@@ -55,6 +55,8 @@ package actionScripts.plugins.haxe
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
+        private static const DEBUG_PORT:int = 3000;
+
 		private var haxePathSetting:PathSetting;
 		private var nekoPathSetting:PathSetting;
 		private var nodePathSetting:PathSetting;
@@ -211,6 +213,9 @@ package actionScripts.plugins.haxe
                     case HaxeProjectVO.LIME_PLATFORM_FLASH:
                     {
                         pendingDebug = true;
+                        pendingRunProject = project;
+                        pendingRunCommand = null;
+                        pendingRunFolder = null;
 			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
                         break;
                     }
@@ -467,11 +472,15 @@ package actionScripts.plugins.haxe
             }
 		}
 
-        private function debugAfterBuild(project:HaxeProjectVO):void
+        private function startDebugAdapter(project:HaxeProjectVO, debug:Boolean):void
         {
             var debugCommand:String = "launch";
             var debugAdapterType:String = null;
             var launchArgs:Object = {};
+            if(!debug)
+            {
+                launchArgs["noDebug"] = true;
+            }
             if(project.isLime)
             {
                 switch(project.limeTargetPlatform)
@@ -481,9 +490,8 @@ package actionScripts.plugins.haxe
                         var webRoot:FileLocation = project.folderLocation.fileBridge
                             .resolvePath("bin" + File.separator + "html5" + File.separator + "bin");
                         launchArgs["name"] = "Moonshine Chrome Launch";
-                        launchArgs["file"] = webRoot.resolvePath("index.html").fileBridge.nativePath;
-                        //launchArgs["url"] = "http://localhost:3000";
-			            //launchArgs["webRoot"] = webRoot.fileBridge.nativePath;
+                        launchArgs["url"] = "http://localhost:" + DEBUG_PORT;
+			            launchArgs["webRoot"] = webRoot.fileBridge.nativePath;
                         //enable for debug logging to a file
                         //launchArgs["trace"] = true;
                         debugAdapterType = "chrome";
@@ -541,12 +549,12 @@ package actionScripts.plugins.haxe
                 project, debugAdapterType, debugCommand, launchArgs));
         }
 
-        private function runAfterBuild(project:HaxeProjectVO, runCommand:String, runFolder:String):void
+        private function runAfterBuild(project:HaxeProjectVO, runCommand:String, runFolder:String, debug:Boolean):void
         {
             warning("Launching Haxe project...");
             if(project.isLime && project.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
             {
-                findLimeLibpath(project);
+                findLimeLibpath(project, debug);
             }
             else if(project.haxeOutput.platform == HaxeOutputVO.PLATFORM_FLASH_PLAYER)
             {
@@ -594,16 +602,16 @@ package actionScripts.plugins.haxe
             }
             else
             {
-                error("Unknown debug command for project: " + project.name);
+                error("Unknown debug command for Haxe project: " + project.name);
             }
         }
 
-        private function findLimeLibpath(project:HaxeProjectVO):void
+        private function findLimeLibpath(project:HaxeProjectVO, debug:Boolean):void
         {
             pendingRunProject = project;
             pendingRunCommand = null;
             pendingRunFolder = null;
-            pendingDebug = false;
+            pendingDebug = debug;
 
 			this.limeLibPath = "";
             var libpathCommand:Vector.<String> = new <String>[
@@ -643,19 +651,21 @@ package actionScripts.plugins.haxe
 			}, null, [CommandLineUtil.joinOptions(libpathCommand)]);
         }
 
-        private function startLimeHTMLDebugServer(project:HaxeProjectVO):void
+        private function startLimeHTMLServer(project:HaxeProjectVO):void
         {
             running = true;
 
             var nodeExePath:String = UtilsCore.getNodeBinPath();
-            var limeFolder:File = new File(this.limeLibPath);
-            var httpServerPath:String = limeFolder.resolvePath("templates/bin/node/http-server/bin/http-server").nativePath;
+            var limeFolder:FileLocation = new FileLocation(this.limeLibPath);
+            var httpServerPath:FileLocation = limeFolder.resolvePath("templates/bin/node/http-server/bin/http-server");
+            
+            var webRoot:FileLocation = project.folderLocation.fileBridge
+                            .resolvePath("bin" + File.separator + "html5" + File.separator + "bin");
             var args:Vector.<String> = new <String>[
-                httpServerPath,
-                "bin/html5/bin",
+                httpServerPath.fileBridge.nativePath,
+                webRoot.fileBridge.nativePath,
                 "-p",
-                "3000",
-                "-o"
+                DEBUG_PORT.toString()
             ];
             var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
             processInfo.executable = new File(nodeExePath);
@@ -738,14 +748,10 @@ package actionScripts.plugins.haxe
                     {
                         dispatcher.dispatchEvent(new RefreshTreeEvent(project.haxeOutput.path.fileBridge.parent));
                     }
-                    if(debug)
+                    dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, project));
+                    if(debug || run)
                     {
-                        dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, project));
-                        debugAfterBuild(project);
-                    }
-                    else if(run)
-                    {
-                        runAfterBuild(project, runCommand, runFolder);
+                        runAfterBuild(project, runCommand, runFolder, debug);
                     }
                 }
             }
@@ -783,6 +789,7 @@ package actionScripts.plugins.haxe
             running = false;
 
             var project:HaxeProjectVO = pendingRunProject;
+            var debug:Boolean = pendingDebug;
             pendingRunProject = null;
             pendingRunCommand = null;
             pendingRunFolder = null;
@@ -795,7 +802,9 @@ package actionScripts.plugins.haxe
 
 			if(event.exitCode == 0)
 			{
-				startLimeHTMLDebugServer(project);
+				startLimeHTMLServer(project);
+                //debug adapter can launch/run without debugging
+                startDebugAdapter(project, debug);
 			}
 			else
 			{
