@@ -32,7 +32,6 @@ package actionScripts.plugin.haxe.hxproject
 	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
-	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
@@ -74,17 +73,6 @@ package actionScripts.plugin.haxe.hxproject
 
 		private function createHaxeProject(event:NewProjectEvent):void
 		{
-            if (!model.haxePath)
-            {
-                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
-                return;
-            }
-            if (!model.nodePath)
-            {
-                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
-                return;
-            }
-
 			var lastSelectedProjectPath:String;
 			
 			CONFIG::OSX
