@@ -85,6 +85,7 @@ package actionScripts.debugAdapter
 		private static const COMMAND_STACK_TRACE:String = "stackTrace";
 		private static const COMMAND_VARIABLES:String = "variables";
 		private static const COMMAND_CONFIGURATION_DONE:String = "configurationDone";
+		private static const PREINITIALIZED_COMMANDS:Vector.<String> = new <String>[COMMAND_LAUNCH, COMMAND_ATTACH, COMMAND_DISCONNECT];
 		private static const EVENT_INITIALIZED:String = "initialized";
 		private static const EVENT_BREAKPOINT:String = "breakpoint";
 		private static const EVENT_OUTPUT:String = "output";
@@ -172,14 +173,14 @@ package actionScripts.debugAdapter
 			return _paused;
 		}
 
-		public function start(adapterID:String, request:String, additionaProperties:Object):void
+		public function start(adapterID:String, request:String, additionalProperties:Object):void
 		{
 			if(request != REQUEST_LAUNCH && request != REQUEST_ATTACH)
 			{
 				throw new IllegalOperationError("Unknown request to start debugger: " + request);
 			}
 
-			_currentRequest = new PendingRequest(adapterID, request, additionaProperties);
+			_currentRequest = new PendingRequest(adapterID, request, additionalProperties);
 
 			this._stackFrames = new ArrayCollection();
 			this._scopesAndVars = new VariablesReferenceHierarchicalData();
@@ -367,7 +368,7 @@ package actionScripts.debugAdapter
 			{
 				throw new IllegalOperationError("Send request failed. Must wait for initialize response before sending request of type '" + command + "' to the debug adapter.");
 			}
-			if(command != COMMAND_LAUNCH && command != COMMAND_ATTACH && _receivedInitializeResponse && !_receivedInitializedEvent)
+			if(PREINITIALIZED_COMMANDS.indexOf(command) == -1 && _receivedInitializeResponse && !_receivedInitializedEvent)
 			{
 				throw new IllegalOperationError("Send request failed. Must wait for initialized event before sending request of type '" + command + "' to the debug adapter.");
 			}
