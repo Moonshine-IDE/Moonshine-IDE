@@ -73,7 +73,7 @@ package actionScripts.plugins.debugAdapter
 
 			dispatcher.addEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.addEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
-			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
+			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_applicationExitHandler);
 			dispatcher.addEventListener(ActionScriptBuildEvent.STOP_DEBUG, dispatcher_stopDebugHandler);
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
@@ -93,7 +93,7 @@ package actionScripts.plugins.debugAdapter
 
 			dispatcher.removeEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.removeEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
-			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
+			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_applicationExitHandler);
 			dispatcher.removeEventListener(ActionScriptBuildEvent.STOP_DEBUG, dispatcher_stopDebugHandler);
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
@@ -276,7 +276,7 @@ package actionScripts.plugins.debugAdapter
 			{
 				//this should have already happened, but if the process exits
 				//abnormally, it might not have
-				_debugAdapter.stop();
+				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
 				
 				warning("Debug adapter exited unexpectedly.");
 			}
@@ -329,13 +329,9 @@ package actionScripts.plugins.debugAdapter
 			}
 		}
 		
-		protected function dispatcher_quitHandler(event:Event):void
+		protected function dispatcher_applicationExitHandler(event:Event):void
 		{
-			if(!_debugAdapter)
-			{
-				return;
-			}
-			_debugAdapter.stop();
+			dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
 		}
 
         private function debugPanel_removedFromStageHandler(event:Event):void
@@ -345,11 +341,7 @@ package actionScripts.plugins.debugAdapter
 
 		protected function dispatcher_stopDebugHandler(event:ActionScriptBuildEvent):void
 		{
-			if(!_debugAdapter)
-			{
-				return;
-			}
-			_debugAdapter.stop();
+			dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
 		}
 		
 		protected function debugPanel_loadVariablesHandler(event:LoadVariablesEvent):void
@@ -372,11 +364,7 @@ package actionScripts.plugins.debugAdapter
 		
 		protected function stopButton_clickHandler(event:MouseEvent):void
 		{
-			if(!_debugAdapter)
-			{
-				return;
-			}
-			_debugAdapter.stop();
+			dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
 		}
 		
 		protected function pauseButton_clickHandler(event:MouseEvent):void
@@ -448,6 +436,7 @@ package actionScripts.plugins.debugAdapter
 			{
 				return;
 			}
+			//don't call stop() anywhere else except here
 			_debugAdapter.stop();
 		}
     }

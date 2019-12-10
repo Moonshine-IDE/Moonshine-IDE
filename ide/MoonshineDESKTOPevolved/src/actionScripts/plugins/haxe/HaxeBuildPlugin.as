@@ -467,7 +467,7 @@ package actionScripts.plugins.haxe
             if (project)
             {
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Debug "));
-                dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate, false, 0, true);
+                dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution, false, 0, true);
 			    dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
             }
 		}
@@ -678,7 +678,7 @@ package actionScripts.plugins.haxe
             addNativeProcessEventListeners();
             nativeProcess.start(processInfo);
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running "));
-            dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate, false, 0, true);
+            dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution, false, 0, true);
             dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
         }
 
@@ -700,6 +700,7 @@ package actionScripts.plugins.haxe
 
             var isLimeHTMLServer:Boolean = event.currentTarget == limeHTMLServerNativeProcess;
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
 
             var project:HaxeProjectVO = pendingRunProject;
@@ -758,6 +759,11 @@ package actionScripts.plugins.haxe
         }
 
         private function onProjectBuildTerminate(event:StatusBarEvent):void
+        {
+            stop();
+        }
+
+        private function onTerminateExecution(event:Event):void
         {
             if(limeHTMLServerNativeProcess && limeHTMLServerNativeProcess.running)
             {
