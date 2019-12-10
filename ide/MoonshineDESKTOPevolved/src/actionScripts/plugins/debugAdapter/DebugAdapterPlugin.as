@@ -141,7 +141,7 @@ package actionScripts.plugins.debugAdapter
 			_debugPanel.stepOverButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
 			_debugPanel.stepIntoButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
 			_debugPanel.stepOutButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
-			_debugPanel.stopButton.enabled = _debugAdapter && _debugAdapter.initialized;
+			_debugPanel.stopButton.enabled = _debugAdapter != null;
 			_debugPanel.stackFrames = _debugAdapter ? _debugAdapter.stackFrames : null;
 			_debugPanel.scopesAndVars = _debugAdapter ? _debugAdapter.scopesAndVars : null;
 		}
@@ -254,6 +254,7 @@ package actionScripts.plugins.debugAdapter
 				//the process won't exit automatically
 				_nativeProcess.exit(true);
 			}
+			refreshView();
 		}
 
 		private function debugAdapter_changeHandler(event:Event):void
@@ -337,68 +338,116 @@ package actionScripts.plugins.debugAdapter
 			_debugAdapter.stop();
 		}
 
+        private function debugPanel_removedFromStageHandler(event:Event):void
+        {
+            isDebugViewVisible = false;
+        }
+
 		protected function dispatcher_stopDebugHandler(event:ActionScriptBuildEvent):void
 		{
+			if(!_debugAdapter)
+			{
+				return;
+			}
 			_debugAdapter.stop();
 		}
 		
 		protected function debugPanel_loadVariablesHandler(event:LoadVariablesEvent):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.loadVariables(event.scopeOrVar);
 		}
 		
 		protected function debugPanel_gotoStackFrameHandler(event:StackFrameEvent):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.gotoStackFrame(event.stackFrame);
 		}
 		
 		protected function stopButton_clickHandler(event:MouseEvent):void
 		{
+			if(!_debugAdapter)
+			{
+				return;
+			}
 			_debugAdapter.stop();
 		}
 		
 		protected function pauseButton_clickHandler(event:MouseEvent):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.pause();
 		}
 		
 		protected function playButton_clickHandler(event:MouseEvent):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.resume();
 		}
 		
 		protected function stepOverButton_clickHandler(event:MouseEvent):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.stepOver();
 		}
 		
 		protected function stepIntoButton_clickHandler(event:MouseEvent):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.stepInto();
 		}
 		
 		protected function stepOutButton_clickHandler(event:MouseEvent):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.stepOut();
 		}
-
-        private function debugPanel_removedFromStageHandler(event:Event):void
-        {
-            isDebugViewVisible = false;
-        }
 		
 		private function dispatcher_stepOverExecutionHandler(event:Event):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.stepOver();
 		}
 		
 		private function dispatcher_continueExecutionHandler(event:Event):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.resume();
 		}
 		
 		private function dispatcher_terminateExecutionHandler(event:Event):void
 		{
+			if(!_debugAdapter)
+			{
+				return;
+			}
 			_debugAdapter.stop();
 		}
     }
