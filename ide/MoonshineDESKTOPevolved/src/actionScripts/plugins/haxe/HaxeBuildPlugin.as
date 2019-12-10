@@ -59,7 +59,6 @@ package actionScripts.plugins.haxe
 
 		private var haxePathSetting:PathSetting;
 		private var nekoPathSetting:PathSetting;
-		private var nodePathSetting:PathSetting;
 		private var isProjectHasInvalidPaths:Boolean;
         private var limeHTMLServerNativeProcess:NativeProcess;
         private var currentProject:HaxeProjectVO;
@@ -127,31 +126,16 @@ package actionScripts.plugins.haxe
             }
         }
 
-        public function get nodePath():String
-        {
-            return model ? model.nodePath : null;
-        }
-
-        public function set nodePath(value:String):void
-        {
-            if (model.nodePath != value)
-            {
-                model.nodePath = value;
-            }
-        }
-
         public function getSettingsList():Vector.<ISetting>
         {
 			onSettingsClose();
 
 			haxePathSetting = new PathSetting(this, 'haxePath', 'Haxe Home', true, haxePath);
 			nekoPathSetting = new PathSetting(this, 'nekoPath', 'Neko Home', true, nekoPath);
-			nodePathSetting = new PathSetting(this, 'nodePath', 'Node.js Home', true, nodePath);
 			
 			return Vector.<ISetting>([
 				haxePathSetting,
-                nekoPathSetting,
-                nodePathSetting
+                nekoPathSetting
 			]);
         }
 		
@@ -164,10 +148,6 @@ package actionScripts.plugins.haxe
 			if (nekoPathSetting)
 			{
 				nekoPathSetting = null;
-			}
-			if (nodePathSetting)
-			{
-				nodePathSetting = null;
 			}
 		}
 
@@ -209,13 +189,27 @@ package actionScripts.plugins.haxe
                 switch(project.limeTargetPlatform)
                 {
                     case HaxeProjectVO.LIME_PLATFORM_HTML5:
-                    case HaxeProjectVO.LIME_PLATFORM_AIR:
-                    case HaxeProjectVO.LIME_PLATFORM_FLASH:
                     {
-                        pendingDebug = true;
+                        if(!UtilsCore.isNodeAvailable())
+                        {
+                            error("A valid Node.js path must be defined to debug project \"" + project.name + "\" on platform \"" + project.limeTargetPlatform + "\".");
+                            dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.js::JavaScriptPlugin"));
+                            return;
+                        }
                         pendingRunProject = project;
                         pendingRunCommand = null;
                         pendingRunFolder = null;
+                        pendingDebug = true;
+			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+                        break;
+                    }
+                    case HaxeProjectVO.LIME_PLATFORM_AIR:
+                    case HaxeProjectVO.LIME_PLATFORM_FLASH:
+                    {
+                        pendingRunProject = project;
+                        pendingRunCommand = null;
+                        pendingRunFolder = null;
+                        pendingDebug = true;
 			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
                         break;
                     }
@@ -260,6 +254,13 @@ package actionScripts.plugins.haxe
             {
                 if(project.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
                 {
+                    if(!UtilsCore.isNodeAvailable())
+                    {
+                        error("A valid Node.js path must be defined to run project \"" + project.name + "\" on platform \"" + project.limeTargetPlatform + "\".");
+                        dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.js::JavaScriptPlugin"));
+                        return;
+                    }
+
                     //for some reason, we can't use startDebug() here because
                     //exiting the NativeProcess with stop() or stop(true) won't
                     //work correctly. the server keeps running, and the port
@@ -271,6 +272,7 @@ package actionScripts.plugins.haxe
                     pendingRunProject = project;
                     pendingRunCommand = null;
                     pendingRunFolder = null;
+                    pendingDebug = false;
 			        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
                 }
                 else
@@ -293,6 +295,7 @@ package actionScripts.plugins.haxe
                         pendingRunProject = project;
                         pendingRunCommand = CommandLineUtil.joinOptions(new <String>[project.haxeOutput.path.fileBridge.resolvePath("bin" + File.separator + csharpExecutableName).fileBridge.nativePath]);
                         pendingRunFolder = project.haxeOutput.path.fileBridge.resolvePath("bin").fileBridge.nativePath;
+                        pendingDebug = false;
 			            this.start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
@@ -306,6 +309,7 @@ package actionScripts.plugins.haxe
                         pendingRunProject = project;
                         pendingRunCommand = CommandLineUtil.joinOptions(new <String>[project.haxeOutput.path.fileBridge.resolvePath(cppExecutableName).fileBridge.nativePath]);
                         pendingRunFolder = project.haxeOutput.path.fileBridge.nativePath;
+                        pendingDebug = false;
 			            this.start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
@@ -321,6 +325,7 @@ package actionScripts.plugins.haxe
                         pendingRunProject = project;
                         pendingRunCommand = CommandLineUtil.joinOptions(new <String>[EnvironmentExecPaths.JAVA_ENVIRON_EXEC_PATH, "-jar", project.haxeOutput.path.fileBridge.resolvePath(jarName).fileBridge.nativePath]);
                         pendingRunFolder = project.haxeOutput.path.fileBridge.nativePath;
+                        pendingDebug = false;
 			            this.start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
@@ -329,6 +334,7 @@ package actionScripts.plugins.haxe
                         pendingRunProject = project;
                         pendingRunCommand = CommandLineUtil.joinOptions(new <String>[EnvironmentExecPaths.NEKO_ENVIRON_EXEC_PATH, project.haxeOutput.path.fileBridge.nativePath]);
                         pendingRunFolder = project.haxeOutput.path.fileBridge.parent.fileBridge.nativePath;
+                        pendingDebug = false;
 			            this.start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
@@ -653,9 +659,15 @@ package actionScripts.plugins.haxe
 
         private function startLimeHTMLServer(project:HaxeProjectVO):void
         {
+            if(!UtilsCore.isNodeAvailable())
+            {
+                error("A valid Node.js path must be defined to run/debug project \"" + project.name + "\" on platform \"" + project.limeTargetPlatform + "\".");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.js::JavaScriptPlugin"));
+                return;
+            }
             running = true;
 
-            var nodeExePath:String = UtilsCore.getNodeBinPath();
+            var nodePath:String = UtilsCore.getNodeBinPath();
             var limeFolder:FileLocation = new FileLocation(this.limeLibPath);
             var httpServerPath:FileLocation = limeFolder.resolvePath("templates/bin/node/http-server/bin/http-server");
             
@@ -668,10 +680,10 @@ package actionScripts.plugins.haxe
                 DEBUG_PORT.toString()
             ];
             var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-            processInfo.executable = new File(nodeExePath);
+            processInfo.executable = new File(nodePath);
             processInfo.arguments = args;
     
-            print("Command: %s", nodeExePath + " " + args.join(" "));
+            print("Command: %s", nodePath + " " + args.join(" "));
             processInfo.workingDirectory = new File(project.projectFolder.nativePath);
             nativeProcess = new NativeProcess();
             limeHTMLServerNativeProcess = nativeProcess;

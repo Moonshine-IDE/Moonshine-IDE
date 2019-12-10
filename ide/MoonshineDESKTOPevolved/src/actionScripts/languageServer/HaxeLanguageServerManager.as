@@ -79,6 +79,7 @@ package actionScripts.languageServer
 		private var _haxeVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousHaxePath:String = null;
+		private var _previousNodePath:String = null;
 		private var _previousTargetPlatform:String = null;
 		private var _displayArguments:String = null;
 		private var _haxeVersion:String = null;
@@ -90,6 +91,7 @@ package actionScripts.languageServer
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 			_dispatcher.addEventListener(SdkEvent.CHANGE_HAXE_SDK, changeHaxeSDKHandler);
+			_dispatcher.addEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler);
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_dispatcher.addEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler);
@@ -193,8 +195,10 @@ package actionScripts.languageServer
 		
 		private function boostrapThenStartNativeProcess():void
 		{
-			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
+			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable() || !UtilsCore.isNodeAvailable())
 			{
+				_previousHaxePath = null;
+				_previousNodePath = null;
 				return;
 			}
 			installDependencies();
@@ -209,6 +213,7 @@ package actionScripts.languageServer
 		{
 			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
 			{
+				_previousHaxePath = null;
 				return;
 			}
 
@@ -316,13 +321,15 @@ package actionScripts.languageServer
 				trace("Error: Haxe language server process already exists!");
 				return;
 			}
-			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
+			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable() || !UtilsCore.isNodeAvailable())
 			{
 				return;
 			}
 
 			var haxePath:String = getProjectSDKPath(_project, _model);
 			_previousHaxePath = haxePath;
+			var nodePath:String = UtilsCore.getNodeBinPath();
+			_previousNodePath = nodePath;
 			if(_project.isLime)
 			{
 				_previousTargetPlatform = _project.limeTargetPlatform;
@@ -330,17 +337,6 @@ package actionScripts.languageServer
 			else
 			{
 				_previousTargetPlatform = _project.haxeOutput.platform;
-			}
-			if(!_model.nodePath)
-			{
-				return;
-			}
-			var cmdFile:File = new File(UtilsCore.getNodeBinPath());
-			if(!cmdFile.exists)
-			{
-				error("Invalid path to Node.js executable: " + cmdFile.nativePath);
-                _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
-				return;
 			}
 
 			var processArgs:Vector.<String> = new <String>[];
@@ -350,7 +346,7 @@ package actionScripts.languageServer
 			//processArgs.push("--inspect");
 			processArgs.push(scriptFile.nativePath);
 			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
+			processInfo.executable = new File(nodePath);
 			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 
 			_languageServerProcess = new NativeProcess();
@@ -562,6 +558,14 @@ package actionScripts.languageServer
 		private function changeHaxeSDKHandler(event:SdkEvent):void
 		{
 			if(getProjectSDKPath(_project, _model) != _previousHaxePath)
+			{
+				restartLanguageServer();
+			}
+		}
+
+		private function changeNodeSDKHandler(event:SdkEvent):void
+		{
+			if(UtilsCore.getNodeBinPath() != _previousNodePath)
 			{
 				restartLanguageServer();
 			}

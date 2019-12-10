@@ -38,11 +38,10 @@ package actionScripts.plugins.chromelauncher
 
 		public function getStartupInfo(project:ProjectVO):NativeProcessStartupInfo
 		{
-			var cmdFile:File = new File(UtilsCore.getNodeBinPath());
-			if(!cmdFile.exists)
+			if(!UtilsCore.isNodeAvailable())
 			{
 				error("Debug session cancelled. A valid Node.js path must be defined to debug with Google Chrome.");
-                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.js::JavaScriptPlugin"));
 				return null;
 			}
 
@@ -57,7 +56,7 @@ package actionScripts.plugins.chromelauncher
 			}
 			startupInfo.workingDirectory = cwd;
 			startupInfo.arguments = processArgs;
-			startupInfo.executable = cmdFile;
+			startupInfo.executable = new File(UtilsCore.getNodeBinPath());
 			return startupInfo;
 		}
 	}

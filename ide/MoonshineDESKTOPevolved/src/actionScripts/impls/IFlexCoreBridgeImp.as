@@ -122,6 +122,7 @@ package actionScripts.impls
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
+	import actionScripts.plugins.js.JavaScriptPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -242,7 +243,8 @@ package actionScripts.impls
 				RenamePlugin,
 				Away3DPlugin,
 				GitHubPlugin,
-				HiddenFilesPlugin
+				HiddenFilesPlugin,
+                JavaScriptPlugin
 			];
 		}
 		
