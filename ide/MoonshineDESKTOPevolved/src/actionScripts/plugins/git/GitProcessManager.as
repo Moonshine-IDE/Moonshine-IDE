@@ -22,6 +22,7 @@ package actionScripts.plugins.git
 	
 	import flash.events.Event;
 	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
 	import flash.utils.Dictionary;
 	
 	import mx.collections.ArrayCollection;
@@ -43,6 +44,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -92,6 +94,7 @@ package actionScripts.plugins.git
 		private var subscribeIdToWorker:String = UIDUtil.createUID();
 		private var lastCloneURL:String;
 		private var lastCloneTarget:String;
+		private var diffResults:String = "";
 		private var isGitUserName:Boolean;
 		private var isGitUserEmail:Boolean;
 		
@@ -178,9 +181,7 @@ package actionScripts.plugins.git
 			if (!model.activeProject) return;
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' status --porcelain > ') +
-				(ConstantsCoreVO.IS_MACOS ? "$'"+ File.applicationStorageDirectory.resolvePath("commitDiff.txt").nativePath +"'" : 
-					File.applicationStorageDirectory.resolvePath("commitDiff.txt").nativePath),
+			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' status --porcelain'),
 				false, 
 				GIT_DIFF_CHECK));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
@@ -686,6 +687,11 @@ package actionScripts.plugins.git
 					isGitUserEmail = true;
 					return;
 				}
+				case GIT_DIFF_CHECK:
+				{
+					diffResults += value.output;
+					return;
+				}
 			}
 			
 			if (isFatal)
@@ -716,18 +722,10 @@ package actionScripts.plugins.git
 		
 		private function checkDiffFileExistence():void
 		{
-			var tmpFile:File = File.applicationStorageDirectory.resolvePath('commitDiff.txt');
-			if (tmpFile.exists)
+			if (StringUtil.trim(diffResults) != "")
 			{
-				var value:String = new FileLocation(tmpFile.nativePath).fileBridge.read() as String;
-				
-				// @note
-				// for some unknown reason, searchRegExp.exec(tmpString) always
-				// failed after 4 records; initial investigation didn't shown
-				// any possible reason of breaking; Thus forEach treatment for now
-				// (but I don't like this)
 				var tmpPositions:ArrayCollection = new ArrayCollection();
-				var contentInLineBreaks:Array = value.split("\n");
+				var contentInLineBreaks:Array = diffResults.split("\n");
 				var firstPart:String;
 				var secondPart:String;
 				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
@@ -747,12 +745,8 @@ package actionScripts.plugins.git
 					}
 				});
 				
+				diffResults = "";
 				dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
-				try {
-					tmpFile.deleteFile();
-				} catch (e:Error) {
-					tmpFile.deleteFileAsync();
-				}
 			}
 			
 			/*
