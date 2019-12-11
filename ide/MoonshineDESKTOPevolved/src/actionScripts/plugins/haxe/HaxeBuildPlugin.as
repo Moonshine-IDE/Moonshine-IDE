@@ -46,7 +46,6 @@ package actionScripts.plugins.haxe
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.utils.CommandLineUtil;
     import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
-    import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
     import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
@@ -564,10 +563,7 @@ package actionScripts.plugins.haxe
             }
             else if(project.haxeOutput.platform == HaxeOutputVO.PLATFORM_FLASH_PLAYER)
             {
-                var swfFile:File = project.haxeOutput.path.fileBridge.getFile as File;
-				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, project)
-				);
+                startDebugAdapter(project, debug);
             }
             else if(runCommand)
             {
