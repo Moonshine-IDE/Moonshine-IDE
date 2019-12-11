@@ -55,6 +55,7 @@ package actionScripts.plugins.haxe
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
+        private static const HTTP_SERVER_MODULE_PATH:String = "elements/http-server/bin/http-server";
         private static const DEBUG_PORT:int = 3000;
 
 		private var haxePathSetting:PathSetting;
@@ -66,8 +67,6 @@ package actionScripts.plugins.haxe
         private var pendingRunCommand:String = null;
         private var pendingRunFolder:String = null;
         private var pendingDebug:Boolean = false;
-        private var limeLibpathProcess:NativeProcess;
-        private var limeLibPath:String = null;
 		
         public function HaxeBuildPlugin()
         {
@@ -560,7 +559,9 @@ package actionScripts.plugins.haxe
             warning("Launching Haxe project...");
             if(project.isLime && project.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
             {
-                findLimeLibpath(project, debug);
+				startLimeHTMLServer(project);
+                //debug adapter can launch/run without debugging
+                startDebugAdapter(project, debug);
             }
             else if(project.haxeOutput.platform == HaxeOutputVO.PLATFORM_FLASH_PLAYER)
             {
@@ -612,51 +613,6 @@ package actionScripts.plugins.haxe
             }
         }
 
-        private function findLimeLibpath(project:HaxeProjectVO, debug:Boolean):void
-        {
-            pendingRunProject = project;
-            pendingRunCommand = null;
-            pendingRunFolder = null;
-            pendingDebug = debug;
-
-			this.limeLibPath = "";
-            var libpathCommand:Vector.<String> = new <String>[
-                EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH,
-                "libpath",
-                "lime"
-            ];
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
-			{
-				var cmdFile:File = null;
-				var processArgs:Vector.<String> = new <String>[];
-				
-				if (Settings.os == "win")
-				{
-					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
-					processArgs.push("/c");
-					processArgs.push(value);
-				}
-				else
-				{
-					cmdFile = new File("/bin/bash");
-					processArgs.push("-c");
-					processArgs.push(value);
-				}
-
-                running = true;
-
-				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-				processInfo.arguments = processArgs;
-				processInfo.executable = cmdFile;
-				processInfo.workingDirectory = project.folderLocation.fileBridge.getFile as File;
-				
-				limeLibpathProcess = new NativeProcess();
-				limeLibpathProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeLibpathProcess_standardOutputDataHandler);
-				limeLibpathProcess.addEventListener(NativeProcessExitEvent.EXIT, limeLibpathProcess_exitHandler);
-				limeLibpathProcess.start(processInfo);
-			}, null, [CommandLineUtil.joinOptions(libpathCommand)]);
-        }
-
         private function startLimeHTMLServer(project:HaxeProjectVO):void
         {
             if(!UtilsCore.isNodeAvailable())
@@ -668,8 +624,7 @@ package actionScripts.plugins.haxe
             running = true;
 
             var nodePath:String = UtilsCore.getNodeBinPath();
-            var limeFolder:FileLocation = new FileLocation(this.limeLibPath);
-            var httpServerPath:FileLocation = limeFolder.resolvePath("templates/bin/node/http-server/bin/http-server");
+            var httpServerPath:FileLocation = model.fileCore.resolveApplicationDirectoryPath(HTTP_SERVER_MODULE_PATH);
             
             var webRoot:FileLocation = project.folderLocation.fileBridge
                             .resolvePath("bin" + File.separator + "html5" + File.separator + "bin");
@@ -792,43 +747,6 @@ package actionScripts.plugins.haxe
         private function onApplicationExit(event:ApplicationEvent):void
         {
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_TERMINATE));
-        }
-
-        private function limeLibpathProcess_standardOutputDataHandler(event:ProgressEvent):void
-        {
-            var process:NativeProcess = NativeProcess(event.currentTarget);
-            var output:IDataInput = process.standardOutput;
-            var data:String = output.readUTFBytes(output.bytesAvailable);
-            this.limeLibPath += data.replace(/[\r\n]/g, "");
-        }
-		
-		private function limeLibpathProcess_exitHandler(event:NativeProcessExitEvent):void
-		{
-            running = false;
-
-            var project:HaxeProjectVO = pendingRunProject;
-            var debug:Boolean = pendingDebug;
-            pendingRunProject = null;
-            pendingRunCommand = null;
-            pendingRunFolder = null;
-            pendingDebug = false;
-
-			limeLibpathProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeLibpathProcess_standardOutputDataHandler);
-			limeLibpathProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeLibpathProcess_exitHandler);
-			limeLibpathProcess.exit();
-			limeLibpathProcess = null;
-
-			if(event.exitCode == 0)
-			{
-				startLimeHTMLServer(project);
-                //debug adapter can launch/run without debugging
-                startDebugAdapter(project, debug);
-			}
-			else
-			{
-                this.limeLibPath = "";
-				error("Failed to load Lime libpath. Run cancelled.");
-			}
         }
 
         private function runProjectProcess_standardOutputDataHandler(event:ProgressEvent):void
