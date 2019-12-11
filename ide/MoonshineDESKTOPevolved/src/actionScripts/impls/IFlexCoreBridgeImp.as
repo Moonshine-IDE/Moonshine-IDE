@@ -122,6 +122,7 @@ package actionScripts.impls
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
+	import actionScripts.plugins.js.JavaScriptPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -242,7 +243,8 @@ package actionScripts.impls
 				RenamePlugin,
 				Away3DPlugin,
 				GitHubPlugin,
-				HiddenFilesPlugin
+				HiddenFilesPlugin,
+                JavaScriptPlugin
 			];
 		}
 		
@@ -353,13 +355,13 @@ package actionScripts.impls
 						"d", [Keyboard.COMMAND],
 						"d", [Keyboard.CONTROL]),
 					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.DEBUG_STEPOVER,
+					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.DEBUG_STEPOVER,
 						"e",[Keyboard.COMMAND],
 						"f6", []),
-					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.CONTINUE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.CONTINUE_EXECUTION,
 						"r",[Keyboard.COMMAND],
 						"f8", []),
-					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.TERMINATE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.TERMINATE_EXECUTION,
 						"t",[Keyboard.COMMAND],
 						"t", [Keyboard.CONTROL])
 				]),

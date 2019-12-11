@@ -42,13 +42,14 @@ package actionScripts.plugins.debugAdapter
     import flash.events.ProgressEvent;
     import flash.utils.IDataInput;
     import actionScripts.debugAdapter.DebugAdapter;
+    import actionScripts.plugins.chromelauncher.ChromeDebugAdapterLauncher;
 	
 	public class DebugAdapterPlugin extends PluginBase
 	{
 		public static const EVENT_SHOW_HIDE_DEBUG_VIEW:String = "EVENT_SHOW_HIDE_DEBUG_VIEW";
 		private static const MAX_RETRY_COUNT:int = 5;
-		private static const DEBUG_TYPE_SWF:String = "swf";
 		private static const CLIENT_ID:String = "moonshine";
+		private static const CLIENT_NAME:String = "Moonshine IDE";
 		
 		override public function get name():String 			{ return "Debug Adapter Protocol Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
@@ -72,7 +73,7 @@ package actionScripts.plugins.debugAdapter
 
 			dispatcher.addEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.addEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
-			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
+			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_applicationExitHandler);
 			dispatcher.addEventListener(ActionScriptBuildEvent.STOP_DEBUG, dispatcher_stopDebugHandler);
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
@@ -92,7 +93,7 @@ package actionScripts.plugins.debugAdapter
 
 			dispatcher.removeEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.removeEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
-			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_quitHandler);
+			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_applicationExitHandler);
 			dispatcher.removeEventListener(ActionScriptBuildEvent.STOP_DEBUG, dispatcher_stopDebugHandler);
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
@@ -140,7 +141,7 @@ package actionScripts.plugins.debugAdapter
 			_debugPanel.stepOverButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
 			_debugPanel.stepIntoButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
 			_debugPanel.stepOutButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
-			_debugPanel.stopButton.enabled = _debugAdapter && _debugAdapter.initialized;
+			_debugPanel.stopButton.enabled = _debugAdapter != null;
 			_debugPanel.stackFrames = _debugAdapter ? _debugAdapter.stackFrames : null;
 			_debugPanel.scopesAndVars = _debugAdapter ? _debugAdapter.scopesAndVars : null;
 		}
@@ -191,6 +192,11 @@ package actionScripts.plugins.debugAdapter
 					launcher = new SWFDebugAdapterLauncher();
 					break;
 				}
+				case "chrome":
+				{
+					launcher = new ChromeDebugAdapterLauncher();
+					break;
+				}
 				default:
 				{
 					error("Unknown debug adapter: " + event.adapterID);
@@ -218,8 +224,9 @@ package actionScripts.plugins.debugAdapter
             initializeDebugViewEventHandlers(event);
 			isDebugViewVisible = true;
 			
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
 			var debugMode:Boolean = false;
-			_debugAdapter = new DebugAdapter(CLIENT_ID, debugMode, dispatcher,
+			_debugAdapter = new DebugAdapter(CLIENT_ID, CLIENT_NAME, debugMode, dispatcher,
 				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_debugAdapter.addEventListener(Event.INIT, debugAdapter_initHandler);
 			_debugAdapter.addEventListener(Event.CLOSE, debugAdapter_closeHandler);
@@ -231,6 +238,7 @@ package actionScripts.plugins.debugAdapter
 
 		private function debugAdapter_initHandler(event:Event):void
 		{
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = true;
 			for(var path:String in _breakpoints)
 			{
 				_debugAdapter.setBreakpoints(path, _breakpoints[path] as Array);
@@ -239,12 +247,14 @@ package actionScripts.plugins.debugAdapter
 
 		private function debugAdapter_closeHandler(event:Event):void
 		{
+			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
 			_debugAdapter = null;
 			if(_nativeProcess)
 			{
 				//the process won't exit automatically
 				_nativeProcess.exit(true);
 			}
+			refreshView();
 		}
 
 		private function debugAdapter_changeHandler(event:Event):void
@@ -266,7 +276,7 @@ package actionScripts.plugins.debugAdapter
 			{
 				//this should have already happened, but if the process exits
 				//abnormally, it might not have
-				_debugAdapter.stop();
+				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
 				
 				warning("Debug adapter exited unexpectedly.");
 			}
@@ -319,77 +329,114 @@ package actionScripts.plugins.debugAdapter
 			}
 		}
 		
-		protected function dispatcher_quitHandler(event:Event):void
+		protected function dispatcher_applicationExitHandler(event:Event):void
 		{
-			if(!_debugAdapter)
-			{
-				return;
-			}
-			_debugAdapter.stop();
-		}
-
-		protected function dispatcher_stopDebugHandler(event:ActionScriptBuildEvent):void
-		{
-			_debugAdapter.stop();
-		}
-		
-		protected function debugPanel_loadVariablesHandler(event:LoadVariablesEvent):void
-		{
-			_debugAdapter.loadVariables(event.scopeOrVar);
-		}
-		
-		protected function debugPanel_gotoStackFrameHandler(event:StackFrameEvent):void
-		{
-			_debugAdapter.gotoStackFrame(event.stackFrame);
-		}
-		
-		protected function stopButton_clickHandler(event:MouseEvent):void
-		{
-			_debugAdapter.stop();
-		}
-		
-		protected function pauseButton_clickHandler(event:MouseEvent):void
-		{
-			_debugAdapter.pause();
-		}
-		
-		protected function playButton_clickHandler(event:MouseEvent):void
-		{
-			_debugAdapter.resume();
-		}
-		
-		protected function stepOverButton_clickHandler(event:MouseEvent):void
-		{
-			_debugAdapter.stepOver();
-		}
-		
-		protected function stepIntoButton_clickHandler(event:MouseEvent):void
-		{
-			_debugAdapter.stepInto();
-		}
-		
-		protected function stepOutButton_clickHandler(event:MouseEvent):void
-		{
-			_debugAdapter.stepOut();
+			dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
 		}
 
         private function debugPanel_removedFromStageHandler(event:Event):void
         {
             isDebugViewVisible = false;
         }
+
+		protected function dispatcher_stopDebugHandler(event:ActionScriptBuildEvent):void
+		{
+			dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+		}
+		
+		protected function debugPanel_loadVariablesHandler(event:LoadVariablesEvent):void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.loadVariables(event.scopeOrVar);
+		}
+		
+		protected function debugPanel_gotoStackFrameHandler(event:StackFrameEvent):void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.gotoStackFrame(event.stackFrame);
+		}
+		
+		protected function stopButton_clickHandler(event:MouseEvent):void
+		{
+			dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+		}
+		
+		protected function pauseButton_clickHandler(event:MouseEvent):void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.pause();
+		}
+		
+		protected function playButton_clickHandler(event:MouseEvent):void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.resume();
+		}
+		
+		protected function stepOverButton_clickHandler(event:MouseEvent):void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.stepOver();
+		}
+		
+		protected function stepIntoButton_clickHandler(event:MouseEvent):void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.stepInto();
+		}
+		
+		protected function stepOutButton_clickHandler(event:MouseEvent):void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.stepOut();
+		}
 		
 		private function dispatcher_stepOverExecutionHandler(event:Event):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.stepOver();
 		}
 		
 		private function dispatcher_continueExecutionHandler(event:Event):void
 		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
 			_debugAdapter.resume();
 		}
 		
 		private function dispatcher_terminateExecutionHandler(event:Event):void
 		{
+			if(!_debugAdapter)
+			{
+				return;
+			}
+			//don't call stop() anywhere else except here
 			_debugAdapter.stop();
 		}
     }

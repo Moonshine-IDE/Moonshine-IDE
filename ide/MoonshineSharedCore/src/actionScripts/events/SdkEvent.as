@@ -24,6 +24,7 @@ package actionScripts.events
 	{
 		public static const CHANGE_SDK:String = "changeSdk";
 		public static const CHANGE_HAXE_SDK:String = "changeHaxeSdk";
+		public static const CHANGE_NODE_SDK:String = "changeNodeSdk";
 
 		public function SdkEvent(type:String)
 		{

@@ -28,7 +28,6 @@ package actionScripts.debugAdapter
 	import actionScripts.debugAdapter.vo.StackFrame;
 	import actionScripts.debugAdapter.vo.Variable;
 	import actionScripts.debugAdapter.vo.VariablesReferenceHierarchicalData;
-	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.ui.editor.text.events.DebugLineEvent;
 
 	import flash.errors.IllegalOperationError;
@@ -64,8 +63,10 @@ package actionScripts.debugAdapter
 
 	public class DebugAdapter extends ConsoleOutputter
 	{
-		private static const TWO_CRLF:String = "\r\n\r\n";
-		private static const CONTENT_LENGTH_PREFIX:String = "Content-Length: ";
+		private static const HELPER_BYTES:ByteArray = new ByteArray();
+		private static const PROTOCOL_HEADER_FIELD_CONTENT_LENGTH:String = "Content-Length: ";
+		private static const PROTOCOL_END_OF_HEADER:String = "\r\n\r\n";
+		private static const PROTOCOL_HEADER_DELIMITER:String = "\r\n";
 		private static const MESSAGE_TYPE_REQUEST:String = "request";
 		private static const MESSAGE_TYPE_RESPONSE:String = "response";
 		private static const MESSAGE_TYPE_EVENT:String = "event";
@@ -83,11 +84,14 @@ package actionScripts.debugAdapter
 		private static const COMMAND_SCOPES:String = "scopes";
 		private static const COMMAND_STACK_TRACE:String = "stackTrace";
 		private static const COMMAND_VARIABLES:String = "variables";
+		private static const COMMAND_CONFIGURATION_DONE:String = "configurationDone";
+		private static const PREINITIALIZED_COMMANDS:Vector.<String> = new <String>[COMMAND_LAUNCH, COMMAND_ATTACH, COMMAND_DISCONNECT];
 		private static const EVENT_INITIALIZED:String = "initialized";
 		private static const EVENT_BREAKPOINT:String = "breakpoint";
 		private static const EVENT_OUTPUT:String = "output";
 		private static const EVENT_STOPPED:String = "stopped";
 		private static const EVENT_TERMINATED:String = "terminated";
+		private static const EVENT_LOADED_SOURCE:String = "loadedSource";
 		private static const REQUEST_LAUNCH:String = "launch";
 		private static const REQUEST_ATTACH:String = "attach";
 		private static const OUTPUT_CATEGORY_CONSOLE:String = "console";
@@ -95,11 +99,12 @@ package actionScripts.debugAdapter
 		private static const OUTPUT_CATEGORY_STDERR:String = "stderr";
 		private static const OUTPUT_CATEGORY_TELEMETRY:String = "telemetry";
 
-		public function DebugAdapter(clientID:String, debugMode:Boolean, dispatcher:IEventDispatcher,
+		public function DebugAdapter(clientID:String, clientName:String, debugMode:Boolean, dispatcher:IEventDispatcher,
 			input:IDataInput, inputDispatcher:IEventDispatcher, inputEvent:String,
 			output:IDataOutput, outputFlushCallback:Function = null)
 		{
 			_clientID = clientID;
+			_clientName = clientName;
 			_debugMode = debugMode;
 			_dispatcher = dispatcher;
 			_input = input;
@@ -112,6 +117,7 @@ package actionScripts.debugAdapter
 		}
 
 		private var _clientID:String;
+		private var _clientName:String;
 		private var _debugMode:Boolean = false;
 		private var _dispatcher:IEventDispatcher;
 		private var _input:IDataInput;
@@ -121,10 +127,12 @@ package actionScripts.debugAdapter
 		private var _outputFlushCallback:Function;
 		private var _model:IDEModel = IDEModel.getInstance();
 
+		private var _supportsConfigurationDoneRequest:Boolean = false;
+
 		private var _seq:int = 0;
-		private var _byteArray:ByteArray = new ByteArray();
 		private var _messageBuffer:String = "";
-		private var _bodyLength:int = -1;
+		private var _messageBytes:ByteArray = new ByteArray();
+		private var _contentLength:int = -1;
 		private var mainThreadID:int = -1;
 		private var _currentRequest:PendingRequest;
 
@@ -145,11 +153,12 @@ package actionScripts.debugAdapter
 		private var _variablesLookup:Dictionary = new Dictionary();
 
 		private var _receivedInitializeResponse:Boolean = false;
+		private var _receivedInitializedEvent:Boolean = false;
 		private var _waitingForLaunchOrAttach:Boolean = false;
 
 		public function get initialized():Boolean
 		{
-			return _receivedInitializeResponse;
+			return _receivedInitializedEvent;
 		}
 
 		public function get launchedOrAttached():Boolean
@@ -164,30 +173,37 @@ package actionScripts.debugAdapter
 			return _paused;
 		}
 
-		public function start(adapterID:String, request:String, additionaProperties:Object):void
+		public function start(adapterID:String, request:String, additionalProperties:Object):void
 		{
 			if(request != REQUEST_LAUNCH && request != REQUEST_ATTACH)
 			{
 				throw new IllegalOperationError("Unknown request to start debugger: " + request);
 			}
 
-			_currentRequest = new PendingRequest(adapterID, request, additionaProperties);
+			_currentRequest = new PendingRequest(adapterID, request, additionalProperties);
 
 			this._stackFrames = new ArrayCollection();
 			this._scopesAndVars = new VariablesReferenceHierarchicalData();
 			
-			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
 			_receivedInitializeResponse = false;
+			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
 			
 			mainThreadID = -1;
 			
-			DebugHighlightManager.IS_DEBUGGER_CONNECTED = true;
-			
 			sendRequest(COMMAND_INITIALIZE,
 			{
 				"clientID": this._clientID,
-				"adapterID": adapterID
+				"clientName": this._clientName,
+				"adapterID": adapterID,
+				"pathFormat": "path",
+				"linesStartAt1": true,
+				"columnsStartAt1": true,
+				"supportsVariableType": false,
+				"supportsVariablePaging": false,
+				"supportsRunInTerminalRequest": false,
+				"supportsMemoryReferences": false,
+				"locale": "en-us"
 			});
 		}
 
@@ -216,7 +232,7 @@ package actionScripts.debugAdapter
 
 		public function resume():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -227,7 +243,7 @@ package actionScripts.debugAdapter
 
 		public function pause():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || _paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || _paused)
 			{
 				return;
 			}
@@ -237,7 +253,7 @@ package actionScripts.debugAdapter
 
 		public function stepOver():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -247,7 +263,7 @@ package actionScripts.debugAdapter
 
 		public function stepInto():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -257,7 +273,7 @@ package actionScripts.debugAdapter
 
 		public function stepOut():void
 		{
-            if (!_receivedInitializeResponse || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
 			{
 				return;
 			}
@@ -275,8 +291,8 @@ package actionScripts.debugAdapter
 			this._scopesAndVars.removeAll();
 			this._stackFrames.removeAll();
 			_receivedInitializeResponse = false;
+			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
-			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
 			
 			_inputDispatcher.removeEventListener(_inputEvent, input_onData);
 
@@ -287,40 +303,63 @@ package actionScripts.debugAdapter
 		
 		private function parseMessageBuffer():void
 		{
-			if(this._bodyLength !== -1)
+			var object:Object = null;
+			try
 			{
-				if(this._messageBuffer.length < this._bodyLength)
+				var needsHeaderPart:Boolean = _contentLength == -1;
+				if(needsHeaderPart && _messageBuffer.indexOf(PROTOCOL_END_OF_HEADER) == -1)
 				{
-					//we don't have the full body yet
+					//not enough data for the header yet
 					return;
 				}
-				var body:String = this._messageBuffer.substr(0, this._bodyLength);
-				this._messageBuffer = this._messageBuffer.substr(this._bodyLength);
-				this._bodyLength = -1;
-				var message:Object = JSON.parse(body);
-				this.parseProtocolMessage(message);
-			}
-			else if(this._messageBuffer.length > CONTENT_LENGTH_PREFIX.length)
-			{
-				//start with a new header
-				var index:int = this._messageBuffer.indexOf(TWO_CRLF, CONTENT_LENGTH_PREFIX.length);
-				if(index === -1)
+				while(needsHeaderPart)
 				{
-					//we don't have a full header yet
+					var index:int = _messageBuffer.indexOf(PROTOCOL_HEADER_DELIMITER);
+					var headerField:String = _messageBuffer.substr(0, index);
+					_messageBuffer = _messageBuffer.substr(index + PROTOCOL_HEADER_DELIMITER.length);
+					if(index == 0)
+					{
+						//this is the end of the header
+						needsHeaderPart = false;
+					}
+					else if(headerField.indexOf(PROTOCOL_HEADER_FIELD_CONTENT_LENGTH) == 0)
+					{
+						var contentLengthAsString:String = headerField.substr(PROTOCOL_HEADER_FIELD_CONTENT_LENGTH.length);
+						_contentLength = parseInt(contentLengthAsString, 10);
+					}
+				}
+				if(_contentLength == -1)
+				{
+					trace("Error: Debug adapter client failed to parse Content-Length header");
 					return;
 				}
-				var lengthString:String = this._messageBuffer.substr(CONTENT_LENGTH_PREFIX.length, index - CONTENT_LENGTH_PREFIX.length);
-				this._bodyLength = parseInt(lengthString, 10);
-				this._messageBuffer = this._messageBuffer.substr(index + TWO_CRLF.length);
+				//keep adding to the byte array until we have the full content
+				_messageBytes.writeUTFBytes(_messageBuffer);
+				_messageBuffer = "";
+				if(_messageBytes.length < _contentLength)
+				{
+					//we don't have the full content part of the message yet,
+					//so we'll try again the next time we have new data
+					return;
+				}
+				_messageBytes.position = 0;
+				var message:String = _messageBytes.readUTFBytes(_contentLength);
+				//add any remaining bytes back into the buffer because they are
+				//the beginning of the next message
+				_messageBuffer = _messageBytes.readUTFBytes(_messageBytes.length - _contentLength);
+				_messageBytes.clear();
+				_contentLength = -1;
+				object = JSON.parse(message);
 			}
-			else
+			catch(error:Error)
 			{
-				//we don't have a full header yet
+				trace("Error: Debug adapter client failed to parse JSON.");
 				return;
 			}
-			//keep trying to parse until we hit one of the return statements
-			//above
-			this.parseMessageBuffer();
+			parseProtocolMessage(object);
+
+			//check if there's another message in the buffer
+			parseMessageBuffer();
 		}
 		
 		private function sendRequest(command:String, args:Object = null):void
@@ -328,6 +367,10 @@ package actionScripts.debugAdapter
 			if(command != COMMAND_INITIALIZE && !_receivedInitializeResponse)
 			{
 				throw new IllegalOperationError("Send request failed. Must wait for initialize response before sending request of type '" + command + "' to the debug adapter.");
+			}
+			if(PREINITIALIZED_COMMANDS.indexOf(command) == -1 && _receivedInitializeResponse && !_receivedInitializedEvent)
+			{
+				throw new IllegalOperationError("Send request failed. Must wait for initialized event before sending request of type '" + command + "' to the debug adapter.");
 			}
 			_seq++;
 			var message:Object =
@@ -345,19 +388,19 @@ package actionScripts.debugAdapter
 		
 		private function sendProtocolMessage(message:Object):void
 		{
-			var string:String = JSON.stringify(message);
+			var contentJSON:String = JSON.stringify(message);
 			if(_debugMode)
 			{
-				trace("<<< ", string);
+				trace("<<< ", contentJSON);
 			}
-			_byteArray.clear();
-			_byteArray.writeUTFBytes(string);
-			var contentLength:String = _byteArray.length.toString();
-			_byteArray.clear();
-			_output.writeUTFBytes(CONTENT_LENGTH_PREFIX);
-			_output.writeUTFBytes(contentLength);
-			_output.writeUTFBytes(TWO_CRLF);
-			_output.writeUTFBytes(string);
+			HELPER_BYTES.clear();
+			HELPER_BYTES.writeUTFBytes(contentJSON);
+			var contentLength:int = HELPER_BYTES.length;
+			HELPER_BYTES.clear();
+			_output.writeUTFBytes(PROTOCOL_HEADER_FIELD_CONTENT_LENGTH);
+			_output.writeUTFBytes(contentLength.toString());
+			_output.writeUTFBytes(PROTOCOL_END_OF_HEADER);
+			_output.writeUTFBytes(contentJSON);
 			if(_outputFlushCallback != null)
 			{
 				_outputFlushCallback();
@@ -415,6 +458,11 @@ package actionScripts.debugAdapter
 					case COMMAND_LAUNCH:
 					{
 						this.parseLaunchResponse(response);
+						break;
+					}
+					case COMMAND_CONFIGURATION_DONE:
+					{
+						this.parseConfigurationDoneResponse(response);
 						break;
 					}
 					case COMMAND_CONTINUE:
@@ -501,6 +549,11 @@ package actionScripts.debugAdapter
 						//not so, we can ignore this one.
 						break;
 					}
+					case EVENT_LOADED_SOURCE:
+					{
+						//we don't currently do anything with this event.
+						break;
+					}
 					case EVENT_STOPPED:
 					{
 						this.parseStoppedEvent(event);
@@ -531,10 +584,11 @@ package actionScripts.debugAdapter
 				this.handleDisconnectOrTerminated();
 				return;
 			}
+			var body:Object = response.body;
+			_supportsConfigurationDoneRequest = body && body.supportsConfigurationDoneRequest === true;
 			_receivedInitializeResponse = true;
+			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
-
-			this.dispatchEvent(new Event(Event.INIT));
 
 			//the request and command are the same constant
 			var command:String = this._currentRequest.request;
@@ -581,6 +635,18 @@ package actionScripts.debugAdapter
 			this.dispatchEvent(new Event(Event.CONNECT));
 			this.dispatchEvent(new Event(Event.CHANGE));
 		}
+
+		private function parseConfigurationDoneResponse(response:Object):void
+		{
+			if(!response.success)
+			{
+				trace("debug adapter \"configurationDone\" command not successful");
+				error("Debug attach failed.");
+				this.stop();
+				return;
+			}
+			this.sendRequest(COMMAND_THREADS);
+		}
 		
 		private function parseContinueResponse(response:Object):void
 		{
@@ -620,7 +686,7 @@ package actionScripts.debugAdapter
 		{
 			if(!response.success)
 			{
-				trace("debug adapter \"setbreakpoints\" command not successful");
+				trace("debug adapter \"setBreakpoints\" command not successful");
 				return;
 			}
 			if(mainThreadID === -1)
@@ -825,7 +891,16 @@ package actionScripts.debugAdapter
 		
 		private function parseInitializedEvent(event:Object):void
 		{
-			this.sendRequest(COMMAND_THREADS);
+			_receivedInitializedEvent = true;
+			this.dispatchEvent(new Event(Event.INIT));
+			if(this._supportsConfigurationDoneRequest)
+			{
+				this.sendRequest(COMMAND_CONFIGURATION_DONE, {});
+			}
+			else
+			{
+				this.sendRequest(COMMAND_THREADS);
+			}
 		}
 		
 		private function parseOutputEvent(event:Object):void
@@ -844,13 +919,13 @@ package actionScripts.debugAdapter
 					category = body.category as String;
 				}
 			}
-			if(output !== null)
+			if(output != null)
 			{
-				if(category === OUTPUT_CATEGORY_STDERR)
+				if(category == OUTPUT_CATEGORY_STDERR)
 				{
 					error(output);
 				}
-				else
+				else if(category != OUTPUT_CATEGORY_TELEMETRY)
 				{
 					print(output);
 				}

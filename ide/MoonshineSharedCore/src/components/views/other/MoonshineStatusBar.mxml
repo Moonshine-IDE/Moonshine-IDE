@@ -6,6 +6,7 @@
 		<![CDATA[
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.StatusBarEvent;
+			import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 			
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			private var loaderBar:loadingBar;
@@ -82,6 +83,11 @@
 				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_TERMINATE));
 			}
 			
+			protected function onTerminateDebug(event:MouseEvent):void
+			{
+				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -118,6 +124,6 @@
 				 fontSize="11" paddingTop="3"
 				 color="#333333"/>
 		<s:Image source="@Embed('/elements/images/icoStop.png')"
-				 click="onTerminateBuild(event)"/>
+				 click="onTerminateDebug(event)"/>
 	</s:HGroup>
 </s:Group>

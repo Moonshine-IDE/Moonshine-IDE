@@ -1092,6 +1092,16 @@ package actionScripts.utils
 			return true;
 		}
 		
+		public static function isNodeAvailable():Boolean
+		{
+			var nodeBinPath:String = getNodeBinPath();
+			if (!nodeBinPath)
+			{
+				return false;
+			}
+			return model.fileCore.isPathExists(nodeBinPath);
+		}
+		
 		public static function isHaxeAvailable():Boolean
 		{
 			if (!model.haxePath || model.haxePath == "")

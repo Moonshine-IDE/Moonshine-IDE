@@ -50,6 +50,7 @@ package actionScripts.languageServer
     import actionScripts.events.SettingsEvent;
     import actionScripts.utils.CommandLineUtil;
     import com.adobe.utils.StringUtil;
+    import actionScripts.ui.tabview.TabEvent;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -78,6 +79,7 @@ package actionScripts.languageServer
 		private var _haxeVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousHaxePath:String = null;
+		private var _previousNodePath:String = null;
 		private var _previousTargetPlatform:String = null;
 		private var _displayArguments:String = null;
 		private var _haxeVersion:String = null;
@@ -89,9 +91,11 @@ package actionScripts.languageServer
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 			_dispatcher.addEventListener(SdkEvent.CHANGE_HAXE_SDK, changeHaxeSDKHandler);
+			_dispatcher.addEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler);
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_dispatcher.addEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler);
+			_dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 
 			boostrapThenStartNativeProcess();
 		}
@@ -191,8 +195,21 @@ package actionScripts.languageServer
 		
 		private function boostrapThenStartNativeProcess():void
 		{
-			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
+			if(!UtilsCore.isHaxeAvailable())
 			{
+				_previousHaxePath = null;
+				warning("Haxe language code intelligence disabled. To enable, update Haxe location in application settings.");
+				return;
+			}
+			if(!UtilsCore.isNekoAvailable())
+			{
+				warning("Haxe language code intelligence disabled. To enable, update Neko location in application settings.");
+				return;
+			}
+			if(!UtilsCore.isNodeAvailable())
+			{
+				_previousNodePath = null;
+				warning("Haxe language code intelligence disabled. To enable, update Node.js location in application settings.");
 				return;
 			}
 			installDependencies();
@@ -207,8 +224,14 @@ package actionScripts.languageServer
 		{
 			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
 			{
+				_previousHaxePath = null;
 				return;
 			}
+
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name, "Haxe: Checking version...", false
+			));
 
 			this._haxeVersion = "";
 			var haxeVersionCommand:Vector.<String> = new <String>[
@@ -258,6 +281,11 @@ package actionScripts.languageServer
 				return;
 			}
 
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name, "Haxe: Loading project...", false
+			));
+
 			this._displayArguments = "";
 			var limeDisplayCommand:Vector.<String> = new <String>[
 				EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH,
@@ -304,13 +332,15 @@ package actionScripts.languageServer
 				trace("Error: Haxe language server process already exists!");
 				return;
 			}
-			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable())
+			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable() || !UtilsCore.isNodeAvailable())
 			{
 				return;
 			}
 
 			var haxePath:String = getProjectSDKPath(_project, _model);
 			_previousHaxePath = haxePath;
+			var nodePath:String = UtilsCore.getNodeBinPath();
+			_previousNodePath = nodePath;
 			if(_project.isLime)
 			{
 				_previousTargetPlatform = _project.limeTargetPlatform;
@@ -318,17 +348,6 @@ package actionScripts.languageServer
 			else
 			{
 				_previousTargetPlatform = _project.haxeOutput.platform;
-			}
-			if(!_model.nodePath)
-			{
-				return;
-			}
-			var cmdFile:File = new File(UtilsCore.getNodeBinPath());
-			if(!cmdFile.exists)
-			{
-				error("Invalid path to Node.js executable: " + cmdFile.nativePath);
-                _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.haxe::HaxeBuildPlugin"));
-				return;
 			}
 
 			var processArgs:Vector.<String> = new <String>[];
@@ -338,7 +357,7 @@ package actionScripts.languageServer
 			//processArgs.push("--inspect");
 			processArgs.push(scriptFile.nativePath);
 			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
+			processInfo.executable = new File(nodePath);
 			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 
 			_languageServerProcess = new NativeProcess();
@@ -358,6 +377,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var haxeFileName:String = (Settings.os == "win") ? "haxe.exe" : "haxe";
+			var haxelibFileName:String = (Settings.os == "win") ? "haxelib.exe" : "haxelib";
 
 			trace("Haxe language server workspace root: " + project.folderPath);
 			trace("Haxe language server SDK: " + sdkPath);
@@ -365,13 +385,17 @@ package actionScripts.languageServer
 			var sendMethodResults:Boolean = false;
 			var options:Object = 
 			{
+				displayArguments: displayArguments,
 				displayServerConfig: {
 					path: new File(sdkPath).resolvePath(haxeFileName).nativePath,
 					arguments: [/*"-v"*/],
-					env: {}
+					env: {},
+					print: {completion: false, reusing: false},
+					useSocket: false
 				},
-				displayArguments: displayArguments,
-				haxelibConfig: {},
+				haxelibConfig: {
+					executable: new File(sdkPath).resolvePath(haxelibFileName).nativePath
+				},
 				sendMethodResults: sendMethodResults
 			};
 
@@ -465,6 +489,11 @@ package actionScripts.languageServer
 		
 		private function limeDisplayProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
+			));
+
 			_limeDisplayProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeDisplayProcess_standardOutputDataHandler);
 			_limeDisplayProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
 			_limeDisplayProcess.removeEventListener(NativeProcessExitEvent.EXIT, limeDisplayProcess_exitHandler);
@@ -493,6 +522,11 @@ package actionScripts.languageServer
 		
 		private function haxeVersionProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
+			));
+
 			_haxeVersionProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, haxeVersionProcess_standardOutputDataHandler);
 			_haxeVersionProcess.removeEventListener(NativeProcessExitEvent.EXIT, haxeVersionProcess_exitHandler);
 			_haxeVersionProcess.exit();
@@ -538,6 +572,28 @@ package actionScripts.languageServer
 			{
 				restartLanguageServer();
 			}
+		}
+
+		private function changeNodeSDKHandler(event:SdkEvent):void
+		{
+			if(UtilsCore.getNodeBinPath() != _previousNodePath)
+			{
+				restartLanguageServer();
+			}
+		}
+
+		private function tabSelectHandler(event:TabEvent):void
+		{
+			var textEditor:BasicTextEditor = event.child as BasicTextEditor;
+			if(!textEditor)
+			{
+				return;
+			}
+			if(!_languageClient)
+			{
+				return;
+			}
+			_languageClient.sendNotification("haxe/didChangeActiveTextEditor", {uri: textEditor.currentFile.fileBridge.url});
 		}
 
 		private function haxelibInstallCompleteHandler(event:HaxelibEvent):void
@@ -610,14 +666,15 @@ package actionScripts.languageServer
 		{
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
-				"Haxe", message.params.message, false
+				project.name, message.params.title, false
 			));
 		}
 
 		private function haxe__progressStop(message:Object):void
 		{
 			_dispatcher.dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
 			));
 		}
 	}
