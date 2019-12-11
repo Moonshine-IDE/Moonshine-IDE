@@ -123,6 +123,7 @@ package actionScripts.impls
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugins.js.JavaScriptPlugin;
+	import actionScripts.plugins.httpServer.HttpServerPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -244,7 +245,8 @@ package actionScripts.impls
 				Away3DPlugin,
 				GitHubPlugin,
 				HiddenFilesPlugin,
-                JavaScriptPlugin
+                JavaScriptPlugin,
+				HttpServerPlugin
 			];
 		}
 		
@@ -252,7 +254,7 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin];
+					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

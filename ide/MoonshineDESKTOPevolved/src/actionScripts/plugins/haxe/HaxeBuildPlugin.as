@@ -51,16 +51,15 @@ package actionScripts.plugins.haxe
     import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
     import flash.errors.IllegalOperationError;
     import actionScripts.factory.FileLocation;
+    import actionScripts.plugins.httpServer.events.HttpServerEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
-        private static const HTTP_SERVER_MODULE_PATH:String = "elements/http-server/bin/http-server";
-        private static const DEBUG_PORT:int = 3000;
+        private static const DEBUG_SERVER_PORT:int = 3000;
 
 		private var haxePathSetting:PathSetting;
 		private var nekoPathSetting:PathSetting;
 		private var isProjectHasInvalidPaths:Boolean;
-        private var limeHTMLServerNativeProcess:NativeProcess;
         private var currentProject:HaxeProjectVO;
         private var pendingRunProject:HaxeProjectVO = null;
         private var pendingRunCommand:String = null;
@@ -490,11 +489,9 @@ package actionScripts.plugins.haxe
                 {
                     case HaxeProjectVO.LIME_PLATFORM_HTML5:
                     {
-                        var webRoot:FileLocation = project.folderLocation.fileBridge
-                            .resolvePath("bin" + File.separator + "html5" + File.separator + "bin");
                         launchArgs["name"] = "Moonshine Chrome Launch";
-                        launchArgs["url"] = "http://localhost:" + DEBUG_PORT;
-			            launchArgs["webRoot"] = webRoot.fileBridge.nativePath;
+                        launchArgs["url"] = "http://localhost:" + DEBUG_SERVER_PORT;
+			            launchArgs["webRoot"] = getLimeWebRoot(project).fileBridge.nativePath;
                         //enable for debug logging to a file
                         //launchArgs["trace"] = true;
                         debugAdapterType = "chrome";
@@ -552,14 +549,24 @@ package actionScripts.plugins.haxe
                 project, debugAdapterType, debugCommand, launchArgs));
         }
 
+        private function getLimeWebRoot(project:HaxeProjectVO):FileLocation
+        {
+            return project.folderLocation.fileBridge
+                            .resolvePath("bin" + File.separator + "html5" + File.separator + "bin");
+        }
+
         private function runAfterBuild(project:HaxeProjectVO, runCommand:String, runFolder:String, debug:Boolean):void
         {
             warning("Launching Haxe project...");
             if(project.isLime && project.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
             {
-				startLimeHTMLServer(project);
-                //debug adapter can launch/run without debugging
-                startDebugAdapter(project, debug);
+                var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getLimeWebRoot(project), DEBUG_SERVER_PORT);
+                dispatcher.dispatchEvent(httpServerEvent);
+                if(!httpServerEvent.isDefaultPrevented())
+                {
+                    //debug adapter can launch/run without debugging
+                    startDebugAdapter(project, debug);
+                }
             }
             else if(project.haxeOutput.platform == HaxeOutputVO.PLATFORM_FLASH_PLAYER)
             {
@@ -608,41 +615,6 @@ package actionScripts.plugins.haxe
             }
         }
 
-        private function startLimeHTMLServer(project:HaxeProjectVO):void
-        {
-            if(!UtilsCore.isNodeAvailable())
-            {
-                error("A valid Node.js path must be defined to run/debug project \"" + project.name + "\" on platform \"" + project.limeTargetPlatform + "\".");
-                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.js::JavaScriptPlugin"));
-                return;
-            }
-            running = true;
-
-            var nodePath:String = UtilsCore.getNodeBinPath();
-            var httpServerPath:FileLocation = model.fileCore.resolveApplicationDirectoryPath(HTTP_SERVER_MODULE_PATH);
-            
-            var webRoot:FileLocation = project.folderLocation.fileBridge
-                            .resolvePath("bin" + File.separator + "html5" + File.separator + "bin");
-            var args:Vector.<String> = new <String>[
-                httpServerPath.fileBridge.nativePath,
-                webRoot.fileBridge.nativePath,
-                "-p",
-                DEBUG_PORT.toString()
-            ];
-            var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-            processInfo.executable = new File(nodePath);
-            processInfo.arguments = args;
-    
-            print("Command: %s", nodePath + " " + args.join(" "));
-            processInfo.workingDirectory = new File(project.projectFolder.nativePath);
-            nativeProcess = new NativeProcess();
-            limeHTMLServerNativeProcess = nativeProcess;
-            addNativeProcessEventListeners();
-            nativeProcess.start(processInfo);
-            dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution, false, 0, true);
-            dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
-        }
-
         override protected function onNativeProcessIOError(event:IOErrorEvent):void
         {
             super.onNativeProcessIOError(event);
@@ -659,7 +631,6 @@ package actionScripts.plugins.haxe
         {
             super.onNativeProcessExit(event);
 
-            var isLimeHTMLServer:Boolean = event.currentTarget == limeHTMLServerNativeProcess;
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
 			dispatcher.removeEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
@@ -679,41 +650,26 @@ package actionScripts.plugins.haxe
             pendingDebug = false;
             currentProject = null;
 
-            if(isLimeHTMLServer)
+            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+            if(isNaN(event.exitCode))
             {
-                limeHTMLServerNativeProcess = null;
-                if(isNaN(event.exitCode))
-                {
-                    warning("Haxe HTML5 server has been terminated.");
-                }
-                else if(event.exitCode != 0)
-                {
-                    warning("Haxe HTML5 server has been terminated with exit code: " + event.exitCode);
-                }
+                warning("Haxe build has been terminated.");
+            }
+            else if(event.exitCode != 0)
+            {
+                warning("Haxe build has been terminated with exit code: " + event.exitCode);
             }
             else
             {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-                if(isNaN(event.exitCode))
+                success("Haxe build has completed successfully.");
+                if(project != null)
                 {
-                    warning("Haxe build has been terminated.");
+                    dispatcher.dispatchEvent(new RefreshTreeEvent(project.haxeOutput.path.fileBridge.parent));
                 }
-                else if(event.exitCode != 0)
+                dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, project));
+                if(debug || run)
                 {
-                    warning("Haxe build has been terminated with exit code: " + event.exitCode);
-                }
-                else
-                {
-                    success("Haxe build has completed successfully.");
-                    if(project != null)
-                    {
-                        dispatcher.dispatchEvent(new RefreshTreeEvent(project.haxeOutput.path.fileBridge.parent));
-                    }
-                    dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, project));
-                    if(debug || run)
-                    {
-                        runAfterBuild(project, runCommand, runFolder, debug);
-                    }
+                    runAfterBuild(project, runCommand, runFolder, debug);
                 }
             }
         }
@@ -725,16 +681,7 @@ package actionScripts.plugins.haxe
 
         private function onTerminateExecution(event:Event):void
         {
-            if(limeHTMLServerNativeProcess && limeHTMLServerNativeProcess.running)
-            {
-                //this seems to be required to stop the http-server on Windows
-                //otherwise, it will keep running and the port won't be released
-                stop(true);
-            }
-            else
-            {
-                stop();
-            }
+            stop();
         }
 
         private function onApplicationExit(event:ApplicationEvent):void
