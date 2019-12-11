@@ -1144,31 +1144,19 @@ package actionScripts.plugins.as3project.mxmlc
 					
 					if (!isLibraryProject)
 					{
-						if (runAfterBuild && !debugAfterBuild)
-						{
-							if(currentSuccessfullProject.isMobile && !currentSuccessfullProject.buildOptions.isMobileRunOnSimulator)
-							{
-								packageAIR(false);
-								//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
-							}
-							else
-							{
-								testMovie();
-							}
-						}
-						else if (debugAfterBuild)
+						if (runAfterBuild || debugAfterBuild)
 						{
 							dispatcher.dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));
 							if (currentSuccessfullProject.resourcePaths.length == 0)
 							{
 								if(currentSuccessfullProject.isMobile && !currentSuccessfullProject.buildOptions.isMobileRunOnSimulator)
 								{
-									packageAIR(true);
+									packageAIR(debugAfterBuild);
 									//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
 								}
 								else
 								{
-									launchDebuggingAfterBuild();
+									launchDebuggingAfterBuild(debugAfterBuild);
 								}
 							}
 							else
@@ -1212,7 +1200,7 @@ package actionScripts.plugins.as3project.mxmlc
             }
 		}
 
-		private function launchDebuggingAfterBuild():void
+		private function launchDebuggingAfterBuild(debug:Boolean):void
 		{
             projectBuildSuccessfully();
             dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, currentProject));
@@ -1250,6 +1238,10 @@ package actionScripts.plugins.as3project.mxmlc
 				{
 					"name": "Moonshine SWF Launch"
 				};
+				if(!debug)
+				{
+					launchArgs["noDebug"] = true;
+				}
 				if(as3Project)
 				{
 					var swfFile:File = as3Project.swfOutput.path.fileBridge.getFile as File;
@@ -1284,69 +1276,6 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER, as3Project, "swf", "launch", launchArgs));
 			}
-		}
-
-		private function testMovie():void 
-		{
-			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-			var swfFile:File = pvo.swfOutput.path.fileBridge.getFile as File;
-			
-			// before test movie lets copy the resource folder(s)
-			// to debug folder if any
-			if (pvo.resourcePaths.length != 0 && resourceCopiedIndex == 0)
-			{
-				copyingResources();
-				return;
-			}
-
-            projectBuildSuccessfully();
-
-			if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM) 
-			{
-				var customSplit:Vector.<String> = Vector.<String>(pvo.testMovieCommand.split(";"));
-				var customFile:String = customSplit[0];
-				var customArgs:String = customSplit.slice(1).join(" ").replace("$(ProjectName)", pvo.projectName).replace("$(CompilerPath)", currentSDK.nativePath);
-
-				print(customFile + " " + customArgs, pvo.folderLocation.fileBridge.nativePath);
-			}
-			else if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
-			{
-                warning("Launching application " + pvo.name + ".");
-				// Let SWFLauncher deal with playin' the swf
-				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, pvo, currentSDK)
-				);
-			} 
-			else 
-			{
-				var htmlWrapperFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] +".html");
-				getHTMLTemplatesCopied(pvo, htmlWrapperFile);
-
-                warning("Launching application " + pvo.name + ".");
-				// Let SWFLauncher runs SWF file
-				var launchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, null, pvo);
-
-				if (pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
-				{
-					launchEvent.url = pvo.customHTMLPath;
-				}
-				else
-				{
-					var urlToLaunch:FileLocation = new FileLocation(pvo.urlToLaunch);
-					if (urlToLaunch.fileBridge.exists)
-					{
-						launchEvent.file = urlToLaunch.fileBridge.getFile as File;
-					}
-					else
-					{
-						launchEvent.file = htmlWrapperFile;
-					}
-				}
-
-				dispatcher.dispatchEvent(launchEvent);
-			}
-			
-			currentProject = null;
 		}
 		
 		public function packageAIR(debugBuild:Boolean):void
@@ -1553,7 +1482,7 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				if(runAfterBuild || debugAfterBuild)
 				{
-					launchDebuggingAfterBuild();
+					launchDebuggingAfterBuild(debugAfterBuild);
 				}
 				else
 				{
@@ -1595,29 +1524,17 @@ package actionScripts.plugins.as3project.mxmlc
             {
                 copyingResources();
             }
-			else if (debugAfterBuild)
+			else if (debugAfterBuild || runAfterBuild)
 			{
-				if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
-				{
-					packageAIR(true);
-					//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
-				}
-				else
-				{
-					launchDebuggingAfterBuild();
-				}
-			}
-            else if (runAfterBuild)
-            {
                 dispatcher.dispatchEvent(new RefreshTreeEvent(pvo.swfOutput.path.fileBridge.parent));
 				if(pvo.isMobile && !pvo.buildOptions.isMobileRunOnSimulator)
 				{
-					packageAIR(false);
+					packageAIR(debugAfterBuild);
 					//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
 				}
 				else
 				{
-                	testMovie();
+					launchDebuggingAfterBuild(debugAfterBuild);
 				}
             }
             else
