@@ -471,7 +471,6 @@ package actionScripts.plugins.haxe
             var project:ProjectVO = model.activeProject;
             if (project)
             {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Debug "));
                 dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution, false, 0, true);
 			    dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
             }
@@ -644,7 +643,6 @@ package actionScripts.plugins.haxe
             limeHTMLServerNativeProcess = nativeProcess;
             addNativeProcessEventListeners();
             nativeProcess.start(processInfo);
-            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running "));
             dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution, false, 0, true);
             dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
         }
@@ -687,7 +685,6 @@ package actionScripts.plugins.haxe
 
             if(isLimeHTMLServer)
             {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_ENDED));
                 limeHTMLServerNativeProcess = null;
                 if(isNaN(event.exitCode))
                 {

@@ -43,6 +43,7 @@ package actionScripts.plugins.debugAdapter
     import flash.utils.IDataInput;
     import actionScripts.debugAdapter.DebugAdapter;
     import actionScripts.plugins.chromelauncher.ChromeDebugAdapterLauncher;
+    import actionScripts.events.StatusBarEvent;
 	
 	public class DebugAdapterPlugin extends PluginBase
 	{
@@ -59,6 +60,7 @@ package actionScripts.plugins.debugAdapter
 		private var _nativeProcess:NativeProcess;
 		private var _debugAdapter:DebugAdapter;
 		private var isDebugViewVisible:Boolean;
+		private var _calledStop:Boolean = false;
 		private var _breakpoints:Object = {};
 		
 		public function DebugAdapterPlugin()
@@ -224,7 +226,10 @@ package actionScripts.plugins.debugAdapter
             initializeDebugViewEventHandlers(event);
 			isDebugViewVisible = true;
 			
+			_calledStop = false;
 			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, event.project.projectName));
+
 			var debugMode:Boolean = false;
 			_debugAdapter = new DebugAdapter(CLIENT_ID, CLIENT_NAME, debugMode, dispatcher,
 				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
@@ -248,6 +253,7 @@ package actionScripts.plugins.debugAdapter
 		private function debugAdapter_closeHandler(event:Event):void
 		{
 			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_ENDED));
 			_debugAdapter = null;
 			if(_nativeProcess)
 			{
@@ -255,6 +261,10 @@ package actionScripts.plugins.debugAdapter
 				_nativeProcess.exit(true);
 			}
 			refreshView();
+			if(!_calledStop)
+			{
+				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+			}
 		}
 
 		private function debugAdapter_changeHandler(event:Event):void
@@ -436,7 +446,10 @@ package actionScripts.plugins.debugAdapter
 			{
 				return;
 			}
-			//don't call stop() anywhere else except here
+			//don't call stop() anywhere else in this class. we call it here
+			//and we use this flag to determine if we must notify other parts
+			//of the app that the debugging has stopped
+			_calledStop = true;
 			_debugAdapter.stop();
 		}
     }
