@@ -249,32 +249,37 @@ package actionScripts.plugins.haxe
 
             if(project.isLime)
             {
-                if(project.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
+                switch(project.limeTargetPlatform)
                 {
-                    if(!UtilsCore.isNodeAvailable())
+                    case HaxeProjectVO.LIME_PLATFORM_HTML5:
                     {
-                        error("A valid Node.js path must be defined to run project \"" + project.name + "\" on platform \"" + project.limeTargetPlatform + "\".");
-                        dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.js::JavaScriptPlugin"));
-                        return;
+                        if(!UtilsCore.isNodeAvailable())
+                        {
+                            error("A valid Node.js path must be defined to run project \"" + project.name + "\" on platform \"" + project.limeTargetPlatform + "\".");
+                            dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.js::JavaScriptPlugin"));
+                            return;
+                        }
+                        pendingRunProject = project;
+                        pendingRunCommand = null;
+                        pendingRunFolder = null;
+                        pendingDebug = false;
+                        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+                        break;
                     }
-
-                    //for some reason, we can't use startDebug() here because
-                    //exiting the NativeProcess with stop() or stop(true) won't
-                    //work correctly. the server keeps running, and the port
-                    //cannot be used again.
-                    //similarly, if we launch npx.cmd directly on Windows, it
-                    //still will not exit the server.
-                    //instead, we need run Node directly and run the npx script
-                    //file. that seems to exit with stop(true).
-                    pendingRunProject = project;
-                    pendingRunCommand = null;
-                    pendingRunFolder = null;
-                    pendingDebug = false;
-			        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
-                }
-                else
-                {
-			        this.startDebug(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.limeTargetPlatform].join(" ")], project.folderLocation);
+                    case HaxeProjectVO.LIME_PLATFORM_AIR:
+                    case HaxeProjectVO.LIME_PLATFORM_FLASH:
+                    {
+                        pendingRunProject = project;
+                        pendingRunCommand = null;
+                        pendingRunFolder = null;
+                        pendingDebug = false;
+                        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+                        break;
+                    }
+                    default:
+                    {
+			            this.startLimeTest(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.limeTargetPlatform].join(" ")], project.folderLocation);
+                    }
                 }
             }
             else
@@ -437,7 +442,7 @@ package actionScripts.plugins.haxe
             }
 		}
         
-        public function startDebug(args:Vector.<String>, buildDirectory:*):void
+        public function startLimeTest(args:Vector.<String>, buildDirectory:*):void
 		{
             if (running)
             {
@@ -502,12 +507,11 @@ package actionScripts.plugins.haxe
                         //switch to the Adobe AIR application descriptor XML file
                         var swfFile:File = project.folderLocation.fileBridge
                             .resolvePath("bin" + File.separator + "air" + File.separator + "bin" + File.separator + project.name + ".swf").fileBridge.getFile as File;
-                        var appDescriptorFile:File = swfFile.parent.resolvePath("application.xml");
-                        var generatedAppDescriptorFile:File = swfFile.parent.parent.resolvePath("application.xml");
-                        generatedAppDescriptorFile.copyTo(appDescriptorFile, true);
+                        var appDescriptorFile:File = swfFile.parent.parent.resolvePath("application.xml");
 
                         launchArgs["name"] = "Moonshine Lime Adobe AIR Launch";
                         launchArgs["program"] = appDescriptorFile.nativePath;
+                        launchArgs["rootDirectory"] = swfFile.parent.nativePath;
                         debugAdapterType = "swf";
                         break;
                     }
@@ -558,21 +562,7 @@ package actionScripts.plugins.haxe
         private function runAfterBuild(project:HaxeProjectVO, runCommand:String, runFolder:String, debug:Boolean):void
         {
             warning("Launching Haxe project...");
-            if(project.isLime && project.limeTargetPlatform == HaxeProjectVO.LIME_PLATFORM_HTML5)
-            {
-                var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getLimeWebRoot(project), DEBUG_SERVER_PORT);
-                dispatcher.dispatchEvent(httpServerEvent);
-                if(!httpServerEvent.isDefaultPrevented())
-                {
-                    //debug adapter can launch/run without debugging
-                    startDebugAdapter(project, debug);
-                }
-            }
-            else if(project.haxeOutput.platform == HaxeOutputVO.PLATFORM_FLASH_PLAYER)
-            {
-                startDebugAdapter(project, debug);
-            }
-            else if(runCommand)
+            if(runCommand)
             {
                 EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
                 {
@@ -608,10 +598,51 @@ package actionScripts.plugins.haxe
                     process.addEventListener(NativeProcessExitEvent.EXIT, runProjectProcess_exitHandler);
                     process.start(processInfo);
                 }, null, [runCommand]);
+                return;
+            }
+
+            if(project.isLime)
+            {
+                switch(project.limeTargetPlatform)
+                {
+                    case HaxeProjectVO.LIME_PLATFORM_HTML5:
+                    {
+                        var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getLimeWebRoot(project), DEBUG_SERVER_PORT);
+                        dispatcher.dispatchEvent(httpServerEvent);
+                        if(!httpServerEvent.isDefaultPrevented())
+                        {
+                            //debug adapter can launch/run without debugging
+                            startDebugAdapter(project, debug);
+                        }
+                        break;
+                    }
+                    case HaxeProjectVO.LIME_PLATFORM_AIR:
+                    case HaxeProjectVO.LIME_PLATFORM_FLASH:
+                    {
+                        startDebugAdapter(project, debug);
+                        break;
+                    }
+                    default:
+                    {
+                        error("Cannot run Haxe project \"" + project.name + "\" on platform \"" + project.limeTargetPlatform + "\".");
+                    }
+                }
             }
             else
             {
-                error("Unknown debug command for Haxe project: " + project.name);
+                switch(project.haxeOutput.platform)
+                {
+                    case HaxeOutputVO.PLATFORM_FLASH_PLAYER:
+                    {
+                        startDebugAdapter(project, debug);
+                        break;
+                    }
+                    default:
+                    {
+                        
+                        error("Cannot run Haxe project \"" + project.name + "\" on platform \"" + project.haxeOutput.platform + "\".");
+                    }
+                }
             }
         }
 
