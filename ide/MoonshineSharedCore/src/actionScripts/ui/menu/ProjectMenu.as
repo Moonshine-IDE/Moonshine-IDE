@@ -157,10 +157,10 @@ package actionScripts.ui.menu
                 var resourceManager:IResourceManager = ResourceManager.getInstance();
                 royaleMenu = Vector.<MenuItem>([
                     new MenuItem(null),
-                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JS_ROYALE], ActionScriptBuildEvent.BUILD,
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AS_SWF'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JS_ROYALE], ActionScriptBuildEvent.BUILD,
                             'b', [Keyboard.COMMAND],
                             'b', [Keyboard.CONTROL]),
-                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE], ActionScriptBuildEvent.BUILD_AND_RUN,
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN_AS_SWF'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE], ActionScriptBuildEvent.BUILD_AND_RUN,
                             "\n", [Keyboard.COMMAND],
                             "\n", [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_AS_JS'), null, [ProjectMenuTypes.JS_ROYALE], ActionScriptBuildEvent.BUILD_AS_JAVASCRIPT,

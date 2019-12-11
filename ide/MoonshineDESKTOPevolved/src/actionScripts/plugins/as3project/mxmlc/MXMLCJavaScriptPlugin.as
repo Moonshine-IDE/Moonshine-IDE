@@ -75,9 +75,13 @@ package actionScripts.plugins.as3project.mxmlc
 	
 	import components.popup.SelectOpenedFlexProject;
 	import components.views.project.TreeView;
+	import actionScripts.plugins.httpServer.events.HttpServerEvent;
+	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 
     public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
+		private static const DEBUG_SERVER_PORT:int = 3000;
+
 		override public function get name():String			{ return "MXMLC Java Script Compiler Plugin"; }
 		override public function get author():String		{ return "Miha Lunar & Moonshine Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.mxmlcjs'); }
@@ -113,6 +117,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedFlexProject;
 		protected var runAfterBuild:Boolean;
+		protected var debugAfterBuild:Boolean;
 
 		private var successMessage:String;
 		private var isProjectHasInvalidPaths:Boolean;
@@ -148,6 +153,7 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN_JAVASCRIPT, buildAndRun);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG_JAVASCRIPT, buildAndDebug);
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AS_JAVASCRIPT, build);
 			reset();
 		}
@@ -197,11 +203,17 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			build(e,true);	
 		}
+
+		private function buildAndDebug(e:Event):void
+		{
+			build(e, true, true)
+		}
 		
-		private function build(e:Event, runAfterBuild:Boolean=false):void
+		private function build(e:Event, runAfterBuild:Boolean=false, debugAfterBuild:Boolean=false):void
 		{
 			this.isProjectHasInvalidPaths = false;
 			this.runAfterBuild = runAfterBuild;
+			this.debugAfterBuild = debugAfterBuild;
 			checkProjectCount();
 		}
 		
@@ -429,6 +441,8 @@ package actionScripts.plugins.as3project.mxmlc
 					sdkPathHomeArg = "ROYALE_HOME=\"" + SDKstr +"\"";
 					compilerPathHomeArg = "ROYALE_COMPILER_HOME=\"" + SDKstr +"\"";
                 }
+				
+				jsCompilationArg += " -source-map=true"
 
 				jsCompilationArg += " -js-output=\"".concat(project.jsOutputPath) +"\"";
 			}
@@ -648,12 +662,40 @@ package actionScripts.plugins.as3project.mxmlc
             dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin")));
             if(runAfterBuild)
             {
-                launchApplication();
+				var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
+                var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getWebRoot(as3Project), DEBUG_SERVER_PORT);
+				dispatcher.dispatchEvent(httpServerEvent);
+                if(!httpServerEvent.isDefaultPrevented())
+                {
+					//debug adapter can launch/run without debugging
+					startDebugAdapter(as3Project, debugAfterBuild);
+				}
             }
             else
             {
                 copyingResources();
             }
+        }
+
+		private function getWebRoot(project:AS3ProjectVO):FileLocation
+		{
+            return new FileLocation(project.jsOutputPath).resolvePath("bin" + File.separator + "js-debug");
+		}
+
+        private function startDebugAdapter(project:AS3ProjectVO, debug:Boolean):void
+        {
+            var debugCommand:String = "launch";
+            var debugAdapterType:String = "chrome";
+            var launchArgs:Object = {};
+            if(!debug)
+            {
+                launchArgs["noDebug"] = true;
+            }
+			launchArgs["name"] = "Moonshine Chrome Launch";
+			launchArgs["url"] = "http://localhost:" + DEBUG_SERVER_PORT;
+			launchArgs["webRoot"] = getWebRoot(project).fileBridge.nativePath;
+            dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER,
+                project, debugAdapterType, debugCommand, launchArgs));
         }
 
 		private function launchApplication():void
