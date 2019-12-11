@@ -93,6 +93,7 @@ package actionScripts.plugins.as3project.mxmlc
 	
 	import org.as3commons.asblocks.utils.FileUtil;
 	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
+	import actionScripts.valueObjects.MobileDeviceVO;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -1251,13 +1252,32 @@ package actionScripts.plugins.as3project.mxmlc
 						launchArgs["program"] = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
 						if(as3Project.isMobile)
 						{
+							var mobileDevice:MobileDeviceVO = null;
+							if (as3Project.buildOptions.isMobileHasSimulatedDevice.name && !as3Project.buildOptions.isMobileHasSimulatedDevice.key)
+							{
+								var deviceCollection:ArrayCollection = as3Project.buildOptions.targetPlatform == "iOS" ? ConstantsCoreVO.TEMPLATES_IOS_DEVICES : ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
+								for (var i:int=0; i < deviceCollection.length; i++)
+								{
+									if (as3Project.buildOptions.isMobileHasSimulatedDevice.name == deviceCollection[i].name)
+									{
+										mobileDevice = deviceCollection[i];
+										break;
+									}
+								}
+							}
+							else if (!as3Project.buildOptions.isMobileHasSimulatedDevice.name)
+							{
+								mobileDevice = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0];
+							}
+							else 
+							{
+								mobileDevice = as3Project.buildOptions.isMobileHasSimulatedDevice;
+							}
+
 							launchArgs["profile"] = "mobileDevice";
-							
-							//these options need to be configurable somehow
-							//but these are reasonable defaults until then
-							launchArgs["screensize"] = "NexusOne";
-							launchArgs["screenDPI"] = 252;
-							launchArgs["versionPlatform"] = "AND";
+							launchArgs["screensize"] = mobileDevice.key;
+							launchArgs["screenDPI"] = parseInt(mobileDevice.dpi, 10);
+							launchArgs["versionPlatform"] = mobileDevice.type;
 						}
 					}
 					else
