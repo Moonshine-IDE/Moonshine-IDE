@@ -1262,16 +1262,29 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 					else
 					{
-						//default to the .swf file, unless an .html file exists in the output folder
-						var htmlFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] + ".html");
-						if(htmlFile.exists)
+						var swfProgram:String = as3Project.customHTMLPath;
+						if(!swfProgram && as3Project.urlToLaunch)
 						{
-							launchArgs["program"] = htmlFile.nativePath;
+							//for some reason, relative paths might be saved with a starting slash
+							var firstChar:String = as3Project.urlToLaunch.charAt(0);
+							if(firstChar == "/" || firstChar == "\\")
+							{
+								var relativeFile:FileLocation = as3Project.projectFolder.file.resolvePath(as3Project.urlToLaunch.substr(1));
+								if(relativeFile.fileBridge.exists)
+								{
+									swfProgram = relativeFile.fileBridge.nativePath;
+								}
+							}
+							if(!swfProgram)
+							{
+								swfProgram = as3Project.urlToLaunch;
+							}
 						}
-						else
+						if(!swfProgram)
 						{
-							launchArgs["program"] = swfFile.nativePath;
+							swfProgram = swfFile.nativePath;
 						}
+						launchArgs["program"] = swfProgram;
 					}
 				}
 				dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER, as3Project, "swf", "launch", launchArgs));
