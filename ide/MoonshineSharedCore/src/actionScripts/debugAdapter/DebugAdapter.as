@@ -781,8 +781,12 @@ package actionScripts.debugAdapter
 			var filePath:String = stackFrame.source.path;
 			var line:int = stackFrame.line - 1;
 			var character:int = stackFrame.column;
+			var file:FileLocation = new FileLocation(filePath);
+			//make sure that we don't have any differences in case
+			//otherwise, a duplicate editor might be opened!
+			file.fileBridge.canonicalize();
 			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.TRACE_LINE,
-				[new FileLocation(filePath)], line);
+				[file], line);
 			openEvent.atChar = character;
 			_dispatcher.dispatchEvent(openEvent);
 			
