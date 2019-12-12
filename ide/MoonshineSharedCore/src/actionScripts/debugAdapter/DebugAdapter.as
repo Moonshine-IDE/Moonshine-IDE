@@ -92,6 +92,7 @@ package actionScripts.debugAdapter
 		private static const EVENT_STOPPED:String = "stopped";
 		private static const EVENT_TERMINATED:String = "terminated";
 		private static const EVENT_LOADED_SOURCE:String = "loadedSource";
+		private static const EVENT_CONTINUED:String = "continued";
 		private static const REQUEST_LAUNCH:String = "launch";
 		private static const REQUEST_ATTACH:String = "attach";
 		private static const OUTPUT_CATEGORY_CONSOLE:String = "console";
@@ -238,7 +239,6 @@ package actionScripts.debugAdapter
 			}
 
 			this.sendRequest(COMMAND_CONTINUE);
-			_dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
 		}
 
 		public function pause():void
@@ -279,6 +279,19 @@ package actionScripts.debugAdapter
 			}
 
 			this.sendRequest(COMMAND_STEP_OUT);
+		}
+
+		private function handleContinue():void
+		{
+			this._paused = false;
+			
+			_dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
+			
+			//we're no longer paused, so clear this until we pause again
+			this._stackFrames.removeAll();
+			this._scopesAndVars.removeAll();
+
+			this.dispatchEvent(new Event(Event.CHANGE));
 		}
 		
 		private function handleDisconnectOrTerminated():void
@@ -559,6 +572,11 @@ package actionScripts.debugAdapter
 						this.parseStoppedEvent(event);
 						break;
 					}
+					case EVENT_CONTINUED:
+					{
+						this.parseContinuedEvent(event);
+						break;
+					}
 					case EVENT_TERMINATED:
 					{
 						this.parseTerminatedEvent(event);
@@ -655,13 +673,7 @@ package actionScripts.debugAdapter
 				trace("debug adapter \"continue\" command not successful");
 				return;
 			}
-			this._paused = false;
-			
-			//we're no longer paused, so clear this until we pause again
-			this._stackFrames.removeAll();
-			this._scopesAndVars.removeAll();
-
-			this.dispatchEvent(new Event(Event.CHANGE));
+			this.handleContinue();
 		}
 		
 		private function parseThreadsResponse(response:Object):void
@@ -940,6 +952,18 @@ package actionScripts.debugAdapter
 				});
 			_paused = true;
 			this.dispatchEvent(new Event(Event.CHANGE));
+		}
+
+		private function parseContinuedEvent(event:Object):void
+		{
+			if(!_paused)
+			{
+				//it's generally not a problem if the "continued" event is
+				//dispatched and we're not in a paused state.
+				return;
+			}
+			//but if we are paused, we should update our state
+			this.handleContinue();
 		}
 		
 		private function parseTerminatedEvent(event:Object):void
