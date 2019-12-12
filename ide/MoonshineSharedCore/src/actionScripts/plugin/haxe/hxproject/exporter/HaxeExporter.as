@@ -83,6 +83,20 @@ package actionScripts.plugin.haxe.hxproject.exporter
 			}
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			projectXML.appendChild(options);
+
+			options = <moonshineRunCustomization />;
+			if(project.isLime)
+			{
+				optionPairs = {
+					targetPlatform:	project.limeTargetPlatform
+				};
+			}
+			else
+			{
+				optionPairs = {};
+			}
+			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
+			projectXML.appendChild(options);
             
             //TODO: store this on HaxeProjectVO
             projectXML.appendChild(<storage/>);

@@ -155,11 +155,15 @@ package actionScripts.plugin.haxe.hxproject.importer
 
 			if(project.isLime)
 			{
-				if (project.haxeOutput.platform == "")
+				var limeTargetPlatform:String = data.moonshineRunCustomization.option.@targetPlatform.toString();
+				if(limeTargetPlatform.length == 0)
 				{
-					project.haxeOutput.platform = HaxeOutputVO.PLATFORM_LIME;
+					//when Haxe projects were first introduced, they didn't have
+					//the moonshineRunCustomization section, so we should
+					//provide them with a default
+					limeTargetPlatform = HaxeProjectVO.LIME_PLATFORM_HTML5;
 				}
-				project.limeTargetPlatform = HaxeProjectVO.LIME_PLATFORM_HTML5;
+				project.limeTargetPlatform = limeTargetPlatform;
 			}
 			else
 			{
