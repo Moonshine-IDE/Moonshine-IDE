@@ -108,8 +108,14 @@ package actionScripts.utils
 		{
 			isSingleProcessRunning = true;
 			
-			if (ConstantsCoreVO.IS_MACOS) executeOSX();
-			else executeWindows();
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				executeOSX();
+			}
+			else
+			{
+				executeWindows();
+			}
 		}
 		
 		private function executeCommandWithSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
