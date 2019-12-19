@@ -196,7 +196,6 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			stopShell();
 			successMessage = null;
-			resourceCopiedIndex = 0;
 		}
 		
 		private function buildAndRun(e:Event):void
@@ -749,26 +748,57 @@ package actionScripts.plugins.as3project.mxmlc
 		}
 		
 		private var resourceCopiedIndex:int;
+		private var resourceDestinationCopiedIndex:int;
+
 		private function copyingResources():void
 		{
             var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-
-            if (pvo.resourcePaths.length == 0)
+			if (pvo.resourcePaths.length == 0)
 			{
-                success("Project Build Successfully.");
+				success("Project Build Successfully.");
 				return;
 			}
 
+			if (resourceCopiedIndex == pvo.resourcePaths.length)
+			{
+				resourceCopiedIndex = 0;
+				notifySuccessfullBuildAfterResourceCopy();
+				return;
+			}
+
+			var resources:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
+
+			warning("Start copying resource: %s", resources.name);
+
             var buildResultFile:File = currentProject.folderLocation.resolvePath(pvo.getRoyaleDebugPath()).fileBridge.getFile as File;
 			var debugDestination:File = buildResultFile.parent;
-			var fl:FileLocation = pvo.resourcePaths[resourceCopiedIndex];
+			var releaseDestination:File = currentProject.folderLocation.resolvePath(
+					pvo.jsOutputPath.concat(currentProject.folderLocation.fileBridge.separator.concat("bin",
+											currentProject.folderLocation.fileBridge.separator, "js-release"))).fileBridge.getFile as File;
 
-            warning("Copying resource: %s", fl.name);
+			resourceDestinationCopiedIndex = !releaseDestination.exists ? 1 : 0;
 
-			(fl.fileBridge.getFile as File).addEventListener(Event.COMPLETE, onResourcesCopyingComplete);
-            (fl.fileBridge.getFile as File).addEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
-			// copying to bin/bin-debug
-			(fl.fileBridge.getFile as File).copyToAsync(debugDestination.resolvePath(fl.fileBridge.name), true);
+			if (debugDestination.exists)
+			{
+				copyResourcesTo(new File(resources.fileBridge.nativePath), debugDestination);
+			}
+
+			if (releaseDestination.exists)
+			{
+				copyResourcesTo(new File(resources.fileBridge.nativePath), releaseDestination);
+			}
+
+			resourceCopiedIndex++;
+		}
+
+		private function copyResourcesTo(resources:File, destination:File):void
+		{
+			print("Copying resources to %s", destination.nativePath);
+
+			resources.addEventListener(Event.COMPLETE, onResourcesCopyingComplete);
+			resources.addEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
+
+			resources.copyToAsync(destination.resolvePath(resources.name), true);
 		}
 
         private function onResourcesCopyingComplete(event:Event):void
@@ -776,24 +806,12 @@ package actionScripts.plugins.as3project.mxmlc
             event.currentTarget.removeEventListener(Event.COMPLETE, onResourcesCopyingComplete);
             event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
 
-            var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-            print("Copying %s complete", event.currentTarget.nativePath);
-
-            resourceCopiedIndex++;
-            if (resourceCopiedIndex < pvo.resourcePaths.length)
+			if (resourceDestinationCopiedIndex == 1)
 			{
 				copyingResources();
-            }
-            else if (runAfterBuild)
-            {
-                dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
-                launchApplication();
-            }
-            else
-            {
-                success("Project Build Successfully.");
-                dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
-            }
+			}
+
+			resourceDestinationCopiedIndex++;
 		}
 
         private function onResourcesCopyingFailed(event:IOErrorEvent):void
@@ -803,7 +821,25 @@ package actionScripts.plugins.as3project.mxmlc
 
             error("Copying resources failed %s\n", event.text);
             error("Project Build failed.");
+
+			resourceDestinationCopiedIndex = 0;
+			resourceCopiedIndex = 0;
         }
+
+		private function notifySuccessfullBuildAfterResourceCopy():void
+		{
+			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
+			if(runAfterBuild)
+			{
+				dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
+				launchApplication();
+			}
+			else
+			{
+				success("Project Build Successfully.");
+				dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
+			}
+		}
 
 		private function shellError(e:ProgressEvent):void 
 		{
