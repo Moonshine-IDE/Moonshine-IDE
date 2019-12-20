@@ -749,6 +749,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private var resourceCopiedIndex:int;
 		private var resourceDestinationCopiedIndex:int;
+		private var maxResourceForCopy:int;
 
 		private function copyingResources():void
 		{
@@ -776,7 +777,8 @@ package actionScripts.plugins.as3project.mxmlc
 					pvo.jsOutputPath.concat(currentProject.folderLocation.fileBridge.separator.concat("bin",
 											currentProject.folderLocation.fileBridge.separator, "js-release"))).fileBridge.getFile as File;
 
-			resourceDestinationCopiedIndex = !releaseDestination.exists ? 1 : 0;
+			maxResourceForCopy = !releaseDestination.exists ? 1 : 2;
+			resourceDestinationCopiedIndex = 0;
 
 			if (debugDestination.exists)
 			{
@@ -806,12 +808,11 @@ package actionScripts.plugins.as3project.mxmlc
             event.currentTarget.removeEventListener(Event.COMPLETE, onResourcesCopyingComplete);
             event.currentTarget.removeEventListener(IOErrorEvent.IO_ERROR, onResourcesCopyingFailed);
 
-			if (resourceDestinationCopiedIndex == 1)
+			resourceDestinationCopiedIndex++;
+			if (resourceDestinationCopiedIndex == maxResourceForCopy)
 			{
 				copyingResources();
 			}
-
-			resourceDestinationCopiedIndex++;
 		}
 
         private function onResourcesCopyingFailed(event:IOErrorEvent):void
