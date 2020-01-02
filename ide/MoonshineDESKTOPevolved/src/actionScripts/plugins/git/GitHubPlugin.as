@@ -40,9 +40,11 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.git.commands.CheckGitAvailabilityCommand;
+	import actionScripts.plugins.git.commands.CheckIsGitRepositoryCommand;
+	import actionScripts.plugins.git.commands.CloneCommand;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
-	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
@@ -230,21 +232,26 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		public function requestToAuthenticate():void
+		public function requestToAuthenticate(onComplete:MethodDescriptor=null):void
 		{
 			if (!modelAgainstProject[model.activeProject].sessionUser)
 			{
-				openAuthentication();
+				openAuthentication(onComplete);
 			}
 		}
 		
-		protected function setGitAvailable(value:Boolean):void
+		public function setGitAvailable(value:Boolean):void
 		{
 			isGitAvailable = value;
 			if (checkoutWindow) checkoutWindow.isGitAvailable = isGitAvailable;
 			if (gitAuthWindow) gitAuthWindow.isGitAvailable = isGitAvailable;
 			if (gitBranchSelectionWindow) gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
 			if (gitNewBranchWindow) gitNewBranchWindow.isGitAvailable = isGitAvailable;
+		}
+		
+		private function checkGitAvailability():void
+		{
+			var tmpCheck:CheckGitAvailabilityCommand = new CheckGitAvailabilityCommand();
 		}
 		
 		private function onProjectsCollectionChanged(event:CollectionEvent):void
@@ -322,9 +329,14 @@ package actionScripts.plugins.git
 				Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
 				
 				// re-test
-				processManager.checkGitAvailability();
+				checkGitAvailability();
 				// if an opened project lets test it if Git repository
-				if (model.activeProject) processManager.pendingProcess.push(new MethodDescriptor(processManager, 'checkIfGitRepository', model.activeProject));
+				if (model.activeProject) 
+				{
+					processManager.pendingProcess.push(
+						new MethodDescriptor(CheckIsGitRepositoryCommand, 'CheckIsGitRepositoryCommand', model.activeProject)
+					);
+				}
 				// save the xcode-only path for later use
 				PathSetupHelperUtil.updateXCodePath(xCodePermissionWindow.xCodePath);
 			}
@@ -351,7 +363,7 @@ package actionScripts.plugins.git
 			{
 				if (!checkOSXGitAccess()) return;
 				
-				processManager.checkGitAvailability();
+				checkGitAvailability();
 				
 				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, true) as SourceControlCheckout;
 				checkoutWindow.title = "Clone Repository";
@@ -379,7 +391,11 @@ package actionScripts.plugins.git
 		private function onCloneRequested(event:VersionControlEvent):void
 		{
 			var submitObject:Object = checkoutWindow.submitObject;
-			if (submitObject) processManager.clone(submitObject.url, submitObject.target, submitObject.targetFolder, submitObject.repository);
+			if (submitObject) 
+			{
+				var tmpCommand:CloneCommand = new CloneCommand(submitObject.url, submitObject.target, submitObject.targetFolder, submitObject.repository);
+				//processManager.clone(submitObject.url, submitObject.target, submitObject.targetFolder, submitObject.repository);
+			}
 		}
 		
 		private function onCheckoutRequest(event:Event):void
@@ -393,7 +409,7 @@ package actionScripts.plugins.git
 			{
 				if (!checkOSXGitAccess()) return;
 				
-				processManager.checkGitAvailability();
+				checkGitAvailability();
 				
 				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
 				gitCommitWindow.title = "Commit";
@@ -477,7 +493,7 @@ package actionScripts.plugins.git
 			{
 				if (!checkOSXGitAccess()) return;
 				
-				processManager.checkGitAvailability();
+				checkGitAvailability();
 				
 				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
 				gitCommitWindow.title = "Modified File(s)";
@@ -518,7 +534,7 @@ package actionScripts.plugins.git
 			{
 				if (!checkOSXGitAccess()) return;
 				
-				processManager.checkGitAvailability();
+				checkGitAvailability();
 				
 				gitNewBranchWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitNewBranchPopup, false) as GitNewBranchPopup;
 				gitNewBranchWindow.title = "New Branch";
@@ -573,7 +589,7 @@ package actionScripts.plugins.git
 			{
 				if (!checkOSXGitAccess()) return;
 				
-				processManager.checkGitAvailability();
+				checkGitAvailability();
 				
 				gitBranchSelectionWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitBranchSelectionPopup, false) as GitBranchSelectionPopup;
 				gitBranchSelectionWindow.title = "Select Branch";
@@ -615,7 +631,9 @@ package actionScripts.plugins.git
 			
 			if (!processManager.hasEventListener(GitProcessManager.GIT_REPOSITORY_TEST))
 				processManager.addEventListener(GitProcessManager.GIT_REPOSITORY_TEST, onGitRepositoryTested, false, 0, true);
-			processManager.checkIfGitRepository(event.project);
+			
+			new CheckIsGitRepositoryCommand(event.project);
+			//processManager.checkIfGitRepository(event.project);
 		}
 		
 		private function onGitRepositoryTested(event:GeneralEvent):void
@@ -647,7 +665,8 @@ package actionScripts.plugins.git
 				tmpProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
 				
 				checkOSXGitAccess();
-				processManager.checkIfGitRepository(tmpProject);
+				new CheckIsGitRepositoryCommand(tmpProject);
+				//processManager.checkIfGitRepository(tmpProject);
 			}
 			else
 			{
@@ -655,18 +674,19 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function openAuthentication():void
+		private function openAuthentication(onComplete:MethodDescriptor=null):void
 		{
 			if (!gitAuthWindow)
 			{
 				if (!checkOSXGitAccess()) return;
 				
-				processManager.checkGitAvailability();
+				checkGitAvailability();
 				
 				gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
 				gitAuthWindow.title = "Git Needs Authentication";
 				gitAuthWindow.isGitAvailable = isGitAvailable;
 				gitAuthWindow.type = VersionControlTypes.GIT;
+				gitAuthWindow.onComplete = onComplete;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
 				gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToPush);
 				PopUpManager.centerPopUp(gitAuthWindow);
