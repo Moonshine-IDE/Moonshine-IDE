@@ -26,7 +26,6 @@ package actionScripts.utils
 	
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.interfaces.IWorkerSubscriber;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.help.HelpPlugin;
@@ -55,7 +54,6 @@ package actionScripts.utils
 		
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
-		private var model:IDEModel = IDEModel.getInstance();
 		private var environmentSetup:EnvironmentSetupUtils = EnvironmentSetupUtils.getInstance();
 		private var components:ArrayCollection;
 		private var lastOutput:String;
@@ -67,8 +65,14 @@ package actionScripts.utils
 		 */
 		public function SoftwareVersionChecker()
 		{
-			if (HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER) subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER;
-			else subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER = UIDUtil.createUID();
+			if (HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER)
+			{
+				subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER;
+			}
+			else
+			{
+				subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER = UIDUtil.createUID();
+			}
 			
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);

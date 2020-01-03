@@ -139,8 +139,14 @@ package actionScripts.plugins.away3d
 		
 		private function onAway3DSettingsUpdated(event:Event):void
 		{
-			if (executablePath) runAwdFile(currentFile);
-			else error("Application unavailable. Terminating.");
+			if (executablePath)
+			{
+				runAwdFile(currentFile);
+			}
+			else
+			{
+				error("Application unavailable. Terminating.");
+			}
 		}
 		
 		private function onAway3DSettingsCanceled(event:Event):void
