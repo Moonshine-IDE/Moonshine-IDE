@@ -32,6 +32,7 @@ package actionScripts.plugins.royale
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.RoyaleApiReportVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
 
@@ -98,23 +99,27 @@ package actionScripts.plugins.royale
 
 		private function getRoyaleSdkSetting():ISetting
 		{
-			var royaleSdk:SDKReferenceVO = null;
+			var royaleSdkPath:String = null;
 			for each (var sdk:SDKReferenceVO in model.userSavedSDKs)
 			{
 				if (sdk.type == SDKTypes.ROYALE)
 				{
-					royaleSdk = sdk;
+					royaleSdkPath = sdk.path;
 					break;
 				}
 			}
 
-			return new PathSetting(this, "royaleSdkPath", "Apache Royale SDK", true, royaleSdk ? royaleSdk.path : null, true);
+			this.royaleSdkPath = royaleSdkPath;
+			return new PathSetting(this, "royaleSdkPath", "Apache Royale SDK", true, royaleSdkPath, true, false, royaleSdkPath);
 		}
 
 		private function getFlexSdkSetting():ISetting
 		{
 			var currentProject:ProjectVO = model.activeProject;
-			return new PathSetting(this, "flexSdkPath", "Apache Flex SDK", true, (currentProject as AS3ProjectVO).customSDKPath, true);
+			var as3Project:AS3ProjectVO =  (currentProject as AS3ProjectVO);
+
+			this.flexSdkPath = as3Project.customSDKPath;
+			return new PathSetting(this, "flexSdkPath", "Apache Flex SDK", true, as3Project.customSDKPath, true, false, as3Project.customSDKPath);
 		}
 
 		private function getMainApplicationFileSetting():ISetting
@@ -123,13 +128,17 @@ package actionScripts.plugins.royale
 			var asProject:AS3ProjectVO = currentProject as AS3ProjectVO;
 			var targets:Vector.<FileLocation> = asProject.targets;
 
-			return new PathSetting(this, "mainAppFile", "Main application file", false, targets[0].fileBridge.name, false);
+			this.mainAppFile = targets[0].fileBridge.nativePath;
+			return new PathSetting(this, "mainAppFile", "Main application file", false, targets[0].fileBridge.nativePath, false, false, targets[0].fileBridge.nativePath);
 		}
 
 		private function getOutputPath():ISetting
 		{
 			var currentProject:ProjectVO = model.activeProject;
-			return new PathSetting(this, "outputPath", "Output Path", true, (currentProject as AS3ProjectVO).outputPath);
+			var as3Project:AS3ProjectVO =  (currentProject as AS3ProjectVO);
+
+			this.outputPath = as3Project.outputPath;
+			return new PathSetting(this, "outputPath", "Output Path", true, as3Project.outputPath, false, false, as3Project.outputPath);
 		}
 
 		override public function deactivate():void
@@ -139,7 +148,15 @@ package actionScripts.plugins.royale
 
 		private function onRunReport(event:Event):void
 		{
+			var reportConfiguration:RoyaleApiReportVO = new RoyaleApiReportVO(
+					this.royaleSdkPath,
+					this.flexSdkPath,
+					this.mainAppFile,
+					this.outputPath,
+					model.activeProject.projectFolder.nativePath
+			);
 
+			dispatcher.dispatchEvent(new RoyaleApiReportEvent(RoyaleApiReportEvent.LAUNCH_REPORT_GENERATION, reportConfiguration));
 		}
 
 		private function onCancelReport(event:Event):void

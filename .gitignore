@@ -10,6 +10,7 @@ ide/MoonshineDESKTOPevolved/obj/MoonshineDESKTOPevolvedConfig.xml
 ide/MoonshineSharedCore/obj/MoonshineSharedCoreConfig.xml
 ide/MoonshineWEBevolved/obj/
 ide/MoonshineWorker/obj/
+ide/MoonshineWorker/bin/
 library/ApacheFlexSDKInstallerLib/obj/
 .idea/
 language-server-wrappers/moonshine-as3mxml/moonshine-as3mxml.iml

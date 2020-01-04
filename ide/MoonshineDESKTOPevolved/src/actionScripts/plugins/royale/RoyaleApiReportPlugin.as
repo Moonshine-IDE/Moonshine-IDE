@@ -18,18 +18,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.royale
 {
+	import actionScripts.events.RoyaleApiReportEvent;
+	import actionScripts.events.WorkerEvent;
+	import actionScripts.interfaces.IWorkerSubscriber;
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.RoyaleApiReportVO;
+	import actionScripts.valueObjects.WorkerNativeProcessResult;
+	import actionScripts.vo.NativeProcessQueueVO;
 
 	import mx.utils.UIDUtil;
 
-	public class RoyaleApiReportPlugin extends PluginBase implements IPlugin
+	public class RoyaleApiReportPlugin extends PluginBase implements IPlugin, IWorkerSubscriber
 	{
 		override public function get name():String			{ return "Apache Royale Api Report Plugin."; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Apache Royale Api Report Plugin."; }
+
+		private const API_REPORT_FILE_NAME:String = "royaleapireport.report";
 
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
@@ -45,11 +53,71 @@ package actionScripts.plugins.royale
 			super.activate();
 
 			subscribeIdToWorker = this.name + UIDUtil.createUID();
+
+			dispatcher.addEventListener(RoyaleApiReportEvent.LAUNCH_REPORT_GENERATION, onLaunchReportGeneration);
 		}
 
 		override public function deactivate():void
 		{
 			super.deactivate();
+		}
+
+		private function onLaunchReportGeneration(event:RoyaleApiReportEvent):void
+		{
+			var reportConfig:RoyaleApiReportVO = event.reportConfiguration;
+			var royaleMxmlc:String = reportConfig.royaleSdkPath + getMxmlcLocation();
+			var flexConfig:String = reportConfig.flexSdkPath + getFlexConfigLocation();
+			var apiReportName:String = reportConfig.reportOutputPath + model.fileCore.separator + API_REPORT_FILE_NAME;
+
+			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
+
+			var fullCommand:String = royaleMxmlc + " " + "-api-report=" + apiReportName + " -load-config=" + flexConfig + " " + reportConfig.mainAppFile;
+
+			var reportCommand:NativeProcessQueueVO = new NativeProcessQueueVO(fullCommand, true);
+
+			queue.push(reportCommand);
+
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory: reportConfig.workingDirectory}, subscribeIdToWorker);
+		}
+
+		private function getMxmlcLocation():String
+		{
+			return model.fileCore.separator + "bin" + model.fileCore.separator + "mxmlc";
+		}
+
+		public function getFlexConfigLocation():String
+		{
+			return model.fileCore.separator + "frameworks" + model.fileCore.separator + "flex-config.xml";
+		}
+
+		public function onWorkerValueIncoming(value:Object):void
+		{
+			switch (value.event)
+			{
+				case WorkerEvent.RUN_NATIVEPROCESS_OUTPUT:
+					var match:Array = value.value.output.match(/Error/);
+					if (match)
+					{
+						error(value.value.output);
+					}
+					else
+					{
+						print(value.value.output);
+					}
+					break;
+				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK:
+					if (queue.length != 0)
+					{
+						queue.shift();
+					}
+					break;
+				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED:
+					success("Report has ended.");
+					break;
+				case WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:
+					debug("%s", value.value);
+					break;
+			}
 		}
 	}
 }

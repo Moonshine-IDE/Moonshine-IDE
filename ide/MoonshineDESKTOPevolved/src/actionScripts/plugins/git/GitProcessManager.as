@@ -397,12 +397,24 @@ package actionScripts.plugins.git
 			switch (value.event)
 			{
 				case WorkerEvent.RUN_NATIVEPROCESS_OUTPUT:
-					if (tmpValue.type == WorkerNativeProcessResult.OUTPUT_TYPE_DATA) shellData(tmpValue);
-					else if (tmpValue.type == WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE) shellExit(tmpValue);
-					else shellError(tmpValue);
+					if (tmpValue.type == WorkerNativeProcessResult.OUTPUT_TYPE_DATA)
+					{
+						shellData(tmpValue);
+					}
+					else if (tmpValue.type == WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE)
+					{
+						shellExit(tmpValue);
+					}
+					else
+					{
+						shellError(tmpValue);
+					}
 					break;
 				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK:
-					if (queue.length != 0) queue.shift();
+					if (queue.length != 0)
+					{
+						queue.shift();
+					}
 					processType = tmpValue.processType;
 					shellTick(tmpValue);
 					break;
