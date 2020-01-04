@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+	import actionScripts.plugins.royale.RoyaleApiReportConfiguratorPlugin;
+
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.Screen;
@@ -246,7 +248,8 @@ package actionScripts.impls
 				GitHubPlugin,
 				HiddenFilesPlugin,
                 JavaScriptPlugin,
-				HttpServerPlugin
+				HttpServerPlugin,
+				RoyaleApiReportConfiguratorPlugin
 			];
 		}
 		
@@ -254,7 +257,7 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin];
+					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

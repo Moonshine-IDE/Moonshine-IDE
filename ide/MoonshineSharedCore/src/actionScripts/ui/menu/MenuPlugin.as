@@ -557,7 +557,10 @@ package actionScripts.ui.menu
 						itemsInTopMenu[1].submenu.items[0].submenu.items[0].menu.removeItemAt(i);
 						windowMenus[1].items[0].items.removeAt(i);
 					}
-					else CustomMenuItem(menu.items[0].submenu.items[0]).data.items.removeAt(i);
+					else
+					{
+						CustomMenuItem(menu.items[0].submenu.items[0]).data.items.removeAt(i);
+					}
 					return;
 				}
 			}
