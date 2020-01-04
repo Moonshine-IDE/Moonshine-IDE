@@ -26,7 +26,6 @@ package actionScripts.plugins.royale
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.RoyaleApiReportVO;
-	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	import actionScripts.vo.NativeProcessQueueVO;
 
 	import mx.utils.UIDUtil;

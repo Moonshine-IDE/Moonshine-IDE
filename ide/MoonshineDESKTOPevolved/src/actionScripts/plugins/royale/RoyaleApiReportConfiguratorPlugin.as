@@ -63,6 +63,7 @@ package actionScripts.plugins.royale
 			super.activate();
 
 			configView = new SettingsView();
+			configView.defaultSaveLabel = "Run";
 			configView.addCategory("Report");
 
 			configView.addEventListener(SettingsView.EVENT_SAVE, onRunReport);
