@@ -20,6 +20,7 @@ package actionScripts.plugins.royale
 {
 	import actionScripts.events.RoyaleApiReportEvent;
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IWorkerSubscriber;
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.IPlugin;
@@ -68,9 +69,19 @@ package actionScripts.plugins.royale
 			var flexConfig:String = reportConfig.flexSdkPath + getFlexConfigLocation();
 			var apiReportName:String = reportConfig.reportOutputPath + model.fileCore.separator + API_REPORT_FILE_NAME;
 
+			var libraryPath:String = "";
+			for each (var library:FileLocation in reportConfig.libraries)
+			{
+				libraryPath += " -library-path+=".concat(library.fileBridge.nativePath, " ");
+			}
+
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 
-			var fullCommand:String = royaleMxmlc + " " + "-api-report=" + apiReportName + " -load-config=" + flexConfig + " " + reportConfig.mainAppFile;
+			var fullCommand:String = royaleMxmlc.concat(" ",
+					libraryPath,
+					"-api-report=", apiReportName, " ",
+					"-load-config=", flexConfig,  " ",
+					reportConfig.mainAppFile);
 
 			var reportCommand:NativeProcessQueueVO = new NativeProcessQueueVO(fullCommand, true);
 

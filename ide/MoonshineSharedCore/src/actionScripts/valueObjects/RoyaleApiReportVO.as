@@ -1,11 +1,14 @@
 package actionScripts.valueObjects
 {
+    import actionScripts.factory.FileLocation;
+
     public class RoyaleApiReportVO
     {
-        public function RoyaleApiReportVO(royaleSdkPath:String, flexSdkPath:String, mainAppFile:String, reportOutputPath:String, workingDirectory:String)
+        public function RoyaleApiReportVO(royaleSdkPath:String, flexSdkPath:String, libraries:Vector.<FileLocation>, mainAppFile:String, reportOutputPath:String, workingDirectory:String)
         {
             _royaleSdkPath = royaleSdkPath;
             _flexSdkPath = flexSdkPath;
+            _libraries = libraries;
             _mainAppFile = mainAppFile;
             _reportOutputPath = reportOutputPath;
             _workingDirectory = workingDirectory;
@@ -21,6 +24,12 @@ package actionScripts.valueObjects
         public function get flexSdkPath():String
         {
             return _flexSdkPath;
+        }
+
+        private var _libraries:Vector.<FileLocation>;
+        public function get libraries():Vector.<FileLocation>
+        {
+            return _libraries;
         }
 
         private var _mainAppFile:String;

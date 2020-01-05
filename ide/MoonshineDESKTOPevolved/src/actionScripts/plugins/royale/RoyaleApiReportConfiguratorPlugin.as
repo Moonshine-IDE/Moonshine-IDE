@@ -22,6 +22,7 @@ package actionScripts.plugins.royale
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -50,6 +51,7 @@ package actionScripts.plugins.royale
 
 		public var royaleSdkPath:String;
 		public var flexSdkPath:String;
+		public var libraries:Vector.<FileLocation>;
 		public var mainAppFile:String;
 		public var outputPath:String;
 
@@ -58,16 +60,15 @@ package actionScripts.plugins.royale
 			super();
 		}
 
+		private var _folderLocation:FileLocation;
+		public function get folderLocation():FileLocation
+		{
+			return _folderLocation;
+		}
+
 		override public function activate():void
 		{
 			super.activate();
-
-			configView = new SettingsView();
-			configView.defaultSaveLabel = "Run";
-			configView.addCategory("Report");
-
-			configView.addEventListener(SettingsView.EVENT_SAVE, onRunReport);
-			configView.addEventListener(SettingsView.EVENT_CLOSE, onCancelReport);
 
 			dispatcher.addEventListener(RoyaleApiReportEvent.LAUNCH_REPORT_CONFIGURATION, onLaunchReportConfigration);
 		}
@@ -87,6 +88,9 @@ package actionScripts.plugins.royale
 			var flexSdk:ISetting = getFlexSdkSetting();
 			apiReportItems.push(flexSdk);
 
+			var projectLibraries:ISetting = getLibraries();
+			apiReportItems.push(projectLibraries);
+
 			var mainAppFile:ISetting = getMainApplicationFileSetting();
 			apiReportItems.push(mainAppFile);
 
@@ -95,6 +99,7 @@ package actionScripts.plugins.royale
 
 			var settingsWrapper:SettingsWrapper = new SettingsWrapper("Royale Api Report", apiReportItems);
 
+			configView.addCategory("Report");
 			configView.addSetting(settingsWrapper, "Report");
 		}
 
@@ -121,6 +126,20 @@ package actionScripts.plugins.royale
 
 			this.flexSdkPath = as3Project.customSDKPath;
 			return new PathSetting(this, "flexSdkPath", "Apache Flex SDK", true, as3Project.customSDKPath, true, false, as3Project.customSDKPath);
+		}
+
+		public function getLibraries():ISetting
+		{
+			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+
+			libraries = new Vector.<FileLocation>();
+			for each (var library:FileLocation in as3Project.libraries)
+			{
+				libraries.push(library);
+			}
+
+			_folderLocation = model.activeProject.folderLocation;
+			return new PathListSetting(this, "libraries", "Libraries", model.activeProject.folderLocation);
 		}
 
 		private function getMainApplicationFileSetting():ISetting
@@ -152,6 +171,7 @@ package actionScripts.plugins.royale
 			var reportConfiguration:RoyaleApiReportVO = new RoyaleApiReportVO(
 					this.royaleSdkPath,
 					this.flexSdkPath,
+					this.libraries,
 					this.mainAppFile,
 					this.outputPath,
 					model.activeProject.projectFolder.nativePath
@@ -170,6 +190,13 @@ package actionScripts.plugins.royale
 
 		private function onLaunchReportConfigration(event:Event):void
 		{
+			configView = new SettingsView();
+			configView.label = "Royale API Report";
+			configView.defaultSaveLabel = "Run";
+
+			configView.addEventListener(SettingsView.EVENT_SAVE, onRunReport);
+			configView.addEventListener(SettingsView.EVENT_CLOSE, onCancelReport);
+
 			addReportItems();
 			dispatcher.dispatchEvent(new AddTabEvent(configView));
 		}
