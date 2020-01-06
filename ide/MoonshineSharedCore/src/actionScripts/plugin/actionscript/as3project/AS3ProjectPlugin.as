@@ -57,6 +57,7 @@ package actionScripts.plugin.actionscript.as3project
 		public static const AS3PROJ_AS_WEB:uint = 2;
 		public static const AS3PROJ_AS_ANDROID:uint = 3;
 		public static const AS3PROJ_AS_IOS:uint = 4;
+		public static const AS3PROJ_JS_WEB:uint = 5;
 		
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
 		

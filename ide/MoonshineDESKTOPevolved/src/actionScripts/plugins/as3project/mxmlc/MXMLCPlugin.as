@@ -268,7 +268,13 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		override public function deactivate():void 
 		{
-			super.deactivate(); 
+			super.deactivate();
+			
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndRun);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD, build);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
+			dispatcher.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, onDefaultSDKUpdatedOutside);
 			
 			reset();
 			shellInfo = null;
@@ -450,15 +456,24 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function buildStart():void
 		{
+			var projects:Array = model.projects.source.filter(function(project:ProjectVO, index:int, source:Array):Boolean
+			{
+				if(!(project is AS3ProjectVO))
+				{
+					return false;
+				}
+				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+				return !as3Project.isRoyale || as3Project.buildOptions.targetPlatform == "SWF";
+			});
 			// check if there is multiple projects were opened in tree view
-			if (model.projects.length > 1)
+			if (projects.length > 1)
 			{
 				// check if user has selection/select any particular project or not
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-					if (projectReference)
+					if (projectReference && projects.indexOf(projectReference) != -1)
 					{
 						checkForUnsavedEdior(projectReference);
 						return;
@@ -471,9 +486,9 @@ package actionScripts.plugins.as3project.mxmlc
 				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
 				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 			}
-			else if (model.projects.length != 0)
+			else if (projects.length != 0)
 			{
-				checkForUnsavedEdior(model.projects[0] as ProjectVO);
+				checkForUnsavedEdior(projects[0] as ProjectVO);
 			}
 			
 			/*
