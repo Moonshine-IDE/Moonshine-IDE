@@ -19,6 +19,7 @@
 package actionScripts.plugins.git.commands
 {
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
@@ -100,6 +101,20 @@ package actionScripts.plugins.git.commands
 			// call super - it might have some essential
 			// commands to run
 			super.shellData(value);
+		}
+		
+		override protected function listOfProcessEnded():void
+		{
+			switch (processType)
+			{
+				case GIT_QUERY_USER_EMAIL:
+					var tmpVO:GitProjectVO = model.activeProject ? plugin.modelAgainstProject[model.activeProject] : null;
+					if (tmpVO && !isGitUserEmail) tmpVO.sessionUserEmail = null;
+					if (tmpVO && !isGitUserName) tmpVO.sessionUserName = null;
+					this.onCompletion(tmpVO);
+					this.onCompletion = null;
+					break;
+			}
 		}
 	}
 }

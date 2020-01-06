@@ -99,9 +99,13 @@ package actionScripts.plugins.git.commands
 					// starts checking pending process here
 					if (pendingProcess.length > 0)
 					{
-						var process:MethodDescriptor = pendingProcess.shift();
-						process.callMethod();
+						for each (var pp:MethodDescriptor in pendingProcess)
+						{
+							//var process:MethodDescriptor = pendingProcess.shift();
+							pp.callMethod();
+						}
 					}
+					unsubscribeFromWorker();
 					break;
 				case WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:
 					debug("%s", value.value);
@@ -133,7 +137,7 @@ package actionScripts.plugins.git.commands
 		
 		protected function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
 		{
-			unsubscribeFromWorker();
+			//unsubscribeFromWorker();
 		}
 		
 		protected function shellTick(value:Object /** type of NativeProcessQueueVO **/):void

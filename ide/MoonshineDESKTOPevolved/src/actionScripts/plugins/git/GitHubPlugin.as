@@ -40,9 +40,13 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.git.commands.AuthorCommand;
+	import actionScripts.plugins.git.commands.CheckDifferenceCommand;
 	import actionScripts.plugins.git.commands.CheckGitAvailabilityCommand;
 	import actionScripts.plugins.git.commands.CheckIsGitRepositoryCommand;
 	import actionScripts.plugins.git.commands.CloneCommand;
+	import actionScripts.plugins.git.commands.GetCurrentBranchCommand;
+	import actionScripts.plugins.git.commands.PushCommand;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
@@ -139,6 +143,7 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit, false, 0, true);
 			dispatcher.addEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN, false, 0, true);
+			dispatcher.addEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			
 			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
@@ -161,6 +166,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit);
 			dispatcher.removeEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN);
+			dispatcher.removeEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested);
 			dispatcher.removeEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			
 			model.projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged);
@@ -423,9 +429,10 @@ package actionScripts.plugins.git
 				// the window until folling process is finished
 				gitCommitWindow.callLater(function():void
 				{
-					if (!processManager.hasEventListener(GitProcessManager.GIT_DIFF_CHECKED))
-						processManager.addEventListener(GitProcessManager.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
-					processManager.checkDiff();
+					if (!dispatcher.hasEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED))
+						dispatcher.addEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
+					//processManager.checkDiff();
+					new CheckDifferenceCommand();
 				});
 			}
 			else
@@ -450,14 +457,16 @@ package actionScripts.plugins.git
 		
 		private function onGitDiffChecked(event:GeneralEvent):void
 		{
-			processManager.removeEventListener(GitProcessManager.GIT_DIFF_CHECKED, onGitDiffChecked);
+			dispatcher.removeEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked);
 			if (gitCommitWindow) 
 			{
 				gitCommitWindow.isReadyToUse = true;
 				gitCommitWindow.commitDiffCollection = event.value as ArrayCollection;
 			}
 			
-			processManager.getGitAuthor(onGitAuthorDetection);
+			var tmpAuthorCommand:AuthorCommand = new AuthorCommand();
+			tmpAuthorCommand.getAuthor(onGitAuthorDetection);
+			//processManager.getGitAuthor(onGitAuthorDetection);
 		}
 		
 		private function onPullRequest(event:Event):void
@@ -467,7 +476,8 @@ package actionScripts.plugins.git
 		
 		private function onPushRequest(event:Event):void
 		{
-			processManager.push();
+			new PushCommand();
+			//processManager.push();
 		}
 		
 		private function onAuthSuccessToPush(event:Event):void
@@ -478,11 +488,14 @@ package actionScripts.plugins.git
 				{
 					modelAgainstProject[model.activeProject].sessionUser = gitAuthWindow.userObject.userName;
 					modelAgainstProject[model.activeProject].sessionPassword = gitAuthWindow.userObject.password;
-					processManager.push(null);
+					
+					//processManager.push(null);
+					new PushCommand();
 				}
 				else
 				{
-					processManager.push(gitAuthWindow.userObject);
+					//processManager.push(gitAuthWindow.userObject);
+					new PushCommand(gitAuthWindow.userObject);
 				}
 			}
 		}
@@ -508,9 +521,10 @@ package actionScripts.plugins.git
 				// the window until folling process is finished
 				gitCommitWindow.callLater(function():void
 				{
-					processManager.checkDiff();
-					if (!processManager.hasEventListener(GitProcessManager.GIT_DIFF_CHECKED))
-						processManager.addEventListener(GitProcessManager.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
+					if (!dispatcher.hasEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED))
+						dispatcher.addEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
+					//processManager.checkDiff();
+					new CheckDifferenceCommand();
 				});
 			}
 			else
@@ -577,14 +591,11 @@ package actionScripts.plugins.git
 		private function onChangeBranchRequest(event:Event):void
 		{
 			processManager.switchBranch();
-			if (!processManager.hasEventListener(GitProcessManager.GIT_REMOTE_BRANCH_LIST))
-				processManager.addEventListener(GitProcessManager.GIT_REMOTE_BRANCH_LIST, onGitRemoteBranchListReceived, false, 0, true);
 		}
 		
 		private function onGitRemoteBranchListReceived(event:GeneralEvent):void
 		{
-			processManager.removeEventListener(GitProcessManager.GIT_REMOTE_BRANCH_LIST, onGitRemoteBranchListReceived);
-			
+			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived);
 			if (!gitBranchSelectionWindow)
 			{
 				if (!checkOSXGitAccess()) return;
@@ -629,16 +640,13 @@ package actionScripts.plugins.git
 				return;
 			}
 			
-			if (!processManager.hasEventListener(GitProcessManager.GIT_REPOSITORY_TEST))
-				processManager.addEventListener(GitProcessManager.GIT_REPOSITORY_TEST, onGitRepositoryTested, false, 0, true);
+			var testGitRepositoryCommand:CheckIsGitRepositoryCommand = new CheckIsGitRepositoryCommand(event.project);
 			
-			new CheckIsGitRepositoryCommand(event.project);
 			//processManager.checkIfGitRepository(event.project);
 		}
 		
 		private function onGitRepositoryTested(event:GeneralEvent):void
 		{
-			processManager.removeEventListener(GitProcessManager.GIT_REPOSITORY_TEST, onGitRepositoryTested);
 			if (event.value && !gitRepositoryPermissionWindow)
 			{
 				gitRepositoryPermissionWindow = new GitRepositoryPermissionPopup;

@@ -90,7 +90,7 @@ package actionScripts.plugins.git.commands
 				}
 				
 				// let open the selection popup
-				dispatchEvent(new GeneralEvent(GIT_REMOTE_BRANCH_LIST_RECEIVED, tmpModel.branchList));
+				dispatcher.dispatchEvent(new GeneralEvent(GIT_REMOTE_BRANCH_LIST_RECEIVED, tmpModel.branchList));
 			}
 		}
 	}

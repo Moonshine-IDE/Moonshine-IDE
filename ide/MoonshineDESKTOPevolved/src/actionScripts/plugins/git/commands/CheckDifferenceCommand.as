@@ -105,7 +105,7 @@ package actionScripts.plugins.git.commands
 				});
 				
 				diffResults = "";
-				dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
+				dispatcher.dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
 			}
 			
 			/*

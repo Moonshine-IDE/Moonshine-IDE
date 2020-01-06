@@ -23,8 +23,8 @@ package actionScripts.plugins.git.commands
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.GitProjectVO;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.UtilsCore;
@@ -35,7 +35,7 @@ package actionScripts.plugins.git.commands
 
 	public class CheckIsGitRepositoryCommand extends GitCommandBase
 	{
-		public static const GIT_REPOSITORY_TEST:String = "checkIfGitRepository";
+		public static const GIT_REPOSITORY_TESTED:String = "gitRepositoryTested";
 		
 		private var onXCodePathDetection:Function;
 		private var xCodePathDetectionType:String;
@@ -46,10 +46,8 @@ package actionScripts.plugins.git.commands
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' rev-parse --git-dir'), false, GIT_REPOSITORY_TEST, project.folderLocation.fileBridge.nativePath));
+			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' rev-parse --git-dir'), false, GIT_REPOSITORY_TESTED, project.folderLocation.fileBridge.nativePath));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:project.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
-			var tmp:MethodDescriptor = new MethodDescriptor(new GetCurrentBranchCommand, 'execute', project);
-			tmp.callMethod();
 		}
 		
 		override protected function shellData(value:Object):void
@@ -61,7 +59,7 @@ package actionScripts.plugins.git.commands
 			
 			switch(tmpQueue.processType)
 			{
-				case GIT_REPOSITORY_TEST:
+				case GIT_REPOSITORY_TESTED:
 				{
 					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
 					if (!isFatal)
@@ -75,19 +73,19 @@ package actionScripts.plugins.git.commands
 								value.output = value.output.replace("\n", "");
 								
 								plugin.modelAgainstProject[tmpProject] = new GitProjectVO();
-								plugin.modelAgainstProject[tmpProject].pathToDownloaded = (value.output == ".git") ? (tmpProject.folderLocation.fileBridge.getFile as File).nativePath : 
-									(new File(value.output)).parent.nativePath;
+								plugin.modelAgainstProject[tmpProject].rootLocal = (value.output == ".git") ? tmpProject.folderLocation.fileBridge.getFile as File : 
+									(new File(value.output)).parent;
 							}
 							
 							// continuing fetch
-							pendingProcess.push(new MethodDescriptor(GetCurrentBranchCommand, 'GetCurrentBranchCommand', tmpProject)); // store the current branch
-							pendingProcess.push(new MethodDescriptor(GetRemoteURLCommand, 'GetRemoteURLCommand', tmpProject)); // store the remote URL
+							pendingProcess.push(new ConstructorDescriptor(GetCurrentBranchCommand, tmpProject)); // store the current branch
+							pendingProcess.push(new ConstructorDescriptor(GetRemoteURLCommand, tmpProject)); // store the remote URL
 							
 							// following will enable/disable Moonshine top menus based on project
 							dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
 						}
 						
-						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
+						dispatcher.dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TESTED));
 					}
 					else if (ConstantsCoreVO.IS_MACOS && tmpProject && 
 						(plugin.projectsNotAcceptedByUserToPermitAsGitOnMacOS[tmpProject.folderLocation.fileBridge.nativePath] == undefined))
@@ -100,7 +98,7 @@ package actionScripts.plugins.git.commands
 					}
 					else
 					{
-						dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST));
+						dispatcher.dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TESTED));
 					}
 					
 					// following will enable/disable Moonshine top menus based on project
@@ -125,7 +123,7 @@ package actionScripts.plugins.git.commands
 				tmpFile = tmpFile.parent;
 				if (tmpFile && tmpFile.resolvePath(".git").exists && tmpFile.resolvePath(".git/index").exists)
 				{
-					dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TEST, {project:value, gitRootLocation:tmpFile}));
+					dispatcher.dispatchEvent(new GeneralEvent(GIT_REPOSITORY_TESTED, {project:value, gitRootLocation:tmpFile}));
 					break;
 				}
 				
