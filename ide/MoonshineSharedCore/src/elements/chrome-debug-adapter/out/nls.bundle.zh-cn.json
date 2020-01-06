@@ -1,0 +1,1 @@
+{"src/chromeDebugAdapter":["找不到 Chrome - 进行安装或在启动配置中设置 \"runtimeExecutable\" 字段。"],"src/chromeProvidedPortConnection":[],"src/errors":["属性 {0} 不存在({1})。","When the remote debugging port is set to 0, you must also provide the \"userDataDir\" launch argument","Could not open a connection to Chrome at: {address}:{port}"],"src/extension":["针对 localhost 启动 Chrome","选择一个选项卡"]}
