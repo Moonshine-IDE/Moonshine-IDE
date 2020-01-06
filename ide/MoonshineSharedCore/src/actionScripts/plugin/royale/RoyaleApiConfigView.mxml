@@ -1,4 +1,51 @@
 <?xml version="1.0"?>
 <settings:SettingsView xmlns:fx="http://ns.adobe.com/mxml/2009"
                        xmlns:settings="actionScripts.plugin.settings.*">
+    <fx:Script><![CDATA[
+        import actionScripts.plugin.settings.vo.AbstractSetting;
+        import actionScripts.plugin.settings.vo.ISetting;
+        import actionScripts.plugin.settings.vo.PathSetting;
+        import actionScripts.plugin.settings.vo.SettingsWrapper;
+
+        override public function save():void
+        {
+            var settingsWrappers:Vector.<SettingsWrapper> = getSettingsForAllCategories();
+            var requiredSetting:ISetting = null;
+
+            for each (var wrapper:SettingsWrapper in settingsWrappers)
+            {
+                var settings:Vector.<ISetting> = wrapper.getSettingsList();
+                for each (var setting:ISetting in settings)
+                {
+                    var settingValue:String = setting.stringValue;
+                    if(!settingValue)
+                    {
+                        requiredSetting = setting;
+                        break;
+                    }
+                }
+
+                if(requiredSetting)
+                {
+                    break;
+                }
+            }
+
+            if(requiredSetting && requiredSetting is PathSetting)
+            {
+                requiredSetting.renderer["setMessage"]("This field is required to generate report", AbstractSetting.MESSAGE_CRITICAL);
+                (requiredSetting as AbstractSetting).addEventListener(AbstractSetting.PATH_SELECTED, onRequiredSettingPathSelect);
+            }
+            else
+            {
+                super.save();
+            }
+        }
+
+        private function onRequiredSettingPathSelect(event:Event):void
+        {
+            event.target.renderer["setMessage"](null, AbstractSetting.MESSAGE_CRITICAL);
+            event.target.removeEventListener(AbstractSetting.PATH_SELECTED, onRequiredSettingPathSelect);
+        }
+        ]]></fx:Script>
 </settings:SettingsView>
