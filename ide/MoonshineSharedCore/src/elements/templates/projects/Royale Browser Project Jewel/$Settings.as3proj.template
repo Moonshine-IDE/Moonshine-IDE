@@ -83,15 +83,6 @@
     <option testMovieCommand=""/>
   </options>
   <moonshineRunCustomization>
-    <option customUrlToLaunch=""/>
-    <option deviceSimulator="null"/>
-    <option projectType="2"/>
-    <option targetPlatform="2"/>
-    <option launchMethod="Simulator"/>
-    <option urlToLaunch=""/>
-    <deviceSimulator>null</deviceSimulator>
-    <certAndroid>null</certAndroid>
-    <certIos>null</certIos>
-    <certIosProvisioning>null</certIosProvisioning>
+    <option targetPlatform="5"/>
   </moonshineRunCustomization>
 </project>
