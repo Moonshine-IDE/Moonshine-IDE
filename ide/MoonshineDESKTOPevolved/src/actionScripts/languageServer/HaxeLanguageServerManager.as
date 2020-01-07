@@ -88,14 +88,14 @@ package actionScripts.languageServer
 		{
 			_project = project;
 
+			_dispatcher.addEventListener(SdkEvent.CHANGE_HAXE_SDK, changeHaxeSDKHandler, false, 0, true);
+			_dispatcher.addEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler, false, 0, true);
+			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler, false, 0, true);
+			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
+			_dispatcher.addEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler, false, 0, true);
+			_dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler, false, 0, true);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
-			_dispatcher.addEventListener(SdkEvent.CHANGE_HAXE_SDK, changeHaxeSDKHandler);
-			_dispatcher.addEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler);
-			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
-			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_dispatcher.addEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler);
-			_dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 
 			boostrapThenStartNativeProcess();
 		}
@@ -147,8 +147,13 @@ package actionScripts.languageServer
 
 		protected function dispose():void
 		{
+			_dispatcher.removeEventListener(SdkEvent.CHANGE_HAXE_SDK, changeHaxeSDKHandler);
+			_dispatcher.removeEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler);
 			_dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
+			_dispatcher.removeEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler);
+			_dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+
 			cleanupLanguageClient();
 		}
 

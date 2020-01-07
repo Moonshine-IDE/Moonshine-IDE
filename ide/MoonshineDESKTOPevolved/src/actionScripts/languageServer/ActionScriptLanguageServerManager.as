@@ -75,9 +75,9 @@ package actionScripts.languageServer
 			_project = project;
 
 			_project.addEventListener(AS3ProjectVO.CHANGE_CUSTOM_SDK, projectChangeCustomSDKHandler);
-			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_dispatcher.addEventListener(SdkEvent.CHANGE_SDK, changeMenuSDKStateHandler);
-			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, javaPathSaveHandler);
+			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
+			_dispatcher.addEventListener(SdkEvent.CHANGE_SDK, changeMenuSDKStateHandler, false, 0, true);
+			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, javaPathSaveHandler, false, 0, true);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 

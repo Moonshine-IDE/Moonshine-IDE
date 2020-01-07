@@ -107,11 +107,11 @@ package actionScripts.languageServer
 		{
 			_project = project;
 
+			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler, false, 0, true);
+			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler, false, 0, true);
+			_dispatcher.addEventListener(GradleBuildEvent.REFRESH_GRADLE_CLASSPATH, onGradleClassPathRefresh, false, 0, true);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
-			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
-			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
-			_dispatcher.addEventListener(GradleBuildEvent.REFRESH_GRADLE_CLASSPATH, onGradleClassPathRefresh, false, 0, true);
 
 			prepareApplicationStorage();
 			preTaskLanguageServer();
@@ -166,6 +166,7 @@ package actionScripts.languageServer
 		{
 			_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
 			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
+			_dispatcher.removeEventListener(GradleBuildEvent.REFRESH_GRADLE_CLASSPATH, onGradleClassPathRefresh);
 			cleanupLanguageClient();
 		}
 
