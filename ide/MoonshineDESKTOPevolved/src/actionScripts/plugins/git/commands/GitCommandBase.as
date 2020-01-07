@@ -21,6 +21,7 @@ package actionScripts.plugins.git.commands
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.interfaces.IWorkerSubscriber;
@@ -161,6 +162,12 @@ package actionScripts.plugins.git.commands
 			{
 				notice(value.output);
 			}
+		}
+		
+		protected function refreshProjectTree():void
+		{
+			// refreshing project tree
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, model.activeProject.projectFolder));
 		}
 		
 		private function getGitPluginReference():void

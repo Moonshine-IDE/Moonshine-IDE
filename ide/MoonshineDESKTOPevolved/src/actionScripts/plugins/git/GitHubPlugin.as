@@ -41,12 +41,21 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.commands.AuthorCommand;
+	import actionScripts.plugins.git.commands.CheckBranchNameAvailabilityCommand;
 	import actionScripts.plugins.git.commands.CheckDifferenceCommand;
 	import actionScripts.plugins.git.commands.CheckGitAvailabilityCommand;
 	import actionScripts.plugins.git.commands.CheckIsGitRepositoryCommand;
 	import actionScripts.plugins.git.commands.CloneCommand;
+	import actionScripts.plugins.git.commands.CreateCheckoutNewBranchCommand;
 	import actionScripts.plugins.git.commands.GetCurrentBranchCommand;
+	import actionScripts.plugins.git.commands.GetXCodePathCommand;
+	import actionScripts.plugins.git.commands.GitChangeBranchToCommand;
+	import actionScripts.plugins.git.commands.GitCheckoutCommand;
+	import actionScripts.plugins.git.commands.GitCommitCommand;
+	import actionScripts.plugins.git.commands.GitSwitchBranchCommand;
+	import actionScripts.plugins.git.commands.PullCommand;
 	import actionScripts.plugins.git.commands.PushCommand;
+	import actionScripts.plugins.git.commands.RevertCommand;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
@@ -149,7 +158,11 @@ package actionScripts.plugins.git
 			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
 			
 			isStartupTest = true;
-			if (checkOSXGitAccess()) processManager.checkGitAvailability();
+			if (checkOSXGitAccess()) 
+			{
+				checkGitAvailability();
+				//processManager.checkGitAvailability();
+			}
 		}
 		
 		override public function deactivate():void 
@@ -288,12 +301,14 @@ package actionScripts.plugins.git
 		{
 			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
 			{
-				processManager.getOSXCodePath(onXCodePathDetection, against);
+				new GetXCodePathCommand(onXCodePathDetection, against);
+				//processManager.getOSXCodePath(onXCodePathDetection, against);
 				return false;
 			}
 			else if (ConstantsCoreVO.IS_MACOS && (against == ProjectMenuTypes.SVN_PROJECT) && !UtilsCore.isSVNPresent()) 
 			{
-				processManager.getOSXCodePath(onXCodePathDetection, against);
+				new GetXCodePathCommand(onXCodePathDetection, against);
+				//processManager.getOSXCodePath(onXCodePathDetection, against);
 				return false;
 			}
 			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
@@ -339,9 +354,10 @@ package actionScripts.plugins.git
 				// if an opened project lets test it if Git repository
 				if (model.activeProject) 
 				{
-					processManager.pendingProcess.push(
+					/*processManager.pendingProcess.push(
 						new MethodDescriptor(CheckIsGitRepositoryCommand, 'CheckIsGitRepositoryCommand', model.activeProject)
-					);
+					);*/
+					new CheckIsGitRepositoryCommand(model.activeProject);
 				}
 				// save the xcode-only path for later use
 				PathSetupHelperUtil.updateXCodePath(xCodePermissionWindow.xCodePath);
@@ -406,7 +422,8 @@ package actionScripts.plugins.git
 		
 		private function onCheckoutRequest(event:Event):void
 		{
-			processManager.checkout();
+			new GitCheckoutCommand();
+			//processManager.checkout();
 		}
 		
 		private function onCommitRequest(event:Event):void
@@ -448,7 +465,11 @@ package actionScripts.plugins.git
 		
 		private function onGitCommitWindowClosed(event:CloseEvent):void
 		{
-			if (gitCommitWindow.isSubmit) processManager.commit(gitCommitWindow.commitDiffCollection, gitCommitWindow.commitMessage);
+			if (gitCommitWindow.isSubmit) 
+			{
+				new GitCommitCommand(gitCommitWindow.commitDiffCollection, gitCommitWindow.commitMessage);
+				//processManager.commit(gitCommitWindow.commitDiffCollection, gitCommitWindow.commitMessage);
+			}
 			
 			gitCommitWindow.removeEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
 			PopUpManager.removePopUp(gitCommitWindow);
@@ -471,7 +492,7 @@ package actionScripts.plugins.git
 		
 		private function onPullRequest(event:Event):void
 		{
-			processManager.pull();
+			new PullCommand();
 		}
 		
 		private function onPushRequest(event:Event):void
@@ -535,7 +556,10 @@ package actionScripts.plugins.git
 		
 		private function onGitRevertWindowClosed(event:CloseEvent):void
 		{
-			if (gitCommitWindow.isSubmit) processManager.revert(gitCommitWindow.commitDiffCollection);
+			if (gitCommitWindow.isSubmit) 
+			{
+				new RevertCommand(gitCommitWindow.commitDiffCollection);
+			}
 			
 			gitCommitWindow.removeEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
 			PopUpManager.removePopUp(gitCommitWindow);
@@ -574,13 +598,15 @@ package actionScripts.plugins.git
 			
 			if (newBranchDetails)
 			{
-				processManager.createAndCheckoutNewBranch(newBranchDetails.name, newBranchDetails.pushToRemote);
+				new CreateCheckoutNewBranchCommand(newBranchDetails.name, newBranchDetails.pushToRemote);
+				//processManager.createAndCheckoutNewBranch(newBranchDetails.name, newBranchDetails.pushToRemote);
 			}
 		}
 		
 		private function onNameValidationRequest(event:GeneralEvent):void
 		{
-			processManager.checkBranchNameValidity(event.value as String, onNameValidatedByGit);
+			new CheckBranchNameAvailabilityCommand(event.value as String, onNameValidatedByGit);
+			//processManager.checkBranchNameValidity(event.value as String, onNameValidatedByGit);
 		}
 		
 		private function onNameValidatedByGit(value:String):void
@@ -590,7 +616,10 @@ package actionScripts.plugins.git
 		
 		private function onChangeBranchRequest(event:Event):void
 		{
-			processManager.switchBranch();
+			if (!dispatcher.hasEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED))
+				dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived, false, 0, true);
+			//processManager.switchBranch();
+			new GitSwitchBranchCommand();
 		}
 		
 		private function onGitRemoteBranchListReceived(event:GeneralEvent):void
@@ -624,7 +653,11 @@ package actionScripts.plugins.git
 			PopUpManager.removePopUp(gitBranchSelectionWindow);
 			gitBranchSelectionWindow = null;
 			
-			if (selectedBranch) processManager.changeBranchTo(selectedBranch);
+			if (selectedBranch) 
+			{
+				new GitChangeBranchToCommand(selectedBranch);
+				//processManager.changeBranchTo(selectedBranch);
+			}
 		}
 		
 		private function onMenuTypeUpdateAgainstGit(event:ProjectEvent):void

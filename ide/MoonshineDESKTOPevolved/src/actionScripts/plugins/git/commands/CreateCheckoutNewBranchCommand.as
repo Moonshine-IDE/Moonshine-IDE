@@ -19,27 +19,34 @@
 package actionScripts.plugins.git.commands
 {
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.vo.NativeProcessQueueVO;
 
-	public class GitCheckoutCommand extends GitCommandBase
+	public class CreateCheckoutNewBranchCommand extends GitCommandBase
 	{
-		private static const GIT_CHECKOUT_BRANCH:String = "gitCheckoutToBranch";
+		private static const GIT_CHECKOUT_NEW_BRANCH:String = "gitCheckoutNewBranch";
 		
-		public function GitCheckoutCommand()
+		public function CreateCheckoutNewBranchCommand(name:String, pushToOrigin:Boolean)
 		{
 			super();
-		}
-		
-		public function checkout():void
-		{
-			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			
+			if (!model.activeProject) return;
+			
+			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_CHECKOUT_BRANCH));
+			// https://stackoverflow.com/questions/1519006/how-do-you-create-a-remote-git-branch
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout -b $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&checkout&&-b&&'+ UtilsCore.getEncodedForShell(name), false, GIT_CHECKOUT_NEW_BRANCH));
+			pendingProcess.push(new ConstructorDescriptor(GetCurrentBranchCommand));
+			if (pushToOrigin)
+			{
+				pendingProcess.push(new ConstructorDescriptor(PushCommand)); // next method we need to fire when above done
+			}
+			
+			notice("Trying to switch branch...");
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
@@ -47,19 +54,9 @@ package actionScripts.plugins.git.commands
 		{
 			switch (processType)
 			{
-				case GIT_CHECKOUT_BRANCH:
+				case GIT_CHECKOUT_NEW_BRANCH:
 					refreshProjectTree(); // important
 					success("...process completed");
-					break;
-			}
-		}
-		
-		override protected function shellTick(value:Object /** type of NativeProcessQueueVO **/):void
-		{
-			switch (value.processType)
-			{
-				case GIT_CHECKOUT_BRANCH:
-					if (value.extraArguments && value.extraArguments.length != 0) notice(value.extraArguments[0] +" :Finished");
 					break;
 			}
 		}

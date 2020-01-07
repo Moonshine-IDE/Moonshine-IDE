@@ -18,29 +18,47 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import mx.collections.ArrayCollection;
+	
+	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
-	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.plugins.git.GitProcessManager;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.vo.NativeProcessQueueVO;
 
-	public class GitCheckoutCommand extends GitCommandBase
+	public class RevertCommand extends GitCommandBase
 	{
 		private static const GIT_CHECKOUT_BRANCH:String = "gitCheckoutToBranch";
 		
-		public function GitCheckoutCommand()
+		public function RevertCommand(files:ArrayCollection)
 		{
 			super();
-		}
-		
-		public function checkout():void
-		{
-			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			
+			if (!model.activeProject) return;
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_CHECKOUT_BRANCH));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
+			for each (var i:GenericSelectableObject in files)
+			{
+				if (i.isSelected) 
+				{
+					switch(i.data.status)
+					{
+						case GitProcessManager.GIT_STATUS_FILE_DELETED:
+						case GitProcessManager.GIT_STATUS_FILE_MODIFIED:
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
+							break;
+						
+						case GitProcessManager.GIT_STATUS_FILE_NEW:
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" reset $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&reset&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
+							break;
+					}
+				}
+			}
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "File Revert ", false));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:plugin.modelAgainstProject[model.activeProject].rootLocal.nativePath}, subscribeIdToWorker);
 		}
 		
 		override protected function listOfProcessEnded():void

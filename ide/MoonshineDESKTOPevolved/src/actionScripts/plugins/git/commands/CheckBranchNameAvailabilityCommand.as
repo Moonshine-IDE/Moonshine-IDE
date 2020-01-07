@@ -19,49 +19,56 @@
 package actionScripts.plugins.git.commands
 {
 	import actionScripts.events.WorkerEvent;
-	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.vo.NativeProcessQueueVO;
 
-	public class GitCheckoutCommand extends GitCommandBase
+	public class CheckBranchNameAvailabilityCommand extends GitCommandBase
 	{
-		private static const GIT_CHECKOUT_BRANCH:String = "gitCheckoutToBranch";
+		private static const GIT_BRANCH_NAME_VALIDATION:String = "gitValidateProposedBranchName";
 		
-		public function GitCheckoutCommand()
+		private var onCompletion:Function;
+		
+		public function CheckBranchNameAvailabilityCommand(name:String, completion:Function)
 		{
 			super();
-		}
-		
-		public function checkout():void
-		{
-			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			
+			onCompletion = completion;
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_CHECKOUT_BRANCH));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" check-ref-format --branch $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&check-ref-format&&--branch&&'+ UtilsCore.getEncodedForShell(name), false, GIT_BRANCH_NAME_VALIDATION));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
-		override protected function listOfProcessEnded():void
+		override protected function shellData(value:Object):void
 		{
-			switch (processType)
+			var match:Array;
+			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
+			
+			switch(tmpQueue.processType)
 			{
-				case GIT_CHECKOUT_BRANCH:
-					refreshProjectTree(); // important
-					success("...process completed");
+				case GIT_BRANCH_NAME_VALIDATION:
+				{
+					if (onCompletion != undefined)
+					{
+						onCompletion(value.output);
+						onCompletion = null;
+						return;
+					}
+					
 					break;
+				}
 			}
+			
+			// call super - it might have some essential
+			// commands to run
+			super.shellData(value);
 		}
 		
-		override protected function shellTick(value:Object /** type of NativeProcessQueueVO **/):void
+		override protected function unsubscribeFromWorker():void
 		{
-			switch (value.processType)
-			{
-				case GIT_CHECKOUT_BRANCH:
-					if (value.extraArguments && value.extraArguments.length != 0) notice(value.extraArguments[0] +" :Finished");
-					break;
-			}
+			super.unsubscribeFromWorker();
+			onCompletion = null;
 		}
 	}
 }

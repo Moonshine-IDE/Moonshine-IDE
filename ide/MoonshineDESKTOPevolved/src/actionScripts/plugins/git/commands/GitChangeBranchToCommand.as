@@ -19,28 +19,39 @@
 package actionScripts.plugins.git.commands
 {
 	import actionScripts.events.WorkerEvent;
-	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.vo.NativeProcessQueueVO;
 
-	public class GitCheckoutCommand extends GitCommandBase
+	public class GitChangeBranchToCommand extends GitCommandBase
 	{
 		private static const GIT_CHECKOUT_BRANCH:String = "gitCheckoutToBranch";
 		
-		public function GitCheckoutCommand()
+		public function GitChangeBranchToCommand(value:GenericSelectableObject)
 		{
 			super();
-		}
-		
-		public function checkout():void
-		{
-			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+			
+			if (!model.activeProject) return;
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_CHECKOUT_BRANCH));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(value.data as String) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(value.data as String), false, GIT_CHECKOUT_BRANCH));
+			pendingProcess.push(new ConstructorDescriptor(GetCurrentBranchCommand));
+			
+			notice("Trying to switch branch...");
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
+		}
+		
+		override protected function shellTick(value:Object /** type of NativeProcessQueueVO **/):void
+		{
+			switch (value.processType)
+			{
+				case GIT_CHECKOUT_BRANCH:
+					if (value.extraArguments && value.extraArguments.length != 0) notice(value.extraArguments[0] +" :Finished");
+					break;
+			}
 		}
 		
 		override protected function listOfProcessEnded():void
@@ -50,16 +61,6 @@ package actionScripts.plugins.git.commands
 				case GIT_CHECKOUT_BRANCH:
 					refreshProjectTree(); // important
 					success("...process completed");
-					break;
-			}
-		}
-		
-		override protected function shellTick(value:Object /** type of NativeProcessQueueVO **/):void
-		{
-			switch (value.processType)
-			{
-				case GIT_CHECKOUT_BRANCH:
-					if (value.extraArguments && value.extraArguments.length != 0) notice(value.extraArguments[0] +" :Finished");
 					break;
 			}
 		}

@@ -18,37 +18,41 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
-	import mx.collections.ArrayCollection;
-	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.vo.NativeProcessQueueVO;
 
-	public class CommitCommand extends GitCommandBase
+	public class PullCommand extends GitCommandBase
 	{
-		private static const GIT_COMMIT:String = "gitCommit";
+		public static const PULL_REQUEST:String = "gitPullRequest";
 		
-		public function CommitCommand(files:ArrayCollection, withMessage:String)
+		public function PullCommand()
 		{
 			super();
 			
+			if (!model.activeProject) return;
+			
+			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			queue = new Vector.<Object>();
 			
-			for each (var i:GenericSelectableObject in files)
-			{
-				if (i.isSelected) 
-				{
-					addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" add $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&add&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_COMMIT));
-				}
-			}
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" pull --progress -v --no-rebase origin $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&pull&&--progress&&-v&&--no-rebase&&origin&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, PULL_REQUEST));
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" commit -m $'"+ UtilsCore.getEncodedForShell(withMessage) +"'" : gitBinaryPathOSX +'&&commit&&-m&&"'+ UtilsCore.getEncodedForShell(withMessage, true) +'"', false, GIT_COMMIT));
-			
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Commit ", false));
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Pull ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
+		}
+		
+		override protected function listOfProcessEnded():void
+		{
+			switch (processType)
+			{
+				case PULL_REQUEST:
+					refreshProjectTree(); // important
+					success("...process completed");
+					break;
+			}
 		}
 	}
 }

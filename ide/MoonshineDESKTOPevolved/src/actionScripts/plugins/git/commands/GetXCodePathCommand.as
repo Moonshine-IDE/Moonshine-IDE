@@ -93,5 +93,11 @@ package actionScripts.plugins.git.commands
 			// commands to run
 			super.shellData(value);
 		}
+		
+		override protected function unsubscribeFromWorker():void
+		{
+			super.unsubscribeFromWorker();
+			onXCodePathDetection = null;
+		}
 	}
 }
