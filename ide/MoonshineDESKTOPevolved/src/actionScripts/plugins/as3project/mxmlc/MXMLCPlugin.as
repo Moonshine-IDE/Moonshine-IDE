@@ -81,7 +81,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
 	
-	import components.popup.SelectOpenedFlexProject;
+	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
 	
 	import flashx.textLayout.elements.LinkElement;
@@ -127,7 +127,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private var	tempObj:Object;
 		private var fschstr:String;
 		private var SDKstr:String;
-		private var selectProjectPopup:SelectOpenedFlexProject;
+		private var selectProjectPopup:SelectOpenedProject;
 
 		private function get mxmlcPath():String
 		{
@@ -456,7 +456,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function buildStart():void
 		{
-			var projects:Array = model.projects.source.filter(function(project:ProjectVO, index:int, source:Array):Boolean
+			var filteredProjects:Array = model.projects.source.filter(function(project:ProjectVO, index:int, source:Array):Boolean
 			{
 				if(!(project is AS3ProjectVO))
 				{
@@ -466,29 +466,30 @@ package actionScripts.plugins.as3project.mxmlc
 				return !as3Project.isRoyale || as3Project.buildOptions.targetPlatform == "SWF";
 			});
 			// check if there is multiple projects were opened in tree view
-			if (projects.length > 1)
+			if (filteredProjects.length > 1)
 			{
 				// check if user has selection/select any particular project or not
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-					if (projectReference && projects.indexOf(projectReference) != -1)
+					if (projectReference && filteredProjects.indexOf(projectReference) != -1)
 					{
 						checkForUnsavedEdior(projectReference);
 						return;
 					}
 				}
 				// if above is false
-				selectProjectPopup = new SelectOpenedFlexProject();
+				selectProjectPopup = new SelectOpenedProject();
+				selectProjectPopup.projects = new ArrayCollection(filteredProjects);
 				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
 				PopUpManager.centerPopUp(selectProjectPopup);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 			}
-			else if (projects.length != 0)
+			else if (filteredProjects.length != 0)
 			{
-				checkForUnsavedEdior(projects[0] as ProjectVO);
+				checkForUnsavedEdior(filteredProjects[0] as ProjectVO);
 			}
 			
 			/*
@@ -502,8 +503,8 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			function onProjectSelectionCancelled(event:Event):void
 			{
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 				selectProjectPopup = null;
 			}
 			
