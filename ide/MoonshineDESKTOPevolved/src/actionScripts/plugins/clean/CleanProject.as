@@ -231,7 +231,7 @@ package actionScripts.plugins.clean
 			{
 				if (currentCleanType == ProjectType.JAVA)
 				{
-					dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project cleaned succssfully."));
+					dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project cleaned successfully."));
 				}
 			}
 		}
