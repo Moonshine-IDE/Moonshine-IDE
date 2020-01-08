@@ -395,7 +395,7 @@ package actionScripts.languageServer
 			{
 				_dispatcher.dispatchEvent(new ExecuteLanguageServerCommandEvent(
 					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
-					command, args ? args : []));
+					project, command, args ? args : []));
 				if(popup)
 				{
 					PopUpManager.removePopUp(popup);

@@ -16,26 +16,23 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.events
+package actionScripts.utils
 {
-	import flash.events.Event;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
 
-	public class ExecuteLanguageServerCommandEvent extends Event
+	public function getProjectForUri(uri:String):ProjectVO
 	{
-		public static const EVENT_EXECUTE_COMMAND:String = "executeCommand";
-
-		public var project:ProjectVO;
-		public var command:String;
-		public var arguments:Array;
-
-		public function ExecuteLanguageServerCommandEvent(type:String, project:ProjectVO, command:String, args:Array = null)
+		var result:Array = IDEModel.getInstance().projects.source.filter(function(project:ProjectVO, index:int, source:Array):Boolean
 		{
-			this.project = project;
-			this.command = command;
-			this.arguments = args;
-			super(type, false, true);
+			return isUriInProject(uri, project);
+		});
+		if(result.length == 0)
+		{
+			return null;
 		}
-
+		return result[0];
 	}
 }
