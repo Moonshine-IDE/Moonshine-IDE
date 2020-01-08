@@ -18,20 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.ui.editor.text.TextEditor;
 	import actionScripts.ui.editor.text.change.TextChangeBase;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.Range;
+	import actionScripts.ui.editor.text.change.TextChangeInsert;
+	import actionScripts.ui.editor.text.change.TextChangeRemove;
 	import actionScripts.valueObjects.TextEdit;
+	import actionScripts.valueObjects.Range;
+	import actionScripts.valueObjects.Position;
+	import actionScripts.ui.editor.text.change.TextChangeMulti;
 
-	public function applyTextEditsToTextEditor(textEditor:TextEditor, textEdits:Vector.<TextEdit>):void
+	public function getTextChangeFromTextEdits(textEdits:Vector.<TextEdit>):TextChangeBase
 	{
-		var change:TextChangeBase = getTextChangeFromTextEdits(textEdits);
-
-		var line:int = textEditor.model.selectedLineIndex;
-		var char:int = textEditor.model.caretIndex;
-		var scrollPosition:int = textEditor.model.scrollPosition;
+		var multi:TextChangeMulti = new TextChangeMulti();
 		var textEditsCount:int = textEdits.length;
 		for(var i:int = 0; i < textEditsCount; i++)
 		{
@@ -39,23 +36,15 @@ package actionScripts.utils
 			var range:Range = textEdit.range;
 			var start:Position = range.start;
 			var end:Position = range.end;
+			var newLines:Vector.<String> = Vector.<String>(textEdit.newText.split("\n"));
+			var insert:TextChangeInsert = new TextChangeInsert(start.line, start.character, newLines);
 			if(start.line !== end.line || start.character !== end.character)
 			{
-				if(end.line > start.line)
-				{
-					line -= (end.line - start.line);
-				}
+				var remove:TextChangeRemove = new TextChangeRemove(start.line, start.character, end.line, end.character);
+				multi.changes.push(remove);
 			}
-			if(start.line <= line)
-			{
-				var newLines:Array = textEdit.newText.split("\n");
-				line += (newLines.length - 1);
-			}
+			multi.changes.push(insert);
 		}
-
-		textEditor.dispatchEvent(new ChangeEvent(ChangeEvent.TEXT_CHANGE, change));
-		textEditor.model.selectedLineIndex = line;
-		textEditor.model.caretIndex = char;
-		textEditor.scrollTo(scrollPosition);
+		return multi;
 	}
 }

@@ -99,6 +99,8 @@ import actionScripts.valueObjects.CreateFile;
 import actionScripts.valueObjects.DeleteFile;
 import actionScripts.valueObjects.RenameFile;
 import actionScripts.valueObjects.TextEdit;
+import flash.errors.IOError;
+import actionScripts.events.RefreshTreeEvent;
 
 function applyTextEditsToURI(uri:String, textEdits:Vector.<TextEdit>):void
 {
@@ -110,7 +112,14 @@ function handleRenameFile(renameFile:RenameFile):void
 {
 	var renameOldLocation:FileLocation = new FileLocation(renameFile.oldUri, true);
 	var renameNewLocation:FileLocation = new FileLocation(renameFile.newUri, true);
-	renameOldLocation.fileBridge.moveTo(renameNewLocation, true);
+	try
+	{
+		renameOldLocation.fileBridge.moveTo(renameNewLocation, true);
+	}
+	catch(error:Error)
+	{
+		trace("rename failed:", error)
+	}
 
 	var editors:ArrayCollection = IDEModel.getInstance().editors;
 	var editorCount:int = editors.length;

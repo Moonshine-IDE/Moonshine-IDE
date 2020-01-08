@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text.change
 {
+	import actionScripts.ui.editor.text.TextLineModel;
+
 	public class TextChangeMulti extends TextChangeBase
 	{
 		private var _changes:Vector.<TextChangeBase>;
@@ -48,6 +50,14 @@ package actionScripts.ui.editor.text.change
 			}
 			
 			return new TextChangeMulti(revChanges);
+		}
+
+		override public function apply(targetLines:Vector.<TextLineModel>):void
+		{
+			for each (var subchange:TextChangeBase in changes)
+			{
+				subchange.apply(targetLines);
+			}
 		}
 		
 	}
