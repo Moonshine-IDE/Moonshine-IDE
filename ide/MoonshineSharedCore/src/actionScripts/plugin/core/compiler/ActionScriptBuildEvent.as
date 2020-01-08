@@ -23,10 +23,7 @@ package actionScripts.plugin.core.compiler
 	public class ActionScriptBuildEvent extends Event
 	{
 		public static const BUILD_AND_RUN:String = "compilerBuildAndRun";
-		public static const BUILD_AND_RUN_JAVASCRIPT:String = "compilerBuildAndRunJavaScript";
-		public static const BUILD_AS_JAVASCRIPT:String = "compilerBuildAsJavaScript";
 		public static const BUILD_AND_DEBUG:String = "compilerBuildAndDebug";
-		public static const BUILD_AND_DEBUG_JAVASCRIPT:String = "compilerBuildAndDebugJavaScript";
 		public static const RUN_AFTER_DEBUG:String = "compilerRunAfterDebug";
 		public static const BUILD:String = "compilerBuild";
 		public static const BUILD_RELEASE:String = "compilerBuildRelease";

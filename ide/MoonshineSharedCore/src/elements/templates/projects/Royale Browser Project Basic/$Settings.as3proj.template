@@ -57,4 +57,7 @@
     <option showHiddenPaths="False"/>
     <option testMovieCommand="ExternalPlayer"/>
   </options>
+  <moonshineRunCustomization>
+    <option targetPlatform="5"/>
+  </moonshineRunCustomization>
 </project>

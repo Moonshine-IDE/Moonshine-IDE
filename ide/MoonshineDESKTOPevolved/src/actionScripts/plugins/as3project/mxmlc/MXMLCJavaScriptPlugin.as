@@ -73,7 +73,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
 	
-	import components.popup.SelectOpenedFlexProject;
+	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
 	import actionScripts.plugins.httpServer.events.HttpServerEvent;
 	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
@@ -115,9 +115,10 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private var fschstr:String;
 		private var SDKstr:String;
-		private var selectProjectPopup:SelectOpenedFlexProject;
+		private var selectProjectPopup:SelectOpenedProject;
 		protected var runAfterBuild:Boolean;
 		protected var debugAfterBuild:Boolean;
+		protected var release:Boolean;
 
 		private var successMessage:String;
 		private var isProjectHasInvalidPaths:Boolean;
@@ -152,15 +153,22 @@ package actionScripts.plugins.as3project.mxmlc
 			registerCommand('buildjs',tempObj);
 			
 			
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN_JAVASCRIPT, buildAndRun);
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG_JAVASCRIPT, buildAndDebug);
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AS_JAVASCRIPT, build);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD, buildDebug);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
 			reset();
 		}
 		
 		override public function deactivate():void 
 		{
 			super.deactivate();
+
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD, buildDebug);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
+
 			reset();
 			shellInfo = null;
 		}
@@ -200,17 +208,29 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function buildAndRun(e:Event):void
 		{
-			build(e,true);	
+			release = false;
+			build(e, false, true);
 		}
 
 		private function buildAndDebug(e:Event):void
 		{
-			build(e, true, true)
+			build(e, false, true, true)
 		}
 		
-		private function build(e:Event, runAfterBuild:Boolean=false, debugAfterBuild:Boolean=false):void
+		private function buildDebug(e:Event):void
+		{
+			build(e);
+		}
+		
+		private function buildRelease(e:Event):void
+		{
+			build(e, true);
+		}
+		
+		private function build(e:Event, release:Boolean=false, runAfterBuild:Boolean=false, debugAfterBuild:Boolean=false):void
 		{
 			this.isProjectHasInvalidPaths = false;
+			this.release = release;
 			this.runAfterBuild = runAfterBuild;
 			this.debugAfterBuild = debugAfterBuild;
 			checkProjectCount();
@@ -230,14 +250,23 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function checkProjectCount():void
 		{
-			if (model.projects.length > 1)
+			var filteredProjects:Array = model.projects.source.filter(function(project:ProjectVO, index:int, source:Array):Boolean
+			{
+				if(!(project is AS3ProjectVO))
+				{
+					return false;
+				}
+				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+				return as3Project.isRoyale && as3Project.buildOptions.targetPlatform == "JS";
+			});
+			if (filteredProjects.length > 1)
 			{
 				// check if user has selection/select any particular project or not
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-					if (projectReference)
+					if (projectReference && filteredProjects.indexOf(projectReference) != -1)
 					{
 						checkForUnsavedEdior(projectReference);
 						return;
@@ -245,16 +274,16 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				// if above is false
-				selectProjectPopup = new SelectOpenedFlexProject();
-				selectProjectPopup.projectType = ProjectType.AS3PROJ_AS_AIR;
+				selectProjectPopup = new SelectOpenedProject();
+				selectProjectPopup.projects = new ArrayCollection(filteredProjects);
 				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
 				PopUpManager.centerPopUp(selectProjectPopup);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);				
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);				
 			}
-			else
+			else if(filteredProjects.length != 0)
 			{
-				checkForUnsavedEdior(model.projects[0] as ProjectVO);	
+				checkForUnsavedEdior(filteredProjects[0] as ProjectVO);	
 			}
 			
 			/*
@@ -268,8 +297,8 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			function onProjectSelectionCancelled(event:Event):void
 			{
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 				selectProjectPopup = null;
 			}
 		}
@@ -428,6 +457,20 @@ package actionScripts.plugins.as3project.mxmlc
 			var configArg:String = " -load-config+=" + project.folderLocation.fileBridge.getRelativePath(project.config.file);
 			var additionalBuildArgs:String = project.buildOptions.getArguments();
 			additionalBuildArgs = " " + additionalBuildArgs.replace("-optimize=false", "");
+				
+			var dbg:String;
+			if (release)
+			{
+				dbg = " -debug=false";
+			}
+			else
+			{
+				dbg = " -debug=true";
+			}
+			if (additionalBuildArgs.indexOf(" -debug=") > -1)
+			{
+				dbg = "";
+			}
 
 			var jsCompilationArg:String = "";
 			if (isFlexJSAfter7)
@@ -449,14 +492,14 @@ package actionScripts.plugins.as3project.mxmlc
             if(Settings.os == "win")
             {
 				compileStr = compileStr.concat(
-					sdkPathHomeArg ? ("set "+ sdkPathHomeArg)+"&& " : '', "set ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+					sdkPathHomeArg ? ("set "+ sdkPathHomeArg)+"&& " : '', "set ", compilerPathHomeArg, compilerArg, configArg, dbg, additionalBuildArgs, jsCompilationArg
 				);
             }
             else
             {
 				var royaleLibPath:String = "royalelib=".concat('"', SDKstr, File.separator, "frameworks", '"');
 				compileStr = compileStr.concat(
-						sdkPathHomeArg ? ("export " + " " + royaleLibPath + " "  + sdkPathHomeArg)+" && " : '', "export ", royaleLibPath, " ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+						sdkPathHomeArg ? ("export " + " " + royaleLibPath + " "  + sdkPathHomeArg)+" && " : '', "export ", royaleLibPath, " ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, dbg, additionalBuildArgs, jsCompilationArg
 				);
             }
 

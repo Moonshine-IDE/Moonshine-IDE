@@ -27,6 +27,7 @@
 			import flashx.textLayout.elements.TextFlow;
 			import flash.events.MouseEvent;
 			import mx.collections.ListCollectionView;
+			import actionScripts.utils.TextUtil;
 
 			[Bindable]
 			public var signatures:ListCollectionView;
@@ -46,7 +47,8 @@
 				var signature:SignatureInformation = signatures.getItemAt(activeSignature) as SignatureInformation;
 				var parameters:Vector.<ParameterInformation> = signature.parameters;
 				var signatureParts:Array = signature.label.split(/[\(\)]/);
-				var signatureHelpText:String = signatureParts[0] + "(";
+				var signatureHelpText:String = TextUtil.htmlEscape(signatureParts[0]);
+				signatureHelpText += "(";
 				var parametersText:String = signatureParts[1];
 				var parameterParts:Array = parametersText.split(",");
 				var parameterCount:int = parameters.length;
@@ -61,7 +63,7 @@
 					{
 						signatureHelpText += "<b>";
 					}
-					signatureHelpText += partText;
+					signatureHelpText += TextUtil.htmlEscape(partText);
 					if(i === activeParameter)
 					{
 						signatureHelpText += "</b>";
@@ -70,7 +72,7 @@
 				signatureHelpText += ")";
 				if(signatureParts.length > 2)
 				{
-					signatureHelpText += signatureParts[2];
+					signatureHelpText += TextUtil.htmlEscape(signatureParts[2]);
 				}
 				return TextConverter.importToFlow(signatureHelpText, TextConverter.TEXT_FIELD_HTML_FORMAT);
 			}
