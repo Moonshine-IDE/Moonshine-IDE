@@ -124,20 +124,6 @@ package actionScripts.plugins.git
 		private var isStartupTest:Boolean;
 		private var pathSetting:PathSetting;
 		
-		private var _processManager:GitProcessManager;
-		protected function get processManager():GitProcessManager
-		{
-			if (!_processManager) 
-			{
-				_processManager = new GitProcessManager();
-				_processManager.plugin = this;
-				_processManager.setGitAvailable = setGitAvailable;
-			}
-			
-			if (gitBinaryPathOSX) _processManager.gitBinaryPathOSX = gitBinaryPathOSX;
-			return _processManager;
-		}
-		
 		override public function activate():void
 		{
 			super.activate();
@@ -161,7 +147,6 @@ package actionScripts.plugins.git
 			if (checkOSXGitAccess()) 
 			{
 				checkGitAvailability();
-				//processManager.checkGitAvailability();
 			}
 		}
 		
@@ -302,13 +287,11 @@ package actionScripts.plugins.git
 			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
 			{
 				new GetXCodePathCommand(onXCodePathDetection, against);
-				//processManager.getOSXCodePath(onXCodePathDetection, against);
 				return false;
 			}
 			else if (ConstantsCoreVO.IS_MACOS && (against == ProjectMenuTypes.SVN_PROJECT) && !UtilsCore.isSVNPresent()) 
 			{
 				new GetXCodePathCommand(onXCodePathDetection, against);
-				//processManager.getOSXCodePath(onXCodePathDetection, against);
 				return false;
 			}
 			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
@@ -416,14 +399,12 @@ package actionScripts.plugins.git
 			if (submitObject) 
 			{
 				var tmpCommand:CloneCommand = new CloneCommand(submitObject.url, submitObject.target, submitObject.targetFolder, submitObject.repository);
-				//processManager.clone(submitObject.url, submitObject.target, submitObject.targetFolder, submitObject.repository);
 			}
 		}
 		
 		private function onCheckoutRequest(event:Event):void
 		{
 			new GitCheckoutCommand();
-			//processManager.checkout();
 		}
 		
 		private function onCommitRequest(event:Event):void
@@ -448,7 +429,6 @@ package actionScripts.plugins.git
 				{
 					if (!dispatcher.hasEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED))
 						dispatcher.addEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
-					//processManager.checkDiff();
 					new CheckDifferenceCommand();
 				});
 			}
@@ -468,7 +448,6 @@ package actionScripts.plugins.git
 			if (gitCommitWindow.isSubmit) 
 			{
 				new GitCommitCommand(gitCommitWindow.commitDiffCollection, gitCommitWindow.commitMessage);
-				//processManager.commit(gitCommitWindow.commitDiffCollection, gitCommitWindow.commitMessage);
 			}
 			
 			gitCommitWindow.removeEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
@@ -487,7 +466,6 @@ package actionScripts.plugins.git
 			
 			var tmpAuthorCommand:AuthorCommand = new AuthorCommand();
 			tmpAuthorCommand.getAuthor(onGitAuthorDetection);
-			//processManager.getGitAuthor(onGitAuthorDetection);
 		}
 		
 		private function onPullRequest(event:Event):void
@@ -498,7 +476,6 @@ package actionScripts.plugins.git
 		private function onPushRequest(event:Event):void
 		{
 			new PushCommand();
-			//processManager.push();
 		}
 		
 		private function onAuthSuccessToPush(event:Event):void
@@ -510,12 +487,10 @@ package actionScripts.plugins.git
 					modelAgainstProject[model.activeProject].sessionUser = gitAuthWindow.userObject.userName;
 					modelAgainstProject[model.activeProject].sessionPassword = gitAuthWindow.userObject.password;
 					
-					//processManager.push(null);
 					new PushCommand();
 				}
 				else
 				{
-					//processManager.push(gitAuthWindow.userObject);
 					new PushCommand(gitAuthWindow.userObject);
 				}
 			}
@@ -544,7 +519,6 @@ package actionScripts.plugins.git
 				{
 					if (!dispatcher.hasEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED))
 						dispatcher.addEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
-					//processManager.checkDiff();
 					new CheckDifferenceCommand();
 				});
 			}
@@ -599,14 +573,12 @@ package actionScripts.plugins.git
 			if (newBranchDetails)
 			{
 				new CreateCheckoutNewBranchCommand(newBranchDetails.name, newBranchDetails.pushToRemote);
-				//processManager.createAndCheckoutNewBranch(newBranchDetails.name, newBranchDetails.pushToRemote);
 			}
 		}
 		
 		private function onNameValidationRequest(event:GeneralEvent):void
 		{
 			new CheckBranchNameAvailabilityCommand(event.value as String, onNameValidatedByGit);
-			//processManager.checkBranchNameValidity(event.value as String, onNameValidatedByGit);
 		}
 		
 		private function onNameValidatedByGit(value:String):void
@@ -618,7 +590,6 @@ package actionScripts.plugins.git
 		{
 			if (!dispatcher.hasEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED))
 				dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived, false, 0, true);
-			//processManager.switchBranch();
 			new GitSwitchBranchCommand();
 		}
 		
@@ -656,7 +627,6 @@ package actionScripts.plugins.git
 			if (selectedBranch) 
 			{
 				new GitChangeBranchToCommand(selectedBranch);
-				//processManager.changeBranchTo(selectedBranch);
 			}
 		}
 		
@@ -673,9 +643,7 @@ package actionScripts.plugins.git
 				return;
 			}
 			
-			var testGitRepositoryCommand:CheckIsGitRepositoryCommand = new CheckIsGitRepositoryCommand(event.project);
-			
-			//processManager.checkIfGitRepository(event.project);
+			new CheckIsGitRepositoryCommand(event.project);
 		}
 		
 		private function onGitRepositoryTested(event:GeneralEvent):void
@@ -707,7 +675,6 @@ package actionScripts.plugins.git
 				
 				checkOSXGitAccess();
 				new CheckIsGitRepositoryCommand(tmpProject);
-				//processManager.checkIfGitRepository(tmpProject);
 			}
 			else
 			{

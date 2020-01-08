@@ -49,7 +49,7 @@ package actionScripts.plugins.git.commands
 			{
 				case GIT_BRANCH_NAME_VALIDATION:
 				{
-					if (onCompletion != undefined)
+					if (onCompletion != null)
 					{
 						onCompletion(value.output);
 						onCompletion = null;
