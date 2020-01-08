@@ -243,7 +243,10 @@
 			{
 				if (force) forceClose = true;
 				
-				if (isNewProjectSettings) GlobalEventDispatcher.getInstance().removeEventListener(GeneralEvent.SCROLL_TO_TOP, onNewProjectScrollChange);
+				if (isNewProjectSettings)
+				{
+					GlobalEventDispatcher.getInstance().removeEventListener(GeneralEvent.SCROLL_TO_TOP, onNewProjectScrollChange);
+				}
 				dispatchEvent(new Event(EVENT_CLOSE));
 			}
 	

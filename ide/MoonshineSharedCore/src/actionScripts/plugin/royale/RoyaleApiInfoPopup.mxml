@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<resizabletitlewindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+                                           xmlns:resizabletitlewindow="actionScripts.ui.resizableTitleWindow.*"
+                                           xmlns:s="library://ns.adobe.com/flex/spark"
+                                           skinClass="components.skins.ResizableTitleWindowSkin"
+                                           maxWidth="650"
+                                           creationComplete="onRoyaleInfoPopupCreationComplete(event)">
+    <fx:Script><![CDATA[
+        import elements.skins.DarkButtonSkin;
+
+        import mx.events.CloseEvent;
+        import mx.events.FlexEvent;
+
+        import spark.components.Alert;
+        import spark.utils.TextFlowUtil;
+
+        private static const info:String = "<p>The Apache Royale compiler can generate a list of APIs used by an application."
+                    + " This is helpful in determining the optimal migration strategy and effort."
+                    + " Generating report may take long time, even couple of hours depends on size of your application."
+                    + " Before you run whole process make sure that you are able to build your app by choosing menu <span fontWeight=\"bold\">Project</span> -> <span fontWeight=\"bold\">Build project.</span>"
+                    + " There is possibility that report generation will be finished with some errors, but it is still may be valid.</p>";
+
+        private function onRoyaleInfoPopupCreationComplete(event:FlexEvent):void
+        {
+            okInfo.setStyle("skinClass", DarkButtonSkin);
+            cancelReport.setStyle("skinClass", DarkButtonSkin);
+            infoLabel.textFlow = TextFlowUtil.importFromString(info);
+        }
+
+        private function cancelThis():void
+        {
+            callLater(closeByCrossSign, [null]);
+            dispatchEvent(new CloseEvent(CloseEvent.CLOSE, false, false, Alert.CANCEL));
+        }
+        ]]></fx:Script>
+
+    <s:RichText id="infoLabel" lineBreak="toFit" maxWidth="650"
+                paddingRight="10" paddingLeft="10" paddingBottom="10"/>
+    <resizabletitlewindow:controlBarContent>
+        <s:Button id="cancelReport" label="Cancel" click="cancelThis()" />
+        <s:Button id="okInfo" label="Ok" click="closeThis()"/>
+    </resizabletitlewindow:controlBarContent>
+</resizabletitlewindow:ResizableTitleWindow>

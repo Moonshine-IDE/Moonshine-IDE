@@ -28,7 +28,6 @@ package actionScripts.plugins.royale
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.events.RoyaleApiReportEvent;
 	import actionScripts.ui.tabview.CloseTabEvent;
@@ -192,7 +191,7 @@ package actionScripts.plugins.royale
 		private function onLaunchReportConfigration(event:Event):void
 		{
 			configView = new RoyaleApiConfigView();
-			configView.label = "Royale API Report";
+			configView.label = "API Report Configuration";
 			configView.defaultSaveLabel = "Run";
 
 			configView.addEventListener(SettingsView.EVENT_SAVE, onRunReport);

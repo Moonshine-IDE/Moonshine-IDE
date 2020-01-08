@@ -7,6 +7,14 @@
         import actionScripts.plugin.settings.vo.PathSetting;
         import actionScripts.plugin.settings.vo.SettingsWrapper;
 
+        import mx.core.FlexGlobals;
+
+        import mx.events.CloseEvent;
+
+        import mx.managers.PopUpManager;
+
+        import spark.components.Alert;
+
         override public function save():void
         {
             var settingsWrappers:Vector.<SettingsWrapper> = getSettingsForAllCategories();
@@ -38,8 +46,22 @@
             }
             else
             {
-                super.save();
+                var reportInfoPopup:RoyaleApiInfoPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, RoyaleApiInfoPopup) as RoyaleApiInfoPopup;
+                reportInfoPopup.addEventListener(CloseEvent.CLOSE, onCloseInfoPopup);
+                PopUpManager.centerPopUp(reportInfoPopup);
             }
+        }
+
+        private function onCloseInfoPopup(event:CloseEvent):void
+        {
+            event.currentTarget.removeEventListener(CloseEvent.CLOSE, onCloseInfoPopup);
+            if (event.detail == Alert.CANCEL)
+            {
+                close();
+                return;
+            }
+
+            super.save();
         }
 
         private function onRequiredSettingPathSelect(event:Event):void

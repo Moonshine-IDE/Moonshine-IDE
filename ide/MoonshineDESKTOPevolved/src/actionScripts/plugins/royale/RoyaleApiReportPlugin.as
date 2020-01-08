@@ -37,7 +37,7 @@ package actionScripts.plugins.royale
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Apache Royale Api Report Plugin."; }
 
-		private const API_REPORT_FILE_NAME:String = "royaleapireport.report";
+		private const API_REPORT_FILE_NAME:String = "royaleapireport.csv";
 
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
