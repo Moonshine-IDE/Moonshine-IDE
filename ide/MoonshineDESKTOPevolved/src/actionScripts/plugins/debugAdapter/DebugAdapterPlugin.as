@@ -222,9 +222,12 @@ package actionScripts.plugins.debugAdapter
 			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, nativeProcess_exitHandler);
 			_nativeProcess.start(startupInfo);
 
-            dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
-            initializeDebugViewEventHandlers(event);
-			isDebugViewVisible = true;
+			if(!event.additionalProperties || !event.additionalProperties.noDebug)
+			{
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
+				initializeDebugViewEventHandlers(event);
+				isDebugViewVisible = true;
+			}
 			
 			_calledStop = false;
 			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
