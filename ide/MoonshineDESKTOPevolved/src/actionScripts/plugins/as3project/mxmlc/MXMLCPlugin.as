@@ -1159,6 +1159,13 @@ package actionScripts.plugins.as3project.mxmlc
 					
 					if (!isLibraryProject)
 					{
+						if (currentSuccessfullProject.testMovie != AS3ProjectVO.TEST_MOVIE_CUSTOM &&
+							currentSuccessfullProject.testMovie != AS3ProjectVO.TEST_MOVIE_AIR)
+						{
+							var swfFile:File = currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File;
+							var htmlWrapperFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] +".html");
+							getHTMLTemplatesCopied(currentSuccessfullProject, htmlWrapperFile);
+						}
 						if (runAfterBuild || debugAfterBuild)
 						{
 							dispatcher.dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));

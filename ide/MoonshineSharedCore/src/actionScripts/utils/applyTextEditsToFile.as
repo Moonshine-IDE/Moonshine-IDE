@@ -18,16 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.OpenFileEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.ui.editor.text.TextEditor;
+	import actionScripts.ui.editor.text.TextLineModel;
+	import actionScripts.ui.editor.text.change.TextChangeBase;
 	import actionScripts.valueObjects.TextEdit;
-
-	import flash.events.Event;
-
-	import mx.core.FlexGlobals;
 
 	public function applyTextEditsToFile(file:FileLocation, textEdits:Vector.<TextEdit>):void
 	{
@@ -37,29 +32,22 @@ package actionScripts.utils
 			applyTextEditsToTextEditor(textEditor, textEdits);
 			return;
 		}
-		var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		function editorOpenHandler(event:EditorPluginEvent):void
-		{
-			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, editorOpenHandler);
 
-			var url:String = event.file.fileBridge.url;
-			if(url !== file.fileBridge.url)
-			{
-				return;
-			}
-			textEditor = event.editor;
-			var file2:Object = event.file.fileBridge.getFile;
-			//this seems to be the only way to be sure that the editor is
-			//displaying the file -JT
-			file2.addEventListener(Event.COMPLETE, function(event:Event):void
-			{
-				file2.removeEventListener(event.target, arguments.callee);
-				//this is pretty hacky! but otherwise, we get an error -JT
-				FlexGlobals.topLevelApplication.callLater(applyTextEditsToTextEditor, [textEditor, textEdits]);
-			});
+		var content:String = file.fileBridge.read() as String;
+		var contentLines:Array = content.split("\n");
+		var textModelLines:Vector.<TextLineModel> = Vector.<TextLineModel>([]);
+		for (var i:int = 0; i < contentLines.length; i++)
+		{
+			var text:String = contentLines[i];
+			var lineModel:TextLineModel = new TextLineModel(text);
+			textModelLines.push(lineModel);
 		}
-		dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, editorOpenHandler);
-		var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, [file]);
-		dispatcher.dispatchEvent(openEvent);
+		
+		var change:TextChangeBase = getTextChangeFromTextEdits(textEdits);
+		change.apply(textModelLines);
+
+		content = textModelLines.join("\n");
+
+		file.fileBridge.save(content);
 	}
 }

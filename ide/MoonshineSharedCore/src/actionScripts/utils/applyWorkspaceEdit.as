@@ -99,6 +99,8 @@ import actionScripts.valueObjects.CreateFile;
 import actionScripts.valueObjects.DeleteFile;
 import actionScripts.valueObjects.RenameFile;
 import actionScripts.valueObjects.TextEdit;
+import flash.errors.IOError;
+import actionScripts.events.RefreshTreeEvent;
 
 function applyTextEditsToURI(uri:String, textEdits:Vector.<TextEdit>):void
 {
@@ -110,7 +112,15 @@ function handleRenameFile(renameFile:RenameFile):void
 {
 	var renameOldLocation:FileLocation = new FileLocation(renameFile.oldUri, true);
 	var renameNewLocation:FileLocation = new FileLocation(renameFile.newUri, true);
-	renameOldLocation.fileBridge.moveTo(renameNewLocation, true);
+	try
+	{
+		renameOldLocation.fileBridge.moveTo(renameNewLocation, true);
+	}
+	catch(error:Error)
+	{
+		trace("rename failed:", error)
+	}
+	GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(renameNewLocation.fileBridge.parent));
 
 	var editors:ArrayCollection = IDEModel.getInstance().editors;
 	var editorCount:int = editors.length;
@@ -141,6 +151,7 @@ function handleCreateFile(createFile:CreateFile):void
 {
 	var createLocation:FileLocation = new FileLocation(createFile.uri, true);
 	createLocation.fileBridge.createFile();
+	GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(createLocation.fileBridge.parent));
 }
 
 function handleDeleteFile(deleteFile:DeleteFile):void
@@ -156,5 +167,6 @@ function handleDeleteFile(deleteFile:DeleteFile):void
 		{
 			deleteLocation.fileBridge.deleteFile();
 		}
+		GlobalEventDispatcher.getInstance().dispatchEvent(new RefreshTreeEvent(deleteLocation.fileBridge.parent));
 	}
 }

@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text.change
 {
+	import actionScripts.ui.editor.text.TextLineModel;
+
 	public class TextChangeBase
 	{
 		protected var _startLine:int;
@@ -36,6 +38,11 @@ package actionScripts.ui.editor.text.change
 		public function getReverse():TextChangeBase
 		{
 			throw new Error("TextChangeBase.getReverse must be overriden in sub-class.");
+		}
+
+		public function apply(targetLines:Vector.<TextLineModel>):void
+		{
+			throw new Error("TextChangeBase.apply must be overriden in sub-class.");
 		}
 		
 	}

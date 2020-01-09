@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text.change
 {
+	import actionScripts.ui.editor.text.TextLineModel;
+
 	public class TextChangeRemove extends TextChangeBase
 	{
 		private var _endLine:int;
@@ -51,6 +53,36 @@ package actionScripts.ui.editor.text.change
 		public function setTextLines(textLines:Vector.<String>):void
 		{
 			_textLines = textLines;
+		}
+
+		override public function apply(targetLines:Vector.<TextLineModel>):void
+		{
+			var targetStartLine:TextLineModel = targetLines[startLine];
+			var targetEndLine:TextLineModel = targetLines[endLine];
+			var textLines:Vector.<String> = new Vector.<String>(endLine - startLine + 1);
+			
+			if (endLine > startLine)
+			{
+				// Remove any lines after the first
+				var remLines:Vector.<TextLineModel> = targetLines.splice(startLine + 1, endLine - startLine);
+				// Store each removed line's text
+				textLines[0] = targetStartLine.text.slice(startChar);
+				for (var i:int = 0; i < remLines.length - 1; i++)
+				{
+					textLines[i+1] = remLines[i].text;
+				}
+				textLines[remLines.length] = remLines[remLines.length - 1].text.slice(0, endChar);
+			}
+			else {
+				// Store removed text
+				textLines[0] = targetStartLine.text.slice(startChar, endChar);
+			}
+			
+			// Remove from first line, and append trailing from end line
+			targetStartLine.text = targetStartLine.text.slice(0, startChar) + targetEndLine.text.slice(endChar);
+			
+			// Store removed lines in change
+			setTextLines(textLines);
 		}
 		
 	}

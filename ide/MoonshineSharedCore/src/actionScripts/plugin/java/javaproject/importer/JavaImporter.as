@@ -71,6 +71,7 @@ package actionScripts.plugin.java.javaproject.importer
 
 			if(projectFile)
 			{
+				//same as JavaLanguageServerManager, prefer pom.xml over build.gradle
 				if(pomFile)
 				{
 					return pomFile;

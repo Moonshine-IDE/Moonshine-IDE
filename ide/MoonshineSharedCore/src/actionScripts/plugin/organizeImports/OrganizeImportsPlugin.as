@@ -25,6 +25,8 @@ package actionScripts.plugin.organizeImports
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.utils.getProjectForUri;
 
 	public class OrganizeImportsPlugin extends PluginBase
 	{
@@ -51,15 +53,15 @@ package actionScripts.plugin.organizeImports
 		private function handleOrganizeImports(event:Event):void
 		{
 			var editor:ActionScriptTextEditor = model.activeEditor as ActionScriptTextEditor;
-			if(!editor)
+			if(!editor || !editor.currentFile)
 			{
 				return;
 			}
-			trace(uri, COMMAND_ORGANIZE_IMPORTS_IN_URI);
 			var uri:String = editor.currentFile.fileBridge.url;
+			var project:ProjectVO = getProjectForUri(uri);
 			dispatcher.dispatchEvent(new ExecuteLanguageServerCommandEvent(
 				ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
-				COMMAND_ORGANIZE_IMPORTS_IN_URI, [{external: uri}]));
+				project, COMMAND_ORGANIZE_IMPORTS_IN_URI, [{external: uri}]));
 		}
 	}
 }

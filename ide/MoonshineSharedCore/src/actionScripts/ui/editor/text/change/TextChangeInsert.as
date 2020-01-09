@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text.change
 {
+	import actionScripts.utils.TextUtil;
+	import actionScripts.ui.editor.text.TextLineModel;
+
 	public class TextChangeInsert extends TextChangeBase
 	{
 		private var _textLines:Vector.<String>;
@@ -40,6 +43,48 @@ package actionScripts.ui.editor.text.change
 			
 			return new TextChangeRemove(startLine, startChar, endLine, endChar);
 		}
+
+		override public function apply(targetLines:Vector.<TextLineModel>):void
+		{
+			if (textLines && textLines.length > 0)
+			{
+				var targetStartLine:TextLineModel = targetLines[startLine];
+				var startIndent:int = TextUtil.indentAmount(targetStartLine.text);
+				var trailText:String = targetStartLine.text.slice(startChar);
+				
+				// Break line at change position, and append first text line
+				targetStartLine.text = targetStartLine.text.slice(0, startChar) + textLines[0];
+				
+				// Append any additional lines to the model
+				if (textLines.length > 1)
+				{
+					// Add indentation to last line if it's empty
+					if (textLines[textLines.length - 1] == "")
+					{
+						// Get indentation of trailing text
+						var trailIndent:int = TextUtil.indentAmount(trailText);
+						// Get indentation of last line of the insert if it's a multi-line insert
+						if (textLines.length > 2) startIndent = TextUtil.indentAmount(textLines[textLines.length - 2]);
+						// Add required amount of indent to get the trailing text aligned with the last line
+						textLines[textLines.length - 1] += TextUtil.repeatStr("\t", Math.max(startIndent - trailIndent, 0));
+					}
+					
+					// Create line models from strings
+					var newLines:Array = new Array(textLines.length - 1);
+					
+					for (var i:int = 0; i < textLines.length; i++)
+					{
+						newLines[i-1] = new TextLineModel(textLines[i]);
+					}
+					
+					targetLines.splice.apply(targetLines, [startLine + 1, 0].concat(newLines));
+				}
+				
+				// Append trailing text to the last changed line
+				targetLines[startLine + textLines.length - 1].text += trailText;
+			}
+		}
+		
 		
 	}
 

@@ -2090,12 +2090,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			var activeEditor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
-			if(!activeEditor)
-			{
-				return;
-			}
-			if(event.isDefaultPrevented() || !isUriInProject(activeEditor.currentFile.fileBridge.url, _project))
+			if(event.isDefaultPrevented() || _project != event.project)
 			{
 				return;
 			}
