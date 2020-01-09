@@ -20,4 +20,5 @@ language-server-wrappers/moonshine-as3mxml/build/
 .vscode/
 ide/MoonshineDESKTOPevolved/build/DEPLOY/MoonshineDevelopment.exe
 ide/MoonshineDESKTOPevolved/build/DEPLOY/Moonshine.exe
+ide/MoonshineWEBevolved/bin-debug/
 **/*.swp
