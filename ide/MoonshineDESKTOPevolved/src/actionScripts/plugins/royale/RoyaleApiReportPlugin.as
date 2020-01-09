@@ -43,6 +43,8 @@ package actionScripts.plugins.royale
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var subscribeIdToWorker:String;
 
+		private var hasErrors:Boolean;
+
 		public function RoyaleApiReportPlugin():void
 		{
 			super();
@@ -64,6 +66,7 @@ package actionScripts.plugins.royale
 
 		private function onLaunchReportGeneration(event:RoyaleApiReportEvent):void
 		{
+			hasErrors = false;
 			var reportConfig:RoyaleApiReportVO = event.reportConfiguration;
 			var royaleMxmlc:String = reportConfig.royaleSdkPath + getMxmlcLocation();
 			var flexConfig:String = reportConfig.flexSdkPath + getFlexConfigLocation();
@@ -108,6 +111,7 @@ package actionScripts.plugins.royale
 					var match:Array = value.value.output.match(/Error/);
 					if (match)
 					{
+						hasErrors = true;
 						error(value.value.output);
 					}
 					else
@@ -122,7 +126,15 @@ package actionScripts.plugins.royale
 					}
 					break;
 				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED:
-					success("Report has ended.");
+					if (hasErrors)
+					{
+						success("Generating report has ended with some errors.");
+					}
+					else
+					{
+						success("Generating report has ended.")
+					}
+					hasErrors = false;
 					break;
 				case WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:
 					debug("%s", value.value);

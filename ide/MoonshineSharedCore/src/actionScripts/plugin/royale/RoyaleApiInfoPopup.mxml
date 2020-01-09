@@ -16,9 +16,9 @@
 
         private static const info:String = "<p>The Apache Royale compiler can generate a list of APIs used by an application."
                     + " This is helpful in determining the optimal migration strategy and effort."
-                    + " Generating report may take long time, even couple of hours depends on size of your application."
-                    + " Before you run whole process make sure that you are able to build your app by choosing menu <span fontWeight=\"bold\">Project</span> -> <span fontWeight=\"bold\">Build project.</span>"
-                    + " There is possibility that report generation will be finished with some errors, but it is still may be valid.</p>";
+                    + " Generating a report may take a long time, even a couple of hours depends on the size of your application."
+                    + " Before you run a whole process make sure that you are able to build your app by choosing menu <span fontWeight=\"bold\">Project</span> -> <span fontWeight=\"bold\">Build project.</span>"
+                    + " It is possible that the report will be generated with some errors, but it may still be valid.</p>";
 
         private function onRoyaleInfoPopupCreationComplete(event:FlexEvent):void
         {

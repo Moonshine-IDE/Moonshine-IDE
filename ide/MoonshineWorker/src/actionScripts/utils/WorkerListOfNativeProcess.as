@@ -10,7 +10,9 @@ package actionScripts.utils
 	
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
-	
+
+	import flash.utils.setTimeout;
+
 	public class WorkerListOfNativeProcess
 	{
 		public var worker:MoonshineWorker;
@@ -176,7 +178,8 @@ package actionScripts.utils
 					subscriberUdid:subscriberUdid
 				});
 				isErrorClose = true;
-				stopShell();
+				//Native process need time to properly exited
+				setTimeout(stopShell, 200);
 			}
 		}
 		
@@ -228,7 +231,9 @@ package actionScripts.utils
 					});
 				}
 				isErrorClose = true;
-				stopShell();
+
+				//Native process need time to properly exited
+				setTimeout(stopShell, 200);
 				return;
 			}
 			
