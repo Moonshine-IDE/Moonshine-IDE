@@ -42,7 +42,7 @@ package actionScripts.plugin.actionscript.mxmlc
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.URLDescriptorVO;
 	
-	import components.popup.SelectOpenedFlexProject;
+	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
 	
 	public class MXMLCPlugin extends PluginBase implements IPlugin, ISettingsProvider
@@ -58,7 +58,7 @@ package actionScripts.plugin.actionscript.mxmlc
 		private var cmdFile:FileLocation;
 		private var loader: DataAgent;
 		private var	tempObj:Object;
-		private var selectProjectPopup:SelectOpenedFlexProject;
+		private var selectProjectPopup:SelectOpenedProject;
 		
 		public function get flexSDK():FileLocation
 		{
@@ -172,11 +172,11 @@ package actionScripts.plugin.actionscript.mxmlc
 				}
 				
 				// if above is false
-				selectProjectPopup = new SelectOpenedFlexProject();
+				selectProjectPopup = new SelectOpenedProject();
 				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
 				PopUpManager.centerPopUp(selectProjectPopup);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 			}
 			else if (model.projects.length != 0)
 			{
@@ -194,8 +194,8 @@ package actionScripts.plugin.actionscript.mxmlc
 			
 			function onProjectSelectionCancelled(event:Event):void
 			{
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 				selectProjectPopup = null;
 			}
 			
