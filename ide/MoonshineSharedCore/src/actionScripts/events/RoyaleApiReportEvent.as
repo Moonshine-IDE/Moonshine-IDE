@@ -8,6 +8,7 @@ package actionScripts.events
     {
         public static const LAUNCH_REPORT_CONFIGURATION:String = "launchReportConfiguration";
         public static const LAUNCH_REPORT_GENERATION:String = "launchReportGeneration";
+        public static const REPORT_GENERATION_COMPLETED:String = "reportGenerationCompleted";
 
         public function RoyaleApiReportEvent(type:String, reportConfiguration:RoyaleApiReportVO = null)
         {

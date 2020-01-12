@@ -135,6 +135,7 @@ package actionScripts.plugins.royale
 						success("Generating report has ended.")
 					}
 					hasErrors = false;
+					dispatcher.dispatchEvent(new RoyaleApiReportEvent(RoyaleApiReportEvent.REPORT_GENERATION_COMPLETED));
 					break;
 				case WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:
 					debug("%s", value.value);

@@ -41,6 +41,8 @@ package actionScripts.plugins.royale
 
 	import flash.events.Event;
 
+	import mx.events.CloseEvent;
+
 	public class RoyaleApiReportConfiguratorPlugin extends PluginBase implements IPlugin
 	{
 		override public function get name():String			{ return "Apache Royale Api Report Configurator Plugin."; }
@@ -71,6 +73,7 @@ package actionScripts.plugins.royale
 			super.activate();
 
 			dispatcher.addEventListener(RoyaleApiReportEvent.LAUNCH_REPORT_CONFIGURATION, onLaunchReportConfigration);
+			dispatcher.addEventListener(RoyaleApiReportEvent.REPORT_GENERATION_COMPLETED, onReportCompleted);
 		}
 
 		private function addReportItems():void
@@ -168,6 +171,7 @@ package actionScripts.plugins.royale
 
 		private function onRunReport(event:Event):void
 		{
+			configView.enabled = false;
 			var reportConfiguration:RoyaleApiReportVO = new RoyaleApiReportVO(
 					this.royaleSdkPath,
 					this.flexSdkPath,
@@ -180,12 +184,25 @@ package actionScripts.plugins.royale
 			dispatcher.dispatchEvent(new RoyaleApiReportEvent(RoyaleApiReportEvent.LAUNCH_REPORT_GENERATION, reportConfiguration));
 		}
 
-		private function onCancelReport(event:Event):void
+		private function onCancelReport(event:CloseEvent):void
+		{
+			dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
+
+			cleanUp();
+		}
+
+		private function cleanUp():void
 		{
 			configView.removeEventListener(SettingsView.EVENT_CLOSE, onRunReport);
 			configView.removeEventListener(SettingsView.EVENT_SAVE, onCancelReport);
 
-			dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
+			configView = null;
+
+			royaleSdkPath = null;
+			flexSdkPath = null;
+			libraries = null;
+			mainAppFile = null;
+			outputPath = null;
 		}
 
 		private function onLaunchReportConfigration(event:Event):void
@@ -195,10 +212,17 @@ package actionScripts.plugins.royale
 			configView.defaultSaveLabel = "Run";
 
 			configView.addEventListener(SettingsView.EVENT_SAVE, onRunReport);
-			configView.addEventListener(SettingsView.EVENT_CLOSE, onCancelReport);
+			configView.addEventListener(CloseEvent.CLOSE, onCancelReport);
 
 			addReportItems();
 			dispatcher.dispatchEvent(new AddTabEvent(configView));
+		}
+
+		private function onReportCompleted(event:RoyaleApiReportEvent):void
+		{
+			dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
+
+			cleanUp();
 		}
 	}
 }

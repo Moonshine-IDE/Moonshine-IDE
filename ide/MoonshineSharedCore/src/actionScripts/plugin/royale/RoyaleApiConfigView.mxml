@@ -58,6 +58,7 @@
             if (event.detail == Alert.CANCEL)
             {
                 close();
+                dispatchEvent(new CloseEvent(CloseEvent.CLOSE, false, false, Alert.CANCEL));
                 return;
             }
 
