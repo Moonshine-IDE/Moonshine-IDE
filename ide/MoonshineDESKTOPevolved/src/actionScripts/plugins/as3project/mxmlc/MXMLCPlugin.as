@@ -561,7 +561,7 @@ package actionScripts.plugins.as3project.mxmlc
 					var sdkReference:SDKReferenceVO = SDKUtils.getSDKReference(tmpSDKLocation);
 					if (sdkReference && sdkReference.isJSOnlySdk)
 					{
-						error("This SDK only supports JavaScript Builds.");
+						error("This SDK only supports JavaScript Builds. Change platform to 'JS' in project Settings -> Run.");
 						return;
 					}
 
