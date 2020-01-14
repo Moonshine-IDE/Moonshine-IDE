@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 * Updated [Groovy language server](https://github.com/prominic/groovy-langugage-server) engine to latest.
+* Updated [ActionScript and MXML](https://as3mxml.com/) engine to v0.25.0.
 
 ### Fixed
 * Royale: Fix issue where resources were not copied to bin/js-release folder.
