@@ -701,13 +701,18 @@ package actionScripts.plugins.as3project.mxmlc
 				event.target.removeEventListener(Event.COMPLETE, onSuccesfullBuildCompleted);
             }
 
-            dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin")));
+			var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
+            dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(as3Project.jsOutputPath).resolvePath("bin")));
             if(runAfterBuild)
             {
-				var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
-                var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getWebRoot(as3Project), DEBUG_SERVER_PORT);
-				dispatcher.dispatchEvent(httpServerEvent);
-                if(!httpServerEvent.isDefaultPrevented())
+				var canStart:Boolean = true;
+				if(!as3Project.customHTMLPath)
+				{
+					var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getWebRoot(as3Project), DEBUG_SERVER_PORT);
+					dispatcher.dispatchEvent(httpServerEvent);
+					canStart = !httpServerEvent.isDefaultPrevented();
+				}
+                if(canStart)
                 {
 					//debug adapter can launch/run without debugging
 					startDebugAdapter(as3Project, debugAfterBuild);
@@ -726,6 +731,11 @@ package actionScripts.plugins.as3project.mxmlc
 
         private function startDebugAdapter(project:AS3ProjectVO, debug:Boolean):void
         {
+			var url:String = "http://localhost:" + DEBUG_SERVER_PORT;
+			if(project.customHTMLPath)
+			{
+				url = project.customHTMLPath;
+			}
             var debugCommand:String = "launch";
             var debugAdapterType:String = "chrome";
             var launchArgs:Object = {};
@@ -734,7 +744,7 @@ package actionScripts.plugins.as3project.mxmlc
                 launchArgs["noDebug"] = true;
             }
 			launchArgs["name"] = "Moonshine Chrome Launch";
-			launchArgs["url"] = "http://localhost:" + DEBUG_SERVER_PORT;
+			launchArgs["url"] = url;
 			launchArgs["webRoot"] = getWebRoot(project).fileBridge.nativePath;
             dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER,
                 project, debugAdapterType, debugCommand, launchArgs));
