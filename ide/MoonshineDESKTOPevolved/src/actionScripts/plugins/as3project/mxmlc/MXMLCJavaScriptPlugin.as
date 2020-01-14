@@ -736,6 +736,14 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				url = project.customHTMLPath;
 			}
+			else if(project.urlToLaunch)
+			{
+				var relativeURL:String = getWebRoot(project).fileBridge.getRelativePath(new FileLocation(project.urlToLaunch));
+				if(relativeURL)
+				{
+					url += "/" + relativeURL;
+				}
+			}
             var debugCommand:String = "launch";
             var debugAdapterType:String = "chrome";
             var launchArgs:Object = {};
