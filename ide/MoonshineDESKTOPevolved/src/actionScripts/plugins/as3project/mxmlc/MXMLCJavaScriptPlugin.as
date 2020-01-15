@@ -703,25 +703,7 @@ package actionScripts.plugins.as3project.mxmlc
 
 			var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
             dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(as3Project.jsOutputPath).resolvePath("bin")));
-            if(runAfterBuild)
-            {
-				var canStart:Boolean = true;
-				if(!as3Project.customHTMLPath)
-				{
-					var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getWebRoot(as3Project), DEBUG_SERVER_PORT);
-					dispatcher.dispatchEvent(httpServerEvent);
-					canStart = !httpServerEvent.isDefaultPrevented();
-				}
-                if(canStart)
-                {
-					//debug adapter can launch/run without debugging
-					startDebugAdapter(as3Project, debugAfterBuild);
-				}
-            }
-            else
-            {
-                copyingResources();
-            }
+			copyingResources();
         }
 
 		private function getWebRoot(project:AS3ProjectVO):FileLocation
@@ -760,47 +742,52 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private function launchApplication():void
 		{
-			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-			var swfFile:File = currentProject.folderLocation.resolvePath(pvo.swfOutput.path.fileBridge.nativePath).fileBridge.getFile as File;
-			
-			// before test movie lets copy the resource folder(s)
-			// to debug folder if any
-			if (pvo.resourcePaths.length != 0 && resourceCopiedIndex == 0)
+			var as3Project:AS3ProjectVO = currentProject as AS3ProjectVO;
+			var swfFile:File = currentProject.folderLocation.resolvePath(as3Project.swfOutput.path.fileBridge.nativePath).fileBridge.getFile as File;
+
+			if (debugAfterBuild)
 			{
-				copyingResources();
-				return;
+				var canStart:Boolean = true;
+				if(!as3Project.customHTMLPath)
+				{
+					var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getWebRoot(as3Project), DEBUG_SERVER_PORT);
+					dispatcher.dispatchEvent(httpServerEvent);
+					canStart = !httpServerEvent.isDefaultPrevented();
+				}
+				if(canStart)
+				{
+					//debug adapter can launch/run without debugging
+					startDebugAdapter(as3Project, debugAfterBuild);
+				}
 			}
-
-            success("Project Build Successfully.");
-
-			if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM) 
+			else if (as3Project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM)
 			{
-				var customSplit:Vector.<String> = Vector.<String>(pvo.testMovieCommand.split(";"));
+				var customSplit:Vector.<String> = Vector.<String>(as3Project.testMovieCommand.split(";"));
 				var customFile:String = customSplit[0];
-				var customArgs:String = customSplit.slice(1).join(" ").replace("$(ProjectName)", pvo.projectName).replace("$(CompilerPath)", currentSDK.nativePath);
+				var customArgs:String = customSplit.slice(1).join(" ").replace("$(ProjectName)", as3Project.projectName).replace("$(CompilerPath)", currentSDK.nativePath);
 
-                print(customFile + " " + customArgs, pvo.folderLocation.fileBridge.nativePath);
+                print(customFile + " " + customArgs, as3Project.folderLocation.fileBridge.nativePath);
 			}
-			else if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
+			else if (as3Project.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
 			{
-                warning("Launching application " + pvo.name + ".");
+                warning("Launching application " + as3Project.name + ".");
 				// Let SWFLauncher deal with playin' the swf
 				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, pvo, currentSDK)
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, as3Project, currentSDK)
 				);
 			} 
 			else 
 			{
-                warning("Launching application " + pvo.name + ".");
+                warning("Launching application " + as3Project.name + ".");
 
-				var launchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, null, pvo);
-				if (pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
+				var launchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, null, as3Project);
+				if (as3Project.customHTMLPath && StringUtil.trim(as3Project.customHTMLPath).length != 0)
 				{
-					launchEvent.url = pvo.customHTMLPath;
+					launchEvent.url = as3Project.customHTMLPath;
 				}
 				else
 				{
-					launchEvent.file = new FileLocation(pvo.urlToLaunch).fileBridge.getFile as File;
+					launchEvent.file = new FileLocation(as3Project.urlToLaunch).fileBridge.getFile as File;
 				}
 
 				dispatcher.dispatchEvent(launchEvent);
@@ -817,7 +804,7 @@ package actionScripts.plugins.as3project.mxmlc
             var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
 			if (pvo.resourcePaths.length == 0)
 			{
-				success("Project Build Successfully.");
+				notifySuccessfullBuildAfterResourceCopy();
 				return;
 			}
 
@@ -894,6 +881,7 @@ package actionScripts.plugins.as3project.mxmlc
 			if(runAfterBuild)
 			{
 				dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
+				success("Project Build Successfully.");
 				launchApplication();
 			}
 			else
