@@ -31,6 +31,7 @@ package actionScripts.plugins.royale
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.events.RoyaleApiReportEvent;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.RoyaleApiReportVO;
@@ -40,6 +41,7 @@ package actionScripts.plugins.royale
 	import flash.display.DisplayObject;
 
 	import flash.events.Event;
+	import flash.net.SharedObject;
 
 	import mx.events.CloseEvent;
 
@@ -181,6 +183,10 @@ package actionScripts.plugins.royale
 					model.activeProject.projectFolder.nativePath
 			);
 
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+			cookie.data["doNotShowRoyaleApiPrompt"] = configView.doNotShowPromptAgain;
+			cookie.flush();
+
 			dispatcher.dispatchEvent(new RoyaleApiReportEvent(RoyaleApiReportEvent.LAUNCH_REPORT_GENERATION, reportConfiguration));
 		}
 
@@ -207,9 +213,12 @@ package actionScripts.plugins.royale
 
 		private function onLaunchReportConfigration(event:Event):void
 		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+
 			configView = new RoyaleApiConfigView();
 			configView.label = "API Report Configuration";
 			configView.defaultSaveLabel = "Run";
+			configView.doNotShowPromptAgain = Boolean(cookie.data.doNotShowRoyaleApiPrompt);
 
 			configView.addEventListener(SettingsView.EVENT_SAVE, onRunReport);
 			configView.addEventListener(CloseEvent.CLOSE, onCancelReport);
