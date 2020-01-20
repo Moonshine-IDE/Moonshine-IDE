@@ -128,14 +128,18 @@ package actionScripts.utils
 				customProcess.exit();
 			}
 
+			presentRunningQueue = null;
+			isErrorClose = false;
+		}
+
+		private function cleanUpShell():void
+		{
 			customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
 			customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
 			customProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
 			customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
 			customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
 			customProcess = null;
-			presentRunningQueue = null;
-			isErrorClose = false;
 		}
 
 		private function shellError(e:ProgressEvent):void 
@@ -179,7 +183,7 @@ package actionScripts.utils
 				});
 				isErrorClose = true;
 				//Native process need time to properly exited
-				setTimeout(stopShell, 200);
+				stopShell();
 			}
 		}
 		
@@ -197,6 +201,8 @@ package actionScripts.utils
 					flush();
 				}
 			}
+
+			cleanUpShell();
 		}
 		
 		private function shellData(e:ProgressEvent):void 
