@@ -86,8 +86,14 @@ package actionScripts.utils
 			
 			var tmpArr:Array = queue[0].com.split("&&");
 			
-			if (!MoonshineWorker.IS_MACOS) tmpArr.unshift("/c");
-			else tmpArr.unshift("-c");
+			if (!MoonshineWorker.IS_MACOS)
+			{
+				tmpArr.unshift("/c");
+			}
+			else
+			{
+				tmpArr.unshift("-c");
+			}
 			customInfo.arguments = Vector.<String>(tmpArr);
 			customInfo.workingDirectory = currentWorkingDirectory;
 			
@@ -191,15 +197,12 @@ package actionScripts.utils
 		{
 			if (customProcess) 
 			{
-				if (!isErrorClose) 
-				{
-					worker.workerToMain.send({
-						event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
-						value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE, null, presentRunningQueue), 
-						subscriberUdid:subscriberUdid
-					});
-					flush();
-				}
+				worker.workerToMain.send({
+					event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT,
+					value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE, null, presentRunningQueue),
+					subscriberUdid:subscriberUdid
+				});
+				flush();
 			}
 
 			cleanUpShell();
@@ -236,14 +239,12 @@ package actionScripts.utils
 						subscriberUdid:subscriberUdid
 					});
 				}
-				isErrorClose = true;
 
 				//Native process need time to properly exited
 				setTimeout(stopShell, 200);
 				return;
 			}
-			
-			isErrorClose = false;
+
 			if (!isFatal)
 			{
 				worker.workerToMain.send({

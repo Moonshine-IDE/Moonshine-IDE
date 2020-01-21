@@ -23,7 +23,7 @@
             return _doNotShowPromptAgain;
         }
 
-        public function set doNotShowPromptAgain(value:Boolean)
+        public function set doNotShowPromptAgain(value:Boolean):void
         {
             _doNotShowPromptAgain = value;
         }
