@@ -482,8 +482,6 @@ package actionScripts.plugins.as3project.mxmlc
 					sdkPathHomeArg = "ROYALE_HOME=\"" + SDKstr +"\"";
 					compilerPathHomeArg = "ROYALE_COMPILER_HOME=\"" + SDKstr +"\"";
                 }
-				
-				jsCompilationArg += " -source-map=true"
 
 				jsCompilationArg += " -js-output=\"".concat(project.jsOutputPath) +"\"";
 			}

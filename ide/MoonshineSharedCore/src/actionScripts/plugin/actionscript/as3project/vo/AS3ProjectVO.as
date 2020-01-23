@@ -371,6 +371,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				settings = getSettingsForVisualEditorTypeOfProjects();
 			}
+			else if (isRoyale)
+			{
+				settings = getSettingsForRoyale();
+			}
 			else if (!isFlashBuilderProject)
 			{
 				settings = getSettingsForNonFlashBuilderProject();
@@ -437,6 +441,64 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private function dispatchNativeExtensionMessageRequest(event:MouseEvent):void
 		{
 			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE));
+		}
+
+		private function getSettingsForRoyale():Vector.<SettingsWrapper>
+		{
+			var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
+
+				new SettingsWrapper("Build options",
+						Vector.<ISetting>([
+							new PathSetting(this, "customSDKPath", "Custom SDK", true, buildOptions.customSDKPath, true),
+							additional,
+
+							new BooleanSetting(buildOptions, "sourceMap", "Source map"),
+							new StringSetting(buildOptions, "compilerConstants", "Compiler constants"),
+							new StringSetting(buildOptions, "loadConfig", "Load config")
+						])
+				),
+				new SettingsWrapper("Ant Build", Vector.<ISetting>([
+					new PathSetting(this, "antBuildPath", "Ant Build File", false, this.antBuildPath, false)
+				])),
+				new SettingsWrapper("Maven Build", Vector.<ISetting>([
+					new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
+					new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
+					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
+				])),
+				new SettingsWrapper("Paths",
+						Vector.<ISetting>([
+							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
+							new PathListSetting(this, "resourcePaths", "Resource folders", folderLocation, false),
+							new PathListSetting(this, "externalLibraries", "External libraries", folderLocation, true, false),
+							new PathListSetting(this, "libraries", "Libraries", folderLocation),
+							nativeExtensionPath
+						])
+				),
+				new SettingsWrapper("Warnings & Errors",
+						Vector.<ISetting>([
+							new BooleanSetting(buildOptions, "showActionScriptWarnings",		"Show actionscript warnings"),
+							new BooleanSetting(buildOptions, "showBindingWarnings",				"Show binding warnings"),
+							new BooleanSetting(buildOptions, "showDeprecationWarnings",			"Show deprecation warnings"),
+							new BooleanSetting(buildOptions, "showUnusedTypeSelectorWarnings",	"Show unused type selector warnings"),
+							new BooleanSetting(buildOptions, "warnings",						"Show all warnings"),
+							new BooleanSetting(buildOptions, "strict",							"Strict error checking"),
+						])
+				)
+			]);
+
+			var runSettingsContent:Vector.<ISetting> = Vector.<ISetting>([
+				targetPlatformSettings,
+				htmlFilePath,
+				customHTMLFilePath,
+				outputPathSetting
+			]);
+
+			var runSettings:SettingsWrapper = new SettingsWrapper("Run", runSettingsContent);
+				runSettingsContent.insertAt(4, jsOutputPathSetting);
+
+			settings.push(runSettings);
+
+			return settings;
 		}
 
 		private function getSettingsForNonFlashBuilderProject():Vector.<SettingsWrapper>

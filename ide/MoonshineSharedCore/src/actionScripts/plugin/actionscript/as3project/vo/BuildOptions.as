@@ -58,6 +58,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var staticLinkRSL:Boolean = false;
 		public var additional:String;
 		public var compilerConstants:String;
+		public var sourceMap:Boolean;
 		public var customSDKPath:String;
 		public var certAndroid:String;
 		public var certAndroidPassword:String;
@@ -180,6 +181,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				linkReport							= SerializeUtil.deserializeString(options.@linkReport);
 				additional							= SerializeUtil.deserializeString(options.@additional);
 				compilerConstants					= SerializeUtil.deserializeString(options.@compilerConstants);
+				sourceMap 							= SerializeUtil.deserializeBoolean(options.@sourceMap);
 				customSDKPath						= SerializeUtil.deserializeString(options.@customSDK);
 				antBuildPath						= SerializeUtil.deserializeString(options.@antBuildPath);
 			}
@@ -221,6 +223,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				linkReport							:	SerializeUtil.serializeString(linkReport),
 				additional							:	SerializeUtil.serializeString(additional),
 				compilerConstants					:	SerializeUtil.serializeString(compilerConstants),
+				sourceMap							: 	SerializeUtil.serializeBoolean(sourceMap),
 				customSDK							:	SerializeUtil.serializeString(customSDKPath),
 				antBuildPath						:	SerializeUtil.serializeString(antBuildPath)
 			}
@@ -262,7 +265,8 @@ package actionScripts.plugin.actionscript.as3project.vo
                 "warnings"								:	warnings,
                 "verbose-stacktraces"					:	verboseStackTraces,
                 "link-report"							:	linkReport,
-                "static-link-runtime-shared-libraries"	:	staticLinkRSL
+                "static-link-runtime-shared-libraries"	:	staticLinkRSL,
+				"source-map"							:   sourceMap
             }
         }
     }
