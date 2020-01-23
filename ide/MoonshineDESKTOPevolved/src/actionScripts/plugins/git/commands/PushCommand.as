@@ -30,6 +30,8 @@ package actionScripts.plugins.git.commands
 	{
 		private const GIT_PUSH:String = "gitPush";
 		
+		private var isErrorEncountered:Boolean;
+		
 		public function PushCommand(userObject:Object=null)
 		{
 			super();
@@ -61,15 +63,24 @@ package actionScripts.plugins.git.commands
 				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" push https://"+ userName +":"+ password +"@"+ tmpModel.remoteURL +".git $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&push&&https://'+ userName +':'+ password +'@'+ tmpModel.remoteURL +'.git&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
 			}
 			
+			isErrorEncountered = false;
 			warning("Git push requested...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Push ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
-		override protected function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
+		override protected function shellError(value:Object):void
 		{
-			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
-			switch (tmpQueue.processType)
+			isErrorEncountered = true;
+			shellError(value);
+		}
+		
+		override protected function listOfProcessEnded():void
+		{
+			// terminate if error thrown 
+			if (isErrorEncountered) return;
+			
+			switch (processType)
 			{
 				case GIT_PUSH:
 					success("...process completed");

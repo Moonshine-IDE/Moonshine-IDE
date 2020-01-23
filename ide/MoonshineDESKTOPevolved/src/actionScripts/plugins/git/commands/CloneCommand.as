@@ -38,6 +38,7 @@ package actionScripts.plugins.git.commands
 		private var lastCloneURL:String;
 		private var lastCloneTarget:String;
 		private var lastTargetFolder:String;
+		private var isErrorEncountered:Boolean;
 		
 		private var _cloningProjectName:String;
 		private function get cloningProjectName():String
@@ -56,6 +57,7 @@ package actionScripts.plugins.git.commands
 			
 			queue = new Vector.<Object>();
 			
+			isErrorEncountered = false;
 			repositoryUnderCursor = repository;
 			lastCloneURL = url;
 			lastCloneTarget = target;
@@ -90,19 +92,8 @@ package actionScripts.plugins.git.commands
 			
 			// call super - it might have some essential 
 			// commands to run
+			isErrorEncountered = true;
 			super.shellError(value);
-		}
-		
-		override protected function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
-		{
-			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
-			switch (tmpQueue.processType)
-			{
-				case GitHubPlugin.CLONE_REQUEST:
-					success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL +")");
-					doPostCloneProcess(new File(lastCloneTarget).resolvePath(cloningProjectName));
-					break;
-			}
 		}
 		
 		override protected function shellData(value:Object):void
@@ -130,6 +121,20 @@ package actionScripts.plugins.git.commands
 			// call super - it might have some essential
 			// commands to run
 			super.shellData(value);
+		}
+		
+		override protected function listOfProcessEnded():void
+		{
+			// terminate if error thrown 
+			if (isErrorEncountered) return;
+			
+			switch (processType)
+			{
+				case GitHubPlugin.CLONE_REQUEST:
+					success("'"+ cloningProjectName +"'...downloaded successfully ("+ lastCloneURL +")");
+					doPostCloneProcess(new File(lastCloneTarget).resolvePath(cloningProjectName));
+					break;
+			}
 		}
 		
 		private function doPostCloneProcess(path:File):void
