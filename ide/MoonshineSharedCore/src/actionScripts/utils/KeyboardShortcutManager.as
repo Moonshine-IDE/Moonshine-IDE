@@ -161,15 +161,11 @@ package actionScripts.utils
 			if (lookupMenuType[event] == null) return true;
 			
 			var project:ProjectVO = model.activeProject;
-			if(project is AS3ProjectVO)
+			var tmpProjectsType:Array = project.menuType.split(",");
+			for (var i:int; i < tmpProjectsType.length; i++)
 			{
-				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-				var tmpProjectsType:Array = as3Project.menuType.split(",");
-				for (var i:int; i < tmpProjectsType.length; i++)
-				{
-					if (tmpProjectsType[i] == "") continue;
-					if ((lookupMenuType[event] as Array).indexOf(tmpProjectsType[i]) != -1) return true;
-				}
+				if (tmpProjectsType[i] == "") continue;
+				if ((lookupMenuType[event] as Array).indexOf(tmpProjectsType[i]) != -1) return true;
 			}
 			
 			return false;

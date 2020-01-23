@@ -466,97 +466,14 @@ package actionScripts.ui.editor.text
 		
 		private function handleChange(event:ChangeEvent):void
 		{
-			applyChange(event.change);
+			var change:TextChangeBase = event.change;
+			if (change) {
+				change.apply(model.lines);
+			}
 		}
 		
 		private function applyChange(change:TextChangeBase):void
 		{
-			if (change) {
-				if (change is TextChangeInsert) applyChangeInsert(TextChangeInsert(change));
-				if (change is TextChangeRemove) applyChangeRemove(TextChangeRemove(change));
-				if (change is TextChangeMulti) applyChangeMulti(TextChangeMulti(change));
-			}
-		}
-		
-		private function applyChangeInsert(change:TextChangeInsert):void
-		{
-			var textLines:Vector.<String> = change.textLines;
-			
-			if (textLines && textLines.length > 0)
-			{
-				var startLine:TextLineModel = model.lines[change.startLine];
-				var startIndent:int = TextUtil.indentAmount(startLine.text);
-				var trailText:String = startLine.text.slice(change.startChar);
-				
-				// Break line at change position, and append first text line
-				startLine.text = startLine.text.slice(0, change.startChar) + textLines[0];
-				
-				// Append any additional lines to the model
-				if (textLines.length > 1)
-				{
-					// Add indentation to last line if it's empty
-					if (textLines[textLines.length - 1] == "")
-					{
-						// Get indentation of trailing text
-						var trailIndent:int = TextUtil.indentAmount(trailText);
-						// Get indentation of last line of the insert if it's a multi-line insert
-						if (textLines.length > 2) startIndent = TextUtil.indentAmount(textLines[textLines.length - 2]);
-						// Add required amount of indent to get the trailing text aligned with the last line
-						textLines[textLines.length - 1] += TextUtil.repeatStr("\t", Math.max(startIndent - trailIndent, 0));
-					}
-					
-					// Create line models from strings
-					var newLines:Array = new Array(textLines.length - 1);
-					
-					for (var i:int = 0; i < textLines.length; i++)
-					{
-						newLines[i-1] = new TextLineModel(textLines[i]);
-					}
-					
-					model.lines.splice.apply(model.lines, [change.startLine + 1, 0].concat(newLines));
-				}
-				
-				// Append trailing text to the last changed line
-				model.lines[change.startLine + textLines.length - 1].text += trailText;
-			}
-		}
-		
-		private function applyChangeRemove(change:TextChangeRemove):void
-		{
-			var startLine:TextLineModel = model.lines[change.startLine];
-			var endLine:TextLineModel = model.lines[change.endLine];
-			var textLines:Vector.<String> = new Vector.<String>(change.endLine - change.startLine + 1);
-			
-			if (change.endLine > change.startLine)
-			{
-				// Remove any lines after the first
-				var remLines:Vector.<TextLineModel> = model.lines.splice(change.startLine + 1, change.endLine - change.startLine);
-				// Store each removed line's text
-				textLines[0] = startLine.text.slice(change.startChar);
-				for (var i:int = 0; i < remLines.length - 1; i++)
-				{
-					textLines[i+1] = remLines[i].text;
-				}
-				textLines[remLines.length] = remLines[remLines.length - 1].text.slice(0, change.endChar);
-			}
-			else {
-				// Store removed text
-				textLines[0] = startLine.text.slice(change.startChar, change.endChar);
-			}
-			
-			// Remove from first line, and append trailing from end line
-			startLine.text = startLine.text.slice(0, change.startChar) + endLine.text.slice(change.endChar);
-			
-			// Store removed lines in change
-			change.setTextLines(textLines);
-		}
-		
-		private function applyChangeMulti(change:TextChangeMulti):void
-		{
-			for each (var subchange:TextChangeBase in change.changes)
-			{
-				applyChange(subchange);
-			}
 		}
 	}
 }

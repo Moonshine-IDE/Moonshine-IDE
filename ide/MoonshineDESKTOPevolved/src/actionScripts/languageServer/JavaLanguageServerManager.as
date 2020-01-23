@@ -31,38 +31,34 @@ package actionScripts.languageServer
     import flash.net.navigateToURL;
     import flash.utils.ByteArray;
     import flash.utils.IDataInput;
-    
+
     import mx.core.FlexGlobals;
     import mx.managers.PopUpManager;
     import mx.utils.SHA256;
-    
+
     import spark.components.Button;
-    
+
     import actionScripts.events.ExecuteLanguageServerCommandEvent;
     import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.GradleBuildEvent;
+    import actionScripts.events.SaveFileEvent;
+    import actionScripts.events.SettingsEvent;
     import actionScripts.events.StatusBarEvent;
+    import actionScripts.factory.FileLocation;
     import actionScripts.languageServer.LanguageClient;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.console.ConsoleOutputter;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.JavaTextEditor;
-    import actionScripts.utils.EnvironmentSetupUtils;
-    import actionScripts.utils.GradleBuildUtil;
     import actionScripts.utils.applyWorkspaceEdit;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
     import actionScripts.valueObjects.WorkspaceEdit;
-    
+
     import components.popup.StandardPopup;
-    
-    import actionScripts.events.SettingsEvent;
-    import actionScripts.utils.CommandLineUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -80,9 +76,13 @@ package actionScripts.languageServer
 		private static const PATH_JDT_LANGUAGE_SERVER_STORAGE:String = "java/jdt-language-server";
 		
 		private static const LANGUAGE_ID_JAVA:String = "java";
+		
+		private static const FILE_NAME_POM_XML:String = "pom.xml";
+		private static const FILE_NAME_BUILD_GRADLE:String = "build.gradle";
 
 		private static const METHOD_LANGUAGE__STATUS:String = "language/status";
 		private static const METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION:String = "language/actionableNotification";
+		private static const METHOD_JAVA__PROJECT_CONFIG_UPDATE:String = "java/projectConfigurationUpdate";
 
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH_HELP:String = "java.ignoreIncompleteClasspath.help";
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
@@ -98,7 +98,6 @@ package actionScripts.languageServer
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _languageServerProcess:NativeProcess;
-		private var _gradleProcess:NativeProcess;
 		private var _languageStatusDone:Boolean = false;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousJDKPath:String = null;
@@ -107,14 +106,14 @@ package actionScripts.languageServer
 		{
 			_project = project;
 
+			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler, false, 0, true);
+			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler, false, 0, true);
+			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler, false, 0, true);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
-			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
-			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
-			_dispatcher.addEventListener(GradleBuildEvent.REFRESH_GRADLE_CLASSPATH, onGradleClassPathRefresh, false, 0, true);
 
 			prepareApplicationStorage();
-			preTaskLanguageServer();
+			startNativeProcess();
 		}
 
 		public function get project():ProjectVO
@@ -166,6 +165,7 @@ package actionScripts.languageServer
 		{
 			_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
 			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
+			_dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			cleanupLanguageClient();
 		}
 
@@ -181,14 +181,6 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
-		}
-		
-		private function preTaskLanguageServer():void
-		{
-			if (!requireUpdateGradleClasspath()) 
-			{
-				startNativeProcess();
-			}
 		}
 
 		private function prepareApplicationStorage():void
@@ -223,74 +215,6 @@ package actionScripts.languageServer
 			{
 				//something went wrong!
 				error("Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath);
-			}
-		}
-		
-		private function onGradleClassPathRefresh(event:Event):void
-		{
-			if (_model.activeProject == _project)
-			{
-				restartLanguageServer();
-			}
-		}
-		
-		private function requireUpdateGradleClasspath():Boolean
-		{
-			// in case of Gradle project we need to
-			// update its eclipse plugin
-			if (IDEModel.getInstance().gradlePath && _project.hasGradleBuild())
-			{
-				if(_languageServerProcess)
-				{
-					trace("Error: Java language server process already exists!");
-					return true;
-				}
-				
-				var eclipseCommand:Vector.<String> = new <String>[
-					EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH,
-					"eclipse"
-				];
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [CommandLineUtil.joinOptions(eclipseCommand)]);
-				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-					StatusBarEvent.LANGUAGE_SERVER_STATUS,
-					null, "Updating Gradle classpath", false
-				));
-				return true;
-			}
-			
-			return false;
-			
-			/*
-			* @local
-			*/
-			function onEnvironmentPrepared(value:String):void
-			{
-				var cmdFile:File;
-				var processArgs:Vector.<String> = new <String>[];
-				
-				if (Settings.os == "win")
-				{
-					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
-					processArgs.push("/c");
-					processArgs.push(value);
-				}
-				else
-				{
-					cmdFile = new File("/bin/bash");
-					processArgs.push("-c");
-					processArgs.push(value);
-				}
-				
-				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-				processInfo.arguments = processArgs;
-				processInfo.executable = cmdFile;
-				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-				
-				_gradleProcess = new NativeProcess();
-				_gradleProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, gradleProcess_standardOutputDataHandler);
-				_gradleProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, gradleProcess_standardErrorDataHandler);
-				_gradleProcess.addEventListener(NativeProcessExitEvent.EXIT, gradleProcess_exitHandler);
-				_gradleProcess.start(processInfo);
 			}
 		}
 
@@ -380,6 +304,17 @@ package actionScripts.languageServer
 			var workspaceLocation:File = File.applicationStorageDirectory.resolvePath(PATH_WORKSPACE_STORAGE).resolvePath(digest);
 			return workspaceLocation.nativePath;
 		}
+
+		private function getProjectBuildConfigFile():FileLocation
+		{
+			//same as JavaImporter, prefer pom.xml over build.gradle
+			var configFile:FileLocation = project.folderLocation.resolvePath(FILE_NAME_POM_XML);
+			if(!configFile.fileBridge.exists)
+			{
+				configFile = project.folderLocation.resolvePath(FILE_NAME_BUILD_GRADLE);
+			}
+			return configFile;
+		}
 		
 		private function initializeLanguageServer(sdkPath:String):void
 		{
@@ -450,7 +385,7 @@ package actionScripts.languageServer
 
 			if(!_waitingToRestart)
 			{
-				preTaskLanguageServer();
+				startNativeProcess();
 			}
 		}
 
@@ -460,7 +395,7 @@ package actionScripts.languageServer
 			{
 				_dispatcher.dispatchEvent(new ExecuteLanguageServerCommandEvent(
 					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
-					command, args ? args : []));
+					project, command, args ? args : []));
 				if(popup)
 				{
 					PopUpManager.removePopUp(popup);
@@ -494,55 +429,6 @@ package actionScripts.languageServer
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
-				preTaskLanguageServer();
-			}
-		}
-		
-		private function gradleProcess_standardOutputDataHandler(e:ProgressEvent):void 
-		{
-			if(!_gradleProcess)
-			{
-				return;
-			}
-			var output:IDataInput = _gradleProcess.standardOutput;
-			var data:String = output.readUTFBytes(output.bytesAvailable);
-			print(data);
-		}
-		
-		private function gradleProcess_standardErrorDataHandler(e:ProgressEvent):void
-		{
-			if(!_gradleProcess)
-			{
-				return;
-			}
-			var output:IDataInput = _gradleProcess.standardError;
-			var data:String = output.readUTFBytes(output.bytesAvailable);
-			
-			if (data.match(/'eclipse' not found in root project/))
-			{
-				error(_project.name + ": Unable to regenerate classpath for Gradle project. Please check that you have included the 'eclipse' plugin, and verify that your dependencies are correct.");
-			}
-			else
-			{
-				error("shellError while updating Gradle classpath: " + data);
-			}
-			
-			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS
-			));
-		}
-		
-		private function gradleProcess_exitHandler(event:NativeProcessExitEvent):void
-		{
-			_gradleProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, gradleProcess_standardErrorDataHandler);
-			_gradleProcess.removeEventListener(NativeProcessExitEvent.EXIT, gradleProcess_exitHandler);
-			_gradleProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, gradleProcess_standardOutputDataHandler);
-			_gradleProcess.exit();
-			_gradleProcess = null;
-			
-			if (event.exitCode == 0)
-			{
-				GradleBuildUtil.IS_GRADLE_STARTED = true;
 				startNativeProcess();
 			}
 		}
@@ -554,6 +440,26 @@ package actionScripts.languageServer
 			{
 				restartLanguageServer();
 			}
+		}
+
+		private function fileSavedHandler(event:SaveFileEvent):void
+		{
+			if(!_languageStatusDone)
+			{
+				return;
+			}
+			var savedTab:BasicTextEditor = event.editor as BasicTextEditor;	
+			if(!savedTab || !savedTab.currentFile)
+			{
+				return;
+			}
+			var uri:String = savedTab.currentFile.fileBridge.url;
+			var configFile:FileLocation = getProjectBuildConfigFile();
+			if(uri != configFile.fileBridge.url)
+			{
+				return;
+			}
+			_languageClient.sendNotification(METHOD_JAVA__PROJECT_CONFIG_UPDATE, {uri: uri});
 		}
 
 		private function executeLanguageServerCommandHandler(event:ExecuteLanguageServerCommandEvent):void
@@ -636,6 +542,9 @@ package actionScripts.languageServer
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS
 					));
+			
+					var configFile:FileLocation = getProjectBuildConfigFile();
+					_languageClient.sendNotification(METHOD_JAVA__PROJECT_CONFIG_UPDATE, {uri: configFile.fileBridge.url});
 					break;
 				}
 				case "Error":

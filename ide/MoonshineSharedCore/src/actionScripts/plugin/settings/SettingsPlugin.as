@@ -190,6 +190,7 @@ package actionScripts.plugin.settings
             delete cookie.data["isSDKhelperPromptDNS"];
             delete cookie.data["devicesAndroid"];
             delete cookie.data["devicesIOS"];
+			delete cookie.data["doNotShowRoyaleApiPrompt"];
 
             model.javaPathForTypeAhead = null;
             model.isCodeCompletionJavaPresent = false;

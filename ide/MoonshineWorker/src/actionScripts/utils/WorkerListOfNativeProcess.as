@@ -10,7 +10,9 @@ package actionScripts.utils
 	
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
-	
+
+	import flash.utils.setTimeout;
+
 	public class WorkerListOfNativeProcess
 	{
 		public var worker:MoonshineWorker;
@@ -36,13 +38,16 @@ package actionScripts.utils
 				return;
 			}
 			
-			if (customProcess) startShell(false);
+			if (customProcess)
+			{
+				stopShell();
+			}
 			customInfo = renewProcessInfo();
 			
 			queue = processDescriptor.queue;
 			if (processDescriptor.workingDirectory != null) currentWorkingDirectory = new File(processDescriptor.workingDirectory);
 			
-			startShell(true);
+			startShell();
 			flush();
 		}
 		
@@ -58,7 +63,7 @@ package actionScripts.utils
 		{
 			if (queue.length == 0)
 			{
-				startShell(false);
+				stopShell();
 				worker.workerToMain.send({
 					event:WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED, 
 					value:null, 
@@ -81,8 +86,14 @@ package actionScripts.utils
 			
 			var tmpArr:Array = queue[0].com.split("&&");
 			
-			if (!MoonshineWorker.IS_MACOS) tmpArr.unshift("/c");
-			else tmpArr.unshift("-c");
+			if (!MoonshineWorker.IS_MACOS)
+			{
+				tmpArr.unshift("/c");
+			}
+			else
+			{
+				tmpArr.unshift("-c");
+			}
 			customInfo.arguments = Vector.<String>(tmpArr);
 			customInfo.workingDirectory = currentWorkingDirectory;
 			
@@ -95,38 +106,48 @@ package actionScripts.utils
 			customProcess.start(customInfo);
 		}
 		
-		private function startShell(start:Boolean):void 
+		private function startShell():void
 		{
-			if (start)
-			{
-				customProcess = new NativeProcess();
-				customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				
-				// @note
-				// for some strange reason all the standard output turns to standard error output by git command line.
-				// to have them dictate and continue the native process (without terminating by assuming as an error)
-				// let's listen standard errors to shellData method only
-				customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
-				
-				customProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
-				customProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
-				customProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			}
-			else
-			{
-				if (!customProcess) return;
-				if (customProcess.running) customProcess.exit();
-				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
-				customProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
-				customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
-				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-				customProcess = null;
-				presentRunningQueue = null;
-				isErrorClose = false;
-			}
+			customProcess = new NativeProcess();
+			customProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+
+			// @note
+			// for some strange reason all the standard output turns to standard error output by git command line.
+			// to have them dictate and continue the native process (without terminating by assuming as an error)
+			// let's listen standard errors to shellData method only
+			customProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
+
+			customProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
+			customProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
+			customProcess.addEventListener(NativeProcessExitEvent.EXIT, shellExit);
 		}
-		
+
+		private function stopShell():void
+		{
+			if (!customProcess)
+			{
+				return;
+			}
+
+			if (customProcess.running)
+			{
+				customProcess.exit();
+			}
+
+			presentRunningQueue = null;
+			isErrorClose = false;
+		}
+
+		private function cleanUpShell():void
+		{
+			customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+			customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
+			customProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
+			customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
+			customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
+			customProcess = null;
+		}
+
 		private function shellError(e:ProgressEvent):void 
 		{
 			if (customProcess)
@@ -167,7 +188,8 @@ package actionScripts.utils
 					subscriberUdid:subscriberUdid
 				});
 				isErrorClose = true;
-				startShell(false);
+				//Native process need time to properly exited
+				stopShell();
 			}
 		}
 		
@@ -175,16 +197,15 @@ package actionScripts.utils
 		{
 			if (customProcess) 
 			{
-				if (!isErrorClose) 
-				{
-					worker.workerToMain.send({
-						event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
-						value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE, null, presentRunningQueue), 
-						subscriberUdid:subscriberUdid
-					});
-					flush();
-				}
+				worker.workerToMain.send({
+					event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT,
+					value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE, null, presentRunningQueue),
+					subscriberUdid:subscriberUdid
+				});
+				flush();
 			}
+
+			cleanUpShell();
 		}
 		
 		private function shellData(e:ProgressEvent):void 
@@ -210,23 +231,28 @@ package actionScripts.utils
 			
 			if (match)
 			{
-				if (!isFatal) worker.workerToMain.send({
-					event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
-					value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_ERROR, data, presentRunningQueue), 
-					subscriberUdid:subscriberUdid
-				});
-				isErrorClose = true;
-				startShell(false);
+				if (!isFatal)
+				{
+					worker.workerToMain.send({
+						event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT,
+						value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_ERROR, data, presentRunningQueue),
+						subscriberUdid:subscriberUdid
+					});
+				}
+
+				//Native process need time to properly exited
+				setTimeout(stopShell, 200);
 				return;
 			}
-			
-			isErrorClose = false;
-			if (!isFatal) worker.workerToMain.send({
-				event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT, 
-				value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_DATA, data, presentRunningQueue), 
-				subscriberUdid:subscriberUdid
-			});
-			//worker.workerToMain.send({event:WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT, value:data, subscriberUdid:subscriberUdid});
+
+			if (!isFatal)
+			{
+				worker.workerToMain.send({
+					event:WorkerEvent.RUN_NATIVEPROCESS_OUTPUT,
+					value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_DATA, data, presentRunningQueue),
+					subscriberUdid:subscriberUdid
+				});
+			}
 		}
 	}
 }

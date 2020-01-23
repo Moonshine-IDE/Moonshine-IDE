@@ -20,43 +20,40 @@ package actionScripts.utils
 {
 	import actionScripts.events.ChangeEvent;
 	import actionScripts.ui.editor.text.TextEditor;
-	import actionScripts.ui.editor.text.change.TextChangeInsert;
-	import actionScripts.ui.editor.text.change.TextChangeMulti;
-	import actionScripts.ui.editor.text.change.TextChangeRemove;
+	import actionScripts.ui.editor.text.change.TextChangeBase;
 	import actionScripts.valueObjects.Position;
 	import actionScripts.valueObjects.Range;
 	import actionScripts.valueObjects.TextEdit;
 
 	public function applyTextEditsToTextEditor(textEditor:TextEditor, textEdits:Vector.<TextEdit>):void
 	{
-		var multi:TextChangeMulti = new TextChangeMulti();
-		var textEditsCount:int = textEdits.length;
+		var change:TextChangeBase = getTextChangeFromTextEdits(textEdits);
+
 		var line:int = textEditor.model.selectedLineIndex;
 		var char:int = textEditor.model.caretIndex;
 		var scrollPosition:int = textEditor.model.scrollPosition;
+		var textEditsCount:int = textEdits.length;
 		for(var i:int = 0; i < textEditsCount; i++)
 		{
-			var change:TextEdit = textEdits[i];
-			var range:Range = change.range;
+			var textEdit:TextEdit = textEdits[i];
+			var range:Range = textEdit.range;
 			var start:Position = range.start;
 			var end:Position = range.end;
-			var insert:TextChangeInsert = new TextChangeInsert(start.line, start.character, Vector.<String>(change.newText.split("\n")));
 			if(start.line !== end.line || start.character !== end.character)
 			{
-				var remove:TextChangeRemove = new TextChangeRemove(start.line, start.character, end.line, end.character);
-				multi.changes.push(remove);
 				if(end.line > start.line)
 				{
 					line -= (end.line - start.line);
 				}
 			}
-			multi.changes.push(insert);
 			if(start.line <= line)
 			{
-				line += (insert.textLines.length - 1);
+				var newLines:Array = textEdit.newText.split("\n");
+				line += (newLines.length - 1);
 			}
 		}
-		textEditor.dispatchEvent(new ChangeEvent(ChangeEvent.TEXT_CHANGE, multi));
+
+		textEditor.dispatchEvent(new ChangeEvent(ChangeEvent.TEXT_CHANGE, change));
 		textEditor.model.selectedLineIndex = line;
 		textEditor.model.caretIndex = char;
 		textEditor.scrollTo(scrollPosition);

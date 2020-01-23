@@ -165,6 +165,8 @@ package actionScripts.plugin.rename
 			
 			var timeoutValue:uint = setTimeout(function():void 
 				{
+					model.mainView.getTreeViewPanel().sortChildren(event.insideLocation);
+					
 					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(event.insideLocation, null, tmpParent);
 					tree.selectedItem = tmpFileW;
 					

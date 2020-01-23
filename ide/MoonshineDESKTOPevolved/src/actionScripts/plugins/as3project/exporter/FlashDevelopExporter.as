@@ -130,7 +130,8 @@ package actionScripts.plugins.as3project.exporter
 			if (p.isMobile) projType = AS3ProjectPlugin.AS3PROJ_AS_ANDROID;
 			
 			var platform:int = !p.air ? AS3ProjectPlugin.AS3PROJ_AS_WEB : AS3ProjectPlugin.AS3PROJ_AS_AIR;
-			if (p.isMobile) platform = (p.buildOptions.targetPlatform == "Android") ? AS3ProjectPlugin.AS3PROJ_AS_ANDROID : AS3ProjectPlugin.AS3PROJ_AS_IOS;
+			if (p.isRoyale) platform = (p.buildOptions.targetPlatform == "SWF") ? AS3ProjectPlugin.AS3PROJ_AS_WEB : AS3ProjectPlugin.AS3PROJ_JS_WEB;
+			else if (p.isMobile) platform = (p.buildOptions.targetPlatform == "Android") ? AS3ProjectPlugin.AS3PROJ_AS_ANDROID : AS3ProjectPlugin.AS3PROJ_AS_IOS;
 			
 			options = <moonshineRunCustomization />;
 			optionPairs = {

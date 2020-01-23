@@ -48,6 +48,8 @@ package actionScripts.ui.editor.text
     import actionScripts.utils.applyWorkspaceEdit;
     import actionScripts.events.ResolveCompletionItemEvent;
     import actionScripts.ui.editor.LanguageServerTextEditor;
+    import actionScripts.utils.getProjectForUri;
+    import actionScripts.valueObjects.ProjectVO;
 
     public class CompletionManager
 	{
@@ -236,11 +238,12 @@ package actionScripts.ui.editor.text
 				model.setSelection(lineIndex, cursorIndex, lineIndex, cursorIndex);
 			}
 
+			var activeEditor:BasicTextEditor = IDEModel.getInstance().activeEditor as BasicTextEditor;
+			var uri:String = (activeEditor && activeEditor.currentFile) ? activeEditor.currentFile.fileBridge.url : null;
+
 			var additionalTextEdits:Vector.<TextEdit> = item.additionalTextEdits;
 			if(additionalTextEdits)
 			{
-				var activeEditor:BasicTextEditor = BasicTextEditor(IDEModel.getInstance().activeEditor);
-				var uri:String = activeEditor.currentFile.fileBridge.url;
 				var workspaceEdit:WorkspaceEdit = new WorkspaceEdit();
 				var changes:Object = {};
 				changes[uri] = additionalTextEdits;
@@ -251,8 +254,12 @@ package actionScripts.ui.editor.text
 			var command:Command = item.command;
 			if(command)
 			{
+				var project:ProjectVO = getProjectForUri(uri);
 				var commandEvent:ExecuteLanguageServerCommandEvent = new ExecuteLanguageServerCommandEvent(
-					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, command.command, command.arguments);
+					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
+					project,
+					command.command,
+					command.arguments);
 				GlobalEventDispatcher.getInstance().dispatchEvent(commandEvent);
 			}
 		}

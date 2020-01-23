@@ -79,7 +79,7 @@ package actionScripts.plugin.recentlyOpened
 			dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, onJavaPathForTypeaheadSave);
 			dispatcher.addEventListener(LayoutModifier.SAVE_LAYOUT_CHANGE_EVENT, onSaveLayoutChangeEvent);
 			dispatcher.addEventListener(GeneralEvent.DEVICE_UPDATED, onDeviceListUpdated, false, 0, true);
-			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
+			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecentProjectList);
 			dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
 			// Give other plugins a chance to cancel the event
 			dispatcher.addEventListener(FilePluginEvent.EVENT_FILE_OPEN, handleOpenFile, false, -100);
@@ -321,7 +321,7 @@ package actionScripts.plugin.recentlyOpened
 			cookie.flush();
 		}
 		
-		private function updateRecetProjectList(event:Event):void
+		private function updateRecentProjectList(event:Event):void
 		{
 			save(model.recentlyOpenedProjects.source, 'recentProjects');
 			save(model.recentlyOpenedProjectOpenedOption.source, 'recentProjectsOpenedOption');
@@ -400,8 +400,14 @@ package actionScripts.plugin.recentlyOpened
 			var toSave:Array = [];
 			for each (var f:Object in recent)
 			{
-				if (f is FileLocation) toSave.push(f.fileBridge.nativePath);
-				else toSave.push(f);
+				if (f is FileLocation)
+				{
+					toSave.push(f.fileBridge.nativePath);
+				}
+				else
+				{
+					toSave.push(f);
+				}
 			}
 			
 			// Add to LocalObject

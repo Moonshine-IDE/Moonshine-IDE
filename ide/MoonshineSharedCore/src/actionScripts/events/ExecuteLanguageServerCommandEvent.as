@@ -19,18 +19,21 @@
 package actionScripts.events
 {
 	import flash.events.Event;
+	import actionScripts.valueObjects.ProjectVO;
 
 	public class ExecuteLanguageServerCommandEvent extends Event
 	{
 		public static const EVENT_EXECUTE_COMMAND:String = "executeCommand";
 
+		public var project:ProjectVO;
 		public var command:String;
 		public var arguments:Array;
 
-		public function ExecuteLanguageServerCommandEvent(type:String, command:String, arguments:Array = null)
+		public function ExecuteLanguageServerCommandEvent(type:String, project:ProjectVO, command:String, args:Array = null)
 		{
+			this.project = project;
 			this.command = command;
-			this.arguments = arguments;
+			this.arguments = args;
 			super(type, false, true);
 		}
 

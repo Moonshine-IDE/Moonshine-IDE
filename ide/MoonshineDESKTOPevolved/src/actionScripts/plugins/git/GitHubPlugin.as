@@ -255,7 +255,7 @@ package actionScripts.plugins.git
 		
 		private function checkGitAvailability():void
 		{
-			var tmpCheck:CheckGitAvailabilityCommand = new CheckGitAvailabilityCommand();
+			new CheckGitAvailabilityCommand();
 		}
 		
 		private function onProjectsCollectionChanged(event:CollectionEvent):void

@@ -126,7 +126,7 @@
 				// when calls by default sdk save settings
 				if (!associatedData)
 				{
-					goSave();
+					saveAndNotify();
 					return;
 				}
 	
@@ -168,7 +168,7 @@
 				var projectFile:FileLocation = new FileLocation(projectPath);
 				if (projectFile.fileBridge.exists)
 				{
-					goSave();
+					saveAndNotify();
 				}
 				else
 				{
@@ -181,23 +181,13 @@
 						projectFile = new FileLocation(associatedData.folderLocation.fileBridge.nativePath + associatedData.folderLocation.fileBridge.separator + ".project");
 						if (projectFile.fileBridge.exists)
 						{
-							goSave();
+							saveAndNotify();
 						}
 					}
 					else
 					{
-						goSave();
+						saveAndNotify();
 					}
-				}
-	
-				/*
-	             *@private
-	             */
-				function goSave():void
-				{
-					isSaved = true;
-					dispatchEvent(new Event(EVENT_SAVE));
-					close(true);
 				}
 			}
 	
@@ -253,7 +243,10 @@
 			{
 				if (force) forceClose = true;
 				
-				if (isNewProjectSettings) GlobalEventDispatcher.getInstance().removeEventListener(GeneralEvent.SCROLL_TO_TOP, onNewProjectScrollChange);
+				if (isNewProjectSettings)
+				{
+					GlobalEventDispatcher.getInstance().removeEventListener(GeneralEvent.SCROLL_TO_TOP, onNewProjectScrollChange);
+				}
 				dispatchEvent(new Event(EVENT_CLOSE));
 			}
 	
@@ -287,7 +280,14 @@
 					}
 				}
 			}
-	
+
+			protected function saveAndNotify():void
+			{
+				isSaved = true;
+				dispatchEvent(new Event(EVENT_SAVE));
+				close(true);
+			}
+
 			private function forceUpdateMXMLCompilerPlugin():void
 			{
 				var settings:Vector.<SettingsWrapper> = getSettingsForAllCategories();
@@ -449,7 +449,7 @@
 				buttonBarElement.visible = buttonBarElement.includeInLayout = isSave;
 			}
 	
-			private function addButtons():void
+			protected function addButtons():void
 			{
 				if (!showDefaultButtons && buttons.length == 0)
 				{

@@ -211,7 +211,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 			nativeExtensionPath.isEditable = air;
 			mobileRunSettings.visible = isMobile;
 			
-			if (!air)
+			if (isRoyale)
+			{
+				tmpCollection = new ArrayCollection([
+					new NameValuePair("JS", AS3ProjectPlugin.AS3PROJ_JS_WEB),
+					new NameValuePair("SWF", AS3ProjectPlugin.AS3PROJ_AS_WEB)
+				]);
+			}
+			else if (!air)
 			{
 				tmpCollection = new ArrayCollection([
 					new NameValuePair("Web", AS3ProjectPlugin.AS3PROJ_AS_WEB)

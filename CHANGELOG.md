@@ -8,12 +8,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Summary
 
 ### Added
+* Apache Royale browser projects support debugging when launched in Chrome.
+* New Haxe project type.
 
 ### Changed
 * Updated [Groovy language server](https://github.com/prominic/groovy-langugage-server) engine to latest.
+* Updated [ActionScript and MXML](https://as3mxml.com/) engine to v0.25.0.
+* Updated [SWF debug adapter](https://as3mxml.com/) engine to v1.0.2.
+* Updated [Chrome debug adapter](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.2.
 
 ### Fixed
 * Royale: Fix issue where resources were not copied to bin/js-release folder.
+* Java: Fix issue where changes to _pom.xml_ or _build.gradle_ were not properly reflected in code intelligence.
 
 ## Moonshine IDE [2.5.0]
 

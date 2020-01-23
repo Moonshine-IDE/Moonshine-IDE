@@ -58,7 +58,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
-	import actionScripts.plugin.project.ProjectType;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -73,7 +72,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
 	
-	import components.popup.SelectOpenedFlexProject;
+	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
 	import actionScripts.plugins.httpServer.events.HttpServerEvent;
 	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
@@ -115,9 +114,10 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private var fschstr:String;
 		private var SDKstr:String;
-		private var selectProjectPopup:SelectOpenedFlexProject;
+		private var selectProjectPopup:SelectOpenedProject;
 		protected var runAfterBuild:Boolean;
 		protected var debugAfterBuild:Boolean;
+		protected var release:Boolean;
 
 		private var successMessage:String;
 		private var isProjectHasInvalidPaths:Boolean;
@@ -152,15 +152,22 @@ package actionScripts.plugins.as3project.mxmlc
 			registerCommand('buildjs',tempObj);
 			
 			
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN_JAVASCRIPT, buildAndRun);
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG_JAVASCRIPT, buildAndDebug);
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AS_JAVASCRIPT, build);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD, buildDebug);
+			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
 			reset();
 		}
 		
 		override public function deactivate():void 
 		{
 			super.deactivate();
+
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD, buildDebug);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
+
 			reset();
 			shellInfo = null;
 		}
@@ -200,17 +207,29 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function buildAndRun(e:Event):void
 		{
-			build(e,true);	
+			release = false;
+			build(e, false, true);
 		}
 
 		private function buildAndDebug(e:Event):void
 		{
-			build(e, true, true)
+			build(e, false, true, true)
 		}
 		
-		private function build(e:Event, runAfterBuild:Boolean=false, debugAfterBuild:Boolean=false):void
+		private function buildDebug(e:Event):void
+		{
+			build(e);
+		}
+		
+		private function buildRelease(e:Event):void
+		{
+			build(e, true);
+		}
+		
+		private function build(e:Event, release:Boolean=false, runAfterBuild:Boolean=false, debugAfterBuild:Boolean=false):void
 		{
 			this.isProjectHasInvalidPaths = false;
+			this.release = release;
 			this.runAfterBuild = runAfterBuild;
 			this.debugAfterBuild = debugAfterBuild;
 			checkProjectCount();
@@ -230,14 +249,23 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function checkProjectCount():void
 		{
-			if (model.projects.length > 1)
+			var filteredProjects:Array = model.projects.source.filter(function(project:ProjectVO, index:int, source:Array):Boolean
+			{
+				if(!(project is AS3ProjectVO))
+				{
+					return false;
+				}
+				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+				return as3Project.isRoyale && as3Project.buildOptions.targetPlatform == "JS";
+			});
+			if (filteredProjects.length > 1)
 			{
 				// check if user has selection/select any particular project or not
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-					if (projectReference)
+					if (projectReference && filteredProjects.indexOf(projectReference) != -1)
 					{
 						checkForUnsavedEdior(projectReference);
 						return;
@@ -245,16 +273,16 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				// if above is false
-				selectProjectPopup = new SelectOpenedFlexProject();
-				selectProjectPopup.projectType = ProjectType.AS3PROJ_AS_AIR;
+				selectProjectPopup = new SelectOpenedProject();
+				selectProjectPopup.projects = new ArrayCollection(filteredProjects);
 				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
 				PopUpManager.centerPopUp(selectProjectPopup);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);				
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);				
 			}
-			else
+			else if(filteredProjects.length != 0)
 			{
-				checkForUnsavedEdior(model.projects[0] as ProjectVO);	
+				checkForUnsavedEdior(filteredProjects[0] as ProjectVO);	
 			}
 			
 			/*
@@ -268,8 +296,8 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			function onProjectSelectionCancelled(event:Event):void
 			{
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 				selectProjectPopup = null;
 			}
 		}
@@ -428,6 +456,20 @@ package actionScripts.plugins.as3project.mxmlc
 			var configArg:String = " -load-config+=" + project.folderLocation.fileBridge.getRelativePath(project.config.file);
 			var additionalBuildArgs:String = project.buildOptions.getArguments();
 			additionalBuildArgs = " " + additionalBuildArgs.replace("-optimize=false", "");
+				
+			var dbg:String;
+			if (release)
+			{
+				dbg = " -debug=false";
+			}
+			else
+			{
+				dbg = " -debug=true";
+			}
+			if (additionalBuildArgs.indexOf(" -debug=") > -1)
+			{
+				dbg = "";
+			}
 
 			var jsCompilationArg:String = "";
 			if (isFlexJSAfter7)
@@ -449,14 +491,14 @@ package actionScripts.plugins.as3project.mxmlc
             if(Settings.os == "win")
             {
 				compileStr = compileStr.concat(
-					sdkPathHomeArg ? ("set "+ sdkPathHomeArg)+"&& " : '', "set ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+					sdkPathHomeArg ? ("set "+ sdkPathHomeArg)+"&& " : '', "set ", compilerPathHomeArg, compilerArg, configArg, dbg, additionalBuildArgs, jsCompilationArg
 				);
             }
             else
             {
 				var royaleLibPath:String = "royalelib=".concat('"', SDKstr, File.separator, "frameworks", '"');
 				compileStr = compileStr.concat(
-						sdkPathHomeArg ? ("export " + " " + royaleLibPath + " "  + sdkPathHomeArg)+" && " : '', "export ", royaleLibPath, " ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, additionalBuildArgs, jsCompilationArg
+						sdkPathHomeArg ? ("export " + " " + royaleLibPath + " "  + sdkPathHomeArg)+" && " : '', "export ", royaleLibPath, " ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, dbg, additionalBuildArgs, jsCompilationArg
 				);
             }
 
@@ -658,22 +700,9 @@ package actionScripts.plugins.as3project.mxmlc
 				event.target.removeEventListener(Event.COMPLETE, onSuccesfullBuildCompleted);
             }
 
-            dispatcher.dispatchEvent(new RefreshTreeEvent((currentProject as AS3ProjectVO).folderLocation.resolvePath("bin")));
-            if(runAfterBuild)
-            {
-				var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
-                var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getWebRoot(as3Project), DEBUG_SERVER_PORT);
-				dispatcher.dispatchEvent(httpServerEvent);
-                if(!httpServerEvent.isDefaultPrevented())
-                {
-					//debug adapter can launch/run without debugging
-					startDebugAdapter(as3Project, debugAfterBuild);
-				}
-            }
-            else
-            {
-                copyingResources();
-            }
+			var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
+            dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(as3Project.jsOutputPath).resolvePath("bin")));
+			copyingResources();
         }
 
 		private function getWebRoot(project:AS3ProjectVO):FileLocation
@@ -683,6 +712,19 @@ package actionScripts.plugins.as3project.mxmlc
 
         private function startDebugAdapter(project:AS3ProjectVO, debug:Boolean):void
         {
+			var url:String = "http://localhost:" + DEBUG_SERVER_PORT;
+			if(project.customHTMLPath)
+			{
+				url = project.customHTMLPath;
+			}
+			else if(project.urlToLaunch)
+			{
+				var relativeURL:String = getWebRoot(project).fileBridge.getRelativePath(new FileLocation(project.urlToLaunch));
+				if(relativeURL)
+				{
+					url += "/" + relativeURL;
+				}
+			}
             var debugCommand:String = "launch";
             var debugAdapterType:String = "chrome";
             var launchArgs:Object = {};
@@ -691,7 +733,7 @@ package actionScripts.plugins.as3project.mxmlc
                 launchArgs["noDebug"] = true;
             }
 			launchArgs["name"] = "Moonshine Chrome Launch";
-			launchArgs["url"] = "http://localhost:" + DEBUG_SERVER_PORT;
+			launchArgs["url"] = url;
 			launchArgs["webRoot"] = getWebRoot(project).fileBridge.nativePath;
             dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER,
                 project, debugAdapterType, debugCommand, launchArgs));
@@ -699,47 +741,52 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private function launchApplication():void
 		{
-			var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
-			var swfFile:File = currentProject.folderLocation.resolvePath(pvo.swfOutput.path.fileBridge.nativePath).fileBridge.getFile as File;
-			
-			// before test movie lets copy the resource folder(s)
-			// to debug folder if any
-			if (pvo.resourcePaths.length != 0 && resourceCopiedIndex == 0)
+			var as3Project:AS3ProjectVO = currentProject as AS3ProjectVO;
+			var swfFile:File = currentProject.folderLocation.resolvePath(as3Project.swfOutput.path.fileBridge.nativePath).fileBridge.getFile as File;
+
+			if (debugAfterBuild)
 			{
-				copyingResources();
-				return;
+				var canStart:Boolean = true;
+				if(!as3Project.customHTMLPath)
+				{
+					var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getWebRoot(as3Project), DEBUG_SERVER_PORT);
+					dispatcher.dispatchEvent(httpServerEvent);
+					canStart = !httpServerEvent.isDefaultPrevented();
+				}
+				if(canStart)
+				{
+					//debug adapter can launch/run without debugging
+					startDebugAdapter(as3Project, debugAfterBuild);
+				}
 			}
-
-            success("Project Build Successfully.");
-
-			if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM) 
+			else if (as3Project.testMovie == AS3ProjectVO.TEST_MOVIE_CUSTOM)
 			{
-				var customSplit:Vector.<String> = Vector.<String>(pvo.testMovieCommand.split(";"));
+				var customSplit:Vector.<String> = Vector.<String>(as3Project.testMovieCommand.split(";"));
 				var customFile:String = customSplit[0];
-				var customArgs:String = customSplit.slice(1).join(" ").replace("$(ProjectName)", pvo.projectName).replace("$(CompilerPath)", currentSDK.nativePath);
+				var customArgs:String = customSplit.slice(1).join(" ").replace("$(ProjectName)", as3Project.projectName).replace("$(CompilerPath)", currentSDK.nativePath);
 
-                print(customFile + " " + customArgs, pvo.folderLocation.fileBridge.nativePath);
+                print(customFile + " " + customArgs, as3Project.folderLocation.fileBridge.nativePath);
 			}
-			else if (pvo.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
+			else if (as3Project.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
 			{
-                warning("Launching application " + pvo.name + ".");
+                warning("Launching application " + as3Project.name + ".");
 				// Let SWFLauncher deal with playin' the swf
 				dispatcher.dispatchEvent(
-					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, pvo, currentSDK)
+					new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, swfFile, as3Project, currentSDK)
 				);
 			} 
 			else 
 			{
-                warning("Launching application " + pvo.name + ".");
+                warning("Launching application " + as3Project.name + ".");
 
-				var launchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, null, pvo);
-				if (pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
+				var launchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, null, as3Project);
+				if (as3Project.customHTMLPath && StringUtil.trim(as3Project.customHTMLPath).length != 0)
 				{
-					launchEvent.url = pvo.customHTMLPath;
+					launchEvent.url = as3Project.customHTMLPath;
 				}
 				else
 				{
-					launchEvent.file = new FileLocation(pvo.urlToLaunch).fileBridge.getFile as File;
+					launchEvent.file = new FileLocation(as3Project.urlToLaunch).fileBridge.getFile as File;
 				}
 
 				dispatcher.dispatchEvent(launchEvent);
@@ -756,7 +803,7 @@ package actionScripts.plugins.as3project.mxmlc
             var pvo:AS3ProjectVO = currentProject as AS3ProjectVO;
 			if (pvo.resourcePaths.length == 0)
 			{
-				success("Project Build Successfully.");
+				notifySuccessfullBuildAfterResourceCopy();
 				return;
 			}
 
@@ -833,6 +880,7 @@ package actionScripts.plugins.as3project.mxmlc
 			if(runAfterBuild)
 			{
 				dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
+				success("Project Build Successfully.");
 				launchApplication();
 			}
 			else

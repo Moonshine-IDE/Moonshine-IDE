@@ -27,6 +27,10 @@
 			import actionScripts.valueObjects.WorkspaceEdit;
 			import actionScripts.events.LanguageServerEvent;
 			import actionScripts.utils.applyWorkspaceEdit;
+			import actionScripts.utils.getProjectForUri;
+			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.ui.editor.BasicTextEditor;
+			import actionScripts.locator.IDEModel;
 
 			[Bindable]
 			public var codeActions:ICollectionView;
@@ -52,9 +56,16 @@
 				var command:Command = codeAction.command;
 				if(command)
 				{
+					var activeEditor:BasicTextEditor = IDEModel.getInstance().activeEditor as BasicTextEditor;
+					if(!activeEditor || !activeEditor.currentFile)
+					{
+						return;
+					}
+					var uri:String = activeEditor.currentFile.fileBridge.url;
+					var project:ProjectVO = getProjectForUri(uri);
 					GlobalEventDispatcher.getInstance().dispatchEvent(new ExecuteLanguageServerCommandEvent(
 						ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
-						command.command, command.arguments));
+						project, command.command, command.arguments));
 				}
 			}
 

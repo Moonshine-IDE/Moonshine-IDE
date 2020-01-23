@@ -19,6 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+	import actionScripts.plugins.royale.RoyaleApiReportConfiguratorPlugin;
+	import actionScripts.plugins.royale.RoyaleApiReportPlugin;
+
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.Screen;
@@ -246,7 +249,9 @@ package actionScripts.impls
 				GitHubPlugin,
 				HiddenFilesPlugin,
                 JavaScriptPlugin,
-				HttpServerPlugin
+				HttpServerPlugin,
+				RoyaleApiReportConfiguratorPlugin,
+				RoyaleApiReportPlugin
 			];
 		}
 		
@@ -254,7 +259,7 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin];
+					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -353,10 +358,9 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
-					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.BUILD_AND_DEBUG,
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.BUILD_AND_DEBUG,
 						"d", [Keyboard.COMMAND],
 						"d", [Keyboard.CONTROL]),
-					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG_AS_JS'), null, [ProjectMenuTypes.JS_ROYALE], ActionScriptBuildEvent.BUILD_AND_DEBUG_JAVASCRIPT),
 					new MenuItem(null),					
 					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.DEBUG_STEPOVER,
 						"e",[Keyboard.COMMAND],

@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-	import com.adobe.utils.StringUtil;
-	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
@@ -83,7 +81,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
 	
-	import components.popup.SelectOpenedFlexProject;
+	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
 	
 	import flashx.textLayout.elements.LinkElement;
@@ -129,7 +127,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private var	tempObj:Object;
 		private var fschstr:String;
 		private var SDKstr:String;
-		private var selectProjectPopup:SelectOpenedFlexProject;
+		private var selectProjectPopup:SelectOpenedProject;
 
 		private function get mxmlcPath():String
 		{
@@ -270,7 +268,13 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		override public function deactivate():void 
 		{
-			super.deactivate(); 
+			super.deactivate();
+			
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndRun);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD, build);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
+			dispatcher.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, onDefaultSDKUpdatedOutside);
 			
 			reset();
 			shellInfo = null;
@@ -452,30 +456,40 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function buildStart():void
 		{
+			var filteredProjects:Array = model.projects.source.filter(function(project:ProjectVO, index:int, source:Array):Boolean
+			{
+				if(!(project is AS3ProjectVO))
+				{
+					return false;
+				}
+				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+				return !as3Project.isRoyale || as3Project.buildOptions.targetPlatform == "SWF";
+			});
 			// check if there is multiple projects were opened in tree view
-			if (model.projects.length > 1)
+			if (filteredProjects.length > 1)
 			{
 				// check if user has selection/select any particular project or not
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-					if (projectReference)
+					if (projectReference && filteredProjects.indexOf(projectReference) != -1)
 					{
 						checkForUnsavedEdior(projectReference);
 						return;
 					}
 				}
 				// if above is false
-				selectProjectPopup = new SelectOpenedFlexProject();
+				selectProjectPopup = new SelectOpenedProject();
+				selectProjectPopup.projects = new ArrayCollection(filteredProjects);
 				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
 				PopUpManager.centerPopUp(selectProjectPopup);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.addEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 			}
-			else if (model.projects.length != 0)
+			else if (filteredProjects.length != 0)
 			{
-				checkForUnsavedEdior(model.projects[0] as ProjectVO);
+				checkForUnsavedEdior(filteredProjects[0] as ProjectVO);
 			}
 			
 			/*
@@ -489,8 +503,8 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			function onProjectSelectionCancelled(event:Event):void
 			{
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedFlexProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
+				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
 				selectProjectPopup = null;
 			}
 			
@@ -547,7 +561,7 @@ package actionScripts.plugins.as3project.mxmlc
 					var sdkReference:SDKReferenceVO = SDKUtils.getSDKReference(tmpSDKLocation);
 					if (sdkReference && sdkReference.isJSOnlySdk)
 					{
-						error("This SDK only supports JavaScript Builds.");
+						error("This SDK only supports JavaScript Builds. Change platform to 'JS' in project Settings -> Run.");
 						return;
 					}
 
@@ -1145,6 +1159,13 @@ package actionScripts.plugins.as3project.mxmlc
 					
 					if (!isLibraryProject)
 					{
+						if (currentSuccessfullProject.testMovie != AS3ProjectVO.TEST_MOVIE_CUSTOM &&
+							currentSuccessfullProject.testMovie != AS3ProjectVO.TEST_MOVIE_AIR)
+						{
+							var swfFile:File = currentSuccessfullProject.swfOutput.path.fileBridge.getFile as File;
+							var htmlWrapperFile:File = swfFile.parent.resolvePath(swfFile.name.split(".")[0] +".html");
+							getHTMLTemplatesCopied(currentSuccessfullProject, htmlWrapperFile);
+						}
 						if (runAfterBuild || debugAfterBuild)
 						{
 							dispatcher.dispatchEvent(new SWFLaunchEvent(SWFLaunchEvent.EVENT_UNLAUNCH_SWF, null));

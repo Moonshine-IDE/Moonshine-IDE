@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"output": "bin-debug/MoonshineWEB.swf",
+		"accessible": true,
+		"source-path": [
+			"src",
+			"../MoonshineSharedCore/src",
+			"../MoonshineSharedCore/src/locale/en_US"
+		],
+		"library-path": [
+			"libs",
+			"../../../Moonshine-IDE/ide/MoonshineSharedCore/libs"
+		]
+	},
+	"files": [
+		"src/MoonshineWEB.mxml"
+	],
+	"copySourcePathAssets": true,
+	"additionalOptions": "-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false"
+}
