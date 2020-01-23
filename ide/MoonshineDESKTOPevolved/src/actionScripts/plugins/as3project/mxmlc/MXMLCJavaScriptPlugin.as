@@ -541,7 +541,6 @@ package actionScripts.plugins.as3project.mxmlc
 				shellInfo.arguments = arg;
 				
 				initShell();
-				//setTimeout(proceedWithBuild, 2000, holdProject);
 			}
 		}
 		
@@ -659,18 +658,21 @@ package actionScripts.plugins.as3project.mxmlc
             if (!fcsh) return;
             if (fcsh.running)
 			{
-				fcsh.exit(true);
+				fcsh.exit();
             }
-            fcsh.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-            fcsh.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
-            fcsh.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR,shellError);
-            fcsh.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR,shellError);
-            fcsh.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-            fcsh = null;
-
-            dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-            dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
         }
+
+		private function cleanUpShell():void
+		{
+			if (!fcsh) return;
+
+			fcsh.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+			fcsh.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
+			fcsh.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR,shellError);
+			fcsh.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR,shellError);
+			fcsh.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
+			fcsh = null;
+		}
 
 		private function onTerminateBuildRequest(event:StatusBarEvent):void
 		{
@@ -903,11 +905,16 @@ package actionScripts.plugins.as3project.mxmlc
 		private function shellExit(e:NativeProcessExitEvent):void 
 		{
 			reset();
+			cleanUpShell();
+
 			if (exiting)
 			{
 				exiting = false;
 				startShell();
 			}
+
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
 		}
 
 		private function printBuildProgress(data:String):void
