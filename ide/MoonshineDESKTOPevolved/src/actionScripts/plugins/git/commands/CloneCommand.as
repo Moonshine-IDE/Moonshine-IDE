@@ -38,7 +38,7 @@ package actionScripts.plugins.git.commands
 		private var lastCloneURL:String;
 		private var lastCloneTarget:String;
 		private var lastTargetFolder:String;
-		private var isErrorEncountered:Boolean;
+		private var authWindowTriggerCountWindows:int;
 		
 		private var _cloningProjectName:String;
 		private function get cloningProjectName():String
@@ -57,6 +57,7 @@ package actionScripts.plugins.git.commands
 			
 			queue = new Vector.<Object>();
 			
+			authWindowTriggerCountWindows = 0;
 			isErrorEncountered = false;
 			repositoryUnderCursor = repository;
 			lastCloneURL = url;
@@ -92,7 +93,6 @@ package actionScripts.plugins.git.commands
 			
 			// call super - it might have some essential 
 			// commands to run
-			isErrorEncountered = true;
 			super.shellError(value);
 		}
 		
@@ -112,7 +112,22 @@ package actionScripts.plugins.git.commands
 						// turns to errordata first
 						cloningProjectName = value.output;
 						warning(value.output);
-						return;
+					}
+					else
+					{
+						match = value.output.toLowerCase().match(/logon failed/);
+						if (match)
+						{
+							authWindowTriggerCountWindows ++;
+							if (authWindowTriggerCountWindows == 2)
+							{
+								// terminates the process as on Windows
+								// git-native authentication window
+								// pops only twice
+								shellError(value);
+								return;
+							}
+						}
 					}
 					break;
 				}

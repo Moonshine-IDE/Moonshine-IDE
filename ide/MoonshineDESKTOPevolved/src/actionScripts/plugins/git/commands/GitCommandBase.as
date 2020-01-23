@@ -49,6 +49,7 @@ package actionScripts.plugins.git.commands
 		protected var queue:Vector.<Object> = new Vector.<Object>();
 		protected var subscribeIdToWorker:String = UIDUtil.createUID();
 		protected var worker:IDEWorker = IDEWorker.getInstance();
+		protected var isErrorEncountered:Boolean;
 		
 		public function GitCommandBase()
 		{
@@ -132,6 +133,7 @@ package actionScripts.plugins.git.commands
 			}
 			
 			if (!match) error(value.output);
+			isErrorEncountered = true;
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			unsubscribeFromWorker();
 		}

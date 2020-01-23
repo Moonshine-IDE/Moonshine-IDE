@@ -30,8 +30,6 @@ package actionScripts.plugins.git.commands
 	{
 		private const GIT_PUSH:String = "gitPush";
 		
-		private var isErrorEncountered:Boolean;
-		
 		public function PushCommand(userObject:Object=null)
 		{
 			super();
@@ -67,12 +65,6 @@ package actionScripts.plugins.git.commands
 			warning("Git push requested...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Push ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
-		}
-		
-		override protected function shellError(value:Object):void
-		{
-			isErrorEncountered = true;
-			shellError(value);
 		}
 		
 		override protected function listOfProcessEnded():void
