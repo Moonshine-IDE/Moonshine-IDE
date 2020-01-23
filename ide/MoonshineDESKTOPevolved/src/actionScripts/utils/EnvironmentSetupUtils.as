@@ -292,7 +292,11 @@ package actionScripts.utils
 		
 		private function getSetExportCommand(field:String, path:String):String
 		{
-			if (ConstantsCoreVO.IS_MACOS) return "export "+ field +"='"+ path +"';";
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				return "export "+ field +"='"+ path +"';";
+			}
+
 			return "set "+ field +"=\""+ path +"\"\r\n";
 		}
 		
