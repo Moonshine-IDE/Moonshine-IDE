@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<resizabletitlewindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+                                           xmlns:resizabletitlewindow="actionScripts.ui.resizableTitleWindow.*"
+                                           xmlns:s="library://ns.adobe.com/flex/spark"
+                                           skinClass="components.skins.ResizableTitleWindowSkin"
+                                           maxWidth="650"
+                                           creationComplete="onRoyaleInfoPopupCreationComplete(event)">
+    <fx:Script><![CDATA[
+        import actionScripts.events.RoyaleApiReportEvent;
+
+        import elements.skins.DarkButtonSkin;
+
+        import mx.events.CloseEvent;
+        import mx.events.FlexEvent;
+
+        import spark.components.Alert;
+        import spark.utils.TextFlowUtil;
+
+        private static const info:String = "<p>The Apache Royale compiler can generate a list of APIs used by an application."
+                + " This is helpful in determining the optimal migration strategy and effort."
+                + " Generating a report may take a long time, even a couple of hours depends on the size of your application."
+                + " Before you run a whole process make sure that you are able to build your app by choosing menu <span fontWeight=\"bold\">Project</span> -> <span fontWeight=\"bold\">Build project.</span>"
+                + " It is possible that the report will be generated with some errors, but it may still be valid.</p>";
+
+        private function onRoyaleInfoPopupCreationComplete(event:FlexEvent):void
+        {
+            okInfo.setStyle("skinClass", DarkButtonSkin);
+            cancelReport.setStyle("skinClass", DarkButtonSkin);
+            infoLabel.textFlow = TextFlowUtil.importFromString(info);
+        }
+
+        private function onCloseReportInfoPopup(event:MouseEvent):void
+        {
+            if(event.currentTarget == cancelReport)
+            {
+                cancelThis();
+            }
+            else
+            {
+                closeThis();
+            }
+        }
+
+        private function cancelThis():void
+        {
+            callLater(closeByCrossSign, [null]);
+            dispatchEvent(new CloseEvent(CloseEvent.CLOSE, false, false, Alert.CANCEL));
+        }
+
+        private function onDismissBoxChange(event:Event):void
+        {
+            dispatchEvent(new RoyaleApiReportEvent(RoyaleApiReportEvent.DO_NOT_SHOW_PROMPT_API_REPORT, null, event.currentTarget.selected));
+        }
+        ]]></fx:Script>
+
+    <s:RichText id="infoLabel" lineBreak="toFit" maxWidth="650"
+                paddingRight="10" paddingLeft="10" paddingBottom="10"/>
+    <resizabletitlewindow:controlBarContent>
+        <s:HGroup percentWidth="100" verticalAlign="middle">
+            <s:CheckBox label="{resourceManager.getString('resources', 'DO_NOT_SHOW_THIS')}"
+                        change="onDismissBoxChange(event)" color="#FFFFFF"/>
+        </s:HGroup>
+        <s:Button id="cancelReport" label="Cancel" click="onCloseReportInfoPopup(event)"/>
+        <s:Button id="okInfo" label="Ok" click="onCloseReportInfoPopup(event)"/>
+    </resizabletitlewindow:controlBarContent>
+</resizabletitlewindow:ResizableTitleWindow>

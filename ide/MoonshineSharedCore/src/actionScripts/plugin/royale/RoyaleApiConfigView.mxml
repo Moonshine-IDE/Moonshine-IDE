@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<settings:SettingsView xmlns:fx="http://ns.adobe.com/mxml/2009"
+                       xmlns:settings="actionScripts.plugin.settings.*" xmlns:s="library://ns.adobe.com/flex/spark">
+    <fx:Script><![CDATA[
+        import actionScripts.events.RoyaleApiReportEvent;
+        import actionScripts.plugin.settings.vo.AbstractSetting;
+        import actionScripts.plugin.settings.vo.ISetting;
+        import actionScripts.plugin.settings.vo.PathSetting;
+        import actionScripts.plugin.settings.vo.SettingsWrapper;
+
+        import mx.core.FlexGlobals;
+
+        import mx.events.CloseEvent;
+
+        import mx.managers.PopUpManager;
+
+        import spark.components.Alert;
+
+        private var _doNotShowPromptAgain:Boolean;
+
+        public function get doNotShowPromptAgain():Boolean
+        {
+            return _doNotShowPromptAgain;
+        }
+
+        public function set doNotShowPromptAgain(value:Boolean):void
+        {
+            _doNotShowPromptAgain = value;
+        }
+
+        override public function save():void
+        {
+            var settingsWrappers:Vector.<SettingsWrapper> = getSettingsForAllCategories();
+            var requiredSetting:ISetting = null;
+
+            for each (var wrapper:SettingsWrapper in settingsWrappers)
+            {
+                var settings:Vector.<ISetting> = wrapper.getSettingsList();
+                for each (var setting:ISetting in settings)
+                {
+                    var settingValue:String = setting.stringValue;
+                    if(!settingValue)
+                    {
+                        requiredSetting = setting;
+                        break;
+                    }
+                }
+
+                if(requiredSetting)
+                {
+                    break;
+                }
+            }
+
+            if(requiredSetting && requiredSetting is PathSetting)
+            {
+                requiredSetting.renderer["setMessage"]("This field is required to generate report", AbstractSetting.MESSAGE_CRITICAL);
+                (requiredSetting as AbstractSetting).addEventListener(AbstractSetting.PATH_SELECTED, onRequiredSettingPathSelect);
+            }
+            else if (!doNotShowPromptAgain)
+            {
+                var reportInfoPopup:RoyaleApiInfoPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, RoyaleApiInfoPopup) as RoyaleApiInfoPopup;
+                reportInfoPopup.addEventListener(CloseEvent.CLOSE, onCloseInfoPopup);
+                reportInfoPopup.addEventListener(RoyaleApiReportEvent.DO_NOT_SHOW_PROMPT_API_REPORT, onDoNotShowPromptApiReprot);
+
+                PopUpManager.centerPopUp(reportInfoPopup);
+            }
+            else
+            {
+                super.save();
+            }
+        }
+
+        private function onCloseInfoPopup(event:CloseEvent):void
+        {
+            event.currentTarget.removeEventListener(CloseEvent.CLOSE, onCloseInfoPopup);
+            if (event.detail == Alert.CANCEL)
+            {
+                close();
+                dispatchEvent(new CloseEvent(CloseEvent.CLOSE, false, false, Alert.CANCEL));
+                return;
+            }
+
+            super.save();
+        }
+
+        private function onRequiredSettingPathSelect(event:Event):void
+        {
+            event.target.renderer["setMessage"](null, AbstractSetting.MESSAGE_CRITICAL);
+            event.target.removeEventListener(AbstractSetting.PATH_SELECTED, onRequiredSettingPathSelect);
+        }
+
+        private function onDoNotShowPromptApiReprot(event:RoyaleApiReportEvent):void
+        {
+            this.doNotShowPromptAgain = event.doNotShowApiPromptReport;
+        }
+        ]]></fx:Script>
+</settings:SettingsView>
