@@ -22,6 +22,7 @@ package actionScripts.plugins.git.commands
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -42,7 +43,7 @@ package actionScripts.plugins.git.commands
 			
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' fetch'), false, null));
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch -r'), false, GIT_REMOTE_BRANCH_LIST));
-			pendingProcess.push(new MethodDescriptor(this, 'getCurrentBranch')); // next method we need to fire when above done
+			pendingProcess.push(new ConstructorDescriptor(GetCurrentBranchCommand)); // next method we need to fire when above done
 			
 			warning("Fetching branch details...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Branch Details ", false));

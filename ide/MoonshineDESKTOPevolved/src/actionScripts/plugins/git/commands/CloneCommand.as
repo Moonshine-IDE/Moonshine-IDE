@@ -24,6 +24,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
@@ -72,6 +73,10 @@ package actionScripts.plugins.git.commands
 		
 		override protected function shellError(value:Object):void
 		{
+			// call super - it might have some essential 
+			// commands to run
+			super.shellError(value);
+			
 			var match:Array;
 			switch (value.queue.processType)
 			{
@@ -81,7 +86,7 @@ package actionScripts.plugins.git.commands
 					if (match)
 					{
 						plugin.requestToAuthenticate(
-							new MethodDescriptor(this, "CloneCommand", lastCloneURL, lastCloneTarget, lastTargetFolder, repositoryUnderCursor)
+							new ConstructorDescriptor(CloneCommand, lastCloneURL, lastCloneTarget, lastTargetFolder, repositoryUnderCursor)
 						);
 					}
 					else
@@ -90,10 +95,6 @@ package actionScripts.plugins.git.commands
 					}
 				}
 			}
-			
-			// call super - it might have some essential 
-			// commands to run
-			super.shellError(value);
 		}
 		
 		override protected function shellData(value:Object):void
