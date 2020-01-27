@@ -197,7 +197,7 @@ package actionScripts.utils
 			
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
-				setCommand += getSetExportCommand("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath);
+				setCommand += getSetExportForJavaCommand("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$JAVA_HOME/bin:" : "%JAVA_HOME%\\bin;");
 				isValidToExecute = true;
 			}
@@ -299,7 +299,17 @@ package actionScripts.utils
 
 			return "set "+ field +"=\""+ path +"\"\r\n";
 		}
-		
+
+		private function getSetExportForJavaCommand(field:String, path:String):String
+		{
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				return getSetExportCommand(field, path);
+			}
+
+			return "set "+ field +"="+ path +"\r\n";
+		}
+
 		private function onBatchFileWriteComplete():void
 		{
 			// following timeout is to overcome process-holding error
