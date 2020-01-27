@@ -29,9 +29,17 @@ package actionScripts.plugins.git.commands
 		{
 			super();
 			
-			queue = new Vector.<Object>();
+			var versionMessage:String = getPlatformMessage(' --version');
+			if(!versionMessage)
+			{
+				//when the git path isn't set at all, getPlatformMessage()
+				//returns null because there's no command to run
+				plugin.setGitAvailable(false);
+				return;
+			}
 			
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' --version'), false, GIT_AVAIL_DECTECTION));
+			queue = new Vector.<Object>();
+			addToQueue(new NativeProcessQueueVO(versionMessage, false, GIT_AVAIL_DECTECTION));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 		}
 		

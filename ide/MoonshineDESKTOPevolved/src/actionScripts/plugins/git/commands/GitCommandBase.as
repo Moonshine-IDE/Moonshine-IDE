@@ -71,6 +71,12 @@ package actionScripts.plugins.git.commands
 		
 		protected function getPlatformMessage(value:String):String
 		{
+			if (!gitBinaryPathOSX)
+			{
+				//the path isn't set at all, so we can't build a command
+				return null;
+			}
+
 			if (ConstantsCoreVO.IS_MACOS)
 			{
 				return gitBinaryPathOSX + value;
