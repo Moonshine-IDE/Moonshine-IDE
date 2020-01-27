@@ -43,6 +43,7 @@
     <option loadConfig=""/>
     <option antBuildPath="build/build.xml"/>
     <option linkReport=""/>
+    <option sourceMap="True"/>
   </build>
   <mavenBuild>
     <option mavenBuildPath=""/>

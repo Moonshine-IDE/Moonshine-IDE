@@ -36,6 +36,7 @@
     <option useNetwork="True"/>
     <option optimize="False"/>
     <option accessible="False"/>
+    <option sourceMap="True"/>
   </build>
   <includeLibraries/>
   <libraryPaths/>
