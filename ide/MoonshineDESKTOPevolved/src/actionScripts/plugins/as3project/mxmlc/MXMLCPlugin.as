@@ -570,13 +570,6 @@ package actionScripts.plugins.as3project.mxmlc
 						return;
 					}
 				}
-
-				// terminate if it's a debug call against FlexJS
-				if (debugAfterBuild)
-				{
-					Alert.show("Moonshine does not currently support Apache Royale® project debugging.", "Note!");
-					return;
-				}
 				
 				// FlexJS Application
 				compileFlexJSApplication(activeProject, release);
