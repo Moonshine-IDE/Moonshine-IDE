@@ -127,7 +127,7 @@
 			{
 				var location:FileLocation = new FileLocation(setting.stringValue);
 				var startFromLocation:String = setting.defaultPath;
-				if (location.fileBridge.exists)
+				if (location.fileBridge.isPathExists(setting.stringValue))
 				{
 					startFromLocation = location.fileBridge.nativePath;
 				}
