@@ -29,6 +29,10 @@ package actionScripts.plugins.royale
 	import actionScripts.valueObjects.RoyaleApiReportVO;
 	import actionScripts.vo.NativeProcessQueueVO;
 
+	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
+
 	import mx.utils.UIDUtil;
 
 	public class RoyaleApiReportPlugin extends PluginBase implements IPlugin, IWorkerSubscriber
@@ -38,12 +42,15 @@ package actionScripts.plugins.royale
 		override public function get description():String	{ return "Apache Royale Api Report Plugin."; }
 
 		private const API_REPORT_FILE_NAME:String = "apireport.csv";
+		private const API_REPORT_LOG_FILE_NAME:String = "apireport.log";
 
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var subscribeIdToWorker:String;
 
 		private var hasErrors:Boolean;
+
+		private var logFileStream:FileStream;
 
 		public function RoyaleApiReportPlugin():void
 		{
@@ -68,6 +75,16 @@ package actionScripts.plugins.royale
 		{
 			hasErrors = false;
 			var reportConfig:RoyaleApiReportVO = event.reportConfiguration;
+
+			var fullFileReportName:String = reportConfig.reportOutputLogPath +
+											model.fileCore.separator +
+											model.activeProject.name + "_" + API_REPORT_LOG_FILE_NAME;
+
+			var logFile:File = new File(fullFileReportName);
+			logFileStream = new FileStream();
+			logFileStream.open(logFile, FileMode.WRITE);
+			logFileStream.writeUTFBytes("Log file for Apache Royale API report: " + new Date().toString() + '\r\n');
+
 			var royaleMxmlc:String = reportConfig.royaleSdkPath + getMxmlcLocation();
 			var flexConfig:String = reportConfig.flexSdkPath + getFlexConfigLocation();
 			var apiReportName:String = reportConfig.reportOutputPath +
@@ -88,7 +105,7 @@ package actionScripts.plugins.royale
 					"-load-config=", flexConfig,  " ",
 					reportConfig.mainAppFile);
 
-			var reportCommand:NativeProcessQueueVO = new NativeProcessQueueVO(fullCommand, true);
+			var reportCommand:NativeProcessQueueVO = new NativeProcessQueueVO(fullCommand, false);
 
 			queue.push(reportCommand);
 
@@ -114,12 +131,9 @@ package actionScripts.plugins.royale
 					if (match)
 					{
 						hasErrors = true;
-						error(value.value.output);
 					}
-					else
-					{
-						print(value.value.output);
-					}
+
+					print(value.value.output);
 					break;
 				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK:
 					if (queue.length != 0)
@@ -128,20 +142,32 @@ package actionScripts.plugins.royale
 					}
 					break;
 				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED:
+					var endMessage:String = "Generating report has ended.";
 					if (hasErrors)
 					{
-						success("Generating report has ended with some errors.");
+						endMessage = "Generating report has ended with some errors.";
 					}
-					else
-					{
-						success("Generating report has ended.")
-					}
+
 					hasErrors = false;
 					dispatcher.dispatchEvent(new RoyaleApiReportEvent(RoyaleApiReportEvent.REPORT_GENERATION_COMPLETED));
+
+					print(endMessage);
+					success(endMessage);
+
+					logFileStream.close();
+					logFileStream = null;
 					break;
 				case WorkerEvent.CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:
-					debug("%s", value.value);
+					print("%s", value.value);
 					break;
+			}
+		}
+
+		override protected function print(str:String, ...replacements):void
+		{
+			if (logFileStream)
+			{
+				logFileStream.writeUTFBytes(str);
 			}
 		}
 	}

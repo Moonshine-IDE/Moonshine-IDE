@@ -515,7 +515,7 @@
 	</s:Scroller>
 
 	<!-- Settings list -->
-	<s:BorderContainer width="100%" height="100%" backgroundColor="#FFFFFF">
+	<s:BorderContainer id="settingsContainer" width="100%" height="100%" backgroundColor="#FFFFFF">
 		<!-- BUG: Horizontal scrollbar always shows when vertical scrollbar shows. Why? -->
 		<s:Scroller id="settingsContentScroller" width="100%"
 					horizontalScrollPolicy="off" minWidth="450" bottom="41"

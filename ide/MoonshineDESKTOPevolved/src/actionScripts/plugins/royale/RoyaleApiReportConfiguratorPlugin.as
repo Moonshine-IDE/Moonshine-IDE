@@ -58,6 +58,7 @@ package actionScripts.plugins.royale
 		public var libraries:Vector.<FileLocation>;
 		public var mainAppFile:String;
 		public var outputPath:String;
+		public var outputLogPath:String;
 
 		public function RoyaleApiReportConfiguratorPlugin():void
 		{
@@ -98,6 +99,9 @@ package actionScripts.plugins.royale
 
 			var mainAppFile:ISetting = getMainApplicationFileSetting();
 			apiReportItems.push(mainAppFile);
+
+			var logOutputPath:ISetting = getOutputLogPath();
+			apiReportItems.push(logOutputPath);
 
 			var outputPath:ISetting = getOutputPath();
 			apiReportItems.push(outputPath);
@@ -163,7 +167,24 @@ package actionScripts.plugins.royale
 			var as3Project:AS3ProjectVO =  (currentProject as AS3ProjectVO);
 
 			this.outputPath = as3Project.outputPath;
-			return new PathSetting(this, "outputPath", "Output Path", true, as3Project.outputPath, false, false, as3Project.outputPath);
+			return new PathSetting(this, "outputPath", "Api report output path", true, as3Project.outputPath, false, false, as3Project.folderLocation.fileBridge.nativePath);
+		}
+
+		private function getOutputLogPath():ISetting
+		{
+			var currentProject:ProjectVO = model.activeProject;
+			var as3Project:AS3ProjectVO =  (currentProject as AS3ProjectVO);
+
+			if (!model.fileCore.isPathExists(as3Project.outputPath))
+			{
+				this.outputLogPath = as3Project.folderPath + model.fileCore.separator + as3Project.outputPath;
+			}
+			else
+			{
+				this.outputLogPath = as3Project.outputPath;
+			}
+
+			return new PathSetting(this, "outputLogPath", "Api report log build file", true, this.outputLogPath, false, false, as3Project.folderLocation.fileBridge.nativePath);
 		}
 
 		override public function deactivate():void
@@ -180,6 +201,7 @@ package actionScripts.plugins.royale
 					this.libraries,
 					this.mainAppFile,
 					this.outputPath,
+					this.outputLogPath,
 					model.activeProject.projectFolder.nativePath
 			);
 

@@ -4,13 +4,15 @@ package actionScripts.valueObjects
 
     public class RoyaleApiReportVO
     {
-        public function RoyaleApiReportVO(royaleSdkPath:String, flexSdkPath:String, libraries:Vector.<FileLocation>, mainAppFile:String, reportOutputPath:String, workingDirectory:String)
+        public function RoyaleApiReportVO(royaleSdkPath:String, flexSdkPath:String, libraries:Vector.<FileLocation>, mainAppFile:String,
+                                          reportOutputPath:String, reportOutputLogPath:String, workingDirectory:String)
         {
             _royaleSdkPath = royaleSdkPath;
             _flexSdkPath = flexSdkPath;
             _libraries = libraries;
             _mainAppFile = mainAppFile;
             _reportOutputPath = reportOutputPath;
+            _reportOutputLogPath = reportOutputLogPath;
             _workingDirectory = workingDirectory;
         }
 
@@ -42,6 +44,12 @@ package actionScripts.valueObjects
         public function get reportOutputPath():String
         {
             return _reportOutputPath;
+        }
+
+        private var _reportOutputLogPath:String;
+        public function get reportOutputLogPath():String
+        {
+            return _reportOutputLogPath;
         }
 
         private var _workingDirectory:String;
