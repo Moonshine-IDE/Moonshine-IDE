@@ -37,7 +37,7 @@ package actionScripts.plugins.royale
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Apache Royale Api Report Plugin."; }
 
-		private const API_REPORT_FILE_NAME:String = "royaleapireport.csv";
+		private const API_REPORT_FILE_NAME:String = "apireport.csv";
 
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
@@ -70,7 +70,9 @@ package actionScripts.plugins.royale
 			var reportConfig:RoyaleApiReportVO = event.reportConfiguration;
 			var royaleMxmlc:String = reportConfig.royaleSdkPath + getMxmlcLocation();
 			var flexConfig:String = reportConfig.flexSdkPath + getFlexConfigLocation();
-			var apiReportName:String = reportConfig.reportOutputPath + model.fileCore.separator + API_REPORT_FILE_NAME;
+			var apiReportName:String = reportConfig.reportOutputPath +
+									   model.fileCore.separator +
+									   model.activeProject.name + "_" + API_REPORT_FILE_NAME;
 
 			var libraryPath:String = "";
 			for each (var library:FileLocation in reportConfig.libraries)
