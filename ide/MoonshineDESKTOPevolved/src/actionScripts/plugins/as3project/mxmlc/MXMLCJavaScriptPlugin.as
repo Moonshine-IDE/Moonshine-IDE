@@ -19,13 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
-	import actionScripts.locator.HelperModel;
-	import actionScripts.plugin.console.ConsoleOutputEvent;
-	import actionScripts.utils.SDKUtils;
-	import actionScripts.valueObjects.SDKReferenceVO;
-
 	import com.adobe.utils.StringUtil;
-
+	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
@@ -39,13 +34,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
 	import flash.utils.setTimeout;
-
-	import flashx.textLayout.elements.LinkElement;
-
-	import flashx.textLayout.elements.ParagraphElement;
-	import flashx.textLayout.elements.SpanElement;
-	import flashx.textLayout.formats.TextDecoration;
-
+	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
@@ -55,27 +44,37 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.HelperModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+	import actionScripts.plugin.core.compiler.JavaScriptBuildEvent;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.build.CompilerPluginBase;
+	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
+	import actionScripts.plugins.httpServer.events.HttpServerEvent;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.NoSDKNotifier;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
 	
 	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
-	import actionScripts.plugins.httpServer.events.HttpServerEvent;
-	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
+	
+	import flashx.textLayout.elements.LinkElement;
+	import flashx.textLayout.elements.ParagraphElement;
+	import flashx.textLayout.elements.SpanElement;
+	import flashx.textLayout.formats.TextDecoration;
 
     public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -152,10 +151,10 @@ package actionScripts.plugins.as3project.mxmlc
 			registerCommand('buildjs',tempObj);
 			
 			
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD, buildDebug);
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
+			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD, buildDebug);
+			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD_RELEASE, buildRelease);
 			reset();
 		}
 		
@@ -163,10 +162,10 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			super.deactivate();
 
-			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
+			dispatcher.removeEventListener(JavaScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
 			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD, buildDebug);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
+			dispatcher.removeEventListener(JavaScriptBuildEvent.BUILD, buildDebug);
+			dispatcher.removeEventListener(JavaScriptBuildEvent.BUILD_RELEASE, buildRelease);
 
 			reset();
 			shellInfo = null;
