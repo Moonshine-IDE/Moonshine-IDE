@@ -16,6 +16,10 @@
 
         import spark.components.Alert;
         import spark.components.BusyIndicator;
+        import spark.components.Label;
+        import spark.components.VGroup;
+        import spark.layouts.HorizontalAlign;
+        import spark.layouts.VerticalAlign;
 
         private var _doNotShowPromptAgain:Boolean;
 
@@ -68,10 +72,26 @@
             }
             else
             {
+                var busyContainer:VGroup = new VGroup();
+                busyContainer.verticalAlign = VerticalAlign.MIDDLE;
+                busyContainer.horizontalAlign = HorizontalAlign.CENTER;
+
+                busyContainer.horizontalCenter = 0;
+                busyContainer.verticalCenter = 0;
+
                 var busyIndicator:BusyIndicator = new BusyIndicator();
-                busyIndicator.horizontalCenter = 0;
-                busyIndicator.verticalCenter = 0;
-                settingsContainer.addElement(busyIndicator);
+                busyIndicator.setStyle("symbolColor", "0x444444");
+                busyIndicator.width = busyIndicator.height = 30;
+                var lbl:Label = new Label();
+                lbl.setStyle("color", "0x444444");
+                lbl.setStyle("fontWeight", "bold");
+                lbl.setStyle("fontSize", 16);
+                lbl.text = "Generating API report is in progress...";
+
+                busyContainer.addElement(busyIndicator);
+                busyContainer.addElement(lbl);
+
+                settingsContainer.addElement(busyContainer);
 
                 super.save();
             }
