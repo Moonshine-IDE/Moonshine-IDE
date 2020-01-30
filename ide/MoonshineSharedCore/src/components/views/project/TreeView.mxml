@@ -1117,8 +1117,8 @@
 	
 			private function onTreeItemOpen(event:TreeEvent):void
 			{
-				tree.saveItemForOpen(event.item);
 				sortChildren(event.item as FileWrapper);
+				tree.saveItemForOpen(event.item);
 			}
 	
 			private function onTreeItemClose(event:TreeEvent):void
