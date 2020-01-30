@@ -166,8 +166,16 @@ package actionScripts.plugins.royale
 			var currentProject:ProjectVO = model.activeProject;
 			var as3Project:AS3ProjectVO =  (currentProject as AS3ProjectVO);
 
-			this.outputPath = as3Project.outputPath;
-			return new PathSetting(this, "outputPath", "Api report output path", true, as3Project.outputPath, false, false, as3Project.folderLocation.fileBridge.nativePath);
+			if (!model.fileCore.isPathExists(as3Project.outputPath))
+			{
+				this.outputPath = as3Project.folderPath + model.fileCore.separator + as3Project.outputPath;
+			}
+			else
+			{
+				this.outputPath = as3Project.outputPath;
+			}
+
+			return new PathSetting(this, "outputPath", "Api report output path", true, this.outputPath, false, false, as3Project.folderLocation.fileBridge.nativePath);
 		}
 
 		private function getOutputLogPath():ISetting

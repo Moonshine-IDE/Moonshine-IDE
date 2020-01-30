@@ -51,6 +51,8 @@ package actionScripts.plugins.royale
 		private var hasErrors:Boolean;
 
 		private var logFileStream:FileStream;
+		private var fullReportPath:String;
+		private var fullLogPath:String;
 
 		public function RoyaleApiReportPlugin():void
 		{
@@ -76,18 +78,18 @@ package actionScripts.plugins.royale
 			hasErrors = false;
 			var reportConfig:RoyaleApiReportVO = event.reportConfiguration;
 
-			var fullFileReportName:String = reportConfig.reportOutputLogPath +
+			fullLogPath = reportConfig.reportOutputLogPath +
 											model.fileCore.separator +
 											model.activeProject.name + "_" + API_REPORT_LOG_FILE_NAME;
 
-			var logFile:File = new File(fullFileReportName);
+			var logFile:File = new File(fullLogPath);
 			logFileStream = new FileStream();
 			logFileStream.open(logFile, FileMode.WRITE);
 			logFileStream.writeUTFBytes("Log file for Apache Royale API report: " + new Date().toString() + '\r\n');
 
 			var royaleMxmlc:String = reportConfig.royaleSdkPath + getMxmlcLocation();
 			var flexConfig:String = reportConfig.flexSdkPath + getFlexConfigLocation();
-			var apiReportName:String = reportConfig.reportOutputPath +
+			fullReportPath = reportConfig.reportOutputPath +
 									   model.fileCore.separator +
 									   model.activeProject.name + "_" + API_REPORT_FILE_NAME;
 
@@ -101,7 +103,7 @@ package actionScripts.plugins.royale
 
 			var fullCommand:String = royaleMxmlc.concat(" ",
 					libraryPath,
-					"-api-report=", apiReportName, " ",
+					"-api-report=", fullReportPath, " ",
 					"-load-config=", flexConfig,  " ",
 					reportConfig.mainAppFile);
 
@@ -142,17 +144,20 @@ package actionScripts.plugins.royale
 					}
 					break;
 				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED:
-					var endMessage:String = "Generating report has ended.";
+					var endMessage:String = "Generating report has ended. ";
 					if (hasErrors)
 					{
-						endMessage = "Generating report has ended with some errors.";
+						endMessage = "Generating report has ended with some errors. ";
 					}
 
 					hasErrors = false;
 					dispatcher.dispatchEvent(new RoyaleApiReportEvent(RoyaleApiReportEvent.REPORT_GENERATION_COMPLETED));
 
 					print(endMessage);
+
 					success(endMessage);
+					warning("Log: " + fullLogPath);
+					warning("Report path: " + fullReportPath);
 
 					logFileStream.close();
 					logFileStream = null;
