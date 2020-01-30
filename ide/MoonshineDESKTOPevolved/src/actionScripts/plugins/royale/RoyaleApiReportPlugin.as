@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.royale
 {
+	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.RoyaleApiReportEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.factory.FileLocation;
@@ -158,6 +159,8 @@ package actionScripts.plugins.royale
 					success(endMessage);
 					warning("Log: " + fullLogPath);
 					warning("Report path: " + fullReportPath);
+
+					dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(fullReportPath)));
 
 					logFileStream.close();
 					logFileStream = null;
