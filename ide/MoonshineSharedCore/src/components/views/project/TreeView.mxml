@@ -133,6 +133,8 @@
 			
 			public function sortChildren(wrapper:FileWrapper):void
 			{
+				if (!wrapper) return;
+
 				if (tree.dataDescriptor.isBranch(wrapper))
 				{
 					wrapper.sortChildren();
@@ -427,6 +429,8 @@
 							refreshActiveProject(tree.selectedItem as FileWrapper);
 							if(ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT > 0) ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT--;
 						}, 1000);
+
+						sortChildren(project.projectFolder);
 						break;
 					}
 				}
