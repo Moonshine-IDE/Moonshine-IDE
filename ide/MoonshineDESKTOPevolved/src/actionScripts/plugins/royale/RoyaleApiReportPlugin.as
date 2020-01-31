@@ -130,13 +130,17 @@ package actionScripts.plugins.royale
 			switch (value.event)
 			{
 				case WorkerEvent.RUN_NATIVEPROCESS_OUTPUT:
-					var match:Array = value.value.output.match(/Error/);
-					if (match)
+					if (value.value.output)
 					{
-						hasErrors = true;
-					}
+						var match:Array = value.value.output.match(/Error/);
+						var noCommand:Array = value.value.output.match(/is not recognized as an internal or external command/);
+						if(match || noCommand)
+						{
+							hasErrors = true;
+						}
 
-					print(value.value.output);
+						print(value.value.output);
+					}
 					break;
 				case WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK:
 					if (queue.length != 0)
