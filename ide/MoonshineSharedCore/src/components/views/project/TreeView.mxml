@@ -506,8 +506,14 @@
 					case FTETreeItemRenderer.OPEN:
 					case FTETreeItemRenderer.OPEN_FILE_FOLDER:
 					{
-						if(isMultiSelection) openFileFolder(tree.selectedItems);
-						else openFileFolder([fileWrapper]);
+						if(isMultiSelection)
+						{
+							openFileFolder(tree.selectedItems);
+						}
+						else
+						{
+							openFileFolder([fileWrapper]);
+						}
 						break;
 					}
 					case FTETreeItemRenderer.CLOSE:

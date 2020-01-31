@@ -206,7 +206,7 @@ package actionScripts.utils {
 
                     if (hasItemForOpen)
                     {
-                        expandItem(item, true);
+                        expandItem(item, true, false, true);
                     }
                 }
 
