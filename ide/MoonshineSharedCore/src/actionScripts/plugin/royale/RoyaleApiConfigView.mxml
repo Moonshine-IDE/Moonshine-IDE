@@ -101,7 +101,7 @@
         {
             this.doNotShowPromptAgain = event.doNotShowApiPromptReport;
         }
-        
+
         private function showBusyIndicator():void
         {
             var busyContainer:VGroup = new VGroup();
@@ -115,7 +115,7 @@
             busyIndicator.setStyle("symbolColor", "0x444444");
             busyIndicator.width = busyIndicator.height = 30;
             var lbl:Label = new Label();
-            lbl.setStyle("color", "0x444444");
+            lbl.setStyle("color", "#e252d3");
             lbl.setStyle("fontWeight", "bold");
             lbl.setStyle("fontSize", 16);
             lbl.text = "Generating API report is in progress...";
