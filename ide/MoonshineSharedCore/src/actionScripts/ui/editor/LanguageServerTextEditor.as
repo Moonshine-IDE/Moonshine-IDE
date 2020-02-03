@@ -18,26 +18,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
-	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.events.LanguageServerEvent;
-	import actionScripts.events.CompletionItemsEvent;
-	import actionScripts.events.SignatureHelpEvent;
-	import actionScripts.events.HoverEvent;
-	import actionScripts.events.GotoDefinitionEvent;
-	import actionScripts.events.DiagnosticsEvent;
 	import flash.events.Event;
-	import flash.geom.Point;
-	import actionScripts.events.ChangeEvent;
 	import flash.events.MouseEvent;
-	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.events.SaveFileEvent;
+	import flash.geom.Point;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
+	
+	import actionScripts.events.ChangeEvent;
 	import actionScripts.events.CodeActionsEvent;
-	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.events.CompletionItemsEvent;
+	import actionScripts.events.DiagnosticsEvent;
+	import actionScripts.events.GotoDefinitionEvent;
+	import actionScripts.events.HoverEvent;
+	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.MenuEvent;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.SaveFileEvent;
+	import actionScripts.events.SignatureHelpEvent;
+	import actionScripts.ui.editor.text.TextLineModel;
+	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.isUriInProject;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
@@ -508,6 +509,9 @@ package actionScripts.ui.editor
 			{
 				this.closeAllPopups();
 			}
+			
+			// check for any externally update
+			checkFileIfChanged();
 		}
 
 		private function addedToStageHandler(event:Event):void

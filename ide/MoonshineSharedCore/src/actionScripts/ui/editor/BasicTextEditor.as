@@ -25,6 +25,7 @@ package actionScripts.ui.editor
     import mx.events.FlexEvent;
     import mx.managers.IFocusManagerComponent;
     import mx.managers.PopUpManager;
+    import mx.utils.ObjectUtil;
     
     import spark.components.Group;
     
@@ -33,11 +34,13 @@ package actionScripts.ui.editor
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.SaveFileEvent;
+    import actionScripts.events.UpdateTabEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.IContentWindowReloadable;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.editor.text.vo.SearchResult;
@@ -49,37 +52,33 @@ package actionScripts.ui.editor
     import components.popup.SelectOpenedProject;
     import components.views.project.TreeView;
 
-    public class BasicTextEditor extends Group implements IContentWindow, IFocusManagerComponent
+    public class BasicTextEditor extends Group implements IContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
 		public var defaultLabel:String = "New";
 		public var projectPath:String;
 		public var editor:TextEditor;
 		public var lastOpenType:String;
 		
+		protected var lastOpenedUpdatedInMoonshine:Date;
 		protected var file:FileLocation;
 		protected var created:Boolean;
 		protected var loadingFile:Boolean;
 		protected var tempScrollTo:int = -1;
 		protected var loader: DataAgent;
+		protected var model:IDEModel = IDEModel.getInstance();
+        protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+        protected var _isChanged:Boolean;
+
+		private var pop:FileSavePopup;
+		private var selectProjectPopup:SelectOpenedProject;
+		protected var isVisualEditor:Boolean;
 
 		private var _readOnly:Boolean = false;
-
 		public function get readOnly():Boolean
 		{
 			return this._readOnly;
 		}
-
-		private var pop:FileSavePopup;
-		protected var model:IDEModel = IDEModel.getInstance();
-
-		private var selectProjectPopup:SelectOpenedProject;
-
-		protected var isVisualEditor:Boolean;
-
-        protected var _isChanged:Boolean;
-
-        protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-
+		
 		public function get label():String
 		{
 			var labelChangeIndicator:String = _isChanged ? "*" : "";
@@ -90,7 +89,6 @@ package actionScripts.ui.editor
 
 			return labelChangeIndicator + file.fileBridge.name;
 		}
-
 		public function get longLabel():String
 		{
 			if (!file) 
@@ -102,13 +100,11 @@ package actionScripts.ui.editor
 		{
 			return file;
 		}
-
 		public function set currentFile(value:FileLocation):void
 		{
 			if (file != value)
             {
                 file = value;
-
                 dispatchEvent(new Event('labelChanged'));
             }
 		}
@@ -117,7 +113,6 @@ package actionScripts.ui.editor
 		{
 			return editor.dataProvider;
 		}
-
 		public function set text(value:String):void
 		{
 			editor.dataProvider = value;
@@ -244,6 +239,7 @@ package actionScripts.ui.editor
 		{
 			loadingFile = true;
 			file = newFile;
+			lastOpenedUpdatedInMoonshine = file.fileBridge.modificationDate;
 			if (fileData) 
 			{
 				openFileAsStringHandler(fileData as String);
@@ -255,6 +251,14 @@ package actionScripts.ui.editor
 			
 			// Load later so we have time to draw before everything happens
 			callLater(file.fileBridge.load);
+		}
+		
+		public function checkFileIfChanged():void
+		{
+			if (ObjectUtil.dateCompare(file.fileBridge.modificationDate, lastOpenedUpdatedInMoonshine) != 0)
+			{
+				dispatcher.dispatchEvent(new UpdateTabEvent(UpdateTabEvent.EVENT_TAB_UPDATED_OUTSIDE, this));
+			}
 		}
 		
 		public function reload():void
@@ -426,6 +430,7 @@ package actionScripts.ui.editor
 		protected function updateChangeStatus():void
 		{
 			_isChanged = editor.hasChanged;
+			lastOpenedUpdatedInMoonshine = file.fileBridge.modificationDate;
 			dispatchEvent(new Event('labelChanged'));
 		}
 

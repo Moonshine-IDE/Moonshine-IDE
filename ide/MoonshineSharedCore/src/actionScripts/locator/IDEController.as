@@ -25,19 +25,21 @@ package actionScripts.locator
 	import actionScripts.controllers.DeleteFileCommand;
 	import actionScripts.controllers.ICommand;
 	import actionScripts.controllers.OpenFileCommand;
+	import actionScripts.controllers.OpenLocationCommand;
 	import actionScripts.controllers.QuitCommand;
 	import actionScripts.controllers.RenameFileFolderCommand;
 	import actionScripts.controllers.SaveAsCommand;
 	import actionScripts.controllers.SaveFileCommand;
+	import actionScripts.controllers.UpdateTabCommand;
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.DeleteFileEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.RenameFileFolderEvent;
+	import actionScripts.events.UpdateTabEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.tabview.CloseTabEvent;
-	import actionScripts.events.OpenLocationEvent;
-	import actionScripts.controllers.OpenLocationCommand;
 	
 	public class IDEController
 	{
@@ -63,6 +65,7 @@ package actionScripts.locator
 			commands[OpenFileEvent.JUMP_TO_SEARCH_LINE] = OpenFileCommand;
 			commands[AddTabEvent.EVENT_ADD_TAB] = AddTabCommand;
 			commands[OpenLocationEvent.OPEN_LOCATION] = OpenLocationCommand;
+			commands[UpdateTabEvent.EVENT_TAB_UPDATED_OUTSIDE] = UpdateTabCommand;
 			
 			commands[MenuPlugin.MENU_SAVE_AS_EVENT] = SaveAsCommand;
 			commands[MenuPlugin.MENU_SAVE_EVENT] = SaveFileCommand; 
