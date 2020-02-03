@@ -76,12 +76,15 @@
 			import actionScripts.valueObjects.URLDescriptorVO;
 			
 			import components.popup.NewFolderPopup;
-	
+
+			[Bindable]
+			private var model:IDEModel = IDEModel.getInstance();
+
 			private var newFolderWindow:NewFolderPopup;
 	
 			// Renaming
 			private var currentEditedItem:FTETreeItemRenderer;
-			private var model:IDEModel = IDEModel.getInstance();
+
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 	
 			// Creating new file
@@ -93,10 +96,7 @@
 			private var fileCollection:Array;
 	
 			private var _projects:ArrayCollection;
-	
-			[Bindable]
-			public var projectFolders:ArrayCollection;
-	
+
 			[Bindable]
 			public function get projects():ArrayCollection
 			{
@@ -120,15 +120,14 @@
 					var project:ProjectVO = value[i];
 					pdirs.push(project.projectFolder);
 				}
-	
-				projectFolders = new ArrayCollection(pdirs);
+
+				model.selectedprojectFolders.removeAll();
 
 				var dataSortField:SortField = new SortField("name", true);
 				var dataSort:Sort = new Sort();
 				dataSort.fields = [dataSortField];
-				projectFolders.sort = dataSort;
-				projectFolders.refresh();
-				model.selectedprojectFolders = projectFolders;
+				model.selectedprojectFolders.sort = dataSort;
+				model.selectedprojectFolders.refresh();
 			}
 			
 			public function sortChildren(wrapper:FileWrapper):void
@@ -214,7 +213,7 @@
 	
 			public function refresh(dir:FileLocation, markAsDeletion:Boolean = false):void
 			{
-				for each (var fw:FileWrapper in projectFolders)
+				for each (var fw:FileWrapper in model.selectedprojectFolders)
 				{
 					if(ConstantsCoreVO.IS_AIR)
 					{
@@ -262,11 +261,11 @@
 			{
 				// determine to which project fileWrapper is belongs to
 				var projectIndex:int = -1;
-				if(projectFolders.length > 1)
+				if(model.selectedprojectFolders.length > 1)
 				{
-					for (var i:int = 0; i < projectFolders.length; i++)
+					for (var i:int = 0; i < model.selectedprojectFolders.length; i++)
 					{
-						if(projectFolders[i] == fw)
+						if(model.selectedprojectFolders[i] == fw)
 						{
 							projectIndex = i;
 							break;
@@ -276,10 +275,10 @@
 				{
 					projectIndex = 0;
 				}
-	
-				projectFolders[projectIndex].isWorking = true;
+
+				model.selectedprojectFolders[projectIndex].isWorking = true;
 				var projectPath:String = project.projectFolder.nativePath;
-				var tmpProjectVO:ProjectVO = new ProjectVO(new FileLocation(URLDescriptorVO.PROJECT_DIR + projectPath), projectFolders[projectIndex].name, false);
+				var tmpProjectVO:ProjectVO = new ProjectVO(new FileLocation(URLDescriptorVO.PROJECT_DIR + projectPath), model.selectedprojectFolders[projectIndex].name, false);
 				tmpProjectVO.projectRemotePath = project.projectFolder.nativePath;
 				tmpProjectVO.addEventListener(ProjectVO.PROJECTS_DATA_UPDATED, onTmpProjectUpdated, false, 0, true);
 				tmpProjectVO.addEventListener(ProjectVO.PROJECTS_DATA_FAULT, onTmpProjectUpdateFault, false, 0, true);
@@ -289,16 +288,15 @@
 					onTmpProjectUpdateFault(null);
 	
 					projects[projectIndex] = tmpProjectVO;
-					projectFolders[projectIndex] = tmpProjectVO.projectFolder;
-					IDEModel.getInstance().selectedprojectFolders = projectFolders;
-					refreshItem(projectFolders[projectIndex]);
+					model.selectedprojectFolders[projectIndex] = tmpProjectVO.projectFolder;
+					refreshItem(model.selectedprojectFolders[projectIndex]);
 				}
 	
 				function onTmpProjectUpdateFault(event:Event):void
 				{
 					tmpProjectVO.removeEventListener(ProjectVO.PROJECTS_DATA_UPDATED, onTmpProjectUpdated);
 					tmpProjectVO.removeEventListener(ProjectVO.PROJECTS_DATA_FAULT, onTmpProjectUpdateFault);
-					projectFolders[projectIndex].isWorking = false;
+					model.selectedprojectFolders[projectIndex].isWorking = false;
 				}
 			}
 	
@@ -342,19 +340,19 @@
 			private function setSelectedItem(fw:FileWrapper):void
 			{
 				var filew:FileWrapper;
-				if(projectFolders.length > 1)
+				if(model.selectedprojectFolders.length > 1)
 				{
-					for (var i:int = 0; i < projectFolders.length; i++)
+					for (var i:int = 0; i < model.selectedprojectFolders.length; i++)
 					{
-						if(fw.nativePath.indexOf((projectFolders[i] as FileWrapper).nativePath) >= 0)
+						if(fw.nativePath.indexOf((model.selectedprojectFolders[i] as FileWrapper).nativePath) >= 0)
 						{
-							filew = projectFolders[i] as FileWrapper;
+							filew = model.selectedprojectFolders[i] as FileWrapper;
 							break;
 						}
 					}
 				} else
 				{
-					filew = projectFolders[0] as FileWrapper;
+					filew = model.selectedprojectFolders[0] as FileWrapper;
 				}
 	
 				tree.selectedItem = filew;
@@ -374,16 +372,16 @@
 						// returns -1 even the fileWrapper object and object inside the collection has same
 						// instance id. Thus a different approach it needs to parse by its uid value
 						var lastSelectedItem:Object = tree.selectedItem;
-						var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, projectFolders);
-						projectFolders.removeItemAt(tmpFWIndex);
+						var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, model.selectedprojectFolders);
+						model.selectedprojectFolders.removeItemAt(tmpFWIndex);
 						timeoutValue = setTimeout(function ():void
 						{
 							if(tree.isItemVisible(lastSelectedItem))
 							{
 								tree.selectedItem = lastSelectedItem;
-							} else if(projectFolders.length != 0)
+							} else if(model.selectedprojectFolders.length != 0)
 							{
-								tree.selectedItem = (--tmpFWIndex != -1) ? projectFolders[tmpFWIndex] : projectFolders[++tmpFWIndex];
+								tree.selectedItem = (--tmpFWIndex != -1) ? model.selectedprojectFolders[tmpFWIndex] : model.selectedprojectFolders[++tmpFWIndex];
 							}
 							clearTimeout(timeoutValue);
 							refreshActiveProject(tree.selectedItem as FileWrapper);
@@ -416,8 +414,8 @@
 							sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, haxeProject.sourceFolder);
 						}
 						if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
-	
-						projectFolders.addItemAt(project.projectFolder, 0);
+
+						model.selectedprojectFolders.addItemAt(project.projectFolder, 0);
 						if((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject)
 						{
 							refreshFileFolder(project.projectFolder, project);
@@ -434,29 +432,25 @@
 						break;
 					}
 				}
-	
-				model.selectedprojectFolders = projectFolders;
 			}
 	
 			private function onProjectTreeUpdates(event:ProjectEvent):void
 			{
-				projectFolders.addItemAt(event.project.projectFolder, 0);
+				model.selectedprojectFolders.addItemAt(event.project.projectFolder, 0);
 	
 				// I don't know why the heck projectFolders having null value from where
 				// is a fix to the probelm for now
 				if(!ConstantsCoreVO.IS_AIR)
 				{
-					for (var i:int = 0; i < projectFolders.length; i++)
+					for (var i:int = 0; i < model.selectedprojectFolders.length; i++)
 					{
-						if(projectFolders[i] == null)
+						if(model.selectedprojectFolders[i] == null)
 						{
-							projectFolders.removeItemAt(i);
+							model.selectedprojectFolders.removeItemAt(i);
 							i--;
 						}
 					}
 				}
-	
-				model.selectedprojectFolders = projectFolders;
 			}
 	
 			private function onProjectFilesUpdates(event:ProjectEvent):void
@@ -862,7 +856,6 @@
 							if(project.projectFolder.nativePath === value[0].nativePath)
 							{
 								projects.removeItem(project);
-								updateTreeView();
 	
 								// in case of Close project we shall need to close the lang-server here
 								// in case of Delete project this handles by the command class
@@ -882,20 +875,12 @@
 						proceedWithDeletionOfNode(fw);
 					}
 				}
-	
-				/*
-				*@local
-				*/
-				function updateTreeView():void
-				{
-					model.selectedprojectFolders = projectFolders;
-				}
-	
+
 				function proceedWithDeletionOfNode(value:FileWrapper):void
 				{
 					// search through open projects as we don't know
 					// which project the FileWrapper is belongs to
-					for each (var fw:FileWrapper in projectFolders)
+					for each (var fw:FileWrapper in model.selectedprojectFolders)
 					{
 						parentCollection = findFilePosition(fw);
 						if(parentCollection) break;
@@ -916,8 +901,7 @@
 					}
 	
 					fileCollection = null;
-					updateTreeView();
-	
+
 					// check if the wrapper is the source folder to the project
 					if(lastProcessedProjectPath != value.projectReference.path)
 					{
@@ -1149,7 +1133,7 @@
 	<utils:CustomTree
 			id="tree"
 			width="100%" height="100%"
-			dataProvider="{projectFolders}"
+			dataProvider="{model.selectedprojectFolders}"
 			propertyNameKey="name"
 			propertyNameKeyValue="nativePath"
 			color="0xEEEEEE"

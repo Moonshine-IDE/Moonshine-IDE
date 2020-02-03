@@ -331,7 +331,7 @@ package actionScripts.plugin.project
 			// If it's not showing, spin it into view
 			if (!openResourceView.stage)
 			{
-				openResourceView.setFileList(treeView.projectFolders);
+				openResourceView.setFileList(model.selectedprojectFolders);
 				openResourceView.setFocus();
 			}
 		}
