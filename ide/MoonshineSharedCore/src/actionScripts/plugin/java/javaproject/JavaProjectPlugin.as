@@ -24,6 +24,7 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.events.MavenBuildEvent;
 	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.RunJavaProjectEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.build.MavenBuildStatus;
 	import actionScripts.plugin.core.compiler.JavaBuildEvent;
@@ -125,11 +126,11 @@ package actionScripts.plugin.java.javaproject
 			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
 			if (javaProject)
 			{
-				var nameWithoutExtension:String = event.defaultApplicationFile.fileBridge.nameWithoutExtension;
+				var nameWithoutExtension:String = (event.value as FileLocation).fileBridge.nameWithoutExtension;
 				if (javaProject.mainClassName != nameWithoutExtension)
 				{
 					javaProject.mainClassName = nameWithoutExtension;
-					javaProject.mainClassPath = event.defaultApplicationFile.fileBridge.nativePath;
+					javaProject.mainClassPath = (event.value as FileLocation).fileBridge.nativePath;
 					javaProject.saveSettings();
 				}
 			}
