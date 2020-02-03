@@ -19,9 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import actionScripts.plugins.royale.RoyaleApiReportConfiguratorPlugin;
-	import actionScripts.plugins.royale.RoyaleApiReportPlugin;
-
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.Screen;
@@ -50,6 +47,7 @@ package actionScripts.impls
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsolePlugin;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.plugin.core.mouse.MouseManagerPlugin;
 	import actionScripts.plugin.errors.UncaughtErrorsPlugin;
 	import actionScripts.plugin.findResources.FindResourcesPlugin;
@@ -58,6 +56,7 @@ package actionScripts.impls
 	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugin.locations.LocationsPlugin;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
+	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.plugin.project.ProjectPlugin;
 	import actionScripts.plugin.projectPanel.ProjectPanelPlugin;
@@ -87,13 +86,19 @@ package actionScripts.impls
 	import actionScripts.plugins.away3d.Away3DPlugin;
 	import actionScripts.plugins.clean.CleanProject;
 	import actionScripts.plugins.core.ProjectBridgeImplBase;
+	import actionScripts.plugins.debugAdapter.DebugAdapterPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.gradle.GradleBuildPlugin;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
 	import actionScripts.plugins.help.view.events.VisualEditorEvent;
+	import actionScripts.plugins.httpServer.HttpServerPlugin;
+	import actionScripts.plugins.js.JavaScriptPlugin;
 	import actionScripts.plugins.maven.MavenBuildPlugin;
+	import actionScripts.plugins.menu.MultiMenuEventsNotifierPlugin;
 	import actionScripts.plugins.nativeFiles.FileAssociationPlugin;
 	import actionScripts.plugins.nativeFiles.FilesCopyPlugin;
+	import actionScripts.plugins.royale.RoyaleApiReportConfiguratorPlugin;
+	import actionScripts.plugins.royale.RoyaleApiReportPlugin;
 	import actionScripts.plugins.run.RunJavaProject;
 	import actionScripts.plugins.startup.StartupHelperPlugin;
 	import actionScripts.plugins.svn.SVNPlugin;
@@ -102,7 +107,6 @@ package actionScripts.impls
 	import actionScripts.plugins.versionControl.VersionControlPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
-	import actionScripts.plugins.debugAdapter.DebugAdapterPlugin;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.MenuPlugin;
@@ -124,9 +128,6 @@ package actionScripts.impls
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
-	import actionScripts.plugin.outline.OutlinePlugin;
-	import actionScripts.plugins.js.JavaScriptPlugin;
-	import actionScripts.plugins.httpServer.HttpServerPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -220,6 +221,7 @@ package actionScripts.impls
 		public function getDefaultPlugins():Array
 		{
 			return [
+				MultiMenuEventsNotifierPlugin,
 				MXMLCPlugin,
 				MXMLCJavaScriptPlugin,
 				SWFLauncherPlugin,
@@ -358,7 +360,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
-					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.BUILD_AND_DEBUG,
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.HAXE], ProjectActionEvent.BUILD_AND_DEBUG,
 						"d", [Keyboard.COMMAND],
 						"d", [Keyboard.CONTROL]),
 					new MenuItem(null),					

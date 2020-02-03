@@ -152,7 +152,7 @@ package actionScripts.plugins.as3project.mxmlc
 			
 			
 			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
+			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
 			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD, buildDebug);
 			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD_RELEASE, buildRelease);
 			reset();
@@ -163,7 +163,7 @@ package actionScripts.plugins.as3project.mxmlc
 			super.deactivate();
 
 			dispatcher.removeEventListener(JavaScriptBuildEvent.BUILD_AND_RUN, buildAndRun);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
+			dispatcher.removeEventListener(JavaScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
 			dispatcher.removeEventListener(JavaScriptBuildEvent.BUILD, buildDebug);
 			dispatcher.removeEventListener(JavaScriptBuildEvent.BUILD_RELEASE, buildRelease);
 
