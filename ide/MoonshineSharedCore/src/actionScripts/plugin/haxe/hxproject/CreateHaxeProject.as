@@ -99,12 +99,13 @@ package actionScripts.plugin.haxe.hxproject
 			var folderLocation:FileLocation = new FileLocation(tmpProjectSourcePath);
 
 			// Remove spaces from project name
-			var projectName:String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
+			var templateName:String = event.templateDir.fileBridge.name;
+			var projectName:String = (templateName.indexOf("(") != -1) ? templateName.substr(0, templateName.indexOf("(")) : templateName;
 			projectName = "New" + projectName.replace(/ /g, "");
 
 			project = new HaxeProjectVO(folderLocation, projectName);
 			//this seems kind of hacky, but other indicators haven't been populated yet
-			project.isLime = projectName.indexOf("OpenFL") != -1 || projectName.indexOf("Lime") != -1;;
+			project.isLime = templateName.indexOf("OpenFL") != -1 || templateName.indexOf("Lime") != -1;
 
 			var settingsView:SettingsView = new SettingsView();
 			settingsView.exportProject = event.exportProject;
