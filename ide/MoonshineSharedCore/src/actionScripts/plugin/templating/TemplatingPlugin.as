@@ -352,7 +352,7 @@ package actionScripts.plugin.templating
 						template.logoImagePath = iconFile.url;
                     }
 
-                    if (templateName.indexOf("Feathers") != -1 || templateName.indexOf("Away3D") != -1)
+                    if (templateName.indexOf("Feathers SDK") != -1 || templateName.indexOf("Away3D") != -1)
 					{
 						feathersProjectTemplates.addItem(template);
                     }

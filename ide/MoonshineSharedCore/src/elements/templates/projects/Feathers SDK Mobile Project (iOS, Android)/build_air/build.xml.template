@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="Moonshine Build Script" basedir="." default="disposeTempFiles">
+ 	
+	<tstamp>
+		<format property="timestamp" pattern="yyyy-MM-dd_HH-mm-ss" />
+	</tstamp>
+	
+	<!--
+	//==========================================================================
+	//
+	//  PROPERTIES
+	//
+	//==========================================================================
+	-->
+	
+	<!-- ANT REQUISITES -->
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="ant-contrib-0.6.jar"/>
+			
+	<!-- READS FLEX_HOME FROM ENVIRONMENT VARIABLE IF EXISTS -->
+	<property environment="env"/>
+	<propertycopy property="FLEX_HOME" from="env.FLEX_HOME" />
+	<echo>SDK : ${FLEX_HOME}</echo>
+
+	<!-- GENERAL PROPERTIES -->
+	<property name="DEPLOY_DIR" value="DEPLOY"/>
+	<property name="DEBUG_DIR" value="build-debug" />
+	<property name="DESKTOP_DESCRIPTOR" value="${DEBUG_DIR}/$DesktopDescriptor-app.xml" />
+	<property name="DESKTOP_DESCRIPTOR_ORIGINAL" value="../src/$DesktopDescriptor-app.xml" />
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+
+	<!-- SWF COMPILER PATH -->
+	<property name="MXMLC_PATH" value="${FLEX_HOME}/lib/mxmlc.jar" />
+	
+	<!-- AIR COMPILER PATH -->
+	<property name="ADT_PATH" value="${FLEX_HOME}/lib/adt.jar" />
+    
+	<!-- PROJECT SOURCE LOCATIONS -->
+	<property name="SOURCE_DIR" value="../src"/>
+	<property name="SOURCE_APP_FILE" value="${SOURCE_DIR}/$ProjectFile" />
+	
+	
+	<!--
+	//==========================================================================
+	//
+	//  PROPERTIES
+	//	NEEDS USER TO CHANGE AS NECESSARY
+	//
+	//==========================================================================
+	-->
+	
+	<property name="SWF_FILENAME" value="$ProjectSWF" />
+	<property name="SWF_FILE_PATH" value="${DEBUG_DIR}/${SWF_FILENAME}" />
+	
+	<!-- CERTIFICATE(S) FOR DESKTOP PACKAGING -->
+	<property name="DESKTOP_SELFSIGNED_CERTIFICATE" value="$Certificate.p12" />
+	<property name="DESKTOP_SELFSIGNED_CERTIFICATE_PASS" value="$Password" />
+	<property name="DESKTOP_PACKAGE_NAME" value="$ProjectName" />
+	
+	
+	<!--
+	//==========================================================================
+	//
+	//  TASKS
+	//
+	//==========================================================================
+	-->
+	
+	<!-- CREATE SELF-SIGNED CERTIFICATE IF DOES NOT EXISTS ALREADY -->
+	<target name="createCertificate" unless="DESKTOP_SELFSIGNED_CERTIFICATE.exists">
+		<echo>Self-signed .p12 certificate generation</echo>
+		<java jar="${ADT_PATH}" fork="true" failonerror="true">
+			<arg line="-certificate" />
+			<arg line="-cn '${DESKTOP_PACKAGE_NAME}'" />
+			<arg line="2048-RSA" />
+	   		<arg line="${DESKTOP_SELFSIGNED_CERTIFICATE}" />
+	   		<arg line="${DESKTOP_SELFSIGNED_CERTIFICATE_PASS}"/>
+		</java>
+	 </target>
+	
+	
+	<!--
+	//==========================================================================
+	//
+	//  GLOBAL
+	//
+	//==========================================================================
+	-->
+	
+	<!-- DELETE ANY PREVIOUS DIRECTORIES AND CREATES NEW ONES -->
+	<target name="init">
+		<delete dir="${DEPLOY_DIR}"/>
+		<delete dir="${DEBUG_DIR}" />
+		<mkdir dir="${DEPLOY_DIR}" />
+		<mkdir dir="${DEBUG_DIR}" />
+	</target>
+	
+	<!-- MODIFY APPLICATION DESCRIPTOR FILE AND COPYING ELEMENTS TO BUILD-DEBUG FOLDER -->
+	<target name="modifyDescriptor" depends="init">
+		<available file="${DESKTOP_SELFSIGNED_CERTIFICATE}" property="DESKTOP_SELFSIGNED_CERTIFICATE.exists" />
+		<if>
+			<equals arg1="${DESKTOP_SELFSIGNED_CERTIFICATE.exists}" arg2="true"/>
+			<then>
+				<copy file="${DESKTOP_SELFSIGNED_CERTIFICATE}" todir="${DEBUG_DIR}" overwrite="true"/>
+			</then>
+			<else>
+				<antcall target="createCertificate"></antcall>
+			</else>
+		</if>
+		<copy file="${DESKTOP_DESCRIPTOR_ORIGINAL}" todir="${DEBUG_DIR}" overwrite="true"/>
+		<copy file="${DESKTOP_SELFSIGNED_CERTIFICATE}" todir="${DEBUG_DIR}" overwrite="true"/>
+		<replaceregexp file="${DESKTOP_DESCRIPTOR}" byline="true" match="((?&lt;=content\&gt;)[\S\s]*?(?=\&lt;\/content))" replace='${SWF_FILE_PATH}'/>
+		<property name="DESKTOP_PACKAGE_PATH" value="${DEPLOY_DIR}/${DESKTOP_PACKAGE_NAME}.apk"/>
+	</target>
+	
+	
+	<!--
+	//==========================================================================
+	//
+	//  GLOBAL BINARIES
+	//
+	//==========================================================================
+	-->
+	
+	<!-- COMPILE SWF TO BUILD-DEBUG DIRECTORY -->
+	<target name="compileSWF" depends="modifyDescriptor">
+		<mxmlc file="${SOURCE_APP_FILE}" output="${SWF_FILE_PATH}" configname="airmobile" locale="en_US" fork="true" optimize="true" debug="false" actionscript-file-encoding="UTF-8" incremental="false" keep-generated-actionscript="false" maxmemory="1024m">
+			<load-config filename="${FLEX_HOME}/frameworks/airmobile-config.xml"/>
+			<source-path path-element="${SOURCE_DIR}"/>
+			<compiler.library-path dir="${DEBUG_DIR}" append="true">
+				<include name="**/*.swc" />
+			</compiler.library-path>
+			<compiler.library-path dir="${flexlib}/frameworks/themes/MetalWorksMobileTheme" append="true">
+				<include name="*.swc" />
+			</compiler.library-path>
+		</mxmlc>
+	</target>
+	
+	<!--
+	//==========================================================================
+	//
+	//  MACOS BINARY
+	//
+	//==========================================================================
+	-->
+	
+	<!-- Compile APK -->
+	<target name="compileAPKProject" depends="compileSWF">
+		<java jar="${ADT_PATH}" fork="true" failonerror="true">
+			<arg line="-package" />
+			<arg line="-target apk-captive-runtime"/>
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore '${DESKTOP_SELFSIGNED_CERTIFICATE}' " />
+			<arg line="-storepass '${DESKTOP_SELFSIGNED_CERTIFICATE_PASS}'" />
+			<arg line="${DESKTOP_PACKAGE_PATH}" />
+			<arg line="${DESKTOP_DESCRIPTOR}" />
+			<arg line="${SWF_FILE_PATH}" />
+			<!-- Add folders to be bundled in the AIR file here -->
+		</java>
+	</target>
+	
+	
+	<!--
+	//==========================================================================
+	//
+	//  DISPOSE
+	//
+	//==========================================================================
+	-->
+	
+	<!-- DELETE TEMP FILES FOR WINDOWS -->
+	<target name="disposeTempFiles" depends="compileAPKProject">
+		<delete dir="${DEBUG_DIR}" />
+	</target>
+</project>
