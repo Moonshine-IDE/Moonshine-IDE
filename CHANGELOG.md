@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Apache Royale browser projects support debugging when launched in Chrome.
 * New Haxe project type.
+* New Haxe Feathers UI project type.
 
 ### Changed
 * Updated [Groovy language server](https://github.com/prominic/groovy-langugage-server) engine to latest.

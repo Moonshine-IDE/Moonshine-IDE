@@ -105,7 +105,7 @@ package actionScripts.plugin.haxe.hxproject
 
 			project = new HaxeProjectVO(folderLocation, projectName);
 			//this seems kind of hacky, but other indicators haven't been populated yet
-			project.isLime = templateName.indexOf("OpenFL") != -1 || templateName.indexOf("Lime") != -1;
+			project.isLime = templateName.indexOf("OpenFL") != -1 || templateName.indexOf("Lime") != -1 || templateName.indexOf("Feathers UI") != -1;
 
 			var settingsView:SettingsView = new SettingsView();
 			settingsView.exportProject = event.exportProject;
