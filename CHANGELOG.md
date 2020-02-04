@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Updated [Groovy language server](https://github.com/prominic/groovy-langugage-server) engine to latest.
 * Updated [ActionScript and MXML](https://as3mxml.com/) engine to v0.25.0.
 * Updated [SWF debug adapter](https://as3mxml.com/) engine to v1.0.2.
-* Updated [Chrome debug adapter](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.2.
+* Updated [Chrome debug adapter](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.5.
 
 ### Fixed
 * Royale: Fix issue where resources were not copied to bin/js-release folder.
