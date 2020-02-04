@@ -217,12 +217,4 @@ package actionScripts.utils {
 			}
 		}
     }
-} true);
-                    }
-                }
-
-                setItemsAsOpen(items);
-			}
-		}
-    }
 }
