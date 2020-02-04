@@ -263,7 +263,7 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = null;
                         pendingRunFolder = null;
                         pendingDebug = false;
-                        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+                        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-release"].join(" ")], project.folderLocation);
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -273,12 +273,12 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = null;
                         pendingRunFolder = null;
                         pendingDebug = false;
-                        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+                        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-release"].join(" ")], project.folderLocation);
                         break;
                     }
                     default:
                     {
-			            this.startLimeTest(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.limeTargetPlatform].join(" ")], project.folderLocation);
+			            this.startLimeTest(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.limeTargetPlatform, "-release"].join(" ")], project.folderLocation);
                     }
                 }
             }
