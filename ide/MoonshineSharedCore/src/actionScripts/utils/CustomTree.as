@@ -208,7 +208,7 @@ package actionScripts.utils {
 
                     if (hasItemForOpen)
                     {
-                        expandItem(item, true, false, true);
+                        expandItem(item, true);
 						(item as FileWrapper).sortChildren();
                     }
                 }
