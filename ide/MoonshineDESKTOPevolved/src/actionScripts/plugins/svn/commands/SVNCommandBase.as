@@ -141,12 +141,8 @@ package actionScripts.plugins.svn.commands
 			{
 				if (target.userObject.save && repositoryItem)
 				{
-					var tmpTopLevel:RepositoryItemVO = VersionControlUtils.getRepositoryItemByUdid(repositoryItem.udid);
-					tmpTopLevel.userName = target.userObject.userName;
-					tmpTopLevel.userPassword = target.userObject.password;
-					SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
+					repositoryItem.userName = target.userObject.userName;
 				}
-				
 				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
 			}
 		}
