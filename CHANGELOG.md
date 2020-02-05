@@ -3,14 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## Moonshine IDE [2.6.0]
+## Moonshine IDE [2.5.1]
 
 ### Summary
 
 ### Added
 * Apache Royale browser projects support debugging when launched in Chrome.
+* Add [Apache Royale API](https://github.com/apache/royale-asjs/wiki/Generating-an-API-Report) report generator to help migration from Flex to Royale.
 * New Haxe project type.
 * New Haxe Feathers UI project type.
+* Getting Started: Add options to download Apache Royale Nightly build.
 
 ### Changed
 * Updated [Groovy language server](https://github.com/prominic/groovy-langugage-server) engine to latest.
@@ -19,8 +21,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Updated [Chrome debug adapter](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.5.
 
 ### Fixed
-* Royale: Fix issue where resources were not copied to bin/js-release folder.
-* Java: Fix issue where changes to _pom.xml_ or _build.gradle_ were not properly reflected in code intelligence.
+* Royale: Fixed issue where resources were not copied to bin/js-release folder.
+* Java: Fixed issue where changes to _pom.xml_ or _build.gradle_ were not properly reflected in code intelligence.
+* Java: Fixed issue where Java path was not recognized by Maven build.
+* Project Sidebar: Fixed issue where project files/folders was not sorted alphabetically.
 
 ## Moonshine IDE [2.5.0]
 
