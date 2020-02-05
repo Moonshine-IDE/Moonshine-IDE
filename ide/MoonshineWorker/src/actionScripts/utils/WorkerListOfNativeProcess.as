@@ -22,7 +22,6 @@ package actionScripts.utils
 		private var customInfo:NativeProcessStartupInfo;
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var pendingQueue:Array = [];
-		private var isErrorClose:Boolean;
 		private var presentRunningQueue:Object;
 		private var currentWorkingDirectory:File;
 		
@@ -40,7 +39,7 @@ package actionScripts.utils
 			
 			if (customProcess)
 			{
-				stopShell();
+				disposeRunningProcess();
 			}
 			customInfo = renewProcessInfo();
 			
@@ -62,8 +61,7 @@ package actionScripts.utils
 		{
 			if (queue.length == 0)
 			{
-				stopShell();
-				cleanUpShell();
+				disposeRunningProcess();
 				worker.workerToMain.send({
 					event:WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED, 
 					value:null, 
@@ -104,7 +102,7 @@ package actionScripts.utils
 				subscriberUdid:subscriberUdid
 			});
 			
-			if (customProcess) cleanUpShell();
+			disposeRunningProcess();
 			startShell();
 			customProcess.start(customInfo);
 		}
@@ -127,28 +125,23 @@ package actionScripts.utils
 
 		private function stopShell():void
 		{
-			if (!customProcess)
-			{
-				return;
-			}
-
-			if (customProcess.running)
+			if (customProcess && customProcess.running)
 			{
 				customProcess.exit();
 			}
-
-			presentRunningQueue = null;
-			isErrorClose = false;
 		}
 
 		private function cleanUpShell():void
 		{
-			customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
-			customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
-			customProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
-			customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
-			customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
-			customProcess = null;
+			if (customProcess)
+			{
+				customProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
+				customProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellData);
+				customProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, shellError);
+				customProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, shellError);
+				customProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
+				customProcess = null;
+			}
 		}
 
 		private function shellError(e:ProgressEvent):void 
@@ -190,9 +183,9 @@ package actionScripts.utils
 					value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_ERROR, data, data), 
 					subscriberUdid:subscriberUdid
 				});
-				isErrorClose = true;
+				
 				//Native process need time to properly exited
-				stopShell();
+				disposeRunningProcess();
 			}
 		}
 		
@@ -243,7 +236,7 @@ package actionScripts.utils
 				}
 
 				//Native process need time to properly exited
-				setTimeout(stopShell, 200);
+				setTimeout(disposeRunningProcess, 200);
 				return;
 			}
 
@@ -255,6 +248,12 @@ package actionScripts.utils
 					subscriberUdid:subscriberUdid
 				});
 			}
+		}
+		
+		private function disposeRunningProcess():void
+		{
+			stopShell();
+			cleanUpShell();
 		}
 	}
 }
