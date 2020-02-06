@@ -21,6 +21,9 @@
 	<property name="keepDebugFiles" value="${APP_PROPERTIES.keepDebugFiles}" />
 	<property name="deploy_dir" value="DEPLOY"/>
 	<property name="debug_dir" value="bin-debug"/>
+	
+	<!-- Overwrite to limit path length errors.  See https://github.com/prominic/Moonshine-IDE/issues/662 -->
+	<property name="elements_dir" value="${basedir}/elements"/>
 
 	<condition property="isWindows">
 		<os family="windows" />
@@ -274,7 +277,7 @@
 	   		<arg line="${desktopBinaryFilename}" />
 	   		<arg line="'${desktopApplicationDescriptor}'" />
 	   		<arg line="'${swfFilename}'" />
-			<arg line="elements" />
+			<arg line="${elements_dir}" />
 			<arg line="installer" />
 			<arg line="tourDeFlex" />
 			<arg line="defaultSDKs"/>
@@ -301,7 +304,7 @@
 	   		<arg line="${desktopBinaryFilename}" />
 	   		<arg line="'${desktopApplicationDescriptor}'" />
 	   		<arg line="'${swfFilename}'" />
-			<arg line="elements" />
+			<arg line="${elements_dir}" />
 			<arg line="installer"/>
 			<arg line="tourDeFlex" />
 			<arg line="defaultSDKs"/>
@@ -324,7 +327,7 @@
 			<!-- AIR doesn't support ANE -->
 			<!--arg line="-extdir"/>
 			<arg line="../extensions"/-->
-			<arg line="elements" />
+			<arg line="${elements_dir}" />
 			<arg line="installer"/>
 			<arg line="tourDeFlex" />
 		</java>
@@ -352,7 +355,7 @@
 			<arg line="${swfFilename}" />
 			<arg line="-extdir"/>
 			<arg line="../extensions"/>
-			<arg line="elements" />
+			<arg line="${elements_dir}" />
 			<arg line="tourDeFlex" />
 			<arg line="helperResources"/>
 			<!-- Add folders to be bundled in the AIR file here -->
@@ -374,7 +377,7 @@
 			<arg line="'${swfFilename}'" />
 			<arg line="-extdir"/>
 			<arg line="../extensions"/>
-			<arg line="elements" />
+			<arg line="${elements_dir}" />
 			<arg line="assets" />
 			<arg line="tourDeFlex" />
 			<arg line="macOScripts" />
@@ -386,7 +389,7 @@
 	
 	<!-- Compile .pkg to distribute through app store -->
 	<target name="buildAppStorePKG" depends="compile app project" if="${Is.Keychain.Certificate.Defined}">
-		<copy tofile="${desktopBinaryFilename}/Contents/Resources/Icon.icns" file="${basedir}/elements/images/moonshineIcons.icns" overwrite="true"/>
+		<copy tofile="${desktopBinaryFilename}/Contents/Resources/Icon.icns" file="${elements_dir}/images/moonshineIcons.icns" overwrite="true"/>
 		<!-- Some Apple-required tags does not generates automatically
 			we'll add them here in a simple find/replace way as parsing info.plist in XML way
 			and determine the tag position to replace is a hard way -->
@@ -763,7 +766,7 @@
 			<os family="windows"/>
 			<then>
 				<echo message="Copy elements for Windows"/>
-				<copy todir="${basedir}/elements" overwrite="true">
+				<copy todir="${elements_dir}" overwrite="true">
 					<fileset dir="${LibraryMoonshineCore}/src/elements">
 						<exclude name="**/config_linux/**"/>
 						<exclude name="**/config_mac/**"/>
@@ -772,7 +775,7 @@
 			</then>
 			<else>
 				<echo message="Copy elements for Mac"/>
-				<copy todir="${basedir}/elements" overwrite="true">
+				<copy todir="${elements_dir}" overwrite="true">
 					<fileset dir="${LibraryMoonshineCore}/src/elements">
 						<exclude name="**/config_win/**"/>
 					</fileset>
@@ -890,7 +893,7 @@
 	</target>
 	
 	<target name="createBuildInfoFile" depends="modifyDescriptor">
-		<echo file="${basedir}/elements/appProperties.txt" append="false">${svn.revision}</echo>
+		<echo file="${elements_dir}/appProperties.txt" append="false">${svn.revision}</echo>
 	</target>
 	
 	<!-- Compile library project to SWC -->
@@ -951,7 +954,7 @@
 			<then>
 				<delete dir="${debug_dir}" />
 				<delete dir="assets" />
-				<delete dir="elements" />
+				<delete dir="${elements_dir}" />
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
 				<delete dir="installer" />
@@ -964,7 +967,7 @@
 			<equals arg1="${keepDebugFiles}" arg2="false"/>
 			<then>
 				<delete dir="${debug_dir}" />
-				<delete dir="elements" />
+				<delete dir="${elements_dir}" />
 				<delete dir="installer" />
 			</then>
 		</if>
@@ -975,7 +978,7 @@
 			<then>
 				<delete dir="${debug_dir}" />
 				<delete dir="assets" />
-				<delete dir="elements" />
+				<delete dir="${elements_dir}" />
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
 				<delete dir="installer" />
