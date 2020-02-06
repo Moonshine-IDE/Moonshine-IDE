@@ -277,12 +277,15 @@
 	   		<arg line="${desktopBinaryFilename}" />
 	   		<arg line="'${desktopApplicationDescriptor}'" />
 	   		<arg line="'${swfFilename}'" />
-			<arg line="${elements_dir}" />
+			<!--<arg line="${elements_dir}" />-->
 			<arg line="installer" />
 			<arg line="tourDeFlex" />
 			<arg line="defaultSDKs"/>
 			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
+	
+	        <arg line="-C ${elements_dir}/.." />
+	        <arg line="elements"/>
 		</java>
 	 </target>
 	
