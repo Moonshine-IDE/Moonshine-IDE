@@ -72,6 +72,9 @@ package actionScripts.utils
 				case SDKTypes.SVN:
 					pluginClass = "actionScripts.plugins.svn::SVNPlugin";
 					break;
+				case SDKTypes.NODEJS:
+					pluginClass = "actionScripts.plugins.js::JavaScriptPlugin";
+					break;
 			}
 			
 			if (pluginClass) GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, pluginClass));
@@ -107,6 +110,9 @@ package actionScripts.utils
 					break;
 				case SDKTypes.SVN:
 					updateSVNPath(path);
+					break;
+				case SDKTypes.NODEJS:
+					updateNodeJsPath(path);
 					break;
 			}
 		}
@@ -179,6 +185,23 @@ package actionScripts.utils
 				// save as moonshine settings
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
 					null, "actionScripts.plugins.grails::GrailsBuildPlugin", settings));
+			}
+		}
+		
+		public static function updateNodeJsPath(path:String):void
+		{
+			// update only if ant path not set
+			// or the existing ant path does not exists
+			if (!UtilsCore.isNodeAvailable())
+			{
+				model.nodePath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({nodePath: path}, 'nodePath', 'Node.js Home', true, path)
+				]);
+				
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, "actionScripts.plugins.js::JavaScriptPlugin", settings));
 			}
 		}
 		
