@@ -765,12 +765,15 @@
 	</target>
 
 	<target name="copyElementsFolder">
-		<copy todir="${debug_dir}/elements" overwrite="true">
-			<fileset dir="${LibraryMoonshineCore}/src/elements"/>
-		</copy>
 		<if>
 			<os family="windows"/>
 			<then>
+				<copy todir="${basedir}/elements" overwrite="true">
+					<fileset dir="${LibraryMoonshineCore}/src/elements">
+						<exclude name="**/config_linux/**"/>
+						<exclude name="**/config_mac/**"/>
+					</fileset>
+				</copy>
 				<echo message="Copy elements for Windows"/>
 				<copy todir="${elements_dir}" overwrite="true">
 					<fileset dir="${LibraryMoonshineCore}/src/elements">
