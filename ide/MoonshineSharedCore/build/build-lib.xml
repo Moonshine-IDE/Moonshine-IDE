@@ -284,7 +284,7 @@
 			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
 			
-			<arg line="elements/moonshine_logo"/>
+			<arg line="assets/images" />
 	        <arg line="-C ${elements_dir}/.." />
 	        <!--<arg line="elements"/>-->
 		</java>
@@ -774,12 +774,6 @@
 			<os family="windows"/>
 			<then>
 				<echo message="Copy elements for Windows"/>
-				<copy todir="${basedir}/elements" overwrite="true">
-					<fileset dir="${LibraryMoonshineCore}/src/elements">
-						<exclude name="**/config_linux/**"/>
-						<exclude name="**/config_mac/**"/>
-					</fileset>
-				</copy>
 				<copy todir="${elements_dir}" overwrite="true">
 					<fileset dir="${LibraryMoonshineCore}/src/elements">
 						<exclude name="**/config_linux/**"/>
@@ -789,11 +783,6 @@
 			</then>
 			<else>
 				<echo message="Copy elements for Mac"/>
-				<copy todir="${basedir}/elements" overwrite="true">
-					<fileset dir="${LibraryMoonshineCore}/src/elements">
-						<exclude name="**/config_win/**"/>
-					</fileset>
-				</copy>
 				<copy todir="${elements_dir}" overwrite="true">
 					<fileset dir="${LibraryMoonshineCore}/src/elements">
 						<exclude name="**/config_win/**"/>
@@ -801,6 +790,9 @@
 				</copy>
 			</else>
 		</if>
+		<copy todir="${basedir}/assets" overwrite="true">
+			<fileset dir="${assets_dir}"/>
+		</copy>
 	</target>
 
 	<!-- Compile SWF to build directory for desktop packaging -->
@@ -836,9 +828,6 @@
 	</target>
 	<target name="CompileSWFOSX" depends="createBuildInfoFile" if="${isOSX}">
 		<echo>Compiling SWF OSX (Debug: ${IsDebug})</echo>
-		<copy todir="${basedir}/assets" overwrite="true">
-			<fileset dir="${assets_dir}"/>
-		</copy>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
 			   swf-version="39" 
@@ -990,6 +979,7 @@
 				<delete dir="${elements_dir}" />
 				<delete dir="elements" />
 				<delete dir="installer" />
+				<delete dir="assets" />
 			</then>
 		</if>
 	</target>
