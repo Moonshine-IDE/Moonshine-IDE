@@ -765,6 +765,9 @@
 	</target>
 
 	<target name="copyElementsFolder">
+		<copy todir="${debug_dir}/elements" overwrite="true">
+			<fileset dir="${LibraryMoonshineCore}/src/elements"/>
+		</copy>
 		<if>
 			<os family="windows"/>
 			<then>
