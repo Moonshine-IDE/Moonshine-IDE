@@ -21,9 +21,6 @@
 	<property name="keepDebugFiles" value="${APP_PROPERTIES.keepDebugFiles}" />
 	<property name="deploy_dir" value="DEPLOY"/>
 	<property name="debug_dir" value="bin-debug"/>
-	
-	<!-- Overwrite to limit path length errors.  See https://github.com/prominic/Moonshine-IDE/issues/662 -->
-	<property name="elements_dir" value="${basedir}/elements"/>
 
 	<condition property="isWindows">
 		<os family="windows" />
@@ -66,6 +63,7 @@
 			<property name="bundledFlexJSSDK" value="${APP_PROPERTIES.bundledFlexJSSDK}" />
 			<property name="svn.revision" value="917"/>
 			<property name="IsDebug" value="false" />
+			<property name="elements_dir" value="${basedir}/elements"/>
 		</then>
 		<else>
 			<echo>Reading properties from Bamboo Variables</echo>
@@ -85,6 +83,9 @@
 			<property name="bundledFlexJSSDK" value="${BUNDLED_FLEXJS_SDK}" />
 			<property name="svn.revision" value="${svn.revision}" />
 			<property name="IsDebug" value="false" />
+			
+			<!-- Overwrite to limit path length errors.  See https://github.com/prominic/Moonshine-IDE/issues/662 -->
+			<property name="elements_dir" value="${elements_dir}"/>
 		</else>
 	</if>
 	
@@ -283,10 +284,7 @@
 			<arg line="defaultSDKs"/>
 			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
-			
-			<arg line="assets/images" />
-	        <arg line="-C ${elements_dir}" />
-	        <!--<arg line="elements"/>-->
+			<arg line="-C ${elements_dir}/.. elements" />
 		</java>
 	 </target>
 	
@@ -308,12 +306,11 @@
 	   		<arg line="${desktopBinaryFilename}" />
 	   		<arg line="'${desktopApplicationDescriptor}'" />
 	   		<arg line="'${swfFilename}'" />
-			<arg line="${elements_dir}" />
-			<arg line="elements/moonshine_logo"/>
 			<arg line="installer"/>
 			<arg line="tourDeFlex" />
 			<arg line="defaultSDKs"/>
 			<arg line="helperResources"/>
+			<arg line="-C ${elements_dir}/.. elements" />
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</java>
 	 </target>
@@ -332,10 +329,9 @@
 			<!-- AIR doesn't support ANE -->
 			<!--arg line="-extdir"/>
 			<arg line="../extensions"/-->
-			<arg line="${elements_dir}" />
-			<arg line="elements/moonshine_logo"/>
 			<arg line="installer"/>
 			<arg line="tourDeFlex" />
+			<arg line="-C ${elements_dir}/.. elements" />
 		</java>
 	</target>
 	
@@ -361,10 +357,9 @@
 			<arg line="${swfFilename}" />
 			<arg line="-extdir"/>
 			<arg line="../extensions"/>
-			<arg line="${elements_dir}" />
-			<arg line="elements/moonshine_logo"/>
 			<arg line="tourDeFlex" />
 			<arg line="helperResources"/>
+			<arg line="-C ${elements_dir}/.. elements" />
 			<!-- Add folders to be bundled in the AIR file here -->
 		</java>
 	</target>
@@ -384,13 +379,12 @@
 			<arg line="'${swfFilename}'" />
 			<arg line="-extdir"/>
 			<arg line="../extensions"/>
-			<arg line="${elements_dir}" />
-			<arg line="elements/moonshine_logo"/>
 			<arg line="assets" />
 			<arg line="tourDeFlex" />
 			<arg line="macOScripts" />
 			<arg line="defaultSDKs"/>
 			<arg line="helperResources"/>
+			<arg line="-C ${elements_dir}/.. elements" />
 			<!-- Add folders to be bundled in the AIR file here -->
 		</java>
 	</target>
@@ -790,9 +784,6 @@
 				</copy>
 			</else>
 		</if>
-		<copy todir="${basedir}/assets" overwrite="true">
-			<fileset dir="${assets_dir}"/>
-		</copy>
 	</target>
 
 	<!-- Compile SWF to build directory for desktop packaging -->
@@ -828,6 +819,9 @@
 	</target>
 	<target name="CompileSWFOSX" depends="createBuildInfoFile" if="${isOSX}">
 		<echo>Compiling SWF OSX (Debug: ${IsDebug})</echo>
+		<copy todir="${basedir}/assets" overwrite="true">
+			<fileset dir="${assets_dir}"/>
+		</copy>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
 			   swf-version="39" 
@@ -979,7 +973,6 @@
 				<delete dir="${elements_dir}" />
 				<delete dir="elements" />
 				<delete dir="installer" />
-				<delete dir="assets" />
 			</then>
 		</if>
 	</target>
