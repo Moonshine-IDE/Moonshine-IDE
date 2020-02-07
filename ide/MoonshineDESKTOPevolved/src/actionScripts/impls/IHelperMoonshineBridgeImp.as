@@ -82,6 +82,11 @@ package actionScripts.impls
 			return UtilsCore.isSVNPresent();
 		}
 		
+		public function isNodeJsPresent():Boolean
+		{
+			return UtilsCore.isNodeAvailable();
+		}
+		
 		public function isGitPresent():Boolean
 		{
 			return UtilsCore.isGitPresent();	
