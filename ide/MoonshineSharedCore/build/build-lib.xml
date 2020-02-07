@@ -286,6 +286,7 @@
 	
 	        <arg line="-C ${elements_dir}/.." />
 	        <!--<arg line="elements"/>-->
+			<arg line="elements/moonshine_logo"/>
 		</java>
 	 </target>
 	
