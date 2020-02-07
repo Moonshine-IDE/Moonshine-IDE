@@ -283,10 +283,10 @@
 			<arg line="defaultSDKs"/>
 			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
-	
+			
+			<arg line="elements/moonshine_logo"/>
 	        <arg line="-C ${elements_dir}/.." />
 	        <!--<arg line="elements"/>-->
-			<arg line="elements/moonshine_logo"/>
 		</java>
 	 </target>
 	
@@ -309,6 +309,7 @@
 	   		<arg line="'${desktopApplicationDescriptor}'" />
 	   		<arg line="'${swfFilename}'" />
 			<arg line="${elements_dir}" />
+			<arg line="elements/moonshine_logo"/>
 			<arg line="installer"/>
 			<arg line="tourDeFlex" />
 			<arg line="defaultSDKs"/>
@@ -332,6 +333,7 @@
 			<!--arg line="-extdir"/>
 			<arg line="../extensions"/-->
 			<arg line="${elements_dir}" />
+			<arg line="elements/moonshine_logo"/>
 			<arg line="installer"/>
 			<arg line="tourDeFlex" />
 		</java>
@@ -360,6 +362,7 @@
 			<arg line="-extdir"/>
 			<arg line="../extensions"/>
 			<arg line="${elements_dir}" />
+			<arg line="elements/moonshine_logo"/>
 			<arg line="tourDeFlex" />
 			<arg line="helperResources"/>
 			<!-- Add folders to be bundled in the AIR file here -->
@@ -382,6 +385,7 @@
 			<arg line="-extdir"/>
 			<arg line="../extensions"/>
 			<arg line="${elements_dir}" />
+			<arg line="elements/moonshine_logo"/>
 			<arg line="assets" />
 			<arg line="tourDeFlex" />
 			<arg line="macOScripts" />
@@ -769,13 +773,13 @@
 		<if>
 			<os family="windows"/>
 			<then>
+				<echo message="Copy elements for Windows"/>
 				<copy todir="${basedir}/elements" overwrite="true">
 					<fileset dir="${LibraryMoonshineCore}/src/elements">
 						<exclude name="**/config_linux/**"/>
 						<exclude name="**/config_mac/**"/>
 					</fileset>
 				</copy>
-				<echo message="Copy elements for Windows"/>
 				<copy todir="${elements_dir}" overwrite="true">
 					<fileset dir="${LibraryMoonshineCore}/src/elements">
 						<exclude name="**/config_linux/**"/>
@@ -785,6 +789,11 @@
 			</then>
 			<else>
 				<echo message="Copy elements for Mac"/>
+				<copy todir="${basedir}/elements" overwrite="true">
+					<fileset dir="${LibraryMoonshineCore}/src/elements">
+						<exclude name="**/config_win/**"/>
+					</fileset>
+				</copy>
 				<copy todir="${elements_dir}" overwrite="true">
 					<fileset dir="${LibraryMoonshineCore}/src/elements">
 						<exclude name="**/config_win/**"/>
@@ -965,6 +974,7 @@
 				<delete dir="${debug_dir}" />
 				<delete dir="assets" />
 				<delete dir="${elements_dir}" />
+				<delete dir="elements" />
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
 				<delete dir="installer" />
@@ -978,6 +988,7 @@
 			<then>
 				<delete dir="${debug_dir}" />
 				<delete dir="${elements_dir}" />
+				<delete dir="elements" />
 				<delete dir="installer" />
 			</then>
 		</if>
@@ -989,6 +1000,7 @@
 				<delete dir="${debug_dir}" />
 				<delete dir="assets" />
 				<delete dir="${elements_dir}" />
+				<delete dir="elements" />
 				<delete dir="tourDeFlex" />
 				<delete dir="defaultSDKs"/>
 				<delete dir="installer" />
