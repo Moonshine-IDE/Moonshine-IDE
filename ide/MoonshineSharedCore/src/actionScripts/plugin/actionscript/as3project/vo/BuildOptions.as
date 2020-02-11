@@ -154,6 +154,26 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return args;
 		}
 
+		public function getBuildObject():Object
+		{
+			var pairs:Object = getArgumentPairs();
+			var dpairs:Object = defaultOptions.getArgumentPairs();
+			var outBuild:Object = {};
+
+			for (var p:String in pairs) {
+				if (isArgumentExistsInAdditionalOptions(p))
+				{
+					continue;
+				}
+
+				if (pairs[p] != dpairs[p]) {
+					outBuild[p] = pairs[p];
+				}
+			}
+
+			return outBuild;
+		}
+
 		public function parse(build:XMLList, parseType:String=TYPE_FD):void 
 		{
 			if (parseType == TYPE_FD)

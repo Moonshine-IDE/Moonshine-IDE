@@ -168,11 +168,20 @@ package actionScripts.utils
 				// considering that application descriptor file should exists in the same
 				// root where application source file is exist
 				var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
-				if (project.targets[0].fileBridge.parent.fileBridge.resolvePath("application.xml").fileBridge.exists) return true;
-				else if (project.targets[0].fileBridge.parent.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.exists) return true;
+				if (project.targets[0].fileBridge.parent.fileBridge.resolvePath("application.xml").fileBridge.exists)
+				{
+					return true;
+				}
+				else if (project.targets[0].fileBridge.parent.fileBridge.resolvePath(appFileName +"-app.xml").fileBridge.exists)
+				{
+					return true;
+				}
 			}
 			
-			if (project.isLibraryProject && project.testMovie == AS3ProjectVO.TEST_MOVIE_AIR) return true;
+			if (project.isLibraryProject && project.testMovie == AS3ProjectVO.TEST_MOVIE_AIR)
+			{
+				return true;
+			}
 			
 			return false;
 		}
@@ -521,57 +530,7 @@ package actionScripts.utils
 				sdkPopup = null;
 			}
 		}
-		
-		/**
-		 * Checks if code-completion requisite FlexJS 
-		 * available or not and returns
-		 */
-		public static function checkCodeCompletionFlexJSSDK():String
-		{
-			var hasFlex:Boolean = false;
-			var FLEXJS_NAME_PREFIX:String = "Apache Flex (FlexJS) ";
-			
-			var path:String;
-			var bestVersionValue:int = 0;
-			for each (var i:SDKReferenceVO in model.userSavedSDKs)
-			{
-				var sdkName:String = i.name;
-				if (sdkName.indexOf(FLEXJS_NAME_PREFIX) != -1)
-				{
-					var sdkVersion:String = sdkName.substr(FLEXJS_NAME_PREFIX.length, sdkName.indexOf(" ", FLEXJS_NAME_PREFIX.length) - FLEXJS_NAME_PREFIX.length);
-					var versionParts:Array = sdkVersion.split("-")[0].split(".");
-					var major:int = 0;
-					var minor:int = 0;
-					var revision:int = 0;
-					if (versionParts.length >= 3)
-					{
-						major = parseInt(versionParts[0], 10);
-						minor = parseInt(versionParts[1], 10);
-						revision = parseInt(versionParts[2], 10);
-					}
-					//FlexJS 0.7.0 is the minimum version supported by the
-					//language server. this may change in the future.
-					if (major > 0 || minor >= 7)
-					{
-						//convert the three parts of the version number
-						//into a single value to compare to other versions.
-						var currentValue:int = major * 1e6 + minor * 1000 + revision;
-						if(bestVersionValue < currentValue)
-						{
-							//pick the newest available version of FlexJS
-							//to power the language server.
-							hasFlex = true;
-							path = i.path;
-							bestVersionValue = currentValue;
-							model.isCodeCompletionJavaPresent = true;
-						}
-					}
-				}
-			}
-			
-			return path;
-		}
-		
+
 		/**
 		 * Returns BOOL if version is newer than
 		 * given version

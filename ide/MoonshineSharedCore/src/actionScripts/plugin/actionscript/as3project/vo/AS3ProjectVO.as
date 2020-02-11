@@ -96,6 +96,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var defaultBuildTargets:String;
 
 		public var config:MXMLCConfigVO;
+		public var asConfig:AsConfigVO;
 		
 		public var flashBuilderProperties:XML;
 		public var flashDevelopObjConfig:XML;
@@ -324,6 +325,7 @@ package actionScripts.plugin.actionscript.as3project.vo
             mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
 			
 			config = new MXMLCConfigVO();
+			asConfig = new AsConfigVO();
 
             projectReference.hiddenPaths = this.hiddenPaths;
 			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
@@ -434,10 +436,37 @@ package actionScripts.plugin.actionscript.as3project.vo
 			/*if (configInvalid)
 			{*/
 			config.write(this);
+			asConfig.write(this);
 			configInvalid = false;
 			//}
 		}
-		
+
+		public function toComplerOptions():Object
+		{
+			var compilerOptions:Object = {};
+
+			var sourcePaths:Array = [];
+			for each (var srcPath:FileLocation in this.classpaths)
+			{
+				sourcePaths.push(srcPath.fileBridge.nativePath);
+			}
+
+			if (sourcePaths.length > 0)
+			{
+				compilerOptions["source-path"] = sourcePaths;
+			}
+			compilerOptions["load-config"] = this.folderLocation.fileBridge.getRelativePath(this.config.file);
+			compilerOptions["output"] = this.swfOutput.path.fileBridge.nativePath;
+
+			var buildOpt:Object = buildOptions.getBuildObject();
+			for (var p:String in buildOpt)
+			{
+				compilerOptions[p] = buildOpt[p];
+			}
+
+			return compilerOptions;
+		}
+
 		private function dispatchNativeExtensionMessageRequest(event:MouseEvent):void
 		{
 			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE));
@@ -481,7 +510,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 							new BooleanSetting(buildOptions, "showDeprecationWarnings",			"Show deprecation warnings"),
 							new BooleanSetting(buildOptions, "showUnusedTypeSelectorWarnings",	"Show unused type selector warnings"),
 							new BooleanSetting(buildOptions, "warnings",						"Show all warnings"),
-							new BooleanSetting(buildOptions, "strict",							"Strict error checking"),
+							new BooleanSetting(buildOptions, "strict",							"Strict error checking")
 						])
 				)
 			]);
@@ -744,6 +773,7 @@ package actionScripts.plugin.actionscript.as3project.vo
             as3Project.defaultBuildTargets = this.defaultBuildTargets;
 
             as3Project.config = new MXMLCConfigVO(new FileLocation(this.config.file.fileBridge.nativePath));
+			as3Project.asConfig = new AsConfigVO(new FileLocation(this.asConfig.file.fileBridge.nativePath));
 
             as3Project.flashBuilderProperties = this.flashBuilderProperties ? this.flashBuilderProperties.copy() : null;
             as3Project.flashDevelopObjConfig = this.flashDevelopObjConfig ? this.flashDevelopObjConfig.copy() : null;
