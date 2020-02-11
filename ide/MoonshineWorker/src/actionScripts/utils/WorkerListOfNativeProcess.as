@@ -47,7 +47,6 @@ package actionScripts.utils
 			queue = processDescriptor.queue;
 			if (processDescriptor.workingDirectory != null) currentWorkingDirectory = new File(processDescriptor.workingDirectory);
 			
-			startShell();
 			flush();
 		}
 		
@@ -64,6 +63,7 @@ package actionScripts.utils
 			if (queue.length == 0)
 			{
 				stopShell();
+				cleanUpShell();
 				worker.workerToMain.send({
 					event:WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED, 
 					value:null, 
@@ -103,6 +103,9 @@ package actionScripts.utils
 				value:presentRunningQueue, 
 				subscriberUdid:subscriberUdid
 			});
+			
+			if (customProcess) cleanUpShell();
+			startShell();
 			customProcess.start(customInfo);
 		}
 		
@@ -202,10 +205,9 @@ package actionScripts.utils
 					value:new WorkerNativeProcessResult(WorkerNativeProcessResult.OUTPUT_TYPE_CLOSE, null, presentRunningQueue),
 					subscriberUdid:subscriberUdid
 				});
+				
 				flush();
 			}
-
-			cleanUpShell();
 		}
 		
 		private function shellData(e:ProgressEvent):void 

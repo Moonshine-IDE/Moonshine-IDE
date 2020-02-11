@@ -20,13 +20,15 @@ package actionScripts.utils {
     import flash.events.Event;
     import flash.events.KeyboardEvent;
     import flash.net.SharedObject;
-
+    
     import mx.collections.ICollectionView;
     import mx.collections.IViewCursor;
     import mx.controls.Tree;
     import mx.core.mx_internal;
     import mx.events.CollectionEventKind;
     import mx.events.TreeEvent;
+    
+    import actionScripts.valueObjects.FileWrapper;
 
     use namespace mx_internal;
 
@@ -206,7 +208,8 @@ package actionScripts.utils {
 
                     if (hasItemForOpen)
                     {
-                        expandItem(item, true, false, true);
+                        expandItem(item, true);
+						(item as FileWrapper).sortChildren();
                     }
                 }
 

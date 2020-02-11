@@ -14,4 +14,11 @@
         <icon>Haxe OpenFL Project.png</icon>
         <description>Create a Haxe OpenFL project.</description>
     </template>
+    <template displayHome="true">
+        <title>Haxe Feathers UI Project</title>
+        <homeTitle>Haxe Feathers UI Project</homeTitle>
+        <name>Haxe Feathers UI Project</name>
+        <icon>Haxe Feathers UI Project.png</icon>
+        <description>Create a Haxe Feathers UI project.</description>
+    </template>
 </templates>

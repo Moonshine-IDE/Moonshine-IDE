@@ -86,7 +86,7 @@
 		<s:HorizontalLayout  />
 	</s:layout>
 	
-	<s:Image id="fileIcon" height="20" width="20"  />
+	<s:Image id="fileIcon" height="20" width="20" smooth="true"  />
 	<s:Label id="labelDisplay"
 			paddingTop="4"
 			paddingLeft="3"

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<!-- project.xml reference: https://lime.software/docs/project-files/xml-format/ -->
+	
+	<meta title="$ProjectName" package="com.example.$ProjectName" version="1.0.0" company="Company Name" />
+	
+	<app main="$ProjectName" path="bin" file="$ProjectName" />
+
+	<window allow-high-dpi="true" />
+	<window fps="60"/>
+	<window fps="0" if="html5"/>
+	
+	<!-- classpath -->
+	<source path="src" />
+
+	<!-- haxe libs -->
+	<haxelib name="openfl" />
+	<haxelib name="actuate" />
+	<haxelib name="feathersui" />
+	
+	<!-- assets -->
+	<icon path="assets/feathersui.svg" />
+	
+</project>

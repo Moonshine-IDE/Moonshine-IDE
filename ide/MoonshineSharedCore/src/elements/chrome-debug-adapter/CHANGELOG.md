@@ -1,3 +1,9 @@
+## 4.12.4
+* Register "useV3" setting officially
+
+## 4.12.3
+* Fix error when using restartFrame on Electron - [Microsoft/vscode#86411](https://github.com/microsoft/vscode/issues/86411)
+
 ## 4.12.2
 * Fix error when setting value on property - [Microsoft/vscode-node-debug2#250](https://github.com/microsoft/vscode-node-debug2/issues/250)
 
@@ -32,7 +38,7 @@
 * Fix some frames incorrectly labelled as "skipped by smartStep"
 
 ## 4.11.0
-* Support %c styling in console.log - thanks to [@rdegelo](https://github.com/rdegelo) for [PR [#367](https://github.com/Microsoft/vscode-chrome-debug/issues/367)](https://github.com/Microsoft/vscode-chrome-debug-core/pull/367) and [PR [#374](https://github.com/Microsoft/vscode-chrome-debug/issues/374)](https://github.com/Microsoft/vscode-chrome-debug-core/pull/374).
+* Support %c styling in console.log - thanks to [@rdegelo](https://github.com/rdegelo) for [PR #367](https://github.com/Microsoft/vscode-chrome-debug-core/pull/367) and [PR #374](https://github.com/Microsoft/vscode-chrome-debug-core/pull/374).
 * Fixes for breakOnLoad edge cases
 
 ## 4.10.2
@@ -59,7 +65,7 @@
 
 ## 4.8.1
 * Allow setting env vars to "null" like when debugging node - [#706](https://github.com/microsoft/vscode-chrome-debug/issues/706)
-* Fix rare issue killing Chrome on Windows - [PR [#703](https://github.com/Microsoft/vscode-chrome-debug/issues/703)](https://github.com/microsoft/vscode-chrome-debug/pull/703)
+* Fix rare issue killing Chrome on Windows - [PR #703](https://github.com/microsoft/vscode-chrome-debug/pull/703)
 * Allow URI-encoded inline source maps - thanks to [@Pokute](https://github.com/Pokute) for the PR! - [Microsoft/vscode-chrome-debug-core#343](https://github.com/microsoft/vscode-chrome-debug-core/issues/343)
 
 ## 4.8.0
@@ -107,7 +113,7 @@
 ## 4.2.1
 * Fix Windows issue with breakpoints not binding if they were set before launch - [Microsoft/vscode#45657](https://github.com/Microsoft/vscode/issues/45657)
 * Work around issue where hover shows wrong 'this' - [Microsoft/vscode#44785](https://github.com/Microsoft/vscode/issues/44785)
-* Fix Chrome session restore prompt showing on every start - thanks to [@aj-r](https://github.com/aj-r) for the PR! - [PR [#606](https://github.com/Microsoft/vscode-chrome-debug/issues/606)](https://github.com/Microsoft/vscode-chrome-debug/pull/606)
+* Fix Chrome session restore prompt showing on every start - thanks to [@aj-r](https://github.com/aj-r) for the PR! - [PR #606](https://github.com/Microsoft/vscode-chrome-debug/pull/606)
 
 ## 4.2.0
 * Use more precise extension activation events to prevent unneeded activation
@@ -115,22 +121,22 @@
 * Make sourceMapPathOverrides default values in package.json match the defaults applied in code - [#581](https://github.com/Microsoft/vscode-chrome-debug/issues/581)
 * Add "Toggle Smart Step" command - [Microsoft/vscode-chrome-debug-core#298](https://github.com/Microsoft/vscode-chrome-debug-core/issues/298)
 * Fix error when setting BP in scripts with certain weird sourcemap names - [Microsoft/vscode#42162](https://github.com/microsoft/vscode/issues/42162)
-* Fix various breakOnLoad-related issues - [PR [Microsoft/vscode-chrome-debug-core#283](https://github.com/Microsoft/vscode-chrome-debug-core/issues/283)](https://github.com/Microsoft/vscode-chrome-debug-core/pull/283), [PR [Microsoft/vscode-chrome-debug-core#285](https://github.com/Microsoft/vscode-chrome-debug-core/issues/285)](https://github.com/Microsoft/vscode-chrome-debug-core/pull/285) and others
+* Fix various breakOnLoad-related issues - [PR Microsoft/vscode-chrome-debug-core#283](https://github.com/Microsoft/vscode-chrome-debug-core/pull/283), [PR Microsoft/vscode-chrome-debug-core#285](https://github.com/Microsoft/vscode-chrome-debug-core/pull/285) and others
 
 ## 4.1.0
 * Implement "step into async code". "step in" on `setTimeout` will now step into the body of the setTimeout if no other breakpoints are hit first. Requires Chrome 65 - [Microsoft/vscode-chrome-debug-core#266](https://github.com/Microsoft/vscode-chrome-debug-core/issues/266)
 * Show exception scope for top frame only - [Microsoft/vscode-chrome-debug-core#233](https://github.com/Microsoft/vscode-chrome-debug-core/issues/233)
-* Fix regex character handling in the left side of `sourceMapPathOverrides` - thanks to [@msafi](https://github.com/msafi) for the PR! - [PR [Microsoft/vscode-chrome-debug-core#261](https://github.com/Microsoft/vscode-chrome-debug-core/issues/261)](https://github.com/Microsoft/vscode-chrome-debug-core/pull/261)
-* Fix errors showing up in some breakpoint scenarios - thanks to [@obastemur](https://github.com/obastemur) for the PRs! - [PR [Microsoft/vscode#263](https://github.com/Microsoft/vscode/issues/263)](https://github.com/Microsoft/vscode-chrome-debug-core/pull/263) and [PR [Microsoft/vscode-chrome-debug-core#265](https://github.com/Microsoft/vscode-chrome-debug-core/issues/265)](https://github.com/Microsoft/vscode-chrome-debug-core/pull/265)
+* Fix regex character handling in the left side of `sourceMapPathOverrides` - thanks to [@msafi](https://github.com/msafi) for the PR! - [PR Microsoft/vscode-chrome-debug-core#261](https://github.com/Microsoft/vscode-chrome-debug-core/pull/261)
+* Fix errors showing up in some breakpoint scenarios - thanks to [@obastemur](https://github.com/obastemur) for the PRs! - [PR Microsoft/vscode#263](https://github.com/Microsoft/vscode-chrome-debug-core/pull/263) and [PR Microsoft/vscode-chrome-debug-core#265](https://github.com/Microsoft/vscode-chrome-debug-core/pull/265)
 * Parse sourcemaps more lazily, to improve startup performance
 * Fix `.*` pattern in `skipFiles` (literal `.` followed by wildcard) - [Microsoft/vscode-chrome-debug-core#268](https://github.com/Microsoft/vscode-chrome-debug-core/issues/268)
 * Fix broken "Toggle skipping this file" command (in Insiders) - [Microsoft/vscode#41945](https://github.com/Microsoft/vscode/issues/41945)
 * Fix race condition in handling skipFiles in some sourcemapped files - [Microsoft/vscode-chrome-debug-core#266](https://github.com/Microsoft/vscode-chrome-debug-core/issues/266)
 
 ## 4.0.0
-* Implement the `breakOnLoad` launch config option to hit breakpoints in code that runs immediately when the page logs - [PR [#513](https://github.com/Microsoft/vscode-chrome-debug/issues/513)](https://github.com/Microsoft/vscode-chrome-debug/pull/513) and [PR [Microsoft/vscode-chrome-debug-core#241](https://github.com/Microsoft/vscode-chrome-debug-core/issues/241)](https://github.com/Microsoft/vscode-chrome-debug-core/pull/241)
+* Implement the `breakOnLoad` launch config option to hit breakpoints in code that runs immediately when the page logs - [PR #513](https://github.com/Microsoft/vscode-chrome-debug/pull/513) and [PR Microsoft/vscode-chrome-debug-core#241](https://github.com/Microsoft/vscode-chrome-debug-core/pull/241)
 * Most strings (error messages, launch config property descriptions, etc) are now translated on [Transifex](https://github.com/Microsoft/Localization/wiki/Visual-Studio-Code-Community-Localization-Project)
-* Resolve `webRoot` variables on the left side of `sourceMapPathOverrides` mappings, not just the right side. Thanks [Amit Mittal](https://github.com/eramitmittal) for the PR! - [PR [#543](https://github.com/Microsoft/vscode-chrome-debug/issues/543)](https://github.com/Microsoft/vscode-chrome-debug/pull/543)
+* Resolve `webRoot` variables on the left side of `sourceMapPathOverrides` mappings, not just the right side. Thanks [Amit Mittal](https://github.com/eramitmittal) for the PR! - [PR #543](https://github.com/Microsoft/vscode-chrome-debug/pull/543)
 * Set focus in `webRoot` after using a launch config snippet - [#539](https://github.com/Microsoft/vscode-chrome-debug/issues/539)
 * Fix error/log messages out of order due to async handling - [Microsoft/vscode#37770](https://github.com/Microsoft/vscode/issues/37770)
 

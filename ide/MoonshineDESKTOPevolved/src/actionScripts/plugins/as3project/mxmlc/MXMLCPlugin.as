@@ -474,7 +474,7 @@ package actionScripts.plugins.as3project.mxmlc
 					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
 					if (projectReference && filteredProjects.indexOf(projectReference) != -1)
 					{
-						checkForUnsavedEdior(projectReference);
+						checkForUnsavedEditor(projectReference);
 						return;
 					}
 				}
@@ -488,7 +488,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else if (filteredProjects.length != 0)
 			{
-				checkForUnsavedEdior(filteredProjects[0] as ProjectVO);
+				checkForUnsavedEditor(filteredProjects[0] as ProjectVO);
 			}
 			
 			/*
@@ -496,7 +496,7 @@ package actionScripts.plugins.as3project.mxmlc
 			*/
 			function onProjectSelected(event:Event):void
 			{
-				checkForUnsavedEdior(selectProjectPopup.selectedProject);
+				checkForUnsavedEditor(selectProjectPopup.selectedProject);
 				onProjectSelectionCancelled(null);
 			}
 			
@@ -510,7 +510,7 @@ package actionScripts.plugins.as3project.mxmlc
 			/*
 			* check for unsaved File
 			*/
-			function checkForUnsavedEdior(activeProject:ProjectVO):void
+			function checkForUnsavedEditor(activeProject:ProjectVO):void
 			{
 				model.activeProject = activeProject;
 				UtilsCore.closeAllRelativeEditors(activeProject, false, proceedWithBuild, false);
@@ -1175,8 +1175,8 @@ package actionScripts.plugins.as3project.mxmlc
 							{
 								if(currentSuccessfullProject.isMobile && !currentSuccessfullProject.buildOptions.isMobileRunOnSimulator)
 								{
+									warning("Start packaging application for Mobile.");
 									packageAIR(debugAfterBuild);
-									//don't call launchDebuggingAfterBuild() until after the .apk or .ipa is built
 								}
 								else
 								{
@@ -1359,11 +1359,9 @@ package actionScripts.plugins.as3project.mxmlc
 			var descriptorFile:FileLocation = project.folderLocation.fileBridge.resolvePath(descriptorPath);
 			var descriptorXML:XML = new XML(descriptorFile.fileBridge.read());
 			var xmlns:Namespace = new Namespace(descriptorXML.namespace());
-			var appID:String = descriptorXML.xmlns::id;
 			
 			var adtPath:String = currentSDK.resolvePath("bin/adt").nativePath;
 
-			var projectFolder:File = project.folderLocation.fileBridge.getFile as File;
 			var outputFolder:File = swfFile.parent;
 			var adtPackagingOptions:Vector.<String> = new <String>[adtPath];
 			if(isAndroid) 
@@ -1691,6 +1689,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function shellExit(e:NativeProcessExitEvent):void 
 		{
+			warning("Compilation of %s finished.", currentProject.projectName);
 			reset();
 			cleanUpShell();
 

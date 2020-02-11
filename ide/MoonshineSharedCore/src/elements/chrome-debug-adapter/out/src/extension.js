@@ -70,7 +70,7 @@ class ChromeConfigurationProvider {
             }
             resolveRemoteUris(folder, config);
             const useV3 = !!vscode.workspace.getConfiguration(DEBUG_SETTINGS).get(USE_V3_SETTING);
-            if (useV3) {
+            if (useV3 && !vscode.env.remoteName) {
                 config['__workspaceFolder'] = '${workspaceFolder}';
                 config.type = 'pwa-chrome';
             }
