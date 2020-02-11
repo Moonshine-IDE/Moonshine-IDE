@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates>
     <template displayHome="true">
-        <title>ActionScript Project (SWF, Desktop)</title>
-        <homeTitle>ActionScript Project (SWF, Desktop)</homeTitle>
-        <name>ActionScript Project (SWF, Desktop)</name>
+        <title>ActionScript Desktop Project</title>
+        <homeTitle>ActionScript Project</homeTitle>
+        <name>ActionScript Desktop Project</name>
         <icon>ActionScript Project (SWF, Desktop).png</icon>
         <description>Create a pure ActionScript project.</description>
+    </template>
+	<template displayHome="false">
+        <title>ActionScript Browser Project</title>
+        <homeTitle>ActionScript Browser Project</homeTitle>
+        <name>ActionScript Browser Project</name>
+        <icon>ActionScript Project (SWF, Desktop).png</icon>
+        <description>Create a pure ActionScript Browser project.</description>
+    </template>
+	<template displayHome="false">
+        <title>ActionScript Mobile Project</title>
+        <homeTitle>ActionScript Mobile Project</homeTitle>
+        <name>ActionScript Mobile Project</name>
+        <icon>ActionScript Project (SWF, Desktop).png</icon>
+        <description>Create a pure ActionScript Mobile project.</description>
     </template>
     <template displayHome="true">
         <title>Library Project (Flex)</title>
