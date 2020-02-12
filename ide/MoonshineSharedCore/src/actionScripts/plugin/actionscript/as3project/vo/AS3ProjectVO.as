@@ -448,7 +448,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			var sourcePaths:Array = [];
 			for each (var srcPath:FileLocation in this.classpaths)
 			{
-				sourcePaths.push(srcPath.fileBridge.nativePath);
+				sourcePaths.push(this.projectFolder.file.fileBridge.getRelativePath(srcPath));
 			}
 
 			if (sourcePaths.length > 0)
