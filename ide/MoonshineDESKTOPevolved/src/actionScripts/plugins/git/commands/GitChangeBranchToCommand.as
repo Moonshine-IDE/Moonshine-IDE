@@ -61,6 +61,7 @@ package actionScripts.plugins.git.commands
 				case GIT_CHECKOUT_BRANCH:
 					refreshProjectTree(); // important
 					success("...process completed");
+					checkCurrentEditorForModification();
 					break;
 			}
 		}
