@@ -1009,7 +1009,7 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 
 				var asConfigPath:String = File.applicationDirectory.resolvePath("elements/as3mxml-language-server/bin/asconfigc.jar").nativePath;
-				var commandConfig:String = "java -jar " + asConfigPath + " --sdk " + defaultFlexSDK + " ";
+				var commandConfig:String = "java -jar \"" + asConfigPath + "\" --sdk " + defaultFlexSDK + " ";
 				var mxmlcStr:String = commandConfig
 					+projectTypeArg
 					+dbg
