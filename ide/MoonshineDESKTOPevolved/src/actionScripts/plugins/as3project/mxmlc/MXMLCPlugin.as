@@ -1637,7 +1637,6 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			if(fcsh)
 			{
-				var currentAs3Project:AS3ProjectVO = currentProject as AS3ProjectVO;
 				var output:IDataInput = fcsh.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 
@@ -1645,13 +1644,6 @@ package actionScripts.plugins.as3project.mxmlc
 				if (syntaxMatch)
 				{
 					error("%s\n", data);
-
-					//Royale compiler sends exit code, we don't have to reset anything here, Flex compiler not.
-					if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
-                    {
-                        //Let's wait with the reset because compiler may still have something to report
-						reset();
-                    }
 					return;
 				}
 
@@ -1659,11 +1651,6 @@ package actionScripts.plugins.as3project.mxmlc
 				if (!syntaxMatch && generalMatch)
 				{
 					error("%s\n", data);
-
-                    if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
-                    {
-						reset();
-                    }
 					return;
 				}
 
@@ -1683,10 +1670,6 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 
 				print(data);
-                if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
-                {
-					reset();
-                }
 			}
 		}
 		
