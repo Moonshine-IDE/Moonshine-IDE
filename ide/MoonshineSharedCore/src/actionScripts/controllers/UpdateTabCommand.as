@@ -30,6 +30,7 @@ package actionScripts.controllers
     import spark.components.Button;
     
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.UpdateTabEvent;
     import actionScripts.locator.IDEModel;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IContentWindowReloadable;
@@ -57,25 +58,46 @@ package actionScripts.controllers
 			
 			pop = new StandardPopup();
 			pop.data = this; // Keep the command from getting GC'd
-			pop.text = tabToUpdate.label + " is changed outside. Do you want to reload it?";
+			
+			var yesButton:Button = new Button();
+			yesButton.styleName = "lightButton";
+			
+			var cancel:Button = new Button();
+			cancel.styleName = "lightButton";
+			
+			if (event.type == UpdateTabEvent.EVENT_TAB_FILE_EXIST_NOMORE)
+			{
+				pop.text = tabToUpdate.label + " is removed from the filesystem. Do you want to save it?";
+				
+				yesButton.label = "Save Again";
+				yesButton.addEventListener(MouseEvent.CLICK, saveButtonTab, false, 0, true);
+				cancel.label = "Cancel";
+				cancel.addEventListener(MouseEvent.CLICK, seeFileAgain, false, 0, true);
+				
+				var close:Button = new Button();
+				close.styleName = "lightButton";
+				close.label = "Close";
+				close.addEventListener(MouseEvent.CLICK, closeFileAgain, false, 0, true);
+				
+				pop.buttons = [yesButton, close, cancel];
+			}
+			else
+			{
+				pop.text = tabToUpdate.label + " is changed outside. Do you want to reload it?";
+				
+				yesButton.label = "Yes";
+				yesButton.addEventListener(MouseEvent.CLICK, yesButtonTab, false, 0, true);
+				cancel.label = "No";
+				cancel.addEventListener(MouseEvent.CLICK, seeFileAgain, false, 0, true);
+				
+				pop.buttons = [yesButton, cancel];
+			}
 			
 			// Changed tabs are marked with * before the filename. Strip if found.
 			if (pop.text.charAt(0) == "*")
 			{
 				pop.text = pop.text.substr(1);
 			}
-			
-			var save:Button = new Button();
-			save.styleName = "lightButton";
-			save.label = "Yes";
-			save.addEventListener(MouseEvent.CLICK, saveTab, false, 0, false);
-			
-			var cancel:Button = new Button();
-			cancel.styleName = "lightButton";
-			cancel.label = "No";
-			cancel.addEventListener(MouseEvent.CLICK, seeFileAgain, false, 0, false);
-			
-			pop.buttons = [save, cancel];
 			
 			PopUpManager.addPopUp(pop, FlexGlobals.topLevelApplication as DisplayObject, true);
 			pop.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
@@ -131,12 +153,29 @@ package actionScripts.controllers
 			cleanUp();
 		}
 		
-		private function saveTab(event:Event=null):void
+		private function yesButtonTab(event:Event=null):void
 		{
 			if (tabToUpdate is IContentWindowReloadable)
 			{
 				(tabToUpdate as IContentWindowReloadable).reload();
 			}
+			cleanUp();
+		}
+		
+		private function saveButtonTab(event:Event=null):void
+		{
+			if (tabToUpdate is BasicTextEditor)
+			{
+				(tabToUpdate as BasicTextEditor).save();
+			}
+			cleanUp();
+		}
+		
+		private function closeFileAgain(event:Event=null):void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, tabToUpdate as DisplayObject, true)
+			);
 			cleanUp();
 		}
 	}

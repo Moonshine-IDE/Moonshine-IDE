@@ -24,6 +24,7 @@ package actionScripts.events
 	public class UpdateTabEvent extends Event
 	{
 		public static const EVENT_TAB_UPDATED_OUTSIDE:String = "tabUpdatedOutside";
+		public static const EVENT_TAB_FILE_EXIST_NOMORE:String = "tabFileExistNomore";
 		
 		public var tab:DisplayObject;
 		

@@ -66,6 +66,7 @@ package actionScripts.locator
 			commands[AddTabEvent.EVENT_ADD_TAB] = AddTabCommand;
 			commands[OpenLocationEvent.OPEN_LOCATION] = OpenLocationCommand;
 			commands[UpdateTabEvent.EVENT_TAB_UPDATED_OUTSIDE] = UpdateTabCommand;
+			commands[UpdateTabEvent.EVENT_TAB_FILE_EXIST_NOMORE] = UpdateTabCommand;
 			
 			commands[MenuPlugin.MENU_SAVE_AS_EVENT] = SaveAsCommand;
 			commands[MenuPlugin.MENU_SAVE_EVENT] = SaveFileCommand; 

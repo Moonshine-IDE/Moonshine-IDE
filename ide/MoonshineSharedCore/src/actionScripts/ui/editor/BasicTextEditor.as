@@ -255,7 +255,14 @@ package actionScripts.ui.editor
 		
 		public function checkFileIfChanged():void
 		{
-			if (ObjectUtil.dateCompare(file.fileBridge.modificationDate, lastOpenedUpdatedInMoonshine) != 0)
+			// physical file do not exist anymore
+			if (!file.fileBridge.exists)
+			{
+				dispatcher.dispatchEvent(new UpdateTabEvent(UpdateTabEvent.EVENT_TAB_FILE_EXIST_NOMORE, this));
+			}
+			
+			// physical file is an updated one
+			else if (ObjectUtil.dateCompare(file.fileBridge.modificationDate, lastOpenedUpdatedInMoonshine) != 0)
 			{
 				dispatcher.dispatchEvent(new UpdateTabEvent(UpdateTabEvent.EVENT_TAB_UPDATED_OUTSIDE, this));
 			}
