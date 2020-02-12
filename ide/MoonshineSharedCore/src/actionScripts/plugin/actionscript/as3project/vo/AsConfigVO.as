@@ -65,6 +65,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 				{
 					appDescFile = "src/" + appFileName + "-app.xml";
 				}
+
+				asConfig.mainClass = pvo.targets[0].fileBridge.nameWithoutExtension;
 			}
 
 			if (pvo.air)
@@ -74,6 +76,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 			}
 
 			asConfig.compilerOptions = pvo.toComplerOptions();
+			if (pvo.buildOptions.additional)
+			{
+				asConfig.additionalOptions = pvo.buildOptions.additional;
+			}
 
 			var asconfigStr:String = JSON.stringify(asConfig);
 			saveAsConfig(asconfigStr, pvo, pvo.projectName + ".json");

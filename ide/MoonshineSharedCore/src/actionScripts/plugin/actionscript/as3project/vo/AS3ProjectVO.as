@@ -455,7 +455,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				compilerOptions["source-path"] = sourcePaths;
 			}
-			compilerOptions["load-config"] = this.folderLocation.fileBridge.getRelativePath(this.config.file);
+			compilerOptions["load-config"] = [
+				this.folderLocation.fileBridge.getRelativePath(this.config.file)
+			];
 			compilerOptions["output"] = this.swfOutput.path.fileBridge.nativePath;
 
 			var buildOpt:Object = buildOptions.getBuildObject();
