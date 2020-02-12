@@ -25,8 +25,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 	
 	public class AsConfigVO extends FileWrapper
 	{
-		private var _asConfigFile:FileLocation;
-
 		public function AsConfigVO(file:FileLocation=null)
 		{
 			super(file);
@@ -83,7 +81,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 		private function saveAsConfig(data:String, pvo:AS3ProjectVO, fileName:String):void
 		{
-			if (!_asConfigFile)
+			if (!file)
 			{
 				var dir:FileLocation = pvo.folderLocation.resolvePath("obj/");
 				if (!dir.fileBridge.exists)
@@ -91,11 +89,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 					dir.fileBridge.createDirectory();
 				}
 
-				_asConfigFile = dir.resolvePath(fileName);
+				file = dir.resolvePath(fileName);
 			}
 
 			// Write file
-			_asConfigFile.fileBridge.save(data);
+			file.fileBridge.save(data);
 		}
 	}
 }
