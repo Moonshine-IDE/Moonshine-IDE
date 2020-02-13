@@ -82,20 +82,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 			}
 
 			var asconfigStr:String = JSON.stringify(asConfig);
-			saveAsConfig(asconfigStr, pvo, pvo.projectName + ".json");
+			saveAsConfig(asconfigStr, pvo);
 		}
 
-		private function saveAsConfig(data:String, pvo:AS3ProjectVO, fileName:String):void
+		private function saveAsConfig(data:String, pvo:AS3ProjectVO):void
 		{
 			if (!file)
 			{
-				var dir:FileLocation = pvo.folderLocation.resolvePath("obj/");
-				if (!dir.fileBridge.exists)
-				{
-					dir.fileBridge.createDirectory();
-				}
-
-				file = dir.resolvePath(fileName);
+				file = pvo.projectFolder.file.fileBridge.resolvePath("asconfig.json");
 			}
 
 			// Write file

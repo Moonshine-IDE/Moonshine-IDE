@@ -689,7 +689,13 @@ package actionScripts.utils
 			// finally
 			return executableFile;
 		}
-		
+
+        public static function hasJava():Boolean
+        {
+            var javaExec:FileLocation = getExecutableJavaLocation();
+
+            return javaExec != null && javaExec.fileBridge.exists;
+        }
 		/**
 		 * Closes all the opened editors relative to a certain project path
 		 */

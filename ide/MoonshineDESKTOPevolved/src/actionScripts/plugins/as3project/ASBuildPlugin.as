@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.as3project.mxmlc
+package actionScripts.plugins.as3project
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
@@ -41,24 +41,15 @@ package actionScripts.plugins.as3project.mxmlc
 	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
-	import actionScripts.events.SdkEvent;
 	import actionScripts.events.ShowSettingsEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.HelperModel;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.event.SetSettingsEvent;
-	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
-	import actionScripts.plugin.settings.vo.AbstractSetting;
-	import actionScripts.plugin.settings.vo.BooleanSetting;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.plugins.build.CompilerPluginBase;
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
@@ -67,14 +58,11 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
-	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.NoSDKNotifier;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.findAndCopyApplicationDescriptor;
-	import actionScripts.valueObjects.ComponentTypes;
-	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
@@ -91,24 +79,20 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	
-	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
+	public class ASBuildPlugin extends CompilerPluginBase
 	{
-		override public function get name():String			{ return "Default SDK"; }
+		override public function get name():String			{ return "ActionScript Build Plugin"; }
 		override public function get author():String		{ return "Miha Lunar & Moonshine Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.mxmlc'); }
-		
-		public var incrementalCompile:Boolean = true;
+
 		protected var runAfterBuild:Boolean;
 		protected var debugAfterBuild:Boolean;
 		protected var release:Boolean;
-		private var fcshPath:String = "bin/fcsh";
 		private var cmdFile:File;
-		private var _defaultFlexSDK:String;
 		private var fcsh:NativeProcess;
 		private var exiting:Boolean = false;
 		private var shellInfo:NativeProcessStartupInfo;
 		private var isLibraryProject:Boolean;
-		private var javaPathSetting:PathSetting;
 		private var adtProcess:NativeProcess;
 		private var adtProcessInfo:NativeProcessStartupInfo;
 		
@@ -126,110 +110,16 @@ package actionScripts.plugins.as3project.mxmlc
 		private var SDKstr:String;
 		private var selectProjectPopup:SelectOpenedProject;
 
-		private function get mxmlcPath():String
-		{
-			if (ConstantsCoreVO.IS_MACOS)
-				return currentSDK.resolvePath("bin/mxmlc").nativePath;
-			
-			// on Windows we need to know if it's a 
-			// pure AIR SDK or not so we can run a modified
-			// mxmlc to pass a compilation problem
-			var sdkReference:SDKReferenceVO = SDKUtils.getSDKFromSavedList(currentSDK.nativePath);
-			if (sdkReference.isPureActionScriptSdk)
-			{
-				return File.applicationDirectory.resolvePath("elements/mxmlc_moonshine.bat").nativePath;
-			}
-			
-			// else continue to return regular mxmlc path
-			return currentSDK.resolvePath("bin/mxmlc.bat").nativePath;
-		}
-		
-		public function get defaultFlexSDK():String
-		{
-			return _defaultFlexSDK;
-		}
-		
-		public function set defaultFlexSDK(value:String):void
-		{
-			_defaultFlexSDK = value;
-			if (_defaultFlexSDK == "")
-			{
-				// check if any bundled SDK present or not
-				// if present, make one default
-				if (model.userSavedSDKs.length > 0 && model.userSavedSDKs[0].status == SDKUtils.BUNDLED)
-				{
-					_defaultFlexSDK = model.userSavedSDKs[0].path;
-					SDKUtils.setDefaultSDKByBundledSDK();
-				}
-				else
-				{
-					model.defaultSDK = null;
-				}
-			}
-			else
-			{
-				for each (var i:SDKReferenceVO in IDEModel.getInstance().userSavedSDKs)
-				{
-					if (i.path == value)
-					{
-						model.defaultSDK = new FileLocation(i.path);
-						model.noSDKNotifier.dispatchEvent(new Event(NoSDKNotifier.SDK_SAVED));
-						break
-					}
-				}
-				
-				// even if above condition do not made 
-				// check one more condition - this is particularly valid 
-				// if we have bundled SDKs and an old bundled SDK 
-				// references not found in newer bundled SDKs
-				if (!model.defaultSDK)
-				{
-					for each (i in IDEModel.getInstance().userSavedSDKs)
-					{
-						if (i.path == value)
-						{
-							model.defaultSDK = new FileLocation(i.path);
-							model.noSDKNotifier.dispatchEvent(new Event(NoSDKNotifier.SDK_SAVED));
-							break
-						}
-					}
-				}
-				
-				// update project-to-sdk references once again
-				for each (var project:ProjectVO in model.projects)
-				{
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
-				}
-			}
-			
-			if (model.defaultSDK)
-			{
-				EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
-			}
-			// state change of menus based upon default SDK presence
-			dispatcher.dispatchEvent(new Event(SdkEvent.CHANGE_SDK));
-		}
-		
-		public function MXMLCPlugin() 
+		public function ASBuildPlugin()
 		{
 			if (Settings.os == "win")
 			{
-				fcshPath = "fcsh_moonshine.bat";
 				cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
 			}
 			else
 			{
 				cmdFile = new File("/bin/bash");
 			}
-			
-			// @devsena
-			// for some unknown reason activate() for this plugin
-			// fail to run when 'revoke all access' in PKG run.
-			// for now, I'm directing the access from here rather than
-			// automated process, I shall need to check this later.
-			activate();
-			
-			SDKUtils.initBundledSDKs();
 		}
 		
 		override public function activate():void 
@@ -242,23 +132,22 @@ package actionScripts.plugins.as3project.mxmlc
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndRun);
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD, build);
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
-			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, onDefaultSDKUpdatedOutside);
-			
+
 			var tempObj:Object = new Object();
 			tempObj.callback = buildCommand;
 			tempObj.commandDesc = "Build the currently selected Flex project.";
-			registerCommand('build',tempObj);
-			
+			registerCommand('buildAS',tempObj);
+
 			tempObj = new Object();
 			tempObj.callback = runCommand;
 			tempObj.commandDesc = "Build and run the currently selected Flex project.";
-			registerCommand('run',tempObj);
-			
+			registerCommand('runAS',tempObj);
+
 			tempObj = new Object();
 			tempObj.callback = releaseCommand;
 			tempObj.commandDesc = "Build the currently selected project in release mode.";
 			tempObj.style = "red";
-			registerCommand('release',tempObj);
+			registerCommand('releaseAS',tempObj);
 
 			reset();
 		}
@@ -271,83 +160,11 @@ package actionScripts.plugins.as3project.mxmlc
 			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndRun);
 			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD, build);
 			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
-			dispatcher.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, onDefaultSDKUpdatedOutside);
 			
 			reset();
 			shellInfo = null;
 		}
-		
-		override public function resetSettings():void
-		{
-			for (var i:int=0; i < model.userSavedSDKs.length; i++)
-			{
-				if (model.userSavedSDKs[i].status != SDKUtils.BUNDLED)
-				{
-					model.userSavedSDKs.removeItemAt(i);
-					i--;
-				}
-			}
 
-			defaultFlexSDK = "";
-			currentSDK = null;
-			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
-			
-			// reset java path
-			model.javaPathForTypeAhead = null;
-			new JavaSettingsProvider();
-		}
-		
-		override protected function onProjectPathsValidated(paths:Array):void
-		{
-			if (paths)
-			{
-				isProjectHasInvalidPaths = true;
-				error("Following path(s) are invalid or does not exists:\n"+ paths.join("\n"));
-			}
-		}
-		
-		public function getSettingsList():Vector.<ISetting>
-		{
-			onSettingsClose();
-			javaPathSetting = new PathSetting(new JavaSettingsProvider(),
-				"currentJavaPath",
-				"Java Development Kit Path", true);
-			javaPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected, false, 0, true);
-			
-			return Vector.<ISetting>([
-				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex®, Apache Royale® or Feathers SDK', true, defaultFlexSDK, true),
-				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation'),
-				javaPathSetting
-			]);
-		}
-		
-		override public function onSettingsClose():void
-		{
-			if (javaPathSetting)
-			{
-				javaPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected);
-				javaPathSetting = null;
-			}
-		}
-		
-		private function onJavaPathSelected(event:Event):void
-		{
-			if (!javaPathSetting.stringValue) return;
-			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_OPENJAVA);
-			if (tmpComponent)
-			{
-				var isValidSDKPath:Boolean = HelperUtils.isValidSDKDirectoryBy(ComponentTypes.TYPE_OPENJAVA, javaPathSetting.stringValue, tmpComponent.pathValidation);
-				if (!isValidSDKPath)
-				{
-					javaPathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
-				}
-				else
-				{
-					javaPathSetting.setMessage(null);
-				}
-			}
-		}
-		
 		private function buildCommand(args:Array):void
 		{
 			build(null, false);
@@ -369,25 +186,10 @@ package actionScripts.plugins.as3project.mxmlc
 			resourceCopiedIndex = 0;
 			targets = new Dictionary();
 		}
-		
-		private function onDefaultSDKUpdatedOutside(event:ProjectEvent):void
-		{
-			// @note
-			// basically requires to listen to update in
-			// Flex SDKs window
-			var tmpRef:SDKReferenceVO = event.anObject as SDKReferenceVO;
-			if (!tmpRef) return;
-			defaultFlexSDK = tmpRef.path;
-			
-			var thisSettings: Vector.<ISetting> = getSettingsList();
-			var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
-			pathSettingToDefaultSDK.stringValue = defaultFlexSDK;
-			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin", thisSettings));
-		}
-		
+
 		private function buildAndRun(e:Event):void
 		{
-            if (UtilsCore.hasJava()) return;
+			if (!UtilsCore.hasJava()) return;
 
 			// re-check in case of debug call and its already running
 			if (e.type == ActionScriptBuildEvent.BUILD_AND_DEBUG && DebugHighlightManager.IS_DEBUGGER_CONNECTED)
@@ -415,7 +217,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function buildRelease(e:Event):void
 		{
-            if (UtilsCore.hasJava()) return;
+			if (!UtilsCore.hasJava()) return;
 
 			SWFLauncherPlugin.RUN_AS_DEBUGGER = false;
 			build(e, false, true);
@@ -438,7 +240,7 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function build(e:Event, runAfterBuild:Boolean=false, release:Boolean=false):void 
 		{
-            if (UtilsCore.hasJava()) return;
+			if (!UtilsCore.hasJava()) return;
 
 			if (e && e.type == ActionScriptBuildEvent.BUILD_AND_DEBUG)
 			{
@@ -574,9 +376,6 @@ package actionScripts.plugins.as3project.mxmlc
 						return;
 					}
 				}
-				
-				// FlexJS Application
-				compileFlexJSApplication(activeProject, release);
 			}
 			else
 			{
@@ -627,149 +426,6 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			return false;
 		}
-		
-		private function compileFlexJSApplication(pvo:ProjectVO, release:Boolean=false):void
-		{
-			var compileStr:String;
-			if (!fcsh || pvo.folderLocation.fileBridge.nativePath != shellInfo.workingDirectory.nativePath 
-				|| usingInvalidSDK(pvo as AS3ProjectVO)) 
-			{
-				currentProject = pvo;
-				var tempCurrentSdk:FileLocation = UtilsCore.getCurrentSDK(pvo as AS3ProjectVO);
-				currentSDK = null;
-				if (!tempCurrentSdk)
-				{
-					model.noSDKNotifier.notifyNoFlexSDK(false);
-					model.noSDKNotifier.addEventListener(NoSDKNotifier.SDK_SAVED, sdkSelected);
-					model.noSDKNotifier.addEventListener(NoSDKNotifier.SDK_SAVE_CANCELLED, sdkSelectionCancelled);
-					error("No Flex SDK found. Setup one in Settings menu.");
-					return;
-				}
-
-				currentSDK = tempCurrentSdk.fileBridge.getFile as File;
-				// determine if the sdk version is lower than 0.8.0 or not
-				var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
-				
-				var compilerExtension:String = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
-				var mxmlcFile:File = currentSDK.resolvePath("js/bin/mxmlc"+ compilerExtension);
-				if (!mxmlcFile.exists)
-				{
-					Alert.show("Invalid SDK - Please configure a Apache Royale® SDK instead","Error!");
-					error("Invalid SDK - Please configure a Apache Royale® SDK instead");
-					return;
-				}
-				
-				// @fix
-				// https://github.com/prominic/Moonshine-IDE/issues/26
-				// We've found js/bin/mxmlc compiletion do not produce
-				// valid swf with prior 0.8 version; we shall need following
-				// executable for version less than 0.8
-				if (!isFlexJSAfter7) mxmlcFile = currentSDK.resolvePath("bin/mxmlc"+ compilerExtension);
-				
-				//If application is flexJS and sdk is flex sdk then error popup alert
-				var fcshFile:File = ConstantsCoreVO.IS_MACOS ?
-                        currentSDK.resolvePath(fcshPath) :
-						currentSDK.resolvePath("bin/fcsh.bat");
-				if (fcshFile.exists)
-				{
-					Alert.show("Invalid SDK - Please configure a Apache Royale® SDK instead","Error!");
-					error("Invalid SDK - Please configure a Apache Royale® SDK instead");
-					return;
-				}
-				fschstr = mxmlcFile.nativePath;
-				fschstr = UtilsCore.convertString(fschstr);
-				
-				SDKstr = currentSDK.nativePath;
-				SDKstr = UtilsCore.convertString(SDKstr);
-				
-				// update build config file
-				AS3ProjectVO(pvo).updateConfig();
-				compileStr = getFlexJSBuildArgs(pvo as AS3ProjectVO);
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
-			}
-			
-			/*
-			* @local
-			*/
-			function onEnvironmentPrepared(value:String):void
-			{
-				var processArgs:Vector.<String> = new Vector.<String>;
-				shellInfo = new NativeProcessStartupInfo();
-				if (Settings.os == "win")
-				{
-					processArgs.push("/c");
-					processArgs.push(value);
-				}
-				else
-				{
-					processArgs.push("-c");
-					processArgs.push(value);
-				}
-				
-				//var workingDirectory:File = currentSDK.resolvePath("bin/");
-				shellInfo.arguments = processArgs;
-				shellInfo.executable = cmdFile;
-				shellInfo.workingDirectory = pvo.folderLocation.fileBridge.getFile as File;
-				
-				initShell();
-				
-				if (ConstantsCoreVO.IS_MACOS)
-				{
-					debug("SDK path: %s", currentSDK.nativePath);
-					send(compileStr);
-				}
-			}
-		}
-
-        private function getFlexJSBuildArgs(project:AS3ProjectVO):String
-        {
-			var compileStr:String = "";
-			
-            // determine if the sdk version is lower than 0.8.0 or not
-            var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
-
-            var sdkPathHomeArg:String;
-			var enLanguageArg:String = "SETUP_SH_VMARGS=\"-Duser.language=en -Duser.region=en\"";
-            var compilerPathHomeArg:String = "FALCON_HOME=" + SDKstr;
-            var compilerArg:String = "&& \"" + fschstr +"\"";
-
-            var configArg:String = compile(project as AS3ProjectVO, release);
-            configArg = configArg.substring(configArg.indexOf(" -load-config"), configArg.length);
-            var jsCompilationArg:String = "";
-
-			if (isFlexJSAfter7)
-			{
-				jsCompilationArg = " -compiler.targets=SWF";
-				if (project.isRoyale)
-                {
-                    sdkPathHomeArg = "ROYALE_HOME=" + SDKstr;
-                    compilerPathHomeArg = "ROYALE_SWF_COMPILER_HOME=" + SDKstr;
-                }
-			}
-
-            if(Settings.os == "win")
-            {
-				compileStr = compileStr.concat(
-					sdkPathHomeArg ? ("set "+ sdkPathHomeArg)+"&& " : '', "set ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
-				);
-				
-                /*processArgs.push("set ".concat(
-                        sdkPathHomeArg, "&& set ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
-                ));*/
-            }
-            else
-            {
-				compileStr = compileStr.concat(
-					sdkPathHomeArg ? ("export "+ sdkPathHomeArg)+";" : '', "export ", enLanguageArg, "; export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
-				);
-					
-                /*processArgs.push("export ".concat(
-                        sdkPathHomeArg, " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
-                ));*/
-            }
-
-            return compileStr;
-        }
 
 		private function compileRegularFlexApplication(pvo:ProjectVO, release:Boolean=false):void
 		{
@@ -917,10 +573,7 @@ package actionScripts.plugins.as3project.mxmlc
 			if (targets[file] == undefined) 
 			{
 				lastTarget = file.fileBridge.getFile as File;
-				
-				// Turn on optimize flag for release builds
-				var optFlag:Boolean = pvo.buildOptions.optimize;
-				if (release) pvo.buildOptions.optimize = true;
+
 				var buildArgs:String = pvo.buildOptions.getArguments();
 				var projectTypeArg:String = "";
 
@@ -958,33 +611,6 @@ package actionScripts.plugins.as3project.mxmlc
 						projectTypeArg = "+configname=air";
 					}
 				}
-				
-				pvo.buildOptions.optimize = optFlag;
-				
-				var dbg:String;
-				if (release)
-				{
-					dbg = " -debug=false";
-				}
-				else
-				{
-					dbg = " -debug=true";
-				}
-
-				if (buildArgs.indexOf(" -debug=") > -1)
-				{
-					dbg = "";
-				}
-				
-				var outputFile:File;
-				if (release && pvo.swfOutput.path)
-				{
-					outputFile = pvo.folderLocation.resolvePath("bin-release/" + pvo.swfOutput.path.fileBridge.name).fileBridge.getFile as File;
-				}
-				else if (pvo.swfOutput.path)
-				{
-					outputFile = pvo.swfOutput.path.fileBridge.getFile as File;
-				}
 
 				if (pvo.nativeExtensions && pvo.nativeExtensions.length > 0)
 				{
@@ -1007,17 +633,15 @@ package actionScripts.plugins.as3project.mxmlc
 					
 					if (extensionArgs != "") 
 					{
-						buildArgs += extensionArgs;
 						if (pvo.air && pvo.buildOptions.isMobileRunOnSimulator) new NativeExtensionExpander(tmpExtensionFiles);
 					}
 				}
 
+				var javaExec:String = UtilsCore.getExecutableJavaLocation().fileBridge.nativePath;
 				var asConfigPath:String = File.applicationDirectory.resolvePath("elements/as3mxml-language-server/bin/asconfigc.jar").nativePath;
-				var commandConfig:String = "java -jar \"" + asConfigPath + "\" --sdk " + defaultFlexSDK + " ";
+				var commandConfig:String = "\"" + javaExec + "\" -jar \"" + asConfigPath + "\" --sdk " + model.defaultSDK.fileBridge.nativePath + " ";
 				var mxmlcStr:String = commandConfig
-					+projectTypeArg
-					+dbg
-					+" --project " + pvo.asConfig.nativePath;
+					+" --project " + pvo.asConfig.file.fileBridge.nativePath;
 				
 				print("Command: %s"+ mxmlcStr);
 				return mxmlcStr;
