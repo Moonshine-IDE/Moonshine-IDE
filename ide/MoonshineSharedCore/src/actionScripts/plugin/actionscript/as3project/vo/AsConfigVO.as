@@ -89,7 +89,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			if (!file)
 			{
-				file = pvo.projectFolder.file.fileBridge.resolvePath("asconfig.json");
+				file = pvo.projectFolder.file.fileBridge.resolvePath(pvo.projectName + "-asconfig.json");
 			}
 
 			// Write file

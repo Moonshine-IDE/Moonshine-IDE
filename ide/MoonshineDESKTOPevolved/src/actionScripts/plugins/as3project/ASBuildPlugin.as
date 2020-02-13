@@ -575,8 +575,6 @@ package actionScripts.plugins.as3project
 				lastTarget = file.fileBridge.getFile as File;
 
 				var buildArgs:String = pvo.buildOptions.getArguments();
-				var projectTypeArg:String = "";
-
 				if (pvo.air)
 				{
 					// option for manipulating swf launch through additional arg
@@ -591,24 +589,6 @@ package actionScripts.plugins.as3project
 					else
 					{
 						pvo.isMobile = !noAir ? true : false;
-					}
-
-					if (noAir)
-					{
-						projectTypeArg = "+configname=airmobile";
-					}
-					else
-					{
-						projectTypeArg = "+configname=air";
-					}
-
-					if (pvo.isMobile && buildArgs.indexOf("+configname=air") == -1)
-					{
-						projectTypeArg = "+configname=air";
-					}
-					else if (!pvo.isMobile && buildArgs.indexOf("+configname=air") == -1)
-					{
-						projectTypeArg = "+configname=air";
 					}
 				}
 
