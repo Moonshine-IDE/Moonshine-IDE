@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
+	import actionScripts.utils.UtilsCore;
+
 	import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
@@ -208,12 +210,7 @@ package actionScripts.languageServer
 			_previousJavaPath = jdkFolder.nativePath;
 			_previousSDKPath = sdkPath;
 
-			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
-			var cmdFile:File = jdkFolder.resolvePath(javaFileName);
-			if(!cmdFile.exists)
-			{
-				cmdFile = jdkFolder.resolvePath("bin/" + javaFileName);
-			}
+			var cmdFile:File = UtilsCore.getExecutableJavaLocation().fileBridge.getFile as File;
 			if(!cmdFile.exists)
 			{
 				error("Invalid path to Java Development Kit: " + cmdFile.nativePath);

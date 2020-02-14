@@ -621,7 +621,7 @@ package actionScripts.plugins.as3project
 				var asConfigPath:String = File.applicationDirectory.resolvePath("elements/as3mxml-language-server/bin/asconfigc.jar").nativePath;
 				var commandConfig:String = "\"" + javaExec + "\" -jar \"" + asConfigPath + "\" --sdk " + model.defaultSDK.fileBridge.nativePath + " ";
 				var mxmlcStr:String = commandConfig
-					+" --project " + pvo.asConfig.file.fileBridge.nativePath;
+					+"--debug=true --project " + pvo.asConfig.file.fileBridge.nativePath;
 				
 				print("Command: %s"+ mxmlcStr);
 				return mxmlcStr;
@@ -830,10 +830,6 @@ package actionScripts.plugins.as3project
 		{
             var currentSuccessfullProject:AS3ProjectVO = currentProject as AS3ProjectVO;
             success("Project Build Successfully.");
-            if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
-            {
-                reset();
-            }
 		}
 
 		private function launchDebuggingAfterBuild(debug:Boolean):void

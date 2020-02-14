@@ -19,6 +19,8 @@
 package actionScripts.plugins.swflauncher
 {
 	import actionScripts.plugins.debugAdapter.IDebugAdapterLauncher;
+	import actionScripts.utils.UtilsCore;
+
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.filesystem.File;
 	import actionScripts.valueObjects.Settings;
@@ -85,9 +87,8 @@ package actionScripts.plugins.swflauncher
 			}
 			startupInfo.workingDirectory = cwd;
 			startupInfo.arguments = processArgs;
-			var javaFile:File = File(model.javaPathForTypeAhead.fileBridge.getFile);
-			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
-			startupInfo.executable = javaFile.resolvePath("bin/" + javaFileName);
+
+			startupInfo.executable = UtilsCore.getExecutableJavaLocation().fileBridge.getFile as File;
 			return startupInfo;
 		}
 	}
