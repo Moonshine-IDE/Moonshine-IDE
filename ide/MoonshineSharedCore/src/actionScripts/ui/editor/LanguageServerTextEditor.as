@@ -509,9 +509,11 @@ package actionScripts.ui.editor
 			{
 				this.closeAllPopups();
 			}
-			
-			// check for any externally update
-			checkFileIfChanged();
+			else
+			{
+				// check for any externally update
+				checkFileIfChanged();
+			}
 		}
 
 		private function addedToStageHandler(event:Event):void

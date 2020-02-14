@@ -21,8 +21,8 @@ package actionScripts.controllers
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.events.MouseEvent;
+    import flash.utils.Dictionary;
     
-    import mx.collections.ArrayCollection;
     import mx.core.FlexGlobals;
     import mx.events.ResizeEvent;
     import mx.managers.PopUpManager;
@@ -146,10 +146,10 @@ package actionScripts.controllers
 		
 		private function seeFileAgain(event:Event=null):void
 		{
-            if (tabToUpdate is BasicTextEditor)
+            /*if (tabToUpdate is BasicTextEditor)
             {
                 model.mainView.mainContent.setSelectedTab(tabToUpdate as DisplayObject);
-            }
+            }*/
 			cleanUp();
 		}
 		

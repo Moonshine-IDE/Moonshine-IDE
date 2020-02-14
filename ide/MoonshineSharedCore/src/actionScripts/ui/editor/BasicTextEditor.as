@@ -239,7 +239,6 @@ package actionScripts.ui.editor
 		{
 			loadingFile = true;
 			file = newFile;
-			lastOpenedUpdatedInMoonshine = file.fileBridge.modificationDate;
 			if (fileData) 
 			{
 				openFileAsStringHandler(fileData as String);
@@ -262,7 +261,8 @@ package actionScripts.ui.editor
 			}
 			
 			// physical file is an updated one
-			else if (ObjectUtil.dateCompare(file.fileBridge.modificationDate, lastOpenedUpdatedInMoonshine) != 0)
+			else if (lastOpenedUpdatedInMoonshine && 
+				ObjectUtil.dateCompare(file.fileBridge.modificationDate, lastOpenedUpdatedInMoonshine) != 0)
 			{
 				dispatcher.dispatchEvent(new UpdateTabEvent(UpdateTabEvent.EVENT_TAB_UPDATED_OUTSIDE, this));
 			}
@@ -290,7 +290,7 @@ package actionScripts.ui.editor
 			text = file.fileBridge.data.toString();
 
 			scrollToTempValue();
-
+			updateChangeStatus();
 			file.fileBridge.getFile.removeEventListener(Event.COMPLETE, openHandler);
 		}
 
