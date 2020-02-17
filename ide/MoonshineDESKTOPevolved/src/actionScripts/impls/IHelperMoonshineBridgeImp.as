@@ -86,6 +86,11 @@ package actionScripts.impls
 		{
 			return UtilsCore.isGitPresent();	
 		}
+		
+		public function isNodeJsPresent():Boolean
+		{
+			return UtilsCore.isNodeAvailable();
+		}
 
 		public function runOrDownloadSDKInstaller():void
 		{
