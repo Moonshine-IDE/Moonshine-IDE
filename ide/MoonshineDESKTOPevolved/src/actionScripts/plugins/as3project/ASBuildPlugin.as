@@ -938,6 +938,8 @@ package actionScripts.plugins.as3project
 						launchArgs["program"] = swfProgram;
 					}
 				}
+
+				print("Launch object: name %s, noDebug: %s, program: %s", launchArgs.name, launchArgs.noDebug, launchArgs.program);
 				dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER, as3Project, "swf", "launch", launchArgs));
 			}
 		}
