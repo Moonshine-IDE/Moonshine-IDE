@@ -493,6 +493,12 @@ package actionScripts.plugins.ant
 
         private function startAntProcess(buildDir:FileLocation):void
         {
+			if (nativeProcess && nativeProcess.running)
+			{
+				Alert.show("Ant build running. Please wait until it finish.", "Note!");
+				return;
+			}
+			
             var antBatPath:String = getAntBatPath();
 			var sdkPath:String = UtilsCore.convertString(currentSDK.fileBridge.nativePath);
             var buildDirPath:String = buildDir.fileBridge.nativePath;
