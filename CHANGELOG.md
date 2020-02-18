@@ -25,6 +25,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Java: Fixed issue where changes to _pom.xml_ or _build.gradle_ were not properly reflected in code intelligence.
 * Java: Fixed issue where Java path was not recognized by Maven build.
 * Project Sidebar: Fixed issue where project files/folders was not sorted alphabetically.
+* Ant: Fixed issue where new Ant process request dismisses any running process output
+* Ant: Fixed issue where notification not showing during Ant build start and end
+* Ant: Fixed issue on Windows where running a process thrown 'The syntax of the command is incorrect' error.
 
 ## Moonshine IDE [2.5.0]
 
