@@ -737,7 +737,7 @@ package actionScripts.plugins.as3project
 			// since swf and air player both versioning same now,
 			// we can load anyone's config file
             var movieVersion:String = SDKUtils.getSdkSwfMajorVersion().toString()+".0";
-			
+
 			// Create project root directory
 			if (!isProjectFromExistingSource)
 			{
@@ -859,7 +859,10 @@ package actionScripts.plugins.as3project
 				{
 					// build folder modification
 					th.projectTemplate(templateDir.resolvePath("build_air"), targetFolder.resolvePath("build"));
-					if (isAway3DProject) th.projectTemplate(templateDir.resolvePath("libs"), targetFolder.resolvePath("libs"));
+					if (isAway3DProject)
+					{
+						th.projectTemplate(templateDir.resolvePath("libs"), targetFolder.resolvePath("libs"));
+					}
 					descriptorFileLocation = targetFolder.resolvePath("build/"+ sourceFile +"-app.xml");
 					try
 					{
