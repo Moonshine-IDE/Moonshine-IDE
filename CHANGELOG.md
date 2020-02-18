@@ -7,12 +7,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Summary
 
+Moonshine 2.5.1 has a couple new features for Apache Royale.  
+- Run a report on a Flex project to see what is needed to convert to Apache Royale
+- Quickly download the latest nightly build of Apache Royale
+- Debug Apache Royale applications in Moonshine using the Chrome debug adapter.   
+
+Also, there is additional support for Haxe, updates for some of the language server, and several bug fixes.
+
 ### Added
 * Apache Royale browser projects support debugging when launched in Chrome.
-* Add [Apache Royale API](https://github.com/apache/royale-asjs/wiki/Generating-an-API-Report) report generator to help migration from Flex to Royale.
-* New Haxe project type.
-* New Haxe Feathers UI project type.
-* Getting Started: Add options to download Apache Royale Nightly build.
+* Generate a report to aid migration from Flex to Royale with Project > Apache Royale API Report.  See the [Apache Royale API](https://github.com/apache/royale-asjs/wiki/Generating-an-API-Report) page for more details.
+* Added support for additional Haxe project types.
+* Added new Haxe Feathers UI project type.
+* Getting Started:  Download the current nightly build of Apache Royale with Moonshine SDK Installer
 
 ### Changed
 * Updated [Groovy language server](https://github.com/prominic/groovy-langugage-server) engine to latest.
@@ -23,11 +30,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Fixed
 * Royale: Fixed issue where resources were not copied to bin/js-release folder.
 * Java: Fixed issue where changes to _pom.xml_ or _build.gradle_ were not properly reflected in code intelligence.
-* Java: Fixed issue where Java path was not recognized by Maven build.
+* Java: Fixed issue where the Windows Java path was not recognized by the Maven build.
 * Project Sidebar: Fixed issue where project files/folders was not sorted alphabetically.
 * Ant: Fixed issue where new Ant process request dismisses any running process output
 * Ant: Fixed issue where notification not showing during Ant build start and end
-* Ant: Fixed issue on Windows where running a process thrown 'The syntax of the command is incorrect' error.
+* Ant: Fixed issue on Windows where running a Ant script triggers a 'The syntax of the command is incorrect' error.
+
 
 ## Moonshine IDE [2.5.0]
 
