@@ -90,7 +90,9 @@ package actionScripts.plugins.as3project.mxmlc
 
 	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 	import actionScripts.valueObjects.MobileDeviceVO;
-	
+
+	import org.as3commons.asblocks.utils.FileUtil;
+
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
 		override public function get name():String			{ return "Default SDK"; }
@@ -922,7 +924,6 @@ package actionScripts.plugins.as3project.mxmlc
 				var optFlag:Boolean = pvo.buildOptions.optimize;
 				if (release) pvo.buildOptions.optimize = true;
 				var buildArgs:String = pvo.buildOptions.getArguments();
-				var projectTypeArg:String = "";
 
 				if (pvo.air)
 				{
@@ -930,32 +931,21 @@ package actionScripts.plugins.as3project.mxmlc
 					// in case of project user wants to run it in a mobile simulator by adding certain
 					// commands in Additional Compiler Arguments, we need to make the swf launching
 					// behaves as a mobile or air
-					var noAir:Boolean = buildArgs.indexOf("+configname=air") == -1;
-					if (noAir)
+					if (buildArgs.indexOf("+configname=air") == -1)
 					{
 						pvo.isMobile = UtilsCore.isMobile(pvo);
 					}
 					else
 					{
-						pvo.isMobile = !noAir ? true : false;
+						pvo.isMobile = (buildArgs.indexOf("+configname=airmobile") != -1) ? true : false;
 					}
-
-					if (noAir)
-					{
-						projectTypeArg = "+configname=airmobile";
-					}
-					else
-					{
-						projectTypeArg = "+configname=air";
-					}
-
 					if (pvo.isMobile && buildArgs.indexOf("+configname=air") == -1)
 					{
-						projectTypeArg = "+configname=air";
+						buildArgs += " +configname=airmobile";
 					}
 					else if (!pvo.isMobile && buildArgs.indexOf("+configname=air") == -1)
 					{
-						projectTypeArg = "+configname=air";
+						buildArgs += " +configname=air";
 					}
 				}
 				
@@ -986,6 +976,16 @@ package actionScripts.plugins.as3project.mxmlc
 					outputFile = pvo.swfOutput.path.fileBridge.getFile as File;
 				}
 
+				var output:String;
+				if (outputFile)
+				{
+					output = " -o " + pvo.folderLocation.fileBridge.getRelativePath(new FileLocation(outputFile.nativePath));
+					if (outputFile.exists == false)
+					{
+						FileUtil.createFile(outputFile);
+					}
+				}
+
 				if (pvo.nativeExtensions && pvo.nativeExtensions.length > 0)
 				{
 					var extensionArgs:String = "";
@@ -1012,12 +1012,11 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 				}
 
-				var asConfigPath:String = File.applicationDirectory.resolvePath("elements/as3mxml-language-server/bin/asconfigc.jar").nativePath;
-				var commandConfig:String = "java -jar \"" + asConfigPath + "\" --sdk " + defaultFlexSDK + " ";
-				var mxmlcStr:String = commandConfig
-					+projectTypeArg
+				var mxmlcStr:String = '"'+ mxmlcPath +'"'
+					+" -load-config+="+pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file)
+					+buildArgs
 					+dbg
-					+" --project " + pvo.asConfig.nativePath;
+					+output;
 				
 				print("Command: %s"+ mxmlcStr);
 				return mxmlcStr;
