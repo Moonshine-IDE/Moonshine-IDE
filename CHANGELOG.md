@@ -8,11 +8,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Summary
 
 Moonshine 2.5.1 has a couple new features for Apache Royale.  
-- Run a report on a Flex project to see what is needed to convert to Apache Royale
-- Quickly download the latest nightly build of Apache Royale
+- Generate a report for a Flex project to see what is needed to convert it to Apache Royale
+- Quickly download the latest nightly build for Apache Royale
 - Debug Apache Royale applications in Moonshine using the Chrome debug adapter.   
 
-Also, there is additional support for Haxe, updates for some of the language server, and several bug fixes.
+Some other changes:
+- Additional support for Haxe
+- Updates for some of the language servers
+- Various bug fixes.
 
 ### Added
 * Apache Royale browser projects support debugging when launched in Chrome.
