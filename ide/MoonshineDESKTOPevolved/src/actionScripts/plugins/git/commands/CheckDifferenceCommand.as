@@ -81,9 +81,9 @@ package actionScripts.plugins.git.commands
 		
 		private function checkDiffFileExistence():void
 		{
+			var tmpPositions:ArrayCollection = new ArrayCollection();
 			if (StringUtil.trim(diffResults) != "")
 			{
-				var tmpPositions:ArrayCollection = new ArrayCollection();
 				var contentInLineBreaks:Array = diffResults.split("\n");
 				var firstPart:String;
 				var secondPart:String;
@@ -105,6 +105,10 @@ package actionScripts.plugins.git.commands
 				});
 				
 				diffResults = "";
+				dispatcher.dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
+			}
+			else
+			{
 				dispatcher.dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
 			}
 			
