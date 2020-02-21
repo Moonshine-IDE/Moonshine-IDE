@@ -3,11 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## Moonshine IDE [2.5.1]
+## Moonshine IDE [2.6.0]
 
 ### Summary
 
-Moonshine 2.5.1 has a couple new features for Apache Royale.  
+Moonshine 2.6.0 has a couple new features for Apache Royale.  
 - Generate a report for a Flex project to see what is needed to convert it to Apache Royale
 - Quickly download the latest nightly build for Apache Royale
 - Debug Apache Royale applications in Moonshine using the Chrome debug adapter.   
