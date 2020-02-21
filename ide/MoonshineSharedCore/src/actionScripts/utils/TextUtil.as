@@ -82,6 +82,18 @@ package actionScripts.utils
 			return 0;
 		}
 		
+		// Get amount of indentation on line by space-press
+		public static function indentAmountBySpace(line:String):int
+		{
+			var indent:int = line.length - line.replace(/ +/,"").length;
+			if (indent > 0)
+			{
+				return indent;
+			}
+			
+			return 0;
+		}
+		
 		// Count digits in decimal number
 		public static function digitCount(num:int):int
 		{

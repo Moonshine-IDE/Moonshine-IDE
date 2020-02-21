@@ -50,6 +50,7 @@ package actionScripts.ui.editor.text.change
 			{
 				var targetStartLine:TextLineModel = targetLines[startLine];
 				var startIndent:int = TextUtil.indentAmount(targetStartLine.text);
+				var startIndentBySpace:int = TextUtil.indentAmountBySpace(targetStartLine.text);
 				var trailText:String = targetStartLine.text.slice(startChar);
 				
 				// Break line at change position, and append first text line
@@ -64,9 +65,14 @@ package actionScripts.ui.editor.text.change
 						// Get indentation of trailing text
 						var trailIndent:int = TextUtil.indentAmount(trailText);
 						// Get indentation of last line of the insert if it's a multi-line insert
-						if (textLines.length > 2) startIndent = TextUtil.indentAmount(textLines[textLines.length - 2]);
+						if (textLines.length > 2) 
+						{
+							startIndent = TextUtil.indentAmount(textLines[textLines.length - 2]);
+						}
 						// Add required amount of indent to get the trailing text aligned with the last line
+						// support both combination of tab and space-key press
 						textLines[textLines.length - 1] += TextUtil.repeatStr("\t", Math.max(startIndent - trailIndent, 0));
+						textLines[textLines.length - 1] += TextUtil.repeatStr(" ", Math.max(startIndentBySpace - trailIndent, 0));
 					}
 					
 					// Create line models from strings
