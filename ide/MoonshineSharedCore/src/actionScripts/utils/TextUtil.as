@@ -82,16 +82,14 @@ package actionScripts.utils
 			return 0;
 		}
 		
-		// Get amount of indentation on line by space-press
-		public static function indentAmountBySpace(line:String):int
+		// Get amount of indention combining space and tabs on line
+		public static function indentAmountBySpaceAndTab(line:String):Object
 		{
-			var indent:int = line.length - line.replace(/ +/,"").length;
-			if (indent > 0)
-			{
-				return indent;
-			}
+			var tmpLine:String = line.replace(/^(\s+).*$/, "$1");
+			var num_spaces:int = tmpLine.length - tmpLine.replace(/[ ]/g, "").length;
+			var num_tabs:int = tmpLine.length - tmpLine.replace(/\t/g, "").length;
 			
-			return 0;
+			return {space: num_spaces, tab: num_tabs};
 		}
 		
 		// Count digits in decimal number

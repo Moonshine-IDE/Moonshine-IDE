@@ -18,8 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text.change
 {
-	import actionScripts.utils.TextUtil;
 	import actionScripts.ui.editor.text.TextLineModel;
+	import actionScripts.utils.TextUtil;
 
 	public class TextChangeInsert extends TextChangeBase
 	{
@@ -49,8 +49,9 @@ package actionScripts.ui.editor.text.change
 			if (textLines && textLines.length > 0)
 			{
 				var targetStartLine:TextLineModel = targetLines[startLine];
-				var startIndent:int = TextUtil.indentAmount(targetStartLine.text);
-				var startIndentBySpace:int = TextUtil.indentAmountBySpace(targetStartLine.text);
+				var tabAndSpaceCount:Object = TextUtil.indentAmountBySpaceAndTab(targetStartLine.text);
+				var startIndent:int = tabAndSpaceCount.tab;
+				var startIndentBySpace:int = tabAndSpaceCount.space;
 				var trailText:String = targetStartLine.text.slice(startChar);
 				
 				// Break line at change position, and append first text line
