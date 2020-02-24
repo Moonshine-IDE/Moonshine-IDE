@@ -711,19 +711,8 @@ package actionScripts.plugins.as3project.mxmlc
 
         private function startDebugAdapter(project:AS3ProjectVO, debug:Boolean):void
         {
-			var url:String = "http://localhost:" + DEBUG_SERVER_PORT;
-			if(project.customHTMLPath)
-			{
-				url = project.customHTMLPath;
-			}
-			else if(project.urlToLaunch)
-			{
-				var relativeURL:String = getWebRoot(project).fileBridge.getRelativePath(new FileLocation(project.urlToLaunch));
-				if(relativeURL)
-				{
-					url += "/" + relativeURL;
-				}
-			}
+			var url:String = getUrlToLaunch(project); 
+
             var debugCommand:String = "launch";
             var debugAdapterType:String = "chrome";
             var launchArgs:Object = {};
@@ -751,13 +740,12 @@ package actionScripts.plugins.as3project.mxmlc
 				launchApplicationWithoutDebugAdapter();
 				return;
 			}
-			var canStart:Boolean = true;
-			if(!as3Project.customHTMLPath)
-			{
-				var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getWebRoot(as3Project), DEBUG_SERVER_PORT);
+
+			var httpWorkingDir:FileLocation = getWebRoot(as3Project);
+			var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, httpWorkingDir, DEBUG_SERVER_PORT);
 				dispatcher.dispatchEvent(httpServerEvent);
-				canStart = !httpServerEvent.isDefaultPrevented();
-			}
+			var canStart:Boolean = !httpServerEvent.isDefaultPrevented();
+
 			if(canStart)
 			{
 				//debug adapter can launch/run without debugging
@@ -795,11 +783,11 @@ package actionScripts.plugins.as3project.mxmlc
 				var launchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, null, pvo);
 				if (pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
 				{
-					launchEvent.url = pvo.customHTMLPath;
+					launchEvent.url = getUrlToLaunch(pvo);
 				}
 				else
 				{
-					launchEvent.file = new FileLocation(pvo.urlToLaunch).fileBridge.getFile as File;
+					launchEvent.file = new FileLocation(getUrlToLaunch(pvo)).fileBridge.getFile as File;
 				}
 
 				dispatcher.dispatchEvent(launchEvent);
@@ -886,6 +874,25 @@ package actionScripts.plugins.as3project.mxmlc
 			resourceDestinationCopiedIndex = 0;
 			resourceCopiedIndex = 0;
         }
+
+		private function getUrlToLaunch(pvo:AS3ProjectVO):String
+		{
+			var url:String = "http://localhost:" + DEBUG_SERVER_PORT;
+			if(pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
+			{
+				url = pvo.customHTMLPath;
+			}
+			else if(pvo.urlToLaunch)
+			{
+				var urlToLaunchLocation:FileLocation = new FileLocation(pvo.urlToLaunch);
+				if(urlToLaunchLocation.fileBridge.exists)
+				{
+					url = urlToLaunchLocation.fileBridge.nativePath;
+				}
+			}
+
+			return url;
+		}
 
 		private function notifySuccessfullBuildAfterResourceCopy():void
 		{
