@@ -42,6 +42,7 @@ package actionScripts.plugins.ant
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.RunANTScriptEvent;
+    import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
@@ -90,7 +91,6 @@ package actionScripts.plugins.ant
         private var shellInfo:NativeProcessStartupInfo;
         private var nativeProcess:NativeProcess;
         private var errors:String = "";
-        private var exiting:Boolean = false;
         private var antPath:String = "ant";
         private var workingDir:FileLocation;
         private var selectProjectPopup:SelectOpenedProject;
@@ -492,6 +492,12 @@ package actionScripts.plugins.ant
 
         private function startAntProcess(buildDir:FileLocation):void
         {
+			if (nativeProcess && nativeProcess.running)
+			{
+				Alert.show("Ant build is running. Please wait until it finish.", "Note!");
+				return;
+			}
+			
             var antBatPath:String = getAntBatPath();
 			var sdkPath:String = UtilsCore.convertString(currentSDK.fileBridge.nativePath);
             var buildDirPath:String = buildDir.fileBridge.nativePath;
@@ -533,6 +539,7 @@ package actionScripts.plugins.ant
 				);
             }
 			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, buildDir.fileBridge.name, "Building ", false));
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, sdkPath, [compileStr]);
 
 			/*
@@ -601,13 +608,10 @@ package actionScripts.plugins.ant
         {
             if (nativeProcess)
             {
-                exiting = true;
                 reset();
-            }
-            else
-            {
-                startShell();
-            }
+			}
+			
+            startShell();
         }
 
         private function startShell():void
@@ -696,17 +700,12 @@ package actionScripts.plugins.ant
             }
 
             debug("%s", data);
+			reset();
         }
 
         private function shellExit(e:NativeProcessExitEvent):void
         {
             debug("FSCH exit code: %s", e.exitCode);
-            if (exiting)
-            {
-                exiting = false;
-                startShell();
-            }
-
             if (isASuccessBuild && selectedProject)
             {
                 print("Files produced under DEPLOY folder.");
@@ -724,7 +723,8 @@ package actionScripts.plugins.ant
             {
                 nativeProcess.exit();
             }
-
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
             nativeProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, shellData);
             nativeProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, shellError);
             nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, shellExit);
