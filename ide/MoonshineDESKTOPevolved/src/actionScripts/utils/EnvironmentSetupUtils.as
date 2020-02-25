@@ -197,43 +197,43 @@ package actionScripts.utils
 			
 			if (UtilsCore.isJavaForTypeaheadAvailable())
 			{
-				setCommand += getSetExportForJavaCommand("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath);
+				setCommand += getSetExportWithoutQuote("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$JAVA_HOME/bin:" : "%JAVA_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isAntAvailable())
 			{
-				setCommand += getSetExportCommand("ANT_HOME", model.antHomePath.fileBridge.nativePath);
+				setCommand += getSetExportWithoutQuote("ANT_HOME", model.antHomePath.fileBridge.nativePath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$ANT_HOME/bin:" : "%ANT_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isMavenAvailable())
 			{
-				setCommand += getSetExportCommand("MAVEN_HOME", model.mavenPath);
+				setCommand += getSetExportWithoutQuote("MAVEN_HOME", model.mavenPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$MAVEN_HOME/bin:" : "%MAVEN_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isGradleAvailable())
 			{
-				setCommand += getSetExportCommand("GRADLE_HOME", model.gradlePath);
+				setCommand += getSetExportWithoutQuote("GRADLE_HOME", model.gradlePath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$GRADLE_HOME/bin:" : "%GRADLE_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isGrailsAvailable())
 			{
-				setCommand += getSetExportCommand("GRAILS_HOME", model.grailsPath);
+				setCommand += getSetExportWithoutQuote("GRAILS_HOME", model.grailsPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$GRAILS_HOME/bin:" : "%GRAILS_HOME%\\bin;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isHaxeAvailable())
 			{
-				setCommand += getSetExportCommand("HAXE_HOME", model.haxePath);
+				setCommand += getSetExportWithoutQuote("HAXE_HOME", model.haxePath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$HAXE_HOME:" : "%HAXE_HOME%;");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isNekoAvailable())
 			{
-				setCommand += getSetExportCommand("NEKO_HOME", model.nekoPath);
+				setCommand += getSetExportWithoutQuote("NEKO_HOME", model.nekoPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$NEKO_HOME:" : "%NEKO_HOME%;");
 				isValidToExecute = true;
 			}
@@ -248,7 +248,7 @@ package actionScripts.utils
 					var gitRootPath:String = model.gitPath.substring(0, substrIndex);
 					if (FileUtils.isPathExists(gitRootPath + "\\mingw64\\ssl\\cert.pem"))
 					{
-						setCommand += getSetExportCommand("GIT_HOME", gitRootPath);
+						setCommand += getSetExportWithoutQuote("GIT_HOME", gitRootPath);
 						additionalCommandLines += "%GIT_HOME%\\bin\\git config --global http.sslCAInfo %GIT_HOME%\\mingw64\\ssl\\cert.pem\r\n";
 						isValidToExecute = true;
 					}
@@ -257,13 +257,13 @@ package actionScripts.utils
 			if (defaultOrCustomSDKPath)
 			{
 				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
-				setCommand += getSetExportCommand(flexRoyaleHomeType, defaultOrCustomSDKPath);
+				setCommand += getSetExportWithoutQuote(flexRoyaleHomeType, defaultOrCustomSDKPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
 				
 				if (!defaultSDKtype || (defaultSDKtype && defaultSDKtype != SDKTypes.ROYALE))
 				{
 					var airHomeType:String = "AIR_SDK_HOME";
-					setCommand += getSetExportCommand(airHomeType, defaultOrCustomSDKPath);
+					setCommand += getSetExportWithoutQuote(airHomeType, defaultOrCustomSDKPath);
 					setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ airHomeType +"/bin:" : "%"+ airHomeType +"%\\bin;");
 				}
 				
@@ -290,7 +290,7 @@ package actionScripts.utils
 			return setCommand;
 		}
 		
-		private function getSetExportCommand(field:String, path:String):String
+		private function getSetExportWithQuote(field:String, path:String):String
 		{
 			if (ConstantsCoreVO.IS_MACOS)
 			{
@@ -300,11 +300,11 @@ package actionScripts.utils
 			return "set "+ field +"=\""+ path +"\"\r\n";
 		}
 
-		private function getSetExportForJavaCommand(field:String, path:String):String
+		private function getSetExportWithoutQuote(field:String, path:String):String
 		{
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				return getSetExportCommand(field, path);
+				return getSetExportWithQuote(field, path);
 			}
 
 			return "set "+ field +"="+ path +"\r\n";
