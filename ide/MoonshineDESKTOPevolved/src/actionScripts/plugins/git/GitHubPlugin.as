@@ -609,7 +609,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceivedForCheckout);
 			if (!gitBranchSelectionWindow)
 			{
-				openGitBranchSelectionWindowWithSelectionHandler(onGitBranchSelectionWindowClosedForCheckout, event);
+				openGitBranchSelectionWindowWithSelectionHandler(onGitBranchSelectionWindowClosedForCheckout, event, "Checkout Branch");
 			}
 			else
 			{
@@ -622,7 +622,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceivedForMerge);
 			if (!gitBranchSelectionWindow)
 			{
-				openGitBranchSelectionWindowWithSelectionHandler(onGitBranchSelectionWindowClosedForMerge, event);
+				openGitBranchSelectionWindowWithSelectionHandler(onGitBranchSelectionWindowClosedForMerge, event, "Merge Branch");
 			}
 			else
 			{
@@ -630,7 +630,7 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function openGitBranchSelectionWindowWithSelectionHandler(method:Function, event:GeneralEvent):void
+		private function openGitBranchSelectionWindowWithSelectionHandler(method:Function, event:GeneralEvent, submitLabel:String=null):void
 		{
 			if (!checkOSXGitAccess()) return;
 			
@@ -640,6 +640,8 @@ package actionScripts.plugins.git
 			gitBranchSelectionWindow.title = "Select Branch";
 			gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
 			gitBranchSelectionWindow.branchCollection = event.value as ArrayCollection;
+			if (submitLabel) gitBranchSelectionWindow.submitButtonLabel = submitLabel;
+			
 			gitBranchSelectionWindow.addEventListener(CloseEvent.CLOSE, method);
 			PopUpManager.centerPopUp(gitBranchSelectionWindow);
 		}
