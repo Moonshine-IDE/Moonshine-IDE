@@ -19,7 +19,6 @@
 package actionScripts.ui.editor.text.change
 {
 	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.utils.TextUtil;
 
 	public class TextChangeInsert extends TextChangeBase
 	{
@@ -58,7 +57,8 @@ package actionScripts.ui.editor.text.change
 				if (textLines.length > 1)
 				{
 					// Add indentation to last line if it's empty
-					if (textLines[textLines.length - 1] == "")
+					if ((textLines[textLines.length - 1] == "") && 
+						(targetStartLine.text.search(/^(\s+).*$/) != -1))
 					{
 						// Add required amount of indent to get the trailing text aligned with the last line
 						// support both combination of tab and space-key press
