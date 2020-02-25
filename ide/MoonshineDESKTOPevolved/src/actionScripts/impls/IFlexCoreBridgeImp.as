@@ -390,8 +390,9 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','PULL'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.PULL_REQUEST),
 					new MenuItem(resourceManager.getString('resources','REVERT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.REVERT_REQUEST),
 					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources','NEW_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.NEW_BRANCH_REQUEST),
-					new MenuItem(resourceManager.getString('resources','SWITCH_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHANGE_BRANCH_REQUEST)
+					new MenuItem(resourceManager.getString('resources','SWITCH_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.CHANGE_BRANCH_REQUEST),
+					new MenuItem(resourceManager.getString('resources','MERGE_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.MERGE_BRANCH_REQUEST),
+					new MenuItem(resourceManager.getString('resources','NEW_BRANCH'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.NEW_BRANCH_REQUEST)
 				]),
 				new MenuItem("Others", [
 					new MenuItem(resourceManager.getString('resources','BUILD_AWAY3D_MODEL'), null, null, Away3DPlugin.OPEN_AWAY3D_BUILDER),

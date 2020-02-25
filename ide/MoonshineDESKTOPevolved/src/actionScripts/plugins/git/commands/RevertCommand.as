@@ -22,7 +22,6 @@ package actionScripts.plugins.git.commands
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
-	import actionScripts.plugins.git.GitProcessManager;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -45,12 +44,12 @@ package actionScripts.plugins.git.commands
 				{
 					switch(i.data.status)
 					{
-						case GitProcessManager.GIT_STATUS_FILE_DELETED:
-						case GitProcessManager.GIT_STATUS_FILE_MODIFIED:
+						case CheckDifferenceCommand.GIT_STATUS_FILE_DELETED:
+						case CheckDifferenceCommand.GIT_STATUS_FILE_MODIFIED:
 							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
 						
-						case GitProcessManager.GIT_STATUS_FILE_NEW:
+						case CheckDifferenceCommand.GIT_STATUS_FILE_NEW:
 							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" reset $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&reset&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
 					}

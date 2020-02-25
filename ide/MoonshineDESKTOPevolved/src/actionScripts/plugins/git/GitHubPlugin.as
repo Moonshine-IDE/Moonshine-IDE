@@ -53,6 +53,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.commands.GitCheckoutCommand;
 	import actionScripts.plugins.git.commands.GitCommitCommand;
 	import actionScripts.plugins.git.commands.GitSwitchBranchCommand;
+	import actionScripts.plugins.git.commands.MergeCommand;
 	import actionScripts.plugins.git.commands.PullCommand;
 	import actionScripts.plugins.git.commands.PushCommand;
 	import actionScripts.plugins.git.commands.RevertCommand;
@@ -90,6 +91,7 @@ package actionScripts.plugins.git
 		public static const REVERT_REQUEST:String = "gitFilesRevertRequest";
 		public static const NEW_BRANCH_REQUEST:String = "gitNewBranchRequest";
 		public static const CHANGE_BRANCH_REQUEST:String = "gitChangeBranchRequest";
+		public static const MERGE_BRANCH_REQUEST:String = "gitMergeBranchRequest";
 		public static const RELAY_SVN_XCODE_REQUEST:String = "svnXCodePermissionRequest";
 		
 		override public function get name():String			{ return "Git"; }
@@ -136,6 +138,7 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(REVERT_REQUEST, onRevertRequest, false, 0, true);
 			dispatcher.addEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest, false, 0, true);
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
+			dispatcher.addEventListener(MERGE_BRANCH_REQUEST, onMergeBranchRequest, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit, false, 0, true);
 			dispatcher.addEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN, false, 0, true);
 			dispatcher.addEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested, false, 0, true);
@@ -162,6 +165,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(REVERT_REQUEST, onRevertRequest);
 			dispatcher.removeEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest);
 			dispatcher.removeEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest);
+			dispatcher.removeEventListener(MERGE_BRANCH_REQUEST, onMergeBranchRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit);
 			dispatcher.removeEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN);
 			dispatcher.removeEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested);
@@ -589,25 +593,23 @@ package actionScripts.plugins.git
 		private function onChangeBranchRequest(event:Event):void
 		{
 			if (!dispatcher.hasEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED))
-				dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived, false, 0, true);
+				dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceivedForCheckout, false, 0, true);
 			new GitSwitchBranchCommand();
 		}
 		
-		private function onGitRemoteBranchListReceived(event:GeneralEvent):void
+		private function onMergeBranchRequest(event:Event):void
 		{
-			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived);
+			if (!dispatcher.hasEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED))
+				dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceivedForMerge, false, 0, true);
+			new GitSwitchBranchCommand();
+		}
+		
+		private function onGitRemoteBranchListReceivedForCheckout(event:GeneralEvent):void
+		{
+			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceivedForCheckout);
 			if (!gitBranchSelectionWindow)
 			{
-				if (!checkOSXGitAccess()) return;
-				
-				checkGitAvailability();
-				
-				gitBranchSelectionWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitBranchSelectionPopup, false) as GitBranchSelectionPopup;
-				gitBranchSelectionWindow.title = "Select Branch";
-				gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
-				gitBranchSelectionWindow.branchCollection = event.value as ArrayCollection;
-				gitBranchSelectionWindow.addEventListener(CloseEvent.CLOSE, onGitBranchSelectionWindowClosed);
-				PopUpManager.centerPopUp(gitBranchSelectionWindow);
+				openGitBranchSelectionWindowWithSelectionHandler(onGitBranchSelectionWindowClosedForCheckout, event);
 			}
 			else
 			{
@@ -615,9 +617,36 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function onGitBranchSelectionWindowClosed(event:CloseEvent):void
+		private function onGitRemoteBranchListReceivedForMerge(event:GeneralEvent):void
 		{
-			gitBranchSelectionWindow.removeEventListener(CloseEvent.CLOSE, onGitBranchSelectionWindowClosed);
+			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceivedForMerge);
+			if (!gitBranchSelectionWindow)
+			{
+				openGitBranchSelectionWindowWithSelectionHandler(onGitBranchSelectionWindowClosedForMerge, event);
+			}
+			else
+			{
+				PopUpManager.bringToFront(gitBranchSelectionWindow);
+			}
+		}
+		
+		private function openGitBranchSelectionWindowWithSelectionHandler(method:Function, event:GeneralEvent):void
+		{
+			if (!checkOSXGitAccess()) return;
+			
+			checkGitAvailability();
+			
+			gitBranchSelectionWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitBranchSelectionPopup, false) as GitBranchSelectionPopup;
+			gitBranchSelectionWindow.title = "Select Branch";
+			gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
+			gitBranchSelectionWindow.branchCollection = event.value as ArrayCollection;
+			gitBranchSelectionWindow.addEventListener(CloseEvent.CLOSE, method);
+			PopUpManager.centerPopUp(gitBranchSelectionWindow);
+		}
+		
+		private function onGitBranchSelectionWindowClosedForCheckout(event:CloseEvent):void
+		{
+			gitBranchSelectionWindow.removeEventListener(CloseEvent.CLOSE, onGitBranchSelectionWindowClosedForCheckout);
 			
 			var selectedBranch:GenericSelectableObject = gitBranchSelectionWindow.isSubmit ? gitBranchSelectionWindow.lstBranches.selectedItem as GenericSelectableObject : null;
 			
@@ -627,6 +656,21 @@ package actionScripts.plugins.git
 			if (selectedBranch) 
 			{
 				new GitChangeBranchToCommand(selectedBranch);
+			}
+		}
+		
+		private function onGitBranchSelectionWindowClosedForMerge(event:CloseEvent):void
+		{
+			gitBranchSelectionWindow.removeEventListener(CloseEvent.CLOSE, onGitBranchSelectionWindowClosedForMerge);
+			
+			var selectedBranch:GenericSelectableObject = gitBranchSelectionWindow.isSubmit ? gitBranchSelectionWindow.lstBranches.selectedItem as GenericSelectableObject : null;
+			
+			PopUpManager.removePopUp(gitBranchSelectionWindow);
+			gitBranchSelectionWindow = null;
+			
+			if (selectedBranch) 
+			{
+				new MergeCommand(selectedBranch);
 			}
 		}
 		

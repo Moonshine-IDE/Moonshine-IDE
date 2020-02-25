@@ -139,7 +139,7 @@
 					<s:ItemRenderer height="22">
 						<fx:Script>
 							<![CDATA[
-								import actionScripts.plugins.git.GitProcessManager;
+								import actionScripts.plugins.git.commands.CheckDifferenceCommand;
 								override public function set data(value:Object):void
 								{
 									if (value) 
@@ -148,7 +148,7 @@
 										labelDisplay.text = data.data.path;
 										switch(data.data.status)
 										{
-											case GitProcessManager.GIT_STATUS_FILE_DELETED:
+											case CheckDifferenceCommand.GIT_STATUS_FILE_DELETED:
 											{
 												lblStatus.text = "D";
 												labelDisplay.setStyle("color", 0xff6666);
@@ -156,7 +156,7 @@
 												break;
 											}
 												
-											case GitProcessManager.GIT_STATUS_FILE_NEW:
+											case CheckDifferenceCommand.GIT_STATUS_FILE_NEW:
 											{
 												lblStatus.text = "N";
 												labelDisplay.setStyle("color", 0x33cc33);
