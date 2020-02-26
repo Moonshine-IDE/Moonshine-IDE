@@ -42,11 +42,39 @@
 	</mx:Script>
 	
 	<s:HGroup width="100%" verticalAlign="middle">
-		<s:Label text="Conflicts by: C:\MyWork\MyGitProjectRepository" fontSize="11" color="0xBBBBBB"/>
+		<s:Label text="Conflicts by: C:\MyWork\MyGitProjectRepository" fontSize="11" color="0xFFBF0F"/>
 		<s:Spacer width="100%"/>
 		<s:Button label="Open file(s)" styleName="darkButton"/>
 	</s:HGroup>
 	
 	<s:List width="100%" height="100%" 
-			dataProvider="{conflicts}" labelField="data" styleName="multiLineList"/>
+			dataProvider="{conflicts}" styleName="multiLineList">
+		<s:itemRenderer>
+			<mx:Component>
+				<s:ItemRenderer height="22">
+					<mx:Script>
+						<![CDATA[
+							override public function set data(value:Object):void
+							{
+								if (value) 
+								{
+									super.data = value;
+									labelDisplay.text = value.data;
+								}
+							}
+						]]>
+					</mx:Script>
+					
+					<s:layout>
+						<s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="10" gap="2"/>
+					</s:layout>
+					
+					<s:Label id="labelDisplay"
+							 paddingLeft="8" width="100%"/>
+					<s:CheckBox id="cbSelect"
+								change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
+				</s:ItemRenderer>
+			</mx:Component>
+		</s:itemRenderer>
+	</s:List>
 </mx:VBox>
