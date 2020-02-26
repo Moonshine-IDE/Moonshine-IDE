@@ -35,6 +35,7 @@ package actionScripts.plugins.git
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
@@ -73,6 +74,7 @@ package actionScripts.plugins.git
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	
+	import components.containers.RepositoryConflictFilesView;
 	import components.popup.GitAuthenticationPopup;
 	import components.popup.GitBranchSelectionPopup;
 	import components.popup.GitCommitSelectionPopup;
@@ -93,6 +95,7 @@ package actionScripts.plugins.git
 		public static const CHANGE_BRANCH_REQUEST:String = "gitChangeBranchRequest";
 		public static const MERGE_BRANCH_REQUEST:String = "gitMergeBranchRequest";
 		public static const RELAY_SVN_XCODE_REQUEST:String = "svnXCodePermissionRequest";
+		public static const EVENT_SHOW_HIDE_FILES_IN_CONFLICT_VIEW:String = "showHideFilesConflictView";
 		
 		override public function get name():String			{ return "Git"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
@@ -125,6 +128,8 @@ package actionScripts.plugins.git
 		private var gitNewBranchWindow:GitNewBranchPopup;
 		private var isStartupTest:Boolean;
 		private var pathSetting:PathSetting;
+		private var conflictFilesListPanel:RepositoryConflictFilesView;
+		private var isConflictViewShowing:Boolean;
 		
 		override public function activate():void
 		{
@@ -143,6 +148,7 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN, false, 0, true);
 			dispatcher.addEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
+			dispatcher.addEventListener(EVENT_SHOW_HIDE_FILES_IN_CONFLICT_VIEW, onShowHideConflictView, false, 0, true);
 			
 			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
 			
@@ -170,6 +176,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN);
 			dispatcher.removeEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested);
 			dispatcher.removeEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
+			dispatcher.removeEventListener(EVENT_SHOW_HIDE_FILES_IN_CONFLICT_VIEW, onShowHideConflictView);
 			
 			model.projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged);
 		}
@@ -212,6 +219,43 @@ package actionScripts.plugins.git
 				pathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected);
 				pathSetting = null;
 			}
+		}
+		
+		private function onShowHideConflictView(event:Event, conflicts:ArrayCollection=null):void
+		{
+			if (!isConflictViewShowing)
+			{
+				if (!conflictFilesListPanel) conflictFilesListPanel = new RepositoryConflictFilesView();
+				if (conflicts) conflictFilesListPanel.conflicts = conflicts;
+				manageConflictViewListeners(true);
+				isConflictViewShowing = true;
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, conflictFilesListPanel));
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, conflictFilesListPanel));
+				manageConflictViewListeners(false);
+				isConflictViewShowing = false;
+				//conflictFilesListPanel = null;
+			}
+		}
+		
+		private function manageConflictViewListeners(attach:Boolean):void
+		{
+			if (attach)
+			{
+				conflictFilesListPanel.addEventListener(Event.REMOVED_FROM_STAGE, onConflictViewRemovedFromStage);
+			}
+			else
+			{
+				conflictFilesListPanel.removeEventListener(Event.REMOVED_FROM_STAGE, onConflictViewRemovedFromStage);
+			}
+		}
+		
+		private function onConflictViewRemovedFromStage(event:Event):void
+		{
+			isConflictViewShowing = false;
+			manageConflictViewListeners(false);
 		}
 		
 		private function onSDKPathSelected(event:Event):void
@@ -672,7 +716,23 @@ package actionScripts.plugins.git
 			
 			if (selectedBranch) 
 			{
+				if (!dispatcher.hasEventListener(MergeCommand.GIT_CONFLICT_FILES_LIST))
+					dispatcher.addEventListener(MergeCommand.GIT_CONFLICT_FILES_LIST, onGitConflictFilesListReceived, false, 0, true);
 				new MergeCommand(selectedBranch);
+			}
+		}
+		
+		private function onGitConflictFilesListReceived(event:GeneralEvent):void
+		{
+			dispatcher.removeEventListener(MergeCommand.GIT_CONFLICT_FILES_LIST, onGitConflictFilesListReceived);
+			
+			if (isConflictViewShowing)
+			{
+				conflictFilesListPanel.conflicts = event.value as ArrayCollection;
+			}
+			else
+			{
+				onShowHideConflictView(null, event.value as ArrayCollection);
 			}
 		}
 		
