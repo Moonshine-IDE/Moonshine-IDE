@@ -74,10 +74,10 @@ package actionScripts.plugin.templating
 	import components.popup.newFile.NewCSSFilePopup;
 	import components.popup.newFile.NewFilePopup;
 	import components.popup.newFile.NewGroovyFilePopup;
+	import components.popup.newFile.NewHaxeFilePopup;
 	import components.popup.newFile.NewJavaFilePopup;
 	import components.popup.newFile.NewMXMLFilePopup;
 	import components.popup.newFile.NewVisualEditorFilePopup;
-	import components.popup.newFile.NewHaxeFilePopup;
 
     /*
     Templating plugin
@@ -324,6 +324,7 @@ package actionScripts.plugin.templating
         private function generateTemplateProjects():void
         {
             var projectTemplateCollection:ArrayCollection = new ArrayCollection();
+			var actionScriptProjectTemplates:ArrayCollection = new ArrayCollection();
             var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
 			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
@@ -360,6 +361,11 @@ package actionScripts.plugin.templating
 					{
 						projectTemplateCollection.addItem(template);
                     }
+					
+					if (templateName.indexOf("ActionScript") != -1)
+					{
+						actionScriptProjectTemplates.addItem(template);
+					}
 
 					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1)
 					{
@@ -392,6 +398,7 @@ package actionScripts.plugin.templating
 			ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA = javaProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_GRAILS = grailsProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_HAXE = haxeProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_PROJECTS_ACTIONSCRIPT = actionScriptProjectTemplates;
         }
 		
 		public function getSettingsList():Vector.<ISetting>	

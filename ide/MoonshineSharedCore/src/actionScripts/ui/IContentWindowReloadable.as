@@ -16,33 +16,11 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.events
+package actionScripts.ui
 {
-	import actionScripts.factory.FileLocation;
-	
-	import flash.events.Event;
-
-	public class FileChangeEvent extends Event
+	public interface IContentWindowReloadable
 	{
-		public static const EVENT_FILECHANGE:String = "newFileChangeEvent";
-		
-		public var filePath:String;
-		public var rootPath:String;
-		public var lineNumner:Number;
-		public var carPosition:Number;
-		public var version:Number;
-		
-		
-		
-		public function FileChangeEvent(type:String, filePath:String=null, lineNumner:Number = 0, carPosition:Number = 0,version:Number = 0 )
-		{
-			this.filePath = filePath;
-			//this.rootPath = rootPath;
-			this.lineNumner = lineNumner;
-			this.carPosition = carPosition;
-			this.version = version;
-			super(type, false, true);
-		}
-		
+		function reload():void;
+		function checkFileIfChanged():void;
 	}
 }

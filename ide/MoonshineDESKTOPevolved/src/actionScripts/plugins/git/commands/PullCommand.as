@@ -51,6 +51,7 @@ package actionScripts.plugins.git.commands
 				case PULL_REQUEST:
 					refreshProjectTree(); // important
 					success("...process completed");
+					checkCurrentEditorForModification();
 					break;
 			}
 		}

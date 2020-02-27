@@ -29,6 +29,9 @@ package actionScripts.ui.tabview
     
     import spark.events.IndexChangeEvent;
     
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.locator.IDEModel;
+    import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.utils.UtilsCore;
@@ -67,6 +70,7 @@ package actionScripts.ui.tabview
 		public function set selectedIndex(value:int):void
 		{
 			if (itemContainer.numChildren == 0) return;
+			//if (_selectedIndex == value) return;
 			if (value < 0) value = 0;
 			_selectedIndex = value;
 			
@@ -96,7 +100,8 @@ package actionScripts.ui.tabview
 				{
 					child.visible = true;
 					UIComponent(child).setFocus();
-					dispatchEvent( new TabEvent(TabEvent.EVENT_TAB_SELECT, child) );
+					IDEModel.getInstance().activeEditor = child as IContentWindow;
+					GlobalEventDispatcher.getInstance().dispatchEvent(new TabEvent(TabEvent.EVENT_TAB_SELECT, child));
 				} 
 				else 
 				{

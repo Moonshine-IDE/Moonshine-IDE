@@ -18,11 +18,12 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<mx:Canvas 
+<mx:VBox 
 	xmlns:mx="http://www.adobe.com/2006/mxml"
 	xmlns:ns="library://ns.adobe.com/flex/spark"
 	styleName="standardPopup"
-	minWidth="350" minHeight="100">
+	minWidth="350" minHeight="100" autoLayout="true"
+	verticalGap="10" paddingLeft="12" paddingRight="12" paddingBottom="10">
 	
 	<mx:filters>
 		<mx:GlowFilter color="0x0" alpha="0.3" blurX="6" blurY="6" quality="2" /> 
@@ -31,10 +32,19 @@
 	<mx:Script>
 		<![CDATA[
 			
-			[Bindable]
-			public var text:String = "";
-			
 			public var buttons:Array;
+			
+			private var _text:String = "";
+			[Bindable]
+			public function get text():String
+			{
+				return _text;
+			}
+			public function set text(value:String):void
+			{
+				_text = value;
+				updateTextHeight();
+			}
 			
 			private function addButtons():void
 			{
@@ -43,6 +53,18 @@
 				{
 					var d:DisplayObject = DisplayObject(buttons[i]);
 					buttonBar.addChild(d);
+					
+				}
+			}
+			
+			private function updateTextHeight():void
+			{
+				if (popupTextArea)
+				{
+					popupTextArea.callLater(function():void
+					{
+						popupTextArea.height = popupTextArea.scroller.viewport.contentHeight + 6;
+					});
 				}
 			}
 			
@@ -50,7 +72,7 @@
 	</mx:Script>
 	
 	<ns:TextArea id="popupTextArea"
-		width="100%" height="60"
+		width="100%" minHeight="60"
 		text="{text}"
 		styleName="uiText"
 		color="0x444444"
@@ -58,12 +80,10 @@
 		paddingTop="14"
 		paddingRight="12"
 		borderVisible="false"
-		contentBackgroundAlpha="0"/>
+		contentBackgroundAlpha="0"
+		creationComplete="updateTextHeight()"/>
 	
 	<mx:HBox id="buttonBar"
-		bottom="10"
-		left="10"
-		right="10" 
 		creationComplete="addButtons()"/>
 	
-</mx:Canvas>
+</mx:VBox>

@@ -44,6 +44,8 @@ package actionScripts.plugins.as3project
 	import actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO;
 	import actionScripts.plugin.groovy.grailsproject.exporter.GrailsExporter;
 	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.haxe.hxproject.exporter.HaxeExporter;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.project.ProjectTemplateType;
@@ -74,8 +76,6 @@ package actionScripts.plugins.as3project
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
 	import actionScripts.valueObjects.TemplateVO;
-	import actionScripts.plugin.haxe.hxproject.exporter.HaxeExporter;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	
     public class CreateProject
 	{
@@ -318,6 +318,7 @@ package actionScripts.plugins.as3project
 			
 			var nvps:Vector.<NameValuePair> = Vector.<NameValuePair>([
 				new NameValuePair("AIR", ProjectType.AS3PROJ_AS_AIR),
+				new NameValuePair("AIR Mobile", ProjectType.AS3PROJ_AS_AIR),
 				new NameValuePair("Web", ProjectType.AS3PROJ_AS_WEB),
 			    new NameValuePair("Visual Editor", ProjectType.VISUAL_EDITOR)
 			]);
@@ -336,8 +337,10 @@ package actionScripts.plugins.as3project
             if (isActionScriptProject)
 			{
 				isActionScriptProject = true;
-				newProjectTypeSetting = new MultiOptionSetting(this, "activeType", "Select project type", nvps);
-				settings.getSettingsList().splice(4, 0, newProjectTypeSetting);
+				projectTemplateTypeSetting = new DropDownListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ACTIONSCRIPT, "title");
+				projectTemplateTypeSetting.addEventListener(Event.CHANGE, onProjectTemplateTypeChange);
+				
+				settings.getSettingsList().splice(4, 0, projectTemplateTypeSetting);
 			}
 
 			if (isOpenProjectCall)
@@ -855,7 +858,7 @@ package actionScripts.plugins.as3project
 			var isAIR:Boolean = templateDir.resolvePath("build_air").fileBridge.exists;
 			if (isActionScriptProject || isAIR || isMobileProject)
 			{
-				if (activeType == ProjectType.AS3PROJ_AS_AIR)
+				if (activeType == ProjectType.AS3PROJ_AS_AIR || activeType == ProjectType.AS3PROJ_AS_AIR_MOBILE)
 				{
 					// build folder modification
 					th.projectTemplate(templateDir.resolvePath("build_air"), targetFolder.resolvePath("build"));
@@ -875,30 +878,15 @@ package actionScripts.plugins.as3project
 						{}
 					}
 				}
-				else
-				{
-					th.projectTemplate(templateDir.resolvePath("build_web"), targetFolder.resolvePath("build"));
-					th.projectTemplate(templateDir.resolvePath("bin-debug_web"), targetFolder.resolvePath("bin-debug"));
-					th.projectTemplate(templateDir.resolvePath("html-template_web"), targetFolder.resolvePath("html-template"));
-				}
 				
 				// we also needs to delete unnecessary folders
 				var folderToDelete1:FileLocation = targetFolder.resolvePath("build_air");
-				var folderToDelete2:FileLocation = targetFolder.resolvePath("build_web");
-				var folderToDelete3:FileLocation = targetFolder.resolvePath("bin-debug_web");
-				var folderToDelete4:FileLocation = targetFolder.resolvePath("html-template_web");
-				var folderToDelete5:FileLocation = targetFolder.resolvePath("build");
+				var folderToDelete2:FileLocation = targetFolder.resolvePath("build");
 				
 				if (folderToDelete1.fileBridge.exists) folderToDelete1.fileBridge.deleteDirectory(true);
-				if (isActionScriptProject)
-				{
-					if (folderToDelete2.fileBridge.exists) folderToDelete2.fileBridge.deleteDirectory(true);
-					if (folderToDelete3.fileBridge.exists) folderToDelete3.fileBridge.deleteDirectory(true);
-					if (folderToDelete4.fileBridge.exists) folderToDelete4.fileBridge.deleteDirectory(true);
-				}
 				if (isAway3DProject)
 				{
-					if (folderToDelete5.fileBridge.exists) folderToDelete5.fileBridge.deleteDirectory(true);
+					if (folderToDelete2.fileBridge.exists) folderToDelete2.fileBridge.deleteDirectory(true);
 				}
 
 			}
@@ -1044,7 +1032,19 @@ package actionScripts.plugins.as3project
 			{
 				pvo = (pvo as ProjectShellVO).getProjectOutOfShell(projectTemplateType);
 			}
-
+			
+			var template:TemplateVO;
+			if (isActionScriptProject)
+			{
+				for each (template in ConstantsCoreVO.TEMPLATES_PROJECTS_ACTIONSCRIPT)
+				{
+					if(template.title == projectTemplateType)
+					{
+						templateLookup[pvo] = template.file;
+						break;
+					}
+				}
+			}
             if (isOpenProjectCall || isFlexJSRoyalProject)
             {
 				setProjectType(projectTemplateType);
@@ -1053,7 +1053,7 @@ package actionScripts.plugins.as3project
 						ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
 						allProjectTemplates;
 
-				for each (var template:TemplateVO in projectsTemplates)
+				for each (template in projectsTemplates)
 				{
 					if(template.title == projectTemplateType)
 					{

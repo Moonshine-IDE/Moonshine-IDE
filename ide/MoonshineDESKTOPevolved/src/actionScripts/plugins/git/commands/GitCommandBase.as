@@ -31,6 +31,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugin.settings.event.RequestSettingByNameEvent;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.git.model.MethodDescriptor;
+	import actionScripts.ui.IContentWindowReloadable;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	
@@ -176,6 +177,14 @@ package actionScripts.plugins.git.commands
 		{
 			// refreshing project tree
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, model.activeProject.projectFolder));
+		}
+		
+		protected function checkCurrentEditorForModification():void
+		{
+			if (model.activeEditor && (model.activeEditor is IContentWindowReloadable))
+			{
+				(model.activeEditor as IContentWindowReloadable).checkFileIfChanged();
+			}
 		}
 		
 		private function getGitPluginReference():void
