@@ -141,6 +141,8 @@ package actionScripts.plugins.svn.commands
 				dispatcher.dispatchEvent(
 					new RefreshTreeEvent(new FileLocation(root.nativePath))
 				);
+				
+				checkCurrentEditorForModification();
 			}
 			else
 			{
