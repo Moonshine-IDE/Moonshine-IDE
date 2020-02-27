@@ -82,6 +82,16 @@ package actionScripts.utils
 			return 0;
 		}
 		
+		// Get amount of indention combining space and tabs on line
+		public static function indentAmountBySpaceAndTab(line:String):Object
+		{
+			var tmpLine:String = line.replace(/^(\s+).*$/, "$1");
+			var num_spaces:int = tmpLine.length - tmpLine.replace(/[ ]/g, "").length;
+			var num_tabs:int = tmpLine.length - tmpLine.replace(/\t/g, "").length;
+			
+			return {space: num_spaces, tab: num_tabs};
+		}
+		
 		// Count digits in decimal number
 		public static function digitCount(num:int):int
 		{

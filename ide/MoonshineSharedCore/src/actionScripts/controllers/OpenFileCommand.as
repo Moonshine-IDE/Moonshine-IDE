@@ -25,7 +25,7 @@ package actionScripts.controllers
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.EditorPluginEvent;
-    import actionScripts.events.FileChangeEvent;
+    import actionScripts.events.UpdateTabEvent;
     import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.OpenFileEvent;
@@ -230,7 +230,6 @@ package actionScripts.controllers
 			{
 				if (openAsTourDe) openTextFile(fileData, true);
 				else openTextFile(fileData);
-				GlobalEventDispatcher.getInstance().dispatchEvent(new FileChangeEvent(FileChangeEvent.EVENT_FILECHANGE,file.fileBridge.nativePath,0,0,0));
 			}
 			else
 			{

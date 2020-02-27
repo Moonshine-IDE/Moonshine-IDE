@@ -72,7 +72,7 @@
 				<s:VGroup width="100%"
 						  includeInLayout="{!isAppStoreVersion}" visible="{!isAppStoreVersion}"
 						  paddingTop="10">
-					<s:Label text="Do you want to download it and install?"
+					<s:Label text="Do you want to download and install it?"
 							 styleName="textInputLabel" color="0x444444"/>
 					<mx:ProgressBar id="prgBar" source="{updater}" label="{(downlaoding)?'Downloading %3%':''}" alpha="{(downlaoding)?1:.3}" />
 					<s:HGroup width="100%">
