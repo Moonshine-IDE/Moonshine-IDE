@@ -75,6 +75,9 @@ package actionScripts.utils
 				case SDKTypes.NODEJS:
 					pluginClass = "actionScripts.plugins.js::JavaScriptPlugin";
 					break;
+				case SDKTypes.NOTES:
+					pluginClass = "actionScripts.plugins.domino::DominoPlugin";
+					break;
 			}
 			
 			if (pluginClass) GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, pluginClass));
@@ -113,6 +116,9 @@ package actionScripts.utils
 					break;
 				case SDKTypes.NODEJS:
 					updateNodeJsPath(path);
+					break;
+				case SDKTypes.NOTES:
+					updateNotesPath(path);
 					break;
 			}
 		}
@@ -281,6 +287,33 @@ package actionScripts.utils
 					// save as moonshine settings
 					dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
 						null, "actionScripts.plugins.git::GitHubPlugin", settings));
+					
+					// update local env.variable
+					environmentSetupUtils.updateToCurrentEnvironmentVariable();
+				}
+			}
+		}
+		
+		public static function updateNotesPath(path:String):void
+		{
+			// update only if ant path not set
+			// or the existing ant path does not exists
+			if (!UtilsCore.isNotesDominoAvailable())
+			{
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_NOTES, message: "Feature available. Click on Configure to allow"}));
+				}
+				else
+				{
+					model.notesPath = path;
+					var settings:Vector.<ISetting> = Vector.<ISetting>([
+						new PathSetting({notesPath: model.notesPath}, 'notesPath', 'IBM/HCL Notes Executable', false)
+					]);
+					
+					// save as moonshine settings
+					dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, "actionScripts.plugins.domino::DominoPlugin", settings));
 					
 					// update local env.variable
 					environmentSetupUtils.updateToCurrentEnvironmentVariable();
