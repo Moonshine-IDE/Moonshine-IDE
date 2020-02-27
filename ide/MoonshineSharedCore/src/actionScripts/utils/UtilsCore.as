@@ -40,6 +40,7 @@ package actionScripts.utils
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
 	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
@@ -62,7 +63,6 @@ package actionScripts.utils
 	import components.popup.SDKSelectorPopup;
 	import components.renderers.CustomToolTipGBA;
 	import components.views.splashscreen.SplashScreen;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
 
 	public class UtilsCore 
 	{
@@ -1311,6 +1311,22 @@ package actionScripts.utils
 			if (component && component.pathValidation)
 			{
 				return model.flexCore.isValidExecutableBy(SDKTypes.GIT, model.gitPath, component.pathValidation);
+			}
+			
+			return true;
+		}
+		
+		public static function isNotesDominoAvailable():Boolean
+		{
+			if (!model.notesPath || !model.fileCore.isPathExists(model.notesPath))
+			{
+				return false;
+			}
+			
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.NOTES);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.NOTES, model.notesPath, component.pathValidation);
 			}
 			
 			return true;

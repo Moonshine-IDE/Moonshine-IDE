@@ -81,6 +81,7 @@ package actionScripts.locator
 		public var haxePath:String;
 		public var nekoPath:String;
 		public var nodePath:String;
+		public var notesPath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var svnPath:String;
 		public var gitPath:String;
