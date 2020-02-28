@@ -49,9 +49,6 @@ package actionScripts.ui.editor
 
 			this._languageID = languageID;
 
-			this.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-			this.addEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
-			
 			editor.addEventListener(ChangeEvent.TEXT_CHANGE, onTextChange);
 			editor.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			editor.addEventListener(MouseEvent.ROLL_OVER, onRollOver);
@@ -69,32 +66,32 @@ package actionScripts.ui.editor
 		private var _codeActionTimeoutID:int = -1;
 		private var _completionIncomplete:Boolean = false;
 
-		protected function addGlobalListeners():void
+		override protected function addGlobalListeners():void
 		{
+			super.addGlobalListeners();
+			
 			dispatcher.addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
 			dispatcher.addEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
-			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			dispatcher.addEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
 			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
-			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
 			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler);
 		}
 
-		protected function removeGlobalListeners():void
+		override protected function removeGlobalListeners():void
 		{
+			super.removeGlobalListeners();
+			
 			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
 			dispatcher.removeEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
-			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
 			dispatcher.removeEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
-			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
@@ -475,7 +472,7 @@ package actionScripts.ui.editor
 			editor.showCodeActions(event.codeActions);
 		}
 
-		protected function closeTabHandler(event:CloseTabEvent):void
+		override protected function closeTabHandler(event:CloseTabEvent):void
 		{
 			var closedTab:LanguageServerTextEditor = event.tab as LanguageServerTextEditor;
 			if(!closedTab || closedTab != this)
@@ -503,27 +500,24 @@ package actionScripts.ui.editor
 				currentFile.fileBridge.url));
 		}
 
-		protected function tabSelectHandler(event:TabEvent):void
+		override protected function tabSelectHandler(event:TabEvent):void
 		{
-			if(event.child != this)
+			if (event.child != this)
 			{
 				this.closeAllPopups();
 			}
-			else
-			{
-				// check for any externally update
-				checkFileIfChanged();
-			}
+			
+			super.tabSelectHandler(event);
 		}
 
-		private function addedToStageHandler(event:Event):void
+		override protected function addedToStageHandler(event:Event):void
 		{
-			this.addGlobalListeners();
+			super.addedToStageHandler(event);
 		}
 
-		private function removedFromStageHandler(event:Event):void
+		override protected function removedFromStageHandler(event:Event):void
 		{
-			this.removeGlobalListeners();
+			super.removedFromStageHandler(event);
 			this.closeAllPopups();
 		}
 	}
