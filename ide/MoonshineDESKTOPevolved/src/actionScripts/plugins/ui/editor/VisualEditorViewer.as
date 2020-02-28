@@ -102,8 +102,6 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.codeEditor = editor;
 			
 			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, addTabHandler);
-			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
-			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, duplicateSelectedElementHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, previewStartCompleteHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STOPPED, previewStoppedHandler);
@@ -131,8 +129,6 @@ package actionScripts.plugins.ui.editor
 				}
 				
 				dispatcher.removeEventListener(AddTabEvent.EVENT_ADD_TAB, addTabHandler);
-				dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
-				dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 				dispatcher.removeEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, duplicateSelectedElementHandler);
 				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, previewStartCompleteHandler);
 				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_STOPPED, previewStoppedHandler);
@@ -304,25 +300,25 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.visualEditor.editingSurface.selectedItem = null;
 		}
 		
-		private function closeTabHandler(event:Event):void
+		override protected function closeTabHandler(event:CloseTabEvent):void
 		{
-			if (!visualEditorView.visualEditor) return;
+			super.closeTabHandler(event);
 			
-			if (event is CloseTabEvent)
+			if (!visualEditorView.visualEditor) return;
+
+			var tmpEvent:CloseTabEvent = event as CloseTabEvent;
+			if (tmpEvent.tab.hasOwnProperty("editor") && tmpEvent.tab["editor"] == this.editor)
 			{
-				var tmpEvent:CloseTabEvent = event as CloseTabEvent;
-				if (tmpEvent.tab.hasOwnProperty("editor") && tmpEvent.tab["editor"] == this.editor)
-				{
-					visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
-					visualEditorView.visualEditor.propertyEditor.removeEventListener("propertyEditorChanged", onPropertyEditorChanged);
-					visualEditorView.visualEditor.editingSurface.selectedItem = null;
-				}
+				visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
+				visualEditorView.visualEditor.propertyEditor.removeEventListener("propertyEditorChanged", onPropertyEditorChanged);
+				visualEditorView.visualEditor.editingSurface.selectedItem = null;
 			}
 		}
 		
-		private function tabSelectHandler(event:TabEvent):void
+		override protected function tabSelectHandler(event:TabEvent):void
 		{
 			if (!visualEditorView.visualEditor) return;
+			super.tabSelectHandler(event);
 			
 			if (!event.child.hasOwnProperty("editor") || event.child["editor"] != this.editor)
 			{

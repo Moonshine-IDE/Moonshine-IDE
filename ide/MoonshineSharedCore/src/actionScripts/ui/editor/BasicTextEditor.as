@@ -31,9 +31,15 @@ package actionScripts.ui.editor
     
     import actionScripts.controllers.DataAgent;
     import actionScripts.events.ChangeEvent;
+    import actionScripts.events.CodeActionsEvent;
+    import actionScripts.events.CompletionItemsEvent;
+    import actionScripts.events.DiagnosticsEvent;
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.LanguageServerMenuEvent;
+    import actionScripts.events.ProjectEvent;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.SaveFileEvent;
+    import actionScripts.events.SignatureHelpEvent;
     import actionScripts.events.UpdateTabEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
@@ -44,6 +50,8 @@ package actionScripts.ui.editor
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.editor.text.vo.SearchResult;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.ui.tabview.TabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
@@ -159,10 +167,50 @@ package actionScripts.ui.editor
 			super();
 			_readOnly = readOnly;
 			
+			this.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			this.addEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
+			
 			percentHeight = 100;
 			percentWidth = 100;
 			addEventListener(FlexEvent.CREATION_COMPLETE, basicTextEditorCreationCompleteHandler);
 			initializeChildrens();
+		}
+		
+		protected function addedToStageHandler(event:Event):void
+		{
+			this.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			this.addGlobalListeners();
+		}
+		
+		protected function removedFromStageHandler(event:Event):void
+		{
+			this.removeEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
+			this.removeGlobalListeners();
+		}
+		
+		protected function addGlobalListeners():void
+		{
+			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+		}
+		
+		protected function removeGlobalListeners():void
+		{
+			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
+			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+		}
+		
+		protected function closeTabHandler(event:CloseTabEvent):void
+		{
+		}
+		
+		protected function tabSelectHandler(event:TabEvent):void
+		{
+			if (event.child == this)
+			{
+				// check for any externally update
+				checkFileIfChanged();
+			}
 		}
 		
 		protected function initializeChildrens():void
