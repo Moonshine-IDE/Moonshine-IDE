@@ -21,7 +21,6 @@ package actionScripts.controllers
     import flash.display.DisplayObject;
     import flash.events.Event;
     import flash.events.MouseEvent;
-    import flash.utils.Dictionary;
     
     import mx.core.FlexGlobals;
     import mx.events.ResizeEvent;
@@ -54,7 +53,14 @@ package actionScripts.controllers
 			if (event.hasOwnProperty('tab'))
 				tabToUpdate = event['tab'];
 			else
-				tabToUpdate = model.activeEditor;	
+				tabToUpdate = model.activeEditor;
+			
+			// probable termination
+			if ((tabToUpdate is BasicTextEditor) && 
+				(model.individualTabAlertShowingFilePath == (tabToUpdate as BasicTextEditor).currentFile.fileBridge.nativePath))
+			{
+				return;
+			}
 			
 			pop = new StandardPopup();
 			pop.data = this; // Keep the command from getting GC'd
@@ -104,6 +110,8 @@ package actionScripts.controllers
 			pop.x = (FlexGlobals.topLevelApplication.width-pop.width)/2;
 			
 			model.isIndividualCloseTabAlertShowing = true;
+			model.individualTabAlertShowingFilePath = (tabToUpdate is BasicTextEditor) ? 
+				(tabToUpdate as BasicTextEditor).currentFile.fileBridge.nativePath : null;
 			
 			// @devsena
 			// we need this because if application frame resized when above alert
@@ -132,6 +140,7 @@ package actionScripts.controllers
 			}
 			
 			tabToUpdate = null;
+			model.individualTabAlertShowingFilePath = null;
 		}
 		
 		private function onApplicationResized(event:ResizeEvent):void
