@@ -18,11 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.domino
 {
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	public class DominoPlugin extends PluginBase implements ISettingsProvider
 	{
@@ -50,12 +50,17 @@ package actionScripts.plugins.domino
         {
 			onSettingsClose();
 
-			nodePathSetting = new PathSetting(this, 'notesPath', 'IBM/HCL Notes Executable', false, notesPath);
+			nodePathSetting = new PathSetting(this, 'notesPath', 'IBM/HCL Notes Executable', ConstantsCoreVO.IS_MACOS ? false : true, notesPath);
 			
 			return Vector.<ISetting>([
                 nodePathSetting
 			]);
         }
+		
+		override public function resetSettings():void
+		{
+			notesPath = null;
+		}
 		
 		override public function onSettingsClose():void
 		{
