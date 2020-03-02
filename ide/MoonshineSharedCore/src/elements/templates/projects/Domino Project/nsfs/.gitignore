@@ -1,0 +1,8 @@
+/*/.settings/
+/*/build.properties
+/*/META-INF/MANIFEST.MF
+/*/.classpath
+!/*/odp/.classpath
+!/*/odp/.settings/*
+!/*/odp/META-INF/MANIFEST.MF
+!/*/odp/.project

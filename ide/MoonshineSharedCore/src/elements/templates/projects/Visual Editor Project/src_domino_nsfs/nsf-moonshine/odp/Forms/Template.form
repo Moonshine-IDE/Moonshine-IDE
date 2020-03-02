@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form publicaccess="false" renderpassthrough="true" xmlns="http://www.lotus.com/dxl">
+  <noteinfo noteid="1eda" unid="4D129C5913A7BF5986256E51003F7C01" sequence="17">
+    <created/>
+    <modified>
+      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
+    </modified>
+    <revised dst="true">
+      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
+    </revised>
+    <lastaccessed>
+      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
+    </lastaccessed>
+    <addedtofile>
+      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
+    </addedtofile>
+  </noteinfo>
+
+  <actionbar bgcolor="#ece9d8" bordercolor="black"/>
+  <body>
+    <richtext>
+   <par def='6'><field type='text' kind='editable' name='BGPMask'/></par>
+ </richtext>
+  </body>
+</form>
