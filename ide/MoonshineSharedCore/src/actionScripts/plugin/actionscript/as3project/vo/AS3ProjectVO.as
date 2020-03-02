@@ -68,6 +68,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
         public var mavenBuildOptions:MavenBuildOptions;
+		public var mavenDominoBuildOptions:MavenDominoBuildOptions;
 		public var customHTMLPath:String;
 		
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -107,6 +108,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isVisualEditorProject:Boolean;
 		public var isActionScriptOnly:Boolean;
 		public var isPrimeFacesVisualEditorProject:Boolean;
+		public var isDominoVisualEditorProject:Boolean;
 		public var isPreviewRunning:Boolean;
 		public var isExportedToExistingSource:Boolean;
 		public var visualEditorExportPath:String;
@@ -369,7 +371,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 			if (isVisualEditorProject)
 			{
-				settings = getSettingsForVisualEditorTypeOfProjects();
+				if(isDominoVisualEditorProject){
+					settings = getSettingsForVisualEditorDominoTypeOfProjects();
+				}else{
+					settings = getSettingsForVisualEditorTypeOfProjects();
+				}
 			}
 			else if (isRoyale)
 			{
@@ -668,6 +674,26 @@ package actionScripts.plugin.actionscript.as3project.vo
 				]);
 		}
 		
+		private function getSettingsForVisualEditorDominoTypeOfProjects():Vector.<SettingsWrapper>
+		{
+            return Vector.<SettingsWrapper>([
+					new SettingsWrapper("Paths",
+							Vector.<ISetting>([
+								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
+                                new PathSetting(this, "visualEditorExportPath", "Export Path", true, visualEditorExportPath)
+							])
+					),
+					new SettingsWrapper("Maven Build", Vector.<ISetting>([
+						new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
+						new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
+						new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false),
+						new PathSetting(this.mavenBuildOptions, "dominoNotesProgram", "Notes Programe Path", true, this.mavenBuildOptions.dominoNotesProgram, false),
+						new PathSetting(this.mavenBuildOptions, "dominoNotesPlatform", "Notes Platform Path", true, this.mavenBuildOptions.dominoNotesPlatform, false)
+						//new ProjectDirectoryPathSetting(this.mavenDominoBuildOptions, this.projectFolder.nativePath, "buildPath", "Notes Programe File Path", this.mavenDominoBuildOptions.buildPath),
+					]))
+				]);
+		}
+
 		private function generateSettingsForSVNProject(value:Vector.<SettingsWrapper>):void
 		{
 			if (isSVN)
@@ -753,6 +779,7 @@ package actionScripts.plugin.actionscript.as3project.vo
             as3Project.isMobile = this.isMobile;
             as3Project.isProjectFromExistingSource = this.isProjectFromExistingSource;
             as3Project.isVisualEditorProject = this.isVisualEditorProject;
+			as3Project.isDominoVisualEditorProject = this.isDominoVisualEditorProject;
             as3Project.isLibraryProject = this.isLibraryProject;
             as3Project.isActionScriptOnly = this.isActionScriptOnly;
             as3Project.isPrimeFacesVisualEditorProject = this.isPrimeFacesVisualEditorProject;

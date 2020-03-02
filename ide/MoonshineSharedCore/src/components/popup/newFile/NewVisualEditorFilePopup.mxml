@@ -16,8 +16,12 @@
             var currentProject:AS3ProjectVO = wrapperBelongToProject as AS3ProjectVO;
             if (currentProject && currentProject.isVisualEditorProject)
             {
-                if (currentProject.isPrimeFacesVisualEditorProject)
-                {
+                 if(currentProject.isDominoVisualEditorProject){
+                    componentTemplates = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_DOMINO;
+                    title = "New Visual Editor Domino File";
+                     extensionLabel.text = ".form";
+                } else if (currentProject.isPrimeFacesVisualEditorProject)
+              {
                     componentTemplates = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES;
                     title = "New Visual Editor PrimeFaces File";
                     extensionLabel.text = ".xhtml";

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   <output>
-    <movie disabled="False"/>
-    <movie platform="AIR"/>
-    <movie version="32"/>
     <movie width="100"/>
+    <movie disabled="False"/>
+    <movie path="bin-debug/MoonshineDESKTOP.swf"/>
+    <movie platform="AIR"/>
     <movie fps="24"/>
+    <movie version="28"/>
     <movie height="100"/>
     <movie background="#000000"/>
-    <movie path="bin-debug/MoonshineDESKTOP.swf"/>
     <movie input=""/>
   </output>
   &lt;!-- Other classes to be compiled into your SWF --&gt;
   <jsOutput>
-    <option path=""/>
+    <option path="/Users/prominic2/work/Moonshine-IDE_fresh/ide/MoonshineDESKTOPevolved"/>
   </jsOutput>
   <classpaths>
     <class path="../MoonshineSharedCore/src"/>
@@ -27,33 +27,33 @@
   </moonshineResourcePaths>
   <moonshineNativeExtensionPaths></moonshineNativeExtensionPaths>
   <build>
-    <option es="False"/>
-    <option verboseStackTraces="False"/>
-    <option customSDK=""/>
-    <option loadConfig=""/>
-    <option linkReport=""/>
-    <option optimize="True"/>
-    <option staticLinkRSL="False"/>
-    <option showActionScriptWarnings="True"/>
-    <option compilerConstants=""/>
-    <option allowSourcePathOverlap="False"/>
     <option showBindingWarnings="True"/>
-    <option antBuildPath=""/>
-    <option showDeprecationWarnings="True"/>
-    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,true  +configname=air -external-library-path+=extensions/SSB.ane"/>
-    <option locale=""/>
-    <option strict="True"/>
-    <option accessible="True"/>
-    <option useNetwork="True"/>
-    <option showUnusedTypeSelectorWarnings="True"/>
     <option useResourceBundleMetadata="True"/>
-    <option benchmark="False"/>
+    <option accessible="True"/>
+    <option verboseStackTraces="False"/>
+    <option showDeprecationWarnings="True"/>
     <option warnings="True"/>
+    <option benchmark="False"/>
+    <option linkReport=""/>
+    <option showUnusedTypeSelectorWarnings="True"/>
+    <option es="False"/>
+    <option staticLinkRSL="False"/>
+    <option antBuildPath=""/>
+    <option loadConfig=""/>
+    <option compilerConstants=""/>
+    <option useNetwork="True"/>
+    <option optimize="True"/>
+    <option strict="True"/>
+    <option locale=""/>
+    <option customSDK=""/>
+    <option showActionScriptWarnings="True"/>
+    <option allowSourcePathOverlap="False"/>
+    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,true  +configname=air -external-library-path+=extensions/SSB.ane"/>
   </build>
   <mavenBuild>
-    <option mavenBuildPath=""/>
-    <option settingsFilePath=""/>
     <option commandLine=""/>
+    <option settingsFilePath=""/>
+    <option mavenBuildPath="/Users/prominic2/work/Moonshine-IDE_fresh/ide/MoonshineDESKTOPevolved"/>
     <actions>
       <action actionName="Build" action="install"/>
       <action actionName="Clean" action="clean"/>
@@ -67,6 +67,7 @@
     <element path="libs/VisualEditor-0.2.0.swc"/>
     <element path="../MoonshineSharedCore/libs/AsWing.swc"/>
     <element path="../MoonshineSharedCore/libs/Global.swc"/>
+    <element path="libs/AwayBuilderLib.swc"/>
   </libraryPaths>
   <externalLibraryPaths></externalLibraryPaths>
   <rslPaths></rslPaths>
@@ -80,22 +81,22 @@
   <postBuildCommand alwaysRun="False">null</postBuildCommand>
   <trustSVNCertificate>False</trustSVNCertificate>
   <options>
-    <option showHiddenPaths="False"/>
     <option isExportedToExistingSource="False"/>
     <option isPrimeFacesVisualEditor="False"/>
-    <option isRoyale="False"/>
     <option visualEditorExportPath=""/>
-    <option testMovieCommand=""/>
     <option defaultBuildTargets=""/>
+    <option isRoyale="False"/>
+    <option testMovieCommand=""/>
     <option testMovie="AIR"/>
+    <option showHiddenPaths="False"/>
   </options>
   <moonshineRunCustomization>
-    <option projectType="1"/>
-    <option launchMethod="Simulator"/>
-    <option urlToLaunch=""/>
-    <option targetPlatform="1"/>
     <option customUrlToLaunch=""/>
     <option deviceSimulator="null"/>
+    <option urlToLaunch=""/>
+    <option launchMethod="Simulator"/>
+    <option projectType="1"/>
+    <option targetPlatform="1"/>
     <deviceSimulator>null</deviceSimulator>
     <certAndroid>null</certAndroid>
     <certIos>null</certIos>

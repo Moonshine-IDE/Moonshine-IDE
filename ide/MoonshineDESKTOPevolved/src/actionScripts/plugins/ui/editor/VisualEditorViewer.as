@@ -81,9 +81,17 @@ package actionScripts.plugins.ui.editor
 			
 			visualEditorView = new VisualEditorView();
 			
-			visualEditorProject.isPrimeFacesVisualEditorProject ?
-				visualEditorView.currentState = "primeFacesVisualEditor" :
+			if(visualEditorProject.isDominoVisualEditorProject){
+				visualEditorView.currentState = "dominoVisualEditor" 
+			}else if(visualEditorProject.isPrimeFacesVisualEditorProject){
+				visualEditorView.currentState = "primeFacesVisualEditor" 
+			}else{
 				visualEditorView.currentState = "flexVisualEditor";
+			}
+			
+
+
+
 			visualEditorView.visualEditorProject = visualEditorProject;
 			
 			visualEditorView.percentWidth = 100;
@@ -102,6 +110,9 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.codeEditor = editor;
 			
 			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, addTabHandler);
+			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+
 			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, duplicateSelectedElementHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, previewStartCompleteHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STOPPED, previewStoppedHandler);
@@ -342,7 +353,13 @@ package actionScripts.plugins.ui.editor
 
 		private function getMxmlCode():String
 		{
-			var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toCode();
+			var mxmlCode:XML = null;
+			if(visualEditorProject.isDominoVisualEditorProject){
+				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode();
+			}else{
+				mxmlCode=visualEditorView.visualEditor.editingSurface.toCode();
+			
+			}
 			var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 			
 			return markAsXml + mxmlCode.toXMLString();
@@ -364,7 +381,7 @@ package actionScripts.plugins.ui.editor
 				var filePath:String = file.fileBridge.nativePath
 						.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
 								 visualEditorProject.visualEditorSourceFolder.fileBridge.nativePath)
-						.replace(/.mxml$|.xhtml$/, ".xml");
+						.replace(/.mxml$|.xhtml$|.form$/, ".xml");
 
 				return filePath;
 			}

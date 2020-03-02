@@ -26,6 +26,9 @@ package actionScripts.plugin.actionscript.as3project.vo
         public function MavenBuildOptions(defaultMavenBuildPath:String)
         {
             super(defaultMavenBuildPath);
+            //this only for test 
+            //this.dominoNotesProgram="/Users/prominic2";
+            //this.dominoNotesPlatform="/Users/prominic2";
         }
 
         override public function get buildActions():Array
@@ -51,7 +54,10 @@ package actionScripts.plugin.actionscript.as3project.vo
             var pairs:Object = {
                 mavenBuildPath: SerializeUtil.serializeString(buildPath),
                 commandLine: SerializeUtil.serializeString(commandLine),
-                settingsFilePath: SerializeUtil.serializeString(settingsFilePath)
+                settingsFilePath: SerializeUtil.serializeString(settingsFilePath),
+
+                 dominoNotesProgram: SerializeUtil.serializeString(dominoNotesProgram),
+                dominoNotesPlatform: SerializeUtil.serializeString(dominoNotesPlatform)
             }
 
             build.appendChild(SerializeUtil.serializePairs(pairs, <option/>));
@@ -65,6 +71,11 @@ package actionScripts.plugin.actionscript.as3project.vo
             buildPath = SerializeUtil.deserializeString(options.@mavenBuildPath);
             commandLine = SerializeUtil.deserializeString(options.@commandLine);
             settingsFilePath = SerializeUtil.deserializeString(options.@settingsFilePath);
+            dominoNotesProgram = SerializeUtil.deserializeString(options.@dominoNotesProgram);
+            dominoNotesPlatform = SerializeUtil.deserializeString(options.@dominoNotesPlatform);
+                        
         }
+        public var dominoNotesProgram:String;
+        public var dominoNotesPlatform:String;
     }
 }

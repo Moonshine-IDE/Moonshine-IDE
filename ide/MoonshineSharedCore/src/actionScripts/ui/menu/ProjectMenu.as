@@ -51,6 +51,7 @@ package actionScripts.ui.menu
         private var vePrimeFaces:Vector.<MenuItem>;
         private var veFlex:Vector.<MenuItem>;
         private var javaMenu:Vector.<MenuItem>;
+        private var dominoMenu:Vector.<MenuItem>;
 		private var javaMenuGradle:Vector.<MenuItem>;
         private var grailsMenu:Vector.<MenuItem>;
         private var haxeMenu:Vector.<MenuItem>;
@@ -77,6 +78,9 @@ package actionScripts.ui.menu
                     if (as3Project.isPrimeFacesVisualEditorProject)
                     {
                         return getVisualEditorMenuPrimeFacesItems();
+                    } else if(as3Project.isDominoVisualEditorProject){
+                        return getDominoMenuItems();
+                    }else {
                     }
 
                     return getVisualEditorMenuFlexItems();
@@ -273,7 +277,25 @@ package actionScripts.ui.menu
             javaMenu.forEach(makeDynamic);
             return javaMenu;
         }
+        private function getDominoMenuItems():Vector.<MenuItem>
+        {
 
+
+            
+            if (dominoMenu == null)
+            {           
+                var resourceManager:IResourceManager = ResourceManager.getInstance();
+
+                dominoMenu = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], MavenBuildEvent.START_MAVEN_BUILD),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], ProjectActionEvent.CLEAN_PROJECT)
+                ]);
+                dominoMenu.forEach(makeDynamic);
+            }
+
+            return dominoMenu;
+        }
         private function getGrailsMenuItems():Vector.<MenuItem>
         {
             if (grailsMenu == null)

@@ -933,6 +933,9 @@ package actionScripts.utils
 				else if ((value as AS3ProjectVO).isPrimeFacesVisualEditorProject)
 				{
 					currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
+				}else if ((value as AS3ProjectVO).isDominoVisualEditorProject)
+				{
+					currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_DOMINO;
 				}
 				else if ((value as AS3ProjectVO).isVisualEditorProject)
 				{
