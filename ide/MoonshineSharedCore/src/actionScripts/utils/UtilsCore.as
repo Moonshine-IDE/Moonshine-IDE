@@ -1326,7 +1326,8 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.NOTES);
 			if (component && component.pathValidation)
 			{
-				return model.flexCore.isValidExecutableBy(SDKTypes.NOTES, model.notesPath, component.pathValidation);
+				return model.fileCore.resolvePath(model.notesPath +"/"+ component.pathValidation).fileBridge.exists;
+				//return model.flexCore.isValidExecutableBy(SDKTypes.NOTES, model.notesPath, component.pathValidation);
 			}
 			
 			return true;

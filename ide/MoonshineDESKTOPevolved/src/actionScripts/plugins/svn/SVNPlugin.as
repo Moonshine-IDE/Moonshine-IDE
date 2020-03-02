@@ -63,6 +63,8 @@ package actionScripts.plugins.svn
 		public static const UPDATE_REQUEST:String = "svnUpdateRequest";
 		public static const SVN_TEST_COMPLETED:String = "svnTestCompleted";
 		
+		public static const NAMESPACE:String = "actionScripts.plugins.svn::SVNPlugin";
+		
 		override public function get name():String			{ return "Subversion"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.subversion'); }
@@ -205,7 +207,7 @@ package actionScripts.plugins.svn
 			// save the settings
 			var thisSettings: Vector.<ISetting> = getSettingsList();
 			var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
-			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.svn::SVNPlugin", thisSettings));
+			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, NAMESPACE, thisSettings));
 			
 			// if an opened project lets test it if Git repository
 			if (model.activeProject) handleProjectOpen(new ProjectEvent(ProjectEvent.ADD_PROJECT, model.activeProject));
@@ -251,7 +253,7 @@ package actionScripts.plugins.svn
                 }
 				else
 				{
-					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
+					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, NAMESPACE));
                 }
 				return;
 			}
