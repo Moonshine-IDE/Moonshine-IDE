@@ -26,10 +26,16 @@
 		 implements="actionScripts.interfaces.IViewWithTitle"
 		 horizontalGap="2" paddingTop="10" paddingLeft="6" paddingRight="6" paddingBottom="4"
 		 width="100%" height="100%" backgroundColor="0x444444">
-	
 	<mx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
+			
+			import spark.components.Alert;
+			
+			import actionScripts.valueObjects.GenericSelectableObject;
+			
+			public static const OPEN_CONFLICT_FILES:String = "openConflictFilesInEditors";
+			public static const MARK_RESOLVE_CONFLICT_FILES:String = "markResolveFilesInConflict";
 			
 			[Bindable] public var conflicts:ArrayCollection;
 			
@@ -38,13 +44,43 @@
 				return "Conflicts";
 			}
 			
+			protected function onResolveRequest(event:MouseEvent):void
+			{
+				if (testIfItemHasSelection())
+				{
+					dispatchEvent(new Event(MARK_RESOLVE_CONFLICT_FILES));
+				}
+			}
+			
+			protected function onOpenInEditorRequest(event:MouseEvent):void
+			{
+				if (testIfItemHasSelection())
+				{
+					dispatchEvent(new Event(OPEN_CONFLICT_FILES));
+				}
+			}
+			
+			protected function testIfItemHasSelection():Boolean
+			{
+				var hasItemSelected:Boolean = conflicts.source.some(function(element:GenericSelectableObject, index:int, arr:Array):Boolean
+				{
+					return element.isSelected;
+				});
+				
+				if (!hasItemSelected) Alert.show("Select an item to proceed.", "Note!");
+				return hasItemSelected;
+			}
+			
 		]]>
 	</mx:Script>
 	
 	<s:HGroup width="100%" verticalAlign="middle">
 		<s:Label text="Conflicts by: C:\MyWork\MyGitProjectRepository" fontSize="11" color="0xFFBF0F"/>
 		<s:Spacer width="100%"/>
-		<s:Button label="Open file(s)" styleName="darkButton"/>
+		<s:Button label="Open file(s)" styleName="darkButton"
+				  click="onOpenInEditorRequest(event)"/>
+		<s:Button label="Mark Resolve" styleName="darkButton"
+				  click="onResolveRequest(event)"/>
 	</s:HGroup>
 	
 	<s:List width="100%" height="100%" 
@@ -66,7 +102,7 @@
 					</mx:Script>
 					
 					<s:layout>
-						<s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="10" gap="2"/>
+						<s:HorizontalLayout verticalAlign="middle" paddingLeft="4" paddingRight="20" gap="2"/>
 					</s:layout>
 					
 					<s:Label id="labelDisplay"

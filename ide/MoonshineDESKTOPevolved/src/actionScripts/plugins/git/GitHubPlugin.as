@@ -32,7 +32,9 @@ package actionScripts.plugins.git
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
@@ -245,10 +247,14 @@ package actionScripts.plugins.git
 			if (attach)
 			{
 				conflictFilesListPanel.addEventListener(Event.REMOVED_FROM_STAGE, onConflictViewRemovedFromStage);
+				conflictFilesListPanel.addEventListener(RepositoryConflictFilesView.MARK_RESOLVE_CONFLICT_FILES, onMarkResolveRequestOnConflictFiles);
+				conflictFilesListPanel.addEventListener(RepositoryConflictFilesView.OPEN_CONFLICT_FILES, onOpenRequestOnConflictFiles);
 			}
 			else
 			{
 				conflictFilesListPanel.removeEventListener(Event.REMOVED_FROM_STAGE, onConflictViewRemovedFromStage);
+				conflictFilesListPanel.removeEventListener(RepositoryConflictFilesView.MARK_RESOLVE_CONFLICT_FILES, onMarkResolveRequestOnConflictFiles);
+				conflictFilesListPanel.removeEventListener(RepositoryConflictFilesView.OPEN_CONFLICT_FILES, onOpenRequestOnConflictFiles);
 			}
 		}
 		
@@ -256,6 +262,36 @@ package actionScripts.plugins.git
 		{
 			isConflictViewShowing = false;
 			manageConflictViewListeners(false);
+		}
+		
+		private function onMarkResolveRequestOnConflictFiles(event:Event):void
+		{
+			var conflicts:ArrayCollection = conflictFilesListPanel.conflicts;
+			for (var i:int; i < conflicts.length; i++)
+			{
+				if (conflicts[i].isSelected)
+				{
+					conflicts.removeItemAt(i);
+					i--;
+				}
+			}
+		}
+		
+		private function onOpenRequestOnConflictFiles(event:Event):void
+		{
+			var conflicts:ArrayCollection = conflictFilesListPanel.conflicts;
+			var targetFile:FileLocation;
+			conflicts.source.forEach(function(element:GenericSelectableObject, index:int, arr:Array):void
+			{
+				if (element.isSelected)
+				{
+					targetFile = model.activeProject.folderLocation.resolvePath(element.data as String);
+					if (targetFile.fileBridge.exists)
+					{
+						dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [targetFile]));
+					}
+				}
+			});
 		}
 		
 		private function onSDKPathSelected(event:Event):void
