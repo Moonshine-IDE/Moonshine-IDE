@@ -42,9 +42,9 @@ package actionScripts.plugins.domino
 		public static var RELAY_MAC_NOTES_PERMISSION_REQUEST:String = "onMacNotesPermissionRequest";
 		public static var NAMESPACE:String = "actionScripts.plugins.domino::DominoPlugin";
 		
-		override public function get name():String			{ return "Notes Domino"; }
+		override public function get name():String			{ return "Domino"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
-		override public function get description():String	{ return "Domino Plugin"; }
+		override public function get description():String	{ return "IBM/HCL Domino Integration"; }
 		
 		private var pathSetting:PathSetting;
 		private var notesMacPermissionPop:NotesMacPermissionPopup;
@@ -92,7 +92,7 @@ package actionScripts.plugins.domino
         {
 			onSettingsClose();
 
-			pathSetting = new PathSetting(this, 'notesPath', 'IBM/HCL Notes Executable', ConstantsCoreVO.IS_MACOS ? false : true, notesPath);
+			pathSetting = new PathSetting(this, 'notesPath', 'IBM/HCL Notes Installation', ConstantsCoreVO.IS_MACOS ? false : true, notesPath);
 			
 			return Vector.<ISetting>([
                 pathSetting
