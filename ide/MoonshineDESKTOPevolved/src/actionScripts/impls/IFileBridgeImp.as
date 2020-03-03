@@ -698,7 +698,7 @@ package actionScripts.impls
 		
 		public function get modificationDate():Date
 		{
-			if (_file && _file.exists) _file.modificationDate;
+			if (_file && _file.exists) return _file.modificationDate;
 			return null;
 		}
 		

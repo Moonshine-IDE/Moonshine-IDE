@@ -28,6 +28,7 @@ package actionScripts.locator
     import actionScripts.interfaces.IFileBridge;
     import actionScripts.interfaces.IFlexCoreBridge;
     import actionScripts.interfaces.IGroovyBridge;
+    import actionScripts.interfaces.IHaxeBridge;
     import actionScripts.interfaces.IJavaBridge;
     import actionScripts.interfaces.ILanguageServerBridge;
     import actionScripts.interfaces.IOSXBookmarkerBridge;
@@ -36,7 +37,6 @@ package actionScripts.locator
     import actionScripts.ui.MainView;
     import actionScripts.utils.NoSDKNotifier;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.interfaces.IHaxeBridge;
 
 	[Bindable] public class IDEModel
 	{
@@ -93,6 +93,7 @@ package actionScripts.locator
 		public var recentSaveProjectPath:ArrayCollection = new ArrayCollection();
 		public var userSavedSDKs:ArrayCollection = new ArrayCollection();
 		public var userSavedTempSDKPath:String;
+		public var individualTabAlertShowingFilePath:String;
 		public var isIndividualCloseTabAlertShowing:Boolean;
 		public var saveFilesBeforeBuild:Boolean;
 

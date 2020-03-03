@@ -26,6 +26,7 @@ package actionScripts.plugin.core.mouse
 	
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.ui.IContentWindowReloadable;
 	import actionScripts.ui.editor.text.TextEditor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
@@ -99,6 +100,10 @@ package actionScripts.plugin.core.mouse
 			isApplicationDeactivated = false;
 			
 			if (lastKnownEditor) setFocusToTextEditor(lastKnownEditor, true);
+			if (model.activeEditor && (model.activeEditor is IContentWindowReloadable))
+			{
+				(model.activeEditor as IContentWindowReloadable).checkFileIfChanged();
+			}
 		}
 		
 		private function setFocusToTextEditor(editor:TextEditor, value:Boolean):void

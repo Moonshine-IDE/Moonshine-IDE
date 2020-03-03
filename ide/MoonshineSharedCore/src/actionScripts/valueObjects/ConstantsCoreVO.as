@@ -89,6 +89,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATES_PROJECTS_JAVA:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_GRAILS:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_HAXE:ArrayCollection;
+		public static var TEMPLATES_PROJECTS_ACTIONSCRIPT:ArrayCollection;
 		public static var TEMPLATES_MXML_COMPONENTS:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_MXML_FLEXJS_COMPONENTS:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_MXML_ROYALE_COMPONENTS:ArrayCollection = new ArrayCollection();
