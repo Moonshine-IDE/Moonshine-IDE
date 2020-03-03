@@ -949,7 +949,7 @@ package actionScripts.plugins.as3project
 	
 				if (folderToDelete6.fileBridge.exists) folderToDelete6.fileBridge.deleteDirectory(true);
 				if (folderToDelete7.fileBridge.exists) folderToDelete7.fileBridge.deleteDirectory(true);
-					if (folderToDelete8.fileBridge.exists) folderToDelete8.fileBridge.deleteDirectory(true);
+				if (folderToDelete8.fileBridge.exists) folderToDelete8.fileBridge.deleteDirectory(true);
 				if (folderToDelete9.fileBridge.exists) folderToDelete9.fileBridge.deleteDirectory(true);
 				//remove old pom file 
 				var pomfile:FileLocation = targetFolder.resolvePath("pom.xml");
@@ -1043,7 +1043,7 @@ package actionScripts.plugins.as3project
 				if (isVisualEditorProject)
 
 				{
-										if(projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
+					if(projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
 					{
 						pvo.isPrimeFacesVisualEditorProject = true
 					}else{

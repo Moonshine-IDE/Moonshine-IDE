@@ -328,7 +328,7 @@ package actionScripts.controllers
 
 				if (project is AS3ProjectVO &&
 					(project as AS3ProjectVO).isVisualEditorProject &&
-					(extension == "mxml" || extension == "xhtml") && !lastOpenEvent.independentOpenFile)
+					(extension == "mxml" || extension == "xhtml"  || extension == "form") && !lastOpenEvent.independentOpenFile)
 				{
 					 editor = model.visualEditorCore.getVisualEditor(project as AS3ProjectVO);
 				}

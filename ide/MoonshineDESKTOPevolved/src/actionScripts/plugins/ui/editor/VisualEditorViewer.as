@@ -73,7 +73,7 @@ package actionScripts.plugins.ui.editor
 			
 			// at this moment prifefaces projects only using the bridge
 			// this condition can be remove if requires
-			if (visualEditorProject.isPrimeFacesVisualEditorProject)
+			if (visualEditorProject.isPrimeFacesVisualEditorProject || visualEditorProject.isDominoVisualEditorProject)
 			{
 				visualEditoryLibraryCore = new IVisualEditorLibraryBridgeImp();
 				visualEditoryLibraryCore.visualEditorProject = visualEditorProject;
@@ -88,10 +88,8 @@ package actionScripts.plugins.ui.editor
 			}else{
 				visualEditorView.currentState = "flexVisualEditor";
 			}
+
 			
-
-
-
 			visualEditorView.visualEditorProject = visualEditorProject;
 			
 			visualEditorView.percentWidth = 100;
@@ -112,7 +110,6 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, addTabHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
-
 			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, duplicateSelectedElementHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, previewStartCompleteHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STOPPED, previewStoppedHandler);

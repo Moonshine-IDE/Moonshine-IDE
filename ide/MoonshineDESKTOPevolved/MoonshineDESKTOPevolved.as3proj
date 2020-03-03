@@ -27,38 +27,39 @@
   </moonshineResourcePaths>
   <moonshineNativeExtensionPaths></moonshineNativeExtensionPaths>
   <build>
-    <option showBindingWarnings="True"/>
-    <option useResourceBundleMetadata="True"/>
-    <option accessible="True"/>
-    <option verboseStackTraces="False"/>
-    <option showDeprecationWarnings="True"/>
     <option warnings="True"/>
-    <option benchmark="False"/>
-    <option linkReport=""/>
-    <option showUnusedTypeSelectorWarnings="True"/>
-    <option es="False"/>
-    <option staticLinkRSL="False"/>
-    <option antBuildPath=""/>
-    <option loadConfig=""/>
-    <option compilerConstants=""/>
-    <option useNetwork="True"/>
-    <option optimize="True"/>
-    <option strict="True"/>
-    <option locale=""/>
     <option customSDK=""/>
     <option showActionScriptWarnings="True"/>
+    <option showDeprecationWarnings="True"/>
+    <option antBuildPath=""/>
+    <option verboseStackTraces="False"/>
+    <option loadConfig=""/>
+    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false  +configname=air "/>
+    <option linkReport=""/>
+    <option showUnusedTypeSelectorWarnings="True"/>
+    <option benchmark="False"/>
+    <option staticLinkRSL="False"/>
+    <option strict="True"/>
+    <option accessible="True"/>
+    <option es="False"/>
+    <option compilerConstants=""/>
+    <option useNetwork="True"/>
     <option allowSourcePathOverlap="False"/>
-    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,true  +configname=air -external-library-path+=extensions/SSB.ane"/>
+    <option sourceMap="False"/>
+    <option useResourceBundleMetadata="True"/>
+    <option optimize="True"/>
+    <option showBindingWarnings="True"/>
+    <option locale=""/>
   </build>
   <mavenBuild>
-    <option commandLine=""/>
-    <option settingsFilePath=""/>
     <option mavenBuildPath="/Users/prominic2/work/Moonshine-IDE_fresh/ide/MoonshineDESKTOPevolved"/>
+    <option settingsFilePath=""/>
+    <option commandLine=""/>
     <actions>
-      <action actionName="Build" action="install"/>
-      <action actionName="Clean" action="clean"/>
-      <action actionName="Clean and Build" action="clean install"/>
-      <action actionName="Exploded" action="war:exploded"/>
+      <action action="install" actionName="Build"/>
+      <action action="clean" actionName="Clean"/>
+      <action action="clean install" actionName="Clean and Build"/>
+      <action action="war:exploded" actionName="Exploded"/>
     </actions>
   </mavenBuild>
   <includeLibraries></includeLibraries>
@@ -81,22 +82,22 @@
   <postBuildCommand alwaysRun="False">null</postBuildCommand>
   <trustSVNCertificate>False</trustSVNCertificate>
   <options>
-    <option isExportedToExistingSource="False"/>
+    <option showHiddenPaths="False"/>
     <option isPrimeFacesVisualEditor="False"/>
+    <option testMovie="AIR"/>
     <option visualEditorExportPath=""/>
+    <option testMovieCommand=""/>
     <option defaultBuildTargets=""/>
     <option isRoyale="False"/>
-    <option testMovieCommand=""/>
-    <option testMovie="AIR"/>
-    <option showHiddenPaths="False"/>
+    <option isExportedToExistingSource="False"/>
   </options>
   <moonshineRunCustomization>
-    <option customUrlToLaunch=""/>
     <option deviceSimulator="null"/>
-    <option urlToLaunch=""/>
     <option launchMethod="Simulator"/>
-    <option projectType="1"/>
+    <option urlToLaunch=""/>
     <option targetPlatform="1"/>
+    <option projectType="1"/>
+    <option customUrlToLaunch=""/>
     <deviceSimulator>null</deviceSimulator>
     <certAndroid>null</certAndroid>
     <certIos>null</certIos>
