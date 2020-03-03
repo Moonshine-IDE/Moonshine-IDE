@@ -331,9 +331,12 @@ package actionScripts.utils
 			var isNotesDominoAvailable:Boolean = UtilsCore.isNotesDominoAvailable(); 
 			if (!isNotesDominoAvailable)
 			{
-				if (ConstantsCoreVO.IS_MACOS && !isNotesDominoAvailable)
+				if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION && 
+					!isNotesDominoAvailable)
 				{
-					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_NOTES, message: "Feature available. Click on Configure to allow permission."}));
+					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, 
+						{type: ComponentTypes.TYPE_NOTES, message: "Feature available. Click on Configure to allow permission."}
+					));
 				}
 				else
 				{
@@ -353,7 +356,7 @@ package actionScripts.utils
 			{
 				model.notesPath = path;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({notesPath: model.notesPath}, 'notesPath', 'IBM/HCL Notes Executable', false)
+					new PathSetting({notesPath: model.notesPath}, 'notesPath', 'IBM/HCL Notes Installation', false)
 				]);
 				
 				// save as moonshine settings
