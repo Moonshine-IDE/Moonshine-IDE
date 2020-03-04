@@ -736,7 +736,7 @@ package actionScripts.plugins.as3project
 			}
 			if (!isProjectFromExistingSource && isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_DOMINO)
 			{
-				sourcePath = "nsfs/nsf-moonshine/odp/Forms";
+				sourcePath = "nsfs" + File.separator + "nsf-moonshine" + File.separator + "odp" + File.separator + "Forms";
 			}
 			var targetFolder:FileLocation = pvo.folderLocation;
 			// lets load the target flash/air player version
@@ -930,16 +930,13 @@ package actionScripts.plugins.as3project
 					th.projectTemplate(templateDir.resolvePath("src_domino_nsfs"), targetFolder.resolvePath("nsfs"));
 					th.projectTemplate(templateDir.resolvePath("src_domino_releng"), targetFolder.resolvePath("releng"));
 					//copy form template
-					
-					//var formFile:FileLocation = targetFolder.resolvePath("src_domino_nsfs")+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"Template.form";
-					//nsfs/nsf-moonshine/odp/Forms/NewVisualEditorProject123.form
 					var original_form:FileLocation =  templateDir.resolvePath("src_domino_nsfs"+File.separator +"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"Template.form");
 					if(original_form.fileBridge.exists){
 						var newFormFile:FileLocation =  targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+pvo.projectName + ".form"); 
 						original_form.fileBridge.copyTo(newFormFile, true); 
 					}
 					
-					//th.projectTemplate(templateDir.resolvePath(source_form_file_path), targetFolder.resolvePath(target_form_file_path));
+					
 				}
 				
 				var folderToDelete6:FileLocation = targetFolder.resolvePath("src_primeface");

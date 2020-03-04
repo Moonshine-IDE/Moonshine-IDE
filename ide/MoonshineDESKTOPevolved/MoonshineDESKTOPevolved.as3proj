@@ -52,7 +52,7 @@
     <option locale=""/>
   </build>
   <mavenBuild>
-    <option mavenBuildPath="/Users/prominic2/work/Moonshine-IDE_fresh/ide/MoonshineDESKTOPevolved"/>
+    <option mavenBuildPath=""/>
     <option settingsFilePath=""/>
     <option commandLine=""/>
     <actions>

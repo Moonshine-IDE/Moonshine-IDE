@@ -34,7 +34,7 @@ package actionScripts.plugin.actionscript.as3project.vo
         
         public function MavenDominoBuildOptions()
         {
-           // super(defaultMavenBuildPath);
+          
         }
     }
 }
