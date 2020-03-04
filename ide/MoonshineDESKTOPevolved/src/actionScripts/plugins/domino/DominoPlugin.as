@@ -28,7 +28,6 @@ package actionScripts.plugins.domino
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.valueObjects.ComponentTypes;
@@ -122,37 +121,22 @@ package actionScripts.plugins.domino
 		private function onNotesPermissionClosed(event:Event):void
 		{
 			var isDiscarded:Boolean = notesMacPermissionPop.isDiscarded;
-			var isGranted:Boolean;
 			var component:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_NOTES);
 			
 			var isValidPath:Boolean = HelperUtils.isValidSDKDirectoryBy(component.type, notesMacPermissionPop.installLocationPath, component.pathValidation);
 			if (!isValidPath)
 			{
-				isGranted = false;
 				component.hasWarning = "Feature available. Click on Configure to allow";
 				Alert.show("Provide Notes.app path only. Validation error.", "Error!");
 			}
 			else if (!isDiscarded) 
 			{
-				isGranted = true;
-				
-				//dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xCodePermissionWindow.xCodePath));
 				Alert.show("Permission accepted. You can now use Notes Domino functionalities.", "Success!");
 				
 				// save the path
 				model.notesPath = notesMacPermissionPop.installLocationPath;
+				component.hasWarning = null;
 				PathSetupHelperUtil.updateNotesPath(notesMacPermissionPop.installLocationPath, true);
-			}
-			else
-			{
-				isGranted = false;
-			}
-			
-			if (ConstantsCoreVO.IS_GIT_OSX_AVAILABLE != isGranted)
-			{
-				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = isGranted;
-				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
-				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
 			}
 			
 			notesMacPermissionPop.removeEventListener(Event.CLOSE, onNotesPermissionClosed);
