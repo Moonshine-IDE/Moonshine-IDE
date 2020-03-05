@@ -43,7 +43,7 @@ package actionScripts.plugins.domino
 		
 		override public function get name():String			{ return "Domino"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
-		override public function get description():String	{ return "IBM/HCL Domino Integration"; }
+		override public function get description():String	{ return "HCL® Notes / Domino Integration"; }
 		
 		private var pathSetting:PathSetting;
 		private var notesMacPermissionPop:NotesMacPermissionPopup;
@@ -91,7 +91,7 @@ package actionScripts.plugins.domino
         {
 			onSettingsClose();
 
-			pathSetting = new PathSetting(this, 'notesPath', 'IBM/HCL Notes Installation', ConstantsCoreVO.IS_MACOS ? false : true, notesPath);
+			pathSetting = new PathSetting(this, 'notesPath', 'HCL Notes Installation', ConstantsCoreVO.IS_MACOS ? false : true, notesPath);
 			
 			return Vector.<ISetting>([
                 pathSetting

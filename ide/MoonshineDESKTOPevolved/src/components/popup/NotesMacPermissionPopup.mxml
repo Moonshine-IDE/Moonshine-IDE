@@ -73,7 +73,7 @@
 				var isCommandLineTools:Boolean = installLocationPath.indexOf(".app") == -1;
 				
 				btnCancel.label = "I Don't Want Notes";
-				retUserMessage.textFlow = TextFlowUtil.importFromString("<p>In order to use the Domino Integration features, you must grant Moonshine permission to access the IBM Notes installation.<br/><br/>Click <span fontWeight='bold'>Allow Access</span> to open the application shown below. Then click \"Open\" to grant access.<br/><br/><span fontWeight='bold'>"+installLocationPath+"</span></p>");
+				retUserMessage.textFlow = TextFlowUtil.importFromString("<p>In order to use the Domino Integration features, you must grant Moonshine permission to access the HCL® Notes installation.<br/><br/>Click <span fontWeight='bold'>Allow Access</span> to open the application shown below. Then click \"Open\" to grant access.<br/><br/><span fontWeight='bold'>"+installLocationPath+"</span></p>");
 			}
 			
 			private function closeButtonClickedRequest(event:MouseEvent):void

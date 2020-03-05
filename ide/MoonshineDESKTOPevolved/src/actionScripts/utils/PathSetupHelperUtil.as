@@ -356,7 +356,7 @@ package actionScripts.utils
 			{
 				model.notesPath = path;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({notesPath: model.notesPath}, 'notesPath', 'IBM/HCL Notes Installation', false)
+					new PathSetting({notesPath: model.notesPath}, 'notesPath', 'HCL Notes Installation', false)
 				]);
 				
 				// save as moonshine settings
