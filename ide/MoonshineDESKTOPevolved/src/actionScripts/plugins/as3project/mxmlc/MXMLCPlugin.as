@@ -1253,7 +1253,8 @@ package actionScripts.plugins.as3project.mxmlc
 					//uninstall/launch this app ID
 					"applicationID": appID,
 					//install this bundle
-					"bundle": bundle
+					"bundle": bundle,
+					"noDebug": !debug
 				};
 				dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER, as3Project, "swf", "attach", attachArgs));
 			}
