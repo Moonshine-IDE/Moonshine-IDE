@@ -93,6 +93,7 @@ package actionScripts.debugAdapter
 		private static const EVENT_TERMINATED:String = "terminated";
 		private static const EVENT_LOADED_SOURCE:String = "loadedSource";
 		private static const EVENT_CONTINUED:String = "continued";
+		private static const EVENT_THREAD:String = "thread";
 		private static const REQUEST_LAUNCH:String = "launch";
 		private static const REQUEST_ATTACH:String = "attach";
 		private static const OUTPUT_CATEGORY_CONSOLE:String = "console";
@@ -238,7 +239,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_CONTINUE);
+			this.sendRequest(COMMAND_CONTINUE, {threadId: this.mainThreadID});
 		}
 
 		public function pause():void
@@ -248,7 +249,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_PAUSE);
+			this.sendRequest(COMMAND_PAUSE, {threadId: this.mainThreadID});
 		}
 
 		public function stepOver():void
@@ -258,7 +259,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_NEXT);
+			this.sendRequest(COMMAND_NEXT, {threadId: this.mainThreadID});
 		}
 
 		public function stepInto():void
@@ -268,7 +269,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_STEP_IN);
+			this.sendRequest(COMMAND_STEP_IN, {threadId: this.mainThreadID});
 		}
 
 		public function stepOut():void
@@ -278,7 +279,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_STEP_OUT);
+			this.sendRequest(COMMAND_STEP_OUT, {threadId: this.mainThreadID});
 		}
 
 		private function handleContinue():void
@@ -556,6 +557,11 @@ package actionScripts.debugAdapter
 						this.parseOutputEvent(event);
 						break;
 					}
+					case EVENT_THREAD:
+					{
+						this.parseThreadEvent(event);
+						break;
+					}
 					case EVENT_BREAKPOINT:
 					{
 						//we don't currently indicate if a breakpoint is verified or
@@ -690,7 +696,15 @@ package actionScripts.debugAdapter
 			if("threads" in body)
 			{
 				var threads:Array = body.threads as Array;
-				mainThreadID = threads[0].id;
+				if(threads.length > 0)
+				{
+					mainThreadID = threads[0].id;
+				}
+				else
+				{
+					//it is possible that there will be no threads returned
+					mainThreadID = -1;
+				}
 			}
 		}
 		
@@ -946,6 +960,11 @@ package actionScripts.debugAdapter
 					print(output);
 				}
 			}
+		}
+
+		private function parseThreadEvent(event:Object):void
+		{
+			this.sendRequest(COMMAND_THREADS);
 		}
 		
 		private function parseStoppedEvent(event:Object):void
