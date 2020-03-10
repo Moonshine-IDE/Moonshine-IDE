@@ -67,6 +67,7 @@
 
         private function onTabBarChange(event:IndexChangeEvent):void
         {
+            //Alert.show(event.newIndex);
             if (event.newIndex == 1)
             {
                 //visualEditor.editingSurface.selectedItem = null;
