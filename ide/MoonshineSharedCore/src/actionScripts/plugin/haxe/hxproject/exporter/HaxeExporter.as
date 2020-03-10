@@ -88,7 +88,8 @@ package actionScripts.plugin.haxe.hxproject.exporter
 			if(project.isLime)
 			{
 				optionPairs = {
-					targetPlatform:	project.limeTargetPlatform
+					targetPlatform:	project.limeTargetPlatform,
+					webBrowser:   project.runWebBrowser
 				};
 			}
 			else

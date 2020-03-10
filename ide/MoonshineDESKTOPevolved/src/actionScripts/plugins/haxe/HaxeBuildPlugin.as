@@ -52,6 +52,7 @@ package actionScripts.plugins.haxe
     import flash.errors.IllegalOperationError;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugins.httpServer.events.HttpServerEvent;
+    import actionScripts.valueObjects.WebBrowserVO;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -494,12 +495,23 @@ package actionScripts.plugins.haxe
                 {
                     case HaxeProjectVO.LIME_PLATFORM_HTML5:
                     {
-                        launchArgs["name"] = "Moonshine Chrome Launch";
+                        launchArgs["name"] = "Moonshine Lime HTML5 Launch";
                         launchArgs["url"] = "http://localhost:" + DEBUG_SERVER_PORT;
 			            launchArgs["webRoot"] = getLimeWebRoot(project).fileBridge.nativePath;
                         //enable for debug logging to a file
                         //launchArgs["trace"] = true;
-                        debugAdapterType = "chrome";
+                        for(var i:int = 0; i < ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.length; i++)
+                        {
+                            var webBrowser:WebBrowserVO = WebBrowserVO(ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.getItemAt(i));
+                            if(webBrowser.name == project.runWebBrowser)
+                            {
+                                debugAdapterType = webBrowser.debugAdapterType;
+                            }
+                        }
+                        if(debugAdapterType == null)
+                        {
+                            debugAdapterType = "chrome";
+                        }
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
