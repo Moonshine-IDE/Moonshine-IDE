@@ -4,9 +4,12 @@ package
 	import flash.text.TextField;
     import flash.text.TextFieldAutoSize;
     import flash.text.TextFormat;
+    import flash.events.Event;
 
 	public class $ProjectName extends Sprite
 	{
+		private var label:TextField;
+		
 		public function $ProjectName()
 		{
 			super();
@@ -14,7 +17,7 @@ package
 			stage.align = StageAlign.TOP_LEFT;
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			
-			var label:TextField = new TextField();
+			label = new TextField();
 			label.autoSize = TextFieldAutoSize.CENTER;
 			
 			var format:TextFormat = new TextFormat();
@@ -22,10 +25,15 @@ package
 			format.size = 24;
 			
 			label.defaultTextFormat = format;
+			label.text = "Hello World!";
 			addChild(label);
 			
-			label.text = "Hello World!";
-			label.x = (stage.stageWidth - label.width)/2;
+			stage.addEventListener(Event.RESIZE, onResizeEvent);
+		}
+		
+		private function onResizeEvent(event:Event):void
+		{
+	        label.x = (stage.stageWidth - label.width)/2;
 			label.y = (stage.stageHeight - label.height)/2;
 		}
 	}
