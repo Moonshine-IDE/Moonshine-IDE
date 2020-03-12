@@ -61,6 +61,12 @@ package actionScripts.debugAdapter
 	 */
 	[Event(name="change")]
 
+	/**
+	 * Dispatched when the debug adapter has stopped at a breakpoint and the
+	 * debug view should be shown.
+	 */
+	[Event(name="suspend")]
+
 	public class DebugAdapter extends ConsoleOutputter
 	{
 		private static const HELPER_BYTES:ByteArray = new ByteArray();
@@ -981,6 +987,7 @@ package actionScripts.debugAdapter
 				});
 			_paused = true;
 			this.dispatchEvent(new Event(Event.CHANGE));
+			this.dispatchEvent(new Event(Event.SUSPEND));
 		}
 
 		private function parseContinuedEvent(event:Object):void
