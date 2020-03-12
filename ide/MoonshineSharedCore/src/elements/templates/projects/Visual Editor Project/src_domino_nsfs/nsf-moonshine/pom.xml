@@ -6,11 +6,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.openntf.nsfodp</groupId>
-		<artifactId>moonshine-domino-project</artifactId>
+		<artifactId>nsf-moonshine</artifactId>
 		<version>1.0.0</version>
 		<relativePath>../..</relativePath>
 	</parent>
-	<artifactId>nsf-moonshine</artifactId>
+	<artifactId>nsf-moonshine-domino</artifactId>
 	<packaging>domino-nsf</packaging>
 	
 	<dependencies>
