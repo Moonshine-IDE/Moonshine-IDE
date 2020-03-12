@@ -527,7 +527,10 @@ package actionScripts.debugAdapter
 					}
 					default:
 					{
-						trace("Cannot parse debug response. Unknown command: \"" + response.command + "\", Full message:", JSON.stringify(response));
+						if(_debugMode)
+						{
+							trace("Cannot parse debug response. Unknown command: \"" + response.command + "\", Full message:", JSON.stringify(response));
+						}
 					}
 				}
 			}
@@ -590,7 +593,10 @@ package actionScripts.debugAdapter
 					}
 					default:
 					{
-						trace("Cannot parse debug event. Unknown event:", "\"" + event.event + "\", Full message:", JSON.stringify(event));
+						if(_debugMode)
+						{
+							trace("Cannot parse debug event. Unknown event:", "\"" + event.event + "\", Full message:", JSON.stringify(event));
+						}
 					}
 				}
 			}
