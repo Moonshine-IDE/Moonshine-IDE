@@ -32,6 +32,7 @@ package actionScripts.locator
     import actionScripts.interfaces.IJavaBridge;
     import actionScripts.interfaces.ILanguageServerBridge;
     import actionScripts.interfaces.IOSXBookmarkerBridge;
+    import actionScripts.interfaces.IOnDiskBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.MainView;
@@ -57,6 +58,7 @@ package actionScripts.locator
 		public var javaCore:IJavaBridge;
 		public var groovyCore:IGroovyBridge;
 		public var haxeCore:IHaxeBridge;
+		public var ondiskCore:IOnDiskBridge;
 		public var languageServerCore:ILanguageServerBridge;
 		public var osxBookmarkerCore:IOSXBookmarkerBridge;
 		

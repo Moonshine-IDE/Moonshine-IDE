@@ -27,11 +27,12 @@ package actionScripts.factory
     import actionScripts.interfaces.IFileBridge;
     import actionScripts.interfaces.IFlexCoreBridge;
     import actionScripts.interfaces.IGroovyBridge;
+    import actionScripts.interfaces.IHaxeBridge;
     import actionScripts.interfaces.IJavaBridge;
     import actionScripts.interfaces.ILanguageServerBridge;
     import actionScripts.interfaces.IOSXBookmarkerBridge;
+    import actionScripts.interfaces.IOnDiskBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
-    import actionScripts.interfaces.IHaxeBridge;
 	
 	/**
 	 * BridgeFactory
@@ -136,6 +137,13 @@ package actionScripts.factory
 		{
 			var clsToCreate : Object = getClassToCreate("actionScripts.impls.ILanguageServerBridgeImp");
 			var gb: ILanguageServerBridge = new clsToCreate();
+			return gb;
+		}
+		
+		public static function getOnDiskInstance(): IOnDiskBridge 
+		{
+			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IOnDiskBridgeImpl");
+			var gb: IOnDiskBridge = new clsToCreate();
 			return gb;
 		}
 		

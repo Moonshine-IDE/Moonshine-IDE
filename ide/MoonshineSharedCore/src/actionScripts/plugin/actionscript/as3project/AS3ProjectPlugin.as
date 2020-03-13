@@ -389,7 +389,8 @@ package actionScripts.plugin.actionscript.as3project
 			return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.GRAILS) == -1 &&
-				projectTemplateName.indexOf(ProjectTemplateType.HAXE) == -1;
+				projectTemplateName.indexOf(ProjectTemplateType.HAXE) == -1 && 
+				projectTemplateName.indexOf(ProjectTemplateType.ONDISK) == -1;
 		}
 		
 		protected function handleEventSearchForProjectsInDirectories(event:ProjectEvent):void

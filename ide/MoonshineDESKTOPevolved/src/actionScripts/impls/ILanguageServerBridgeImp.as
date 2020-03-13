@@ -1,21 +1,23 @@
 package actionScripts.impls
 {
-	import actionScripts.interfaces.ILanguageServerBridge;
 	import flash.errors.IllegalOperationError;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.languageServer.ILanguageServerManager;
-	import actionScripts.events.ProjectEvent;
 	import flash.events.Event;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.interfaces.ILanguageServerBridge;
 	import actionScripts.languageServer.ActionScriptLanguageServerManager;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.languageServer.JavaLanguageServerManager;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import actionScripts.languageServer.GroovyLanguageServerManager;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.languageServer.HaxeLanguageServerManager;
+	import actionScripts.languageServer.ILanguageServerManager;
+	import actionScripts.languageServer.JavaLanguageServerManager;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.valueObjects.ProjectVO;
 
 	public class ILanguageServerBridgeImp implements ILanguageServerBridge
 	{
@@ -207,6 +209,10 @@ package actionScripts.impls
 				var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
 				var haxeManager:HaxeLanguageServerManager = new HaxeLanguageServerManager(haxeProject);
 				manager = haxeManager;
+			}
+			if (project is OnDiskProjectVO)
+			{
+				return;
 			}
 			managers.push(manager);
 			manager.addEventListener(Event.INIT, manager_initHandler);

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<note xmlns="http://www.lotus.com/dxl" class="form">
+  <item name="$Flags">
+    <text>34567Cg~[</text>
+  </item>
+  <item name="$TITLE">
+    <text>org/openntf/nsfodp/example/ExampleClass.java</text>
+  </item>
+  <item name="$FileNames" sign="true">
+    <text>org/openntf/nsfodp/example/ExampleClass.java</text>
+  </item>
+</note>

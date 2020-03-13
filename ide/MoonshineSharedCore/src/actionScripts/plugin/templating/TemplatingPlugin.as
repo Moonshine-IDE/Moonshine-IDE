@@ -263,6 +263,14 @@ package actionScripts.plugin.templating
                 if (!file.isHidden && !file.isDirectory)
                     ConstantsCoreVO.TEMPLATES_MXML_ROYALE_COMPONENTS.addItem(file);
             }
+			
+			files = templatesDir.resolvePath("files/Visual Editor DXL File.dve.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE = files;
+			
+			files = templatesDir.resolvePath("files/Form Builder DXL File.dfb.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE = files;
 
 			var projects:FileLocation = templatesDir.resolvePath("projects");
 			list = projects.fileBridge.getDirectoryListing();
