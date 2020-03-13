@@ -1,53 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   <mavenBuild>
-          <option commandLine="war:exploded"/>
+  	<option commandLine="war:exploded"/>
   </mavenBuild>
-  <output>
-    <movie path="bin-debug/$ProjectSWF"/>
-    <movie width="725"/>
-    <movie height="450"/>
-    <movie version="$MovieVersion"/>
-    <movie input=""/>
-    <movie disabled="False"/>
-    <movie background="FF00FF"/>
-    <movie fps="60"/>
-  </output>
   <classpaths>
     <class path="$SourcePath"/>
   </classpaths>
   <build>
-    <option benchmark="False"/>
-    <option es="False"/>
     <option additional=""/>
-    <option showActionScriptWarnings="True"/>
-    <option staticLinkRSL="False"/>
-    <option locale=""/>
-    <option showDeprecationWarnings="True"/>
-    <option customSDK=""/>
     <option antBuildPath="build/build.xml"/>
-    <option showBindingWarnings="True"/>
-    <option useResourceBundleMetadata="True"/>
-    <option warnings="True"/>
-    <option loadConfig=""/>
-    <option showUnusedTypeSelectorWarnings="True"/>
-    <option compilerConstants=""/>
-    <option verboseStackTraces="False"/>
-    <option allowSourcePathOverlap="False"/>
     <option linkReport=""/>
-    <option strict="True"/>
-    <option useNetwork="True"/>
-    <option optimize="False"/>
-    <option accessible="False"/>
   </build>
-  <includeLibraries/>
-  <libraryPaths/>
-  <externalLibraryPaths>
-  	<!-- example: <element path="..." /> -->
-  </externalLibraryPaths>
-  <rslPaths/>
-  <intrinsics/>
-  <library/>
   <compileTargets>
     <compile path="$SourceFile"/>
   </compileTargets>

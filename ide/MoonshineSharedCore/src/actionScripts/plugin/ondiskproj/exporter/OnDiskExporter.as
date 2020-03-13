@@ -47,14 +47,8 @@ package actionScripts.plugin.ondiskproj.exporter
 			projectXML.appendChild(exportPaths(project.classpaths, <classpaths />, <class />, project));
 			
 			projectXML.appendChild(project.buildOptions.toXML());
+			projectXML.appendChild(project.mavenBuildOptions.toXML());
 		
-            tmpXML = <haxelib/>;
-            for each(var haxelib:String in project.haxelibs)
-            {
-                tmpXML.appendChild(<library name={haxelib}/>);
-            }
-			projectXML.appendChild(tmpXML);
-			
 			projectXML.appendChild(exportPaths(project.targets, <compileTargets />, <compile />, project));
 			projectXML.appendChild(exportPaths(project.hiddenPaths, <hiddenPaths />, <hidden />, project));
 			

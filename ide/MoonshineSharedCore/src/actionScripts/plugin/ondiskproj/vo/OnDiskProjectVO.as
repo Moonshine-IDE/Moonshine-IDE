@@ -24,6 +24,7 @@ package actionScripts.plugin.ondiskproj.vo
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
+	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskExporter;
 	import actionScripts.plugin.settings.vo.DropDownListSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -66,6 +67,7 @@ package actionScripts.plugin.ondiskproj.vo
 
 		//public var haxeOutput:HaxeOutputVO;
 		public var buildOptions:OnDiskBuildOptions;
+		public var mavenBuildOptions:MavenBuildOptions;
 		public var limeTargetPlatform:String;
 
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -121,6 +123,7 @@ package actionScripts.plugin.ondiskproj.vo
 			super(folder, projectName, updateToTreeView);
 			
 			buildOptions = new OnDiskBuildOptions();
+			mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
 
             projectReference.hiddenPaths = this.hiddenPaths;
 			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
