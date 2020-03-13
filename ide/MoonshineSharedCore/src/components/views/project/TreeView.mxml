@@ -64,6 +64,7 @@
 			import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 			import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 			import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+			import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 			import actionScripts.plugin.templating.TemplatingHelper;
 			import actionScripts.ui.LayoutModifier;
 			import actionScripts.ui.renderers.FTETreeItemRenderer;
@@ -207,6 +208,11 @@
 	                    var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
 	                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, haxeProject.sourceFolder);
 	                }
+					else if (project is OnDiskProjectVO)
+					{
+						var onDiskProject:OnDiskProjectVO = OnDiskProjectVO(project);
+						sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, onDiskProject.sourceFolder);
+					}
 					if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 				}
 			}
@@ -412,6 +418,11 @@
 						{
 							var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
 							sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, haxeProject.sourceFolder);
+						}
+						else if (project is OnDiskProjectVO)
+						{
+							var onDiskProject:OnDiskProjectVO = OnDiskProjectVO(project);
+							sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, onDiskProject.sourceFolder);
 						}
 						if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 

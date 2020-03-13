@@ -325,6 +325,12 @@
 					{
 						return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation);
 					}
+					
+					projectFileLocation = model.ondiskCore.testOnDisk(projectFile);
+					if (projectFileLocation)
+					{
+						return model.ondiskCore.parseOnDisk(recentOpenedProjectObject as FileLocation);
+					}
 				}
 	
 				return null;

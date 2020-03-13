@@ -81,7 +81,6 @@ package actionScripts.plugin.ondiskproj.importer
             parsePaths(data.compileTargets.compile, project.targets, project, "path");
             parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path");		
 			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
-			parsePathString(data.haxelib["library"], project.haxelibs, project, "name");
 	
 			if (!project.buildOptions.additional) project.buildOptions.additional = "";
 			
@@ -142,6 +141,7 @@ package actionScripts.plugin.ondiskproj.importer
             project.testMovie = data.options.option.@testMovie;
 
             project.buildOptions.parse(data.build);
+			project.mavenBuildOptions.parse(data.mavenBuild);
 			
 			project.runWebBrowser = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@webBrowser);
 			
