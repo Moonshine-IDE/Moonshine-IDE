@@ -83,7 +83,12 @@
             var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
             if(SimpleValidator.validate(validateArr))
             {
-                var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, new FileLocation(ddlType.selectedItem.nativePath), wrapperOfFolderLocation);
+                var tmpEvent:NewFileEvent = new NewFileEvent(
+					NewFileEvent.EVENT_NEW_FILE, 
+					null, 
+					(componentTemplates ? new FileLocation(ddlType.selectedItem.nativePath) : null), 
+					wrapperOfFolderLocation
+				);
                 tmpEvent.ofProject = wrapperBelongToProject;
                 tmpEvent.fileName = txtFileName.text;
                 dispatchEvent(tmpEvent);
@@ -235,11 +240,13 @@
 		</s:Group>
 	</s:VGroup>
 	<s:VGroup width="100%">
-		<s:Label text="Based on:"/>
+		<s:Label text="Based on:"
+				 visible="{componentTemplates}" includeInLayout="{componentTemplates}"/>
 		<s:DropDownList id="ddlType"
 						width="100%" height="25"
 						dataProvider="{componentTemplates}" labelFunction="getTemplateLabel"
 						requireSelection="true" itemRendererFunction="getItemRenderer"
+						visible="{componentTemplates}" includeInLayout="{componentTemplates}"
 						open="lastSelectedItem=ddlType.selectedItem" close="onDropDownClosed(event)"/>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
