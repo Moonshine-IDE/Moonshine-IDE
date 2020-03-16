@@ -36,6 +36,7 @@ package actionScripts.plugin.ondiskproj.vo
 
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public var targets:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean = false;
 
 		public var prebuildCommands:String;
