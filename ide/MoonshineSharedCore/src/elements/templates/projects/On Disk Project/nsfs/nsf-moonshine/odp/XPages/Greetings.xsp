@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xp:view xmlns:xp="http://www.ibm.com/xsp/core" xmlns:xc="http://www.ibm.com/xsp/custom">
+	<xc:GreetingsActionBar></xc:GreetingsActionBar>
+	<xp:viewPanel rows="30" id="Greetings" width="600">
+		<xp:this.facets>
+			<xp:pager partialRefresh="true" layout="Previous Group Next"
+				xp:key="headerPager" for="Greetings" id="pager1">
+			</xp:pager>
+			<xp:pager partialRefresh="true" layout="Previous Group Next"
+				xp:key="footerPager" id="pager2">
+			</xp:pager>
+			<xp:viewTitle xp:key="viewTitle" id="viewTitle1" value="Greentings">
+			</xp:viewTitle>
+		</xp:this.facets>
+
+		<xp:this.data>
+			<xp:dominoView var="view1" viewName="Greetings"></xp:dominoView>
+		</xp:this.data>
+		<xp:viewColumn columnName="NameFirst" id="viewColumn1"
+			displayAs="link" showCheckbox="true" openDocAsReadonly="true">
+			<xp:viewColumnHeader value="First Name" id="viewColumnHeader1">
+			</xp:viewColumnHeader>
+		</xp:viewColumn>
+		<xp:viewColumn columnName="NameLast" id="viewColumn2"
+			displayAs="link" openDocAsReadonly="true">
+			<xp:viewColumnHeader value="Last Name" id="viewColumnHeader2">
+			</xp:viewColumnHeader>
+		</xp:viewColumn>
+		<xp:viewColumn columnName="Sex" id="viewColumn3">
+			<xp:viewColumnHeader value="Sex" id="viewColumnHeader3"></xp:viewColumnHeader>
+		</xp:viewColumn>
+		<xp:viewColumn columnName="$2" id="viewColumn4">
+			<xp:viewColumnHeader value="Last Updated" id="viewColumnHeader4">
+			</xp:viewColumnHeader>
+		</xp:viewColumn>
+	</xp:viewPanel>
+
+
+	<xc:Footer></xc:Footer>
+</xp:view>

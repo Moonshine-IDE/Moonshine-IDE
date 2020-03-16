@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xp:view xmlns:xp="http://www.ibm.com/xsp/core">
+	<xp:this.resources>
+		<xp:script src="/utils.ssjs.jss" clientSide="false"></xp:script>
+	</xp:this.resources>
+	<xp:panel id="UserInfo"><span style="font-weight:bold">User: </span>
+		<xp:text id="computedField1" value="#{javascript:getUserName()}"
+			style="font-weight:bold">
+		</xp:text>
+	</xp:panel>
+	<xp:panel id="MoonshineIDE">
+		This is an example form provided in the
+		Moonshine-IDE On Disk
+		Project Template.
+	</xp:panel>
+</xp:view>
