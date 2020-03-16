@@ -26,6 +26,7 @@
 				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, fromTemplate, wrapperOfFolderLocation);
 				tmpEvent.ofProject = wrapperBelongToProject;
 				tmpEvent.fileName = txtFileName.text;
+				tmpEvent.fileExtension = extensionLabel.text.substr(1, extensionLabel.text.length);
 				dispatchEvent(tmpEvent);
 				
 				doBeforeExit();

@@ -155,6 +155,7 @@ package actionScripts.plugin.templating
 			{
 	            dispatcher.addEventListener(ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX, handleExportNewProjectFromTemplate);
 				dispatcher.addEventListener(NewFileEvent.EVENT_NEW_VISUAL_EDITOR_FILE, onVisualEditorFileCreateRequest, false, 0, true);
+				dispatcher.addEventListener(NewFileEvent.EVENT_FILE_CREATED, onNewFileBeingCreated, false, 0, true);
 			}
 		}
 		
@@ -1560,6 +1561,11 @@ package actionScripts.plugin.templating
 			}
 			
 			return false;
+		}
+		
+		private function onNewFileBeingCreated(event:NewFileEvent):void
+		{
+			notifyNewFileCreated(event.insideLocation, event.newFileCreated, event.isOpenAfterCreate);
 		}
 
 		private function notifyNewFileCreated(insideLocation:FileWrapper, fileToSave:FileLocation, isOpenAfterCreate:Boolean=true):void

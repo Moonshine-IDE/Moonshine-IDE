@@ -19,7 +19,7 @@
 package actionScripts.plugin.ondiskproj
 {
     import flash.display.DisplayObject;
-    import flash.events.Event;
+    import flash.filesystem.File;
     
     import mx.core.FlexGlobals;
     import mx.events.CloseEvent;
@@ -32,6 +32,7 @@ package actionScripts.plugin.ondiskproj
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
+    import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -41,7 +42,7 @@ package actionScripts.plugin.ondiskproj
 	
 	public class OnDiskProjectPlugin extends PluginBase
 	{
-		public static const EVENT_NEW_FILE_WINDOW:String = "onNewFileWindowRequest";
+		public static const EVENT_NEW_FILE_WINDOW:String = "onOnDiskNewFileWindowRequest";
 		
 		public var activeType:uint = ProjectType.ONDISK;
 		
@@ -62,6 +63,7 @@ package actionScripts.plugin.ondiskproj
 		override public function deactivate():void
 		{
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
+			dispatcher.removeEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow);
 			
 			super.deactivate();
 		}
@@ -126,10 +128,32 @@ package actionScripts.plugin.ondiskproj
 			handleNewFilePopupClose(null);
 			TemplatingPlugin.checkAndUpdateIfTemplateModified(event);
 			
+			var fileContent:String = event.fromTemplate.fileBridge.read() as String;
+			var th:TemplatingHelper = new TemplatingHelper();
+			var sourceFileWithExtension:String = event.fileName +"."+ event.fileExtension;
+			var tmpDate:Date = new Date();	
+			
+			th.templatingData["$createdOn"] = tmpDate.toLocaleTimeString();
+			th.templatingData["$revisedOn"] = tmpDate.toLocaleTimeString();
+			th.templatingData["$lastAccessedOn"] = tmpDate.toLocaleTimeString();
+			th.templatingData["$addedOn"] = tmpDate.toLocaleTimeString();
+			
 			// TO-DO
 			// 1. Generate intermediate dfb/dve
 			
+			// POPULATE XML from 'fileContent' TO MODIFY IN XML
+			
+			var targetFile:FileLocation = event.insideLocation.file.fileBridge.resolvePath(sourceFileWithExtension)
+			th.fileTemplate(event.fromTemplate, targetFile);
+			
 			// 2. Generate final files under 'odp/Forms'
+			
+			
+			// open to editor and refresh tree
+			var tmpNewFileEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_FILE_CREATED, null, null, event.insideLocation);
+			tmpNewFileEvent.isOpenAfterCreate = true;
+			tmpNewFileEvent.newFileCreated = targetFile;
+			dispatcher.dispatchEvent(tmpNewFileEvent);
 		}
 	}
 }
