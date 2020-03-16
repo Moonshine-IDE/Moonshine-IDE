@@ -19,7 +19,6 @@
 package actionScripts.plugin.ondiskproj
 {
     import flash.display.DisplayObject;
-    import flash.filesystem.File;
     
     import mx.core.FlexGlobals;
     import mx.events.CloseEvent;
