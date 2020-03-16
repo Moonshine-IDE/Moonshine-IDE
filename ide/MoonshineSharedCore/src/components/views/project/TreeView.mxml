@@ -164,7 +164,7 @@
 					);
 				} else if(fileWrapper)
 				{
-					refreshByWrapperItem(fileWrapper);
+					tree.callLater(refreshByWrapperItem, [fileWrapper]);
 				}
 			}
 	
@@ -183,37 +183,22 @@
 					fileWrapper.sourceController.refresh(fileWrapper.file);
 				}
 	
-				if(fileWrapper.isRoot)
+				var project:ProjectVO;
+				if (fileWrapper.projectReference)
 				{
-					var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fileWrapper) as ProjectVO;
-					if (!project.sourceFolder) return;
-					var sourceWrapper:FileWrapper = null;
-					if(project is AS3ProjectVO)
+					project = UtilsCore.getProjectByPath(fileWrapper.projectReference.path) as ProjectVO;
+				}
+				if (project && project.sourceFolder && 
+					(project.sourceFolder.fileBridge.nativePath.indexOf(fileWrapper.nativePath + model.fileCore.separator) != -1))
+				{
+					if (project.sourceFolder) 
 					{
-						var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-						sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
+						var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
+						if (sourceWrapper && sourceWrapper != project.projectFolder) 
+						{
+							sourceWrapper.isSourceFolder = true;
+						}
 					}
-	                else if (project is JavaProjectVO)
-	                {
-	                    var javaProject:JavaProjectVO = JavaProjectVO(project);
-	                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, javaProject.sourceFolder);
-	                }
-	                else if (project is GrailsProjectVO)
-	                {
-	                    var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
-	                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, grailsProject.sourceFolder);
-	                }
-	                else if (project is HaxeProjectVO)
-	                {
-	                    var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
-	                    sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, haxeProject.sourceFolder);
-	                }
-					else if (project is OnDiskProjectVO)
-					{
-						var onDiskProject:OnDiskProjectVO = OnDiskProjectVO(project);
-						sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, onDiskProject.sourceFolder);
-					}
-					if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 				}
 			}
 	
@@ -397,40 +382,23 @@
 					case CollectionEventKind.ADD:
 					{
 						project = projects.getItemAt(event.location) as ProjectVO;
-	
-						var sourceWrapper:FileWrapper = null;
-						if(project is AS3ProjectVO)
+						if (project.sourceFolder) 
 						{
-	                        var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-							if (as3Project.sourceFolder) sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, as3Project.sourceFolder);
+							var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
+							if (sourceWrapper && sourceWrapper != project.projectFolder) 
+							{
+								sourceWrapper.isSourceFolder = true;
+							}
 						}
-	                    else if (project is JavaProjectVO)
-	                    {
-	                        var javaProject:JavaProjectVO = JavaProjectVO(project);
-	                        if (javaProject.sourceFolder) sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, javaProject.sourceFolder);
-	                    }
-	                    else if (project is GrailsProjectVO)
-	                    {
-	                        var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
-							if (grailsProject.sourceFolder) sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, grailsProject.sourceFolder);
-	                    }
-						else if (project is HaxeProjectVO)
-						{
-							var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
-							sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, haxeProject.sourceFolder);
-						}
-						else if (project is OnDiskProjectVO)
-						{
-							var onDiskProject:OnDiskProjectVO = OnDiskProjectVO(project);
-							sourceWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, onDiskProject.sourceFolder);
-						}
-						if(sourceWrapper && sourceWrapper != project.projectFolder) sourceWrapper.isSourceFolder = true;
 
 						model.selectedprojectFolders.addItemAt(project.projectFolder, 0);
-						if((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject)
+						
+						if (((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject) || 
+							(project is OnDiskProjectVO))
 						{
 							refreshFileFolder(project.projectFolder, project);
 						}
+						
 						timeoutValue = setTimeout(function ():void
 						{
 							tree.selectedItem = project.projectFolder;
