@@ -129,7 +129,7 @@ package actionScripts.plugin.ondiskproj
 			// TO-DO
 			// 1. Generate intermediate dfb/dve
 			
-			// 2. Generate final files under 'odp'
+			// 2. Generate final files under 'odp/Forms'
 		}
 	}
 }
