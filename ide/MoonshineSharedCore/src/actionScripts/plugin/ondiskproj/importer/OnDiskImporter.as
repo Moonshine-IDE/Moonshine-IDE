@@ -27,7 +27,7 @@ package actionScripts.plugin.ondiskproj.importer
 
 	public class OnDiskImporter extends FlashDevelopImporterBase
 	{
-		private static const FILE_EXTENSION_ONDISK:String = ".ondiskproj";
+		private static const FILE_EXTENSION_ONDISKPROJ:String = ".ondiskproj";
 
 		public static function test(file:Object):FileLocation
 		{
@@ -40,8 +40,8 @@ package actionScripts.plugin.ondiskproj.importer
 			for each (var i:Object in listing)
 			{
 				var fileName:String = i.name;
-				var extensionIndex:int = fileName.lastIndexOf(FILE_EXTENSION_ONDISK);
-				if(extensionIndex != -1 && extensionIndex == (fileName.length - FILE_EXTENSION_ONDISK.length))
+				var extensionIndex:int = fileName.lastIndexOf(FILE_EXTENSION_ONDISKPROJ);
+				if(extensionIndex != -1 && extensionIndex == (fileName.length - FILE_EXTENSION_ONDISKPROJ.length))
 				{
 					return new FileLocation(i.nativePath);
 				}
@@ -60,7 +60,7 @@ package actionScripts.plugin.ondiskproj.importer
 
             if (!settingsFileLocation)
             {
-                settingsFileLocation = projectFolder.fileBridge.resolvePath(projectName + FILE_EXTENSION_ONDISK);
+                settingsFileLocation = projectFolder.fileBridge.resolvePath(projectName + FILE_EXTENSION_ONDISKPROJ);
             }
 
 			var project:OnDiskProjectVO = new OnDiskProjectVO(projectFolder, projectName);
@@ -76,9 +76,7 @@ package actionScripts.plugin.ondiskproj.importer
 			
 			// Parse XML file
             project.classpaths.length = 0;
-            project.targets.length = 0;
 			
-            parsePaths(data.compileTargets.compile, project.targets, project, "path");
             parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path");		
 			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
 	
@@ -95,55 +93,8 @@ package actionScripts.plugin.ondiskproj.importer
 
             project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
 
-			if (project.targets.length > 0)
-			{
-				var target:FileLocation = project.targets[0];
-				
-				// determine source folder path
-				var substrPath:String = target.fileBridge.nativePath.replace(project.folderLocation.fileBridge.nativePath + separator, "");
-				var pathSplit:Array = substrPath.split(separator);
-				// remove the last class file name
-				pathSplit.pop();
-				var finalPath:String = project.folderLocation.fileBridge.nativePath;
-				// loop through array if source folder level is
-				// deeper more than 1 level
-				for (var j:int=0; j < pathSplit.length; j++)
-				{
-					finalPath += separator + pathSplit[j];
-				}
-				
-				// even before deciding, go for some more checks -
-				// which needs in case user used 'set as default application'
-				// to a file exists in different path
-				for each (var i:FileLocation in project.classpaths)
-				{
-					if ((finalPath + separator).indexOf(i.fileBridge.nativePath + separator) != -1) project.sourceFolder = i;
-				}
-				
-				// if yet not decided from above approach
-				if (!project.sourceFolder) project.sourceFolder = new FileLocation(finalPath);
-			}
-			else if (project.classpaths.length > 0)
-			{
-				// its possible that a project do not have any default application (project.targets[0])
-				// i.e. library project where no default application maintains
-				// we shall try to select the source folder based on its classpaths
-				for each (var k:FileLocation in project.classpaths)
-				{
-					if (k.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + separator) != -1) 
-					{
-						project.sourceFolder = k;
-						break;
-					}
-				}
-			}
-
-            project.testMovie = data.options.option.@testMovie;
-
             project.buildOptions.parse(data.build);
 			project.mavenBuildOptions.parse(data.mavenBuild);
-			
-			project.runWebBrowser = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@webBrowser);
 			
 			UtilsCore.setProjectMenuType(project);
 

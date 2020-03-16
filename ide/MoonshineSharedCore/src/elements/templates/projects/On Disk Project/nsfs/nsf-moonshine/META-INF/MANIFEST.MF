@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
-Automatic-Module-Name: org.openntf.nsfodp.nsf-moonshine
-Bundle-SymbolicName: org.openntf.nsfodp.nsf-moonshine
-Bundle-Name: nsf-moonshine
+Automatic-Module-Name: org.openntf.nsfodp.nsf-moonshine-domino
+Bundle-SymbolicName: org.openntf.nsfodp.nsf-moonshine-domino
+Bundle-Name: nsf-moonshine-domino
 Bundle-Version: 1.0.0
 Bundle-Classpath: odp/Code/Jars/exampleembeddedjar.jar
 Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,com.ibm.common

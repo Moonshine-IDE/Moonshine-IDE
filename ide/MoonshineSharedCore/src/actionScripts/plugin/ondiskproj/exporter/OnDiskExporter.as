@@ -25,11 +25,11 @@ package actionScripts.plugin.ondiskproj.exporter
 
     public class OnDiskExporter extends FlashDevelopExporterBase
     {
-		private static const FILE_EXTENSION_HXPROJ:String = ".ondiskproj";
+		private static const FILE_EXTENSION_ONDISKPROJ:String = ".ondiskproj";
 
         public static function export(project:OnDiskProjectVO):void
         {
-            var projectSettings:FileLocation = project.folderLocation.resolvePath(project.projectName + FILE_EXTENSION_HXPROJ);
+            var projectSettings:FileLocation = project.folderLocation.resolvePath(project.projectName + FILE_EXTENSION_ONDISKPROJ);
             if (!projectSettings.fileBridge.exists)
             {
                 projectSettings.fileBridge.createFile();
@@ -49,7 +49,6 @@ package actionScripts.plugin.ondiskproj.exporter
 			projectXML.appendChild(project.buildOptions.toXML());
 			projectXML.appendChild(project.mavenBuildOptions.toXML());
 		
-			projectXML.appendChild(exportPaths(project.targets, <compileTargets />, <compile />, project));
 			projectXML.appendChild(exportPaths(project.hiddenPaths, <hiddenPaths />, <hidden />, project));
 			
 			tmpXML = <preBuildCommand />;
@@ -63,29 +62,12 @@ package actionScripts.plugin.ondiskproj.exporter
 			
 			var options:XML = <options />;
 			var optionPairs:Object = {
-				showHiddenPaths		:	SerializeUtil.serializeBoolean(project.showHiddenPaths),
-				testMovie			:	SerializeUtil.serializeString(project.testMovie),
-				testMovieCommand	:	SerializeUtil.serializeString(project.testMovieCommand)
-			}
-			if (project.testMovieCommand && project.testMovieCommand != "") 
-			{
-				optionPairs.testMovieCommand = project.testMovieCommand;
+				showHiddenPaths		:	SerializeUtil.serializeBoolean(project.showHiddenPaths)
 			}
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			projectXML.appendChild(options);
 
 			options = <moonshineRunCustomization />;
-			if(project.isLime)
-			{
-				optionPairs = {
-					targetPlatform:	project.limeTargetPlatform,
-					webBrowser:   project.runWebBrowser
-				};
-			}
-			else
-			{
-				optionPairs = {};
-			}
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			projectXML.appendChild(options);
             

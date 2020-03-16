@@ -26,12 +26,9 @@ package actionScripts.plugin.ondiskproj.vo
 	{
 		public static var defaultOptions:OnDiskBuildOptions = new OnDiskBuildOptions();
 		
-		public var directives:Vector.<String>;
-		public var flashStrict:Boolean = false;
-		public var noInlineOnDebug:Boolean = false;
-		public var mainClass:String;
-		public var enabledebug:Boolean = false;
 		public var additional:String;
+		public var antBuildPath:String;
+		public var linkReport:String;
 		
 		/**
 		 * @return haxe arguments with defaults removed
@@ -51,13 +48,6 @@ package actionScripts.plugin.ondiskproj.vo
 					args += " -"+p+"="+pairs[p];
 				}
 			}
-			if(directives)
-			{
-				for each(var directive:String in directives)
-				{
-					args += " -D " + directive;
-				}
-			}
 			if (additional && (StringUtil.trim(additional).length > 0))
 			{
 				args += " " + additional.replace("\n", " ");
@@ -69,12 +59,9 @@ package actionScripts.plugin.ondiskproj.vo
 		{
 			var options:XMLList = build.option;
 			
-			mainClass							= SerializeUtil.deserializeString(options.@mainClass);
-			enabledebug							= SerializeUtil.deserializeBoolean(options.@enabledebug);
-			noInlineOnDebug						= SerializeUtil.deserializeBoolean(options.@noInlineOnDebug);
-			flashStrict							= SerializeUtil.deserializeBoolean(options.@flashStrict);
-			directives							= SerializeUtil.deserializeDelimitedString(options.@directives);
 			additional							= SerializeUtil.deserializeString(options.@additional);
+			antBuildPath						= SerializeUtil.deserializeString(options.@antBuildPath);
+			linkReport							= SerializeUtil.deserializeString(options.@linkReport);
 		}
 		
 		public function toXML():XML
@@ -82,12 +69,9 @@ package actionScripts.plugin.ondiskproj.vo
 			var build:XML = <build/>;
 			
 			var pairs:Object = {
-				mainClass							:	SerializeUtil.serializeString(mainClass),
-				enabledebug							:	SerializeUtil.serializeBoolean(enabledebug),
-				noInlineOnDebug						:	SerializeUtil.serializeBoolean(noInlineOnDebug),
-				flashStrict							:	SerializeUtil.serializeBoolean(flashStrict),
-				directives							:	SerializeUtil.serializeDelimitedString(directives),
-				additional							:	SerializeUtil.serializeString(additional)
+				additional						:	SerializeUtil.serializeString(additional),
+				antBuildPath					:	SerializeUtil.serializeString(antBuildPath),
+				linkReport						:	SerializeUtil.serializeString(linkReport)
 			}
 			
 			build.appendChild(SerializeUtil.serializePairs(pairs, <option/>));
@@ -110,8 +94,7 @@ package actionScripts.plugin.ondiskproj.vo
 
         private function getArgumentPairs():Object {
             return {
-                "flash-strict"							:	flashStrict,
-				"main"									:	mainClass
+				"link-report"					:	linkReport
             }
         }
     }

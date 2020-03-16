@@ -30,7 +30,7 @@ package actionScripts.plugin.ondiskproj
 		
 		override public function get name():String 			{ return "On Disk Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
-		override public function get description():String 	{ return "ConstantsCoreVO project importing, exporting & scaffolding."; }
+		override public function get description():String 	{ return "On Disk Project importing, exporting & scaffolding."; }
 		
 		override public function activate():void
 		{
