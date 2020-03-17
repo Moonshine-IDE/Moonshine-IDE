@@ -18,11 +18,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.valueObjects.ProjectVO;
+	import mx.collections.ArrayCollection;
+	
+	import actionScripts.factory.FileLocation;
 
-    public interface IVisualEditorBridge extends IProject
+    public interface IVisualEditorProjectVO
     {
-        function getVisualEditor(visualEditorProject:ProjectVO):BasicTextEditor;
+		function get isVisualEditorProject():Boolean;
+		function set isVisualEditorProject(value:Boolean):void;
+		function get isPrimeFacesVisualEditorProject():Boolean;
+		function set isPrimeFacesVisualEditorProject(value:Boolean):void;
+		function get isPreviewRunning():Boolean;
+		function set isPreviewRunning(value:Boolean):void;
+		function get visualEditorSourceFolder():FileLocation;
+		function set visualEditorSourceFolder(value:FileLocation):void;
+		
+		// all acceptable files list those can be opened in 
+		// Moonshine editor (mainly generates for VisualEditor project)
+		function get filesList():ArrayCollection;
+		function set filesList(value:ArrayCollection):void;
     }
 }

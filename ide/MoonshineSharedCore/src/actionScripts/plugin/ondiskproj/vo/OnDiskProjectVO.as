@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.ondiskproj.vo
 {
+	import mx.collections.ArrayCollection;
+	
 	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskExporter;
@@ -29,7 +32,7 @@ package actionScripts.plugin.ondiskproj.vo
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class OnDiskProjectVO extends ProjectVO
+	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO
 	{
 		public var buildOptions:OnDiskBuildOptions;
 		public var mavenBuildOptions:MavenBuildOptions;
@@ -43,6 +46,26 @@ package actionScripts.plugin.ondiskproj.vo
 		public var postbuildCommands:String;
 		public var postbuildAlways:Boolean;
 		public var visualEditorExportPath:String;
+		
+		private var _isVisualEditorProject:Boolean;
+		public function get isVisualEditorProject():Boolean						{	return _isVisualEditorProject;	}
+		public function set isVisualEditorProject(value:Boolean):void			{	_isVisualEditorProject = value;	}
+		
+		private var _isPrimeFacesVisualEditorProject:Boolean;
+		public function get isPrimeFacesVisualEditorProject():Boolean			{	return _isPrimeFacesVisualEditorProject;	}
+		public function set isPrimeFacesVisualEditorProject(value:Boolean):void	{	_isPrimeFacesVisualEditorProject = value;	}
+		
+		private var _isPreviewRunning:Boolean;
+		public function get isPreviewRunning():Boolean							{	return _isPreviewRunning;	}
+		public function set isPreviewRunning(value:Boolean):void				{	_isPreviewRunning = value;	}
+		
+		private var _visualEditorSourceFolder:FileLocation;
+		public function get visualEditorSourceFolder():FileLocation				{	return _visualEditorSourceFolder;	}
+		public function set visualEditorSourceFolder(value:FileLocation):void	{	_visualEditorSourceFolder = value;	}
+		
+		private var _filesList:ArrayCollection;
+		[Bindable] public function get filesList():ArrayCollection				{	return _filesList;	}
+		public function set filesList(value:ArrayCollection):void				{	_filesList = value;	}
 
 		public function OnDiskProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
 		{

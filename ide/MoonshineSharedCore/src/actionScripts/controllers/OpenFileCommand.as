@@ -319,7 +319,12 @@ package actionScripts.controllers
 					(project as AS3ProjectVO).isVisualEditorProject &&
 					(extension == "mxml" || extension == "xhtml") && !lastOpenEvent.independentOpenFile)
 				{
-					 editor = model.visualEditorCore.getVisualEditor(project as AS3ProjectVO);
+					 editor = model.visualEditorCore.getVisualEditor(project);
+				}
+				else if (project is OnDiskProjectVO &&
+					(extension == "dfb" || extension == "dve") && !lastOpenEvent.independentOpenFile)
+				{
+					editor = model.visualEditorCore.getVisualEditor(project);
 				}
 				else if((lastOpenEvent && !lastOpenEvent.independentOpenFile) && 
 					model.languageServerCore.hasCustomTextEditorForUri(file.fileBridge.url, project))

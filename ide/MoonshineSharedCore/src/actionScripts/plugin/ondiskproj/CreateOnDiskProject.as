@@ -284,6 +284,13 @@ package actionScripts.plugin.ondiskproj
 			th.templatingData["$SourcePath"] = sourcePath;
 			th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + model.fileCore.separator +"visualeditor"+ model.fileCore.separator + sourceFileWithExtension) : "";
 			
+			var tmpDate:Date = new Date();	
+			
+			th.templatingData["$createdOn"] = tmpDate.toString();
+			th.templatingData["$revisedOn"] = tmpDate.toString();
+			th.templatingData["$lastAccessedOn"] = tmpDate.toString();
+			th.templatingData["$addedOn"] = tmpDate.toString();
+			
 			th.projectTemplate(templateDir, targetFolder);
 			
 			var projectSettingsFileName:String = projectName + ".ondiskproj";

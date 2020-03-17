@@ -132,10 +132,10 @@ package actionScripts.plugin.ondiskproj
 			var sourceFileWithExtension:String = event.fileName +"."+ event.fileExtension;
 			var tmpDate:Date = new Date();	
 			
-			th.templatingData["$createdOn"] = tmpDate.toLocaleTimeString();
-			th.templatingData["$revisedOn"] = tmpDate.toLocaleTimeString();
-			th.templatingData["$lastAccessedOn"] = tmpDate.toLocaleTimeString();
-			th.templatingData["$addedOn"] = tmpDate.toLocaleTimeString();
+			th.templatingData["$createdOn"] = tmpDate.toString();
+			th.templatingData["$revisedOn"] = tmpDate.toString();
+			th.templatingData["$lastAccessedOn"] = tmpDate.toString();
+			th.templatingData["$addedOn"] = tmpDate.toString();
 			
 			// TO-DO
 			// 1. Generate intermediate dfb/dve
