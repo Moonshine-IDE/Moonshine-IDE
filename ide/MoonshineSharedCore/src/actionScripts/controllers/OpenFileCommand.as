@@ -25,16 +25,18 @@ package actionScripts.controllers
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.EditorPluginEvent;
-    import actionScripts.events.UpdateTabEvent;
     import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.OpenFileEvent;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.events.UpdateTabEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
@@ -44,7 +46,6 @@ package actionScripts.controllers
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
-    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	public class OpenFileCommand implements ICommand
 	{
@@ -311,19 +312,7 @@ package actionScripts.controllers
 
 				if (!project)
 				{
-					project = model.activeProject as AS3ProjectVO;
-                }
-				if (!project)
-				{
-					project = model.activeProject as JavaProjectVO;
-                }
-				if (!project)
-				{
-					project = model.activeProject as GrailsProjectVO;
-                }
-				if (!project)
-				{
-					project = model.activeProject as HaxeProjectVO;
+					project = model.activeProject;
                 }
 
 				if (project is AS3ProjectVO &&
