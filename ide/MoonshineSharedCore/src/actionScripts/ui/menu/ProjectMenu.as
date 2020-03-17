@@ -336,8 +336,8 @@ package actionScripts.ui.menu
 				var resourceManager:IResourceManager = ResourceManager.getInstance();
 				onDiskMenu = Vector.<MenuItem>([
 					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources', 'ONDISK_VISUALEDITOR_FILE'), null, [ProjectMenuTypes.ON_DISK], ExportVisualEditorProjectEvent.EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX),
-					new MenuItem(resourceManager.getString('resources', 'ONDISK_FORMBUILDER_FILE'), null, [ProjectMenuTypes.ON_DISK], ExportVisualEditorProjectEvent.EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX)
+					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.ON_DISK], MavenBuildEvent.START_MAVEN_BUILD),
+					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.ON_DISK], ProjectActionEvent.CLEAN_PROJECT)
 				]);
 				
 				onDiskMenu.forEach(makeDynamic);

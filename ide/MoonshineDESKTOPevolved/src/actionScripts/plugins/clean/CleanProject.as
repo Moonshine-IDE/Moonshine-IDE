@@ -38,7 +38,9 @@ package actionScripts.plugins.clean
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.project.ProjectType;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.utils.UtilsCore;
@@ -48,7 +50,6 @@ package actionScripts.plugins.clean
 	
 	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	public class CleanProject extends ConsoleBuildPluginBase implements IPlugin
 	{
@@ -169,6 +170,11 @@ package actionScripts.plugins.clean
 					currentCleanType = ProjectType.HAXE;
 					cleanHaxeProject(project as HaxeProjectVO);
 				}
+				else if (project is OnDiskProjectVO)
+				{
+					currentCleanType = ProjectType.ONDISK;
+					cleanOnDiskProject(project as OnDiskProjectVO);
+				}
 			}
 		}
 
@@ -220,6 +226,11 @@ package actionScripts.plugins.clean
 		private function cleanHaxeProject(haxeProject:HaxeProjectVO):void
 		{
 			//TODO: clean haxe project
+		}
+		
+		private function cleanOnDiskProject(ondiskProject:OnDiskProjectVO):void
+		{
+			//TODO: clean ondisk project
 		}
 		
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
