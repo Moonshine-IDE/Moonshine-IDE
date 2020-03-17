@@ -45,6 +45,7 @@ package actionScripts.plugins.debugAdapter
     import actionScripts.plugins.chromelauncher.ChromeDebugAdapterLauncher;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.plugins.firefoxlauncher.FirefoxDebugAdapterLauncher;
+    import actionScripts.plugins.hxcpplauncher.HxCppDebugAdapterLauncher;
 	
 	public class DebugAdapterPlugin extends PluginBase
 	{
@@ -203,6 +204,11 @@ package actionScripts.plugins.debugAdapter
 				case "firefox":
 				{
 					launcher = new FirefoxDebugAdapterLauncher();
+					break;
+				}
+				case "hxcpp":
+				{
+					launcher = new HxCppDebugAdapterLauncher();
 					break;
 				}
 				default:
