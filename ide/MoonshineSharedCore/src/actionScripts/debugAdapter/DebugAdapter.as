@@ -163,6 +163,7 @@ package actionScripts.debugAdapter
 		private var _receivedInitializeResponse:Boolean = false;
 		private var _receivedInitializedEvent:Boolean = false;
 		private var _waitingForLaunchOrAttach:Boolean = false;
+		private var _handledPostInit:Boolean = false;
 
 		public function get initialized():Boolean
 		{
@@ -196,6 +197,7 @@ package actionScripts.debugAdapter
 			_receivedInitializeResponse = false;
 			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
+			_handledPostInit = false;
 			
 			mainThreadID = -1;
 			
@@ -313,6 +315,7 @@ package actionScripts.debugAdapter
 			_receivedInitializeResponse = false;
 			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
+			_handledPostInit = false;
 			
 			_inputDispatcher.removeEventListener(_inputEvent, input_onData);
 
@@ -623,8 +626,11 @@ package actionScripts.debugAdapter
 			var body:Object = response.body;
 			_supportsConfigurationDoneRequest = body && body.supportsConfigurationDoneRequest === true;
 			_receivedInitializeResponse = true;
-			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
+			if(_receivedInitializedEvent && !_handledPostInit)
+			{
+				this.handlePostInit();
+			}
 
 			//the request and command are the same constant
 			var command:String = this._currentRequest.request;
@@ -930,10 +936,10 @@ package actionScripts.debugAdapter
 			}
 			this.handleDisconnectOrTerminated();
 		}
-		
-		private function parseInitializedEvent(event:Object):void
+
+		private function handlePostInit():void
 		{
-			_receivedInitializedEvent = true;
+			this._handledPostInit = true;
 			this.dispatchEvent(new Event(Event.INIT));
 			if(this._supportsConfigurationDoneRequest)
 			{
@@ -943,6 +949,20 @@ package actionScripts.debugAdapter
 			{
 				this.sendRequest(COMMAND_THREADS);
 			}
+		}
+		
+		private function parseInitializedEvent(event:Object):void
+		{
+			_receivedInitializedEvent = true;
+			if(!_receivedInitializeResponse)
+			{
+				//hxcpp-debug-server (and maybe other debug adapters too?) sends
+				//initialized before the initialize response, which is against
+				//spec. normally, we'd send some requests after this event, but
+				//instead, we'll wait until after the initialize response.
+				return;
+			}
+			this.handlePostInit();
 		}
 		
 		private function parseOutputEvent(event:Object):void
