@@ -51,7 +51,9 @@ package actionScripts.impls
 
         public function getPluginsNotToShowInSettings():Array
         {
-            return [];
+            return [
+				OnDiskProjectPlugin
+			];
         }
 
         public function get runtimeVersion():String
