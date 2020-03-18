@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup 
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+  	xmlns:s="library://ns.adobe.com/flex/spark"
+  	width="100%"
+  	gap="0"
+  	paddingTop="15"
+  	paddingBottom="5">
+	
+	<s:VGroup width="100%" paddingLeft="15" paddingBottom="15" paddingRight="15"
+			  verticalAlign="middle">
+		<s:Label styleName="uiTextSettingsLabel"
+				 text="Enable passwordless access" paddingBottom="10"/>
+		<s:RichText lineBreak="toFit" width="100%" paddingLeft="15" paddingBottom="15"
+					styleName="uiTextSettingsValue">
+			<s:p>In order to run HCL Notes operations from Moonshine, you need to enable a Notes setting that will allow local applications to run without your password.</s:p>
+			<s:p/>
+			<s:p fontStyle="italic">Note that your Notes client must still be open, authenticated, and unlocked in order for this setting to work.</s:p>
+			<s:p/>
+			<s:list>
+				<s:li>Open HCL Notes > Security > User Security... (or File > Security > User Security... for older versions)</s:li>
+				<s:li>Enter your Notes Password</s:li>
+				<s:li>In the Security Basics tab, enable the "Don't prompt for password from other Notes-based programes" checkbox setting</s:li>
+			</s:list>
+		</s:RichText>
+		<s:Image width="100%" source="/elements/images/dominoSettingsInstruction.png"/>
+		<s:Label width="100%" maxDisplayedLines="5"
+				 text="If you do not wish to enable this setting, then you can still run the Maven or Ant scripts from a Terminal or Command Prompt and enter the password manually."
+				 paddingLeft="15" paddingTop="15" styleName="uiTextSettingsValue"/>
+	</s:VGroup>
+</s:VGroup>
