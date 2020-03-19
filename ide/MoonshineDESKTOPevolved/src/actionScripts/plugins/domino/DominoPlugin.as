@@ -25,6 +25,7 @@ package actionScripts.plugins.domino
 	
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.settings.SimpleInformationOnlySetting;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
@@ -34,6 +35,7 @@ package actionScripts.plugins.domino
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
+	import components.containers.DominoSettingsInstruction;
 	import components.popup.NotesMacPermissionPopup;
 	
 	public class DominoPlugin extends PluginBase implements ISettingsProvider
@@ -93,8 +95,12 @@ package actionScripts.plugins.domino
 
 			pathSetting = new PathSetting(this, 'notesPath', 'HCL Notes Installation', ConstantsCoreVO.IS_MACOS ? false : true, notesPath);
 			
+			var instructions:SimpleInformationOnlySetting = new SimpleInformationOnlySetting();
+			instructions.renderer = new DominoSettingsInstruction();
+			
 			return Vector.<ISetting>([
-                pathSetting
+                pathSetting,
+				instructions
 			]);
         }
 		
