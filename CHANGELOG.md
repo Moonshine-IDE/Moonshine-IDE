@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## Moonshine IDE [2.7.0]
+
+### Summary
+
+### Added
+* Choose between Chrome and Firefox when debugging Apache Royale and OpenFL projects targeting HTML/JS.
+* Debug OpenFL projects targeting native Windows, macOS, and Linux with the HXCPP debugger.
+
+### Changed
+* Updated [Firefox debug adapter](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.7.0.
+* Updated [HXCPP debug adapter](https://github.com/vshaxe/hxcpp-debugger) engine to v1.2.4.
+
+### Fixed
+
 ## Moonshine IDE [2.6.0]
 
 ### Summary
