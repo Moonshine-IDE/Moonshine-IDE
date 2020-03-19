@@ -174,11 +174,12 @@ package actionScripts.plugin.haxe.hxproject.importer
 				project.limeTargetPlatform = null;
 			}
 			
-			
 			if (project.testMovie == HaxeProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == HaxeProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
 			{
                 project.testMovieCommand = data.options.option.@testMovieCommand;
 			}
+			
+			project.runWebBrowser = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@webBrowser);
 			
 			UtilsCore.setProjectMenuType(project);
 

@@ -11,4 +11,8 @@
 		<device name="Apple iPhone 6" key="750x1294:750x1334" screenDPI="326" type="IOS"/>
 		<device name="Apple iPhone 6 Plus" key="1242x2148:1242x2208" screenDPI="401" type="IOS"/>
 	</devices>
+	<browsers>
+		<browser name="Google Chrome" debugAdapter="chrome"/>
+		<browser name="Mozilla Firefox" debugAdapter="firefox"/>
+	</browsers>
 </root>

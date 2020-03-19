@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"target": "es2015",
+		"lib": [ "es2015" ],
+		"module": "commonjs",
+		"noEmit": true,
+		"strict": true,
+		"noImplicitReturns": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"skipLibCheck": true
+	},
+	"include": [
+		"src/adapter/firefoxDebugAdapter.ts",
+		"src/adapter/util/forkedLauncher.ts",
+		"src/adapter/firefox/protocol.d.ts",
+		"src/extension/main.ts",
+		"src/typings/*.d.ts",
+		"src/test/test*.ts"
+	]
+}

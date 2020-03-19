@@ -75,6 +75,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
+	import actionScripts.valueObjects.WebBrowserVO;
 
     public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -711,16 +712,29 @@ package actionScripts.plugins.as3project.mxmlc
 
         private function startDebugAdapter(project:AS3ProjectVO, debug:Boolean):void
         {
-			var url:String = getUrlToLaunch(project); 
+			var url:String = getUrlToLaunch(project);
+
+			var debugAdapterType:String = null;
+			for(var i:int = 0; i < ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.length; i++)
+			{
+				var webBrowser:WebBrowserVO = WebBrowserVO(ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.getItemAt(i));
+				if(webBrowser.name == project.runWebBrowser)
+				{
+					debugAdapterType = webBrowser.debugAdapterType;
+				}
+			}
+			if(debugAdapterType == null)
+			{
+				debugAdapterType = "chrome";
+			}
 
             var debugCommand:String = "launch";
-            var debugAdapterType:String = "chrome";
             var launchArgs:Object = {};
             if(!debug)
             {
                 launchArgs["noDebug"] = true;
             }
-			launchArgs["name"] = "Moonshine Chrome Launch";
+			launchArgs["name"] = "Moonshine Royale JS Launch";
 			launchArgs["url"] = url;
 			launchArgs["webRoot"] = getWebRoot(project).fileBridge.nativePath;
             dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER,

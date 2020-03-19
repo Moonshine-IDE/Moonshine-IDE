@@ -1,0 +1,17 @@
+{
+	"description": "A WebExtension that terminates Firefox by closing all its windows",
+	"manifest_version": 2,
+	"name": "Terminator",
+	"version": "1.0",
+	"homepage_url": "https://github.com/firefox-devtools/vscode-firefox-debug",
+	"applications": {
+		"gecko": {
+			"id": "{5b498dbd-f841-423d-9e46-a735486a0eb7}"
+		}
+	},
+	"background": {
+		"scripts": [
+			"main.js"
+		]
+	}
+}

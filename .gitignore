@@ -8,6 +8,7 @@ ide/MoonshineWorker/MoonshineWorker.iml
 ide/MoonshineDESKTOPevolved/obj/MoonshineDESKTOPevolvedConfig.xml
 ide/MoonshineSharedCore/obj/MoonshineSharedCoreConfig.xml
 ide/MoonshineWEBevolved/obj/
+ide/MoonshineWEBevolved/bin-debug/
 ide/MoonshineWorker/obj/
 ide/MoonshineWorker/bin/
 library/ApacheFlexSDKInstallerLib/obj/
