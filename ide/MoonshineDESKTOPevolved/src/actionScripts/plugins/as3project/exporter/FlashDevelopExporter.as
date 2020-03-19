@@ -140,7 +140,8 @@ package actionScripts.plugins.as3project.exporter
 				urlToLaunch		:	p.urlToLaunch ? p.urlToLaunch : "",
 				customUrlToLaunch:	p.customHTMLPath ? p.customHTMLPath : "",
 				launchMethod	:	p.buildOptions.isMobileRunOnSimulator ? "Simulator" : "Device",
-				deviceSimulator	:	p.isMobileHasSimulatedDevice ? p.isMobileHasSimulatedDevice.name : null
+				deviceSimulator	:	p.isMobileHasSimulatedDevice ? p.isMobileHasSimulatedDevice.name : null,
+				webBrowser      :   p.runWebBrowser
 			}
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			

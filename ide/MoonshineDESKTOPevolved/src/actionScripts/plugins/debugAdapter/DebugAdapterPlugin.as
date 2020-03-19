@@ -44,6 +44,8 @@ package actionScripts.plugins.debugAdapter
     import actionScripts.debugAdapter.DebugAdapter;
     import actionScripts.plugins.chromelauncher.ChromeDebugAdapterLauncher;
     import actionScripts.events.StatusBarEvent;
+    import actionScripts.plugins.firefoxlauncher.FirefoxDebugAdapterLauncher;
+    import actionScripts.plugins.hxcpplauncher.HxCppDebugAdapterLauncher;
 	
 	public class DebugAdapterPlugin extends PluginBase
 	{
@@ -199,6 +201,16 @@ package actionScripts.plugins.debugAdapter
 					launcher = new ChromeDebugAdapterLauncher();
 					break;
 				}
+				case "firefox":
+				{
+					launcher = new FirefoxDebugAdapterLauncher();
+					break;
+				}
+				case "hxcpp":
+				{
+					launcher = new HxCppDebugAdapterLauncher();
+					break;
+				}
 				default:
 				{
 					error("Unknown debug adapter: " + event.adapterID);
@@ -239,6 +251,7 @@ package actionScripts.plugins.debugAdapter
 			_debugAdapter.addEventListener(Event.INIT, debugAdapter_initHandler);
 			_debugAdapter.addEventListener(Event.CLOSE, debugAdapter_closeHandler);
 			_debugAdapter.addEventListener(Event.CHANGE, debugAdapter_changeHandler);
+			_debugAdapter.addEventListener(Event.SUSPEND, debugAdapter_suspendHandler);
 			_debugAdapter.start(event.adapterID, event.request, event.additionalProperties);
 			
 			refreshView();
@@ -273,6 +286,12 @@ package actionScripts.plugins.debugAdapter
 		private function debugAdapter_changeHandler(event:Event):void
 		{
 			refreshView();
+		}
+
+		private function debugAdapter_suspendHandler(event:Event):void
+		{
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SELECT_VIEW_IN_PROJECT_PANEL, this._debugPanel));
 		}
 		
 		protected function nativeProcess_standardErrorDataHandler(event:ProgressEvent):void

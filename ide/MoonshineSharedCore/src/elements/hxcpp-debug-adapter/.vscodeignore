@@ -1,0 +1,8 @@
+.vscode/**
+bin/*.map
+images/*.xcf
+node_modules/**/*.ts
+src/**
+.gitignore
+.travis.yml
+build.hxml

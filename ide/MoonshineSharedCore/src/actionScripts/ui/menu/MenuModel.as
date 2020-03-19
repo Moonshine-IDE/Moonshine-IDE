@@ -440,7 +440,6 @@ package actionScripts.ui.menu
 			 return;*/
 			var relatedObject:DisplayObject = e.relatedObject as DisplayObject
 
-			trace(relatedObject);
 			if (!relatedObject)
 				return;
 			// if we are moving down/up to a new menuItemRenderer in the same menu,
@@ -497,7 +496,6 @@ package actionScripts.ui.menu
 
 		private function setPreviousRenderer(rdr:MenuItemRenderer):void
 		{
-			trace("setPreviousRenderer", rdr == previousMenuItemRenderer, rdr == activeMenuItemRenderer);
 			if (rdr == previousMenuItemRenderer || rdr == activeMenuItemRenderer)
 				return;
 			//if (hasSubMenu(rdr))

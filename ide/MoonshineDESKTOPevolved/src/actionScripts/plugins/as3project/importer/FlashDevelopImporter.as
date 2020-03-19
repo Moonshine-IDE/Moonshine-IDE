@@ -225,6 +225,8 @@ package actionScripts.plugins.as3project.importer
 			if (customHtml) project.customHTMLPath = customHtml;
 
             project.isMobileHasSimulatedDevice = new MobileDeviceVO(SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@deviceSimulator));
+
+			project.runWebBrowser = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@webBrowser);
 			
 			var simulator:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
             project.buildOptions.isMobileRunOnSimulator = (simulator != "Device") ? true : false;

@@ -1,0 +1,837 @@
+{
+  "name": "vscode-firefox-debug",
+  "displayName": "Debugger for Firefox",
+  "version": "2.7.0",
+  "author": "Holger Benl <hbenl@evandor.de>",
+  "publisher": "firefox-devtools",
+  "description": "Debug your web application or browser extension in Firefox",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.40.0"
+  },
+  "categories": [
+    "Debuggers"
+  ],
+  "scripts": {
+    "reinstall": "rimraf node_modules package-lock.json && npm install",
+    "clean": "rimraf dist/*.bundle.js dist/*.bundle.js.map dist/mappings.wasm coverage .nyc_output vscode-firefox-debug-*.vsix",
+    "build": "webpack --mode=production",
+    "watch": "webpack --watch --mode=development",
+    "rebuild": "npm run clean && npm run build",
+    "typecheck": "tsc",
+    "typecheck-watch": "tsc -w",
+    "test": "TS_NODE_FILES=true mocha --opts src/test/mocha.opts \"src/test/test*.ts\"",
+    "cover": "nyc npm test && nyc report --reporter=lcov && nyc report --reporter=html",
+    "package": "vsce package",
+    "publish": "npm run rebuild && vsce publish",
+    "package-npm": "cd dist && npm pack",
+    "publish-npm": "npm run rebuild && cd dist && npm publish"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.8.3",
+    "chokidar": "^3.3.1",
+    "core-js": "^3.6.4",
+    "data-uri-to-buffer": "3.0.0",
+    "debounce": "^1.2.0",
+    "escape-string-regexp": "^2.0.0",
+    "file-uri-to-path": "^2.0.0",
+    "file-url": "^3.0.0",
+    "firefox-profile": "^1.3.1",
+    "fs-extra": "^8.1.0",
+    "is-absolute-url": "^3.0.3",
+    "minimatch": "^3.0.4",
+    "source-map": "^0.7.3",
+    "strip-json-comments": "^3.0.1",
+    "uuid": "^3.4.0",
+    "vscode-debugadapter": "^1.38.0",
+    "vscode-uri": "^2.1.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/preset-typescript": "^7.8.3",
+    "@gulp-sourcemaps/map-sources": "^1.0.0",
+    "@types/debounce": "^1.2.0",
+    "@types/fs-extra": "^8.0.1",
+    "@types/gulp": "^4.0.6",
+    "@types/gulp-concat": "^0.0.32",
+    "@types/gulp-rename": "^0.0.33",
+    "@types/gulp-sourcemaps": "^0.0.32",
+    "@types/gulp-uglify": "^3.0.6",
+    "@types/minimatch": "^3.0.3",
+    "@types/mocha": "^7.0.1",
+    "@types/node": "^10.17.15",
+    "@types/rimraf": "^2.0.3",
+    "@types/uuid": "^3.4.7",
+    "@types/vscode": "~1.40.0",
+    "@types/webpack": "^4.41.6",
+    "babel-loader": "^8.0.6",
+    "copy-webpack-plugin": "^5.1.1",
+    "gulp": "^4.0.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-nop": "0.0.3",
+    "gulp-rename": "^2.0.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-uglify": "^3.0.2",
+    "mocha": "^7.0.1",
+    "nyc": "^15.0.0",
+    "ts-node": "^8.6.2",
+    "typescript": "~3.7.5",
+    "vsce": "^1.73.0",
+    "vscode-debugadapter-testsupport": "^1.40.1",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11"
+  },
+  "babel": {
+    "presets": [
+      "@babel/typescript",
+      [
+        "@babel/env",
+        {
+          "modules": false,
+          "useBuiltIns": "usage",
+          "corejs": 3
+        }
+      ]
+    ],
+    "plugins": [
+      "@babel/proposal-class-properties",
+      "@babel/proposal-object-rest-spread"
+    ]
+  },
+  "browserslist": [
+    "node 8"
+  ],
+  "nyc": {
+    "include": [
+      "out/**/*.js"
+    ],
+    "exclude": [
+      "out/test/**/*.js"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/firefox-devtools/vscode-firefox-debug.git"
+  },
+  "keywords": [
+    "vscode",
+    "firefox",
+    "debug"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/firefox-devtools/vscode-firefox-debug/issues"
+  },
+  "homepage": "https://github.com/firefox-devtools/vscode-firefox-debug",
+  "extensionKind": [
+    "ui"
+  ],
+  "main": "./dist/extension.bundle.js",
+  "activationEvents": [
+    "onDebug"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.firefox.reloadAddon",
+        "title": "Firefox: Reload add-on"
+      },
+      {
+        "command": "extension.firefox.toggleSkippingFile",
+        "title": "Toggle skipping this file"
+      },
+      {
+        "command": "extension.firefox.openScript",
+        "title": "Open script"
+      },
+      {
+        "command": "extension.firefox.addPathMapping",
+        "title": "Map to local directory"
+      },
+      {
+        "command": "extension.firefox.addFilePathMapping",
+        "title": "Map to local file"
+      },
+      {
+        "command": "extension.firefox.addNullPathMapping",
+        "title": "Don't map this directory"
+      },
+      {
+        "command": "extension.firefox.addNullFilePathMapping",
+        "title": "Don't map this file"
+      },
+      {
+        "command": "extension.firefox.enablePopupAutohide",
+        "title": "Firefox: Enable popup auto-hide"
+      },
+      {
+        "command": "extension.firefox.disablePopupAutohide",
+        "title": "Firefox: Disable popup auto-hide"
+      },
+      {
+        "command": "extension.firefox.togglePopupAutohide",
+        "title": "Firefox: Toggle popup auto-hide"
+      },
+      {
+        "command": "extension.firefox.pathMappingWizard",
+        "title": "Firefox: Run the path mapping wizard"
+      }
+    ],
+    "menus": {
+      "debug/callstack/context": [
+        {
+          "command": "extension.firefox.toggleSkippingFile",
+          "when": "inDebugMode && debugType == 'firefox' && callStackItemType == 'stackFrame'"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "extension.firefox.addPathMapping",
+          "group": "addPathMapping@1",
+          "when": "view == extension.firefox.loadedScripts && viewItem == directory"
+        },
+        {
+          "command": "extension.firefox.addFilePathMapping",
+          "group": "addPathMapping@1",
+          "when": "view == extension.firefox.loadedScripts && viewItem == file"
+        },
+        {
+          "command": "extension.firefox.addNullPathMapping",
+          "group": "addPathMapping@2",
+          "when": "view == extension.firefox.loadedScripts && viewItem == directory"
+        },
+        {
+          "command": "extension.firefox.addNullFilePathMapping",
+          "group": "addPathMapping@2",
+          "when": "view == extension.firefox.loadedScripts && viewItem == file"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "extension.firefox.pathMappingWizard",
+          "when": "editorIsOpen && inDebugMode && debugType == 'firefox'"
+        },
+        {
+          "command": "extension.firefox.toggleSkippingFile",
+          "when": "false"
+        },
+        {
+          "command": "extension.firefox.openScript",
+          "when": "false"
+        },
+        {
+          "command": "extension.firefox.addPathMapping",
+          "when": "false"
+        },
+        {
+          "command": "extension.firefox.addFilePathMapping",
+          "when": "false"
+        },
+        {
+          "command": "extension.firefox.addNullPathMapping",
+          "when": "false"
+        },
+        {
+          "command": "extension.firefox.addNullFilePathMapping",
+          "when": "false"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Firefox debug",
+      "properties": {
+        "firefox.executable": {
+          "description": "Absolute path to the Firefox executable",
+          "type": "string",
+          "scope": "resource"
+        },
+        "firefox.args": {
+          "description": "Additional arguments passed to Firefox",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "scope": "resource"
+        },
+        "firefox.profileDir": {
+          "description": "The path of the Firefox profile directory to use",
+          "type": "string",
+          "scope": "resource"
+        },
+        "firefox.profile": {
+          "description": "The name of the Firefox profile to use",
+          "type": "string",
+          "scope": "resource"
+        },
+        "firefox.keepProfileChanges": {
+          "description": "Use the specified profile directly instead of a temporary copy",
+          "type": "boolean",
+          "scope": "resource"
+        }
+      }
+    },
+    "views": {
+      "debug": [
+        {
+          "id": "extension.firefox.loadedScripts",
+          "name": "Loaded Scripts",
+          "when": "inDebugMode && debugType == 'firefox'"
+        }
+      ]
+    },
+    "debuggers": [
+      {
+        "type": "firefox",
+        "label": "Firefox",
+        "program": "./dist/adapter.bundle.js",
+        "runtime": "node",
+        "initialConfigurations": [
+          {
+            "name": "Launch index.html",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "file": "${workspaceFolder}/index.html"
+          },
+          {
+            "name": "Launch localhost",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "url": "http://localhost/index.html",
+            "webRoot": "${workspaceFolder}"
+          },
+          {
+            "name": "Attach",
+            "type": "firefox",
+            "request": "attach"
+          },
+          {
+            "name": "Launch WebExtension",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "addonPath": "${workspaceFolder}"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Firefox: Launch (file)",
+            "description": "Launch Firefox navigated to a local file in your project",
+            "body": {
+              "type": "firefox",
+              "request": "launch",
+              "reAttach": true,
+              "name": "${1:Launch index.html}",
+              "file": "^\"\\${workspaceFolder}/${2:index.html}\""
+            }
+          },
+          {
+            "label": "Firefox: Launch (server)",
+            "description": "Launch Firefox navigated to your project running on a server",
+            "body": {
+              "type": "firefox",
+              "request": "launch",
+              "reAttach": true,
+              "name": "${1:Launch localhost}",
+              "url": "${2:http://localhost/index.html}",
+              "webRoot": "^\"\\${workspaceFolder}${3:}\""
+            }
+          },
+          {
+            "label": "Firefox: Attach",
+            "description": "Attach to a running Firefox process",
+            "body": {
+              "type": "firefox",
+              "request": "attach",
+              "name": "${1:Attach}"
+            }
+          },
+          {
+            "label": "Firefox: WebExtension",
+            "description": "Launch Firefox with your WebExtension project installed",
+            "body": {
+              "type": "firefox",
+              "request": "launch",
+              "reAttach": true,
+              "name": "${1:Launch add-on}",
+              "addonPath": "^\"\\${workspaceFolder}${2:}\""
+            }
+          }
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [],
+            "properties": {
+              "file": {
+                "type": "string",
+                "description": "The file to open in the browser",
+                "default": "${workspaceFolder}/index.html"
+              },
+              "url": {
+                "type": "string",
+                "description": "The url to open in the browser"
+              },
+              "webRoot": {
+                "type": "string",
+                "description": "If the 'url' property is specified, this property specifies the workspace absolute path corresponding to the path of the url",
+                "default": "${workspaceFolder}"
+              },
+              "firefoxExecutable": {
+                "type": "string",
+                "description": "Absolute path to the Firefox executable"
+              },
+              "profileDir": {
+                "type": "string",
+                "description": "The path of the Firefox profile directory to use"
+              },
+              "profile": {
+                "type": "string",
+                "description": "The name of the Firefox profile to use"
+              },
+              "keepProfileChanges": {
+                "type": "boolean",
+                "description": "Use the specified profile directly instead of a temporary copy",
+                "default": true
+              },
+              "port": {
+                "type": "number",
+                "description": "The remote debugging port to use",
+                "default": 6000
+              },
+              "timeout": {
+                "type": "number",
+                "description": "The timeout in seconds for the adapter to connect to Firefox after launching it",
+                "default": 5
+              },
+              "firefoxArgs": {
+                "type": "array",
+                "description": "Additional arguments passed to Firefox",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "reAttach": {
+                "type": "boolean",
+                "description": "Don't terminate Firefox at the end of the debugging session and re-attach to it when starting the next session",
+                "default": true
+              },
+              "reloadOnAttach": {
+                "type": "boolean",
+                "description": "Reload all tabs after re-attaching to Firefox",
+                "default": true
+              },
+              "reloadOnChange": {
+                "description": "Watch the specified files, directories or glob patterns and reload the tabs or add-on when they change",
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "properties": {
+                  "watch": {
+                    "description": "Files, directories or glob patterns to be watched for file changes",
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": "${workspaceFolder}/**/*.js"
+                  },
+                  "ignore": {
+                    "description": "Files, directories or glob patterns to be ignored",
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": "**/node_modules/**"
+                  },
+                  "debounce": {
+                    "description": "The time in milliseconds to wait after a file change before reloading, or false to start reloading immediately",
+                    "type": [
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                },
+                "default": {
+                  "watch": "${workspaceFolder}/**/*.js",
+                  "ignore": "**/node_modules/**"
+                }
+              },
+              "clearConsoleOnReload": {
+                "type": "boolean",
+                "description": "Clear the debug console in VS Code when the page is reloaded in Firefox",
+                "default": false
+              },
+              "pathMappings": {
+                "type": "array",
+                "description": "Additional mappings from URLs (as seen by Firefox) to filesystem paths (as seen by VS Code)",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "description": "The URL as seen by Firefox"
+                    },
+                    "path": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The corresponding filesystem path as seen by VS Code"
+                    }
+                  }
+                }
+              },
+              "skipFiles": {
+                "type": "array",
+                "description": "An array of glob patterns to skip when debugging",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "preferences": {
+                "type": "object",
+                "description": "Set additional Firefox preferences",
+                "additionalProperties": {
+                  "type": [
+                    "boolean",
+                    "integer",
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "showConsoleCallLocation": {
+                "type": "boolean",
+                "description": "Show the location of console API calls",
+                "default": true
+              },
+              "addonPath": {
+                "type": "string",
+                "description": "The path of the directory containing the WebExtension",
+                "default": "${workspaceFolder}"
+              },
+              "popupAutohideButton": {
+                "type": "boolean",
+                "description": "Show a button in the status bar for toggling popup auto-hide (WebExtension debugging)",
+                "default": false
+              },
+              "liftAccessorsFromPrototypes": {
+                "type": "number",
+                "description": "The number of prototype levels that should be scanned for accessor properties",
+                "default": 0
+              },
+              "suggestPathMappingWizard": {
+                "type": "boolean",
+                "description": "Suggest using the Path Mapping Wizard when the user tries to set a breakpoint in an unmapped source during a debug session",
+                "default": true
+              },
+              "log": {
+                "type": "object",
+                "description": "Configuration for diagnostic logging of the debug adapter",
+                "properties": {
+                  "fileName": {
+                    "type": "string",
+                    "description": "The name of the logfile",
+                    "default": "${workspaceFolder}/vscode-firefox-debug.log"
+                  },
+                  "fileLevel": {
+                    "type": "object",
+                    "description": "The minimum loglevel(s) for messages written to the logfile",
+                    "properties": {
+                      "default": {
+                        "type": "string",
+                        "enum": [
+                          "Debug",
+                          "Info",
+                          "Warn",
+                          "Error"
+                        ],
+                        "description": "The default loglevel"
+                      }
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "enum": [
+                        "Debug",
+                        "Info",
+                        "Warn",
+                        "Error"
+                      ]
+                    },
+                    "default": {
+                      "default": "Debug"
+                    }
+                  },
+                  "consoleLevel": {
+                    "type": "object",
+                    "description": "The minimum loglevel(s) for messages written to the console",
+                    "properties": {
+                      "default": {
+                        "type": "string",
+                        "enum": [
+                          "Debug",
+                          "Info",
+                          "Warn",
+                          "Error"
+                        ],
+                        "description": "The default loglevel"
+                      }
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "enum": [
+                        "Debug",
+                        "Info",
+                        "Warn",
+                        "Error"
+                      ]
+                    },
+                    "default": {
+                      "default": "Debug"
+                    }
+                  }
+                },
+                "default": {
+                  "fileName": "${workspaceFolder}/vscode-firefox-debug.log",
+                  "fileLevel": {
+                    "default": "Debug"
+                  },
+                  "consoleLevel": {
+                    "default": "Warn"
+                  }
+                }
+              }
+            }
+          },
+          "attach": {
+            "required": [],
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "The url to open in the browser"
+              },
+              "webRoot": {
+                "type": "string",
+                "description": "If the 'url' property is specified, this property specifies the workspace absolute path corresponding to the path of the url",
+                "default": "${workspaceFolder}"
+              },
+              "port": {
+                "type": "number",
+                "description": "The remote debugging port to use",
+                "default": 6000
+              },
+              "host": {
+                "type": "string",
+                "description": "The remote debugging host to use",
+                "default": "localhost"
+              },
+              "reloadOnAttach": {
+                "type": "boolean",
+                "description": "Reload all tabs after attaching to Firefox",
+                "default": false
+              },
+              "reloadOnChange": {
+                "description": "Watch the specified files, directories or glob patterns and reload the tabs or add-on when they change",
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "properties": {
+                  "watch": {
+                    "description": "Files, directories or glob patterns to be watched for file changes",
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": "${workspaceFolder}/**/*.js"
+                  },
+                  "ignore": {
+                    "description": "Files, directories or glob patterns to be ignored",
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": "**/node_modules/**"
+                  },
+                  "debounce": {
+                    "description": "The time in milliseconds to wait after a file change before reloading, or false to start reloading immediately",
+                    "type": [
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                },
+                "default": {
+                  "watch": "${workspaceFolder}/**/*.js",
+                  "ignore": "**/node_modules/**"
+                }
+              },
+              "clearConsoleOnReload": {
+                "type": "boolean",
+                "description": "Clear the debug console in VS Code when the page is reloaded in Firefox",
+                "default": false
+              },
+              "pathMappings": {
+                "type": "array",
+                "description": "Additional mappings from URLs (as seen by Firefox) to filesystem paths (as seen by VS Code)",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "description": "The URL as seen by Firefox"
+                    },
+                    "path": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The corresponding filesystem path as seen by VS Code"
+                    }
+                  }
+                }
+              },
+              "skipFiles": {
+                "type": "array",
+                "description": "An array of glob patterns to skip when debugging",
+                "items": {
+                  "type": "string"
+                },
+                "default": [
+                  "${workspaceFolder}/node_modules/**/*"
+                ]
+              },
+              "showConsoleCallLocation": {
+                "type": "boolean",
+                "description": "Show the location of console API calls",
+                "default": true
+              },
+              "addonPath": {
+                "type": "string",
+                "description": "The path of the directory containing the WebExtension",
+                "default": "${workspaceFolder}"
+              },
+              "popupAutohideButton": {
+                "type": "boolean",
+                "description": "Show a button in the status bar for toggling popup auto-hide (WebExtension debugging)",
+                "default": false
+              },
+              "liftAccessorsFromPrototypes": {
+                "type": "number",
+                "description": "The number of prototype levels that should be scanned for accessor properties",
+                "default": 0
+              },
+              "suggestPathMappingWizard": {
+                "type": "boolean",
+                "description": "Suggest using the Path Mapping Wizard when the user tries to set a breakpoint in an unmapped source during a debug session",
+                "default": true
+              },
+              "log": {
+                "type": "object",
+                "description": "Configuration for diagnostic logging of the debug adapter",
+                "properties": {
+                  "fileName": {
+                    "type": "string",
+                    "description": "The name of the logfile",
+                    "default": "${workspaceFolder}/vscode-firefox-debug.log"
+                  },
+                  "fileLevel": {
+                    "type": "object",
+                    "description": "The minimum loglevel(s) for messages written to the logfile",
+                    "properties": {
+                      "default": {
+                        "type": "string",
+                        "enum": [
+                          "Debug",
+                          "Info",
+                          "Warn",
+                          "Error"
+                        ],
+                        "description": "The default loglevel"
+                      }
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "enum": [
+                        "Debug",
+                        "Info",
+                        "Warn",
+                        "Error"
+                      ]
+                    },
+                    "default": {
+                      "default": "Debug"
+                    }
+                  },
+                  "consoleLevel": {
+                    "type": "object",
+                    "description": "The minimum loglevel(s) for messages written to the console",
+                    "properties": {
+                      "default": {
+                        "type": "string",
+                        "enum": [
+                          "Debug",
+                          "Info",
+                          "Warn",
+                          "Error"
+                        ],
+                        "description": "The default loglevel"
+                      }
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "enum": [
+                        "Debug",
+                        "Info",
+                        "Warn",
+                        "Error"
+                      ]
+                    },
+                    "default": {
+                      "default": "Debug"
+                    }
+                  }
+                },
+                "default": {
+                  "fileName": "${workspaceFolder}/vscode-firefox-debug.log",
+                  "fileLevel": {
+                    "default": "Debug"
+                  },
+                  "consoleLevel": {
+                    "default": "Warn"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

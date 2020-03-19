@@ -35,6 +35,8 @@ package actionScripts.plugin.haxe.hxproject.vo
 	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectOutputFileExtension;
 	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectTarget;
 	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectOutputPath;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import flash.events.Event;
 
 	public class HaxeProjectVO extends ProjectVO
 	{
@@ -83,6 +85,9 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 		public var testMovie:String = TEST_MOVIE_WEBSERVER;
 		public var testMovieCommand:String;
+
+		private var webBrowserSettings:DropDownListSetting;
+		private var targetPlatformSettings:DropDownListSetting;
 		
 		public function get outputPath():String
 		{
@@ -190,6 +195,18 @@ package actionScripts.plugin.haxe.hxproject.vo
 			
 			return tmpCollection;
 		}
+		
+		private var _runWebBrowser:String;
+
+		public function get runWebBrowser():String
+		{
+			return _runWebBrowser;
+		}
+
+		public function set runWebBrowser(value:String):void
+		{
+			_runWebBrowser = value;
+		}
 
 		public function HaxeProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
 		{
@@ -205,6 +222,9 @@ package actionScripts.plugin.haxe.hxproject.vo
 		override public function getSettings():Vector.<SettingsWrapper>
 		{
 			// TODO more categories / better setting UI
+			if (targetPlatformSettings) targetPlatformSettings = null;
+			if (webBrowserSettings) webBrowserSettings = null;
+
 			var settings:Vector.<SettingsWrapper>;
 
 			if(isLime)
@@ -233,18 +253,32 @@ package actionScripts.plugin.haxe.hxproject.vo
 		override public function saveSettings():void
 		{
 			HaxeExporter.export(this);
+			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
 		}
 
 		private function getSettingsForLimeProject():Vector.<SettingsWrapper>
 		{
+			targetPlatformSettings = new DropDownListSetting(this, "limeTargetPlatform", "Platform", limePlatformTypes);
+			targetPlatformSettings.addEventListener(Event.CHANGE, onTargetPlatformChanged, false, 0, true);
+			webBrowserSettings = new DropDownListSetting(this, "runWebBrowser", "Web Browser (HTML5 only)", ConstantsCoreVO.TEMPLATES_WEB_BROWSERS, "name");
+			webBrowserSettings.isEditable = targetPlatformSettings.stringValue == LIME_PLATFORM_HTML5;
             var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
 
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
-                            new DropDownListSetting(this, "limeTargetPlatform", "Platform", limePlatformTypes),
-                            new StaticLabelSetting("Edit project.xml to customize other build options for OpenFL and Lime projects.", 14, 0x686868)
+                            new StaticLabelSetting("Edit project.xml to customize build options for OpenFL and Lime projects.", 14, 0x686868)
                         ])
-                )
+                ),
+                new SettingsWrapper("Output",
+                        Vector.<ISetting>([
+							targetPlatformSettings
+                        ])
+				),
+                new SettingsWrapper("Run",
+                        Vector.<ISetting>([
+                            webBrowserSettings
+                        ])
+				)
             ]);
 
 			return settings;
@@ -274,6 +308,17 @@ package actionScripts.plugin.haxe.hxproject.vo
             ]);
 
 			return settings;
+		}
+
+		private function onTargetPlatformChanged(event:Event):void
+		{
+			if (webBrowserSettings)
+			{
+				if(isLime)
+				{
+					webBrowserSettings.isEditable = targetPlatformSettings.stringValue == LIME_PLATFORM_HTML5;
+				}
+			}
 		}
 	}
 }
