@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<form publicaccess="false" renderpassthrough="true" xmlns="http://www.lotus.com/dxl">
-  <noteinfo noteid="1eda" unid="4D129C5913A7BF5986256E51003F7C01" sequence="17">
-    <created/>
+<!DOCTYPE note>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.4'
+ replicaid='4825808B00336E81'>
+
+  <noteinfo noteid='2116' unid='27C118EDE31483CB86256C6900644875' sequence='8'>
+    <created>
+      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
+    </created> 
     <modified>
       <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
     </modified>
@@ -15,11 +20,19 @@
       <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
     </addedtofile>
   </noteinfo>
+  <item name='$Info' sign='true'>
+<rawitemdata type='1'>
+hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
+</rawitemdata></item>
+<item name='$Flags'><text/></item>
 
-  <actionbar bgcolor="#ece9d8" bordercolor="black"/>
-  <body>
-    <richtext>
-   <par def='6'><field type='text' kind='editable' name='BGPMask'/></par>
- </richtext>
-  </body>
-</form>
+<item name='$TITLE'><text>$ProjectName</text></item>
+
+<item name='$Fields'><textlist>
+</textlist></item>
+<item name='$Body' sign='true'><richtext>
+</richtext>
+</item>
+
+
+</note>
