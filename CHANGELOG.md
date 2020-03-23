@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.1.1.
 * Updated [Firefox debug adapter](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.7.0.
 * Updated [HXCPP debug adapter](https://github.com/vshaxe/hxcpp-debugger) engine to v1.2.4.
+* Updated [SWF debug adapter](https://as3mxml.com) engine to v1.1.1.
 
 ### Fixed
 
