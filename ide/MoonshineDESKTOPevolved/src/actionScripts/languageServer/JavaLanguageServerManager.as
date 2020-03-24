@@ -68,7 +68,8 @@ package actionScripts.languageServer
 		//when updating the JDT language server, the name of this JAR file will
 		//change, and Moonshine will automatically update the version that is
 		//copied to File.applicationStorageDirectory
-		private static const LANGUAGE_SERVER_JAR_PATH:String = "plugins/org.eclipse.equinox.launcher_1.5.700.v20200207-2156.jar";
+		private static const LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX:String = "org.eclipse.equinox.launcher_";
+		private static const LANGUAGE_SERVER_JAR_FOLDER_PATH:String = "plugins";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
 		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
@@ -101,6 +102,7 @@ package actionScripts.languageServer
 		private var _languageStatusDone:Boolean = false;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousJDKPath:String = null;
+		private var _languageServerLauncherJar:File;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
 		{
@@ -185,15 +187,35 @@ package actionScripts.languageServer
 
 		private function prepareApplicationStorage():void
 		{
+			var appFolder:File = File.applicationDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_APP);
+			var appPluginsFolder:File = appFolder.resolvePath(LANGUAGE_SERVER_JAR_FOLDER_PATH)
 			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
-			var jarFile:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_PATH);
-			if(jarFile.exists)
+			var storagePluginsFolder:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_FOLDER_PATH);
+			
+			this._languageServerLauncherJar = null;
+			var files:Array = appPluginsFolder.getDirectoryListing();
+			var fileCount:int = files.length;
+			for(var i:int = 0; i < fileCount; i++)
+			{
+				var file:File = File(files[i]);
+				if(file.name.indexOf(LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX) == 0)
+				{
+					//jarFile = file;
+					this._languageServerLauncherJar = storagePluginsFolder.resolvePath(file.name);
+					break;
+				}
+			}
+			if(!this._languageServerLauncherJar)
+			{
+				error("Error initializing Java language server. Missing Java language server launcher.");
+				return;
+			}
+			if(this._languageServerLauncherJar.exists)
 			{
 				//we've already copied the files to application storage, so
 				//we're good to go!
 				return;
 			}
-			var appFolder:File = File.applicationDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_APP);
 			//this directory may already exist, if an older version of Moonshine
 			//with an older version of the JDT language server was installed
 			//we don't want conflicts between JDT language server versions, so
@@ -211,7 +233,7 @@ package actionScripts.languageServer
 			{
 				showStorageError = true;
 			}
-			if(showStorageError || !storageFolder.exists || !jarFile.exists)
+			if(showStorageError || !storageFolder.exists || !this._languageServerLauncherJar.exists)
 			{
 				//something went wrong!
 				error("Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath);
@@ -250,7 +272,6 @@ package actionScripts.languageServer
 			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
 			var processArgs:Vector.<String> = new <String>[];
 			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			var jarFile:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_PATH);
 			//uncomment to allow connection to debugger
 			//processArgs.push("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044");
 			processArgs.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
@@ -261,7 +282,7 @@ package actionScripts.languageServer
 			processArgs.push("-noverify");
 			processArgs.push("-Xmx1G");
 			processArgs.push("-jar");
-			processArgs.push(jarFile.nativePath);
+			processArgs.push(this._languageServerLauncherJar.nativePath);
 			processArgs.push("-configuration");
 			var configFile:File = null;
 			if(ConstantsCoreVO.IS_MACOS)
