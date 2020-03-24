@@ -37,6 +37,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public static const IOS_PACKAGING_STANDARD:String = "IOS_PACKAGING_STANDARD";
 		//fast bypasses bytecode translation interprets the SWF
 		public static const IOS_PACKAGING_FAST:String = "IOS_PACKAGING_FAST";
+
+		public static const CONNECT_TYPE_WIFI:String = "WiFi";
+		public static const CONNECT_TYPE_USB:String = "USB";
 		
 		public var accessible:Boolean = false;
 		public var allowSourcePathOverlap:Boolean = false;
@@ -99,6 +102,16 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function get isMobileHasSimulatedDevice():MobileDeviceVO
 		{
 			return _isMobileHasSimulatedDevice;
+		}
+		
+		private var _isMobileConnectType:String = CONNECT_TYPE_USB;
+		public function set isMobileConnectType(value:String):void
+		{
+			_isMobileConnectType = value;
+		}
+		public function get isMobileConnectType():String
+		{
+			return _isMobileConnectType;
 		}
 		
 		public function get customSDK():FileLocation

@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Choose between Chrome and Firefox when debugging Apache Royale and OpenFL projects targeting HTML/JS.
 * Debug OpenFL projects targeting native Windows, macOS, and Linux with the HXCPP debugger.
+* Choose between USB and Wi-Fi connection when debugging Adobe AIR mobile apps on a real device. 
 
 ### Changed
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.1.1.
