@@ -43,6 +43,7 @@ package actionScripts.plugins.ui.editor
     import actionScripts.ui.tabview.TabEvent;
 
     import view.suportClasses.events.PropertyEditorChangeEvent;
+	import flash.filesystem.File;
 	
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
@@ -352,7 +353,7 @@ package actionScripts.plugins.ui.editor
 		{
 			var mxmlCode:XML = null;
 			if(visualEditorProject.isDominoVisualEditorProject){
-				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode();
+				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 			}else{
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toCode();
 			
@@ -369,6 +370,15 @@ package actionScripts.plugins.ui.editor
 			{
 				visualEditorView.visualEditor.loadFile(veFilePath);
 			}
+		}
+
+		private function getDominoFormFileName():String
+		{
+			var fullPath:String = getVisualEditorFilePath();
+			//maybe this will broken on windows env ,it need be improve in next
+			var fileName:String = fullPath.substr(fullPath.lastIndexOf("/") + 1);
+			fileName = fileName.slice(0, -4);
+			return fileName;
 		}
 		
 		private function getVisualEditorFilePath():String

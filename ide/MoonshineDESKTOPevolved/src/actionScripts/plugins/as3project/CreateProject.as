@@ -950,7 +950,10 @@ package actionScripts.plugins.as3project
 				if (folderToDelete9.fileBridge.exists) folderToDelete9.fileBridge.deleteDirectory(true);
 				//remove old pom file 
 				var pomfile:FileLocation = targetFolder.resolvePath("pom.xml");
-				if (pomfile.fileBridge.exists)pomfile.fileBridge.deleteFile(); 
+				if (pomfile.fileBridge.exists)pomfile.fileBridge.deleteFile();
+				//remove old template file
+				var templatefile:FileLocation = targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"Template.form"); 
+				if (templatefile.fileBridge.exists)templatefile.fileBridge.deleteFile();
 
 				var original:FileLocation =  targetFolder.resolvePath("$domino-pom.xml");
 				if(original.fileBridge.exists){
