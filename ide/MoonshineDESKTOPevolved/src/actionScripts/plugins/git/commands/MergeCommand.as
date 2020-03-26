@@ -38,7 +38,7 @@ package actionScripts.plugins.git.commands
 		
 		private var diffResults:String = "";
 		
-		public function MergeCommand(value:GenericSelectableObject)
+		public function MergeCommand(targetBranch:String)
 		{
 			super();
 			
@@ -46,8 +46,8 @@ package actionScripts.plugins.git.commands
 			
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" merge $'"+ UtilsCore.getEncodedForShell('origin/'+ value.data as String) +"'" : 
-				gitBinaryPathOSX +'&&merge&&'+ UtilsCore.getEncodedForShell('origin/'+ value.data as String), false, GIT_MERGE_BRANCH));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" merge $'"+ UtilsCore.getEncodedForShell('origin/'+ targetBranch) +"'" : 
+				gitBinaryPathOSX +'&&merge&&'+ UtilsCore.getEncodedForShell('origin/'+ targetBranch), false, GIT_MERGE_BRANCH));
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' diff --name-only --diff-filter=U'), false, GIT_CONFLICT_FILE_LIST));
 			
 			notice("Initiating the merge process...");

@@ -52,6 +52,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.commands.CreateCheckoutNewBranchCommand;
 	import actionScripts.plugins.git.commands.GetCurrentBranchCommand;
 	import actionScripts.plugins.git.commands.GetXCodePathCommand;
+	import actionScripts.plugins.git.commands.GitAddCommand;
 	import actionScripts.plugins.git.commands.GitChangeBranchToCommand;
 	import actionScripts.plugins.git.commands.GitCheckoutCommand;
 	import actionScripts.plugins.git.commands.GitCommitCommand;
@@ -249,12 +250,14 @@ package actionScripts.plugins.git
 				conflictFilesListPanel.addEventListener(Event.REMOVED_FROM_STAGE, onConflictViewRemovedFromStage);
 				conflictFilesListPanel.addEventListener(RepositoryConflictFilesView.MARK_RESOLVE_CONFLICT_FILES, onMarkResolveRequestOnConflictFiles);
 				conflictFilesListPanel.addEventListener(RepositoryConflictFilesView.OPEN_CONFLICT_FILES, onOpenRequestOnConflictFiles);
+				conflictFilesListPanel.addEventListener(RepositoryConflictFilesView.OPEN_CONFLICT_FILE, onOpenRequestOnSingleConflictFile);
 			}
 			else
 			{
 				conflictFilesListPanel.removeEventListener(Event.REMOVED_FROM_STAGE, onConflictViewRemovedFromStage);
 				conflictFilesListPanel.removeEventListener(RepositoryConflictFilesView.MARK_RESOLVE_CONFLICT_FILES, onMarkResolveRequestOnConflictFiles);
 				conflictFilesListPanel.removeEventListener(RepositoryConflictFilesView.OPEN_CONFLICT_FILES, onOpenRequestOnConflictFiles);
+				conflictFilesListPanel.removeEventListener(RepositoryConflictFilesView.OPEN_CONFLICT_FILE, onOpenRequestOnSingleConflictFile);
 			}
 		}
 		
@@ -271,6 +274,7 @@ package actionScripts.plugins.git
 			{
 				if (conflicts[i].isSelected)
 				{
+					new GitAddCommand(conflicts[i].data as String);
 					conflicts.removeItemAt(i);
 					i--;
 				}
@@ -292,6 +296,17 @@ package actionScripts.plugins.git
 					}
 				}
 			});
+		}
+		
+		private function onOpenRequestOnSingleConflictFile(event:GeneralEvent):void
+		{
+			var targetFile:FileLocation = model.activeProject.folderLocation.resolvePath(
+				(event.value as GenericSelectableObject).data as String
+			);
+			if (targetFile.fileBridge.exists)
+			{
+				dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [targetFile]));
+			}
 		}
 		
 		private function onSDKPathSelected(event:Event):void
@@ -754,7 +769,7 @@ package actionScripts.plugins.git
 			{
 				if (!dispatcher.hasEventListener(MergeCommand.GIT_CONFLICT_FILES_LIST))
 					dispatcher.addEventListener(MergeCommand.GIT_CONFLICT_FILES_LIST, onGitConflictFilesListReceived, false, 0, true);
-				new MergeCommand(selectedBranch);
+				new MergeCommand(selectedBranch.data as String);
 			}
 		}
 		
