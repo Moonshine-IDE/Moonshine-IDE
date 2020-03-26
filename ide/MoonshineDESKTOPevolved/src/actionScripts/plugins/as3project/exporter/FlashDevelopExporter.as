@@ -26,6 +26,7 @@ package actionScripts.plugins.as3project.exporter
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.core.exporter.FlashDevelopExporterBase;
+	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	
 	public class FlashDevelopExporter extends FlashDevelopExporterBase
 	{
@@ -135,13 +136,14 @@ package actionScripts.plugins.as3project.exporter
 			
 			options = <moonshineRunCustomization />;
 			optionPairs = {
-				projectType		:	projType,
-				targetPlatform	:	platform,
-				urlToLaunch		:	p.urlToLaunch ? p.urlToLaunch : "",
-				customUrlToLaunch:	p.customHTMLPath ? p.customHTMLPath : "",
-				launchMethod	:	p.buildOptions.isMobileRunOnSimulator ? "Simulator" : "Device",
-				deviceSimulator	:	p.isMobileHasSimulatedDevice ? p.isMobileHasSimulatedDevice.name : null,
-				webBrowser      :   p.runWebBrowser
+				projectType			:	projType,
+				targetPlatform		:	platform,
+				urlToLaunch			:	p.urlToLaunch ? p.urlToLaunch : "",
+				customUrlToLaunch	:	p.customHTMLPath ? p.customHTMLPath : "",
+				launchMethod		:	p.buildOptions.isMobileRunOnSimulator ? "Simulator" : "Device",
+				deviceConnectType	:   p.buildOptions.isMobileConnectType ? p.buildOptions.isMobileConnectType : BuildOptions.CONNECT_TYPE_USB,
+				deviceSimulator		:	p.isMobileHasSimulatedDevice ? p.isMobileHasSimulatedDevice.name : null,
+				webBrowser			:   p.runWebBrowser
 			}
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			

@@ -94,6 +94,8 @@ package actionScripts.plugins.as3project.mxmlc
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
+		private static const DEFAULT_PORT:int = 7936;
+
 		override public function get name():String			{ return "Default SDK"; }
 		override public function get author():String		{ return "Miha Lunar & Moonshine Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.mxmlc'); }
@@ -1246,16 +1248,24 @@ package actionScripts.plugins.as3project.mxmlc
 				{
 					"name": "Moonshine SWF Device Attach",
 					"platform": isAndroid ? "android" : "ios",
-					//connect to the device over USB
-					"connect": true,
-					//the port to connect over
-					"port": 7936,
 					//uninstall/launch this app ID
 					"applicationID": appID,
 					//install this bundle
 					"bundle": bundle,
 					"noDebug": !debug
 				};
+				if(as3Project.buildOptions.isMobileConnectType == BuildOptions.CONNECT_TYPE_WIFI)
+				{
+					//listen for device over Wi-Fi
+					attachArgs["connect"] = false;
+				}
+				else
+				{
+					//connect to the device over USB
+					attachArgs["connect"] = true;
+					//the port to connect over
+					attachArgs["port"] = DEFAULT_PORT;
+				}
 				dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER, as3Project, "swf", "attach", attachArgs));
 			}
 			else if(as3Project)
@@ -1380,13 +1390,17 @@ package actionScripts.plugins.as3project.mxmlc
 				adtPackagingOptions.push("-package", "-target", androidPackagingMode);
 				if(debugBuild)
 				{
-					//-connect tells the app to connect over wifi
-					//adtPackagingOptions.push("-connect");
-
-					//-listen tells the app to wait for a connection over USB
-					adtPackagingOptions.push("-listen");
-					adtPackagingOptions.push("7936")
-
+					if(project.buildOptions.isMobileConnectType == BuildOptions.CONNECT_TYPE_WIFI)
+					{
+						//-connect tells the app to connect over wifi
+						adtPackagingOptions.push("-connect");
+					}
+					else
+					{
+						//-listen tells the app to wait for a connection over USB
+						adtPackagingOptions.push("-listen");
+						adtPackagingOptions.push(DEFAULT_PORT.toString());
+					}
 					//must use one of -connect or -listen, but not both!
 				}
 				adtPackagingOptions.push("-storetype", "pkcs12", "-keystore", project.buildOptions.certAndroid, "-storepass", project.buildOptions.certAndroidPassword, project.name + ".apk", descriptorName, swfFile.name);
@@ -1426,13 +1440,17 @@ package actionScripts.plugins.as3project.mxmlc
 				adtPackagingOptions.push("-package", "-target", iOSPackagingMode);
 				if(debugBuild)
 				{
-					//-connect tells the app to connect over wifi
-					//adtPackagingOptions.push("-connect");
-
-					//-listen tells the app to wait for a connection over USB
-					adtPackagingOptions.push("-listen");
-					adtPackagingOptions.push("7936")
-
+					if(project.buildOptions.isMobileConnectType == BuildOptions.CONNECT_TYPE_WIFI)
+					{
+						//-connect tells the app to connect over wifi
+						adtPackagingOptions.push("-connect");
+					}
+					else
+					{
+						//-listen tells the app to wait for a connection over USB
+						adtPackagingOptions.push("-listen");
+						adtPackagingOptions.push(DEFAULT_PORT.toString());
+					}
 					//must use one of -connect or -listen, but not both!
 
 				}

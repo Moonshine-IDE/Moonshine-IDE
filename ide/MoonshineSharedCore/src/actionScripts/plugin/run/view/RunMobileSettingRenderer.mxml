@@ -95,9 +95,16 @@
 				// generate content for device debugging
 				if (deviceContent && currentState == "device")
 				{
+					var connectTypeSetting:MultiOptionSetting = new MultiOptionSetting(setting.provider, 'isMobileConnectType', "Connection Type", 
+						Vector.<NameValuePair>([
+							new NameValuePair("USB", BuildOptions.CONNECT_TYPE_USB),
+							new NameValuePair("Wi-Fi", BuildOptions.CONNECT_TYPE_WIFI)
+						])
+					);
 					if (isAndroidDevice)
 					{
 						deviceSettings = Vector.<ISetting>([
+							connectTypeSetting,
 							new PathSetting(setting.provider, "certAndroid", "Certificate", false, setting.provider["certAndroid"], false),
 							new StringSetting(setting.provider, "certAndroidPassword", "Certificate Password")
 						]);
@@ -105,6 +112,7 @@
 					else
 					{
 						deviceSettings = Vector.<ISetting>([
+							connectTypeSetting,
 							new MultiOptionSetting(setting.provider, 'iosPackagingMode', "Packaging Mode", 
 								Vector.<NameValuePair>([
 									new NameValuePair("Standard", BuildOptions.IOS_PACKAGING_STANDARD),

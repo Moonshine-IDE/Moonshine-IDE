@@ -31,6 +31,7 @@ package actionScripts.plugins.as3project.importer
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.MobileDeviceVO;
+	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
@@ -230,6 +231,9 @@ package actionScripts.plugins.as3project.importer
 			
 			var simulator:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@launchMethod);
             project.buildOptions.isMobileRunOnSimulator = (simulator != "Device") ? true : false;
+
+			var deviceConnectType:String = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@deviceConnectType)
+            project.buildOptions.isMobileConnectType = deviceConnectType ? deviceConnectType : BuildOptions.CONNECT_TYPE_USB;
 			
 			if (!project.air)
 			{
