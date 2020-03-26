@@ -31,6 +31,8 @@ package actionScripts.plugin.console
 		public static const TYPE_SUCCESS:String = "typeSuccess";
 		public static const TYPE_NOTE:String = "typeNotice";
 		
+		public static const CONSOLE_ACTIVATE:String = "activateConsoleView";
+		
 		public var text:*;
 		public var hideOtherOutput:Boolean;
 		public var messageType:String;

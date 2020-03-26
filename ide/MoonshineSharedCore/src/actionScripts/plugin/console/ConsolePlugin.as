@@ -96,6 +96,7 @@ package actionScripts.plugin.console
             dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_OUTPUT, consoleOutputHandler);
 			dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_PRINT, consolePrintHandler);
             dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_CLEAR, consoleClearHandler);
+			dispatcher.addEventListener(ConsoleCommandEvent.EVENT_ACTIVATE, consoleActivateRequestHandler);
 
             dispatcher.addEventListener(ConsoleModeEvent.CHANGE, changeMode);
 
@@ -146,6 +147,7 @@ package actionScripts.plugin.console
 			dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_OUTPUT, consoleOutputHandler);
 			dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_PRINT, consolePrintHandler);
             dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_CLEAR, consoleClearHandler);
+			dispatcher.removeEventListener(ConsoleCommandEvent.EVENT_ACTIVATE, consoleActivateRequestHandler);
 
 			dispatcher.removeEventListener(ConsoleModeEvent.CHANGE, changeMode);
 		}
@@ -312,6 +314,11 @@ package actionScripts.plugin.console
         {
             consoleView.history.text = "";
         }
+		
+		private function consoleActivateRequestHandler(event:ConsoleCommandEvent):void
+		{
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SELECT_VIEW_IN_PROJECT_PANEL, this.consoleView));
+		}
 
         private function consoleOutputHandler(event:ConsoleOutputEvent):void
         {

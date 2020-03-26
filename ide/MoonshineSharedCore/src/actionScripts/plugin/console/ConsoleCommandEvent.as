@@ -23,15 +23,16 @@ package actionScripts.plugin.console
 	public class ConsoleCommandEvent extends Event
 	{
 		public static const EVENT_COMMAND:String = "consoleCommand";
+		public static const EVENT_ACTIVATE:String = "consoleActivate";
 		
 		public var command:String;
 		public var args:Array;
 		
-		public function ConsoleCommandEvent(command:String, args:Array)
+		public function ConsoleCommandEvent(command:String, args:Array=null)
 		{
 			this.command = command;
 			this.args = args;
-			super(EVENT_COMMAND, false, true);
+			super(command, false, true);
 		}
 		
 		override public function clone():Event {
