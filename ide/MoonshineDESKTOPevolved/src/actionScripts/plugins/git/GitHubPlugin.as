@@ -528,7 +528,7 @@ package actionScripts.plugins.git
 				{
 					if (!dispatcher.hasEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED))
 						dispatcher.addEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
-					new CheckDifferenceCommand();
+					new CheckDifferenceCommand(GitCommitSelectionPopup.TYPE_COMMIT);
 				});
 			}
 			else
@@ -618,7 +618,7 @@ package actionScripts.plugins.git
 				{
 					if (!dispatcher.hasEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED))
 						dispatcher.addEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
-					new CheckDifferenceCommand();
+					new CheckDifferenceCommand(GitCommitSelectionPopup.TYPE_REVERT);
 				});
 			}
 			else

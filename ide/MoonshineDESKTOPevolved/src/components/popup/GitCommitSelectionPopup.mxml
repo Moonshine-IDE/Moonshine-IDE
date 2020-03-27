@@ -17,6 +17,7 @@
 			import actionScripts.plugins.git.model.GitProjectVO;
 			import actionScripts.valueObjects.GenericSelectableObject;
 			import actionScripts.valueObjects.VersionControlTypes;
+			import actionScripts.plugins.git.commands.CheckDifferenceCommand;
 			
 			public static const TYPE_COMMIT:String = "typeCommit";
 			public static const TYPE_REVERT:String = "typeRevert";
@@ -155,7 +156,14 @@
 												lblStatus.setStyle("color", 0xff6666);
 												break;
 											}
-												
+											
+											case CheckDifferenceCommand.GIT_STATUS_FILE_NEW_NONVERSIONED:
+											{
+												lblStatus.text = "NV";
+												labelDisplay.setStyle("color", 0x33cc33);
+												lblStatus.setStyle("color", 0x33cc33);
+												break;
+											}
 											case CheckDifferenceCommand.GIT_STATUS_FILE_NEW:
 											{
 												lblStatus.text = "N";
@@ -183,7 +191,7 @@
 						</s:layout>
 						
 						<s:Label id="lblStatus"
-								 width="20" textAlign="center"/>
+								 width="30" textAlign="center"/>
 						<s:CheckBox id="cbSelect"
 									change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
 						<s:Label id="labelDisplay"

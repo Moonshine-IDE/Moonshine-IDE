@@ -26,6 +26,8 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.vo.NativeProcessQueueVO;
+	
+	import components.popup.GitCommitSelectionPopup;
 
 	public class CheckDifferenceCommand extends GitCommandBase
 	{
@@ -33,16 +35,19 @@ package actionScripts.plugins.git.commands
 		public static const GIT_STATUS_FILE_MODIFIED:String = "gitStatusFileModified";
 		public static const GIT_STATUS_FILE_DELETED:String = "gitStatusFileDeleted";
 		public static const GIT_STATUS_FILE_NEW:String = "gitStatusFileNew";
+		public static const GIT_STATUS_FILE_NEW_NONVERSIONED:String = "gitStatusFileNewNonVersioned";
 		
 		private static const GIT_DIFF_CHECK:String = "checkGitDiff";
 		
 		private var diffResults:String = "";
+		private var filterType:String;
 		
-		public function CheckDifferenceCommand()
+		public function CheckDifferenceCommand(filterType:String)
 		{
 			super();
 			
 			queue = new Vector.<Object>();
+			this.filterType = filterType;
 			
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' status --porcelain'),
 				false, 
@@ -86,6 +91,7 @@ package actionScripts.plugins.git.commands
 			{
 				var contentInLineBreaks:Array = diffResults.split("\n");
 				var firstPart:String;
+				var fileStatus:String;
 				var secondPart:String;
 				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
 				{
@@ -99,10 +105,28 @@ package actionScripts.plugins.git.commands
 						// we need to remove them before a commit
 						secondPart = secondPart.replace(/\"/g, "");
 						secondPart = StringUtil.trim(secondPart);
+						fileStatus = getFileStatus(firstPart);
 						
-						tmpPositions.addItem(new GenericSelectableObject(false, {path: secondPart, status:getFileStatus(firstPart)}));
+						tmpPositions.addItem(
+							new GenericSelectableObject(
+								(fileStatus == GIT_STATUS_FILE_NEW_NONVERSIONED ? false : true), 
+								{path: secondPart, status:fileStatus}
+							)
+						);
 					}
 				});
+				
+				// in case of Revert, we're not going to include
+				// unversioned file - unversioned file doesn't makes 
+				// sense of a revert action
+				if (filterType == GitCommitSelectionPopup.TYPE_REVERT)
+				{
+					tmpPositions.filterFunction = function(value:Object):Object {
+						if (value.data.status == CheckDifferenceCommand.GIT_STATUS_FILE_NEW_NONVERSIONED) return false;
+						return true;
+					};
+					tmpPositions.refresh();
+				}
 				
 				diffResults = "";
 				dispatcher.dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
@@ -118,7 +142,8 @@ package actionScripts.plugins.git.commands
 			function getFileStatus(value:String):String
 			{
 				if (value == "D") return GIT_STATUS_FILE_DELETED;
-				else if (value == "??" || value == "A") return GIT_STATUS_FILE_NEW;
+				else if (value == "??") return GIT_STATUS_FILE_NEW_NONVERSIONED;
+				else if (value == "A") return GIT_STATUS_FILE_NEW;
 				return GIT_STATUS_FILE_MODIFIED;
 			}
 		}

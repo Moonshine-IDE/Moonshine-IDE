@@ -48,7 +48,7 @@ package actionScripts.plugins.git.commands
 						case CheckDifferenceCommand.GIT_STATUS_FILE_MODIFIED:
 							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
-						
+						case CheckDifferenceCommand.GIT_STATUS_FILE_NEW_NONVERSIONED:
 						case CheckDifferenceCommand.GIT_STATUS_FILE_NEW:
 							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" reset $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&reset&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
 							break;
