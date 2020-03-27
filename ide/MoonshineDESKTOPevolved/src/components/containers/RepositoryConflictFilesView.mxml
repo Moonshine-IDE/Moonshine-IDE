@@ -86,7 +86,7 @@
 		<s:Spacer width="100%"/>
 		<s:Button label="Open file(s)" styleName="darkButton"
 				  click="onOpenInEditorRequest(event)"/>
-		<s:Button label="Mark Resolve" styleName="darkButton"
+		<s:Button label="Mark as Resolved" styleName="darkButton"
 				  click="onResolveRequest(event)"/>
 	</s:HGroup>
 	
