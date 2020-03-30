@@ -24,6 +24,7 @@ package actionScripts.plugins.git.commands
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugins.git.model.GitFileVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -91,12 +92,14 @@ package actionScripts.plugins.git.commands
 			if (StringUtil.trim(diffResults) != "")
 			{
 				var contentInLineBreaks:Array = diffResults.split("\n");
+				var gitFile:GitFileVO;
 				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
 				{
 					if (element != "")
 					{
-						element = StringUtil.trim(element);
-						tmpPositions.addItem(new GenericSelectableObject(false, element));
+						gitFile = new GitFileVO();
+						gitFile.path = StringUtil.trim(element);
+						tmpPositions.addItem(gitFile);
 					}
 				});
 				

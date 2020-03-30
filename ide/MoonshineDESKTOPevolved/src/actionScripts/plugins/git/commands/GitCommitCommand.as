@@ -22,9 +22,9 @@ package actionScripts.plugins.git.commands
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugins.git.model.GitFileVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.vo.NativeProcessQueueVO;
 
 	public class GitCommitCommand extends GitCommandBase
@@ -37,11 +37,11 @@ package actionScripts.plugins.git.commands
 			
 			queue = new Vector.<Object>();
 			
-			for each (var i:GenericSelectableObject in files)
+			for each (var i:GitFileVO in files)
 			{
 				if (i.isSelected) 
 				{
-					addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" add $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&add&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_COMMIT));
+					addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" add $'"+ UtilsCore.getEncodedForShell(i.path) +"'" : gitBinaryPathOSX +'&&add&&'+ UtilsCore.getEncodedForShell(i.path), false, GIT_COMMIT));
 				}
 			}
 			

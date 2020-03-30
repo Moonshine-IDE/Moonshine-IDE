@@ -14,10 +14,9 @@
 			import mx.events.FlexEvent;
 			import mx.validators.Validator;
 			
+			import actionScripts.plugins.git.model.GitFileVO;
 			import actionScripts.plugins.git.model.GitProjectVO;
-			import actionScripts.valueObjects.GenericSelectableObject;
 			import actionScripts.valueObjects.VersionControlTypes;
-			import actionScripts.plugins.git.commands.CheckDifferenceCommand;
 			
 			public static const TYPE_COMMIT:String = "typeCommit";
 			public static const TYPE_REVERT:String = "typeRevert";
@@ -81,15 +80,10 @@
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
-			private function getResourceName(item:Object):String
-			{
-				return ((item as GenericSelectableObject).data.path as String);
-			}
-			
 			protected function onSelectAllChange(event:Event):void
 			{
 				var isSelected:Boolean = event.target.selected;
-				for each (var i:GenericSelectableObject in commitDiffCollection)
+				for each (var i:GitFileVO in commitDiffCollection)
 				{
 					i.isSelected = isSelected;
 				}
@@ -97,7 +91,7 @@
 			
 			protected function hasSelectionToChanges():Boolean
 			{
-				for each (var i:GenericSelectableObject in commitDiffCollection)
+				for each (var i:GitFileVO in commitDiffCollection)
 				{
 					if (i.isSelected) return true;
 				}
@@ -140,41 +134,33 @@
 					<s:ItemRenderer height="22">
 						<fx:Script>
 							<![CDATA[
-								import actionScripts.plugins.git.commands.CheckDifferenceCommand;
+								import actionScripts.plugins.git.model.GitFileVO;
 								override public function set data(value:Object):void
 								{
 									if (value) 
 									{
 										super.data = value;
-										labelDisplay.text = data.data.path;
-										switch(data.data.status)
+										labelDisplay.text = data.path;
+										switch(data.status)
 										{
-											case CheckDifferenceCommand.GIT_STATUS_FILE_DELETED:
+											case GitFileVO.GIT_STATUS_FILE_DELETED:
 											{
-												lblStatus.text = "D";
+												lblStatus.text = data.rawStatus;
 												labelDisplay.setStyle("color", 0xff6666);
 												lblStatus.setStyle("color", 0xff6666);
 												break;
 											}
-											
-											case CheckDifferenceCommand.GIT_STATUS_FILE_NEW_NONVERSIONED:
+											case GitFileVO.GIT_STATUS_FILE_NEW:
+											case GitFileVO.GIT_STATUS_FILE_NEW_NONVERSIONED:
 											{
-												lblStatus.text = "NV";
+												lblStatus.text = data.rawStatus;
 												labelDisplay.setStyle("color", 0x33cc33);
 												lblStatus.setStyle("color", 0x33cc33);
 												break;
 											}
-											case CheckDifferenceCommand.GIT_STATUS_FILE_NEW:
-											{
-												lblStatus.text = "N";
-												labelDisplay.setStyle("color", 0x33cc33);
-												lblStatus.setStyle("color", 0x33cc33);
-												break;
-											}
-												
 											default:
 											{
-												lblStatus.text = "M";
+												lblStatus.text = data.rawStatus;
 												labelDisplay.setStyle("color", 0xffffff);
 												lblStatus.setStyle("color", 0xffffff);
 												break;
@@ -193,7 +179,8 @@
 						<s:Label id="lblStatus"
 								 width="30" textAlign="center"/>
 						<s:CheckBox id="cbSelect"
-									change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"/>
+									change="data.isSelected = cbSelect.selected" selected="{data.isSelected}"
+									enabled="{data.isSelectable}"/>
 						<s:Label id="labelDisplay"
 								 paddingLeft="8"/>
 					</s:ItemRenderer>

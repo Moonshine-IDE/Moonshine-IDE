@@ -61,6 +61,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.commands.PullCommand;
 	import actionScripts.plugins.git.commands.PushCommand;
 	import actionScripts.plugins.git.commands.RevertCommand;
+	import actionScripts.plugins.git.model.GitFileVO;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
@@ -285,11 +286,11 @@ package actionScripts.plugins.git
 		{
 			var conflicts:ArrayCollection = conflictFilesListPanel.conflicts;
 			var targetFile:FileLocation;
-			conflicts.source.forEach(function(element:GenericSelectableObject, index:int, arr:Array):void
+			conflicts.source.forEach(function(element:GitFileVO, index:int, arr:Array):void
 			{
 				if (element.isSelected)
 				{
-					targetFile = model.activeProject.folderLocation.resolvePath(element.data as String);
+					targetFile = model.activeProject.folderLocation.resolvePath(element.path);
 					if (targetFile.fileBridge.exists)
 					{
 						dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [targetFile]));
@@ -301,7 +302,7 @@ package actionScripts.plugins.git
 		private function onOpenRequestOnSingleConflictFile(event:GeneralEvent):void
 		{
 			var targetFile:FileLocation = model.activeProject.folderLocation.resolvePath(
-				(event.value as GenericSelectableObject).data as String
+				(event.value as GitFileVO).path as String
 			);
 			if (targetFile.fileBridge.exists)
 			{

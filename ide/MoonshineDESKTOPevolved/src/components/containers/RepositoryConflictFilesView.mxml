@@ -33,7 +33,7 @@
 			import spark.components.Alert;
 			
 			import actionScripts.events.GeneralEvent;
-			import actionScripts.valueObjects.GenericSelectableObject;
+			import actionScripts.plugins.git.model.GitFileVO;
 			
 			public static const OPEN_CONFLICT_FILES:String = "openConflictFilesInEditors";
 			public static const OPEN_CONFLICT_FILE:String = "openConflictFileInEditor";
@@ -64,7 +64,7 @@
 			
 			protected function testIfItemHasSelection():Boolean
 			{
-				var hasItemSelected:Boolean = conflicts.source.some(function(element:GenericSelectableObject, index:int, arr:Array):Boolean
+				var hasItemSelected:Boolean = conflicts.source.some(function(element:GitFileVO, index:int, arr:Array):Boolean
 				{
 					return element.isSelected;
 				});
@@ -104,7 +104,7 @@
 								if (value) 
 								{
 									super.data = value;
-									labelDisplay.text = value.data;
+									labelDisplay.text = value.path;
 								}
 							}
 						]]>

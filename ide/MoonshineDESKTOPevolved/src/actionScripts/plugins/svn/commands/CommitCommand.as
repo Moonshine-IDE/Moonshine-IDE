@@ -36,7 +36,7 @@ package actionScripts.plugins.svn.commands
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugins.git.commands.CheckDifferenceCommand;
+	import actionScripts.plugins.git.model.GitFileVO;
 	import actionScripts.plugins.svn.provider.SVNStatus;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -110,9 +110,9 @@ package actionScripts.plugins.svn.commands
 			*/
 			function getFileStatus(value:SVNStatus):String
 			{
-				if (value.status == "deleted") return CheckDifferenceCommand.GIT_STATUS_FILE_DELETED;
-				else if (value.status == "unversioned") return CheckDifferenceCommand.GIT_STATUS_FILE_NEW;
-				return CheckDifferenceCommand.GIT_STATUS_FILE_MODIFIED;
+				if (value.status == "deleted") return GitFileVO.GIT_STATUS_FILE_DELETED;
+				else if (value.status == "unversioned") return GitFileVO.GIT_STATUS_FILE_NEW;
+				return GitFileVO.GIT_STATUS_FILE_MODIFIED;
 			}
 		}
 		
@@ -182,7 +182,7 @@ package actionScripts.plugins.svn.commands
 			toAdd = [];
 			for each (var wrap:GenericSelectableObject in affectedFiles)
 			{
-				if (wrap.isSelected && wrap.data.status == CheckDifferenceCommand.GIT_STATUS_FILE_NEW)
+				if (wrap.isSelected && wrap.data.status == GitFileVO.GIT_STATUS_FILE_NEW)
 				{
 					toAdd.push(wrap.data.path);	
 				}

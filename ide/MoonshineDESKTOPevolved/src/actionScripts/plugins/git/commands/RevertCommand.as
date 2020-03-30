@@ -18,13 +18,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import com.adobe.utils.StringUtil;
+	
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugins.git.model.GitFileVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.vo.NativeProcessQueueVO;
 
 	public class RevertCommand extends GitCommandBase
@@ -38,19 +40,29 @@ package actionScripts.plugins.git.commands
 			if (!model.activeProject) return;
 			queue = new Vector.<Object>();
 			
-			for each (var i:GenericSelectableObject in files)
+			for each (var i:GitFileVO in files)
 			{
 				if (i.isSelected) 
 				{
-					switch(i.data.status)
+					switch(i.status)
 					{
-						case CheckDifferenceCommand.GIT_STATUS_FILE_DELETED:
-						case CheckDifferenceCommand.GIT_STATUS_FILE_MODIFIED:
-							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
+						case GitFileVO.GIT_STATUS_FILE_DELETED:
+						case GitFileVO.GIT_STATUS_FILE_MODIFIED:
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout $'"+ UtilsCore.getEncodedForShell(i.path) +"'" : gitBinaryPathOSX +'&&checkout&&'+ UtilsCore.getEncodedForShell(i.path), false, GIT_CHECKOUT_BRANCH, i.path));
 							break;
-						case CheckDifferenceCommand.GIT_STATUS_FILE_NEW_NONVERSIONED:
-						case CheckDifferenceCommand.GIT_STATUS_FILE_NEW:
-							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" reset $'"+ UtilsCore.getEncodedForShell(i.data.path) +"'" : gitBinaryPathOSX +'&&reset&&'+ UtilsCore.getEncodedForShell(i.data.path), false, GIT_CHECKOUT_BRANCH, i.data.path));
+						case GitFileVO.GIT_STATUS_FILE_NEW_NONVERSIONED:
+						case GitFileVO.GIT_STATUS_FILE_NEW:
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" reset $'"+ UtilsCore.getEncodedForShell(i.path) +"'" : gitBinaryPathOSX +'&&reset&&'+ UtilsCore.getEncodedForShell(i.path), false, GIT_CHECKOUT_BRANCH, i.path));
+							break;
+						case GitFileVO.GIT_STATUS_FILE_RENAMED:
+							var renamedFiles:Array = i.path.split("->");
+							var fileFrom:String = UtilsCore.getEncodedForShell(StringUtil.trim(renamedFiles[1]));
+							var fileTo:String = UtilsCore.getEncodedForShell(StringUtil.trim(renamedFiles[0]));
+							addToQueue(
+								new NativeProcessQueueVO(
+									ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" mv $'"+ fileFrom +"' $'"+ fileTo +"'" : gitBinaryPathOSX +'&&mv&&'+ fileFrom +'&&'+ fileTo, false, GIT_CHECKOUT_BRANCH, i.path
+								)
+							);
 							break;
 					}
 				}
