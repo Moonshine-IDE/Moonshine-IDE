@@ -275,7 +275,7 @@ package actionScripts.plugins.git
 			{
 				if (conflicts[i].isSelected)
 				{
-					new GitAddCommand(conflicts[i].data as String);
+					new GitAddCommand(conflicts[i].path);
 					conflicts.removeItemAt(i);
 					i--;
 				}
