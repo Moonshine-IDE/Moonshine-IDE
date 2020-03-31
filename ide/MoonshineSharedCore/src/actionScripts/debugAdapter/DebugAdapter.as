@@ -687,6 +687,8 @@ package actionScripts.debugAdapter
 				this.stop();
 				return;
 			}
+			this._paused = false;
+			this.dispatchEvent(new Event(Event.CHANGE));
 			this.sendRequest(COMMAND_THREADS);
 		}
 		
@@ -707,8 +709,6 @@ package actionScripts.debugAdapter
 				trace("debug adapter \"threads\" command not successful");
 				return;
 			}
-			this._paused = false;
-			this.dispatchEvent(new Event(Event.CHANGE));
 			
 			var body:Object = response.body;
 			if("threads" in body)
@@ -717,6 +717,13 @@ package actionScripts.debugAdapter
 				if(threads.length > 0)
 				{
 					mainThreadID = threads[0].id;
+					if(this._paused)
+					{
+						this.sendRequest(COMMAND_STACK_TRACE,
+							{
+								threadId: mainThreadID
+							});
+					}
 				}
 				else
 				{
@@ -947,6 +954,8 @@ package actionScripts.debugAdapter
 			}
 			else
 			{
+				this._paused = false;
+				this.dispatchEvent(new Event(Event.CHANGE));
 				this.sendRequest(COMMAND_THREADS);
 			}
 		}
