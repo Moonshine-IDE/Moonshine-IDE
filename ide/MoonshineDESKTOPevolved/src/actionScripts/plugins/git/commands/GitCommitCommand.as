@@ -39,16 +39,32 @@ package actionScripts.plugins.git.commands
 			queue = new Vector.<Object>();
 			
 			var filePaths:String = "";
+			var filePathsUnversioned:String = "";
 			for each (var i:GitFileVO in files)
 			{
 				if (i.isSelected) 
 				{
+					if (i.status == GitFileVO.GIT_STATUS_FILE_NEW_NONVERSIONED)
+					{
+						filePathsUnversioned += (ConstantsCoreVO.IS_MACOS ? (" $'"+ UtilsCore.getEncodedForShell(i.path) +"'") : 
+							('&&'+ UtilsCore.getEncodedForShell(i.path)));
+					}
+					
 					filePaths += (ConstantsCoreVO.IS_MACOS ? (" $'"+ UtilsCore.getEncodedForShell(i.path) +"'") : 
 								('&&'+ UtilsCore.getEncodedForShell(i.path)));
 				}
 			}
 			
 			if (!filePaths) return;
+			if (filePathsUnversioned)
+			{
+				addToQueue(
+					new NativeProcessQueueVO(
+						ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" add"+ filePathsUnversioned : gitBinaryPathOSX +'&&add'+ filePathsUnversioned, false, GIT_ADD
+					)
+				);
+			}
+			
 			addToQueue(
 				new NativeProcessQueueVO(
 					ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" commit -m $'"+ UtilsCore.getEncodedForShell(withMessage) +"'"+ filePaths : 
