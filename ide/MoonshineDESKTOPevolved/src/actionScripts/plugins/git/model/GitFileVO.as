@@ -23,6 +23,8 @@ package actionScripts.plugins.git.model
 		public static const GIT_STATUS_FILE_MODIFIED:String = "gitStatusFileModified";
 		public static const GIT_STATUS_FILE_DELETED:String = "gitStatusFileDeleted";
 		public static const GIT_STATUS_FILE_NEW:String = "gitStatusFileNew";
+		public static const GIT_STATUS_FILE_NEW_MODIFIED:String = "gitStatusFileNewAndModified";
+		public static const GIT_STATUS_FILE_NEW_DELETED:String = "gitStatusFileNewAndDeleted";
 		public static const GIT_STATUS_FILE_NEW_NONVERSIONED:String = "gitStatusFileNewNonVersioned";
 		public static const GIT_STATUS_FILE_RENAMED:String = "gitStatusFileRenamed";
 		public static const GIT_STATUS_FILE_IGNORED:String = "gitStatusFileIgnored";
@@ -87,6 +89,12 @@ package actionScripts.plugins.git.model
 					break;
 				case "A":
 					_status = GIT_STATUS_FILE_NEW;
+					break;
+				case "AM":
+					_status = GIT_STATUS_FILE_NEW_MODIFIED;
+					break;
+				case "AD":
+					_status = GIT_STATUS_FILE_NEW_DELETED;
 					break;
 				case "U":
 				case "UU":

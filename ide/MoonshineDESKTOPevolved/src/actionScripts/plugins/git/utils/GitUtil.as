@@ -34,13 +34,16 @@ package actionScripts.plugins.git.utils
 				{
 					case GitFileVO.GIT_STATUS_FILE_CONFLICT:
 					case GitFileVO.GIT_STATUS_FILE_IGNORED:
+					case GitFileVO.GIT_STATUS_FILE_NEW_DELETED:
 						break;
+					case GitFileVO.GIT_STATUS_FILE_NEW_NONVERSIONED:
 					case GitFileVO.GIT_STATUS_FILE_NEW:
+					case GitFileVO.GIT_STATUS_FILE_NEW_MODIFIED:
 						file.isSelectable = true;
 						break;
 					case GitFileVO.GIT_STATUS_FILE_RENAMED:
 					case GitFileVO.GIT_STATUS_FILE_DELETED:
-					default:
+					case GitFileVO.GIT_STATUS_FILE_MODIFIED:
 						file.isSelectable = true;
 						file.isSelected = true;
 						break;
@@ -63,7 +66,9 @@ package actionScripts.plugins.git.utils
 					case GitFileVO.GIT_STATUS_FILE_NEW:
 					case GitFileVO.GIT_STATUS_FILE_RENAMED:
 					case GitFileVO.GIT_STATUS_FILE_DELETED:
-					default:
+					case GitFileVO.GIT_STATUS_FILE_NEW_MODIFIED:
+					case GitFileVO.GIT_STATUS_FILE_NEW_DELETED:
+					case GitFileVO.GIT_STATUS_FILE_MODIFIED:
 						file.isSelectable = true;
 						break;
 				}

@@ -54,6 +54,9 @@ package actionScripts.plugins.git.commands
 						case GitFileVO.GIT_STATUS_FILE_NEW:
 							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" reset $'"+ UtilsCore.getEncodedForShell(i.path) +"'" : gitBinaryPathOSX +'&&reset&&'+ UtilsCore.getEncodedForShell(i.path), false, GIT_CHECKOUT_BRANCH, i.path));
 							break;
+						case GitFileVO.GIT_STATUS_FILE_NEW_DELETED:
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" restore $'"+ UtilsCore.getEncodedForShell(i.path) +"'" : gitBinaryPathOSX +'&&restore&&'+ UtilsCore.getEncodedForShell(i.path), false, GIT_CHECKOUT_BRANCH, i.path));
+							break;
 						case GitFileVO.GIT_STATUS_FILE_RENAMED:
 							var renamedFiles:Array = i.path.split("->");
 							var fileFrom:String = UtilsCore.getEncodedForShell(StringUtil.trim(renamedFiles[1]));

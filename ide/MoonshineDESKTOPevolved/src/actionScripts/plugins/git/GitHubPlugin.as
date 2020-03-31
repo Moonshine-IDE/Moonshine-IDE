@@ -516,7 +516,7 @@ package actionScripts.plugins.git
 				
 				checkGitAvailability();
 				
-				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
+				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, true) as GitCommitSelectionPopup;
 				gitCommitWindow.title = "Commit";
 				gitCommitWindow.isGitAvailable = isGitAvailable;
 				gitCommitWindow.addEventListener(CloseEvent.CLOSE, onGitCommitWindowClosed);
@@ -605,7 +605,7 @@ package actionScripts.plugins.git
 				
 				checkGitAvailability();
 				
-				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
+				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, true) as GitCommitSelectionPopup;
 				gitCommitWindow.title = "Modified File(s)";
 				gitCommitWindow.type = GitTypesVO.TYPE_REVERT;
 				gitCommitWindow.isGitAvailable = isGitAvailable;
