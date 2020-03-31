@@ -1001,10 +1001,13 @@ package actionScripts.debugAdapter
 		
 		private function parseStoppedEvent(event:Object):void
 		{
-			this.sendRequest(COMMAND_STACK_TRACE,
-				{
-					threadId: mainThreadID
-				});
+			if(mainThreadID != -1)
+			{
+				this.sendRequest(COMMAND_STACK_TRACE,
+					{
+						threadId: mainThreadID
+					});
+			}
 			_paused = true;
 			this.dispatchEvent(new Event(Event.CHANGE));
 			this.dispatchEvent(new Event(Event.SUSPEND));
