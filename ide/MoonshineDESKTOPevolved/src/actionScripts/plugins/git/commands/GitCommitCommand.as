@@ -40,18 +40,20 @@ package actionScripts.plugins.git.commands
 			
 			var filePaths:String = "";
 			var filePathsUnversioned:String = "";
+			var filePath:String;
 			for each (var i:GitFileVO in files)
 			{
 				if (i.isSelected) 
 				{
+					filePath = UtilsCore.getEncodedForShell(i.path);
 					if (i.status == GitFileVO.GIT_STATUS_FILE_NEW_NONVERSIONED)
 					{
-						filePathsUnversioned += (ConstantsCoreVO.IS_MACOS ? (" $'"+ UtilsCore.getEncodedForShell(i.path) +"'") : 
-							('&&'+ UtilsCore.getEncodedForShell(i.path)));
+						filePathsUnversioned += (ConstantsCoreVO.IS_MACOS ? (" $'"+ filePath +"'") : 
+							('&&'+ filePath));
 					}
 					
-					filePaths += (ConstantsCoreVO.IS_MACOS ? (" $'"+ UtilsCore.getEncodedForShell(i.path) +"'") : 
-								('&&'+ UtilsCore.getEncodedForShell(i.path)));
+					filePaths += (ConstantsCoreVO.IS_MACOS ? (" $'"+ filePath +"'") : 
+								('&&'+ filePath));
 				}
 			}
 			
