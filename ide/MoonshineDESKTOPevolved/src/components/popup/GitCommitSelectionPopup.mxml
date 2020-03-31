@@ -16,10 +16,9 @@
 			
 			import actionScripts.plugins.git.model.GitFileVO;
 			import actionScripts.plugins.git.model.GitProjectVO;
+			import actionScripts.plugins.git.model.GitTypesVO;
 			import actionScripts.valueObjects.VersionControlTypes;
 			
-			public static const TYPE_COMMIT:String = "typeCommit";
-			public static const TYPE_REVERT:String = "typeRevert";
 			public static const GET_AUTHOR:String = "getGitAuthor";
 			
 			[Bindable] public var filesCount:int;
@@ -27,7 +26,7 @@
 			[Bindable] public var commitDiffCollection:ArrayCollection;
 			[Bindable] public var windowType:String = VersionControlTypes.GIT;
 			
-			public var type:String = TYPE_COMMIT;
+			public var type:String = GitTypesVO.TYPE_COMMIT;
 			public var isSubmit:Boolean;
 			public var commitMessage:String;
 			
@@ -47,8 +46,8 @@
 			
 			private function onCreationCompletes(event:FlexEvent):void
 			{
-				btnCommit.label = (type == TYPE_COMMIT) ? "Commit Selected" : "Revert Selected";
-				if (type == TYPE_REVERT)
+				btnCommit.label = (type == GitTypesVO.TYPE_COMMIT) ? "Commit Selected" : "Revert Selected";
+				if (type == GitTypesVO.TYPE_REVERT)
 				{
 					lstFiles.percentHeight = 100;
 					txtMessage.includeInLayout = txtMessage.visible = false;
@@ -66,7 +65,7 @@
 					return;
 				}
 				
-				if (type == TYPE_COMMIT)
+				if (type == GitTypesVO.TYPE_COMMIT)
 				{
 					var tmpArr : Array = new Array(sValidator);
 					if (Validator.validateAll(tmpArr).length != 0)

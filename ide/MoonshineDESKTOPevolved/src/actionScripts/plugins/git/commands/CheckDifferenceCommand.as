@@ -25,11 +25,10 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.GitFileVO;
+	import actionScripts.plugins.git.model.GitTypesVO;
 	import actionScripts.plugins.git.utils.GitUtil;
 	import actionScripts.vo.NativeProcessQueueVO;
 	
-	import components.popup.GitCommitSelectionPopup;
-
 	public class CheckDifferenceCommand extends GitCommandBase
 	{
 		public static const GIT_DIFF_CHECKED:String = "gitDiffProcessCompleted";
@@ -104,29 +103,13 @@ package actionScripts.plugins.git.commands
 						
 						gitFile = new GitFileVO();
 						gitFile.rawStatus = firstPart;
-						gitFile.isSelected = (gitFile.status == GitFileVO.GIT_STATUS_FILE_NEW_NONVERSIONED ? false : true);
 						gitFile.path = secondPart;
 						
 						tmpPositions.addItem(gitFile);
 					}
 				});
 				
-				// in case of Revert, we're not going to include
-				// unversioned file - unversioned file doesn't makes 
-				// sense of a revert action
-				if (filterType == GitCommitSelectionPopup.TYPE_REVERT)
-				{
-					GitUtil.setFileSelectionForRevertAction(tmpPositions);
-					/*tmpPositions.filterFunction = function(value:Object):Object {
-						if (value.status == GitFileVO.GIT_STATUS_FILE_NEW_NONVERSIONED) return false;
-						return true;
-					};
-					tmpPositions.refresh();*/
-				}
-				else
-				{
-					GitUtil.setFileSelectionForCommitAction(tmpPositions);
-				}
+				performRequestSpecificFilteration(tmpPositions);
 				
 				diffResults = "";
 				dispatcher.dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
@@ -134,6 +117,27 @@ package actionScripts.plugins.git.commands
 			else
 			{
 				dispatcher.dispatchEvent(new GeneralEvent(GIT_DIFF_CHECKED, tmpPositions));
+			}
+		}
+		
+		private function performRequestSpecificFilteration(collection:ArrayCollection):void
+		{
+			switch (filterType)
+			{
+				case GitTypesVO.TYPE_REVERT:
+					// in case of Revert, we're not going to include
+					// unversioned file - unversioned file doesn't makes 
+					// sense of a revert action
+					GitUtil.setFileSelectionForRevertAction(collection);
+					/*tmpPositions.filterFunction = function(value:Object):Object {
+					if (value.status == GitFileVO.GIT_STATUS_FILE_NEW_NONVERSIONED) return false;
+					return true;
+					};
+					tmpPositions.refresh();*/
+					break;
+				case GitTypesVO.TYPE_COMMIT:
+					GitUtil.setFileSelectionForCommitAction(collection);
+					break;
 			}
 		}
 	}

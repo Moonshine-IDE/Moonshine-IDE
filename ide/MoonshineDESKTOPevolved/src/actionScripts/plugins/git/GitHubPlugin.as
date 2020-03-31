@@ -63,6 +63,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.commands.RevertCommand;
 	import actionScripts.plugins.git.model.GitFileVO;
 	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.plugins.git.model.GitTypesVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
@@ -529,7 +530,7 @@ package actionScripts.plugins.git
 				{
 					if (!dispatcher.hasEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED))
 						dispatcher.addEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
-					new CheckDifferenceCommand(GitCommitSelectionPopup.TYPE_COMMIT);
+					new CheckDifferenceCommand(GitTypesVO.TYPE_COMMIT);
 				});
 			}
 			else
@@ -606,7 +607,7 @@ package actionScripts.plugins.git
 				
 				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
 				gitCommitWindow.title = "Modified File(s)";
-				gitCommitWindow.type = GitCommitSelectionPopup.TYPE_REVERT;
+				gitCommitWindow.type = GitTypesVO.TYPE_REVERT;
 				gitCommitWindow.isGitAvailable = isGitAvailable;
 				gitCommitWindow.addEventListener(CloseEvent.CLOSE, onGitRevertWindowClosed);
 				PopUpManager.centerPopUp(gitCommitWindow);
@@ -619,7 +620,7 @@ package actionScripts.plugins.git
 				{
 					if (!dispatcher.hasEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED))
 						dispatcher.addEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked, false, 0, true);
-					new CheckDifferenceCommand(GitCommitSelectionPopup.TYPE_REVERT);
+					new CheckDifferenceCommand(GitTypesVO.TYPE_REVERT);
 				});
 			}
 			else

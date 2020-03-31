@@ -30,6 +30,7 @@ package actionScripts.plugins.git.commands
 	public class GitCommitCommand extends GitCommandBase
 	{
 		private static const GIT_COMMIT:String = "gitCommit";
+		private static const GIT_ADD:String = "gitAdd";
 		
 		public function GitCommitCommand(files:ArrayCollection, withMessage:String)
 		{
@@ -37,12 +38,18 @@ package actionScripts.plugins.git.commands
 			
 			queue = new Vector.<Object>();
 			
+			var filePaths:String = "";
 			for each (var i:GitFileVO in files)
 			{
 				if (i.isSelected) 
 				{
-					addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" add $'"+ UtilsCore.getEncodedForShell(i.path) +"'" : gitBinaryPathOSX +'&&add&&'+ UtilsCore.getEncodedForShell(i.path), false, GIT_COMMIT));
+					filePaths += (ConstantsCoreVO.IS_MACOS ? (" $'"+ UtilsCore.getEncodedForShell(i.path) +"'") : 
+								('&&'+ UtilsCore.getEncodedForShell(i.path)));
 				}
+			}
+			if (filePaths)
+			{
+				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" add"+ filePaths : gitBinaryPathOSX +'&&add'+ filePaths, false, GIT_ADD));
 			}
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" commit -m $'"+ UtilsCore.getEncodedForShell(withMessage) +"'" : gitBinaryPathOSX +'&&commit&&-m&&"'+ UtilsCore.getEncodedForShell(withMessage, true) +'"', false, GIT_COMMIT));

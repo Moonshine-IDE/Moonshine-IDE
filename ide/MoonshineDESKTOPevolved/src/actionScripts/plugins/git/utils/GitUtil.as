@@ -65,7 +65,6 @@ package actionScripts.plugins.git.utils
 					case GitFileVO.GIT_STATUS_FILE_DELETED:
 					default:
 						file.isSelectable = true;
-						file.isSelected = true;
 						break;
 				}
 			}

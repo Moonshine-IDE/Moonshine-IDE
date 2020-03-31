@@ -18,16 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
-	import com.adobe.utils.StringUtil;
-	
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.GitFileVO;
+	import actionScripts.plugins.git.model.GitTypesVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.vo.NativeProcessQueueVO;
 
 	public class MergeCommand extends GitCommandBase
@@ -35,9 +33,6 @@ package actionScripts.plugins.git.commands
 		public static const GIT_CONFLICT_FILES_LIST:String = "gitConflitFilesList";
 		
 		private static const GIT_MERGE_BRANCH:String = "gitMergeBranch";
-		private static const GIT_CONFLICT_FILE_LIST:String = "getConflictFileNames";
-		
-		private var diffResults:String = "";
 		
 		public function MergeCommand(targetBranch:String)
 		{
@@ -49,64 +44,34 @@ package actionScripts.plugins.git.commands
 			
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" merge $'"+ UtilsCore.getEncodedForShell('origin/'+ targetBranch) +"'" : 
 				gitBinaryPathOSX +'&&merge&&'+ UtilsCore.getEncodedForShell('origin/'+ targetBranch), false, GIT_MERGE_BRANCH));
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' diff --name-only --diff-filter=U'), false, GIT_CONFLICT_FILE_LIST));
 			
 			notice("Initiating the merge process...");
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
-		}
-		
-		override protected function shellData(value:Object):void
-		{
-			var match:Array;
-			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
-			
-			switch(tmpQueue.processType)
-			{
-				case GIT_CONFLICT_FILE_LIST:
-				{
-					diffResults += value.output;
-					return;
-				}
-			}
-			
-			// call super - it might have some essential
-			// commands to run
-			super.shellData(value);
 		}
 		
 		override protected function listOfProcessEnded():void
 		{
 			switch (processType)
 			{
-				case GIT_CONFLICT_FILE_LIST:
-					refreshProjectTree(); // important
-					success("...process completed");
-					parseConflictFilesList();
+				case GIT_MERGE_BRANCH:
+					dispatcher.addEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked);
+					new CheckDifferenceCommand(GitTypesVO.TYPE_CONFLICT);
 					break;
 			}
 		}
 		
-		protected function parseConflictFilesList():void
+		private function onGitDiffChecked(event:GeneralEvent):void
 		{
-			var tmpPositions:ArrayCollection = new ArrayCollection();
-			if (StringUtil.trim(diffResults) != "")
-			{
-				var contentInLineBreaks:Array = diffResults.split("\n");
-				var gitFile:GitFileVO;
-				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
-				{
-					if (element != "")
-					{
-						gitFile = new GitFileVO();
-						gitFile.path = StringUtil.trim(element);
-						tmpPositions.addItem(gitFile);
-					}
-				});
-				
-				diffResults = "";
-			}
+			dispatcher.removeEventListener(CheckDifferenceCommand.GIT_DIFF_CHECKED, onGitDiffChecked);
 			
-			dispatcher.dispatchEvent(new GeneralEvent(GIT_CONFLICT_FILES_LIST, tmpPositions));
+			var tmpCollection:ArrayCollection = event.value as ArrayCollection;
+			tmpCollection.filterFunction = function(value:Object):Object {
+				if (value.status == GitFileVO.GIT_STATUS_FILE_CONFLICT) return true;
+				return false;
+			};
+			tmpCollection.refresh();
+			
+			dispatcher.dispatchEvent(new GeneralEvent(GIT_CONFLICT_FILES_LIST, tmpCollection));
 		}
 	}
 }
