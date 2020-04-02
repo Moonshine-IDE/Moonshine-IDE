@@ -50,11 +50,9 @@ package actionScripts.plugins.menu
 				return;
 			}
 			
-			switch (model.activeProject.menuType)
+			if (isMenuOfProjectType(ProjectMenuTypes.JS_ROYALE, model.activeProject.menuType))
 			{
-				case ProjectMenuTypes.JS_ROYALE:
-					buildRoyale();
-					break;
+				buildRoyale();
 			}
 		}
 		
@@ -65,11 +63,9 @@ package actionScripts.plugins.menu
 				return;
 			}
 			
-			switch (model.activeProject.menuType)
+			if (isMenuOfProjectType(ProjectMenuTypes.JS_ROYALE, model.activeProject.menuType))
 			{
-				case ProjectMenuTypes.JS_ROYALE:
-					buildAndRunRoyale();
-					break;
+				buildAndRunRoyale();
 			}
 		}
 		
@@ -80,11 +76,9 @@ package actionScripts.plugins.menu
 				return;
 			}
 			
-			switch (model.activeProject.menuType)
+			if (isMenuOfProjectType(ProjectMenuTypes.JS_ROYALE, model.activeProject.menuType))
 			{
-				case ProjectMenuTypes.JS_ROYALE:
-					buildAndReleaseRoyale();
-					break;
+				buildAndReleaseRoyale();
 			}
 		}
 		
@@ -95,15 +89,29 @@ package actionScripts.plugins.menu
 				return;
 			}
 			
-			switch (model.activeProject.menuType)
+			if (isMenuOfProjectType(ProjectMenuTypes.JS_ROYALE, model.activeProject.menuType))
 			{
-				case ProjectMenuTypes.JS_ROYALE:
-					debugRoyale();
-					break;
-				default:
-					dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.BUILD_AND_DEBUG));
-					break;
+				debugRoyale();
 			}
+			else
+			{
+				dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.BUILD_AND_DEBUG));
+			}
+		}
+		
+		private function isMenuOfProjectType(type:String, value:String):Boolean
+		{
+			var tmpSplit:Array = value.split(",");
+			var isFound:Boolean = tmpSplit.some(function(element:String, index:int, arr:Array):Boolean
+			{
+				if (element == type)
+				{
+					return true;
+				}
+				return false;
+			});
+			
+			return isFound;
 		}
 		
 		protected function buildRoyale():void

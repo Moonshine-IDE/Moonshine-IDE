@@ -1,0 +1,108 @@
+{
+	"name": "hxcpp-debugger",
+	"displayName": "HXCPP Debugger",
+	"version": "1.2.4",
+	"publisher": "vshaxe",
+	"license": "MIT",
+	"description": "Debugger for Haxe/HXCPP applications",
+	"author": {
+		"name": "vshaxe"
+	},
+	"engines": {
+		"vscode": "^1.36.0"
+	},
+	"categories": [
+		"Debuggers"
+	],
+	"icon": "images/icon.png",
+	"galleryBanner": {
+		"theme": "dark",
+		"color": "#000000"
+	},
+	"keywords": [
+		"haxe",
+		"hxcpp",
+		"C++"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/vshaxe/hxcpp-debugger.git"
+	},
+	"bugs": {
+		"url": "https://github.com/vshaxe/hxcpp-debugger/issues"
+	},
+	"dependencies": {
+		"vscode-debugprotocol": "1.36.0",
+		"vscode-debugadapter": "1.36.0"
+	},
+	"scripts": {
+		"vscode:prepublish": "haxe build.hxml"
+	},
+	"main": "bin/extension.js",
+	"activationEvents": [
+		"*"
+	],
+	"contributes": {
+		"commands": [
+			{
+				"title": "Setup",
+				"command": "hxcpp-debugger.setup",
+				"category": "HXCPP Debugger"
+			}
+		],
+		"debuggers": [
+			{
+				"type": "hxcpp",
+				"label": "HXCPP",
+				"program": "./bin/adapter.js",
+				"runtime": "node",
+				"configurationAttributes": {
+					"launch": {
+						"required": [
+							"program"
+						],
+						"properties": {
+							"program": {
+								"type": "string",
+								"description": "full path to executable.",
+								"default": "${workspaceFolder}/bin/yourExecutable.exe"
+							},
+							"receiveAdapterOutput": {
+								"type": "bool",
+								"description": "redirect adapter log to debug console",
+								"default": false
+							}
+						}
+					},
+					"attach": {
+						"properties": {
+							"request": {
+								"type": "string",
+								"description": "Attaches to an executable which is launched manually",
+								"default": "attach"
+							},
+							"receiveAdapterOutput": {
+								"type": "bool",
+								"description": "redirect adapter log to debug console",
+								"default": false
+							}
+						}
+					}
+				},
+				"initialConfigurations": [
+					{
+						"name": "HXCPP",
+						"type": "hxcpp",
+						"request": "launch",
+						"program": "${workspaceFolder}/bin/yourExecutable.exe"
+					}
+				]
+			}
+		]
+	},
+	"__metadata": {
+		"id": "3a689fe4-5899-4db6-b6a4-6641fc11022f",
+		"publisherDisplayName": "Haxe Foundation",
+		"publisherId": "bdf58939-bf37-40d4-9543-90fcc14fd490"
+	}
+}

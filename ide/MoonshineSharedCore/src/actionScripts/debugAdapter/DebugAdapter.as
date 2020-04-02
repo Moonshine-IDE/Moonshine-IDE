@@ -61,6 +61,12 @@ package actionScripts.debugAdapter
 	 */
 	[Event(name="change")]
 
+	/**
+	 * Dispatched when the debug adapter has stopped at a breakpoint and the
+	 * debug view should be shown.
+	 */
+	[Event(name="suspend")]
+
 	public class DebugAdapter extends ConsoleOutputter
 	{
 		private static const HELPER_BYTES:ByteArray = new ByteArray();
@@ -93,6 +99,7 @@ package actionScripts.debugAdapter
 		private static const EVENT_TERMINATED:String = "terminated";
 		private static const EVENT_LOADED_SOURCE:String = "loadedSource";
 		private static const EVENT_CONTINUED:String = "continued";
+		private static const EVENT_THREAD:String = "thread";
 		private static const REQUEST_LAUNCH:String = "launch";
 		private static const REQUEST_ATTACH:String = "attach";
 		private static const OUTPUT_CATEGORY_CONSOLE:String = "console";
@@ -156,6 +163,7 @@ package actionScripts.debugAdapter
 		private var _receivedInitializeResponse:Boolean = false;
 		private var _receivedInitializedEvent:Boolean = false;
 		private var _waitingForLaunchOrAttach:Boolean = false;
+		private var _handledPostInit:Boolean = false;
 
 		public function get initialized():Boolean
 		{
@@ -189,6 +197,7 @@ package actionScripts.debugAdapter
 			_receivedInitializeResponse = false;
 			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
+			_handledPostInit = false;
 			
 			mainThreadID = -1;
 			
@@ -238,7 +247,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_CONTINUE);
+			this.sendRequest(COMMAND_CONTINUE, {threadId: this.mainThreadID});
 		}
 
 		public function pause():void
@@ -248,7 +257,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_PAUSE);
+			this.sendRequest(COMMAND_PAUSE, {threadId: this.mainThreadID});
 		}
 
 		public function stepOver():void
@@ -258,7 +267,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_NEXT);
+			this.sendRequest(COMMAND_NEXT, {threadId: this.mainThreadID});
 		}
 
 		public function stepInto():void
@@ -268,7 +277,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_STEP_IN);
+			this.sendRequest(COMMAND_STEP_IN, {threadId: this.mainThreadID});
 		}
 
 		public function stepOut():void
@@ -278,7 +287,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_STEP_OUT);
+			this.sendRequest(COMMAND_STEP_OUT, {threadId: this.mainThreadID});
 		}
 
 		private function handleContinue():void
@@ -306,6 +315,7 @@ package actionScripts.debugAdapter
 			_receivedInitializeResponse = false;
 			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
+			_handledPostInit = false;
 			
 			_inputDispatcher.removeEventListener(_inputEvent, input_onData);
 
@@ -526,7 +536,10 @@ package actionScripts.debugAdapter
 					}
 					default:
 					{
-						trace("Cannot parse debug response. Unknown command: \"" + response.command + "\", Full message:", JSON.stringify(response));
+						if(_debugMode)
+						{
+							trace("Cannot parse debug response. Unknown command: \"" + response.command + "\", Full message:", JSON.stringify(response));
+						}
 					}
 				}
 			}
@@ -554,6 +567,11 @@ package actionScripts.debugAdapter
 					case EVENT_OUTPUT:
 					{
 						this.parseOutputEvent(event);
+						break;
+					}
+					case EVENT_THREAD:
+					{
+						this.parseThreadEvent(event);
 						break;
 					}
 					case EVENT_BREAKPOINT:
@@ -584,7 +602,10 @@ package actionScripts.debugAdapter
 					}
 					default:
 					{
-						trace("Cannot parse debug event. Unknown event:", "\"" + event.event + "\", Full message:", JSON.stringify(event));
+						if(_debugMode)
+						{
+							trace("Cannot parse debug event. Unknown event:", "\"" + event.event + "\", Full message:", JSON.stringify(event));
+						}
 					}
 				}
 			}
@@ -605,8 +626,11 @@ package actionScripts.debugAdapter
 			var body:Object = response.body;
 			_supportsConfigurationDoneRequest = body && body.supportsConfigurationDoneRequest === true;
 			_receivedInitializeResponse = true;
-			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
+			if(_receivedInitializedEvent && !_handledPostInit)
+			{
+				this.handlePostInit();
+			}
 
 			//the request and command are the same constant
 			var command:String = this._currentRequest.request;
@@ -663,6 +687,8 @@ package actionScripts.debugAdapter
 				this.stop();
 				return;
 			}
+			this._paused = false;
+			this.dispatchEvent(new Event(Event.CHANGE));
 			this.sendRequest(COMMAND_THREADS);
 		}
 		
@@ -683,14 +709,27 @@ package actionScripts.debugAdapter
 				trace("debug adapter \"threads\" command not successful");
 				return;
 			}
-			this._paused = false;
-			this.dispatchEvent(new Event(Event.CHANGE));
 			
 			var body:Object = response.body;
 			if("threads" in body)
 			{
 				var threads:Array = body.threads as Array;
-				mainThreadID = threads[0].id;
+				if(threads.length > 0)
+				{
+					mainThreadID = threads[0].id;
+					if(this._paused)
+					{
+						this.sendRequest(COMMAND_STACK_TRACE,
+							{
+								threadId: mainThreadID
+							});
+					}
+				}
+				else
+				{
+					//it is possible that there will be no threads returned
+					mainThreadID = -1;
+				}
 			}
 		}
 		
@@ -904,10 +943,10 @@ package actionScripts.debugAdapter
 			}
 			this.handleDisconnectOrTerminated();
 		}
-		
-		private function parseInitializedEvent(event:Object):void
+
+		private function handlePostInit():void
 		{
-			_receivedInitializedEvent = true;
+			this._handledPostInit = true;
 			this.dispatchEvent(new Event(Event.INIT));
 			if(this._supportsConfigurationDoneRequest)
 			{
@@ -915,8 +954,24 @@ package actionScripts.debugAdapter
 			}
 			else
 			{
+				this._paused = false;
+				this.dispatchEvent(new Event(Event.CHANGE));
 				this.sendRequest(COMMAND_THREADS);
 			}
+		}
+		
+		private function parseInitializedEvent(event:Object):void
+		{
+			_receivedInitializedEvent = true;
+			if(!_receivedInitializeResponse)
+			{
+				//hxcpp-debug-server (and maybe other debug adapters too?) sends
+				//initialized before the initialize response, which is against
+				//spec. normally, we'd send some requests after this event, but
+				//instead, we'll wait until after the initialize response.
+				return;
+			}
+			this.handlePostInit();
 		}
 		
 		private function parseOutputEvent(event:Object):void
@@ -947,15 +1002,24 @@ package actionScripts.debugAdapter
 				}
 			}
 		}
+
+		private function parseThreadEvent(event:Object):void
+		{
+			this.sendRequest(COMMAND_THREADS);
+		}
 		
 		private function parseStoppedEvent(event:Object):void
 		{
-			this.sendRequest(COMMAND_STACK_TRACE,
-				{
-					threadId: mainThreadID
-				});
+			if(mainThreadID != -1)
+			{
+				this.sendRequest(COMMAND_STACK_TRACE,
+					{
+						threadId: mainThreadID
+					});
+			}
 			_paused = true;
 			this.dispatchEvent(new Event(Event.CHANGE));
+			this.dispatchEvent(new Event(Event.SUSPEND));
 		}
 
 		private function parseContinuedEvent(event:Object):void

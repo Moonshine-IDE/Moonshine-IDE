@@ -52,9 +52,12 @@ package actionScripts.plugins.haxe
     import flash.errors.IllegalOperationError;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugins.httpServer.events.HttpServerEvent;
+    import actionScripts.valueObjects.WebBrowserVO;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
+		private static const HXCPP_DEBUG_SERVER_ROOT_PATH:String = "elements/hxcpp-debug-adapter/hxcpp-debug-server";
+        private static const HAXEFLAG_MACRO_INJECT_SERVER:String = "--haxeflag=\"--macro hxcpp.debug.jsonrpc.Macro.injectServer()\"";
         private static const DEBUG_SERVER_PORT:int = 3000;
 
 		private var haxePathSetting:PathSetting;
@@ -198,6 +201,27 @@ package actionScripts.plugins.haxe
                         pendingRunFolder = null;
                         pendingDebug = true;
 			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+                        break;
+                    }
+                    case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
+                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_LINUX:
+                    {
+                        if(!UtilsCore.isNodeAvailable())
+                        {
+                            error("A valid Node.js path must be defined to debug project \"" + project.name + "\" on platform \"" + project.limeTargetPlatform + "\".");
+                            dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.js::JavaScriptPlugin"));
+                            return;
+                        }
+                        pendingRunProject = project;
+                        pendingRunCommand = null;
+                        pendingRunFolder = null;
+                        pendingDebug = true;
+                        var commandParts:Array = [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"];
+			            var hxcppDebugServerFolder:File = File.applicationDirectory.resolvePath(HXCPP_DEBUG_SERVER_ROOT_PATH);
+                        commandParts.push("--source=" + hxcppDebugServerFolder.nativePath);
+                        commandParts.push(HAXEFLAG_MACRO_INJECT_SERVER);
+			            this.start(new <String>[commandParts.join(" ")], project.folderLocation);
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -363,7 +387,18 @@ package actionScripts.plugins.haxe
 
             if(project.isLime)
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+                var commandParts:Array = [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"];
+                switch(project.limeTargetPlatform)
+                {
+                    case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
+                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_LINUX:
+			            var hxcppDebugServerFolder:File = File.applicationDirectory.resolvePath(HXCPP_DEBUG_SERVER_ROOT_PATH);
+                        commandParts.push("--source=" + hxcppDebugServerFolder.nativePath);
+                        commandParts.push(HAXEFLAG_MACRO_INJECT_SERVER);
+                        break;
+                }
+			    this.start(new <String>[commandParts.join(" ")], project.folderLocation);
             }
             else
             {
@@ -494,12 +529,39 @@ package actionScripts.plugins.haxe
                 {
                     case HaxeProjectVO.LIME_PLATFORM_HTML5:
                     {
-                        launchArgs["name"] = "Moonshine Chrome Launch";
+                        launchArgs["name"] = "Moonshine Lime HTML5 Launch";
                         launchArgs["url"] = "http://localhost:" + DEBUG_SERVER_PORT;
 			            launchArgs["webRoot"] = getLimeWebRoot(project).fileBridge.nativePath;
                         //enable for debug logging to a file
                         //launchArgs["trace"] = true;
-                        debugAdapterType = "chrome";
+                        for(var i:int = 0; i < ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.length; i++)
+                        {
+                            var webBrowser:WebBrowserVO = WebBrowserVO(ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.getItemAt(i));
+                            if(webBrowser.name == project.runWebBrowser)
+                            {
+                                debugAdapterType = webBrowser.debugAdapterType;
+                            }
+                        }
+                        if(debugAdapterType == null)
+                        {
+                            debugAdapterType = "chrome";
+                        }
+                        break;
+                    }
+                    case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
+                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_LINUX:
+                    {
+                        var cppExecutableName:String = project.name;
+                        if(Settings.os == "win")
+                        {
+                            cppExecutableName += ".exe";
+                        }
+                        var exeFile:File = project.folderLocation.fileBridge
+                            .resolvePath("bin" + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableName).fileBridge.getFile as File;
+                        launchArgs["name"] = "Moonshine Lime HXCPP Launch";
+                        launchArgs["program"] = exeFile.nativePath;
+                        debugAdapterType = "hxcpp";
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -616,6 +678,9 @@ package actionScripts.plugins.haxe
                         }
                         break;
                     }
+                    case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
+                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
                     case HaxeProjectVO.LIME_PLATFORM_FLASH:
                     {
