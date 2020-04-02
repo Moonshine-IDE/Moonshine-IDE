@@ -109,7 +109,7 @@ package actionScripts.plugin.actionscript.as3project
 		private function importFDProject(projectFile:FileLocation=null, openWithChoice:Boolean=false, openByProject:ProjectVO=null):void
 		{
 			// Is file in an already opened project?
-			if (checkIfProjectIsAlreadyOpened(projectFile.fileBridge.parent.fileBridge.nativePath)) return;
+			if (checkIfProjectIsAlreadyOpened(projectFile.fileBridge.nativePath)) return;
 			
 			// Assume user wants to open project by clicking settings file
 			openProject(projectFile, openWithChoice, openByProject);
@@ -130,7 +130,7 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			for each (var p:ProjectVO in model.projects)
 			{
-				if (path == p.folderLocation.fileBridge.nativePath)
+				if (path == p.projectFile.fileBridge.nativePath)
 				{
 					warning("Project already opened. Ignoring.");
 					return true;
@@ -272,6 +272,75 @@ package actionScripts.plugin.actionscript.as3project
 			else if (isFDProject)
 			{
 				importFDProject(flashDevelopProjectFile);
+			}
+		}
+		
+		private function openProjectBy(projectFile:FileLocation):void
+		{
+			//onFileSelectionCancelled(event);
+			// probable termination due to error at objC side
+			if (!projectFile) return;
+			
+			var isFBProject: Boolean;
+			var isFDProject: Boolean;
+			var projectRootFolder:FileLocation = projectFile.fileBridge.parent;
+			flashDevelopProjectFile = model.flexCore.testFlashDevelop(projectRootFolder.fileBridge.getFile);
+			flashBuilderProjectFile = model.flexCore.testFlashBuilder(projectRootFolder.fileBridge.getFile);
+			if (flashBuilderProjectFile) isFBProject = true;
+			if (flashDevelopProjectFile) isFDProject = true;
+			
+			// for Java, Grails, and Haxe projects
+			if (!flashBuilderProjectFile && !flashDevelopProjectFile)
+			{
+				flashDevelopProjectFile = model.javaCore.testJava(projectRootFolder.fileBridge.getFile);
+				if (flashDevelopProjectFile)
+				{
+					importFDProject(flashDevelopProjectFile, false, model.javaCore.parseJava(projectRootFolder));
+					return;
+				}
+				flashDevelopProjectFile = model.groovyCore.testGrails(projectRootFolder.fileBridge.getFile);
+				if (flashDevelopProjectFile)
+				{
+					importFDProject(flashDevelopProjectFile, false, model.groovyCore.parseGrails(projectRootFolder, null, flashDevelopProjectFile));
+					return;
+				}
+				flashDevelopProjectFile = model.haxeCore.testHaxe(projectRootFolder.fileBridge.getFile);
+				if (flashDevelopProjectFile)
+				{
+					importFDProject(flashDevelopProjectFile, false, model.haxeCore.parseHaxe(projectRootFolder));
+					return;
+				}
+			}
+			
+			if (!isFBProject && !isFDProject)
+			{
+				nonProjectFolderLocation = projectRootFolder;
+				Alert.show("This directory is missing the Moonshine project configuration files. Do you want to generate a new project by locating existing source?", "Error!", Alert.YES|Alert.NO, null, onExistingSourceProjectConfirm);
+			}
+			else if (isFBProject && isFDProject)
+			{
+				// @devsena
+				// check change log in AS3ProjectVO.as against
+				// commenting the following process
+				
+				/*Alert.okLabel = "Flash Builder Project";
+				Alert.yesLabel = "FlashDevelop Project";
+				Alert.buttonWidth = 150;
+				
+				Alert.show("Project directory contains different types of Flex projects. Please, choose an option how you want it to be open.", "Project Type Choice", Alert.OK|Alert.YES|Alert.CANCEL, null, projectChoiceHandler);
+				Alert.okLabel = "OK";
+				Alert.yesLabel = "YES";
+				Alert.buttonWidth = 65;*/
+				
+				importFDProject(projectFile);
+			}
+			else if (isFBProject)
+			{
+				importFBProject();
+			}
+			else if (isFDProject)
+			{
+				importFDProject(projectFile);
 			}
 		}
 		
@@ -432,7 +501,7 @@ package actionScripts.plugin.actionscript.as3project
 				var configurationParent:Object;
 				for each (var projectRefFile:Object in projectFiles)
 				{
-					configurationParent = model.fileCore.getFileByPath(projectRefFile.projectFile.nativePath).parent;
+					configurationParent = model.fileCore.getFileByPath(projectRefFile.projectFile.nativePath);
 					tmpSelectableObject = new GenericSelectableObject(true);
 					tmpSelectableObject.data = {
 						name: repositoryRootFile.getRelativePath(configurationParent, true),
@@ -472,7 +541,7 @@ package actionScripts.plugin.actionscript.as3project
 				{
 					if (item.isSelected)
 					{
-						openProjectByDirectory(model.fileCore.getFileByPath(item.data.path).parent);
+						openProjectBy(new FileLocation(item.data.path));
 					}
 				}
 			}

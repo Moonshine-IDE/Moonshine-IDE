@@ -266,13 +266,13 @@ package actionScripts.plugin.project
 		{
 			showProjectPanel();
 			// Is file in an already opened project?
-			for each (var p:ProjectVO in model.projects)	
+			/*for each (var p:ProjectVO in model.projects)	
 			{
 				if (event.project.folderLocation.fileBridge.nativePath == p.folderLocation.fileBridge.nativePath)
 				{
 					return;
 				}
-			}
+			}*/
 			
 			if (model.projects.getItemIndex(event.project) == -1)
 			{

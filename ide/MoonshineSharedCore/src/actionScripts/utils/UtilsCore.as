@@ -311,7 +311,7 @@ package actionScripts.utils
 			
 			for each (var p:ProjectVO in model.projects)
 			{
-				if (p.folderPath == projectFolder.projectReference.path)
+				if (p.projectId == projectFolder.projectReference.projectId)
 					return p;
 			}
 			

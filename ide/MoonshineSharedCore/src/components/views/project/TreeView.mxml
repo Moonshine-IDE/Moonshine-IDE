@@ -827,7 +827,7 @@
 				{
 					if(!orByProjectPath)
 					{
-						if(FileWrapper(tree.selectedItem).projectReference.path == projects[i].folderPath) return projects[i];
+						if(FileWrapper(tree.selectedItem).projectReference.projectId == projects[i].projectId) return projects[i];
 					} else
 					{
 						if(orByProjectPath == projects[i].folderPath) return projects[i];

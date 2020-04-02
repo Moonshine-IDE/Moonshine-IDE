@@ -33,6 +33,7 @@ package actionScripts.valueObjects
 		public var isTemplate:Boolean;
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean;
+		public var projectId:String;
 
 		public function ProjectReferenceVO()
 		{
@@ -61,6 +62,7 @@ package actionScripts.valueObjects
 			if ( value.hasOwnProperty("sdk") ) tmpVO.sdk = value.sdk;
 			if ( value.hasOwnProperty("isAway3D") ) tmpVO.isAway3D = value.isAway3D;
 			if ( value.hasOwnProperty("isTemplate") ) tmpVO.isTemplate = value.isTemplate;
+			if ( value.hasOwnProperty("projectId") ) tmpVO.projectId = value.projectId;
 			
 			// finally
 			return tmpVO;

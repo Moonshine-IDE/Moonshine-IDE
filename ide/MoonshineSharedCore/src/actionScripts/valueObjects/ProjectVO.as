@@ -25,6 +25,7 @@ package actionScripts.valueObjects
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
+	import mx.utils.UIDUtil;
 	
 	import actionScripts.controllers.DataAgent;
 	import actionScripts.events.GlobalEventDispatcher;
@@ -43,6 +44,7 @@ package actionScripts.valueObjects
 		
 		public var folderLocation: FileLocation;
 
+		public var projectId:String = UIDUtil.createUID();
 		public var projectFile: FileLocation;
 		public var sourceFolder:FileLocation;
 		public var projectRemotePath:String;
@@ -81,6 +83,7 @@ package actionScripts.valueObjects
 			projectReference = new ProjectReferenceVO();
 			projectReference.name = projectName;
 			projectReference.path = folder.fileBridge.nativePath;
+			projectReference.projectId = projectId;
 
 			folderLocation.fileBridge.name = this.projectName = projectName;
 			shallUpdateToTreeView = updateToTreeView;
