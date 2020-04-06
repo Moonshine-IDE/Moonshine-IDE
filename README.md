@@ -5,15 +5,39 @@ Moonshine IDE is a free IDE built with Adobe AIR. You can create ActionScript 3,
 
 We want to provide a free IDE to our community for ActionScript projects. An IDE which is cross platform and provides Apache Flex®, Apache Royale®, Feathers and cloud support.
 
-## Installation 
+## Local Build
 
-### Prerequisites
+### External Prerequisites
 
-We build Moonshine IDE with [Apache Flex® SDK 4.16.1](https://flex.apache.org/installer.html), using [Adobe AIR and Flash Player 28.0](https://helpx.adobe.com/flash-player/release-note/fp_28_air_28_release_notes.html).
+To build Moonshine IDE you need: 
+- [Apache Flex® SDK](https://flex.apache.org),
+- [Adobe AIR and Flash Player](https://helpx.adobe.com/flash-player.html).
 
-### Desktop Version
+If you've used Moonshine IDE before and already downloaded Flex with Moonshine SDK Installer you can use existing SDKs. By default they're installed in `C:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_32.0`.
 
-First, build and deploy codecompletion.jar
+### Internal Prerequisites
+
+To build Moonshine IDE you also need Moonshine SDK Installer source code. You can clone Moonshine SDK Installer from: `https://github.com/prominic/Moonshine-SDK-Installer.git`.
+
+You should place SDK Installer repository on the same level as Moonshine IDE. So if you have Moonshine IDE in `C:\Repos\Moonshine-IDE` you should have SDK Installer in `C:\Repos\Moonshine-SDK-Installer`
+
+### Change configuration files for local build
+
+In `Moonshine-IDE\ide\MoonshineDESKTOPevolved\build\ApplicationProperties.xml` change:
+- build version to something newer than already installed eg.
+`<buildVersion><![CDATA[2.7.0]]></buildVersion>`
+
+- SDK path for Flex and AIR eg.
+`<winSDKPath><![CDATA[C:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_32.0]]></winSDKPath>`
+`<winSDKPath64><![CDATA[C:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_32.0]]></winSDKPath64>`
+
+In `Moonshine-IDE\ide\MoonshineDESKTOPevolved\src\MoonshineDESKTOP-app.xml`
+- set AIR version for the one you have installed locally eg.
+`<application xmlns="http://ns.adobe.com/air/application/32.0">`
+
+### Build Desktop Version
+
+If you need to recompile language server, build and deploy codecompletion.jar. If not you can skip this step.
 
     cd language-server-wrappers/moonshine-as3mxml
     ant deploy
@@ -24,9 +48,9 @@ To build the application itself, use these commands:
     cd ide/MoonshineDESKTOPevolved/build
     ant 
 
-Find the generated artifacts in ide/MoonshineDESKTOPevolved/build/DEPLOY
+Find the generated artifacts in `ide/MoonshineDESKTOPevolved/build/DEPLOY`
 
-### Web Version
+### Build Web Version
 
 To compile the SWF for the web version of Moonshine-IDE, run:
 
@@ -34,7 +58,7 @@ To compile the SWF for the web version of Moonshine-IDE, run:
     ant 
 
 
-Find the generated artifacts in ide/MoonshineWEBevolved/build/DEPLOY
+Find the generated artifacts in `ide/MoonshineWEBevolved/build/DEPLOY`
 
 NOTE:  this part of the project is out of date.  The server-side logic needs to be updated before the source can be released.
 
