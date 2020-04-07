@@ -480,7 +480,7 @@ package actionScripts.plugins.as3project.mxmlc
                 {
                     jsCompilationArg = " -compiler.targets=JSRoyale";
 					sdkPathHomeArg = "ROYALE_HOME=\"" + SDKstr +"\"";
-					compilerPathHomeArg = "ROYALE_COMPILER_HOME=\"" + SDKstr +"\"";
+					compilerPathHomeArg = "";
                 }
 
 				jsCompilationArg += " -js-output=\"".concat(project.jsOutputPath) +"\"";
