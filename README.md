@@ -29,17 +29,21 @@ You should place SDK Installer repository on the same level as Moonshine IDE. So
 ### 4. Change configuration files for local build
 
 In `Moonshine-IDE\ide\MoonshineDESKTOPevolved\build\ApplicationProperties.xml` change:
-- build version to something newer than already installed eg.
+- Build version to something newer than already installed eg.
 
 	```
 	<buildVersion><![CDATA[2.7.0]]></buildVersion>
 	```
 
-- SDK path for Flex and AIR eg.
+- If you have FLEX_HOME set up as environment variable you can skip this step. If not, set one of the following parameters:
 
-	On Windows:
+	On Windows 32-bit:
 	```
 	<winSDKPath><![CDATA[C:\MoonshineSDKs\Flex_SDK\Flex_xxx_AIR_xxx]]></winSDKPath>
+	```
+	
+	On Windows 64-bit:
+	```
 	<winSDKPath64><![CDATA[C:\MoonshineSDKs\Flex_SDK\Flex_xxx_AIR_xxx]]></winSDKPath64>
 	```
 	
@@ -49,7 +53,7 @@ In `Moonshine-IDE\ide\MoonshineDESKTOPevolved\build\ApplicationProperties.xml` c
 	```
 
 In `Moonshine-IDE\ide\MoonshineDESKTOPevolved\src\MoonshineDESKTOP-app.xml`
-- set AIR version for the one you have installed locally eg.
+- By default Moonshine IDE builds with AIR 28.0. If you've installed newer version of AIR SDK on your environment (eg. 32.0) change this parameter accordingly:
 
 	```
 	<application xmlns="http://ns.adobe.com/air/application/32.0">
