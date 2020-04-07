@@ -24,13 +24,16 @@ package actionScripts.plugin.recentlyOpened
     import flash.utils.setTimeout;
     
     import mx.collections.ArrayCollection;
+    import mx.controls.Alert;
     
     import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GeneralEvent;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.MenuEvent;
+    import actionScripts.events.OpenFileEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.events.StartupHelperEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.locator.IDEModel;
     import actionScripts.plugin.IMenuPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -44,6 +47,7 @@ package actionScripts.plugin.recentlyOpened
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.valueObjects.ProjectReferenceVO;
+    import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.SDKReferenceVO;
     
     import components.views.project.TreeView;
@@ -58,6 +62,7 @@ package actionScripts.plugin.recentlyOpened
 		override public function get description():String	{ return "Stores the last opened file paths."; }
 		
 		private var cookie:SharedObject;
+		private var recentOpenedProjectObject:FileLocation;
 		
 		override public function activate():void
 		{
@@ -84,6 +89,12 @@ package actionScripts.plugin.recentlyOpened
 			// Give other plugins a chance to cancel the event
 			dispatcher.addEventListener(FilePluginEvent.EVENT_FILE_OPEN, handleOpenFile, false, -100);
 			dispatcher.addEventListener(GeneralEvent.EVENT_FILE_BROWSED, onFileLocationBrowsed, false, 0, true);
+			
+			if (ConstantsCoreVO.IS_AIR)
+			{
+				dispatcher.addEventListener("eventOpenRecentProject", onOpenRecentProject, false, 0, true);
+				dispatcher.addEventListener("eventOpenRecentFile", onOpenRecentFile, false, 0, true);
+			}
 		}
 		
 		public function getMenu():MenuItem
@@ -413,6 +424,117 @@ package actionScripts.plugin.recentlyOpened
 			// Add to LocalObject
 			cookie.data[key] = toSave;
 			cookie.flush();
+		}
+		
+		private function onOpenRecentProject(menuEvent:MenuEvent):void
+		{
+			openRecentItem(menuEvent.data as ProjectReferenceVO);
+		}
+		
+		private function onOpenRecentFile(menuEvent:MenuEvent):void
+		{
+			openRecentItem(menuEvent.data as ProjectReferenceVO);
+		}
+		
+		protected function openRecentItem(refVO:ProjectReferenceVO):void
+		{
+			// do not open an already opened project
+			if(model.mainView.getTreeViewPanel() && UtilsCore.checkProjectIfAlreadyOpened(refVO.path)) return;
+			
+			// desktop
+			if(ConstantsCoreVO.IS_AIR)
+			{
+				recentOpenedProjectObject = new FileLocation(refVO.path);
+				
+				if(!FileLocation(recentOpenedProjectObject).fileBridge.exists)
+				{
+					Alert.show("Can't import: The file does not exist anymore.", "Error!");
+					return;
+				}
+				
+				if(recentOpenedProjectObject.fileBridge.isDirectory)
+				{
+					var project:ProjectVO;
+					var lastOpenedOption:String;
+					
+					// check if any last opend option is associated with the project
+					for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
+					{
+						if(i.path == recentOpenedProjectObject.fileBridge.nativePath)
+						{
+							lastOpenedOption = i.option;
+							break;
+						}
+					}
+					
+					project = getProjectBasedOnFileOption(lastOpenedOption, refVO.name);
+					
+					if(!project)
+					{
+						Alert.show("Can't import: Not a valid Flex project directory.", "Error!");
+						return;
+					}
+					
+					// save old sdk details to the project
+					if(project is AS3ProjectVO)
+					{
+						var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+						as3Project.buildOptions.oldDefaultSDKPath = refVO.sdk;
+					}
+					
+					// trigger the project to open
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+						new ProjectEvent(ProjectEvent.ADD_PROJECT, project, lastOpenedOption));
+				} else
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+						new OpenFileEvent(OpenFileEvent.OPEN_FILE, [recentOpenedProjectObject as FileLocation])
+					);
+				}
+			}
+		}
+		
+		private function getProjectBasedOnFileOption(lastOpenedOption:String, projectName:String):ProjectVO
+		{
+			var projectFile:Object = recentOpenedProjectObject.fileBridge.getFile;
+			var projectFileLocation:FileLocation;
+			
+			if(!lastOpenedOption ||
+				lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FB_PROJECT ||
+				lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FD_PROJECT)
+			{
+				projectFileLocation = model.flexCore.testFlashDevelop(projectFile);
+				if(projectFileLocation)
+				{
+					return model.flexCore.parseFlashDevelop(null, projectFileLocation, projectName);
+				}
+				
+				projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
+				if(projectFileLocation)
+				{
+					return model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
+				}
+				
+				projectFileLocation = model.javaCore.testJava(projectFile);
+				if(projectFileLocation)
+				{
+					return model.javaCore.parseJava(recentOpenedProjectObject as FileLocation);
+				}
+				
+				projectFileLocation = model.groovyCore.testGrails(projectFile);
+				if (projectFileLocation)
+				{
+					return model.groovyCore.parseGrails(recentOpenedProjectObject as FileLocation, null, projectFileLocation);
+				}
+				
+				projectFileLocation = model.haxeCore.testHaxe(projectFile);
+				if (projectFileLocation)
+				{
+					return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation);
+				}
+			}
+			
+			return null;
 		}
 	}
 }

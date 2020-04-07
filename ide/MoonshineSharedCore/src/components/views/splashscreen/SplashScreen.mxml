@@ -42,13 +42,11 @@
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.MenuEvent;
 			import actionScripts.events.NewProjectEvent;
-			import actionScripts.events.OpenFileEvent;
 			import actionScripts.events.ProjectEvent;
 			import actionScripts.events.SdkEvent;
 			import actionScripts.events.SettingsEvent;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			import actionScripts.plugin.actionscript.as3project.vo.MXMLProjectVO;
 			import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
 			import actionScripts.plugin.splashscreen.SplashScreenPlugin;
@@ -56,7 +54,6 @@
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.ProjectReferenceVO;
-			import actionScripts.valueObjects.ProjectVO;
 			import actionScripts.valueObjects.TemplateVO;
 			import actionScripts.valueObjects.URLDescriptorVO;
 			
@@ -115,59 +112,8 @@
 				// do not open an already opened project
 				if(model.mainView.getTreeViewPanel() && UtilsCore.checkProjectIfAlreadyOpened(refVO.path)) return;
 	
-				// desktop
-				if(ConstantsCoreVO.IS_AIR)
-				{
-					recentOpenedProjectObject = new FileLocation(refVO.path);
-	
-					if(!FileLocation(recentOpenedProjectObject).fileBridge.exists)
-					{
-						Alert.show("Can't import: The file does not exist anymore.", "Error!");
-						return;
-					}
-	
-					if(recentOpenedProjectObject.fileBridge.isDirectory)
-					{
-						var project:ProjectVO;
-						var lastOpenedOption:String;
-	
-						// check if any last opend option is associated with the project
-						for each (var i:Object in model.recentlyOpenedProjectOpenedOption)
-						{
-							if(i.path == recentOpenedProjectObject.fileBridge.nativePath)
-							{
-								lastOpenedOption = i.option;
-								break;
-							}
-						}
-	
-						project = getProjectBasedOnFileOption(lastOpenedOption, refVO.name);
-	
-						if(!project)
-						{
-							Alert.show("Can't import: Not a valid Flex project directory.", "Error!");
-							return;
-						}
-	
-						// save old sdk details to the project
-						if(project is AS3ProjectVO)
-						{
-							var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-							as3Project.buildOptions.oldDefaultSDKPath = refVO.sdk;
-						}
-	
-						// trigger the project to open
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-								new ProjectEvent(ProjectEvent.ADD_PROJECT, project, lastOpenedOption));
-					} else
-					{
-						GlobalEventDispatcher.getInstance().dispatchEvent(
-								new OpenFileEvent(OpenFileEvent.OPEN_FILE, [recentOpenedProjectObject as FileLocation])
-						);
-					}
-				}
-				// web
-				else
+				// web only
+				if (!ConstantsCoreVO.IS_AIR)
 				{
 					recentOpenedProjectObject = refVO;
 					// check if there is no login or not
@@ -284,50 +230,7 @@
 			private function handleRecentClick(event:Event):void
 			{
 				var refVO:ProjectReferenceVO = RecentProjectRenderer(event.target).project;
-				openRecentItem(refVO);
-			}
-	
-			private function getProjectBasedOnFileOption(lastOpenedOption:String, projectName:String):ProjectVO
-			{
-				var projectFile:Object = recentOpenedProjectObject.fileBridge.getFile;
-				var projectFileLocation:FileLocation;
-	
-				if(!lastOpenedOption ||
-						lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FB_PROJECT ||
-						lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FD_PROJECT)
-				{
-					projectFileLocation = model.flexCore.testFlashDevelop(projectFile);
-					if(projectFileLocation)
-					{
-						return model.flexCore.parseFlashDevelop(null, projectFileLocation, projectName);
-					}
-	
-					projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
-					if(projectFileLocation)
-					{
-						return model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-					}
-	
-					projectFileLocation = model.javaCore.testJava(projectFile);
-					if(projectFileLocation)
-					{
-						return model.javaCore.parseJava(recentOpenedProjectObject as FileLocation);
-					}
-	
-					projectFileLocation = model.groovyCore.testGrails(projectFile);
-					if (projectFileLocation)
-					{
-						return model.groovyCore.parseGrails(recentOpenedProjectObject as FileLocation, null, projectFileLocation);
-					}
-	
-					projectFileLocation = model.haxeCore.testHaxe(projectFile);
-					if (projectFileLocation)
-					{
-						return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation);
-					}
-				}
-	
-				return null;
+				dispatcher.dispatchEvent(new MenuEvent("eventOpenRecentProject", false, false, refVO));
 			}
 	
 			private function onProjectLoadSuccess(value:Object):void
@@ -378,8 +281,12 @@
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED, updateRecetProjectList);
 				dispatcher.addEventListener(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED, updateRecetFileList);
 				dispatcher.addEventListener(ConsoleEvent.OPEN_REPORT_A_BUG_WINDOW, onOpenReportBugWithError, false, 0, true);
-				dispatcher.addEventListener("eventOpenRecentProject", onOpenRecentProject);
-				dispatcher.addEventListener("eventOpenRecentFile", onOpenRecentFile);
+				
+				if (!ConstantsCoreVO.IS_AIR)
+				{
+					dispatcher.addEventListener("eventOpenRecentProject", onOpenRecentProject);
+					dispatcher.addEventListener("eventOpenRecentFile", onOpenRecentFile);
+				}
 	
 				grpNoSDKMess.y = this.height;
 	
