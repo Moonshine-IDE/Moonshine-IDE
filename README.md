@@ -18,7 +18,9 @@ To build Moonshine IDE you need to download:
 - [Apache Flex® SDK](https://flex.apache.org),
 - [Adobe AIR and Flash Player](https://helpx.adobe.com/flash-player.html).
 
-If you've used Moonshine IDE before and already downloaded these SDKs with Moonshine SDK Installer you can use existing SDKs. By default they're installed in `C:\MoonshineSDKs\Flex_SDK\Flex_xxx_AIR_xxx` on Windows and corresponding folder on Mac.
+If you've used Moonshine IDE before and already downloaded these SDKs with Moonshine SDK Installer you can use existing SDKs. By default they're installed in:
+- `C:\MoonshineSDKs\Flex_SDK\Flex_xxx_AIR_xxx` on Windows
+- `/Users/$username/Downloads/MoonshineSDKs` on Mac
 
 ### 3. Clone Moonshine SDK Installer
 
