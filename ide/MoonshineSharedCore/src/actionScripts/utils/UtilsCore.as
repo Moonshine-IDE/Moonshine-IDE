@@ -40,8 +40,10 @@ package actionScripts.utils
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
 	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -62,7 +64,6 @@ package actionScripts.utils
 	import components.popup.SDKSelectorPopup;
 	import components.renderers.CustomToolTipGBA;
 	import components.views.splashscreen.SplashScreen;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
 
 	public class UtilsCore 
 	{
@@ -958,6 +959,10 @@ package actionScripts.utils
 			else if (value is HaxeProjectVO)
 			{
 				currentMenuType = ProjectMenuTypes.HAXE;
+			}
+			else if (value is OnDiskProjectVO)
+			{
+				currentMenuType = ProjectMenuTypes.ON_DISK;
 			}
 
 			if (!value.menuType)

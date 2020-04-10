@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template displayHome="true">
+        <title>On Disk Project</title>
+        <homeTitle>Domino On Disk Project</homeTitle>
+        <name>On Disk Project</name>
+        <icon>On Disk Project.png</icon>
+        <description>// description to be updated.</description>
+    </template>
+</templates>

@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<note class='sharedfield' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.10'
+ replicaid='052585270065DAC7'>
+<noteinfo noteid='152' unid='8E9C9AA2A0528A0B8625851C006F1428' sequence='2'>
+<created><datetime dst='true'>20200228T151316,56-05</datetime></created>
+<modified><datetime>20200310T133232,49-05</datetime></modified>
+<revised><datetime dst='true'>20200228T151334,06-05</datetime></revised>
+<lastaccessed><datetime>20200310T133232,48-05</datetime></lastaccessed>
+<addedtofile><datetime>20200310T133232,48-05</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></updatedby>
+<wassignedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></wassignedby>
+<item name='$HTMLCode' sign='true'>
+<rawitemdata type='1'>
+</rawitemdata></item>
+<item name='$TITLE'><text>Comment</text></item>
+<item name='$Info' sign='true'>
+<rawitemdata type='1'>
+hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
+</rawitemdata></item>
+<item name='$Flags'><text/></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='Comment' placeholder='true'>
+<rawitemdata type='0'>
+</rawitemdata></item>
+<item name='$Fields'><text>Comment</text></item>
+<item name='$Body' summary='true' sign='true'>
+<rawitemdata type='1'>
+gQKC/1oAAQAAAAAAAAAAAKAFAACgBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAABAAAAAJSHAAAAAAAAAAAAAAAAAQAAAAQAAACDBAEAhf8IAAEAAArdBgAAiv/+/1AA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4AHgAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAIr/LACCAAEAAAACAAAAAAAAAgEAAAoAAAAAAAAAAAcAAAAAAENv
+bW1lbnQAYg4BAIQAAAAAAAEAAADeBgAAiv+F/wgAAQAACg==
+</rawitemdata></item></note>
+

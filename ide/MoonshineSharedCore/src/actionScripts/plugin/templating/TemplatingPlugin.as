@@ -47,6 +47,7 @@ package actionScripts.plugin.templating
 	import actionScripts.plugin.IMenuPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.StaticLabelSetting;
@@ -154,6 +155,7 @@ package actionScripts.plugin.templating
 			{
 	            dispatcher.addEventListener(ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX, handleExportNewProjectFromTemplate);
 				dispatcher.addEventListener(NewFileEvent.EVENT_NEW_VISUAL_EDITOR_FILE, onVisualEditorFileCreateRequest, false, 0, true);
+				dispatcher.addEventListener(NewFileEvent.EVENT_FILE_CREATED, onNewFileBeingCreated, false, 0, true);
 			}
 		}
 		
@@ -169,6 +171,12 @@ package actionScripts.plugin.templating
 			}
 			
 			readTemplates();
+		}
+		
+		public static function checkAndUpdateIfTemplateModified(event:NewFileEvent):void
+		{
+			var modifiedTemplate:FileLocation = TemplatingHelper.getCustomFileFor(event.fromTemplate);
+			if (modifiedTemplate.fileBridge.exists) event.fromTemplate = modifiedTemplate;
 		}
 		
 		protected function readTemplates():void
@@ -263,6 +271,14 @@ package actionScripts.plugin.templating
                 if (!file.isHidden && !file.isDirectory)
                     ConstantsCoreVO.TEMPLATES_MXML_ROYALE_COMPONENTS.addItem(file);
             }
+			
+			files = templatesDir.resolvePath("files/Visual Editor DXL File.dve.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE = files;
+			
+			files = templatesDir.resolvePath("files/Form Builder DXL File.dfb.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE = files;
 
 			var projects:FileLocation = templatesDir.resolvePath("projects");
 			list = projects.fileBridge.getDirectoryListing();
@@ -862,6 +878,12 @@ package actionScripts.plugin.templating
 					case "Haxe Interface":
 						openHaxeTypeChoose(event, true);
 						break;
+					case "Form Builder DXL File":
+						openOnDiskFormBuilderTypeChoose(event);
+						break;
+					case "Visual Editor DXL File":
+						openOnDiskVisualEditorTypeChoose(event);
+						break;
 					default:
 						for (i = 0; i < fileTemplates.length; i++)
 						{
@@ -997,6 +1019,16 @@ package actionScripts.plugin.templating
                 PopUpManager.centerPopUp(newVisualEditorFilePopup);
             }
         }
+		
+		protected function openOnDiskFormBuilderTypeChoose(event:Event):void
+		{
+			dispatcher.dispatchEvent(new GeneralEvent(OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE));
+		}
+		
+		protected function openOnDiskVisualEditorTypeChoose(event:Event):void
+		{
+			dispatcher.dispatchEvent(new GeneralEvent(OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE));
+		}
 
 		protected function openCSSComponentTypeChoose(event:Event):void
 		{
@@ -1195,12 +1227,6 @@ package actionScripts.plugin.templating
 			}
 		}
 		
-		protected function checkAndUpdateIfTemplateModified(event:NewFileEvent):void
-		{
-			var modifiedTemplate:FileLocation = TemplatingHelper.getCustomFileFor(event.fromTemplate);
-			if (modifiedTemplate.fileBridge.exists) event.fromTemplate = modifiedTemplate;
-		}
-
 		protected function openGroovyTypeChoose(event:Event, isInterfaceDialog:Boolean):void
 		{
 			if (!newGroovyComponentPopup)
@@ -1535,6 +1561,11 @@ package actionScripts.plugin.templating
 			}
 			
 			return false;
+		}
+		
+		private function onNewFileBeingCreated(event:NewFileEvent):void
+		{
+			notifyNewFileCreated(event.insideLocation, event.newFileCreated, event.isOpenAfterCreate);
 		}
 
 		private function notifyNewFileCreated(insideLocation:FileWrapper, fileToSave:FileLocation, isOpenAfterCreate:Boolean=true):void

@@ -33,15 +33,14 @@ package actionScripts.ui.menu
     import actionScripts.plugin.core.compiler.GrailsBuildEvent;
     import actionScripts.plugin.core.compiler.HaxeBuildEvent;
     import actionScripts.plugin.core.compiler.JavaBuildEvent;
-    import actionScripts.plugin.core.compiler.JavaScriptBuildEvent;
     import actionScripts.plugin.core.compiler.ProjectActionEvent;
     import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
     import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.RoyaleOutputTarget;
 
     public class ProjectMenu
     {
@@ -54,6 +53,7 @@ package actionScripts.ui.menu
 		private var javaMenuGradle:Vector.<MenuItem>;
         private var grailsMenu:Vector.<MenuItem>;
         private var haxeMenu:Vector.<MenuItem>;
+		private var onDiskMenu:Vector.<MenuItem>;
 
         private var currentProject:ProjectVO;
 
@@ -104,6 +104,11 @@ package actionScripts.ui.menu
             {
                 return getHaxeMenuItems();
             }
+			
+			if (project is OnDiskProjectVO)
+			{
+				return getOnDiskMenuItems();
+			}
 
             return null;
         }
@@ -323,6 +328,23 @@ package actionScripts.ui.menu
 
             return haxeMenu;
         }
+		
+		private function getOnDiskMenuItems():Vector.<MenuItem>
+		{
+			if (onDiskMenu == null)
+			{
+				var resourceManager:IResourceManager = ResourceManager.getInstance();
+				onDiskMenu = Vector.<MenuItem>([
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.ON_DISK], MavenBuildEvent.START_MAVEN_BUILD),
+					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.ON_DISK], ProjectActionEvent.CLEAN_PROJECT)
+				]);
+				
+				onDiskMenu.forEach(makeDynamic);
+			}
+			
+			return onDiskMenu;
+		}
 
         private function makeDynamic(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
         {

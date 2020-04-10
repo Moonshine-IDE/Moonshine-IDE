@@ -33,6 +33,7 @@ package actionScripts.events
 		public static const EVENT_FILE_RENAMED:String = "EVENT_FILE_RENAMED";
 		public static const EVENT_PROJECT_SELECTED:String = "EVENT_PROJECT_SELECTED";
 		public static const EVENT_FILE_SELECTED:String = "EVENT_FILE_SELECTED";
+		public static const EVENT_FILE_CREATED:String = "EVENT_FILE_CREATED";
 		public static const EVENT_PROJECT_RENAME:String = "EVENT_PROJECT_RENAME";
 		
 		public var filePath:String;
@@ -40,6 +41,7 @@ package actionScripts.events
 		public var fileExtension:String;
 		public var fromTemplate:FileLocation;
 		public var insideLocation:FileWrapper;
+		public var newFileCreated:FileLocation;
 		public var extraParameters:Array;
 		public var isFolder:Boolean;
 		public var isOpenAfterCreate:Boolean = true;

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+  <mavenBuild>
+  	<option commandLine="war:exploded"/>
+  </mavenBuild>
+  <classpaths>
+    <class path="$SourcePath"/>
+  </classpaths>
+  <build>
+    <option additional=""/>
+    <option antBuildPath="build/build.xml"/>
+    <option linkReport=""/>
+  </build>
+  <compileTargets>
+    <compile path="$SourceFile"/>
+  </compileTargets>
+  <hiddenPaths>
+    <hidden path="visualeditor-src" />
+    <hidden path="formbuilder-src" />
+  </hiddenPaths>
+  <preBuildCommand/>
+  <postBuildCommand alwaysRun="False"/>
+  <options>
+    <option showHiddenPaths="False"/>
+    <option testMovieCommand="ExternalPlayer"/>
+    <option isPrimeFacesVisualEditor="False"/>
+  </options>
+</project>
