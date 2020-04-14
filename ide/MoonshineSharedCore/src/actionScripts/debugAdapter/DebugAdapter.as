@@ -1013,6 +1013,11 @@ package actionScripts.debugAdapter
 
 		private function parseThreadEvent(event:Object):void
 		{
+			if(!_receivedInitializedEvent)
+			{
+				//not ready to request threads, so ignore for now
+				return;
+			}
 			this.sendRequest(COMMAND_THREADS);
 		}
 		
