@@ -28,6 +28,8 @@ package actionScripts.impls
     import actionScripts.plugin.ondiskproj.importer.OnDiskImporter;
     import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
+    import actionScripts.plugins.ui.editor.tabularInterface.TabularInterfaceEditorWrapper;
+    import actionScripts.ui.IContentWindow;
 
     public class IOnDiskBridgeImpl extends ProjectBridgeImplBase implements IOnDiskBridge
     {
@@ -35,6 +37,11 @@ package actionScripts.impls
         {
             super();
         }
+		
+		public function getTabularInterfaceEditor(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow
+		{
+			return ((new TabularInterfaceEditorWrapper(file, project)) as IContentWindow);
+		}
 
         public function getCorePlugins():Array
         {

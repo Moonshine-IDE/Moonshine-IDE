@@ -32,6 +32,7 @@ package actionScripts.factory
     import actionScripts.interfaces.ILanguageServerBridge;
     import actionScripts.interfaces.IOSXBookmarkerBridge;
     import actionScripts.interfaces.IOnDiskBridge;
+    import actionScripts.interfaces.ITabularInterfaceBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
 	
 	/**

@@ -241,7 +241,7 @@
 	</s:VGroup>
 	<s:VGroup width="100%">
 		<s:Label text="Based on:"
-				 visible="{componentTemplates}" includeInLayout="{componentTemplates}"/>
+				 visible="{componentTemplates != null}" includeInLayout="{componentTemplates != null}"/>
 		<s:DropDownList id="ddlType"
 						width="100%" height="25"
 						dataProvider="{componentTemplates}" labelFunction="getTemplateLabel"

@@ -18,14 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
-	import actionScripts.ui.IContentWindow;
+    import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+    import actionScripts.ui.editor.tabularInterface.TabularInterfaceEditorWrapper;
 
-    public interface IOnDiskBridge extends IProject
+    public interface ITabularInterfaceBridge extends IProject
     {
-		function testOnDisk(file:Object):FileLocation;
-		function parseOnDisk(file:FileLocation):OnDiskProjectVO;
-		function getTabularInterfaceEditor(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow;
+        function getTabularInterfaceEditor(project:OnDiskProjectVO):TabularInterfaceEditorWrapper;
     }
 }

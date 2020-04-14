@@ -246,11 +246,12 @@ package actionScripts.plugin.recentlyOpened
 			//var f:File = (event.project.projectFile) ? event.project.projectFile : event.project.folder;
 			var f:FileLocation = event.project.folderLocation;
 			var toRemove:int = -1;
-			for each (var file:Object in model.recentlyOpenedProjects)
+			for each (var projectReference:Object in model.recentlyOpenedProjects)
 			{
-				if (file.path == f.fileBridge.nativePath)
+				if ((projectReference.name == event.project.name) && 
+					(projectReference.path == f.fileBridge.nativePath))
 				{
-					toRemove = model.recentlyOpenedProjects.getItemIndex(file);
+					toRemove = model.recentlyOpenedProjects.getItemIndex(projectReference);
 					break;
 				}
 			}
@@ -269,6 +270,7 @@ package actionScripts.plugin.recentlyOpened
 			tmpSOReference.name = event.project.name;
 			tmpSOReference.sdk = customSDKPath ? customSDKPath : (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 			tmpSOReference.path = event.project.folderLocation.fileBridge.nativePath;
+			//tmpSOReference.projectId = event.project.projectId;
 			//tmpSOReference.isAway3D = (event.type == ProjectEvent.ADD_PROJECT_AWAY3D);
 			
 			model.recentlyOpenedProjects.addItemAt(tmpSOReference, 0);
@@ -531,6 +533,12 @@ package actionScripts.plugin.recentlyOpened
 				if (projectFileLocation)
 				{
 					return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation);
+				}
+				
+				projectFileLocation = model.ondiskCore.testOnDisk(projectFile);
+				if (projectFileLocation)
+				{
+					return model.ondiskCore.parseOnDisk(recentOpenedProjectObject as FileLocation);
 				}
 			}
 			
