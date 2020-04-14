@@ -1,0 +1,5 @@
+<field allowmultivalues="false" allowtabout="false" computeaftervalidation="false" dataconnectionfield="data" defaultfocus="false" kind="computed" name="%FieldName%" protected="false" showdelimiters="true" sign="false" storelocally="false" type="richtext" useappletinbrowser="false">
+<code event="defaultvalue">
+<formula>%ComputedValue%</formula>
+</code>
+</field>

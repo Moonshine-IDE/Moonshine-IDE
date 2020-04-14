@@ -1,0 +1,6 @@
+<field allowmultivalues="false" allowtabout="false" computeaftervalidation="false" dataconnectionfield="data" defaultfocus="false" kind="computed" name="%FieldName%" protected="false" showdelimiters="true" sign="false" storelocally="false" type="datetime" useappletinbrowser="false">
+<datetimeformat date="yearmonthday" dateformat="weekdaymonthdayyear" dateseparator1=" " dateseparator2="/" dateseparator3="/" dayformat="twodigitday" fourdigityear="false" fourdigityearfor21stcentury="true" monthformat="twodigitmonth" omitthisyear="false" preference="usersetting" show="date" showtodaywhenappropriate="false" timeformat24="false" timeseparator=":" weekdayformat="shortname" yearformat="fourdigityear" zone="never"/>
+<code event="defaultvalue">
+<formula>%ComputedValue%</formula>
+</code>
+</field>
