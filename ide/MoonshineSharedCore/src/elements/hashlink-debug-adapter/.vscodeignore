@@ -1,0 +1,11 @@
+*
+*/**
+!node_modules/**/*
+!adapter.js
+!bindings.js
+!CHANGELOG.md
+!extension.js
+!icon.png
+!LICENSE.md
+!package.json
+!README.md

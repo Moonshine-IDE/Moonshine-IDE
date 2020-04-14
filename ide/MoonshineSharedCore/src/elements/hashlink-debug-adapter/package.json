@@ -1,0 +1,169 @@
+{
+	"name": "haxe-hl",
+	"displayName": "HashLink Debugger",
+	"version": "1.1.0",
+	"publisher": "HaxeFoundation",
+	"license": "MIT",
+	"description": "Debugger for Haxe/HashLink applications",
+	"repository": {
+		"url": "https://github.com/vshaxe/hashlink-debugger",
+		"type": "git"
+	},
+	"bugs": {
+		"url": "https://github.com/vshaxe/hashlink-debugger/issues"
+	},
+	"author": {
+		"name": "ncannasse"
+	},
+	"engines": {
+		"vscode": "^1.42.0",
+		"nadako.vshaxe": "^2.19.1"
+	},
+	"extensionDependencies": [
+		"nadako.vshaxe"
+	],
+	"icon": "icon.png",
+	"categories": [
+		"Debuggers"
+	],
+	"galleryBanner": {
+		"theme": "dark",
+		"color": "#5d338f"
+	},
+	"keywords": [
+		"haxe",
+		"hashlink"
+	],
+	"dependencies": {
+		"bindings": "^1.5.0",
+		"deasync": "0.1.15",
+		"ffi-napi": "^2.4.5",
+		"ref-napi": "^1.4.2",
+		"ref-struct-napi": "^1.1.0",
+		"vscode-debugadapter": "1.36.0",
+		"vscode-debugprotocol": "1.36.0"
+	},
+	"devDependencies": {},
+	"scripts": {},
+	"main": "extension.js",
+	"activationEvents": [
+		"onDebugResolve:hl"
+	],
+	"contributes": {
+		"debuggers": [
+			{
+				"type": "hl",
+				"label": "HashLink",
+				"program": "./adapter.js",
+				"runtime": "node",
+				"configurationAttributes": {
+					"launch": {
+						"required": [
+							"cwd"
+						],
+						"properties": {
+							"request": {
+								"type": "string",
+								"description": "launch",
+								"default": "launch"
+							},
+							"cwd": {
+								"type": "string",
+								"description": "Working directory",
+								"default": "${workspaceFolder}"
+							},
+							"hl": {
+								"type": "string",
+								"markdownDescription": "Path to the `hl` executable.",
+								"default": "hl"
+							},
+							"env": {
+								"type": "object",
+								"markdownDescription": "The environment with which to start the `hl` executable."
+							},
+							"program": {
+								"type": "string",
+								"markdownDescription": "Path to the `.hl` file"
+							},
+							"args": {
+								"description": "Program arguments.",
+								"type": "array",
+								"default": [],
+								"items": {
+									"type": "string"
+								}
+							},
+							"argsFile": {
+								"description": "File from which to read program arguments.",
+								"type": "string"
+							},
+							"port": {
+								"type": "number",
+								"description": "Debug port used to connect to HL virtual machine."
+							},
+							"hotReload": {
+								"description": "Enable HL code hot reload on compilation - EXPERIMENTAL.",
+								"type": "boolean"
+							},
+							"profileSamples": {
+								"type": "number",
+								"description": "Start profiling with the specified number of samples per second."
+							}
+						}
+					},
+					"attach": {
+						"required": [
+							"port",
+							"cwd"
+						],
+						"properties": {
+							"request": {
+								"type": "string",
+								"description": "attach",
+								"default": "attach"
+							},
+							"cwd": {
+								"type": "string",
+								"description": "Working directory",
+								"default": "${workspaceFolder}"
+							},
+							"port": {
+								"type": "number",
+								"decscription": "Port to connect to.",
+								"default": 6112
+							}
+						}
+					}
+				},
+				"initialConfigurations": [
+					{
+						"name": "HashLink (launch)",
+						"request": "launch",
+						"type": "hl",
+						"cwd": "${workspaceFolder}",
+						"preLaunchTask": {
+							"type": "haxe",
+							"args": "active configuration"
+						}
+					},
+					{
+						"name": "HashLink (attach)",
+						"request": "attach",
+						"port": 6112,
+						"type": "hl",
+						"cwd": "${workspaceFolder}",
+						"preLaunchTask": {
+							"type": "haxe",
+							"args": "active configuration"
+						}
+					}
+				]
+			}
+		]
+	},
+	"__metadata": {
+		"id": "1cc8d5ef-027a-447d-8a30-0ec3f0fe30d3",
+		"publisherDisplayName": "Haxe Foundation",
+		"publisherId": "61407f1c-eaa6-4653-b105-144f7a312894"
+	}
+}

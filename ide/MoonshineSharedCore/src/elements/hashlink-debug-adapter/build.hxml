@@ -1,0 +1,17 @@
+-lib vscode-debugadapter
+-lib format
+-lib hscript
+-cp src
+-D js-es=6
+-js adapter.js
+-main HLAdapter
+-debug
+
+--next
+
+-cp src
+-lib vscode
+-lib vshaxe
+-D js-es=6
+-js extension.js
+Extension
