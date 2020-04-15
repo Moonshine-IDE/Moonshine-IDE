@@ -224,6 +224,20 @@ package actionScripts.plugins.haxe
 			            this.start(new <String>[commandParts.join(" ")], project.folderLocation);
                         break;
                     }
+                    /*case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
+                    {
+                        if(ConstantsCoreVO.IS_MACOS)
+                        {
+                            error("Debugging HashLink on macOS is not supported yet. For details, see: https://github.com/vshaxe/hashlink-debugger/issues/28");
+                            return;
+                        }
+                        pendingRunProject = project;
+                        pendingRunCommand = null;
+                        pendingRunFolder = null;
+                        pendingDebug = true;
+			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+                        break;
+                    }*/
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
                     case HaxeProjectVO.LIME_PLATFORM_FLASH:
                     {
@@ -557,11 +571,29 @@ package actionScripts.plugins.haxe
                         {
                             cppExecutableName += ".exe";
                         }
-                        var exeFile:File = project.folderLocation.fileBridge
+                        var cppExeFile:File = project.folderLocation.fileBridge
                             .resolvePath("bin" + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableName).fileBridge.getFile as File;
                         launchArgs["name"] = "Moonshine Lime HXCPP Launch";
-                        launchArgs["program"] = exeFile.nativePath;
+                        launchArgs["program"] = cppExeFile.nativePath;
                         debugAdapterType = "hxcpp";
+                        break;
+                    }
+                    case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
+                    {
+                        var hlbootDatFile:File = project.folderLocation.fileBridge
+                            .resolvePath("bin" + File.separator + "hl" + File.separator + "bin" + File.separator + "hlboot.dat").fileBridge.getFile as File;
+                        launchArgs["name"] = "Moonshine Lime HashLink Launch";
+                        launchArgs["program"] = hlbootDatFile.nativePath;
+                        launchArgs["cwd"] = hlbootDatFile.parent.nativePath;
+                        //TODO: resolve path to hl executable
+                        //launchArgs["hl"] = "C:/HaxeToolkit/haxe/lib/lime/7,7,0/templates/bin/hl/windows/hl.exe";
+                        var hlClassPaths:Array = [];
+                        project.classpaths.forEach(function(classPath:FileLocation, index:int, source:Vector.<FileLocation>):void
+                        {
+                            hlClassPaths[index] = classPath.fileBridge.nativePath;
+                        });
+                        launchArgs["classPaths"] = hlClassPaths;
+                        debugAdapterType = "hl";
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -681,6 +713,7 @@ package actionScripts.plugins.haxe
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
                     case HaxeProjectVO.LIME_PLATFORM_MAC:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
+                    case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
                     case HaxeProjectVO.LIME_PLATFORM_FLASH:
                     {

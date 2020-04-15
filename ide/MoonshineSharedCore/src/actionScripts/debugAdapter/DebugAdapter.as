@@ -141,7 +141,7 @@ package actionScripts.debugAdapter
 		private var _messageBuffer:String = "";
 		private var _messageBytes:ByteArray = new ByteArray();
 		private var _contentLength:int = -1;
-		private var mainThreadID:int = -1;
+		private var _threadIDs:Vector.<int> = new <int>[];
 		private var _currentRequest:PendingRequest;
 
 		private var _stackFrames:ArrayCollection = new ArrayCollection();
@@ -199,7 +199,7 @@ package actionScripts.debugAdapter
 			_waitingForLaunchOrAttach = false;
 			_handledPostInit = false;
 			
-			mainThreadID = -1;
+			_threadIDs.length = 0;
 			
 			sendRequest(COMMAND_INITIALIZE,
 			{
@@ -247,7 +247,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_CONTINUE, {threadId: this.mainThreadID});
+			this.sendRequest(COMMAND_CONTINUE, {threadId: this._threadIDs[0]});
 		}
 
 		public function pause():void
@@ -257,7 +257,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_PAUSE, {threadId: this.mainThreadID});
+			this.sendRequest(COMMAND_PAUSE, {threadId: this._threadIDs[0]});
 		}
 
 		public function stepOver():void
@@ -267,7 +267,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_NEXT, {threadId: this.mainThreadID});
+			this.sendRequest(COMMAND_NEXT, {threadId: this._threadIDs[0]});
 		}
 
 		public function stepInto():void
@@ -277,7 +277,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_STEP_IN, {threadId: this.mainThreadID});
+			this.sendRequest(COMMAND_STEP_IN, {threadId: this._threadIDs[0]});
 		}
 
 		public function stepOut():void
@@ -287,7 +287,7 @@ package actionScripts.debugAdapter
 				return;
 			}
 
-			this.sendRequest(COMMAND_STEP_OUT, {threadId: this.mainThreadID});
+			this.sendRequest(COMMAND_STEP_OUT, {threadId: this._threadIDs[0]});
 		}
 
 		private function handleContinue():void
@@ -714,21 +714,16 @@ package actionScripts.debugAdapter
 			if("threads" in body)
 			{
 				var threads:Array = body.threads as Array;
-				if(threads.length > 0)
+				var threadCount:int = threads.length;
+				this._threadIDs.length = threadCount;
+				for(var i:int = 0; i < threadCount; i++)
 				{
-					mainThreadID = threads[0].id;
-					if(this._paused)
-					{
-						this.sendRequest(COMMAND_STACK_TRACE,
-							{
-								threadId: mainThreadID
-							});
-					}
+					var thread:Object = threads[i];
+					this._threadIDs[i] = thread.id;
 				}
-				else
+				if(this._paused && this._threadIDs.length > 0)
 				{
-					//it is possible that there will be no threads returned
-					mainThreadID = -1;
+					this.stackTrace(this._threadIDs[0]);
 				}
 			}
 		}
@@ -740,7 +735,7 @@ package actionScripts.debugAdapter
 				trace("debug adapter \"setBreakpoints\" command not successful");
 				return;
 			}
-			if(mainThreadID === -1)
+			if(this._threadIDs.length == 0)
 			{
 				this.sendRequest(COMMAND_THREADS);
 			}
@@ -806,6 +801,19 @@ package actionScripts.debugAdapter
 			this.sendRequest(COMMAND_VARIABLES,
 			{
 				variablesReference: scopeOrVar.variablesReference
+			});
+		}
+
+		private function stackTrace(threadID:int):void
+		{
+			this.sendRequest(COMMAND_STACK_TRACE,
+			{
+				threadId: threadID,
+				startFrame: 0,
+				//it should be possible to omit levels or set it to 0, but the
+				//HashLink debugger incorrectly requires it
+				//https://github.com/vshaxe/hashlink-debugger/issues/74
+				levels: 10000
 			});
 		}
 		
@@ -1005,17 +1013,25 @@ package actionScripts.debugAdapter
 
 		private function parseThreadEvent(event:Object):void
 		{
+			if(!_receivedInitializedEvent)
+			{
+				//not ready to request threads, so ignore for now
+				return;
+			}
 			this.sendRequest(COMMAND_THREADS);
 		}
 		
 		private function parseStoppedEvent(event:Object):void
 		{
-			if(mainThreadID != -1)
+			var body:Object = event.body;
+			var threadID:int = -1;
+			if(this._threadIDs.length > 0)
 			{
-				this.sendRequest(COMMAND_STACK_TRACE,
-					{
-						threadId: mainThreadID
-					});
+				threadID = this._threadIDs[0];
+			}
+			if(threadID != -1)
+			{
+				this.stackTrace(threadID);
 			}
 			_paused = true;
 			this.dispatchEvent(new Event(Event.CHANGE));

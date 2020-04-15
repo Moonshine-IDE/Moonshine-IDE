@@ -1,0 +1,17 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: krdlab/setup-haxe@v1.1.2
+    - run: |
+        haxelib install format
+        haxelib install hscript
+        haxelib install vshaxe
+        haxelib install vscode
+        haxelib install vscode-debugadapter
+    - run: haxe build.hxml
