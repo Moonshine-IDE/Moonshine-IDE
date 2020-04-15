@@ -40,13 +40,23 @@ package actionScripts.plugins.ui.editor.tabularInterface
 	
 	public class TabularInterfaceEditorWrapper extends Group implements IContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
-		public function get label():String								{ return "Tabular Interface"; }
 		public function get longLabel():String							{ return "Tabular Interface"; }
 		public function get tabularEditorInterface():DominoTabularForm	{ return dominoTabularForm; }
 		
 		private var _file:FileLocation;
 		public function get file():FileLocation							{ return _file; }
 
+		public function get label():String
+		{
+			var labelChangeIndicator:String = _isChanged ? "*" : "";
+			if (!file)
+			{
+				return labelChangeIndicator + longLabel;
+			}
+			
+			return labelChangeIndicator + file.fileBridge.name;
+		}
+		
 		protected var dominoTabularForm:DominoTabularForm;
 		
 		private var project:OnDiskProjectVO;
@@ -79,9 +89,10 @@ package actionScripts.plugins.ui.editor.tabularInterface
 		{
 		}
 		
+		private var _isChanged:Boolean;
 		public function isChanged():Boolean
 		{
-			return false;
+			return _isChanged;
 		}
 		
 		public function isEmpty():Boolean
@@ -130,6 +141,7 @@ package actionScripts.plugins.ui.editor.tabularInterface
 		
 		protected function updateChangeStatus():void
 		{
+			_isChanged = true;
 			dispatchEvent(new Event('labelChanged'));
 		}
 		
