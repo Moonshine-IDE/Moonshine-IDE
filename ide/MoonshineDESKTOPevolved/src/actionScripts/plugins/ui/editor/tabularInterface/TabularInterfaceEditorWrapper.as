@@ -36,6 +36,7 @@ package actionScripts.plugins.ui.editor.tabularInterface
 	import actionScripts.ui.tabview.TabEvent;
 	
 	import view.suportClasses.events.PropertyEditorChangeEvent;
+	import view.suportClasses.events.VisualEditorEvent;
 	import view.tabularInterface.DominoTabularForm;
 	
 	public class TabularInterfaceEditorWrapper extends Group implements IContentWindow, IFocusManagerComponent, IContentWindowReloadable
@@ -124,6 +125,7 @@ package actionScripts.plugins.ui.editor.tabularInterface
 			dominoTabularForm.filePath = file.fileBridge.getFile as File;
 			
 			dominoTabularForm.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange, false, 0, true);
+			dominoTabularForm.addEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaved, false, 0, true);
 			
 			addElement(dominoTabularForm);
 		}
@@ -139,6 +141,12 @@ package actionScripts.plugins.ui.editor.tabularInterface
 			updateChangeStatus()
 		}
 		
+		protected function onTabularInterfaceEditorSaved(event:VisualEditorEvent):void
+		{
+			_isChanged = false;
+			dispatchEvent(new Event('labelChanged'));
+		}
+		
 		protected function updateChangeStatus():void
 		{
 			_isChanged = true;
@@ -151,6 +159,7 @@ package actionScripts.plugins.ui.editor.tabularInterface
 			dominoTabularForm.dispose();
 			
 			dominoTabularForm.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange);
+			dominoTabularForm.removeEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaved);
 		}
 		
 		private function tabSelectHandler(event:TabEvent):void
