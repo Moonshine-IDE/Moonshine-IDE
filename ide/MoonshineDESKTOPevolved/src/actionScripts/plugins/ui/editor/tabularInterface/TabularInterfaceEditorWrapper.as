@@ -88,6 +88,7 @@ package actionScripts.plugins.ui.editor.tabularInterface
 		
 		public function save():void
 		{
+			dominoTabularForm.save();
 		}
 		
 		private var _isChanged:Boolean;
