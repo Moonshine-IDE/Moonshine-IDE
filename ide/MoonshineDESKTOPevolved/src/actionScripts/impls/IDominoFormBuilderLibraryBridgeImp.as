@@ -23,15 +23,15 @@ package actionScripts.impls
 	
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugins.ui.editor.tabularInterface.TabularInterfaceEditorWrapper;
+	import actionScripts.plugins.ui.editor.dominoFormBuilder.DominoFormBuilderWrapper;
 	import actionScripts.ui.resizableTitleWindow.ResizableTitleWindow;
 	
 	import components.skins.ResizableTitleWindowSkin;
 	
-	import view.interfaces.ITabularInterfaceEditorLibraryBridge;
-	import view.tabularInterface.DominoTabularForm;
+	import view.dominoFormBuilder.DominoTabularForm;
+	import view.interfaces.IDominoFormBuilderLibraryBridge;
 
-	public class ITabularInterfaceEditorLibraryBridgeImp extends ConsoleOutputter implements ITabularInterfaceEditorLibraryBridge
+	public class IDominoFormBuilderLibraryBridgeImp extends ConsoleOutputter implements IDominoFormBuilderLibraryBridge
 	{
 		private var model:IDEModel = IDEModel.getInstance();
 		
@@ -43,7 +43,7 @@ package actionScripts.impls
 		
 		public function getTabularEditorInterfaceWrapper():DominoTabularForm
 		{
-			var editor:TabularInterfaceEditorWrapper = model.activeEditor as TabularInterfaceEditorWrapper;
+			var editor:DominoFormBuilderWrapper = model.activeEditor as DominoFormBuilderWrapper;
 			if (editor)
 			{
 				return editor.tabularEditorInterface;

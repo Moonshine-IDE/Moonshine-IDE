@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.ui.editor.tabularInterface
+package actionScripts.plugins.ui.editor.dominoFormBuilder
 {
 	import flash.events.Event;
 	import flash.filesystem.File;
@@ -27,7 +27,7 @@ package actionScripts.plugins.ui.editor.tabularInterface
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.impls.ITabularInterfaceEditorLibraryBridgeImp;
+	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.ui.IContentWindow;
@@ -35,11 +35,11 @@ package actionScripts.plugins.ui.editor.tabularInterface
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
 	
+	import view.dominoFormBuilder.DominoTabularForm;
 	import view.suportClasses.events.PropertyEditorChangeEvent;
 	import view.suportClasses.events.VisualEditorEvent;
-	import view.tabularInterface.DominoTabularForm;
 	
-	public class TabularInterfaceEditorWrapper extends Group implements IContentWindow, IFocusManagerComponent, IContentWindowReloadable
+	public class DominoFormBuilderWrapper extends Group implements IContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
 		public function get longLabel():String							{ return "Tabular Interface"; }
 		public function get tabularEditorInterface():DominoTabularForm	{ return dominoTabularForm; }
@@ -61,14 +61,14 @@ package actionScripts.plugins.ui.editor.tabularInterface
 		protected var dominoTabularForm:DominoTabularForm;
 		
 		private var project:OnDiskProjectVO;
-		private var visualEditoryLibraryCore:ITabularInterfaceEditorLibraryBridgeImp;
+		private var visualEditoryLibraryCore:IDominoFormBuilderLibraryBridgeImp;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var model:IDEModel = IDEModel.getInstance();
 		
 		/**
 		 * CONSTRUCTOR
 		 */
-		public function TabularInterfaceEditorWrapper(file:FileLocation, project:OnDiskProjectVO=null)
+		public function DominoFormBuilderWrapper(file:FileLocation, project:OnDiskProjectVO=null)
 		{
 			super();
 			this.project = project;
@@ -121,7 +121,7 @@ package actionScripts.plugins.ui.editor.tabularInterface
 			dominoTabularForm = new DominoTabularForm();
 			dominoTabularForm.percentWidth = dominoTabularForm.percentHeight = 100;
 			
-			visualEditoryLibraryCore = new ITabularInterfaceEditorLibraryBridgeImp();
+			visualEditoryLibraryCore = new IDominoFormBuilderLibraryBridgeImp();
 			dominoTabularForm.moonshineBridge = visualEditoryLibraryCore;
 			dominoTabularForm.filePath = file.fileBridge.getFile as File;
 			
