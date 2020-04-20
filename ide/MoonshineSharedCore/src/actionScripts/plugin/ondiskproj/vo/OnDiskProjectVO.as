@@ -34,6 +34,8 @@ package actionScripts.plugin.ondiskproj.vo
 
 	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO
 	{
+		public static const DOMINO_EXPORT_PATH:String = "nsfs/nsf-moonshine";
+		
 		public var buildOptions:OnDiskBuildOptions;
 		public var mavenBuildOptions:MavenBuildOptions;
 
