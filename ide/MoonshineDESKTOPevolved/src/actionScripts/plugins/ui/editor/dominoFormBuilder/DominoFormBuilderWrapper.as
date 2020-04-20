@@ -34,6 +34,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import actionScripts.ui.IContentWindowReloadable;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.utils.FileUtils;
 	
 	import view.dominoFormBuilder.DominoTabularForm;
 	import view.suportClasses.events.PropertyEditorChangeEvent;
@@ -88,7 +89,20 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		
 		public function save():void
 		{
-			dominoTabularForm.save();
+			// null if form has problem
+			var tmpFormXML:XML = dominoTabularForm.formXML;
+			if (tmpFormXML)
+			{
+				// save form-xml
+				saveFormXML(tmpFormXML);
+				
+				// save form-dxl
+				saveFormDXL();
+				
+				// remove changed marker in tab
+				_isChanged = false;
+				dispatchEvent(new Event('labelChanged'));
+			}
 		}
 		
 		private var _isChanged:Boolean;
@@ -126,7 +140,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			dominoTabularForm.filePath = file.fileBridge.getFile as File;
 			
 			dominoTabularForm.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange, false, 0, true);
-			dominoTabularForm.addEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaved, false, 0, true);
+			dominoTabularForm.addEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaveRequest, false, 0, true);
 			
 			addElement(dominoTabularForm);
 		}
@@ -142,10 +156,9 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			updateChangeStatus()
 		}
 		
-		protected function onTabularInterfaceEditorSaved(event:VisualEditorEvent):void
+		protected function onTabularInterfaceEditorSaveRequest(event:VisualEditorEvent):void
 		{
-			_isChanged = false;
-			dispatchEvent(new Event('labelChanged'));
+			save();
 		}
 		
 		protected function updateChangeStatus():void
@@ -160,7 +173,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			dominoTabularForm.dispose();
 			
 			dominoTabularForm.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange);
-			dominoTabularForm.removeEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaved);
+			dominoTabularForm.removeEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaveRequest);
 		}
 		
 		private function tabSelectHandler(event:TabEvent):void
@@ -188,6 +201,43 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		{
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+		}
+		
+		private function saveFormXML(value:XML):void
+		{
+			if (!file.fileBridge.exists)
+			{
+				file.fileBridge.createFile();
+			}
+			
+			var data:XML = <root/>;
+			XML.ignoreComments = false;
+			
+			data.appendChild(value);
+			
+			FileUtils.writeToFile(
+				file.fileBridge.getFile as File,
+				"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"+ data.toXMLString()
+				);
+		}
+		
+		private function saveFormDXL():void
+		{
+			var formDXL:XML = dominoTabularForm.formDXL;
+			var tmpDXLFileName:String = file.fileBridge.nameWithoutExtension +".form";
+			var dxlFile:FileLocation = project.folderLocation.fileBridge.resolvePath(
+				OnDiskProjectVO.DOMINO_EXPORT_PATH +"/odp/Forms/"+ tmpDXLFileName
+			);
+			
+			if (!dxlFile.fileBridge.exists)
+			{
+				dxlFile.fileBridge.createFile();
+			}
+			
+			FileUtils.writeToFile(
+				dxlFile.fileBridge.getFile as File,
+				"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"+ formDXL.toXMLString()
+			);
 		}
 	}
 }

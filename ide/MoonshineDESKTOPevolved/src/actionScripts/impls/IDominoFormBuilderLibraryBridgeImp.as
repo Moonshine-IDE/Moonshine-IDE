@@ -19,12 +19,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+	import flash.filesystem.File;
+	
 	import spark.components.TitleWindow;
 	
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugins.ui.editor.dominoFormBuilder.DominoFormBuilderWrapper;
 	import actionScripts.ui.resizableTitleWindow.ResizableTitleWindow;
+	import actionScripts.utils.FileUtils;
 	
 	import components.skins.ResizableTitleWindowSkin;
 	
@@ -58,6 +61,21 @@ package actionScripts.impls
 			tmpPopup.setStyle("skinClass", ResizableTitleWindowSkin);
 			
 			return tmpPopup;
+		}
+		
+		public function getDominoFieldTemplateFile(path:String):File
+		{
+			return (File.applicationDirectory.resolvePath("elements/templates/domino/"+ path));
+		}
+		
+		public function read(file:File):String
+		{
+			return (FileUtils.readFromFile(file) as String);
+		}
+		
+		public function readAsync(file:File, onSuccess:Function, onFault:Function=null):void
+		{
+			FileUtils.readFromFileAsync(file, FileUtils.DATA_FORMAT_STRING, onSuccess, onFault);
 		}
 	}
 }

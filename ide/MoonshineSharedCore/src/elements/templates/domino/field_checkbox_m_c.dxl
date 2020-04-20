@@ -1,0 +1,10 @@
+<field allowmultivalues="true" allowtabout="false" borderstyle="none" computeaftervalidation="false" dataconnectionfield="data" defaultfocus="false" kind="computed" listdisplayseparator="comma" listinputseparators="comma" lookupaddressonrefresh="false" lookupeachchar="false" name="%FieldName%" protected="false" showdelimiters="true" sign="false" storelocally="false" type="keyword" useappletinbrowser="false">
+<keywords allownew="false" columns="1" helperbutton="false" readingorder="lefttoright" recalcchoices="false" ui="checkbox">
+<textlist>
+<text>.|1</text>
+</textlist>
+</keywords>
+<code event="defaultvalue">
+<formula>%ComputedValue%</formula>
+</code>
+</field>
