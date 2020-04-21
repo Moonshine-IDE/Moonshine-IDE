@@ -29,6 +29,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import actionScripts.factory.FileLocation;
 	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.IContentWindowReloadable;
@@ -42,6 +43,8 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	
 	public class DominoFormBuilderWrapper extends Group implements IContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
+		private static const FORM_GENERATION_PATH:String = OnDiskProjectVO.DOMINO_EXPORT_PATH +"/odp/Forms/";
+		
 		public function get longLabel():String							{ return "Tabular Interface"; }
 		public function get tabularEditorInterface():DominoTabularForm	{ return dominoTabularForm; }
 		
@@ -102,6 +105,13 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 				// remove changed marker in tab
 				_isChanged = false;
 				dispatchEvent(new Event('labelChanged'));
+				
+				// output in console
+				var tmpMessage:String = "Form Builder successfully saved and DXL generated at:\n"+ 
+					FORM_GENERATION_PATH + file.fileBridge.nameWithoutExtension +".form";
+				dispatcher.dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, tmpMessage, false, false, ConsoleOutputEvent.TYPE_SUCCESS)
+				);
 			}
 		}
 		
@@ -226,7 +236,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			var formDXL:XML = dominoTabularForm.formDXL;
 			var tmpDXLFileName:String = file.fileBridge.nameWithoutExtension +".form";
 			var dxlFile:FileLocation = project.folderLocation.fileBridge.resolvePath(
-				OnDiskProjectVO.DOMINO_EXPORT_PATH +"/odp/Forms/"+ tmpDXLFileName
+				FORM_GENERATION_PATH + tmpDXLFileName
 			);
 			
 			if (!dxlFile.fileBridge.exists)
