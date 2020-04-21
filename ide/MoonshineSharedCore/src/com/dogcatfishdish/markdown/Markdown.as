@@ -1,8 +1,14 @@
 /*
-This version 
+Moonshine changes
+-------
+- Added Github-flavored markdown code blocks
+- Added ...rest:Array to escapeCharacters_callback() params
+
+Actiondown
 -------
 Copyright © 2010 Ben Beaumont
 http://www.dogcatfishdish.com/
+https://raw.githubusercontent.com/bbeaumont/Actiondown
 
 
 Original license
@@ -48,12 +54,18 @@ package com.dogcatfishdish.markdown
 		private static var g_titles:Array = [];
 		private static var g_html_blocks:Array = [];
 		private static var g_list_level:int = 0;
+		private static var g_gh_code_blocks:Array = [];
 		
 		public static function MakeHtml(text:String):String 
 		{
+			if(!text)
+			{
+				return text;
+			}
 			g_urls = [];
 			g_titles = [];
 			g_html_blocks = [];
+			g_gh_code_blocks = [];
 			
 			text = text.replace(/~/g,"~T");
 			text = text.replace(/\$/g,"~D");
@@ -121,6 +133,7 @@ package com.dogcatfishdish.markdown
 			text = text.replace(/^[ ]{0,2}([ ]?\-[ ]?){3,}[ \t]*$/gm, key);
 			text = text.replace(/^[ ]{0,2}([ ]?\_[ ]?){3,}[ \t]*$/gm, key);	
 			text = _DoLists(text);
+			text = _DoGithubCodeBlocks(text);
 			text = _DoCodeBlocks(text);
 			text = _DoBlockQuotes(text);
 			text = _HashHTMLBlocks(text);
@@ -213,7 +226,7 @@ package com.dogcatfishdish.markdown
 					{
 						var list:String = m1;
 						var list_type:String = (m2.search(/[*+-]/g)>-1) ? "ul" : "ol";
-						list = list.replace(/\n{2,}/g,"\n\n\n");;
+						list = list.replace(/\n{2,}/g,"\n\n\n");
 						var result:String = _ProcessListItems(list);
 						result = result.replace(/\s+$/,"");
 						result = "<"+list_type+">" + result + "</"+list_type+">\n";
@@ -281,11 +294,36 @@ package com.dogcatfishdish.markdown
 			
 			return list_str;
 		}
-		
+
+		private static function _DoGithubCodeBlocks(text:String):String
+		{
+			text += "~0";
+			text = text.replace(/(?:^|\n)(?: {0,3})(```+|~~~+)(?: *)([^\s`~]*)\n([\s\S]*?)\n(?: {0,3})\1/g,
+				function (wholeMatch:String, delim:String, language:String, codeblock:String, ...rest:Array):String {
+
+					codeblock = _EncodeCode( _Outdent(codeblock));
+					codeblock = _Detab(codeblock);
+					codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines
+					codeblock = codeblock.replace(/\n+$/g,""); // trim trailing whitespace
+
+					codeblock = "<pre><code" + (language ? " class=\"" + language + " language-" + language + "\"" : "") + ">" + codeblock + "</code></pre>";
+
+					codeblock = hashBlock(codeblock);
+
+					// Since GHCodeblocks can be false positives, we need to
+					// store the primitive text and the parsed text in a global var,
+					// and then return a token
+					return '\n\n~G' + (g_gh_code_blocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
+				});
+
+			text = text.replace(/~0/,"");
+			
+			return text;
+		}
 			
 		private static function _DoCodeBlocks(text:String):String 
 		{
-			text += "~0";	
+			text += "~0";
 			text = text.replace(/(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g,
 				function(wholeMatch:String, m1:String, m2:String, ...rest:Array):String 
 				{
@@ -386,7 +424,7 @@ package com.dogcatfishdish.markdown
 			{
 				var str:String = grafs[i];
 
-				if (str.search(/~K(\d+)K/g) >= 0) 
+				if (str.search(/~(K|G)(\d+)\1/g) >= 0) 
 				{
 					grafsOut.push(str);
 				}
@@ -402,14 +440,39 @@ package com.dogcatfishdish.markdown
 			end = grafsOut.length;
 			for (i = 0; i < end; i++) 
 			{
-				var reg:RegExp = /~K(\d+)K/g;
+				var reg:RegExp = /~(K|G)(\d+)\1/g;
 				var res:Object = reg.exec(grafsOut[i]);
+				var codeFlag:Boolean = false;
+				var blockText:String = "";
 				
-				while(res != null) {	
-					var blockText:String = g_html_blocks[int(res[1])]; //FIXME this is a shitty bit
+				while(res != null) {
+					var delim:String = res[1];
+					var num:int = int(res[2]);
+					if(delim == "K")
+					{
+						blockText = g_html_blocks[num];
+					}
+					else
+					{
+						if(codeFlag)
+						{
+							blockText = _EncodeCode(g_gh_code_blocks[num].text);
+						}
+						else
+						{
+							blockText = g_gh_code_blocks[num].codeblock;
+						}
+					}
 					blockText = blockText.replace(/\$/g,"$$$$"); // Escape any dollar signs
-					grafsOut[i] = grafsOut[i].replace(/~K\d+K/, blockText);
+					grafsOut[i] = grafsOut[i].replace(/~(K|G)\d+\1/, blockText);
+					// Check if grafsOut[i] is a pre->code
+					if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOut[i])) {
+						codeFlag = true;
+					}
+					//create a new object so that the state is reset
+					reg = /~(K|G)(\d+)\1/g;
 					res = reg.exec(grafsOut[i]);
+					
 				}	
 			}
 			
