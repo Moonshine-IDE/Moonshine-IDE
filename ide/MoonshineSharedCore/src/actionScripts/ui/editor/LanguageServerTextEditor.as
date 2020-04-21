@@ -295,7 +295,9 @@ package actionScripts.ui.editor
 		{
 			dispatcher.removeEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
 			dispatcher.removeEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
-			editor.showHover(null);
+			//don't call showHover(null) here. let the manager handle it.
+			//because the mouse might have moved over the tooltip instead,
+			//and we don't want to clear the hover in that case
 			editor.showDefinitionLink(null, null);
 		}
 		
