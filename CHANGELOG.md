@@ -10,12 +10,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Choose between Chrome and Firefox when debugging Apache Royale and OpenFL projects targeting HTML/JS.
 * Debug OpenFL projects targeting native Windows, macOS, and Linux with the HXCPP debugger.
+* Debug OpenFL projects targeting HashLink (Windows).
 * Choose between USB and Wi-Fi connection when debugging Adobe AIR mobile apps on a real device. 
 
 ### Changed
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.1.1.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.52.0.
 * Updated [Firefox debug adapter](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.7.0.
+* Updated [HashLink debug adapter](https://github.com/vshaxe/hashlink-debugger) engine to latest.
 * Updated [HXCPP debug adapter](https://github.com/vshaxe/hxcpp-debugger) engine to v1.2.4.
 * Updated [SWF debug adapter](https://as3mxml.com) engine to v1.1.1.
 
