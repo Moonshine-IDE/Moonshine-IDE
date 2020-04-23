@@ -1,7 +1,9 @@
 /*
 Moonshine changes
 -------
-- Added Github-flavored markdown code blocks
+- Added ``` code blocks
+- Fixed parsing of lists at end of Markdown string
+- Added option to format HTML for Flash TextField
 - Added ...rest:Array to escapeCharacters_callback() params
 
 Actiondown
