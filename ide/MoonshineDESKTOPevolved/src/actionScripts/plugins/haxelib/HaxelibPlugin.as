@@ -76,6 +76,10 @@ package actionScripts.plugins.haxelib
 				status.currentIndex = 0;
 				dispatcher.dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,
+					"Haxe"
+				));
+				dispatcher.dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS,
 					"Haxe", "Installing Haxe dependencies...", false
 				));
 				installNextDependency(status);
@@ -125,7 +129,8 @@ package actionScripts.plugins.haxelib
 			if(status.currentIndex >= status.items.length)
 			{
 				dispatcher.dispatchEvent(new StatusBarEvent(
-					StatusBarEvent.LANGUAGE_SERVER_STATUS
+					StatusBarEvent.LANGUAGE_SERVER_STATUS,
+					"Haxe"
 				));
 				dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, status.project));
 				return;
@@ -185,6 +190,10 @@ package actionScripts.plugins.haxelib
 				return;
 			}
 
+			dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				"Haxe", "Checking Haxe dependencies...", false
+			));
 			var project:HaxeProjectVO = event.project;
 			if(project.isLime)
 			{
