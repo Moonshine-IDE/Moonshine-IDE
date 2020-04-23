@@ -252,7 +252,8 @@ package actionScripts.languageServer
 			initializeLanguageServer(sdkPath);
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS, "ActionScript", "Starting ActionScript & MXML code intelligence..."
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name, "Starting ActionScript & MXML code intelligence..."
 			));
 		}
 		
@@ -434,7 +435,8 @@ package actionScripts.languageServer
 			this.dispatchEvent(new Event(Event.INIT));
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
 			));
 		}
 
