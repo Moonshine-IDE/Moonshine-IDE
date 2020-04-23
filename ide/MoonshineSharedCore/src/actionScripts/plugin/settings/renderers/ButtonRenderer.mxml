@@ -49,9 +49,9 @@
 	</fx:Script>
 
 	<s:Label styleName="uiTextSettingsLabel"
-			 text="{setting.label}" />
+			 text="{setting.label}" width="100%" />
 
-	<mx:Spacer width="100%"/>
+	<mx:Spacer width="10"/>
 	
 	<s:Button id="btn"
 			  label="{setting.stringValue}"
