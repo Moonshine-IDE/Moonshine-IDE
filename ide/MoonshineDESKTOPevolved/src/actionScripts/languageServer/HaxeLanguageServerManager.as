@@ -78,6 +78,7 @@ package actionScripts.languageServer
 		private var _limeDisplayProcess:NativeProcess;
 		private var _haxeVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
+		private var _waitingToDispose:Boolean = false;
 		private var _waitingForHaxelibInstall:Boolean = false;
 		private var _previousHaxePath:String = null;
 		private var _previousNodePath:String = null;
@@ -156,6 +157,21 @@ package actionScripts.languageServer
 			_dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 
 			cleanupLanguageClient();
+
+			if(_haxeVersionProcess)
+			{
+				_waitingToDispose = true;
+				_haxeVersionProcess.exit(true);
+			}
+			if(_limeDisplayProcess)
+			{
+				_waitingToDispose = true;
+				_limeDisplayProcess.exit(true);
+			}
+			else if(_waitingForHaxelibInstall)
+			{
+				_waitingToDispose = true;
+			}
 		}
 
 		protected function cleanupLanguageClient():void
@@ -523,6 +539,11 @@ package actionScripts.languageServer
 			_limeDisplayProcess.exit();
 			_limeDisplayProcess = null;
 
+			if(_waitingToDispose)
+			{
+				//don't continue if we've disposed during the bootstrap process
+				return;
+			}
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
@@ -562,6 +583,11 @@ package actionScripts.languageServer
 			_haxeVersionProcess.exit();
 			_haxeVersionProcess = null;
 
+			if(_waitingToDispose)
+			{
+				//don't continue if we've disposed during the bootstrap process
+				return;
+			}
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
@@ -640,6 +666,11 @@ package actionScripts.languageServer
 				return;
 			}
 			_waitingForHaxelibInstall = false;
+			if(_waitingToDispose)
+			{
+				//don't continue if we've disposed during the bootstrap process
+				return;
+			}
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
