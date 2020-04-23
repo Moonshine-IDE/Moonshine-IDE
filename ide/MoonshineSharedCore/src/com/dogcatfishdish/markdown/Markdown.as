@@ -240,6 +240,9 @@ package com.dogcatfishdish.markdown
 		{
 			var whole_list:RegExp = /^(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/g;
 			
+			//add sentinel to act as non-whitespace character after end of list
+			text += "~0";
+
 			if (g_list_level > 0) {
 
 				text = text.replace(whole_list, 
