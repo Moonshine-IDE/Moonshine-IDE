@@ -78,6 +78,7 @@ package actionScripts.languageServer
 		private var _limeDisplayProcess:NativeProcess;
 		private var _haxeVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
+		private var _waitingForHaxelibInstall:Boolean = false;
 		private var _previousHaxePath:String = null;
 		private var _previousNodePath:String = null;
 		private var _previousTargetPlatform:String = null;
@@ -217,11 +218,13 @@ package actionScripts.languageServer
 				warning("Haxe language code intelligence disabled. To enable, update Node.js location in application settings.");
 				return;
 			}
+			_waitingForHaxelibInstall = false;
 			installDependencies();
 		}
 
 		private function installDependencies():void
 		{
+			_waitingForHaxelibInstall = true;
 			_dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL, _project));
 		}
 		
@@ -438,6 +441,20 @@ package actionScripts.languageServer
 				_waitingToRestart = true;
 				_languageServerProcess.exit();
 			}
+			else if(_haxeVersionProcess)
+			{
+				_waitingToRestart = true;
+				_haxeVersionProcess.exit();
+			}
+			else if(_limeDisplayProcess)
+			{
+				_waitingToRestart = true;
+				_limeDisplayProcess.exit();
+			}
+			else if(_waitingForHaxelibInstall)
+			{
+				_waitingToRestart = true;
+			}
 
 			if(!_waitingToRestart)
 			{
@@ -471,6 +488,7 @@ package actionScripts.languageServer
 			{
 				_waitingToRestart = false;
 				bootstrapThenStartNativeProcess();
+				return;
 			}
 		}
 		
@@ -505,6 +523,13 @@ package actionScripts.languageServer
 			_limeDisplayProcess.exit();
 			_limeDisplayProcess = null;
 
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				bootstrapThenStartNativeProcess();
+				return;
+			}
+
 			if(event.exitCode == 0)
 			{
 				startNativeProcess(this._displayArguments.split("\n"));
@@ -536,6 +561,13 @@ package actionScripts.languageServer
 			_haxeVersionProcess.removeEventListener(NativeProcessExitEvent.EXIT, haxeVersionProcess_exitHandler);
 			_haxeVersionProcess.exit();
 			_haxeVersionProcess = null;
+
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				bootstrapThenStartNativeProcess();
+				return;
+			}
 
 			if(event.exitCode == 0)
 			{
@@ -605,6 +637,13 @@ package actionScripts.languageServer
 		{
 			if(event.project != _project)
 			{
+				return;
+			}
+			_waitingForHaxelibInstall = false;
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				restartLanguageServer();
 				return;
 			}
 			if(_languageServerProcess)
