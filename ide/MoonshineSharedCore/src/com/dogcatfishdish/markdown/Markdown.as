@@ -8,7 +8,7 @@ Actiondown
 -------
 Copyright © 2010 Ben Beaumont
 http://www.dogcatfishdish.com/
-https://raw.githubusercontent.com/bbeaumont/Actiondown
+https://github.com/bbeaumont/Actiondown
 
 
 Original license
