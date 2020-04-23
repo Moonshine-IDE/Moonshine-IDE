@@ -97,7 +97,7 @@ package actionScripts.languageServer
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 
-			boostrapThenStartNativeProcess();
+			bootstrapThenStartNativeProcess();
 		}
 
 		public function get project():ProjectVO
@@ -198,7 +198,7 @@ package actionScripts.languageServer
 			return true;
 		}
 		
-		private function boostrapThenStartNativeProcess():void
+		private function bootstrapThenStartNativeProcess():void
 		{
 			if(!UtilsCore.isHaxeAvailable())
 			{
@@ -441,7 +441,7 @@ package actionScripts.languageServer
 
 			if(!_waitingToRestart)
 			{
-				boostrapThenStartNativeProcess();
+				bootstrapThenStartNativeProcess();
 			}
 		}
 
@@ -470,7 +470,7 @@ package actionScripts.languageServer
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
-				boostrapThenStartNativeProcess();
+				bootstrapThenStartNativeProcess();
 			}
 		}
 		
