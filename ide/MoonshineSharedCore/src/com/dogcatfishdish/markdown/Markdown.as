@@ -55,8 +55,9 @@ package com.dogcatfishdish.markdown
 		private static var g_html_blocks:Array = [];
 		private static var g_list_level:int = 0;
 		private static var g_gh_code_blocks:Array = [];
+		private static var g_formatForFlashTextField:Boolean = false;
 		
-		public static function MakeHtml(text:String):String 
+		public static function MakeHtml(text:String, formatForFlashTextField:Boolean=false):String 
 		{
 			if(!text)
 			{
@@ -66,6 +67,7 @@ package com.dogcatfishdish.markdown
 			g_titles = [];
 			g_html_blocks = [];
 			g_gh_code_blocks = [];
+			g_formatForFlashTextField = formatForFlashTextField;
 			
 			text = text.replace(/~/g,"~T");
 			text = text.replace(/\$/g,"~D");
@@ -80,6 +82,12 @@ package com.dogcatfishdish.markdown
 			text = _UnescapeSpecialChars(text);
 			text = text.replace(/~D/g,"$$");
 			text = text.replace(/~T/g,"~");
+			if(g_formatForFlashTextField)
+			{
+				//TextField HTML format needs new lines stripped from both
+				//the beginning and end so that they are not rendered
+				text = text.replace(/(^\n+|\n+$)/g,"");
+			}
 			
 			return text;
 		}
@@ -128,7 +136,8 @@ package com.dogcatfishdish.markdown
 		{
 			text = _DoHeaders(text);
 
-			var key:String = hashBlock("<hr />");
+		
+			var key:String = g_formatForFlashTextField ? hashBlock("<p>---</p>") : hashBlock("<hr />");
 			text = text.replace(/^[ ]{0,2}([ ]?\*[ ]?){3,}[ \t]*$/gm, key);
 			text = text.replace(/^[ ]{0,2}([ ]?\-[ ]?){3,}[ \t]*$/gm, key);
 			text = text.replace(/^[ ]{0,2}([ ]?\_[ ]?){3,}[ \t]*$/gm, key);	
@@ -193,6 +202,10 @@ package com.dogcatfishdish.markdown
 			text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm,
 				function(wholeMatch:String, m1:String, ...rest:Array):String
 				{
+					if(g_formatForFlashTextField)
+					{
+						return hashBlock("<p><font size=\"+2\">" + _RunSpanGamut(m1) + "</font></p>");
+					}
 					return hashBlock("<h1>" + _RunSpanGamut(m1) + "</h1>");
 				}
 			);
@@ -200,6 +213,10 @@ package com.dogcatfishdish.markdown
 			text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm,
 				function(matchFound:String, m1:String, ...rest:Array):String
 				{
+					if(g_formatForFlashTextField)
+					{
+						return hashBlock("<p><font size=\"+1\">" + _RunSpanGamut(m1) + "</font></p>");
+					}
 					return hashBlock("<h2>" + _RunSpanGamut(m1) + "</h2>");
 				}
 			);
@@ -208,6 +225,10 @@ package com.dogcatfishdish.markdown
 				function(wholeMatch:String, m1:String, m2:String, ...rest:Array):String 
 				{
 					var h_level:uint = m1.length;
+					if(g_formatForFlashTextField)
+					{
+						return hashBlock("<p>" + _RunSpanGamut(m1) + "</p>");
+					}
 					return hashBlock("<h" + h_level + ">" + _RunSpanGamut(m2) + "</h" + h_level + ">");
 				}
 			);
@@ -306,7 +327,14 @@ package com.dogcatfishdish.markdown
 					codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines
 					codeblock = codeblock.replace(/\n+$/g,""); // trim trailing whitespace
 
-					codeblock = "<pre><code" + (language ? " class=\"" + language + " language-" + language + "\"" : "") + ">" + codeblock + "</code></pre>";
+					if(g_formatForFlashTextField)
+					{
+						codeblock = "<p><font face=\"_typewriter\">" + codeblock + "</font></p>";
+					}
+					else
+					{
+						codeblock = "<pre><code" + (language ? " class=\"" + language + " language-" + language + "\"" : "") + ">" + codeblock + "</code></pre>";
+					}
 
 					codeblock = hashBlock(codeblock);
 
@@ -335,7 +363,14 @@ package com.dogcatfishdish.markdown
 					codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines
 					codeblock = codeblock.replace(/\n+$/g,""); // trim trailing whitespace
 					
-					codeblock = "<pre><code>" + codeblock + "\n</code></pre>";
+					if(g_formatForFlashTextField)
+					{
+						codeblock = "<p><font face=\"_typewriter\">" + codeblock + "</font></p>";
+					}
+					else
+					{
+						codeblock = "<pre><code>" + codeblock + "\n</code></pre>";
+					}
 					
 					return hashBlock(codeblock) + nextChar;
 				}
@@ -355,6 +390,10 @@ package com.dogcatfishdish.markdown
 					c = c.replace(/^([ \t]*)/g,"");	// leading whitespace
 					c = c.replace(/[ \t]*$/g,"");	// trailing whitespace
 					c = _EncodeCode(c);
+					if(g_formatForFlashTextField)
+					{
+						return m1 + "<font face=\"_typewriter\">" + c + "</font>";
+					}
 					return m1 + "<code>" + c + "</code>";
 				}
 			);
@@ -374,9 +413,12 @@ package com.dogcatfishdish.markdown
 		
 		private static function _DoItalicsAndBold(text:String):String 
 		{
-			text = text.replace(/(\*\*|__)(?=\S)([^\r]*?\S[*_]*)\1/g, "<strong>$2</strong>");
-			
-			text = text.replace(/(\*|_)(?=\S)([^\r]*?\S)\1/g, "<em>$2</em>");
+			var boldTag:String = g_formatForFlashTextField ? "b" : "strong";
+			var italicTag:String = g_formatForFlashTextField ? "i" : "em";
+
+			text = text.replace(/(\*\*|__)(?=\S)([^\r]*?\S[*_]*)\1/g, "<" + boldTag + ">$2</" + boldTag + ">");			
+
+			text = text.replace(/(\*|_)(?=\S)([^\r]*?\S)\1/g, "<" + italicTag + ">$2</" + italicTag + ">");
 			
 			return text;
 		}
@@ -404,7 +446,14 @@ package com.dogcatfishdish.markdown
 						}
 					);
 					
-					return hashBlock("<blockquote>\n" + bq + "\n</blockquote>");
+					if(g_formatForFlashTextField)
+					{
+						return hashBlock("<textformat blockindent=\"20\">" + bq + "</textformat>");
+					}
+					else
+					{
+						return hashBlock("<blockquote>\n" + bq + "\n</blockquote>");
+					}
 				}
 			);
 			return text;			
