@@ -594,7 +594,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(!_languageClient)
+			if(!_languageClient || !_languageClient.initialized)
 			{
 				return;
 			}
