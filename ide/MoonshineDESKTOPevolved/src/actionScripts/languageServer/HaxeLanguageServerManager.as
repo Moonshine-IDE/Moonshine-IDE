@@ -85,6 +85,7 @@ package actionScripts.languageServer
 		private var _previousTargetPlatform:String = null;
 		private var _displayArguments:String = null;
 		private var _haxeVersion:String = null;
+		private var _languageServerProgressStarted:Boolean = false;
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -180,6 +181,15 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+			if(_languageServerProgressStarted)
+			{
+				//if we had a progress message, clean it up
+				_dispatcher.dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS,
+					project.name
+				));
+			}
+			_languageServerProgressStarted = false;
 			_languageClient.removeNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.removeNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
@@ -435,6 +445,7 @@ package actionScripts.languageServer
 					trace("}}} ", JSON.stringify(message));
 				});
 			}
+			_languageServerProgressStarted = false;
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
 		}
@@ -739,6 +750,7 @@ package actionScripts.languageServer
 
 		private function haxe__progressStart(message:Object):void
 		{
+			_languageServerProgressStarted = true;
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
 				project.name, message.params.title, false
@@ -747,6 +759,7 @@ package actionScripts.languageServer
 
 		private function haxe__progressStop(message:Object):void
 		{
+			_languageServerProgressStarted = false;
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
 				project.name
