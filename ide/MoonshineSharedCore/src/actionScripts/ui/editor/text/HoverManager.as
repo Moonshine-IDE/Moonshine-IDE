@@ -47,10 +47,10 @@ package actionScripts.ui.editor.text
 			{
 				if(i > 0)
 				{
-					hoverText += "\n";
+					hoverText += "\n\n";
 				}
 				var content:String = contents[i];
-				content = Markdown.MakeHtml(content);
+				content = Markdown.MakeHtml(content, true);
 				hoverText += content;
 			}
 			if(hoverText.length == 0)

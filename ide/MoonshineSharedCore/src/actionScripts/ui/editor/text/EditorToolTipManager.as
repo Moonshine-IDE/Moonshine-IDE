@@ -49,7 +49,9 @@ package actionScripts.ui.editor.text
 			tooltipGroup = new Group();
 			tooltipGroup.percentWidth = 100;
 			tooltipGroup.maxWidth = 450;
-			tooltipGroup.layout = new VerticalLayout();
+			var groupLayout:VerticalLayout = new VerticalLayout();
+			groupLayout.gap = 20;
+			tooltipGroup.layout = groupLayout;
 			tooltip.addElement(tooltipGroup);
 		}
 
@@ -108,12 +110,6 @@ package actionScripts.ui.editor.text
 				config.defaultLinkHoverFormat = linkFormat;
 				config.defaultLinkActiveFormat = linkFormat;
 				var format:String = html ? TextConverter.TEXT_FIELD_HTML_FORMAT : TextConverter.PLAIN_TEXT_FORMAT;
-				if(html)
-				{
-					//TextField HTML format needs new lines stripped from both
-					//the beginning and end so that they are not rendered
-					value = value.replace(/(^\n+|\n+$)/g,"");
-				}
 				var textFlow:TextFlow = TextConverter.importToFlow(value, format, config);
 				textFlow.addEventListener(FlowElementMouseEvent.CLICK, function(event:FlowElementMouseEvent):void
 				{
