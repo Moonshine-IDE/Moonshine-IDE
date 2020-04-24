@@ -546,7 +546,7 @@ package actionScripts.languageServer
 				{
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS,
-						"Java", message.params.message, false
+						project.name, message.params.message, false
 					));
 					break;
 				}
@@ -554,14 +554,15 @@ package actionScripts.languageServer
 				{
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS,
-						"Java", message.params.message, false
+						project.name, message.params.message, false
 					));
 				}
 				case "Started":
 				{
 					_languageStatusDone = true;
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-						StatusBarEvent.LANGUAGE_SERVER_STATUS
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name
 					));
 			
 					var configFile:FileLocation = getProjectBuildConfigFile();
@@ -572,7 +573,8 @@ package actionScripts.languageServer
 				{
 					_languageStatusDone = true;
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-						StatusBarEvent.LANGUAGE_SERVER_STATUS
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name
 					));
 					break;
 				}

@@ -147,7 +147,7 @@ package actionScripts.plugins.debugAdapter
 			_debugPanel.stepIntoButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
 			_debugPanel.stepOutButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
 			_debugPanel.stopButton.enabled = _debugAdapter != null;
-			_debugPanel.stackFrames = _debugAdapter ? _debugAdapter.stackFrames : null;
+			_debugPanel.threadsAndStackFrames = _debugAdapter ? _debugAdapter.threadsAndStackFrames : null;
 			_debugPanel.scopesAndVars = _debugAdapter ? _debugAdapter.scopesAndVars : null;
 		}
 		

@@ -6,12 +6,18 @@ package actionScripts.ui.editor.text
 	import flash.utils.setTimeout;
 
 	import flashx.textLayout.conversion.TextConverter;
+	import flashx.textLayout.elements.Configuration;
+	import flashx.textLayout.elements.LinkElement;
+	import flashx.textLayout.elements.TextFlow;
+	import flashx.textLayout.events.FlowElementMouseEvent;
+	import flashx.textLayout.formats.TextDecoration;
+	import flashx.textLayout.formats.TextLayoutFormat;
 
 	import mx.containers.VBox;
 	import mx.managers.PopUpManager;
 
-	import spark.components.RichText;
 	import spark.components.Group;
+	import spark.components.RichEditableText;
 	import spark.layouts.VerticalLayout;
 
 	public class EditorToolTipManager
@@ -35,20 +41,21 @@ package actionScripts.ui.editor.text
 			tooltip = new VBox();
 			tooltip.styleName = "toolTip";
 			tooltip.focusEnabled = false;
-			tooltip.mouseEnabled = false;
-			tooltip.mouseChildren = false;
 			tooltip.maxWidth = 450;
+			tooltip.addEventListener(MouseEvent.ROLL_OUT, tooltip_onRollOut);
 
 			//RichText won't wrap correctly if added to the VBox above, for some
 			//reason, so we're going to add it to this internal Group instead
 			tooltipGroup = new Group();
 			tooltipGroup.percentWidth = 100;
 			tooltipGroup.maxWidth = 450;
-			tooltipGroup.layout = new VerticalLayout();
+			var groupLayout:VerticalLayout = new VerticalLayout();
+			groupLayout.gap = 20;
+			tooltipGroup.layout = groupLayout;
 			tooltip.addElement(tooltipGroup);
 		}
 
-		public function setTooltip(id:String, value:String):void
+		public function setTooltip(id:String, value:String, html:Boolean = false):void
 		{
 			if(value === null)
 			{
@@ -57,7 +64,7 @@ package actionScripts.ui.editor.text
 					//there's nothing to clear
 					return;
 				}
-				var richText:RichText = idToRichText[id];
+				var richText:RichEditableText = RichEditableText(idToRichText[id]);
 				tooltipGroup.removeElement(richText);
 				delete idToRichText[id];
 				delete idToValue[id];
@@ -84,16 +91,43 @@ package actionScripts.ui.editor.text
 				idToValue[id] = value;
 				if(id in idToRichText)
 				{
-					richText = idToRichText[id];
+					richText = RichEditableText(idToRichText[id]);
 				}
 				else
 				{
-					richText = new RichText();
+					richText = new RichEditableText();
+					richText.editable = false;
 					richText.percentWidth = 100;
 					tooltipGroup.addElement(richText);
 					idToRichText[id] = richText;
 				}
-				richText.textFlow = TextConverter.importToFlow(value, TextConverter.PLAIN_TEXT_FORMAT);
+				var config:Configuration = new Configuration();
+				var linkFormat:TextLayoutFormat = new TextLayoutFormat();
+				//we can't set this in CSS, apparently, so do it manually here
+				linkFormat.color = 0xffffff;
+				linkFormat.textDecoration = TextDecoration.UNDERLINE;
+				config.defaultLinkNormalFormat = linkFormat;
+				config.defaultLinkHoverFormat = linkFormat;
+				config.defaultLinkActiveFormat = linkFormat;
+				var format:String = html ? TextConverter.TEXT_FIELD_HTML_FORMAT : TextConverter.PLAIN_TEXT_FORMAT;
+				var textFlow:TextFlow = TextConverter.importToFlow(value, format, config);
+				textFlow.addEventListener(FlowElementMouseEvent.CLICK, function(event:FlowElementMouseEvent):void
+				{
+    				var link:LinkElement = event.flowElement as LinkElement;
+					if(!link)
+					{
+						return;
+					}
+					var href:String = link.href;
+					if(href.indexOf("http://") == 0 || href.indexOf("https://") == 0)
+					{
+						//let this link work normally
+						return;
+					}
+					//might be a special URI scheme defined by a language server
+					event.preventDefault();
+				});
+				richText.textFlow = textFlow;
 			}
 			if(tooltip.isPopUp)
 			{
@@ -126,11 +160,23 @@ package actionScripts.ui.editor.text
 				PopUpManager.addPopUp(tooltip, editor, false);
 			}
 
-			//to get an accurate height, we need to validate first
+			//to get an accurate width/height, we need to validate first
+			tooltip.maxHeight = NaN;
+			tooltip.explicitWidth = NaN;
 			tooltip.validateNow();
+			//for some reason, it can start wrapping at max - 1...
+			if(tooltip.width >= 449) {
+				//if we reached the maxWidth, we should also set a maxHeight
+				//however, if both maxWidth and maxHeight are set, it might set
+				//the width smaller than the maxWidth, so set an explicitWidth
+				//instead to force it to work like we want -JT
+				tooltip.explicitWidth = 450;
+				tooltip.maxHeight = 450;
+				tooltip.validateNow();
+			}
 
-			var tooltipX:Number = tooltip.stage.mouseX;
-			var tooltipY:Number = tooltip.stage.mouseY - (tooltip.height + 15);
+			var tooltipX:Number = tooltip.stage.mouseX - 30;
+			var tooltipY:Number = tooltip.stage.mouseY - (tooltip.height + 10);
 			var maxTooltipX:Number = tooltip.stage.stageWidth - tooltip.width;
 			if(tooltipX > maxTooltipX)
 			{
@@ -154,7 +200,7 @@ package actionScripts.ui.editor.text
 			{
 				delete idToValue[id];
 
-				var text:RichText = idToRichText[id];
+				var text:RichEditableText = RichEditableText(idToRichText[id]);
 				tooltipGroup.removeElement(text);
 				delete idToRichText[id];
 			}
@@ -170,8 +216,19 @@ package actionScripts.ui.editor.text
 			PopUpManager.removePopUp(tooltip);
 		}
 
+		private function tooltip_onRollOut(event:MouseEvent):void
+		{
+			closeTooltip();
+		}
+
 		private function editor_onRollOut(event:MouseEvent):void
 		{
+			if(event.relatedObject != null && (tooltip == event.relatedObject || tooltip.contains(event.relatedObject)))
+			{
+				//if we're over the tooltip, don't close it!
+				//we'll close the tooltip when the mouse rolls out of it
+				return;
+			}
 			closeTooltip();
 		}
 

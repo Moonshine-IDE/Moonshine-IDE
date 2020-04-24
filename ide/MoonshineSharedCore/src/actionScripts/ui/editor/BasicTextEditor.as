@@ -303,7 +303,7 @@ package actionScripts.ui.editor
 		public function checkFileIfChanged():void
 		{
 			// physical file do not exist anymore
-			if (!file.fileBridge.exists)
+			if (file && !file.fileBridge.exists)
 			{
 				dispatcher.dispatchEvent(new UpdateTabEvent(UpdateTabEvent.EVENT_TAB_FILE_EXIST_NOMORE, this));
 			}

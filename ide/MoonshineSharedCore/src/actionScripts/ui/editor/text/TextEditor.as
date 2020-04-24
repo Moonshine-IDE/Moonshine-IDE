@@ -851,9 +851,9 @@ package actionScripts.ui.editor.text
 			codeActionsManager.showCodeActions(codeActions);
 		}
 
-		public function setTooltip(id:String, text:String):void
+		public function setTooltip(id:String, text:String, html:Boolean = false):void
 		{
-			editorToolTipManager.setTooltip(id, text);
+			editorToolTipManager.setTooltip(id, text, html);
 		}
 
 		private function handleResize(event:ResizeEvent):void

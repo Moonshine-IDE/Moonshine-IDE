@@ -31,7 +31,6 @@
 	</mx:Metadata>
 
 	<mx:Script><![CDATA[
-		import mx.collections.ICollectionView;
 		import mx.collections.IHierarchicalData;
 		import mx.events.AdvancedDataGridEvent;
 		import mx.events.ListEvent;
@@ -42,7 +41,7 @@
 		import actionScripts.debugAdapter.vo.Variable;
 
 		[Bindable]
-		public var stackFrames:ICollectionView;
+		public var threadsAndStackFrames:IHierarchicalData;
 
 		[Bindable]
 		public var scopesAndVars:IHierarchicalData;
@@ -61,24 +60,33 @@
 			return "";
 		}
 
-		private function lineLabelFunction(item:StackFrame, column:DataGridColumn = null):String
+		private function lineLabelFunction(item:Object, column:AdvancedDataGridColumn = null):String
 		{
-			if(item.source)
+			if(item is StackFrame)
 			{
-				return item.line.toString();
+				var stackFrame:StackFrame = StackFrame(item);
+				if(stackFrame.source)
+				{
+					return stackFrame.line.toString();
+				}
 			}
 			return "";
 		}
 
-		private function nameDataTipFunction(item:StackFrame):String
+		private function nameDataTipFunction(item:Object):String
 		{
-			var result:String = item.name;
-			if(item.source)
+			if(item is StackFrame)
 			{
-				result += " (" + item.line + "," + item.column + ")";
-				result += "\n" + item.source.path;
+				var stackFrame:StackFrame = StackFrame(item);
+				var result:String = stackFrame.name;
+				if(stackFrame.source)
+				{
+					result += " (" + stackFrame.line + "," + stackFrame.column + ")";
+					result += "\n" + stackFrame.source.path;
+				}
+				return result;
 			}
-			return result;
+			return "";
 		}
 
 		private function variablesTree_itemOpenHandler(event:AdvancedDataGridEvent):void
@@ -90,15 +98,19 @@
 			}
 		}
 
-		private function callStackList_itemClickHandler(event:ListEvent):void
+		private function threadsList_itemClickHandler(event:ListEvent):void
 		{
-			var stackFrame:StackFrame = StackFrame(event.itemRenderer.data);
+			var stackFrame:StackFrame = event.itemRenderer.data as StackFrame;
+			if(!stackFrame)
+			{
+				return;
+			}
 			this.dispatchEvent(new StackFrameEvent(StackFrameEvent.GOTO_STACK_FRAME, stackFrame));
 		}
 		]]></mx:Script>
 	
 	<mx:Style>
-		.variablesTreeHeaderStyles
+		.variablesOrThreadsTreeHeaderStyles
 		{
 			color: #e0e0e0;
 			horizontalAlign: left;
@@ -124,7 +136,7 @@
 
 	<containers:HDividerGroup gap="1" percentWidth="100" percentHeight="100">
 			<mx:AdvancedDataGrid id="variablesTree"
-								 percentWidth="50" percentHeight="100"
+				percentWidth="50" percentHeight="100"
 				draggableColumns="false"
 				sortableColumns="false"
 				color="0xe0e0e0"
@@ -139,7 +151,7 @@
 				borderVisible="false"
 				useRollOver="true"
 				headerColors="[0x6a6a6a,0x303030]"
-				headerStyleName="variablesTreeHeaderStyles"
+				headerStyleName="variablesOrThreadsTreeHeaderStyles"
 				sortExpertMode="true"
 				headerSortSeparatorSkin="mx.skins.ProgrammaticSkin"
 				sortItemRenderer="mx.core.UIComponent"
@@ -155,29 +167,35 @@
 						showDataTips="true" dataTipFunction="{variablesValueLabelFunction}"/>
 				</mx:columns>
 			</mx:AdvancedDataGrid>
-			<mx:DataGrid id="callStackList"
-						 percentWidth="50" percentHeight="100"
-						 draggableColumns="false"
-						 sortableColumns="false"
-						 color="0xe0e0e0"
-						 fontSize="11"
-						 contentBackgroundColor="0x0"
-						 textRollOverColor="0xFFFFFF"
-						 rollOverColor="0x393939"
-						 selectionColor="0x393939"
-						 alternatingItemColors="[0x444444, 0x4d4c4c]"
-						 textSelectedColor="0xe0e0e0"
-						 borderVisible="false"
-						 useRollOver="true"
-						 chromeColor="#393939"
-						 verticalScrollBarStyleName="black"
-						 dataProvider="{stackFrames}"
-						 itemClick="callStackList_itemClickHandler(event)">
+			<mx:AdvancedDataGrid id="threadsList"
+				percentWidth="50" percentHeight="100"
+				draggableColumns="false"
+				sortableColumns="false"
+				color="0xe0e0e0"
+				fontSize="11"
+				verticalScrollBarStyleName="black"
+				contentBackgroundColor="0x0"
+				textRollOverColor="0xFFFFFF"
+				rollOverColor="0x393939"
+				selectionColor="0x393939"
+				alternatingItemColors="[0x444444, 0x4d4c4c]"
+				textSelectedColor="0xe0e0e0"
+				borderVisible="false"
+				useRollOver="true"
+				headerColors="[0x6a6a6a,0x303030]"
+				headerStyleName="variablesOrThreadsTreeHeaderStyles"
+				sortExpertMode="true"
+				headerSortSeparatorSkin="mx.skins.ProgrammaticSkin"
+				sortItemRenderer="mx.core.UIComponent"
+				chromeColor="#393939"
+				dataProvider="{threadsAndStackFrames}"
+				displayItemsExpanded="true"
+				itemClick="threadsList_itemClickHandler(event)">
 				<mx:columns>
-					<mx:DataGridColumn headerText="Frames" dataField="name"
+					<mx:AdvancedDataGridColumn headerText="Stack" dataField="name"
 									   dataTipField="source" dataTipFunction="{nameDataTipFunction}" showDataTips="true"/>
-					<mx:DataGridColumn headerText="Line" labelFunction="{lineLabelFunction}" width="50"/>
+					<mx:AdvancedDataGridColumn headerText="Line" labelFunction="{lineLabelFunction}" width="50"/>
 				</mx:columns>
-			</mx:DataGrid>
+			</mx:AdvancedDataGrid>
 	</containers:HDividerGroup>
 </mx:HBox>
