@@ -1022,12 +1022,24 @@ package actionScripts.plugin.templating
 		
 		protected function openOnDiskFormBuilderTypeChoose(event:Event):void
 		{
-			dispatcher.dispatchEvent(new GeneralEvent(OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE));
+			var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
+				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
+				ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE, (event as NewFileEvent).insideLocation
+				);
+			tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
+			
+			dispatcher.dispatchEvent(tmpOnDiskEvent);
 		}
 		
 		protected function openOnDiskVisualEditorTypeChoose(event:Event):void
 		{
-			dispatcher.dispatchEvent(new GeneralEvent(OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE));
+			var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
+				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
+				ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE, (event as NewFileEvent).insideLocation
+			);
+			tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
+			
+			dispatcher.dispatchEvent(tmpOnDiskEvent);
 		}
 
 		protected function openCSSComponentTypeChoose(event:Event):void

@@ -83,34 +83,16 @@ package actionScripts.plugin.ondiskproj
             return projectTemplateName.indexOf(ProjectTemplateType.ONDISK) != -1;
         }
 		
-		protected function openOnDiskNewFileWindow(event:GeneralEvent):void
+		protected function openOnDiskNewFileWindow(event:NewFileEvent):void
 		{
 			newOnDiskFilePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewOnDiskFilePopup, true) as NewOnDiskFilePopup;
-			newOnDiskFilePopup.fromTemplate = event.value as FileLocation;
+			newOnDiskFilePopup.fromTemplate = event.fromTemplate;
+			newOnDiskFilePopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+			newOnDiskFilePopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+			newOnDiskFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+			
 			newOnDiskFilePopup.addEventListener(CloseEvent.CLOSE, handleNewFilePopupClose);
 			newOnDiskFilePopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onNewFileCreateRequest);
-			
-			// newFileEvent sends by TreeView when right-clicked
-			// context menu
-			if (event is NewFileEvent)
-			{
-				newOnDiskFilePopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
-				newOnDiskFilePopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
-				newOnDiskFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
-			}
-			else
-			{
-				// try to check if there is any selection in
-				// TreeView item
-				var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
-				if (treeSelectedItem)
-				{
-					var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
-					newOnDiskFilePopup.folderLocation = creatingItemIn.file;
-					newOnDiskFilePopup.wrapperOfFolderLocation = creatingItemIn;
-					newOnDiskFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
-				}
-			}
 			
 			PopUpManager.centerPopUp(newOnDiskFilePopup);
 		}
