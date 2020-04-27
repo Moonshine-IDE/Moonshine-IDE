@@ -34,6 +34,7 @@ package actionScripts.controllers
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
     import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.notifier.ActionNotifier;
@@ -170,15 +171,16 @@ package actionScripts.controllers
 			// If file is open already, just focus that editor.
 			for each (var contentWindow:IContentWindow in model.editors)
 			{
-				var ed:BasicTextEditor = contentWindow as BasicTextEditor;
-				if (ed
-					&& ed.currentFile
-					&& ed.currentFile.fileBridge.nativePath == file.fileBridge.nativePath)
+				if ((contentWindow is IFileContentWindow) && 
+					(contentWindow as IFileContentWindow).currentFile.fileBridge.nativePath == file.fileBridge.nativePath)
 				{
 					isFileOpen = true;
-					model.activeEditor = ed;
-					if (atLine > -1)
+					model.activeEditor = contentWindow;
+					
+					if ((contentWindow is BasicTextEditor) && (atLine > -1))
 					{
+						var ed:BasicTextEditor = contentWindow as BasicTextEditor;
+
 						ed.getEditorComponent().scrollTo(atLine, openType);
 						if (!openType || openType == OpenFileEvent.OPEN_FILE || openType == OpenFileEvent.JUMP_TO_SEARCH_LINE)
 						{
@@ -194,7 +196,8 @@ package actionScripts.controllers
 							ed.getEditorComponent().model.caretIndex = atChar;
 						}
 					}
-					ed.setFocus();
+
+					contentWindow.setFocus();
 					return;
 				}
 			}

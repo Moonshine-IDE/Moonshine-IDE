@@ -47,6 +47,7 @@ package actionScripts.ui.editor
     import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IContentWindowReloadable;
+    import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.editor.text.vo.SearchResult;
@@ -60,7 +61,7 @@ package actionScripts.ui.editor
     import components.popup.SelectOpenedProject;
     import components.views.project.TreeView;
 
-    public class BasicTextEditor extends Group implements IContentWindow, IFocusManagerComponent, IContentWindowReloadable
+    public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
 		public var defaultLabel:String = "New";
 		public var projectPath:String;
