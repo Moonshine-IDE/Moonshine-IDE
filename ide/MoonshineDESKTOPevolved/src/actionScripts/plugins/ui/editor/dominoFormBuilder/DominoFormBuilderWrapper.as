@@ -33,6 +33,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.IContentWindowReloadable;
+	import actionScripts.ui.IFileContentWindow;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.FileUtils;
@@ -41,25 +42,27 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import view.suportClasses.events.PropertyEditorChangeEvent;
 	import view.suportClasses.events.VisualEditorEvent;
 	
-	public class DominoFormBuilderWrapper extends Group implements IContentWindow, IFocusManagerComponent, IContentWindowReloadable
+	public class DominoFormBuilderWrapper extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
 		private static const FORM_GENERATION_PATH:String = OnDiskProjectVO.DOMINO_EXPORT_PATH +"/odp/Forms/";
 		
 		public function get longLabel():String							{ return "Tabular Interface"; }
 		public function get tabularEditorInterface():DominoTabularForm	{ return dominoTabularForm; }
 		
-		private var _file:FileLocation;
-		public function get file():FileLocation							{ return _file; }
-
+		private var _currentFile:FileLocation;
+		
+		public function get currentFile():FileLocation					{ return _currentFile;	}
+		public function set currentFile(value:FileLocation):void		{ throw Error('No SET option available.'); }
+		
 		public function get label():String
 		{
 			var labelChangeIndicator:String = _isChanged ? "*" : "";
-			if (!file)
+			if (!currentFile)
 			{
 				return labelChangeIndicator + longLabel;
 			}
 			
-			return labelChangeIndicator + file.fileBridge.name;
+			return labelChangeIndicator + currentFile.fileBridge.name;
 		}
 		
 		protected var dominoTabularForm:DominoTabularForm;
@@ -76,7 +79,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		{
 			super();
 			this.project = project;
-			this._file = file;
+			this._currentFile = file;
 			this.percentWidth = this.percentHeight = 100;
 			
 			addGlobalListeners();
@@ -108,7 +111,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 				
 				// output in console
 				var tmpMessage:String = "Form Builder successfully saved and DXL generated at:\n"+ 
-					FORM_GENERATION_PATH + file.fileBridge.nameWithoutExtension +".form";
+					FORM_GENERATION_PATH + currentFile.fileBridge.nameWithoutExtension +".form";
 				dispatcher.dispatchEvent(
 					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, tmpMessage, false, false, ConsoleOutputEvent.TYPE_SUCCESS)
 				);
@@ -147,7 +150,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			
 			visualEditoryLibraryCore = new IDominoFormBuilderLibraryBridgeImp();
 			dominoTabularForm.moonshineBridge = visualEditoryLibraryCore;
-			dominoTabularForm.filePath = file.fileBridge.getFile as File;
+			dominoTabularForm.filePath = currentFile.fileBridge.getFile as File;
 			
 			dominoTabularForm.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange, false, 0, true);
 			dominoTabularForm.addEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaveRequest, false, 0, true);
@@ -215,9 +218,9 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		
 		private function saveFormXML(value:XML):void
 		{
-			if (!file.fileBridge.exists)
+			if (!currentFile.fileBridge.exists)
 			{
-				file.fileBridge.createFile();
+				currentFile.fileBridge.createFile();
 			}
 			
 			var data:XML = <root/>;
@@ -226,7 +229,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			data.appendChild(value);
 			
 			FileUtils.writeToFile(
-				file.fileBridge.getFile as File,
+				currentFile.fileBridge.getFile as File,
 				"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"+ data.toXMLString()
 				);
 		}
@@ -234,7 +237,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		private function saveFormDXL():void
 		{
 			var formDXL:XML = dominoTabularForm.formDXL;
-			var tmpDXLFileName:String = file.fileBridge.nameWithoutExtension +".form";
+			var tmpDXLFileName:String = currentFile.fileBridge.nameWithoutExtension +".form";
 			var dxlFile:FileLocation = project.folderLocation.fileBridge.resolvePath(
 				FORM_GENERATION_PATH + tmpDXLFileName
 			);
