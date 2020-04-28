@@ -182,11 +182,14 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		
 		private function closeTabHandler(event:CloseTabEvent):void
 		{
-			removeGlobalListeners();
-			dominoTabularForm.dispose();
-			
-			dominoTabularForm.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange);
-			dominoTabularForm.removeEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaveRequest);
+			if (event.tab == this)
+			{
+				removeGlobalListeners();
+				dominoTabularForm.dispose();
+				
+				dominoTabularForm.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange);
+				dominoTabularForm.removeEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaveRequest);
+			}
 		}
 		
 		private function tabSelectHandler(event:TabEvent):void
