@@ -87,6 +87,7 @@ package actionScripts.impls
 	import actionScripts.plugins.clean.CleanProject;
 	import actionScripts.plugins.core.ProjectBridgeImplBase;
 	import actionScripts.plugins.debugAdapter.DebugAdapterPlugin;
+	import actionScripts.plugins.domino.DominoPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.gradle.GradleBuildPlugin;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
@@ -251,6 +252,7 @@ package actionScripts.impls
 				GitHubPlugin,
 				HiddenFilesPlugin,
                 JavaScriptPlugin,
+				DominoPlugin,
 				HttpServerPlugin,
 				RoyaleApiReportConfiguratorPlugin,
 				RoyaleApiReportPlugin

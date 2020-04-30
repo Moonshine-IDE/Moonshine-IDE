@@ -403,7 +403,7 @@ package actionScripts.plugin.settings
 			{
 				xml.properties[name] = value;
 			}
-			else
+			else if (name)
 			{
 				xml.properties.appendChild(<{name}>{value}</{name}>);
 			}
@@ -457,6 +457,7 @@ package actionScripts.plugin.settings
 			for each (var setting:ISetting in settingsList)
 			{
 				propName = setting.name;
+				trace(propName);
 				if (!saveData.properties.hasOwnProperty(propName))
 					continue;
 

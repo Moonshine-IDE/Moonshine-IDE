@@ -179,13 +179,11 @@ package actionScripts.ui.editor
 		
 		protected function addedToStageHandler(event:Event):void
 		{
-			this.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			this.addGlobalListeners();
 		}
 		
 		protected function removedFromStageHandler(event:Event):void
 		{
-			this.removeEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
 			this.removeGlobalListeners();
 		}
 		

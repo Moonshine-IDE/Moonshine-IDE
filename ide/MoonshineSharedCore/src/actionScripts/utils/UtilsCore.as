@@ -1321,6 +1321,23 @@ package actionScripts.utils
 			return true;
 		}
 		
+		public static function isNotesDominoAvailable():Boolean
+		{
+			if (!model.notesPath || !model.fileCore.isPathExists(model.notesPath))
+			{
+				return false;
+			}
+			
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.NOTES);
+			if (component && component.pathValidation)
+			{
+				return model.fileCore.resolvePath(model.notesPath +"/"+ component.pathValidation).fileBridge.exists;
+				//return model.flexCore.isValidExecutableBy(SDKTypes.NOTES, model.notesPath, component.pathValidation);
+			}
+			
+			return true;
+		}
+		
 		public static function getLineBreakEncoding():String
 		{
 			return (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");

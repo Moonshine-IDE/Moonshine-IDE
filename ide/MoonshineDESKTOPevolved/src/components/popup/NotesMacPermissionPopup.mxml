@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" autoLayout="true"
+		 creationComplete="onJavaPathSetupPopupCreationComplete(event)"
+		 horizontalCenter="0" verticalCenter="0">
+	<fx:Script>
+		<![CDATA[
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			import spark.utils.TextFlowUtil;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			
+			public var installLocationPath:String;
+			public var isDiscarded:Boolean;
+			
+			private var model:IDEModel = IDEModel.getInstance();
+			
+			private function onJavaPathSetupPopupCreationComplete(event:FlexEvent):void
+			{
+				var closeButtonUIC:UIComponent = new UIComponent();
+				closeButtonUIC.width = closeButtonUIC.height = 27;
+				closeButtonUIC.right = 0;
+				
+				var closeButton:Sprite = new Sprite();
+				// Circle
+				closeButton.graphics.lineStyle(1, 0xFFFFFF, 0.8);
+				closeButton.graphics.beginFill(0x0, 0);
+				closeButton.graphics.drawCircle(14, 12, 6);
+				closeButton.graphics.endFill();
+				// X (\)
+				closeButton.graphics.lineStyle(2, 0xFFFFFF, 0.8, true);
+				closeButton.graphics.moveTo(12, 10);
+				closeButton.graphics.lineTo(16, 14);
+				// X (/)
+				closeButton.graphics.moveTo(16, 10);
+				closeButton.graphics.lineTo(12, 14);
+				// Hit area
+				closeButton.graphics.lineStyle(0, 0x0, 0);
+				closeButton.graphics.beginFill(0x0, 0);
+				closeButton.graphics.drawRect(0, 0, 27, 25);
+				closeButton.graphics.endFill();
+				
+				closeButton.addEventListener(MouseEvent.CLICK, closeButtonClickedRequest, false, 0, true);
+				closeButtonUIC.addChild(closeButton);
+				
+				addElement(closeButtonUIC);
+				
+				var isCommandLineTools:Boolean = installLocationPath.indexOf(".app") == -1;
+				
+				btnCancel.label = "I Don't Want Notes";
+				retUserMessage.textFlow = TextFlowUtil.importFromString("<p>In order to use the Domino Integration features, you must grant Moonshine permission to access the HCL® Notes installation.<br/><br/>Click <span fontWeight='bold'>Allow Access</span> to open the application shown below. Then click \"Open\" to grant access.<br/><br/><span fontWeight='bold'>"+installLocationPath+"</span></p>");
+			}
+			
+			private function closeButtonClickedRequest(event:MouseEvent):void
+			{
+				closeButtonClicked(event, true);
+			}
+			
+			private function closeButtonClicked(event:MouseEvent, isDiscarded:Boolean = false):void
+			{
+				this.isDiscarded = isDiscarded;
+				if (event) event.target.removeEventListener(MouseEvent.CLICK, closeButtonClicked);
+				dispatchEvent(new Event(Event.CLOSE));
+			}
+			
+			private function onAllowAccess(event:MouseEvent):void
+			{
+				var binLocation:FileLocation = new FileLocation(installLocationPath);
+				model.fileCore.browseForOpen("Select Notes File", onPermissionGiven, null, null, installLocationPath);
+			}
+			
+			private function onPermissionGiven(dir:Object):void
+			{
+				installLocationPath = (dir as File).nativePath;
+				closeButtonClicked(null);
+			}
+
+		]]>
+	</fx:Script>
+	
+	<s:BorderContainer id="body" 
+					   width="450" minHeight="150" autoLayout="true"
+					   cornerRadius="6" borderColor="0x2d2d2d"
+					   alpha="1">
+		<s:backgroundFill>
+			<s:SolidColor color="0xa0a0a0"/>
+		</s:backgroundFill>
+		<s:VGroup width="100%" height="100%"
+				  gap="0">
+			<s:RichEditableText id="retUserMessage"
+								paddingLeft="20" paddingRight="20" paddingTop="20" paddingBottom="20"
+								width="100%"
+								editable="false" focusEnabled="false"
+								fontSize="13"/>
+			<!-- Button bar -->
+			<mx:HRule id="buttonBarLine"
+					  width="100%"
+					  bottom="41"
+					  strokeWidth="1"
+					  strokeColor="0x303030" />
+			<mx:HBox id="buttonBar"
+					 width="100%"
+					 height="41"
+					 bottom="0"
+					 backgroundColor="0x444444"
+					 paddingRight="10"
+					 paddingTop="0"
+					 horizontalAlign="center"
+					 verticalAlign="middle"
+					 ><mx:filters>
+						  <mx:DropShadowFilter 
+							  alpha=".5" 
+							  angle="90" 
+							  blurX="0" 
+							  blurY="7" 
+							  strength="1"
+							  distance="1"
+							  inner="true" />
+					  </mx:filters>
+				<mx:HBox autoLayout="true">
+					<s:Button id="btnAllowAccess" 
+							  label="Allow Access" styleName="darkButton"
+							  click="onAllowAccess(event)"/>
+					<s:Button id="btnCancel" 
+							  styleName="darkButton"
+							  click="closeButtonClicked(event, true)"/>
+				</mx:HBox>
+			</mx:HBox>
+		</s:VGroup>
+	</s:BorderContainer>
+</s:Group>

@@ -39,6 +39,7 @@
 			import actionScripts.interfaces.IHelperMoonshineBridge;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.settings.vo.PluginSetting;
+			import actionScripts.plugins.domino.DominoPlugin;
 			import actionScripts.plugins.git.GitHubPlugin;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.ui.tabview.CloseTabEvent;
@@ -193,6 +194,10 @@
 					
 					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
 					gitComponent.hasWarning = svnComponent.hasWarning = null;
+				}
+				else if (component.type == ComponentTypes.TYPE_NOTES && ConstantsCoreVO.IS_MACOS)
+				{
+					dispatcher.dispatchEvent(new Event(DominoPlugin.RELAY_MAC_NOTES_PERMISSION_REQUEST));
 				}
 				else
 				{
