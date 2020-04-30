@@ -18,15 +18,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.debugAdapter
 {
+    import actionScripts.debugAdapter.DebugAdapter;
     import actionScripts.events.ApplicationEvent;
     import actionScripts.events.EditorPluginEvent;
+    import actionScripts.events.StatusBarEvent;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
     import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
+    import actionScripts.plugins.chromelauncher.ChromeDebugAdapterLauncher;
     import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
     import actionScripts.plugins.debugAdapter.events.LoadVariablesEvent;
     import actionScripts.plugins.debugAdapter.events.StackFrameEvent;
     import actionScripts.plugins.debugAdapter.view.DebugAdapterView;
+    import actionScripts.plugins.firefoxlauncher.FirefoxDebugAdapterLauncher;
+    import actionScripts.plugins.hashlinklauncher.HashLinkDebugAdapterLauncher;
+    import actionScripts.plugins.hxcpplauncher.HxCppDebugAdapterLauncher;
     import actionScripts.plugins.swflauncher.SWFDebugAdapterLauncher;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
@@ -41,11 +47,6 @@ package actionScripts.plugins.debugAdapter
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     import flash.utils.IDataInput;
-    import actionScripts.debugAdapter.DebugAdapter;
-    import actionScripts.plugins.chromelauncher.ChromeDebugAdapterLauncher;
-    import actionScripts.events.StatusBarEvent;
-    import actionScripts.plugins.firefoxlauncher.FirefoxDebugAdapterLauncher;
-    import actionScripts.plugins.hxcpplauncher.HxCppDebugAdapterLauncher;
 	
 	public class DebugAdapterPlugin extends PluginBase
 	{
@@ -146,7 +147,7 @@ package actionScripts.plugins.debugAdapter
 			_debugPanel.stepIntoButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
 			_debugPanel.stepOutButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
 			_debugPanel.stopButton.enabled = _debugAdapter != null;
-			_debugPanel.stackFrames = _debugAdapter ? _debugAdapter.stackFrames : null;
+			_debugPanel.threadsAndStackFrames = _debugAdapter ? _debugAdapter.threadsAndStackFrames : null;
 			_debugPanel.scopesAndVars = _debugAdapter ? _debugAdapter.scopesAndVars : null;
 		}
 		
@@ -204,6 +205,11 @@ package actionScripts.plugins.debugAdapter
 				case "firefox":
 				{
 					launcher = new FirefoxDebugAdapterLauncher();
+					break;
+				}
+				case "hl":
+				{
+					launcher = new HashLinkDebugAdapterLauncher();
 					break;
 				}
 				case "hxcpp":
