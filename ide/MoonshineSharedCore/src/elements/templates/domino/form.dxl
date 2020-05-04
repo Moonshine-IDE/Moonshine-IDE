@@ -1,0 +1,5 @@
+<form name='%FormName%'>
+    <body>
+        <richtext>%FromBody%</richtext>
+    </body>
+</form>

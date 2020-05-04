@@ -1,0 +1,4 @@
+<view name='%ViewName%' bgcolor='white' headerbgcolor='white' marginbgcolor='white' showmargin='true'>
+<code event='selection'><formula>SELECT Form='%FormName%'</formula></code>
+%Columns%
+</view>
