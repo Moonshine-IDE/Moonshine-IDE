@@ -262,11 +262,11 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		
 		private function saveContinue():void
 		{
-			// save view-dxl
-			saveViewDXL(dominoTabularForm.viewDXL);
-			
 			// save form-xml
 			saveFormXML(dominoTabularForm.formXML);
+			
+			// save view-dxl
+			saveViewDXL(dominoTabularForm.viewDXL);
 			
 			// remove changed marker in tab
 			_isChanged = false;
