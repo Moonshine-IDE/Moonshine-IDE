@@ -229,7 +229,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 				((dxlFile.fileBridge.modificationDate.getTime() - formObject.dxlGeneratedOn.getTime()) > 1000)))
 			{
 				Alert.show(
-					"Are you sure you want to overwrite the "+ tmpDXLFileName +" Form? Any external changes will be lost.", 
+					"Are you sure you want to overwrite the "+ formObject.formName +" Form? Any external changes will be lost.", 
 					"Note!",
 					Alert.YES | Alert.NO, null, 
 					onWriteDXLConfirm
