@@ -2,6 +2,7 @@ package actionScripts.ui.editor.text
 {
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
+	import flash.ui.Keyboard;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
@@ -234,6 +235,12 @@ package actionScripts.ui.editor.text
 
 		private function editor_onKeyDown(event:KeyboardEvent):void
 		{
+			if(event.keyCode == Keyboard.CONTROL || event.keyCode == Keyboard.COMMAND ||
+				event.keyCode == Keyboard.ALTERNATE || event.keyCode == Keyboard.SHIFT)
+			{
+				//allow anything except modifier keys
+				return;
+			}
 			closeTooltip();
 		}
 	}
