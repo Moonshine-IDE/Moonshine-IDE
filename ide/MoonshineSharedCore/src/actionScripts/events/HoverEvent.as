@@ -19,6 +19,7 @@
 package actionScripts.events
 {
 	import flash.events.Event;
+	import actionScripts.valueObjects.Position;
 
 	public class HoverEvent extends Event
 	{
@@ -26,12 +27,14 @@ package actionScripts.events
 		
 		public var contents:Vector.<String>;
 		public var uri:String;
+		public var position:Position;
 
-		public function HoverEvent(type:String, contents:Vector.<String>, uri:String)
+		public function HoverEvent(type:String, contents:Vector.<String>, uri:String, position:Position)
 		{
 			super(type, false, true);
 			this.contents = contents;
 			this.uri = uri;
+			this.position = position;
 		}
 
 	}
