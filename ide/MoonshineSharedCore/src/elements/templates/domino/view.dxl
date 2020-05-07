@@ -1,4 +1,19 @@
 <view name='%ViewName%' bgcolor='white' headerbgcolor='white' marginbgcolor='white' showmargin='true'>
 <code event='selection'><formula>SELECT Form='%FormName%'</formula></code>
+<actionbar bgcolor='#f0f0f0'>
+    <actionbuttonstyle bgcolor='#f0f0f0' />
+    <action title='New %FormName%' icon='30'>
+        <code event='click'>
+            <formula>@Command([Compose]; "%FormName%")</formula>
+        </code>
+    </action>
+    <sharedactionref id="6"></sharedactionref>
+    <sharedactionref id="7"></sharedactionref>
+    <sharedactionref id="8"></sharedactionref>
+    <sharedactionref id="9"></sharedactionref>
+    <sharedactionref id="10"></sharedactionref>
+    <sharedactionref id="11"></sharedactionref>
+    <sharedactionref id="12"></sharedactionref>
+</actionbar>
 %Columns%
 </view>
