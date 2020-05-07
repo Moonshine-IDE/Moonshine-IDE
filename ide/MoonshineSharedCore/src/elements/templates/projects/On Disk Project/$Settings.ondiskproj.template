@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   <mavenBuild>
-  	<option commandLine="war:exploded"/>
+  	<option commandLine="clean install"/>
   </mavenBuild>
   <classpaths>
     <class path="$SourcePath"/>
