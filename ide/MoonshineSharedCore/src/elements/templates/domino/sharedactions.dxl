@@ -1,0 +1,73 @@
+<sharedactions>
+	<action title="FormCommon.Close" icon="149" id="1">
+		<code event="label"><formula>"Close"</formula></code>
+		<code event="click">
+			<formula>@Command([FileCloseWindow])</formula>
+		</code>
+	</action>
+	<action title="FormCommon.Edit" icon="5" hide="edit previewedit" id="2">
+		<code event="label"><formula>"Edit"</formula></code>
+		<code event="click">
+			<formula>@Command([EditDocument])</formula>
+		</code>
+	</action>
+	<action title="FormCommon.Next" icon="113" id="3">
+		<code event="label"><formula>"Next"</formula></code>
+		<code event="click">
+			<formula>@Command([NavigateNext])</formula>
+		</code>
+	</action>
+	<action title="FormCommon.Previous" icon="114" id="4">
+		<code event="label"><formula>"Previous"</formula></code>
+		<code event="click">
+			<formula>@Command([NavigatePrev])</formula>
+		</code>
+	</action>
+	<action title="FormCommon.SaveAndClose" icon="10" hide="preview read" id="5">
+		<code event="label"><formula>"Save and Close"</formula></code>
+		<code event="click">
+			<formula>@Command([FileSave]);@Command([FileCloseWindow])</formula>
+		</code>
+	</action>
+
+	<action title="ViewCommon.CollapseAll" icon="155" onlyiconinbar="true" id="6">
+		<code event="click">
+			<formula>@Command([ViewCollapseAll])</formula>
+		</code>
+	</action>
+	<action title="ViewCommon.ExpandAll" icon="154" onlyiconinbar="true" id="7">
+		<code event="click">
+			<formula>@Command([ViewExpandAll])</formula>
+		</code>
+	</action>
+	<action title="ViewCommon.Find" icon="23" id="8">
+		<code event="label"><formula>"Find"</formula></code>
+		<code event="click">
+			<formula>@Command([EditFind])</formula>
+		</code>
+	</action>
+	<action title="ViewCommon.OpenDoc" icon="100" id="9">
+		<code event="label"><formula>"Open Doc"</formula></code>
+		<code event="click">
+			<formula>@Command([OpenDocument])</formula>
+		</code>
+	</action>
+	<action title="ViewCommon.Props" icon="36" id="10">
+		<code event="label"><formula>"Props"</formula></code>
+		<code event="click">
+			<formula>@Command([DesignDocumentInfo])</formula>
+		</code>
+	</action>
+	<action title="ViewCommon.Refresh" icon="145" id="11">
+		<code event="label"><formula>"Refresh"</formula></code>
+		<code event="click">
+			<formula>@Command([ViewRefreshFields])</formula>
+		</code>
+	</action>
+	<action title="ViewCommon.Search" icon="101" id="12">
+		<code event="label"><formula>"Search"</formula></code>
+		<code event="click">
+			<formula>@Command([ViewShowSearchBar])</formula>
+		</code>
+	</action>
+</sharedactions>

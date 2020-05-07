@@ -1,4 +1,12 @@
 <form name='%FormName%'>
+	<actionbar bgcolor='#f0f0f0'>
+		<actionbuttonstyle bgcolor='#f0f0f0' />
+		<sharedactionref id="1"></sharedactionref>
+		<sharedactionref id="2"></sharedactionref>
+		<sharedactionref id="3"></sharedactionref>
+		<sharedactionref id="4"></sharedactionref>
+		<sharedactionref id="5"></sharedactionref>
+	</actionbar>
     <body>
         <richtext>%FromBody%</richtext>
     </body>
