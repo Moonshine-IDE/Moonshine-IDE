@@ -6,6 +6,7 @@ package actionScripts.plugins.build
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
+    import flash.filesystem.File;
     import flash.utils.IDataInput;
     
     import actionScripts.factory.FileLocation;
@@ -107,7 +108,11 @@ package actionScripts.plugins.build
 				
 				//var workingDirectory:File = currentSDK.resolvePath("bin/");
 				nativeProcessStartupInfo.arguments = processArgs;
-				if (buildDirectory) nativeProcessStartupInfo.workingDirectory = buildDirectory.fileBridge.getFile;
+				if (buildDirectory) 
+				{
+					if (buildDirectory is FileLocation)	nativeProcessStartupInfo.workingDirectory = buildDirectory.fileBridge.getFile;
+					else if (buildDirectory is File) nativeProcessStartupInfo.workingDirectory = buildDirectory;
+				}
 				
 				nativeProcess.start(nativeProcessStartupInfo);
 			}
