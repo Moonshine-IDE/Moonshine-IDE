@@ -92,9 +92,9 @@ package actionScripts.plugin.ondiskproj.vo
 				new SettingsWrapper("Maven Build", Vector.<ISetting>([
 					new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
 					new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
-					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false),
-					new PathSetting(this.mavenBuildOptions, "dominoNotesProgram", "Notes Programe Path", true, this.mavenBuildOptions.dominoNotesProgram, false),
-					new PathSetting(this.mavenBuildOptions, "dominoNotesPlatform", "Notes Platform Path", true, this.mavenBuildOptions.dominoNotesPlatform, false)
+					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
+					/*new PathSetting(this.mavenBuildOptions, "dominoNotesProgram", "Notes Programe Path", true, this.mavenBuildOptions.dominoNotesProgram, false),
+					new PathSetting(this.mavenBuildOptions, "dominoNotesPlatform", "Notes Platform Path", true, this.mavenBuildOptions.dominoNotesPlatform, false)*/
 				]))
 			]);
 			
