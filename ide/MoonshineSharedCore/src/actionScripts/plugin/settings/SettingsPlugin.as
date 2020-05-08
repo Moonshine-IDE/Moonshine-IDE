@@ -341,6 +341,7 @@ package actionScripts.plugin.settings
 				saveClassSettings(settingObject);
 			}
 			
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_SETTINGS_SAVED));
 			dispatcher.dispatchEvent(new StartupHelperEvent(StartupHelperEvent.REFRESH_GETTING_STARTED));
 		}
 

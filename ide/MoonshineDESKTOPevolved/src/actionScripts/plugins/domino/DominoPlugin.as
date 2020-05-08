@@ -29,7 +29,9 @@ package actionScripts.plugins.domino
 	
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.events.StatusBarEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.settings.SimpleInformationOnlySetting;
+	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -43,6 +45,7 @@ package actionScripts.plugins.domino
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.HelperConstants;
 	
 	import components.containers.DominoSettingsInstruction;
 	import components.popup.NotesMacPermissionPopup;
@@ -63,7 +66,7 @@ package actionScripts.plugins.domino
 		private var pathSetting:PathSetting;
 		private var updateSitePathSetting:UpdateSitePathSetting;
 		private var notesMacPermissionPop:NotesMacPermissionPopup;
-		private var targetUpdateSitePath:File = FileUtils.getUserDownloadsDirectory().resolvePath("MoonshineSDKs/Domino/UpdateSite");
+		private var targetUpdateSitePath:File;
 
         public function get notesPath():String
         {
@@ -82,6 +85,21 @@ package actionScripts.plugins.domino
 			super.activate();
 			
 			dispatcher.addEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest, false, 0, true);
+			dispatcher.addEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved, false, 0, true);
+			
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				targetUpdateSitePath = FileUtils.getUserDownloadsDirectory().resolvePath(HelperConstants.DEFAULT_SDK_FOLDER_NAME +"/Domino/UpdateSite");
+			}
+			else
+			{
+				var tmpRootDirectories:Array = File.getRootDirectories();
+				HelperConstants.DEFAULT_INSTALLATION_PATH = (tmpRootDirectories.length > 0) ? 
+					tmpRootDirectories[0].resolvePath(HelperConstants.DEFAULT_SDK_FOLDER_NAME +"/Domino/UpdateSite") : 
+					File.userDirectory.resolvePath(HelperConstants.DEFAULT_SDK_FOLDER_NAME +"/Domino/UpdateSite");
+			}
+			
+			OnDiskMavenSettingsExporter.mavenSettingsPath = new FileLocation(targetUpdateSitePath.parent.resolvePath("settings.xml").nativePath);
 		}
 		
 		override public function deactivate():void
@@ -89,6 +107,7 @@ package actionScripts.plugins.domino
 			super.deactivate();
 			
 			dispatcher.removeEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest);
+			dispatcher.removeEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved);
 		}
 
 		override public function resetSettings():void
@@ -281,6 +300,20 @@ package actionScripts.plugins.domino
 			if (targetUpdateSitePath.exists)
 			{
 				updateSitePathSetting.path = updateSitePath = targetUpdateSitePath.nativePath;
+				generateDominoMavenSettingsFile();
+			}
+		}
+		
+		private function onSettingsSaved(event:SettingsEvent):void
+		{
+			generateDominoMavenSettingsFile();
+		}
+		
+		private function generateDominoMavenSettingsFile():void
+		{
+			if (updateSitePath && FileUtils.isPathExists(updateSitePath))
+			{
+				OnDiskMavenSettingsExporter.exportOnDiskMavenSettings(updateSitePath);
 			}
 		}
 	}

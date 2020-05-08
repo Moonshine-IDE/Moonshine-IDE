@@ -24,7 +24,6 @@ package actionScripts.plugin.ondiskproj
     import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
     
-    import actionScripts.events.GeneralEvent;
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.NewProjectEvent;
     import actionScripts.factory.FileLocation;
@@ -35,7 +34,6 @@ package actionScripts.plugin.ondiskproj
     import actionScripts.plugin.templating.TemplatingPlugin;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.FileWrapper;
     
     import components.popup.newFile.NewOnDiskFilePopup;
 	

@@ -35,6 +35,7 @@ package actionScripts.plugin.ondiskproj
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskExporter;
+	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 	import actionScripts.plugin.ondiskproj.importer.OnDiskImporter;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
@@ -296,6 +297,11 @@ package actionScripts.plugin.ondiskproj
 			var projectSettingsFileName:String = projectName + ".ondiskproj";
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
 			pvo = OnDiskImporter.parse(targetFolder, projectName, settingsFile);
+			
+			if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists)
+			{
+				pvo.mavenBuildOptions.settingsFilePath = OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath; 
+			}
 			
 			OnDiskExporter.export(pvo);
 			
