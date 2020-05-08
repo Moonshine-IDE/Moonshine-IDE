@@ -48,6 +48,11 @@
 	
 			private var message:String;
 			private var messageType:String;
+			
+			public function set path(value:String):void
+			{
+				lblValue.text = setting.stringValue = value;
+			}
 	
 			public function setMessage(value:String, type:String):void
 			{

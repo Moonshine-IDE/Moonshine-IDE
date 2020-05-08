@@ -280,8 +280,7 @@ package actionScripts.plugins.domino
 			// set as default Update site
 			if (targetUpdateSitePath.exists)
 			{
-				updateSitePath = targetUpdateSitePath.nativePath;
-				updateSitePathSetting.stringValue = updateSitePath;
+				updateSitePathSetting.path = updateSitePath = targetUpdateSitePath.nativePath;
 			}
 		}
 	}

@@ -49,5 +49,13 @@ package actionScripts.plugins.domino.settings
 				updateSiteRenderer.enabled = _editable;
 			}
 		}
+		
+		public function set path(value:String):void
+		{
+			if (updateSiteRenderer)
+			{
+				updateSiteRenderer.path = value;	
+			}
+		}
 	}
 }
