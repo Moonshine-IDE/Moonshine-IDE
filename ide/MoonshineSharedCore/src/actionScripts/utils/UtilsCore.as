@@ -46,6 +46,7 @@ package actionScripts.utils
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.IFileContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
@@ -761,10 +762,10 @@ package actionScripts.utils
 			
 			for (var i:int = 0; i < editorsCount; i++)
 			{
-				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile &&
-					(!projectReferencePath || model.editors[i].projectPath == projectReferencePath))
+				if ((model.editors[i] is IFileContentWindow) && model.editors[i].currentFile &&
+					(!projectReferencePath || (model.editors[i].hasOwnProperty("projectPath") && model.editors[i].projectPath == projectReferencePath)))
 				{
-                    var editor:BasicTextEditor = model.editors[i];
+                    var editor:IContentWindow = model.editors[i];
 					if (editor)
 					{
 						editorsToClose.push(editor);

@@ -146,7 +146,6 @@
 			private function refreshFileFolder(fileWrapper:FileWrapper, project:ProjectVO = null):void
 			{
 				if(!project) project = UtilsCore.getProjectFromProjectFolder(fileWrapper);
-				var asProject:AS3ProjectVO = project as AS3ProjectVO;
 	
 				if(!ConstantsCoreVO.IS_AIR)
 				{
@@ -154,11 +153,11 @@
 					return;
 				}
 	
-				if(asProject && asProject.isVisualEditorProject)
+				if((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject)
 				{
 					dispatcher.dispatchEvent(
 							new RefreshVisualEditorSourcesEvent(RefreshVisualEditorSourcesEvent.REFRESH_VISUALEDITOR_SRC,
-									fileWrapper, asProject)
+									fileWrapper, (project as AS3ProjectVO))
 					);
 				} else if(fileWrapper)
 				{
@@ -391,8 +390,7 @@
 
 						model.selectedprojectFolders.addItemAt(project.projectFolder, 0);
 						
-						if (((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject) || 
-							(project is OnDiskProjectVO))
+						if (((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject))
 						{
 							refreshFileFolder(project.projectFolder, project);
 						}
