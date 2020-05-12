@@ -333,19 +333,19 @@ package actionScripts.ui.tabview
         private function closeThisTab():void
 		{
             dispatchEvent(new Event(EVENT_TAB_CLOSE));
-
-            if (data is BasicTextEditor)
-            {
-                var editor:BasicTextEditor = data as BasicTextEditor;
-
-				if(editor.currentFile)
+			
+			if (data is IFileContentWindow)
+			{
+				var projectPath:String = data.hasOwnProperty("projectPath") ? data["projectPath"] : null;
+				var editor:IFileContentWindow = data as IFileContentWindow;
+				if (editor.currentFile)
 				{
 					SharedObjectUtil.removeLocationOfClosingProjectFile(
-							editor.currentFile.name,
-							editor.currentFile.fileBridge.nativePath,
-							editor.projectPath);
+						editor.currentFile.name,
+						editor.currentFile.fileBridge.nativePath,
+						projectPath);
 				}
-            }
+			}
 		}
     }
 }
