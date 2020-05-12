@@ -94,7 +94,7 @@ package actionScripts.plugins.domino
 			else
 			{
 				var tmpRootDirectories:Array = File.getRootDirectories();
-				HelperConstants.DEFAULT_INSTALLATION_PATH = (tmpRootDirectories.length > 0) ? 
+				targetUpdateSitePath = (tmpRootDirectories.length > 0) ? 
 					tmpRootDirectories[0].resolvePath(HelperConstants.DEFAULT_SDK_FOLDER_NAME +"/Domino/UpdateSite") : 
 					File.userDirectory.resolvePath(HelperConstants.DEFAULT_SDK_FOLDER_NAME +"/Domino/UpdateSite");
 			}

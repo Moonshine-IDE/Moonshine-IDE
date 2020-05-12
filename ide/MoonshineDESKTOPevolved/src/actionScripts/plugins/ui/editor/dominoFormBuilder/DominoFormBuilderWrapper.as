@@ -23,7 +23,6 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	
 	import mx.events.CloseEvent;
 	import mx.managers.IFocusManagerComponent;
-	import mx.utils.ObjectUtil;
 	
 	import spark.components.Alert;
 	import spark.components.Group;
@@ -59,6 +58,8 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		public function get currentFile():FileLocation					{ return _currentFile;	}
 		public function set currentFile(value:FileLocation):void		{ throw Error('No SET option available.'); }
 		
+		public function get projectPath():String						{ return (project ? project.folderLocation.fileBridge.nativePath : null); }
+			
 		public function get label():String
 		{
 			var labelChangeIndicator:String = _isChanged ? "*" : "";
@@ -69,6 +70,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			
 			return labelChangeIndicator + currentFile.fileBridge.name;
 		}
+		
 		
 		protected var dominoTabularForm:DominoTabularForm;
 		
