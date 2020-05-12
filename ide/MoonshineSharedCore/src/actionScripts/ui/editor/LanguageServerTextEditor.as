@@ -65,6 +65,9 @@ package actionScripts.ui.editor
 
 		private var _codeActionTimeoutID:int = -1;
 		private var _completionIncomplete:Boolean = false;
+		private var _hoverTimeoutID:int = -1;
+		private var _definitionTimeoutID:int = -1;
+		private var _previousCharAndLine:Point;
 
 		override protected function addGlobalListeners():void
 		{
@@ -101,8 +104,61 @@ package actionScripts.ui.editor
 		protected function closeAllPopups():void
 		{
 			editor.showSignatureHelp(null);
-			editor.showHover(null);
+			clearHover();
+			clearDefinitionLink();
+		}
+
+		protected function startOrResetCodeActionTimer():void
+		{
+			if(_codeActionTimeoutID != -1)
+			{
+				//we want to "debounce" this event, so reset the timer
+				clearTimeout(_codeActionTimeoutID);
+				_codeActionTimeoutID = -1;
+			}
+			_codeActionTimeoutID = setTimeout(dispatchCodeActionEvent, 250);
+		}
+
+		protected function startOrResetHoverTimer(line:int, char:int):void
+		{
+			if(_hoverTimeoutID != -1)
+			{
+				//we want to "debounce" this event, so reset the timer
+				clearTimeout(_hoverTimeoutID);
+				_hoverTimeoutID = -1;
+			}
+			_hoverTimeoutID = setTimeout(dispatchHoverEvent, 250, line, char)
+		}
+
+		protected function startOrResetDefinitionLinkTimer(line:int, char:int):void
+		{
+			if(_definitionTimeoutID != -1)
+			{
+				//we want to "debounce" this event, so reset the timer
+				clearTimeout(_definitionTimeoutID);
+				_definitionTimeoutID = -1;
+			}
+			_definitionTimeoutID = setTimeout(dispatchDefinitionLinkEvent, 250, line, char)
+		}
+
+		private function clearDefinitionLink():void
+		{
 			editor.showDefinitionLink(null, null);
+			if(_definitionTimeoutID != -1)
+			{
+				clearTimeout(_definitionTimeoutID);
+				_definitionTimeoutID = -1;
+			}
+		}
+
+		private function clearHover():void
+		{
+			editor.showHover(null);
+			if(_hoverTimeoutID != -1)
+			{
+				clearTimeout(_hoverTimeoutID);
+				_hoverTimeoutID = -1;
+			}
 		}
 
 		protected function dispatchDidOpenEvent():void
@@ -176,6 +232,7 @@ package actionScripts.ui.editor
 
 		protected function dispatchHoverEvent(line:int, char:int):void
 		{
+			_hoverTimeoutID = -1;
 			if(!currentFile)
 			{
 				return;
@@ -188,6 +245,7 @@ package actionScripts.ui.editor
 
 		protected function dispatchDefinitionLinkEvent(line:int, char:int):void
 		{
+			_definitionTimeoutID = -1;
 			if(!currentFile)
 			{
 				return;
@@ -287,6 +345,7 @@ package actionScripts.ui.editor
 
 		private function onRollOver(event:MouseEvent):void
 		{
+			_previousCharAndLine = null;
 			dispatcher.addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
 			dispatcher.addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
 		}
@@ -298,7 +357,50 @@ package actionScripts.ui.editor
 			//don't call showHover(null) here. let the manager handle it.
 			//because the mouse might have moved over the tooltip instead,
 			//and we don't want to clear the hover in that case
-			editor.showDefinitionLink(null, null);
+			if(_hoverTimeoutID != -1)
+			{
+				clearTimeout(_hoverTimeoutID);
+				_hoverTimeoutID = -1;
+			}
+			clearDefinitionLink();
+		}
+
+		private function isInsideSameWord(cl1:Point, cl2:Point):Boolean
+		{
+			if(!cl1 || !cl2)
+			{
+				return false;
+			}
+			var line1:Number = cl1.y;
+			var line2:Number = cl2.y;
+			if(line1 != line2)
+			{
+				//can't be the same word on different lines
+				return false;
+			}
+			var char1:Number = cl1.x;
+			var char2:Number = cl2.x;
+			if(char1 == char2)
+			{
+				//must be the same word when the character hasn't changed
+				return true;
+			}
+			var model:TextLineModel = editor.model.lines[line1];
+			var startIndex:int = char1;
+			var endIndex:int = char2;
+			if(startIndex > endIndex)
+			{
+				startIndex = char2;
+				endIndex = char1;
+			}
+			if((endIndex + 1) < model.text.length)
+			{
+				//include the later character when possible
+				endIndex++;
+			}
+			//look for non-word characters between the two
+			var substr:String = model.text.substr(startIndex, endIndex - startIndex);
+			return /^\w+$/g.test(substr);
 		}
 		
 		private function onMouseMove(event:MouseEvent):void
@@ -307,20 +409,28 @@ package actionScripts.ui.editor
 			var charAndLine:Point = editor.getCharAndLineForXY(globalXY, true);
 			if(charAndLine !== null)
 			{
+				if(!isInsideSameWord(charAndLine, _previousCharAndLine))
+				{
+					clearHover();
+					clearDefinitionLink();
+				}
+				_previousCharAndLine = charAndLine.clone();
+
 				if(event.ctrlKey)
 				{
-					dispatchDefinitionLinkEvent(charAndLine.y, charAndLine.x);
+					startOrResetDefinitionLinkTimer(charAndLine.y, charAndLine.x);
 				}
 				else
 				{
-					editor.showDefinitionLink(null, null);
-					dispatchHoverEvent(charAndLine.y, charAndLine.x);
+					clearDefinitionLink();
 				}
+				startOrResetHoverTimer(charAndLine.y, charAndLine.x);
+				
 			}
 			else
 			{
-				editor.showDefinitionLink(null, null);
-				editor.showHover(null);
+				clearDefinitionLink();
+				clearHover();
 			}
 		}
 
@@ -337,13 +447,7 @@ package actionScripts.ui.editor
 
 		private function editorModel_onChange(event:Event):void
 		{
-			if(_codeActionTimeoutID != -1)
-			{
-				//we want to "debounce" this event, so reset the timer
-				clearTimeout(_codeActionTimeoutID);
-				_codeActionTimeoutID = -1;
-			}
-			_codeActionTimeoutID = setTimeout(dispatchCodeActionEvent, 250);
+			startOrResetCodeActionTimer();
 		}
 
 		protected function menuGoToDefinitionHandler(event:MenuEvent):void
