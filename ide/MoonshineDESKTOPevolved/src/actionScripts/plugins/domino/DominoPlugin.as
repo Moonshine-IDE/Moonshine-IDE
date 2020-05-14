@@ -274,9 +274,12 @@ package actionScripts.plugins.domino
 		
 		private function startUpdateSiteGeneration():void
 		{
+			var gitPath:String = (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) ? 
+				model.gitPath : "git";
+			
 			var commandA:String = "mkdir '"+ TEMP_UPDATE_SITE_DOWNLOAD_PATH.nativePath +"'";
 			var commandB:String = "cd '"+ TEMP_UPDATE_SITE_DOWNLOAD_PATH.nativePath +"'";
-			var commandC:String = "git clone --progress -v https://github.com/OpenNTF/generate-domino-update-site .";
+			var commandC:String = gitPath +" clone --progress -v https://github.com/OpenNTF/generate-domino-update-site .";
 			var commandD:String = "cd generate-domino-update-site";
 			var commandE:String = "mvn org.openntf.p2:generate-domino-update-site:generateUpdateSite -Dsrc=\""+ notesPath +"/Contents/MacOS\" -Ddest=\""+ targetUpdateSitePath.nativePath +"\"";
 			
