@@ -283,9 +283,10 @@ package actionScripts.plugins.domino
 			var commandB:String = "cd '"+ TEMP_UPDATE_SITE_DOWNLOAD_PATH.nativePath +"'";
 			var commandC:String = gitPath +" clone --progress -v https://github.com/OpenNTF/generate-domino-update-site .";
 			var commandD:String = "cd generate-domino-update-site";
-			var commandE:String = mavenPath +" org.openntf.p2:generate-domino-update-site:generateUpdateSite -Dsrc=\""+ notesPath +"/Contents/MacOS\" -Ddest=\""+ targetUpdateSitePath.nativePath +"\"";
+			var commandE:String = mavenPath +" install";
+			var commandF:String = mavenPath +" org.openntf.p2:generate-domino-update-site:generateUpdateSite -Dsrc=\""+ notesPath +"/Contents/MacOS\" -Ddest=\""+ targetUpdateSitePath.nativePath +"\"";
 			
-			var fullCommand:String = [commandA, commandB, commandC, commandD, commandE].join(" && ");
+			var fullCommand:String = [commandA, commandB, commandC, commandD, commandE, commandF].join(" && ");
 			print("%s", fullCommand);
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Generating Update Site..", null, false));
