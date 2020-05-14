@@ -277,7 +277,7 @@ package actionScripts.plugins.domino
 			var gitPath:String = (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) ? 
 				model.gitPath : "git";
 			var mavenPath:String = (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) ? 
-				model.mavenPath : "mvn";
+				model.mavenPath +"/bin/mvn" : "mvn";
 			
 			var commandA:String = "mkdir '"+ TEMP_UPDATE_SITE_DOWNLOAD_PATH.nativePath +"'";
 			var commandB:String = "cd '"+ TEMP_UPDATE_SITE_DOWNLOAD_PATH.nativePath +"'";
