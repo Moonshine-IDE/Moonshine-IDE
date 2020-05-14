@@ -276,12 +276,14 @@ package actionScripts.plugins.domino
 		{
 			var gitPath:String = (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) ? 
 				model.gitPath : "git";
+			var mavenPath:String = (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) ? 
+				model.mavenPath : "mvn";
 			
 			var commandA:String = "mkdir '"+ TEMP_UPDATE_SITE_DOWNLOAD_PATH.nativePath +"'";
 			var commandB:String = "cd '"+ TEMP_UPDATE_SITE_DOWNLOAD_PATH.nativePath +"'";
 			var commandC:String = gitPath +" clone --progress -v https://github.com/OpenNTF/generate-domino-update-site .";
 			var commandD:String = "cd generate-domino-update-site";
-			var commandE:String = "mvn org.openntf.p2:generate-domino-update-site:generateUpdateSite -Dsrc=\""+ notesPath +"/Contents/MacOS\" -Ddest=\""+ targetUpdateSitePath.nativePath +"\"";
+			var commandE:String = mavenPath +" org.openntf.p2:generate-domino-update-site:generateUpdateSite -Dsrc=\""+ notesPath +"/Contents/MacOS\" -Ddest=\""+ targetUpdateSitePath.nativePath +"\"";
 			
 			var fullCommand:String = [commandA, commandB, commandC, commandD, commandE].join(" && ");
 			print("%s", fullCommand);
