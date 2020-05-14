@@ -54,6 +54,7 @@ package actionScripts.plugins.haxe
     import flash.events.ProgressEvent;
     import flash.filesystem.File;
     import flash.utils.IDataInput;
+    import actionScripts.events.DebugActionEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -524,7 +525,7 @@ package actionScripts.plugins.haxe
             var project:ProjectVO = model.activeProject;
             if (project)
             {
-                dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution, false, 0, true);
+                dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, onDebugStop, false, 0, true);
 			    dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
             }
 		}
@@ -799,7 +800,7 @@ package actionScripts.plugins.haxe
             super.onNativeProcessExit(event);
 
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STOP, onDebugStop);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
 
             var project:HaxeProjectVO = pendingRunProject;
@@ -846,7 +847,7 @@ package actionScripts.plugins.haxe
             stop();
         }
 
-        private function onTerminateExecution(event:Event):void
+        private function onDebugStop(event:DebugActionEvent):void
         {
             stop();
         }

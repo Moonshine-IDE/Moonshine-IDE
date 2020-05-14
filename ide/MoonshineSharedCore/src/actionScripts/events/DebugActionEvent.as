@@ -16,26 +16,22 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.core.compiler
+package actionScripts.events
 {
 	import flash.events.Event;
 
-	public class ActionScriptBuildEvent extends Event
+	public class DebugActionEvent extends Event
 	{
-		public static const BUILD_AND_RUN:String = "compilerBuildAndRun";
-		public static const BUILD_AND_DEBUG:String = "compilerBuildAndDebug";
-		public static const RUN_AFTER_DEBUG:String = "compilerRunAfterDebug";
-		public static const BUILD:String = "compilerBuild";
-		public static const BUILD_RELEASE:String = "compilerBuildRelease";
-		public static const PREBUILD:String = "compilerPrebuild";
-		public static const POSTBUILD:String = "compilerPostbuild";
-		public static const EXIT_FDB: String = "EXIT_FDB";
-		public static const SAVE_BEFORE_BUILD:String = "saveBeforeBuild";
+		public static const DEBUG_STEP_INTO:String = "debugStepInto";
+		public static const DEBUG_STEP_OUT:String = "debugStepOut";
+		public static const DEBUG_STEP_OVER:String = "debugStepOver";
+		public static const DEBUG_RESUME:String = "debugResume";
+		public static const DEBUG_PAUSE:String = "debugPause";
+		public static const DEBUG_STOP:String = "debugStop";
 		
-		public function ActionScriptBuildEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
+		public function DebugActionEvent(type:String)
 		{
-			super(type, bubbles, cancelable);
+			super(type, false, false);
 		}
-		
 	}
 }

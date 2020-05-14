@@ -20,10 +20,10 @@ package actionScripts.plugins.debugAdapter
 {
     import actionScripts.debugAdapter.DebugAdapter;
     import actionScripts.events.ApplicationEvent;
+    import actionScripts.events.DebugActionEvent;
     import actionScripts.events.EditorPluginEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
     import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
     import actionScripts.plugins.chromelauncher.ChromeDebugAdapterLauncher;
     import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
@@ -43,7 +43,6 @@ package actionScripts.plugins.debugAdapter
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
-    import flash.events.MouseEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     import flash.utils.IDataInput;
@@ -79,13 +78,15 @@ package actionScripts.plugins.debugAdapter
 			dispatcher.addEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.addEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
 			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_applicationExitHandler);
-			dispatcher.addEventListener(ActionScriptBuildEvent.STOP_DEBUG, dispatcher_stopDebugHandler);
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
 			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
-			dispatcher.addEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER, dispatcher_stepOverExecutionHandler);
-			dispatcher.addEventListener(ActionScriptBuildEvent.CONTINUE_EXECUTION, dispatcher_continueExecutionHandler);
-			dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, dispatcher_terminateExecutionHandler);
+			dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, dispatcher_debugStopHandler);
+			dispatcher.addEventListener(DebugActionEvent.DEBUG_STEP_OVER, dispatcher_debugStepOverHandler);
+			dispatcher.addEventListener(DebugActionEvent.DEBUG_STEP_INTO, dispatcher_debugStepIntoHandler);
+			dispatcher.addEventListener(DebugActionEvent.DEBUG_STEP_OUT, dispatcher_debugStepOutHandler);
+			dispatcher.addEventListener(DebugActionEvent.DEBUG_RESUME, dispatcher_debugResumeHandler);
+			dispatcher.addEventListener(DebugActionEvent.DEBUG_PAUSE, dispatcher_debugPauseHandler);
 			//if you add any new listeners here, before sure that you remove
 			//them in deactivate()
 			
@@ -99,39 +100,41 @@ package actionScripts.plugins.debugAdapter
 			dispatcher.removeEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.removeEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_applicationExitHandler);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.STOP_DEBUG, dispatcher_stopDebugHandler);
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
 			dispatcher.removeEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER, dispatcher_stepOverExecutionHandler);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.CONTINUE_EXECUTION, dispatcher_continueExecutionHandler);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, dispatcher_terminateExecutionHandler);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STOP, dispatcher_debugStopHandler);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STEP_OVER, dispatcher_debugStepOverHandler);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STEP_INTO, dispatcher_debugStepIntoHandler);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STEP_OUT, dispatcher_debugStepOutHandler);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_RESUME, dispatcher_debugResumeHandler);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_PAUSE, dispatcher_debugPauseHandler);
 		}
 		
 		private function initializeDebugViewEventHandlers(event:Event):void
 		{
-            _debugPanel.playButton.addEventListener(MouseEvent.CLICK, playButton_clickHandler);
-			_debugPanel.pauseButton.addEventListener(MouseEvent.CLICK, pauseButton_clickHandler);
-			_debugPanel.stepOverButton.addEventListener(MouseEvent.CLICK, stepOverButton_clickHandler);
-			_debugPanel.stepIntoButton.addEventListener(MouseEvent.CLICK, stepIntoButton_clickHandler);
-			_debugPanel.stepOutButton.addEventListener(MouseEvent.CLICK, stepOutButton_clickHandler);
-			_debugPanel.stopButton.addEventListener(MouseEvent.CLICK, stopButton_clickHandler);
-			_debugPanel.addEventListener(Event.REMOVED_FROM_STAGE, debugPanel_removedFromStageHandler);
+			_debugPanel.addEventListener(DebugActionEvent.DEBUG_PAUSE, debugPanel_debugPauseHandler);
+			_debugPanel.addEventListener(DebugActionEvent.DEBUG_RESUME, debugPanel_debugResumeHandler);
+			_debugPanel.addEventListener(DebugActionEvent.DEBUG_STEP_INTO, debugPanel_debugStepIntoHandler);
+			_debugPanel.addEventListener(DebugActionEvent.DEBUG_STEP_OUT, debugPanel_debugStepOutHandler);
+			_debugPanel.addEventListener(DebugActionEvent.DEBUG_STEP_OVER, debugPanel_debugStepOverHandler);
+			_debugPanel.addEventListener(DebugActionEvent.DEBUG_STOP, debugPanel_debugStopHandler);
 			_debugPanel.addEventListener(LoadVariablesEvent.LOAD_VARIABLES, debugPanel_loadVariablesHandler);
 			_debugPanel.addEventListener(StackFrameEvent.GOTO_STACK_FRAME, debugPanel_gotoStackFrameHandler);
+			_debugPanel.addEventListener(Event.REMOVED_FROM_STAGE, debugPanel_removedFromStageHandler);
 		}
 
 		private function cleanupDebugViewEventHandlers():void
 		{
-            _debugPanel.playButton.removeEventListener(MouseEvent.CLICK, playButton_clickHandler);
-            _debugPanel.pauseButton.removeEventListener(MouseEvent.CLICK, pauseButton_clickHandler);
-            _debugPanel.stepOverButton.removeEventListener(MouseEvent.CLICK, stepOverButton_clickHandler);
-            _debugPanel.stepIntoButton.removeEventListener(MouseEvent.CLICK, stepIntoButton_clickHandler);
-            _debugPanel.stepOutButton.removeEventListener(MouseEvent.CLICK, stepOutButton_clickHandler);
-            _debugPanel.stopButton.removeEventListener(MouseEvent.CLICK, stopButton_clickHandler);
-            _debugPanel.removeEventListener(LoadVariablesEvent.LOAD_VARIABLES, debugPanel_loadVariablesHandler);
-            _debugPanel.removeEventListener(StackFrameEvent.GOTO_STACK_FRAME, debugPanel_gotoStackFrameHandler);
-            _debugPanel.removeEventListener(Event.REMOVED_FROM_STAGE, debugPanel_removedFromStageHandler);
+			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_PAUSE, debugPanel_debugPauseHandler);
+			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_RESUME, debugPanel_debugResumeHandler);
+			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_STEP_INTO, debugPanel_debugStepIntoHandler);
+			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_STEP_OUT, debugPanel_debugStepOutHandler);
+			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_STEP_OVER, debugPanel_debugStepOverHandler);
+			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_STOP, debugPanel_debugStopHandler);
+			_debugPanel.removeEventListener(LoadVariablesEvent.LOAD_VARIABLES, debugPanel_loadVariablesHandler);
+			_debugPanel.removeEventListener(StackFrameEvent.GOTO_STACK_FRAME, debugPanel_gotoStackFrameHandler);
+			_debugPanel.removeEventListener(Event.REMOVED_FROM_STAGE, debugPanel_removedFromStageHandler);
 		}
 
 		private function refreshView():void
@@ -169,6 +172,51 @@ package actionScripts.plugins.debugAdapter
 			}
 			
 			this._breakpoints[path] = editor.getEditorComponent().breakpoints;
+		}
+
+		private function pauseDebugAdapter():void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.pause();
+		}
+
+		private function resumeDebugAdapter():void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.resume();
+		}
+
+		private function stepOverDebugAdapter():void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.stepOver();
+		}
+
+		private function stepOutDebugAdapter():void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.stepOut();
+		}
+
+		private function stepIntoDebugAdapter():void
+		{
+			if(!_debugAdapter || !_debugAdapter.initialized)
+			{
+				return;
+			}
+			_debugAdapter.stepInto();
 		}
 		
 		private function dispatcher_showDebugViewHandler(event:Event):void
@@ -285,7 +333,10 @@ package actionScripts.plugins.debugAdapter
 			refreshView();
 			if(!_calledStop)
 			{
-				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+				//dispatch the event instead of calling stopDebugAdapter()
+				//directly because other parts of the UI need to know that
+				//debug/run has stopped
+				dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 			}
 		}
 
@@ -313,8 +364,8 @@ package actionScripts.plugins.debugAdapter
 			if(_debugAdapter)
 			{
 				//this should have already happened, but if the process exits
-				//abnormally, it might not have
-				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+				//abnormally, it might not have yet
+				dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 				
 				warning("Debug adapter exited unexpectedly.");
 			}
@@ -369,18 +420,13 @@ package actionScripts.plugins.debugAdapter
 		
 		protected function dispatcher_applicationExitHandler(event:Event):void
 		{
-			dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+			dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 		}
 
         private function debugPanel_removedFromStageHandler(event:Event):void
         {
             isDebugViewVisible = false;
         }
-
-		protected function dispatcher_stopDebugHandler(event:ActionScriptBuildEvent):void
-		{
-			dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
-		}
 		
 		protected function debugPanel_loadVariablesHandler(event:LoadVariablesEvent):void
 		{
@@ -400,75 +446,62 @@ package actionScripts.plugins.debugAdapter
 			_debugAdapter.gotoStackFrame(event.stackFrame);
 		}
 		
-		protected function stopButton_clickHandler(event:MouseEvent):void
+		protected function debugPanel_debugStopHandler(event:DebugActionEvent):void
 		{
-			dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+			dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 		}
 		
-		protected function pauseButton_clickHandler(event:MouseEvent):void
+		protected function debugPanel_debugResumeHandler(event:DebugActionEvent):void
 		{
-			if(!_debugAdapter || !_debugAdapter.initialized)
-			{
-				return;
-			}
-			_debugAdapter.pause();
+			this.resumeDebugAdapter();
 		}
 		
-		protected function playButton_clickHandler(event:MouseEvent):void
+		protected function debugPanel_debugPauseHandler(event:DebugActionEvent):void
 		{
-			if(!_debugAdapter || !_debugAdapter.initialized)
-			{
-				return;
-			}
-			_debugAdapter.resume();
+			this.pauseDebugAdapter();
 		}
 		
-		protected function stepOverButton_clickHandler(event:MouseEvent):void
+		protected function debugPanel_debugStepOverHandler(event:DebugActionEvent):void
 		{
-			if(!_debugAdapter || !_debugAdapter.initialized)
-			{
-				return;
-			}
-			_debugAdapter.stepOver();
+			this.stepOverDebugAdapter();
 		}
 		
-		protected function stepIntoButton_clickHandler(event:MouseEvent):void
+		protected function debugPanel_debugStepIntoHandler(event:DebugActionEvent):void
 		{
-			if(!_debugAdapter || !_debugAdapter.initialized)
-			{
-				return;
-			}
-			_debugAdapter.stepInto();
+			this.stepIntoDebugAdapter();
 		}
 		
-		protected function stepOutButton_clickHandler(event:MouseEvent):void
+		protected function debugPanel_debugStepOutHandler(event:DebugActionEvent):void
 		{
-			if(!_debugAdapter || !_debugAdapter.initialized)
-			{
-				return;
-			}
-			_debugAdapter.stepOut();
+			this.stepOutDebugAdapter();
 		}
 		
-		private function dispatcher_stepOverExecutionHandler(event:Event):void
+		private function dispatcher_debugStepOverHandler(event:DebugActionEvent):void
 		{
-			if(!_debugAdapter || !_debugAdapter.initialized)
-			{
-				return;
-			}
-			_debugAdapter.stepOver();
+			this.stepOverDebugAdapter();
 		}
 		
-		private function dispatcher_continueExecutionHandler(event:Event):void
+		private function dispatcher_debugStepOutHandler(event:DebugActionEvent):void
 		{
-			if(!_debugAdapter || !_debugAdapter.initialized)
-			{
-				return;
-			}
-			_debugAdapter.resume();
+			this.stepOutDebugAdapter();
 		}
 		
-		private function dispatcher_terminateExecutionHandler(event:Event):void
+		private function dispatcher_debugStepIntoHandler(event:DebugActionEvent):void
+		{
+			this.stepIntoDebugAdapter();
+		}
+		
+		private function dispatcher_debugResumeHandler(event:DebugActionEvent):void
+		{
+			this.resumeDebugAdapter();
+		}
+		
+		private function dispatcher_debugPauseHandler(event:DebugActionEvent):void
+		{
+			this.pauseDebugAdapter();
+		}
+
+		protected function dispatcher_debugStopHandler(event:DebugActionEvent):void
 		{
 			if(!_debugAdapter)
 			{
