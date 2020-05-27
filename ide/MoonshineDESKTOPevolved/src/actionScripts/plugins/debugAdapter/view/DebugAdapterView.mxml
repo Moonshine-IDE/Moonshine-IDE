@@ -227,7 +227,9 @@
 			<mx:columns>
 				<mx:AdvancedDataGridColumn headerText="Stack" dataField="name"
 									dataTipField="source" dataTipFunction="{nameDataTipFunction}" showDataTips="true"/>
-				<mx:AdvancedDataGridColumn headerText="Line" labelFunction="{lineLabelFunction}" width="50"/>
+				<mx:AdvancedDataGridColumn headerText="Line"
+					itemRenderer="actionScripts.plugins.debugAdapter.view.DebugAdapterThreadRenderer"
+					labelFunction="{lineLabelFunction}" width="50"/>
 			</mx:columns>
 		</mx:AdvancedDataGrid>
 	</containers:HDividerGroup>
