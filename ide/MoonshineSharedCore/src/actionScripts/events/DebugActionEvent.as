@@ -28,10 +28,13 @@ package actionScripts.events
 		public static const DEBUG_RESUME:String = "debugResume";
 		public static const DEBUG_PAUSE:String = "debugPause";
 		public static const DEBUG_STOP:String = "debugStop";
+
+		public var threadId:int;
 		
-		public function DebugActionEvent(type:String)
+		public function DebugActionEvent(type:String, threadId:int = -1)
 		{
 			super(type, false, false);
+			this.threadId = threadId;
 		}
 	}
 }

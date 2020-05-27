@@ -4,32 +4,81 @@
 		<s:State name="labelOnly"/>
 		<s:State name="threadControls"/>
 	</s:states>
-	<s:Group>
+	<s:Group includeIn="labelOnly">
 		<s:layout>
 			<s:HorizontalLayout padding="6" verticalAlign="middle"/>
 		</s:layout>
-		<s:Label includeIn="labelOnly" text="{stackTraceLabel}"/>
-		<s:Label excludeFrom="labelOnly" text=""/>
+		<s:Label text="{stackTraceLabel}"/>
+	</s:Group>
+	<s:Group excludeFrom="labelOnly">
+		<s:layout>
+			<s:HorizontalLayout paddingLeft="6" paddingRight="6" gap="6" verticalAlign="middle"/>
+		</s:layout>
+		<s:Button id="playButton" styleName="debugMiniPlayButton" toolTip="Play"
+			enabled="false" click="playButton_clickHandler(event)"/>
+		<s:Button id="pauseButton" styleName="debugMiniPauseButton" toolTip="Pause"
+			enabled="false" click="pauseButton_clickHandler(event)"/>
+		<s:Button id="stepOverButton" styleName="debugMiniStepOverButton" toolTip="Step Over"
+			enabled="false" click="stepOverButton_clickHandler(event)"/>
+		<s:Button id="stepIntoButton" styleName="debugMiniStepIntoButton" toolTip="Step Into"
+			enabled="false" click="stepIntoButton_clickHandler(event)"/>
+		<s:Button id="stepOutButton" styleName="debugMiniStepOutButton" toolTip="Step Out"
+			enabled="false" click="stepOutButton_clickHandler(event)"/>
 	</s:Group>
 
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.debugAdapter.vo.StackFrame;
 			import mx.controls.listClasses.BaseListData;
+			import actionScripts.events.DebugActionEvent;
+			import actionScripts.debugAdapter.vo.Thread;
 
 			[Bindable]
 			private var stackTraceLabel:String;
 
+			[Bindable]
+			private var stackFrame:StackFrame;
+
+			[Bindable]
+			private var thread:Thread;
+
 			override public function set data(value:Object):void
 			{
 				super.data = value;
-				this.currentState = (value is StackFrame) ? "labelOnly" : "threadControls";
+				this.stackFrame = value as StackFrame;
+				this.thread = value as Thread;
+				this.currentState = (this.stackFrame != null) ? "labelOnly" : "threadControls";
 			}
 
 			override public function set listData(value:BaseListData):void
 			{
 				super.listData = value;
 				this.stackTraceLabel = this.listData ? this.listData.label : "";
+			}
+
+			private function playButton_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_RESUME, this.thread.id));
+			}
+
+			private function pauseButton_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_PAUSE, this.thread.id))
+			}
+
+			private function stepOverButton_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STEP_OVER, this.thread.id));
+			}
+
+			private function stepOutButton_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STEP_OUT, this.thread.id));
+			}
+
+			private function stepIntoButton_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STEP_INTO, this.thread.id));
 			}
 		]]>
 	</fx:Script>
