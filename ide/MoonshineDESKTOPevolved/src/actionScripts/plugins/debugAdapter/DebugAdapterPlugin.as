@@ -174,49 +174,49 @@ package actionScripts.plugins.debugAdapter
 			this._breakpoints[path] = editor.getEditorComponent().breakpoints;
 		}
 
-		private function pauseDebugAdapter():void
+		private function pauseDebugAdapter(threadId:int):void
 		{
 			if(!_debugAdapter || !_debugAdapter.initialized)
 			{
 				return;
 			}
-			_debugAdapter.pause();
+			_debugAdapter.pause(threadId);
 		}
 
-		private function resumeDebugAdapter():void
+		private function resumeDebugAdapter(threadId:int):void
 		{
 			if(!_debugAdapter || !_debugAdapter.initialized)
 			{
 				return;
 			}
-			_debugAdapter.resume();
+			_debugAdapter.resume(threadId);
 		}
 
-		private function stepOverDebugAdapter():void
+		private function stepOverDebugAdapter(threadId:int):void
 		{
 			if(!_debugAdapter || !_debugAdapter.initialized)
 			{
 				return;
 			}
-			_debugAdapter.stepOver();
+			_debugAdapter.stepOver(threadId);
 		}
 
-		private function stepOutDebugAdapter():void
+		private function stepOutDebugAdapter(threadId:int):void
 		{
 			if(!_debugAdapter || !_debugAdapter.initialized)
 			{
 				return;
 			}
-			_debugAdapter.stepOut();
+			_debugAdapter.stepOut(threadId);
 		}
 
-		private function stepIntoDebugAdapter():void
+		private function stepIntoDebugAdapter(threadId:int):void
 		{
 			if(!_debugAdapter || !_debugAdapter.initialized)
 			{
 				return;
 			}
-			_debugAdapter.stepInto();
+			_debugAdapter.stepInto(threadId);
 		}
 		
 		private function dispatcher_showDebugViewHandler(event:Event):void
@@ -448,57 +448,57 @@ package actionScripts.plugins.debugAdapter
 		
 		protected function debugPanel_debugStopHandler(event:DebugActionEvent):void
 		{
-			dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
+			dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP, event.threadId));
 		}
 		
 		protected function debugPanel_debugResumeHandler(event:DebugActionEvent):void
 		{
-			this.resumeDebugAdapter();
+			this.resumeDebugAdapter(event.threadId);
 		}
 		
 		protected function debugPanel_debugPauseHandler(event:DebugActionEvent):void
 		{
-			this.pauseDebugAdapter();
+			this.pauseDebugAdapter(event.threadId);
 		}
 		
 		protected function debugPanel_debugStepOverHandler(event:DebugActionEvent):void
 		{
-			this.stepOverDebugAdapter();
+			this.stepOverDebugAdapter(event.threadId);
 		}
 		
 		protected function debugPanel_debugStepIntoHandler(event:DebugActionEvent):void
 		{
-			this.stepIntoDebugAdapter();
+			this.stepIntoDebugAdapter(event.threadId);
 		}
 		
 		protected function debugPanel_debugStepOutHandler(event:DebugActionEvent):void
 		{
-			this.stepOutDebugAdapter();
+			this.stepOutDebugAdapter(event.threadId);
 		}
 		
 		private function dispatcher_debugStepOverHandler(event:DebugActionEvent):void
 		{
-			this.stepOverDebugAdapter();
+			this.stepOverDebugAdapter(event.threadId);
 		}
 		
 		private function dispatcher_debugStepOutHandler(event:DebugActionEvent):void
 		{
-			this.stepOutDebugAdapter();
+			this.stepOutDebugAdapter(event.threadId);
 		}
 		
 		private function dispatcher_debugStepIntoHandler(event:DebugActionEvent):void
 		{
-			this.stepIntoDebugAdapter();
+			this.stepIntoDebugAdapter(event.threadId);
 		}
 		
 		private function dispatcher_debugResumeHandler(event:DebugActionEvent):void
 		{
-			this.resumeDebugAdapter();
+			this.resumeDebugAdapter(event.threadId);
 		}
 		
 		private function dispatcher_debugPauseHandler(event:DebugActionEvent):void
 		{
-			this.pauseDebugAdapter();
+			this.pauseDebugAdapter(event.threadId);
 		}
 
 		protected function dispatcher_debugStopHandler(event:DebugActionEvent):void
