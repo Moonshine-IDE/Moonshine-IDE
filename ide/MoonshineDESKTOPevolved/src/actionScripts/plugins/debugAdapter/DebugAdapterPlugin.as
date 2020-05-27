@@ -144,12 +144,10 @@ package actionScripts.plugins.debugAdapter
 				return;
 			}
 
-			_debugPanel.playButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
-			_debugPanel.pauseButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && !_debugAdapter.paused;
-			_debugPanel.stepOverButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
-			_debugPanel.stepIntoButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
-			_debugPanel.stepOutButton.enabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
-			_debugPanel.stopButton.enabled = _debugAdapter != null;
+			_debugPanel.playEnabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
+			_debugPanel.pauseEnabled = _debugAdapter && _debugAdapter.launchedOrAttached && !_debugAdapter.paused;
+			_debugPanel.stepEnabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
+			_debugPanel.stopEnabled = _debugAdapter != null;
 			_debugPanel.threadsAndStackFrames = _debugAdapter ? _debugAdapter.threadsAndStackFrames : null;
 			_debugPanel.scopesAndVars = _debugAdapter ? _debugAdapter.scopesAndVars : null;
 		}

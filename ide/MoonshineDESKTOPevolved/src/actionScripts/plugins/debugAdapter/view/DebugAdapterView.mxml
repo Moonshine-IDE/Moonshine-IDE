@@ -23,6 +23,7 @@
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
 		 xmlns:s="library://ns.adobe.com/flex/spark"
 		 xmlns:containers="spark.containers.*"
+		 xmlns:local="actionScripts.plugins.debugAdapter.view.*"
 		 implements="actionScripts.interfaces.IViewWithTitle"
 		 horizontalGap="2"
 		 width="100%" height="100%" backgroundColor="0x444444">
@@ -47,6 +48,18 @@
 
 		[Bindable]
 		public var scopesAndVars:IHierarchicalData;
+
+		[Bindable]
+		public var pauseEnabled:Boolean = false;
+
+		[Bindable]
+		public var playEnabled:Boolean = false;
+
+		[Bindable]
+		public var stepEnabled:Boolean = false;
+
+		[Bindable]
+		public var stopEnabled:Boolean = false;
 
 		public function get title():String
 		{
@@ -154,17 +167,17 @@
 	<s:VGroup gap="4" horizontalAlign="center" verticalAlign="top"
 	          percentHeight="100" width="35" paddingTop="4">
 		<s:Button id="playButton" styleName="debugPlayButton" toolTip="Play"
-			enabled="false" click="playButton_clickHandler(event)"/>
+			enabled="{playEnabled}" click="playButton_clickHandler(event)"/>
 		<s:Button id="pauseButton" styleName="debugPauseButton" toolTip="Pause"
-			enabled="false" click="pauseButton_clickHandler(event)"/>
+			enabled="{pauseEnabled}" click="pauseButton_clickHandler(event)"/>
 		<s:Button id="stepOverButton" styleName="debugStepOverButton" toolTip="Step Over"
-			enabled="false" click="stepOverButton_clickHandler(event)"/>
+			enabled="{stepEnabled}" click="stepOverButton_clickHandler(event)"/>
 		<s:Button id="stepIntoButton" styleName="debugStepIntoButton" toolTip="Step Into"
-			enabled="false" click="stepIntoButton_clickHandler(event)"/>
+			enabled="{stepEnabled}" click="stepIntoButton_clickHandler(event)"/>
 		<s:Button id="stepOutButton" styleName="debugStepOutButton" toolTip="Step Out"
-			enabled="false" click="stepOutButton_clickHandler(event)"/>
+			enabled="{stepEnabled}" click="stepOutButton_clickHandler(event)"/>
 		<s:Button id="stopButton" styleName="debugStopButton" toolTip="Stop"
-			enabled="false" click="stopButton_clickHandler(event)"/>
+			enabled="{stopEnabled}" click="stopButton_clickHandler(event)"/>
 	</s:VGroup>
 
 	<containers:HDividerGroup gap="1" percentWidth="100" percentHeight="100">
@@ -228,8 +241,17 @@
 				<mx:AdvancedDataGridColumn headerText="Stack" dataField="name"
 									dataTipField="source" dataTipFunction="{nameDataTipFunction}" showDataTips="true"/>
 				<mx:AdvancedDataGridColumn headerText="Line"
-					itemRenderer="actionScripts.plugins.debugAdapter.view.DebugAdapterThreadRenderer"
-					labelFunction="{lineLabelFunction}" width="50"/>
+					labelFunction="{lineLabelFunction}" width="50">
+					<mx:itemRenderer>
+						<mx:Component>
+							<local:DebugAdapterThreadRenderer
+								dispatcher="{outerDocument}"
+								playEnabled="{outerDocument.playEnabled}"
+								pauseEnabled="{outerDocument.pauseEnabled}"
+								stepEnabled="{outerDocument.stepEnabled}"/>
+						</mx:Component>
+					</mx:itemRenderer>
+				</mx:AdvancedDataGridColumn>
 			</mx:columns>
 		</mx:AdvancedDataGrid>
 	</containers:HDividerGroup>

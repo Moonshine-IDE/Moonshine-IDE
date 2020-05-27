@@ -15,15 +15,15 @@
 			<s:HorizontalLayout paddingLeft="6" paddingRight="6" gap="6" verticalAlign="middle"/>
 		</s:layout>
 		<s:Button id="playButton" styleName="debugMiniPlayButton" toolTip="Play"
-			enabled="false" click="playButton_clickHandler(event)"/>
+			enabled="{this.thread != null &amp;&amp; this.playEnabled}" click="playButton_clickHandler(event)"/>
 		<s:Button id="pauseButton" styleName="debugMiniPauseButton" toolTip="Pause"
-			enabled="false" click="pauseButton_clickHandler(event)"/>
+			enabled="{this.thread != null &amp;&amp; this.pauseEnabled}" click="pauseButton_clickHandler(event)"/>
 		<s:Button id="stepOverButton" styleName="debugMiniStepOverButton" toolTip="Step Over"
-			enabled="false" click="stepOverButton_clickHandler(event)"/>
+			enabled="{this.thread != null &amp;&amp; this.stepEnabled}" click="stepOverButton_clickHandler(event)"/>
 		<s:Button id="stepIntoButton" styleName="debugMiniStepIntoButton" toolTip="Step Into"
-			enabled="false" click="stepIntoButton_clickHandler(event)"/>
+			enabled="{this.thread != null &amp;&amp; this.stepEnabled}" click="stepIntoButton_clickHandler(event)"/>
 		<s:Button id="stepOutButton" styleName="debugMiniStepOutButton" toolTip="Step Out"
-			enabled="false" click="stepOutButton_clickHandler(event)"/>
+			enabled="{this.thread != null &amp;&amp; this.stepEnabled}" click="stepOutButton_clickHandler(event)"/>
 	</s:Group>
 
 	<fx:Script>
@@ -32,6 +32,18 @@
 			import mx.controls.listClasses.BaseListData;
 			import actionScripts.events.DebugActionEvent;
 			import actionScripts.debugAdapter.vo.Thread;
+			import flash.events.IEventDispatcher;
+
+			public var dispatcher:IEventDispatcher;
+
+			[Bindable]
+			public var pauseEnabled:Boolean = false;
+
+			[Bindable]
+			public var playEnabled:Boolean = false;
+
+			[Bindable]
+			public var stepEnabled:Boolean = false;
 
 			[Bindable]
 			private var stackTraceLabel:String;
@@ -58,27 +70,27 @@
 
 			private function playButton_clickHandler(event:MouseEvent):void
 			{
-				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_RESUME, this.thread.id));
+				this.dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_RESUME, this.thread.id));
 			}
 
 			private function pauseButton_clickHandler(event:MouseEvent):void
 			{
-				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_PAUSE, this.thread.id))
+				this.dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_PAUSE, this.thread.id))
 			}
 
 			private function stepOverButton_clickHandler(event:MouseEvent):void
 			{
-				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STEP_OVER, this.thread.id));
+				this.dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STEP_OVER, this.thread.id));
 			}
 
 			private function stepOutButton_clickHandler(event:MouseEvent):void
 			{
-				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STEP_OUT, this.thread.id));
+				this.dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STEP_OUT, this.thread.id));
 			}
 
 			private function stepIntoButton_clickHandler(event:MouseEvent):void
 			{
-				this.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STEP_INTO, this.thread.id));
+				this.dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STEP_INTO, this.thread.id));
 			}
 		]]>
 	</fx:Script>
