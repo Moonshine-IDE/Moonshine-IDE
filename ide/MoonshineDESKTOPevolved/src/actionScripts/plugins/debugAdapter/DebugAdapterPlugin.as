@@ -144,10 +144,8 @@ package actionScripts.plugins.debugAdapter
 				return;
 			}
 
-			_debugPanel.playEnabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
-			_debugPanel.pauseEnabled = _debugAdapter && _debugAdapter.launchedOrAttached && !_debugAdapter.paused;
-			_debugPanel.stepEnabled = _debugAdapter && _debugAdapter.launchedOrAttached && _debugAdapter.paused;
-			_debugPanel.stopEnabled = _debugAdapter != null;
+			_debugPanel.active = _debugAdapter != null;
+			_debugPanel.pausedThreads = _debugAdapter ? _debugAdapter.pausedThreads : null;
 			_debugPanel.threadsAndStackFrames = _debugAdapter ? _debugAdapter.threadsAndStackFrames : null;
 			_debugPanel.scopesAndVars = _debugAdapter ? _debugAdapter.scopesAndVars : null;
 		}
