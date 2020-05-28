@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+	<editors>
+		<editor isWindows="true" isMac="true">
+			<title>VIM</title>
+			<defaultLocation>
+				<windows>$programFiles/VIM/vim.exe</windows>
+				<macos>/Applications/MacVim.app</macos>
+			</defaultLocation>
+			<website>https://www.vim.org/download.php</website>
+		</editor>
+		<editor isWindows="false" isMac="true">
+			<title>SublimeText</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/Sublime Text.app</macos>
+			</defaultLocation>
+			<website>https://www.sublimetext.com/3</website>
+		</editor>
+		<editor isWindows="false" isMac="true">
+			<title>TextMate</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/MacVIM.app</macos>
+			</defaultLocation>
+			<website>https://adoptopenjdk.net/</website>
+		</editor>
+		<editor isWindows="true" isMac="true">
+			<title>Visual Studio Code</title>
+			<defaultLocation>
+				<windows>$programFiles/VIM/vim.exe</windows>
+				<macos>/Applications/MacVIM.app</macos>
+			</defaultLocation>
+			<website>https://adoptopenjdk.net/</website>
+		</editor>
+		<editor isWindows="false" isMac="true">
+			<title>IAWriter</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/MacVIM.app</macos>
+			</defaultLocation>
+			<website>https://adoptopenjdk.net/</website>
+		</editor>
+		<editor isWindows="false" isMac="true">
+			<title>Prettify XML</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/MacVIM.app</macos>
+			</defaultLocation>
+			<website>https://adoptopenjdk.net/</website>
+		</editor>
+		<editor isWindows="false" isMac="true">
+			<title>Emacs</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/MacVIM.app</macos>
+			</defaultLocation>
+			<website>https://adoptopenjdk.net/</website>
+		</editor>
+		<editor isWindows="false" isMac="true">
+			<title>TextWrangler</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/MacVIM.app</macos>
+			</defaultLocation>
+			<website>https://adoptopenjdk.net/</website>
+		</editor>
+		<editor isWindows="true" isMac="false">
+			<title>NotePad++</title>
+			<defaultLocation>
+				<windows>$programFiles/VIM/vim.exe</windows>
+				<macos/>
+			</defaultLocation>
+			<website>https://adoptopenjdk.net/</website>
+		</editor>
+		<editor isWindows="true" isMac="false">
+			<title>UltraEdit</title>
+			<defaultLocation>
+				<windows>$programFiles/VIM/vim.exe</windows>
+				<macos/>
+			</defaultLocation>
+			<website>https://adoptopenjdk.net/</website>
+		</editor>
+	</editors>
+</config>
