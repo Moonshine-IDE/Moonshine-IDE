@@ -129,6 +129,7 @@ package actionScripts.impls
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
+	import actionScripts.events.DebugActionEvent;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -367,13 +368,15 @@ package actionScripts.impls
 						"d", [Keyboard.COMMAND],
 						"d", [Keyboard.CONTROL]),
 					new MenuItem(null),					
-					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.DEBUG_STEPOVER,
+					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_OVER,
 						"e",[Keyboard.COMMAND],
 						"f6", []),
-					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.CONTINUE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','STEP_INTO'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_INTO),
+					new MenuItem(resourceManager.getString('resources','STEP_OUT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_OUT),
+					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_RESUME,
 						"r",[Keyboard.COMMAND],
 						"f8", []),
-					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], ActionScriptBuildEvent.TERMINATE_EXECUTION,
+					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STOP,
 						"t",[Keyboard.COMMAND],
 						"t", [Keyboard.CONTROL])
 				]),

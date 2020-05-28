@@ -60,6 +60,7 @@ package actionScripts.plugins.fdb
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
+	import actionScripts.events.DebugActionEvent;
 	
 	public class FDBPlugin extends PluginBase implements IPlugin
 	{
@@ -124,8 +125,8 @@ package actionScripts.plugins.fdb
 			dispatcher.addEventListener(MenuPlugin.MENU_SAVE_AS_EVENT, handleEditorSave);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, handleEditorSave);
 			dispatcher.addEventListener(FDBEvent.SHOW_DEBUG_VIEW, handleShowDebugView);
-			dispatcher.addEventListener(ActionScriptBuildEvent.CONTINUE_EXECUTION,continueExecutionHandler);
-			dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION,terminateExecutionHandler);
+			dispatcher.addEventListener(DebugActionEvent.DEBUG_RESUME,debugResumeHandler);
+			dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP,debugStopHandler);
 	
 			
 			var	fdbObj:Object = new Object();
@@ -138,14 +139,14 @@ package actionScripts.plugins.fdb
 		}
 		
 		//"F6" will call below function and step over the line
-		private function handleCodeStepOver(e:Event):void
+		private function handleCodeStepOver(e:DebugActionEvent):void
 		{
 			send("next");
 			debug(">>> %s <<<", "fdb next");
 		}
 		
 		//Continue Execution
-		private function continueExecutionHandler(e:Event):void
+		private function debugResumeHandler(e:DebugActionEvent):void
 		{
 			if(fdb)
 			{
@@ -162,7 +163,7 @@ package actionScripts.plugins.fdb
 		}
 		
 		//Terminate execution of running application
-		private function terminateExecutionHandler(e:Event):void
+		private function debugStopHandler(e:DebugActionEvent):void
 		{
 			if(fdb)
 				stopDebugger();
@@ -205,6 +206,14 @@ package actionScripts.plugins.fdb
 		{
 			super.deactivate();
 			dispatcher.removeEventListener(ActionScriptBuildEvent.POSTBUILD, postbuild);
+			dispatcher.removeEventListener(ActionScriptBuildEvent.PREBUILD, handleCompile);
+			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
+			dispatcher.removeEventListener(MenuPlugin.MENU_SAVE_EVENT, handleEditorSave);
+			dispatcher.removeEventListener(MenuPlugin.MENU_SAVE_AS_EVENT, handleEditorSave);
+			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, handleEditorSave);
+			dispatcher.removeEventListener(FDBEvent.SHOW_DEBUG_VIEW, handleShowDebugView);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_RESUME,debugResumeHandler);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STOP,debugStopHandler);
 			
 			unregisterCommand(CONSOLE_MODE);
 			
@@ -715,7 +724,7 @@ package actionScripts.plugins.fdb
 					if (!manualMode)
 					{
 						isStepOver = true;
-						dispatcher.addEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER,handleCodeStepOver );
+						dispatcher.addEventListener(DebugActionEvent.DEBUG_STEP_OVER,handleCodeStepOver );
 						objectTree.removeAll();
 						var itemThis : XML = <item label="this" path="this" name="this" value="this" isBranch="true" />;
 						var itemLocals : XML = <item label="locals" path="" name="locals" value="locals" isBranch="true" />;
@@ -771,7 +780,7 @@ package actionScripts.plugins.fdb
 						}
 					}
 					//unregister "F6" command
-					dispatcher.removeEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER,handleCodeStepOver );
+					dispatcher.removeEventListener(DebugActionEvent.DEBUG_STEP_OVER,handleCodeStepOver );
 					isMatchFound = true;
 				}
 				
@@ -783,7 +792,7 @@ package actionScripts.plugins.fdb
 					{
 						var nextLine3:int = match[0];
 						dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.TRACE_LINE, [getFileTargetPath(nameOfFile)], nextLine3-1));
-						dispatcher.addEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER,handleCodeStepOver );
+						dispatcher.addEventListener(DebugActionEvent.DEBUG_STEP_OVER,handleCodeStepOver );
 					}
 					isMatchFound = true;
 				}
@@ -831,7 +840,7 @@ package actionScripts.plugins.fdb
 		private function debuggerExit(e:NativeProcessExitEvent):void
 		{
 			debug("FDB exit code %s", e.exitCode);
-			GlobalEventDispatcher.getInstance().removeEventListener(ActionScriptBuildEvent.STOP_DEBUG,stopDebugHandler);
+			GlobalEventDispatcher.getInstance().removeEventListener(DebugActionEvent.DEBUG_STOP,stopDebugHandler);
 			fdb = null;
 		}
 		
@@ -847,7 +856,7 @@ package actionScripts.plugins.fdb
 				print("2 in MXMLCPlugin debugafterBuild");
 				initDebugger();
 				send("run");
-				GlobalEventDispatcher.getInstance().addEventListener(ActionScriptBuildEvent.STOP_DEBUG,stopDebugHandler);
+				GlobalEventDispatcher.getInstance().addEventListener(DebugActionEvent.DEBUG_STOP,stopDebugHandler);
 				GlobalEventDispatcher.getInstance().addEventListener(ActionScriptBuildEvent.EXIT_FDB,exitFDBHandler);
 			}
 			else
@@ -870,12 +879,12 @@ package actionScripts.plugins.fdb
 			}
 		}
 		
-		private function stopDebugHandler(e:ActionScriptBuildEvent):void{
+		private function stopDebugHandler(e:DebugActionEvent):void{
 			if(fdb)
 			{
 				stopDebugger();
 			}
-			GlobalEventDispatcher.getInstance().removeEventListener(ActionScriptBuildEvent.STOP_DEBUG,stopDebugHandler);
+			GlobalEventDispatcher.getInstance().removeEventListener(DebugActionEvent.DEBUG_STOP,stopDebugHandler);
 		}
 		
 		// remoce trace line from editor and unlaunch swf
@@ -893,7 +902,7 @@ package actionScripts.plugins.fdb
 				}
 			}
 			//unregister "F6" command
-			dispatcher.removeEventListener(ActionScriptBuildEvent.DEBUG_STEPOVER,handleCodeStepOver );
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STEP_OVER,handleCodeStepOver );
 			if(!isSession){
 				fdb.closeInput();
 			}

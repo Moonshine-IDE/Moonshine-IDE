@@ -33,6 +33,7 @@ package actionScripts.plugins.httpServer
 	import flash.events.Event;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.DebugActionEvent;
 
 	public class HttpServerPlugin extends ConsoleBuildPluginBase
 	{
@@ -60,7 +61,7 @@ package actionScripts.plugins.httpServer
             super.activate();
 
 			dispatcher.addEventListener(HttpServerEvent.START_HTTP_SERVER, startHttpServerHandler);
-			dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, terminateExecutionHandler);
+			dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, debugStopHandler);
 			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
         }
 
@@ -69,7 +70,7 @@ package actionScripts.plugins.httpServer
             super.deactivate();
 
 			dispatcher.removeEventListener(HttpServerEvent.START_HTTP_SERVER, startHttpServerHandler);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, terminateExecutionHandler);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STOP, debugStopHandler);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
         }
 
@@ -142,7 +143,7 @@ package actionScripts.plugins.httpServer
 			}
         }
 
-        private function terminateExecutionHandler(event:Event):void
+        private function debugStopHandler(event:DebugActionEvent):void
         {
 			//this seems to be required to stop the http-server on Windows
 			//otherwise, it will keep running and the port won't be released

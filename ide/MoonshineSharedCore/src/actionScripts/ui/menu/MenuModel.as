@@ -36,6 +36,7 @@ package actionScripts.ui.menu
     import actionScripts.ui.menu.interfaces.ICustomMenuItem;
     import actionScripts.ui.menu.renderers.MenuItemRenderer;
     import actionScripts.ui.menu.renderers.MenuRenderer;
+    import actionScripts.events.DebugActionEvent;
 
     public class MenuModel extends EventDispatcher
 	{
@@ -226,13 +227,26 @@ package actionScripts.ui.menu
 			if (menuItem.data && menuItem.data.hasOwnProperty("event") && menuItem.data.event)
 			{
 				var data:Object = menuItem.data;
-
-				dispatcher.dispatchEvent(new MenuEvent(data.event, false, false, data.eventData));
+				if(data.event.indexOf("debug") == 0)
+				{
+					dispatcher.dispatchEvent(new DebugActionEvent(data.event));
+				}
+				else
+				{
+					dispatcher.dispatchEvent(new MenuEvent(data.event, false, false, data.eventData));
+				}
 
 			}
 			else if (menuItem.shortcut && menuItem.shortcut.event)
 			{
-				dispatcher.dispatchEvent(new Event(menuItem.shortcut.event));
+				if(menuItem.shortcut.event.indexOf("debug") == 0)
+				{
+					dispatcher.dispatchEvent(new DebugActionEvent(menuItem.shortcut.event));
+				}
+				else
+				{
+					dispatcher.dispatchEvent(new Event(menuItem.shortcut.event));
+				}
 			}
 		}
 

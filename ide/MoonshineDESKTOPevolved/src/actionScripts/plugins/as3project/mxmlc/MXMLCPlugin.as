@@ -91,6 +91,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import org.as3commons.asblocks.utils.FileUtil;
 	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 	import actionScripts.valueObjects.MobileDeviceVO;
+	import actionScripts.events.DebugActionEvent;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -406,7 +407,7 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				if (event.detail == Alert.YES)
 				{
-					dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+					dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 					setTimeout(function():void
 					{
 						dispatcher.dispatchEvent(e);
@@ -1064,7 +1065,7 @@ package actionScripts.plugins.as3project.mxmlc
 			// stop running debug process for run/build if debug process in running
 			if (!debugAfterBuild)
 			{
-				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.STOP_DEBUG, false));
+				dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 			}
 
 			fcsh = new NativeProcess();

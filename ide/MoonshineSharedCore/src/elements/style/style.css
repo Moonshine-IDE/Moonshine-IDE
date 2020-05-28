@@ -378,6 +378,36 @@ mx|ScrollBar.black
 	icon: Embed("/elements/images/debug-step-out-icon.png");
 }
 
+.debugMiniPlayButton
+{
+	skinClass: ClassReference("elements.skins.MiniDarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-play-icon.png");
+}
+
+.debugMiniPauseButton
+{
+	skinClass: ClassReference("elements.skins.MiniDarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-pause-icon.png");
+}
+
+.debugMiniStepIntoButton
+{
+	skinClass: ClassReference("elements.skins.MiniDarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-step-into-icon.png");
+}
+
+.debugMiniStepOverButton
+{
+	skinClass: ClassReference("elements.skins.MiniDarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-step-over-icon.png");
+}
+
+.debugMiniStepOutButton
+{
+	skinClass: ClassReference("elements.skins.MiniDarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-step-out-icon.png");
+}
+
 .codeActionButton
 {
 	skinClass: ClassReference("elements.skins.CodeActionButtonSkin");
