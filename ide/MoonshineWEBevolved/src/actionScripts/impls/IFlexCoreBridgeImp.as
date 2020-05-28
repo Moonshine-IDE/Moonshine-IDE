@@ -23,6 +23,7 @@ package actionScripts.impls
 	import flash.events.Event;
 	import flash.ui.Keyboard;
 	
+	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
 	import mx.core.IFlexDisplayObject;
 	import mx.core.IVisualElement;
@@ -416,6 +417,11 @@ package actionScripts.impls
 		public function startTypeAheadWithJavaPath(path:String):void
 		{
 			
+		}
+		
+		public function getExternalEditors():ArrayCollection
+		{
+			return null;
 		}
 		
 		public function get runtimeVersion():String

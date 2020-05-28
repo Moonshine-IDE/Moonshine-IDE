@@ -26,6 +26,7 @@ package actionScripts.impls
 	import flash.filesystem.File;
 	import flash.ui.Keyboard;
 	
+	import mx.collections.ArrayCollection;
 	import mx.controls.HTML;
 	import mx.core.FlexGlobals;
 	import mx.core.IFlexDisplayObject;
@@ -33,6 +34,7 @@ package actionScripts.impls
 	import mx.resources.ResourceManager;
 	
 	import actionScripts.events.ChangeLineEncodingEvent;
+	import actionScripts.events.DebugActionEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
@@ -88,6 +90,7 @@ package actionScripts.impls
 	import actionScripts.plugins.core.ProjectBridgeImplBase;
 	import actionScripts.plugins.debugAdapter.DebugAdapterPlugin;
 	import actionScripts.plugins.domino.DominoPlugin;
+	import actionScripts.plugins.externalEditors.ExternalEditorsPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.gradle.GradleBuildPlugin;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
@@ -129,7 +132,6 @@ package actionScripts.impls
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
-	import actionScripts.events.DebugActionEvent;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -256,7 +258,8 @@ package actionScripts.impls
 				DominoPlugin,
 				HttpServerPlugin,
 				RoyaleApiReportConfiguratorPlugin,
-				RoyaleApiReportPlugin
+				RoyaleApiReportPlugin,
+				ExternalEditorsPlugin
 			];
 		}
 		
@@ -265,7 +268,7 @@ package actionScripts.impls
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin];
+					MultiMenuEventsNotifierPlugin, ExternalEditorsPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -524,6 +527,11 @@ package actionScripts.impls
 		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
 		{
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(completion, customSDK, withCommands);
+		}
+		
+		public function getExternalEditors():ArrayCollection
+		{
+			return ExternalEditorsPlugin.editors;
 		}
 	}
 }
