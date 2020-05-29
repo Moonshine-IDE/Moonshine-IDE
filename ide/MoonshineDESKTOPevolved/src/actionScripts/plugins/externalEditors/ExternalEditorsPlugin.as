@@ -18,20 +18,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.externalEditors
 {	
-	import mx.collections.ArrayCollection;
+	import flash.events.Event;
+	import flash.filesystem.File;
+	import flash.net.registerClassAlias;
 	
+	import mx.collections.ArrayCollection;
+	import mx.utils.ObjectUtil;
+	
+	import actionScripts.events.FilePluginEvent;
+	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.SettingsEvent;
-	import actionScripts.plugin.actionscript.as3project.settings.SimpleInformationOnlySetting;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugins.domino.settings.UpdateSitePathSetting;
 	import actionScripts.plugins.externalEditors.importer.ExternalEditorsImporter;
+	import actionScripts.plugins.externalEditors.settings.ExternalEditorSetting;
 	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
+	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
+	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import components.containers.DominoSettingsInstruction;
 	
 	public class ExternalEditorsPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
 	{
@@ -41,12 +47,14 @@ package actionScripts.plugins.externalEditors
 		
 		override public function get name():String			{ return "External Editors"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
-		override public function get description():String	{ return "Integration of External Editors to Moonshine-IDE"; }
+		override public function get description():String	{ return "Accessing external editors from Moonshine-IDE"; }
 		
 		public var updateSitePath:String;
 		
-		private var pathSetting:PathSetting;
 		private var updateSitePathSetting:UpdateSitePathSetting;
+		private var editorsUntilSave:ArrayCollection;
+		private var settings:Vector.<ISetting>;
+		private var removedEditors:Array = [];
 		
 		override public function activate():void
 		{
@@ -72,30 +80,37 @@ package actionScripts.plugins.externalEditors
 		
 		override public function onSettingsClose():void
 		{
-			if (pathSetting)
-			{
-				pathSetting = null;
-			}
+			editorsUntilSave = null;
+			settings = null;
 		}
 		
         public function getSettingsList():Vector.<ISetting>
         {
-			onSettingsClose();
+			// not to affect original collection 
+			// unless a save 
+			registerClassAlias("actionScripts.plugins.externalEditors.vo.ExternalEditorVO", ExternalEditorVO);
+			registerClassAlias("flash.filesystem.File", File);
+			editorsUntilSave = ObjectUtil.clone(editors) as ArrayCollection;
 			
-			// check if all dependencies for 'update site > generate'
-			// functionality, are present
-
-			updateSitePathSetting = new UpdateSitePathSetting(this, 'updateSitePath', 'Update Site', true, updateSitePath);
+			settings = new Vector.<ISetting>();			
+			for each (var editor:ExternalEditorVO in editorsUntilSave)
+			{
+				settings.push(
+					getEditorSetting(editor)
+				);
+			}
 			
-			var instructions:SimpleInformationOnlySetting = new SimpleInformationOnlySetting();
-			instructions.renderer = new DominoSettingsInstruction();
-			
-			return Vector.<ISetting>([
-                pathSetting,
-				updateSitePathSetting,
-				instructions
-			]);
+			return settings;
         }
+		
+		private function getEditorSetting(editor:ExternalEditorVO):ExternalEditorSetting
+		{
+			var tmpSetting:ExternalEditorSetting = new ExternalEditorSetting(editor);
+			tmpSetting.addEventListener(ExternalEditorSetting.EVENT_MODIFY, onEditorModify, false, 0, true);
+			tmpSetting.addEventListener(ExternalEditorSetting.EVENT_REMOVE, onEditorRemove, false, 0, true);
+			
+			return tmpSetting;
+		}
 		
 		private function generateEditorsList():void
 		{
@@ -104,11 +119,66 @@ package actionScripts.plugins.externalEditors
 			{
 				editors = ExternalEditorsImporter.getDefaultEditors();
 			}
+			
+			updateEventListeners();
+		}
+		
+		private function updateEventListeners():void
+		{
+			var eventName:String;
+			for each (var editor:ExternalEditorVO in editors)
+			{
+				eventName = "eventOpenWithExternalEditor"+ editor.localID;
+				dispatcher.addEventListener(eventName, onOpenWithExternalEditor, false, 0, true);
+			}
+			
+			dispatcher.addEventListener(FTETreeItemRenderer.CONFIGURE_EXTERNAL_EDITORS, onOpenExternalEditorConfiguration, false, 0, true);
 		}
 		
 		private function onSettingsSaved(event:SettingsEvent):void
 		{
 			
+		}
+		
+		private function onOpenWithExternalEditor(event:FilePluginEvent):void
+		{
+			var editorID:String = event.type.replace("eventOpenWithExternalEditor", "");
+			var editor:ExternalEditorVO;
+			editors.source.some(function(item:ExternalEditorVO, index:int, arr:Array):Boolean {
+				if (item.localID == editorID)
+				{
+					editor = item;
+					return true;
+				}
+				return false;
+			});
+			
+			if (editor)
+			{
+				trace(event.file.fileBridge.nativePath);
+			}
+		}
+		
+		private function onOpenExternalEditorConfiguration(event:Event):void
+		{
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, NAMESPACE));
+		}
+		
+		private function onEditorModify(event:Event):void
+		{
+			
+		}
+		
+		private function onEditorRemove(event:Event):void
+		{
+			// store the editor references but
+			// remove from the collection once Save
+			// along with remove corresponding global listener
+			removedEditors.push((event.target as ExternalEditorSetting).editor);
+			
+			editorsUntilSave.removeItem((event.target as ExternalEditorSetting).editor);
+			settings.splice(settings.indexOf(event.target), 1);
+			(event.target as ExternalEditorSetting).renderer.dispatchEvent(new Event('refresh'));
 		}
 	}
 }

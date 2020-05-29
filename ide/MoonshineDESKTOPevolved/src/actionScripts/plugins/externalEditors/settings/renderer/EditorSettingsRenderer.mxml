@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%"
+		  paddingLeft="15" paddingTop="15" paddingRight="15" paddingBottom="15"
+		  visible="true" creationComplete="init()">
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.net.navigateToURL;
+			
+			import actionScripts.plugin.settings.renderers.LinkButtonSkin;
+			import actionScripts.plugins.externalEditors.settings.ExternalEditorSetting;
+			
+			[Bindable] public var setting:ExternalEditorSetting;
+			
+			private function init():void
+			{
+				
+			}
+			
+			public function remove():void
+			{
+				setting.dispatchEvent(new Event(ExternalEditorSetting.EVENT_REMOVE));
+			}
+			
+			private function modify():void
+			{
+				setting.dispatchEvent(new Event(ExternalEditorSetting.EVENT_MODIFY));
+			}
+			
+			private function openWebsite():void
+			{
+				navigateToURL(new URLRequest(setting.editor.website));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%">
+		<s:Label styleName="uiTextSettingsLabel"
+				 text="{setting.label}" />
+		<mx:Spacer width="100%"/>
+		<s:Button label="Clear"
+				  skinClass="{LinkButtonSkin}"/>
+		<s:Button label="Change"
+				  skinClass="{LinkButtonSkin}"/>
+		<s:Button label="Download"
+				  skinClass="{LinkButtonSkin}"
+				  visible="{setting.editor.isMoonshineDefault}" includeInLayout="{setting.editor.isMoonshineDefault}"
+				  click="openWebsite()"/>
+		<s:Button label="Modify"
+				  skinClass="{LinkButtonSkin}"
+				  visible="{!setting.editor.isMoonshineDefault}" includeInLayout="{!setting.editor.isMoonshineDefault}"
+				  click="modify()"/>
+		<s:Button label="Remove"
+				  skinClass="{LinkButtonSkin}"
+				  visible="{!setting.editor.isMoonshineDefault}" includeInLayout="{!setting.editor.isMoonshineDefault}"
+				  click="remove()"/>
+	</s:HGroup>
+	
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:Label id="lblValue"
+				 styleName="uiTextSettingsValue"
+				 paddingTop="10" width="98%"
+				 text="{setting.stringValue? setting.stringValue : 'Not Set'}"/>
+		<s:Spacer width="100%"/>
+		<s:CheckBox toolTip="Enable"
+					enabled="{setting.editor.isValid}" selected="@{setting.editor.isEnabled}"/>
+	</s:HGroup>
+	
+	<s:Label id="lblMessage"
+			 styleName="uiTextSettingsLabel" color="0xff0000" width="100%" maxDisplayedLines="3"
+			 fontSize="12" includeInLayout="{!setting.editor.isValid}" visible="{!setting.editor.isValid}"
+			 text="Path is not accessible."/>
+</s:VGroup>

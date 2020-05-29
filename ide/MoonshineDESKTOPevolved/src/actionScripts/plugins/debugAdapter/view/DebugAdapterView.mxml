@@ -42,6 +42,9 @@
 		import actionScripts.debugAdapter.vo.Variable;
 		import actionScripts.events.DebugActionEvent;
 		import flash.events.MouseEvent;
+		import mx.collections.ICollectionView;
+		import mx.collections.ArrayCollection;
+		import actionScripts.debugAdapter.vo.Thread;
 
 		[Bindable]
 		public var threadsAndStackFrames:IHierarchicalData;
@@ -50,20 +53,23 @@
 		public var scopesAndVars:IHierarchicalData;
 
 		[Bindable]
-		public var pauseEnabled:Boolean = false;
+		public var pausedThreads:ArrayCollection;
 
 		[Bindable]
-		public var playEnabled:Boolean = false;
-
-		[Bindable]
-		public var stepEnabled:Boolean = false;
-
-		[Bindable]
-		public var stopEnabled:Boolean = false;
+		public var active:Boolean = false;
 
 		public function get title():String
 		{
 			return "Debug";
+		}
+
+		public function isThreadPaused(thread:Thread):Boolean
+		{
+			if(!thread)
+			{
+				return false;
+			}
+			return this.pausedThreads.getItemIndex(thread.id) != -1;
 		}
 
 		private function variablesValueLabelFunction(item:Object, column:AdvancedDataGridColumn = null):String
@@ -167,17 +173,17 @@
 	<s:VGroup gap="4" horizontalAlign="center" verticalAlign="top"
 	          percentHeight="100" width="35" paddingTop="4">
 		<s:Button id="playButton" styleName="debugPlayButton" toolTip="Play"
-			enabled="{playEnabled}" click="playButton_clickHandler(event)"/>
+			enabled="{active &amp;&amp; pausedThreads.length > 0}" click="playButton_clickHandler(event)"/>
 		<s:Button id="pauseButton" styleName="debugPauseButton" toolTip="Pause"
-			enabled="{pauseEnabled}" click="pauseButton_clickHandler(event)"/>
+			enabled="{active &amp;&amp; pausedThreads.length == 0}" click="pauseButton_clickHandler(event)"/>
 		<s:Button id="stepOverButton" styleName="debugStepOverButton" toolTip="Step Over"
-			enabled="{stepEnabled}" click="stepOverButton_clickHandler(event)"/>
+			enabled="{active &amp;&amp; pausedThreads.length > 0}" click="stepOverButton_clickHandler(event)"/>
 		<s:Button id="stepIntoButton" styleName="debugStepIntoButton" toolTip="Step Into"
-			enabled="{stepEnabled}" click="stepIntoButton_clickHandler(event)"/>
+			enabled="{active &amp;&amp; pausedThreads.length > 0}" click="stepIntoButton_clickHandler(event)"/>
 		<s:Button id="stepOutButton" styleName="debugStepOutButton" toolTip="Step Out"
-			enabled="{stepEnabled}" click="stepOutButton_clickHandler(event)"/>
+			enabled="{active &amp;&amp; pausedThreads.length > 0}" click="stepOutButton_clickHandler(event)"/>
 		<s:Button id="stopButton" styleName="debugStopButton" toolTip="Stop"
-			enabled="{stopEnabled}" click="stopButton_clickHandler(event)"/>
+			enabled="{active}" click="stopButton_clickHandler(event)"/>
 	</s:VGroup>
 
 	<containers:HDividerGroup gap="1" percentWidth="100" percentHeight="100">
@@ -246,9 +252,13 @@
 						<mx:Component>
 							<local:DebugAdapterThreadRenderer
 								dispatcher="{outerDocument}"
-								playEnabled="{outerDocument.playEnabled}"
-								pauseEnabled="{outerDocument.pauseEnabled}"
-								stepEnabled="{outerDocument.stepEnabled}"/>
+								playEnabled="{outerDocument.active &amp;&amp; outerDocument.isThreadPaused(this.data as Thread)}"
+								pauseEnabled="{outerDocument.active &amp;&amp; !outerDocument.isThreadPaused(this.data as Thread)}"
+								stepEnabled="{outerDocument.active &amp;&amp; outerDocument.isThreadPaused(this.data as Thread)}">
+								<mx:Script><![CDATA[
+									import actionScripts.debugAdapter.vo.Thread;
+								]]></mx:Script>
+							</local:DebugAdapterThreadRenderer>
 						</mx:Component>
 					</mx:itemRenderer>
 				</mx:AdvancedDataGridColumn>

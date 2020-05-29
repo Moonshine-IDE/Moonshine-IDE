@@ -21,15 +21,15 @@
 			<title>TextMate</title>
 			<defaultLocation>
 				<windows/>
-				<macos>/Applications/MacVIM.app</macos>
+				<macos>/Applications/Unknown.app</macos>
 			</defaultLocation>
 			<website>https://adoptopenjdk.net/</website>
 		</editor>
 		<editor isWindows="true" isMac="true">
 			<title>Visual Studio Code</title>
 			<defaultLocation>
-				<windows>$programFiles/VIM/vim.exe</windows>
-				<macos>/Applications/MacVIM.app</macos>
+				<windows>$programFiles/Unkown.exe</windows>
+				<macos>/Applications/Unknown.app</macos>
 			</defaultLocation>
 			<website>https://adoptopenjdk.net/</website>
 		</editor>

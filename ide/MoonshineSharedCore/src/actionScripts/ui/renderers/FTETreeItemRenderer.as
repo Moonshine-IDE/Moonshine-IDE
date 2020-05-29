@@ -419,22 +419,17 @@ package actionScripts.ui.renderers
 			var editors:ArrayCollection = model.flexCore.getExternalEditors();
 			for each (var editor:IExternalEditorVO in editors)
 			{
-				var eventType:String = "eventOpenWith"+ editor.title;
-				var item:Object = model.contextMenuCore.getContextMenuItem(editor.title, redispatch, Event.SELECT);
+				var eventType:String = "eventOpenWithExternalEditor"+ editor.localID;
+				var item:Object = model.contextMenuCore.getContextMenuItem(editor.title, redispatchOpenWith, Event.SELECT);
 				item.data = eventType;
-				
-				/*enableTypes = TemplatingHelper.getTemplateMenuType(label);
-				item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
-				{
-					return activeProject.menuType.indexOf(item) != -1;
-				});*/
+				item.enabled = editor.isValid && editor.isEnabled;
 				
 				model.contextMenuCore.subMenu(event.target, item);
 			}
 
 			model.contextMenuCore.subMenu(event.target, model.contextMenuCore.getContextMenuItem(null));
 			
-			var customize:Object = model.contextMenuCore.getContextMenuItem(CONFIGURE_EXTERNAL_EDITORS, redispatch, Event.SELECT);
+			var customize:Object = model.contextMenuCore.getContextMenuItem(CONFIGURE_EXTERNAL_EDITORS, redispatchOpenWith, Event.SELECT);
 			customize.data = CONFIGURE_EXTERNAL_EDITORS;
 			model.contextMenuCore.subMenu(event.target, customize);
 		}
@@ -450,7 +445,7 @@ package actionScripts.ui.renderers
 			}
 			
 			var enableTypes:Array;
-			var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatch, Event.SELECT);
+			var folder:Object = model.contextMenuCore.getContextMenuItem("Folder", redispatchNew, Event.SELECT);
 			folder.data = NEW_FOLDER;
 			model.contextMenuCore.subMenu(e.target, folder);
 			model.contextMenuCore.subMenu(e.target, model.contextMenuCore.getContextMenuItem(null));
@@ -459,7 +454,7 @@ package actionScripts.ui.renderers
 			{
 				var label:String = TemplatingHelper.getTemplateLabel(file);
 				var eventType:String = "eventNewFileFromTemplate"+label;
-				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatch, Event.SELECT);
+				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatchNew, Event.SELECT);
 				item.data = eventType;
 				
 				enableTypes = TemplatingHelper.getTemplateMenuType(label);
@@ -486,14 +481,14 @@ package actionScripts.ui.renderers
 		
 		private function redispatch(event:Event):void
 		{
-			var type:String = (event.target is ContextMenuItem) ? event.target.caption : event.target.label;
-			if (type == NEW) return;
-			
-			
-			var e:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, 
-															type, 
-															FileWrapper(data));
-			e.renderer = this;
+			dispatchEvent(
+				getNewTreeMenuItemEvent(event)
+			);
+		}
+		
+		private function redispatchNew(event:Event):void
+		{
+			var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
 			if (event.target.hasOwnProperty("data") && event.target.data)
 			{
 				e.menuLabel = NEW;
@@ -501,6 +496,28 @@ package actionScripts.ui.renderers
 			}
 			
 			dispatchEvent(e);
+		}
+		
+		private function redispatchOpenWith(event:Event):void
+		{
+			var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
+			if (event.target.hasOwnProperty("data") && event.target.data)
+			{
+				e.menuLabel = OPEN_WITH;
+				e.extra = event.target.data;
+			}
+			
+			dispatchEvent(e);
+		}
+		
+		private function getNewTreeMenuItemEvent(event:Event):TreeMenuItemEvent
+		{
+			var type:String = (event.target is ContextMenuItem) ? event.target.caption : event.target.label;
+			var e:TreeMenuItemEvent = new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, 
+				type, 
+				FileWrapper(data));
+			e.renderer = this;
+			return e;
 		}
 		
 		override protected function createChildren():void

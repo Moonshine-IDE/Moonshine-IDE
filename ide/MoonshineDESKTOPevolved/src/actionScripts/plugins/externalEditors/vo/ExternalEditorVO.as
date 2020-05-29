@@ -27,6 +27,8 @@ package actionScripts.plugins.externalEditors.vo
 	[Bindable]
 	public class ExternalEditorVO implements IExternalEditorVO
 	{
+		public var isMoonshineDefault:Boolean;
+		
 		private var _title:String;
 		public function get title():String								{	return _title;	}
 		public function set title(value:String):void					{	_title = value;	}
@@ -45,7 +47,10 @@ package actionScripts.plugins.externalEditors.vo
 
 		private var _isValid:Boolean;
 		public function get isValid():Boolean							{	return _isValid;	}
-		public function set isValid(value:Boolean):void					{	_isValid = value;	}
+		public function set isValid(value:Boolean):void					{
+			_isValid = value;
+			if (!_isValid && (_isValid != _isEnabled)) isEnabled = false;
+		}
 		
 		private var _localID:String;
 		public function get localID():String							{	return _localID;	}
