@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="500" minWidth="400" minHeight="100" autoLayout="true"
+		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+		 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="onCreationCompletes(), txtTitle.setFocus()">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.CloseEvent;
+			import mx.validators.Validator;
+			
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
+			
+			public static const UPDATE_EDITOR:String = "updateExternalEditorVO";
+			
+			[Bindable] public var editor:ExternalEditorVO;
+			
+			private function onCreationCompletes():void
+			{
+				title = editor ? "Modify Editor" : "Add New Editor";
+				if (!editor) editor = new ExternalEditorVO();
+			}
+			
+			private function onSubmit():void
+			{
+				var tmpArr : Array = new Array(nameValidator, pathValidator);
+				if (Validator.validateAll(tmpArr).length == 0)
+				{
+					editor.title = txtTitle.text;
+					editor.installPath = new File(txtPath.text);
+					editor.isValid = true;
+					editor.isEnabled = true;
+					
+					dispatchEvent(new Event(UPDATE_EDITOR));
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+				}
+			}
+			
+			private function onBrowse(event:MouseEvent):void
+			{
+				IDEModel.getInstance().fileCore.browseForOpen("Select executable", onExecutableSelected, null, ["*.app;*.exe"]);
+			}
+			
+			protected function onExecutableSelected(file:File):void
+			{
+				txtPath.text = file.nativePath;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="nameValidator" source="{txtTitle}" property="text" trigger="{btnCommit}" triggerEvent="click"/>
+		<mx:StringValidator id="pathValidator" source="{txtPath}" property="text" trigger="{btnCommit}" triggerEvent="click"/>
+	</fx:Declarations>
+	
+	<s:VGroup height="100%" width="100%" 
+			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
+		<view:PromptTextInput id="txtTitle"
+							  width="100%" styleName="textInput"
+							  prompt="Editor Title"/>
+		<s:HGroup width="100%" verticalAlign="middle">
+			<view:PromptTextInput id="txtPath" 
+								  width="100%" styleName="textInput" editable="false"
+								  prompt="Executable Path"/>
+			<s:Button label="Browse" styleName="lightButton"
+					  click="onBrowse(event)"/>
+		</s:HGroup>
+		<view:PromptTextInput id="txtArguments"
+							  width="100%" styleName="textInput"
+							  prompt="Extra Arguments"/>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button id="btnCommit" label="Submit"
+				  styleName="darkButton" click="onSubmit()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

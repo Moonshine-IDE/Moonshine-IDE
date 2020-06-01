@@ -18,6 +18,7 @@
     <classEntry path="components.popup.SearchInProjectPreviewPopup"/>
     <classEntry path="actionScripts.plugin.actionscript.as3project.vo.LibrarySettingsVO"/>
     <classEntry path="actionScripts.interfaces.IExternalEditorVO"/>
+    <classEntry path="actionScripts.plugin.settings.vo.LinkOnlySettingVO"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

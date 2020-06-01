@@ -18,18 +18,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.externalEditors
 {	
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.filesystem.File;
 	import flash.net.registerClassAlias;
 	
 	import mx.collections.ArrayCollection;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.FilePluginEvent;
-	import actionScripts.events.NewFileEvent;
 	import actionScripts.events.SettingsEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.LinkOnlySetting;
+	import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugins.domino.settings.UpdateSitePathSetting;
 	import actionScripts.plugins.externalEditors.importer.ExternalEditorsImporter;
@@ -39,9 +45,14 @@ package actionScripts.plugins.externalEditors
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
+	import components.popup.ExternalEditorAddEditPopup;
+	
 	public class ExternalEditorsPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
 	{
 		public static var NAMESPACE:String = "actionScripts.plugins.externalEditors::ExternalEditorsPlugin";
+		
+		private static const EVENT_ADD_EDITOR:String = "addNewEditor";
+		private static const EVENT_VALIDATE_ALL_EDITORS:String = "validateAllEditors";
 		
 		public static var editors:ArrayCollection; 
 		
@@ -55,6 +66,8 @@ package actionScripts.plugins.externalEditors
 		private var editorsUntilSave:ArrayCollection;
 		private var settings:Vector.<ISetting>;
 		private var removedEditors:Array = [];
+		private var addEditEditorWindow:ExternalEditorAddEditPopup;
+		private var linkOnlySetting:LinkOnlySetting;
 		
 		override public function activate():void
 		{
@@ -92,7 +105,14 @@ package actionScripts.plugins.externalEditors
 			registerClassAlias("flash.filesystem.File", File);
 			editorsUntilSave = ObjectUtil.clone(editors) as ArrayCollection;
 			
-			settings = new Vector.<ISetting>();			
+			settings = new Vector.<ISetting>();
+			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
+				new LinkOnlySettingVO("Add New", EVENT_ADD_EDITOR),
+				new LinkOnlySettingVO("Validate All", EVENT_VALIDATE_ALL_EDITORS)
+			]);
+			linkOnlySetting.addEventListener(EVENT_ADD_EDITOR, onEditorAdd, false, 0, true);
+			
+			settings.push(linkOnlySetting);
 			for each (var editor:ExternalEditorVO in editorsUntilSave)
 			{
 				settings.push(
@@ -155,7 +175,7 @@ package actionScripts.plugins.externalEditors
 			
 			if (editor)
 			{
-				trace(event.file.fileBridge.nativePath);
+				runExternalEditor(editor, event.file);
 			}
 		}
 		
@@ -166,7 +186,47 @@ package actionScripts.plugins.externalEditors
 		
 		private function onEditorModify(event:Event):void
 		{
+			openEditorModifyPopup((event.target as ExternalEditorSetting).editor);
+		}
+		
+		private function onEditorAdd(event:Event):void
+		{
+			openEditorModifyPopup();
+		}
+		
+		private function openEditorModifyPopup(editor:ExternalEditorVO=null):void
+		{
+			if (!addEditEditorWindow)
+			{
+				addEditEditorWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ExternalEditorAddEditPopup, true) as ExternalEditorAddEditPopup;
+				addEditEditorWindow.editor = editor;
+				addEditEditorWindow.addEventListener(CloseEvent.CLOSE, onEditorEditPopupClosed);
+				addEditEditorWindow.addEventListener(ExternalEditorAddEditPopup.UPDATE_EDITOR, onUpdateExternalEditorObject);
+				
+				PopUpManager.centerPopUp(addEditEditorWindow);
+			}
+			else
+			{
+				PopUpManager.bringToFront(addEditEditorWindow);
+			}	
+		}
+		
+		protected function onUpdateExternalEditorObject(event:Event):void
+		{
+			var editor:ExternalEditorVO = addEditEditorWindow.editor;
+			if (editorsUntilSave.getItemIndex(editor) == -1)
+			{
+				onEditorSettingAdd(editor);
+			}
+		}
+		
+		protected function onEditorEditPopupClosed(event:CloseEvent):void
+		{
+			addEditEditorWindow.removeEventListener(CloseEvent.CLOSE, onEditorEditPopupClosed);
+			addEditEditorWindow.removeEventListener(ExternalEditorAddEditPopup.UPDATE_EDITOR, onUpdateExternalEditorObject);
 			
+			PopUpManager.removePopUp(addEditEditorWindow);
+			addEditEditorWindow = null;
 		}
 		
 		private function onEditorRemove(event:Event):void
@@ -179,6 +239,27 @@ package actionScripts.plugins.externalEditors
 			editorsUntilSave.removeItem((event.target as ExternalEditorSetting).editor);
 			settings.splice(settings.indexOf(event.target), 1);
 			(event.target as ExternalEditorSetting).renderer.dispatchEvent(new Event('refresh'));
+		}
+		
+		private function onEditorSettingAdd(editor:ExternalEditorVO):void
+		{
+			editorsUntilSave.addItem(editor);
+			
+			var tmpSetting:ExternalEditorSetting = getEditorSetting(editor);
+			settings.push(tmpSetting);
+			
+			// force redraw of setting list using existing renderer
+			(settings[2] as ExternalEditorSetting).renderer.dispatchEvent(new Event('refresh'));
+		}
+		
+		private function runExternalEditor(editor:ExternalEditorVO, onPath:FileLocation):void
+		{
+			var command:String = "open -a '"+ editor.installPath.nativePath +"' '"+ onPath.fileBridge.nativePath +"'";
+			print("%s", command);
+			
+			this.start(
+				new <String>[command], null
+			);
 		}
 	}
 }

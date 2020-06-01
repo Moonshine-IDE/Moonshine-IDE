@@ -52,7 +52,8 @@
 			
 			private function openWebsite():void
 			{
-				navigateToURL(new URLRequest(setting.editor.website));
+				setting.dispatchEvent(new Event(ExternalEditorSetting.EVENT_MODIFY));
+				//navigateToURL(new URLRequest(setting.editor.website));
 			}
 			
 		]]>
