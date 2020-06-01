@@ -1100,12 +1100,18 @@ package actionScripts.utils
 		
 		public static function isNodeAvailable():Boolean
 		{
-			var nodeBinPath:String = getNodeBinPath();
-			if (!nodeBinPath)
+			if (!model.nodePath || model.nodePath == "")
 			{
 				return false;
 			}
-			return model.fileCore.isPathExists(nodeBinPath);
+			
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.NODEJS);
+			if (component && component.pathValidation)
+			{
+				return model.fileCore.isPathExists(model.nodePath + model.fileCore.separator + component.pathValidation);
+			}
+			
+			return true;
 		}
 		
 		public static function isHaxeAvailable():Boolean
@@ -1242,7 +1248,7 @@ package actionScripts.utils
             }
             else
             {
-                return UtilsCore.convertString(nodeLocation.resolvePath("node").fileBridge.nativePath);
+                return UtilsCore.convertString(nodeLocation.resolvePath("bin/node").fileBridge.nativePath);
             }
 			
 			return null;

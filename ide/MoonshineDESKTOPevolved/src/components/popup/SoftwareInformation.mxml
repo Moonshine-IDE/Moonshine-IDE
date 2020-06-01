@@ -120,6 +120,14 @@
 							if(model.antHomePath && model.antHomePath.fileBridge.exists)
 								component.installToPath = model.antHomePath.fileBridge.nativePath;
 							break;
+						case ComponentTypes.TYPE_NODEJS:
+							if(model.nodePath && FileUtils.isPathExists(model.nodePath))
+								component.installToPath = model.nodePath;
+							break;
+						case ComponentTypes.TYPE_NOTES:
+							if(model.notesPath && FileUtils.isPathExists(model.notesPath))
+								component.installToPath = model.notesPath;
+							break;
 					}
 	
 					component.version = null;
