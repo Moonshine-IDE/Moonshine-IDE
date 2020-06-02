@@ -41,6 +41,16 @@
 			
 			private var links:Array = [];
 			
+			public function dispose():void
+			{
+				for (var i:int; i < links.length; i++)
+				{
+					(links[i] as Button).removeEventListener(MouseEvent.CLICK, onLinkClicked);
+				}
+				
+				links = null;
+			}
+			
 			private function onCreationCompletes():void
 			{
 				for (var i:int; i < nameEventPair.length; i++)

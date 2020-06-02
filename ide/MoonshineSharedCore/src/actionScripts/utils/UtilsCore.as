@@ -25,6 +25,8 @@ package actionScripts.utils
 	import mx.collections.ArrayCollection;
 	import mx.collections.ICollectionView;
 	import mx.collections.IList;
+	import mx.collections.Sort;
+	import mx.collections.SortField;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
 	import mx.events.CloseEvent;
@@ -47,7 +49,6 @@ package actionScripts.utils
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.IFileContentWindow;
-	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.ui.tabview.CloseTabEvent;
@@ -270,6 +271,21 @@ package actionScripts.utils
 			}
 			// if not found
 			return null;
+		}
+		
+		public static function sortCollection(collection:ArrayCollection, fields:Array):void
+		{
+			var sortFields:Array = [];
+			fields.forEach(function(field:String, index:int, arr:Array):void
+			{
+				if (field != "")
+				{
+					sortFields.push(new SortField(field, true));
+				}
+			});
+			
+			collection.sort = new Sort(sortFields);
+			collection.refresh();
 		}
 		
 		/**

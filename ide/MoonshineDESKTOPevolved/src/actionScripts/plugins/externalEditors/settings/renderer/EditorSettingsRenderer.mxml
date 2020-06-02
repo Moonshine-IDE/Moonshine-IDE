@@ -30,6 +30,7 @@
 		<![CDATA[
 			import flash.net.navigateToURL;
 			
+			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.settings.renderers.LinkButtonSkin;
 			import actionScripts.plugins.externalEditors.settings.ExternalEditorSetting;
 			
@@ -40,7 +41,24 @@
 				
 			}
 			
-			public function remove():void
+			private function clear():void
+			{
+				setting.editor.installPath = null;
+				setting.stringValue = null;
+			}
+			
+			private function browse():void
+			{
+				IDEModel.getInstance().fileCore.browseForOpen("Select executable", onExecutableSelected, null, ["*.app;*.exe"]);
+			}
+			
+			protected function onExecutableSelected(file:File):void
+			{
+				setting.stringValue = file.nativePath;
+				setting.editor.installPath = file;
+			}
+			
+			private function remove():void
 			{
 				setting.dispatchEvent(new Event(ExternalEditorSetting.EVENT_REMOVE));
 			}
@@ -52,8 +70,7 @@
 			
 			private function openWebsite():void
 			{
-				setting.dispatchEvent(new Event(ExternalEditorSetting.EVENT_MODIFY));
-				//navigateToURL(new URLRequest(setting.editor.website));
+				navigateToURL(new URLRequest(setting.editor.website));
 			}
 			
 		]]>
@@ -61,12 +78,14 @@
 	
 	<s:HGroup width="100%">
 		<s:Label styleName="uiTextSettingsLabel"
-				 text="{setting.label}" />
+				 text="{setting.editor.title}" />
 		<mx:Spacer width="100%"/>
 		<s:Button label="Clear"
-				  skinClass="{LinkButtonSkin}"/>
+				  skinClass="{LinkButtonSkin}"
+				  click="clear()"/>
 		<s:Button label="Change"
-				  skinClass="{LinkButtonSkin}"/>
+				  skinClass="{LinkButtonSkin}"
+				  click="browse()"/>
 		<s:Button label="Download"
 				  skinClass="{LinkButtonSkin}"
 				  visible="{setting.editor.isMoonshineDefault}" includeInLayout="{setting.editor.isMoonshineDefault}"

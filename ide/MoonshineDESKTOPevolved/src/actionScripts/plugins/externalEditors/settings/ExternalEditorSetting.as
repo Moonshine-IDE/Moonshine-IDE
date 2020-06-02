@@ -41,7 +41,7 @@ package actionScripts.plugins.externalEditors.settings
 			this.name = 'fakeSetting';
 			this.label = editor.title;
 			this.editor = editor;
-			defaultValue = stringValue = editor.installPath.nativePath;
+			defaultValue = stringValue = (editor.installPath ? editor.installPath.nativePath : "");
 		}
 		
 		override public function get renderer():IVisualElement

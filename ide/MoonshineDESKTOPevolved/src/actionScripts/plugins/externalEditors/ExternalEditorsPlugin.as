@@ -22,6 +22,8 @@ package actionScripts.plugins.externalEditors
 	import flash.events.Event;
 	import flash.filesystem.File;
 	import flash.net.registerClassAlias;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
@@ -33,6 +35,7 @@ package actionScripts.plugins.externalEditors
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.LinkOnlySetting;
 	import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
@@ -43,6 +46,7 @@ package actionScripts.plugins.externalEditors
 	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import components.popup.ExternalEditorAddEditPopup;
@@ -93,8 +97,29 @@ package actionScripts.plugins.externalEditors
 		
 		override public function onSettingsClose():void
 		{
+			// remove all externaleditorsetting listeners
+			if (settings)
+			{
+				for each (var setting:AbstractSetting in setting)
+				{
+					if (setting is ExternalEditorSetting)
+					{
+						setting.removeEventListener(ExternalEditorSetting.EVENT_MODIFY, onEditorModify);
+						setting.removeEventListener(ExternalEditorSetting.EVENT_REMOVE, onEditorSettingRemove);
+					}
+				}
+			}
+			
+			// remove all linkonlysetting listeners
+			if (linkOnlySetting)
+			{
+				linkOnlySetting.removeEventListener(EVENT_ADD_EDITOR, onEditorAdd);
+				linkOnlySetting.removeEventListener(EVENT_VALIDATE_ALL_EDITORS, onValidateAll);
+			}
+			
 			editorsUntilSave = null;
 			settings = null;
+			linkOnlySetting = null;
 		}
 		
         public function getSettingsList():Vector.<ISetting>
@@ -103,7 +128,8 @@ package actionScripts.plugins.externalEditors
 			// unless a save 
 			registerClassAlias("actionScripts.plugins.externalEditors.vo.ExternalEditorVO", ExternalEditorVO);
 			registerClassAlias("flash.filesystem.File", File);
-			editorsUntilSave = ObjectUtil.clone(editors) as ArrayCollection;
+			editorsUntilSave = ObjectUtil.copy(editors) as ArrayCollection;
+			if (editorsUntilSave) UtilsCore.sortCollection(editorsUntilSave, ["title"]);
 			
 			settings = new Vector.<ISetting>();
 			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
@@ -111,6 +137,7 @@ package actionScripts.plugins.externalEditors
 				new LinkOnlySettingVO("Validate All", EVENT_VALIDATE_ALL_EDITORS)
 			]);
 			linkOnlySetting.addEventListener(EVENT_ADD_EDITOR, onEditorAdd, false, 0, true);
+			linkOnlySetting.addEventListener(EVENT_VALIDATE_ALL_EDITORS, onValidateAll, false, 0, true);
 			
 			settings.push(linkOnlySetting);
 			for each (var editor:ExternalEditorVO in editorsUntilSave)
@@ -127,7 +154,7 @@ package actionScripts.plugins.externalEditors
 		{
 			var tmpSetting:ExternalEditorSetting = new ExternalEditorSetting(editor);
 			tmpSetting.addEventListener(ExternalEditorSetting.EVENT_MODIFY, onEditorModify, false, 0, true);
-			tmpSetting.addEventListener(ExternalEditorSetting.EVENT_REMOVE, onEditorRemove, false, 0, true);
+			tmpSetting.addEventListener(ExternalEditorSetting.EVENT_REMOVE, onEditorSettingRemove, false, 0, true);
 			
 			return tmpSetting;
 		}
@@ -157,7 +184,8 @@ package actionScripts.plugins.externalEditors
 		
 		private function onSettingsSaved(event:SettingsEvent):void
 		{
-			
+			editors = editorsUntilSave;
+			ExternalEditorsSharedObjectUtil.saveExternalEditorsInSO(editors);
 		}
 		
 		private function onOpenWithExternalEditor(event:FilePluginEvent):void
@@ -194,6 +222,11 @@ package actionScripts.plugins.externalEditors
 			openEditorModifyPopup();
 		}
 		
+		private function onValidateAll(event:Event):void
+		{
+			
+		}
+		
 		private function openEditorModifyPopup(editor:ExternalEditorVO=null):void
 		{
 			if (!addEditEditorWindow)
@@ -218,6 +251,10 @@ package actionScripts.plugins.externalEditors
 			{
 				onEditorSettingAdd(editor);
 			}
+			else
+			{
+				onEditorSettingModified(editor);
+			}
 		}
 		
 		protected function onEditorEditPopupClosed(event:CloseEvent):void
@@ -229,7 +266,7 @@ package actionScripts.plugins.externalEditors
 			addEditEditorWindow = null;
 		}
 		
-		private function onEditorRemove(event:Event):void
+		private function onEditorSettingRemove(event:Event):void
 		{
 			// store the editor references but
 			// remove from the collection once Save
@@ -238,18 +275,46 @@ package actionScripts.plugins.externalEditors
 			
 			editorsUntilSave.removeItem((event.target as ExternalEditorSetting).editor);
 			settings.splice(settings.indexOf(event.target), 1);
-			(event.target as ExternalEditorSetting).renderer.dispatchEvent(new Event('refresh'));
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
 		}
 		
 		private function onEditorSettingAdd(editor:ExternalEditorVO):void
 		{
 			editorsUntilSave.addItem(editor);
+			UtilsCore.sortCollection(editorsUntilSave, ["title"]);
 			
 			var tmpSetting:ExternalEditorSetting = getEditorSetting(editor);
-			settings.push(tmpSetting);
+			settings.splice(editorsUntilSave.getItemIndex(editor)+2, 0, tmpSetting);
 			
 			// force redraw of setting list using existing renderer
-			(settings[2] as ExternalEditorSetting).renderer.dispatchEvent(new Event('refresh'));
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+		}
+		
+		private function onEditorSettingModified(editor:ExternalEditorVO):void
+		{
+			var oldTitleIndex:int;
+			for (var i:int; i < settings.length; i++)
+			{
+				if ((settings[i] is ExternalEditorSetting) && (settings[i] as ExternalEditorSetting).editor == editor)
+				{
+					oldTitleIndex = i;
+					break;
+				}
+			}
+			
+			var timeoutValue:uint = setTimeout(function():void
+			{
+				clearTimeout(timeoutValue);
+				
+				var newTitleIndex:int = editorsUntilSave.getItemIndex(editor);
+				var tmpSetting:Object = settings.removeAt(oldTitleIndex);
+				(tmpSetting as ExternalEditorSetting).editor = editor;
+				(tmpSetting as ExternalEditorSetting).stringValue = editor.installPath.nativePath;
+				settings.splice(newTitleIndex+2, 0, tmpSetting);
+				
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+			}, 500);
+			
 		}
 		
 		private function runExternalEditor(editor:ExternalEditorVO, onPath:FileLocation):void

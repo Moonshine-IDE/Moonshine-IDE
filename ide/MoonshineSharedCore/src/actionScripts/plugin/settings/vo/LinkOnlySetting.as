@@ -20,10 +20,11 @@ package actionScripts.plugin.settings.vo
 {
 	import mx.core.IVisualElement;
 	
+	import actionScripts.interfaces.IDisposable;
 	import actionScripts.plugin.settings.renderers.LinkOnlySettingsRenderer;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	
-	public class LinkOnlySetting extends AbstractSetting
+	public class LinkOnlySetting extends AbstractSetting implements IDisposable
 	{
 		public static const EVENT_MODIFY:String = "modify";
 		public static const EVENT_REMOVE:String = "delete";
@@ -49,6 +50,11 @@ package actionScripts.plugin.settings.vo
 			rdr.setting = this;
 			rdr.nameEventPair = nameEventPair;
 			return rdr;
+		}
+		
+		public function dispose():void
+		{
+			if (rdr) rdr.dispose();
 		}
 	}
 }

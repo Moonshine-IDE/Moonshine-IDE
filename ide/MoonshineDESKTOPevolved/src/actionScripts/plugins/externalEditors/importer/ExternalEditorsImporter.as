@@ -6,6 +6,7 @@ package actionScripts.plugins.externalEditors.importer
 	
 	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
 	import actionScripts.utils.FileUtils;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class ExternalEditorsImporter
@@ -51,6 +52,11 @@ package actionScripts.plugins.externalEditors.importer
 				tmpEditor.isMoonshineDefault = true;
 				
 				tmpCollection.addItem(tmpEditor);
+			}
+			
+			if (tmpCollection)
+			{
+				UtilsCore.sortCollection(tmpCollection, ["title"]);
 			}
 			
 			return tmpCollection;

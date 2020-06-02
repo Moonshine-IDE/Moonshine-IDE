@@ -21,12 +21,9 @@ package actionScripts.plugins.externalEditors.utils
 	import flash.net.SharedObject;
 	
 	import mx.collections.ArrayCollection;
-	import mx.collections.Sort;
-	import mx.collections.SortField;
 	
-	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
-	import actionScripts.utils.ObjectTranslator;
 	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.utils.UtilsCore;
 
 	public class ExternalEditorsSharedObjectUtil
 	{
@@ -34,26 +31,21 @@ package actionScripts.plugins.externalEditors.utils
 		{
 			var tmpCollection:ArrayCollection;
 			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
-			var editor:ExternalEditorVO;
 			
 			if (cookie.data.hasOwnProperty('savedExternalEditors'))
 			{
-				tmpCollection = new ArrayCollection();
-				for each (var item:Object in cookie.data.savedExternalEditors)
-				{
-					editor = ObjectTranslator.objectToInstance(item, ExternalEditorVO) as ExternalEditorVO;
-					tmpCollection.addItem(editor);
-				}
-			}
-			
-			// add sorting by type
-			if (tmpCollection)
-			{
-				tmpCollection.sort = new Sort([new SortField("title")]);
-				tmpCollection.refresh();
+				tmpCollection = cookie.data.savedExternalEditors;
+				UtilsCore.sortCollection(tmpCollection, ["title"]);
 			}
 			
 			return tmpCollection;
+		}
+		
+		public static function saveExternalEditorsInSO(collection:ArrayCollection):void
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+			cookie.data["savedExternalEditors"] = collection;
+			cookie.flush();
 		}
 		
 		public static function resetExternalEditorsInSO():void

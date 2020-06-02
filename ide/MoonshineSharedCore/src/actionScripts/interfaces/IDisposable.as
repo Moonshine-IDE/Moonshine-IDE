@@ -16,24 +16,10 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.events
+package actionScripts.interfaces
 {
-	import flash.events.Event;
-	
-	public class SettingsEvent extends Event
+	public interface IDisposable
 	{
-		public static const EVENT_OPEN_SETTINGS:String = "openSettingsEvent";
-		public static const EVENT_SETTINGS_SAVED:String = "savedSettingsEvent";
-		public static const EVENT_REFRESH_CURRENT_SETTINGS:String = "refreshCurrentSettingsEvent";
-		
-		public var openSettingsByQualifiedClassName:String;
-		
-		public function SettingsEvent(type:String, openSettingsByQualifiedClassName:String=null)
-		{
-			this.openSettingsByQualifiedClassName = openSettingsByQualifiedClassName;
-			
-			super(type, false, false);
-		}
-		
+		function dispose():void;
 	}
 }

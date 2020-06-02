@@ -20,6 +20,11 @@
 			{
 				title = editor ? "Modify Editor" : "Add New Editor";
 				if (!editor) editor = new ExternalEditorVO();
+				else
+				{
+					txtTitle.text = editor.title;
+					txtPath.text = editor.installPath.nativePath;
+				}
 			}
 			
 			private function onSubmit():void

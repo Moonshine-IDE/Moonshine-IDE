@@ -35,7 +35,10 @@ package actionScripts.plugins.externalEditors.vo
 		
 		private var _installPath:File;
 		public function get installPath():File							{	return _installPath;	}
-		public function set installPath(value:File):void				{	_installPath = value;	}
+		public function set installPath(value:File):void				{	
+			_installPath = value;
+			isValid = (_installPath && _installPath.exists);
+		}
 
 		private var _website:String;
 		public function get website():String							{	return _website;	}
