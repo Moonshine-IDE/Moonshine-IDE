@@ -21,25 +21,25 @@
 			<title>TextMate</title>
 			<defaultLocation>
 				<windows/>
-				<macos>/Applications/Unknown.app</macos>
+				<macos>/Applications/TextMate.app</macos>
 			</defaultLocation>
-			<website>https://adoptopenjdk.net/</website>
+			<website>https://macromates.com</website>
 		</editor>
 		<editor isWindows="true" isMac="true">
 			<title>Visual Studio Code</title>
 			<defaultLocation>
-				<windows>$programFiles/Unkown.exe</windows>
-				<macos>/Applications/Unknown.app</macos>
+				<windows>$programFiles/Visual Studio Code.exe</windows>
+				<macos>/Applications/Visual Studio Code.app</macos>
 			</defaultLocation>
-			<website>https://adoptopenjdk.net/</website>
+			<website>https://code.visualstudio.com</website>
 		</editor>
 		<editor isWindows="false" isMac="true">
 			<title>IAWriter</title>
 			<defaultLocation>
 				<windows/>
-				<macos>/Applications/MacVIM.app</macos>
+				<macos>/Applications/IAWriter.app</macos>
 			</defaultLocation>
-			<website>https://adoptopenjdk.net/</website>
+			<website>https://ia.net/downloads</website>
 		</editor>
 		<editor isWindows="false" isMac="true">
 			<title>Prettify XML</title>
@@ -53,17 +53,17 @@
 			<title>Emacs</title>
 			<defaultLocation>
 				<windows/>
-				<macos>/Applications/MacVIM.app</macos>
+				<macos>/Applications/Emacs.app</macos>
 			</defaultLocation>
-			<website>https://adoptopenjdk.net/</website>
+			<website>https://www.gnu.org/software/emacs</website>
 		</editor>
 		<editor isWindows="false" isMac="true">
-			<title>TextWrangler</title>
+			<title>BBEdit</title>
 			<defaultLocation>
 				<windows/>
-				<macos>/Applications/MacVIM.app</macos>
+				<macos>/Applications/BBEdit.app</macos>
 			</defaultLocation>
-			<website>https://adoptopenjdk.net/</website>
+			<website>https://www.barebones.com/products/textwrangler/download.html</website>
 		</editor>
 		<editor isWindows="true" isMac="false">
 			<title>NotePad++</title>
