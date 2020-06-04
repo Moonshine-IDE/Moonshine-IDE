@@ -58,7 +58,10 @@ package actionScripts.plugins.externalEditors.vo
 		private var _localID:String;
 		public function get localID():String							{	return _localID;	}
 		public function set localID(value:String):void					{	_localID = value;	}
-
+		
+		private var _defaultInstallPath:String;
+		public function get defaultInstallPath():String					{	return _defaultInstallPath;	}
+		public function set defaultInstallPath(value:String):void		{	_defaultInstallPath = value;	}
 		
 		public function ExternalEditorVO()
 		{

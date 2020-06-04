@@ -37,7 +37,7 @@
 			<title>IAWriter</title>
 			<defaultLocation>
 				<windows/>
-				<macos>/Applications/IAWriter.app</macos>
+				<macos>/Applications/iA Writer.app</macos>
 			</defaultLocation>
 			<website>https://ia.net/downloads</website>
 		</editor>

@@ -198,6 +198,11 @@
 						}
 					}
 				}
+				
+				if (fileWrapper.file.fileBridge.isDirectory) 
+				{
+					sortChildren(fileWrapper);
+				}
 			}
 	
 			public function refresh(dir:FileLocation, markAsDeletion:Boolean = false):void
@@ -404,7 +409,6 @@
 							if(ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT > 0) ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT--;
 						}, 1000);
 
-						sortChildren(project.projectFolder);
 						break;
 					}
 				}

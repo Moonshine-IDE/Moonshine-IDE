@@ -56,7 +56,7 @@ package actionScripts.plugins.externalEditors
 		public static var NAMESPACE:String = "actionScripts.plugins.externalEditors::ExternalEditorsPlugin";
 		
 		private static const EVENT_ADD_EDITOR:String = "addNewEditor";
-		private static const EVENT_VALIDATE_ALL_EDITORS:String = "validateAllEditors";
+		private static const EVENT_RESET_ALL_EDITORS:String = "resetAllEditors";
 		
 		public static var editors:ArrayCollection; 
 		
@@ -114,7 +114,7 @@ package actionScripts.plugins.externalEditors
 			if (linkOnlySetting)
 			{
 				linkOnlySetting.removeEventListener(EVENT_ADD_EDITOR, onEditorAdd);
-				linkOnlySetting.removeEventListener(EVENT_VALIDATE_ALL_EDITORS, onValidateAll);
+				linkOnlySetting.removeEventListener(EVENT_RESET_ALL_EDITORS, onResetAll);
 			}
 			
 			editorsUntilSave = null;
@@ -134,10 +134,10 @@ package actionScripts.plugins.externalEditors
 			settings = new Vector.<ISetting>();
 			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
 				new LinkOnlySettingVO("Add New", EVENT_ADD_EDITOR),
-				new LinkOnlySettingVO("Validate All", EVENT_VALIDATE_ALL_EDITORS)
+				new LinkOnlySettingVO("Reset to Default", EVENT_RESET_ALL_EDITORS)
 			]);
 			linkOnlySetting.addEventListener(EVENT_ADD_EDITOR, onEditorAdd, false, 0, true);
-			linkOnlySetting.addEventListener(EVENT_VALIDATE_ALL_EDITORS, onValidateAll, false, 0, true);
+			linkOnlySetting.addEventListener(EVENT_RESET_ALL_EDITORS, onResetAll, false, 0, true);
 			
 			settings.push(linkOnlySetting);
 			for each (var editor:ExternalEditorVO in editorsUntilSave)
@@ -184,6 +184,16 @@ package actionScripts.plugins.externalEditors
 		
 		private function onSettingsSaved(event:SettingsEvent):void
 		{
+			// remove unnecessary listeners
+			if (removedEditors.length > 0)
+			{
+				removedEditors.forEach(function(element:ExternalEditorVO, index:Number, arr:Array):void {
+					dispatcher.removeEventListener("eventOpenWithExternalEditor"+ element.localID, onOpenWithExternalEditor);
+				});
+				
+				removedEditors = [];
+			}
+			
 			editors = editorsUntilSave;
 			ExternalEditorsSharedObjectUtil.saveExternalEditorsInSO(editors);
 		}
@@ -222,9 +232,29 @@ package actionScripts.plugins.externalEditors
 			openEditorModifyPopup();
 		}
 		
-		private function onValidateAll(event:Event):void
+		private function onResetAll(event:Event):void
 		{
+			var setting:ExternalEditorSetting;
+			for (var i:int; i < settings.length; i++)
+			{
+				setting = settings[i] as ExternalEditorSetting;
+				if (setting)
+				{
+					if (setting.editor.isMoonshineDefault)
+					{
+						setting.editor.installPath = new File(setting.editor.defaultInstallPath);
+						setting.stringValue = setting.editor.installPath.nativePath;
+					}
+					else
+					{
+						removedEditors.push(setting.editor);
+						settings.removeAt(i);
+						i--;
+					}
+				}
+			}
 			
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
 		}
 		
 		private function openEditorModifyPopup(editor:ExternalEditorVO=null):void

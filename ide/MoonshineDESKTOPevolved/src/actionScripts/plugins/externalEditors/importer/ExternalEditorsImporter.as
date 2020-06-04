@@ -47,6 +47,7 @@ package actionScripts.plugins.externalEditors.importer
 					installPath = validateWindowsInstallation(installPath);
 				}
 				tmpEditor.installPath = new File(installPath);
+				tmpEditor.defaultInstallPath = installPath;
 				tmpEditor.isValid = tmpEditor.installPath.exists;
 				tmpEditor.isEnabled = tmpEditor.isValid == true;
 				tmpEditor.isMoonshineDefault = true;
