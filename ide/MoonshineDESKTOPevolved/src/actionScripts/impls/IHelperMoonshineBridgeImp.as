@@ -91,6 +91,11 @@ package actionScripts.impls
 		{
 			return UtilsCore.isNodeAvailable();
 		}
+		
+		public function isNotesDominoPresent():Boolean
+		{
+			return false;
+		}
 
 		public function runOrDownloadSDKInstaller():void
 		{
