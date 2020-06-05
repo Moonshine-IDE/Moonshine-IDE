@@ -34,7 +34,6 @@
 				{
 					editor.title = txtTitle.text;
 					editor.installPath = new File(txtPath.text);
-					editor.isValid = true;
 					editor.isEnabled = true;
 					
 					dispatchEvent(new Event(UPDATE_EDITOR));

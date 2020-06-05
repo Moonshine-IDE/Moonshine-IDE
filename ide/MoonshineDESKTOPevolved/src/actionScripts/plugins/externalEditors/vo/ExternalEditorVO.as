@@ -37,7 +37,7 @@ package actionScripts.plugins.externalEditors.vo
 		public function get installPath():File							{	return _installPath;	}
 		public function set installPath(value:File):void				{	
 			_installPath = value;
-			isValid = (_installPath && _installPath.exists);
+			if (!_installPath) isEnabled = false;
 		}
 
 		private var _website:String;
@@ -48,12 +48,7 @@ package actionScripts.plugins.externalEditors.vo
 		public function get isEnabled():Boolean							{	return _isEnabled;	}
 		public function set isEnabled(value:Boolean):void				{	_isEnabled = value;	}
 
-		private var _isValid:Boolean;
-		public function get isValid():Boolean							{	return _isValid;	}
-		public function set isValid(value:Boolean):void					{
-			_isValid = value;
-			if (!_isValid && (_isValid != _isEnabled)) isEnabled = false;
-		}
+		public function get isValid():Boolean							{	return (installPath && installPath.exists);	}
 		
 		private var _localID:String;
 		public function get localID():String							{	return _localID;	}

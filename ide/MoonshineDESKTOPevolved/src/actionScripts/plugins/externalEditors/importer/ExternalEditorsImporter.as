@@ -48,7 +48,6 @@ package actionScripts.plugins.externalEditors.importer
 				}
 				tmpEditor.installPath = new File(installPath);
 				tmpEditor.defaultInstallPath = installPath;
-				tmpEditor.isValid = tmpEditor.installPath.exists;
 				tmpEditor.isEnabled = tmpEditor.isValid == true;
 				tmpEditor.isMoonshineDefault = true;
 				
