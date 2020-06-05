@@ -4,7 +4,7 @@
 		<editor isWindows="true" isMac="true">
 			<title>VIM</title>
 			<defaultLocation>
-				<windows>$programFiles/VIM/vim.exe</windows>
+				<windows>$programFiles/Vim/vim82/vim.exe</windows>
 				<macos>/Applications/MacVim.app</macos>
 			</defaultLocation>
 			<website>https://www.vim.org/download.php</website>
@@ -68,18 +68,18 @@
 		<editor isWindows="true" isMac="false">
 			<title>NotePad++</title>
 			<defaultLocation>
-				<windows>$programFiles/VIM/vim.exe</windows>
+				<windows>$programFiles/Notepad++/notepad++.exe</windows>
 				<macos/>
 			</defaultLocation>
-			<website>https://adoptopenjdk.net/</website>
+			<website>https://notepad-plus-plus.org/downloads/</website>
 		</editor>
 		<editor isWindows="true" isMac="false">
 			<title>UltraEdit</title>
 			<defaultLocation>
-				<windows>$programFiles/VIM/vim.exe</windows>
+				<windows>$programFiles/IDM Computer Solutions/UltraEdit/uedit64.exe</windows>
 				<macos/>
 			</defaultLocation>
-			<website>https://adoptopenjdk.net/</website>
+			<website>https://www.ultraedit.com/</website>
 		</editor>
 	</editors>
 </config>

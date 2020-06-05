@@ -349,7 +349,15 @@ package actionScripts.plugins.externalEditors
 		
 		private function runExternalEditor(editor:ExternalEditorVO, onPath:FileLocation):void
 		{
-			var command:String = "open -a '"+ editor.installPath.nativePath +"' '"+ onPath.fileBridge.nativePath +"'";
+			var command:String;
+			if (ConstantsCoreVO.IS_MACOS) 
+			{
+				command = "open -a '"+ editor.installPath.nativePath +"' '"+ onPath.fileBridge.nativePath +"'";
+			}
+			else
+			{
+				command = '"'+ editor.installPath.nativePath +'" "'+ onPath.fileBridge.nativePath +'"';
+			}
 			print("%s", command);
 			
 			this.start(
