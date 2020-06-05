@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<j:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:j="library://ns.apache.org/royale/jewel"
+		 itemsVerticalAlign="itemsCentered">
+	<j:Label text="Jewel Hello World!"/>
+	<j:Button text="Jewel Hello World!"/>
+	<j:CheckBox text="Jewel Hello World!" selected="true"/>
+	<j:RadioButton text="Jewel Hello World!" selected="true"/>
+</j:VGroup>
