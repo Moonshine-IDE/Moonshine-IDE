@@ -316,6 +316,9 @@ package actionScripts.plugins.externalEditors
 			var tmpSetting:ExternalEditorSetting = getEditorSetting(editor);
 			settings.splice(editorsUntilSave.getItemIndex(editor)+2, 0, tmpSetting);
 			
+			var eventName:String = "eventOpenWithExternalEditor"+ editor.localID;
+			dispatcher.addEventListener(eventName, onOpenWithExternalEditor, false, 0, true);
+			
 			// force redraw of setting list using existing renderer
 			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
 		}
