@@ -6,7 +6,6 @@
 		 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="onCreationCompletes(), txtTitle.setFocus()">
 	<fx:Script>
 		<![CDATA[
-			import com.adobe.utils.StringUtil;
 			
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
@@ -37,7 +36,7 @@
 				{
 					editor.title = txtTitle.text;
 					editor.installPath = new File(txtPath.text);
-					if (StringUtil.trim(txtArguments.text).length != 0) editor.extraArguments = txtArguments.text;
+					editor.extraArguments = txtArguments.text;
 					editor.isEnabled = true;
 					
 					dispatchEvent(new Event(UPDATE_EDITOR));

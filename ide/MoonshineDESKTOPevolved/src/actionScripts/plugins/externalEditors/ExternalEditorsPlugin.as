@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.externalEditors
 {	
+	import com.adobe.utils.StringUtil;
+	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.filesystem.File;
@@ -364,15 +366,16 @@ package actionScripts.plugins.externalEditors
 		private function runExternalEditor(editor:ExternalEditorVO, onPath:FileLocation):void
 		{
 			var command:String;
+			var extraArguments:String = (StringUtil.trim(editor.extraArguments).length != 0) ? editor.extraArguments : null;
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
 				command = "open -a '"+ editor.installPath.nativePath +"' '"+ onPath.fileBridge.nativePath +"'";
-				if (editor.extraArguments) command += " --args "+ editor.extraArguments;
+				if (extraArguments) command += " --args "+ extraArguments;
 			}
 			else
 			{
 				command = '"'+ editor.installPath.nativePath +'" "'+ onPath.fileBridge.nativePath +'"';
-				if (editor.extraArguments) command += " "+ editor.extraArguments;
+				if (extraArguments) command += " "+ extraArguments;
 			}
 			print("%s", command);
 			
