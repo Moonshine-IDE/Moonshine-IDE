@@ -4,9 +4,13 @@
 		<editor isWindows="true" isMac="true">
 			<title>VIM</title>
 			<defaultLocation>
-				<windows>$programFiles/Vim/vim82/vim.exe</windows>
+				<windows>$programFiles/Vim/vim82/gvim.exe</windows>
 				<macos>/Applications/MacVim.app</macos>
 			</defaultLocation>
+			<defaultArguments>
+				<windows>-R</windows>
+				<macos/>
+			</defaultArguments>
 			<website>https://www.vim.org/download.php</website>
 		</editor>
 		<editor isWindows="false" isMac="true">
@@ -31,6 +35,10 @@
 				<windows>$programFiles/Visual Studio Code.exe</windows>
 				<macos>/Applications/Visual Studio Code.app</macos>
 			</defaultLocation>
+			<defaultArguments>
+				<windows>--disable-extensions</windows>
+				<macos>--disable-extensions</macos>
+			</defaultArguments>
 			<website>https://code.visualstudio.com</website>
 		</editor>
 		<editor isWindows="false" isMac="true">

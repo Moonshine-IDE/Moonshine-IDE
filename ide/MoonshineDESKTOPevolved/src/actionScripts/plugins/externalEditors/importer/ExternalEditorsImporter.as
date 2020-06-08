@@ -46,6 +46,11 @@ package actionScripts.plugins.externalEditors.importer
 				{
 					installPath = validateWindowsInstallation(installPath);
 				}
+				if (editor.hasOwnProperty("defaultArguments"))
+				{
+					tmpEditor.extraArguments = String(editor.defaultArguments[ConstantsCoreVO.IS_MACOS ? "macos" : "windows"].valueOf());
+				}
+				
 				tmpEditor.installPath = new File(installPath);
 				tmpEditor.defaultInstallPath = installPath;
 				tmpEditor.isEnabled = tmpEditor.isValid == true;

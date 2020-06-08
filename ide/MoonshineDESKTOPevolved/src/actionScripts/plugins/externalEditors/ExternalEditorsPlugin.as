@@ -46,6 +46,7 @@ package actionScripts.plugins.externalEditors
 	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.utils.SharedObjectUpdaterWithNewUpdates;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
@@ -72,6 +73,7 @@ package actionScripts.plugins.externalEditors
 		private var removedEditors:Array = [];
 		private var addEditEditorWindow:ExternalEditorAddEditPopup;
 		private var linkOnlySetting:LinkOnlySetting;
+		private var newUpdateSyncDateUTC:String = "Mon Jun 8 10:16:00 2020 UTC";
 		
 		override public function activate():void
 		{
@@ -165,6 +167,15 @@ package actionScripts.plugins.externalEditors
 			if (!editors)
 			{
 				editors = ExternalEditorsImporter.getDefaultEditors();
+			}
+			else
+			{
+				var newUpdateDate:Date = new Date(Date.parse(newUpdateSyncDateUTC));
+				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(newUpdateDate))
+				{
+					editors = SharedObjectUpdaterWithNewUpdates.syncWithNewUpdates(editors, ExternalEditorsImporter.getDefaultEditors(), "title") as ArrayCollection;
+					ExternalEditorsSharedObjectUtil.saveExternalEditorsInSO(editors);
+				}
 			}
 			
 			updateEventListeners();
@@ -356,10 +367,12 @@ package actionScripts.plugins.externalEditors
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
 				command = "open -a '"+ editor.installPath.nativePath +"' '"+ onPath.fileBridge.nativePath +"'";
+				if (editor.extraArguments) command += " --args "+ editor.extraArguments;
 			}
 			else
 			{
 				command = '"'+ editor.installPath.nativePath +'" "'+ onPath.fileBridge.nativePath +'"';
+				if (editor.extraArguments) command += " "+ editor.extraArguments;
 			}
 			print("%s", command);
 			

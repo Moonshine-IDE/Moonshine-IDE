@@ -22,6 +22,7 @@ package actionScripts.plugins.externalEditors.utils
 	
 	import mx.collections.ArrayCollection;
 	
+	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.utils.UtilsCore;
 
@@ -34,7 +35,12 @@ package actionScripts.plugins.externalEditors.utils
 			
 			if (cookie.data.hasOwnProperty('savedExternalEditors'))
 			{
-				tmpCollection = cookie.data.savedExternalEditors;
+				tmpCollection = new ArrayCollection();
+				for each (var item:Object in cookie.data.savedExternalEditors)
+				{
+					tmpCollection.addItem(ExternalEditorVO.cloneToEditorVO(item));
+				}
+				
 				UtilsCore.sortCollection(tmpCollection, ["title"]);
 			}
 			

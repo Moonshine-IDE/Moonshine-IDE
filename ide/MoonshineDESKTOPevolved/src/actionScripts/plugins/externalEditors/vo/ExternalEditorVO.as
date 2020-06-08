@@ -58,9 +58,37 @@ package actionScripts.plugins.externalEditors.vo
 		public function get defaultInstallPath():String					{	return _defaultInstallPath;	}
 		public function set defaultInstallPath(value:String):void		{	_defaultInstallPath = value;	}
 		
+		private var _extraArguments:String;
+		public function get extraArguments():String						{	return _extraArguments;	}
+		public function set extraArguments(value:String):void			{	_extraArguments = value;	}
+		
 		public function ExternalEditorVO()
 		{
 			_localID = UIDUtil.createUID();
+		}
+		
+		public static function cloneToEditorVO(value:Object):ExternalEditorVO
+		{
+			var tmpVO:ExternalEditorVO = new ExternalEditorVO();
+			
+			if ("isMoonshineDefault" in value) tmpVO.isMoonshineDefault = value.isMoonshineDefault;
+			if ("title" in value) tmpVO.title = value.title;
+			if (("installPath" in value) && (value.installPath is File)) tmpVO.installPath = value.installPath;
+			else if (("installPath" in value) && (value.installPath is String))
+			{
+				try
+				{
+					tmpVO.installPath = new File(value.installPath);
+				}
+				catch (e:Error){}
+			}
+			if ("website" in value) tmpVO.website = value.website;
+			if ("isEnabled" in value) tmpVO.isEnabled = value.isEnabled;
+			if ("localID" in value) tmpVO.localID = value.localID;
+			if ("defaultInstallPath" in value) tmpVO.defaultInstallPath = value.defaultInstallPath;
+			if ("extraArguments" in value) tmpVO.extraArguments = value.extraArguments;
+			
+			return tmpVO;
 		}
 	}
 }
