@@ -75,7 +75,7 @@ package actionScripts.plugins.externalEditors
 		private var removedEditors:Array = [];
 		private var addEditEditorWindow:ExternalEditorAddEditPopup;
 		private var linkOnlySetting:LinkOnlySetting;
-		private var newUpdateSyncDateUTC:String = "Mon Jun 8 10:16:00 2020 UTC";
+		private var needUpdateSyncDateUTC:String = "Tue Jun 9 07:01:18 2020 UTC";
 		
 		override public function activate():void
 		{
@@ -172,7 +172,7 @@ package actionScripts.plugins.externalEditors
 			}
 			else
 			{
-				var newUpdateDate:Date = new Date(Date.parse(newUpdateSyncDateUTC));
+				var newUpdateDate:Date = new Date(Date.parse(needUpdateSyncDateUTC));
 				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(newUpdateDate))
 				{
 					editors = SharedObjectUpdaterWithNewUpdates.syncWithNewUpdates(editors, ExternalEditorsImporter.getDefaultEditors(), "title") as ArrayCollection;
@@ -276,6 +276,7 @@ package actionScripts.plugins.externalEditors
 			{
 				addEditEditorWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ExternalEditorAddEditPopup, true) as ExternalEditorAddEditPopup;
 				addEditEditorWindow.editor = editor;
+				addEditEditorWindow.editors = editorsUntilSave;
 				addEditEditorWindow.addEventListener(CloseEvent.CLOSE, onEditorEditPopupClosed);
 				addEditEditorWindow.addEventListener(ExternalEditorAddEditPopup.UPDATE_EDITOR, onUpdateExternalEditorObject);
 				
@@ -366,7 +367,7 @@ package actionScripts.plugins.externalEditors
 		private function runExternalEditor(editor:ExternalEditorVO, onPath:FileLocation):void
 		{
 			var command:String;
-			var extraArguments:String = (StringUtil.trim(editor.extraArguments).length != 0) ? editor.extraArguments : null;
+			var extraArguments:String = (editor.extraArguments && StringUtil.trim(editor.extraArguments).length != 0) ? editor.extraArguments : null;
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
 				command = "open -a '"+ editor.installPath.nativePath +"' '"+ onPath.fileBridge.nativePath +"'";

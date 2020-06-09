@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import flash.filesystem.File;
 	import flash.net.SharedObject;
 	import flash.utils.describeType;
 	
@@ -49,10 +50,14 @@ package actionScripts.utils
 		{
 			var itemInUpdatedCollection:Object;
 			var describedType:XML;
-			for each (var sharedItem:Object in sharedCollection)
+			var updatedItem:Object;
+			var sharedItem:Object;
+			
+			// updating the existing items
+			for each (sharedItem in sharedCollection)
 			{
 				itemInUpdatedCollection = null;
-				for each (var updatedItem:Object in updatedCollection)
+				for each (updatedItem in updatedCollection)
 				{
 					if (updatedItem[primaryField] == sharedItem[primaryField])
 					{
@@ -74,13 +79,41 @@ package actionScripts.utils
 						if (String(propertyTag.@access) != "readonly")
 						{
 							localName = String(propertyTag.@name);
-							sharedItem[localName] = itemInUpdatedCollection[localName];
-							/*if (sharedItem[localName] && 
-								(itemInUpdatedCollection[localName] || itemInUpdatedCollection[localName] != ""))
+							if (localName == "installPath")
 							{
-							}*/
+								if (!sharedItem[localName] || 
+									((sharedItem[localName] is File) && 
+									!(sharedItem[localName] as File).exists))
+								{
+									sharedItem[localName] = itemInUpdatedCollection[localName];
+								}
+							}
+							else
+							{
+								sharedItem[localName] = itemInUpdatedCollection[localName];
+							}
 						}
 					}
+				}
+			}
+			
+			// addition of any newer item
+			var isFound:Boolean;
+			for each (updatedItem in updatedCollection)
+			{
+				isFound = false;
+				for each (sharedItem in sharedCollection)
+				{
+					if (updatedItem[primaryField] == sharedItem[primaryField])
+					{
+						isFound = true;
+						break;
+					}
+				}
+				
+				if (!isFound)
+				{
+					sharedCollection.addItem(updatedItem);
 				}
 			}
 			

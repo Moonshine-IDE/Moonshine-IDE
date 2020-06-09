@@ -7,10 +7,10 @@
 				<windows>$programFiles/Vim/vim82/gvim.exe</windows>
 				<macos>/Applications/MacVim.app</macos>
 			</defaultLocation>
-			<defaultArguments>
-				<windows>-R</windows>
-				<macos/>
-			</defaultArguments>
+<!-- 			<defaultArguments> -->
+<!-- 				<windows>-R</windows> -->
+<!-- 				<macos/> -->
+<!-- 			</defaultArguments> -->
 			<website>https://www.vim.org/download.php</website>
 		</editor>
 		<editor isWindows="false" isMac="true">
@@ -32,13 +32,9 @@
 		<editor isWindows="true" isMac="true">
 			<title>Visual Studio Code</title>
 			<defaultLocation>
-				<windows>$programFiles/Visual Studio Code.exe</windows>
+				<windows>$appData/Local/Programs/Microsoft VS Code/Code.exe</windows>
 				<macos>/Applications/Visual Studio Code.app</macos>
 			</defaultLocation>
-			<defaultArguments>
-				<windows>--disable-extensions</windows>
-				<macos>--disable-extensions</macos>
-			</defaultArguments>
 			<website>https://code.visualstudio.com</website>
 		</editor>
 		<editor isWindows="false" isMac="true">

@@ -6,9 +6,13 @@
 		 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="onCreationCompletes(), txtTitle.setFocus()">
 	<fx:Script>
 		<![CDATA[
+			import com.adobe.utils.StringUtil;
 			
+			import mx.collections.ArrayCollection;
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
+			
+			import spark.components.Alert;
 			
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
@@ -16,6 +20,8 @@
 			public static const UPDATE_EDITOR:String = "updateExternalEditorVO";
 			
 			[Bindable] public var editor:ExternalEditorVO;
+			
+			public var editors:ArrayCollection;
 			
 			private function onCreationCompletes():void
 			{
@@ -32,16 +38,28 @@
 			private function onSubmit():void
 			{
 				var tmpArr : Array = new Array(nameValidator, pathValidator);
-				if (Validator.validateAll(tmpArr).length == 0)
+				if (Validator.validateAll(tmpArr).length != 0)
 				{
-					editor.title = txtTitle.text;
-					editor.installPath = new File(txtPath.text);
-					editor.extraArguments = txtArguments.text;
-					editor.isEnabled = true;
-					
-					dispatchEvent(new Event(UPDATE_EDITOR));
-					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					return;
 				}
+				
+				// prevent name duplication
+				for each (var editor:ExternalEditorVO in editors)
+				{
+					if (editor.title.toLowerCase() == StringUtil.trim(txtTitle.text).toLowerCase())
+					{
+						Alert.show("Duplicate Title is not permitted.", "Error!");
+						return;
+					}
+				}
+				
+				editor.title = txtTitle.text;
+				editor.installPath = new File(txtPath.text);
+				editor.extraArguments = txtArguments.text;
+				editor.isEnabled = true;
+				
+				dispatchEvent(new Event(UPDATE_EDITOR));
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
 			private function onBrowse(event:MouseEvent):void

@@ -69,6 +69,11 @@ package actionScripts.plugins.externalEditors.importer
 		
 		private static function validateWindowsInstallation(path:String):String
 		{
+			if (path.indexOf("$appData") != -1)
+			{
+				return (path.replace("$appData", File.userDirectory.resolvePath("AppData").nativePath));
+			}
+			
 			var tmpPath:String;
 			path = path.replace("$programFiles", "");
 			if (ConstantsCoreVO.is64BitSupport)
