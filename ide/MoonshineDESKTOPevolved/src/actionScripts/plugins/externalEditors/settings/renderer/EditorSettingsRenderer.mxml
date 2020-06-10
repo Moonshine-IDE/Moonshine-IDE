@@ -49,6 +49,11 @@
 			
 			private function browse():void
 			{
+				if (setting.editor.installPath && setting.editor.installPath.exists)
+				{
+					IDEModel.getInstance().fileCore.nativePath = setting.editor.installPath.nativePath;
+				}
+				
 				IDEModel.getInstance().fileCore.browseForOpen("Select executable", onExecutableSelected, null, ["*.app;*.exe"]);
 			}
 			
