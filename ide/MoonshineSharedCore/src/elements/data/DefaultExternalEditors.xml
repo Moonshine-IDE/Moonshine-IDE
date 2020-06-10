@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
 	<editors>
-		<editor isWindows="true" isMac="true">
+		<editor id="vim" isWindows="true" isMac="true">
 			<title>VIM</title>
 			<defaultLocation>
 				<windows>$programFiles/Vim/vim82/gvim.exe</windows>
@@ -13,7 +13,7 @@
 <!-- 			</defaultArguments> -->
 			<website>https://www.vim.org/download.php</website>
 		</editor>
-		<editor isWindows="false" isMac="true">
+		<editor id="sublimetext" isWindows="false" isMac="true">
 			<title>SublimeText</title>
 			<defaultLocation>
 				<windows/>
@@ -21,7 +21,7 @@
 			</defaultLocation>
 			<website>https://www.sublimetext.com/3</website>
 		</editor>
-		<editor isWindows="false" isMac="true">
+		<editor id="textmate" isWindows="false" isMac="true">
 			<title>TextMate</title>
 			<defaultLocation>
 				<windows/>
@@ -29,7 +29,7 @@
 			</defaultLocation>
 			<website>https://macromates.com</website>
 		</editor>
-		<editor isWindows="true" isMac="true">
+		<editor id="vscode" isWindows="true" isMac="true">
 			<title>Visual Studio Code</title>
 			<defaultLocation>
 				<windows>$appData/Local/Programs/Microsoft VS Code/Code.exe</windows>
@@ -37,7 +37,7 @@
 			</defaultLocation>
 			<website>https://code.visualstudio.com</website>
 		</editor>
-		<editor isWindows="false" isMac="true">
+		<editor id="iawriter" isWindows="false" isMac="true">
 			<title>IAWriter</title>
 			<defaultLocation>
 				<windows/>
@@ -45,7 +45,7 @@
 			</defaultLocation>
 			<website>https://ia.net/downloads</website>
 		</editor>
-		<editor isWindows="false" isMac="true">
+		<editor id="prettifyxml" isWindows="false" isMac="true">
 			<title>Prettify XML</title>
 			<defaultLocation>
 				<windows/>
@@ -53,7 +53,7 @@
 			</defaultLocation>
 			<website>https://adoptopenjdk.net/</website>
 		</editor>
-		<editor isWindows="false" isMac="true">
+		<editor id="emacs" isWindows="false" isMac="true">
 			<title>Emacs</title>
 			<defaultLocation>
 				<windows/>
@@ -61,7 +61,7 @@
 			</defaultLocation>
 			<website>https://www.gnu.org/software/emacs</website>
 		</editor>
-		<editor isWindows="false" isMac="true">
+		<editor id="bbedit" isWindows="false" isMac="true">
 			<title>BBEdit</title>
 			<defaultLocation>
 				<windows/>
@@ -69,7 +69,7 @@
 			</defaultLocation>
 			<website>https://www.barebones.com/products/textwrangler/download.html</website>
 		</editor>
-		<editor isWindows="true" isMac="false">
+		<editor id="notepad++" isWindows="true" isMac="false">
 			<title>NotePad++</title>
 			<defaultLocation>
 				<windows>$programFiles/Notepad++/notepad++.exe</windows>
@@ -77,7 +77,7 @@
 			</defaultLocation>
 			<website>https://notepad-plus-plus.org/downloads/</website>
 		</editor>
-		<editor isWindows="true" isMac="false">
+		<editor id="ultraedit" isWindows="true" isMac="false">
 			<title>UltraEdit</title>
 			<defaultLocation>
 				<windows>$programFiles/IDM Computer Solutions/UltraEdit/uedit64.exe</windows>

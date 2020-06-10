@@ -37,7 +37,15 @@ package actionScripts.plugins.externalEditors.vo
 		public function get installPath():File							{	return _installPath;	}
 		public function set installPath(value:File):void				{	
 			_installPath = value;
-			if (!_installPath) isEnabled = false;
+			if (!_installPath) 
+			{
+				isEnabled = false;
+				isValid = false;
+			}
+			else
+			{
+				isValid = true;
+			}
 		}
 
 		private var _website:String;
@@ -47,8 +55,10 @@ package actionScripts.plugins.externalEditors.vo
 		private var _isEnabled:Boolean;
 		public function get isEnabled():Boolean							{	return _isEnabled;	}
 		public function set isEnabled(value:Boolean):void				{	_isEnabled = value;	}
-
-		public function get isValid():Boolean							{	return (installPath && installPath.exists);	}
+		
+		private var _isValid:Boolean;
+		public function get isValid():Boolean							{	return _isValid;	}
+		public function set isValid(value:Boolean):void					{	_isValid = value;	}
 		
 		private var _localID:String;
 		public function get localID():String							{	return _localID;	}
@@ -62,9 +72,9 @@ package actionScripts.plugins.externalEditors.vo
 		public function get extraArguments():String						{	return _extraArguments;	}
 		public function set extraArguments(value:String):void			{	_extraArguments = value;	}
 		
-		public function ExternalEditorVO()
+		public function ExternalEditorVO(uid:String=null)
 		{
-			_localID = UIDUtil.createUID();
+			_localID = uid ? uid : UIDUtil.createUID();
 		}
 		
 		public static function cloneToEditorVO(value:Object):ExternalEditorVO

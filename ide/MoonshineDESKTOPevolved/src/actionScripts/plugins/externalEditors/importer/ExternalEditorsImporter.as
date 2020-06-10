@@ -37,7 +37,7 @@ package actionScripts.plugins.externalEditors.importer
 					continue;
 				} 
 				
-				tmpEditor = new ExternalEditorVO();
+				tmpEditor = new ExternalEditorVO(String(editor.@id));
 				tmpEditor.title = String(editor.title);
 				tmpEditor.website = String(editor.website);
 				

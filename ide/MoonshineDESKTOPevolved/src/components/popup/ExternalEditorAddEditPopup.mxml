@@ -44,9 +44,9 @@
 				}
 				
 				// prevent name duplication
-				for each (var editor:ExternalEditorVO in editors)
+				for each (var item:ExternalEditorVO in editors)
 				{
-					if (editor.title.toLowerCase() == StringUtil.trim(txtTitle.text).toLowerCase())
+					if (item.title.toLowerCase() == StringUtil.trim(txtTitle.text).toLowerCase())
 					{
 						Alert.show("Duplicate Title is not permitted.", "Error!");
 						return;
