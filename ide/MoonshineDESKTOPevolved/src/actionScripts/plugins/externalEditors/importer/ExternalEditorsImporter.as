@@ -41,7 +41,9 @@ package actionScripts.plugins.externalEditors.importer
 				tmpEditor.title = String(editor.title);
 				tmpEditor.website = String(editor.website);
 				
-				var installPath:String = String(editor.defaultLocation[ConstantsCoreVO.IS_MACOS ? "macos" : "windows"].valueOf());
+				var installPath:String = checkPath(
+					String(editor.defaultLocation[ConstantsCoreVO.IS_MACOS ? "macos" : "windows"].valueOf())
+				);
 				if (!ConstantsCoreVO.IS_MACOS)
 				{
 					installPath = validateWindowsInstallation(installPath);
@@ -67,13 +69,18 @@ package actionScripts.plugins.externalEditors.importer
 			return tmpCollection;
 		}
 		
-		private static function validateWindowsInstallation(path:String):String
+		private static function checkPath(path:String):String
 		{
-			if (path.indexOf("$appData") != -1)
+			if (path.indexOf("$userDirectory") != -1)
 			{
-				return (path.replace("$appData", File.userDirectory.resolvePath("AppData").nativePath));
+				return (path.replace("$userDirectory", File.userDirectory.nativePath));
 			}
 			
+			return path;
+		}
+		
+		private static function validateWindowsInstallation(path:String):String
+		{
 			var tmpPath:String;
 			path = path.replace("$programFiles", "");
 			if (ConstantsCoreVO.is64BitSupport)

@@ -32,7 +32,7 @@
 		<editor id="vscode" isWindows="true" isMac="true">
 			<title>Visual Studio Code</title>
 			<defaultLocation>
-				<windows>$appData/Local/Programs/Microsoft VS Code/Code.exe</windows>
+				<windows>$userDirectory/AppData/Local/Programs/Microsoft VS Code/Code.exe</windows>
 				<macos>/Applications/Visual Studio Code.app</macos>
 			</defaultLocation>
 			<website>https://code.visualstudio.com</website>
@@ -84,6 +84,14 @@
 				<macos/>
 			</defaultLocation>
 			<website>https://www.ultraedit.com/</website>
+		</editor>
+		<editor id="eclipse" isWindows="true" isMac="true">
+			<title>Eclipse</title>
+			<defaultLocation>
+				<windows>$userDirectory/eclipse/java-2020-03/eclipse/eclipse.exe</windows>
+				<macos>$userDirectory/Documents/eclipse/java-2020-03/Eclipse.app</macos>
+			</defaultLocation>
+			<website>https://www.eclipse.org/downloads/</website>
 		</editor>
 	</editors>
 </config>
