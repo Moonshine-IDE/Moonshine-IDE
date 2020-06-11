@@ -75,7 +75,7 @@ package actionScripts.plugins.externalEditors
 		private var removedEditors:Array = [];
 		private var addEditEditorWindow:ExternalEditorAddEditPopup;
 		private var linkOnlySetting:LinkOnlySetting;
-		private var needUpdateSyncDateUTC:String = "Wed Jun 10 06:53:11 2020 UTC";
+		private var needUpdateSyncDateUTC:String = "Thu Jun 11 05:58:26 2020 UTC";
 		
 		override public function activate():void
 		{

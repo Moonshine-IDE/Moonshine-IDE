@@ -60,7 +60,9 @@
 			protected function onExecutableSelected(file:File):void
 			{
 				setting.stringValue = file.nativePath;
-				setting.editor.installPath = file;
+				// do not use 'file' directly as that instance can be
+				// changed by other activities
+				setting.editor.installPath = new File(file.nativePath);
 			}
 			
 			private function remove():void
