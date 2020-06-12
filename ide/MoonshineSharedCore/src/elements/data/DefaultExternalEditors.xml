@@ -45,14 +45,6 @@
 			</defaultLocation>
 			<website>https://ia.net/downloads</website>
 		</editor>
-		<editor id="prettifyxml" isWindows="false" isMac="true">
-			<title>Prettify XML</title>
-			<defaultLocation>
-				<windows/>
-				<macos>/Applications/MacVIM.app</macos>
-			</defaultLocation>
-			<website>https://adoptopenjdk.net/</website>
-		</editor>
 		<editor id="emacs" isWindows="false" isMac="true">
 			<title>Emacs</title>
 			<defaultLocation>
