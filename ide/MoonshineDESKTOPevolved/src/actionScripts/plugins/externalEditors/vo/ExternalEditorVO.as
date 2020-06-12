@@ -37,7 +37,7 @@ package actionScripts.plugins.externalEditors.vo
 		public function get installPath():File							{	return _installPath;	}
 		public function set installPath(value:File):void				{	
 			_installPath = value;
-			if (!_installPath) 
+			if (!_installPath || !_installPath.exists) 
 			{
 				isEnabled = false;
 				isValid = false;
@@ -97,7 +97,7 @@ package actionScripts.plugins.externalEditors.vo
 				}
 				catch (e:Error){}
 			}
-			else 
+			if (!tmpVO.installPath || !tmpVO.installPath.exists)
 			{
 				tmpVO.isEnabled = false;
 				tmpVO.isValid = false;
