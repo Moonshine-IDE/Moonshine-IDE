@@ -384,5 +384,25 @@ package actionScripts.plugins.externalEditors
 				new <String>[command], null
 			);
 		}
+		
+		override protected function set running(value:Boolean):void
+		{
+			super.running = value;
+			
+			/*
+			 * NOTE:
+			 * On Windows after triggering an application
+			 * the NativeProcess never exits and prevent from
+			 * opening any new file to the editor without 
+			 * closing it first (unlike macOS).
+			 * We need to manually close the NativeProcess
+			 * top overcome this holding situation once
+			 * NativeProcess once triggered
+			 */
+			if (!ConstantsCoreVO.IS_MACOS && value)
+			{
+				this.stop();
+			}
+		}
 	}
 }

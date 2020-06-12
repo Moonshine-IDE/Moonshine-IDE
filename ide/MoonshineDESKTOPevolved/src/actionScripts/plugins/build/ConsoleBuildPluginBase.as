@@ -102,8 +102,6 @@ package actionScripts.plugins.build
 					processArgs.push(value);
 				}
 				
-				running = true;
-				
 				addNativeProcessEventListeners();
 				
 				//var workingDirectory:File = currentSDK.resolvePath("bin/");
@@ -115,6 +113,7 @@ package actionScripts.plugins.build
 				}
 				
 				nativeProcess.start(nativeProcessStartupInfo);
+				running = true;
 			}
         }
 
@@ -165,6 +164,7 @@ package actionScripts.plugins.build
 
         protected function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
+			print("%s", "Native Process exiting.");
             removeNativeProcessEventListeners();
         }
 
