@@ -1,0 +1,1 @@
+<j:DataGridColumn label="$label" itemRenderer="$renderer"/>

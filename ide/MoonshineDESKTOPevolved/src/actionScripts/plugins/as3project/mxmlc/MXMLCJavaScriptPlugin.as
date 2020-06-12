@@ -755,10 +755,14 @@ package actionScripts.plugins.as3project.mxmlc
 				return;
 			}
 
-			var httpWorkingDir:FileLocation = getWebRoot(as3Project);
-			var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, httpWorkingDir, DEBUG_SERVER_PORT);
-				dispatcher.dispatchEvent(httpServerEvent);
-			var canStart:Boolean = !httpServerEvent.isDefaultPrevented();
+			var canStart:Boolean = true;
+			if(needsLocalServer(as3Project))
+			{
+				var httpWorkingDir:FileLocation = getWebRoot(as3Project);
+				var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, httpWorkingDir, DEBUG_SERVER_PORT);
+					dispatcher.dispatchEvent(httpServerEvent);
+				canStart = !httpServerEvent.isDefaultPrevented();
+			}
 
 			if(canStart)
 			{
@@ -797,11 +801,13 @@ package actionScripts.plugins.as3project.mxmlc
 				var launchEvent:SWFLaunchEvent = new SWFLaunchEvent(SWFLaunchEvent.EVENT_LAUNCH_SWF, null, pvo);
 				if (pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
 				{
-					launchEvent.url = getUrlToLaunch(pvo);
+					//this is a fallback, and should not use getUrlToLaunch()
+					launchEvent.url = pvo.customHTMLPath;
 				}
 				else
 				{
-					launchEvent.file = new FileLocation(getUrlToLaunch(pvo)).fileBridge.getFile as File;
+					//this is a fallback, and should not use getUrlToLaunch()
+					launchEvent.file = new FileLocation(pvo.urlToLaunch).fileBridge.getFile as File;
 				}
 
 				dispatcher.dispatchEvent(launchEvent);
@@ -889,6 +895,11 @@ package actionScripts.plugins.as3project.mxmlc
 			resourceCopiedIndex = 0;
         }
 
+		private function needsLocalServer(pvo:AS3ProjectVO):Boolean
+		{
+			return !(pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0);
+		}
+
 		private function getUrlToLaunch(pvo:AS3ProjectVO):String
 		{
 			var url:String = "http://localhost:" + DEBUG_SERVER_PORT;
@@ -898,10 +909,10 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else if(pvo.urlToLaunch)
 			{
-				var urlToLaunchLocation:FileLocation = new FileLocation(pvo.urlToLaunch);
-				if(urlToLaunchLocation.fileBridge.exists)
+				var relativeURL:String = getWebRoot(pvo).fileBridge.getRelativePath(new FileLocation(pvo.urlToLaunch));
+				if(relativeURL)
 				{
-					url = urlToLaunchLocation.fileBridge.nativePath;
+					url += "/" + relativeURL;
 				}
 			}
 

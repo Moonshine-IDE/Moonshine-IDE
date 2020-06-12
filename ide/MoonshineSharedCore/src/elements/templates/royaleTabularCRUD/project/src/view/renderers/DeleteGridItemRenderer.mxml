@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<j:DataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  			 xmlns:j="library://ns.apache.org/royale/jewel" 
+		  			 xmlns:js="library://ns.apache.org/royale/basic" 
+		  			 xmlns:itemRenderers="org.apache.royale.jewel.beads.itemRenderers.*" xmlns:beads="classes.beads.*">
+	 <j:beads>
+		<js:ItemRendererDataBinding/>
+		<j:VerticalCenteredLayout />
+	</j:beads>
+	<fx:Script>
+	<![CDATA[
+		import classes.beads.JewelDataGridRendererOwner;
+		import classes.events.DeleteItemEvent;
+
+		import org.apache.royale.events.IEventDispatcher;
+		import org.apache.royale.events.MouseEvent;
+				
+		private function onDeleteClick(event:MouseEvent):void
+		{
+			var ownerViewBead:JewelDataGridRendererOwner = this.parent["getBeadByType"](JewelDataGridRendererOwner) as JewelDataGridRendererOwner;
+			(ownerViewBead.ownerView as IEventDispatcher).dispatchEvent(new DeleteItemEvent(DeleteItemEvent.DELETE_TABLE_ITEM, data));
+		}
+	]]>
+</fx:Script>
+    <j:IconButton localId="deleteIcon" emphasis="secondary" width="24" height="24" style="padding: 0px;"
+				  click="onDeleteClick(event)">
+        <j:icon>
+            <js:MaterialIcon text="{MaterialIconType.CLOSE}" />
+        </j:icon>
+    </j:IconButton>
+</j:DataGridItemRenderer>
