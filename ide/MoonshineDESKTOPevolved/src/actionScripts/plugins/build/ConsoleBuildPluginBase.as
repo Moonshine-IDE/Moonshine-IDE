@@ -164,7 +164,6 @@ package actionScripts.plugins.build
 
         protected function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
-			print("%s", "Native Process exiting.");
             removeNativeProcessEventListeners();
         }
 
