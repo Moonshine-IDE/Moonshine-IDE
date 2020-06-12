@@ -83,6 +83,11 @@ package actionScripts.plugins.externalEditors.vo
 			
 			if ("isMoonshineDefault" in value) tmpVO.isMoonshineDefault = value.isMoonshineDefault;
 			if ("title" in value) tmpVO.title = value.title;
+			if ("website" in value) tmpVO.website = value.website;
+			if ("isEnabled" in value) tmpVO.isEnabled = value.isEnabled;
+			if ("localID" in value) tmpVO.localID = value.localID;
+			if ("defaultInstallPath" in value) tmpVO.defaultInstallPath = value.defaultInstallPath;
+			if ("extraArguments" in value) tmpVO.extraArguments = value.extraArguments;
 			if (("installPath" in value) && (value.installPath is File)) tmpVO.installPath = value.installPath;
 			else if (("installPath" in value) && (value.installPath is String))
 			{
@@ -92,11 +97,11 @@ package actionScripts.plugins.externalEditors.vo
 				}
 				catch (e:Error){}
 			}
-			if ("website" in value) tmpVO.website = value.website;
-			if ("isEnabled" in value) tmpVO.isEnabled = value.isEnabled;
-			if ("localID" in value) tmpVO.localID = value.localID;
-			if ("defaultInstallPath" in value) tmpVO.defaultInstallPath = value.defaultInstallPath;
-			if ("extraArguments" in value) tmpVO.extraArguments = value.extraArguments;
+			else 
+			{
+				tmpVO.isEnabled = false;
+				tmpVO.isValid = false;
+			}
 			
 			return tmpVO;
 		}
