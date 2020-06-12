@@ -89,11 +89,11 @@ package actionScripts.plugins.externalEditors.vo
 			if ("defaultInstallPath" in value) tmpVO.defaultInstallPath = value.defaultInstallPath;
 			if ("extraArguments" in value) tmpVO.extraArguments = value.extraArguments;
 			if (("installPath" in value) && (value.installPath is File)) tmpVO.installPath = value.installPath;
-			else if (("installPath" in value) && (value.installPath is String))
+			else if (("installPath" in value) && value.installPath && ("nativePath" in value.installPath))
 			{
 				try
 				{
-					tmpVO.installPath = new File(value.installPath);
+					tmpVO.installPath = new File(value.installPath.nativePath);
 				}
 				catch (e:Error){}
 			}
