@@ -286,7 +286,7 @@ package actionScripts.debugAdapter
 
 			var threads:ArrayCollection = this._threadsAndStackFrames.getRoot() as ArrayCollection;
 			var thread:Thread = this.findThread(threadId);
-			if(!thread || this._pausedThreads.contains(thread.id))
+			if(!thread || !this._pausedThreads.contains(thread.id))
 			{
 				//not found or already paused
 				return;
