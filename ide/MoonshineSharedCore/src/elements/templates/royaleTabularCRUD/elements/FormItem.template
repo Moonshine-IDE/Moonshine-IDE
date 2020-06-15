@@ -1,4 +1,0 @@
-<j:FormItem label="$label" required="$required"
-			className="horizontalContentShrinkFormItem">
-			%FormItemContent%
-</j:FormItem>

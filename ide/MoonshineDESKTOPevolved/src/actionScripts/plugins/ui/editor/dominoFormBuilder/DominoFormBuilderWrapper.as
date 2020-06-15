@@ -33,6 +33,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+	import actionScripts.plugins.ondiskproj.exporter.OnDiskRoyaleCRUDExporter;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.IContentWindowReloadable;
 	import actionScripts.ui.IFileContentWindow;
@@ -79,6 +80,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var model:IDEModel = IDEModel.getInstance();
 		private var formObject:DominoFormVO;
+		private var crudRoyaleExporter:OnDiskRoyaleCRUDExporter;
 		
 		/**
 		 * CONSTRUCTOR
@@ -149,6 +151,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			
 			dominoTabularForm.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange, false, 0, true);
 			dominoTabularForm.addEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaveRequest, false, 0, true);
+			dominoTabularForm.addEventListener(VisualEditorEvent.GENERATE_ROYALE_CRUD, onTabularInterfaceRoyaleCRUDRequest, false, 0, true);
 			
 			addElement(dominoTabularForm);
 		}
@@ -169,6 +172,12 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			save();
 		}
 		
+		protected function onTabularInterfaceRoyaleCRUDRequest(event:VisualEditorEvent):void
+		{
+			if (!crudRoyaleExporter) crudRoyaleExporter = new OnDiskRoyaleCRUDExporter(null);
+			crudRoyaleExporter.browseToExport(dominoTabularForm.formObject);
+		}
+		
 		protected function updateChangeStatus():void
 		{
 			_isChanged = true;
@@ -184,8 +193,10 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 				
 				dominoTabularForm.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange);
 				dominoTabularForm.removeEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaveRequest);
+				dominoTabularForm.removeEventListener(VisualEditorEvent.GENERATE_ROYALE_CRUD, onTabularInterfaceRoyaleCRUDRequest);
 				
 				formObject = null;
+				crudRoyaleExporter = null;
 			}
 		}
 		

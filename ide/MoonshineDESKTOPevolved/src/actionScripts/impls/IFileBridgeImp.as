@@ -158,7 +158,7 @@ package actionScripts.impls
 			 */
 			function onSelectHandler(event:Event):void
 			{
-				onCancelHandler(event);
+				removeHandlers(event);
 				
 				// to overcome a macOS bug where previously selected
 				// file can return to directory browsing
@@ -171,6 +171,14 @@ package actionScripts.impls
 				updateCoreFilePathOnBrowse((event.target as File).nativePath);
 			}
 			function onCancelHandler(event:Event):void
+			{
+				removeHandlers(event);
+				if (cancelListener != null) 
+				{
+					cancelListener();
+				}
+			}
+			function removeHandlers(event:Event):void
 			{
 				event.target.removeEventListener(Event.SELECT, onSelectHandler);
 				event.target.removeEventListener(Event.CANCEL, onCancelHandler);
@@ -514,11 +522,19 @@ package actionScripts.impls
 			*/
 			function onSelectHandler(event:Event):void
 			{
-				onCancelHandler(event);
+				removeHandlers(event);
 				selectListner(event.target as File);
 				updateCoreFilePathOnBrowse((event.target as File).nativePath);
 			}
 			function onCancelHandler(event:Event):void
+			{
+				removeHandlers(event);
+				if (cancelListener != null) 
+				{
+					cancelListener();
+				}
+			}
+			function removeHandlers(event:Event):void
 			{
 				event.target.removeEventListener(Event.SELECT, onSelectHandler);
 				event.target.removeEventListener(Event.CANCEL, onCancelHandler);
