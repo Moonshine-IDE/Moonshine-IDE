@@ -33,7 +33,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
-	import actionScripts.plugins.ondiskproj.exporter.OnDiskRoyaleCRUDExporter;
+	import actionScripts.plugins.ondiskproj.crud.exporter.OnDiskRoyaleCRUDExporter;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.IContentWindowReloadable;
 	import actionScripts.ui.IFileContentWindow;

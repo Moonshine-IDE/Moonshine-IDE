@@ -84,6 +84,8 @@ package actionScripts.plugins.as3project
 		protected var templateLookup:Object = {};
 		protected var isFlexJSRoyalProject:Boolean;
 		protected var project:Object;
+		protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		protected var model:IDEModel = IDEModel.getInstance();
 		
 		private var newProjectWithExistingSourcePathSetting:NewProjectSourcePathListSetting;
 		private var newLibrarySetting:NewLibraryProjectSetting;
@@ -95,8 +97,6 @@ package actionScripts.plugins.as3project
 		private var projectWithExistingSourceSetting:BooleanSetting;
 
 		private var cookie:SharedObject;
-		private var model:IDEModel = IDEModel.getInstance();
-		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		private var isActionScriptProject:Boolean;
 		private var isMobileProject:Boolean;

@@ -16,17 +16,21 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.ondiskproj.exporter
+package actionScripts.plugins.ondiskproj.crud.exporter
 {
 	import flash.events.Event;
 	import flash.filesystem.File;
 	
 	import actionScripts.events.NewProjectEvent;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugins.as3project.CreateProject;
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.AddEditPageGenerator;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
 	
 	import view.dominoFormBuilder.vo.DominoFormVO;
 
@@ -35,13 +39,21 @@ package actionScripts.plugins.ondiskproj.exporter
 		private static const TEMPLATE_PROJECT_PATH:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/templates/royaleTabularCRUD/project");
 		
 		private var formObject:DominoFormVO;
-		private var model:IDEModel = IDEModel.getInstance();
 		private var targetDirectory:File;
 		
+		/**
+		 * CONSTRUCTOR
+		 */
 		public function OnDiskRoyaleCRUDExporter(event:NewProjectEvent)
 		{
 			super(event);
 		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  PUBLIC API
+		//
+		//--------------------------------------------------------------------------
 		
 		public function browseToExport(formObject:DominoFormVO):void
 		{
@@ -49,28 +61,15 @@ package actionScripts.plugins.ondiskproj.exporter
 			model.fileCore.browseForDirectory("Select Directory to Export", onDirectorySelected, onDirectorySelectionCancelled);
 		}
 		
-		protected function onDirectorySelected(path:File):void
-		{
-			targetDirectory = path;
-			onCreateProjectSave(null);
-		}
-		
-		protected function onDirectorySelectionCancelled():void
-		{
-			formObject = null;
-		}
+		//--------------------------------------------------------------------------
+		//
+		//  OVERRIDES
+		//
+		//--------------------------------------------------------------------------
 		
 		override protected function getProjectWithTemplate(pvo:Object, exportProject:AS3ProjectVO=null):Object
 		{
-			var templateSettingsName:String = "$Settings.as3proj.template";
-			var tmpLocation:FileLocation = pvo.folderLocation;
-			var tmpName:String = pvo.projectName;
-			
 			templateLookup[pvo] = TEMPLATE_PROJECT_PATH;
-			pvo = FlashDevelopImporter.parse(TEMPLATE_PROJECT_PATH.resolvePath(templateSettingsName), null, null, false, projectTemplateType);
-			pvo.folderLocation = tmpLocation;
-			pvo.projectName = tmpName;
-			
 			return pvo;
 		}
 		
@@ -86,6 +85,52 @@ package actionScripts.plugins.ondiskproj.exporter
 			(project as AS3ProjectVO).folderLocation = new FileLocation(targetDirectory.nativePath);
 			
 			project = createFileSystemBeforeSave(project);
+			if (project)
+			{
+				generatePageContents();
+			}
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  LISTENERS API
+		//
+		//--------------------------------------------------------------------------
+		
+		protected function onDirectorySelected(path:File):void
+		{
+			targetDirectory = path;
+			onCreateProjectSave(null);
+		}
+		
+		protected function onDirectorySelectionCancelled():void
+		{
+			formObject = null;
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE API
+		//
+		//--------------------------------------------------------------------------
+		
+		private function generatePageContents():void
+		{
+			// temp
+			new ListingPageGenerator((project as AS3ProjectVO).projectFolder.file, formObject);
+			// temp
+			new AddEditPageGenerator((project as AS3ProjectVO).projectFolder.file, formObject);
+		}
+		
+		private function openProjectInMoonshine():void
+		{
+			dispatcher.dispatchEvent(
+				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
+			);
+			
+			dispatcher.dispatchEvent( 
+				new OpenFileEvent(OpenFileEvent.OPEN_FILE, [project.targets[0]], -1, [project.projectFolder])
+			);
 		}
 	}
 }

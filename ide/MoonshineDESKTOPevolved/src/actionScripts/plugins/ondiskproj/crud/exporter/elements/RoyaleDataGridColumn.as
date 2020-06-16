@@ -16,22 +16,19 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.ondiskproj.vo
+package actionScripts.plugins.ondiskproj.crud.exporter.elements
 {
-	public class OnDiskRoyaleElementTemplates
+	import view.dominoFormBuilder.vo.DominoFormFieldVO;
+
+	public class RoyaleDataGridColumn extends RoyaleElemenetBase
 	{
-		public static const DATAGRID_COLUMN_WITH_RENDERER:XML = <j:DataGridColumn label="$label" itemRenderer="$renderer"/>;
-		public static const DATAGRID_COLUMN:XML = <j:DataGridColumn label="$label" dataField="$dataField"/>;
-		public static const BEAD_STRING_VALIDATOR:XML = <j:StringValidator required="1"/>;
-		public static const FORM_ITEM:XML = <j:FormItem label="$label" required="$required"
-			className="horizontalContentShrinkFormItem">
-			%FormItemContent%
-</j:FormItem>;
-		public static const BEADS:XML = <j:beads>
-	%BeadsContent%
-</j:beads>;
-		public static const TEXT_INPUT:XML = <j:TextInput localId="$localId" percentWidth="100">
-	%Beads%
-</j:TextInput>;
+		public static function toCode(value:DominoFormFieldVO):String
+		{
+			var column:String = readTemplate("DataGridColumn.template");
+			column = column.replace(/%label%/ig, value.label);
+			column = column.replace(/%dataField%/ig, value.name);
+			
+			return column;
+		}
 	}
 }
