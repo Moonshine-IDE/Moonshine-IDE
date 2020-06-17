@@ -27,6 +27,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.as3project.CreateProject;
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.AddEditPageGenerator;
@@ -80,8 +81,14 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		
 		override protected function onCreateProjectSave(event:Event):void
 		{
+			var projectName:String = formObject.formName +"_RoyaleApplication";
+			
+			dispatcher.dispatchEvent(
+				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Saving project at: "+ targetDirectory.resolvePath(projectName).nativePath)
+			);
+			
 			project = FlashDevelopImporter.parse(TEMPLATE_PROJECT_PATH.resolvePath("$Settings.as3proj.template"), null, null, false);
-			(project as AS3ProjectVO).projectName = formObject.formName +"_RoyaleApplication";
+			(project as AS3ProjectVO).projectName = projectName;
 			(project as AS3ProjectVO).folderLocation = new FileLocation(targetDirectory.nativePath);
 			
 			project = createFileSystemBeforeSave(project);
@@ -120,6 +127,22 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			new ListingPageGenerator((project as AS3ProjectVO).projectFolder.file, formObject);
 			// temp
 			new AddEditPageGenerator((project as AS3ProjectVO).projectFolder.file, formObject);
+			
+			// success message
+			dispatcher.dispatchEvent(
+				new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_PRINT, 
+					"Project saved at: "+ targetDirectory.resolvePath((project as AS3ProjectVO).name).nativePath, 
+					false, false, 
+					ConsoleOutputEvent.TYPE_SUCCESS
+				)
+			);
+			dispatcher.dispatchEvent(
+				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Opening project in Moonshine..")
+			);
+			
+			// open project in Moonshine
+			openProjectInMoonshine();
 		}
 		
 		private function openProjectInMoonshine():void

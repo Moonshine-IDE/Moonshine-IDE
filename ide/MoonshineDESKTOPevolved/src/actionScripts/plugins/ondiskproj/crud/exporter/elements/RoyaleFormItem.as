@@ -35,10 +35,12 @@ package actionScripts.plugins.ondiskproj.crud.exporter.elements
 					formContent = toTextInputCode(value);
 					break;
 				case FormBuilderFieldType.DATETIME:
+					formContent = toDateFieldCode(value);
 					break;
 				case FormBuilderFieldType.RICH_TEXT:
 					break;
 				case FormBuilderFieldType.NUMBER:
+					formContent = toNumberTextInputCode(value);
 					break;
 			}
 			
@@ -66,6 +68,35 @@ package actionScripts.plugins.ondiskproj.crud.exporter.elements
 			textInput = textInput.replace(/%Beads%/ig, beads);
 			
 			return textInput;
+		}
+		
+		private static function toNumberTextInputCode(field:DominoFormFieldVO):String
+		{
+			var beads:String = readTemplate("Beads.template");
+			var beadRestrict:String = readTemplate("Bead_Restrict.template");
+			var beadElements:String = "";
+			
+			beadElements = beadRestrict.replace(/%pattern%/gi, "[^0-9]");
+			if (field.editable != FormBuilderEditableType.EDITABLE)
+			{
+				beadElements += "\n"+ readTemplate("Bead_Disabled.template");
+			}
+			
+			beads = beads.replace(/%BeadsContent%/ig, beadElements);
+			
+			var textInput:String = readTemplate("TextInput.template");;
+			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
+			textInput = textInput.replace(/%Beads%/ig, beads);
+			
+			return textInput;
+		}
+		
+		private static function toDateFieldCode(field:DominoFormFieldVO):String
+		{
+			var dateField:String = readTemplate("DateField.template");;
+			dateField = dateField.replace(/%localId%/ig, field.name +"_id");
+			
+			return dateField;
 		}
 	}
 }
