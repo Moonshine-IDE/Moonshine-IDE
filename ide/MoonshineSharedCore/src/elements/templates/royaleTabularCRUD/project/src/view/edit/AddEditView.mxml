@@ -28,7 +28,7 @@
 		<js:ContainerDataBinding />
 	</j:beads>
 	
-	<html:H2 text="Add/Edit to $formName"/>
+	<html:H2 text="Add/Edit to %FormName%"/>
 	
 	<js:HRule percentWidth="100"/>
 	<j:Spacer height="20"/>

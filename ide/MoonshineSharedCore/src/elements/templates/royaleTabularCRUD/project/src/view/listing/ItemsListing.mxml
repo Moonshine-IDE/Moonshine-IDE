@@ -31,7 +31,7 @@
 	<j:Grid gap="false">
 		<j:GridCell desktopNumerator="1" desktopDenominator="2" tabletNumerator="1" 
 					tabletDenominator="2" phoneNumerator="1" phoneDenominator="2">
-			<html:H2 text="$formName"/>
+			<html:H2 text="%FormName%"/>
 		</j:GridCell>
 		<j:GridCell desktopNumerator="1" desktopDenominator="2" tabletNumerator="1" tabletDenominator="2" 
 					phoneNumerator="1" phoneDenominator="2">
@@ -55,7 +55,7 @@
 	
 	<j:Label percentWidth="100" text="* Double click to open any row in edit"
 			 className="smallFont italic labelTextAlignRight"/>
-	<j:DataGrid id="tableCredentials"
+	<j:DataGrid id="dgItems"
 				rowHeight="50">
 		<j:columns>
 			%DataGridColumns%

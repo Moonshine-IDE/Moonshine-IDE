@@ -40,6 +40,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			if (!fileContent) return;
 			
 			fileContent = fileContent.replace(/%DataGridColumns%/ig, generateColumns());
+			fileContent = fileContent.replace(/%FormName%/g, form.viewName);
 			saveFile(fileContent);
 		}
 		

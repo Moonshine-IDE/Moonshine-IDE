@@ -40,6 +40,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			if (!fileContent) return;
 			
 			fileContent = fileContent.replace(/%FormItems%/ig, generateFormItems());
+			fileContent = fileContent.replace(/%FormName%/ig, form.viewName);
 			saveFile(fileContent);
 		}
 		
