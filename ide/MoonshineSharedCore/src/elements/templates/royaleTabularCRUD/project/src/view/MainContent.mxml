@@ -23,8 +23,7 @@
     <j:ApplicationMainContent id="mainContent" 
 							  hasTopAppBar="false" hasFooterBar="false" selectedContent="ItemsListing">
        <j:ScrollableSectionContent name="ItemsListing" className="sectionCenter">
-			<listing:ItemsListing eventNavigateTo="onNavigationChangeRequest(event)"
-								  percentWidth="50"/>
+			<listing:ItemsListing eventNavigateTo="onNavigationChangeRequest(event)"/>
 	   </j:ScrollableSectionContent>
 		<j:ScrollableSectionContent name="{AddEditView.NAME}" className="sectionCenter">
 			<edit:AddEditView eventNavigateTo="onNavigationChangeRequest(event)"
