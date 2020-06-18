@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
+    import flash.system.Capabilities;
     import flash.system.Security;
     
     import mx.collections.ArrayCollection;
@@ -229,6 +230,7 @@ package actionScripts.valueObjects
 		//--------------------------------------------------------------------------
 		
 		public static var IS_MACOS							: Boolean;
+		public static var is64BitSupport					: Boolean = Capabilities.supports64BitProcesses;
 		public static var IS_DEVELOPMENT_MODE				: Boolean;
 		public static var IS_AUTH_REQUIRED					: Boolean; // MoonshineServerPluginOpenSource
 		public static var IS_BUNDLED_SDK_PRESENT			: Boolean;

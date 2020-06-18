@@ -144,6 +144,11 @@
 	fontSize: 12;
 }
 
+.linkButton
+{
+	skinClass: ClassReference("actionScripts.plugin.settings.renderers.LinkButtonSkin");
+}
+
 .smallText
 {
 	fontFamily: 'DejaVuSans';

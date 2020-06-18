@@ -44,6 +44,7 @@
 			import actionScripts.events.DeleteFileEvent;
 			import actionScripts.events.DuplicateEvent;
 			import actionScripts.events.FileCopyPasteEvent;
+			import actionScripts.events.FilePluginEvent;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.HiddenFilesEvent;
 			import actionScripts.events.NewFileEvent;
@@ -584,6 +585,18 @@
 							}
 						}
 	
+						break;
+					}
+					case FTETreeItemRenderer.OPEN_WITH:
+					{
+						if (event.extra == FTETreeItemRenderer.CONFIGURE_EXTERNAL_EDITORS)
+						{
+							dispatcher.dispatchEvent(new Event(event.extra));
+						}
+						else
+						{
+							dispatcher.dispatchEvent(new FilePluginEvent(event.extra, fileWrapper.file));
+						}
 						break;
 					}
 					case FTETreeItemRenderer.RUN_ANT_SCRIPT:

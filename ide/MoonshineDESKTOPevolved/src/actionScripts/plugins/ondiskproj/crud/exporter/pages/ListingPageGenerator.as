@@ -19,12 +19,12 @@
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugins.ondiskproj.crud.exporter.elements.RoyaleDataGridColumn;
+	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleDataGridColumn;
 	
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	
-	public class ListingPageGenerator extends RoyalePageGenerator
+	public class ListingPageGenerator extends RoyalePageGeneratorBase
 	{
 		override protected function get pageRelativePathString():String		{	return "src/view/listing/ItemsListing.mxml";	}
 		

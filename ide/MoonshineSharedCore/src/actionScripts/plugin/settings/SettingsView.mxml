@@ -44,6 +44,7 @@
 			
 			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.SettingsEvent;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -252,6 +253,7 @@
 				{
 					GlobalEventDispatcher.getInstance().removeEventListener(GeneralEvent.SCROLL_TO_TOP, onNewProjectScrollChange);
 				}
+				GlobalEventDispatcher.getInstance().removeEventListener(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS, handleRefreshSettings);
 				dispatchEvent(new Event(EVENT_CLOSE));
 			}
 	
@@ -381,6 +383,12 @@
 				}
 				
 				if (isNewProjectSettings) GlobalEventDispatcher.getInstance().addEventListener(GeneralEvent.SCROLL_TO_TOP, onNewProjectScrollChange, false, 0, true);
+				GlobalEventDispatcher.getInstance().addEventListener(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS, handleRefreshSettings, false, 0, true);
+			}
+			
+			private function onCurrentSettingsRefreshRequest(event:SettingsEvent):void
+			{
+				handleRefreshSettings(event);
 			}
 	
 			private function handleItemClick(event:Event):void

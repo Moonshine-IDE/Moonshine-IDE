@@ -897,6 +897,11 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private function needsLocalServer(pvo:AS3ProjectVO):Boolean
 		{
+			if(ConstantsCoreVO.IS_APP_STORE_VERSION)
+			{
+				//starting the http server doesn't work
+				return false;
+			}
 			return !(pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0);
 		}
 
@@ -909,10 +914,17 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else if(pvo.urlToLaunch)
 			{
-				var relativeURL:String = getWebRoot(pvo).fileBridge.getRelativePath(new FileLocation(pvo.urlToLaunch));
-				if(relativeURL)
+				if(needsLocalServer(pvo))
 				{
-					url += "/" + relativeURL;
+					var relativeURL:String = getWebRoot(pvo).fileBridge.getRelativePath(new FileLocation(pvo.urlToLaunch));
+					if(relativeURL)
+					{
+						url += "/" + relativeURL;
+					}
+				}
+				else
+				{
+					url = new FileLocation(pvo.urlToLaunch).fileBridge.url;
 				}
 			}
 

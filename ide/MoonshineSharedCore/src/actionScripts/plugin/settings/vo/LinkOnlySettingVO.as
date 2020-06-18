@@ -16,24 +16,17 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.events
+package actionScripts.plugin.settings.vo
 {
-	import flash.events.Event;
-	
-	public class SettingsEvent extends Event
+	public class LinkOnlySettingVO
 	{
-		public static const EVENT_OPEN_SETTINGS:String = "openSettingsEvent";
-		public static const EVENT_SETTINGS_SAVED:String = "savedSettingsEvent";
-		public static const EVENT_REFRESH_CURRENT_SETTINGS:String = "refreshCurrentSettingsEvent";
+		public var label:String;
+		public var event:String;
 		
-		public var openSettingsByQualifiedClassName:String;
-		
-		public function SettingsEvent(type:String, openSettingsByQualifiedClassName:String=null)
+		public function LinkOnlySettingVO(label:String, event:String)
 		{
-			this.openSettingsByQualifiedClassName = openSettingsByQualifiedClassName;
-			
-			super(type, false, false);
+			this.label = label;
+			this.event = event;
 		}
-		
 	}
 }

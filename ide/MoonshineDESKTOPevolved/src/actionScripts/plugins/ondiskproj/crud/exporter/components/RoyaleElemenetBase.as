@@ -16,24 +16,23 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.events
+package actionScripts.plugins.ondiskproj.crud.exporter.components
 {
-	import flash.events.Event;
+	import flash.filesystem.File;
 	
-	public class SettingsEvent extends Event
+	import actionScripts.utils.FileUtils;
+	
+	public class RoyaleElemenetBase
 	{
-		public static const EVENT_OPEN_SETTINGS:String = "openSettingsEvent";
-		public static const EVENT_SETTINGS_SAVED:String = "savedSettingsEvent";
-		public static const EVENT_REFRESH_CURRENT_SETTINGS:String = "refreshCurrentSettingsEvent";
-		
-		public var openSettingsByQualifiedClassName:String;
-		
-		public function SettingsEvent(type:String, openSettingsByQualifiedClassName:String=null)
+		public static function readTemplate(path:String):String
 		{
-			this.openSettingsByQualifiedClassName = openSettingsByQualifiedClassName;
+			var filePath:File = File.applicationDirectory.resolvePath("elements/templates/royaleTabularCRUD/elements/"+ path);
+			if (filePath.exists)
+			{
+				return (FileUtils.readFromFile(filePath) as String);
+			}
 			
-			super(type, false, false);
+			return "";
 		}
-		
 	}
 }

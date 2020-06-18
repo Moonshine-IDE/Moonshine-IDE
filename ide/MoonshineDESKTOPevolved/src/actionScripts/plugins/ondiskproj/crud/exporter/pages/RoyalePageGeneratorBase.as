@@ -25,7 +25,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	
 	import view.dominoFormBuilder.vo.DominoFormVO;
 
-	public class RoyalePageGenerator
+	public class RoyalePageGeneratorBase
 	{
 		protected var projectPath:FileLocation;
 		protected var pagePath:FileLocation;
@@ -33,7 +33,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		
 		protected function get pageRelativePathString():String		{	return null;	}
 		
-		public function RoyalePageGenerator(projectPath:FileLocation, form:DominoFormVO)
+		public function RoyalePageGeneratorBase(projectPath:FileLocation, form:DominoFormVO)
 		{
 			this.projectPath = projectPath;
 			this.form = form;

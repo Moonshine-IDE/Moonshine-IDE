@@ -19,12 +19,12 @@
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugins.ondiskproj.crud.exporter.elements.RoyaleFormItem;
+	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleFormItem;
 	
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	
-	public class AddEditPageGenerator extends RoyalePageGenerator
+	public class AddEditPageGenerator extends RoyalePageGeneratorBase
 	{
 		override protected function get pageRelativePathString():String		{	return "src/view/edit/AddEditView.mxml";	}
 		

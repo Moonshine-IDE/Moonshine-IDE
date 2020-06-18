@@ -16,23 +16,13 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.ondiskproj.crud.exporter.elements
+package actionScripts.interfaces
 {
-	import flash.filesystem.File;
-	
-	import actionScripts.utils.FileUtils;
-	
-	public class RoyaleElemenetBase
+	public interface IExternalEditorVO
 	{
-		public static function readTemplate(path:String):String
-		{
-			var filePath:File = File.applicationDirectory.resolvePath("elements/templates/royaleTabularCRUD/elements/"+ path);
-			if (filePath.exists)
-			{
-				return (FileUtils.readFromFile(filePath) as String);
-			}
-			
-			return "";
-		}
+		function get isValid():Boolean;
+		function get isEnabled():Boolean;
+		function get title():String;
+		function get localID():String;
 	}
 }

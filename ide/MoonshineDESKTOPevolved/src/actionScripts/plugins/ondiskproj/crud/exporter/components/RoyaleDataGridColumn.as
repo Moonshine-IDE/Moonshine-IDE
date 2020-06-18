@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.ondiskproj.crud.exporter.elements
+package actionScripts.plugins.ondiskproj.crud.exporter.components
 {
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 

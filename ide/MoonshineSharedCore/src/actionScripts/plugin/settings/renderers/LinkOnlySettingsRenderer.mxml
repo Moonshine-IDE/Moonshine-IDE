@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%"
+		  paddingLeft="15" paddingTop="8" paddingRight="15" paddingBottom="8"
+		  creationComplete="onCreationCompletes()">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.components.Button;
+			
+			import actionScripts.plugin.settings.vo.LinkOnlySetting;
+			import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
+						
+			[Bindable] public var setting:LinkOnlySetting;
+			
+			public var nameEventPair:Vector.<LinkOnlySettingVO>;
+			
+			private var links:Array = [];
+			
+			public function dispose():void
+			{
+				for (var i:int; i < links.length; i++)
+				{
+					(links[i] as Button).removeEventListener(MouseEvent.CLICK, onLinkClicked);
+				}
+				
+				links = null;
+			}
+			
+			private function onCreationCompletes():void
+			{
+				for (var i:int; i < nameEventPair.length; i++)
+				{
+					var tmpButton:Button = new Button();
+					tmpButton.label = nameEventPair[i].label;
+					tmpButton.styleName = "linkButton";
+					tmpButton.name = nameEventPair[i].event;
+					tmpButton.addEventListener(MouseEvent.CLICK, onLinkClicked, false, 0, true);
+					linkBody.addElement(tmpButton);
+					links.push(tmpButton);
+				}
+			}
+			
+			private function onLinkClicked(event:MouseEvent):void
+			{
+				setting.dispatchEvent(new Event(event.target.name));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup id="linkBody" 
+			  width="100%" gap="8">
+		<mx:Spacer width="100%"/>
+	</s:HGroup>
+</s:VGroup>
