@@ -26,10 +26,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	
 	public class ListingPageGenerator extends RoyalePageGeneratorBase
 	{
-		override protected function get pageRelativePathString():String		{	return "src/view/listing/ItemsListing.mxml";	}
+		private var _pageRelativePathString:String;
+		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
 		
 		public function ListingPageGenerator(projectPath:FileLocation, form:DominoFormVO)
 		{
+			_pageRelativePathString = "src/views/modules/"+ form.formName +"/"+ form.formName +"_views/"+ form.formName +"_listing.mxml";
+			
 			super(projectPath, form);
 			generate();
 		}

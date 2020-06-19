@@ -27,9 +27,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	{
 		override protected function get pageRelativePathString():String		{	return "src/views/MainContent.mxml";	}
 		
-		public function MainContentPageGenerator(projectPath:FileLocation, form:DominoFormVO)
+		private var forms:Vector.<DominoFormVO>;
+		
+		public function MainContentPageGenerator(projectPath:FileLocation, forms:Vector.<DominoFormVO>)
 		{
-			super(projectPath, form);
+			super(projectPath, null);
+			
+			this.forms = forms;
 			generate();
 		}
 		
@@ -38,7 +42,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
 			
-			for each (var field:DominoFormFieldVO in form.fields)
+			for each (var field:DominoFormFieldVO in forms)
 			{
 				
 			}

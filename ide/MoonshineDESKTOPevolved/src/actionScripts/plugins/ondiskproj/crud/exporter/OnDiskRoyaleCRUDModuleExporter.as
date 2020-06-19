@@ -25,6 +25,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.templating.TemplatingHelper;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.AddEditPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.MainContentPageGenerator;
 	import actionScripts.utils.UtilsCore;
@@ -96,7 +97,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.templatingData["$moduleName"] = moduleName;
-			th.templatingData["$packagePath"] = "views.module."+ moduleName +"."+ moduleName +"_services";
+			th.templatingData["$packagePath"] = "views.modules."+ moduleName +"."+ moduleName +"_services";
 			
 			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath);
 			generateModuleClasses(form);
@@ -105,12 +106,12 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		protected function generateModuleClasses(form:DominoFormVO):void
 		{
 			new ListingPageGenerator(project.projectFolder.file, form);
-			new AddEditPageGenerator(project).projectFolder.file, form);
+			new AddEditPageGenerator(project.projectFolder.file, form);
 		}
 		
 		protected function generateProjectClasses():void
 		{
-			//new MainContentPageGenerator(project.projectFolder.file, formObject);
+			new MainContentPageGenerator(project.projectFolder.file, formObjects);
 		}
 	}
 }
