@@ -3,12 +3,12 @@
 						     xmlns:j="library://ns.apache.org/royale/jewel"
 						     xmlns:js="library://ns.apache.org/royale/basic"
 						     xmlns:html="library://ns.apache.org/royale/html"
-						     xmlns:view="view.*" xmlns:listing="view.listing.*" xmlns:edit="view.edit.*">
+						     xmlns:src="*">
 	<fx:Script>
 		<![CDATA[
 			import classes.events.ScreenEvent;
 			
-			import view.edit.AddEditView;
+			%ImportStatements%
 			
 			private function onNavigationChangeRequest(event:ScreenEvent):void
 			{
@@ -22,13 +22,9 @@
 	</j:beads>
     <j:ApplicationMainContent id="mainContent" 
 							  hasTopAppBar="false" hasFooterBar="false" selectedContent="ItemsListing">
-       <j:ScrollableSectionContent name="ItemsListing" className="sectionCenter">
+		<j:ScrollableSectionContent name="ItemsListing" className="sectionCenter">
 			<listing:ItemsListing eventNavigateTo="onNavigationChangeRequest(event)"
 								  percentWidth="100"/>
-	   </j:ScrollableSectionContent>
-		<j:ScrollableSectionContent name="{AddEditView.NAME}" className="sectionCenter">
-			<edit:AddEditView eventNavigateTo="onNavigationChangeRequest(event)"
-							  percentWidth="50"/>
 		</j:ScrollableSectionContent>
-    </j:ApplicationMainContent>
+		%ScrollableSectionContents%
 </j:ApplicationResponsiveView>

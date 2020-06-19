@@ -30,22 +30,17 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.as3project.CreateProject;
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.AddEditPageGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
 	
-	import view.dominoFormBuilder.vo.DominoFormVO;
-
-	public class OnDiskRoyaleCRUDExporter extends CreateProject
+	public class OnDiskRoyaleCRUDProjectExporter extends CreateProject
 	{
 		private static const TEMPLATE_PROJECT_PATH:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/templates/royaleTabularCRUD/project");
 		
-		private var formObject:DominoFormVO;
 		private var targetDirectory:File;
 		
 		/**
 		 * CONSTRUCTOR
 		 */
-		public function OnDiskRoyaleCRUDExporter(event:NewProjectEvent)
+		public function OnDiskRoyaleCRUDProjectExporter(event:NewProjectEvent)
 		{
 			super(event);
 		}
@@ -56,9 +51,8 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		//
 		//--------------------------------------------------------------------------
 		
-		public function browseToExport(formObject:DominoFormVO):void
+		public function browseToExport():void
 		{
-			this.formObject = formObject;
 			model.fileCore.browseForDirectory("Select Directory to Export", onDirectorySelected, onDirectorySelectionCancelled);
 		}
 		
@@ -81,7 +75,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		
 		override protected function onCreateProjectSave(event:Event):void
 		{
-			var projectName:String = formObject.formName +"_RoyaleApplication";
+			var projectName:String = model.activeProject.name +"_RoyaleApplication";
 			
 			dispatcher.dispatchEvent(
 				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Saving project at: "+ targetDirectory.resolvePath(projectName).nativePath)
@@ -112,7 +106,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		
 		protected function onDirectorySelectionCancelled():void
 		{
-			formObject = null;
+			project = null;
 		}
 		
 		//--------------------------------------------------------------------------
@@ -123,10 +117,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		
 		private function generatePageContents():void
 		{
-			// temp
-			new ListingPageGenerator((project as AS3ProjectVO).projectFolder.file, formObject);
-			// temp
-			new AddEditPageGenerator((project as AS3ProjectVO).projectFolder.file, formObject);
+			new OnDiskRoyaleCRUDModuleExporter(
+				(project as AS3ProjectVO).sourceFolder.resolvePath("views/modules"),
+				model.activeProject
+			);
 			
 			// success message
 			dispatcher.dispatchEvent(
@@ -142,7 +136,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			);
 			
 			// open project in Moonshine
-			openProjectInMoonshine();
+			//openProjectInMoonshine();
 		}
 		
 		private function openProjectInMoonshine():void

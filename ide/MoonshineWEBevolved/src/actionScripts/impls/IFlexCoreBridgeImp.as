@@ -449,6 +449,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function generateTabularRoyaleProject():void
+		{
+			
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE LISTENERS
