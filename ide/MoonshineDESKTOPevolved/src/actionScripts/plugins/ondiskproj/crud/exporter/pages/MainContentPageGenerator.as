@@ -19,8 +19,8 @@
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleScrollableSectionContent;
 	
-	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	
 	public class MainContentPageGenerator extends RoyalePageGeneratorBase
@@ -42,10 +42,22 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
 			
-			for each (var field:DominoFormFieldVO in forms)
+			var importStatements:String = "";
+			var scrollableContents:String = "";
+			
+			for each (var field:DominoFormVO in forms)
 			{
+				importStatements += "import views.modules."+ field.formName +"."+ field.formName +"_views."+ field.formName +"_listing;\n";
+				importStatements += "import views.modules."+ field.formName +"."+ field.formName +"_views."+ field.formName +"_addEdit;\n";
 				
+				scrollableContents += RoyaleScrollableSectionContent.toCode(field.formName +"_listing") +"\n";
+				scrollableContents += RoyaleScrollableSectionContent.toCode(field.formName +"_addEdit") +"\n";
 			}
+			
+			fileContent = fileContent.replace(/%ImportStatements%/gi, importStatements);
+			fileContent = fileContent.replace(/%ScrollableSectionContents%/gi, scrollableContents);
+			
+			saveFile(fileContent);
 		}
 	}
 }

@@ -42,6 +42,8 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
 			
+			fileContent = fileContent.replace(/%ImportStatements%/g, form.viewName);
+			
 			fileContent = fileContent.replace(/%DataGridColumns%/ig, generateColumns());
 			fileContent = fileContent.replace(/%FormName%/g, form.viewName);
 			saveFile(fileContent);

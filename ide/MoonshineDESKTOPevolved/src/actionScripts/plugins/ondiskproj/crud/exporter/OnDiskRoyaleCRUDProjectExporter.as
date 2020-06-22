@@ -30,6 +30,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.as3project.CreateProject;
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	public class OnDiskRoyaleCRUDProjectExporter extends CreateProject
 	{
@@ -118,15 +119,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		private function generatePageContents():void
 		{
 			new OnDiskRoyaleCRUDModuleExporter(
-				(project as AS3ProjectVO).sourceFolder.resolvePath("views/modules"),
-				model.activeProject
+				(project as ProjectVO).sourceFolder.resolvePath("views/modules"),
+				project as ProjectVO
 			);
 			
 			// success message
 			dispatcher.dispatchEvent(
 				new ConsoleOutputEvent(
 					ConsoleOutputEvent.CONSOLE_PRINT, 
-					"Project saved at: "+ targetDirectory.resolvePath((project as AS3ProjectVO).name).nativePath, 
+					"Project saved at: "+ targetDirectory.resolvePath((project as ProjectVO).name).nativePath, 
 					false, false, 
 					ConsoleOutputEvent.TYPE_SUCCESS
 				)

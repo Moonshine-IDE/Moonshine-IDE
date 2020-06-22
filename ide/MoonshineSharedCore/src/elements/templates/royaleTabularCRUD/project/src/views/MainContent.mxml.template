@@ -23,8 +23,9 @@
     <j:ApplicationMainContent id="mainContent" 
 							  hasTopAppBar="false" hasFooterBar="false" selectedContent="ItemsListing">
 		<j:ScrollableSectionContent name="ItemsListing" className="sectionCenter">
-			<listing:ItemsListing eventNavigateTo="onNavigationChangeRequest(event)"
+			<src:Dashboard eventNavigateTo="onNavigationChangeRequest(event)"
 								  percentWidth="100"/>
 		</j:ScrollableSectionContent>
 		%ScrollableSectionContents%
+	</j:ApplicationMainContent>
 </j:ApplicationResponsiveView>

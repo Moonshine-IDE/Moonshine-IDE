@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <j:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
-		  xmlns:j="library://ns.apache.org/royale/jewel" xmlns:controls="view.controls.*"
+		  xmlns:j="library://ns.apache.org/royale/jewel"
 		  xmlns:js="library://ns.apache.org/royale/basic" 
 		  xmlns:html="library://ns.apache.org/royale/html"
-		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter">
+		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter"
+		  xmlns:src="*">
 	<fx:Metadata>
 		[Event(name="eventNavigateTo", type="classes.events.ScreenEvent")]
 	</fx:Metadata>
@@ -11,14 +12,11 @@
 		<![CDATA[
 			import classes.events.ScreenEvent;
 
+			import org.apache.royale.events.MouseEvent;
+
 			%ImportStatements%
 			
-			public static const NAME:String = "ItemsAddEdit";
-					
-			private function onBackRequest(event:MouseEvent):void
-			{
-				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, ItemsListing.NAME));
-			}
+			public static const NAME:String = "AddEditView";
 			
 		]]>
 	</fx:Script>
@@ -26,8 +24,10 @@
 		<js:ContainerDataBinding />
 	</j:beads>
 	
-	<html:H2 text="Modules for %FormName%"/>
+	<html:H2 text="Add/Edit to %FormName%"/>
 	
 	<js:HRule percentWidth="100"/>
-	<j:Spacer height="20"/>	
+	<j:Spacer height="20"/>
+	
+	%ModuleLinks%
 </j:VGroup>

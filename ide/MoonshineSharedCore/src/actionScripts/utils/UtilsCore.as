@@ -859,11 +859,11 @@ package actionScripts.utils
 		{
 			if (project)
 			{
-				if (isSourceFolderOnly && (project as AS3ProjectVO).sourceFolder) 
+				if (isSourceFolderOnly && project.sourceFolder) 
 				{
 					// lets search for the probable existing fileWrapper object
 					// instead of creating a new one - that could be expensive
-					var sourceWrapper:FileWrapper = findFileWrapperAgainstFileLocation(project.projectFolder, (project as AS3ProjectVO).sourceFolder);
+					var sourceWrapper:FileWrapper = findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
 					if (sourceWrapper) 
 					{
 						parseChildrens(sourceWrapper, collection, readableExtensions);
@@ -1371,7 +1371,7 @@ package actionScripts.utils
             if (!value) return;
 
             var extension:String = value.file.fileBridge.extension;
-            if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
+            if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension, readableExtensions))
             {
                 collection.addItem(new ResourceVO(value.file.fileBridge.name, value));
                 return;

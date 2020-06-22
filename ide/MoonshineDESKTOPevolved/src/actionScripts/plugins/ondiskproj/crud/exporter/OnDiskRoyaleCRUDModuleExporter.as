@@ -26,6 +26,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.AddEditPageGenerator;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.DashboardPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.MainContentPageGenerator;
 	import actionScripts.utils.UtilsCore;
@@ -87,6 +88,12 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 				copyTemplates(form);
 			}
 			
+			// ** IMPORTANT **
+			// update files-list once ALL file
+			// creation are complete
+			// run once to save process
+			project.projectFolder.updateChildren();
+			
 			// project specific generation
 			generateProjectClasses();
 		}
@@ -112,6 +119,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		protected function generateProjectClasses():void
 		{
 			new MainContentPageGenerator(project.projectFolder.file, formObjects);
+			
+			var dashboardGenerator:DashboardPageGenerator = new DashboardPageGenerator(project.projectFolder.file, formObjects);
+			dashboardGenerator.project = this.project;
+			dashboardGenerator.generate();
 		}
 	}
 }

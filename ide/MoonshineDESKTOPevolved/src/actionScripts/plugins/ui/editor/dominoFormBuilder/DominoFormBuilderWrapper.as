@@ -40,6 +40,8 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.FileUtils;
 	
+	import avmplus.getQualifiedClassName;
+	
 	import view.dominoFormBuilder.DominoTabularForm;
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	import view.suportClasses.events.PropertyEditorChangeEvent;

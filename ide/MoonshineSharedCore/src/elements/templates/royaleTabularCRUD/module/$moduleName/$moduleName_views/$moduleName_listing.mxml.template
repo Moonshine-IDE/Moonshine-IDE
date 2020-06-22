@@ -13,7 +13,7 @@
 
 			import org.apache.royale.events.MouseEvent;
 
-			import view.edit.AddEditView;
+			%ImportStatements%
 			
 			public static const NAME:String = "ItemsListing";
 
