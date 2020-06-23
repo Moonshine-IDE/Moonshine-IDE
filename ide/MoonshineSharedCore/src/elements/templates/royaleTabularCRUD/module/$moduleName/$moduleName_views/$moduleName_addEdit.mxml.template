@@ -13,11 +13,11 @@
 
 			%ImportStatements%
 			
-			public static const NAME:String = "ItemsAddEdit";
+			public static const NAME:String = "%ViewComponentName%";
 					
 			private function onBackRequest(event:MouseEvent):void
 			{
-				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, ItemsListing.NAME));
+				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, %ListingComponentName%.NAME));
 			}
 			
 		]]>
@@ -29,5 +29,29 @@
 	<html:H2 text="Modules for %FormName%"/>
 	
 	<js:HRule percentWidth="100"/>
-	<j:Spacer height="20"/>	
+	<j:Spacer height="20"/>
+	
+	<j:Form>
+		<j:beads>
+			<j:FormValidator id="formValidator" trigger="{btnSubmit}" triggerEvent="click" 
+							 requiredFieldError="At least one field has a validation error. Please correct the problem and submit again."/>
+		</j:beads>
+		%FormItems%
+	</j:Form>
+	
+	<j:Spacer height="20"/>
+	
+	<j:HGroup itemsHorizontalAlign="itemsCenter" gap="3" percentWidth="100">
+		<j:IconButton id="btnSubmit" text="Submit">
+			<j:icon>
+				<js:MaterialIcon text="{MaterialIconType.UPDATE}" />
+			</j:icon>
+		</j:IconButton>
+		<j:IconButton text="Cancel"
+			click="onBackRequest(event)">
+			<j:icon>
+				<js:MaterialIcon text="{MaterialIconType.ARROW_BACK}" />
+			</j:icon>
+		</j:IconButton>
+	</j:HGroup>
 </j:VGroup>

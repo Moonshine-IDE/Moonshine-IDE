@@ -3,8 +3,7 @@
 		  xmlns:j="library://ns.apache.org/royale/jewel"
 		  xmlns:js="library://ns.apache.org/royale/basic" 
 		  xmlns:html="library://ns.apache.org/royale/html"
-		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter"
-		  xmlns:src="*">
+		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" gap="10">
 	<fx:Metadata>
 		[Event(name="eventNavigateTo", type="classes.events.ScreenEvent")]
 	</fx:Metadata>

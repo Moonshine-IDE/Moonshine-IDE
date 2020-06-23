@@ -18,20 +18,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleScrollableSectionContent;
+	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	
 	public class MainContentPageGenerator extends RoyalePageGeneratorBase
 	{
-		override protected function get pageRelativePathString():String		{	return "src/views/MainContent.mxml";	}
+		override protected function get pageRelativePathString():String		{	return "views/MainContent.mxml";	}
 		
 		private var forms:Vector.<DominoFormVO>;
 		
-		public function MainContentPageGenerator(projectPath:FileLocation, forms:Vector.<DominoFormVO>)
+		public function MainContentPageGenerator(project:ProjectVO, forms:Vector.<DominoFormVO>, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
 		{
-			super(projectPath, null);
+			super(project, null, classReferenceSettings);
 			
 			this.forms = forms;
 			generate();
@@ -44,16 +45,21 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			
 			var importStatements:String = "";
 			var scrollableContents:String = "";
+			var namespaces:String = "";
 			
-			for each (var field:DominoFormVO in forms)
+			for each (var form:DominoFormVO in forms)
 			{
-				importStatements += "import views.modules."+ field.formName +"."+ field.formName +"_views."+ field.formName +"_listing;\n";
-				importStatements += "import views.modules."+ field.formName +"."+ field.formName +"_views."+ field.formName +"_addEdit;\n";
+				importStatements += "import "+ classReferenceSettings[(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
+				importStatements += "import "+ classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
 				
-				scrollableContents += RoyaleScrollableSectionContent.toCode(field.formName +"_listing") +"\n";
-				scrollableContents += RoyaleScrollableSectionContent.toCode(field.formName +"_addEdit") +"\n";
+				namespaces += 'xmlns:'+ form.formName +'_addEdit="'+ classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] +'" \n';
+				namespaces += 'xmlns:'+ form.formName +'_listing="'+ classReferenceSettings[(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] +'" \n';
+				
+				scrollableContents += RoyaleScrollableSectionContent.toCode(form.formName +"_listing") +"\n";
+				scrollableContents += RoyaleScrollableSectionContent.toCode(form.formName +"_addEdit") +"\n";
 			}
 			
+			fileContent = fileContent.replace(/%Namespaces%/gi, namespaces);
 			fileContent = fileContent.replace(/%ImportStatements%/gi, importStatements);
 			fileContent = fileContent.replace(/%ScrollableSectionContents%/gi, scrollableContents);
 			

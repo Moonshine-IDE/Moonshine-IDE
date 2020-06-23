@@ -29,6 +29,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.DashboardPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.MainContentPageGenerator;
+	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
@@ -39,6 +40,8 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	public class OnDiskRoyaleCRUDModuleExporter
 	{
 		private static const TEMPLATE_MODULE_PATH:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/templates/royaleTabularCRUD/module");
+		
+		[Bindable] protected var classReferenceSettings:RoyaleCRUDClassReferenceSettings = new RoyaleCRUDClassReferenceSettings();
 		
 		protected var targetPath:FileLocation;
 		protected var project:ProjectVO;
@@ -94,6 +97,8 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			// run once to save process
 			project.projectFolder.updateChildren();
 			
+			// class-files gneration
+			generateModuleClasses();
 			// project specific generation
 			generateProjectClasses();
 		}
@@ -107,22 +112,21 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			th.templatingData["$packagePath"] = "views.modules."+ moduleName +"."+ moduleName +"_services";
 			
 			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath);
-			generateModuleClasses(form);
 		}
 		
-		protected function generateModuleClasses(form:DominoFormVO):void
+		protected function generateModuleClasses():void
 		{
-			new ListingPageGenerator(project.projectFolder.file, form);
-			new AddEditPageGenerator(project.projectFolder.file, form);
+			for each (var form:DominoFormVO in formObjects)
+			{
+				new ListingPageGenerator(this.project, form, classReferenceSettings);
+				new AddEditPageGenerator(this.project, form, classReferenceSettings);
+			}
 		}
 		
 		protected function generateProjectClasses():void
 		{
-			new MainContentPageGenerator(project.projectFolder.file, formObjects);
-			
-			var dashboardGenerator:DashboardPageGenerator = new DashboardPageGenerator(project.projectFolder.file, formObjects);
-			dashboardGenerator.project = this.project;
-			dashboardGenerator.generate();
+			new MainContentPageGenerator(this.project, formObjects, classReferenceSettings);
+			new DashboardPageGenerator(this.project, formObjects, classReferenceSettings);
 		}
 	}
 }

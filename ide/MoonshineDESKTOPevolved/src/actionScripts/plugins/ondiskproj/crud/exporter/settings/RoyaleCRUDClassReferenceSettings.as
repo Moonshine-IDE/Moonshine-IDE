@@ -16,22 +16,15 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.ondiskproj.crud.exporter.components
+package actionScripts.plugins.ondiskproj.crud.exporter.settings
 {
-	public class RoyaleScrollableSectionContent extends RoyaleElemenetBase
+	public dynamic class RoyaleCRUDClassReferenceSettings
 	{
-		public static function toCode(componentName:String):String
+		public static const IMPORT:String = "_import";
+		public static const NAMESPACE:String = "_xmlns";
+		
+		public function RoyaleCRUDClassReferenceSettings()
 		{
-			var scrollableSectionContent:String = readTemplate("ScrollableSectionContent.template");
-			var viewComponent:String = readTemplate("ViewComponent.template");
-			
-			viewComponent = viewComponent.replace(/%ViewComponentName%/ig, componentName);
-			viewComponent = viewComponent.replace(/%Namespace%/ig, componentName);
-			
-			scrollableSectionContent = scrollableSectionContent.replace(/%ViewComponentName%/ig, componentName);
-			scrollableSectionContent = scrollableSectionContent.replace(/%ViewComponent%/ig, viewComponent);
-			
-			return scrollableSectionContent;
 		}
 	}
 }

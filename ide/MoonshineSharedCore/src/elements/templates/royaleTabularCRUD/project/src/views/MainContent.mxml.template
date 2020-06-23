@@ -3,7 +3,8 @@
 						     xmlns:j="library://ns.apache.org/royale/jewel"
 						     xmlns:js="library://ns.apache.org/royale/basic"
 						     xmlns:html="library://ns.apache.org/royale/html"
-						     xmlns:src="*">
+						     xmlns:general="views.general.*" 
+						     %Namespaces%>
 	<fx:Script>
 		<![CDATA[
 			import classes.events.ScreenEvent;
@@ -21,9 +22,9 @@
 		<js:ContainerDataBinding/>
 	</j:beads>
     <j:ApplicationMainContent id="mainContent" 
-							  hasTopAppBar="false" hasFooterBar="false" selectedContent="ItemsListing">
-		<j:ScrollableSectionContent name="ItemsListing" className="sectionCenter">
-			<src:Dashboard eventNavigateTo="onNavigationChangeRequest(event)"
+							  hasTopAppBar="false" hasFooterBar="false" selectedContent="Dashboard">
+		<j:ScrollableSectionContent name="Dashboard" className="sectionCenter">
+			<general:Dashboard eventNavigateTo="onNavigationChangeRequest(event)"
 								  percentWidth="100"/>
 		</j:ScrollableSectionContent>
 		%ScrollableSectionContents%

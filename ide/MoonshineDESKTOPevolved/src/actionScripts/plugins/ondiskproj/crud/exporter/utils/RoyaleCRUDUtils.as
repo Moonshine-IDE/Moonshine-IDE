@@ -28,10 +28,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 	{
 		private static var fileName:String;
 		
-		public static function getImportReferenceFor(project:ProjectVO, fileNameWithExtension:String, extension:Array=null):String
+		public static function getImportReferenceFor(fileNameWithExtension:String, project:ProjectVO, extensions:Array=null):String
 		{
 			var files:ArrayCollection = new ArrayCollection();
-			UtilsCore.parseFilesList(files, project, extension, true);
+			UtilsCore.parseFilesList(files, project, extensions, true);
 			
 			fileName = fileNameWithExtension;
 			files.filterFunction = resourceFilterFunction;

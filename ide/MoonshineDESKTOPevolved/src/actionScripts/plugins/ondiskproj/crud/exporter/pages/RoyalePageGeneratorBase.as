@@ -21,25 +21,29 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	import flash.filesystem.File;
 	
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.utils.FileUtils;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.dominoFormBuilder.vo.DominoFormVO;
 
 	public class RoyalePageGeneratorBase
 	{
-		protected var projectPath:FileLocation;
 		protected var pagePath:FileLocation;
 		protected var form:DominoFormVO;
+		protected var project:ProjectVO;
+		protected var classReferenceSettings:RoyaleCRUDClassReferenceSettings;
 		
 		protected function get pageRelativePathString():String		{	return null;	}
 		
-		public function RoyalePageGeneratorBase(projectPath:FileLocation, form:DominoFormVO)
+		public function RoyalePageGeneratorBase(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
 		{
-			this.projectPath = projectPath;
+			this.project = project;
 			this.form = form;
+			this.classReferenceSettings = classReferenceSettings;
 			
 			if (pageRelativePathString) 
-				pagePath = projectPath.fileBridge.resolvePath(pageRelativePathString);
+				pagePath = project.sourceFolder.fileBridge.resolvePath(pageRelativePathString);
 		}
 		
 		public function generate():void

@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleDataGridColumn;
+	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
+	import actionScripts.plugins.ondiskproj.crud.exporter.utils.RoyaleCRUDUtils;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
@@ -29,11 +31,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		private var _pageRelativePathString:String;
 		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
 		
-		public function ListingPageGenerator(projectPath:FileLocation, form:DominoFormVO)
+		public function ListingPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
 		{
-			_pageRelativePathString = "src/views/modules/"+ form.formName +"/"+ form.formName +"_views/"+ form.formName +"_listing.mxml";
+			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"_views/"+ form.formName +"_listing.mxml";
 			
-			super(projectPath, form);
+			super(project, form, classReferenceSettings);
 			generate();
 		}
 		
@@ -42,7 +44,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
 			
-			fileContent = fileContent.replace(/%ImportStatements%/g, form.viewName);
+			generateClassReferences();
+			
+			fileContent = fileContent.replace(/%ImportStatements%/ig, "import "+ classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n");
+			fileContent = fileContent.replace(/%AddEditComponentName%/ig, form.formName +"_addEdit");
+			fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"_listing");
 			
 			fileContent = fileContent.replace(/%DataGridColumns%/ig, generateColumns());
 			fileContent = fileContent.replace(/%FormName%/g, form.viewName);
@@ -61,6 +67,19 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			}
 			
 			return tmpContent;
+		}
+		
+		private function generateClassReferences():void
+		{
+			if (!classReferenceSettings.hasOwnProperty(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT))
+			{
+				var importPath:String = RoyaleCRUDUtils.getImportReferenceFor(form.formName +"_addEdit.mxml", project, ["mxml"]);
+				classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
+				
+				var splitPath:Array = importPath.split(".");
+				splitPath[splitPath.length - 1] = "*";
+				classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
+			}
 		}
 	}
 }

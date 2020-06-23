@@ -15,11 +15,16 @@
 
 			%ImportStatements%
 			
-			public static const NAME:String = "ItemsListing";
+			public static const NAME:String = "%ViewComponentName%";
 
 			private function onAddNewRequest(event:MouseEvent):void
 			{
-				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, AddEditView.NAME));
+				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, %AddEditComponentName%.NAME));
+			}
+			
+			private function onBackRequest(event:MouseEvent):void
+			{
+				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, "Dashboard"));
 			}
 			
 		]]>
@@ -47,6 +52,12 @@
 						<js:MaterialIcon text="{MaterialIconType.REFRESH}" />
 					</j:icon>
 				</j:IconButton>
+				<j:IconButton text="Back"
+								click="onBackRequest(event)">
+					<j:icon>
+						<js:MaterialIcon text="{MaterialIconType.REFRESH}" />
+					</j:icon>
+				</j:IconButton>
 			</j:HGroup>
 		</j:GridCell>
 	</j:Grid>
@@ -59,7 +70,7 @@
 				rowHeight="50">
 		<j:columns>
 			%DataGridColumns%
-			<j:DataGridColumn label="Delete" itemRenderer="view.renderers.DeleteGridItemRenderer" 
+			<j:DataGridColumn label="Delete" itemRenderer="views.renderers.DeleteGridItemRenderer" 
 							  columnWidth="100"/>
 		</j:columns>
 	</j:DataGrid>

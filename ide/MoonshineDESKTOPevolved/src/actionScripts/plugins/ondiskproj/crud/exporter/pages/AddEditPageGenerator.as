@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleFormItem;
+	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
+	import actionScripts.plugins.ondiskproj.crud.exporter.utils.RoyaleCRUDUtils;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
@@ -29,11 +31,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		private var _pageRelativePathString:String;
 		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
 		
-		public function AddEditPageGenerator(projectPath:FileLocation, form:DominoFormVO)
+		public function AddEditPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
 		{
-			_pageRelativePathString = "src/views/modules/"+ form.formName +"/"+ form.formName +"_views/"+ form.formName +"_addEdit.mxml";
+			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"_views/"+ form.formName +"_addEdit.mxml";
 			
-			super(projectPath, form);
+			super(project, form, classReferenceSettings);
 			generate();
 		}
 		
@@ -41,6 +43,12 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		{
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
+			
+			generateClassReferences();
+			
+			fileContent = fileContent.replace(/%ImportStatements%/ig, "import "+ classReferenceSettings[(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n");
+			fileContent = fileContent.replace(/%ListingComponentName%/ig, form.formName +"_listing");
+			fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"_addEdit");
 			
 			fileContent = fileContent.replace(/%FormItems%/ig, generateFormItems());
 			fileContent = fileContent.replace(/%FormName%/ig, form.viewName);
@@ -56,6 +64,19 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			}
 			
 			return tmpContent;
+		}
+		
+		private function generateClassReferences():void
+		{
+			if (!classReferenceSettings.hasOwnProperty(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.IMPORT))
+			{
+				var importPath:String = RoyaleCRUDUtils.getImportReferenceFor(form.formName +"_listing.mxml", project, ["mxml"]);
+				classReferenceSettings[(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
+				
+				var splitPath:Array = importPath.split(".");
+				splitPath[splitPath.length - 1] = "*";
+				classReferenceSettings[(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
+			}
 		}
 	}
 }

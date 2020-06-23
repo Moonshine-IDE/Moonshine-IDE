@@ -18,26 +18,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleModuleLinkButton;
-	import actionScripts.plugins.ondiskproj.crud.exporter.utils.RoyaleCRUDUtils;
+	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	
 	public class DashboardPageGenerator extends RoyalePageGeneratorBase
 	{
-		override protected function get pageRelativePathString():String		{	return "src/views/general/Dashboard.mxml";	}
-		
-		public var project:ProjectVO;
+		override protected function get pageRelativePathString():String		{	return "views/general/Dashboard.mxml";	}
 		
 		private var forms:Vector.<DominoFormVO>;
 		
-		public function DashboardPageGenerator(projectPath:FileLocation, forms:Vector.<DominoFormVO>)
+		public function DashboardPageGenerator(project:ProjectVO, forms:Vector.<DominoFormVO>, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
 		{
-			super(projectPath, form);
+			super(project, form, classReferenceSettings);
 			
 			this.forms = forms;
+			generate();
 		}
 		
 		override public function generate():void
@@ -48,12 +46,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var importStatements:String = "";
 			var moduleLinks:String = "";
 			
-			for each (var field:DominoFormVO in forms)
+			for each (var form:DominoFormVO in forms)
 			{
-				importStatements += "import "+ RoyaleCRUDUtils.getImportReferenceFor(project, field.formName +"_listing.mxml", ["mxml"]) +"\n";
-				importStatements += "import "+ RoyaleCRUDUtils.getImportReferenceFor(project, field.formName +"_addEdit.mxml", ["mxml"]) +"\n";
+				importStatements += "import "+ classReferenceSettings[(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
 				
-				moduleLinks += RoyaleModuleLinkButton.toCode(field.formName +"_listing", field.viewName);
+				moduleLinks += RoyaleModuleLinkButton.toCode(form.formName +"_listing", form.viewName) +"\n";
 			}
 			
 			fileContent = fileContent.replace(/%ImportStatements%/gi, importStatements);
