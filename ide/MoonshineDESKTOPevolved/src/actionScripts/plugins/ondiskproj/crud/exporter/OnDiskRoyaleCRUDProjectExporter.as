@@ -137,7 +137,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			);
 			
 			// open project in Moonshine
-			//openProjectInMoonshine();
+			openProjectInMoonshine();
 		}
 		
 		private function openProjectInMoonshine():void
