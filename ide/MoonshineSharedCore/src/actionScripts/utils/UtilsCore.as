@@ -1264,7 +1264,14 @@ package actionScripts.utils
             }
             else
             {
-                return UtilsCore.convertString(nodeLocation.resolvePath("bin/node").fileBridge.nativePath);
+				if (nodeLocation.resolvePath("node").fileBridge.exists)
+				{
+					return UtilsCore.convertString(nodeLocation.resolvePath("node").fileBridge.nativePath);
+				}
+				else if (nodeLocation.resolvePath("bin/node").fileBridge.exists)
+				{
+	                return UtilsCore.convertString(nodeLocation.resolvePath("bin/node").fileBridge.nativePath);
+				}
             }
 			
 			return null;
