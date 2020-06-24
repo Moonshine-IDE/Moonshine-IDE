@@ -3,6 +3,7 @@
 		  xmlns:j="library://ns.apache.org/royale/jewel" xmlns:controls="view.controls.*"
 		  xmlns:js="library://ns.apache.org/royale/basic" 
 		  xmlns:html="library://ns.apache.org/royale/html"
+		  xmlns:joditeditor="classes.joditeditor.*"
 		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter">
 	<fx:Metadata>
 		[Event(name="eventNavigateTo", type="classes.events.ScreenEvent")]
