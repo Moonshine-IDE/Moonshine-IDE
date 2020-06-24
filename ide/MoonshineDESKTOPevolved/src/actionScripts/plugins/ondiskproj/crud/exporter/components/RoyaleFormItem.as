@@ -29,20 +29,27 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			var formItem:String = readTemplate("FormItem.template");
 			var formContent:String;
 			
-			switch (value.type)
+			if (value.isMultiValue)
 			{
-				case FormBuilderFieldType.TEXT:
-					formContent = toTextInputCode(value);
-					break;
-				case FormBuilderFieldType.DATETIME:
-					formContent = toDateFieldCode(value);
-					break;
-				case FormBuilderFieldType.RICH_TEXT:
-					formContent = toRichTextFieldCode(value);
-					break;
-				case FormBuilderFieldType.NUMBER:
-					formContent = toNumberTextInputCode(value);
-					break;
+				formContent = toMultiValueListCode(value);
+			}
+			else
+			{
+				switch (value.type)
+				{
+					case FormBuilderFieldType.TEXT:
+						formContent = toTextInputCode(value);
+						break;
+					case FormBuilderFieldType.DATETIME:
+						formContent = toDateFieldCode(value);
+						break;
+					case FormBuilderFieldType.RICH_TEXT:
+						formContent = toRichTextFieldCode(value);
+						break;
+					case FormBuilderFieldType.NUMBER:
+						formContent = toNumberTextInputCode(value);
+						break;
+				}
 			}
 			
 			formItem = formItem.replace(/%label%/ig, value.label);
@@ -54,20 +61,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function toTextInputCode(field:DominoFormFieldVO):String
 		{
-			if (field.isMultiValue)
-			{
-				return toMultiValueListCode(field);
-			}
-			
-			var beads:String = readTemplate("Beads.template");
-			var beadElements:String = "";
-			
-			if (field.editable != FormBuilderEditableType.EDITABLE)
-			{
-				beadElements += "\n"+ readTemplate("BeadDisabled.template");
-			}
-			
-			beads = beads.replace(/%BeadsContent%/ig, beadElements);
+			var beads:String = updateBeads(field);
 			
 			var textInput:String = readTemplate("TextInput.template");;
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
@@ -78,17 +72,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function toNumberTextInputCode(field:DominoFormFieldVO):String
 		{
-			var beads:String = readTemplate("Beads.template");
-			var beadRestrict:String = readTemplate("Bead_Restrict.template");
-			var beadElements:String = "";
-			
-			beadElements = beadRestrict.replace(/%pattern%/gi, "[^0-9]");
-			if (field.editable != FormBuilderEditableType.EDITABLE)
-			{
-				beadElements += "\n"+ readTemplate("BeadDisabled.template");
-			}
-			
-			beads = beads.replace(/%BeadsContent%/ig, beadElements);
+			var beads:String = updateBeads(field);
 			
 			var textInput:String = readTemplate("TextInput.template");;
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
@@ -98,7 +82,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		}
 		
 		private static function toMultiValueListCode(field:DominoFormFieldVO):String
-		{
+		{			
 			var multiValueField:String = readTemplate("MultiValueList.template");;
 			multiValueField = multiValueField.replace(/%localId%/ig, field.name +"_id");
 			
@@ -107,8 +91,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function toDateFieldCode(field:DominoFormFieldVO):String
 		{
+			var beads:String = updateBeads(field);
+			
 			var dateField:String = readTemplate("DateField.template");;
 			dateField = dateField.replace(/%localId%/ig, field.name +"_id");
+			dateField = dateField.replace(/%Beads%/ig, beads);
 			
 			return dateField;
 		}
@@ -119,6 +106,34 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			richText = richText.replace(/%localId%/ig, field.name +"_id");
 			
 			return richText;
+		}
+		
+		private static function updateBeads(field:DominoFormFieldVO):String
+		{
+			var beads:String = readTemplate("Beads.template");
+			var beadElements:String = "";
+			
+			if (field.editable != FormBuilderEditableType.EDITABLE)
+			{
+				beadElements = readTemplate("BeadDisabled.template") +"\n";
+			}
+			
+			switch (field.type)
+			{
+				case FormBuilderFieldType.TEXT:
+					break;
+				case FormBuilderFieldType.DATETIME:
+					break;
+				case FormBuilderFieldType.RICH_TEXT:
+					break;
+				case FormBuilderFieldType.NUMBER:
+					var beadRestrict:String = readTemplate("Bead_Restrict.template");
+					beadElements += beadRestrict.replace(/%pattern%/gi, "[^0-9]") +"\n";
+					break;
+			}
+			
+			beads = beads.replace(/%BeadsContent%/ig, beadElements);
+			return beads;
 		}
 	}
 }
