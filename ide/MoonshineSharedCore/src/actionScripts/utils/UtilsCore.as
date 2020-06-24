@@ -1124,10 +1124,13 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.NODEJS);
 			if (component && component.pathValidation)
 			{
-				return model.fileCore.isPathExists(model.nodePath + model.fileCore.separator + component.pathValidation);
+				if (model.fileCore.isPathExists(model.nodePath + model.fileCore.separator + component.pathValidation)) 
+					return true;
+				else if (model.fileCore.isPathExists(model.nodePath + model.fileCore.separator + "node"))
+					return true;
 			}
 			
-			return true;
+			return false;
 		}
 		
 		public static function isHaxeAvailable():Boolean
