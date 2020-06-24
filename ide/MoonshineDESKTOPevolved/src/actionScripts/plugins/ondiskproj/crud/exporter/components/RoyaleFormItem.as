@@ -38,6 +38,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 					formContent = toDateFieldCode(value);
 					break;
 				case FormBuilderFieldType.RICH_TEXT:
+					formContent = toRichTextFieldCode(value);
 					break;
 				case FormBuilderFieldType.NUMBER:
 					formContent = toNumberTextInputCode(value);
@@ -53,12 +54,17 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function toTextInputCode(field:DominoFormFieldVO):String
 		{
+			if (field.isMultiValue)
+			{
+				return toMultiValueListCode(field);
+			}
+			
 			var beads:String = readTemplate("Beads.template");
 			var beadElements:String = "";
 			
 			if (field.editable != FormBuilderEditableType.EDITABLE)
 			{
-				beadElements += "\n"+ readTemplate("Bead_Disabled.template");
+				beadElements += "\n"+ readTemplate("BeadDisabled.template");
 			}
 			
 			beads = beads.replace(/%BeadsContent%/ig, beadElements);
@@ -79,7 +85,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			beadElements = beadRestrict.replace(/%pattern%/gi, "[^0-9]");
 			if (field.editable != FormBuilderEditableType.EDITABLE)
 			{
-				beadElements += "\n"+ readTemplate("Bead_Disabled.template");
+				beadElements += "\n"+ readTemplate("BeadDisabled.template");
 			}
 			
 			beads = beads.replace(/%BeadsContent%/ig, beadElements);
@@ -91,12 +97,28 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			return textInput;
 		}
 		
+		private static function toMultiValueListCode(field:DominoFormFieldVO):String
+		{
+			var multiValueField:String = readTemplate("MultiValueList.template");;
+			multiValueField = multiValueField.replace(/%localId%/ig, field.name +"_id");
+			
+			return multiValueField;
+		}
+		
 		private static function toDateFieldCode(field:DominoFormFieldVO):String
 		{
 			var dateField:String = readTemplate("DateField.template");;
 			dateField = dateField.replace(/%localId%/ig, field.name +"_id");
 			
 			return dateField;
+		}
+		
+		private static function toRichTextFieldCode(field:DominoFormFieldVO):String
+		{
+			var richText:String = readTemplate("JoditEditor.template");;
+			richText = richText.replace(/%localId%/ig, field.name +"_id");
+			
+			return richText;
 		}
 	}
 }

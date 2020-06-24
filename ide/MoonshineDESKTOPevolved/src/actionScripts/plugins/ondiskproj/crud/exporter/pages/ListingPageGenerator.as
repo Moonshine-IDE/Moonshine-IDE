@@ -33,7 +33,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		
 		public function ListingPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
 		{
-			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"_views/"+ form.formName +"_listing.mxml";
+			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +"Listing.mxml";
 			
 			super(project, form, classReferenceSettings);
 			generate();
@@ -46,9 +46,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			
 			generateClassReferences();
 			
-			fileContent = fileContent.replace(/%ImportStatements%/ig, "import "+ classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n");
-			fileContent = fileContent.replace(/%AddEditComponentName%/ig, form.formName +"_addEdit");
-			fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"_listing");
+			fileContent = fileContent.replace(/%ImportStatements%/ig, "import "+ classReferenceSettings[(form.formName +"AddEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n");
+			fileContent = fileContent.replace(/%AddEditComponentName%/ig, form.formName +"AddEdit");
+			fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"Listing");
 			
 			fileContent = fileContent.replace(/%DataGridColumns%/ig, generateColumns());
 			fileContent = fileContent.replace(/%FormName%/g, form.viewName);
@@ -71,14 +71,14 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		
 		private function generateClassReferences():void
 		{
-			if (!classReferenceSettings.hasOwnProperty(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT))
+			if (!classReferenceSettings.hasOwnProperty(form.formName +"AddEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT))
 			{
-				var importPath:String = RoyaleCRUDUtils.getImportReferenceFor(form.formName +"_addEdit.mxml", project, ["mxml"]);
-				classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
+				var importPath:String = RoyaleCRUDUtils.getImportReferenceFor(form.formName +"AddEdit.mxml", project, ["mxml"]);
+				classReferenceSettings[(form.formName +"AddEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
 				
 				var splitPath:Array = importPath.split(".");
 				splitPath[splitPath.length - 1] = "*";
-				classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
+				classReferenceSettings[(form.formName +"AddEdit"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
 			}
 		}
 	}

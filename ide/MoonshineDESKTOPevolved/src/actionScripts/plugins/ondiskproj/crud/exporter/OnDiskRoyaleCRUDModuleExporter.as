@@ -109,7 +109,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.templatingData["$moduleName"] = moduleName;
-			th.templatingData["$packagePath"] = "views.modules."+ moduleName +"."+ moduleName +"_services";
+			th.templatingData["$packagePath"] = "views.modules."+ moduleName +"."+ moduleName +"Services";
 			
 			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath);
 		}

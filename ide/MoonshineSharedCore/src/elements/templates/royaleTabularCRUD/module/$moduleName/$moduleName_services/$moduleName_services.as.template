@@ -1,9 +1,0 @@
-package $packagePath
-{
-	public class $moduleName_services
-	{
-		public function $moduleName_services()
-		{
-		}
-	}
-}

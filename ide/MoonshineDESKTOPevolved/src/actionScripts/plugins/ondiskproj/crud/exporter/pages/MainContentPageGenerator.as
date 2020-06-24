@@ -49,14 +49,14 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			
 			for each (var form:DominoFormVO in forms)
 			{
-				importStatements += "import "+ classReferenceSettings[(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
-				importStatements += "import "+ classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
+				importStatements += "import "+ classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
+				importStatements += "import "+ classReferenceSettings[(form.formName +"AddEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
 				
-				namespaces += 'xmlns:'+ form.formName +'_addEdit="'+ classReferenceSettings[(form.formName +"_addEdit"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] +'" \n';
-				namespaces += 'xmlns:'+ form.formName +'_listing="'+ classReferenceSettings[(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] +'" \n';
+				namespaces += 'xmlns:'+ form.formName +'AddEdit="'+ classReferenceSettings[(form.formName +"AddEdit"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] +'" \n';
+				namespaces += 'xmlns:'+ form.formName +'Listing="'+ classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] +'" \n';
 				
-				scrollableContents += RoyaleScrollableSectionContent.toCode(form.formName +"_listing") +"\n";
-				scrollableContents += RoyaleScrollableSectionContent.toCode(form.formName +"_addEdit") +"\n";
+				scrollableContents += RoyaleScrollableSectionContent.toCode(form.formName +"Listing") +"\n";
+				scrollableContents += RoyaleScrollableSectionContent.toCode(form.formName +"AddEdit") +"\n";
 			}
 			
 			fileContent = fileContent.replace(/%Namespaces%/gi, namespaces);

@@ -48,9 +48,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			
 			for each (var form:DominoFormVO in forms)
 			{
-				importStatements += "import "+ classReferenceSettings[(form.formName +"_listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
+				importStatements += "import "+ classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
 				
-				moduleLinks += RoyaleModuleLinkButton.toCode(form.formName +"_listing", form.viewName) +"\n";
+				moduleLinks += RoyaleModuleLinkButton.toCode(form.formName +"Listing", form.viewName) +"\n";
 			}
 			
 			fileContent = fileContent.replace(/%ImportStatements%/gi, importStatements);

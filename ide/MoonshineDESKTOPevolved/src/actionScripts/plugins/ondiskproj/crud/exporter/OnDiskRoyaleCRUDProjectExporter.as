@@ -76,7 +76,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		
 		override protected function onCreateProjectSave(event:Event):void
 		{
-			var projectName:String = model.activeProject.name +"_RoyaleApplication";
+			var projectName:String = model.activeProject.name +"RoyaleApplication";
 			
 			dispatcher.dispatchEvent(
 				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Saving project at: "+ targetDirectory.resolvePath(projectName).nativePath)

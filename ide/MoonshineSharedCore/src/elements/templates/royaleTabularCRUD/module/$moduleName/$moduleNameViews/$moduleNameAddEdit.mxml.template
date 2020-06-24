@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <j:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
-		  xmlns:j="library://ns.apache.org/royale/jewel" xmlns:controls="view.controls.*"
+		  xmlns:j="library://ns.apache.org/royale/jewel"
 		  xmlns:js="library://ns.apache.org/royale/basic" 
 		  xmlns:html="library://ns.apache.org/royale/html"
-		  xmlns:joditeditor="classes.joditeditor.*"
+		  xmlns:joditeditor="classes.joditeditor.*" xmlns:components="views.components.*"
 		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter">
 	<fx:Metadata>
 		[Event(name="eventNavigateTo", type="classes.events.ScreenEvent")]
