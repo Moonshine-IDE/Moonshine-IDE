@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <j:Card xmlns:fx="http://ns.adobe.com/mxml/2009"
-		  xmlns:j="library://ns.apache.org/royale/jewel" xmlns:controls="view.controls.*"
-		  xmlns:js="library://ns.apache.org/royale/basic" 
-		  xmlns:html="library://ns.apache.org/royale/html"
-		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" gap="2"
-		  initComplete="onCreationCompletes(event)">
+		xmlns:j="library://ns.apache.org/royale/jewel" xmlns:controls="view.controls.*"
+		xmlns:js="library://ns.apache.org/royale/basic" 
+		xmlns:html="library://ns.apache.org/royale/html"
+		itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" gap="2"
+		initComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
+
+			import org.apache.royale.core.ClassFactory;
 			import org.apache.royale.collections.ArrayList;
 			import org.apache.royale.events.Event;
 			import org.apache.royale.events.MouseEvent;
+			import org.apache.royale.jewel.beads.controls.Disabled;
+			import org.apache.royale.jewel.beads.controls.textinput.Restrict;
+			import views.renderers.DateListItemRenderer;
 			
-			private var _items:ArrayList = new ArrayList([]); 
+			public var inputType:String;
+			
+			private var _items:ArrayList = new ArrayList(); 
 			[Bindable]
 			public function get items():ArrayList
 			{
@@ -20,6 +27,17 @@
 			public function set items(value:ArrayList):void
 			{
 				_items = value;
+			}
+			
+			private var _restrictPattern:String;
+			[Bindable]
+			public function get restrictPattern():String
+			{
+				return _restrictPattern;
+			}
+			public function set restrictPattern(value:String):void
+			{
+				_restrictPattern = value;
 			}
 			
 			private var editingItem:Object;
@@ -37,7 +55,7 @@
 					this.addItemGroup.visible = false;
 				}
 			}
-
+			
 			private function onAddButtonClicked():void
 			{
 				editingItem = null;
@@ -52,20 +70,93 @@
 			private function onCreationCompletes(event:Event):void
 			{
 				this.addItemForm.addEventListener("valid", onAddItemFormValid);
+				toggleInputsByType();
+			}
+			
+			private function toggleInputsByType():void
+			{
+				switch (inputType)
+				{
+					case "Datetime":
+						this.fiDateField.visible = true;
+						this.dateField.selectedDate = new Date();
+						this.multivalueList.itemRenderer = new org.apache.royale.core.ClassFactory(DateListItemRenderer);
+						break;
+					default:
+						this.fiTextInput.visible = true;
+						this.txtItemTitle["element"].addEventListener("keypress", onTextKeyDown);
+						if (restrictPattern)
+						{
+							var restrictBead:Restrict = new Restrict();
+							restrictBead.pattern = restrictPattern;
+							this.txtItemTitle.addBead(restrictBead)
+						}
+						break;
+				}
+			}
+			
+			private function updateItemByType():void
+			{
+				var editIndex:int = items.getItemIndex(editingItem);
+				switch (inputType)
+				{
+					case "Datetime":
+						items.setItemAt(this.dateField.selectedDate, editIndex);
+						break;
+					default:
+						items.setItemAt(this.txtItemTitle.text, editIndex);
+						break;
+				}
+				
+				this.multivalueList.selectedItem = items.getItemAt(editIndex);
+			}
+			
+			private function openUpdateFormByType():void
+			{
+				switch (inputType)
+				{
+					case "Datetime":
+						this.dateField.selectedDate = editingItem as Date;
+						break;
+					default:
+						this.txtItemTitle.text = editingItem as String;
+						break;
+				}
+			}
+			
+			private function addItemByType():void
+			{
+				switch (inputType)
+				{
+					case "Datetime":
+						items.addItem(this.dateField.selectedDate);
+						break;
+					default:
+						items.addItem(this.txtItemTitle.text);
+						this.txtItemTitle.text = null;
+						break;
+				}
+			}
+			
+			private function onTextKeyDown(event:Event):void
+			{
+				if (event["keyCode"] == 13)
+				{
+					this.formValidator.validate();
+				}
 			}
 			
 			private function onAddItemFormValid(event:Event):void
 			{
 				if (editingItem) 
 				{
-					items.setItemAt(this.txtItemTitle.text, items.getItemIndex(editingItem));
+					updateItemByType();
 				}
 				else
 				{
-					items.addItem(this.txtItemTitle.text);
+					addItemByType();
 				}
 				
-				this.txtItemTitle.text = null;
 				toggleFormView(false);
 			}
 			
@@ -73,7 +164,7 @@
 			{
 				editingItem = this.multivalueList.selectedItem;
 				toggleFormView(true);
-				this.txtItemTitle.text = this.multivalueList.selectedItem as String;
+				openUpdateFormByType();
 			}
 			
 			private function onRemoveButtonClicked():void
@@ -118,13 +209,19 @@
 				<j:FormValidator id="formValidator" trigger="{btnSubmit}" triggerEvent="click" 
 								 requiredFieldError="At least one field has a validation error. Please correct the problem and submit again."/>
 			</j:beads>
-			<j:FormItem label="Item Title:" required="true"
-						className="horizontalContentShrinkFormItem">
+			<j:FormItem localId="fiTextInput" 
+						label="Item Title:" required="true"
+						className="horizontalContentShrinkFormItem" visible="false">
 				<j:TextInput localId="txtItemTitle" percentWidth="100">
 					<j:beads>
 						<j:StringValidator required="1"/>
 					</j:beads>
 				</j:TextInput>
+			</j:FormItem>
+			<j:FormItem localId="fiDateField" 
+						label="Date/Time:" required="true"
+						className="horizontalContentShrinkFormItem" visible="false">
+				<j:DateField localId="dateField" dateFormat="MM/DD/YYYY" percentWidth="100"/>
 			</j:FormItem>
 		</j:Form>
 		<j:HGroup itemsHorizontalAlign="itemsRight" gap="2" percentWidth="100">

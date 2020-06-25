@@ -85,6 +85,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{			
 			var multiValueField:String = readTemplate("MultiValueList.template");;
 			multiValueField = multiValueField.replace(/%localId%/ig, field.name +"_id");
+			multiValueField = multiValueField.replace(/%InputType%/ig, field.type);
+			multiValueField = multiValueField.replace(/%Restrict%/ig, 
+				field.type == FormBuilderFieldType.NUMBER ? "[^0-9]" : '');
 			
 			return multiValueField;
 		}

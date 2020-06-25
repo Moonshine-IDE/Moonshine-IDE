@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<j:ListItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:j="library://ns.apache.org/royale/jewel" 
+					xmlns:js="library://ns.apache.org/royale/basic" 
+					xmlns:html="library://ns.apache.org/royale/html" 
+					xmlns="http://www.w3.org/1999/xhtml">
+	<fx:Script>
+		<![CDATA[
+			
+			override public function set data(value:Object):void
+			{
+				if (value)
+				{
+					super.data = value;
+					this.txtDateString.text = (value as Date).toDateString();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<j:beads>
+		<js:ItemRendererDataBinding />
+	</j:beads>
+	
+	<j:HGroup percentWidth="100" percentHeight="100" itemsVerticalAlign="itemsCenter">
+		<j:Label localId="txtDateString" percentWidth="100" multiline="true"/>
+	</j:HGroup>
+</j:ListItemRenderer>

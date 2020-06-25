@@ -1,1 +1,1 @@
-<components:MultiValueList localId="%localId%" percentWidth="100"/>
+<components:MultiValueList localId="%localId%" inputType="%InputType%" restrictPattern="%Restrict%" percentWidth="100"/>
