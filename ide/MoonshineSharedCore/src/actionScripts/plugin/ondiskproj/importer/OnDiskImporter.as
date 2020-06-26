@@ -140,8 +140,6 @@ package actionScripts.plugin.ondiskproj.importer
 
             project.buildOptions.parse(data.build);
 			project.mavenBuildOptions.parse(data.mavenBuild);
-			
-			UtilsCore.setProjectMenuType(project);
 
 			return project;
 		}
