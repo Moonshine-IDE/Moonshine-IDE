@@ -193,7 +193,6 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 		{
 			if (event.child == this)
 			{
-				model.activeProject = project;
 				this.setFocus();
 			}
 		}
