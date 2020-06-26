@@ -125,8 +125,8 @@ package actionScripts.ui.menu
                             'b', [Keyboard.COMMAND],
                             'b', [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE], ActionScriptBuildEvent.BUILD_AND_RUN,
-                            [Keyboard.ENTER], [Keyboard.COMMAND],
-                            [Keyboard.ENTER], [Keyboard.CONTROL]),
+                            "\r\n", [Keyboard.COMMAND],
+                            "\r\n", [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.BUILD_RELEASE),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], "selectedProjectAntBuild"),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA], MavenBuildEvent.START_MAVEN_BUILD),
@@ -271,8 +271,8 @@ package actionScripts.ui.menu
                         'b', [Keyboard.COMMAND],
                         'b', [Keyboard.CONTROL]),
                 new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, JavaBuildEvent.BUILD_AND_RUN,
-                        [Keyboard.ENTER], [Keyboard.COMMAND],
-                        [Keyboard.ENTER], [Keyboard.CONTROL]),
+                        "\r\n", [Keyboard.COMMAND],
+                        "\r\n", [Keyboard.CONTROL]),
                 new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
             ]);
 			
@@ -293,8 +293,8 @@ package actionScripts.ui.menu
 						'b', [Keyboard.COMMAND],
 						'b', [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, GrailsBuildEvent.BUILD_RELEASE,
-						[Keyboard.ENTER], [Keyboard.COMMAND],
-						[Keyboard.ENTER], [Keyboard.CONTROL]),
+						"\r\n", [Keyboard.COMMAND],
+						"\r\n", [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'RUN_GRAILS_TASKS'), null, enabledTypes, GrailsBuildEvent.RUN_COMMAND),
@@ -320,8 +320,8 @@ package actionScripts.ui.menu
                         'b', [Keyboard.COMMAND],
                         'b', [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, HaxeBuildEvent.BUILD_AND_RUN,
-						[Keyboard.ENTER], [Keyboard.COMMAND],
-						[Keyboard.ENTER], [Keyboard.CONTROL]),
+						"\r\n", [Keyboard.COMMAND],
+						"\r\n", [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, HaxeBuildEvent.BUILD_RELEASE),
                 ]);
                 haxeMenu.forEach(makeDynamic);

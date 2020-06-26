@@ -6,13 +6,14 @@
 					xmlns="http://www.w3.org/1999/xhtml">
 	<fx:Script>
 		<![CDATA[
+			import classes.utils.Utils;
 			
 			override public function set data(value:Object):void
 			{
 				if (value)
 				{
 					super.data = value;
-					this.txtDateString.text = (value as Date).toDateString();
+					this.txtDateString.text = Utils.getDateString(value as Date);
 				}
 			}
 			

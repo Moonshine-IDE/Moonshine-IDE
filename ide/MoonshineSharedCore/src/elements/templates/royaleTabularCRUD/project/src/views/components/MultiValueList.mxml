@@ -15,6 +15,9 @@
 			import org.apache.royale.jewel.beads.controls.Disabled;
 			import org.apache.royale.jewel.beads.controls.textinput.Restrict;
 			import views.renderers.DateListItemRenderer;
+			import org.apache.royale.jewel.List;
+			import org.apache.royale.binding.ConstantBinding;
+			import org.apache.royale.jewel.beads.itemRenderers.RemoveAllItemRendererForArrayListData;
 			
 			public var inputType:String;
 			
@@ -40,6 +43,8 @@
 				_restrictPattern = value;
 			}
 			
+			[Bindable]
+			private var multivalueList:List;
 			private var editingItem:Object;
 			
 			private function toggleFormView(show:Boolean):void
@@ -75,12 +80,16 @@
 			
 			private function toggleInputsByType():void
 			{
+				multivalueList = new List();
+				multivalueList.percentWidth = 100;
+				multivalueList.height = 100;
+				
 				switch (inputType)
 				{
 					case "Datetime":
+						multivalueList.itemRenderer = new ClassFactory(DateListItemRenderer);
 						this.fiDateField.visible = true;
 						this.dateField.selectedDate = new Date();
-						this.multivalueList.itemRenderer = new org.apache.royale.core.ClassFactory(DateListItemRenderer);
 						break;
 					default:
 						this.fiTextInput.visible = true;
@@ -93,6 +102,15 @@
 						}
 						break;
 				}
+				
+				var cb:ConstantBinding = new ConstantBinding();
+				cb.setDocument(this);
+				cb.sourcePropertyName = "items";
+				cb.destinationPropertyName = "dataProvider";
+				multivalueList.addBead(cb);
+				
+				multivalueList.addBead(new RemoveAllItemRendererForArrayListData);
+				this.addElementAt(multivalueList, 0);
 			}
 			
 			private function updateItemByType():void
@@ -178,13 +196,6 @@
 	<j:beads>
 		<js:ContainerDataBinding />
 	</j:beads>
-	
-	<j:List localId="multivalueList"
-			percentWidth="100" dataProvider="{items}" minHeight="100">
-		<j:beads>
-			<j:RemoveAllItemRendererForArrayListData/>
-		</j:beads>
-	</j:List>
 	
 	<j:HGroup localId="buttonsGroup" 
 			  percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
