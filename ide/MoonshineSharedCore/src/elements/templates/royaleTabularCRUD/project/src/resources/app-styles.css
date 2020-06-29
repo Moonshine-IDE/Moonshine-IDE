@@ -25,3 +25,12 @@
 .horizontalContentShrinkFormItem {
 	IFormItemContentArea: ClassReference("classes.beads.ContentGroupShrinkForm");
 }
+
+.jewel.label.formFieldDescription {
+	fontSize: 12px;
+	color: #666666;
+}
+
+.bodyPadding {
+	padding: 20px;
+}

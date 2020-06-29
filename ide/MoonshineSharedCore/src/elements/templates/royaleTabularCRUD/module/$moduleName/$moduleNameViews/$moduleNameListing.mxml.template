@@ -3,7 +3,7 @@
 		 xmlns:j="library://ns.apache.org/royale/jewel"
 		 xmlns:js="library://ns.apache.org/royale/basic" 
 		 xmlns:html="library://ns.apache.org/royale/html"
-		 itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter">
+		 itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" className="bodyPadding">
 	<fx:Metadata>
 		[Event(name="eventNavigateTo", type="classes.events.ScreenEvent")]
 	</fx:Metadata>
@@ -62,6 +62,7 @@
 		</j:GridCell>
 	</j:Grid>
 	
+	<js:HRule percentWidth="100"/>
 	<j:Spacer height="20"/>
 	
 	<j:Label percentWidth="100" text="* Double click to open any row in edit"

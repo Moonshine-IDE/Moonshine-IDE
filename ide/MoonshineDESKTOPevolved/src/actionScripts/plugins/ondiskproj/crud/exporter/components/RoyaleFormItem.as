@@ -67,6 +67,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
 			textInput = textInput.replace(/%Beads%/ig, beads);
 			
+			if (field.description) return formItemWithDescription(textInput, field);
 			return textInput;
 		}
 		
@@ -78,6 +79,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
 			textInput = textInput.replace(/%Beads%/ig, beads);
 			
+			if (field.description) return formItemWithDescription(textInput, field);
 			return textInput;
 		}
 		
@@ -89,6 +91,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			multiValueField = multiValueField.replace(/%Restrict%/ig, 
 				field.type == FormBuilderFieldType.NUMBER ? "[^0-9]" : '');
 			
+			if (field.description) return formItemWithDescription(multiValueField, field);
 			return multiValueField;
 		}
 		
@@ -100,14 +103,16 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			dateField = dateField.replace(/%localId%/ig, field.name +"_id");
 			dateField = dateField.replace(/%Beads%/ig, beads);
 			
+			if (field.description) return formItemWithDescription(dateField, field);
 			return dateField;
 		}
 		
 		private static function toRichTextFieldCode(field:DominoFormFieldVO):String
 		{
-			var richText:String = readTemplate("JoditEditor.template");;
+			var richText:String = readTemplate("JoditEditor.template");
 			richText = richText.replace(/%localId%/ig, field.name +"_id");
 			
+			if (field.description) return formItemWithDescription(richText, field);
 			return richText;
 		}
 		
@@ -137,6 +142,20 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			
 			beads = beads.replace(/%BeadsContent%/ig, beadElements);
 			return beads;
+		}
+		
+		private static function formItemWithDescription(formItem:String, field:DominoFormFieldVO):String
+		{
+			var container:String = "<j:VGroup percentWidth=\"100\">\n"+ formItem;
+			
+			var label:String = readTemplate("Label.template");
+			label = label.replace(/%Multiline%/ig, "true");
+			label = label.replace(/%ClassName%/ig, "formFieldDescription");
+			label = label.replace(/%PercentWidth%/ig, "100");
+			label = label.replace(/%Text%/ig, field.description);
+			
+			container += "\n"+ label +"\n</j:VGroup>";
+			return container;
 		}
 	}
 }
