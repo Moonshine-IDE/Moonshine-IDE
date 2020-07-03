@@ -154,7 +154,8 @@ package actionScripts.utils
 							break;
 						case ComponentTypes.TYPE_NODEJS:
 							executable = ConstantsCoreVO.IS_MACOS ? "node" : "node.exe";
-							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
+							if (ConstantsCoreVO.IS_MACOS) commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
+							else commands = '"'+ itemUnderCursor.installToPath+'/'+ executable +'" --version';
 							itemTypeUnderCursor = QUERY_NODEJS_VERSION;
 							break;
 						case ComponentTypes.TYPE_NOTES:
