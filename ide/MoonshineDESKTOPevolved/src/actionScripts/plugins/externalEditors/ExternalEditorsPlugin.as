@@ -401,7 +401,13 @@ package actionScripts.plugins.externalEditors
 			 */
 			if (!ConstantsCoreVO.IS_MACOS && value)
 			{
-				this.stop();
+				// a bit of interval before closing this
+				// https://github.com/prominic/Moonshine-IDE/issues/707
+				var timeoutValue:uint = setTimeout(function():void
+				{
+					this.stop();
+					clearTimeout(timeoutValue);
+				}, 1000);
 			}
 		}
 	}
