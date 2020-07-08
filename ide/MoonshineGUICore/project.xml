@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="MoonshineGUICore" package="Moonshine" version="1.0.0" company="Prominic.NET" />
+	<app file="MoonshineGUICore" />
+	
+	<source path="src" />
+	<source path="externs" />
+	
+	<haxelib name="openfl" />
+	<haxelib name="actuate" />
+	<haxelib name="feathersui" />
+
+	<template path="templates" if="flash"/>
+</project>
