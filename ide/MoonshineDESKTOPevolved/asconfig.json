@@ -11,7 +11,8 @@
 		"library-path": [
 			"libs",
 			"libs/ApacheFlexSDKInstallerLib.swc",
-			"../../../Moonshine-IDE/ide/MoonshineSharedCore/libs"
+			"../../../Moonshine-IDE/ide/MoonshineSharedCore/libs",
+			"../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"
 		]
 	},
 	"files": [

@@ -6,7 +6,8 @@
 			"src"
 		],
 		"library-path": [
-			"libs"
+			"libs",
+			"../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"
 		],
 		"include-sources": [
 			"src"

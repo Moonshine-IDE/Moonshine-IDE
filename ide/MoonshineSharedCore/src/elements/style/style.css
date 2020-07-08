@@ -14,6 +14,19 @@
 }
 
 @font-face {
+	src: url("/elements/fonts/DejaVuSans.ttf");
+	fontFamily: "DejaVuSansTF";
+	embedAsCFF: false;
+}
+
+@font-face {
+	src: url("/elements/fonts/DejaVuSans-Bold.ttf");
+	fontFamily: "DejaVuSansTF";
+	fontWeight: bold;
+	embedAsCFF: false;
+}
+
+@font-face {
 	src: url("/elements/fonts/DejaVuSans-Oblique.ttf");
 	fontFamily: "DejaVuSans";
 	fontStyle: italic;
