@@ -12,4 +12,6 @@
 	<haxelib name="feathersui" />
 
 	<template path="templates" if="flash"/>
+
+	<haxeflag name="--macro" value="include('moonshine')"/>
 </project>
