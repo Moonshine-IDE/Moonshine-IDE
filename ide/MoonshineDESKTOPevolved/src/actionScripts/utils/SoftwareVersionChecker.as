@@ -154,13 +154,18 @@ package actionScripts.utils
 							break;
 						case ComponentTypes.TYPE_NODEJS:
 							executable = ConstantsCoreVO.IS_MACOS ? "node" : "node.exe";
-							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
+							if (ConstantsCoreVO.IS_MACOS) commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
+							else commands = '"'+ itemUnderCursor.installToPath+'/'+ executable +'" --version';
 							itemTypeUnderCursor = QUERY_NODEJS_VERSION;
 							break;
 						case ComponentTypes.TYPE_NOTES:
 							if (ConstantsCoreVO.IS_MACOS)
 							{
 								commands = 'defaults read "'+ itemUnderCursor.installToPath+'"/Contents/Info CFBundleShortVersionString';
+							}
+							else
+							{
+								commands = '"'+ itemUnderCursor.installToPath+'/nsd.exe" -version';
 							}
 							itemTypeUnderCursor = QUERY_NOTES_VERSION;
 							break;
@@ -316,9 +321,17 @@ package actionScripts.utils
 						break;
 					}
 					case QUERY_NOTES_VERSION:
-						if (!components[int(tmpQueue.extraArguments[0])].version)
+						if (ConstantsCoreVO.IS_MACOS && !components[int(tmpQueue.extraArguments[0])].version)
 						{
 							components[int(tmpQueue.extraArguments[0])].version = value.output;
+						}
+						else if (!ConstantsCoreVO.IS_MACOS)
+						{
+							match = value.output.match(/Release /);
+							if (match)
+							{
+								components[int(tmpQueue.extraArguments[0])].version = value.output.substring(value.output.indexOf("Release"), value.output.length - 3);
+							}
 						}
 						break;
 					case QUERY_MAVEN_VERSION:

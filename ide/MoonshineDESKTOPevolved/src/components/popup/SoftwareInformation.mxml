@@ -168,10 +168,16 @@
 												super.data = value;
 												if (value.version) 
 												{
-													lblVersion.text = value.version;
+													//lblVersion.text = value.version;
 													lblVersion.visible = lblVersion.includeInLayout = true;
 													lblNI.visible = lblNI.includeInLayout = lblFix.visible = 
 														lblFix.includeInLayout = false;
+												}
+												else
+												{
+													lblVersion.visible = lblVersion.includeInLayout = false;
+													lblNI.visible = lblNI.includeInLayout = lblFix.visible = 
+														lblFix.includeInLayout = true;
 												}
 											}
 										}
@@ -189,7 +195,8 @@
 								</s:layout>
 								<s:Label id="lblVersion"
 										 width="100%"
-										 includeInLayout="false" visible="false"/>
+										 includeInLayout="false" visible="false"
+										 text="{data.version}"/>
 								<s:Label id="lblNI" 
 										 text="Not Installed."/>
 								<s:Label id="lblFix" 
