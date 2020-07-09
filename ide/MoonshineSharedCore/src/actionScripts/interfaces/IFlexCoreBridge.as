@@ -77,6 +77,7 @@ package actionScripts.interfaces
 		function getComponentByType(type:String):Object;
 		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
 		function getExternalEditors():ArrayCollection;
+		function unzipLanguageServerFiles():void;
 
         /**
          *

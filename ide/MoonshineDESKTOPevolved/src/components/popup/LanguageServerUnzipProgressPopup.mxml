@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 width="500" minWidth="400" minHeight="100" autoLayout="true"
+		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Script>
+		<![CDATA[
+			
+			import elements.skins.IDEProgressBarSkin;
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup height="100%" width="100%" 
+			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12">
+		<s:Label text="Updating Moonshine file system. Please wait."/>
+		<mx:ProgressBar id="pbFiles" 
+						mode="manual"
+						width="100%" labelPlacement="right" labelWidth="0"
+						barSkin="elements.skins.IDEProgressBarSkin"/>
+	</s:VGroup>
+</resizableTitleWindow:ResizableTitleWindow>

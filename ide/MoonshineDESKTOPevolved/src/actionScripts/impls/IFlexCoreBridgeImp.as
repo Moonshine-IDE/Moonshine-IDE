@@ -59,6 +59,7 @@ package actionScripts.impls
 	import actionScripts.plugin.locations.LocationsPlugin;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
+	import actionScripts.plugin.preInitialization.PreInitializationTasksPlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.plugin.project.ProjectPlugin;
 	import actionScripts.plugin.projectPanel.ProjectPanelPlugin;
@@ -119,6 +120,7 @@ package actionScripts.impls
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.LanguageServerUnzipper;
 	import actionScripts.utils.SHClassTest;
 	import actionScripts.utils.SWFTrustPolicyModifier;
 	import actionScripts.utils.SoftwareVersionChecker;
@@ -196,6 +198,7 @@ package actionScripts.impls
 		public function getCorePlugins():Array
 		{
 			return [
+				PreInitializationTasksPlugin,
 				SettingsPlugin, 
 				ProjectPlugin,
 				ProjectPanelPlugin,
@@ -532,6 +535,11 @@ package actionScripts.impls
 		public function getExternalEditors():ArrayCollection
 		{
 			return ExternalEditorsPlugin.editors;
+		}
+		
+		public function unzipLanguageServerFiles():void
+		{
+			new LanguageServerUnzipper();
 		}
 	}
 }

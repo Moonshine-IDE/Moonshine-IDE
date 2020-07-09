@@ -107,7 +107,7 @@ package actionScripts.locator
 		public var showHiddenPaths:Boolean;
 
 		public var version: String = "1.0.0";
-		public var build: String = "";
+		public var revision: String = "";
 		
 		public function removeEditor(editor:Object):Boolean
 		{
@@ -123,24 +123,24 @@ package actionScripts.locator
 
 		public function refreshIdeBuildVersion():void
 		{
-            build = "";
+            revision = "";
 
             var revisionInfoFile: FileLocation = fileCore.resolveApplicationDirectoryPath("elements/appProperties.txt");
             if (revisionInfoFile.fileBridge.exists)
             {
-				var buildNumber:String = String(revisionInfoFile.fileBridge.read()).split("\n")[0];
-				if (buildNumber && buildNumber.indexOf("bamboo") == -1)
+				var revisionNumber:String = String(revisionInfoFile.fileBridge.read()).split("\n")[0];
+				if (revisionNumber && revisionNumber.indexOf("bamboo") == -1)
                 {
-                    build = buildNumber;
+                    revision = revisionNumber;
                 }
             }
 		}
 
 		public function getVersionWithBuildNumber():String
 		{
-			if (build)
+			if (revision)
 			{
-				return "Version " + version + ", Build " + build;
+				return "Version " + version + ", Build " + revision;
 			}
 
 			return "Version " + version;

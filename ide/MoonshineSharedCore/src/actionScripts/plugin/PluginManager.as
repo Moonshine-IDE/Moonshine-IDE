@@ -19,6 +19,7 @@
 package actionScripts.plugin
 {
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.preInitialization.PreInitializationTasksPlugin;
 	import actionScripts.plugin.settings.SettingsPlugin;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.MenuItem;
@@ -37,7 +38,9 @@ package actionScripts.plugin
 		private var defaultPlugins:Array = model.flexCore.getDefaultPlugins();
         private var registeredPlugins:Vector.<IPlugin> = new Vector.<IPlugin>();
         private var settingsPlugin:SettingsPlugin;
+		private var preInitTasksPlugins:PreInitializationTasksPlugin;
         private var pendingPlugMenuItems:Vector.<MenuItem> = new Vector.<MenuItem>();
+		private var postInitializationPlugins:Vector.<IPlugin> = new Vector.<IPlugin>();
 
         public function PluginManager()
         {
@@ -65,8 +68,17 @@ package actionScripts.plugin
                     throw new Error("Can't add plugin that doesn't implement IPlugin.");
 					break;
                 }
-
-                registerPlugin(instance);
+				
+				if ((instance is IMenuPlugin) || 
+					(instance is SettingsPlugin) || 
+					(instance is PreInitializationTasksPlugin))
+				{
+	                registerPlugin(instance);
+				}
+				else
+				{
+					postInitializationPlugins.push(instance);
+				}
             }           
 			
 			var menuInstance:MenuPlugin = new MenuPlugin();
@@ -77,6 +89,7 @@ package actionScripts.plugin
 			settingsPlugin.initializePlugin(menuInstance);
 			registeredPlugins.push(menuInstance);
 			registeredPlugins.sort(order);
+			preInitTasksPlugins.initializePlugin();
 			
 			/*
 			* @local
@@ -88,6 +101,14 @@ package actionScripts.plugin
 				return 0;
 			}
         }
+		
+		public function registerPostInitializationPlugins():void
+		{
+			for each (var instance:IPlugin in postInitializationPlugins)
+			{
+				registerPlugin(instance);
+			}
+		}
 		
 		private var index:int;
         public function registerPlugin(plug:IPlugin):void
@@ -120,6 +141,12 @@ package actionScripts.plugin
                 SettingsPlugin(plug).pluginManager = this;
                 settingsPlugin = SettingsPlugin(plug);
             }
+			
+			if (plug is PreInitializationTasksPlugin)
+			{
+				(plug as PreInitializationTasksPlugin).pluginManager = this;
+				preInitTasksPlugins = (plug as PreInitializationTasksPlugin);
+			}
         }
 
         moonshine_internal function getPluginByClassName(className:String):IPlugin
