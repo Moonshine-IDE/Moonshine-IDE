@@ -23,22 +23,26 @@ package actionScripts.utils
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	import flash.utils.ByteArray;
 	
 	import mx.controls.Alert;
 	
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.extResources.deng.fzip.fzip.FZip;
 	import actionScripts.extResources.deng.fzip.fzip.FZipErrorEvent;
 	import actionScripts.extResources.deng.fzip.fzip.FZipFile;
 	
 	[Event(name="FILE_LOAD_SUCCESS", type="flash.events.Event")]
 	[Event(name="FILE_LOAD_ERROR", type="flash.events.Event")]
+	[Event(name="FILE_WRITE_ERROR", type="actionScripts.events.GeneralEvent")]
+	[Event(name="FILE_PROGRESSED_COUNT", type="actionScripts.events.GeneralEvent")]
 	public class Unzip extends EventDispatcher
 	{
 		public static const FILE_LOAD_SUCCESS:String = "fileLoadSuccess";
 		public static const FILE_LOAD_ERROR:String = "fileLoadError";
+		public static const FILE_WRITE_ERROR:String = "fileWriteError";
+		public static const FILE_PROGRESSED_COUNT:String = "fileUnzipProgressedCount";
 		
 		private var fZip:FZip;
 		private var loader:Loader;
@@ -50,12 +54,19 @@ package actionScripts.utils
 			return _filesCount;
 		}
 		
-		public function Unzip(zipFile:File)
+		private var _zipFile:File;
+		public function get zipFile():File
+		{
+			return _zipFile;
+		}
+		
+		public function Unzip(file:File)
 		{
 			// @NOTE
 			// Since load method as provided by the FZip
 			// fails on macOS for some reason, we need
 			// manual handling to loads its bytes data
+			_zipFile = file;
 			FileUtils.readFromFileAsync(zipFile, FileUtils.DATA_FORMAT_BYTEARRAY, onReadCompletes, onReadIOError);
 		}
 		
@@ -71,6 +82,7 @@ package actionScripts.utils
 		private function onReadIOError(value:String):void
 		{
 			dispatchEvent(new Event(FILE_LOAD_ERROR));
+			_zipFile = null;
 		}
 		
 		public function getFileAt(index:int):FZipFile
@@ -146,11 +158,14 @@ package actionScripts.utils
 					toFile.createDirectory();
 					onSuccessWrite();
 				}
-				else FileUtils.writeToFileAsync(toFile, fzipFile.content, onSuccessWrite, onErrorWrite);
+				else 
+				{
+					FileUtils.writeToFileAsync(toFile, fzipFile.content, onSuccessWrite, onErrorWrite);
+				}
 			}
 			else if (onCompletion != null)
 			{
-				filesUnzippedCount = 0;
+				dispose();
 				onCompletion(destination);
 			}
 			
@@ -160,15 +175,22 @@ package actionScripts.utils
 			function onSuccessWrite():void
 			{
 				filesUnzippedCount++;
+				dispatchEvent(new GeneralEvent(FILE_PROGRESSED_COUNT, filesUnzippedCount));
 				unzipTo(destination, onCompletion);
 			}
 			function onErrorWrite(value:String):void
 			{
+				dispose();
+				dispatchEvent(new GeneralEvent(FILE_WRITE_ERROR, value));
+			}
+			function dispose():void
+			{
 				filesUnzippedCount = 0;
+				_zipFile = null;
 			}
 		}
 		
-		private function addListeners(isAdd:Boolean):void
+		public function addListeners(isAdd:Boolean):void
 		{
 			if (isAdd)
 			{

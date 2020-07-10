@@ -539,7 +539,8 @@ package actionScripts.impls
 		
 		public function unzipLanguageServerFiles():void
 		{
-			new LanguageServerUnzipper();
+			var tmpUnzipper:LanguageServerUnzipper = new LanguageServerUnzipper();
+			tmpUnzipper.checkAndUnzip();
 		}
 	}
 }

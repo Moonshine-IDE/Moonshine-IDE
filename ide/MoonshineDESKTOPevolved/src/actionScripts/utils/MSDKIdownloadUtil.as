@@ -185,6 +185,7 @@ package actionScripts.utils
 			function onFileLoadedInMemory(event:Event):void
 			{
 				event.target.removeEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadedInMemory);
+				unZip.addListeners(true);
 				unZip.unzipTo(new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY), onUnzipCompleted);
 			}
 			function onUnzipCompleted(destination:File):void
