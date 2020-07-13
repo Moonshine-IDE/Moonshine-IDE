@@ -18,31 +18,33 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
+	import flash.events.Event;
+	
+	import mx.events.CollectionEvent;
+	import mx.events.CollectionEventKind;
+	import mx.events.FlexEvent;
+	
+	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.ChangeEvent;
 	import actionScripts.events.PreviewPluginEvent;
 	import actionScripts.factory.FileLocation;
-    import actionScripts.utils.MavenPomUtil;
-
-    import flash.events.Event;
-
-	import mx.events.CollectionEvent;
-    import mx.events.CollectionEventKind;
-    import mx.events.FlexEvent;
-    
-    import actionScripts.events.AddTabEvent;
-    import actionScripts.events.ChangeEvent;
-    import actionScripts.impls.IVisualEditorLibraryBridgeImp;
-    import actionScripts.interfaces.IVisualEditorViewer;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugins.help.view.VisualEditorView;
-    import actionScripts.plugins.help.view.events.VisualEditorEvent;
-    import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-    import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.editor.text.TextEditor;
-    import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.ui.tabview.TabEvent;
-
-    import view.suportClasses.events.PropertyEditorChangeEvent;
+	import actionScripts.impls.IVisualEditorLibraryBridgeImp;
+	import actionScripts.interfaces.IVisualEditorProjectVO;
+	import actionScripts.interfaces.IVisualEditorViewer;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+	import actionScripts.plugins.help.view.VisualEditorView;
+	import actionScripts.plugins.help.view.events.VisualEditorEvent;
+	import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+	import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.editor.text.TextEditor;
+	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.utils.MavenPomUtil;
+	import actionScripts.valueObjects.ProjectVO;
+	
+	import view.suportClasses.events.PropertyEditorChangeEvent;
 	
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
@@ -51,7 +53,7 @@ package actionScripts.plugins.ui.editor
 		private var visualEditorView:VisualEditorView;
 		private var hasChangedProperties:Boolean;
 		
-		private var visualEditorProject:AS3ProjectVO;
+		private var visualEditorProject:ProjectVO;
 		private var visualEditoryLibraryCore:IVisualEditorLibraryBridgeImp;
 		private var undoManager:UndoManagerVisualEditor;
 		
@@ -60,7 +62,7 @@ package actionScripts.plugins.ui.editor
 			return visualEditorView;
 		}
 		
-		public function VisualEditorViewer(visualEditorProject:AS3ProjectVO = null)
+		public function VisualEditorViewer(visualEditorProject:ProjectVO = null)
 		{
 			this.visualEditorProject = visualEditorProject;
 			
@@ -73,7 +75,7 @@ package actionScripts.plugins.ui.editor
 			
 			// at this moment prifefaces projects only using the bridge
 			// this condition can be remove if requires
-			if (visualEditorProject.isPrimeFacesVisualEditorProject)
+			if ((visualEditorProject as IVisualEditorProjectVO).isPrimeFacesVisualEditorProject)
 			{
 				visualEditoryLibraryCore = new IVisualEditorLibraryBridgeImp();
 				visualEditoryLibraryCore.visualEditorProject = visualEditorProject;
@@ -81,7 +83,7 @@ package actionScripts.plugins.ui.editor
 			
 			visualEditorView = new VisualEditorView();
 			
-			visualEditorProject.isPrimeFacesVisualEditorProject ?
+			(visualEditorProject as IVisualEditorProjectVO).isPrimeFacesVisualEditorProject ?
 				visualEditorView.currentState = "primeFacesVisualEditor" :
 				visualEditorView.currentState = "flexVisualEditor";
 			visualEditorView.visualEditorProject = visualEditorProject;
@@ -215,10 +217,19 @@ package actionScripts.plugins.ui.editor
 
         private function refreshFileForPreview():void
         {
-			if (visualEditorProject.isPrimeFacesVisualEditorProject)
+			if ((visualEditorProject as IVisualEditorProjectVO).isPrimeFacesVisualEditorProject)
 			{
+				var mavenBuildPath:String;
+				if (visualEditorProject is AS3ProjectVO)
+				{
+					mavenBuildPath = (visualEditorProject as AS3ProjectVO).mavenBuildOptions.buildPath;
+				}
+				else if (visualEditorProject is OnDiskProjectVO)
+				{
+					mavenBuildPath = (visualEditorProject as OnDiskProjectVO).mavenBuildOptions.buildPath;
+				}
+				
 				var separator:String = file.fileBridge.separator;
-				var mavenBuildPath:String = visualEditorProject.mavenBuildOptions.buildPath;
 				var mavenPomPath:String = mavenBuildPath.concat(separator, "pom.xml");
 				var targetPath:String = mavenBuildPath.concat(separator, "target");
 
@@ -336,7 +347,7 @@ package actionScripts.plugins.ui.editor
 		{
 			if (visualEditorView.currentState == "primeFacesVisualEditor")
 			{
-				dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, file, visualEditorProject));
+				dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, file, visualEditorProject as AS3ProjectVO));
 			}
 		}
 
@@ -359,11 +370,11 @@ package actionScripts.plugins.ui.editor
 		
 		private function getVisualEditorFilePath():String
 		{
-			if (visualEditorProject.visualEditorSourceFolder)
+			if ((visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder)
 			{
 				var filePath:String = file.fileBridge.nativePath
 						.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
-								 visualEditorProject.visualEditorSourceFolder.fileBridge.nativePath)
+							(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath)
 						.replace(/.mxml$|.xhtml$/, ".xml");
 
 				return filePath;

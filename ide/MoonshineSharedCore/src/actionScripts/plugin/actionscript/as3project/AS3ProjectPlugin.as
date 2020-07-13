@@ -241,6 +241,12 @@ package actionScripts.plugin.actionscript.as3project
 					importFDProject(flashDevelopProjectFile, false, model.haxeCore.parseHaxe(new FileLocation(dir.nativePath)));
 					return;
 				}
+				flashDevelopProjectFile = model.ondiskCore.testOnDisk(dir);
+				if (flashDevelopProjectFile)
+				{
+					importFDProject(flashDevelopProjectFile, false, model.ondiskCore.parseOnDisk(new FileLocation(dir.nativePath)));
+					return;
+				}
 			}
 			
 			if (!isFBProject && !isFDProject)
@@ -458,7 +464,8 @@ package actionScripts.plugin.actionscript.as3project
 			return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.GRAILS) == -1 &&
-				projectTemplateName.indexOf(ProjectTemplateType.HAXE) == -1;
+				projectTemplateName.indexOf(ProjectTemplateType.HAXE) == -1 && 
+				projectTemplateName.indexOf(ProjectTemplateType.ONDISK) == -1;
 		}
 		
 		protected function handleEventSearchForProjectsInDirectories(event:ProjectEvent):void

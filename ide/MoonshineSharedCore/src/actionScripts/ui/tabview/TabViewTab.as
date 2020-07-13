@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabview
 {
-    import actionScripts.ui.tabNavigator.CloseTabButton;
-
     import flash.display.Sprite;
     import flash.events.ContextMenuEvent;
     import flash.events.Event;
@@ -34,7 +32,9 @@ package actionScripts.ui.tabview
     
     import spark.components.Label;
     
+    import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.tabNavigator.CloseTabButton;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
 
@@ -105,16 +105,17 @@ package actionScripts.ui.tabview
 			if (_data != value)
 			{
 				_data = value;
-				if (value is BasicTextEditor)
+				if (value is IFileContentWindow)
 				{
-					var editor:BasicTextEditor = value as BasicTextEditor;
+					var projectPath:String = value.hasOwnProperty("projectPath") ? value["projectPath"] : null;
+					var editor:IFileContentWindow = value as IFileContentWindow;
 					if (editor.currentFile)
                     {
                         this.contextMenu = createContextMenu();
                         SharedObjectUtil.saveLocationOfOpenedProjectFile(
 								editor.currentFile.name,
                                 editor.currentFile.fileBridge.nativePath,
-								editor.projectPath);
+								projectPath);
                     }
 				}
 			}
@@ -332,19 +333,19 @@ package actionScripts.ui.tabview
         private function closeThisTab():void
 		{
             dispatchEvent(new Event(EVENT_TAB_CLOSE));
-
-            if (data is BasicTextEditor)
-            {
-                var editor:BasicTextEditor = data as BasicTextEditor;
-
-				if(editor.currentFile)
+			
+			if (data is IFileContentWindow)
+			{
+				var projectPath:String = data.hasOwnProperty("projectPath") ? data["projectPath"] : null;
+				var editor:IFileContentWindow = data as IFileContentWindow;
+				if (editor.currentFile)
 				{
 					SharedObjectUtil.removeLocationOfClosingProjectFile(
-							editor.currentFile.name,
-							editor.currentFile.fileBridge.nativePath,
-							editor.projectPath);
+						editor.currentFile.name,
+						editor.currentFile.fileBridge.nativePath,
+						projectPath);
 				}
-            }
+			}
 		}
     }
 }

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xp:view xmlns:xp="http://www.ibm.com/xsp/core" xmlns:xc="http://www.ibm.com/xsp/custom">
+	<xp:this.data>
+		<xp:dominoDocument var="document" formName="Greeting"
+			action="openDocument">
+		</xp:dominoDocument>
+	</xp:this.data>
+
+	<xc:GreetingActionBar></xc:GreetingActionBar>
+
+	<xp:span style="font-family:sans-serif;font-size:22pt">
+		Hello, World! (XPages)
+	</xp:span>
+	<xp:br></xp:br>
+	<xp:br></xp:br>
+	Let me introduce myself! My name is:
+	<xp:br></xp:br>
+
+	<xp:panel>
+		<xp:table>
+			<xp:tr>
+				<xp:td>
+					<xp:label value="Name first:" id="nameFirst_Label1" for="nameFirst1">
+					</xp:label>
+				</xp:td>
+				<xp:td>
+					<xp:inputText value="#{document.NameFirst}" id="nameFirst1">
+					</xp:inputText>
+				</xp:td>
+			</xp:tr>
+			<xp:tr>
+				<xp:td>
+					<xp:label value="Name last:" id="nameLast_Label1" for="nameLast1">
+					</xp:label>
+				</xp:td>
+				<xp:td>
+					<xp:inputText value="#{document.NameLast}" id="nameLast1">
+					</xp:inputText>
+				</xp:td>
+			</xp:tr>
+			<xp:tr>
+				<xp:td>
+
+					<xp:label value="Sex:" id="sex_Label1" for="sex1"></xp:label>
+				</xp:td>
+				<xp:td>
+					<xp:radioGroup id="radioGroup1"
+						layout="pageDirection" value="#{document.Sex}"
+						defaultValue="Male">
+						<xp:selectItem itemLabel="Male"
+							itemValue="Male">
+						</xp:selectItem>
+						<xp:selectItem itemLabel="Female"
+							itemValue="Female">
+						</xp:selectItem>
+					</xp:radioGroup>
+				</xp:td>
+			</xp:tr>
+		</xp:table>
+	</xp:panel>
+	
+	<xp:panel>
+		<xp:label value="Comment:" id="comment_Label1" for="comment1">
+		</xp:label>
+		<br />
+		<xp:inputRichText value="#{document.Comment}" id="comment1">
+		</xp:inputRichText>
+	</xp:panel>
+
+	<xc:Footer></xc:Footer>
+</xp:view>

@@ -21,6 +21,7 @@ package actionScripts.interfaces
 {
     import flash.display.DisplayObject;
     
+    import mx.collections.ArrayCollection;
     import mx.core.IFlexDisplayObject;
     
     import actionScripts.events.NewProjectEvent;
@@ -75,6 +76,7 @@ package actionScripts.interfaces
 		function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void;
 		function getComponentByType(type:String):Object;
 		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
+		function getExternalEditors():ArrayCollection;
 
         /**
          *

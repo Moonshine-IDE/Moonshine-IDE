@@ -92,6 +92,8 @@ package actionScripts.plugins.git
 		public static const CHANGE_BRANCH_REQUEST:String = "gitChangeBranchRequest";
 		public static const RELAY_SVN_XCODE_REQUEST:String = "svnXCodePermissionRequest";
 		
+		public static const NAMESPACE:String = "actionScripts.plugins.git::GitHubPlugin";
+		
 		override public function get name():String			{ return "Git"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Git Plugin."; }
@@ -279,7 +281,7 @@ package actionScripts.plugins.git
 			
 			var thisSettings: Vector.<ISetting> = getSettingsList();
 			var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
-			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.git::GitHubPlugin", thisSettings));
+			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, NAMESPACE, thisSettings));
 		}
 		
 		private function checkOSXGitAccess(against:String=ProjectMenuTypes.GIT_PROJECT):Boolean

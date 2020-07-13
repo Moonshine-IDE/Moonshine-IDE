@@ -23,6 +23,8 @@ package actionScripts.events
 	public class SettingsEvent extends Event
 	{
 		public static const EVENT_OPEN_SETTINGS:String = "openSettingsEvent";
+		public static const EVENT_SETTINGS_SAVED:String = "savedSettingsEvent";
+		public static const EVENT_REFRESH_CURRENT_SETTINGS:String = "refreshCurrentSettingsEvent";
 		
 		public var openSettingsByQualifiedClassName:String;
 		

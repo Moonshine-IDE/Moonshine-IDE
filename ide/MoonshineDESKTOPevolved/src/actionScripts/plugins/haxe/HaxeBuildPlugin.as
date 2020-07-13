@@ -19,40 +19,42 @@
 package actionScripts.plugins.haxe
 {
     import actionScripts.events.ApplicationEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.SdkEvent;
     import actionScripts.events.SettingsEvent;
     import actionScripts.events.StatusBarEvent;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
     import actionScripts.plugin.core.compiler.HaxeBuildEvent;
+    import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
     import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
+    import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
+    import actionScripts.plugins.haxelib.utils.HaxelibFinder;
+    import actionScripts.plugins.httpServer.events.HttpServerEvent;
+    import actionScripts.utils.CommandLineUtil;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
+    import actionScripts.valueObjects.WebBrowserVO;
 
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
+    import flash.errors.IllegalOperationError;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     import flash.filesystem.File;
     import flash.utils.IDataInput;
-    import actionScripts.events.RefreshTreeEvent;
-    import actionScripts.utils.CommandLineUtil;
-    import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
-    import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
-    import flash.errors.IllegalOperationError;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugins.httpServer.events.HttpServerEvent;
-    import actionScripts.valueObjects.WebBrowserVO;
+    import actionScripts.events.DebugActionEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -222,6 +224,20 @@ package actionScripts.plugins.haxe
                         commandParts.push("--source=" + hxcppDebugServerFolder.nativePath);
                         commandParts.push(HAXEFLAG_MACRO_INJECT_SERVER);
 			            this.start(new <String>[commandParts.join(" ")], project.folderLocation);
+                        break;
+                    }
+                    case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
+                    {
+                        if(ConstantsCoreVO.IS_MACOS)
+                        {
+                            error("Debugging HashLink on macOS is not supported yet. For details, see: https://github.com/vshaxe/hashlink-debugger/issues/28");
+                            return;
+                        }
+                        pendingRunProject = project;
+                        pendingRunCommand = null;
+                        pendingRunFolder = null;
+                        pendingDebug = true;
+			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -509,7 +525,7 @@ package actionScripts.plugins.haxe
             var project:ProjectVO = model.activeProject;
             if (project)
             {
-                dispatcher.addEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution, false, 0, true);
+                dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, onDebugStop, false, 0, true);
 			    dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
             }
 		}
@@ -557,11 +573,66 @@ package actionScripts.plugins.haxe
                         {
                             cppExecutableName += ".exe";
                         }
-                        var exeFile:File = project.folderLocation.fileBridge
+                        var cppExeFile:File = project.folderLocation.fileBridge
                             .resolvePath("bin" + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableName).fileBridge.getFile as File;
                         launchArgs["name"] = "Moonshine Lime HXCPP Launch";
-                        launchArgs["program"] = exeFile.nativePath;
+                        launchArgs["program"] = cppExeFile.nativePath;
                         debugAdapterType = "hxcpp";
+                        break;
+                    }
+                    case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
+                    {
+                        var hlbootDatFile:File = project.folderLocation.fileBridge
+                            .resolvePath("bin" + File.separator + "hl" + File.separator + "bin" + File.separator + "hlboot.dat").fileBridge.getFile as File;
+                        launchArgs["name"] = "Moonshine Lime HashLink Launch";
+                        launchArgs["program"] = hlbootDatFile.nativePath;
+                        launchArgs["cwd"] = hlbootDatFile.parent.nativePath;
+                        var hlClassPaths:Array = [];
+                        project.classpaths.forEach(function(classPath:FileLocation, index:int, source:Vector.<FileLocation>):void
+                        {
+                            hlClassPaths[index] = classPath.fileBridge.nativePath;
+                        });
+                        launchArgs["classPaths"] = hlClassPaths;
+                        debugAdapterType = "hl";
+                        
+                        HaxelibFinder.find("lime", function(limePath:String):void
+                        {
+                            if(!limePath)
+                            {
+                                error("Lime not found. HashLink debug launch failed.");
+                                return;
+                            }
+                            var hlRoot:File = new File(limePath).resolvePath("templates/bin/hl");
+                            var hlExe:File = null;
+                            switch(Settings.os)
+                            {
+                                case "win":
+                                {
+                                    hlExe = hlRoot.resolvePath("windows/hl.exe");
+                                    break;
+                                }
+                                case "mac":
+                                {
+                                    hlExe = hlRoot.resolvePath("mac/hl");
+                                    break;
+                                }
+                                case "lin":
+                                {
+                                    hlExe = hlRoot.resolvePath("linux/hl");
+                                    break;
+                                }
+                                default:
+                                {
+                                    error("Unknown operating system. HashLink debug launch failed.");
+                                    return;
+                                }
+                            }
+                            launchArgs["hl"] = hlExe.nativePath;
+                            
+                            dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER,
+                                project, debugAdapterType, debugCommand, launchArgs));
+                        });
+                        return;
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -681,6 +752,7 @@ package actionScripts.plugins.haxe
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
                     case HaxeProjectVO.LIME_PLATFORM_MAC:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
+                    case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
                     case HaxeProjectVO.LIME_PLATFORM_FLASH:
                     {
@@ -728,7 +800,7 @@ package actionScripts.plugins.haxe
             super.onNativeProcessExit(event);
 
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
-			dispatcher.removeEventListener(ActionScriptBuildEvent.TERMINATE_EXECUTION, onTerminateExecution);
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STOP, onDebugStop);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
 
             var project:HaxeProjectVO = pendingRunProject;
@@ -775,7 +847,7 @@ package actionScripts.plugins.haxe
             stop();
         }
 
-        private function onTerminateExecution(event:Event):void
+        private function onDebugStop(event:DebugActionEvent):void
         {
             stop();
         }

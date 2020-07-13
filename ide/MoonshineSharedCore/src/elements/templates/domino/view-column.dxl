@@ -1,0 +1,3 @@
+<column itemname='%FieldName%' sort='%Sort%' categorized='%Categorized%' twisties='true' width='30'>
+<columnheader title='%Label%'></columnheader>
+</column>

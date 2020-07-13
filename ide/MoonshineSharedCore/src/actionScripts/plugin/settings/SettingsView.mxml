@@ -44,15 +44,17 @@
 			
 			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.SettingsEvent;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 			import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+			import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+			import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 			import actionScripts.plugin.settings.vo.ISetting;
 			import actionScripts.plugin.settings.vo.PluginSettingsWrapper;
 			import actionScripts.plugin.settings.vo.SettingsWrapper;
 			import actionScripts.valueObjects.ProjectVO;
-			import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 			public static const EVENT_SAVE:String = "saveSettingsEvent";
 			public static const EVENT_CLOSE:String = "closeSettingsEvent";
@@ -154,6 +156,10 @@
 				{
 					projectPath += ".hxproj";
 				}
+				else if(associatedData is OnDiskProjectVO)
+				{
+					projectPath += ".ondiskproj";
+				}
 				else
 				{
 					projectPath += ".as3proj";
@@ -247,6 +253,7 @@
 				{
 					GlobalEventDispatcher.getInstance().removeEventListener(GeneralEvent.SCROLL_TO_TOP, onNewProjectScrollChange);
 				}
+				GlobalEventDispatcher.getInstance().removeEventListener(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS, handleRefreshSettings);
 				dispatchEvent(new Event(EVENT_CLOSE));
 			}
 	
@@ -376,6 +383,12 @@
 				}
 				
 				if (isNewProjectSettings) GlobalEventDispatcher.getInstance().addEventListener(GeneralEvent.SCROLL_TO_TOP, onNewProjectScrollChange, false, 0, true);
+				GlobalEventDispatcher.getInstance().addEventListener(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS, handleRefreshSettings, false, 0, true);
+			}
+			
+			private function onCurrentSettingsRefreshRequest(event:SettingsEvent):void
+			{
+				handleRefreshSettings(event);
 			}
 	
 			private function handleItemClick(event:Event):void

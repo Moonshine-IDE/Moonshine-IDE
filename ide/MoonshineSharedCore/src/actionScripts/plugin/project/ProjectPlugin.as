@@ -459,6 +459,15 @@ package actionScripts.plugin.project
 	                        project = model.haxeCore.parseHaxe(projectLocation);
 	                    }
 					}
+					
+					if (!project)
+					{
+						projectFileLocation = model.ondiskCore.testOnDisk(projectFile);
+						if (projectFileLocation)
+						{
+							project = model.ondiskCore.parseOnDisk(projectLocation);
+						}
+					}
 
                     if (project)
                     {

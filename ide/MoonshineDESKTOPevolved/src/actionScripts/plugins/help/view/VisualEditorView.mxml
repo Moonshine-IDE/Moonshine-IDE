@@ -42,7 +42,7 @@
 		
 		import spark.events.IndexChangeEvent;
 		
-		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
 		import actionScripts.ui.editor.text.TextEditor;
 
@@ -51,7 +51,7 @@
         private var _codeEditor:TextEditor;
 
 		[Bindable]
-        public var visualEditorProject:AS3ProjectVO;
+        public var visualEditorProject:ProjectVO;
 
         public function set codeEditor(value:TextEditor):void
         {

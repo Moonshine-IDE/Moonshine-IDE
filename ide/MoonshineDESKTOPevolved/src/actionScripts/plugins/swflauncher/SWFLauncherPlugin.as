@@ -43,6 +43,7 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
 	import flash.errors.IllegalOperationError;
+	import actionScripts.events.DebugActionEvent;
 	
 	public class SWFLauncherPlugin extends PluginBase
 	{	
@@ -286,7 +287,7 @@ package actionScripts.plugins.swflauncher
 		private function shellExit(e:NativeProcessExitEvent):void 
 		{
 			if(customProcess)
-				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.STOP_DEBUG,false));
+				dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 		}
 		
 		private function shellData(e:ProgressEvent):void 

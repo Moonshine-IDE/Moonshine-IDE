@@ -189,7 +189,7 @@ package actionScripts.plugins.git.commands
 		
 		private function getGitPluginReference():void
 		{
-			var tmpEvent:RequestSettingByNameEvent = new RequestSettingByNameEvent("actionScripts.plugins.git::GitHubPlugin");
+			var tmpEvent:RequestSettingByNameEvent = new RequestSettingByNameEvent(GitHubPlugin.NAMESPACE);
 			dispatcher.dispatchEvent(tmpEvent);
 			
 			plugin = tmpEvent.value as GitHubPlugin;

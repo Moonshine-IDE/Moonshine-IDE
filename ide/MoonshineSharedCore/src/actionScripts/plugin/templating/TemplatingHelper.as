@@ -215,6 +215,9 @@ package actionScripts.plugin.templating
 				case "Haxe Class":
 				case "Haxe Interface":
 					return [ProjectMenuTypes.HAXE, ProjectMenuTypes.TEMPLATE];
+				case "Visual Editor DXL File":
+				case "Form Builder DXL File":
+					return [ProjectMenuTypes.ON_DISK];
 			}
 			
 			return [];

@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
+    import flash.system.Capabilities;
     import flash.system.Security;
     
     import mx.collections.ArrayCollection;
@@ -82,29 +83,41 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_GROOVYCLASS: FileLocation;
 		public static var TEMPLATE_HAXECLASS: FileLocation;
 		public static var TEMPLATE_HAXEINTERFACE: FileLocation;
+		
 		public static var TEMPLATES_FILES: ArrayCollection;
 		public static var TEMPLATES_PROJECTS: ArrayCollection;
+		
 		public static var TEMPLATES_PROJECTS_SPECIALS:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_ROYALE:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_JAVA:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_GRAILS:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_HAXE:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_ACTIONSCRIPT:ArrayCollection;
+		
 		public static var TEMPLATES_MXML_COMPONENTS:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_MXML_FLEXJS_COMPONENTS:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_MXML_ROYALE_COMPONENTS:ArrayCollection = new ArrayCollection();
-        public static var TEMPLATES_VISUALEDITOR_FILES_FLEX:ArrayCollection = new ArrayCollection();
+        
+		public static var TEMPLATES_VISUALEDITOR_FILES_FLEX:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES:ArrayCollection = new ArrayCollection();
+		
+		public static var TEMPLATE_ODP_VISUALEDITOR_FILE:FileLocation;
+		public static var TEMPLATE_ODP_FORMBUILDER_FILE:FileLocation;
+		
 		public static var TEMPLATES_OPEN_PROJECTS: ArrayCollection;
+		
 		public static var TEMPLATES_ANDROID_DEVICES:ArrayCollection;
 		public static var TEMPLATES_IOS_DEVICES:ArrayCollection;
+		
 		public static var TEMPLATES_WEB_BROWSERS:ArrayCollection;
+		
+		public static var VISUALEDITOR_FLEX_PROJECT:FileLocation;
+		public static var ONDISK_PROJECT:FileLocation;
 		public static var ACTIONSCRIPT_PROJECT:FileLocation;
 		public static var LIBRARY_PROJECT_PROJECT:FileLocation;
 		public static var FLEXBROWSER_PROJECT:FileLocation;
 		public static var FLEXDESKTOP_PROJECT:FileLocation;
 		public static var FLEXMOBILE_PROJECT:FileLocation;
-		public static var VISUALEDITOR_FLEX_PROJECT:FileLocation;
 		public static var FLEXJS_PROJECT:FileLocation;
         public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
@@ -217,6 +230,7 @@ package actionScripts.valueObjects
 		//--------------------------------------------------------------------------
 		
 		public static var IS_MACOS							: Boolean;
+		public static var is64BitSupport					: Boolean = Capabilities.supports64BitProcesses;
 		public static var IS_DEVELOPMENT_MODE				: Boolean;
 		public static var IS_AUTH_REQUIRED					: Boolean; // MoonshineServerPluginOpenSource
 		public static var IS_BUNDLED_SDK_PRESENT			: Boolean;

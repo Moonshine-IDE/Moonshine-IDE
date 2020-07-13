@@ -25,6 +25,8 @@ package actionScripts.utils
 	import mx.collections.ArrayCollection;
 	import mx.collections.ICollectionView;
 	import mx.collections.IList;
+	import mx.collections.Sort;
+	import mx.collections.SortField;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
 	import mx.events.CloseEvent;
@@ -40,11 +42,13 @@ package actionScripts.utils
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.SWFOutputVO;
 	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.IFileContentWindow;
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.ui.tabview.CloseTabEvent;
@@ -62,7 +66,6 @@ package actionScripts.utils
 	import components.popup.SDKSelectorPopup;
 	import components.renderers.CustomToolTipGBA;
 	import components.views.splashscreen.SplashScreen;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeOutputVO;
 
 	public class UtilsCore 
 	{
@@ -268,6 +271,21 @@ package actionScripts.utils
 			}
 			// if not found
 			return null;
+		}
+		
+		public static function sortCollection(collection:ArrayCollection, fields:Array):void
+		{
+			var sortFields:Array = [];
+			fields.forEach(function(field:String, index:int, arr:Array):void
+			{
+				if (field != "")
+				{
+					sortFields.push(new SortField(field, true));
+				}
+			});
+			
+			collection.sort = new Sort(sortFields);
+			collection.refresh();
 		}
 		
 		/**
@@ -760,10 +778,10 @@ package actionScripts.utils
 			
 			for (var i:int = 0; i < editorsCount; i++)
 			{
-				if ((model.editors[i] is BasicTextEditor) && model.editors[i].currentFile &&
-					(!projectReferencePath || model.editors[i].projectPath == projectReferencePath))
+				if ((model.editors[i] is IFileContentWindow) && model.editors[i].currentFile &&
+					(!projectReferencePath || (model.editors[i].hasOwnProperty("projectPath") && model.editors[i].projectPath == projectReferencePath)))
 				{
-                    var editor:BasicTextEditor = model.editors[i];
+                    var editor:IContentWindow = model.editors[i];
 					if (editor)
 					{
 						editorsToClose.push(editor);
@@ -959,6 +977,10 @@ package actionScripts.utils
 			{
 				currentMenuType = ProjectMenuTypes.HAXE;
 			}
+			else if (value is OnDiskProjectVO)
+			{
+				currentMenuType = ProjectMenuTypes.ON_DISK;
+			}
 
 			if (!value.menuType)
 			{
@@ -1094,12 +1116,21 @@ package actionScripts.utils
 		
 		public static function isNodeAvailable():Boolean
 		{
-			var nodeBinPath:String = getNodeBinPath();
-			if (!nodeBinPath)
+			if (!model.nodePath || model.nodePath == "")
 			{
 				return false;
 			}
-			return model.fileCore.isPathExists(nodeBinPath);
+			
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.NODEJS);
+			if (component && component.pathValidation)
+			{
+				if (model.fileCore.isPathExists(model.nodePath + model.fileCore.separator + component.pathValidation)) 
+					return true;
+				else if (model.fileCore.isPathExists(model.nodePath + model.fileCore.separator + "node"))
+					return true;
+			}
+			
+			return false;
 		}
 		
 		public static function isHaxeAvailable():Boolean
@@ -1236,7 +1267,14 @@ package actionScripts.utils
             }
             else
             {
-                return UtilsCore.convertString(nodeLocation.resolvePath("node").fileBridge.nativePath);
+				if (nodeLocation.resolvePath("node").fileBridge.exists)
+				{
+					return UtilsCore.convertString(nodeLocation.resolvePath("node").fileBridge.nativePath);
+				}
+				else if (nodeLocation.resolvePath("bin/node").fileBridge.exists)
+				{
+	                return UtilsCore.convertString(nodeLocation.resolvePath("bin/node").fileBridge.nativePath);
+				}
             }
 			
 			return null;
@@ -1311,6 +1349,23 @@ package actionScripts.utils
 			if (component && component.pathValidation)
 			{
 				return model.flexCore.isValidExecutableBy(SDKTypes.GIT, model.gitPath, component.pathValidation);
+			}
+			
+			return true;
+		}
+		
+		public static function isNotesDominoAvailable():Boolean
+		{
+			if (!model.notesPath || !model.fileCore.isPathExists(model.notesPath))
+			{
+				return false;
+			}
+			
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.NOTES);
+			if (component && component.pathValidation)
+			{
+				return model.fileCore.resolvePath(model.notesPath +"/"+ component.pathValidation).fileBridge.exists;
+				//return model.flexCore.isValidExecutableBy(SDKTypes.NOTES, model.notesPath, component.pathValidation);
 			}
 			
 			return true;

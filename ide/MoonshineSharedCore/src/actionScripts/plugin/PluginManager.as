@@ -53,7 +53,8 @@ package actionScripts.plugin
                     model.visualEditorCore.getDefaultPlugins(),
                     model.javaCore.getDefaultPlugins(),
                     model.groovyCore.getDefaultPlugins(),
-                    model.haxeCore.getDefaultPlugins());
+                    model.haxeCore.getDefaultPlugins(),
+					model.ondiskCore.getDefaultPlugins());
         	
             var plug:Class;
             for each (plug in allPlugins)
