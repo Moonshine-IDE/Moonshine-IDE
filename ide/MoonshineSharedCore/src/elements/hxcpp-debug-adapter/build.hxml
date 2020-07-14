@@ -1,0 +1,15 @@
+-lib vscode
+-lib vscode-debugadapter
+-cp src
+-cp hxcpp-debug-server
+-D js-es=6
+-js bin/adapter.js
+-main Adapter
+
+--next
+
+-lib vscode
+-cp src
+-D js-es=6
+-js bin/extension.js
+Extension

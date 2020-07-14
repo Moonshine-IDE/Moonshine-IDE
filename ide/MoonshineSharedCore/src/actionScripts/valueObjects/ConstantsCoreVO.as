@@ -102,6 +102,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATES_OPEN_PROJECTS: ArrayCollection;
 		public static var TEMPLATES_ANDROID_DEVICES:ArrayCollection;
 		public static var TEMPLATES_IOS_DEVICES:ArrayCollection;
+		public static var TEMPLATES_WEB_BROWSERS:ArrayCollection;
 		public static var ACTIONSCRIPT_PROJECT:FileLocation;
 		public static var LIBRARY_PROJECT_PROJECT:FileLocation;
 		public static var FLEXBROWSER_PROJECT:FileLocation;
@@ -506,6 +507,12 @@ public class $fileName
 				{
 					if (String(i.@type) == "AND") TEMPLATES_ANDROID_DEVICES.addItem(new MobileDeviceVO(String(i.@name), String(i.@key), String(i.@type), String(i.@screenDPI), true));
 					else TEMPLATES_IOS_DEVICES.addItem(new MobileDeviceVO(String(i.@name), String(i.@key), String(i.@type), String(i.@screenDPI), true));
+				}
+				
+				TEMPLATES_WEB_BROWSERS = new ArrayCollection();
+				for each (i in tmpXML..browser)
+				{
+					TEMPLATES_WEB_BROWSERS.addItem(new WebBrowserVO(String(i.@name), String(i.@debugAdapter), true));
 				}
 			}
 		}

@@ -1,0 +1,14 @@
+src/**
+node_modules/**
+**/*.map
+package-lock.json
+tsconfig.json
+webpack.config.js
+.vscode/**
+.gitignore
+.nyc_output/**
+coverage/**
+testdata/**
+dist/package.json
+dist/README.md
+dist/LICENSE

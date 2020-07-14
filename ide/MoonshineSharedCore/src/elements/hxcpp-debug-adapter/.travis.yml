@@ -1,0 +1,11 @@
+language: haxe
+dist: xenial
+haxe:
+  - development
+
+install:
+  - haxelib install vscode
+  - haxelib install vscode-debugadapter
+
+script:
+  - haxe build.hxml

@@ -120,6 +120,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private var jsOutputPathSetting:PathSetting;
 		private var nativeExtensionPath:PathListSetting;
 		private var mobileRunSettings:RunMobileSetting;
+		private var webBrowserSettings:DropDownListSetting;
 		private var targetPlatformSettings:DropDownListSetting;
 
         private var _jsOutputPath:String;
@@ -202,6 +203,16 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function get isMobileHasSimulatedDevice():MobileDeviceVO
 		{
 			return _isMobileHasSimulatedDevice;
+		}
+		
+		private var _runWebBrowser:String;
+		public function set runWebBrowser(value:String):void
+		{
+			_runWebBrowser = value;
+		}
+		public function get runWebBrowser():String
+		{
+			return _runWebBrowser;
 		}
 		
 		public function get platformTypes():ArrayCollection
@@ -315,6 +326,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 				mobileRunSettings.updateDevices(targetPlatformSettings.stringValue);
 				buildOptions.isMobileHasSimulatedDevice = (!targetPlatformSettings.stringValue || targetPlatformSettings.stringValue == "Android") ? ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0] : ConstantsCoreVO.TEMPLATES_IOS_DEVICES[0];
 			}
+			if (webBrowserSettings)
+			{
+				webBrowserSettings.isEditable = targetPlatformSettings.stringValue == "JS";
+			}
 		}
 		
 		public function AS3ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
@@ -344,6 +359,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (nativeExtensionPath) nativeExtensionPath = null;
 			if (mobileRunSettings) mobileRunSettings = null;
 			if (targetPlatformSettings) targetPlatformSettings = null;
+			if (webBrowserSettings) webBrowserSettings = null;
 			
 			additional = new StringSetting(buildOptions, "additional", "Additional compiler options");
 			htmlFilePath = new PathSetting(this, "urlToLaunch", "URL to Launch", false, urlToLaunch);
@@ -354,6 +370,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 			nativeExtensionPath = getExtensionsSettings();
 			mobileRunSettings = new RunMobileSetting(buildOptions, "Launch Method");
 			targetPlatformSettings = new DropDownListSetting(buildOptions, "targetPlatform", "Platform", platformTypes, "name");
+			webBrowserSettings = new DropDownListSetting(this, "runWebBrowser", "Web Browser", ConstantsCoreVO.TEMPLATES_WEB_BROWSERS, "name");
+			webBrowserSettings.isEditable = targetPlatformSettings.stringValue == "JS";
 
 			if (isRoyale)
 			{
@@ -496,11 +514,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 				targetPlatformSettings,
 				htmlFilePath,
 				customHTMLFilePath,
-				outputPathSetting
+				outputPathSetting,
+				webBrowserSettings
 			]);
 
 			var runSettings:SettingsWrapper = new SettingsWrapper("Run", runSettingsContent);
-				runSettingsContent.insertAt(4, jsOutputPathSetting);
+			runSettingsContent.insertAt(4, jsOutputPathSetting);
 
 			settings.push(runSettings);
 
