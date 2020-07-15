@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='utf-8'?>
+<note class='filter' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.10'
+ replicaid='052585270065DAC7'>
+<noteinfo noteid='16e' unid='A634536F7DDD8A078625851C006FBC8C' sequence='4'>
+<created><datetime dst='true'>20200228T152027,64-05</datetime></created>
+<modified><datetime>20200310T133232,57-05</datetime></modified>
+<revised><datetime dst='true'>20200228T152256,64-05</datetime></revised>
+<lastaccessed><datetime>20200310T133232,56-05</datetime></lastaccessed>
+<addedtofile><datetime>20200310T133232,56-05</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></updatedby>
+<wassignedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></wassignedby>
+<item name='$FILE' summary='true' sign='true' seal='true'><object><file hosttype='msdos'
+ compression='none' flags='sign' encoding='none' name='%%source%%.jar' size='395'>
+<created><datetime>20200228T142030,59-06</datetime></created>
+<modified><datetime>20200228T142256,60-06</datetime></modified><filedata>
+UEsDBBQACAgIAK9yXFAAAAAAAAAAAAAAAAAOAAAASmF2YUFnZW50LmphdmFVUMFqwzAMvRf6D289
+JWOkH1B62MpgDDYGHezsOqI1c6xgKVnL6L/P8bI11cGW7Pee9OSalqPCs3ZS1dy4wNXtaj6bz9pu
+552F9UYEz6Y393sKCjoqhVqQqwcjhO8BjRQjo2dX45WV5MW4UJQXAKDxNJT4jy2JOA6Q8V5jTzo+
+FuVqCs0dNxw0jQAzLdZ/9CqRp7CsMNVYLvEWXVCBgbim9YSs0CR+koQy9EDZLiwH4QQorHdJsgTH
+1Cf2FC9fX7Qrqys/J1FqKu60aodGPhSLJ/Ke7/DB0dc3i+lIZ1ij9lA8Hi21Ovin8no/9CuzVWM/
+36OxNF3KOWfpPP8AUEsHCAUVsVX9AAAAxwEAAFBLAQIUABQACAgIAK9yXFAFFbFV/QAAAMcBAAAO
+AAAAAAAAAAAAAAAAAAAAAABKYXZhQWdlbnQuamF2YVBLBQYAAAAAAQABADwAAAA5AQAAAAA=
+</filedata></file></object></item>
+<item name='$FILE' summary='true' sign='true' seal='true'><object><file hosttype='msdos'
+ compression='none' flags='sign' encoding='none' name='%%object%%.jar' size='508'>
+<created><datetime>20200228T142030,61-06</datetime></created>
+<modified><datetime>20200228T142256,62-06</datetime></modified><filedata>
+UEsDBBQACAgIANxyXFAAAAAAAAAAAAAAAAAPAAAASmF2YUFnZW50LmNsYXNzbZDbTsJAEIb/AaFQ
+i5wVD6h4BDU2XmNM1JgYU40JBq8b2JBq6RK6GHwir/UCoxc+gA9lHOohaNiLnd35Z7+df94/Xt8A
+7KKsIUSIn9l39mFLeErDBGHalarnm03ZdjxpBvkj2xeE6L7jOeqAEC5X6oSJY9kUOsKIG4ggypwL
+qYR/bjueDoJhIIEpgt4SqiZ835EeoVCuWH/w30p1EilkNKQJuXG6gSxyhCSzgoaOpadEXxGK/4Gj
+cjWOaRQ0zBBSN+zRdG2vZdbufSXaBmYxx1Zkjyl5K5AdaV52HU/VVFfY7WoMC4TEqXBdubN8Lbtu
+s6RjEcsalgjZMS8MlLBC0DrDlMt282Vr5F/F6Va1Utexhg0N6z+QQD3pN0RHBVY3h8NMdr64duP2
+qms3BKO5WwxXiE88cN41vqU5EsfI1jNij0EBD/1X3uPyEMfi1gCT1vYLkoTrJ+Qz8wMUHxCztgdY
+fQwIOcxwZ7w+AVBLBwiGmmVQbAEAACACAABQSwECFAAUAAgICADcclxQhpplUGwBAAAgAgAADwAA
+AAAAAAAAAAAAAAAAAAAASmF2YUFnZW50LmNsYXNzUEsFBgAAAAABAAEAPQAAAKkBAAAAAA==
+</filedata></file></object></item>
+<item name='$JavaCompilerSource'><text>1.3</text></item>
+<item name='$JavaCompilerTarget'><text>1.2</text></item>
+<item name='$AssistVersion'><datetime>20200228T142256,66-06</datetime></item>
+<item name='$TITLE' sign='true'><text>ExampleJavaAgent</text></item>
+<item name='$AssistType' sign='true'><number>65427</number></item>
+<item name='$AssistLastRun' sign='true'>
+<rawitemdata type='400'>
+AAAAAAAAAAA=
+</rawitemdata></item>
+<item name='$AssistDocCount' sign='true'><number>0</number></item>
+<item name='$FlagsExt' sign='true'><text/></item>
+<item name='$AssistFlags' sign='true'><text>Es</text></item>
+<item name='$AssistTrigger'><text>4</text></item>
+<item name='$AssistInfo' sign='true'>
+<rawitemdata type='11'>
+AQAEAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+</rawitemdata></item>
+<item name='$AssistQuery' sign='true'>
+<rawitemdata type='f'>
+gQYAAAAA
+</rawitemdata></item>
+<item name='$AssistAction' sign='true'>
+<rawitemdata type='10'>
+gQKT/2YADwAlAB8AAQAAAAAAAABKYXZhQWdlbnQuY2xhc3NjOlxQcm9ncmFtIEZpbGVzICh4ODYp
+XElCTVxOb3Rlc1xEYXRhJSVzb3VyY2UlJS5qYXIAJSVvYmplY3QlJS5qYXIAAAA=
+</rawitemdata></item>
+<item name='$AssistAction_Ex' sign='true'>
+<rawitemdata type='14'>
+gQI=
+</rawitemdata></item>
+<item name='$Restricted' sign='true'><number>1</number></item>
+<item name='$Flags'><text>fJj3</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='$AssistRunInfo' summary='true'>
+<rawitemdata type='3'>
+BgAAAgAACABqAQAAAAAAAAUAAAAwAAAAAAAAAAAAAAAAAAAAngAAAAAAAAAAAAAAAAAAABAAAAAA
+AAAAEy9wAByFJQYAAAAAwvZvAByFJYZ9E24AHIUlhgAAAAAAAAAAAAAAAAAAAAAAAAAAU3RhcnRl
+ZCBydW5uaW5nIGFnZW50ICdFeGFtcGxlSmF2YUFnZW50JyBvbiAwMi8yOC8yMDIwIDAyOjI1OjE4
+IFBNDQpSYW4gSmF2YSBBZ2VudCBDbGFzcw0KRG9uZSBydW5uaW5nIGFnZW50ICdFeGFtcGxlSmF2
+YUFnZW50JyBvbiAwMi8yOC8yMDIwIDAyOjI1OjIwIFBNDQoADQoGaNJF6m9qmQQucAAchSWG2QiG
+ZPz/ITBUKNExEI3lQ5OwDottUJJeyprAzfo+7WBNb8sJi4Nr6/P37+s//rNDEL/PTmnC4WBKWHa8
+unEKDf6N5nn26SMwqxsQozNHoF+lphj8p8ruDT+5HnIRxWT0zGRF9jb+lkj02wN8KVxDRssbxE0B
+sCNOkhKkG94s8y9Nh5HJbkUi77KV9c5o1S7k0I7mInitcRhm6xOmTmJFr+CiVXYLFq/NRmNlIk0k
+CqQOmL6Hr3y085MxsB2y4xcjxHuRUYkD+HrEUOuzXPPzwH4TFXID19+aXieUdrlrIXEwhXXjzkgM
+PKA8NUnePdSUsjwXRSoRO1yGxq8NAM/Kw0lEmqqCzk7I11ZNQzyx1v6RyLhaeYtDGE7wrDCWSUoe
+eFPccip+822ClWveOHU5TPIlY+7TxTYkyr7D0Zenhg0302qtTWrWUcP7UzDkm4PPOV+13lZ8RyC0
+EnQk5M7azvukqCKmlOSieTR3XvDEmDkye3HMrCgw53IrJamTEle++Dkf26g8XNkKqRlY76E2Mq7x
+ZUc2XTMEalYr7PDD+rWBkceBnfG4XpPT2NVhh75SsZMszSVcmsYYUKlNRZRbBEArCJq0UXvXPldL
+tH9KzeqR3Of3IzuWWOaLyS+Yp2e274lWJotKxeCowPYCDZQH7PG7Rf+DqtDwT5JH/CG6qNrFKsVb
+mlHoEnbIqlni0kgZ970tXGxfG82/3MTMUFQ2U4igI/WB1HjBVKkD5AHdYB/9GCor54QlBiWbhr3T
+qAeWwXOfOCqVT5YMVZzgqR6cffkmeGof3zctCKg5fqipjsIXuaevApv9yd28E7MdgtryY4kKSdG2
+ZcD4Vo9FYCcyoIpjjIBGZ8o66B3L11Er0cvNFY9FRLpjxQrCBFlMmm9Tq5Z863owub9vT+pUH2Lt
+1/SD5K5Iw6uurWqPWlhhxCr/PNqmRM56/fh9gXX/zBUWb6/XRLMG/rrLbm2s4LedV5AfD5Ek4NgE
+8RVqPN7IfYEfEurz6L3vD6Vh
+</rawitemdata></item></note>
+

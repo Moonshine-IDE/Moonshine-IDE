@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+	<editors>
+		<editor id="vim" isWindows="true" isMac="true">
+			<title>VIM</title>
+			<defaultLocation>
+				<windows>$programFiles/Vim/vim82/gvim.exe</windows>
+				<macos>/Applications/MacVim.app</macos>
+			</defaultLocation>
+<!-- 			<defaultArguments> -->
+<!-- 				<windows>-R</windows> -->
+<!-- 				<macos/> -->
+<!-- 			</defaultArguments> -->
+			<website>https://www.vim.org/download.php</website>
+		</editor>
+		<editor id="sublimetext" isWindows="false" isMac="true">
+			<title>SublimeText</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/Sublime Text.app</macos>
+			</defaultLocation>
+			<website>https://www.sublimetext.com/3</website>
+		</editor>
+		<editor id="textmate" isWindows="false" isMac="true">
+			<title>TextMate</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/TextMate.app</macos>
+			</defaultLocation>
+			<website>https://macromates.com</website>
+		</editor>
+		<editor id="vscode" isWindows="true" isMac="true">
+			<title>Visual Studio Code</title>
+			<defaultLocation>
+				<windows>$userDirectory/AppData/Local/Programs/Microsoft VS Code/Code.exe</windows>
+				<macos>/Applications/Visual Studio Code.app</macos>
+			</defaultLocation>
+			<website>https://code.visualstudio.com</website>
+		</editor>
+		<editor id="iawriter" isWindows="false" isMac="true">
+			<title>IAWriter</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/iA Writer.app</macos>
+			</defaultLocation>
+			<website>https://ia.net/downloads</website>
+		</editor>
+		<editor id="emacs" isWindows="false" isMac="true">
+			<title>Emacs</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/Emacs.app</macos>
+			</defaultLocation>
+			<website>https://www.gnu.org/software/emacs</website>
+		</editor>
+		<editor id="bbedit" isWindows="false" isMac="true">
+			<title>BBEdit</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/BBEdit.app</macos>
+			</defaultLocation>
+			<website>https://www.barebones.com/products/textwrangler/download.html</website>
+		</editor>
+		<editor id="notepad++" isWindows="true" isMac="false">
+			<title>NotePad++</title>
+			<defaultLocation>
+				<windows>$programFiles/Notepad++/notepad++.exe</windows>
+				<macos/>
+			</defaultLocation>
+			<website>https://notepad-plus-plus.org/downloads/</website>
+		</editor>
+		<editor id="ultraedit" isWindows="true" isMac="false">
+			<title>UltraEdit</title>
+			<defaultLocation>
+				<windows>$programFiles/IDM Computer Solutions/UltraEdit/uedit64.exe</windows>
+				<macos/>
+			</defaultLocation>
+			<website>https://www.ultraedit.com/</website>
+		</editor>
+		<editor id="eclipse" isWindows="true" isMac="true">
+			<title>Eclipse</title>
+			<defaultLocation>
+				<windows>$userDirectory/eclipse/java-2020-03/eclipse/eclipse.exe</windows>
+				<macos>$userDirectory/Documents/eclipse/java-2020-03/Eclipse.app</macos>
+			</defaultLocation>
+			<website>https://www.eclipse.org/downloads/</website>
+		</editor>
+	</editors>
+</config>

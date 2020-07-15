@@ -23,6 +23,26 @@ package actionScripts.plugin.actionscript.as3project.vo
 
     public class MavenBuildOptions extends JavaProjectBuildOptions
     {
+		private var _dominoNotesProgram:String;
+		public function get dominoNotesProgram():String
+		{
+			return _dominoNotesProgram;
+		}
+		public function set dominoNotesProgram(value:String):void
+		{
+			_dominoNotesProgram = value;
+		}
+
+		private var _dominoNotesPlatform:String;
+		public function get dominoNotesPlatform():String
+		{
+			return _dominoNotesPlatform;
+		}
+		public function set dominoNotesPlatform(value:String):void
+		{
+			_dominoNotesPlatform = value;
+		}
+		
         public function MavenBuildOptions(defaultMavenBuildPath:String)
         {
             super(defaultMavenBuildPath);
@@ -56,8 +76,10 @@ package actionScripts.plugin.actionscript.as3project.vo
                 commandLine: SerializeUtil.serializeString(commandLine),
                 settingsFilePath: SerializeUtil.serializeString(settingsFilePath),
 
-                 dominoNotesProgram: SerializeUtil.serializeString(dominoNotesProgram),
+                dominoNotesProgram: SerializeUtil.serializeString(dominoNotesProgram),
                 dominoNotesPlatform: SerializeUtil.serializeString(dominoNotesPlatform)
+				dominoNotesProgram: SerializeUtil.serializeString(dominoNotesProgram),
+				dominoNotesPlatform: SerializeUtil.serializeString(dominoNotesPlatform)
             }
 
             build.appendChild(SerializeUtil.serializePairs(pairs, <option/>));
@@ -71,9 +93,8 @@ package actionScripts.plugin.actionscript.as3project.vo
             buildPath = SerializeUtil.deserializeString(options.@mavenBuildPath);
             commandLine = SerializeUtil.deserializeString(options.@commandLine);
             settingsFilePath = SerializeUtil.deserializeString(options.@settingsFilePath);
-            dominoNotesProgram = SerializeUtil.deserializeString(options.@dominoNotesProgram);
-            dominoNotesPlatform = SerializeUtil.deserializeString(options.@dominoNotesPlatform);
-                        
+			dominoNotesProgram = SerializeUtil.deserializeString(options.@dominoNotesProgram);
+			dominoNotesPlatform = SerializeUtil.deserializeString(options.@dominoNotesPlatform);
         }
         public var dominoNotesProgram:String;
         public var dominoNotesPlatform:String;

@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: org.openntf.nsfodp.nsf-moonshine-domino
+Bundle-SymbolicName: org.openntf.nsfodp.nsf-moonshine-domino
+Bundle-Name: nsf-moonshine-domino
+Bundle-Version: 1.0.0
+Bundle-Classpath: odp/Code/Jars/exampleembeddedjar.jar
+Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,com.ibm.common
+ s;resolution:=optional,com.ibm.commons.xml;resolution:=optional,com.i
+ bm.commons.vfs;resolution:=optional,com.ibm.jscript;resolution:=optio
+ nal,com.ibm.designer.runtime.directory;resolution:=optional,com.ibm.d
+ esigner.runtime;resolution:=optional,com.ibm.xsp.core;resolution:=opt
+ ional,com.ibm.xsp.extsn;resolution:=optional,com.ibm.xsp.designer;res
+ olution:=optional,com.ibm.xsp.domino;resolution:=optional,com.ibm.not
+ es.java.api;resolution:=optional,com.ibm.xsp.rcp;resolution:=optional
+ ,org.openntf.nsfodp.example;resolution:=optional
+Bundle-ManifestVersion: 2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Created-By: org.openntf.maven.nsfodp.GeneratePDEStructureMojo
+

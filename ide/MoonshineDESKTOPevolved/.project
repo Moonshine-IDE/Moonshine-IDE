@@ -25,22 +25,22 @@
 		<link>
 			<name>[source path] InstallerSharedCore-src</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-SDK-Installer/InstallerSharedCore/src</locationURI>
+			<location>/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-SDK-Installer/InstallerSharedCore/src</location>
 		</link>
 		<link>
 			<name>[source path] MoonshineSharedCore-src</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src</locationURI>
+			<location>/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineSharedCore/src</location>
 		</link>
 		<link>
 			<name>[source path] en_US</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/en_US</locationURI>
+			<location>/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/en_US</location>
 		</link>
 		<link>
 			<name>[source path] ja_JP</name>
 			<type>2</type>
-			<locationURI>DOCUMENTS/Prominic_Git/git/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/ja_JP</locationURI>
+			<location>/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineSharedCore/src/locale/ja_JP</location>
 		</link>
 	</linkedResources>
 </projectDescription>

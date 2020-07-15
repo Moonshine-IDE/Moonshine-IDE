@@ -36,6 +36,7 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.plugins.svn.SVNPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -260,12 +261,12 @@ package actionScripts.plugins.versionControl
 				{
 					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN) 
 					{
-						if (!isSVNPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.svn::SVNPlugin"));
+						if (!isSVNPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, SVNPlugin.NAMESPACE));
 						else return true;
 					}
 					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT) 
 					{
-						if (!isGitPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.git::GitHubPlugin"));
+						if (!isGitPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, GitHubPlugin.NAMESPACE));
 						else return true;
 					}
 				}

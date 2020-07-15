@@ -896,9 +896,9 @@ package actionScripts.languageServer
 				}
 				else if(result && FIELD_CONTENTS in result) //hover
 				{
-					uri = _hoverLookup[requestID] as String;
+					var uriAndPosition:UriAndPosition = _hoverLookup[requestID] as UriAndPosition;
 					delete _hoverLookup[requestID];
-					handleHoverResponse(result, uri);
+					handleHoverResponse(result, uriAndPosition.uri, uriAndPosition.position);
 				}
 				else if(result && FIELD_DOCUMENT_CHANGES in result) //rename
 				{
@@ -918,7 +918,7 @@ package actionScripts.languageServer
 					}
 					else if(requestID in _definitionLinkLookup)
 					{
-						var uriAndPosition:UriAndPosition = _definitionLinkLookup[requestID] as UriAndPosition;
+						uriAndPosition = _definitionLinkLookup[requestID] as UriAndPosition;
 						delete _definitionLinkLookup[requestID];
 						handleDefinitionLinkResponse(result, uriAndPosition.uri, uriAndPosition.position);
 					}
@@ -1114,7 +1114,7 @@ package actionScripts.languageServer
 			}
 		}
 
-		private function handleHoverResponse(result:Object, uri:String):void
+		private function handleHoverResponse(result:Object, uri:String, position:Position):void
 		{
 			var resultContents:Object = result.contents;
 			var eventContents:Vector.<String> = new <String>[];
@@ -1132,7 +1132,7 @@ package actionScripts.languageServer
 			{
 				eventContents[0] = parseHover(resultContents);
 			}
-			_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents, uri));
+			_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, eventContents, uri, position));
 		}
 
 		private function handleRenameResponse(result:Object):void
@@ -1730,9 +1730,10 @@ package actionScripts.languageServer
 				return;
 			}
 			event.preventDefault();
+			var positionVO:Position = new Position(event.endLineNumber, event.endLinePos);
 			if(!supportsHover)
 			{
-				_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, new <String>[], uri));
+				_globalDispatcher.dispatchEvent(new HoverEvent(HoverEvent.EVENT_SHOW_HOVER, new <String>[], uri, positionVO));
 				return;
 			}
 
@@ -1740,15 +1741,15 @@ package actionScripts.languageServer
 			textDocument.uri = uri;
 
 			var position:Object = new Object();
-			position.line = event.endLineNumber;
-			position.character = event.endLinePos;
+			position.line = positionVO.line;
+			position.character = positionVO.character;
 
 			var params:Object = new Object();
 			params.textDocument = textDocument;
 			params.position = position;
 			
 			var id:int = this.sendRequest(METHOD_TEXT_DOCUMENT__HOVER, params);
-			_hoverLookup[id] = uri;
+			_hoverLookup[id] = new UriAndPosition(uri, positionVO);
 		}
 
 		private function definitionLinkHandler(event:LanguageServerEvent):void

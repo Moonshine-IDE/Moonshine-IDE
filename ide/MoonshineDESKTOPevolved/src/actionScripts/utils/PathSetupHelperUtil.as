@@ -30,6 +30,9 @@ package actionScripts.utils
 	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.domino.DominoPlugin;
+	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.plugins.svn.SVNPlugin;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
@@ -58,7 +61,7 @@ package actionScripts.utils
 					pluginClass = "actionScripts.plugins.ant::AntBuildPlugin";
 					break;
 				case SDKTypes.GIT:
-					pluginClass = "actionScripts.plugins.git::GitHubPlugin";
+					pluginClass = GitHubPlugin.NAMESPACE;
 					break;
 				case SDKTypes.MAVEN:
 					pluginClass = "actionScripts.plugins.maven::MavenBuildPlugin";
@@ -70,10 +73,13 @@ package actionScripts.utils
 					pluginClass = "actionScripts.plugins.grails::GrailsBuildPlugin";
 					break;
 				case SDKTypes.SVN:
-					pluginClass = "actionScripts.plugins.svn::SVNPlugin";
+					pluginClass = SVNPlugin.NAMESPACE;
 					break;
 				case SDKTypes.NODEJS:
 					pluginClass = "actionScripts.plugins.js::JavaScriptPlugin";
+					break;
+				case SDKTypes.NOTES:
+					pluginClass = DominoPlugin.NAMESPACE;
 					break;
 			}
 			
@@ -113,6 +119,9 @@ package actionScripts.utils
 					break;
 				case SDKTypes.NODEJS:
 					updateNodeJsPath(path);
+					break;
+				case SDKTypes.NOTES:
+					updateNotesPath(path);
 					break;
 			}
 		}
@@ -227,7 +236,7 @@ package actionScripts.utils
 			}
 		}
 		
-		public static function updateSVNPath(path:String):void
+		public static function updateSVNPath(path:String, forceUpdate:Boolean=false):void
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
@@ -239,52 +248,123 @@ package actionScripts.utils
 				}
 				else
 				{
-					if (path && !ConstantsCoreVO.IS_MACOS && path.indexOf("svn.exe") == -1)
-					{
-						path += (File.separator +'bin'+ File.separator +'svn.exe');
-					}
-					
-					model.svnPath = path;
-					var settings:Vector.<ISetting> = Vector.<ISetting>([
-						new PathSetting({svnBinaryPath: model.svnPath}, 'svnBinaryPath', 'SVN Binary', false)
-					]);
-					
-					// save as moonshine settings
-					dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
-						null, "actionScripts.plugins.svn::SVNPlugin", settings));
+					updateMoonshineConfiguration();
 				}
+			}
+			
+			if (forceUpdate)
+			{
+				updateMoonshineConfiguration();
+			}
+			
+			/*
+			 * @local
+			 */
+			function updateMoonshineConfiguration():void
+			{
+				if (path && !ConstantsCoreVO.IS_MACOS && path.indexOf("svn.exe") == -1)
+				{
+					path += (File.separator +'bin'+ File.separator +'svn.exe');
+				}
+				
+				model.svnPath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({svnBinaryPath: model.svnPath}, 'svnBinaryPath', 'SVN Binary', false)
+				]);
+				
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, SVNPlugin.NAMESPACE, settings));
 			}
 		}
 		
-		public static function updateGitPath(path:String):void
+		public static function updateGitPath(path:String, forceUpdate:Boolean=false):void
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!UtilsCore.isGitPresent())
+			var isGitPresent:Boolean = UtilsCore.isGitPresent();
+			if (!isGitPresent)
 			{
-				if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent())
+				if (ConstantsCoreVO.IS_MACOS && !isGitPresent)
 				{
 					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_GIT, message: "Feature available. Click on Configure to allow"}));
 				}
 				else
 				{
-					if (!ConstantsCoreVO.IS_MACOS && path.indexOf("git.exe") == -1)
-					{
-						path += (File.separator +'bin'+ File.separator +'git.exe');
-					}
-					
-					model.gitPath = path;
-					var settings:Vector.<ISetting> = Vector.<ISetting>([
-						new PathSetting({gitBinaryPathOSX: model.gitPath}, 'gitBinaryPathOSX', 'Git Path', true)
-					]);
-					
-					// save as moonshine settings
-					dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
-						null, "actionScripts.plugins.git::GitHubPlugin", settings));
-					
-					// update local env.variable
-					environmentSetupUtils.updateToCurrentEnvironmentVariable();
+					updateMoonshineConfiguration();
 				}
+			}
+			
+			if (forceUpdate)
+			{
+				updateMoonshineConfiguration();
+			}
+			
+			/*
+			 * @local
+			 */
+			function updateMoonshineConfiguration():void
+			{
+				if (!ConstantsCoreVO.IS_MACOS && path.indexOf("git.exe") == -1)
+				{
+					path += (File.separator +'bin'+ File.separator +'git.exe');
+				}
+				
+				model.gitPath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({gitBinaryPathOSX: model.gitPath}, 'gitBinaryPathOSX', 'Git Path', true)
+				]);
+				
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, GitHubPlugin.NAMESPACE, settings));
+				
+				// update local env.variable
+				environmentSetupUtils.updateToCurrentEnvironmentVariable();
+			}
+		}
+		
+		public static function updateNotesPath(path:String, forceUpdate:Boolean=false):void
+		{
+			// update only if ant path not set
+			// or the existing ant path does not exists
+			var isNotesDominoAvailable:Boolean = UtilsCore.isNotesDominoAvailable(); 
+			if (!isNotesDominoAvailable)
+			{
+				if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION && 
+					!isNotesDominoAvailable)
+				{
+					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, 
+						{type: ComponentTypes.TYPE_NOTES, message: "Feature available. Click on Configure to allow permission."}
+					));
+				}
+				else
+				{
+					updateMoonshineConfiguration();
+				}
+			}
+			
+			if (forceUpdate)
+			{
+				updateMoonshineConfiguration();
+			}
+			
+			/*
+			 * @local
+			 */
+			function updateMoonshineConfiguration():void
+			{
+				model.notesPath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({notesPath: model.notesPath}, 'notesPath', 'HCL Notes Installation', false)
+				]);
+				
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, DominoPlugin.NAMESPACE, settings));
+				
+				// update local env.variable
+				environmentSetupUtils.updateToCurrentEnvironmentVariable();
 			}
 		}
 		

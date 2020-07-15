@@ -32,6 +32,7 @@ package actionScripts.ui.tabview
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.locator.IDEModel;
     import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.utils.UtilsCore;
@@ -325,14 +326,14 @@ package actionScripts.ui.tabview
             for (var i:int = numTabs - 2; i > -1; i--)
 			{
                 var tab:TabViewTab = tabContainer.getChildAt(i) as TabViewTab;
-                removeTabFromCache(tab.data as BasicTextEditor);
+                removeTabFromCache(tab.data as IFileContentWindow);
 			}
 
 			for each (var item:HamburgerMenuTabsVO in model.hamburgerTabs)
 			{
 				if (item.tabData is BasicTextEditor)
 				{
-                    removeTabFromCache(item.tabData as BasicTextEditor);
+                    removeTabFromCache(item.tabData as IFileContentWindow);
 				}
 			}
 		}
@@ -516,14 +517,18 @@ package actionScripts.ui.tabview
             invalidateDisplayList();
         }
 
-		private function removeTabFromCache(editor:BasicTextEditor):void
+		private function removeTabFromCache(editor:IFileContentWindow):void
 		{
             if (editor)
             {
-                SharedObjectUtil.removeLocationOfClosingProjectFile(
+				var projectPath:String = ("projectPath" in editor) ? editor["projectPath"] : null;
+				if (editor.currentFile)
+				{
+					SharedObjectUtil.removeLocationOfClosingProjectFile(
 						editor.currentFile.name,
-                        editor.currentFile.fileBridge.nativePath,
-						editor.projectPath);
+						editor.currentFile.fileBridge.nativePath,
+						projectPath);
+				}
             }
 		}
     }

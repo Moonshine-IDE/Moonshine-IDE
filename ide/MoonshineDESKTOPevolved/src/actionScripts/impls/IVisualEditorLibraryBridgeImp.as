@@ -27,6 +27,7 @@ package actionScripts.impls
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.TreeMenuItemEvent;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugins.ui.editor.VisualEditorViewer;
@@ -40,7 +41,7 @@ package actionScripts.impls
 	
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
 	{
-		public var visualEditorProject:AS3ProjectVO;
+		public var visualEditorProject:ProjectVO;
 		
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var model:IDEModel = IDEModel.getInstance();
@@ -49,10 +50,10 @@ package actionScripts.impls
 		public function getXhtmlFileUpdates(updateHandler:Function=null):void
 		{
 			this.updateHandler = updateHandler;
-			if (!visualEditorProject.filesList)
+			if (!(visualEditorProject as IVisualEditorProjectVO).filesList)
 			{
-				visualEditorProject.filesList = new ArrayCollection();
-				UtilsCore.parseFilesList(visualEditorProject.filesList, visualEditorProject as ProjectVO, ["xhtml"], true); // to be use in includes files list in primefaces
+				(visualEditorProject as IVisualEditorProjectVO).filesList = new ArrayCollection();
+				UtilsCore.parseFilesList((visualEditorProject as IVisualEditorProjectVO).filesList, visualEditorProject as ProjectVO, ["xhtml"], true); // to be use in includes files list in primefaces
 				dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onNewFileAdded, false, 0, true);
 				dispatcher.addEventListener(TreeMenuItemEvent.FILE_DELETED, onFileRemoved, false, 0, true);
 				dispatcher.addEventListener(TreeMenuItemEvent.FILE_RENAMED, onFileRenamed, false, 0, true);
@@ -111,7 +112,7 @@ package actionScripts.impls
 				var newFileWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(event.data, (event.extra as FileLocation));
 				if (newFileWrapper)
 				{
-					visualEditorProject.filesList.addItem(new ResourceVO((event.extra as FileLocation).name, newFileWrapper));
+					(visualEditorProject as IVisualEditorProjectVO).filesList.addItem(new ResourceVO((event.extra as FileLocation).name, newFileWrapper));
 					sendXHtmlUpdates();
 				}
 			}
@@ -123,18 +124,19 @@ package actionScripts.impls
 			if (event.data.projectReference.path == visualEditorProject.projectFolder.nativePath)
 			{
 				var pathSeparator:String = event.data.file.fileBridge.separator;
-				for (var i:int=0; i < visualEditorProject.filesList.length; i ++)
+				var filesList:ArrayCollection = (visualEditorProject as IVisualEditorProjectVO).filesList;
+				for (var i:int=0; i < filesList.length; i ++)
 				{
 					// direct == path check or
 					// path check if the xhtml file is children of deleted file/folder
-					if (event.data.file.fileBridge.nativePath == visualEditorProject.filesList[i].sourceWrapper.file.fileBridge.nativePath)
+					if (event.data.file.fileBridge.nativePath == filesList[i].sourceWrapper.file.fileBridge.nativePath)
 					{
-						visualEditorProject.filesList.removeItemAt(i);
+						filesList.removeItemAt(i);
 						break;
 					}
-					else if (visualEditorProject.filesList[i].sourceWrapper.file.fileBridge.nativePath.indexOf(event.data.file.fileBridge.nativePath + pathSeparator) != -1)
+					else if (filesList[i].sourceWrapper.file.fileBridge.nativePath.indexOf(event.data.file.fileBridge.nativePath + pathSeparator) != -1)
 					{
-						visualEditorProject.filesList.removeItemAt(i);
+						filesList.removeItemAt(i);
 						i--;
 					}
 				}
@@ -148,7 +150,8 @@ package actionScripts.impls
 			// remove resource only relative to the project
 			if (event.data.projectReference.path == visualEditorProject.projectFolder.nativePath)
 			{
-				for each (var i:ResourceVO in visualEditorProject.filesList)
+				var filesList:ArrayCollection = (visualEditorProject as IVisualEditorProjectVO).filesList;
+				for each (var i:ResourceVO in filesList)
 				{
 					if (event.data.file.fileBridge.nativePath == i.sourceWrapper.file.fileBridge.nativePath)
 					{
@@ -163,7 +166,7 @@ package actionScripts.impls
 		
 		private function sendXHtmlUpdates():void
 		{
-			this.updateHandler(visualEditorProject.filesList);
+			this.updateHandler((visualEditorProject as IVisualEditorProjectVO).filesList);
 		}
 		
 		protected function handleEditorChange(event:CollectionEvent):void

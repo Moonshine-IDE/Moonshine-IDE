@@ -137,11 +137,7 @@ package actionScripts.utils
 		
 		private function runAppStoreHelperWindows():void
 		{
-			var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			npInfo.executable = executableFile;
-			npInfo.arguments = new Vector.<String>();
-			var process:NativeProcess = new NativeProcess();
-			process.start(npInfo);
+			executableFile.openWithDefaultApplication();
 		}
 		
 		private function initiate64BitDownloadProcess(downloadUrl:String):void

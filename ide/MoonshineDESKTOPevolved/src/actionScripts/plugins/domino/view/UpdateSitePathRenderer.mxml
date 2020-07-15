@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup
+		xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		width="100%"
+		paddingLeft="15"
+		paddingTop="15"
+		paddingRight="15"
+		paddingBottom="15"
+		creationComplete="onPathRendererCreationComplete(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.settings.renderers.LinkButtonSkin;
+			import actionScripts.plugin.settings.vo.AbstractSetting;
+			import actionScripts.plugin.settings.vo.PathSetting;
+			import actionScripts.plugins.domino.settings.UpdateSitePathSetting;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+	
+			[Bindable] public var setting:PathSetting;
+			[Bindable] public var isGenerateButton:Boolean;
+	
+			[Bindable] private var model:IDEModel = IDEModel.getInstance();
+	
+			private var message:String;
+			private var messageType:String;
+			
+			public function set path(value:String):void
+			{
+				lblValue.text = setting.stringValue = value;
+			}
+	
+			public function setMessage(value:String, type:String):void
+			{
+				this.message = value;
+				this.messageType = type;
+	
+				if (!lblMessage)
+				{
+					return;
+				}
+				if (!this.message)
+				{
+					lblMessage.text = "";
+					lblMessage.includeInLayout = lblMessage.visible = false;
+				}
+	
+				lblMessage.includeInLayout = lblMessage.visible = true;
+				switch (type)
+				{
+					case AbstractSetting.MESSAGE_CRITICAL:
+						lblMessage.setStyle("color", 0xff0000);
+						break;
+					case AbstractSetting.MESSAGE_IMPORTANT:
+						lblMessage.setStyle("color", 0x0099ff);
+						break;
+					default:
+						lblMessage.setStyle("color", 0x666666);
+						break;
+				}
+	
+				lblMessage.text = value;
+			}
+	
+			private function selectPath():void
+			{
+				var location:FileLocation = new FileLocation(setting.stringValue);
+				var startFromLocation:String = setting.defaultPath;
+				if (location.fileBridge.isPathExists(setting.stringValue))
+				{
+					startFromLocation = location.fileBridge.nativePath;
+				}
+				
+				if (setting.directory)
+				{
+					model.fileCore.browseForDirectory("Select directory", openFile, null, startFromLocation);
+				}
+				else
+				{
+					model.fileCore.browseForOpen("Select file", openFile, null, setting.fileFilters, startFromLocation);
+				}
+			}
+	
+			private function clearPath():void
+			{
+				setting.stringValue = "";
+				lblMessage.text = "";
+			}
+			
+			private function generatePath():void
+			{
+				setting.dispatchEvent(new Event(UpdateSitePathSetting.EVENT_GENRATE_SITE));
+			}
+	
+			private function openFile(fileDir:Object):void
+			{
+				setting.stringValue = fileDir.nativePath;
+				setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
+			}
+	
+			protected function onPathRendererCreationComplete(event:FlexEvent):void
+			{
+				setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
+	
+				// validate path
+				if(setting.stringValue)
+				{
+					if(!(new FileLocation(setting.stringValue).fileBridge.exists))
+						setMessage("Path is not accessible.", AbstractSetting.MESSAGE_CRITICAL);
+				} else
+				{
+					setMessage(this.message, this.messageType);
+				}
+			}
+	
+			private function onFocusIn(event:FocusEvent):void
+			{
+				event.currentTarget.text = "";
+			}
+			
+		]]>
+	</fx:Script>
+
+	<s:HGroup width="100%">
+		<s:Label styleName="uiTextSettingsLabel"
+				 text="{setting.label}" />
+		<mx:Spacer width="100%"/>
+		<s:Button label="Clear"
+				  skinClass="{LinkButtonSkin}"
+				  click="clearPath()" />
+		<s:Button label="Change"
+				  skinClass="{LinkButtonSkin}"
+				  click="selectPath()" />
+		<s:Button label="Generate"
+				  skinClass="{LinkButtonSkin}" color="0xff0000"
+				  click="generatePath()" 
+				  visible="{ConstantsCoreVO.IS_MACOS}" includeInLayout="{ConstantsCoreVO.IS_MACOS}"
+				  enabled="{isGenerateButton}"/>
+	</s:HGroup>
+
+	<s:Label id="lblValue"
+			 styleName="uiTextSettingsValue"
+			 paddingTop="10" width="98%"
+			 text="{setting.stringValue? setting.stringValue : 'Not Set' }"/>
+	
+	<s:Label id="lblMessage"
+			 styleName="uiTextSettingsLabel" color="#666666" width="100%" maxDisplayedLines="3"
+			 fontSize="12" includeInLayout="false" visible="false"/>
+</s:VGroup>

@@ -47,6 +47,8 @@ package actionScripts.utils
 		private static const QUERY_SVN_GIT_VERSION:String = "getSVNGitVersion";
 		private static const QUERY_GRADLE_VERSION:String = "getGradleVersion";
 		private static const QUERY_GRAILS_VERSION:String = "getGrailsVersion";
+		private static const QUERY_NODEJS_VERSION:String = "getNodeJSVersion";
+		private static const QUERY_NOTES_VERSION:String = "getHCLNotesVersion";
 		
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
 		
@@ -149,6 +151,23 @@ package actionScripts.utils
 							executable = ConstantsCoreVO.IS_MACOS ? "grails" : "grails.bat";
 							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
 							itemTypeUnderCursor = QUERY_GRAILS_VERSION;
+							break;
+						case ComponentTypes.TYPE_NODEJS:
+							executable = ConstantsCoreVO.IS_MACOS ? "node" : "node.exe";
+							if (ConstantsCoreVO.IS_MACOS) commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
+							else commands = '"'+ itemUnderCursor.installToPath+'/'+ executable +'" --version';
+							itemTypeUnderCursor = QUERY_NODEJS_VERSION;
+							break;
+						case ComponentTypes.TYPE_NOTES:
+							if (ConstantsCoreVO.IS_MACOS)
+							{
+								commands = 'defaults read "'+ itemUnderCursor.installToPath+'"/Contents/Info CFBundleShortVersionString';
+							}
+							else
+							{
+								commands = '"'+ itemUnderCursor.installToPath+'/nsd.exe" -version';
+							}
+							itemTypeUnderCursor = QUERY_NOTES_VERSION;
 							break;
 					}
 					
@@ -292,6 +311,7 @@ package actionScripts.utils
 					case QUERY_ANT_VERSION:
 					case QUERY_GRAILS_VERSION:
 					case QUERY_SVN_GIT_VERSION:
+					case QUERY_NODEJS_VERSION:
 					{
 						if (!components[int(tmpQueue.extraArguments[0])].version)
 						{
@@ -300,6 +320,20 @@ package actionScripts.utils
 						}
 						break;
 					}
+					case QUERY_NOTES_VERSION:
+						if (ConstantsCoreVO.IS_MACOS && !components[int(tmpQueue.extraArguments[0])].version)
+						{
+							components[int(tmpQueue.extraArguments[0])].version = value.output;
+						}
+						else if (!ConstantsCoreVO.IS_MACOS)
+						{
+							match = value.output.match(/Release /);
+							if (match)
+							{
+								components[int(tmpQueue.extraArguments[0])].version = value.output.substring(value.output.indexOf("Release"), value.output.length - 3);
+							}
+						}
+						break;
 					case QUERY_MAVEN_VERSION:
 					case QUERY_GRADLE_VERSION:
 						// in case of 'mvn -version' on OSX the process

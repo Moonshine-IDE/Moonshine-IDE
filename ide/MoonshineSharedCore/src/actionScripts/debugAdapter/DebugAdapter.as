@@ -18,16 +18,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.debugAdapter
 {
-	import actionScripts.events.OpenFileEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.debugAdapter.vo.BaseVariablesReference;
 	import actionScripts.debugAdapter.vo.Scope;
 	import actionScripts.debugAdapter.vo.Source;
 	import actionScripts.debugAdapter.vo.StackFrame;
+	import actionScripts.debugAdapter.vo.Thread;
+	import actionScripts.debugAdapter.vo.ThreadsHierarchicalData;
 	import actionScripts.debugAdapter.vo.Variable;
 	import actionScripts.debugAdapter.vo.VariablesReferenceHierarchicalData;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.ui.editor.text.events.DebugLineEvent;
 
 	import flash.errors.IllegalOperationError;
@@ -141,14 +143,13 @@ package actionScripts.debugAdapter
 		private var _messageBuffer:String = "";
 		private var _messageBytes:ByteArray = new ByteArray();
 		private var _contentLength:int = -1;
-		private var mainThreadID:int = -1;
 		private var _currentRequest:PendingRequest;
 
-		private var _stackFrames:ArrayCollection = new ArrayCollection();
+		private var _threadsAndStackFrames:ThreadsHierarchicalData = new ThreadsHierarchicalData();
 
-		public function get stackFrames():ArrayCollection
+		public function get threadsAndStackFrames():ThreadsHierarchicalData
 		{
-			return _stackFrames;
+			return _threadsAndStackFrames;
 		}
 
 		private var _scopesAndVars:VariablesReferenceHierarchicalData = new VariablesReferenceHierarchicalData();
@@ -159,6 +160,8 @@ package actionScripts.debugAdapter
 		}
 
 		private var _variablesLookup:Dictionary = new Dictionary();
+		private var _stackTraceLookup:Dictionary = new Dictionary();
+		private var _continueLookup:Dictionary = new Dictionary();
 
 		private var _receivedInitializeResponse:Boolean = false;
 		private var _receivedInitializedEvent:Boolean = false;
@@ -167,7 +170,7 @@ package actionScripts.debugAdapter
 
 		public function get initialized():Boolean
 		{
-			return _receivedInitializedEvent;
+			return _receivedInitializedEvent && _receivedInitializeResponse;
 		}
 
 		public function get launchedOrAttached():Boolean
@@ -175,11 +178,11 @@ package actionScripts.debugAdapter
 			return initialized && !_waitingForLaunchOrAttach;
 		}
 
-		private var _paused:Boolean = true;
+		private var _pausedThreads:ArrayCollection = new ArrayCollection();
 
-		public function get paused():Boolean
+		public function get pausedThreads():ArrayCollection
 		{
-			return _paused;
+			return _pausedThreads;
 		}
 
 		public function start(adapterID:String, request:String, additionalProperties:Object):void
@@ -191,15 +194,13 @@ package actionScripts.debugAdapter
 
 			_currentRequest = new PendingRequest(adapterID, request, additionalProperties);
 
-			this._stackFrames = new ArrayCollection();
+			this._threadsAndStackFrames = new ThreadsHierarchicalData();
 			this._scopesAndVars = new VariablesReferenceHierarchicalData();
 			
 			_receivedInitializeResponse = false;
 			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
 			_handledPostInit = false;
-			
-			mainThreadID = -1;
 			
 			sendRequest(COMMAND_INITIALIZE,
 			{
@@ -240,64 +241,106 @@ package actionScripts.debugAdapter
 		{
 		}
 
-		public function resume():void
+		public function resume(threadId:int = -1):void
 		{
-            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach)
 			{
 				return;
 			}
 
-			this.sendRequest(COMMAND_CONTINUE, {threadId: this.mainThreadID});
+			var threads:ArrayCollection = this._threadsAndStackFrames.getRoot() as ArrayCollection;
+			var thread:Thread = this.findThread(threadId);
+			if(!thread || !this._pausedThreads.contains(thread.id))
+			{
+				//not found or not paused
+				return;
+			}
+			var nextSeq:int = _seq + 1;
+			this._continueLookup[nextSeq] = thread.id;
+			this.sendRequest(COMMAND_CONTINUE, {threadId: thread.id});
 		}
 
-		public function pause():void
+		public function pause(threadId:int = -1):void
 		{
-            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || _paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach)
 			{
 				return;
 			}
 
-			this.sendRequest(COMMAND_PAUSE, {threadId: this.mainThreadID});
+			var threads:ArrayCollection = this._threadsAndStackFrames.getRoot() as ArrayCollection;
+			var thread:Thread = this.findThread(threadId);
+			if(!thread || this._pausedThreads.contains(thread.id))
+			{
+				//not found or already paused
+				return;
+			}
+			this.sendRequest(COMMAND_PAUSE, {threadId: thread.id});
 		}
 
-		public function stepOver():void
+		public function stepOver(threadId:int = -1):void
 		{
-            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach)
 			{
 				return;
 			}
 
-			this.sendRequest(COMMAND_NEXT, {threadId: this.mainThreadID});
+			var threads:ArrayCollection = this._threadsAndStackFrames.getRoot() as ArrayCollection;
+			var thread:Thread = this.findThread(threadId);
+			if(!thread || !this._pausedThreads.contains(thread.id))
+			{
+				//not found or already paused
+				return;
+			}
+			this.sendRequest(COMMAND_NEXT, {threadId: thread.id});
 		}
 
-		public function stepInto():void
+		public function stepInto(threadId:int = -1):void
 		{
-            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach)
 			{
 				return;
 			}
 
-			this.sendRequest(COMMAND_STEP_IN, {threadId: this.mainThreadID});
+			var threads:ArrayCollection = this._threadsAndStackFrames.getRoot() as ArrayCollection;
+			var thread:Thread = this.findThread(threadId);
+			if(!thread || !this._pausedThreads.contains(thread.id))
+			{
+				//not found or not paused
+				return;
+			}
+			this.sendRequest(COMMAND_STEP_IN, {threadId: thread.id});
 		}
 
-		public function stepOut():void
+		public function stepOut(threadId:int = -1):void
 		{
-            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach || !_paused)
+            if (!_receivedInitializedEvent || _waitingForLaunchOrAttach)
 			{
 				return;
 			}
 
-			this.sendRequest(COMMAND_STEP_OUT, {threadId: this.mainThreadID});
+			var threads:ArrayCollection = this._threadsAndStackFrames.getRoot() as ArrayCollection;
+			var thread:Thread = this.findThread(threadId);
+			if(!thread || !this._pausedThreads.contains(thread.id))
+			{
+				//not found or not paused
+				return;
+			}
+			this.sendRequest(COMMAND_STEP_OUT, {threadId: thread.id});
 		}
 
-		private function handleContinue():void
+		private function handleContinue(threadID:int):void
 		{
-			this._paused = false;
+			var thread:Thread = this.findThread(threadID);
+			if(!thread)
+			{
+				return;
+			}
+			this._pausedThreads.removeItem(thread.id);
 			
 			_dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
 			
-			//we're no longer paused, so clear this until we pause again
-			this._stackFrames.removeAll();
+			//we're no longer paused, so clear these until we pause again
+			this._threadsAndStackFrames.setStackFramesForThread([], thread);
 			this._scopesAndVars.removeAll();
 
 			this.dispatchEvent(new Event(Event.CHANGE));
@@ -308,10 +351,11 @@ package actionScripts.debugAdapter
 			//this function may be called when the debug adapter is in a bad
 			//state. it may not have even started, or it may not be connected.
 			//be careful what variables you access because some may be null.
-			_paused = true;
 			this._variablesLookup = new Dictionary();
+			this._stackTraceLookup = new Dictionary();
 			this._scopesAndVars.removeAll();
-			this._stackFrames.removeAll();
+			this._threadsAndStackFrames.removeAll();
+			this._pausedThreads.removeAll();
 			_receivedInitializeResponse = false;
 			_receivedInitializedEvent = false;
 			_waitingForLaunchOrAttach = false;
@@ -687,19 +731,26 @@ package actionScripts.debugAdapter
 				this.stop();
 				return;
 			}
-			this._paused = false;
 			this.dispatchEvent(new Event(Event.CHANGE));
 			this.sendRequest(COMMAND_THREADS);
 		}
 		
 		private function parseContinueResponse(response:Object):void
 		{
+			var requestID:int = response.request_seq;
+			if(!(requestID in this._continueLookup))
+			{
+				//we have new threads, so we don't care anymore
+				return;
+			}
+			var threadID:int = int(this._continueLookup[requestID]);
+			delete this._continueLookup[requestID];
 			if(!response.success)
 			{
 				trace("debug adapter \"continue\" command not successful");
 				return;
 			}
-			this.handleContinue();
+			this.handleContinue(threadID);
 		}
 		
 		private function parseThreadsResponse(response:Object):void
@@ -713,24 +764,33 @@ package actionScripts.debugAdapter
 			var body:Object = response.body;
 			if("threads" in body)
 			{
+				this._stackTraceLookup = new Dictionary();
+				var resultThreads:Array = [];
 				var threads:Array = body.threads as Array;
-				if(threads.length > 0)
+				var threadCount:int = threads.length;
+				for(var i:int = 0; i < threadCount; i++)
 				{
-					mainThreadID = threads[0].id;
-					if(this._paused)
+					var thread:Thread = this.parseThread(threads[i]);
+					resultThreads.push(thread);
+				}
+				this._threadsAndStackFrames.setThreads(resultThreads);
+				for(i = 0; i < threadCount; i++)
+				{
+					thread = resultThreads[i];
+					if(this._pausedThreads.contains(thread.id))
 					{
-						this.sendRequest(COMMAND_STACK_TRACE,
-							{
-								threadId: mainThreadID
-							});
+						this.stackTrace(thread);
 					}
 				}
-				else
-				{
-					//it is possible that there will be no threads returned
-					mainThreadID = -1;
-				}
 			}
+		}
+		
+		private function parseThread(response:Object):Thread
+		{
+			var vo:Thread = new Thread();
+			vo.name = response.name as String;
+			vo.id = response.id as Number;
+			return vo;
 		}
 		
 		private function parseSetBreakpointsResponse(response:Object):void
@@ -740,7 +800,8 @@ package actionScripts.debugAdapter
 				trace("debug adapter \"setBreakpoints\" command not successful");
 				return;
 			}
-			if(mainThreadID === -1)
+			var threads:ArrayCollection = this._threadsAndStackFrames.getRoot() as ArrayCollection;
+			if(threads.length == 0)
 			{
 				this.sendRequest(COMMAND_THREADS);
 			}
@@ -756,20 +817,30 @@ package actionScripts.debugAdapter
 			var body:Object = response.body;
 			if("stackFrames" in body)
 			{
-				this._stackFrames.removeAll();
+				var requestID:int = response.request_seq;
+				if(!(requestID in this._stackTraceLookup))
+				{
+					//we have new threads, so we don't care anymore
+					return;
+				}
+				var thread:Thread = Thread(this._stackTraceLookup[requestID]);
+				delete this._stackTraceLookup[requestID];
+
+				var resultStackFrames:Array = [];
 				var stackFrames:Array = body.stackFrames as Array;
 				var stackFramesCount:int = stackFrames.length;
 				for(var i:int = 0; i < stackFramesCount; i++)
 				{
 					var stackFrame:StackFrame = this.parseStackFrame(stackFrames[i]);
-					this._stackFrames.addItem(stackFrame);
+					resultStackFrames[i] = stackFrame;
 				}
-			}
-			this.dispatchEvent(new Event(Event.CHANGE));
-			if(this._stackFrames.length > 0)
-			{
-				var firstStackFrame:StackFrame = StackFrame(this._stackFrames.getItemAt(0));
-				this.gotoStackFrame(firstStackFrame);
+				this._threadsAndStackFrames.setStackFramesForThread(resultStackFrames, thread);
+				this.dispatchEvent(new Event(Event.CHANGE));
+				if(resultStackFrames.length > 0)
+				{
+					var firstStackFrame:StackFrame = StackFrame(resultStackFrames[0]);
+					this.gotoStackFrame(firstStackFrame);
+				}
 			}
 		}
 		
@@ -806,6 +877,21 @@ package actionScripts.debugAdapter
 			this.sendRequest(COMMAND_VARIABLES,
 			{
 				variablesReference: scopeOrVar.variablesReference
+			});
+		}
+
+		private function stackTrace(thread:Thread):void
+		{
+			var nextSeq:int = _seq + 1;
+			this._stackTraceLookup[nextSeq] = thread;
+			this.sendRequest(COMMAND_STACK_TRACE,
+			{
+				threadId: thread.id,
+				startFrame: 0,
+				//it should be possible to omit levels or set it to 0, but the
+				//HashLink debugger incorrectly requires it
+				//https://github.com/vshaxe/hashlink-debugger/issues/74
+				levels: 10000
 			});
 		}
 		
@@ -954,7 +1040,6 @@ package actionScripts.debugAdapter
 			}
 			else
 			{
-				this._paused = false;
 				this.dispatchEvent(new Event(Event.CHANGE));
 				this.sendRequest(COMMAND_THREADS);
 			}
@@ -1005,33 +1090,58 @@ package actionScripts.debugAdapter
 
 		private function parseThreadEvent(event:Object):void
 		{
+			if(!_receivedInitializedEvent)
+			{
+				//not ready to request threads, so ignore for now
+				return;
+			}
 			this.sendRequest(COMMAND_THREADS);
 		}
 		
 		private function parseStoppedEvent(event:Object):void
 		{
-			if(mainThreadID != -1)
+			var body:Object = event.body;
+			var threadID:int = -1;
+			if("threadId" in body)
 			{
-				this.sendRequest(COMMAND_STACK_TRACE,
-					{
-						threadId: mainThreadID
-					});
+				threadID = body.threadId;
 			}
-			_paused = true;
+			var thread:Thread = this.findThread(threadID);
+			if(thread != null)
+			{
+				this._pausedThreads.addItem(thread.id);
+				this.stackTrace(thread);
+			}
 			this.dispatchEvent(new Event(Event.CHANGE));
 			this.dispatchEvent(new Event(Event.SUSPEND));
 		}
 
 		private function parseContinuedEvent(event:Object):void
 		{
-			if(!_paused)
-			{
-				//it's generally not a problem if the "continued" event is
-				//dispatched and we're not in a paused state.
-				return;
-			}
 			//but if we are paused, we should update our state
-			this.handleContinue();
+			var body:Object = event.body;
+			var threadID:int = -1;
+			if("threadId" in body)
+			{
+				threadID = body.threadId;
+			}
+			this.handleContinue(threadID);
+		}
+
+		private function findThread(threadID:int):Thread
+		{
+			var threads:ArrayCollection = this._threadsAndStackFrames.getRoot() as ArrayCollection;
+			var threadCount:int = threads.length;
+			for(var i:int = 0; i < threadCount; i++)
+			{
+				var thread:Thread = Thread(threads.getItemAt(i));
+				if(threadID == thread.id || threadID == -1)
+				{
+					return thread;
+					break;
+				}
+			}
+			return null;
 		}
 		
 		private function parseTerminatedEvent(event:Object):void

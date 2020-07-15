@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.openntf.nsfodp</groupId>
+		<artifactId>nsf-moonshine</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../..</relativePath>
+	</parent>
+	<artifactId>nsf-moonshine-domino</artifactId>
+	<packaging>domino-nsf</packaging>
+	
+	<dependencies>
+		<!-- This represents a JAR that's expected to be deployed to jvm/lib/ext on the server -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.9</version>
+		</dependency>
+	</dependencies>
+	
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.openntf.maven</groupId>
+				<artifactId>nsfodp-maven-plugin</artifactId>
+				<configuration>
+					<binaryDxl>true</binaryDxl>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

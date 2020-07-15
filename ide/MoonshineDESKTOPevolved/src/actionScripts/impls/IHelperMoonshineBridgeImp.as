@@ -94,7 +94,7 @@ package actionScripts.impls
 		
 		public function isNotesDominoPresent():Boolean
 		{
-			return false;
+			return UtilsCore.isNotesDominoAvailable();
 		}
 
 		public function runOrDownloadSDKInstaller():void

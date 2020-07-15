@@ -18,25 +18,29 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.haxe.hxproject.vo
 {
-	import mx.collections.ArrayCollection;
-	import mx.utils.StringUtil;
-
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.OpenFileEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.haxe.hxproject.exporter.HaxeExporter;
+	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectOutputFileExtension;
+	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectOutputPath;
+	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectTarget;
+	import actionScripts.plugin.settings.vo.ButtonSetting;
 	import actionScripts.plugin.settings.vo.DropDownListSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.plugin.settings.vo.StaticLabelSetting;
 	import actionScripts.plugin.settings.vo.StringListSetting;
 	import actionScripts.plugin.settings.vo.StringSetting;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectOutputFileExtension;
-	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectTarget;
-	import actionScripts.plugin.haxe.hxproject.utils.getHaxeProjectOutputPath;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
+
+	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
+
+	import mx.collections.ArrayCollection;
+	import mx.utils.StringUtil;
 
 	public class HaxeProjectVO extends ProjectVO
 	{
@@ -256,6 +260,18 @@ package actionScripts.plugin.haxe.hxproject.vo
 			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
 		}
 
+		public function openLimeProjectXML():void
+		{
+			if(!this.isLime)
+			{
+				throw new IllegalOperationError("Cannot open Lime/OpenFL project.xml for this type of Haxe project");
+			}
+			var event:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, [this.folderLocation.resolvePath("project.xml")]);
+			GlobalEventDispatcher.getInstance().dispatchEvent(event);
+		}
+
+		public var openLimeProjectXMLLabel:String = "Open project.xml";
+
 		private function getSettingsForLimeProject():Vector.<SettingsWrapper>
 		{
 			targetPlatformSettings = new DropDownListSetting(this, "limeTargetPlatform", "Platform", limePlatformTypes);
@@ -266,7 +282,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 
                 new SettingsWrapper("Build options",
                         Vector.<ISetting>([
-                            new StaticLabelSetting("Edit project.xml to customize build options for OpenFL and Lime projects.", 14, 0x686868)
+							new ButtonSetting(this, "openLimeProjectXMLLabel", "Edit project.xml to customize build options for OpenFL and Lime projects.", "openLimeProjectXML")
                         ])
                 ),
                 new SettingsWrapper("Output",

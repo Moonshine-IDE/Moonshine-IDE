@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xp:view xmlns:xp="http://www.ibm.com/xsp/core">
+
+	<xp:panel id="Actions"
+		style="padding-left:10.0px;padding-top:10.0px;padding-bottom:10.0px">
+		<xp:button value="Edit" id="button1"
+			rendered="#{javascript:!document.isEditable()}">
+		<xp:eventHandler event="onclick" submit="true" refreshMode="complete">
+			<xp:this.action>
+				<xp:changeDocumentMode var="document" mode="edit"></xp:changeDocumentMode>
+			</xp:this.action></xp:eventHandler></xp:button>
+		<xp:button value="Save" id="button2"
+			rendered="#{javascript:document.isEditable()}">
+		<xp:eventHandler event="onclick" submit="true" refreshMode="complete">
+			<xp:this.action>
+				<xp:saveDocument var="document"></xp:saveDocument>
+			</xp:this.action></xp:eventHandler></xp:button>
+		<xp:button value="Close" id="button3"><xp:eventHandler event="onclick" submit="true" refreshMode="complete">
+	<xp:this.action>
+		<xp:openPage name="/Greetings.xsp"></xp:openPage>
+	</xp:this.action></xp:eventHandler></xp:button>
+	</xp:panel>
+</xp:view>

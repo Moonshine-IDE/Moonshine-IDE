@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
+	import com.dogcatfishdish.markdown.Markdown;
+
 	public class HoverManager
 	{
 		private static const TOOL_TIP_ID:String = "HoverManagerToolTip";
@@ -45,9 +47,10 @@ package actionScripts.ui.editor.text
 			{
 				if(i > 0)
 				{
-					hoverText += "\n";
+					hoverText += "\n\n";
 				}
 				var content:String = contents[i];
+				content = Markdown.MakeHtml(content, true);
 				hoverText += content;
 			}
 			if(hoverText.length == 0)
@@ -56,7 +59,7 @@ package actionScripts.ui.editor.text
 				this.closeHover();
 				return;
 			}
-			editor.setTooltip(TOOL_TIP_ID, hoverText);
+			editor.setTooltip(TOOL_TIP_ID, hoverText, true);
 		}
 
 		public function closeHover():void

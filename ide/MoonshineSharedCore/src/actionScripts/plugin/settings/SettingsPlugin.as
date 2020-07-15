@@ -138,7 +138,8 @@ package actionScripts.plugin.settings
 				model.flexCore.getPluginsNotToShowInSettings(),
 				model.javaCore.getPluginsNotToShowInSettings(),
 				model.groovyCore.getPluginsNotToShowInSettings(),
-				model.haxeCore.getPluginsNotToShowInSettings()
+				model.haxeCore.getPluginsNotToShowInSettings(),
+				model.ondiskCore.getPluginsNotToShowInSettings()
 			);
 			
 			dispatcher.addEventListener(SettingsEvent.EVENT_OPEN_SETTINGS, openAppSettings);
@@ -340,6 +341,7 @@ package actionScripts.plugin.settings
 				saveClassSettings(settingObject);
 			}
 			
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_SETTINGS_SAVED));
 			dispatcher.dispatchEvent(new StartupHelperEvent(StartupHelperEvent.REFRESH_GETTING_STARTED));
 		}
 
@@ -402,7 +404,7 @@ package actionScripts.plugin.settings
 			{
 				xml.properties[name] = value;
 			}
-			else
+			else if (name)
 			{
 				xml.properties.appendChild(<{name}>{value}</{name}>);
 			}
@@ -456,6 +458,7 @@ package actionScripts.plugin.settings
 			for each (var setting:ISetting in settingsList)
 			{
 				propName = setting.name;
+				trace(propName);
 				if (!saveData.properties.hasOwnProperty(propName))
 					continue;
 

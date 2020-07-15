@@ -25,7 +25,6 @@ package actionScripts.controllers
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.EditorPluginEvent;
-    import actionScripts.events.UpdateTabEvent;
     import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.OpenFileEvent;
@@ -33,9 +32,9 @@ package actionScripts.controllers
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
     import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.notifier.ActionNotifier;
@@ -44,7 +43,6 @@ package actionScripts.controllers
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
-    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	public class OpenFileCommand implements ICommand
 	{
@@ -173,15 +171,16 @@ package actionScripts.controllers
 			// If file is open already, just focus that editor.
 			for each (var contentWindow:IContentWindow in model.editors)
 			{
-				var ed:BasicTextEditor = contentWindow as BasicTextEditor;
-				if (ed
-					&& ed.currentFile
-					&& ed.currentFile.fileBridge.nativePath == file.fileBridge.nativePath)
+				if ((contentWindow is IFileContentWindow) && 
+					(contentWindow as IFileContentWindow).currentFile.fileBridge.nativePath == file.fileBridge.nativePath)
 				{
 					isFileOpen = true;
-					model.activeEditor = ed;
-					if (atLine > -1)
+					model.activeEditor = contentWindow;
+					
+					if ((contentWindow is BasicTextEditor) && (atLine > -1))
 					{
+						var ed:BasicTextEditor = contentWindow as BasicTextEditor;
+
 						ed.getEditorComponent().scrollTo(atLine, openType);
 						if (!openType || openType == OpenFileEvent.OPEN_FILE || openType == OpenFileEvent.JUMP_TO_SEARCH_LINE)
 						{
@@ -197,7 +196,8 @@ package actionScripts.controllers
 							ed.getEditorComponent().model.caretIndex = atChar;
 						}
 					}
-					ed.setFocus();
+
+					contentWindow.setFocus();
 					return;
 				}
 			}
@@ -228,8 +228,20 @@ package actionScripts.controllers
 			// Load and see if it's a binary file
 			if (ConstantsCoreVO.IS_AIR)
 			{
-				if (openAsTourDe) openTextFile(fileData, true);
-				else openTextFile(fileData);
+				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper);
+				var extension:String = file.fileBridge.extension.toLowerCase();
+				if (openAsTourDe) 
+				{
+					openTourDeFile(fileData);
+				}
+				else if ((project is OnDiskProjectVO) && (extension == "dfb")) 
+				{
+					openTabularInterfaceEditorFile(project);
+				}
+				else
+				{
+					openTextFile(project, fileData);
+				}
 			}
 			else
 			{
@@ -242,7 +254,11 @@ package actionScripts.controllers
 		private function fileLoadedFromServer(value:Object, message:String=null):void
 		{
 			if (UtilsCore.isBinary(value.toString())) openBinaryFiles([file]);
-			else openTextFile(value);
+			else 
+			{
+				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper);
+				openTextFile(project, value);
+			}
 			
 			fileFault(null);
 		}
@@ -287,22 +303,49 @@ package actionScripts.controllers
 					}
 				});
 			}
-			// Let WebKit try to display binary files (works for images)
-			/*var htmlViewer:BasicHTMLViewer = new BasicHTMLViewer();
-			htmlViewer.open(file);
-			
-			ged.dispatchEvent(
-			new AddTabEvent(htmlViewer)
-			);*/
 		}
 		
-		private function openTextFile(value:Object, asTourDe:Boolean=false):void
+		private function openTourDeFile(value:Object):void
+		{
+			var editor:BasicTextEditor = null;
+			editor = model.flexCore.getTourDeEditor(tourDeSWFSource);
+			editor.open(file, value);
+			
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+		}
+		
+		private function openTabularInterfaceEditorFile(project:ProjectVO):void
+		{
+			var editor:IContentWindow = model.ondiskCore.getTabularInterfaceEditor(file, project as OnDiskProjectVO);
+			
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+		}
+		
+		private function openTextFile(project:ProjectVO, value:Object):void
 		{
 			// Open all text files with basic text editor
 			var editor:BasicTextEditor = null;
-			if(asTourDe)
+			var extension:String = file.fileBridge.extension;
+			if (!project)
 			{
-				editor = model.flexCore.getTourDeEditor(tourDeSWFSource);
+				project = model.activeProject;
+			}
+			
+			if ((project is AS3ProjectVO &&
+				(project as AS3ProjectVO).isVisualEditorProject &&
+				(extension == "mxml" || extension == "xhtml") && !lastOpenEvent.independentOpenFile) || 
+				(project is OnDiskProjectVO) && (extension == "dve"))
+			{
+				editor = model.visualEditorCore.getVisualEditor(project);
+			}
+			else if((lastOpenEvent && !lastOpenEvent.independentOpenFile) && 
+				model.languageServerCore.hasCustomTextEditorForUri(file.fileBridge.url, project))
+			{
+				editor = model.languageServerCore.getCustomTextEditorForUri(file.fileBridge.url, project);
 			}
 			else
 			{
@@ -346,6 +389,10 @@ package actionScripts.controllers
                 // file instances belongs to the project
                 if (wrapper) editor.projectPath = wrapper.projectReference.path;
 			}
+			
+			// requires in case of project deletion and closing all the opened
+			// file instances belongs to the project
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
 
 			// Let plugins hook in syntax highlighters & other functionality
 			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);

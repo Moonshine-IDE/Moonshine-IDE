@@ -252,7 +252,8 @@ package actionScripts.languageServer
 			initializeLanguageServer(sdkPath);
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS, "ActionScript", "Starting ActionScript & MXML code intelligence..."
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name, "Starting ActionScript & MXML code intelligence..."
 			));
 		}
 		
@@ -321,7 +322,6 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			var buildOptions:BuildOptions = _project.buildOptions;
 			var type:String = "app";
 			if(_project.isLibraryProject)
 			{
@@ -347,12 +347,13 @@ package actionScripts.languageServer
 			//the config file may not exist, or it may be out of date, so
 			//we're going to tell the project to update it immediately
 			_project.updateConfig();
+			var buildOptions:BuildOptions = _project.buildOptions;
 			if(_project.config.file)
 			{
 				var projectPath:File = new File(project.folderLocation.fileBridge.nativePath);
 				var configPath:File = new File(_project.config.file.fileBridge.nativePath);
 				var buildArgs:String = "-load-config+=" +
-					projectPath.getRelativePath(configPath, true)
+					projectPath.getRelativePath(configPath, true) +
 					" " +
 					buildOptions.getArguments();
 			}
@@ -386,9 +387,9 @@ package actionScripts.languageServer
 			}
 
 			//this object is designed to be similar to the asconfig.json
-			//format used by vscode-nextgenas
-			//https://github.com/BowlerHatLLC/vscode-nextgenas/wiki/asconfig.json
-			//https://github.com/BowlerHatLLC/vscode-nextgenas/blob/master/distribution/src/assembly/schemas/asconfig.schema.json
+			//format used by vscode-as3mxml
+			//https://github.com/BowlerHatLLC/vscode-as3mxml/wiki/asconfig.json
+			//https://github.com/BowlerHatLLC/vscode-as3mxml/blob/master/distribution/src/assembly/schemas/asconfig.schema.json
 			var params:Object = new Object();
 			params.type = type;
 			params.config = config;
@@ -434,7 +435,8 @@ package actionScripts.languageServer
 			this.dispatchEvent(new Event(Event.INIT));
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
 			));
 		}
 

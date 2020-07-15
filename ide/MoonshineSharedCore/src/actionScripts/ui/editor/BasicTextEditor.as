@@ -47,6 +47,7 @@ package actionScripts.ui.editor
     import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IContentWindowReloadable;
+    import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.editor.text.vo.SearchResult;
@@ -60,7 +61,7 @@ package actionScripts.ui.editor
     import components.popup.SelectOpenedProject;
     import components.views.project.TreeView;
 
-    public class BasicTextEditor extends Group implements IContentWindow, IFocusManagerComponent, IContentWindowReloadable
+    public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
 		public var defaultLabel:String = "New";
 		public var projectPath:String;
@@ -178,13 +179,11 @@ package actionScripts.ui.editor
 		
 		protected function addedToStageHandler(event:Event):void
 		{
-			this.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			this.addGlobalListeners();
 		}
 		
 		protected function removedFromStageHandler(event:Event):void
 		{
-			this.removeEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
 			this.removeGlobalListeners();
 		}
 		
@@ -303,7 +302,7 @@ package actionScripts.ui.editor
 		public function checkFileIfChanged():void
 		{
 			// physical file do not exist anymore
-			if (!file.fileBridge.exists)
+			if (file && !file.fileBridge.exists)
 			{
 				dispatcher.dispatchEvent(new UpdateTabEvent(UpdateTabEvent.EVENT_TAB_FILE_EXIST_NOMORE, this));
 			}

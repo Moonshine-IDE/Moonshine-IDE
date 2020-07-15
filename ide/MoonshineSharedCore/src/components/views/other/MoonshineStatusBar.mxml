@@ -7,10 +7,13 @@
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.StatusBarEvent;
 			import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+			import actionScripts.events.DebugActionEvent;
 			
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			private var loaderBar:loadingBar;
 			private var languageServerLoaderBar:loadingBar;
+			private var projectToStatus:Object = {};
+			private var lastProjectName:String = null;
 			
 			private function onCreation():void
 			{
@@ -23,8 +26,33 @@
 
 			private function onLanguageServerStatus(event:StatusBarEvent):void
 			{
-				lblLanguageServer.text = event.notificationSuffix;
-				hgLanguageServer.visible = lblLanguageServer.text != null && lblLanguageServer.text.length > 0;
+				var message:String = event.notificationSuffix;
+				if(event.projectName)
+				{
+					if(message == null || message.length == 0)
+					{
+						delete projectToStatus[event.projectName];
+					}
+					else
+					{
+						projectToStatus[event.projectName] = message;
+						lastProjectName = event.projectName;
+					}
+				}
+				if(!message && lastProjectName == event.projectName)
+				{
+					//if we're clearing the current message, try to display one
+					//of the messages from another project, if any are available
+					lastProjectName = null;
+					for(var projectName:String in projectToStatus)
+					{
+						message = projectToStatus[projectName];
+						lastProjectName = projectName;
+						break;
+					}
+				}
+				lblLanguageServer.text = message;
+				hgLanguageServer.visible = message != null && message.length > 0;
 				if(hgLanguageServer.visible && !languageServerLoaderBar)
 				{
 					languageServerLoaderBar = new loadingBar();
@@ -85,7 +113,7 @@
 			
 			protected function onTerminateDebug(event:MouseEvent):void
 			{
-				dispatcher.dispatchEvent(new ActionScriptBuildEvent(ActionScriptBuildEvent.TERMINATE_EXECUTION));
+				dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 			}
 			
 		]]>

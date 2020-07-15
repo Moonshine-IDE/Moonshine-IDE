@@ -78,11 +78,14 @@ package actionScripts.languageServer
 		private var _limeDisplayProcess:NativeProcess;
 		private var _haxeVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
+		private var _waitingToDispose:Boolean = false;
+		private var _waitingForHaxelibInstall:Boolean = false;
 		private var _previousHaxePath:String = null;
 		private var _previousNodePath:String = null;
 		private var _previousTargetPlatform:String = null;
 		private var _displayArguments:String = null;
 		private var _haxeVersion:String = null;
+		private var _languageServerProgressStarted:Boolean = false;
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -97,7 +100,7 @@ package actionScripts.languageServer
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 
-			boostrapThenStartNativeProcess();
+			bootstrapThenStartNativeProcess();
 		}
 
 		public function get project():ProjectVO
@@ -155,6 +158,21 @@ package actionScripts.languageServer
 			_dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 
 			cleanupLanguageClient();
+
+			if(_haxeVersionProcess)
+			{
+				_waitingToDispose = true;
+				_haxeVersionProcess.exit(true);
+			}
+			if(_limeDisplayProcess)
+			{
+				_waitingToDispose = true;
+				_limeDisplayProcess.exit(true);
+			}
+			else if(_waitingForHaxelibInstall)
+			{
+				_waitingToDispose = true;
+			}
 		}
 
 		protected function cleanupLanguageClient():void
@@ -163,6 +181,15 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+			if(_languageServerProgressStarted)
+			{
+				//if we had a progress message, clean it up
+				_dispatcher.dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS,
+					project.name
+				));
+			}
+			_languageServerProgressStarted = false;
 			_languageClient.removeNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.removeNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
@@ -198,7 +225,7 @@ package actionScripts.languageServer
 			return true;
 		}
 		
-		private function boostrapThenStartNativeProcess():void
+		private function bootstrapThenStartNativeProcess():void
 		{
 			if(!UtilsCore.isHaxeAvailable())
 			{
@@ -217,11 +244,13 @@ package actionScripts.languageServer
 				warning("Haxe language code intelligence disabled. To enable, update Node.js location in application settings.");
 				return;
 			}
+			_waitingForHaxelibInstall = false;
 			installDependencies();
 		}
 
 		private function installDependencies():void
 		{
+			_waitingForHaxelibInstall = true;
 			_dispatcher.dispatchEvent(new HaxelibEvent(HaxelibEvent.HAXELIB_INSTALL, _project));
 		}
 		
@@ -416,6 +445,7 @@ package actionScripts.languageServer
 					trace("}}} ", JSON.stringify(message));
 				});
 			}
+			_languageServerProgressStarted = false;
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
 		}
@@ -438,10 +468,24 @@ package actionScripts.languageServer
 				_waitingToRestart = true;
 				_languageServerProcess.exit();
 			}
+			else if(_haxeVersionProcess)
+			{
+				_waitingToRestart = true;
+				_haxeVersionProcess.exit();
+			}
+			else if(_limeDisplayProcess)
+			{
+				_waitingToRestart = true;
+				_limeDisplayProcess.exit();
+			}
+			else if(_waitingForHaxelibInstall)
+			{
+				_waitingToRestart = true;
+			}
 
 			if(!_waitingToRestart)
 			{
-				boostrapThenStartNativeProcess();
+				bootstrapThenStartNativeProcess();
 			}
 		}
 
@@ -470,7 +514,8 @@ package actionScripts.languageServer
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
-				boostrapThenStartNativeProcess();
+				bootstrapThenStartNativeProcess();
+				return;
 			}
 		}
 		
@@ -505,6 +550,18 @@ package actionScripts.languageServer
 			_limeDisplayProcess.exit();
 			_limeDisplayProcess = null;
 
+			if(_waitingToDispose)
+			{
+				//don't continue if we've disposed during the bootstrap process
+				return;
+			}
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				bootstrapThenStartNativeProcess();
+				return;
+			}
+
 			if(event.exitCode == 0)
 			{
 				startNativeProcess(this._displayArguments.split("\n"));
@@ -536,6 +593,18 @@ package actionScripts.languageServer
 			_haxeVersionProcess.removeEventListener(NativeProcessExitEvent.EXIT, haxeVersionProcess_exitHandler);
 			_haxeVersionProcess.exit();
 			_haxeVersionProcess = null;
+
+			if(_waitingToDispose)
+			{
+				//don't continue if we've disposed during the bootstrap process
+				return;
+			}
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				bootstrapThenStartNativeProcess();
+				return;
+			}
 
 			if(event.exitCode == 0)
 			{
@@ -594,7 +663,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(!_languageClient)
+			if(!_languageClient || !_languageClient.initialized)
 			{
 				return;
 			}
@@ -605,6 +674,18 @@ package actionScripts.languageServer
 		{
 			if(event.project != _project)
 			{
+				return;
+			}
+			_waitingForHaxelibInstall = false;
+			if(_waitingToDispose)
+			{
+				//don't continue if we've disposed during the bootstrap process
+				return;
+			}
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				restartLanguageServer();
 				return;
 			}
 			if(_languageServerProcess)
@@ -669,6 +750,7 @@ package actionScripts.languageServer
 
 		private function haxe__progressStart(message:Object):void
 		{
+			_languageServerProgressStarted = true;
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
 				project.name, message.params.title, false
@@ -677,6 +759,7 @@ package actionScripts.languageServer
 
 		private function haxe__progressStop(message:Object):void
 		{
+			_languageServerProgressStarted = false;
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
 				project.name
