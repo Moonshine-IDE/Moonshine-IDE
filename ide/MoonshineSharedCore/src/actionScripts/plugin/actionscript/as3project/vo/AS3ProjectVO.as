@@ -105,9 +105,9 @@ package actionScripts.plugin.actionscript.as3project.vo
         public var isMobile:Boolean;
         public var isProjectFromExistingSource:Boolean;
 		public var isActionScriptOnly:Boolean;
-		public var isPrimeFacesVisualEditorProject:Boolean;
+		//public var isPrimeFacesVisualEditorProject:Boolean;
 		public var isDominoVisualEditorProject:Boolean;
-		public var isPreviewRunning:Boolean;
+		//public var isPreviewRunning:Boolean;
 		public var isExportedToExistingSource:Boolean;
 		public var visualEditorExportPath:String;
 
