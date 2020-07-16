@@ -52,7 +52,7 @@
     <option locale=""/>
   </build>
   <mavenBuild>
-    <option mavenBuildPath=""/>
+    <option mavenBuildPath="/Users/prominic2/work/Moonshine-IDE_fresh/ide/MoonshineDESKTOPevolved"/>
     <option settingsFilePath=""/>
     <option commandLine=""/>
     <actions>
@@ -82,11 +82,15 @@
   <postBuildCommand alwaysRun="False">null</postBuildCommand>
   <trustSVNCertificate>False</trustSVNCertificate>
   <options>
+<<<<<<< HEAD
     <option showHiddenPaths="False"/>
+=======
+>>>>>>> master
     <option isPrimeFacesVisualEditor="False"/>
     <option testMovie="AIR"/>
     <option visualEditorExportPath=""/>
     <option testMovieCommand=""/>
+    <option showHiddenPaths="False"/>
     <option defaultBuildTargets=""/>
     <option isRoyale="False"/>
     <option isExportedToExistingSource="False"/>
