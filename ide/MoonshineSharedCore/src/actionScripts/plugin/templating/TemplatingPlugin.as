@@ -346,6 +346,7 @@ package actionScripts.plugin.templating
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
 			var grailsProjectTemplates:ArrayCollection = new ArrayCollection();
 			var haxeProjectTemplates:ArrayCollection = new ArrayCollection();
+			var moduleTemplates:ArrayCollection = new ArrayCollection();
 
 			allLoadedTemplates = [];
             for each (var templateConfig:XML in templateConfigs)
@@ -402,6 +403,12 @@ package actionScripts.plugin.templating
 					{
                         haxeProjectTemplates.addItem(template);
 					}
+					
+					if (template.title.indexOf("Module") != -1)
+					{
+						moduleTemplates.addItem(template);
+						projectTemplateCollection.removeItem(template);
+					}
 
 					allLoadedTemplates.push(template);
                 }
@@ -415,6 +422,7 @@ package actionScripts.plugin.templating
 			ConstantsCoreVO.TEMPLATES_PROJECTS_GRAILS = grailsProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_HAXE = haxeProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ACTIONSCRIPT = actionScriptProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_MODULES = moduleTemplates;
         }
 		
 		public function getSettingsList():Vector.<ISetting>	

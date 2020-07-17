@@ -89,6 +89,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var isFlexJS:Boolean;
 		public var isMDLFlexJS:Boolean;
 		public var isRoyale:Boolean;
+		public var isModule:Boolean;
 		
 		public var testMovie:String = TEST_MOVIE_EXTERNAL_PLAYER;
 		public var testMovieCommand:String;

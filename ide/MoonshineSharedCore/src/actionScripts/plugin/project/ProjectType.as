@@ -29,5 +29,6 @@ package actionScripts.plugin.project
         public static const HAXE:uint = 7;
 		public static const AS3PROJ_AS_AIR_MOBILE:uint = 8;
 		public static const ONDISK:uint = 9;
+		public static const MODULE:uint = 10;
     }
 }
