@@ -337,7 +337,7 @@ package actionScripts.controllers
 			
 			if ((project is AS3ProjectVO &&
 				(project as AS3ProjectVO).isVisualEditorProject &&
-				(extension == "mxml" || extension == "xhtml") && !lastOpenEvent.independentOpenFile) || 
+				(extension == "mxml" || extension == "xhtml" || extension == "form") && !lastOpenEvent.independentOpenFile) || 
 				(project is OnDiskProjectVO) && (extension == "dve"))
 			{
 				editor = model.visualEditorCore.getVisualEditor(project);
@@ -349,45 +349,7 @@ package actionScripts.controllers
 			}
 			else
 			{
-				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper);
-                var extension:String = file.fileBridge.extension;
-
-				if (!project)
-				{
-					project = model.activeProject as AS3ProjectVO;
-                }
-				if (!project)
-				{
-					project = model.activeProject as JavaProjectVO;
-                }
-				if (!project)
-				{
-					project = model.activeProject as GrailsProjectVO;
-                }
-				if (!project)
-				{
-					project = model.activeProject as HaxeProjectVO;
-                }
-
-				if (project is AS3ProjectVO &&
-					(project as AS3ProjectVO).isVisualEditorProject &&
-					(extension == "mxml" || extension == "xhtml"  || extension == "form") && !lastOpenEvent.independentOpenFile)
-				{
-					 editor = model.visualEditorCore.getVisualEditor(project as AS3ProjectVO);
-				}
-				else if((lastOpenEvent && !lastOpenEvent.independentOpenFile) && 
-					model.languageServerCore.hasCustomTextEditorForUri(file.fileBridge.url, project))
-				{
-					editor = model.languageServerCore.getCustomTextEditorForUri(file.fileBridge.url, project);
-				}
-				else
-                {
-					editor = new BasicTextEditor();
-                }
-
-                // requires in case of project deletion and closing all the opened
-                // file instances belongs to the project
-                if (wrapper) editor.projectPath = wrapper.projectReference.path;
+				editor = new BasicTextEditor();
 			}
 			
 			// requires in case of project deletion and closing all the opened

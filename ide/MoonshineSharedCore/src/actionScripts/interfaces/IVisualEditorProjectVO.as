@@ -28,6 +28,8 @@ package actionScripts.interfaces
 		function set isVisualEditorProject(value:Boolean):void;
 		function get isPrimeFacesVisualEditorProject():Boolean;
 		function set isPrimeFacesVisualEditorProject(value:Boolean):void;
+		function get isDominoVisualEditorProject():Boolean;
+		function set isDominoVisualEditorProject(value:Boolean):void;
 		function get isPreviewRunning():Boolean;
 		function set isPreviewRunning(value:Boolean):void;
 		function get visualEditorSourceFolder():FileLocation;

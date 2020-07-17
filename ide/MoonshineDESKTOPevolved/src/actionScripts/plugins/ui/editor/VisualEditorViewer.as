@@ -386,7 +386,7 @@ package actionScripts.plugins.ui.editor
 		private function getMxmlCode():String
 		{
 			var mxmlCode:XML = null;
-			if(visualEditorProject.isDominoVisualEditorProject){
+			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 			}else{
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toCode();
@@ -421,7 +421,7 @@ package actionScripts.plugins.ui.editor
 			{
 				var filePath:String = file.fileBridge.nativePath
 						.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
-								 visualEditorProject.visualEditorSourceFolder.fileBridge.nativePath)
+								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath)
 						.replace(/.mxml$|.xhtml$|.form$/, ".xml");
 
 				return filePath;

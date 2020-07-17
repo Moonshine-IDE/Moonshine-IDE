@@ -106,7 +106,7 @@ package actionScripts.plugin.actionscript.as3project.vo
         public var isProjectFromExistingSource:Boolean;
 		public var isActionScriptOnly:Boolean;
 		//public var isPrimeFacesVisualEditorProject:Boolean;
-		public var isDominoVisualEditorProject:Boolean;
+		//public var isDominoVisualEditorProject:Boolean;
 		//public var isPreviewRunning:Boolean;
 		public var isExportedToExistingSource:Boolean;
 		public var visualEditorExportPath:String;
@@ -228,6 +228,17 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function set isPrimeFacesVisualEditorProject(value:Boolean):void
 		{
 			_isPrimeFacesVisualEditorProject = value;
+		}
+
+
+		private var _isDominoVisualEditorProject:Boolean;
+		public function get isDominoVisualEditorProject():Boolean
+		{
+			return _isDominoVisualEditorProject;
+		}
+		public function set isDominoVisualEditorProject(value:Boolean):void
+		{
+			_isDominoVisualEditorProject = value;
 		}
 		
 		private var _isPreviewRunning:Boolean;

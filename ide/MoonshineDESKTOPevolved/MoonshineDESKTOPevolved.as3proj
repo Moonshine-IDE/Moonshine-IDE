@@ -82,10 +82,7 @@
   <postBuildCommand alwaysRun="False">null</postBuildCommand>
   <trustSVNCertificate>False</trustSVNCertificate>
   <options>
-<<<<<<< HEAD
     <option showHiddenPaths="False"/>
-=======
->>>>>>> master
     <option isPrimeFacesVisualEditor="False"/>
     <option testMovie="AIR"/>
     <option visualEditorExportPath=""/>
