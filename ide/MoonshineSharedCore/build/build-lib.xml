@@ -140,6 +140,7 @@
 	<property name="background_dir" value="../src/backgrounds"/>
     <property name="swfFilename" value="${debug_dir}/Moonshine.swf" />
 	<property name="LibraryMoonshineCore" value="../../MoonshineSharedCore"/>
+	<property name="LibraryGUICore" value="../../MoonshineGUICore"/>
 	<property name="LibraryHelperSharedCore" value="../../../../Moonshine-SDK-Installer/InstallerSharedCore"/>
 	<property name="applicationSourceDirectory" value="../src"/>
 	<property name="desktopMainSource" value="${applicationSourceDirectory}/MoonshineDESKTOP.mxml" />
@@ -781,8 +782,30 @@
 		</if>
 	</target>
 
+	<target name="InstallHaxeDependencies">
+		<echo>Installing Haxe Libraries</echo>
+		<exec executable="haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="feathersui"/>
+		</exec>
+	</target>
+
+	<target name="CompileGUICore" depends="InstallHaxeDependencies">
+		<echo>Compiling GUI Core SWC</echo>
+		<exec executable="haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="run"/>
+			<arg value="openfl"/>
+			<arg value="build"/>
+			<arg value="flash"/>
+		</exec>
+	</target>
+
 	<!-- Compile SWF to build directory for desktop packaging -->
-	<target name="CompileSWFWindows" depends="createBuildInfoFile" unless="${isOSX}">
+	<target name="CompileSWFWindows" depends="createBuildInfoFile,CompileGUICore" unless="${isOSX}">
 		<echo>Compiling SWF Windows (Debug: ${IsDebug})</echo>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
@@ -810,9 +833,12 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
+			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+				<include name="*.swc" />
+			</compiler.library-path>
 		</mxmlc>
 	</target>
-	<target name="CompileSWFOSX" depends="createBuildInfoFile" if="${isOSX}">
+	<target name="CompileSWFOSX" depends="createBuildInfoFile,CompileGUICore" if="${isOSX}">
 		<echo>Compiling SWF OSX (Debug: ${IsDebug})</echo>
 		<copy todir="${basedir}/assets" overwrite="true">
 			<fileset dir="${assets_dir}"/>
@@ -843,6 +869,9 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
+			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+				<include name="*.swc" />
+			</compiler.library-path>
 			<compiler.external-library-path dir="${debug_dir}" append="true">
 			   <include name="SSB.ane" />
 			</compiler.external-library-path>
@@ -850,7 +879,7 @@
 	</target>
 	
 	<!-- Compile web SWF to build directory for desktop packaging -->
-	<target name="CompileWeb" depends="createBuildInfoFile">
+	<target name="CompileWeb" depends="createBuildInfoFile,CompileGUICore">
 		<copy todir="${debug_dir}/elements" overwrite="true">
 			<fileset dir="${LibraryMoonshineCore}/src/elements"/>
 		</copy>
@@ -879,6 +908,9 @@
 			<compiler.debug>false</compiler.debug>
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
+			</compiler.library-path>
+			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+				<include name="*.swc" />
 			</compiler.library-path>
 		</mxmlc>
 	</target>
