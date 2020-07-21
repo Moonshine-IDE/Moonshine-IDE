@@ -64,6 +64,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
 		this.styleProvider.setStyleFunction(Label, TitleWindow.CHILD_VARIANT_TITLE, setTitleWindowTitleStyles);
 
+		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
+
 		this.styleProvider.setStyleFunction(ListView, null, setListViewStyles);
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 
@@ -163,7 +165,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		button.focusRectSkin = focusRectSkin;
 
 		button.textFormat = new TextFormat("DejaVuSansTF", 12, 0xBBBBBB);
-		button.setTextFormatForState(DISABLED, new TextFormat("DejaVuSansTF", 12, 0x555555));
+		button.setTextFormatForState(DISABLED, new TextFormat("DejaVuSansTF", 12, 0x666666));
 		button.embedFonts = true;
 
 		button.paddingTop = 8.0;
@@ -302,6 +304,24 @@ class MoonshineTheme extends ClassVariantTheme {
 		layout.paddingLeft = 10.0;
 		layout.gap = 4.0;
 		controlBar.layout = layout;
+	}
+
+	private function setToolBarLayoutGroupStyles(group:LayoutGroup):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x444444);
+		backgroundSkin.cornerRadius = 7.0;
+		group.backgroundSkin = backgroundSkin;
+
+		var layout = new HorizontalLayout();
+		layout.horizontalAlign = RIGHT;
+		layout.verticalAlign = MIDDLE;
+		layout.paddingTop = 10.0;
+		// TODO: should be 10.0, but there's a temporary bug in Feathers UI HorizontalLayout when using RIGHT
+		layout.paddingRight = 0.0;
+		layout.paddingBottom = 10.0;
+		layout.paddingLeft = 10.0;
+		layout.gap = 4.0;
+		group.layout = layout;
 	}
 
 	private function setTextInputStyles(textInput:TextInput):Void {

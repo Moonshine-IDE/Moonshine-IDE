@@ -1,5 +1,3 @@
-package moonshine;
-
 /*
 	Copyright 2020 Prominic.NET, Inc.
 
@@ -19,12 +17,10 @@ package moonshine;
 	No warranty of merchantability or fitness of any kind.
 	Use this software at your own risk.
  */
-import moonshine.plugin.references.view.ReferencesView;
-import moonshine.plugin.symbols.view.SymbolsView;
-import feathers.core.DefaultFocusManager;
 
-class HaxeClasses {
-	public var DefaultFocusManager:DefaultFocusManager;
-	public var ReferencesView:ReferencesView;
-	public var SymbolsView:SymbolsView;
+package actionScripts.interfaces;
+
+extern interface IViewWithTitle {
+	@:flash.property
+	public var title(get, null):String;
 }
