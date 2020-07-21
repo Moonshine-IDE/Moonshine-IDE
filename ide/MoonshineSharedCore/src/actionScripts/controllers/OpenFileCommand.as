@@ -171,34 +171,42 @@ package actionScripts.controllers
 			// If file is open already, just focus that editor.
 			for each (var contentWindow:IContentWindow in model.editors)
 			{
-				if ((contentWindow is IFileContentWindow) && 
-					(contentWindow as IFileContentWindow).currentFile.fileBridge.nativePath == file.fileBridge.nativePath)
+				if (contentWindow is IFileContentWindow)
 				{
-					isFileOpen = true;
-					model.activeEditor = contentWindow;
-					
-					if ((contentWindow is BasicTextEditor) && (atLine > -1))
+					var contentWindowFile:FileLocation = (contentWindow as IFileContentWindow).currentFile;
+					// on case-insensitive file systems, these may not match
+					// unless we canonicalize, and then we'd get the same file
+					// opened in multiple tabs
+					contentWindowFile.fileBridge.canonicalize();
+					file.fileBridge.canonicalize();
+					if(contentWindowFile.fileBridge.nativePath == file.fileBridge.nativePath)
 					{
-						var ed:BasicTextEditor = contentWindow as BasicTextEditor;
+						isFileOpen = true;
+						model.activeEditor = contentWindow;
+						
+						if ((contentWindow is BasicTextEditor) && (atLine > -1))
+						{
+							var ed:BasicTextEditor = contentWindow as BasicTextEditor;
 
-						ed.getEditorComponent().scrollTo(atLine, openType);
-						if (!openType || openType == OpenFileEvent.OPEN_FILE || openType == OpenFileEvent.JUMP_TO_SEARCH_LINE)
-						{
-							ed.getEditorComponent().selectLine(atLine);
-                        }
-						else if (openType == OpenFileEvent.TRACE_LINE)
-						{
-							ed.getEditorComponent().selectTraceLine(atLine);
-                        }
+							ed.getEditorComponent().scrollTo(atLine, openType);
+							if (!openType || openType == OpenFileEvent.OPEN_FILE || openType == OpenFileEvent.JUMP_TO_SEARCH_LINE)
+							{
+								ed.getEditorComponent().selectLine(atLine);
+							}
+							else if (openType == OpenFileEvent.TRACE_LINE)
+							{
+								ed.getEditorComponent().selectTraceLine(atLine);
+							}
 
-						if (atChar > -1)
-						{
-							ed.getEditorComponent().model.caretIndex = atChar;
+							if (atChar > -1)
+							{
+								ed.getEditorComponent().model.caretIndex = atChar;
+							}
 						}
-					}
 
-					contentWindow.setFocus();
-					return;
+						contentWindow.setFocus();
+						return;
+					}
 				}
 			}
 			
