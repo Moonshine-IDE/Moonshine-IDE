@@ -20,6 +20,12 @@
 
 package moonshine.theme;
 
+import feathers.controls.ToggleButtonState;
+import feathers.controls.ToggleButton;
+import feathers.controls.dataRenderers.TreeViewItemRenderer;
+import feathers.layout.HorizontalLayoutData;
+import feathers.controls.TreeView;
+import moonshine.ui.SideBarViewHeader;
 import moonshine.ui.ResizableTitleWindow;
 import feathers.layout.VerticalListLayout;
 import feathers.controls.dataRenderers.ItemRenderer;
@@ -59,20 +65,29 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		this.styleProvider.setStyleFunction(Button, null, setLightButtonStyles);
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_DARK_BUTTON, setDarkButtonStyles);
-		this.styleProvider.setStyleFunction(Button, TitleWindow.CHILD_VARIANT_CLOSE_BUTTON, setTitleWindowCloseButtonStyles);
+
+		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
-		this.styleProvider.setStyleFunction(Label, TitleWindow.CHILD_VARIANT_TITLE, setTitleWindowTitleStyles);
 
 		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
 
 		this.styleProvider.setStyleFunction(ListView, null, setListViewStyles);
-		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
+
+		this.styleProvider.setStyleFunction(SideBarViewHeader, null, setSideBarViewHeaderStyles);
+		this.styleProvider.setStyleFunction(Label, SideBarViewHeader.CHILD_VARIANT_TITLE, setSideBarViewHeaderTitleStyles);
+		this.styleProvider.setStyleFunction(Button, SideBarViewHeader.CHILD_VARIANT_CLOSE_BUTTON, setSideBarViewHeaderCloseButtonStyles);
 
 		this.styleProvider.setStyleFunction(TitleWindow, null, setTitleWindowStyles);
+		this.styleProvider.setStyleFunction(Label, TitleWindow.CHILD_VARIANT_TITLE, setTitleWindowTitleStyles);
 		this.styleProvider.setStyleFunction(LayoutGroup, THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR, setTitleWindowControlBarStyles);
+		this.styleProvider.setStyleFunction(Button, TitleWindow.CHILD_VARIANT_CLOSE_BUTTON, setTitleWindowCloseButtonStyles);
 
 		this.styleProvider.setStyleFunction(TextInput, null, setTextInputStyles);
+
+		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
+		this.styleProvider.setStyleFunction(TreeViewItemRenderer, null, setTreeViewItemRendererStyles);
+		this.styleProvider.setStyleFunction(ToggleButton, TreeViewItemRenderer.CHILD_VARIANT_DISCLOSURE_BUTTON, setTreeViewItemRendererDisclosureButtonStyles);
 	}
 
 	private function setLightButtonStyles(button:Button):Void {
@@ -175,6 +190,24 @@ class MoonshineTheme extends ClassVariantTheme {
 		button.gap = 4.0;
 	}
 
+	private function setItemRendererStyles(itemRenderer:ItemRenderer):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x464646);
+		backgroundSkin.selectedFill = SolidColor(0xC165B8);
+		// TODO: uncomment when ToggleButtonState is handled correctly by BasicToggleButton
+		// backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+		itemRenderer.backgroundSkin = backgroundSkin;
+
+		itemRenderer.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
+		itemRenderer.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
+		itemRenderer.embedFonts = true;
+
+		itemRenderer.paddingTop = 4.0;
+		itemRenderer.paddingRight = 4.0;
+		itemRenderer.paddingBottom = 4.0;
+		itemRenderer.paddingLeft = 4.0;
+	}
+
 	private function setTitleWindowCloseButtonStyles(button:Button):Void {
 		var backgroundSkin = new CircleSkin();
 		backgroundSkin.border = SolidColor(1.0, 0xffffff);
@@ -228,20 +261,50 @@ class MoonshineTheme extends ClassVariantTheme {
 		listView.paddingLeft = 1.0;
 	}
 
-	private function setItemRendererStyles(itemRenderer:ItemRenderer):Void {
+	private function setSideBarViewHeaderStyles(header:SideBarViewHeader):Void {
 		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0x464646);
-		backgroundSkin.selectedFill = SolidColor(0xC165B8);
-		itemRenderer.backgroundSkin = backgroundSkin;
+		backgroundSkin.fill = Gradient(LINEAR, [0xF2F2F2, 0xEEEEEE, 0xEEEEEE, 0xD8D8D8], [1.0, 1.0, 1.0, 1.0], [0x00, 0x3F, 0xCF, 0xFF],
+			90.0 * Math.PI / 180.0);
+		backgroundSkin.border = null;
+		header.backgroundSkin = backgroundSkin;
 
-		itemRenderer.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
-		itemRenderer.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
-		itemRenderer.embedFonts = true;
+		var layout = new HorizontalLayout();
+		layout.horizontalAlign = LEFT;
+		layout.verticalAlign = MIDDLE;
+		layout.paddingTop = 6.0;
+		layout.paddingRight = 6.0;
+		layout.paddingBottom = 6.0;
+		layout.paddingLeft = 6.0;
+		layout.gap = 4.0;
+		header.layout = layout;
+	}
 
-		itemRenderer.paddingTop = 5.0;
-		itemRenderer.paddingRight = 5.0;
-		itemRenderer.paddingBottom = 5.0;
-		itemRenderer.paddingLeft = 5.0;
+	private function setSideBarViewHeaderTitleStyles(label:Label):Void {
+		label.textFormat = new TextFormat("DejaVuSansTF", 11, 0x292929);
+		label.embedFonts = true;
+		label.layoutData = new HorizontalLayoutData(100.0);
+	}
+
+	private function setSideBarViewHeaderCloseButtonStyles(button:Button):Void {
+		var backgroundSkin = new CircleSkin();
+		backgroundSkin.border = SolidColor(1.0, 0x444444, 0.8);
+		backgroundSkin.fill = null;
+		backgroundSkin.width = 14.0;
+		backgroundSkin.height = 14.0;
+		button.backgroundSkin = backgroundSkin;
+
+		var icon = new Shape();
+		icon.graphics.beginFill(0xff00ff, 0.0);
+		icon.graphics.drawRect(0.0, 0.0, 8.0, 8.0);
+		icon.graphics.lineStyle(2.0, 0x444444, 0.8, true, NORMAL, SQUARE);
+		icon.graphics.moveTo(2.0, 2.0);
+		icon.graphics.lineTo(6.0, 6.0);
+		icon.graphics.moveTo(2.0, 6.0);
+		icon.graphics.lineTo(6.0, 2.0);
+		button.icon = icon;
+
+		button.horizontalAlign = CENTER;
+		button.verticalAlign = MIDDLE;
 	}
 
 	private function setTitleWindowStyles(window:TitleWindow):Void {
@@ -341,5 +404,75 @@ class MoonshineTheme extends ClassVariantTheme {
 		textInput.paddingRight = 5.0;
 		textInput.paddingBottom = 5.0;
 		textInput.paddingLeft = 5.0;
+	}
+
+	private function setTreeViewStyles(treeView:TreeView):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x464646);
+		backgroundSkin.border = SolidColor(1.0, 0x666666);
+		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
+		backgroundSkin.cornerRadius = 0.0;
+		backgroundSkin.minWidth = 160.0;
+		backgroundSkin.minHeight = 160.0;
+		treeView.backgroundSkin = backgroundSkin;
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		treeView.focusRectSkin = focusRectSkin;
+
+		var layout = new VerticalListLayout();
+		layout.requestedRowCount = 5;
+		treeView.layout = layout;
+
+		treeView.paddingTop = 1.0;
+		treeView.paddingRight = 1.0;
+		treeView.paddingBottom = 1.0;
+		treeView.paddingLeft = 1.0;
+	}
+
+	private function setTreeViewItemRendererStyles(itemRenderer:TreeViewItemRenderer):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x464646);
+		backgroundSkin.selectedFill = SolidColor(0xC165B8);
+		// TODO: uncomment when ToggleButtonState is handled correctly by BasicToggleButton
+		// backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+		itemRenderer.backgroundSkin = backgroundSkin;
+
+		itemRenderer.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
+		itemRenderer.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
+		itemRenderer.embedFonts = true;
+
+		itemRenderer.paddingTop = 4.0;
+		itemRenderer.paddingRight = 4.0;
+		itemRenderer.paddingBottom = 4.0;
+		itemRenderer.paddingLeft = 4.0;
+		itemRenderer.indentation = 12.0;
+	}
+
+	private function setTreeViewItemRendererDisclosureButtonStyles(button:ToggleButton):Void {
+		var icon = new Shape();
+		icon.graphics.beginFill(0xff00ff, 0.0);
+		icon.graphics.drawRect(0.0, 0.0, 12.0, 12.0);
+		icon.graphics.endFill();
+		icon.graphics.beginFill(0x6F7777);
+		icon.graphics.moveTo(2.0, 2.0);
+		icon.graphics.lineTo(10.0, 6.0);
+		icon.graphics.lineTo(2.0, 10.0);
+		icon.graphics.lineTo(2.0, 2.0);
+		icon.graphics.endFill();
+		button.icon = icon;
+
+		var selectedIcon = new Shape();
+		selectedIcon.graphics.beginFill(0xff00ff, 0.0);
+		selectedIcon.graphics.drawRect(0.0, 0.0, 12.0, 12.0);
+		selectedIcon.graphics.endFill();
+		selectedIcon.graphics.beginFill(0x6F7777);
+		selectedIcon.graphics.moveTo(2.0, 2.0);
+		selectedIcon.graphics.lineTo(10.0, 2.0);
+		selectedIcon.graphics.lineTo(6.0, 10.0);
+		selectedIcon.graphics.lineTo(2.0, 2.0);
+		selectedIcon.graphics.endFill();
+		button.selectedIcon = selectedIcon;
 	}
 }

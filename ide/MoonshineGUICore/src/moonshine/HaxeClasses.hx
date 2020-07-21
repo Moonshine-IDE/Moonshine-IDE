@@ -19,12 +19,14 @@ package moonshine;
 	No warranty of merchantability or fitness of any kind.
 	Use this software at your own risk.
  */
+import moonshine.plugin.help.view.AS3DocsView;
 import moonshine.plugin.references.view.ReferencesView;
 import moonshine.plugin.symbols.view.SymbolsView;
 import feathers.core.DefaultFocusManager;
 
 class HaxeClasses {
 	public var DefaultFocusManager:DefaultFocusManager;
+	public var AS3DocsView:AS3DocsView;
 	public var ReferencesView:ReferencesView;
 	public var SymbolsView:SymbolsView;
 }
