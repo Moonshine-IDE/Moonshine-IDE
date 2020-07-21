@@ -28,12 +28,13 @@ package actionScripts.plugin.help
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.help.view.AS3DocsView;
+	import moonshine.plugin.help.view.AS3DocsView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.ui.FeathersUIWrapper;
 
 	public class HelpPlugin extends PluginBase implements IPlugin
 	{
@@ -73,7 +74,20 @@ package actionScripts.plugin.help
 		
 		protected function as3DocHandler(event:Event):void
 		{
-			LayoutModifier.addToSidebar(new AS3DocsView(), event);
+			var docsView:AS3DocsView = new AS3DocsView();
+			docsView.addEventListener(Event.CLOSE, as3DocsView_closeHandler);
+			var docsViewWrapper:AS3DocsViewWrapper = new AS3DocsViewWrapper(docsView);
+			docsViewWrapper.percentWidth = 100.0;
+			docsViewWrapper.percentHeight = 100.0;
+			LayoutModifier.addToSidebar(docsViewWrapper, event);
+		}
+
+		protected function as3DocsView_closeHandler(event:Event):void
+		{
+			var docsView:AS3DocsView = AS3DocsView(event.currentTarget);
+			docsView.removeEventListener(Event.CLOSE, as3DocsView_closeHandler);
+			var docsViewWrapper:AS3DocsViewWrapper = AS3DocsViewWrapper(docsView.parent);
+			LayoutModifier.removeFromSidebar(docsViewWrapper);
 		}
 		
 		protected function abouthShowHandler(event:Event):void
@@ -106,5 +120,23 @@ package actionScripts.plugin.help
 			var url:String = ResourceManager.getInstance().getString('resources', 'PRIVACY_POLICY_URL');
 			navigateToURL(new URLRequest(url));
         }
+	}
+}
+
+import actionScripts.ui.FeathersUIWrapper;
+import actionScripts.ui.IPanelWindow;
+import feathers.core.FeathersControl;
+
+//IPanelWindow used by LayoutModifier.addToSidebar() and removeFromSidebar()
+class AS3DocsViewWrapper extends FeathersUIWrapper implements IPanelWindow {
+	public function AS3DocsViewWrapper(feathersUIControl:FeathersControl)
+	{
+		super(feathersUIControl);
+	}
+
+	override public function get className():String
+	{
+		//className used by LayoutModifier.attachSidebarSections
+		return "AS3DocsView";
 	}
 }
