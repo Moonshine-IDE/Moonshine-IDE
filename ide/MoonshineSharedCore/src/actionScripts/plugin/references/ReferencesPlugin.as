@@ -22,15 +22,19 @@ package actionScripts.plugin.references
 
 	import flash.events.Event;
 	
-	import mx.collections.ArrayCollection;
+	import feathers.data.ArrayCollection;
 	
 	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.events.ReferencesEvent;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.references.view.ReferencesView;
+	import moonshine.plugin.references.view.ReferencesView;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Location;
+	import actionScripts.ui.FeathersUIWrapper;
+	import actionScripts.ui.FeathersUIWrapper;
+	import mx.controls.Alert;
+	import actionScripts.events.OpenLocationEvent;
 
 	public class ReferencesPlugin extends PluginBase
 	{
@@ -38,18 +42,24 @@ package actionScripts.plugin.references
 		
 		public function ReferencesPlugin()
 		{
+			referencesView = new ReferencesView();
+			referencesViewWrapper = new FeathersUIWrapperWithTitle(this.referencesView);
+			referencesViewWrapper.percentWidth = 100;
+			referencesViewWrapper.percentHeight = 100;
 		}
 
 		override public function get name():String { return "References Plugin"; }
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays all references for a symbol in the entire workspace."; }
 
-		private var referencesView:ReferencesView = new ReferencesView();
+		private var referencesViewWrapper:FeathersUIWrapperWithTitle;
+		private var referencesView:ReferencesView;
 		private var isReferencesViewVisible:Boolean;
 
 		override public function activate():void
 		{
 			super.activate();
+			referencesView.addEventListener(ReferencesView.EVENT_OPEN_SELECTED_REFERENCE, handleOpenSelectedReference);
 			dispatcher.addEventListener(EVENT_OPEN_FIND_REFERENCES_VIEW, handleOpenFindReferencesView);
 			dispatcher.addEventListener(ReferencesEvent.EVENT_SHOW_REFERENCES, handleShowReferences);
 		}
@@ -57,6 +67,7 @@ package actionScripts.plugin.references
 		override public function deactivate():void
 		{
 			super.deactivate();
+			referencesView.removeEventListener(ReferencesView.EVENT_OPEN_SELECTED_REFERENCE, handleOpenSelectedReference);
 			dispatcher.removeEventListener(EVENT_OPEN_FIND_REFERENCES_VIEW, handleOpenFindReferencesView);
 			dispatcher.removeEventListener(ReferencesEvent.EVENT_SHOW_REFERENCES, handleShowReferences);
 		}
@@ -86,18 +97,30 @@ package actionScripts.plugin.references
 			for(var i:int = 0; i < itemCount; i++)
 			{
 				var symbol:Location = references[i];
-				collection.addItem(symbol);
+				collection.add(symbol);
 			}
 			collection.filterFunction = null;
 			collection.refresh();
 
 			if (!isReferencesViewVisible)
 			{
-				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, referencesView));
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, referencesViewWrapper));
 				isReferencesViewVisible = true;
 
 				referencesView.addEventListener(Event.REMOVED_FROM_STAGE, onReferenceViewRemovedFromStage);
 			}
+		}
+
+		private function handleOpenSelectedReference(event:Event):void {
+			var selectedReference:Location = this.referencesView.selectedReference;
+			if(!selectedReference)
+			{
+				Alert.show("Please select an item to open.");
+				return;
+			}
+
+			dispatcher.dispatchEvent(
+				new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, selectedReference));
 		}
 
 		private function onReferenceViewRemovedFromStage(event:Event):void
@@ -106,5 +129,25 @@ package actionScripts.plugin.references
 			isReferencesViewVisible = false;
 			referencesView.removeEventListener(Event.REMOVED_FROM_STAGE, onReferenceViewRemovedFromStage);
 		}
+	}
+}
+
+import actionScripts.interfaces.IViewWithTitle;
+import actionScripts.ui.FeathersUIWrapper;
+import feathers.core.FeathersControl;
+
+class FeathersUIWrapperWithTitle extends FeathersUIWrapper implements IViewWithTitle {
+	public function FeathersUIWrapperWithTitle(feathersUIControl:FeathersControl)
+	{
+		super(feathersUIControl);
+	}
+
+	public function get title():String {
+		var feathersUIControlWithTitle:IViewWithTitle = this.feathersUIControl as IViewWithTitle;
+		if(!feathersUIControlWithTitle)
+		{
+			return "";
+		}
+		return feathersUIControlWithTitle.title;
 	}
 }
