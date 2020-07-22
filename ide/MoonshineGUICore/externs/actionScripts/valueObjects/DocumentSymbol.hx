@@ -1,5 +1,3 @@
-package moonshine;
-
 /*
 	Copyright 2020 Prominic.NET, Inc.
 
@@ -19,16 +17,17 @@ package moonshine;
 	No warranty of merchantability or fitness of any kind.
 	Use this software at your own risk.
  */
-import feathers.core.DefaultFocusManager;
-import moonshine.plugin.help.view.AS3DocsView;
-import moonshine.plugin.outline.view.OutlineView;
-import moonshine.plugin.references.view.ReferencesView;
-import moonshine.plugin.symbols.view.SymbolsView;
 
-class HaxeClasses {
-	public var DefaultFocusManager:DefaultFocusManager;
-	public var AS3DocsView:AS3DocsView;
-	public var OutlineView:OutlineView;
-	public var ReferencesView:ReferencesView;
-	public var SymbolsView:SymbolsView;
+package actionScripts.valueObjects;
+
+import openfl.Vector;
+
+extern class DocumentSymbol {
+	public var name:String;
+	public var detail:String;
+	public var kind:Int;
+	public var deprecated:Bool;
+	public var range:Range;
+	public var selectionRange:Range;
+	public var children:Vector<DocumentSymbol>;
 }
