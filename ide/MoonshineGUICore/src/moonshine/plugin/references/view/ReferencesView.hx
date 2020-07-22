@@ -50,16 +50,22 @@ class ReferencesView extends LayoutGroup implements IViewWithTitle {
 		return "References";
 	}
 
+	private var _references:ArrayCollection<Location> = new ArrayCollection();
+
 	@:flash.property
-	public var references(default, set):ArrayCollection<Location> = new ArrayCollection();
+	public var references(get, set):ArrayCollection<Location>;
+
+	private function get_references():ArrayCollection<Location> {
+		return this._references;
+	}
 
 	private function set_references(value:ArrayCollection<Location>):ArrayCollection<Location> {
-		if (this.references == value) {
-			return this.references;
+		if (this._references == value) {
+			return this._references;
 		}
-		this.references = value;
+		this._references = value;
 		this.setInvalid(InvalidationFlag.DATA);
-		return this.references;
+		return this._references;
 	}
 
 	@:flash.property
@@ -88,7 +94,11 @@ class ReferencesView extends LayoutGroup implements IViewWithTitle {
 	}
 
 	override private function update():Void {
-		this.resultsListView.dataProvider = this.references;
+		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
+
+		if (dataInvalid) {
+			this.resultsListView.dataProvider = this._references;
+		}
 
 		super.update();
 	}

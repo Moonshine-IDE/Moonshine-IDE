@@ -43,7 +43,7 @@ package actionScripts.plugin.references
 		public function ReferencesPlugin()
 		{
 			referencesView = new ReferencesView();
-			referencesViewWrapper = new FeathersUIWrapperWithTitle(this.referencesView);
+			referencesViewWrapper = new ReferencesViewWrapper(this.referencesView);
 			referencesViewWrapper.percentWidth = 100;
 			referencesViewWrapper.percentHeight = 100;
 		}
@@ -52,7 +52,7 @@ package actionScripts.plugin.references
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays all references for a symbol in the entire workspace."; }
 
-		private var referencesViewWrapper:FeathersUIWrapperWithTitle;
+		private var referencesViewWrapper:ReferencesViewWrapper;
 		private var referencesView:ReferencesView;
 		private var isReferencesViewVisible:Boolean;
 
@@ -134,20 +134,15 @@ package actionScripts.plugin.references
 
 import actionScripts.interfaces.IViewWithTitle;
 import actionScripts.ui.FeathersUIWrapper;
-import feathers.core.FeathersControl;
+import moonshine.plugin.references.view.ReferencesView;
 
-class FeathersUIWrapperWithTitle extends FeathersUIWrapper implements IViewWithTitle {
-	public function FeathersUIWrapperWithTitle(feathersUIControl:FeathersControl)
+class ReferencesViewWrapper extends FeathersUIWrapper implements IViewWithTitle {
+	public function ReferencesViewWrapper(feathersUIControl:ReferencesView)
 	{
 		super(feathersUIControl);
 	}
 
 	public function get title():String {
-		var feathersUIControlWithTitle:IViewWithTitle = this.feathersUIControl as IViewWithTitle;
-		if(!feathersUIControlWithTitle)
-		{
-			return "";
-		}
-		return feathersUIControlWithTitle.title;
+		return ReferencesView(feathersUIControl).title;
 	}
 }

@@ -125,13 +125,19 @@ package actionScripts.plugin.help
 
 import actionScripts.ui.FeathersUIWrapper;
 import actionScripts.ui.IPanelWindow;
-import feathers.core.FeathersControl;
+import actionScripts.interfaces.IViewWithTitle;
+import moonshine.plugin.help.view.AS3DocsView;
 
 //IPanelWindow used by LayoutModifier.addToSidebar() and removeFromSidebar()
-class AS3DocsViewWrapper extends FeathersUIWrapper implements IPanelWindow {
-	public function AS3DocsViewWrapper(feathersUIControl:FeathersControl)
+class AS3DocsViewWrapper extends FeathersUIWrapper implements IPanelWindow, IViewWithTitle {
+	public function AS3DocsViewWrapper(feathersUIControl:AS3DocsView)
 	{
 		super(feathersUIControl);
+	}
+
+	public function get title():String
+	{
+		return AS3DocsView(feathersUIControl).title;
 	}
 
 	override public function get className():String

@@ -20,28 +20,26 @@
 
 package moonshine.theme;
 
-import feathers.controls.ToggleButtonState;
-import feathers.controls.ToggleButton;
-import feathers.controls.dataRenderers.TreeViewItemRenderer;
-import feathers.layout.HorizontalLayoutData;
-import feathers.controls.TreeView;
-import moonshine.ui.SideBarViewHeader;
-import moonshine.ui.ResizableTitleWindow;
-import feathers.layout.VerticalListLayout;
-import feathers.controls.dataRenderers.ItemRenderer;
-import feathers.controls.ListView;
-import feathers.controls.TextInputState;
-import feathers.controls.TextInput;
 import feathers.controls.Button;
-import feathers.controls.ButtonState;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
+import feathers.controls.ListView;
+import feathers.controls.TextInput;
+import feathers.controls.TextInputState;
+import feathers.controls.ToggleButton;
+import feathers.controls.TreeView;
+import feathers.controls.dataRenderers.ItemRenderer;
+import feathers.controls.dataRenderers.TreeViewItemRenderer;
 import feathers.layout.HorizontalLayout;
+import feathers.layout.HorizontalLayoutData;
+import feathers.layout.VerticalListLayout;
 import feathers.skins.CircleSkin;
 import feathers.skins.RectangleSkin;
 import feathers.style.Theme;
 import feathers.themes.ClassVariantTheme;
 import moonshine.style.MoonshineButtonSkin;
+import moonshine.ui.ResizableTitleWindow;
+import moonshine.ui.SideBarViewHeader;
 import moonshine.ui.TitleWindow;
 import openfl.display.Shape;
 import openfl.text.TextFormat;
@@ -266,6 +264,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		listView.paddingRight = 1.0;
 		listView.paddingBottom = 1.0;
 		listView.paddingLeft = 1.0;
+
+		listView.fixedScrollBars = true;
 	}
 
 	private function setSideBarViewHeaderStyles(header:SideBarViewHeader):Void {
@@ -351,6 +351,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		window.paddingRight = 1.0;
 		window.paddingBottom = 1.0;
 		window.paddingLeft = 1.0;
+
+		window.fixedScrollBars = true;
 	}
 
 	private function setTitleWindowTitleStyles(label:Label):Void {
@@ -436,6 +438,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		treeView.paddingRight = 1.0;
 		treeView.paddingBottom = 1.0;
 		treeView.paddingLeft = 1.0;
+
+		treeView.fixedScrollBars = true;
 	}
 
 	private function setTreeViewItemRendererStyles(itemRenderer:TreeViewItemRenderer):Void {

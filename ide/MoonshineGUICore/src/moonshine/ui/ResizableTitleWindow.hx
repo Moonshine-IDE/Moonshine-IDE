@@ -33,16 +33,22 @@ class ResizableTitleWindow extends TitleWindow {
 
 	private var _resizeHandle:Sprite;
 
+	private var _resizeEnabled:Bool = true;
+
 	@:flash.property
-	public var resizeEnabled(default, set):Bool = true;
+	public var resizeEnabled(get, set):Bool;
+
+	private function get_resizeEnabled():Bool {
+		return this._resizeEnabled;
+	}
 
 	private function set_resizeEnabled(value:Bool):Bool {
-		if (this.resizeEnabled == value) {
-			return this.resizeEnabled;
+		if (this._resizeEnabled == value) {
+			return this._resizeEnabled;
 		}
-		this.resizeEnabled = value;
+		this._resizeEnabled = value;
 		this.setInvalid(InvalidationFlag.DATA);
-		return this.resizeEnabled;
+		return this._resizeEnabled;
 	}
 
 	private var _currentResizeHandleSkin:DisplayObject;
@@ -96,7 +102,7 @@ class ResizableTitleWindow extends TitleWindow {
 		if (this._currentResizeHandleSkin == null) {
 			return;
 		}
-		this._currentResizeHandleSkin.visible = this.resizeEnabled;
+		this._currentResizeHandleSkin.visible = this._resizeEnabled;
 	}
 
 	private function layoutResizeHandle():Void {

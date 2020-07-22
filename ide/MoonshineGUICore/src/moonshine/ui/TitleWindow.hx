@@ -46,28 +46,40 @@ class TitleWindow extends Panel {
 		this.addEventListener(KeyboardEvent.KEY_DOWN, titleWindow_keyDownHandler);
 	}
 
-	@:flash.property
-	public var title(default, set):String;
+	private var _title:String;
 
-	private function set_title(value:String):String {
-		if (this.title == value) {
-			return this.title;
-		}
-		this.title = value;
-		this.setInvalid(InvalidationFlag.DATA);
-		return this.title;
+	@:flash.property
+	public var title(get, set):String;
+
+	private function get_title():String {
+		return this._title;
 	}
 
+	private function set_title(value:String):String {
+		if (this._title == value) {
+			return this._title;
+		}
+		this._title = value;
+		this.setInvalid(InvalidationFlag.DATA);
+		return this._title;
+	}
+
+	private var _closeEnabled:Bool = false;
+
 	@:flash.property
-	public var closeEnabled(default, set):Bool;
+	public var closeEnabled(get, set):Bool;
+
+	private function get_closeEnabled():Bool {
+		return this._closeEnabled;
+	}
 
 	private function set_closeEnabled(value:Bool):Bool {
-		if (this.closeEnabled == value) {
-			return this.closeEnabled;
+		if (this._closeEnabled == value) {
+			return this._closeEnabled;
 		}
-		this.closeEnabled = value;
+		this._closeEnabled = value;
 		this.setInvalid(InvalidationFlag.DATA);
-		return this.closeEnabled;
+		return this._closeEnabled;
 	}
 
 	@:style
@@ -129,13 +141,13 @@ class TitleWindow extends Panel {
 	}
 
 	private function updateTitle():Void {
-		this.titleLabel.text = this.title;
+		this.titleLabel.text = this._title;
 	}
 
 	private function updateCloseButton():Void {
-		this.closeButton.enabled = this.enabled && this.closeEnabled;
-		this.closeButton.visible = this.closeEnabled;
-		this.closeButton.includeInLayout = this.closeEnabled;
+		this.closeButton.enabled = this.enabled && this._closeEnabled;
+		this.closeButton.visible = this._closeEnabled;
+		this.closeButton.includeInLayout = this._closeEnabled;
 	}
 
 	private function closeButton_triggerHandler(event:TriggerEvent):Void {

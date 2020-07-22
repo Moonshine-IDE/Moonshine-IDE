@@ -20,6 +20,7 @@
 
 package moonshine.plugin.help.view;
 
+import actionScripts.interfaces.IViewWithTitle;
 import feathers.controls.Panel;
 import feathers.controls.TreeView;
 import feathers.controls.dataRenderers.TreeViewItemRenderer;
@@ -36,13 +37,20 @@ import openfl.events.IOErrorEvent;
 import openfl.net.URLLoader;
 import openfl.net.URLRequest;
 
-class AS3DocsView extends Panel {
+class AS3DocsView extends Panel implements IViewWithTitle {
 	public function new() {
 		super();
 	}
 
 	private var treeView:TreeView;
 	private var urlLoader:URLLoader;
+
+	@:flash.property
+	public var title(get, never):String;
+
+	public function get_title():String {
+		return "Useful Links";
+	}
 
 	override private function initialize():Void {
 		this.layout = new AnchorLayout();
@@ -64,7 +72,7 @@ class AS3DocsView extends Panel {
 		this.addChild(this.treeView);
 
 		var header = new SideBarViewHeader();
-		header.title = "Useful Links";
+		header.title = this.title;
 		header.closeEnabled = true;
 		header.addEventListener(Event.CLOSE, header_closeHandler);
 		this.header = header;

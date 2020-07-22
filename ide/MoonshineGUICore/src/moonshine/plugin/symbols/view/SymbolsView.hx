@@ -59,29 +59,41 @@ class SymbolsView extends ResizableTitleWindow {
 	private var resultsListView:ListView;
 	private var openSymbolButton:Button;
 
-	@:flash.property
-	public var query(default, set):String = "";
+	private var _query:String = "";
 
-	private function set_query(value:String):String {
-		if (this.query == value) {
-			return this.query;
-		}
-		this.query = value;
-		this.setInvalid(InvalidationFlag.DATA);
-		this.dispatchEvent(new Event(EVENT_QUERY_CHANGE));
-		return this.query;
+	@:flash.property
+	public var query(get, set):String;
+
+	private function get_query():String {
+		return this._query;
 	}
 
+	private function set_query(value:String):String {
+		if (this._query == value) {
+			return this._query;
+		}
+		this._query = value;
+		this.setInvalid(InvalidationFlag.DATA);
+		this.dispatchEvent(new Event(EVENT_QUERY_CHANGE));
+		return this._query;
+	}
+
+	private var _symbols:ArrayCollection<Dynamic> = new ArrayCollection();
+
 	@:flash.property
-	public var symbols(default, set):ArrayCollection<Dynamic> = new ArrayCollection();
+	public var symbols(get, set):ArrayCollection<Dynamic>;
+
+	private function get_symbols():ArrayCollection<Dynamic> {
+		return this._symbols;
+	}
 
 	private function set_symbols(value:ArrayCollection<Dynamic>):ArrayCollection<Dynamic> {
-		if (this.symbols == value) {
-			return this.symbols;
+		if (this._symbols == value) {
+			return this._symbols;
 		}
-		this.symbols = value;
+		this._symbols = value;
 		this.setInvalid(InvalidationFlag.DATA);
-		return this.symbols;
+		return this._symbols;
 	}
 
 	@:flash.property
@@ -159,13 +171,14 @@ class SymbolsView extends ResizableTitleWindow {
 	}
 
 	override private function update():Void {
-		this.searchFieldTextInput.text = this.query;
-		this.resultsListView.dataProvider = this.symbols;
+		this.searchFieldTextInput.text = this._query;
+		this.resultsListView.dataProvider = this._symbols;
 
 		super.update();
 	}
 
 	private function searchFieldTextInput_changeHandler(event:Event):Void {
+		// use the setter so that the event is dispatched
 		this.query = this.searchFieldTextInput.text;
 	}
 
