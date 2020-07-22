@@ -33,6 +33,8 @@ package actionScripts.ui
 	import feathers.core.IFocusContainer;
 	import feathers.core.DefaultFocusManager;
 	import flash.display.InteractiveObject;
+	import openfl._internal.Lib;
+	import flash.display.MovieClip;
 
 	[DefaultProperty("feathersUIControl")]
 	public class FeathersUIWrapper extends UIComponent implements IFocusManagerContainer, IFocusManagerComplexComponent
@@ -270,6 +272,12 @@ package actionScripts.ui
 
 		protected function feathersUIWrapper_addedToStageHandler(event:Event):void
 		{
+			if(Lib.current == null)
+			{
+				//when using OpenFL components in AS3, this variable may not
+				//have been initialized. Actuate needs it, though.
+				Lib.current = this.root as MovieClip;
+			}
 			if(!this._feathersUIControl)
 			{
 				return;
