@@ -192,11 +192,18 @@ class MoonshineTheme extends ClassVariantTheme {
 
 	private function setItemRendererStyles(itemRenderer:ItemRenderer):Void {
 		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0x464646);
+		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.selectedFill = SolidColor(0xC165B8);
 		// TODO: uncomment when ToggleButtonState is handled correctly by BasicToggleButton
 		// backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
 		itemRenderer.backgroundSkin = backgroundSkin;
+
+		// TODO: uncomment when alternateBackgroundSkin is supported in alpha.3
+		/*var alternateBackgroundSkin = new RectangleSkin();
+			alternateBackgroundSkin.fill = SolidColor(0x4D4C4C);
+			alternateBackgroundSkin.selectedFill = SolidColor(0xC165B8);
+			alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+			itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin; */
 
 		itemRenderer.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
 		itemRenderer.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
@@ -238,7 +245,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 	private function setListViewStyles(listView:ListView):Void {
 		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0x464646);
+		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = SolidColor(1.0, 0x666666);
 		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
@@ -408,7 +415,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 	private function setTreeViewStyles(treeView:TreeView):Void {
 		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0x464646);
+		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = SolidColor(1.0, 0x666666);
 		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
@@ -433,11 +440,18 @@ class MoonshineTheme extends ClassVariantTheme {
 
 	private function setTreeViewItemRendererStyles(itemRenderer:TreeViewItemRenderer):Void {
 		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0x464646);
+		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.selectedFill = SolidColor(0xC165B8);
 		// TODO: uncomment when ToggleButtonState is handled correctly by BasicToggleButton
 		// backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
 		itemRenderer.backgroundSkin = backgroundSkin;
+
+		// TODO: uncomment when alternateBackgroundSkin is supported in alpha.3
+		/*var alternateBackgroundSkin = new RectangleSkin();
+			alternateBackgroundSkin.fill = SolidColor(0x4D4C4C);
+			alternateBackgroundSkin.selectedFill = SolidColor(0xC165B8);
+			alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+			itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin; */
 
 		itemRenderer.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
 		itemRenderer.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
