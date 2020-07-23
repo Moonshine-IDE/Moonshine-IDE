@@ -69,7 +69,6 @@ package actionScripts.plugin.symbols
 		{
 			super.activate();
 			symbolsView.addEventListener(SymbolsView.EVENT_QUERY_CHANGE, handleQueryChange);
-			symbolsView.addEventListener(SymbolsView.EVENT_OPEN_SELECTED_SYMBOL, handleOpenSelectedSymbol);
 			dispatcher.addEventListener(EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW, handleOpenDocumentSymbolsView);
 			dispatcher.addEventListener(EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW, handleOpenWorkspaceSymbolsView);
 			dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowSymbols);
@@ -80,40 +79,10 @@ package actionScripts.plugin.symbols
 		{
 			super.deactivate();
 			symbolsView.removeEventListener(SymbolsView.EVENT_QUERY_CHANGE, handleQueryChange);
-			symbolsView.removeEventListener(SymbolsView.EVENT_OPEN_SELECTED_SYMBOL, handleOpenSelectedSymbol);
 			dispatcher.removeEventListener(EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW, handleOpenDocumentSymbolsView);
 			dispatcher.removeEventListener(EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW, handleOpenWorkspaceSymbolsView);
 			dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowSymbols);
 			dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, handleShowSymbols);
-		}
-
-		private function handleOpenSelectedSymbol(event:Event):void
-		{
-			var selectedSymbol:Object = this.symbolsView.selectedSymbol;
-			if(!selectedSymbol)
-			{
-				Alert.show("Please select an item to open.");
-				return;
-			}
-
-			if(selectedSymbol is SymbolInformation)
-			{
-				var symbolInfo:SymbolInformation = selectedSymbol as SymbolInformation;
-				dispatcher.dispatchEvent(
-					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, symbolInfo.location));
-			}
-			else if(selectedSymbol is DocumentSymbol)
-			{
-				var documentSymbol:DocumentSymbol = selectedSymbol as DocumentSymbol;
-				var activeEditor:BasicTextEditor = model.activeEditor as BasicTextEditor;
-				var uri:String = activeEditor.currentFile.fileBridge.url;
-				var range:Range = documentSymbol.range;
-				var location:Location = new Location(uri, range);
-				dispatcher.dispatchEvent(
-					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
-			}
-
-			PopUpManager.removePopUp(symbolsViewWrapper);
 		}
 		
 		private function handleQueryChange(event:Event):void
@@ -236,6 +205,24 @@ package actionScripts.plugin.symbols
 
 		private function symbolsView_closeHandler(event:Event):void
 		{
+			var selectedSymbol:Object = this.symbolsView.selectedSymbol;
+			if(selectedSymbol is SymbolInformation)
+			{
+				var symbolInfo:SymbolInformation = selectedSymbol as SymbolInformation;
+				dispatcher.dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, symbolInfo.location));
+			}
+			else if(selectedSymbol is DocumentSymbol)
+			{
+				var documentSymbol:DocumentSymbol = selectedSymbol as DocumentSymbol;
+				var activeEditor:BasicTextEditor = model.activeEditor as BasicTextEditor;
+				var uri:String = activeEditor.currentFile.fileBridge.url;
+				var range:Range = documentSymbol.range;
+				var location:Location = new Location(uri, range);
+				dispatcher.dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
+			}
+
 			PopUpManager.removePopUp(symbolsViewWrapper);
 		}
 

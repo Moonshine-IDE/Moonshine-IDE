@@ -41,7 +41,6 @@ import openfl.events.Event;
 
 class SymbolsView extends ResizableTitleWindow {
 	public static final EVENT_QUERY_CHANGE = "queryChange";
-	public static final EVENT_OPEN_SELECTED_SYMBOL = "openSelectedSymbol";
 
 	public function new() {
 		MoonshineTheme.initializeTheme();
@@ -92,18 +91,18 @@ class SymbolsView extends ResizableTitleWindow {
 			return this._symbols;
 		}
 		this._symbols = value;
+		this._selectedSymbol = null;
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._symbols;
 	}
+
+	private var _selectedSymbol:Dynamic;
 
 	@:flash.property
 	public var selectedSymbol(get, never):Dynamic;
 
 	public function get_selectedSymbol():Dynamic {
-		if (this.resultsListView == null) {
-			return null;
-		}
-		return this.resultsListView.selectedItem;
+		return this._selectedSymbol;
 	}
 
 	override private function initialize():Void {
@@ -149,6 +148,8 @@ class SymbolsView extends ResizableTitleWindow {
 		this.resultsListView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
 			var itemRenderer = new ItemRenderer();
 			itemRenderer.doubleClickEnabled = true;
+			// required for double-click too
+			itemRenderer.mouseChildren = false;
 			itemRenderer.addEventListener(MouseEvent.DOUBLE_CLICK, itemRenderer_doubleClickHandler);
 			return itemRenderer;
 		});
@@ -187,10 +188,17 @@ class SymbolsView extends ResizableTitleWindow {
 	}
 
 	private function openSymbolButton_triggerHandler(event:TriggerEvent):Void {
-		this.dispatchEvent(new Event(EVENT_OPEN_SELECTED_SYMBOL));
+		if (this.resultsListView.selectedItem == null) {
+			// this shouldn't happen, but to be safe...
+			// TODO: show an alert message to select an item
+			return;
+		}
+		this._selectedSymbol = this.resultsListView.selectedItem;
+		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
 	private function itemRenderer_doubleClickHandler(event:MouseEvent):Void {
-		this.dispatchEvent(new Event(EVENT_OPEN_SELECTED_SYMBOL));
+		this._selectedSymbol = this.resultsListView.selectedItem;
+		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 }
