@@ -127,7 +127,11 @@
 	<property environment="env"/>
 	<!-- Check and set if Flex SDK already setup as environment variable -->
 	<propertycopy property="FLEX_HOME" from="env.FLEX_HOME" silent="true" override="${Is.FLEX_HOME.Not.Exists}"/>
+	<propertycopy property="SIGNTOOL_HOME" from="env.SIGNTOOL_HOME" silent="true"/>
+	<propertycopy property="NSIS_HOME" from="env.NSIS_HOME" silent="true"/>
 	<echo>SDK : ${FLEX_HOME}</echo>
+	<echo>SIGNTOOL: ${SIGNTOOL_HOME}</echo>
+	<echo>NSIS: ${NSIS_HOME}</echo>
 	
     <!-- Path to your Flex SDK with AIR 3.1 overlaid -->
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
@@ -282,7 +286,7 @@
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</java>
 		<echo># Signed Process Running - Signing Executable</echo>
-		<exec executable="signtool" failonerror="true">
+		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/f"/>
 			<arg value="${debug_dir}/${certSelfSigned}"/>
@@ -291,7 +295,7 @@
 			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
 		</exec>
 		<echo># Signed Process Running - Praparing Installer</echo>
-		<exec executable="makensis" failonerror="true">
+		<exec executable="${NSIS_HOME}/makensis.exe" failonerror="true">
 			<arg value="/DVERSION=${BuildVersion}"/>
 			<arg value="/DINSTALLERNAME=${installerName}"/>
 			<arg value="/DAPPID=${applicationID}"/>
@@ -299,7 +303,7 @@
 			<arg value="nsis-build.nsi"/>
 		</exec>
 		<echo># Signed Process Running - Signing Installer</echo>
-		<exec executable="signtool" failonerror="true">
+		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/f"/>
 			<arg value="${certSignedWindowsBinary}"/>
