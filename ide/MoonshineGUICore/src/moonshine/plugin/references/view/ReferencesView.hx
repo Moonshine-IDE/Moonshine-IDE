@@ -84,7 +84,8 @@ class ReferencesView extends LayoutGroup implements IViewWithTitle {
 		this.resultsListView = new ListView();
 		this.resultsListView.itemToText = (item:Location) -> {
 			var start = item.range.start;
-			return "(" + start.line + ", " + start.character + ") " + new FileLocation(item.uri, true).fileBridge.nativePath;
+			var fileLocation:FileLocation = new FileLocation(item.uri, true);
+			return fileLocation.name + " (" + start.line + ", " + start.character + ") - " + fileLocation.fileBridge.nativePath;
 		}
 		this.resultsListView.layoutData = AnchorLayoutData.fill();
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
