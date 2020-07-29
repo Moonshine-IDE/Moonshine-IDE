@@ -24,16 +24,72 @@
 	;Request application privileges for Windows Vista and higher
 	RequestExecutionLevel admin
 	
+;--------------------------------
+;Start of StrContains
+	
+	Var STR_HAYSTACK
+	Var STR_NEEDLE
+	Var STR_CONTAINS_VAR_1
+	Var STR_CONTAINS_VAR_2
+	Var STR_CONTAINS_VAR_3
+	Var STR_CONTAINS_VAR_4
+	Var STR_RETURN_VAR
+	 
+	Function StrContains
+	  Exch $STR_NEEDLE
+	  Exch 1
+	  Exch $STR_HAYSTACK
+	  ; Uncomment to debug
+	  ;MessageBox MB_OK 'STR_NEEDLE = $STR_NEEDLE STR_HAYSTACK = $STR_HAYSTACK '
+		StrCpy $STR_RETURN_VAR ""
+		StrCpy $STR_CONTAINS_VAR_1 -1
+		StrLen $STR_CONTAINS_VAR_2 $STR_NEEDLE
+		StrLen $STR_CONTAINS_VAR_4 $STR_HAYSTACK
+		loop:
+		  IntOp $STR_CONTAINS_VAR_1 $STR_CONTAINS_VAR_1 + 1
+		  StrCpy $STR_CONTAINS_VAR_3 $STR_HAYSTACK $STR_CONTAINS_VAR_2 $STR_CONTAINS_VAR_1
+		  StrCmp $STR_CONTAINS_VAR_3 $STR_NEEDLE found
+		  StrCmp $STR_CONTAINS_VAR_1 $STR_CONTAINS_VAR_4 done
+		  Goto loop
+		found:
+		  StrCpy $STR_RETURN_VAR $STR_NEEDLE
+		  Goto done
+		done:
+	   Pop $STR_NEEDLE ;Prevent "invalid opcode" errors and keep the
+	   Exch $STR_RETURN_VAR  
+	FunctionEnd
+	 
+	!macro _StrContainsConstructor OUT NEEDLE HAYSTACK
+	  Push `${HAYSTACK}`
+	  Push `${NEEDLE}`
+	  Call StrContains
+	  Pop `${OUT}`
+	!macroend
+	 
+	!define StrContains '!insertmacro "_StrContainsConstructor"'
+	
+;--------------------------------
+;End of StrContains
+	
 Function .onInit
+	ReadRegStr $R2 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
+		"InstallLocation"
+	${StrContains} $0 "(x86)" $R2
+	StrCmp $0 "" +2 0
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION \
+		"This will install Moonshine 64-Bit in your system.$\n$\nA 32-Bit version found already installed. Do you want to uninstall the 32-Bit version before proceed?$\n$\n \
+		YES - to uninstall 32-Bit version.$\n \
+		NO - to keep 32-Bit version." \
+		IDYES run_x86_uninstaller IDNO +1
 	ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"TimeStamp"
 	StrCmp $R0 "" done
 	StrCmp $R0 "${TIMESTAMP}" 0 done
 	MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
 		"A same version of Moonshine-IDE found already installed. Do you want to run the installed version?$\n$\n \
-		$\"YES$\" to run the previous version.$\n \
-		$\"NO$\" to uninstall the previous version and install again.$\n \
-		$\"Cancel$\" to cancel this installation." \
+		YES - to run the previous version.$\n \
+		NO - to uninstall the previous version and install again.$\n \
+		Cancel - to cancel this installation." \
 		IDYES run_application IDNO run_uninstaller
 		Abort
 	run_application:
@@ -56,6 +112,17 @@ Function .onInit
 		uninstall_success:
 			Delete "$INSTDIR\uninstall.exe"
 			RmDir "$INSTDIR"
+	run_x86_uninstaller:
+		ClearErrors
+		;x86 uninstaller path
+		ReadRegStr $R3 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
+			"UninstallString"
+		ExecWait '$R3'
+		IfErrors uninstall_fail_x86 uninstall_success_x86
+		uninstall_fail_x86:
+			Quit
+		uninstall_success_x86:
+			RmDir "$R2"
 	done:
 FunctionEnd
 
@@ -91,7 +158,7 @@ FunctionEnd
 ;--------------------------------
 ;Installer Sections
 
-Section "Moonshine-IDE" SecFeathersSDKManager
+Section "Moonshine-IDE" SecMoonshineInstaller
 
 	;copy all files
 	SetOutPath "$INSTDIR"
@@ -115,8 +182,8 @@ Section "Moonshine-IDE" SecFeathersSDKManager
 		"TimeStamp" "${TIMESTAMP}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"HelpLink" "https://moonshine-ide.com/faq/"
-	;WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
-		"DisplayIcon" "$\"$INSTDIR\Feathers SDK Manager.exe$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
+		"DisplayIcon" "$\"$INSTDIR\${INSTALLERNAME}.exe$\""
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
