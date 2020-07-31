@@ -134,8 +134,8 @@ Function .onInit
 	StrCmp $R0 "${TIMESTAMP}" 0 done
 	MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
 		"A same version of Moonshine-IDE found already installed. Do you want to run the installed version?$\n$\n \
-		Yes - To run the previous version.$\n \
-		No - To uninstall the previous version before installing again.$\n \
+		Yes - To run the installed version.$\n \
+		No - To uninstall the installed version and re-install again.$\n \
 		Cancel - To cancel this installation." \
 		IDYES run_application IDNO run_uninstaller
 		Abort
