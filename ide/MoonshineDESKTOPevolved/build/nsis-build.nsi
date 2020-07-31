@@ -125,8 +125,8 @@ Function .onInit
 	StrCmp $0 "" +2 0
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION \
 		"This will install Moonshine 64-Bit in your system.$\n$\nA 32-Bit version found already installed. Do you want to uninstall the 32-Bit version before proceed?$\n$\n \
-		Yes - to uninstall 32-Bit version.$\n \
-		No - to keep 32-Bit version." \
+		Yes - To uninstall the 32-Bit version.$\n \
+		No - To keep the 32-Bit version." \
 		IDYES run_x86_uninstaller IDNO +1
 	ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"TimeStamp"
@@ -134,9 +134,9 @@ Function .onInit
 	StrCmp $R0 "${TIMESTAMP}" 0 done
 	MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
 		"A same version of Moonshine-IDE found already installed. Do you want to run the installed version?$\n$\n \
-		Yes - to run the previous version.$\n \
-		No - to uninstall the previous version and install again.$\n \
-		Cancel - to cancel this installation." \
+		Yes - To run the previous version.$\n \
+		No - To uninstall the previous version before installing again.$\n \
+		Cancel - To cancel this installation." \
 		IDYES run_application IDNO run_uninstaller
 		Abort
 	run_application:
@@ -159,6 +159,7 @@ Function .onInit
 		uninstall_success:
 			Delete "$INSTDIR\uninstall.exe"
 			RmDir "$INSTDIR"
+			Goto done
 	run_x86_uninstaller:
 		ClearErrors
 		;x86 uninstaller path
