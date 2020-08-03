@@ -311,14 +311,13 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.visualEditor.editingSurface.selectedItem = null;
 		}
 		
-		override protected function closeTabHandler(event:CloseTabEvent):void
+		override protected function closeTabHandler(event:Event):void
 		{
 			super.closeTabHandler(event);
 			
 			if (!visualEditorView.visualEditor) return;
 
-			var tmpEvent:CloseTabEvent = event as CloseTabEvent;
-			if (tmpEvent.tab.hasOwnProperty("editor") && tmpEvent.tab["editor"] == this.editor)
+			if (model.activeEditor == this)
 			{
 				visualEditorView.visualEditor.editingSurface.removeEventListener(Event.CHANGE, onEditingSurfaceChange);
 				visualEditorView.visualEditor.propertyEditor.removeEventListener("propertyEditorChanged", onPropertyEditorChanged);

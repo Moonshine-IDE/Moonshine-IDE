@@ -175,9 +175,9 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			dispatchEvent(new Event('labelChanged'));
 		}
 		
-		private function closeTabHandler(event:CloseTabEvent):void
+		private function closeTabHandler(event:Event):void
 		{
-			if (event.tab == this)
+			if (model.activeEditor == this)
 			{
 				removeGlobalListeners();
 				dominoTabularForm.dispose();

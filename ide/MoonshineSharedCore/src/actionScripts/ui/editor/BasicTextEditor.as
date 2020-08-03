@@ -199,7 +199,7 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 		}
 		
-		protected function closeTabHandler(event:CloseTabEvent):void
+		protected function closeTabHandler(event:Event):void
 		{
 		}
 		

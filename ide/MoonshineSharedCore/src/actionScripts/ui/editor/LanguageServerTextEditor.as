@@ -578,10 +578,9 @@ package actionScripts.ui.editor
 			editor.showCodeActions(event.codeActions);
 		}
 
-		override protected function closeTabHandler(event:CloseTabEvent):void
+		override protected function closeTabHandler(event:Event):void
 		{
-			var closedTab:LanguageServerTextEditor = event.tab as LanguageServerTextEditor;
-			if(!closedTab || closedTab != this)
+			if (model.activeEditor != this)
 			{
 				return;
 			}
