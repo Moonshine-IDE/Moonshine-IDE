@@ -789,6 +789,28 @@
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="feathersui"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="openfl"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="actuate"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="lime"/>
+			<arg value="--quiet"/>
 		</exec>
 	</target>
 
