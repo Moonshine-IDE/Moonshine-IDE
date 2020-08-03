@@ -122,23 +122,25 @@ Function .onInit
 	ReadRegStr $R2 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"InstallLocation"
 	${StrContains} $0 "(x86)" $R2
-	StrCmp $0 "" +2 0
+	StrCmp $0 "" check_timestamp 0
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION \
-		"This will install Moonshine 64-Bit in your system.$\n$\nA 32-Bit version found already installed. Do you want to uninstall the 32-Bit version before proceed?$\n$\n \
+		"This will install Moonshine 64-Bit in your system.$\n$\nA 32-Bit version found already installed. You need to uninstall the 32-Bit version before proceed. \
+		You can still able to access everything from your earlier installation.$\n$\n \
 		Yes - To uninstall the 32-Bit version.$\n \
-		No - To keep the 32-Bit version." \
-		IDYES run_x86_uninstaller IDNO +1
-	ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
-		"TimeStamp"
-	StrCmp $R0 "" done
-	StrCmp $R0 "${TIMESTAMP}" 0 done
-	MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
-		"A same version of Moonshine-IDE found already installed. Do you want to run the installed version?$\n$\n \
-		Yes - To run the installed version.$\n \
-		No - To uninstall the installed version and re-install again.$\n \
-		Cancel - To cancel this installation." \
-		IDYES run_application IDNO run_uninstaller
-		Abort
+		No - To quit the installation." \
+		IDYES run_x86_uninstaller IDNO quit_installation
+	check_timestamp:
+		ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
+			"TimeStamp"
+		StrCmp $R0 "" done
+		StrCmp $R0 "${TIMESTAMP}" 0 done
+		MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
+			"A same version of Moonshine-IDE found already installed. Do you want to run the installed version?$\n$\n \
+			Yes - To run the installed version.$\n \
+			No - To uninstall the installed version and re-install again.$\n \
+			Cancel - To cancel this installation." \
+			IDYES run_application IDNO run_uninstaller
+			Abort
 	run_application:
 		ClearErrors
 		Exec "$INSTDIR\${INSTALLERNAME}.exe"
@@ -147,7 +149,7 @@ Function .onInit
 		ClearErrors
 		;look for the nsis uninstaller as a special case
 		ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
-			"UninstallString"
+			"UninstallString64bit"
 		StrCmp $R1 "$\"$INSTDIR\uninstall.exe$\"" 0 +3
 			ExecWait '$R1 _?=$INSTDIR'
 				Goto +2
@@ -171,6 +173,10 @@ Function .onInit
 			Quit
 		uninstall_success_x86:
 			RmDir "$R2"
+			Goto check_timestamp
+	quit_installation:
+		ClearErrors
+		Quit
 	done:
 FunctionEnd
 
@@ -235,6 +241,8 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
+		"UninstallString64bit" "$\"$INSTDIR\uninstall.exe$\""
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"NoModify" 0x1
@@ -247,7 +255,7 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 		"EstimatedSize" "$0"
 	
 	;Create Start Menu entry
-	CreateShortCut "$SMPROGRAMS\${INSTALLERNAME}.lnk" "$INSTDIR\${INSTALLERNAME}.exe"
+	CreateShortCut "$SMPROGRAMS\${INSTALLERNAME} (64-bit).lnk" "$INSTDIR\${INSTALLERNAME}.exe"
 
 SectionEnd
 
