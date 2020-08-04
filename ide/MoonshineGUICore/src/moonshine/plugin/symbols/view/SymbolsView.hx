@@ -127,6 +127,7 @@ class SymbolsView extends ResizableTitleWindow {
 		searchField.addChild(searchFieldLabel);
 
 		this.searchFieldTextInput = new TextInput();
+		this.searchFieldTextInput.prompt = "Symbol name";
 		this.searchFieldTextInput.addEventListener(Event.CHANGE, searchFieldTextInput_changeHandler);
 		searchField.addChild(this.searchFieldTextInput);
 
