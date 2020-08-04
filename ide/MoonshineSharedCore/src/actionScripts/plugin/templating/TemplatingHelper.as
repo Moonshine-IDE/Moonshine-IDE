@@ -190,6 +190,7 @@ package actionScripts.plugin.templating
 			switch (file)
 			{
 				case "MXML File":
+				case "MXML Module":
 					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.TEMPLATE];
 				case "AS3 Class":
 				case "AS3 Interface":

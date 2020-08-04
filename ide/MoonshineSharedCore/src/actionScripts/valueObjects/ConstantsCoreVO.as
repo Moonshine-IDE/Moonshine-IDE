@@ -77,6 +77,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_TEXT: FileLocation;
 		public static var TEMPLATE_XML: FileLocation;
 		public static var TEMPLATE_MXML: FileLocation;
+		public static var TEMPLATE_MXML_MODULE: FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_FLEX:FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_PRIMEFACES:FileLocation;
 		public static var TEMPLATE_JAVACLASS: FileLocation;
