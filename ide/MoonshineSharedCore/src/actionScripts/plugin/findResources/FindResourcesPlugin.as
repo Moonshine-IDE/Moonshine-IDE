@@ -21,20 +21,26 @@ package actionScripts.plugin.findResources
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
-	import mx.collections.ArrayCollection;
+	import feathers.data.ArrayCollection;
 	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
-	import components.popup.FindResourcesPopup;
+	import moonshine.plugin.findResources.view.FindResourcesView;
+	import actionScripts.ui.FeathersUIWrapper;
+	import actionScripts.utils.UtilsCore;
+	import mx.collections.ArrayList;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.valueObjects.ResourceVO;
 
 	public class FindResourcesPlugin extends PluginBase
 	{
 		public static const EVENT_FIND_RESOURCES: String = "findResources";
-		private var resourceSearchView:FindResourcesPopup;
+
+		private var findResourcesView:FindResourcesView;
+		private var findResourcesViewWrapper:FeathersUIWrapper;
 
 		[Bindable]
 		public static var previouslySelectedPatterns:ArrayCollection;
@@ -57,28 +63,55 @@ package actionScripts.plugin.findResources
 
 		protected function findResourcesHandler(event:Event):void
 		{
-			if (!resourceSearchView)
+			if (!findResourcesView)
 			{
-				resourceSearchView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, FindResourcesPopup, true) as FindResourcesPopup;
-				resourceSearchView.addEventListener(CloseEvent.CLOSE, findResourcesViewCloseHandler);
+				findResourcesView = new FindResourcesView();
+				findResourcesView.addEventListener(Event.CLOSE, findResourcesView_closeHandler);
+				findResourcesViewWrapper = new FeathersUIWrapper(findResourcesView);
+				PopUpManager.addPopUp(findResourcesViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+				PopUpManager.centerPopUp(findResourcesViewWrapper);
+				findResourcesViewWrapper.assignFocus("top");
+			}
 
-				PopUpManager.centerPopUp(resourceSearchView);
+			if(!previouslySelectedPatterns)
+			{
+				previouslySelectedPatterns = new ArrayCollection();
+                for each (var extension:String in ConstantsCoreVO.READABLE_FILES)
+                {
+                    previouslySelectedPatterns.add({label: extension, isSelected: false});
+                }
+			}
+			findResourcesView.patterns = previouslySelectedPatterns;
+
+			var parsedFilesList:ArrayList = new ArrayList();
+			UtilsCore.parseFilesList(parsedFilesList);
+
+			var resources:ArrayCollection = findResourcesView.resources;
+			resources.removeAll();
+
+			var fileCount:int = parsedFilesList.length;
+			for(var i:int = 0; i < fileCount; i++)
+			{
+				var resource:ResourceVO = ResourceVO(parsedFilesList.getItemAt(i));
+				resources.add(resource);
 			}
 		}
 
-		protected function findResourcesViewCloseHandler(event:CloseEvent):void
+		protected function findResourcesView_closeHandler(event:Event):void
 		{
-			if (resourceSearchView.filesExtensionFilterView.hasSelectedExtensions())
+			var selectedResource:ResourceVO = findResourcesView.selectedResource;
+			if(selectedResource)
 			{
-                previouslySelectedPatterns = resourceSearchView.filesExtensionFilterView.patterns;
-			}
-			else
-			{
-				previouslySelectedPatterns = null;
+				dispatcher.dispatchEvent(
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [selectedResource.sourceWrapper.file], -1, [selectedResource.sourceWrapper]));
 			}
 
-			resourceSearchView.removeEventListener(CloseEvent.CLOSE, findResourcesViewCloseHandler);
-			resourceSearchView = null;
+			previouslySelectedPatterns = findResourcesView.patterns;
+
+			PopUpManager.removePopUp(findResourcesViewWrapper);
+			findResourcesView.removeEventListener(Event.CLOSE, findResourcesView_closeHandler);
+			findResourcesView = null;
+			findResourcesViewWrapper = null;
 		}
 	}
 }
