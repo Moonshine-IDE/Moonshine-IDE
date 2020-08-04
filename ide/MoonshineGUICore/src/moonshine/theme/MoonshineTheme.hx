@@ -20,6 +20,9 @@
 
 package moonshine.theme;
 
+import openfl.events.Event;
+import feathers.controls.ToggleButtonState;
+import feathers.controls.Check;
 import feathers.controls.Button;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
@@ -63,6 +66,8 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		this.styleProvider.setStyleFunction(Button, null, setLightButtonStyles);
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_DARK_BUTTON, setDarkButtonStyles);
+
+		this.styleProvider.setStyleFunction(Check, null, setCheckStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 
@@ -113,10 +118,10 @@ class MoonshineTheme extends ClassVariantTheme {
 		button.setSkinForState(DISABLED, disabledSkin);
 
 		var downSkin = new MoonshineButtonSkin();
-		downSkin.outerBorderFill = SolidColor(0xCCCCCC);
+		downSkin.outerBorderFill = SolidColor(0x666666);
 		downSkin.outerBorderSize = 3.0;
 		downSkin.outerBorderRadius = 10.0;
-		downSkin.innerBorderFill = SolidColor(0xEFEFEF);
+		downSkin.innerBorderFill = SolidColor(0xFFFFFF);
 		downSkin.innerBorderSize = 1.0;
 		downSkin.innerBorderRadius = 7.0;
 		downSkin.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
@@ -188,6 +193,112 @@ class MoonshineTheme extends ClassVariantTheme {
 		button.gap = 4.0;
 	}
 
+	private function setCheckStyles(check:Check):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x000000, 0.0);
+		backgroundSkin.border = null;
+		check.backgroundSkin = backgroundSkin;
+
+		var icon = new MoonshineButtonSkin();
+		icon.outerBorderFill = SolidColor(0x666666);
+		icon.outerBorderSize = 2.0;
+		icon.outerBorderRadius = 4.0;
+		icon.innerBorderFill = SolidColor(0xFFFFFF);
+		icon.innerBorderSize = 1.0;
+		icon.innerBorderRadius = 2.0;
+		icon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		icon.borderRadius = 0.0;
+		icon.width = 20.0;
+		icon.height = 20.0;
+		check.icon = icon;
+
+		var disabledIcon = new MoonshineButtonSkin();
+		disabledIcon.outerBorderFill = SolidColor(0xCCCCCC);
+		disabledIcon.outerBorderSize = 2.0;
+		disabledIcon.outerBorderRadius = 4.0;
+		disabledIcon.innerBorderFill = SolidColor(0xFFFFFF);
+		disabledIcon.innerBorderSize = 1.0;
+		disabledIcon.innerBorderRadius = 2.0;
+		disabledIcon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		disabledIcon.borderRadius = 0.0;
+		disabledIcon.alpha = 0.5;
+		disabledIcon.width = 20.0;
+		disabledIcon.height = 20.0;
+		check.disabledIcon = disabledIcon;
+
+		var downSkin = new MoonshineButtonSkin();
+		downSkin.outerBorderFill = SolidColor(0x666666);
+		downSkin.outerBorderSize = 2.0;
+		downSkin.outerBorderRadius = 4.0;
+		downSkin.innerBorderFill = SolidColor(0xFFFFFF);
+		downSkin.innerBorderSize = 1.0;
+		downSkin.innerBorderRadius = 2.0;
+		downSkin.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		downSkin.borderRadius = 0.0;
+		downSkin.alpha = 0.5;
+		downSkin.width = 20.0;
+		downSkin.height = 20.0;
+		check.setIconForState(DOWN(false), downSkin);
+
+		var selectedIcon = new MoonshineButtonSkin();
+		selectedIcon.outerBorderFill = SolidColor(0x666666);
+		selectedIcon.outerBorderSize = 2.0;
+		selectedIcon.outerBorderRadius = 4.0;
+		selectedIcon.innerBorderFill = SolidColor(0xFFFFFF);
+		selectedIcon.innerBorderSize = 1.0;
+		selectedIcon.innerBorderRadius = 2.0;
+		selectedIcon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		selectedIcon.borderRadius = 0.0;
+		selectedIcon.width = 20.0;
+		selectedIcon.height = 20.0;
+		check.selectedIcon = selectedIcon;
+		var checkMark = new Shape();
+		checkMark.graphics.beginFill(0x292929);
+		checkMark.graphics.drawRect(-0.0, -7.0, 3.0, 13.0);
+		checkMark.graphics.drawRect(-5.0, 3.0, 5.0, 3.0);
+		checkMark.graphics.endFill();
+		checkMark.rotation = 45.0;
+		checkMark.x = 10.0;
+		checkMark.y = 9.0;
+		selectedIcon.addChild(checkMark);
+
+		var selectedDownIcon = new MoonshineButtonSkin();
+		selectedDownIcon.outerBorderFill = SolidColor(0x666666);
+		selectedDownIcon.outerBorderSize = 2.0;
+		selectedDownIcon.outerBorderRadius = 4.0;
+		selectedDownIcon.innerBorderFill = SolidColor(0xFFFFFF);
+		selectedDownIcon.innerBorderSize = 1.0;
+		selectedDownIcon.innerBorderRadius = 2.0;
+		selectedDownIcon.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		selectedDownIcon.borderRadius = 0.0;
+		selectedDownIcon.alpha = 0.5;
+		selectedDownIcon.width = 20.0;
+		selectedDownIcon.height = 20.0;
+		check.setIconForState(DOWN(true), selectedDownIcon);
+		var downCheckMark = new Shape();
+		downCheckMark.graphics.beginFill(0x292929);
+		downCheckMark.graphics.drawRect(-0.0, -7.0, 3.0, 13.0);
+		downCheckMark.graphics.drawRect(-5.0, 3.0, 5.0, 3.0);
+		downCheckMark.graphics.endFill();
+		downCheckMark.rotation = 45.0;
+		downCheckMark.x = 10.0;
+		downCheckMark.y = 9.0;
+		selectedDownIcon.addChild(downCheckMark);
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		focusRectSkin.cornerRadius = 10.0;
+		check.focusRectSkin = focusRectSkin;
+
+		check.textFormat = new TextFormat("DejaVuSansTF", 12, 0x292929);
+		check.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x999999);
+		check.embedFonts = true;
+
+		check.horizontalAlign = LEFT;
+		check.gap = 4.0;
+	}
+
 	private function setItemRendererStyles(itemRenderer:ItemRenderer):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
@@ -207,10 +318,12 @@ class MoonshineTheme extends ClassVariantTheme {
 		itemRenderer.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
 		itemRenderer.embedFonts = true;
 
+		itemRenderer.horizontalAlign = LEFT;
 		itemRenderer.paddingTop = 4.0;
 		itemRenderer.paddingRight = 4.0;
 		itemRenderer.paddingBottom = 4.0;
 		itemRenderer.paddingLeft = 4.0;
+		itemRenderer.gap = 4.0;
 	}
 
 	private function setTitleWindowCloseButtonStyles(button:Button):Void {
