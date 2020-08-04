@@ -96,6 +96,7 @@ package actionScripts.plugin.locations
 				var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
 				PopUpManager.addPopUp(locationsViewWrapper, DisplayObject(parentApp), true);
 				PopUpManager.centerPopUp(locationsViewWrapper);
+				locationsViewWrapper.assignFocus("top");
 
 				isLocationsViewVisible = true;
 
