@@ -47,6 +47,7 @@ package actionScripts.impls
 	import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.actionscript.modules.FlashModulesPlugin;
 	import actionScripts.plugin.console.ConsolePlugin;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
@@ -259,7 +260,8 @@ package actionScripts.impls
 				HttpServerPlugin,
 				RoyaleApiReportConfiguratorPlugin,
 				RoyaleApiReportPlugin,
-				ExternalEditorsPlugin
+				ExternalEditorsPlugin,
+				FlashModulesPlugin
 			];
 		}
 		
@@ -268,7 +270,7 @@ package actionScripts.impls
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin];
+					MultiMenuEventsNotifierPlugin, FlashModulesPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

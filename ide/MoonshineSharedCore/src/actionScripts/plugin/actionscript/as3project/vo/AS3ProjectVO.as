@@ -68,7 +68,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
         public var mavenBuildOptions:MavenBuildOptions;
-		public var flashModuleOptions:FlashModuleOptions;
 		public var customHTMLPath:String;
 		
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -82,6 +81,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var assetLibrary:XMLList; // TODO Unknown if it works in FD, there just for compatibility purposes (<library/> tag)
 		public var targets:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public var modulePaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean = false;
 		
 		public var prebuildCommands:String;

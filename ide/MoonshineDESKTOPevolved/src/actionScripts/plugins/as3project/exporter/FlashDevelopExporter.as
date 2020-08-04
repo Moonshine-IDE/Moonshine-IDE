@@ -93,6 +93,7 @@ package actionScripts.plugins.as3project.exporter
 				project.appendChild(tmpBlankXML);
 			}
 			
+			project.appendChild(exportPaths(p.modulePaths, <modules />, <module />, p));
 			project.appendChild(exportPaths(p.targets, <compileTargets />, <compile />, p));
 			project.appendChild(exportPaths(p.hiddenPaths, <hiddenPaths />, <hidden />, p));
 			

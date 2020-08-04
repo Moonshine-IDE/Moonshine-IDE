@@ -23,7 +23,6 @@ package actionScripts.plugins.as3project.importer
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
-    import actionScripts.plugin.actionscript.as3project.vo.FlashModuleOptions;
     import actionScripts.plugin.core.importer.FlashBuilderImporterBase;
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.SerializeUtil;
@@ -154,8 +153,8 @@ package actionScripts.plugins.as3project.importer
 			// flash modules
 			if ((data.modules as XMLList).children().length() != 0)
 			{
-				p.flashModuleOptions = new FlashModuleOptions();
-				parsePaths(data.modules.module, p.flashModuleOptions.modulePaths, p, "sourcePath");
+				p.modulePaths = new Vector.<FileLocation>();
+				parsePaths(data.modules.module, p.modulePaths, p, "sourcePath");
 			}
 
 			p.buildOptions.parse(data.compiler, BuildOptions.TYPE_FB);

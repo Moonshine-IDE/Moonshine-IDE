@@ -31,6 +31,7 @@ package actionScripts.plugin.templating
 	
 	import __AS3__.vec.Vector;
 	
+	import actionScripts.events.ASModulesEvent;
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.EditorPluginEvent;
 	import actionScripts.events.ExportVisualEditorProjectEvent;
@@ -1467,7 +1468,7 @@ package actionScripts.plugin.templating
 				var tmpFile:FileLocation = onMXMLFileCreateRequest(event);
 				if (tmpFile)
 				{
-					(event.ofProject as AS3ProjectVO).flashModuleOptions.addModule(tmpFile);
+					dispatcher.dispatchEvent(new ASModulesEvent(ASModulesEvent.EVENT_ADD_MODULE, tmpFile, (event.ofProject as AS3ProjectVO)));
 				}
 			}
 		}
