@@ -43,7 +43,6 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
     import actionScripts.plugin.settings.vo.SettingsWrapper;
-    import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.plugin.settings.vo.StringSetting;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.utils.SDKUtils;
@@ -122,6 +121,12 @@ package actionScripts.plugin.actionscript.as3project.vo
         private var _jsOutputPath:String;
 		private var _urlToLaunch:String;
 
+		override public function set folderLocation(value:FileLocation):void
+		{
+			super.folderLocation = value;
+			if (flashModuleOptions) flashModuleOptions.projectFolderLocation = value;
+		}
+		
 		public function get air():Boolean
 		{
 			return UtilsCore.isAIR(this);
@@ -383,7 +388,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			swfOutput = new SWFOutputVO();
 			buildOptions = new BuildOptions();
             mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
-			flashModuleOptions = new FlashModuleOptions();
+			flashModuleOptions = new FlashModuleOptions(folder);
 			
 			config = new MXMLCConfigVO();
 
@@ -492,6 +497,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 			}
 			
 			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
+		}
+		
+		override public function cancelledSettings():void
+		{
+			flashModuleOptions.cancelledSettings();
 		}
 		
 		public function updateConfig():void 

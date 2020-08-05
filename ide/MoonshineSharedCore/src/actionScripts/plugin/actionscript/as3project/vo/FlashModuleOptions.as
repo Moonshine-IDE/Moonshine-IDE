@@ -18,22 +18,32 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
+    import flash.net.registerClassAlias;
+    
+    import mx.collections.ArrayCollection;
+    
     import actionScripts.events.ASModulesEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
+    import actionScripts.utils.SerializeUtil;
+    import actionScripts.valueObjects.FlashModuleVO;
 
 	public class FlashModuleOptions 
 	{
-		public var modulePaths:Vector.<FileLocation> = new Vector.<FileLocation>();
-		public var abcd:Boolean;
-		
+		public var modulePaths:ArrayCollection = new ArrayCollection;
+		public var projectFolderLocation:FileLocation;
+
+		private var moduleSelectionsUntilSave:Array;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var selectionIndex:Array;
 		
-		public function FlashModuleOptions()
+		public function FlashModuleOptions(folder:FileLocation)
 		{
+			projectFolderLocation = folder;
+			
 			dispatcher.addEventListener(ASModulesEvent.EVENT_ADD_MODULE, onAddModuleEvent, false, 0, true);
 			dispatcher.addEventListener(ASModulesEvent.EVENT_REMOVE_MODULE, onRemoveModuleEvent, false, 0, true);
 		}
@@ -43,28 +53,89 @@ package actionScripts.plugin.actionscript.as3project.vo
 			var settings:Vector.<ISetting> = new Vector.<ISetting>();
 			
 			settings.push(
-				new StaticLabelSetting("Select Modules to auto-compile during project a build.", 14, 0x686868)
+				new StaticLabelSetting("Select modules to auto-compile during a project build.", 14, 0x686868)
 				);
 			
-			for each (var path:FileLocation in modulePaths)
+			// for some strange reason doing registerClassAlias
+			// to FileLocation always returns wrong results.
+			// this should be doing for now
+			var tmpRelativePath:String;
+			moduleSelectionsUntilSave = modulePaths.source.map(function(element:FlashModuleVO, index:int, arr:Array):Object
 			{
+				tmpRelativePath = getProjectRelativePath(element.sourcePath);
+
+				var tmpObject:Object = {sourcePath: tmpRelativePath, isSelected: element.isSelected};
 				settings.push(
-					new BooleanSetting(this, "abcd", path.fileBridge.nativePath)
-					);
-			}
+					new BooleanSetting(tmpObject, "isSelected", tmpRelativePath)
+				);
+				return tmpObject;
+			});
 			
 			return settings;
 		}
 		
+		public function cancelledSettings():void
+		{
+			moduleSelectionsUntilSave = null;
+		}
+		
+		public function parse(modules:XMLList):void 
+		{
+			var tmpModule:FlashModuleVO;
+			modulePaths = new ArrayCollection();
+			for each (var module:XML in modules.module)
+			{
+				tmpModule = new FlashModuleVO(
+					projectFolderLocation.resolvePath(module.@sourcePath)
+				);
+				
+				if ("@compile" in module)
+				{
+					tmpModule.isSelected = String(module.@compile) == "true" ? true : false;
+				}
+				
+				modulePaths.addItem(tmpModule);
+			}
+		}
+		
+		public function toXML():XML
+		{
+			// triggers during project configuration saves
+			if (moduleSelectionsUntilSave)
+			{
+				moduleSelectionsUntilSave.forEach(function(element:Object, index:int, arr:Array):void
+				{
+					modulePaths[index].isSelected = element.isSelected;
+				});
+				moduleSelectionsUntilSave = null;
+			}
+			
+			var modules:XML = <modules/>;
+			for each (var module:FlashModuleVO in modulePaths)
+			{
+				modules.appendChild(SerializeUtil.serializeObjectPairs({
+					sourcePath: getProjectRelativePath(module.sourcePath),
+					compile: module.isSelected.toString()
+				}, <module/>));
+			}
+			
+			return modules;
+		}
+		
 		private function onAddModuleEvent(event:ASModulesEvent):void
 		{
-			modulePaths.push(event.moduleFilePath);
+			modulePaths.addItem(new FlashModuleVO(event.moduleFilePath));
 			event.project.saveSettings();
 		}
 		
 		private function onRemoveModuleEvent(event:ASModulesEvent):void
 		{
 			
+		}
+		
+		private function getProjectRelativePath(value:FileLocation):String
+		{
+			return projectFolderLocation.fileBridge.getRelativePath(value, true);
 		}
     }
 }

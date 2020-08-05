@@ -41,7 +41,15 @@ package actionScripts.valueObjects
 		
 		[Bindable] public var folderNamesOnly:Vector.<String> = new Vector.<String>();
 		
-		public var folderLocation: FileLocation;
+		private var _folderLocation: FileLocation;
+		public function get folderLocation():FileLocation
+		{
+			return _folderLocation;
+		}
+		public function set folderLocation(value:FileLocation):void
+		{
+			_folderLocation = value;
+		}
 
 		public var projectFile: FileLocation;
 		public var sourceFolder:FileLocation;
@@ -131,6 +139,10 @@ package actionScripts.valueObjects
 		public function saveSettings():void	
 		{
 			throw new Error("saveSettings() not implemented yet");
+		}
+		
+		public function cancelledSettings():void
+		{
 		}
 		
 		public function getSettings():Vector.<SettingsWrapper>

@@ -223,6 +223,12 @@ package actionScripts.plugin.project
 				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, settings)
 			);
 			
+			// notify project
+			if (!settings.isSaved && (settings.associatedData is ProjectVO))
+			{
+				(settings.associatedData as ProjectVO).cancelledSettings();
+			}
+			
 			settings.removeEventListener(SettingsView.EVENT_CLOSE, settingsClose);
 			settings.removeEventListener(SettingsView.EVENT_SAVE, settingsSave);
 		}
