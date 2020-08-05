@@ -86,7 +86,7 @@ package actionScripts.plugins.as3project.importer
 			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
 			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path");
 			parsePaths(data.moonshineNativeExtensionPaths["class"], project.nativeExtensions, project, "path");
-			parsePaths(data.modules["module"], project.modulePaths, project, "path");
+			parsePaths(data.modules["module"], project.flashModuleOptions.modulePaths, project, "path");
 			if (!project.buildOptions.additional) project.buildOptions.additional = "";
 			
 			if (project.hiddenPaths.length > 0 && project.projectFolder)

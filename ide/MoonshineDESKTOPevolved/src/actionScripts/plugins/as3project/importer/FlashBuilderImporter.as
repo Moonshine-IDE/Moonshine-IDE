@@ -153,8 +153,7 @@ package actionScripts.plugins.as3project.importer
 			// flash modules
 			if ((data.modules as XMLList).children().length() != 0)
 			{
-				p.modulePaths = new Vector.<FileLocation>();
-				parsePaths(data.modules.module, p.modulePaths, p, "sourcePath");
+				parsePaths(data.modules.module, p.flashModuleOptions.modulePaths, p, "sourcePath");
 			}
 
 			p.buildOptions.parse(data.compiler, BuildOptions.TYPE_FB);

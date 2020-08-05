@@ -43,6 +43,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
     import actionScripts.plugin.settings.vo.SettingsWrapper;
+    import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.plugin.settings.vo.StringSetting;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.utils.SDKUtils;
@@ -68,6 +69,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
         public var mavenBuildOptions:MavenBuildOptions;
+		public var flashModuleOptions:FlashModuleOptions;
 		public var customHTMLPath:String;
 		
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -81,7 +83,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var assetLibrary:XMLList; // TODO Unknown if it works in FD, there just for compatibility purposes (<library/> tag)
 		public var targets:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
-		public var modulePaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean = false;
 		
 		public var prebuildCommands:String;
@@ -382,6 +383,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			swfOutput = new SWFOutputVO();
 			buildOptions = new BuildOptions();
             mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
+			flashModuleOptions = new FlashModuleOptions();
 			
 			config = new MXMLCConfigVO();
 
@@ -608,6 +610,9 @@ package actionScripts.plugin.actionscript.as3project.vo
                             nativeExtensionPath
                         ])
                 ),
+				new SettingsWrapper("Modules",
+					flashModuleOptions.getSettings()
+				),
                 new SettingsWrapper("Warnings & Errors",
                         Vector.<ISetting>([
                             new BooleanSetting(buildOptions, "showActionScriptWarnings",		"Show actionscript warnings"),
@@ -697,6 +702,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 							nativeExtensionPath
                         ])
                 ),
+				new SettingsWrapper("Modules",
+					flashModuleOptions.getSettings()
+				),
                 new SettingsWrapper("Warnings & Errors",
                         Vector.<ISetting>([
                             new BooleanSetting(buildOptions, "warnings",						"Show all warnings"),
