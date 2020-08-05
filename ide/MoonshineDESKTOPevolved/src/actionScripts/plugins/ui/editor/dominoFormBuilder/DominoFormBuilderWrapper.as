@@ -39,6 +39,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.FileUtils;
+	import actionScripts.utils.SharedObjectUtil;
 	
 	import view.dominoFormBuilder.DominoTabularForm;
 	import view.dominoFormBuilder.vo.DominoFormVO;
@@ -185,6 +186,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 				dominoTabularForm.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange);
 				dominoTabularForm.removeEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaveRequest);
 				
+				SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
 				formObject = null;
 			}
 		}

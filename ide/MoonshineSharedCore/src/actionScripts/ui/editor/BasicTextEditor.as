@@ -31,15 +31,9 @@ package actionScripts.ui.editor
     
     import actionScripts.controllers.DataAgent;
     import actionScripts.events.ChangeEvent;
-    import actionScripts.events.CodeActionsEvent;
-    import actionScripts.events.CompletionItemsEvent;
-    import actionScripts.events.DiagnosticsEvent;
     import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.LanguageServerMenuEvent;
-    import actionScripts.events.ProjectEvent;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.SaveFileEvent;
-    import actionScripts.events.SignatureHelpEvent;
     import actionScripts.events.UpdateTabEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
@@ -53,6 +47,7 @@ package actionScripts.ui.editor
     import actionScripts.ui.editor.text.vo.SearchResult;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabEvent;
+    import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
@@ -201,6 +196,20 @@ package actionScripts.ui.editor
 		
 		protected function closeTabHandler(event:Event):void
 		{
+			if (event is CloseTabEvent)
+			{
+				if ((event as CloseTabEvent).isUserTriggered)
+				{
+					SharedObjectUtil.removeLocationOfEditorFile(
+						(event as CloseTabEvent).tab as IContentWindow
+					);
+				}
+			}
+			// suppose to call only when keyboard shortcuts Event
+			else if (model.activeEditor == this)
+			{
+				SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
+			}
 		}
 		
 		protected function tabSelectHandler(event:TabEvent):void
