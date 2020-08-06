@@ -83,6 +83,7 @@ package actionScripts.impls
 	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
 	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugins.as3project.mxmlc.MXMLCFlashModulePlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.away3d.Away3DPlugin;
@@ -228,6 +229,7 @@ package actionScripts.impls
 				MultiMenuEventsNotifierPlugin,
 				MXMLCPlugin,
 				MXMLCJavaScriptPlugin,
+				MXMLCFlashModulePlugin,
 				SWFLauncherPlugin,
 				AS3ProjectPlugin,
 				AS3SyntaxPlugin,
@@ -268,7 +270,7 @@ package actionScripts.impls
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
