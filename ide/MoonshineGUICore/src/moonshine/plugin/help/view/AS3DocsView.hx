@@ -56,6 +56,7 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 		this.layout = new AnchorLayout();
 
 		this.treeView = new TreeView();
+		this.treeView.variant = TreeView.VARIANT_BORDERLESS;
 		this.treeView.selectable = false;
 		this.treeView.layoutData = AnchorLayoutData.fill();
 		this.treeView.itemToText = (item:TreeNode<Xml>) -> item.data.get("label");

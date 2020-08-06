@@ -20,6 +20,13 @@
 
 package moonshine.theme;
 
+import moonshine.style.MoonshineHScrollBarThumbSkin;
+import moonshine.style.MoonshineVScrollBarThumbSkin;
+import feathers.controls.Panel;
+import feathers.controls.BasicButton;
+import feathers.controls.VScrollBar;
+import feathers.controls.HScrollBar;
+import feathers.controls.Callout;
 import openfl.events.Event;
 import feathers.controls.ToggleButtonState;
 import feathers.controls.Check;
@@ -67,6 +74,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(Button, null, setLightButtonStyles);
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_DARK_BUTTON, setDarkButtonStyles);
 
+		this.styleProvider.setStyleFunction(Callout, null, setCalloutStyles);
+
 		this.styleProvider.setStyleFunction(Check, null, setCheckStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
@@ -76,6 +85,12 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
 
 		this.styleProvider.setStyleFunction(ListView, null, setListViewStyles);
+		this.styleProvider.setStyleFunction(ListView, ListView.VARIANT_BORDERLESS, setBorderlessListViewStyles);
+
+		this.styleProvider.setStyleFunction(Panel, null, setPanelStyles);
+
+		this.styleProvider.setStyleFunction(HScrollBar, null, setHScrollBarStyles);
+		this.styleProvider.setStyleFunction(VScrollBar, null, setVScrollBarStyles);
 
 		this.styleProvider.setStyleFunction(SideBarViewHeader, null, setSideBarViewHeaderStyles);
 		this.styleProvider.setStyleFunction(Label, SideBarViewHeader.CHILD_VARIANT_TITLE, setSideBarViewHeaderTitleStyles);
@@ -89,6 +104,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(TextInput, null, setTextInputStyles);
 
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
+		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeViewItemRenderer, null, setTreeViewItemRendererStyles);
 		this.styleProvider.setStyleFunction(ToggleButton, TreeViewItemRenderer.CHILD_VARIANT_DISCLOSURE_BUTTON, setTreeViewItemRendererDisclosureButtonStyles);
 	}
@@ -152,6 +168,17 @@ class MoonshineTheme extends ClassVariantTheme {
 		backgroundSkin.borderRadius = 7.0;
 		button.backgroundSkin = backgroundSkin;
 
+		var hoverSkin = new MoonshineButtonSkin();
+		hoverSkin.outerBorderFill = SolidColor(0x292929);
+		hoverSkin.outerBorderSize = 3.0;
+		hoverSkin.outerBorderRadius = 10.0;
+		hoverSkin.innerBorderFill = SolidColor(0x4C4C4C);
+		hoverSkin.innerBorderSize = 1.0;
+		hoverSkin.innerBorderRadius = 7.0;
+		hoverSkin.fill = Gradient(LINEAR, [0x3F3F3F, 0x3F3F3F, 0x3B3B3B, 0x3B3B3B], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		hoverSkin.borderRadius = 7.0;
+		button.setSkinForState(HOVER, hoverSkin);
+
 		var disabledSkin = new MoonshineButtonSkin();
 		disabledSkin.outerBorderFill = SolidColor(0x292929);
 		disabledSkin.outerBorderSize = 3.0;
@@ -191,6 +218,14 @@ class MoonshineTheme extends ClassVariantTheme {
 		button.paddingBottom = 8.0;
 		button.paddingLeft = 8.0;
 		button.gap = 4.0;
+	}
+
+	private function setCalloutStyles(callout:Callout):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0xA0A0A0);
+		backgroundSkin.border = SolidColor(1.0, 0x292929);
+		backgroundSkin.cornerRadius = 7.0;
+		callout.backgroundSkin = backgroundSkin;
 	}
 
 	private function setCheckStyles(check:Check):Void {
@@ -381,6 +416,75 @@ class MoonshineTheme extends ClassVariantTheme {
 		listView.fixedScrollBars = true;
 	}
 
+	private function setBorderlessListViewStyles(listView:ListView):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x444444);
+		backgroundSkin.border = null;
+		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
+		backgroundSkin.cornerRadius = 0.0;
+		backgroundSkin.minWidth = 160.0;
+		backgroundSkin.minHeight = 160.0;
+		listView.backgroundSkin = backgroundSkin;
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		listView.focusRectSkin = focusRectSkin;
+
+		var layout = new VerticalListLayout();
+		layout.requestedRowCount = 5;
+		listView.layout = layout;
+
+		listView.paddingTop = 0.0;
+		listView.paddingRight = 0.0;
+		listView.paddingBottom = 0.0;
+		listView.paddingLeft = 0.0;
+
+		listView.fixedScrollBars = true;
+	}
+
+	private function setPanelStyles(panel:Panel):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0xA0A0A0);
+		backgroundSkin.border = null;
+		backgroundSkin.cornerRadius = 7.0;
+		panel.backgroundSkin = backgroundSkin;
+	}
+
+	private function setHScrollBarStyles(scrollBar:HScrollBar):Void {
+		var trackSkin = new RectangleSkin();
+		trackSkin.fill = Gradient(LINEAR, [0x3A3A3A, 0x414141, 0x414141], [1.0, 1.0, 1.0], [0x00, 0x3F, 0xFF], 90.0 * Math.PI / 180.0);
+		trackSkin.width = 16.0;
+		trackSkin.height = 16.0;
+		trackSkin.minWidth = 16.0;
+		trackSkin.minHeight = 16.0;
+		scrollBar.trackSkin = trackSkin;
+
+		var thumbSkin = new MoonshineHScrollBarThumbSkin();
+		thumbSkin.width = 15.0;
+		thumbSkin.height = 15.0;
+		thumbSkin.minWidth = 15.0;
+		thumbSkin.minHeight = 15.0;
+		scrollBar.thumbSkin = thumbSkin;
+	}
+
+	private function setVScrollBarStyles(scrollBar:VScrollBar):Void {
+		var trackSkin = new RectangleSkin();
+		trackSkin.fill = Gradient(LINEAR, [0x3A3A3A, 0x414141, 0x414141], [1.0, 1.0, 1.0], [0x00, 0x3F, 0xFF]);
+		trackSkin.width = 15.0;
+		trackSkin.height = 15.0;
+		trackSkin.minWidth = 15.0;
+		trackSkin.minHeight = 15.0;
+		scrollBar.trackSkin = trackSkin;
+
+		var thumbSkin = new MoonshineVScrollBarThumbSkin();
+		thumbSkin.width = 15.0;
+		thumbSkin.height = 15.0;
+		thumbSkin.minWidth = 15.0;
+		thumbSkin.minHeight = 15.0;
+		scrollBar.thumbSkin = thumbSkin;
+	}
+
 	private function setSideBarViewHeaderStyles(header:SideBarViewHeader):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = Gradient(LINEAR, [0xF2F2F2, 0xEEEEEE, 0xEEEEEE, 0xD8D8D8], [1.0, 1.0, 1.0, 1.0], [0x00, 0x3F, 0xCF, 0xFF],
@@ -551,6 +655,33 @@ class MoonshineTheme extends ClassVariantTheme {
 		treeView.paddingRight = 1.0;
 		treeView.paddingBottom = 1.0;
 		treeView.paddingLeft = 1.0;
+
+		treeView.fixedScrollBars = true;
+	}
+
+	private function setBorderlessTreeViewStyles(treeView:TreeView):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x444444);
+		backgroundSkin.border = null;
+		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
+		backgroundSkin.cornerRadius = 0.0;
+		backgroundSkin.minWidth = 160.0;
+		backgroundSkin.minHeight = 160.0;
+		treeView.backgroundSkin = backgroundSkin;
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		treeView.focusRectSkin = focusRectSkin;
+
+		var layout = new VerticalListLayout();
+		layout.requestedRowCount = 5;
+		treeView.layout = layout;
+
+		treeView.paddingTop = 0.0;
+		treeView.paddingRight = 0.0;
+		treeView.paddingBottom = 0.0;
+		treeView.paddingLeft = 0.0;
 
 		treeView.fixedScrollBars = true;
 	}
