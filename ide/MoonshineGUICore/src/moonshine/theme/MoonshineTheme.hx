@@ -20,6 +20,7 @@
 
 package moonshine.theme;
 
+import moonshine.style.MoonshineControlBarSkin;
 import moonshine.style.MoonshineHScrollBarThumbSkin;
 import moonshine.style.MoonshineVScrollBarThumbSkin;
 import feathers.controls.Panel;
@@ -578,10 +579,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	}
 
 	private function setTitleWindowControlBarStyles(controlBar:LayoutGroup):Void {
-		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0x444444);
-		backgroundSkin.cornerRadius = 7.0;
-		controlBar.backgroundSkin = backgroundSkin;
+		controlBar.backgroundSkin = new MoonshineControlBarSkin();
 
 		var layout = new HorizontalLayout();
 		layout.horizontalAlign = RIGHT;
