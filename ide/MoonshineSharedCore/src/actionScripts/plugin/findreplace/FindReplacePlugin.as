@@ -157,6 +157,7 @@ package actionScripts.plugin.findreplace
 				gotoLineView.addEventListener(Event.CLOSE, onGotoLineClosed);
 				PopUpManager.centerPopUp(gotoLineViewWrapper);
 				gotoLineViewWrapper.assignFocus("top");
+				gotoLineViewWrapper.stage.addEventListener(Event.RESIZE, gotoLineView_stage_resizeHandler, false, 0, true);
 			}
 		}
 		
@@ -173,10 +174,16 @@ package actionScripts.plugin.findreplace
 				textEditor.invalidateLines();
 			}
 			
+			gotoLineViewWrapper.stage.removeEventListener(Event.RESIZE, gotoLineView_stage_resizeHandler);
 			PopUpManager.removePopUp(gotoLineViewWrapper);
 			gotoLineView.removeEventListener(Event.CLOSE, onGotoLineClosed);
 			gotoLineView = null;
 			gotoLineViewWrapper = null;
+		}
+
+		protected function gotoLineView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(gotoLineViewWrapper);
 		}
 
 		protected function closeSearchView(event:Event):void

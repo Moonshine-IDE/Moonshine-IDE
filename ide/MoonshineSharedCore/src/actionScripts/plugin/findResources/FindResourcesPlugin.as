@@ -71,6 +71,7 @@ package actionScripts.plugin.findResources
 				PopUpManager.addPopUp(findResourcesViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 				PopUpManager.centerPopUp(findResourcesViewWrapper);
 				findResourcesViewWrapper.assignFocus("top");
+				findResourcesViewWrapper.stage.addEventListener(Event.RESIZE, findResourcesView_stage_resizeHandler, false, 0, true);
 			}
 
 			if(!previouslySelectedPatterns)
@@ -107,11 +108,16 @@ package actionScripts.plugin.findResources
 			}
 
 			previouslySelectedPatterns = findResourcesView.patterns;
-
+			findResourcesViewWrapper.stage.removeEventListener(Event.RESIZE, findResourcesView_stage_resizeHandler);
 			PopUpManager.removePopUp(findResourcesViewWrapper);
 			findResourcesView.removeEventListener(Event.CLOSE, findResourcesView_closeHandler);
 			findResourcesView = null;
 			findResourcesViewWrapper = null;
+		}
+
+		protected function findResourcesView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(findResourcesViewWrapper);
 		}
 	}
 }

@@ -143,6 +143,7 @@ package actionScripts.plugin.symbols
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS,
 				editor.currentFile.fileBridge.url));
 			symbolsViewWrapper.assignFocus("top");
+			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
 		}
 
 		private function handleOpenWorkspaceSymbolsView(event:Event):void
@@ -161,6 +162,7 @@ package actionScripts.plugin.symbols
 			PopUpManager.addPopUp(symbolsViewWrapper, DisplayObject(parentApp), true);
 			PopUpManager.centerPopUp(symbolsViewWrapper);
 			symbolsView.stage.focus = symbolsView.searchFieldTextInput;
+			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
 		}
 
 		private function handleShowSymbols(event:SymbolsEvent):void
@@ -223,7 +225,13 @@ package actionScripts.plugin.symbols
 					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
 			}
 
+			symbolsViewWrapper.stage.removeEventListener(Event.RESIZE, symbolsView_stage_resizeHandler);
 			PopUpManager.removePopUp(symbolsViewWrapper);
+		}
+
+		protected function symbolsView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(symbolsViewWrapper);
 		}
 
 	}

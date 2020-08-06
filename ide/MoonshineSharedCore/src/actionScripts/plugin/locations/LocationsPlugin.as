@@ -97,6 +97,7 @@ package actionScripts.plugin.locations
 				PopUpManager.addPopUp(locationsViewWrapper, DisplayObject(parentApp), true);
 				PopUpManager.centerPopUp(locationsViewWrapper);
 				locationsViewWrapper.assignFocus("top");
+				locationsViewWrapper.stage.addEventListener(Event.RESIZE, locationsView_stage_resizeHandler, false, 0, true);
 
 				isLocationsViewVisible = true;
 
@@ -119,7 +120,13 @@ package actionScripts.plugin.locations
 				dispatcher.dispatchEvent(
 					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, selectedLocation));
 			}
+			locationsViewWrapper.stage.removeEventListener(Event.RESIZE, locationsView_stage_resizeHandler);
 			PopUpManager.removePopUp(locationsViewWrapper);
+		}
+
+		protected function locationsView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(locationsViewWrapper);
 		}
 	}
 }
