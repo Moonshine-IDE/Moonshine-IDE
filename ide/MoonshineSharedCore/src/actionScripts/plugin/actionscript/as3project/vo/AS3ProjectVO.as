@@ -48,6 +48,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.valueObjects.ProjectVO;
 	
@@ -502,6 +503,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 		override public function cancelledSettings():void
 		{
 			flashModuleOptions.cancelledSettings();
+		}
+		
+		override public function projectFileDelete(fw:FileWrapper):void
+		{
+			if (flashModuleOptions.modulePaths.length > 0)
+			{
+				flashModuleOptions.onRemoveModuleEvent(fw, this);
+			}
 		}
 		
 		public function updateConfig():void 

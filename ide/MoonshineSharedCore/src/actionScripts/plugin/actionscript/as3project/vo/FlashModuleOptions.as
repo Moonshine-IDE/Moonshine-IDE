@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import flash.net.registerClassAlias;
-    
     import mx.collections.ArrayCollection;
     
     import actionScripts.events.ASModulesEvent;
@@ -29,6 +27,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.utils.SerializeUtil;
+    import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.FlashModuleVO;
 
 	public class FlashModuleOptions 
@@ -45,7 +44,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 			projectFolderLocation = folder;
 			
 			dispatcher.addEventListener(ASModulesEvent.EVENT_ADD_MODULE, onAddModuleEvent, false, 0, true);
-			dispatcher.addEventListener(ASModulesEvent.EVENT_REMOVE_MODULE, onRemoveModuleEvent, false, 0, true);
 		}
 		
 		public function getSettings():Vector.<ISetting>
@@ -122,15 +120,45 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return modules;
 		}
 		
+		public function onRemoveModuleEvent(fw:FileWrapper, project:AS3ProjectVO):void
+		{
+			if (fw.file.fileBridge.isDirectory)
+			{
+				var modulesToRemove:Array = [];
+				modulePaths.source.forEach(function(element:FlashModuleVO, index:int, arr:Array):void
+				{
+					if (element.sourcePath.fileBridge.nativePath.indexOf(fw.file.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
+					{
+						modulesToRemove.push(element);
+					}
+				});
+				
+				for (var i:int; i < modulesToRemove.length; i++)
+				{
+					modulePaths.removeItem(modulesToRemove.shift());
+					i--;
+				}
+			}
+			else
+			{
+				modulePaths.source.some(function(element:FlashModuleVO, index:int, arr:Array):Boolean
+				{
+					if (element.sourcePath.fileBridge.nativePath == fw.file.fileBridge.nativePath)
+					{
+						modulePaths.removeItem(element);
+						return true;
+					}
+					return false;
+				});
+			}
+			
+			project.saveSettings();
+		}
+		
 		private function onAddModuleEvent(event:ASModulesEvent):void
 		{
 			modulePaths.addItem(new FlashModuleVO(event.moduleFilePath));
 			event.project.saveSettings();
-		}
-		
-		private function onRemoveModuleEvent(event:ASModulesEvent):void
-		{
-			
 		}
 		
 		private function getProjectRelativePath(value:FileLocation):String

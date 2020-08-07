@@ -136,6 +136,10 @@ package actionScripts.valueObjects
 			folderLocation.fileBridge.nativePath = value;
 		}
 		
+		public function projectFileDelete(fw:FileWrapper):void
+		{
+		}
+		
 		public function saveSettings():void	
 		{
 			throw new Error("saveSettings() not implemented yet");
