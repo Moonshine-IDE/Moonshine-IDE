@@ -144,6 +144,7 @@ package actionScripts.plugin.recentlyOpened
 
                     cookie.flush();
 					model.recentlyOpenedFiles.source = recent;
+					UtilsCore.sortCollection(model.recentlyOpenedFiles, ["name"]);
 				}
 			}
 			
@@ -175,6 +176,7 @@ package actionScripts.plugin.recentlyOpened
 				}
 				cookie.flush();
 				model.recentlyOpenedProjects.source = recent;
+				UtilsCore.sortCollection(model.recentlyOpenedProjects, ["name"]);
 			}
 			
 			if (cookie.data.hasOwnProperty('recentProjectsOpenedOption'))

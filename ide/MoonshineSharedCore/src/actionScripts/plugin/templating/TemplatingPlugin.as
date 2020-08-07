@@ -20,6 +20,7 @@ package actionScripts.plugin.templating
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
@@ -321,6 +322,9 @@ package actionScripts.plugin.templating
 				}
 			}
 			
+			// sort when done
+			fileTemplates.sortOn("name", Array.CASEINSENSITIVE);
+			
 			projects = customTemplatesDir.resolvePath("projects");
 			if (!projects.fileBridge.exists) projects.fileBridge.createDirectory();
 			var projectList:Array = projects.fileBridge.getDirectoryListing();
@@ -333,6 +337,9 @@ package actionScripts.plugin.templating
 					projectTemplates.push(new FileLocation(file.nativePath));
 				}
 			}
+			
+			// sort when done
+			projectTemplates.sortOn("name", Array.CASEINSENSITIVE);
 
 			generateTemplateProjects();
 		}
@@ -566,6 +573,7 @@ package actionScripts.plugin.templating
 			
 			// Update internal template list
 			fileTemplates.push(newTemplate);
+			fileTemplates.sortOn("name", Array.CASEINSENSITIVE);
 			
 			// send event to get the new item added immediately to File/New menu
 			var lbl:String = TemplatingHelper.getTemplateLabel(newTemplate);
@@ -604,6 +612,7 @@ package actionScripts.plugin.templating
 			NewTemplateRenderer(event.target).dispatchEvent(new Event('refresh'));
 			
 			projectTemplates.push(newTemplate);
+			projectTemplates.sortOn("name", Array.CASEINSENSITIVE);
 			
 			// send event to get the new item added immediately to File/New menu
 			// send event to get the new item added immediately to File/New menu
@@ -781,7 +790,14 @@ package actionScripts.plugin.templating
 					
 					// update file list
 					tmpOldIndex = fileTemplates.indexOf(custom);
-					if (tmpOldIndex != -1) fileTemplates[tmpOldIndex] = customNewLocation;
+					if (tmpOldIndex != -1) 
+					{
+						fileTemplates[tmpOldIndex] = customNewLocation;
+						setTimeout(function():void
+						{
+							fileTemplates.sortOn("name", Array.CASEINSENSITIVE);
+						}, 1000);
+					}
 					
 					// updating file/new menu
 					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, false, oldFileName, null, newFileName, customNewLocation));
@@ -796,7 +812,11 @@ package actionScripts.plugin.templating
 					
 					// update file list
 					tmpOldIndex = projectTemplates.indexOf(custom);
-					if (tmpOldIndex != -1) projectTemplates[tmpOldIndex] = customNewLocation;
+					if (tmpOldIndex != -1) 
+					{
+						projectTemplates[tmpOldIndex] = customNewLocation;
+						projectTemplates.sortOn("name", Array.CASEINSENSITIVE);
+					}
 					
 					// updating file/new menu
 					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, true, oldFileName, null, newFileName, customNewLocation));
