@@ -415,7 +415,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 		}
 		
-		private function buildRelease(e:Event):void
+		protected function buildRelease(e:Event):void
 		{
 			SWFLauncherPlugin.RUN_AS_DEBUGGER = false;
 			build(e, false, true);

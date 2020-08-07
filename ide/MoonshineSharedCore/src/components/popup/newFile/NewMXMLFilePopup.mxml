@@ -246,7 +246,7 @@
 						width="100%" height="25"
 						dataProvider="{componentTemplates}" labelFunction="getTemplateLabel"
 						requireSelection="true" itemRendererFunction="getItemRenderer"
-						visible="{componentTemplates}" includeInLayout="{componentTemplates}"
+						visible="{componentTemplates!=null}" includeInLayout="{componentTemplates!=null}"
 						open="lastSelectedItem=ddlType.selectedItem" close="onDropDownClosed(event)"/>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"

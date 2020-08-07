@@ -37,6 +37,9 @@ package actionScripts.plugins.as3project.mxmlc
 		private var currentModule:FlashModuleVO;
 		private var currentModuleConfigFile:FileLocation;
 		private var isMainApplicationCallCompleted:Boolean;
+		private var isRunAfterBuild:Boolean;
+		private var isDebugAfterBuild:Boolean;
+		private var isReleaseAfterBuild:Boolean;
 		
 		override public function activate():void
 		{
@@ -62,22 +65,38 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		protected function onProjectBuild(event:Event):void
 		{
+			isRunAfterBuild = false;
+			isDebugAfterBuild = false;
+			isReleaseAfterBuild = false;
+			
 			build(event);
 		}
 		
 		protected function onProjectBuildAndRun(event:Event):void
 		{
+			isRunAfterBuild = true;
+			isDebugAfterBuild = false;
+			isReleaseAfterBuild = false;
+			
 			buildAndRun(event);
 		}
 		
 		protected function onProjectBuildAndRelease(event:Event):void
 		{
+			isRunAfterBuild = false;
+			isDebugAfterBuild = false;
+			isReleaseAfterBuild = true;
 			
+			buildRelease(event);
 		}
 		
 		protected function onProjectBuildDebug(event:Event):void
 		{
+			isRunAfterBuild = true;
+			isDebugAfterBuild = true;
+			isReleaseAfterBuild = false;
 			
+			buildAndRun(event);
 		}
 		
 		override protected function compileRegularFlexApplication(pvo:ProjectVO, release:Boolean=false):void
@@ -115,8 +134,8 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else if (!isMainApplicationCallCompleted)
 			{
-				isMainApplicationCallCompleted = true;
 				dispose();
+				isMainApplicationCallCompleted = true;
 				compileFunctionForMainApplication(currentProject, release);
 			}
 		}
@@ -126,11 +145,25 @@ package actionScripts.plugins.as3project.mxmlc
 			var relativeMainConfigPath:String = pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file);
 			var compileStr:String = super.compile(pvo, release);
 			
-			compileStr = compileStr.replace(
-				relativeMainConfigPath, currentProject.folderLocation.fileBridge.getRelativePath(
-					currentModuleConfigFile ? currentModuleConfigFile : pvo.config.file, true
-				)
-			);
+			if (currentModuleConfigFile)
+			{
+				compileStr = compileStr.replace(
+					relativeMainConfigPath, currentProject.folderLocation.fileBridge.getRelativePath(
+						currentModuleConfigFile, true
+					)
+				);
+				
+				// requires to overcome multi triggers of SWF
+				runAfterBuild = false;
+				debugAfterBuild = false;
+				isReleaseAfterBuild = false;
+			}
+			else
+			{
+				runAfterBuild = isRunAfterBuild;
+				debugAfterBuild = isDebugAfterBuild;
+				release = isReleaseAfterBuild;
+			}
 			
 			return compileStr;
 		}
