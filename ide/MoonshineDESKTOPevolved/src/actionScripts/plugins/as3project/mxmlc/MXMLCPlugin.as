@@ -452,6 +452,8 @@ package actionScripts.plugins.as3project.mxmlc
 			this.isProjectHasInvalidPaths = false;
 			this.runAfterBuild = runAfterBuild;
 			this.release = release;
+			
+			clearOutput();
 			buildStart();
 		}
 		
@@ -521,11 +523,13 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function proceedWithBuild(activeProject:ProjectVO=null):void
 		{
+			
 			// Don't compile if there is no project. Don't warn since other compilers might take the job.
 			if (!activeProject) activeProject = model.activeProject;
 			if (!activeProject || !(activeProject is AS3ProjectVO)) return;
 			
 			reset();
+			warning("Compiling "+activeProject.projectName);
 			
 			var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
 			isLibraryProject = as3Pvo.isLibraryProject;
@@ -765,7 +769,8 @@ package actionScripts.plugins.as3project.mxmlc
                         sdkPathHomeArg, " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
                 ));*/
             }
-
+			
+			print("Command: %s"+ compileStr);
             return compileStr;
         }
 
@@ -801,6 +806,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// update build config file
 				AS3ProjectVO(pvo).updateConfig();
 				compileStr = compile(pvo as AS3ProjectVO, release);
+				print("Command: %s"+ compileStr);
 				
 				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
 			}
@@ -901,9 +907,7 @@ package actionScripts.plugins.as3project.mxmlc
 
 		protected function compile(pvo:AS3ProjectVO, release:Boolean=false):String 
 		{
-            clearOutput();
 			dispatcher.dispatchEvent(new MXMLCPluginEvent(ActionScriptBuildEvent.PREBUILD, new FileLocation(currentSDK.nativePath)));
-			warning("Compiling "+pvo.projectName);
 			
 			currentProject = pvo;
 			if (pvo.targets.length == 0) 
@@ -1013,7 +1017,6 @@ package actionScripts.plugins.as3project.mxmlc
 					+buildArgs
 					+dbg;
 				
-				print("Command: %s"+ mxmlcStr);
 				return mxmlcStr;
 			} 
 			else 
@@ -1220,7 +1223,7 @@ package actionScripts.plugins.as3project.mxmlc
 		protected function projectBuildSuccessfully():void
 		{
             var currentSuccessfullProject:AS3ProjectVO = currentProject as AS3ProjectVO;
-            success("Project Build Successfully.");
+            success("Build completed successfully.");
             if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
             {
                 reset();
