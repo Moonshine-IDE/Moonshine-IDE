@@ -903,6 +903,7 @@ package actionScripts.utils
 				}
 			}
 			
+			openProjectMenu.items.sort(menuComparer);
 			return openProjectMenu;
 		}
 		
@@ -927,6 +928,7 @@ package actionScripts.utils
 				}
 			}
 			
+			openFileMenu.items.sort(menuComparer);
 			return openFileMenu;
 		}
 		
@@ -1412,5 +1414,12 @@ package actionScripts.utils
                         return item == extension;
                     });
         }
+		
+		private static function menuComparer(itemA:MenuItem, itemB:MenuItem):Number 
+		{
+			if (itemA.label < itemB.label) return -1; //ITEM A is before ITEM B
+			else if (itemA.label > itemB.label) return 1; //ITEM A is after ITEM B
+			else return 0; //ITEM A and ITEM B have same date
+		}
     }
 }
