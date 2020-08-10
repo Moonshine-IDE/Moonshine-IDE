@@ -142,6 +142,7 @@ package actionScripts.ui
 			event.preventDefault(); 
 			
 			var e:CloseTabEvent = new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, event.child);
+			e.isUserTriggered = true;
 			GlobalEventDispatcher.getInstance().dispatchEvent(e);
 		}
 		

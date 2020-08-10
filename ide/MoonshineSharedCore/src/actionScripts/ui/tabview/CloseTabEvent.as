@@ -31,6 +31,7 @@ package actionScripts.ui.tabview
 		
 		public var tab:DisplayObject;
 		public var forceClose:Boolean;
+		public var isUserTriggered:Boolean;
 		
 		public function CloseTabEvent(type:String, targetEditor:DisplayObject, forceClose:Boolean=false)
 		{
