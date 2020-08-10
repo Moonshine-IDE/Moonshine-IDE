@@ -130,12 +130,14 @@ package actionScripts.plugins.as3project.mxmlc
 			{
 				currentModule = modulesQueue.shift() as FlashModuleVO;
 				currentModuleConfigFile = (currentProject as AS3ProjectVO).config.writeForFlashModule(currentProject as AS3ProjectVO, currentModule.sourcePath);
+				warning("Compiling module: "+ currentModule.sourcePath.fileBridge.nameWithoutExtension);
 				compileFunctionForMainApplication(currentProject, release);
 			}
 			else if (!isMainApplicationCallCompleted)
 			{
 				dispose();
 				isMainApplicationCallCompleted = true;
+				warning("Compiling main application");
 				compileFunctionForMainApplication(currentProject, release);
 			}
 		}
