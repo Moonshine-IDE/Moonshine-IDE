@@ -338,9 +338,6 @@ package actionScripts.plugin.templating
 				}
 			}
 			
-			// sort when done
-			projectTemplates.sortOn("name", Array.CASEINSENSITIVE);
-
 			generateTemplateProjects();
 		}
 
@@ -494,6 +491,7 @@ package actionScripts.plugin.templating
 			newFileMenu.items.push(separator);
 
 			var filteredProjectTemplatesToMenu:Array = allLoadedTemplates.filter(filterProjectsTemplates);
+			filteredProjectTemplatesToMenu.sortOn("title", Array.CASEINSENSITIVE);
 
 			for each (var projectTemplate:TemplateVO in filteredProjectTemplatesToMenu)
 			{
