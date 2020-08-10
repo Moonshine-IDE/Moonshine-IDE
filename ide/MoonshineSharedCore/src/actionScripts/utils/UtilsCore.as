@@ -1417,9 +1417,9 @@ package actionScripts.utils
 		
 		private static function menuComparer(itemA:MenuItem, itemB:MenuItem):Number 
 		{
-			if (itemA.label < itemB.label) return -1; //ITEM A is before ITEM B
-			else if (itemA.label > itemB.label) return 1; //ITEM A is after ITEM B
-			else return 0; //ITEM A and ITEM B have same date
+			if (itemA.label.toLowerCase() < itemB.label.toLowerCase()) return -1;
+			else if (itemA.label.toLowerCase() > itemB.label.toLowerCase()) return 1;
+			else return 0;
 		}
     }
 }
