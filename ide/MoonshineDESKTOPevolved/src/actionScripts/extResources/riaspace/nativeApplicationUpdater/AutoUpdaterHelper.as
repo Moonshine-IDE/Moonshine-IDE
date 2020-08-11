@@ -2,14 +2,18 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 {
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	
 	import mx.controls.Alert;
+	
+	import actionScripts.events.GeneralEvent;
 	
 	import air.update.events.DownloadErrorEvent;
 	import air.update.events.StatusUpdateEvent;
 	import air.update.events.UpdateEvent;
-
-	public class AutoUpdaterHelper
+	
+	[Event(name="DONE", type="actionScripts.events.GeneralEvent")]
+	public class AutoUpdaterHelper extends EventDispatcher
 	{
 		[Bindable] public var downlaoding:Boolean = false;
 		[Bindable] public var isUpdater:Boolean;
@@ -39,6 +43,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		public function updater_errorHandler(event:ErrorEvent):void
 		{
 			Alert.show(event.text);
+			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
 		}
 		
 		public function updater_initializedHandler(event:UpdateEvent):void
@@ -73,6 +78,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		{
 			updater.cancelUpdate();
 			isUpdater = false;
+			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
 		}
 		
 		public function btnYes_clickHandler(event:Event):void
@@ -94,6 +100,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		private function updater_downloadErrorHandler(event:DownloadErrorEvent):void
 		{
 			Alert.show("Error downloading update file, try again later.");
+			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
 		}
 	}
 }

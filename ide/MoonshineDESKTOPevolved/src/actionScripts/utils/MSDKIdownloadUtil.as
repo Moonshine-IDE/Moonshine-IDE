@@ -99,9 +99,11 @@ package actionScripts.utils
 			isUpdateChecking = true;
 			
 			updaterHelper = new AutoUpdaterHelper();
-			nativeApplicationUpdater = new NativeApplicationUpdater();
+			updaterHelper.addEventListener(GeneralEvent.DONE, onUpdaterHelperDone, false, 0, true);
 			
+			nativeApplicationUpdater = new NativeApplicationUpdater();
 			updaterHelper.updater = nativeApplicationUpdater;
+
 			nativeApplicationUpdater.addEventListener(UpdateEvent.INITIALIZED, updaterHelper.updater_initializedHandler, false, 0, true);
 			nativeApplicationUpdater.addEventListener(StatusUpdateEvent.UPDATE_STATUS, updater_updateStatusHandler, false, 0, true);
 			nativeApplicationUpdater.addEventListener(ErrorEvent.ERROR, updaterHelper.updater_errorHandler, false, 0, true);
@@ -151,6 +153,7 @@ package actionScripts.utils
 			}
 			else
 			{
+				onUpdaterHelperDone(null);
 				runAppStoreHelperWindows();
 			}
 		}
@@ -158,6 +161,23 @@ package actionScripts.utils
 		private function updater_beforeInstallation(event:UpdateEvent):void
 		{
 			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
+		}
+		
+		private function onUpdaterHelperDone(event:GeneralEvent):void
+		{
+			if (nativeApplicationUpdater)
+			{
+				nativeApplicationUpdater.removeEventListener(UpdateEvent.INITIALIZED, updaterHelper.updater_initializedHandler);
+				nativeApplicationUpdater.removeEventListener(StatusUpdateEvent.UPDATE_STATUS, updater_updateStatusHandler);
+				nativeApplicationUpdater.removeEventListener(ErrorEvent.ERROR, updaterHelper.updater_errorHandler);
+				nativeApplicationUpdater.removeEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, updaterHelper.updater_errorHandler);
+				nativeApplicationUpdater.removeEventListener(StatusUpdateErrorEvent.UPDATE_ERROR, updaterHelper.updater_errorHandler);
+				nativeApplicationUpdater.removeEventListener(UpdateEvent.BEFORE_INSTALL, updater_beforeInstallation);
+				nativeApplicationUpdater = null;
+				
+				updaterHelper.removeEventListener(GeneralEvent.DONE, onUpdaterHelperDone);
+				updaterHelper = null;
+			}
 		}
 		
 		private function runAppStoreHelperOSX():void
