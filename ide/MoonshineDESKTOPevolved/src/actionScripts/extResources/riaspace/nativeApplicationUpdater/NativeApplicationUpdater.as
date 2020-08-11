@@ -92,8 +92,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		[Bindable]		
 		public var updateURL:String;
 		
-		public var exitApplicationBeforeInstall:Boolean = true;
-		
 		protected var _isNewerVersionFunction:Function;
 		
 		protected var _updateDescriptor:XML;
@@ -139,16 +137,13 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				hideAlert = _hideAlert;
 				currentState = INITIALIZING;
 				
-				if (!currentVersion)
-				{
-					var applicationDescriptor:XML = NativeApplication.nativeApplication.applicationDescriptor;
-					var xmlns:Namespace = new Namespace(applicationDescriptor.namespace());
-					
-					if (xmlns.uri == "http://ns.adobe.com/air/application/2.1")
-						currentVersion = applicationDescriptor.xmlns::version;
-					else
-						currentVersion = applicationDescriptor.xmlns::versionNumber;
-				}
+				var applicationDescriptor:XML = NativeApplication.nativeApplication.applicationDescriptor;
+				var xmlns:Namespace = new Namespace(applicationDescriptor.namespace());
+				
+				if (xmlns.uri == "http://ns.adobe.com/air/application/2.1")
+					currentVersion = applicationDescriptor.xmlns::version;
+				else
+					currentVersion = applicationDescriptor.xmlns::versionNumber;
 				
 				if (os.indexOf("win") > -1)
 				{
@@ -485,7 +480,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 					installProcess.start(info);
 				}
 				
-				if (exitApplicationBeforeInstall) setTimeout(NativeApplication.nativeApplication.exit, 200);
+				setTimeout(NativeApplication.nativeApplication.exit, 200);
 			}
 		}
 		
