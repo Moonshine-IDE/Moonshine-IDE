@@ -20,26 +20,22 @@ package actionScripts.utils
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
-	import flash.events.Event;
+	import flash.events.ErrorEvent;
 	import flash.events.EventDispatcher;
-	import flash.events.IOErrorEvent;
-	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	import flash.net.URLLoader;
-	import flash.net.URLRequest;
 	import flash.net.URLStream;
-	import flash.utils.ByteArray;
-	
-	import mx.controls.Alert;
 	
 	import actionScripts.events.GeneralEvent;
-	import actionScripts.extResources.riaspace.nativeApplicationUpdater.UpdaterErrorCodes;
+	import actionScripts.extResources.riaspace.nativeApplicationUpdater.AutoUpdaterHelper;
+	import actionScripts.extResources.riaspace.nativeApplicationUpdater.NativeApplicationUpdater;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
 	
 	import air.update.events.DownloadErrorEvent;
+	import air.update.events.StatusUpdateErrorEvent;
+	import air.update.events.StatusUpdateEvent;
 	import air.update.events.UpdateEvent;
 
 	public class MSDKIdownloadUtil extends EventDispatcher
@@ -53,11 +49,13 @@ package actionScripts.utils
 		private var isUpdateChecking:Boolean;
 		private var isUpdateChecked:Boolean;
 		private var updateDescriptorLoader:URLLoader;
+		private var nativeApplicationUpdater:NativeApplicationUpdater;
+		private var updaterHelper:AutoUpdaterHelper;
 
 		private var _executableFile:File;
 		private function get executableFile():File
 		{
-			if (!_executableFile) _executableFile = (new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY)).resolvePath("Moonshine SDK Installer.exe");
+			if (!_executableFile) _executableFile = (new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY)).resolvePath("MoonshineSDKInstaller.exe");
 			return _executableFile;
 		}
 		
@@ -86,8 +84,7 @@ package actionScripts.utils
 					// in an application lifecycle
 					if (!isUpdateChecked)
 					{
-						isUpdateChecking = true;
-						checkForUpdates();
+						initializeApplicationUpdater();
 					}
 					else if (executableFile.exists)
 					{
@@ -97,20 +94,89 @@ package actionScripts.utils
 			}
 		}
 		
-		private function checkForUpdates():void
+		private function initializeApplicationUpdater():void
 		{
-			if (updateDescriptorLoader) return;
+			isUpdateChecking = true;
 			
-			updateDescriptorLoader = new URLLoader();
-			updateDescriptorLoader.addEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
-			updateDescriptorLoader.addEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
-			try
+			updaterHelper = new AutoUpdaterHelper();
+			updaterHelper.addEventListener(GeneralEvent.DONE, onUpdaterHelperDone, false, 0, true);
+			
+			nativeApplicationUpdater = new NativeApplicationUpdater();
+			updaterHelper.updater = nativeApplicationUpdater;
+
+			nativeApplicationUpdater.addEventListener(UpdateEvent.INITIALIZED, updaterHelper.updater_initializedHandler, false, 0, true);
+			nativeApplicationUpdater.addEventListener(StatusUpdateEvent.UPDATE_STATUS, updater_updateStatusHandler, false, 0, true);
+			nativeApplicationUpdater.addEventListener(ErrorEvent.ERROR, updaterHelper.updater_errorHandler, false, 0, true);
+			nativeApplicationUpdater.addEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, updaterHelper.updater_errorHandler, false, 0, true);
+			nativeApplicationUpdater.addEventListener(StatusUpdateErrorEvent.UPDATE_ERROR, updaterHelper.updater_errorHandler, false, 0, true);
+			nativeApplicationUpdater.addEventListener(UpdateEvent.BEFORE_INSTALL, updater_beforeInstallation, false, 0, true);
+			
+			nativeApplicationUpdater.currentVersion = getInstalledVersion();
+			nativeApplicationUpdater.updateURL = HelperConstants.INSTALLER_UPDATE_CHECK_URL;
+			nativeApplicationUpdater.initialize();
+		}
+		
+		private function getInstalledVersion():String
+		{
+			var currentVersion:String;
+			
+			// if only any previous installation is present
+			// we will able to compare its version with
+			var localDescriptor:File = new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY).resolvePath("META-INF/AIR/application.xml");
+			if (localDescriptor.exists)
 			{
-				updateDescriptorLoader.load(new URLRequest(HelperConstants.INSTALLER_UPDATE_CHECK_URL));
+				// load local information
+				var applicationDescriptor:XML = new XML(FileUtils.readFromFile(localDescriptor));
+				var xmlns:Namespace = new Namespace(applicationDescriptor.namespace());
+				
+				if (xmlns.uri == "http://ns.adobe.com/air/application/2.1")
+					currentVersion = applicationDescriptor.xmlns::version;
+				else
+					currentVersion = applicationDescriptor.xmlns::versionNumber;
+				
+				return currentVersion;
 			}
-			catch(error:Error)
+			
+			return "0.0.0";
+		}
+		
+		private function updater_updateStatusHandler(event:StatusUpdateEvent):void
+		{
+			if (event.available)
 			{
+				// In case update is available prevent default behavior of checkNow() function 
+				// and switch to the view that gives the user ability to decide if he wants to
+				// install new version of the application.
+				event.preventDefault();
+				nativeApplicationUpdater.exitApplicationBeforeInstall = false;
+				updaterHelper.btnYes_clickHandler(null);
+			}
+			else
+			{
+				onUpdaterHelperDone(null);
 				runAppStoreHelperWindows();
+			}
+		}
+		
+		private function updater_beforeInstallation(event:UpdateEvent):void
+		{
+			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
+		}
+		
+		private function onUpdaterHelperDone(event:GeneralEvent):void
+		{
+			if (nativeApplicationUpdater)
+			{
+				nativeApplicationUpdater.removeEventListener(UpdateEvent.INITIALIZED, updaterHelper.updater_initializedHandler);
+				nativeApplicationUpdater.removeEventListener(StatusUpdateEvent.UPDATE_STATUS, updater_updateStatusHandler);
+				nativeApplicationUpdater.removeEventListener(ErrorEvent.ERROR, updaterHelper.updater_errorHandler);
+				nativeApplicationUpdater.removeEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, updaterHelper.updater_errorHandler);
+				nativeApplicationUpdater.removeEventListener(StatusUpdateErrorEvent.UPDATE_ERROR, updaterHelper.updater_errorHandler);
+				nativeApplicationUpdater.removeEventListener(UpdateEvent.BEFORE_INSTALL, updater_beforeInstallation);
+				nativeApplicationUpdater = null;
+				
+				updaterHelper.removeEventListener(GeneralEvent.DONE, onUpdaterHelperDone);
+				updaterHelper = null;
 			}
 		}
 		
@@ -137,183 +203,7 @@ package actionScripts.utils
 		
 		private function runAppStoreHelperWindows():void
 		{
-			executableFile.openWithDefaultApplication();
-		}
-		
-		private function initiate64BitDownloadProcess(downloadUrl:String):void
-		{
-			var fileName:String = downloadUrl.substr(downloadUrl.lastIndexOf("/") + 1)
-			downloadingFile = new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY);
-			if (!downloadingFile.exists) downloadingFile.createDirectory();
-			downloadingFile = downloadingFile.resolvePath(fileName);
-			
-			fileStream = new FileStream();
-			fileStream.addEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
-			fileStream.addEventListener(Event.CLOSE, fileStream_closeHandler);
-			fileStream.openAsync(downloadingFile, FileMode.WRITE);
-			
-			urlStream = new URLStream();
-			urlStream.addEventListener(Event.OPEN, urlStream_openHandler);
-			urlStream.addEventListener(ProgressEvent.PROGRESS, urlStream_progressHandler);
-			urlStream.addEventListener(Event.COMPLETE, urlStream_completeHandler);
-			urlStream.addEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
-			
-			try
-			{
-				urlStream.load(new URLRequest(downloadUrl));
-				isDownloading = true;
-			}
-			catch(error:Error)
-			{
-				dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false, 
-					"Error downloading update file: " + error.message, UpdaterErrorCodes.ERROR_9004, error.message));
-			}
-		}
-		
-		private function unzipDownloadedFile():void
-		{
-			var unZip:Unzip = new Unzip(downloadingFile);
-			unZip.addEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadedInMemory);
-			
-			/*
-			* @local
-			*/
-			function onFileLoadedInMemory(event:Event):void
-			{
-				event.target.removeEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadedInMemory);
-				unZip.unzipTo(new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY), onUnzipCompleted);
-			}
-			function onUnzipCompleted(destination:File):void
-			{
-				dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
-				runAppStoreHelperWindows();
-				try { downloadingFile.deleteFile(); } catch (e:Error) { downloadingFile.deleteFileAsync(); }
-			}
-		}
-		
-		private function isNewerVersionFunction(updateVersion:String, currentVersion:String):Boolean
-		{
-			var tmpSplit:Array = updateVersion.split(".");
-			var uv1:Number = Number(tmpSplit[0]);
-			var uv2:Number = Number(tmpSplit[1]);
-			var uv3:Number = Number(tmpSplit[2]);
-			
-			var tmpSplit2:Array = currentVersion.split(".");
-			var cv1:Number = Number(tmpSplit2[0]);
-			var cv2:Number = Number(tmpSplit2[1]);
-			var cv3:Number = Number(tmpSplit2[2]);
-			
-			if (uv1 > cv1) return true;
-			else if (uv1 >= cv1 && uv2 > cv2) return true;
-			else if (uv1 >= cv1 && uv2 >= cv2 && uv3 > cv3) return true;
-			
-			return false;
-		}
-		
-		protected function urlStream_ioErrorHandler(event:IOErrorEvent):void
-		{
-			fileStream.removeEventListener(Event.CLOSE, fileStream_closeHandler);
-			fileStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
-			fileStream.close();
-			
-			urlStream.removeEventListener(Event.OPEN, urlStream_openHandler);
-			urlStream.removeEventListener(ProgressEvent.PROGRESS, urlStream_progressHandler);
-			urlStream.removeEventListener(Event.COMPLETE, urlStream_completeHandler);
-			urlStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
-			urlStream.close();
-			
-			isDownloading = false;
-			dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false, 
-				"Error downloading update file: " + event.text, UpdaterErrorCodes.ERROR_9005, event.errorID));
-		}
-		
-		protected function fileStream_closeHandler(event:Event):void
-		{
-			fileStream.removeEventListener(Event.CLOSE, fileStream_closeHandler);
-			fileStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
-			
-			isDownloading = false;
-			unzipDownloadedFile();
-		}
-		
-		protected function urlStream_openHandler(event:Event):void
-		{
-			dispatchEvent(new UpdateEvent(UpdateEvent.DOWNLOAD_START));
-		}
-		
-		protected function urlStream_progressHandler(event:ProgressEvent):void
-		{
-			var bytes:ByteArray = new ByteArray();
-			urlStream.readBytes(bytes);
-			fileStream.writeBytes(bytes);
-			dispatchEvent(event);
-		}
-		
-		protected function urlStream_completeHandler(event:Event):void
-		{
-			urlStream.removeEventListener(Event.OPEN, urlStream_openHandler);
-			urlStream.removeEventListener(ProgressEvent.PROGRESS, urlStream_progressHandler);
-			urlStream.removeEventListener(Event.COMPLETE, urlStream_completeHandler);
-			urlStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
-			urlStream.close();
-			fileStream.close();
-			isDownloading = false;
-		}
-		
-		protected function updateDescriptorLoader_completeHandler(event:Event):void
-		{
-			isUpdateChecked = true;
-			isUpdateChecking = false;
-			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
-			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
-			updateDescriptorLoader.close();
-			
-			// store remote information
-			var updateDescriptor:XML = new XML(updateDescriptorLoader.data);
-			var updateVersion:String = String(updateDescriptor.exe.version);
-			var updateVersionUrl:String = String(updateDescriptor.exe.url);
-			var currentVersion:String;
-			
-			updateDescriptorLoader = null;
-			
-			// if only any previous installation is present
-			// we will able to compare its version with
-			var localDescriptor:File = new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY).resolvePath("META-INF/AIR/application.xml");
-			if (localDescriptor.exists)
-			{
-				// load local information
-				var applicationDescriptor:XML = new XML(FileUtils.readFromFile(localDescriptor));
-				var xmlns:Namespace = new Namespace(applicationDescriptor.namespace());
-				
-				if (xmlns.uri == "http://ns.adobe.com/air/application/2.1")
-					currentVersion = applicationDescriptor.xmlns::version;
-				else
-					currentVersion = applicationDescriptor.xmlns::versionNumber;
-			}
-			
-			if (!localDescriptor.exists || isNewerVersionFunction(updateVersion, currentVersion))
-			{
-				dispatchEvent(new Event(EVENT_NEW_VERSION_DETECTED));
-				// initiate new download
-				initiate64BitDownloadProcess(updateVersionUrl);
-			}
-			else
-			{
-				// continue running existing download
-				runAppStoreHelperWindows();
-			}
-		}
-		
-		protected function updateDescriptorLoader_ioErrorHandler(event:IOErrorEvent):void
-		{
-			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
-			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
-			updateDescriptorLoader.close();
-			updateDescriptorLoader = null;
-			
-			isUpdateChecked = true;
-			isUpdateChecking = false;
-			Alert.show("Error downloading Installer updater file, try again later.\n"+ event.text, "Error!");
+			if (executableFile.exists) executableFile.openWithDefaultApplication();
 		}
 	}
 }
