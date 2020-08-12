@@ -55,7 +55,7 @@ package actionScripts.utils
 		private var _executableFile:File;
 		private function get executableFile():File
 		{
-			if (!_executableFile) _executableFile = (new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY)).resolvePath("MoonshineSDKInstaller.exe");
+			if (!_executableFile) _executableFile = (new File(HelperConstants.WINDOWS_64BIT_DOWNLOAD_DIRECTORY)).resolvePath("Moonshine SDK Installer.exe");
 			return _executableFile;
 		}
 		
