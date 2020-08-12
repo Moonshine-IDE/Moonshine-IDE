@@ -161,6 +161,7 @@ package actionScripts.utils
 		private function updater_beforeInstallation(event:UpdateEvent):void
 		{
 			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
+			onUpdaterHelperDone(null);
 		}
 		
 		private function onUpdaterHelperDone(event:GeneralEvent):void
@@ -177,6 +178,10 @@ package actionScripts.utils
 				
 				updaterHelper.removeEventListener(GeneralEvent.DONE, onUpdaterHelperDone);
 				updaterHelper = null;
+				
+				isUpdateChecking = false;
+				isUpdateChecked = false;
+				isDownloading = false;
 			}
 		}
 		
