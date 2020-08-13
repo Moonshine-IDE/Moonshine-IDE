@@ -18,13 +18,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
+    import flash.events.Event;
+    
     import mx.collections.ArrayCollection;
     
     import actionScripts.events.ASModulesEvent;
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.SettingsEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.interfaces.IModulesFinder;
+    import actionScripts.locator.IDEModel;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.LinkOnlySetting;
+    import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.utils.SerializeUtil;
     import actionScripts.valueObjects.FileWrapper;
@@ -32,12 +39,19 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 	public class FlashModuleOptions 
 	{
+		private static const EVENT_ADD_MODULE:String = "addModuleEvent";
+		private static const EVENT_SEARCH_MODULES:String = "searchModulesEvent";
+		
 		public var modulePaths:ArrayCollection = new ArrayCollection;
 		public var projectFolderLocation:FileLocation;
 
 		private var moduleSelectionsUntilSave:Array;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var selectionIndex:Array;
+		private var linkOnlySetting:LinkOnlySetting;
+		private var modulesFinder:IModulesFinder;
+		private var settings:Vector.<ISetting>;
+		private var modulesPendingToBeAdded:Array;
 		
 		public function FlashModuleOptions(folder:FileLocation)
 		{
@@ -48,10 +62,19 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function getSettings():Vector.<ISetting>
 		{
-			var settings:Vector.<ISetting> = new Vector.<ISetting>();
+			modulesPendingToBeAdded = [];
+			settings = new Vector.<ISetting>();
+			
+			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
+				new LinkOnlySettingVO("Add Module", EVENT_ADD_MODULE),
+				new LinkOnlySettingVO("Search", EVENT_SEARCH_MODULES)
+			]);
+			linkOnlySetting.addEventListener(EVENT_ADD_MODULE, onModuleAddRequest, false, 0, true);
+			linkOnlySetting.addEventListener(EVENT_SEARCH_MODULES, onModulesSearchRequest, false, 0, true);
+			settings.push(linkOnlySetting);
 			
 			settings.push(
-				new StaticLabelSetting("Select modules to auto-compile during a project build.", 14, 0x686868)
+				new StaticLabelSetting("Select modules to compile during a project build.", 14, 0x686868)
 				);
 			
 			// for some strange reason doing registerClassAlias
@@ -74,7 +97,21 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function cancelledSettings():void
 		{
+			if (linkOnlySetting)
+			{
+				linkOnlySetting.removeEventListener(EVENT_ADD_MODULE, onModuleAddRequest);
+				linkOnlySetting.removeEventListener(EVENT_SEARCH_MODULES, onModulesSearchRequest);
+			}
+			
+			if (modulesFinder)
+			{
+				modulesFinder.dispose();
+			}
+			
+			modulesFinder = null;
+			linkOnlySetting = null;
 			moduleSelectionsUntilSave = null;
+			modulesPendingToBeAdded = null;
 		}
 		
 		public function parse(modules:XMLList):void 
@@ -98,6 +135,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function toXML():XML
 		{
+			if (modulesPendingToBeAdded && modulesPendingToBeAdded.length > 0)
+			{
+				modulePaths = new ArrayCollection(modulePaths.source.concat(modulesPendingToBeAdded));
+			}
+			
 			// triggers during project configuration saves
 			if (moduleSelectionsUntilSave)
 			{
@@ -164,6 +206,50 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private function getProjectRelativePath(value:FileLocation):String
 		{
 			return projectFolderLocation.fileBridge.getRelativePath(value, true);
+		}
+		
+		private function onModuleAddRequest(event:Event):void
+		{
+			
+		}
+		
+		private function onModulesSearchRequest(event:Event):void
+		{
+			modulesFinder ||= IDEModel.getInstance().flexCore.getModulesFinder();
+			modulesFinder.search(IDEModel.getInstance().activeProject, onModuleSearchProcessExit);
+		}
+		
+		private function onModuleSearchProcessExit(modules:Array, isError:Boolean=false):void
+		{
+			if (!isError)
+			{
+				var isExist:Boolean;
+				var tmpModule:FlashModuleVO;
+				modules.forEach(function(pathValue:String, index:int, arr:Array):void
+				{
+					isExist = modulePaths.source.some(function(module:FlashModuleVO, index:int, arr:Array):Boolean
+					{
+						return (module.sourcePath.fileBridge.nativePath == pathValue);
+					});
+					
+					if (!isExist)
+					{
+						tmpModule = new FlashModuleVO(
+							new FileLocation(pathValue)
+						);
+						modulesPendingToBeAdded.push(tmpModule);
+						
+						var tmpObject:Object = {sourcePath: IDEModel.getInstance().activeProject.folderLocation.fileBridge.getRelativePath(tmpModule.sourcePath, true), 
+							isSelected: tmpModule.isSelected};
+						settings.push(
+							new BooleanSetting(tmpObject, "isSelected", tmpObject.sourcePath)
+						);
+						moduleSelectionsUntilSave.push(tmpObject);
+					}
+				});
+				
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+			}
 		}
     }
 }

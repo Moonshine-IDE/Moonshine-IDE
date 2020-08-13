@@ -39,6 +39,7 @@ package actionScripts.impls
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.interfaces.IModulesFinder;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -447,6 +448,11 @@ package actionScripts.impls
 		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
 		{
 			
+		}
+		
+		public function getModulesFinder():IModulesFinder
+		{
+			return null;
 		}
 		
 		//--------------------------------------------------------------------------

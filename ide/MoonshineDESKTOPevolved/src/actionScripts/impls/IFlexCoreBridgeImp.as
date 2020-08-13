@@ -43,12 +43,12 @@ package actionScripts.impls
 	import actionScripts.events.StartupHelperEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
+	import actionScripts.interfaces.IModulesFinder;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsolePlugin;
-	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.plugin.core.mouse.MouseManagerPlugin;
 	import actionScripts.plugin.errors.UncaughtErrorsPlugin;
@@ -120,6 +120,7 @@ package actionScripts.impls
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.ModulesFinder;
 	import actionScripts.utils.SHClassTest;
 	import actionScripts.utils.SWFTrustPolicyModifier;
 	import actionScripts.utils.SoftwareVersionChecker;
@@ -534,6 +535,11 @@ package actionScripts.impls
 		public function getExternalEditors():ArrayCollection
 		{
 			return ExternalEditorsPlugin.editors;
+		}
+		
+		public function getModulesFinder():IModulesFinder
+		{
+			return (new ModulesFinder());
 		}
 	}
 }
