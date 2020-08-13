@@ -48,12 +48,16 @@ package actionScripts.utils
 			if (ConstantsCoreVO.IS_MACOS)
 			{
 				command = "/usr/bin/grep -ilR '<s:Module ' "+ 
-					projectFolder.fileBridge.getRelativePath(sourceFolder, true);
+					(
+						(!sourceFolder || projectFolder.fileBridge.nativePath == sourceFolder.fileBridge.nativePath) ? 
+						projectFolder.fileBridge.nativePath : 
+						projectFolder.fileBridge.getRelativePath(sourceFolder, true)
+					);
 			}
 			else
 			{
 				command = '"c:\\Windows\\System32\\findstr.exe" /s /i /m /c:"<s:Module " ';
-				command += '"'+ sourceFolder.fileBridge.nativePath +'\\*"';
+				command += '"'+ (sourceFolder ? sourceFolder.fileBridge.nativePath : projectFolder.fileBridge.nativePath) +'\\*"';
 			}
 			
 			// run the command
