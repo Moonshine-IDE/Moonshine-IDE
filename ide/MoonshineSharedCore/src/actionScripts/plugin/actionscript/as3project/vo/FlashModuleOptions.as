@@ -22,6 +22,8 @@ package actionScripts.plugin.actionscript.as3project.vo
     
     import mx.collections.ArrayCollection;
     
+    import spark.components.Alert;
+    
     import actionScripts.events.ASModulesEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.SettingsEvent;
@@ -88,7 +90,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				tmpRelativePath = getProjectRelativePath(element.sourcePath);
 
-				var tmpObject:Object = {sourcePath: tmpRelativePath, isSelected: element.isSelected};
+				var tmpObject:Object = {sourcePath: tmpRelativePath, fullPath:element.sourcePath.fileBridge.nativePath, isSelected: element.isSelected};
 				settings.push(
 					new BooleanSetting(tmpObject, "isSelected", tmpRelativePath)
 				);
@@ -229,6 +231,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				var isExist:Boolean;
 				var tmpModule:FlashModuleVO;
 				var tmpModuleFile:FileLocation;
+				var newCount:int = 0;
 				modules.forEach(function(pathValue:String, index:int, arr:Array):void
 				{
 					// in case of osx grep call it returns only
@@ -240,9 +243,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 						pathValue = tmpModuleFile.fileBridge.nativePath;
 					}
 					
-					isExist = modulePaths.source.some(function(module:FlashModuleVO, index:int, arr:Array):Boolean
+					isExist = moduleSelectionsUntilSave.some(function(module:Object, index:int, arr:Array):Boolean
 					{
-						return (module.sourcePath.fileBridge.nativePath == pathValue);
+						return (module.fullPath == pathValue);
 					});
 					
 					if (!isExist)
@@ -253,15 +256,22 @@ package actionScripts.plugin.actionscript.as3project.vo
 						modulesPendingToBeAdded.push(tmpModule);
 						
 						var tmpObject:Object = {sourcePath: getProjectRelativePath(tmpModule.sourcePath), 
+							fullPath: tmpModule.sourcePath.fileBridge.nativePath,
 							isSelected: tmpModule.isSelected};
 						settings.push(
 							new BooleanSetting(tmpObject, "isSelected", tmpObject.sourcePath)
 						);
 						moduleSelectionsUntilSave.push(tmpObject);
+						newCount++;
 					}
 				});
 				
+				Alert.show("Found "+ newCount +" new module(s) under:\n"+ projectFolderLocation.fileBridge.nativePath, "Note!");
 				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+			}
+			else if (!isError)
+			{
+				Alert.show("No module found under:\n"+ projectFolderLocation.fileBridge.nativePath, "Note!");
 			}
 		}
     }

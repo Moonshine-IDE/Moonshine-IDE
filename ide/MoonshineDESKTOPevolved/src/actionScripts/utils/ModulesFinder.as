@@ -41,6 +41,8 @@ package actionScripts.utils
 		
 		public function search(projectFolder:FileLocation, sourceFolder:FileLocation, exitFn:Function):void
 		{
+			if (nativeProcess && nativeProcess.running) return;
+			
 			onExitFunction = exitFn;
 			isError = false;
 			
