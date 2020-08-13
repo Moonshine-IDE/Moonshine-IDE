@@ -18,11 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.factory.FileLocation;
 
 	public interface IModulesFinder
 	{
 		function dispose():void;
-		function search(project:ProjectVO, exitFn:Function):void;
+		function search(projectFolder:FileLocation, sourceFolder:FileLocation, exitFn:Function):void;
 	}
 }

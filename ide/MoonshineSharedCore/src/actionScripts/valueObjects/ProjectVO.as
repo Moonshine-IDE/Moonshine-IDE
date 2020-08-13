@@ -50,9 +50,18 @@ package actionScripts.valueObjects
 		{
 			_folderLocation = value;
 		}
+		
+		private var _sourceFolder:FileLocation;
+		public function get sourceFolder():FileLocation
+		{
+			return _sourceFolder;
+		}
+		public function set sourceFolder(value:FileLocation):void
+		{
+			_sourceFolder = value;
+		}
 
 		public var projectFile: FileLocation;
-		public var sourceFolder:FileLocation;
 		public var projectRemotePath:String;
 		public var projectName:String;
 		public var fileNamesOnly:Vector.<String>;

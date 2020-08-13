@@ -34,6 +34,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.utils.SerializeUtil;
+    import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.FlashModuleVO;
 
@@ -44,6 +45,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public var modulePaths:ArrayCollection = new ArrayCollection;
 		public var projectFolderLocation:FileLocation;
+		public var sourceFolderLocation:FileLocation;
 
 		private var moduleSelectionsUntilSave:Array;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -53,9 +55,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private var settings:Vector.<ISetting>;
 		private var modulesPendingToBeAdded:Array;
 		
-		public function FlashModuleOptions(folder:FileLocation)
+		public function FlashModuleOptions(folder:FileLocation, sourceFolder:FileLocation)
 		{
 			projectFolderLocation = folder;
+			sourceFolderLocation = sourceFolder;
 			
 			dispatcher.addEventListener(ASModulesEvent.EVENT_ADD_MODULE, onAddModuleEvent, false, 0, true);
 		}
@@ -216,17 +219,27 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private function onModulesSearchRequest(event:Event):void
 		{
 			modulesFinder ||= IDEModel.getInstance().flexCore.getModulesFinder();
-			modulesFinder.search(IDEModel.getInstance().activeProject, onModuleSearchProcessExit);
+			modulesFinder.search(projectFolderLocation, sourceFolderLocation, onModuleSearchProcessExit);
 		}
 		
 		private function onModuleSearchProcessExit(modules:Array, isError:Boolean=false):void
 		{
-			if (!isError)
+			if (!isError && modules)
 			{
 				var isExist:Boolean;
 				var tmpModule:FlashModuleVO;
+				var tmpModuleFile:FileLocation;
 				modules.forEach(function(pathValue:String, index:int, arr:Array):void
 				{
+					// in case of osx grep call it returns only
+					// relative path. we need an extra work to 
+					// get a full path so we can use in next steps
+					if (ConstantsCoreVO.IS_MACOS)
+					{
+						tmpModuleFile = projectFolderLocation.fileBridge.resolvePath(pathValue);
+						pathValue = tmpModuleFile.fileBridge.nativePath;
+					}
+					
 					isExist = modulePaths.source.some(function(module:FlashModuleVO, index:int, arr:Array):Boolean
 					{
 						return (module.sourcePath.fileBridge.nativePath == pathValue);
@@ -235,11 +248,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 					if (!isExist)
 					{
 						tmpModule = new FlashModuleVO(
-							new FileLocation(pathValue)
+							tmpModuleFile || new FileLocation(pathValue)
 						);
 						modulesPendingToBeAdded.push(tmpModule);
 						
-						var tmpObject:Object = {sourcePath: IDEModel.getInstance().activeProject.folderLocation.fileBridge.getRelativePath(tmpModule.sourcePath, true), 
+						var tmpObject:Object = {sourcePath: getProjectRelativePath(tmpModule.sourcePath), 
 							isSelected: tmpModule.isSelected};
 						settings.push(
 							new BooleanSetting(tmpObject, "isSelected", tmpObject.sourcePath)

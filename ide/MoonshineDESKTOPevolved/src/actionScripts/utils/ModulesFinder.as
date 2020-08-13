@@ -22,10 +22,10 @@ package actionScripts.utils
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	
+	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IModulesFinder;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ProjectVO;
 
 	public class ModulesFinder extends ConsoleBuildPluginBase implements IModulesFinder
 	{
@@ -39,7 +39,7 @@ package actionScripts.utils
 			super.activate();
 		}
 		
-		public function search(project:ProjectVO, exitFn:Function):void
+		public function search(projectFolder:FileLocation, sourceFolder:FileLocation, exitFn:Function):void
 		{
 			onExitFunction = exitFn;
 			isError = false;
@@ -47,18 +47,18 @@ package actionScripts.utils
 			var command:String;
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				command = 'grep -ilR "<s Module " '+ 
-					project.folderLocation.fileBridge.getRelativePath(project.sourceFolder, true);
+				command = "/usr/bin/grep -ilR '<s:Module ' "+ 
+					projectFolder.fileBridge.getRelativePath(sourceFolder, true);
 			}
 			else
 			{
 				command = '"c:\\Windows\\System32\\findstr.exe" /s /i /m /c:"<s:Module " ';
-				command += '"'+ project.sourceFolder.fileBridge.nativePath +'\\*"';
+				command += '"'+ sourceFolder.fileBridge.nativePath +'\\*"';
 			}
 			
 			// run the command
 			this.start(
-				new <String>[command], null
+				new <String>[command], projectFolder
 			);
 		}
 		
