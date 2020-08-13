@@ -49,12 +49,12 @@ package actionScripts.utils
 			var command:String;
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				command = "/usr/bin/grep -ilR '<s:Module ' "+ 
+				command = "/usr/bin/grep -ilR '<s:Module ' '"+ 
 					(
 						(!sourceFolder || projectFolder.fileBridge.nativePath == sourceFolder.fileBridge.nativePath) ? 
 						projectFolder.fileBridge.nativePath : 
 						projectFolder.fileBridge.getRelativePath(sourceFolder, true)
-					);
+					) +"'";
 			}
 			else
 			{
