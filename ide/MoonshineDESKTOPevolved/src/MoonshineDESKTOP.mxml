@@ -32,6 +32,8 @@
 		<![CDATA[
 			import mx.events.FlexEvent;
 			
+			import spark.components.Alert;
+			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.LayoutEvent;
 			import actionScripts.factory.FileLocation;
@@ -179,6 +181,7 @@
 				}
 				
 				// continue to update check
+				updaterHelper.updater = updater;
 				updater.updateURL = "https://moonshine-ide.com/wp-content/uploads/updater.xml";
 				updater.initialize();
 			}
@@ -245,19 +248,19 @@
 	</fx:Script>
 	<fx:Declarations>
 		<nativeApplicationUpdater:NativeApplicationUpdater id="updater"
-														   initialized="updater_initializedHandler(event)"
-														   updateStatus="updater_updateStatusHandler(event)"
-														   error="updater_errorHandler(event)"
-														   downloadError="updater_errorHandler(event)"
-														   updateError="updater_errorHandler(event)"/>
+														   initialized="updaterHelper.updater_initializedHandler(event)"
+														   updateStatus="updaterHelper.updater_updateStatusHandler(event)"
+														   error="updaterHelper.updater_errorHandler(event)"
+														   downloadError="updaterHelper.updater_errorHandler(event)"
+														   updateError="updaterHelper.updater_errorHandler(event)"/>
+		<nativeApplicationUpdater:AutoUpdaterHelper id="updaterHelper"/>
 	</fx:Declarations>
 	<fx:Style source="/elements/style/style.css"/>
 	<fx:Style source="/assets/styles/InstallApacheFlexStyle.css"/>
 	<fx:Style source="/assets/styles/awaybuilder_defaults.css"/>
 
-	<fx:Script source="actionScripts/utils/AutoUpdater.as"/>
 	<containers:UpdaterView width="100%" height="100%"
-							includeInLayout="{isUpdater}" visible="{isUpdater}"
-							updater="{updater}" downlaoding="{downlaoding}" isAppStoreVersion="{ConstantsCoreVO.IS_APP_STORE_VERSION}"
-							UPDATEYES="btnYes_clickHandler(event)" UPDATENO="btnNo_clickHandler(event)" UPDATECANCEL="btnCancel_clickHandler(event)"/>
+							includeInLayout="{updaterHelper.isUpdater}" visible="{updaterHelper.isUpdater}"
+							updater="{updater}" downlaoding="{updaterHelper.downlaoding}" isAppStoreVersion="{ConstantsCoreVO.IS_APP_STORE_VERSION}"
+							UPDATEYES="updaterHelper.btnYes_clickHandler(event)" UPDATENO="updaterHelper.btnNo_clickHandler(event)" UPDATECANCEL="updaterHelper.btnCancel_clickHandler(event)"/>
 </s:WindowedApplication>
