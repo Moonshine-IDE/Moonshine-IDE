@@ -518,7 +518,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		override public function projectFileDelete(fw:FileWrapper):void
 		{
-			if (flashModuleOptions.modulePaths.length > 0)
+			if (flashModuleOptions)
 			{
 				flashModuleOptions.onRemoveModuleEvent(fw, this);
 			}

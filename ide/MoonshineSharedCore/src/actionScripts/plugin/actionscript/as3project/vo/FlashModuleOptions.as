@@ -48,6 +48,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var projectFolderLocation:FileLocation;
 		public var sourceFolderLocation:FileLocation;
 
+		private var model:IDEModel = IDEModel.getInstance();
 		private var moduleSelectionsUntilSave:Array;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var selectionIndex:Array;
@@ -144,6 +145,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (modulesPendingToBeAdded && modulesPendingToBeAdded.length > 0)
 			{
 				modulePaths = new ArrayCollection(modulePaths.source.concat(modulesPendingToBeAdded));
+				modulesPendingToBeAdded = [];
 			}
 			
 			// triggers during project configuration saves
@@ -280,13 +282,36 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function onModuleAddRequest():void
 		{
+			//model.fileCore.browseForOpen("Select MXML Module", onModuleBrowsed, null, ["*.mxml"]);
 			Alert.show("Feature in-progress.", "Note!");
 		}
 		
 		private function onModulesSearchRequest():void
 		{
-			modulesFinder ||= IDEModel.getInstance().flexCore.getModulesFinder();
+			modulesFinder ||= model.flexCore.getModulesFinder();
 			modulesFinder.search(projectFolderLocation, sourceFolderLocation, onModuleSearchProcessExit);
+		}
+		
+		private function onModuleBrowsed(file:Object):void
+		{
+			// test a few things before adding
+			// the selected file to module list
+			// 1. inside source-folder
+			// 2. is <s:Module file
+			
+			var sourcePath:String = sourceFolderLocation ? sourceFolderLocation.fileBridge.nativePath : projectFolderLocation.fileBridge.nativePath;
+			if (file.nativePath.indexOf(sourcePath + model.fileCore.separator) == -1)
+			{
+				Alert.show("Module file needs to be inside the target Project/Source directory.", "Error!");
+				return;
+			}
+			
+			var fileContent:String = model.fileCore.read() as String;
+			if (fileContent.search("<s:Module ") == -1)
+			{
+				Alert.show("Selected file is not a valid Module file.", "Error!");
+				return;
+			}
 		}
 		
 		private function onModuleSearchProcessExit(modules:Array, isError:Boolean=false):void
