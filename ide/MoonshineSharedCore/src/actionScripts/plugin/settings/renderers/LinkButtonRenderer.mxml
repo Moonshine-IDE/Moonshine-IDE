@@ -19,41 +19,36 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
 		  xmlns:s="library://ns.adobe.com/flex/spark"
-		  xmlns:mx="library://ns.adobe.com/flex/mx"
-		  width="100%"
-		  paddingLeft="15" paddingTop="8" paddingRight="15" paddingBottom="8"
-		  creationComplete="onCreationCompletes()">
-	
+		  autoLayout="true">
 	<fx:Script>
 		<![CDATA[
-			import mx.events.FlexEvent;
-			
+			import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
 			import actionScripts.plugin.settings.vo.LinkOnlySetting;
 			import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
-						
-			[Bindable] public var setting:LinkOnlySetting;
+
+			[Bindable] public var linkSettingVO:LinkOnlySettingVO;
 			
-			public var nameEventPair:Vector.<LinkOnlySettingVO>;
-			
-			private function onCreationCompletes():void
+			public var setting:LinkOnlySetting;
+
+			private function onLinkClicked(event:MouseEvent):void
 			{
-				var linkButton:LinkButtonRenderer;
-				for (var i:int; i < nameEventPair.length; i++)
+				if (!linkSettingVO.isBusy)
 				{
-					linkButton = new LinkButtonRenderer();
-					linkButton.linkSettingVO = nameEventPair[i];
-					linkButton.setting = setting;
-					linkBody.addElement(linkButton);
+					setting.dispatchEvent(new LinkOnlySettingsEvent(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, linkSettingVO));
 				}
 			}
 			
 		]]>
 	</fx:Script>
+
+	<s:Button label="{linkSettingVO.label}"
+			  styleName="linkButton"
+			  click="onLinkClicked(event)"
+			  alpha="{linkSettingVO.isBusy ? .3 : 1.0}"/>
 	
-	<s:HGroup id="linkBody" 
-			  width="100%" gap="8">
-		<mx:Spacer width="100%"/>
-	</s:HGroup>
-</s:VGroup>
+	<s:BusyIndicator width="20" height="20"
+					 horizontalCenter="0"
+					 visible="{linkSettingVO.isBusy}" includeInLayout="{linkSettingVO.isBusy}"/>
+</s:Group>

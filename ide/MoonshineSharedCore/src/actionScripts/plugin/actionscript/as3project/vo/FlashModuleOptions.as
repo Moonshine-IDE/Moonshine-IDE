@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import flash.events.Event;
-    
     import mx.collections.ArrayCollection;
     
     import spark.components.Alert;
@@ -30,6 +28,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.IModulesFinder;
     import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.LinkOnlySetting;
@@ -42,8 +41,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 	public class FlashModuleOptions 
 	{
-		private static const EVENT_ADD_MODULE:String = "addModuleEvent";
-		private static const EVENT_SEARCH_MODULES:String = "searchModulesEvent";
+		private static const ADD_MODULE:String = "Add Module";
+		private static const SEARCH_MODULES:String = "Search";
 		
 		public var modulePaths:ArrayCollection = new ArrayCollection;
 		public var projectFolderLocation:FileLocation;
@@ -56,6 +55,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		private var modulesFinder:IModulesFinder;
 		private var settings:Vector.<ISetting>;
 		private var modulesPendingToBeAdded:Array;
+		private var searchLinkOnlyVO:LinkOnlySettingVO;
 		
 		public function FlashModuleOptions(folder:FileLocation, sourceFolder:FileLocation)
 		{
@@ -70,12 +70,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 			modulesPendingToBeAdded = [];
 			settings = new Vector.<ISetting>();
 			
+			searchLinkOnlyVO = new LinkOnlySettingVO(SEARCH_MODULES);
 			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
-				new LinkOnlySettingVO("Add Module", EVENT_ADD_MODULE),
-				new LinkOnlySettingVO("Search", EVENT_SEARCH_MODULES)
+				new LinkOnlySettingVO(ADD_MODULE),
+				searchLinkOnlyVO
 			]);
-			linkOnlySetting.addEventListener(EVENT_ADD_MODULE, onModuleAddRequest, false, 0, true);
-			linkOnlySetting.addEventListener(EVENT_SEARCH_MODULES, onModulesSearchRequest, false, 0, true);
+			linkOnlySetting.addEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkOnlyItemClicked, false, 0, true);
 			settings.push(linkOnlySetting);
 			
 			settings.push(
@@ -104,8 +104,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			if (linkOnlySetting)
 			{
-				linkOnlySetting.removeEventListener(EVENT_ADD_MODULE, onModuleAddRequest);
-				linkOnlySetting.removeEventListener(EVENT_SEARCH_MODULES, onModulesSearchRequest);
+				linkOnlySetting.removeEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkOnlyItemClicked);
 			}
 			
 			if (modulesFinder)
@@ -113,6 +112,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				modulesFinder.dispose();
 			}
 			
+			searchLinkOnlyVO = null;
 			modulesFinder = null;
 			linkOnlySetting = null;
 			moduleSelectionsUntilSave = null;
@@ -265,12 +265,25 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return projectFolderLocation.fileBridge.getRelativePath(value, true);
 		}
 		
-		private function onModuleAddRequest(event:Event):void
+		private function onLinkOnlyItemClicked(event:LinkOnlySettingsEvent):void
 		{
-			
+			if (event.value.label == ADD_MODULE)
+			{
+				onModuleAddRequest();
+			}
+			else if (event.value.label == SEARCH_MODULES)
+			{
+				searchLinkOnlyVO.isBusy = true;
+				onModulesSearchRequest();
+			}
 		}
 		
-		private function onModulesSearchRequest(event:Event):void
+		private function onModuleAddRequest():void
+		{
+			Alert.show("Feature in-progress.", "Note!");
+		}
+		
+		private function onModulesSearchRequest():void
 		{
 			modulesFinder ||= IDEModel.getInstance().flexCore.getModulesFinder();
 			modulesFinder.search(projectFolderLocation, sourceFolderLocation, onModuleSearchProcessExit);
@@ -325,6 +338,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				Alert.show("No module found under:\n"+ projectFolderLocation.fileBridge.nativePath, "Note!");
 			}
+			
+			searchLinkOnlyVO.isBusy = false;
 		}
 		
 		private function updateModulesInSettings(modules:Array, isRemove:Boolean=false):void

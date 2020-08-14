@@ -54,7 +54,6 @@ package actionScripts.plugin.settings.vo
 		
 		public function dispose():void
 		{
-			if (rdr) rdr.dispose();
 		}
 	}
 }

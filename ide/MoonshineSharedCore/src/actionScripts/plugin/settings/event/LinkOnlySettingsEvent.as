@@ -16,27 +16,22 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.settings.vo
+package actionScripts.plugin.settings.event
 {
-	[Bindable] public class LinkOnlySettingVO
+	import flash.events.Event;
+	
+	import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
+	
+	public class LinkOnlySettingsEvent extends Event
 	{
-		public var label:String;
-		public var event:String;
-		
-		private var _isBusy:Boolean;
-		public function get isBusy():Boolean
-		{
-			return _isBusy;
-		}
-		public function set isBusy(value:Boolean):void
-		{
-			_isBusy = value;
-		}
+		public static const EVENT_LINK_CLICKED:String = "linkClickedEvent";
 
-		public function LinkOnlySettingVO(label:String, event:String=null)
+		public var value:LinkOnlySettingVO;
+
+		public function LinkOnlySettingsEvent(type:String, value:LinkOnlySettingVO)
 		{
-			this.label = label;
-			this.event = event;
+			super(type, false, false);
+			this.value = value;
 		}
 	}
 }
