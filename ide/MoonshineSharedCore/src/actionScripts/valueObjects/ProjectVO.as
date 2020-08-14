@@ -158,6 +158,10 @@ package actionScripts.valueObjects
 		{
 		}
 		
+		public function closedSettings():void
+		{
+		}
+		
 		public function getSettings():Vector.<SettingsWrapper>
 		{
 			return Vector.<SettingsWrapper>([]);

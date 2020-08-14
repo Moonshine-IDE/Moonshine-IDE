@@ -90,7 +90,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				tmpRelativePath = getProjectRelativePath(element.sourcePath);
 
-				var tmpObject:Object = {sourcePath: tmpRelativePath, fullPath:element.sourcePath.fileBridge.nativePath, isSelected: element.isSelected};
+				var tmpObject:Object = {sourcePath: tmpRelativePath, module:element, isSelected: element.isSelected};
 				settings.push(
 					new BooleanSetting(tmpObject, "isSelected", tmpRelativePath)
 				);
@@ -117,6 +117,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			linkOnlySetting = null;
 			moduleSelectionsUntilSave = null;
 			modulesPendingToBeAdded = null;
+			settings = null;
 		}
 		
 		public function parse(modules:XMLList):void 
@@ -152,7 +153,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 				{
 					modulePaths[index].isSelected = element.isSelected;
 				});
-				moduleSelectionsUntilSave = null;
 			}
 			
 			var modules:XML = <modules/>;
@@ -172,19 +172,45 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (fw.file.fileBridge.isDirectory)
 			{
 				var modulesToRemove:Array = [];
-				modulePaths.source.forEach(function(element:FlashModuleVO, index:int, arr:Array):void
+				if (moduleSelectionsUntilSave)
 				{
-					if (element.sourcePath.fileBridge.nativePath.indexOf(fw.file.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
+					moduleSelectionsUntilSave.forEach(function(element:Object, index:int, arr:Array):void
 					{
-						modulesToRemove.push(element);
-					}
-				});
+						if ((element.module as FlashModuleVO).sourcePath.fileBridge.nativePath.indexOf(fw.file.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
+						{
+							modulesToRemove.push({module: element.module, moduleSelectionsUntilSaveObj: element});
+						}
+					});
+				}
+				else
+				{
+					modulePaths.source.forEach(function(element:FlashModuleVO, index:int, arr:Array):void
+					{
+						if (element.sourcePath.fileBridge.nativePath.indexOf(fw.file.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
+						{
+							modulesToRemove.push({module: element, moduleSelectionsUntilSaveObj: null});
+						}
+					});
+				}
 				
 				for (var i:int; i < modulesToRemove.length; i++)
 				{
-					modulePaths.removeItem(modulesToRemove.shift());
-					i--;
+					modulePaths.removeItem(modulesToRemove[i].module);
+					if (moduleSelectionsUntilSave) 
+					{
+						moduleSelectionsUntilSave.splice(modulesToRemove.indexOf(modulesToRemove[i].moduleSelectionsUntilSaveObj), 1);
+						if (modulesPendingToBeAdded)
+						{
+							var pendingIndex:int =  modulesPendingToBeAdded.indexOf(modulesToRemove[i].module);
+							if (pendingIndex != -1) 
+							{
+								modulesPendingToBeAdded.splice(pendingIndex, 1);
+							}
+						}
+					}
 				}
+				
+				updateModulesInSettings([modulesToRemove], true);
 			}
 			else
 			{
@@ -197,6 +223,29 @@ package actionScripts.plugin.actionscript.as3project.vo
 					}
 					return false;
 				});
+				
+				if (moduleSelectionsUntilSave)
+				{
+					moduleSelectionsUntilSave.some(function(element:Object, index:int, arr:Array):Boolean
+					{
+						if ((element.module as FlashModuleVO).sourcePath.fileBridge.nativePath == fw.file.fileBridge.nativePath)
+						{
+							moduleSelectionsUntilSave.splice(index, 1);
+							if (modulesPendingToBeAdded)
+							{
+								var pendingIndex:int =  modulesPendingToBeAdded.indexOf(element.module);
+								if (pendingIndex != -1) 
+								{
+									modulesPendingToBeAdded.splice(pendingIndex, 1);
+								}
+							}
+							updateModulesInSettings([element.module], true);
+							return true;
+						}
+						return false;
+					});
+				}
+				
 			}
 			
 			project.saveSettings();
@@ -204,8 +253,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function onAddModuleEvent(event:ASModulesEvent):void
 		{
-			modulePaths.addItem(new FlashModuleVO(event.moduleFilePath));
+			var tmpModule:FlashModuleVO = new FlashModuleVO(event.moduleFilePath);
+			modulePaths.addItem(tmpModule);
 			event.project.saveSettings();
+			
+			updateModulesInSettings([tmpModule]);
 		}
 		
 		private function getProjectRelativePath(value:FileLocation):String
@@ -243,9 +295,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 						pathValue = tmpModuleFile.fileBridge.nativePath;
 					}
 					
-					isExist = moduleSelectionsUntilSave.some(function(module:Object, index:int, arr:Array):Boolean
+					isExist = moduleSelectionsUntilSave.some(function(moduleObj:Object, index:int, arr:Array):Boolean
 					{
-						return (module.fullPath == pathValue);
+						return ((moduleObj.module as FlashModuleVO).sourcePath.fileBridge.nativePath == pathValue);
 					});
 					
 					if (!isExist)
@@ -256,7 +308,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 						modulesPendingToBeAdded.push(tmpModule);
 						
 						var tmpObject:Object = {sourcePath: getProjectRelativePath(tmpModule.sourcePath), 
-							fullPath: tmpModule.sourcePath.fileBridge.nativePath,
+							module: tmpModule,
 							isSelected: tmpModule.isSelected};
 						settings.push(
 							new BooleanSetting(tmpObject, "isSelected", tmpObject.sourcePath)
@@ -273,6 +325,43 @@ package actionScripts.plugin.actionscript.as3project.vo
 			{
 				Alert.show("No module found under:\n"+ projectFolderLocation.fileBridge.nativePath, "Note!");
 			}
+		}
+		
+		private function updateModulesInSettings(modules:Array, isRemove:Boolean=false):void
+		{
+			if (!settings) return;
+			
+			if (isRemove)
+			{
+				modules.forEach(function(module:FlashModuleVO, index:int, arr:Array):void
+				{
+					for (var i:int; i < settings.length; i++)
+					{
+						if ((settings[i] is BooleanSetting) && ((settings[i] as BooleanSetting).provider.module == module))
+						{
+							settings.splice(i, 1);
+							break;
+						}
+					}
+				});
+			}
+			else
+			{
+				modules.forEach(function(module:FlashModuleVO, index:int, arr:Array):void
+				{
+					modulesPendingToBeAdded.push(module);
+					
+					var tmpObject:Object = {sourcePath: getProjectRelativePath(module.sourcePath), 
+						module: module,
+						isSelected: module.isSelected};
+					settings.push(
+						new BooleanSetting(tmpObject, "isSelected", tmpObject.sourcePath)
+					);
+					moduleSelectionsUntilSave.push(tmpObject);
+				});
+			}
+			
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
 		}
     }
 }

@@ -501,16 +501,17 @@ package actionScripts.plugin.actionscript.as3project.vo
 				// Write settings
 				model.flexCore.exportFlashDevelop(this, settingsFile);
 				//}
-				
-				// we need to clear footprint of some listeners
-				// in flash modules
-				flashModuleOptions.cancelledSettings();
 			}
 			
 			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
 		}
 		
 		override public function cancelledSettings():void
+		{
+			flashModuleOptions.cancelledSettings();
+		}
+		
+		override public function closedSettings():void
 		{
 			flashModuleOptions.cancelledSettings();
 		}

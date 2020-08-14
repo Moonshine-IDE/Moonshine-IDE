@@ -263,6 +263,10 @@ package actionScripts.plugin.project
 				{
 					// Save
 					pvo.saveSettings();
+					if (pvo is ProjectVO) 
+					{
+						(pvo as ProjectVO).closedSettings();
+					}
 				}
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SAVE_PROJECT_SETTINGS, pvo));
 			}
