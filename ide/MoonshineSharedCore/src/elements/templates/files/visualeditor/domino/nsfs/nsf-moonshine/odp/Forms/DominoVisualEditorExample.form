@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<note class="form" version="9.0" maintenanceversion="1.4" replicaid="4825808B00336E89" xmlns="http://www.lotus.com/dxl">
+  <noteinfo noteid="2116" unid="27C118EDE31483CB86256C6900644875" sequence="8">
+    <created>
+      <datetime>Mon Aug 10 15:31:35 GMT+0300 2020</datetime>
+    </created>
+    
+    <modified>
+      <datetime>Mon Aug 10 15:31:35 GMT+0300 2020</datetime>
+    </modified>
+    
+    <revised dst="true">
+      <datetime>Mon Aug 10 15:31:35 GMT+0300 2020</datetime>
+    </revised>
+    <lastaccessed>
+      <datetime>Mon Aug 10 15:31:35 GMT+0300 2020</datetime>
+    </lastaccessed>
+    <lastaccessed>
+      <datetime>Mon Aug 10 15:31:35 GMT+0300 2020</datetime>
+    </lastaccessed>
+    <addedtofile>
+      <datetime>Mon Aug 10 15:31:35 GMT+0300 2020</datetime>
+    </addedtofile>
+  </noteinfo>
+  <item name="$Info" sign="true">
+    <rawitemdata type="1">hhgBAIAAAAAAgAAAAQABAP///wAQAAAA</rawitemdata>
+  </item>
+  <item name="$Flags">
+    <text/>
+  </item>
+  <item name="$TITLE">
+    <text>DominoVisualEditorExample</text>
+  </item>
+  <item name="$Fields">
+    <textlist>
+      <text>test222</text>
+      <text>test188</text>
+      <text>test_center</text>
+    </textlist>
+  </item>
+  <item name="$Body" sign="true">
+    <richtext style="width:700px;height:700px;" class="flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop" direction="Horizontal" vdirection="Vertical">
+     
+    </richtext>
+  </item>
+</note>

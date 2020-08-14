@@ -69,6 +69,8 @@ package actionScripts.plugins.ui.editor
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.suportClasses.events.PropertyEditorChangeEvent;
+
+	import mx.controls.Alert;
 	
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
@@ -386,9 +388,13 @@ package actionScripts.plugins.ui.editor
 		private function getMxmlCode():String
 		{
 			var mxmlCode:XML = null;
-			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){
+
+			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){			
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
-			}else{
+			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0){
+				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
+			} 
+			else{
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toCode();
 			
 			}
@@ -423,7 +429,7 @@ package actionScripts.plugins.ui.editor
 						.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
 								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath)
 						.replace(/.mxml$|.xhtml$|.form$/, ".xml");
-
+			
 				return filePath;
 			}
 

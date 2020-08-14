@@ -80,6 +80,8 @@ package actionScripts.plugin.templating
 	import components.popup.newFile.NewMXMLFilePopup;
 	import components.popup.newFile.NewVisualEditorFilePopup;
 
+	import actionScripts.interfaces.IVisualEditorProjectVO
+
     /*
     Templating plugin
 
@@ -217,6 +219,12 @@ package actionScripts.plugin.templating
                 if (!file.isHidden && !file.isDirectory)
                     ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_DOMINO.addItem(file);
             }
+
+
+			files = templatesDir.resolvePath("files/visualeditor/domino/nsfs/nsf-moonshine/odp/Forms/DominoVisualEditorExample.form");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_DOMINO_FORM = files;
+
             files = templatesDir.resolvePath("files/visualeditor/primeFaces");
             list = files.fileBridge.getDirectoryListing();
             for each (file in list)
@@ -848,6 +856,7 @@ package actionScripts.plugin.templating
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				eventName = event.type.substr(24);
+				//Alert.show("eventName:"+eventName);
 				
 				// MXML type choose
 				switch (eventName)
@@ -874,6 +883,9 @@ package actionScripts.plugin.templating
 					case "Visual Editor PrimeFaces File":
 						openVisualEditorComponentTypeChoose(event);
 						break;
+					// case "Domino Visual Editor Form":
+					// 	openDominoVisualEditorFormTypeChoose(event);
+					// 	break;	
 					case "Visual Editor Domino File":
 						openVisualEditorComponentTypeChoose(event);
 						break;
@@ -1031,6 +1043,16 @@ package actionScripts.plugin.templating
             }
         }
 		
+		protected function openDominoVisualEditorFormTypeChoose(event:Event):void
+        {
+            var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
+				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
+				ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_DOMINO_FORM, (event as NewFileEvent).insideLocation
+				);
+			tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
+			
+			dispatcher.dispatchEvent(tmpOnDiskEvent);
+        }
 		protected function openOnDiskFormBuilderTypeChoose(event:Event):void
 		{
 			var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
@@ -1114,6 +1136,16 @@ package actionScripts.plugin.templating
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
 						newFilePopup.wrapperOfFolderLocation = creatingItemIn;
 						newFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+					}
+				}
+				var eventName:String = event.type.substr(24)
+				if(eventName){
+					if(eventName=="Domino Visual Editor Form"){
+						if(newFilePopup.wrapperBelongToProject){
+							(newFilePopup.wrapperBelongToProject as IVisualEditorProjectVO).isDominoVisualEditorProject = true;
+							//Alert.show("Domino Visual set to true");
+						}
+						
 					}
 				}
 				

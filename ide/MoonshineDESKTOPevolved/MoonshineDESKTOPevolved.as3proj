@@ -87,7 +87,6 @@
     <option testMovie="AIR"/>
     <option visualEditorExportPath=""/>
     <option testMovieCommand=""/>
-    <option showHiddenPaths="False"/>
     <option defaultBuildTargets=""/>
     <option isRoyale="False"/>
     <option isExportedToExistingSource="False"/>
@@ -97,8 +96,8 @@
     <option launchMethod="Simulator"/>
     <option urlToLaunch=""/>
     <option targetPlatform="1"/>
-    <option projectType="1"/>
     <option customUrlToLaunch=""/>
+    <option projectType="1"/>
     <deviceSimulator>null</deviceSimulator>
     <certAndroid>null</certAndroid>
     <certIos>null</certIos>

@@ -103,6 +103,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATES_VISUALEDITOR_FILES_FLEX:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES:ArrayCollection = new ArrayCollection();
 		public static var TEMPLATES_VISUALEDITOR_FILES_DOMINO:ArrayCollection = new ArrayCollection();
+		public static var TEMPLATES_VISUALEDITOR_FILES_DOMINO_FORM:FileLocation ;
 
 		
 		public static var TEMPLATE_ODP_VISUALEDITOR_FILE:FileLocation;
