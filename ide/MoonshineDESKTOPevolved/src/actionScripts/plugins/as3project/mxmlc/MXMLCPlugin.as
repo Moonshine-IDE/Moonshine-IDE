@@ -146,7 +146,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			
 			// else continue to return regular mxmlc path
-			return currentSDK.resolvePath("bin/mxmlc.bat").nativePath;
+			return getWindowsCompilerFile(currentSDK, "bin/mxmlc").nativePath;
 		}
 		
 		public function get defaultFlexSDK():String
@@ -668,7 +668,7 @@ package actionScripts.plugins.as3project.mxmlc
 				//If application is flexJS and sdk is flex sdk then error popup alert
 				var fcshFile:File = ConstantsCoreVO.IS_MACOS ?
                         currentSDK.resolvePath(fcshPath) :
-						currentSDK.resolvePath("bin/fcsh.bat");
+						getWindowsCompilerFile(currentSDK, "bin/fcsh");
 				if (fcshFile.exists)
 				{
 					Alert.show("Invalid SDK - Please configure a Apache Royale® SDK instead","Error!");
@@ -841,7 +841,8 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function compileFlexLibrary(pvo:AS3ProjectVO):void
 		{
-			var compcFile:File = (Settings.os == "win") ? currentSDK.resolvePath("bin/compc.bat") : currentSDK.resolvePath("bin/compc");
+			var compcFile:File;
+			compcFile = (Settings.os == "win") ? getWindowsCompilerFile(currentSDK, "bin/compc") : compcFile = currentSDK.resolvePath("bin/compc");
 			if (!compcFile.exists)
 			{
 				Alert.show("Invalid SDK - Please configure a Flex SDK instead.","Error!");

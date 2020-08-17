@@ -21,8 +21,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.utils.SDKUtils;
-    import actionScripts.utils.SerializeUtil;
-    import actionScripts.utils.TextUtil;
+	import actionScripts.utils.SerializeUtil;
+	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 
 	public class SWFOutputVO 
@@ -35,6 +35,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var path:FileLocation;
 		public var frameRate:Number = 24;
 		public var swfVersion:uint = 10;
+		public var swfVersionStrict:Number = 0;
 		public var swfMinorVersion:uint = 0;
 		public var width:int = 100;
 		public var height:int = 100;

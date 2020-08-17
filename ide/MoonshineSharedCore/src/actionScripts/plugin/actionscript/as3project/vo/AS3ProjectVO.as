@@ -646,7 +646,8 @@ package actionScripts.plugin.actionscript.as3project.vo
                             new IntSetting(swfOutput,	"width", 		"Width"),
                             new IntSetting(swfOutput,	"height",	 	"Height"),
                             new ColorSetting(swfOutput,	"background",	"Background color"),
-                            new IntSetting(swfOutput,	"swfVersion",	"Minimum player version")
+                            new IntSetting(swfOutput,	"swfVersion",	"Minimum player version"),
+							new StringSetting(swfOutput, "swfVersionStrict",	"Strict player version (manual)")
                         ])
                 ));
             }
