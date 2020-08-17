@@ -24,17 +24,18 @@ package actionScripts.plugin.actionscript.as3project.vo
     
     import actionScripts.events.ASModulesEvent;
     import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.SettingsEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.IModulesFinder;
     import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.actionscript.as3project.settings.ModuleListSetting;
+    import actionScripts.plugin.actionscript.as3project.settings.PathListItemVO;
     import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
-    import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.LinkOnlySetting;
     import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.utils.SerializeUtil;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.FlashModuleVO;
@@ -49,14 +50,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var sourceFolderLocation:FileLocation;
 
 		private var model:IDEModel = IDEModel.getInstance();
-		private var moduleSelectionsUntilSave:Array;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var selectionIndex:Array;
 		private var linkOnlySetting:LinkOnlySetting;
 		private var modulesFinder:IModulesFinder;
-		private var settings:Vector.<ISetting>;
-		private var modulesPendingToBeAdded:Array;
 		private var searchLinkOnlyVO:LinkOnlySettingVO;
+		private var moduleSettings:ModuleListSetting;
 		
 		public function FlashModuleOptions(folder:FileLocation, sourceFolder:FileLocation)
 		{
@@ -68,8 +66,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function getSettings():Vector.<ISetting>
 		{
-			modulesPendingToBeAdded = [];
-			settings = new Vector.<ISetting>();
+			var settings:Vector.<ISetting> = new Vector.<ISetting>();
 			
 			searchLinkOnlyVO = new LinkOnlySettingVO(SEARCH_MODULES);
 			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
@@ -80,23 +77,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 			settings.push(linkOnlySetting);
 			
 			settings.push(
-				new StaticLabelSetting("Select modules to compile during a project build.", 14, 0x686868)
+				new StaticLabelSetting("Select modules to compile during a project build.", 14, 0x686868),
+				moduleSettings = new ModuleListSetting(this, "modulePaths", "Modules Paths", projectFolderLocation, true, false, true)
 				);
-			
-			// for some strange reason doing registerClassAlias
-			// to FileLocation always returns wrong results.
-			// this should be doing for now
-			var tmpRelativePath:String;
-			moduleSelectionsUntilSave = modulePaths.source.map(function(element:FlashModuleVO, index:int, arr:Array):Object
-			{
-				tmpRelativePath = getProjectRelativePath(element.sourcePath);
-
-				var tmpObject:Object = {sourcePath: tmpRelativePath, module:element, isSelected: element.isSelected};
-				settings.push(
-					new BooleanSetting(tmpObject, "isSelected", tmpRelativePath)
-				);
-				return tmpObject;
-			});
 			
 			return settings;
 		}
@@ -113,12 +96,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 				modulesFinder.dispose();
 			}
 			
+			moduleSettings = null;
 			searchLinkOnlyVO = null;
 			modulesFinder = null;
 			linkOnlySetting = null;
-			moduleSelectionsUntilSave = null;
-			modulesPendingToBeAdded = null;
-			settings = null;
 		}
 		
 		public function parse(modules:XMLList):void 
@@ -142,21 +123,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function toXML():XML
 		{
-			if (modulesPendingToBeAdded && modulesPendingToBeAdded.length > 0)
-			{
-				modulePaths = new ArrayCollection(modulePaths.source.concat(modulesPendingToBeAdded));
-				modulesPendingToBeAdded = [];
-			}
-			
-			// triggers during project configuration saves
-			if (moduleSelectionsUntilSave)
-			{
-				moduleSelectionsUntilSave.forEach(function(element:Object, index:int, arr:Array):void
-				{
-					modulePaths[index].isSelected = element.isSelected;
-				});
-			}
-			
 			var modules:XML = <modules/>;
 			for each (var module:FlashModuleVO in modulePaths)
 			{
@@ -171,48 +137,21 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		public function onRemoveModuleEvent(fw:FileWrapper, project:AS3ProjectVO):void
 		{
+			var modulesToRemove:Array = [];
 			if (fw.file.fileBridge.isDirectory)
 			{
-				var modulesToRemove:Array = [];
-				if (moduleSelectionsUntilSave)
+				modulePaths.source.forEach(function(element:FlashModuleVO, index:int, arr:Array):void
 				{
-					moduleSelectionsUntilSave.forEach(function(element:Object, index:int, arr:Array):void
+					if (element.sourcePath.fileBridge.nativePath.indexOf(fw.file.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
 					{
-						if ((element.module as FlashModuleVO).sourcePath.fileBridge.nativePath.indexOf(fw.file.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
-						{
-							modulesToRemove.push({module: element.module, moduleSelectionsUntilSaveObj: element});
-						}
-					});
-				}
-				else
-				{
-					modulePaths.source.forEach(function(element:FlashModuleVO, index:int, arr:Array):void
-					{
-						if (element.sourcePath.fileBridge.nativePath.indexOf(fw.file.fileBridge.nativePath + fw.file.fileBridge.separator) != -1)
-						{
-							modulesToRemove.push({module: element, moduleSelectionsUntilSaveObj: null});
-						}
-					});
-				}
+						modulesToRemove.push(element);
+					}
+				});
 				
 				for (var i:int; i < modulesToRemove.length; i++)
 				{
-					modulePaths.removeItem(modulesToRemove[i].module);
-					if (moduleSelectionsUntilSave) 
-					{
-						moduleSelectionsUntilSave.splice(modulesToRemove.indexOf(modulesToRemove[i].moduleSelectionsUntilSaveObj), 1);
-						if (modulesPendingToBeAdded)
-						{
-							var pendingIndex:int =  modulesPendingToBeAdded.indexOf(modulesToRemove[i].module);
-							if (pendingIndex != -1) 
-							{
-								modulesPendingToBeAdded.splice(pendingIndex, 1);
-							}
-						}
-					}
+					modulePaths.removeItem(modulesToRemove[i]);
 				}
-				
-				updateModulesInSettings([modulesToRemove], true);
 			}
 			else
 			{
@@ -220,36 +159,15 @@ package actionScripts.plugin.actionscript.as3project.vo
 				{
 					if (element.sourcePath.fileBridge.nativePath == fw.file.fileBridge.nativePath)
 					{
+						modulesToRemove = [element];
 						modulePaths.removeItem(element);
 						return true;
 					}
 					return false;
 				});
-				
-				if (moduleSelectionsUntilSave)
-				{
-					moduleSelectionsUntilSave.some(function(element:Object, index:int, arr:Array):Boolean
-					{
-						if ((element.module as FlashModuleVO).sourcePath.fileBridge.nativePath == fw.file.fileBridge.nativePath)
-						{
-							moduleSelectionsUntilSave.splice(index, 1);
-							if (modulesPendingToBeAdded)
-							{
-								var pendingIndex:int =  modulesPendingToBeAdded.indexOf(element.module);
-								if (pendingIndex != -1) 
-								{
-									modulesPendingToBeAdded.splice(pendingIndex, 1);
-								}
-							}
-							updateModulesInSettings([element.module], true);
-							return true;
-						}
-						return false;
-					});
-				}
-				
 			}
 			
+			updateModulesInSettings(modulesToRemove, true);
 			project.saveSettings();
 		}
 		
@@ -282,8 +200,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function onModuleAddRequest():void
 		{
-			//model.fileCore.browseForOpen("Select MXML Module", onModuleBrowsed, null, ["*.mxml"]);
-			Alert.show("Feature in-progress.", "Note!");
+			model.fileCore.browseForOpen("Select MXML Module", onModuleBrowsed, null, ["*.mxml"]);
+			//Alert.show("Feature in-progress.", "Note!");
 		}
 		
 		private function onModulesSearchRequest():void
@@ -312,6 +230,10 @@ package actionScripts.plugin.actionscript.as3project.vo
 				Alert.show("Selected file is not a valid Module file.", "Error!");
 				return;
 			}
+			
+			moduleSettings.addModules([
+				new FlashModuleVO(new FileLocation(file.nativePath))
+			]);
 		}
 		
 		private function onModuleSearchProcessExit(modules:Array, isError:Boolean=false):void
@@ -322,6 +244,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				var tmpModule:FlashModuleVO;
 				var tmpModuleFile:FileLocation;
 				var newCount:int = 0;
+				var tmpModules:Array = [];
 				modules.forEach(function(pathValue:String, index:int, arr:Array):void
 				{
 					// in case of osx grep call it returns only
@@ -333,31 +256,30 @@ package actionScripts.plugin.actionscript.as3project.vo
 						pathValue = tmpModuleFile.fileBridge.nativePath;
 					}
 					
-					isExist = moduleSelectionsUntilSave.some(function(moduleObj:Object, index:int, arr:Array):Boolean
+					isExist = moduleSettings.paths.source.some(function(moduleObj:PathListItemVO, index:int, arr:Array):Boolean
 					{
-						return ((moduleObj.module as FlashModuleVO).sourcePath.fileBridge.nativePath == pathValue);
+						return (moduleObj.file.fileBridge.nativePath == pathValue);
 					});
 					
 					if (!isExist)
 					{
-						tmpModule = new FlashModuleVO(
-							tmpModuleFile || new FileLocation(pathValue)
+						tmpModule = new FlashModuleVO(tmpModuleFile || new FileLocation(pathValue));
+						modulePaths.addItem(tmpModule);
+						tmpModules.push(
+							tmpModule
 						);
-						modulesPendingToBeAdded.push(tmpModule);
-						
-						var tmpObject:Object = {sourcePath: getProjectRelativePath(tmpModule.sourcePath), 
-							module: tmpModule,
-							isSelected: tmpModule.isSelected};
-						settings.push(
-							new BooleanSetting(tmpObject, "isSelected", tmpObject.sourcePath)
-						);
-						moduleSelectionsUntilSave.push(tmpObject);
 						newCount++;
 					}
 				});
 				
-				Alert.show("Found "+ newCount +" new module(s) under:\n"+ projectFolderLocation.fileBridge.nativePath, "Note!");
-				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+				Alert.show("Added "+ newCount +" new module(s) under:\n"+ projectFolderLocation.fileBridge.nativePath, "Note!");
+				if (tmpModules.length > 0) 
+				{
+					moduleSettings.addModules(tmpModules);
+					
+					var tmpProject:AS3ProjectVO = UtilsCore.getProjectByPath(projectFolderLocation.fileBridge.nativePath) as AS3ProjectVO;
+					if (tmpProject) tmpProject.saveSettings();
+				}
 			}
 			else if (!isError)
 			{
@@ -369,39 +291,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function updateModulesInSettings(modules:Array, isRemove:Boolean=false):void
 		{
-			if (!settings) return;
-			
 			if (isRemove)
 			{
-				modules.forEach(function(module:FlashModuleVO, index:int, arr:Array):void
-				{
-					for (var i:int; i < settings.length; i++)
-					{
-						if ((settings[i] is BooleanSetting) && ((settings[i] as BooleanSetting).provider.module == module))
-						{
-							settings.splice(i, 1);
-							break;
-						}
-					}
-				});
+				moduleSettings.removeModules(modules);
 			}
 			else
 			{
-				modules.forEach(function(module:FlashModuleVO, index:int, arr:Array):void
-				{
-					modulesPendingToBeAdded.push(module);
-					
-					var tmpObject:Object = {sourcePath: getProjectRelativePath(module.sourcePath), 
-						module: module,
-						isSelected: module.isSelected};
-					settings.push(
-						new BooleanSetting(tmpObject, "isSelected", tmpObject.sourcePath)
-					);
-					moduleSelectionsUntilSave.push(tmpObject);
-				});
+				moduleSettings.addModules(modules);
 			}
-			
-			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
 		}
     }
 }

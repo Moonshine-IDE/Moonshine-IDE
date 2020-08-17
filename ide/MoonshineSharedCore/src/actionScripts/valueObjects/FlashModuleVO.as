@@ -25,7 +25,7 @@ package actionScripts.valueObjects
 	{
 		public var sourcePath:FileLocation;
 		
-		private var _isSelected:Boolean = true;
+		private var _isSelected:Boolean;
 		public function get isSelected():Boolean
 		{
 			return _isSelected;
@@ -35,9 +35,10 @@ package actionScripts.valueObjects
 			_isSelected = value;
 		}
 		
-		public function FlashModuleVO(path:FileLocation=null)
+		public function FlashModuleVO(path:FileLocation=null, selected:Boolean=true)
 		{
 			this.sourcePath = path;
+			this.isSelected = selected;
 		}
 	}
 }

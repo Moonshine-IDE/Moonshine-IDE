@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:settings="actionScripts.plugin.actionscript.as3project.settings.*"
+		  width="100%" gap="0" paddingTop="15" paddingBottom="5" paddingLeft="15" paddingRight="15"
+		  creationComplete="onCreationCompletes(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			
+			public static const NOT_SET_PATH_MESSAGE:String = "No value";
+		
+			[Bindable]
+			public var setting:ModuleListSetting;
+			
+			private var fileBrowsing:PathListItemVO;
+			private var isPresentFileBrowseIsLocale:Boolean = false;
+			private var model:IDEModel = IDEModel.getInstance();
+			
+			protected function init():void
+			{
+				// Add listeners
+				var factory:ClassFactory = new ClassFactory(ModulePathRenderer);
+				pathList.itemRenderer = factory;
+				pathList.dataProvider = setting.paths;
+				
+				pathList.addEventListener(ModulePathRenderer.EVENT_OPEN_FILE, openFile, false, 0, true);
+				pathList.addEventListener(ModulePathRenderer.EVENT_REMOVE_ITEM, removeItem, false, 0, true);
+			}
+			
+			protected function openFile(event:Event):void
+			{
+				fileBrowsing = event.target.data;
+				model.fileCore.browseForOpen(setting.label, fileSelect, fileCancel, null, fileBrowsing.file ? (fileBrowsing.file as FileLocation).fileBridge.nativePath : null);
+			}
+			
+			protected function fileSelect(fileDir:Object):void
+			{
+				var finalPath: String = (fileDir is FileLocation) ? (fileDir as FileLocation).fileBridge.nativePath : new FileLocation(fileDir.nativePath).fileBridge.nativePath;
+				fileBrowsing.file = new FileLocation(finalPath);
+				
+				// I dont' know what the heck it's not working in PKG
+				// if I write:
+				// filebrowsing.label = setting.getlabelFor(dir)
+				// thus a new label initiation and then submission
+				var tmpLabel: String = setting.getLabelFor(fileDir);
+				fileBrowsing.label = tmpLabel;
+				
+			}
+			
+			protected function fileCancel():void
+			{
+				fileBrowsing = null;
+			}
+			
+			protected function removeItem(event:Event):void
+			{
+				var idx:int = setting.paths.getItemIndex(event.target.data);
+				setting.paths.removeItemAt(idx);
+			}
+			
+			protected function addItem():void
+			{
+				// add new item & browse for it
+				var item:PathListItemVO = new PathListItemVO(null, null);
+				if (setting.relativeRoot)
+				{
+					//item.file = new FileLocation();
+					item.label = NOT_SET_PATH_MESSAGE;
+					/*item.file = new FileLocation(setting.relativeRoot.fileBridge.nativePath);
+					item.label = "/";*/
+				}
+				else
+				{
+					//item.file = new FileLocation();
+					item.label = NOT_SET_PATH_MESSAGE;
+				}
+				
+				setting.paths.addItem(item);
+			}
+		
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (setting.customMessage) addElement(setting.customMessage);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:DataGroup id="pathList"
+				 width="100%"
+				creationComplete="init()">
+		<s:layout>
+			<s:VerticalLayout gap="5" />
+		</s:layout>
+	</s:DataGroup>
+</s:VGroup>
