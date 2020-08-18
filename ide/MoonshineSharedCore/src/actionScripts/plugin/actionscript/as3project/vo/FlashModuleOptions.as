@@ -200,8 +200,14 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function onModuleAddRequest():void
 		{
-			model.fileCore.browseForOpen("Select MXML Module", onModuleBrowsed, null, ["*.mxml"]);
-			//Alert.show("Feature in-progress.", "Note!");
+			if (model.fileCore.nativePath.indexOf(projectFolderLocation.fileBridge.nativePath + projectFolderLocation.fileBridge.separator) != -1)
+			{
+				model.fileCore.browseForOpen("Select MXML Module", onModuleBrowsed, null, ["*.mxml"]);
+			}
+			else
+			{
+				model.fileCore.browseForOpen("Select MXML Module", onModuleBrowsed, null, ["*.mxml"], projectFolderLocation.fileBridge.nativePath);
+			}
 		}
 		
 		private function onModulesSearchRequest():void
@@ -215,12 +221,20 @@ package actionScripts.plugin.actionscript.as3project.vo
 			// test a few things before adding
 			// the selected file to module list
 			// 1. inside source-folder
-			// 2. is <s:Module file
+			// 2. not a duplicated item
+			// 3. is <s:Module file
 			
 			var sourcePath:String = sourceFolderLocation ? sourceFolderLocation.fileBridge.nativePath : projectFolderLocation.fileBridge.nativePath;
 			if (file.nativePath.indexOf(sourcePath + model.fileCore.separator) == -1)
 			{
 				Alert.show("Module file needs to be inside the target Project/Source directory.", "Error!");
+				return;
+			}
+			
+			var isPathAlreadyAdded:Boolean = moduleSettings.isPathExists(file.nativePath);
+			if (isPathAlreadyAdded)
+			{
+				Alert.show("Module file is already added.", "Note!");
 				return;
 			}
 			

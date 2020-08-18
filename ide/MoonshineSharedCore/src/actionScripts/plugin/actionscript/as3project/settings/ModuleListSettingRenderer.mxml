@@ -28,7 +28,8 @@
 		<![CDATA[
 			import mx.events.FlexEvent;
 			
-			import actionScripts.factory.FileLocation;
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.OpenFileEvent;
 			import actionScripts.locator.IDEModel;
 			
 			public static const NOT_SET_PATH_MESSAGE:String = "No value";
@@ -54,26 +55,9 @@
 			protected function openFile(event:Event):void
 			{
 				fileBrowsing = event.target.data;
-				model.fileCore.browseForOpen(setting.label, fileSelect, fileCancel, null, fileBrowsing.file ? (fileBrowsing.file as FileLocation).fileBridge.nativePath : null);
-			}
-			
-			protected function fileSelect(fileDir:Object):void
-			{
-				var finalPath: String = (fileDir is FileLocation) ? (fileDir as FileLocation).fileBridge.nativePath : new FileLocation(fileDir.nativePath).fileBridge.nativePath;
-				fileBrowsing.file = new FileLocation(finalPath);
-				
-				// I dont' know what the heck it's not working in PKG
-				// if I write:
-				// filebrowsing.label = setting.getlabelFor(dir)
-				// thus a new label initiation and then submission
-				var tmpLabel: String = setting.getLabelFor(fileDir);
-				fileBrowsing.label = tmpLabel;
-				
-			}
-			
-			protected function fileCancel():void
-			{
-				fileBrowsing = null;
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [fileBrowsing.file])
+				);
 			}
 			
 			protected function removeItem(event:Event):void

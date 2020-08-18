@@ -155,6 +155,16 @@ package actionScripts.plugin.actionscript.as3project.settings
 			});
 		}
 		
+		public function isPathExists(modulePath:String):Boolean
+		{
+			for each (var item:PathListItemVO in copiedPaths)
+			{
+				if (item.file.fileBridge.nativePath == modulePath)
+					return true;
+			}
+			return false;
+		}
+		
 		public function removeModules(modules:Array):void
 		{
 			modules.forEach(function(module:FlashModuleVO, index:int, arr:Array):void
