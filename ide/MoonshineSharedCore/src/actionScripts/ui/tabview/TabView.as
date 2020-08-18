@@ -50,10 +50,12 @@ package actionScripts.ui.tabview
 		private var tabContainer:Canvas;
 		private var itemContainer:Canvas;
 		private var shadow:UIComponent;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
         private var hamburgerMenuTabs:HamburgerMenuTabs;
 		private var _model:TabsModel;
 		
+		private var lastSelectedIndex:int = -1;
 		private var tabLookup:Dictionary = new Dictionary(true); // child:tab
 		
 		private var tabSizeDefault:int = 200;
@@ -73,6 +75,7 @@ package actionScripts.ui.tabview
 			if (itemContainer.numChildren == 0) return;
 			//if (_selectedIndex == value) return;
 			if (value < 0) value = 0;
+			lastSelectedIndex = _selectedIndex;
 			_selectedIndex = value;
 			
 			// Explicitly set new, so no automagic needed.
@@ -102,7 +105,7 @@ package actionScripts.ui.tabview
 					child.visible = true;
 					UIComponent(child).setFocus();
 					IDEModel.getInstance().activeEditor = child as IContentWindow;
-					GlobalEventDispatcher.getInstance().dispatchEvent(new TabEvent(TabEvent.EVENT_TAB_SELECT, child));
+					dispatcher.dispatchEvent(new TabEvent(TabEvent.EVENT_TAB_SELECT, child));
 				} 
 				else 
 				{
@@ -111,6 +114,7 @@ package actionScripts.ui.tabview
 			}
 			
 			invalidateLayoutTabs();
+			trace(selectedIndex);
 		}
 
 		public function get model():TabsModel
@@ -124,6 +128,30 @@ package actionScripts.ui.tabview
 
 			_model = new TabsModel();
 			addEventListener(ResizeEvent.RESIZE, handleResize);
+			
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_NAVIGATE_NEXT_PREVIOUS_HOTKEYS, onNextPreviousTabNavigate, false, 0, true);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_NAVIGATE_EDITORS_LIST_HOTKEYS, onTabListNavigate, false, 0, true);
+		}
+		
+		private function onNextPreviousTabNavigate(event:Event):void
+		{
+			if (itemContainer.numChildren <= 1) return;
+			
+			if (lastSelectedIndex == selectedIndex) 
+			{
+				lastSelectedIndex = selectedIndex + 1;
+			}
+			else if (lastSelectedIndex > (itemContainer.numChildren - 1))
+			{
+				lastSelectedIndex = itemContainer.numChildren - 1;
+			}
+			
+			selectedIndex = lastSelectedIndex;
+		}
+		
+		private function onTabListNavigate(event:Event):void
+		{
+			
 		}
 
 		public function setSelectedTab(editor:DisplayObject):void

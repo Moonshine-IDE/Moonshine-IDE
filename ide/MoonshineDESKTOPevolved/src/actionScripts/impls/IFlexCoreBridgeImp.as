@@ -117,6 +117,7 @@ package actionScripts.impls
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.SHClassTest;
@@ -355,6 +356,13 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','PROBLEMS_VIEW'), null, null, ProblemsPlugin.EVENT_PROBLEMS),
 					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], DebugAdapterPlugin.EVENT_SHOW_HIDE_DEBUG_VIEW),
 					new MenuItem(resourceManager.getString('resources','HOME'), null, null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
+					new MenuItem(null), //separator
+					new MenuItem(resourceManager.getString('resources','NAVIGATE_NEXT_PREVIOUS'), null, null, TabEvent.EVENT_TAB_NAVIGATE_NEXT_PREVIOUS_HOTKEYS,
+						"\t", [Keyboard.CONTROL],
+						"\t", [Keyboard.CONTROL]),
+					new MenuItem(resourceManager.getString('resources','NAVIGATE_EDITORS_LIST'), null, null, TabEvent.EVENT_TAB_NAVIGATE_EDITORS_LIST_HOTKEYS,
+						"\t", [Keyboard.CONTROL, Keyboard.SHIFT],
+						"\t", [Keyboard.CONTROL], Keyboard.SHIFT),
 					new MenuItem(null), //separator
 					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),
 					new MenuItem(resourceManager.getString('resources','WORKSPACE_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], SymbolsPlugin.EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW),
