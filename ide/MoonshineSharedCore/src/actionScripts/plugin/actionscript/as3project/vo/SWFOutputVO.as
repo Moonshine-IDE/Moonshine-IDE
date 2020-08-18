@@ -35,11 +35,23 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var path:FileLocation;
 		public var frameRate:Number = 24;
 		public var swfVersion:uint = 10;
-		public var swfVersionStrict:Number = 0;
 		public var swfMinorVersion:uint = 0;
 		public var width:int = 100;
 		public var height:int = 100;
 		public var platform:String;
+		
+		private var _swfVersionStrict:Number = 0;
+		public function get swfVersionStrict():Number
+		{
+			return _swfVersionStrict;
+		}
+		public function set swfVersionStrict(value:Number):void
+		{
+			if (!isNaN(value))
+			{
+				_swfVersionStrict = value;
+			}
+		}
 		
 		// TODO What is this? It's present as <movie input="" /> in FD .as3proj
 		/** Not sure what this is */
