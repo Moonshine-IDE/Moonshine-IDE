@@ -208,6 +208,13 @@ package actionScripts.ui.tabview
 			editorsListMenu.addEventListener(MenuEvent.MENU_HIDE, onEditorsListMenuClosed, false, 0, true);
 		}
 		
+		private function removeEditorsListMenu():void
+		{
+			editorsListMenu.hide();
+			editorsListMenu.removeEventListener(MenuEvent.MENU_HIDE, onEditorsListMenuClosed);
+			editorsListMenu = null;
+		}
+		
 		private function onKeysUp(event:KeyboardEvent):void
 		{
 			if (event.keyCode == Keyboard.CONTROL || event.keyCode == Keyboard.SHIFT)
@@ -215,10 +222,9 @@ package actionScripts.ui.tabview
 				if ((multiKeys.length == 0) || multiKeys[0] != event.keyCode) multiKeys.push(event.keyCode);
 				if (multiKeys.length == 2)
 				{
-					editorsListMenu.hide();
 					stage.removeEventListener(KeyboardEvent.KEY_UP, onKeysUp);
+					removeEditorsListMenu();
 					multiKeys = null;
-					editorsListMenu = null;
 				}
 			}
 		}
