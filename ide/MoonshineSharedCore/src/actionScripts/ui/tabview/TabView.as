@@ -20,11 +20,15 @@ package actionScripts.ui.tabview
 {
     import flash.display.DisplayObject;
     import flash.events.Event;
+    import flash.events.KeyboardEvent;
     import flash.geom.Matrix;
+    import flash.ui.Keyboard;
     import flash.utils.Dictionary;
     
     import mx.containers.Canvas;
+    import mx.controls.Menu;
     import mx.core.UIComponent;
+    import mx.events.MenuEvent;
     import mx.events.ResizeEvent;
     
     import spark.events.IndexChangeEvent;
@@ -33,6 +37,7 @@ package actionScripts.ui.tabview
     import actionScripts.locator.IDEModel;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IFileContentWindow;
+    import actionScripts.ui.ScrollableMenu;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.utils.UtilsCore;
@@ -57,6 +62,8 @@ package actionScripts.ui.tabview
 		
 		private var lastSelectedIndex:int = -1;
 		private var tabLookup:Dictionary = new Dictionary(true); // child:tab
+		private var editorsListMenu:ScrollableMenu;
+		private var multiKeys:Array;
 		
 		private var tabSizeDefault:int = 200;
 		private var tabSizeMin:int = 100;
@@ -114,7 +121,6 @@ package actionScripts.ui.tabview
 			}
 			
 			invalidateLayoutTabs();
-			trace(selectedIndex);
 		}
 
 		public function get model():TabsModel
@@ -135,6 +141,12 @@ package actionScripts.ui.tabview
 		
 		private function onNextPreviousTabNavigate(event:Event):void
 		{
+			if (editorsListMenu)
+			{
+				updateEditorsListMenuOnTabKey();
+				return;
+			}
+			
 			if (itemContainer.numChildren <= 1) return;
 			
 			if (lastSelectedIndex == selectedIndex) 
@@ -151,7 +163,82 @@ package actionScripts.ui.tabview
 		
 		private function onTabListNavigate(event:Event):void
 		{
+			if (!multiKeys)
+			{
+				multiKeys = [];
+				stage.addEventListener(KeyboardEvent.KEY_UP, onKeysUp, false, 0, true); // need to handle this our own
+				addEditorsListMenu();
+			}
+			else
+			{
+				updateEditorsListMenuOnTabKey();
+			}
+		}
+		
+		private function addEditorsListMenu():void
+		{
+			var tmpCollection:Array = [];
+			var tab:TabViewTab;
+			var tabData:DisplayObject;
+			for (var i:int = 0; i < tabContainer.numChildren; i++)
+			{
+				tab = tabContainer.getChildAt(i) as TabViewTab;
+				tabData = tab.data as DisplayObject;
+				if (!tab.selected && tabData)
+				{
+					tmpCollection.push(new HamburgerMenuTabsVO(tab["label"], tabData, i));
+				}
+			}
+			if (_model.hamburgerTabs.length > 0)
+			{
+				tmpCollection = tmpCollection.concat(_model.hamburgerTabs.source);
+			}
 			
+			editorsListMenu = ScrollableMenu.createMenu(this, tmpCollection, false);
+			editorsListMenu.labelField = "label";
+			editorsListMenu.rowCount = 1;
+			editorsListMenu.width = width * .6;
+			editorsListMenu.show(tabContainer.x + ((width - editorsListMenu.width) / 2), 25);
+			editorsListMenu.styleName = "multiLineList";
+			editorsListMenu.callLater(function():void
+			{
+				editorsListMenu.selectedIndex = 0;
+			});
+			
+			editorsListMenu.addEventListener(MenuEvent.MENU_HIDE, onEditorsListMenuClosed, false, 0, true);
+		}
+		
+		private function onKeysUp(event:KeyboardEvent):void
+		{
+			if (event.keyCode == Keyboard.CONTROL || event.keyCode == Keyboard.SHIFT)
+			{
+				if ((multiKeys.length == 0) || multiKeys[0] != event.keyCode) multiKeys.push(event.keyCode);
+				if (multiKeys.length == 2)
+				{
+					editorsListMenu.hide();
+					stage.removeEventListener(KeyboardEvent.KEY_UP, onKeysUp);
+					multiKeys = null;
+					editorsListMenu = null;
+				}
+			}
+		}
+		
+		private function updateEditorsListMenuOnTabKey():void
+		{
+			editorsListMenu.selectedIndex++;
+			editorsListMenu.selectedItem = editorsListMenu.dataProvider[editorsListMenu.selectedIndex];
+		}
+		
+		private function onEditorsListMenuClosed(event:MenuEvent):void
+		{
+			if ((editorsListMenu.selectedItemBasedOnSelectedIndex as HamburgerMenuTabsVO).visibleIndex != -1)
+			{
+				selectedIndex = (editorsListMenu.selectedItemBasedOnSelectedIndex as HamburgerMenuTabsVO).visibleIndex;
+			}
+			else
+			{
+				addTabFromHamburgerMenu(editorsListMenu.selectedItemBasedOnSelectedIndex as HamburgerMenuTabsVO);
+			}
 		}
 
 		public function setSelectedTab(editor:DisplayObject):void

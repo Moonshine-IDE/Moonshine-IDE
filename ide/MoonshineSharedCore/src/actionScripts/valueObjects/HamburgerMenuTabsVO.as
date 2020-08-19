@@ -25,11 +25,13 @@ package actionScripts.valueObjects
         [Bindable]
         public var label:String;
         public var tabData:DisplayObject;
+		public var visibleIndex:int;
 
-        public function HamburgerMenuTabsVO(label:String, tabData:DisplayObject):void
+        public function HamburgerMenuTabsVO(label:String, tabData:DisplayObject, visibleIndex:int=-1):void
         {
             this.label = label;
             this.tabData = tabData;
+			this.visibleIndex = visibleIndex;
         }
     }
 }
