@@ -59,6 +59,10 @@ export async function createPathMappingForActiveTextEditor(loadedScriptsProvider
 		await showLaunchConfig(launchConfigReference.workspaceFolder);
 
 		vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
+
+	} else {
+		const vscFilename = editor.document.uri.path.split('/').pop()!;
+		vscode.window.showWarningMessage(`Firefox hasn't loaded any file named "${vscFilename}"`);
 	}
 }
 
@@ -83,28 +87,31 @@ export async function createPathMappingForPath(
 		return;
 	}
 
+	const pathMapping = await createPathMapping(vscPath, ffUrls, debugSession.workspaceFolder);
+
+	if (!pathMapping) {
+		return;
+	}
+
 	const message =
 		"This file's path isn't mapped to any url that was loaded by Firefox. " +
-		"Perhaps your debug configuration needs a pathMapping for this file - " +
-		"do you want to let the Path Mapping Wizard try to create one for you?";
+		"Either this file hasn't been loaded by Firefox yet or " +
+		"your debug configuration needs a pathMapping for this file - " +
+		"do you think the file has already been loaded and want to let the " +
+		"Path Mapping Wizard try to create a pathMapping for you?";
 	const yesOrNo = await vscode.window.showInformationMessage(message, 'Yes', 'No');
 
 	if (yesOrNo === 'Yes') {
 
-		const pathMapping = await createPathMapping(vscPath, ffUrls, debugSession.workspaceFolder);
+		addPathMappingToLaunchConfig(launchConfigReference, pathMapping.url, pathMapping.path);
 
-		if (pathMapping) {
+		await showLaunchConfig(launchConfigReference.workspaceFolder);
 
-			addPathMappingToLaunchConfig(launchConfigReference, pathMapping.url, pathMapping.path);
-
-			await showLaunchConfig(launchConfigReference.workspaceFolder);
-
-			vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
-		}
+		vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
 	}
 }
 
-export async function createPathMapping(
+async function createPathMapping(
 	vscPath: string,
 	ffUrls: string[],
 	workspaceFolder?: vscode.WorkspaceFolder
@@ -162,10 +169,6 @@ function findBestMatch(vscPath: string, ffUrls: URL[]): URL | undefined {
 			bestMatch = ffUrl;
 			bestScore = score;
 		}
-	}
-
-	if (!bestMatch) {
-		vscode.window.showWarningMessage(`Firefox hasn't loaded any file named "${vscFilename}"`);
 	}
 
 	return bestMatch;

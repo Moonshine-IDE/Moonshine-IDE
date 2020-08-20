@@ -85,19 +85,22 @@ describe('Debug console: The debugger', function() {
 		util.evaluateDelayed(dc, 'foo.bar', 0);
 		let outputEvent = <DebugProtocol.OutputEvent> await dc.waitForEvent('output');
 
-		assert.equal(outputEvent.body.category, 'stderr');
+		let category = outputEvent.body.category;
+		assert.equal((category === 'stdout') || (category === 'stderr'), true);
 		assert.equal(outputEvent.body.output.trim(), 'ReferenceError: foo is not defined');
 
 		util.evaluateDelayed(dc, 'eval("foo(")', 0);
 		outputEvent = <DebugProtocol.OutputEvent> await dc.waitForEvent('output');
 
-		assert.equal(outputEvent.body.category, 'stderr');
+		category = outputEvent.body.category;
+		assert.equal((category === 'stdout') || (category === 'stderr'), true);
 		assert.equal(outputEvent.body.output.trim(), 'SyntaxError: expected expression, got end of script');
 
 		util.evaluateDelayed(dc, 'throw new Error("Something went wrong")', 0);
 		outputEvent = <DebugProtocol.OutputEvent> await dc.waitForEvent('output');
 
-		assert.equal(outputEvent.body.category, 'stderr');
+		category = outputEvent.body.category;
+		assert.equal((category === 'stdout') || (category === 'stderr'), true);
 		assert.equal(outputEvent.body.output.trim(), 'Error: Something went wrong');
 	});
 

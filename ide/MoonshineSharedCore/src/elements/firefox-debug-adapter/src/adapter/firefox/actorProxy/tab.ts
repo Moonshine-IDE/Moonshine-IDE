@@ -87,7 +87,7 @@ export class TabActorProxy extends EventEmitter implements ActorProxy {
 
 	public receiveResponse(response: FirefoxDebugProtocol.Response): void {
 
-		if (response['type'] === 'tabAttached') {
+		if (response['threadActor']) {
 
 			log.debug(`Attached to tab ${this.name}`);
 			let tabAttachedResponse = <FirefoxDebugProtocol.TabAttachedResponse>response;

@@ -6,8 +6,7 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 export interface LaunchConfiguration extends CommonConfiguration, DebugProtocol.LaunchRequestArguments {
 	request: 'launch';
 	file?: string;
-	firefoxExecutable?: string;
-	profileDir?: string;
+	tmpDir?: string;
 	profile?: string;
 	keepProfileChanges?: boolean;
 	preferences?: { [key: string]: boolean | number | string | null };
@@ -33,8 +32,11 @@ export interface CommonConfiguration {
 	request: 'launch' | 'attach';
 	url?: string;
 	webRoot?: string;
+	firefoxExecutable?: string;
+	profileDir?: string;
 	reloadOnAttach?: boolean;
 	reloadOnChange?: ReloadConfiguration;
+	tabFilter?: TabFilterConfiguration;
 	clearConsoleOnReload?: boolean;
 	pathMappings?: { url: string, path: string | null }[];
 	skipFiles?: string[];
@@ -52,6 +54,13 @@ export interface DetailedReloadConfiguration {
 	watch: string | string[];
 	ignore?: string | string[];
 	debounce?: number | boolean;
+}
+
+export type TabFilterConfiguration = string | string[] | DetailedTabFilterConfiguration;
+
+export interface DetailedTabFilterConfiguration {
+	include?: string | string[];
+	exclude?: string | string[];
 }
 
 export declare type LogLevel = 'Debug' | 'Info' | 'Warn' | 'Error';
