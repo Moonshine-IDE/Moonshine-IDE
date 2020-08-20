@@ -3,6 +3,7 @@
  * Copyright (C) Microsoft Corporation. All rights reserved.
  *--------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.defaultTargetFilter = exports.getTargetFilter = exports.DebounceHelper = exports.getBrowserPath = void 0;
 const path = require("path");
 const vscode_chrome_debug_core_1 = require("vscode-chrome-debug-core");
 const WIN_APPDATA = process.env.LOCALAPPDATA || '/';
