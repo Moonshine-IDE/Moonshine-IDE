@@ -46,6 +46,10 @@
         import actionScripts.utils.UtilsCore;
         import actionScripts.valueObjects.ConstantsCoreVO;
         import actionScripts.valueObjects.FileWrapper;
+        import actionScripts.valueObjects.ProjectVO;
+        import actionScripts.valueObjects.ProjectReferenceVO;
+
+        import actionScripts.interfaces.IVisualEditorProjectVO;
 
         [Bindable]
         public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
@@ -128,16 +132,25 @@
                 super.closeThis();
             }
         }
+        private var dominoToProjectFileWrapper:FileWrapper=null;
+        
 
         protected function parseFolders():void
         {
             tree.expandItem(wrapperBelongToProject.projectFolder, true);
+                
+           
 
             // 1. expand all items to our fileWrapper object
             // 2. select the fileWrapper object
             // 3. scroll to the fileWrapper object
             UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
             UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
+            var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+            if(project.isDominoVisualEditorProject)
+            {
+                wrapperOfFolderLocation=UtilsCore.findDominoFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath+"/nsfs/nsf-moonshine/odp/Forms");
+            }
             tree.callLater(function ():void
             {
                 var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
@@ -147,7 +160,8 @@
                 }
 
                 // selection
-                tree.selectedItem = wrapperOfFolderLocation;
+               tree.selectedItem = wrapperOfFolderLocation;
+               
                 // scroll-to
                 tree.callLater(function ():void
                 {
@@ -241,13 +255,32 @@
             if(wrapperBelongToProject)
             {
                 txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-                        Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
-                        wrapperOfFolderLocation.nativePath);
+                Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+                wrapperOfFolderLocation.nativePath);
+                var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+                if(project.isDominoVisualEditorProject)
+                {
+                    if(!tree.selectedItem){
+                        if(!UtilsCore.endsWith(txtDestination.text,"Forms")&&txtDestination.text.indexOf(".")<0){
+                            txtDestination.text = txtDestination.text + ".nsfs.nsf-moonshine.odp.Forms"
+                        }
+
+                    }
+                   
+                   
+                }
+               
+                //Alert.show(":"+txtDestination.text);        
                 txtFileName.setFocus();
             }
 
             tree.callLater(parseFolders);
             GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
+        }
+
+        protected function dominoDefaultSetting():void
+        {
+            var project:ProjectVO;
         }
         ]]>
 	</fx:Script>
@@ -270,7 +303,8 @@
                                  doubleClickEnabled="true"
                                  labelField="name"
                                  itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
-                                 itemClick="onTreeItemClicked(event)"/>
+                                 itemClick="onTreeItemClicked(event)"
+                                 creationComplete="dominoDefaultSetting()"/>
 	</s:VGroup>
 	<s:VGroup width="100%">
 		<s:Label id="lblName" text="Name:"/>

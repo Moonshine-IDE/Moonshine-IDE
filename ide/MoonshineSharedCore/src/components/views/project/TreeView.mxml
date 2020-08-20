@@ -127,7 +127,10 @@
 				var dataSort:Sort = new Sort();
 				dataSort.fields = [dataSortField];
 				model.selectedprojectFolders.sort = dataSort;
+				
 				model.selectedprojectFolders.refresh();
+
+				
 			}
 			
 			public function sortChildren(wrapper:FileWrapper):void
