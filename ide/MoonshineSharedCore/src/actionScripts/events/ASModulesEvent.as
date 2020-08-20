@@ -16,27 +16,27 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.settings.vo
+package actionScripts.events
 {
-	[Bindable] public class LinkOnlySettingVO
-	{
-		public var label:String;
-		public var event:String;
-		
-		private var _isBusy:Boolean;
-		public function get isBusy():Boolean
-		{
-			return _isBusy;
-		}
-		public function set isBusy(value:Boolean):void
-		{
-			_isBusy = value;
-		}
+	import flash.events.Event;
+	
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
-		public function LinkOnlySettingVO(label:String, event:String=null)
+	public class ASModulesEvent extends Event
+	{
+		public static const EVENT_ADD_MODULE:String = "addModuleEvent";
+		public static const EVENT_REMOVE_MODULE:String = "removeModuleEvent";
+
+		public var moduleFilePath:FileLocation;
+		public var project:AS3ProjectVO;
+
+		public function ASModulesEvent(type:String, moduleFilePath:FileLocation, project:AS3ProjectVO)
 		{
-			this.label = label;
-			this.event = event;
+			super(type, false, true);
+			
+			this.moduleFilePath = moduleFilePath;
+			this.project = project;
 		}
 	}
 }

@@ -16,27 +16,13 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.settings.vo
+package actionScripts.interfaces
 {
-	[Bindable] public class LinkOnlySettingVO
-	{
-		public var label:String;
-		public var event:String;
-		
-		private var _isBusy:Boolean;
-		public function get isBusy():Boolean
-		{
-			return _isBusy;
-		}
-		public function set isBusy(value:Boolean):void
-		{
-			_isBusy = value;
-		}
+	import actionScripts.factory.FileLocation;
 
-		public function LinkOnlySettingVO(label:String, event:String=null)
-		{
-			this.label = label;
-			this.event = event;
-		}
+	public interface IModulesFinder
+	{
+		function dispose():void;
+		function search(projectFolder:FileLocation, sourceFolder:FileLocation, exitFn:Function):void;
 	}
 }

@@ -88,7 +88,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
 	
-	import org.as3commons.asblocks.utils.FileUtil;
 	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.events.DebugActionEvent;
@@ -102,9 +101,12 @@ package actionScripts.plugins.as3project.mxmlc
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.mxmlc'); }
 		
 		public var incrementalCompile:Boolean = true;
+		
 		protected var runAfterBuild:Boolean;
 		protected var debugAfterBuild:Boolean;
 		protected var release:Boolean;
+		protected var currentProject:ProjectVO;
+		
 		private var fcshPath:String = "bin/fcsh";
 		private var cmdFile:File;
 		private var _defaultFlexSDK:String;
@@ -115,15 +117,12 @@ package actionScripts.plugins.as3project.mxmlc
 		private var javaPathSetting:PathSetting;
 		private var adtProcess:NativeProcess
 		private var adtProcessInfo:NativeProcessStartupInfo;
-		
 		private var lastTarget:File;
 		private var targets:Dictionary;
 		private var isProjectHasInvalidPaths:Boolean;
-		
 		private var currentSDK:File;
 		
 		/** Project currently under compilation */
-		private var currentProject:ProjectVO;
 		private var queue:Vector.<String> = new Vector.<String>();
 
 		private var	tempObj:Object;
@@ -390,7 +389,7 @@ package actionScripts.plugins.as3project.mxmlc
 			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin", thisSettings));
 		}
 		
-		private function buildAndRun(e:Event):void
+		protected function buildAndRun(e:Event):void
 		{
 			// re-check in case of debug call and its already running
 			if (e.type == ActionScriptBuildEvent.BUILD_AND_DEBUG && DebugHighlightManager.IS_DEBUGGER_CONNECTED)
@@ -416,7 +415,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 		}
 		
-		private function buildRelease(e:Event):void
+		protected function buildRelease(e:Event):void
 		{
 			SWFLauncherPlugin.RUN_AS_DEBUGGER = false;
 			build(e, false, true);
@@ -437,7 +436,7 @@ package actionScripts.plugins.as3project.mxmlc
 			model.noSDKNotifier.removeEventListener(NoSDKNotifier.SDK_SAVE_CANCELLED, sdkSelectionCancelled);
 		}
 		
-		private function build(e:Event, runAfterBuild:Boolean=false, release:Boolean=false):void 
+		protected function build(e:Event, runAfterBuild:Boolean=false, release:Boolean=false):void 
 		{
 			if (e && e.type == ActionScriptBuildEvent.BUILD_AND_DEBUG)
 			{
@@ -453,6 +452,8 @@ package actionScripts.plugins.as3project.mxmlc
 			this.isProjectHasInvalidPaths = false;
 			this.runAfterBuild = runAfterBuild;
 			this.release = release;
+			
+			clearOutput();
 			buildStart();
 		}
 		
@@ -522,11 +523,13 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		private function proceedWithBuild(activeProject:ProjectVO=null):void
 		{
+			
 			// Don't compile if there is no project. Don't warn since other compilers might take the job.
 			if (!activeProject) activeProject = model.activeProject;
 			if (!activeProject || !(activeProject is AS3ProjectVO)) return;
 			
 			reset();
+			warning("Compiling "+activeProject.projectName);
 			
 			var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
 			isLibraryProject = as3Pvo.isLibraryProject;
@@ -627,7 +630,7 @@ package actionScripts.plugins.as3project.mxmlc
 			return false;
 		}
 		
-		private function compileFlexJSApplication(pvo:ProjectVO, release:Boolean=false):void
+		protected function compileFlexJSApplication(pvo:ProjectVO, release:Boolean=false):void
 		{
 			var compileStr:String;
 			if (!fcsh || pvo.folderLocation.fileBridge.nativePath != shellInfo.workingDirectory.nativePath 
@@ -766,11 +769,12 @@ package actionScripts.plugins.as3project.mxmlc
                         sdkPathHomeArg, " && export ", enLanguageArg, " && export ", compilerPathHomeArg, compilerArg, configArg, jsCompilationArg
                 ));*/
             }
-
+			
+			print("Command: %s"+ compileStr);
             return compileStr;
         }
 
-		private function compileRegularFlexApplication(pvo:ProjectVO, release:Boolean=false):void
+		protected function compileRegularFlexApplication(pvo:ProjectVO, release:Boolean=false):void
 		{
 			var compileStr:String;
 			if (!fcsh || pvo.folderLocation.fileBridge.nativePath != shellInfo.workingDirectory.nativePath 
@@ -802,6 +806,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// update build config file
 				AS3ProjectVO(pvo).updateConfig();
 				compileStr = compile(pvo as AS3ProjectVO, release);
+				print("Command: %s"+ compileStr);
 				
 				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
 			}
@@ -901,11 +906,9 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 		}
 
-		private function compile(pvo:AS3ProjectVO, release:Boolean=false):String 
+		protected function compile(pvo:AS3ProjectVO, release:Boolean=false):String 
 		{
-            clearOutput();
 			dispatcher.dispatchEvent(new MXMLCPluginEvent(ActionScriptBuildEvent.PREBUILD, new FileLocation(currentSDK.nativePath)));
-			warning("Compiling "+pvo.projectName);
 			
 			currentProject = pvo;
 			if (pvo.targets.length == 0) 
@@ -964,7 +967,7 @@ package actionScripts.plugins.as3project.mxmlc
 					dbg = "";
 				}
 				
-				var outputFile:File;
+				/*var outputFile:File;
 				if (release && pvo.swfOutput.path)
 				{
 					outputFile = pvo.folderLocation.resolvePath("bin-release/" + pvo.swfOutput.path.fileBridge.name).fileBridge.getFile as File;
@@ -982,7 +985,7 @@ package actionScripts.plugins.as3project.mxmlc
 					{
 						FileUtil.createFile(outputFile);
 					}
-				}
+				}*/
 				
 				if (pvo.nativeExtensions && pvo.nativeExtensions.length > 0)
 				{
@@ -1013,10 +1016,8 @@ package actionScripts.plugins.as3project.mxmlc
 				var mxmlcStr:String = '"'+ mxmlcPath +'"'
 					+" -load-config+="+pvo.folderLocation.fileBridge.getRelativePath(pvo.config.file)
 					+buildArgs
-					+dbg
-					+output;
+					+dbg;
 				
-				print("Command: %s"+ mxmlcStr);
 				return mxmlcStr;
 			} 
 			else 
@@ -1094,6 +1095,7 @@ package actionScripts.plugins.as3project.mxmlc
             if (fcsh.running)
 			{
 				fcsh.exit();
+				cleanUpShell();
 			}
 		}
 
@@ -1219,10 +1221,10 @@ package actionScripts.plugins.as3project.mxmlc
 			
 		}
 
-		private function projectBuildSuccessfully():void
+		protected function projectBuildSuccessfully():void
 		{
             var currentSuccessfullProject:AS3ProjectVO = currentProject as AS3ProjectVO;
-            success("Project Build Successfully.");
+            success("Build completed successfully.");
             if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
             {
                 reset();

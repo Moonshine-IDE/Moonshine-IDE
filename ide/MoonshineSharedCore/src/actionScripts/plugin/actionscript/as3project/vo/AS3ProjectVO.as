@@ -48,6 +48,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.utils.SDKUtils;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.valueObjects.ProjectVO;
 	
@@ -68,6 +69,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
         public var mavenBuildOptions:MavenBuildOptions;
+		public var flashModuleOptions:FlashModuleOptions;
 		public var customHTMLPath:String;
 		
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -120,6 +122,18 @@ package actionScripts.plugin.actionscript.as3project.vo
         private var _jsOutputPath:String;
 		private var _urlToLaunch:String;
 
+		override public function set folderLocation(value:FileLocation):void
+		{
+			super.folderLocation = value;
+			if (flashModuleOptions) flashModuleOptions.projectFolderLocation = value;
+		}
+		
+		override public function set sourceFolder(value:FileLocation):void
+		{
+			super.sourceFolder = value;
+			if (flashModuleOptions) flashModuleOptions.sourceFolderLocation = value;
+		}
+		
 		public function get air():Boolean
 		{
 			return UtilsCore.isAIR(this);
@@ -381,6 +395,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			swfOutput = new SWFOutputVO();
 			buildOptions = new BuildOptions();
             mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
+			flashModuleOptions = new FlashModuleOptions(folder, sourceFolder);
 			
 			config = new MXMLCConfigVO();
 
@@ -489,6 +504,24 @@ package actionScripts.plugin.actionscript.as3project.vo
 			}
 			
 			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
+		}
+		
+		override public function cancelledSettings():void
+		{
+			flashModuleOptions.cancelledSettings();
+		}
+		
+		override public function closedSettings():void
+		{
+			flashModuleOptions.cancelledSettings();
+		}
+		
+		override public function projectFileDelete(fw:FileWrapper):void
+		{
+			if (flashModuleOptions)
+			{
+				flashModuleOptions.onRemoveModuleEvent(fw, this);
+			}
 		}
 		
 		public function updateConfig():void 
@@ -607,6 +640,9 @@ package actionScripts.plugin.actionscript.as3project.vo
                             nativeExtensionPath
                         ])
                 ),
+				new SettingsWrapper("Modules",
+					flashModuleOptions.getSettings()
+				),
                 new SettingsWrapper("Warnings & Errors",
                         Vector.<ISetting>([
                             new BooleanSetting(buildOptions, "showActionScriptWarnings",		"Show actionscript warnings"),
@@ -697,6 +733,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 							nativeExtensionPath
                         ])
                 ),
+				new SettingsWrapper("Modules",
+					flashModuleOptions.getSettings()
+				),
                 new SettingsWrapper("Warnings & Errors",
                         Vector.<ISetting>([
                             new BooleanSetting(buildOptions, "warnings",						"Show all warnings"),

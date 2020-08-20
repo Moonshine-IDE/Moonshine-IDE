@@ -1,4 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,31 +13,32 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License
 // 
+// Author: Prominic.NET, Inc.
 // No warranty of merchantability or fitness of any kind. 
 // Use this software at your own risk.
-// 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.settings.vo
+package actionScripts.valueObjects
 {
-	[Bindable] public class LinkOnlySettingVO
-	{
-		public var label:String;
-		public var event:String;
-		
-		private var _isBusy:Boolean;
-		public function get isBusy():Boolean
-		{
-			return _isBusy;
-		}
-		public function set isBusy(value:Boolean):void
-		{
-			_isBusy = value;
-		}
+	import actionScripts.factory.FileLocation;
 
-		public function LinkOnlySettingVO(label:String, event:String=null)
+	public class FlashModuleVO
+	{
+		public var sourcePath:FileLocation;
+		
+		private var _isSelected:Boolean;
+		public function get isSelected():Boolean
 		{
-			this.label = label;
-			this.event = event;
+			return _isSelected;
+		}
+		public function set isSelected(value:Boolean):void
+		{
+			_isSelected = value;
+		}
+		
+		public function FlashModuleVO(path:FileLocation=null, selected:Boolean=true)
+		{
+			this.sourcePath = path;
+			this.isSelected = selected;
 		}
 	}
 }

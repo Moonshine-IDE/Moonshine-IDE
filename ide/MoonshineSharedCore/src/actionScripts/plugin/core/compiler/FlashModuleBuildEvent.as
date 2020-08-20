@@ -16,27 +16,23 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.settings.vo
+package actionScripts.plugin.core.compiler
 {
-	[Bindable] public class LinkOnlySettingVO
+	import flash.events.Event;
+	
+	public class FlashModuleBuildEvent extends Event
 	{
-		public var label:String;
-		public var event:String;
-		
-		private var _isBusy:Boolean;
-		public function get isBusy():Boolean
-		{
-			return _isBusy;
-		}
-		public function set isBusy(value:Boolean):void
-		{
-			_isBusy = value;
-		}
+		public static const BUILD_AND_DEBUG:String = "flashModuleBuildAndDebug";
+		public static const BUILD_RELEASE:String = "flashModuleBuildRelease";
+		public static const BUILD_AND_RUN:String = "flashModuleBuildAndRun";
+		public static const BUILD:String = "flashModuleCompilerBuild";
 
-		public function LinkOnlySettingVO(label:String, event:String=null)
+		public var value:Object;
+		
+		public function FlashModuleBuildEvent(type:String, value:Object=null, bubbles:Boolean=false, cancelable:Boolean=false)
 		{
-			this.label = label;
-			this.event = event;
+			this.value = value;
+			super(type, bubbles, cancelable);
 		}
 	}
 }

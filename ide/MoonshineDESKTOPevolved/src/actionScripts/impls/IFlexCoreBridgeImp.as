@@ -43,12 +43,12 @@ package actionScripts.impls
 	import actionScripts.events.StartupHelperEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
+	import actionScripts.interfaces.IModulesFinder;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsolePlugin;
-	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.plugin.core.mouse.MouseManagerPlugin;
 	import actionScripts.plugin.errors.UncaughtErrorsPlugin;
@@ -83,6 +83,7 @@ package actionScripts.impls
 	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
 	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
 	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugins.as3project.mxmlc.MXMLCFlashModulePlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.away3d.Away3DPlugin;
@@ -120,6 +121,7 @@ package actionScripts.impls
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.ModulesFinder;
 	import actionScripts.utils.SHClassTest;
 	import actionScripts.utils.SWFTrustPolicyModifier;
 	import actionScripts.utils.SoftwareVersionChecker;
@@ -229,6 +231,7 @@ package actionScripts.impls
 				MultiMenuEventsNotifierPlugin,
 				MXMLCPlugin,
 				MXMLCJavaScriptPlugin,
+				MXMLCFlashModulePlugin,
 				SWFLauncherPlugin,
 				AS3ProjectPlugin,
 				AS3SyntaxPlugin,
@@ -269,7 +272,7 @@ package actionScripts.impls
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -540,6 +543,11 @@ package actionScripts.impls
 		public function getExternalEditors():ArrayCollection
 		{
 			return ExternalEditorsPlugin.editors;
+		}
+		
+		public function getModulesFinder():IModulesFinder
+		{
+			return (new ModulesFinder());
 		}
 	}
 }
