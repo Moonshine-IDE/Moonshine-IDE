@@ -51,7 +51,9 @@ package actionScripts.utils
 
 			// replace if appropriate
 			data = data.replace(/<content>.*?<\/content>/, "<content>"+ project.swfOutput.path.fileBridge.name +"</content>");
-			data = data.replace(currentAIRNamespaceVersion, "http://ns.adobe.com/air/application/"+ project.swfOutput.swfVersion +".0");
+			data = data.replace(currentAIRNamespaceVersion, "http://ns.adobe.com/air/application/"+ (
+				(project.swfOutput.swfVersionStrict != 0) ? project.swfOutput.swfVersionStrict : project.swfOutput.swfVersion +".0"
+			));
 			if (data.indexOf("_") != -1)
 			{
 				// MOON-108
