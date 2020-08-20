@@ -1,0 +1,68 @@
+{
+	"Spark Component Definition": {
+		"prefix": "spark component",
+		"body": [
+			"<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+			"<s:${1:component} xmlns:fx=\"http://ns.adobe.com/mxml/2009\"",
+			"\txmlns:s=\"library://ns.adobe.com/flex/spark\">",
+			"\t$0",
+			"</s:${1:component}>"
+		],
+		"description": "Spark (Flex) Component Definition"
+	},
+	"MX Component Definition": {
+		"prefix": "mx component",
+		"body": [
+			"<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+			"<mx:${1:component} xmlns:fx=\"http://ns.adobe.com/mxml/2009\"",
+			"\txmlns:mx=\"library://ns.adobe.com/flex/mx\">",
+			"\t$0",
+			"</mx:${1:component}>"
+		],
+		"description": "MX (Flex) Component Definition"
+	},
+	"Feathers Component Definition": {
+		"prefix": "feathers component",
+		"body": [
+			"<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+			"<f:${1:component} xmlns:fx=\"http://ns.adobe.com/mxml/2009\"",
+			"\txmlns:f=\"library://ns.feathersui.com/mxml\">",
+			"\t$0",
+			"</f:${1:component}>"
+		],
+		"description": "Feathers Component Definition"
+	},
+	"Jewel Component Definition": {
+		"prefix": "jewel component",
+		"body": [
+			"<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+			"<j:${1:component} xmlns:fx=\"http://ns.adobe.com/mxml/2009\"",
+			"\txmlns:j=\"library://ns.apache.org/royale/jewel\">",
+			"\t$0",
+			"</j:${1:component}>"
+		],
+		"description": "Jewel (Royale) Component Definition"
+	},
+	"Express Component Definition": {
+		"prefix": "express component",
+		"body": [
+			"<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+			"<js:${1:component} xmlns:fx=\"http://ns.adobe.com/mxml/2009\"",
+			"\txmlns:js=\"library://ns.apache.org/royale/express\">",
+			"\t$0",
+			"</js:${1:component}>"
+		],
+		"description": "Express (Royale) Component Definition"
+	},
+	"Basic Component Definition": {
+		"prefix": "basic component",
+		"body": [
+			"<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+			"<js:${1:component} xmlns:fx=\"http://ns.adobe.com/mxml/2009\"",
+			"\txmlns:js=\"library://ns.apache.org/royale/basic\">",
+			"\t$0",
+			"</js:${1:component}>"
+		],
+		"description": "Basic (Royale) Component Definition"
+	}
+}
