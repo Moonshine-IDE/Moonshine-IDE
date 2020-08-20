@@ -20,14 +20,13 @@
 
 package moonshine.style;
 
-import openfl.geom.Matrix;
-import feathers.core.MeasureSprite;
 import feathers.graphics.FillStyle;
+import feathers.skins.ProgrammaticSkin;
 import openfl.display.InterpolationMethod;
 import openfl.display.SpreadMethod;
+import openfl.geom.Matrix;
 
-// TODO: change to ProgrammaticSkin when alpha.3 is released
-class MoonshineButtonSkin extends MeasureSprite {
+class MoonshineButtonSkin extends ProgrammaticSkin {
 	public function new() {
 		super();
 	}

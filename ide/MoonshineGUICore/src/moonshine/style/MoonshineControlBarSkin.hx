@@ -20,11 +20,10 @@
 
 package moonshine.style;
 
+import feathers.skins.ProgrammaticSkin;
 import openfl.geom.Matrix;
-import feathers.skins.BaseGraphicsPathSkin;
 
-// TODO: change this to ProgrammaticSkin when alpha.3 is released
-class MoonshineControlBarSkin extends BaseGraphicsPathSkin {
+class MoonshineControlBarSkin extends ProgrammaticSkin {
 	public function new() {
 		super();
 	}

@@ -20,11 +20,11 @@
 
 package moonshine.ui;
 
-import openfl.display.Sprite;
-import openfl.events.MouseEvent;
 import feathers.core.IValidating;
 import feathers.core.InvalidationFlag;
 import openfl.display.DisplayObject;
+import openfl.display.Sprite;
+import openfl.events.MouseEvent;
 
 class ResizableTitleWindow extends TitleWindow {
 	public function new() {
@@ -115,14 +115,8 @@ class ResizableTitleWindow extends TitleWindow {
 		this._resizeHandle.x = this.actualWidth - this.paddingRight - this._currentResizeHandleSkin.width;
 		this._resizeHandle.y = this.actualHeight - this.paddingBottom - this._currentResizeHandleSkin.height;
 
-		// TODO: switch to numRawChildren property when it is fixed
-		var oldBypass = this._displayListBypassEnabled;
-		this._displayListBypassEnabled = false;
-		var numRawChildren = this.numChildren;
-		this._displayListBypassEnabled = oldBypass;
-
-		if (this.getRawChildIndex(this._resizeHandle) != (numRawChildren - 1)) {
-			this.setRawChildIndex(this._resizeHandle, numRawChildren - 1);
+		if (this.getRawChildIndex(this._resizeHandle) != (this.numRawChildren - 1)) {
+			this.setRawChildIndex(this._resizeHandle, this.numRawChildren - 1);
 		}
 	}
 

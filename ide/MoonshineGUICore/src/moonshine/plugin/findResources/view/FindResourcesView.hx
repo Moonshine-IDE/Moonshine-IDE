@@ -20,30 +20,29 @@
 
 package moonshine.plugin.findResources.view;
 
-import feathers.events.ListViewEvent;
-import feathers.data.ListViewItemState;
-import feathers.controls.Check;
-import feathers.controls.Callout;
 import actionScripts.valueObjects.ResourceVO;
-import actionScripts.factory.FileLocation;
-import feathers.layout.VerticalLayoutData;
-import feathers.layout.HorizontalLayout;
-import moonshine.theme.MoonshineTheme;
-import feathers.layout.HorizontalLayoutData;
-import openfl.events.MouseEvent;
-import feathers.controls.dataRenderers.ItemRenderer;
-import feathers.utils.DisplayObjectRecycler;
-import feathers.events.TriggerEvent;
 import feathers.controls.Button;
+import feathers.controls.Callout;
+import feathers.controls.Check;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
 import feathers.controls.ListView;
 import feathers.controls.TextInput;
+import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayCollection;
+import feathers.data.ListViewItemState;
+import feathers.events.ListViewEvent;
+import feathers.events.TriggerEvent;
+import feathers.layout.HorizontalLayout;
+import feathers.layout.HorizontalLayoutData;
 import feathers.layout.VerticalLayout;
+import feathers.layout.VerticalLayoutData;
+import feathers.utils.DisplayObjectRecycler;
+import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
+import openfl.events.MouseEvent;
 
 class FindResourcesView extends ResizableTitleWindow {
 	public function new() {
@@ -55,8 +54,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.minWidth = 300.0;
 		this.minHeight = 300.0;
 		this.closeEnabled = true;
-		// TODO: make resizable when infinite loop issue fixed in Feathers UI
-		this.resizeEnabled = false;
+		this.resizeEnabled = true;
 	}
 
 	private var searchFieldTextInput:TextInput;
@@ -154,8 +152,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		resultsFieldLayout.horizontalAlign = JUSTIFY;
 		resultsFieldLayout.gap = 10.0;
 		resultsField.layout = resultsFieldLayout;
-		// TODO: uncomment when infinite loop issue fixed in Feathers UI
-		// resultsField.layoutData = new VerticalLayoutData(null, 100.0);
+		resultsField.layoutData = new VerticalLayoutData(null, 100.0);
 		this.addChild(resultsField);
 
 		var resultsFieldLabel = new Label();
@@ -172,8 +169,7 @@ class FindResourcesView extends ResizableTitleWindow {
 			itemRenderer.addEventListener(MouseEvent.DOUBLE_CLICK, itemRenderer_doubleClickHandler);
 			return itemRenderer;
 		});
-		// TODO: uncomment when infinite loop issue fixed in Feathers UI
-		// this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
+		this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
 		resultsField.addChild(this.resultsListView);
 

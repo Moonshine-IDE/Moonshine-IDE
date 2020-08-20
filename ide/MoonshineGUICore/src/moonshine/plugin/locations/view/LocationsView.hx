@@ -20,7 +20,6 @@
 
 package moonshine.plugin.locations.view;
 
-import feathers.layout.VerticalLayoutData;
 import actionScripts.factory.FileLocation;
 import actionScripts.valueObjects.Location;
 import feathers.controls.Button;
@@ -32,6 +31,7 @@ import feathers.core.InvalidationFlag;
 import feathers.data.ArrayCollection;
 import feathers.events.TriggerEvent;
 import feathers.layout.VerticalLayout;
+import feathers.layout.VerticalLayoutData;
 import feathers.utils.DisplayObjectRecycler;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;

@@ -111,13 +111,12 @@ class OutlineView extends Panel implements IViewWithTitle {
 
 		if (dataInvalid) {
 			this.treeView.dataProvider = this._outline;
-			// TODO: uncomment when toggleBranch() exists in alpha.3
-			/*if (this._outline != null && this._outline.getLength() > 0) {
+			if (this._outline != null && this._outline.getLength() > 0) {
 				var rootBranch = this._outline.get([0]);
 				if (this._outline.isBranch(rootBranch)) {
 					this.treeView.toggleBranch(rootBranch, true);
 				}
-			}*/
+			}
 		}
 
 		super.update();

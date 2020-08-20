@@ -20,18 +20,18 @@
 
 package moonshine.plugin.rename.view;
 
-import openfl.events.KeyboardEvent;
-import openfl.ui.Keyboard;
-import feathers.core.InvalidationFlag;
 import feathers.controls.Button;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
 import feathers.controls.TextInput;
+import feathers.core.InvalidationFlag;
 import feathers.events.TriggerEvent;
 import feathers.layout.VerticalLayout;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
+import openfl.ui.Keyboard;
 
 class RenameView extends ResizableTitleWindow {
 	public function new() {
@@ -131,8 +131,7 @@ class RenameView extends ResizableTitleWindow {
 		if (this._existingSymbolNameChanged) {
 			this._existingSymbolNameChanged = false;
 			this.symbolNameTextInput.text = this._existingSymbolName;
-			// TODO: uncomment when selectAll() is supported (alpha.3)
-			// this.symbolNameTextInput.selectAll();
+			this.symbolNameTextInput.selectAll();
 			this.symbolNameFieldLabel.text = 'Rename symbol \'${this._existingSymbolName}\' and its usages to:';
 		}
 

@@ -20,25 +20,20 @@
 
 package moonshine.theme;
 
-import moonshine.style.MoonshineControlBarSkin;
-import moonshine.style.MoonshineHScrollBarThumbSkin;
-import moonshine.style.MoonshineVScrollBarThumbSkin;
-import feathers.controls.Panel;
-import feathers.controls.BasicButton;
-import feathers.controls.VScrollBar;
-import feathers.controls.HScrollBar;
-import feathers.controls.Callout;
-import openfl.events.Event;
-import feathers.controls.ToggleButtonState;
-import feathers.controls.Check;
 import feathers.controls.Button;
+import feathers.controls.Callout;
+import feathers.controls.Check;
+import feathers.controls.HScrollBar;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
 import feathers.controls.ListView;
+import feathers.controls.Panel;
 import feathers.controls.TextInput;
 import feathers.controls.TextInputState;
 import feathers.controls.ToggleButton;
+import feathers.controls.ToggleButtonState;
 import feathers.controls.TreeView;
+import feathers.controls.VScrollBar;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.controls.dataRenderers.TreeViewItemRenderer;
 import feathers.layout.HorizontalLayout;
@@ -49,6 +44,9 @@ import feathers.skins.RectangleSkin;
 import feathers.style.Theme;
 import feathers.themes.ClassVariantTheme;
 import moonshine.style.MoonshineButtonSkin;
+import moonshine.style.MoonshineControlBarSkin;
+import moonshine.style.MoonshineHScrollBarThumbSkin;
+import moonshine.style.MoonshineVScrollBarThumbSkin;
 import moonshine.ui.ResizableTitleWindow;
 import moonshine.ui.SideBarViewHeader;
 import moonshine.ui.TitleWindow;
@@ -339,16 +337,14 @@ class MoonshineTheme extends ClassVariantTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.selectedFill = SolidColor(0xC165B8);
-		// TODO: uncomment when ToggleButtonState is handled correctly by BasicToggleButton
-		// backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+		backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
 		itemRenderer.backgroundSkin = backgroundSkin;
 
-		// TODO: uncomment when alternateBackgroundSkin is supported in alpha.3
-		/*var alternateBackgroundSkin = new RectangleSkin();
-			alternateBackgroundSkin.fill = SolidColor(0x4D4C4C);
-			alternateBackgroundSkin.selectedFill = SolidColor(0xC165B8);
-			alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
-			itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin; */
+		var alternateBackgroundSkin = new RectangleSkin();
+		alternateBackgroundSkin.fill = SolidColor(0x4D4C4C);
+		alternateBackgroundSkin.selectedFill = SolidColor(0xC165B8);
+		alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+		itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
 
 		itemRenderer.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
 		itemRenderer.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
@@ -585,8 +581,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		layout.horizontalAlign = RIGHT;
 		layout.verticalAlign = MIDDLE;
 		layout.paddingTop = 10.0;
-		// TODO: should be 10.0, but there's a temporary bug in Feathers UI HorizontalLayout when using RIGHT
-		layout.paddingRight = 0.0;
+		layout.paddingRight = 10.0;
 		layout.paddingBottom = 10.0;
 		layout.paddingLeft = 10.0;
 		layout.gap = 4.0;
@@ -603,8 +598,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		layout.horizontalAlign = RIGHT;
 		layout.verticalAlign = MIDDLE;
 		layout.paddingTop = 10.0;
-		// TODO: should be 10.0, but there's a temporary bug in Feathers UI HorizontalLayout when using RIGHT
-		layout.paddingRight = 0.0;
+		layout.paddingRight = 10.0;
 		layout.paddingBottom = 10.0;
 		layout.paddingLeft = 10.0;
 		layout.gap = 4.0;
@@ -688,16 +682,14 @@ class MoonshineTheme extends ClassVariantTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.selectedFill = SolidColor(0xC165B8);
-		// TODO: uncomment when ToggleButtonState is handled correctly by BasicToggleButton
-		// backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+		backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
 		itemRenderer.backgroundSkin = backgroundSkin;
 
-		// TODO: uncomment when alternateBackgroundSkin is supported in alpha.3
-		/*var alternateBackgroundSkin = new RectangleSkin();
-			alternateBackgroundSkin.fill = SolidColor(0x4D4C4C);
-			alternateBackgroundSkin.selectedFill = SolidColor(0xC165B8);
-			alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
-			itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin; */
+		var alternateBackgroundSkin = new RectangleSkin();
+		alternateBackgroundSkin.fill = SolidColor(0x4D4C4C);
+		alternateBackgroundSkin.selectedFill = SolidColor(0xC165B8);
+		alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+		itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
 
 		itemRenderer.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
 		itemRenderer.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);

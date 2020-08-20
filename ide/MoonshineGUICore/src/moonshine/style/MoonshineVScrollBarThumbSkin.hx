@@ -20,10 +20,9 @@
 
 package moonshine.style;
 
-import feathers.skins.BaseGraphicsPathSkin;
+import feathers.skins.ProgrammaticSkin;
 
-// TODO: change this to ProgrammaticSkin when alpha.3 is released
-class MoonshineVScrollBarThumbSkin extends BaseGraphicsPathSkin {
+class MoonshineVScrollBarThumbSkin extends ProgrammaticSkin {
 	public function new() {
 		super();
 	}

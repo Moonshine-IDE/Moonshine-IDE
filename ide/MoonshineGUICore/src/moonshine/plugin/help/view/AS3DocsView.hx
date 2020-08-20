@@ -23,13 +23,11 @@ package moonshine.plugin.help.view;
 import actionScripts.interfaces.IViewWithTitle;
 import feathers.controls.Panel;
 import feathers.controls.TreeView;
-import feathers.controls.dataRenderers.TreeViewItemRenderer;
 import feathers.data.TreeCollection;
 import feathers.data.TreeNode;
-import feathers.events.TriggerEvent;
+import feathers.events.TreeViewEvent;
 import feathers.layout.AnchorLayout;
 import feathers.layout.AnchorLayoutData;
-import feathers.utils.DisplayObjectRecycler;
 import moonshine.ui.SideBarViewHeader;
 import openfl.Lib;
 import openfl.events.Event;
@@ -60,16 +58,7 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 		this.treeView.selectable = false;
 		this.treeView.layoutData = AnchorLayoutData.fill();
 		this.treeView.itemToText = (item:TreeNode<Xml>) -> item.data.get("label");
-		// TODO: uncomment when TreeViewEvent exists in alpha.3
-		// this.treeView.addEventListener(TreeViewEvent.ITEM_TRIGGER, treeView_itemTriggerHandler);
-		this.treeView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
-			var itemRenderer = new TreeViewItemRenderer();
-			itemRenderer.addEventListener(TriggerEvent.TRIGGER, treeView_itemTriggerHandler);
-			return itemRenderer;
-		});
-		this.treeView.itemRendererRecycler.destroy = (itemRenderer) -> {
-			itemRenderer.removeEventListener(TriggerEvent.TRIGGER, treeView_itemTriggerHandler);
-		};
+		this.treeView.addEventListener(TreeViewEvent.ITEM_TRIGGER, treeView_itemTriggerHandler);
 		this.addChild(this.treeView);
 
 		var header = new SideBarViewHeader();
@@ -136,22 +125,8 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 		this.cleanupURLLoader();
 	}
 
-	// TODO: uncomment when TreeViewEvent exists in alpha.3
-
-	/*private function treeView_itemTriggerHandler(event:TreeViewEvent):Void {
+	private function treeView_itemTriggerHandler(event:TreeViewEvent):Void {
 		var treeNode = cast(event.state.data, TreeNode<Dynamic>);
-		var xml = cast(treeNode.data, Xml);
-		var link = xml.get("link");
-
-		if (link == null) {
-			return;
-		}
-
-		Lib.navigateToURL(new URLRequest(link), "_blank");
-	}*/
-	private function treeView_itemTriggerHandler(event:TriggerEvent):Void {
-		var itemRenderer = cast(event.currentTarget, TreeViewItemRenderer);
-		var treeNode = cast(itemRenderer.data, TreeNode<Dynamic>);
 		var xml = cast(treeNode.data, Xml);
 		var link = xml.get("link");
 

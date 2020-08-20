@@ -20,18 +20,18 @@
 
 package moonshine.plugin.findreplace.view;
 
-import openfl.events.KeyboardEvent;
-import openfl.ui.Keyboard;
-import feathers.core.InvalidationFlag;
 import feathers.controls.Button;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
 import feathers.controls.TextInput;
+import feathers.core.InvalidationFlag;
 import feathers.events.TriggerEvent;
 import feathers.layout.VerticalLayout;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
+import openfl.ui.Keyboard;
 
 class GoToLineView extends ResizableTitleWindow {
 	public function new() {
@@ -136,7 +136,7 @@ class GoToLineView extends ResizableTitleWindow {
 	}
 
 	private function submit():Void {
-		if(!this.goToLineButton.enabled) {
+		if (!this.goToLineButton.enabled) {
 			return;
 		}
 		this._lineNumber = this.parseLineNumber();
