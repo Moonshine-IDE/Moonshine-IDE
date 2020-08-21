@@ -64,6 +64,8 @@
         public var fileTemplate:FileLocation;
         public var folderFileLocation:FileLocation;
 
+        private var dominoWarning:Boolean = false;
+
         override protected function onBrowseButton(event:MouseEvent):void
         {
             super.onBrowseButton(event);
@@ -197,14 +199,35 @@
 
         protected function onTreeItemClicked(event:ListEvent):void
         {
-            txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-                    Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
-                    tree.selectedItem.nativePath);
+            //we only allow domin form generate into Forms folder
+            var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+            if(project.isDominoVisualEditorProject)
+            {
+                if(lblExtension.text){
+                    //we should only limit the form file
+                    if(lblExtension.text==".form"){
+                        //btnCreate.enabled = false;
+                        warningMessage= "Domino form file only allow in the Forms folder.please not change it.";
+                        hgExistingWarning.visible=hgExistingWarning.includeInLayout=true;
 
-            // re-validate upon folder location change
-            wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
-            isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
-            onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+                    }
+                    
+                    tree.selectedItem=wrapperOfFolderLocation;
+                }
+                
+
+            }else{
+                txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+                tree.selectedItem.nativePath);
+
+                // re-validate upon folder location change
+                wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
+                isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
+                onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+            }
+
+            
         }
 
         override protected function onNewFileCreationComplete(event:FlexEvent):void
