@@ -180,10 +180,14 @@
 					}
 				}
 				
-				// continue to update check
-				updaterHelper.updater = updater;
-				updater.updateURL = "https://moonshine-ide.com/wp-content/uploads/updater.xml";
-				updater.initialize();
+				// update check for
+				// windows or osx-non-sandbox
+				if (!ConstantsCoreVO.IS_MACOS || !ConstantsCoreVO.IS_APP_STORE_VERSION)
+				{
+					updaterHelper.updater = updater;
+					updater.updateURL = "https://moonshine-ide.com/wp-content/uploads/updater.xml";
+					updater.initialize();
+				}
 			}
 	
 			public function onHelperAppInstallationCompletes():void
