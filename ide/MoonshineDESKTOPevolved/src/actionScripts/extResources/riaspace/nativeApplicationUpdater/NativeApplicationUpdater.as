@@ -156,7 +156,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				}
 				else if (os.indexOf("mac") > -1)
 				{
-					installerType = "dmg";
+					installerType = "pkg";
 				}
 				else if (os.indexOf("linux") > -1)
 				{
