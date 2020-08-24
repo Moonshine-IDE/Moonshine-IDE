@@ -151,7 +151,7 @@
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
             if(project.isDominoVisualEditorProject)
             {
-                wrapperOfFolderLocation=UtilsCore.findDominoFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath+"/nsfs/nsf-moonshine/odp/Forms");
+                wrapperOfFolderLocation=UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms");
             }
             tree.callLater(function ():void
             {
@@ -203,16 +203,19 @@
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
             if(project.isDominoVisualEditorProject)
             {
-                if(lblExtension.text){
-                    //we should only limit the form file
-                    if(lblExtension.text==".form"){
-                        //btnCreate.enabled = false;
+                 //we should only limit the form file
+                if(lblExtension.text&&lblExtension.text==".form"){
+                    //get the domino project form folder value:
+                    var dominoFormFolder:String=wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms"
+                    var currentPath:String=UtilsCore.getPackageReferenceByProjectPath(
+                Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+                tree.selectedItem.nativePath);
+                    //btnCreate.enabled = false;
+                    if(currentPath!=dominoFormFolder){
                         warningMessage= "Domino form file only allow in the Forms folder.please not change it.";
                         hgExistingWarning.visible=hgExistingWarning.includeInLayout=true;
-
+                        tree.selectedItem=wrapperOfFolderLocation;
                     }
-                    
-                    tree.selectedItem=wrapperOfFolderLocation;
                 }
                 
 
@@ -283,12 +286,11 @@
                 var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
                 if(project.isDominoVisualEditorProject)
                 {
-                    if(!tree.selectedItem){
-                        if(!UtilsCore.endsWith(txtDestination.text,"Forms")&&txtDestination.text.indexOf(".")<0){
-                            txtDestination.text = txtDestination.text + ".nsfs.nsf-moonshine.odp.Forms"
+                        if(lblExtension.text&&lblExtension.text==".form"){
+                               txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                                Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+                             wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms");
                         }
-
-                    }
                    
                    
                 }
@@ -323,7 +325,7 @@
                                  borderVisible="false"
                                  rowHeight="18"
                                  useRollOver="true"
-                                 doubleClickEnabled="true"
+                                 doubleClickEnabled="false"
                                  labelField="name"
                                  itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
                                  itemClick="onTreeItemClicked(event)"
