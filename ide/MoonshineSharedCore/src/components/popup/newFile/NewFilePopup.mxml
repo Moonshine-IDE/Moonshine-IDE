@@ -212,7 +212,7 @@
                 tree.selectedItem.nativePath);
                     //btnCreate.enabled = false;
                     if(currentPath!=dominoFormFolder){
-                        warningMessage= "Domino form file only allow in the Forms folder.please not change it.";
+                        warningMessage= "Domino forms are only supported in the Forms folder.";
                         hgExistingWarning.visible=hgExistingWarning.includeInLayout=true;
                         tree.selectedItem=wrapperOfFolderLocation;
                     }

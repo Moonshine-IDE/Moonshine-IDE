@@ -33,6 +33,8 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.events.FlexEvent;
+			import mx.controls.Alert;
+			import actionScripts.utils.UtilsCore;
 			
 			import spark.events.TextOperationEvent;
 			
@@ -43,7 +45,7 @@
 			import actionScripts.valueObjects.FileWrapper;
 			
 			public var wrapperOfFolderLocation:FileWrapper;
-			
+			private var cacheOldFileName:String;
 			[Bindable] private var fileExtension:String;
 			[Bindable] private var modifiedName:String = "";
 			[Bindable] private var originalFileName:String;
@@ -69,10 +71,33 @@
 			{
 				// validation check for Enter key
 				if (!btnChange.enabled) return;
+
 				
 				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_FILE_RENAMED, null, null, wrapperOfFolderLocation);
 				tmpEvent.fileName = txtFileName.text + fileExtension;
 				dispatchEvent(tmpEvent);
+				//only domino visual form file should be update xml
+				if(fileExtension==".form"){
+					var parentFolder:String=wrapperOfFolderLocation.file.fileBridge.parent.fileBridge.nativePath;
+					if(UtilsCore.endsWith(parentFolder,"nsfs/nsf-moonshine/odp/Forms")){
+							
+							var projectPath:String=parentFolder.substring(0,parentFolder.indexOf("nsfs/nsf-moonshine/odp/Forms"));
+							if(projectPath){
+								var targetXmlPatj:String=projectPath+"visualeditor-src/main/webapp/"+txtFileName.text+".xml";
+								projectPath=projectPath+"visualeditor-src/main/webapp/"+cacheOldFileName+".xml";
+								
+								var xmlFile:File = new File(projectPath);
+								if(xmlFile.exists){
+											var destination:File = new File(targetXmlPatj);
+											xmlFile.copyTo(destination, true);
+											xmlFile.deleteFile();
+								}
+							}
+							
+					}
+				
+				
+				}
 				
 				doBeforeExit();
 				super.closeThis();
@@ -87,6 +112,7 @@
 					tempArr.pop();*/
 					
 					txtFileName.text = wrapperOfFolderLocation.file.fileBridge.nameWithoutExtension;
+					cacheOldFileName =txtFileName.text; 
 					txtFileName.setFocus();
 					txtFileName.selectRange(0, txtFileName.text.length);
 					originalFileName = txtFileName.text;
