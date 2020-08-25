@@ -185,7 +185,7 @@
 				if (!ConstantsCoreVO.IS_MACOS || !ConstantsCoreVO.IS_APP_STORE_VERSION)
 				{
 					updaterHelper.updater = updater;
-					updater.updateURL = "https://moonshine-ide.com/wp-content/uploads/updater.xml";
+					updater.updateURL = "https://moonshine-ide.com/downloads/updater.xml";
 					updater.initialize();
 				}
 			}
