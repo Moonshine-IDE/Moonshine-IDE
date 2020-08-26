@@ -125,7 +125,7 @@ Function .onInit
 	StrCmp $0 "" check_timestamp 0
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION \
 		"This will install 64-Bit Moonshine-IDE on your system.$\n$\nA 32-Bit version is currently installed. You will need to uninstall the 32-bit version before you can install the new version. \
-		Your settings and open projects will still be available in the new version.$\n$\nDo you want to uninstall the old version now? \
+		Your settings and open projects will still be available in the new version.$\n$\nDo you want to uninstall the old version now?" \
 		IDYES run_x86_uninstaller IDNO quit_installation
 	check_timestamp:
 		ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
