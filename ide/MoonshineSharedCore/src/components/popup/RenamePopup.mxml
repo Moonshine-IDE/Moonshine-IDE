@@ -43,6 +43,11 @@
 			import actionScripts.factory.FileLocation;
 			import actionScripts.ui.menu.MenuPlugin;
 			import actionScripts.valueObjects.FileWrapper;
+			import utils.MainApplicationCodeUtils;
+			import actionScripts.utils.FileUtils;
+
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.ui.editor.VisualEditorViewer;
 			
 			public var wrapperOfFolderLocation:FileWrapper;
 			private var cacheOldFileName:String;
@@ -71,28 +76,61 @@
 			{
 				// validation check for Enter key
 				if (!btnChange.enabled) return;
-
 				
 				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_FILE_RENAMED, null, null, wrapperOfFolderLocation);
 				tmpEvent.fileName = txtFileName.text + fileExtension;
 				dispatchEvent(tmpEvent);
 				//only domino visual form file should be update xml
 				if(fileExtension==".form"){
+				   
 					var parentFolder:String=wrapperOfFolderLocation.file.fileBridge.parent.fileBridge.nativePath;
+					var sourceFormFilePath:String=wrapperOfFolderLocation.file.fileBridge.nativePath;
+					var targetFormFilePath:String=parentFolder+"/"+tmpEvent.fileName;
+					var destinationFormFile:File = new File(targetFormFilePath);
 					if(UtilsCore.endsWith(parentFolder,"nsfs/nsf-moonshine/odp/Forms")){
-							
-							var projectPath:String=parentFolder.substring(0,parentFolder.indexOf("nsfs/nsf-moonshine/odp/Forms"));
-							if(projectPath){
-								var targetXmlPatj:String=projectPath+"visualeditor-src/main/webapp/"+txtFileName.text+".xml";
-								projectPath=projectPath+"visualeditor-src/main/webapp/"+cacheOldFileName+".xml";
-								
-								var xmlFile:File = new File(projectPath);
-								if(xmlFile.exists){
-											var destination:File = new File(targetXmlPatj);
-											xmlFile.copyTo(destination, true);
-											xmlFile.deleteFile();
-								}
+
+						//1.we need update the title ofform file 
+						//1.update the rename file name to title;
+						var model:IDEModel = IDEModel.getInstance();
+						var formXmlString:String=null;
+						if(model){
+							//Alert.show("found model");
+							var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+							if(editor){
+								//Alert.show("found editor");
+								formXmlString =editor.renameDominoFormFileSave(txtFileName.text);
+
 							}
+						}else{
+							Alert.show("no model");
+						}
+						if(formXmlString!=null){
+							
+							if(destinationFormFile.exists){
+								destinationFormFile.deleteFile();
+							}
+							FileUtils.writeToFile(destinationFormFile,formXmlString);
+								
+						}
+
+
+						//2. copy xml file to new name	
+						var projectPath:String=parentFolder.substring(0,parentFolder.indexOf("nsfs/nsf-moonshine/odp/Forms"));
+						//Alert.show("projectPath:"+projectPath);
+						if(projectPath){
+							var targetXmlPatj:String=projectPath+"visualeditor-src/main/webapp/"+txtFileName.text+".xml";
+							projectPath=projectPath+"visualeditor-src/main/webapp/"+cacheOldFileName+".xml";
+							
+							var xmlFile:File = new File(projectPath);
+							if(xmlFile.exists){
+
+								var destination:File = new File(targetXmlPatj);
+
+								xmlFile.copyTo(destination, true);
+
+								xmlFile.deleteFile();
+							}
+						}
 							
 					}
 				

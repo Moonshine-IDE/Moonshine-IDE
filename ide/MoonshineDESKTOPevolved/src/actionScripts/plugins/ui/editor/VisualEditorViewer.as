@@ -249,6 +249,19 @@ package actionScripts.plugins.ui.editor
 			refreshFileForPreview();
 		}
 
+		/**
+		 *When user rename the form file, it require the title match the file name.
+		 *So in this case , we need save the form file again
+		 */
+
+		public function renameDominoFormFileSave(fileName:String):String 
+		{
+			//visualEditorView.visualEditor.saveEditedFile();
+			return getDominoMxmlCode(fileName);
+			
+
+		}
+
         private function refreshFileForPreview():void
         {
 			if ((visualEditorProject as IVisualEditorProjectVO).isPrimeFacesVisualEditorProject)
@@ -400,6 +413,14 @@ package actionScripts.plugins.ui.editor
 			}
 			var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 			
+			return markAsXml + mxmlCode.toXMLString();
+		}
+
+		private function getDominoMxmlCode(fileName:String):String
+		{
+			var mxmlCode:XML = null;
+			mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(fileName);
+			var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 			return markAsXml + mxmlCode.toXMLString();
 		}
 		
