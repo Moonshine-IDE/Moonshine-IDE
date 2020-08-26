@@ -29,7 +29,7 @@
 ;Start of running process check
 
 !define APP_NAME find_close_terminate
-!define WND_PROCESS_TITLE "Moonshine SDK Installer"
+!define WND_PROCESS_TITLE "Moonshine-IDE"
 !define TO_MS 2000
 !define SYNC_TERM 0x00100001
 
@@ -124,10 +124,8 @@ Function .onInit
 	${StrContains} $0 "(x86)" $R2
 	StrCmp $0 "" check_timestamp 0
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION \
-		"This will install Moonshine 64-Bit in your system.$\n$\nA 32-Bit version found already installed. You need to uninstall the 32-Bit version before proceed. \
-		You can still able to access everything from your earlier installation.$\n$\n \
-		Yes - To uninstall the 32-Bit version.$\n \
-		No - To quit the installation." \
+		"This will install 64-Bit Moonshine-IDE on your system.$\n$\nA 32-Bit version is currently installed. You will need to uninstall the 32-bit version before you can install the new version. \
+		Your settings and open projects will still be available in the new version.$\n$\nDo you want to uninstall the old version now? \
 		IDYES run_x86_uninstaller IDNO quit_installation
 	check_timestamp:
 		ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
@@ -135,10 +133,10 @@ Function .onInit
 		StrCmp $R0 "" done
 		StrCmp $R0 "${TIMESTAMP}" 0 done
 		MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
-			"A same version of Moonshine-IDE found already installed. Do you want to run the installed version?$\n$\n \
-			Yes - To run the installed version.$\n \
-			No - To uninstall the installed version and re-install again.$\n \
-			Cancel - To cancel this installation." \
+			"This version of Moonshine-IDE is already installed. Do you want to run the current installation?$\n$\n \
+			Yes - Start Moonshine-IDE now$\n \
+			No - Do a fresh install$\n \
+			Cancel - Cancel this installation" \
 			IDYES run_application IDNO run_uninstaller
 			Abort
 	run_application:
