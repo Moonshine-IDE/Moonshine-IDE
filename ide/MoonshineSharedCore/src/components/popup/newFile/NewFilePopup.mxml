@@ -50,6 +50,7 @@
         import actionScripts.valueObjects.ProjectReferenceVO;
 
         import actionScripts.interfaces.IVisualEditorProjectVO;
+            import actionScripts.utils.FileUtils;
 
         [Bindable]
         public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
@@ -123,6 +124,7 @@
                     var tmpDuplicateEvent:DuplicateEvent = new DuplicateEvent(DuplicateEvent.EVENT_APPLY_DUPLICATE, wrapperOfFolderLocation, folderFileLocation);
                     tmpDuplicateEvent.fileName = txtFileName.text;
                     dispatchEvent(tmpDuplicateEvent);
+                    updateDuplicationFormXmlFile(tmpDuplicateEvent.fileName);
                 } else
                 {
                     var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, fileTemplate, wrapperOfFolderLocation);
@@ -132,6 +134,34 @@
 
                 doBeforeExit();
                 super.closeThis();
+            }
+        }
+
+        private function updateDuplicationFormXmlFile(fileName:String):void 
+        {
+
+            var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+            if(project.isDominoVisualEditorProject)
+            {
+                    if(lblExtension.text&&lblExtension.text==".form"){
+                        //Alert.show("duplication file name:"+fileName);
+                        var targetXmlFilePath:String=wrapperBelongToProject.projectFolder.nativePath+"/visualeditor-src/main/webapp/"+fileName+".xml";
+                        var destinationXmlFile:File=new File(targetXmlFilePath);
+                        var sourceXmlFileName:String=txtFileName.prompt;
+                        var sourceXmlFilePath:String= wrapperBelongToProject.projectFolder.nativePath+"/visualeditor-src/main/webapp/"+sourceXmlFileName+".xml";
+                        var sourceXmlFile=new File(sourceXmlFilePath);
+                        //Alert.show("source xml file name:"+sourceXmlFilePath);
+                        //Alert.show("target  xml file name:"+targetXmlFilePath);
+                        if(destinationXmlFile.exists){
+                            destinationXmlFile.deleteFile();
+                        }
+                        if(sourceXmlFile.exists){
+                            sourceXmlFile.copyTo(destinationXmlFile, true);
+                        }
+                        //FileUtils.writeToFile(destinationFormFile,formXmlString);
+                    }
+                
+                
             }
         }
         private var dominoToProjectFileWrapper:FileWrapper=null;
@@ -253,7 +283,7 @@
                     lblExtension.text = "";
                 }
 
-                if(extension == "as" || extension == "mxml")
+                if(extension == "as" || extension == "mxml" || extension=="form")
                 {
                     txtFileName.restrict = "0-9A-Za-z_.";
                 }
