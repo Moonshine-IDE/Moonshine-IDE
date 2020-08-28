@@ -50,7 +50,9 @@
         import actionScripts.valueObjects.ProjectReferenceVO;
 
         import actionScripts.interfaces.IVisualEditorProjectVO;
-            import actionScripts.utils.FileUtils;
+        import actionScripts.utils.FileUtils;
+        import actionScripts.locator.IDEModel;
+        import actionScripts.plugins.ui.editor.VisualEditorViewer;
 
         [Bindable]
         public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
@@ -158,6 +160,28 @@
                         if(sourceXmlFile.exists){
                             sourceXmlFile.copyTo(destinationXmlFile, true);
                         }
+                        //2.update title from form file 
+                        var model:IDEModel = IDEModel.getInstance();
+						var formXmlString:String=null;
+						if(model){
+							//Alert.show("found model");
+							var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+							if(editor){
+								//Alert.show("found editor");
+								formXmlString =editor.renameDominoFormFileSave(txtFileName.text);
+
+							}
+						}
+                        if(formXmlString!=null){
+
+                            var destinationFormFile:File=new File(wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms/"+fileName+".form")
+							
+							if(destinationFormFile.exists){
+								destinationFormFile.deleteFile();
+							}
+							FileUtils.writeToFile(destinationFormFile,formXmlString);
+								
+						} 
                         //FileUtils.writeToFile(destinationFormFile,formXmlString);
                     }
                 
