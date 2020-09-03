@@ -51,11 +51,11 @@ describe('Inspecting variables: The debugger', function() {
 
 		variablesResponse = await dc.variablesRequest({ variablesReference: scopes.body.scopes[2].variablesReference });
 		let variable = util.findVariable(variablesResponse.body.variables, 'arg')!;
-		assert.equal(variable.value, '{key: "value"}');
+		assert.equal(variable.value, '{key: "value", Symbol(Local Symbol): "Symbol-keyed 1", Symbol(Symbol.iterator): "Symbol-keyed 2"}');
 		variablesResponse = await dc.variablesRequest({ variablesReference: variable.variablesReference });
 		assert.equal(util.findVariable(variablesResponse.body.variables, 'key').value, '"value"');
-		assert.equal(util.findVariable(variablesResponse.body.variables, 'Symbol(Local Symbol)').value, '"Symbol-keyed property 1"');
-		assert.equal(util.findVariable(variablesResponse.body.variables, 'Symbol(Symbol.iterator)').value, '"Symbol-keyed property 2"');
+		assert.equal(util.findVariable(variablesResponse.body.variables, 'Symbol(Local Symbol)').value, '"Symbol-keyed 1"');
+		assert.equal(util.findVariable(variablesResponse.body.variables, 'Symbol(Symbol.iterator)').value, '"Symbol-keyed 2"');
 	});
 
 	it('should inspect variables in different stackframes', async function() {

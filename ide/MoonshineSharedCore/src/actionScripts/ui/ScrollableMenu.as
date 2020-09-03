@@ -28,6 +28,12 @@ package actionScripts.ui
 	
 	public class ScrollableMenu extends Menu
 	{
+		private var _selectedItemBasedOnSelectedIndex:Object;
+		public function get selectedItemBasedOnSelectedIndex():Object
+		{
+			return _selectedItemBasedOnSelectedIndex;
+		}
+		
 		public function ScrollableMenu()
 		{
 			super();
@@ -192,6 +198,20 @@ package actionScripts.ui
 			super.openSubMenu(row);
 		}
 		
+		override public function set selectedIndex(value:int):void
+		{
+			// this will make the selection running in loop
+			if (value >= dataProvider.length)
+			{
+				super.selectedIndex = 0;
+			}
+			else
+			{
+				super.selectedIndex = value;
+			}
+			
+			_selectedItemBasedOnSelectedIndex = dataProvider[selectedIndex];
+		}
 		
 		override protected function measure():void
 		{
@@ -202,7 +222,5 @@ package actionScripts.ui
 				measuredMinWidth = measuredWidth = measuredWidth + ScrollBar.THICKNESS;
 			}    
 		}
-		
-		
 	}
 }

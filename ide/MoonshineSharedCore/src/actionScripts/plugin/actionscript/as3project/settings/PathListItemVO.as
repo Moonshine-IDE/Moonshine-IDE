@@ -27,6 +27,16 @@ package actionScripts.plugin.actionscript.as3project.settings
 		public var file:FileLocation;
 		public var isMainSourceFolder:Boolean;
 		
+		private var _isSelected:Boolean;
+		public function get isSelected():Boolean
+		{
+			return _isSelected;
+		}
+		public function set isSelected(value:Boolean):void
+		{
+			_isSelected = value;
+		}
+		
 		public function PathListItemVO(file:FileLocation, label:String)
 		{
 			this.file = file;

@@ -3,6 +3,7 @@
  * Copyright (C) Microsoft Corporation. All rights reserved.
  *--------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.couldNotConnectToPort = exports.chromeProvidedPortWithoutUserDataDir = exports.getNotExistErrorResponse = void 0;
 const errors_1 = require("vscode-chrome-debug-core/out/src/errors");
 const nls = require("vscode-nls");
 const localize = nls.loadMessageBundle(__filename);

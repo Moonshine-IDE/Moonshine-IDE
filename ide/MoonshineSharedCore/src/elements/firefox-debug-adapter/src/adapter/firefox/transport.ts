@@ -20,7 +20,7 @@ export class DebugProtocolTransport extends EventEmitter {
 	) {
 		super();
 
-		this.buffer = new Buffer(DebugProtocolTransport.initialBufferLength);
+		this.buffer = Buffer.alloc(DebugProtocolTransport.initialBufferLength);
 		this.bufferedLength = 0;
 		this.receivingHeader = true;
 
@@ -44,7 +44,7 @@ export class DebugProtocolTransport extends EventEmitter {
 								log.debug(`Going to receive message with ${bodyLength} bytes in body (initial chunk contained ${chunk.length} bytes)`);
 							}
 							// create a buffer for the message body
-							let bodyBuffer = new Buffer(bodyLength);
+							let bodyBuffer = Buffer.alloc(bodyLength);
 							// copy the start of the body from this.buffer
 							this.buffer.copy(bodyBuffer, 0, i + 1);
 							// replace this.buffer with bodyBuffer
@@ -64,7 +64,7 @@ export class DebugProtocolTransport extends EventEmitter {
 						let msgString = this.buffer.toString('utf8');
 						this.emit('message', JSON.parse(msgString));
 						// get ready to receive the next header
-						this.buffer = new Buffer(DebugProtocolTransport.initialBufferLength);
+						this.buffer = Buffer.alloc(DebugProtocolTransport.initialBufferLength);
 						this.bufferedLength = 0;
 						this.receivingHeader = true;
 					}
@@ -74,7 +74,7 @@ export class DebugProtocolTransport extends EventEmitter {
 	}
 
 	public sendMessage(msg: any): void {
-		let msgBuf = new Buffer(JSON.stringify(msg), 'utf8');
+		let msgBuf = Buffer.from(JSON.stringify(msg), 'utf8');
 		this.socket.write(msgBuf.length + ':', 'ascii');
 		this.socket.write(msgBuf);
 	}

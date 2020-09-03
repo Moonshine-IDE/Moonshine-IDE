@@ -33,7 +33,6 @@ package actionScripts.ui.tabview
     import spark.components.Label;
     
     import actionScripts.ui.IFileContentWindow;
-    import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.tabNavigator.CloseTabButton;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -333,19 +332,6 @@ package actionScripts.ui.tabview
         private function closeThisTab():void
 		{
             dispatchEvent(new Event(EVENT_TAB_CLOSE));
-			
-			if (data is IFileContentWindow)
-			{
-				var projectPath:String = data.hasOwnProperty("projectPath") ? data["projectPath"] : null;
-				var editor:IFileContentWindow = data as IFileContentWindow;
-				if (editor.currentFile)
-				{
-					SharedObjectUtil.removeLocationOfClosingProjectFile(
-						editor.currentFile.name,
-						editor.currentFile.fileBridge.nativePath,
-						projectPath);
-				}
-			}
 		}
     }
 }

@@ -23,6 +23,7 @@ package actionScripts.plugins.menu
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
+	import actionScripts.plugin.core.compiler.FlashModuleBuildEvent;
 	import actionScripts.plugin.core.compiler.JavaScriptBuildEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
@@ -54,6 +55,10 @@ package actionScripts.plugins.menu
 			{
 				buildRoyale();
 			}
+			else if (model.activeProject is AS3ProjectVO)
+			{
+				buildAS3Project();
+			}
 		}
 		
 		private function onProjectBuildAndRun(event:Event):void
@@ -67,6 +72,10 @@ package actionScripts.plugins.menu
 			{
 				buildAndRunRoyale();
 			}
+			else if (model.activeProject is AS3ProjectVO)
+			{
+				buildAndRunAS3Project();
+			}
 		}
 		
 		private function onProjectBuildAndRelease(event:Event):void
@@ -79,6 +88,10 @@ package actionScripts.plugins.menu
 			if (isMenuOfProjectType(ProjectMenuTypes.JS_ROYALE, model.activeProject.menuType))
 			{
 				buildAndReleaseRoyale();
+			}
+			else if (model.activeProject is AS3ProjectVO)
+			{
+				buildAndReleaseAS3Project();
 			}
 		}
 		
@@ -95,6 +108,12 @@ package actionScripts.plugins.menu
 			}
 			else
 			{
+				if ((model.activeProject is AS3ProjectVO) && hasModules())
+				{
+					dispatcher.dispatchEvent(new Event(FlashModuleBuildEvent.BUILD_AND_DEBUG));
+					return;
+				}
+				
 				dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.BUILD_AND_DEBUG));
 			}
 		}
@@ -164,6 +183,47 @@ package actionScripts.plugins.menu
 			{
 				dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.BUILD_AND_DEBUG));
 			}
+		}
+		
+		protected function buildAS3Project():void
+		{
+			if (hasModules())
+			{
+				dispatcher.dispatchEvent(new Event(FlashModuleBuildEvent.BUILD));
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.BUILD));
+			}
+		}
+		
+		protected function buildAndRunAS3Project():void
+		{
+			if (hasModules())
+			{
+				dispatcher.dispatchEvent(new Event(FlashModuleBuildEvent.BUILD_AND_RUN));
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.BUILD_AND_RUN));
+			}
+		}
+		
+		protected function buildAndReleaseAS3Project():void
+		{
+			if (hasModules())
+			{
+				dispatcher.dispatchEvent(new Event(FlashModuleBuildEvent.BUILD_RELEASE));
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.BUILD_RELEASE));
+			}
+		}
+		
+		private function hasModules():Boolean
+		{
+			return ((model.activeProject as AS3ProjectVO).flashModuleOptions.modulePaths.length > 0);
 		}
 	}
 }

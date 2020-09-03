@@ -903,6 +903,7 @@ package actionScripts.utils
 				}
 			}
 			
+			openProjectMenu.items.sort(menuComparer);
 			return openProjectMenu;
 		}
 		
@@ -927,6 +928,7 @@ package actionScripts.utils
 				}
 			}
 			
+			openFileMenu.items.sort(menuComparer);
 			return openFileMenu;
 		}
 		
@@ -1412,5 +1414,12 @@ package actionScripts.utils
                         return item == extension;
                     });
         }
+		
+		private static function menuComparer(itemA:MenuItem, itemB:MenuItem):Number 
+		{
+			if (itemA.label.toLowerCase() < itemB.label.toLowerCase()) return -1;
+			else if (itemA.label.toLowerCase() > itemB.label.toLowerCase()) return 1;
+			else return 0;
+		}
     }
 }

@@ -16,8 +16,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.importer
 {
-    import actionScripts.utils.SerializeUtil;
-
     import flash.filesystem.File;
     import flash.filesystem.FileMode;
     import flash.filesystem.FileStream;
@@ -27,6 +25,7 @@ package actionScripts.plugins.as3project.importer
     import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
     import actionScripts.plugin.core.importer.FlashBuilderImporterBase;
     import actionScripts.utils.SDKUtils;
+    import actionScripts.utils.SerializeUtil;
     import actionScripts.utils.UtilsCore;
 	
 	public class FlashBuilderImporter extends FlashBuilderImporterBase
@@ -143,29 +142,35 @@ package actionScripts.plugins.as3project.importer
 				}
 			}
 			
+			var sourceFolder:FileLocation = p.folderLocation.resolvePath(data.compiler.@sourceFolderPath);
+			var outputFolder:FileLocation = p.folderLocation.resolvePath(data.compiler.@outputFolderPath);
+			
 			parsePaths(data.compiler.compilerSourcePath["compilerSourcePathEntry"], p.classpaths, p, "path", p.flashBuilderDOCUMENTSPath);
 			//parsePaths(data.compiler.moonshineResourcePath["moonshineResourcePathEntry"], p.resourcePaths, p, "path", p.flashBuilderDOCUMENTSPath);
 			parsePaths(data.compiler.libraryPath.libraryPathEntry.excludedEntries.libraryPathEntry.(@linkType == "10"), p.resourcePaths, p, "path", p.flashBuilderDOCUMENTSPath);
 			parsePaths(data.compiler.libraryPath.libraryPathEntry.(@kind == "3"), p.libraries, p, "path", p.flashBuilderDOCUMENTSPath);
+			
+			// flash modules
+			if ((data.modules as XMLList).children().length() != 0)
+			{
+				p.flashModuleOptions.parse(data.modules);
+			}
 
 			p.buildOptions.parse(data.compiler, BuildOptions.TYPE_FB);
-			var target:FileLocation = p.folderLocation.resolvePath(data.compiler.@sourceFolderPath + "/" + data.@mainApplicationPath); 
+			var target:FileLocation = sourceFolder.resolvePath(data.@mainApplicationPath); 
 			p.targets.push(target);
 			
 			p.air = SerializeUtil.deserializeBoolean(data.compiler.@useApolloConfig);
 			p.isActionScriptOnly = SerializeUtil.deserializeBoolean(data.compiler.@useFlashSDK);
 
 			// FB doesn't seem to have a notion of output filename, so we guesstimate it
-			p.swfOutput.path = p.folderLocation.resolvePath(data.compiler.@outputFolderPath + "/" + p.targets[0].fileBridge.name.split(".")[0] + ".swf");
+			p.swfOutput.path = outputFolder.resolvePath(p.targets[0].fileBridge.name.split(".")[0] + ".swf");
 			// lets update SWF version too per current SDK version (if setup a default SDK)
 			p.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(p.buildOptions.customSDKPath);
 			
-			var classPath:FileLocation = p.folderLocation.resolvePath(data.compiler.@sourceFolderPath);
-			p.classpaths.push(classPath);
-
+			p.classpaths.push(sourceFolder);
 			p.isFlashBuilderProject = true;
-			
-			p.sourceFolder = p.folderLocation.fileBridge.resolvePath(data.compiler.@sourceFolderPath);
+			p.sourceFolder = sourceFolder;
 			p.isMobile = UtilsCore.isMobile(p);
 		}
 		

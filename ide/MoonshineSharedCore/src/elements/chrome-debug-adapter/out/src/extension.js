@@ -3,14 +3,16 @@
  * Copyright (C) Microsoft Corporation. All rights reserved.
  *--------------------------------------------------------*/
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ChromeConfigurationProvider = exports.deactivate = exports.activate = void 0;
 const vscode = require("vscode");
 const Core = require("vscode-chrome-debug-core");
 const nls = require("vscode-nls");
@@ -18,7 +20,6 @@ const path = require("path");
 const utils_1 = require("./utils");
 const localize = nls.loadMessageBundle(__filename);
 const DEBUG_SETTINGS = 'debug.chrome';
-const USE_V3_SETTING = 'useV3';
 function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand('extension.chrome-debug.toggleSkippingFile', toggleSkippingFile));
     context.subscriptions.push(vscode.commands.registerCommand('extension.chrome-debug.toggleSmartStep', toggleSmartStep));
@@ -50,7 +51,8 @@ class ChromeConfigurationProvider {
                 // than try to work automagically.
                 return null;
             }
-            if (config.request === 'attach') {
+            const v3 = useV3();
+            if (config.request === 'attach' && !v3) {
                 const discovery = new Core.chromeTargetDiscoveryStrategy.ChromeTargetDiscovery(new Core.NullLogger(), new Core.telemetry.NullTelemetryReporter());
                 let targets;
                 try {
@@ -69,9 +71,9 @@ class ChromeConfigurationProvider {
                 }
             }
             resolveRemoteUris(folder, config);
-            const useV3 = !!vscode.workspace.getConfiguration(DEBUG_SETTINGS).get(USE_V3_SETTING);
-            if (useV3 && !vscode.env.remoteName) {
-                config['__workspaceFolder'] = '${workspaceFolder}';
+            if (v3) {
+                folder = folder || (vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined);
+                config['__workspaceFolder'] = folder === null || folder === void 0 ? void 0 : folder.uri.fsPath;
                 config.type = 'pwa-chrome';
             }
             return config;
@@ -88,6 +90,15 @@ function getFsPath(uri) {
     return isWindows && !fsPath.match(/^[a-zA-Z]:/) ?
         fsPath.replace(/\\/g, '/') : // Hack - undo the slash normalization that URI does when windows is the current platform
         fsPath;
+}
+function useV3() {
+    var _a, _b;
+    return (_b = (_a = getWithoutDefault('debug.chrome.useV3')) !== null && _a !== void 0 ? _a : getWithoutDefault('debug.javascript.usePreview')) !== null && _b !== void 0 ? _b : true;
+}
+function getWithoutDefault(setting) {
+    var _a;
+    const info = vscode.workspace.getConfiguration().inspect(setting);
+    return (_a = info === null || info === void 0 ? void 0 : info.workspaceValue) !== null && _a !== void 0 ? _a : info === null || info === void 0 ? void 0 : info.globalValue;
 }
 function mapRemoteClientUriToInternalPath(remoteUri) {
     const uriPath = getFsPath(remoteUri);

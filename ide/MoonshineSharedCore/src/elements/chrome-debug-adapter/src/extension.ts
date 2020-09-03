@@ -12,7 +12,6 @@ import { defaultTargetFilter, getTargetFilter } from './utils';
 const localize = nls.loadMessageBundle();
 
 const DEBUG_SETTINGS = 'debug.chrome';
-const USE_V3_SETTING = 'useV3';
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('extension.chrome-debug.toggleSkippingFile', toggleSkippingFile));
@@ -48,7 +47,8 @@ export class ChromeConfigurationProvider implements vscode.DebugConfigurationPro
             return null;
         }
 
-        if (config.request === 'attach') {
+        const v3 = useV3();
+        if (config.request === 'attach' && !v3) {
             const discovery = new Core.chromeTargetDiscoveryStrategy.ChromeTargetDiscovery(
                 new Core.NullLogger(), new Core.telemetry.NullTelemetryReporter());
 
@@ -72,9 +72,9 @@ export class ChromeConfigurationProvider implements vscode.DebugConfigurationPro
 
         resolveRemoteUris(folder, config);
 
-        const useV3 = !!vscode.workspace.getConfiguration(DEBUG_SETTINGS).get(USE_V3_SETTING);
-        if (useV3 && !vscode.env.remoteName) {
-            config['__workspaceFolder'] = '${workspaceFolder}';
+        if (v3) {
+            folder = folder || (vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined);
+            config['__workspaceFolder'] = folder?.uri.fsPath;
             config.type = 'pwa-chrome';
         }
 
@@ -92,6 +92,15 @@ function getFsPath(uri: vscode.Uri): string {
     return isWindows && !fsPath.match(/^[a-zA-Z]:/) ?
         fsPath.replace(/\\/g, '/') : // Hack - undo the slash normalization that URI does when windows is the current platform
         fsPath;
+}
+
+function useV3() {
+    return getWithoutDefault('debug.chrome.useV3') ?? getWithoutDefault('debug.javascript.usePreview') ?? true;
+}
+
+function getWithoutDefault<T>(setting: string): T | undefined {
+    const info = vscode.workspace.getConfiguration().inspect<T>(setting);
+    return info?.workspaceValue ?? info?.globalValue;
 }
 
 function mapRemoteClientUriToInternalPath(remoteUri: vscode.Uri): string {

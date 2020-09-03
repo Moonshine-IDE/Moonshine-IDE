@@ -37,8 +37,8 @@ package actionScripts.ui.editor
 	import actionScripts.events.SaveFileEvent;
 	import actionScripts.events.SignatureHelpEvent;
 	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.utils.isUriInProject;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
@@ -578,13 +578,10 @@ package actionScripts.ui.editor
 			editor.showCodeActions(event.codeActions);
 		}
 
-		override protected function closeTabHandler(event:CloseTabEvent):void
+		override protected function closeTabHandler(event:Event):void
 		{
-			var closedTab:LanguageServerTextEditor = event.tab as LanguageServerTextEditor;
-			if(!closedTab || closedTab != this)
-			{
-				return;
-			}
+			super.closeTabHandler(event);
+			
 			dispatchDidCloseEvent();
 		}
 
