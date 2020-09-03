@@ -127,7 +127,11 @@
 	<property environment="env"/>
 	<!-- Check and set if Flex SDK already setup as environment variable -->
 	<propertycopy property="FLEX_HOME" from="env.FLEX_HOME" silent="true" override="${Is.FLEX_HOME.Not.Exists}"/>
+	<propertycopy property="SIGNTOOL_HOME" from="env.SIGNTOOL_HOME" silent="true"/>
+	<propertycopy property="NSIS_HOME" from="env.NSIS_HOME" silent="true"/>
 	<echo>SDK : ${FLEX_HOME}</echo>
+	<echo>SIGNTOOL: ${SIGNTOOL_HOME}</echo>
+	<echo>NSIS: ${NSIS_HOME}</echo>
 	
     <!-- Path to your Flex SDK with AIR 3.1 overlaid -->
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
@@ -188,6 +192,9 @@
 		 replaced with the individual locales -->
 	<property name="locale.path" value="${LibraryMoonshineCore}/src/locale/{locale}" />
 	
+	<tstamp>
+		<format property="timestamp.time" pattern="MM/dd/yyyy hh:mm aa"/>
+	</tstamp>
 	
 	<!--
 	//==========================================================================
@@ -261,18 +268,15 @@
 
 	<!-- Windows packaging/signing Task -->
 	<target name="CompileSWFWindowsSignedPackage" depends="CompileSWFOSX,CompileSWFWindows">
-		<echo>Signed Process Running</echo>
+		<echo># Signed Process Running - Preparing Bundle</echo>
 		<java jar="${adt_path}" fork="true" failonerror="true">
 			<arg line="-package" />
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${debug_dir}/${certSelfSigned}'" />
 	   		<arg line="-storepass '${certSelfSignedPassword}'" />
 			<arg line="-tsa 'http://timestamp.entrust.net/TSS/RFC3161sha2TS'" />
-	   		<arg line="-target native"/>
-	   		<arg line="-storetype pkcs12" />
-	   		<arg line="-keystore '${certSignedWindowsBinary}'" />
-	   		<arg line="-storepass '${certSignedWindowsBinaryPassword}'" />
-	   		<arg line="${desktopBinaryFilename}" />
+	   		<arg line="-target bundle"/>
+	   		<arg line="${windowsBundleFilename}" />
 	   		<arg line="'${desktopApplicationDescriptor}'" />
 	   		<arg line="'${swfFilename}'" />
 			<arg line="elements" />
@@ -282,6 +286,32 @@
 			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</java>
+		<echo># Signed Process Running - Signing Executable</echo>
+		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
+			<arg value="sign"/>
+			<arg value="/f"/>
+			<arg value="${debug_dir}/${certSelfSigned}"/>
+			<arg value="/p"/>
+			<arg value="${certSelfSignedPassword}"/>
+			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
+		</exec>
+		<echo># Signed Process Running - Praparing Installer</echo>
+		<exec executable="${NSIS_HOME}/makensis.exe" failonerror="true">
+			<arg value="/DVERSION=${BuildVersion}"/>
+			<arg value="/DINSTALLERNAME=${installerName}"/>
+			<arg value="/DAPPID=${applicationID}"/>
+			<arg value="/DTIMESTAMP=${timestamp.time}"/>
+			<arg value="nsis-build.nsi"/>
+		</exec>
+		<echo># Signed Process Running - Signing Installer</echo>
+		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
+			<arg value="sign"/>
+			<arg value="/f"/>
+			<arg value="${certSignedWindowsBinary}"/>
+			<arg value="/p"/>
+			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="${deploy_dir}/${installerName}-${BuildVersion}.exe"/>
+		</exec>
 	 </target>
 	
 	<!-- Windows self-signed packaging initiator -->
@@ -748,6 +778,7 @@
 				    <replacevalue><![CDATA[]]></replacevalue>
 				</replace>
 				<property name="desktopBinaryFilename" value="${deploy_dir}/${installerName}.exe" />
+				<property name="windowsBundleFilename" value="${deploy_dir}/${installerName}EXE" />
 			</else>
 		</if>
 		<replaceregexp file="${desktopApplicationDescriptor}" match="filenameToBeReplacedByANT" replace="${executableName}" />
@@ -1003,6 +1034,7 @@
 		<if>
 			<equals arg1="${keepDebugFiles}" arg2="false"/>
 			<then>
+				<delete dir="${deploy_dir}/MoonshineEXE" />
 				<delete dir="${debug_dir}" />
 				<delete dir="assets" />
 				<delete dir="elements" />

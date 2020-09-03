@@ -77,19 +77,17 @@ package actionScripts.utils
 			if (ConstantsCoreVO.IS_MACOS) runAppStoreHelperOSX();
 			else
 			{
-				if ((!executableFile.exists && !isUpdateChecking && !isDownloading) || 
-					(!isUpdateChecking && !isDownloading)) 
+				if (executableFile.exists)
+				{
+					runAppStoreHelperWindows();
+				}
+				else if (((!executableFile.exists && !isUpdateChecking && !isDownloading) || 
+					(!isUpdateChecking && !isDownloading)) && 
+					!isUpdateChecked) 
 				{
 					// make sure we does this check once
 					// in an application lifecycle
-					if (!isUpdateChecked)
-					{
-						initializeApplicationUpdater();
-					}
-					else if (executableFile.exists)
-					{
-						runAppStoreHelperWindows();
-					}
+					initializeApplicationUpdater();
 				}
 			}
 		}
