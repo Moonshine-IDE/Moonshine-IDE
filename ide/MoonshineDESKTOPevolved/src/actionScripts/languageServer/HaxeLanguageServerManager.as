@@ -86,6 +86,7 @@ package actionScripts.languageServer
 		private var _displayArguments:String = null;
 		private var _haxeVersion:String = null;
 		private var _languageServerProgressStarted:Boolean = false;
+		private var _activeProgressTokens:Array = [];
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -448,6 +449,8 @@ package actionScripts.languageServer
 			_languageServerProgressStarted = false;
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
+			_languageClient.addNotificationListener("$/progress", dollar__progress);
+			_languageClient.addNotificationListener("window/workDoneProgress/create", window__workDoneProgress__create);
 		}
 
 		private function restartLanguageServer():void
@@ -764,6 +767,47 @@ package actionScripts.languageServer
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
 				project.name
 			));
+		}
+
+		private function window__workDoneProgress__create(message:Object):void
+		{
+			var token:Object = message.params.token;
+			this._activeProgressTokens.push(token);
+		}
+
+		private function dollar__progress(message:Object):void
+		{
+			var token:Object = message.params.token;
+			var value:Object = message.params.value;
+			var tokenIndex:int = this._activeProgressTokens.indexOf(token);
+			if(tokenIndex == -1)
+			{
+				return;
+			}
+
+			switch(value.kind)
+			{
+				case "end":
+				{
+					this._activeProgressTokens.splice(tokenIndex, 1);
+					_dispatcher.dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name
+					));
+					break;
+				}
+				case "begin":
+				{
+					_dispatcher.dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name, value.title, false
+					));
+					break;
+				}
+				default:
+					trace("Unknown progress message: " + JSON.stringify(message));
+				
+			}
 		}
 	}
 }
