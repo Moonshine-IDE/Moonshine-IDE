@@ -45,6 +45,8 @@ package actionScripts.plugin.outline
 	{
 		public static const EVENT_OUTLINE:String = "EVENT_OUTLINE";
 
+		private static const LANGUAGE_SERVER_CAPABILITY_DOCUMENT_SYMBOLS:String = "textDocument/documentSymbol";
+
 		public function OutlinePlugin()
 		{
 			super();
@@ -76,6 +78,7 @@ package actionScripts.plugin.outline
 			dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowDocumentSymbols);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, handleTabSelect);
 			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, handleLanguageServerOpened);
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, handleLanguageServerRegisterCapability);
 			dispatcher.addEventListener(LanguageServerEvent.EVENT_DIDCHANGE, handleDidChange);
 			dispatcher.addEventListener(LanguageServerEvent.EVENT_DIDSAVE, handleDidSave);
 		}
@@ -100,6 +103,23 @@ package actionScripts.plugin.outline
 			//we may have tried to refresh the symbols previously, but it would
 			//not have been successful because the language server was not ready
 			//yet. try again now.
+			this.refreshSymbols();
+		}
+
+		private function handleLanguageServerRegisterCapability(event:ProjectEvent):void
+		{
+			if(event.extras[0] != LANGUAGE_SERVER_CAPABILITY_DOCUMENT_SYMBOLS)
+			{
+				return;
+			}
+			
+			//start fresh because this capapbility wasn't registered before
+			var collection:TreeCollection = outlineView.outline;
+			collection.removeAll();
+
+			//we may have tried to refresh the symbols previously, but it would
+			//not have been successful because the language server did not have
+			//this capability registered yet
 			this.refreshSymbols();
 		}
 
