@@ -27,4 +27,5 @@ ide/MoonshineDESKTOPevolved/build/helperResources/
 ide/MoonshineDESKTOPevolved/build/tourDeFlex/
 ide/MoonshineDESKTOPevolved/build/installer/sdk-installer-config-4.0.xml
 **/*.swp
-ide/MoonshineGUICore/bin/
+ide/MoonshineGUICore/bin/**/haxe
+ide/MoonshineGUICore/bin/**/obj
