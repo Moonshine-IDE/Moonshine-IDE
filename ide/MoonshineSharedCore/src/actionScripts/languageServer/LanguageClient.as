@@ -1521,6 +1521,15 @@ package actionScripts.languageServer
 					trace("Error: Failed to update language server capability. Unknown method: " + method);
 				}
 			}
+			
+			if(enable)
+			{
+				_globalDispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, _project, method));
+			}
+			else
+			{
+				_globalDispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_UNREGISTER_CAPABILITY, _project, method));
+			}
 		}
 
 		private function client__registerCapability(jsonObject:Object):void
