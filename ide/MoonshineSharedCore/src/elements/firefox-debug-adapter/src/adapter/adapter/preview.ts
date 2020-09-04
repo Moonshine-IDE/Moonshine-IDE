@@ -32,7 +32,7 @@ export function renderPreview(objectGrip: FirefoxDebugProtocol.ObjectGrip): stri
 
 		} else if (preview.kind === 'ArrayLike') {
 
-			return renderArrayLikePreview(preview);
+			return renderArrayLikePreview(preview, objectGrip.class);
 
 		} else if ((objectGrip.class === 'Date') && (preview.kind === undefined)) {
 
@@ -83,6 +83,19 @@ function renderObjectPreview(preview: FirefoxDebugProtocol.ObjectPreview, classN
 		}
 	}
 
+	if (i < maxProperties) {
+		for (const symbolProperty of preview.ownSymbols) {
+
+			const renderedValue = renderGrip(symbolProperty.descriptor.value);
+			renderedProperties.push(`Symbol(${symbolProperty.name}): ${renderedValue}`);
+
+			if (++i >= maxProperties) {
+				renderedProperties.push('\u2026');
+				break;
+			}
+		}
+	}
+
 	const renderedObject = `{${renderedProperties.join(', ')}}`;
 
 	if (className === 'Object') {
@@ -118,9 +131,9 @@ function renderDOMElementPreview(preview: FirefoxDebugProtocol.DOMNodePreview): 
 	}
 }
 
-function renderArrayLikePreview(preview: FirefoxDebugProtocol.ArrayLikePreview): string {
+function renderArrayLikePreview(preview: FirefoxDebugProtocol.ArrayLikePreview, className: string): string {
 
-	let result = `Array(${preview.length})`;
+	let result = `${className}(${preview.length})`;
 
 	if (preview.items && preview.items.length > 0) {
 

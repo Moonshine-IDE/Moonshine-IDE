@@ -3,14 +3,16 @@
  * Copyright (C) Microsoft Corporation. All rights reserved.
  *--------------------------------------------------------*/
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.resolveWebRootPattern = exports.ChromeDebugAdapter = void 0;
 const nls = require("vscode-nls");
 let localize = nls.loadMessageBundle(__filename);
 const os = require("os");
@@ -462,7 +464,7 @@ class ChromeDebugAdapter extends vscode_chrome_debug_core_1.ChromeDebugAdapter {
         });
     }
     getFullEnv(customEnv) {
-        const env = Object.assign({}, process.env, customEnv);
+        const env = Object.assign(Object.assign({}, process.env), customEnv);
         Object.keys(env).filter(k => env[k] === null).forEach(key => delete env[key]);
         return env;
     }

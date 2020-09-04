@@ -24,7 +24,7 @@
 					 xmlns:s="library://ns.adobe.com/flex/spark"
 					 xmlns:view="actionScripts.plugin.findreplace.view.*"
 					 xmlns:utils="actionScripts.utils.*" title="New MXML Component"
-					 xmlns:newfile="components.popup.newFile.*">
+					 xmlns:newfile="components.popup.newFile.*" xmlns:mx="library://ns.adobe.com/flex/mx">
 	<fx:Metadata>
 		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
 	</fx:Metadata>
@@ -226,7 +226,7 @@
                                  useRollOver="true"
                                  doubleClickEnabled="true"
                                  labelField="name"
-                                 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+                                 itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
                                  itemClick="onTreeItemClicked(event)"/>
 	</s:VGroup>
 	<s:VGroup width="100%">
@@ -246,7 +246,7 @@
 						width="100%" height="25"
 						dataProvider="{componentTemplates}" labelFunction="getTemplateLabel"
 						requireSelection="true" itemRendererFunction="getItemRenderer"
-						visible="{componentTemplates}" includeInLayout="{componentTemplates}"
+						visible="{componentTemplates!=null}" includeInLayout="{componentTemplates!=null}"
 						open="lastSelectedItem=ddlType.selectedItem" close="onDropDownClosed(event)"/>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"

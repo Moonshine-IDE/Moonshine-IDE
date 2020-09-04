@@ -18,14 +18,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.build
 {
+	import flash.filesystem.File;
+	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	public class CompilerPluginBase extends PluginBase implements IPlugin
 	{
@@ -50,6 +52,14 @@ package actionScripts.plugins.build
 		protected function onProjectPathsValidated(paths:Array):void
 		{
 			
+		}
+		
+		protected function getWindowsCompilerFile(sdk:File, compilerPath:String):File
+		{
+			var tmpFile:File = sdk.resolvePath(compilerPath +".exe");
+			if (tmpFile.exists) return tmpFile;
+			
+			return sdk.resolvePath(compilerPath +".bat");
 		}
 		
 		private function validateAS3VOPaths(project:AS3ProjectVO):void

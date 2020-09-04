@@ -77,6 +77,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_TEXT: FileLocation;
 		public static var TEMPLATE_XML: FileLocation;
 		public static var TEMPLATE_MXML: FileLocation;
+		public static var TEMPLATE_MXML_MODULE: FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_FLEX:FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_PRIMEFACES:FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_DOMINO:FileLocation;
@@ -300,7 +301,8 @@ package actionScripts.valueObjects
 </s:Group>]]></root>;
 			
 			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj", "xhtml",
-								"java", "groovy", "gradle", "yml", "gsp", "properties", "javaproj", "sh", "ini", "jar"];
+								"java", "groovy", "gradle", "yml", "gsp", "properties", "javaproj", "sh", "ini", "jar", "hx", "hxproj", "grailsproj",
+								"json", "md"];
 			
 			TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";

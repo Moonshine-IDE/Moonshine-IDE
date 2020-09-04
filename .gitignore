@@ -27,6 +27,11 @@ ide/MoonshineDESKTOPevolved/build/helperResources/
 ide/MoonshineDESKTOPevolved/build/tourDeFlex/
 ide/MoonshineDESKTOPevolved/build/installer/sdk-installer-config-4.0.xml
 **/*.swp
+<<<<<<< HEAD
 ide/MoonshineSharedCore/src/elements/templates/projects/Domino Project/nsfs/.gitignore
 
 
+=======
+ide/MoonshineGUICore/bin/**/haxe
+ide/MoonshineGUICore/bin/**/obj
+>>>>>>> master

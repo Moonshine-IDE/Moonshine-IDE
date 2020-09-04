@@ -26,6 +26,8 @@ package actionScripts.utils
     
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.IFileContentWindow;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
@@ -207,6 +209,18 @@ package actionScripts.utils
             }
 
             saveProjectItem({name: fileName, path: filePath}, "name", "path", cookieName);
+		}
+		
+		public static function removeLocationOfEditorFile(editor:IContentWindow):void
+		{
+			if (!(editor is IFileContentWindow)) return;
+			
+			var projectPath:String = ("projectPath" in editor) ? editor["projectPath"] : null;
+			removeLocationOfClosingProjectFile(
+				(editor as IFileContentWindow).currentFile.name,
+				(editor as IFileContentWindow).currentFile.fileBridge.nativePath,
+				projectPath
+			);
 		}
 
 		public static function removeLocationOfClosingProjectFile(fileName:String, filePath:String, projectPath:String):void

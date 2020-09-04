@@ -8,6 +8,9 @@
 		"library-path": [
 			"libs"
 		],
+		"external-library-path": [
+			"../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"
+		],
 		"include-sources": [
 			"src"
 		]

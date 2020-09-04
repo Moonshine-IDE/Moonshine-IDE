@@ -1,21 +1,23 @@
 import { Log } from '../../util/log';
 import { EventEmitter } from 'events';
-import { PendingRequests } from '../../util/pendingRequests';
+import { PendingRequests, PendingRequest } from '../../util/pendingRequests';
 import { PathMapper } from '../../util/pathMapper';
 import { ActorProxy } from './interface';
 import { TabActorProxy } from './tab';
+import { TabDescriptorActorProxy } from './tabDescriptor';
 import { ConsoleActorProxy } from './console';
 import { PreferenceActorProxy } from './preference';
 import { AddonsActorProxy } from './addons';
+import { DeviceActorProxy } from './device';
 import { DebugConnection } from '../connection';
 
 let log = Log.create('RootActorProxy');
 
-export type FetchTabsResult = {
-	tabs: Map<string, [TabActorProxy, ConsoleActorProxy]>,
+export interface FetchRootResult {
 	preference: PreferenceActorProxy,
-	addons: AddonsActorProxy | undefined
-};
+	addons: AddonsActorProxy | undefined,
+	device: DeviceActorProxy
+}
 
 /**
  * Proxy class for a root actor
@@ -25,8 +27,10 @@ export type FetchTabsResult = {
 export class RootActorProxy extends EventEmitter implements ActorProxy {
 
 	private tabs = new Map<string, [TabActorProxy, ConsoleActorProxy]>();
+	private pendingRootRequest?: PendingRequest<FetchRootResult>;
+	private rootPromise?: Promise<FetchRootResult>;
 	private pendingProcessRequests = new PendingRequests<[TabActorProxy, ConsoleActorProxy]>();
-	private pendingTabsRequests = new PendingRequests<FetchTabsResult>();
+	private pendingTabsRequests = new PendingRequests<Map<string, [TabActorProxy, ConsoleActorProxy]>>();
 	private pendingAddonsRequests = new PendingRequests<FirefoxDebugProtocol.Addon[]>();
 
 	constructor(
@@ -41,6 +45,20 @@ export class RootActorProxy extends EventEmitter implements ActorProxy {
 		return 'root';
 	}
 
+	public fetchRoot(): Promise<FetchRootResult> {
+		if (!this.rootPromise) {
+
+			log.debug('Fetching root');
+
+			this.rootPromise = new Promise<FetchRootResult>((resolve, reject) => {
+				this.pendingRootRequest = { resolve, reject };
+				this.connection.sendRequest({ to: this.name, type: 'getRoot' });
+			});
+		}
+
+		return this.rootPromise;
+	}
+
 	public fetchProcess(): Promise<[TabActorProxy, ConsoleActorProxy]> {
 
 		log.debug('Fetching process');
@@ -51,11 +69,11 @@ export class RootActorProxy extends EventEmitter implements ActorProxy {
 		})
 	}
 
-	public fetchTabs(): Promise<FetchTabsResult> {
+	public fetchTabs(): Promise<Map<string, [TabActorProxy, ConsoleActorProxy]>> {
 
 		log.debug('Fetching tabs');
 
-		return new Promise<FetchTabsResult>((resolve, reject) => {
+		return new Promise<Map<string, [TabActorProxy, ConsoleActorProxy]>>((resolve, reject) => {
 			this.pendingTabsRequests.enqueue({ resolve, reject });
 			this.connection.sendRequest({ to: this.name, type: 'listTabs' });
 		})
@@ -98,7 +116,7 @@ export class RootActorProxy extends EventEmitter implements ActorProxy {
 
 			// convert the Tab array into a map of TabActorProxies, re-using already 
 			// existing proxies and emitting tabOpened events for new ones
-			tabsResponse.tabs.forEach((tab) => {
+			Promise.all(tabsResponse.tabs.map(async tab => {
 
 				let actorsForTab: [TabActorProxy, ConsoleActorProxy];
 				if (this.tabs.has(tab.actor)) {
@@ -109,42 +127,73 @@ export class RootActorProxy extends EventEmitter implements ActorProxy {
 
 					log.debug(`Tab ${tab.actor} opened`);
 
-					actorsForTab = [
-						new TabActorProxy(
-							tab.actor, tab.title, tab.url, this.pathMapper, this.connection),
-						new ConsoleActorProxy(tab.consoleActor, this.connection)
-					];
+					if ((tab as FirefoxDebugProtocol.Tab).consoleActor) {
+
+						const _tab = tab as FirefoxDebugProtocol.Tab;
+						actorsForTab = [
+							new TabActorProxy(
+								tab.actor, _tab.title, _tab.url, this.pathMapper, this.connection),
+							new ConsoleActorProxy(_tab.consoleActor, this.connection)
+						];
+
+					} else {
+
+						const tabDescriptorActor = new TabDescriptorActorProxy(
+							tab.actor, this.pathMapper, this.connection);
+						actorsForTab = await tabDescriptorActor.getTarget();
+
+					}
+
 					this.emit('tabOpened', actorsForTab);
-
 				}
+
 				currentTabs.set(tab.actor, actorsForTab);
+
+			})).then(() => {
+
+				// emit tabClosed events for tabs that have disappeared
+				this.tabs.forEach((actorsForTab, tabActorName) => {
+					if (!currentTabs.has(tabActorName)) {
+						log.debug(`Tab ${tabActorName} closed`);
+						this.emit('tabClosed', actorsForTab);
+					}
+				});
+
+				this.tabs = currentTabs;
+		
+				this.pendingTabsRequests.resolveOne(currentTabs);
 			});
 
-			// emit tabClosed events for tabs that have disappeared
-			this.tabs.forEach((actorsForTab) => {
-				if (!currentTabs.has(actorsForTab[0].name)) {
-					log.debug(`Tab ${actorsForTab[0].name} closed`);
-					this.emit('tabClosed', actorsForTab);
-				}
-			});					
+		} else if (response['preferenceActor']) {
 
-			this.tabs = currentTabs;
+			log.debug('Received root response');
 
-			let preferenceActor = this.connection.getOrCreate(tabsResponse.preferenceActor,
-				() => new PreferenceActorProxy(tabsResponse.preferenceActor, this.connection));
+			let rootResponse = <FirefoxDebugProtocol.RootResponse>response;
+			if (this.pendingRootRequest) {
 
-			let addonsActor: AddonsActorProxy | undefined;
-			const addonsActorName = tabsResponse.addonsActor;
-			if (addonsActorName) {
-				addonsActor = this.connection.getOrCreate(addonsActorName,
-					() => new AddonsActorProxy(addonsActorName, this.connection));
-			}
+				let preferenceActor = this.connection.getOrCreate(rootResponse.preferenceActor,
+					() => new PreferenceActorProxy(rootResponse.preferenceActor, this.connection));
 	
-			this.pendingTabsRequests.resolveOne({
-				tabs: currentTabs, 
-				preference: preferenceActor, 
-				addons: addonsActor
-			});
+				let addonsActor: AddonsActorProxy | undefined;
+				const addonsActorName = rootResponse.addonsActor;
+				if (addonsActorName) {
+					addonsActor = this.connection.getOrCreate(addonsActorName,
+						() => new AddonsActorProxy(addonsActorName, this.connection));
+				}
+
+				const deviceActor = this.connection.getOrCreate(rootResponse.deviceActor,
+					() => new DeviceActorProxy(rootResponse.deviceActor, this.connection));
+
+				this.pendingRootRequest.resolve({ 
+					preference: preferenceActor,
+					addons: addonsActor,
+					device: deviceActor
+				});
+				this.pendingRootRequest = undefined;
+
+			} else {
+				log.warn('Received root response without a corresponding request');
+			}
 
 		} else if (response['type'] === 'tabListChanged') {
 

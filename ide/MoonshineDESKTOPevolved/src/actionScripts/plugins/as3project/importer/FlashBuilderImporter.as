@@ -149,6 +149,12 @@ package actionScripts.plugins.as3project.importer
 			//parsePaths(data.compiler.moonshineResourcePath["moonshineResourcePathEntry"], p.resourcePaths, p, "path", p.flashBuilderDOCUMENTSPath);
 			parsePaths(data.compiler.libraryPath.libraryPathEntry.excludedEntries.libraryPathEntry.(@linkType == "10"), p.resourcePaths, p, "path", p.flashBuilderDOCUMENTSPath);
 			parsePaths(data.compiler.libraryPath.libraryPathEntry.(@kind == "3"), p.libraries, p, "path", p.flashBuilderDOCUMENTSPath);
+			
+			// flash modules
+			if ((data.modules as XMLList).children().length() != 0)
+			{
+				p.flashModuleOptions.parse(data.modules);
+			}
 
 			p.buildOptions.parse(data.compiler, BuildOptions.TYPE_FB);
 			var target:FileLocation = sourceFolder.resolvePath(data.@mainApplicationPath); 

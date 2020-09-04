@@ -56,6 +56,8 @@ package actionScripts.events
 		public static const CHECK_SVN_PROJECT:String = "checkSVNRepository";
 		public static const LANGUAGE_SERVER_OPENED:String = "languageServerOpenedAgainstProject";
 		public static const LANGUAGE_SERVER_CLOSED:String = "languageServerClosedAgainstProject";
+		public static const LANGUAGE_SERVER_REGISTER_CAPABILITY:String = "languageServerRegisterCapabilityAgainstProject";
+		public static const LANGUAGE_SERVER_UNREGISTER_CAPABILITY:String = "languageServerRegisterCapabilityAgainstProject";
 		
 		public static const OPEN_CUSTOM_COMMANDS_ON_SDK:String = "openCustomCommandsInterfaceForSDKtype";
 		

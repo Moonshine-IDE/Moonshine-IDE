@@ -9,10 +9,10 @@ if ($PSVersionTable.PSVersion -lt "6.0" -or $IsWindows) {
 }
 $ret=0
 if (Test-Path "$basedir/node$exe") {
-  & "$basedir/node$exe"  "$basedir/../uuid/bin/uuid" $args
+  & "$basedir/node$exe"  "$basedir/../uuid/dist/bin/uuid" $args
   $ret=$LASTEXITCODE
 } else {
-  & "node$exe"  "$basedir/../uuid/bin/uuid" $args
+  & "node$exe"  "$basedir/../uuid/dist/bin/uuid" $args
   $ret=$LASTEXITCODE
 }
 exit $ret

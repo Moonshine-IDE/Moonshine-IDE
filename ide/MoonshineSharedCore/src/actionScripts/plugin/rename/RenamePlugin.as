@@ -38,7 +38,7 @@ package actionScripts.plugin.rename
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
-    import actionScripts.plugin.rename.view.RenameView;
+    import moonshine.plugin.rename.view.RenameView;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.LanguageServerTextEditor;
@@ -51,14 +51,21 @@ package actionScripts.plugin.rename
     
     import components.popup.RenamePopup;
     import components.popup.newFile.NewFilePopup;
+    import actionScripts.ui.FeathersUIWrapper;
 
 	public class RenamePlugin extends PluginBase
 	{
-		private var renameView:RenameView = new RenameView();
+		private var renameViewWrapper:FeathersUIWrapper;
+		private var renameView:RenameView;
 		private var newFilePopup:NewFilePopup;
 		private var renameFileView:RenamePopup;
 		
-		public function RenamePlugin() {	}
+		public function RenamePlugin()
+		{
+			this.renameView = new RenameView();
+			this.renameView.addEventListener(Event.CLOSE, renameView_closeHandler);
+			this.renameViewWrapper = new FeathersUIWrapper(renameView);
+		}
 
 		override public function get name():String { return "Rename Plugin"; }
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
@@ -97,25 +104,32 @@ package actionScripts.plugin.rename
 			this._startChar = TextUtil.startOfWord(lineText, caretIndex);
 			this._endChar = TextUtil.endOfWord(lineText, caretIndex);
 			this._line = editor.editor.model.selectedLineIndex;
-			renameView.oldName = editor.editor.model.selectedLine.text.substr(this._startChar, this._endChar - this._startChar);
-			renameView.addEventListener(CloseEvent.CLOSE, renameView_closeHandler);
-			PopUpManager.addPopUp(renameView, DisplayObject(editor.parentApplication), true);
-			PopUpManager.centerPopUp(renameView);
+			renameView.existingSymbolName = editor.editor.model.selectedLine.text.substr(this._startChar, this._endChar - this._startChar);
+			PopUpManager.addPopUp(renameViewWrapper, DisplayObject(editor.parentApplication), true);
+			PopUpManager.centerPopUp(renameViewWrapper);
+			renameViewWrapper.assignFocus("top");
+			renameViewWrapper.stage.addEventListener(Event.RESIZE, renameView_stage_resizeHandler, false, 0, true);
 		}
 		
-		private function renameView_closeHandler(event:CloseEvent):void
+		private function renameView_closeHandler(event:Event):void
 		{
 			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-			renameView.removeEventListener(CloseEvent.CLOSE, renameView_closeHandler);
-			if (event.detail !== Alert.OK)
-			{
-				return;
-			}
 			
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_RENAME,
-				editor.currentFile.fileBridge.url,
-				this._startChar, this._line, this._endChar, this._line,
-				renameView.newName));
+			if(renameView.newSymbolName != null)
+			{
+				dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_RENAME,
+					editor.currentFile.fileBridge.url,
+					this._startChar, this._line, this._endChar, this._line,
+					renameView.newSymbolName));
+			}	
+			
+			renameViewWrapper.stage.removeEventListener(Event.RESIZE, renameView_stage_resizeHandler);
+			PopUpManager.removePopUp(renameViewWrapper);
+		}
+
+		private function renameView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(renameViewWrapper);
 		}
 		
 		private function handleOpenRenameFileView(event:RenameEvent):void

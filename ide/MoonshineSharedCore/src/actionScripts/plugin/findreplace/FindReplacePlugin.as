@@ -30,13 +30,14 @@ package actionScripts.plugin.findreplace
     import actionScripts.events.ApplicationEvent;
     import actionScripts.events.GeneralEvent;
     import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.findreplace.view.GoToLineView;
+    import moonshine.plugin.findreplace.view.GoToLineView;
     import actionScripts.plugin.findreplace.view.SearchView;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.editor.text.vo.SearchResult;
     import actionScripts.utils.TextUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.ui.FeathersUIWrapper;
 
 	public class FindReplacePlugin extends PluginBase
 	{
@@ -49,6 +50,7 @@ package actionScripts.plugin.findreplace
 
 		private var searchView:SearchView;
 		private var gotoLineView:GoToLineView;
+		private var gotoLineViewWrapper:FeathersUIWrapper;
 		
 		private var searchReplaceRe:RegExp = /^(?:\/)?((?:\\[^\/]|\\\/|\[(?:\\[^\]]|\\\]|[^\\\]])+\]|[^\[\]\\\/])+)\/((?:\\[^\/]|\\\/|[^\\\/])+)?(?:\/([gismx]*))?$/;
 		private var tempObj:Object;
@@ -148,19 +150,23 @@ package actionScripts.plugin.findreplace
 			{
 				var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
 				
-				gotoLineView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GoToLineView, true) as GoToLineView;
-				gotoLineView.totalLinesCount = editor.getEditorComponent().model.lines.length;
-				gotoLineView.addEventListener(CloseEvent.CLOSE, onGotoLineClosed);
-				PopUpManager.centerPopUp(gotoLineView);
+				gotoLineView = new GoToLineView();
+				gotoLineViewWrapper = new FeathersUIWrapper(gotoLineView);
+				PopUpManager.addPopUp(gotoLineViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+				gotoLineView.maxLineNumber = editor.getEditorComponent().model.lines.length;
+				gotoLineView.addEventListener(Event.CLOSE, onGotoLineClosed);
+				PopUpManager.centerPopUp(gotoLineViewWrapper);
+				gotoLineViewWrapper.assignFocus("top");
+				gotoLineViewWrapper.stage.addEventListener(Event.RESIZE, gotoLineView_stage_resizeHandler, false, 0, true);
 			}
 		}
 		
-		private function onGotoLineClosed(event:CloseEvent):void
+		private function onGotoLineClosed(event:Event):void
 		{
 			if (gotoLineView.lineNumber != -1)
 			{
 				var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
-				var tmpLineIndex:int = --gotoLineView.lineNumber != -1 ? gotoLineView.lineNumber : 0;
+				var tmpLineIndex:int = gotoLineView.lineNumber - 1;
 				
 				var textEditor:TextEditor = editor.getEditorComponent();
 				textEditor.model.setSelection(tmpLineIndex, 0, tmpLineIndex, 0);
@@ -168,8 +174,16 @@ package actionScripts.plugin.findreplace
 				textEditor.invalidateLines();
 			}
 			
-			gotoLineView.removeEventListener(CloseEvent.CLOSE, onGotoLineClosed);
+			gotoLineViewWrapper.stage.removeEventListener(Event.RESIZE, gotoLineView_stage_resizeHandler);
+			PopUpManager.removePopUp(gotoLineViewWrapper);
+			gotoLineView.removeEventListener(Event.CLOSE, onGotoLineClosed);
 			gotoLineView = null;
+			gotoLineViewWrapper = null;
+		}
+
+		protected function gotoLineView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(gotoLineViewWrapper);
 		}
 
 		protected function closeSearchView(event:Event):void

@@ -18,22 +18,29 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.symbols
 {
-	import flash.display.DisplayObject;
-	import flash.events.Event;
-	
-	import mx.collections.ArrayCollection;
-	import mx.core.UIComponent;
-	import mx.managers.PopUpManager;
-	
 	import actionScripts.events.LanguageServerEvent;
+	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.SymbolsEvent;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.symbols.view.SymbolsView;
-	import actionScripts.ui.editor.ActionScriptTextEditor;
+	import actionScripts.ui.FeathersUIWrapper;
+	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.DocumentSymbol;
+	import actionScripts.valueObjects.Location;
+	import actionScripts.valueObjects.Range;
 	import actionScripts.valueObjects.SymbolInformation;
+
+	import feathers.data.ArrayCollection;
+
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+
+	import moonshine.plugin.symbols.view.SymbolsView;
+
+	import mx.controls.Alert;
+	import mx.core.UIComponent;
+	import mx.managers.PopUpManager;
 
 	public class SymbolsPlugin extends PluginBase
 	{
@@ -45,13 +52,17 @@ package actionScripts.plugin.symbols
 
 		public function SymbolsPlugin()
 		{
+			this.symbolsView = new SymbolsView();
+			this.symbolsView.addEventListener(Event.CLOSE, symbolsView_closeHandler);
+			this.symbolsViewWrapper = new FeathersUIWrapper(this.symbolsView);
 		}
 
 		override public function get name():String { return "Symbols Plugin"; }
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays symbols in current document or entire workspace."; }
 
-		private var symbolsView:SymbolsView = new SymbolsView();
+		private var symbolsViewWrapper:FeathersUIWrapper;
+		private var symbolsView:SymbolsView;
 		private var isWorkspace:Boolean = false;
 
 		override public function activate():void
@@ -67,6 +78,7 @@ package actionScripts.plugin.symbols
 		override public function deactivate():void
 		{
 			super.deactivate();
+			symbolsView.removeEventListener(SymbolsView.EVENT_QUERY_CHANGE, handleQueryChange);
 			dispatcher.removeEventListener(EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW, handleOpenDocumentSymbolsView);
 			dispatcher.removeEventListener(EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW, handleOpenWorkspaceSymbolsView);
 			dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowSymbols);
@@ -82,6 +94,7 @@ package actionScripts.plugin.symbols
 				{
 					//no point in calling the language server here
 					//an empty query is supposed to have zero results
+					this.symbolsView.symbols.filterFunction = null;
 					this.symbolsView.symbols.removeAll();
 					return;
 				}
@@ -120,12 +133,17 @@ package actionScripts.plugin.symbols
 			}
 			isWorkspace = false;
 			symbolsView.title = TITLE_DOCUMENT;
+			symbolsView.query = "";
+			var collection:ArrayCollection = symbolsView.symbols;
+			collection.filterFunction = null;
+			collection.removeAll();
 			var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
-			PopUpManager.addPopUp(symbolsView, DisplayObject(parentApp), true);
-			PopUpManager.centerPopUp(symbolsView);
+			PopUpManager.addPopUp(symbolsViewWrapper, DisplayObject(parentApp), true);
+			PopUpManager.centerPopUp(symbolsViewWrapper);
 			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS,
 				editor.currentFile.fileBridge.url));
-			symbolsView.focusManager.setFocus(symbolsView.txt_query);
+			symbolsViewWrapper.assignFocus("top");
+			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
 		}
 
 		private function handleOpenWorkspaceSymbolsView(event:Event):void
@@ -136,15 +154,21 @@ package actionScripts.plugin.symbols
 			}
 			isWorkspace = true;
 			symbolsView.title = TITLE_WORKSPACE;
+			symbolsView.query = "";
+			var collection:ArrayCollection = symbolsView.symbols;
+			collection.filterFunction = null;
+			collection.removeAll();
 			var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
-			PopUpManager.addPopUp(symbolsView, DisplayObject(parentApp), true);
-			PopUpManager.centerPopUp(symbolsView);
-			symbolsView.focusManager.setFocus(symbolsView.txt_query);
+			PopUpManager.addPopUp(symbolsViewWrapper, DisplayObject(parentApp), true);
+			PopUpManager.centerPopUp(symbolsViewWrapper);
+			symbolsView.stage.focus = symbolsView.searchFieldTextInput;
+			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
 		}
 
 		private function handleShowSymbols(event:SymbolsEvent):void
 		{
 			var collection:ArrayCollection = symbolsView.symbols;
+			collection.filterFunction = null;
 			collection.removeAll();
 			var symbols:Array = event.symbols;
 			var itemCount:int = symbols.length;
@@ -154,17 +178,15 @@ package actionScripts.plugin.symbols
 				if(symbol is SymbolInformation)
 				{
 					var symbolInfo:SymbolInformation = symbol as SymbolInformation;
-					collection.addItem(symbolInfo);
+					collection.add(symbolInfo);
 				}
 				else if(symbol is DocumentSymbol)
 				{
 					var documentSymbol:DocumentSymbol = symbol as DocumentSymbol;
-					collection.addItem(documentSymbol);
+					collection.add(documentSymbol);
 					this.addDocumentSymbolChildren(documentSymbol, collection);
 				}
 			}
-			collection.filterFunction = null;
-			collection.refresh();
 		}
 
 		private function addDocumentSymbolChildren(documentSymbol:DocumentSymbol, collection:ArrayCollection):void
@@ -178,9 +200,38 @@ package actionScripts.plugin.symbols
 			for(var j:int = 0; j < childCount; j++)
 			{
 				var child:DocumentSymbol = children[j];
-				collection.addItem(child);
+				collection.add(child);
 				this.addDocumentSymbolChildren(child, collection);
 			}
+		}
+
+		private function symbolsView_closeHandler(event:Event):void
+		{
+			var selectedSymbol:Object = this.symbolsView.selectedSymbol;
+			if(selectedSymbol is SymbolInformation)
+			{
+				var symbolInfo:SymbolInformation = selectedSymbol as SymbolInformation;
+				dispatcher.dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, symbolInfo.location));
+			}
+			else if(selectedSymbol is DocumentSymbol)
+			{
+				var documentSymbol:DocumentSymbol = selectedSymbol as DocumentSymbol;
+				var activeEditor:BasicTextEditor = model.activeEditor as BasicTextEditor;
+				var uri:String = activeEditor.currentFile.fileBridge.url;
+				var range:Range = documentSymbol.range;
+				var location:Location = new Location(uri, range);
+				dispatcher.dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
+			}
+
+			symbolsViewWrapper.stage.removeEventListener(Event.RESIZE, symbolsView_stage_resizeHandler);
+			PopUpManager.removePopUp(symbolsViewWrapper);
+		}
+
+		protected function symbolsView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(symbolsViewWrapper);
 		}
 
 	}

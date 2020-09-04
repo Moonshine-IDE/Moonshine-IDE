@@ -131,7 +131,7 @@ export class PathMapper {
 		return undefined;
 	}
 
-	private removeQueryString(path: string): string {
+	removeQueryString(path: string): string {
 		let queryStringIndex = path.indexOf('?');
 		if (queryStringIndex >= 0) {
 			return path.substr(0, queryStringIndex);

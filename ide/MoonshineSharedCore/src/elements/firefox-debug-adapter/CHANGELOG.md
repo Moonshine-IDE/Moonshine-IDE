@@ -1,3 +1,22 @@
+### Version 2.9.0
+* add `tabFilter` configuration property
+* open a new Firefox tab if no tab matches the `tabFilter`
+* allow `stable`, `developer` and `nightly` as values for firefoxExecutable
+* only suggest the Path Mapping Wizard if it can create a pathMapping
+* debug protocol fix for Firefox 78
+
+### Version 2.8.0
+* debug protocol fix for Firefox 77
+* add `tmpDir` configuration property
+* fix for skipping external URLs containing a query string
+* fixes for object previews
+
+### Version 2.7.2
+* debug protocol fixes for Firefox 76
+
+### Version 2.7.1
+* debug protocol fix for Firefox 75
+
 ### Version 2.7.0
 * bugfix for breakpoints in Vue.js projects
 * add default pathMappings for Next.js projects

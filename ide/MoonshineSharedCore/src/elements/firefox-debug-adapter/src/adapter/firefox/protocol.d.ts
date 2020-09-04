@@ -29,11 +29,14 @@ declare namespace FirefoxDebugProtocol {
 		};
 	}
 
-	interface TabsResponse extends Response {
-		tabs: Tab[];
-		selected: number;
+	interface RootResponse extends Response {
 		preferenceActor: string;
 		addonsActor?: string;
+		deviceActor: string;
+	}
+
+	interface TabsResponse extends Response {
+		tabs: (Tab | TabDescriptor)[];
 	}
 
 	interface Tab {
@@ -41,6 +44,14 @@ declare namespace FirefoxDebugProtocol {
 		title: string;
 		url: string;
 		consoleActor: string;
+	}
+
+	interface TabDescriptor {
+		actor: string;
+	}
+
+	interface TabDescriptorTargetResponse extends Response {
+		frame: Tab;
 	}
 
 	interface AddonsResponse extends Response {
@@ -76,6 +87,15 @@ declare namespace FirefoxDebugProtocol {
 			url: string;
 			consoleActor: string;
 		}
+	}
+
+	interface DeviceDescriptionResponse extends Response {
+		value: DeviceDescription;
+	}
+
+	interface DeviceDescription {
+		profile: string;
+		channel: string;
 	}
 
 	interface TabAttachedResponse extends TypedResponse {
@@ -125,11 +145,21 @@ declare namespace FirefoxDebugProtocol {
 		consoleActor: string;
 	}
 
-	interface GetCachedMessagesResponse extends Response {
-		messages:
-			((ConsoleAPICallResponseBody & { _type: 'ConsoleAPI' }) |
-			 (PageErrorResponseBody & { _type: 'PageError' }))[];
+	interface LegacyGetCachedMessagesResponse extends Response {
+		messages: LegacyCachedMessage[];
 	}
+
+	type LegacyCachedMessage =
+		(ConsoleAPICallResponseBody & { _type: 'ConsoleAPI' }) |
+		(PageErrorResponseBody & { _type: 'PageError' });
+
+	interface GetCachedMessagesResponse extends Response {
+		messages: CachedMessage[];
+	}
+
+	type CachedMessage =
+		{ type: 'consoleAPICall', message: ConsoleAPICallResponseBody } |
+		{ type: 'pageError', pageError: PageErrorResponseBody };
 
 	interface PageErrorResponse extends TypedResponse {
 		pageError: PageErrorResponseBody;

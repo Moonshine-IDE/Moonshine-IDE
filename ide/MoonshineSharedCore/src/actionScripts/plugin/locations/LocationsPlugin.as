@@ -20,30 +20,36 @@ package actionScripts.plugin.locations
 {
 	import actionScripts.events.LocationsEvent;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.locations.view.LocationsView;
+	import moonshine.plugin.locations.view.LocationsView;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Location;
 
 	import flash.events.Event;
 
-	import mx.collections.ArrayCollection;
 	import mx.core.UIComponent;
 	import flash.display.DisplayObject;
 	import mx.managers.PopUpManager;
 	import actionScripts.events.OpenLocationEvent;
+	import feathers.data.ArrayCollection;
+	import actionScripts.ui.FeathersUIWrapper;
+	import mx.controls.Alert;
 
 	public class LocationsPlugin extends PluginBase
 	{
 		public function LocationsPlugin()
 		{
+			locationsView = new LocationsView()
+			locationsView.addEventListener(Event.CLOSE, locationsView_closeHandler);
+			locationsViewWrapper = new FeathersUIWrapper(locationsView);
 		}
 
 		override public function get name():String { return "Go to Locations Plugin"; }
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays a list of locations that may be opened in the workspace."; }
 
-		private var locationsView:LocationsView = new LocationsView();
+		private var locationsViewWrapper:FeathersUIWrapper;
+		private var locationsView:LocationsView;
 		private var isLocationsViewVisible:Boolean;
 
 		override public function activate():void
@@ -65,7 +71,12 @@ package actionScripts.plugin.locations
 			var locations:Vector.<Location> = event.locations;
 			var itemCount:int = locations.length;
 
-			if(itemCount == 1)
+			if(itemCount == 0)
+			{
+				Alert.show("No locations found", ConstantsCoreVO.MOONSHINE_IDE_LABEL);
+				return;
+			}
+			else if(itemCount == 1)
 			{
 				//only one location means that we jump straight there
 				dispatcher.dispatchEvent(new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, locations[0]));
@@ -75,7 +86,7 @@ package actionScripts.plugin.locations
 			for(var i:int = 0; i < itemCount; i++)
 			{
 				var location:Location = locations[i];
-				collection.addItem(location);
+				collection.add(location);
 			}
 			collection.filterFunction = null;
 			collection.refresh();
@@ -83,8 +94,10 @@ package actionScripts.plugin.locations
 			if (!isLocationsViewVisible)
 			{
 				var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
-				PopUpManager.addPopUp(locationsView, DisplayObject(parentApp), true);
-				PopUpManager.centerPopUp(locationsView);
+				PopUpManager.addPopUp(locationsViewWrapper, DisplayObject(parentApp), true);
+				PopUpManager.centerPopUp(locationsViewWrapper);
+				locationsViewWrapper.assignFocus("top");
+				locationsViewWrapper.stage.addEventListener(Event.RESIZE, locationsView_stage_resizeHandler, false, 0, true);
 
 				isLocationsViewVisible = true;
 
@@ -97,6 +110,23 @@ package actionScripts.plugin.locations
 			locationsView.locations.removeAll();
 			isLocationsViewVisible = false;
 			locationsView.removeEventListener(Event.REMOVED_FROM_STAGE, onLocationsViewRemovedFromStage);
+		}
+
+		private function locationsView_closeHandler(event:Event):void
+		{
+			var selectedLocation:Location = this.locationsView.selectedLocation;
+			if(selectedLocation)
+			{
+				dispatcher.dispatchEvent(
+					new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, selectedLocation));
+			}
+			locationsViewWrapper.stage.removeEventListener(Event.RESIZE, locationsView_stage_resizeHandler);
+			PopUpManager.removePopUp(locationsViewWrapper);
+		}
+
+		protected function locationsView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(locationsViewWrapper);
 		}
 	}
 }

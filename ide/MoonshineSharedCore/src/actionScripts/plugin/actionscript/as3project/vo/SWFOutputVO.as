@@ -21,8 +21,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.utils.SDKUtils;
-    import actionScripts.utils.SerializeUtil;
-    import actionScripts.utils.TextUtil;
+	import actionScripts.utils.SerializeUtil;
+	import actionScripts.utils.TextUtil;
 	import actionScripts.utils.UtilsCore;
 
 	public class SWFOutputVO 
@@ -39,6 +39,19 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var width:int = 100;
 		public var height:int = 100;
 		public var platform:String;
+		
+		private var _swfVersionStrict:Number = 0;
+		public function get swfVersionStrict():Number
+		{
+			return _swfVersionStrict;
+		}
+		public function set swfVersionStrict(value:Number):void
+		{
+			if (!isNaN(value))
+			{
+				_swfVersionStrict = value;
+			}
+		}
 		
 		// TODO What is this? It's present as <movie input="" /> in FD .as3proj
 		/** Not sure what this is */

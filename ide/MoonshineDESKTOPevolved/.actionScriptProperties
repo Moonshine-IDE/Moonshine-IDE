@@ -18,6 +18,7 @@
       <libraryPathEntry kind="1" linkType="1" path="libs"/>
       <libraryPathEntry kind="3" linkType="1" path="libs/ApacheFlexSDKInstallerLib.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="1" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineSharedCore/libs"/>
+      <libraryPathEntry kind="3" linkType="1" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="5" linkType="2" path="extensions/SSB.ane"/>
     </libraryPath>
     <sourceAttachmentPath/>

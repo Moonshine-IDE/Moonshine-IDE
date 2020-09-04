@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.outline
 {
-	import actionScripts.plugin.outline.view.OutlineView;
+	import moonshine.plugin.outline.view.OutlineView;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import flash.events.Event;
@@ -38,17 +38,25 @@ package actionScripts.plugin.outline
 	import actionScripts.events.ProjectEvent;
 	import flash.utils.Timer;
 	import flash.events.TimerEvent;
+	import feathers.data.TreeNode;
+	import feathers.data.TreeCollection;
 
 	public class OutlinePlugin extends PluginBase
 	{
 		public static const EVENT_OUTLINE:String = "EVENT_OUTLINE";
 
+		private static const LANGUAGE_SERVER_CAPABILITY_DOCUMENT_SYMBOLS:String = "textDocument/documentSymbol";
+
 		public function OutlinePlugin()
 		{
 			super();
 			
-			outlineView  = new OutlineView();
+			outlineView = new OutlineView();
 			outlineView.addEventListener(Event.CHANGE, outlineView_changeHandler);
+			outlineView.addEventListener(Event.CLOSE, outlineView_closeHandler);
+			outlineViewWrapper = new OutlineViewWrapper(outlineView);
+			outlineViewWrapper.percentWidth = 100;
+			outlineViewWrapper.percentHeight = 100;
 
 			changeTimer = new Timer(500, 1);
 			changeTimer.addEventListener(TimerEvent.TIMER_COMPLETE, changeTimer_timerCompleteHandler);
@@ -58,6 +66,7 @@ package actionScripts.plugin.outline
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays an outline of the symbols in a source file."; }
 		
+		private var outlineViewWrapper:OutlineViewWrapper;
 		private var outlineView:OutlineView;
 		private var isStartupCall:Boolean = true;
 		private var changeTimer:Timer;
@@ -69,6 +78,7 @@ package actionScripts.plugin.outline
 			dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowDocumentSymbols);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, handleTabSelect);
 			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, handleLanguageServerOpened);
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, handleLanguageServerRegisterCapability);
 			dispatcher.addEventListener(LanguageServerEvent.EVENT_DIDCHANGE, handleDidChange);
 			dispatcher.addEventListener(LanguageServerEvent.EVENT_DIDSAVE, handleDidSave);
 		}
@@ -87,7 +97,7 @@ package actionScripts.plugin.outline
 		private function handleLanguageServerOpened(event:ProjectEvent):void
 		{
 			//start fresh because it's a new language server instance
-			var collection:ArrayCollection = outlineView.outline;
+			var collection:TreeCollection = outlineView.outline;
 			collection.removeAll();
 
 			//we may have tried to refresh the symbols previously, but it would
@@ -96,14 +106,31 @@ package actionScripts.plugin.outline
 			this.refreshSymbols();
 		}
 
+		private function handleLanguageServerRegisterCapability(event:ProjectEvent):void
+		{
+			if(event.extras[0] != LANGUAGE_SERVER_CAPABILITY_DOCUMENT_SYMBOLS)
+			{
+				return;
+			}
+			
+			//start fresh because this capapbility wasn't registered before
+			var collection:TreeCollection = outlineView.outline;
+			collection.removeAll();
+
+			//we may have tried to refresh the symbols previously, but it would
+			//not have been successful because the language server did not have
+			//this capability registered yet
+			this.refreshSymbols();
+		}
+
 		private function handleOutlineShow(event:Event):void
 		{
-			var collection:ArrayCollection = outlineView.outline;
+			var collection:TreeCollection = outlineView.outline;
 			collection.removeAll();
 			
-			if (!outlineView.parent)
+			if (!outlineViewWrapper.parent)
             {
-				LayoutModifier.addToSidebar(outlineView, event);
+				LayoutModifier.addToSidebar(outlineViewWrapper, event);
 
 				this.refreshSymbols();
             }
@@ -113,20 +140,24 @@ package actionScripts.plugin.outline
 				//hidden
 				changeTimer.reset();
 
-				LayoutModifier.removeFromSidebar(outlineView);
+				LayoutModifier.removeFromSidebar(outlineViewWrapper);
 			}
 			isStartupCall = false;
 		}
 
 		private function handleShowDocumentSymbols(event:SymbolsEvent):void
 		{
-			if(!outlineView.parent)
+			if(!outlineViewWrapper.parent)
 			{
 				//we can ignore this event when the outline isn't visible
 				return;
 			}
-			var collection:ArrayCollection = outlineView.outline;
+			var collection:TreeCollection = outlineView.outline;
 			collection.removeAll();
+
+			//TODO: remove when addAt() bug is fixed in alpha.3
+			var nodes:Array = [];
+
 			var symbols:Array = event.symbols;
 			var itemCount:int = symbols.length;
 			for(var i:int = 0; i < itemCount; i++)
@@ -135,33 +166,38 @@ package actionScripts.plugin.outline
 				if(symbol is SymbolInformation)
 				{
 					var symbolInfo:SymbolInformation = symbol as SymbolInformation;
-					collection.addItem({label: symbolInfo.name, symbol: symbolInfo});
+					//TODO: remove when addAt() bug is fixed in alpha.3
+					//collection.addAt(new TreeNode(symbolInfo), [i]);
+					nodes.push(new TreeNode(symbolInfo));
 				}
 				else if(symbol is DocumentSymbol)
 				{
 					var documentSymbol:DocumentSymbol = symbol as DocumentSymbol;
-					var item:Object = this.getDocumentSymbolItem(documentSymbol);
-					collection.addItem(item);
+					var item:TreeNode = this.getDocumentSymbolItem(documentSymbol);
+					//TODO: remove when addAt() bug is fixed in alpha.3
+					nodes.push(item);
+					//collection.addAt(item, [i]);
 				}
 			}
+			//TODO: remove when addAt() bug is fixed in alpha.3
+			outlineView.outline = new TreeCollection(nodes);
 		}
 
-		private function getDocumentSymbolItem(documentSymbol:DocumentSymbol):Object
+		private function getDocumentSymbolItem(documentSymbol:DocumentSymbol):TreeNode
 		{
-			var item:Object = {label: documentSymbol.name, symbol: documentSymbol, children: null};
+			var nodeChildren:Array = null;
 			var symbolChildren:Vector.<DocumentSymbol> = documentSymbol.children;
 			if(documentSymbol.children)
 			{
-				var children:Array = [];
+				nodeChildren = [];
 				var childCount:int = symbolChildren.length;
 				for(var i:int = 0; i < childCount; i++)
 				{
 					var child:DocumentSymbol = symbolChildren[i];
-					children[i] = this.getDocumentSymbolItem(child);
+					nodeChildren[i] = this.getDocumentSymbolItem(child);
 				}
-				item.children = children;
 			}
-			return item;
+			return new TreeNode(documentSymbol, nodeChildren);
 		}
 
 		private function refreshSymbols():void
@@ -173,7 +209,7 @@ package actionScripts.plugin.outline
 			//reset the timer, if it's running, because we're refreshing immediately
 			changeTimer.reset();
 
-			if(!outlineView.parent)
+			if(!outlineViewWrapper.parent)
 			{
 				//we can ignore this event when the outline isn't visible
 				return;
@@ -192,7 +228,7 @@ package actionScripts.plugin.outline
 		private function handleTabSelect(event:TabEvent):void
 		{
 			//we switched to a different file, so remove the old symbols
-			var collection:ArrayCollection = outlineView.outline;
+			var collection:TreeCollection = outlineView.outline;
 			collection.removeAll();
 
 			this.refreshSymbols();
@@ -230,13 +266,18 @@ package actionScripts.plugin.outline
 			dispatcher.dispatchEvent(new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, location));
 		}
 
+		private function outlineView_closeHandler(event:Event):void
+		{
+			LayoutModifier.removeFromSidebar(outlineViewWrapper);
+		}
+
 		private function handleDidChange(event:LanguageServerEvent):void
 		{
 			//the file has been edited. to avoid updating the outline too often,
 			//reset the timer and start over from the beginning.
 			changeTimer.reset();
 			
-			if(!outlineView.parent)
+			if(!outlineViewWrapper.parent)
 			{
 				//we can ignore this event when the outline isn't visible
 				return;
@@ -256,5 +297,29 @@ package actionScripts.plugin.outline
 			//reflect the new changes
 			this.refreshSymbols();
 		}
+	}
+}
+
+import actionScripts.ui.FeathersUIWrapper;
+import actionScripts.ui.IPanelWindow;
+import actionScripts.interfaces.IViewWithTitle;
+import moonshine.plugin.outline.view.OutlineView;
+
+//IPanelWindow used by LayoutModifier.addToSidebar() and removeFromSidebar()
+class OutlineViewWrapper extends FeathersUIWrapper implements IPanelWindow, IViewWithTitle {
+	public function OutlineViewWrapper(outlineView:OutlineView)
+	{
+		super(outlineView);
+	}
+
+	public function get title():String
+	{
+		return OutlineView(feathersUIControl).title;
+	}
+
+	override public function get className():String
+	{
+		//className used by LayoutModifier.attachSidebarSections
+		return "OutlineView";
 	}
 }

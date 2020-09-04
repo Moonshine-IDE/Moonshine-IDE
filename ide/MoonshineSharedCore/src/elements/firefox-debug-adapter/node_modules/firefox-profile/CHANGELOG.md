@@ -1,3 +1,7 @@
+# 2.0.0
+
+* WebExtensions with package.json should not be classified as JetPack addon, thanks to @photonios
+
 # 1.3.1
 
 * fix regExp for parsing `user_pref`, thanks to @hbenl

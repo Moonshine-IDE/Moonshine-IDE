@@ -107,7 +107,8 @@ package actionScripts.languageServer
 		private static const METHOD_INITIALIZED:String = "initialized";
 		private static const METHOD_SHUTDOWN:String = "shutdown";
 		private static const METHOD_EXIT:String = "exit";
-		private static const METHOD_CANCEL_REQUEST:String = "$/cancelRequest";
+		private static const METHOD_DOLLAR__CANCEL_REQUEST:String = "$/cancelRequest";
+		private static const METHOD_DOLLAR__PROGRESS:String = "$/progress";
 		private static const METHOD_TEXT_DOCUMENT__DID_CHANGE:String = "textDocument/didChange";
 		private static const METHOD_TEXT_DOCUMENT__DID_OPEN:String = "textDocument/didOpen";
 		private static const METHOD_TEXT_DOCUMENT__DID_CLOSE:String = "textDocument/didClose";
@@ -131,6 +132,8 @@ package actionScripts.languageServer
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 		private static const METHOD_WINDOW__LOG_MESSAGE:String = "window/logMessage";
 		private static const METHOD_WINDOW__SHOW_MESSAGE:String = "window/showMessage";
+		private static const METHOD_WINDOW__WORK_DONE_PROGRESS__CREATE:String = "window/workDoneProgress/create";
+		private static const METHOD_WINDOW__WORK_DONE_PROGRESS__CANCEL:String = "window/workDoneProgress/cancel";
 		private static const METHOD_CLIENT__REGISTER_CAPABILITY:String = "client/registerCapability";
 		private static const METHOD_CLIENT__UNREGISTER_CAPABILITY:String = "client/unregisterCapability";
 		private static const METHOD_TELEMETRY__EVENT:String = "telemetry/event";
@@ -977,12 +980,55 @@ package actionScripts.languageServer
 				return;
 			}
 			var found:Boolean = true;
+			var canHandleNotification:Boolean = false;
 			var method:String = object.method;
 			switch(method)
 			{
+				case METHOD_DOLLAR__PROGRESS:
+				{
+					dollar__progress(object);
+					canHandleNotification = true;
+					//this is a notification and does not require a response
+					break;
+				}
+				case METHOD_DOLLAR__CANCEL_REQUEST:
+				{
+					dollar__cancelRequest(object);
+					canHandleNotification = true;
+					//this is a notification and does not require a response
+					break;
+				}
 				case METHOD_TEXT_DOCUMENT__PUBLISH_DIAGNOSTICS:
 				{
 					textDocument__publishDiagnostics(object);
+					canHandleNotification = true;
+					//this is a notification and does not require a response
+					break;
+				}
+				case METHOD_WINDOW__LOG_MESSAGE:
+				{
+					window__logMessage(object);
+					canHandleNotification = true;
+					//this is a notification and does not require a response
+					break;
+				}
+				case METHOD_WINDOW__SHOW_MESSAGE:
+				{
+					window__showMessage(object);
+					canHandleNotification = true;
+					//this is a notification and does not require a response
+					break;
+				}
+				case METHOD_WINDOW__WORK_DONE_PROGRESS__CREATE:
+				{
+					window__workDoneProgress__create(object);
+					canHandleNotification = true;
+					//this is a notification and does not require a response
+					break;
+				}
+				case METHOD_TELEMETRY__EVENT:
+				{
+					canHandleNotification = true;
 					//this is a notification and does not require a response
 					break;
 				}
@@ -990,16 +1036,6 @@ package actionScripts.languageServer
 				{
 					workspace__applyEdit(object);
 					sendResponse(object.id, { applied: true });
-					break;
-				}
-				case METHOD_WINDOW__LOG_MESSAGE:
-				{
-					window__logMessage(object);
-					break;
-				}
-				case METHOD_WINDOW__SHOW_MESSAGE:
-				{
-					window__showMessage(object);
 					break;
 				}
 				case METHOD_CLIENT__REGISTER_CAPABILITY:
@@ -1014,20 +1050,15 @@ package actionScripts.languageServer
 					sendResponse(object.id, {});
 					break;
 				}
-				case METHOD_TELEMETRY__EVENT:
-				{
-					//just ignore this one
-					break;
-				}
 				default:
 				{
 					found = false;
 					break;
 				}
 			}
-			if(!found)
+			if(!found || canHandleNotification)
 			{
-				found = this.handleNotification(object);
+				found = this.handleNotification(object) || found;
 			}
 			if(!found)
 			{
@@ -1322,6 +1353,16 @@ package actionScripts.languageServer
 			}
 			return original.value;
 		}
+
+		private function dollar__cancelRequest(jsonObject:Object):void
+		{
+			// notifications that start with $/ may be safely ignored
+		}
+
+		private function dollar__progress(jsonObject:Object):void
+		{
+			// notifications that start with $/ may be safely ignored
+		}
 		
 		private function textDocument__publishDiagnostics(jsonObject:Object):void
 		{
@@ -1391,6 +1432,10 @@ package actionScripts.languageServer
 			}
 			
 			Alert.show(message);
+		}
+
+		private function window__workDoneProgress__create(jsonObject:Object):void
+		{
 		}
 
 		private function updateRegisteredCapability(jsonObject:Object, enable:Boolean):void
@@ -1475,6 +1520,15 @@ package actionScripts.languageServer
 				{
 					trace("Error: Failed to update language server capability. Unknown method: " + method);
 				}
+			}
+			
+			if(enable)
+			{
+				_globalDispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, _project, method));
+			}
+			else
+			{
+				_globalDispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_UNREGISTER_CAPABILITY, _project, method));
 			}
 		}
 

@@ -37,8 +37,8 @@ package actionScripts.ui.editor
 	import actionScripts.events.SaveFileEvent;
 	import actionScripts.events.SignatureHelpEvent;
 	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.utils.isUriInProject;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
@@ -82,7 +82,11 @@ package actionScripts.ui.editor
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
-			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler);
+			// a higher priority ensures that the language server knows about
+			// all open files before we potentially makes other queries to the
+			// language server
+			// example: document symbols in the outline view
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler, false, 1);
 		}
 
 		override protected function removeGlobalListeners():void
@@ -578,13 +582,10 @@ package actionScripts.ui.editor
 			editor.showCodeActions(event.codeActions);
 		}
 
-		override protected function closeTabHandler(event:CloseTabEvent):void
+		override protected function closeTabHandler(event:Event):void
 		{
-			var closedTab:LanguageServerTextEditor = event.tab as LanguageServerTextEditor;
-			if(!closedTab || closedTab != this)
-			{
-				return;
-			}
+			super.closeTabHandler(event);
+			
 			dispatchDidCloseEvent();
 		}
 

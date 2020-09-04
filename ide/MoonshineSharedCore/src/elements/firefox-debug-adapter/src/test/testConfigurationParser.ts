@@ -1,7 +1,9 @@
+import * as os from 'os';
 import { LaunchConfiguration, AttachConfiguration } from '../common/configuration';
 import { parseConfiguration, NormalizedReloadConfiguration } from '../adapter/configuration';
 import * as assert from 'assert';
 import * as path from 'path';
+import RegExpEscape from 'escape-string-regexp';
 import { isWindowsPlatform } from '../common/util';
 
 describe('The configuration parser', function() {
@@ -10,12 +12,15 @@ describe('The configuration parser', function() {
 
 		let filePath: string;
 		let fileUrl: string;
+		let tabFilter: string;
 		if (isWindowsPlatform()) {
 			filePath = 'c:\\Users\\user\\project\\index.html';
 			fileUrl = 'file:///c:/Users/user/project/index.html';
+			tabFilter = 'file:\/\/\/c:\/Users\/user\/project\/.*';
 		} else {
 			filePath = '/home/user/project/index.html';
 			fileUrl = 'file:///home/user/project/index.html';
+			tabFilter = 'file:\/\/\/home\/user\/project\/.*';
 		}
 		let parsedConfiguration = await parseConfiguration({
 			request: 'launch',
@@ -26,6 +31,7 @@ describe('The configuration parser', function() {
 		assert.equal(parsedConfiguration.addon, undefined);
 		assert.deepEqual(parsedConfiguration.filesToSkip, []);
 		assert.equal(parsedConfiguration.reloadOnChange, undefined);
+		assert.deepEqual(parsedConfiguration.tabFilter, { include: [ new RegExp(tabFilter) ], exclude: [] });
 		assert.equal(parsedConfiguration.showConsoleCallLocation, false);
 		assert.equal(parsedConfiguration.liftAccessorsFromPrototypes, 0);
 		assert.equal(parsedConfiguration.suggestPathMappingWizard, true);
@@ -53,6 +59,7 @@ describe('The configuration parser', function() {
 		assert.equal(parsedConfiguration.addon, undefined);
 		assert.deepEqual(parsedConfiguration.filesToSkip, []);
 		assert.equal(parsedConfiguration.reloadOnChange, undefined);
+		assert.deepEqual(parsedConfiguration.tabFilter, { include: [ /https:\/\/mozilla\.org\/.*/ ], exclude: [] });
 		assert.equal(parsedConfiguration.showConsoleCallLocation, false);
 		assert.equal(parsedConfiguration.liftAccessorsFromPrototypes, 0);
 		assert.equal(parsedConfiguration.suggestPathMappingWizard, true);
@@ -75,14 +82,14 @@ describe('The configuration parser', function() {
 		}), 'The "file" property in the launch configuration has to be an absolute path');
 	});
 
-	for (let request of [ 'launch', 'attach' ]) {
-		it(`should require "webRoot" or "pathMappings" if "url" is specified in a ${request} configuration`, async function() {
-			await assertPromiseRejects(parseConfiguration(<any>{
-				request,
-				url: 'https://mozilla.org/'
-			}), `If you set "url" you also have to set "webRoot" or "pathMappings" in the ${request} configuration`);
-		});
+	it(`should require "webRoot" or "pathMappings" if "url" is specified in a launch configuration`, async function() {
+		await assertPromiseRejects(parseConfiguration(<any>{
+			request: 'launch',
+			url: 'https://mozilla.org/'
+		}), `If you set "url" you also have to set "webRoot" or "pathMappings" in the launch configuration`);
+	});
 
+	for (let request of [ 'launch', 'attach' ]) {
 		it(`should require "webRoot" to be an absolute path in a ${request} configuration`, async function() {
 			await assertPromiseRejects(parseConfiguration(<any>{
 				request,
@@ -299,6 +306,28 @@ describe('The configuration parser', function() {
 		assert.equal(parsedConfiguration.attach!.reloadTabs, true);
 	});
 
+	it('should not allow both "reAttach" and "keepProfileChanges" to be true on MacOS', async function() {
+
+		if (os.platform() !== 'darwin') {
+			this.skip();
+			return;
+		}
+
+		try {
+			await parseConfiguration({
+				request: 'launch',
+				file: '/home/user/project/index.html',
+				reAttach: true,
+				profileDir: path.join(os.tmpdir(), 'dummy'),
+				keepProfileChanges: true
+			});
+		} catch {
+			return;
+		}
+
+		throw new Error('This configuration should have been rejected');
+	});
+
 	it('should create a corresponding NormalizedReloadConfiguration if "reloadOnChange" is set to a string', async function() {
 
 		let parsedConfiguration = await parseConfiguration({
@@ -496,6 +525,79 @@ describe('The configuration parser', function() {
 		assert.equal(parsedConfiguration.filesToSkip.length, 1);
 	});
 
+	it('should create a corresponding ParsedTabFilterConfiguration if "tabFilter" is set to a string', async function() {
+
+		let parsedConfiguration = await parseConfiguration({
+			request: 'launch',
+			file: '/home/user/project/index.html',
+			tabFilter: 'http://localhost:3000'
+		});
+
+		assert.deepEqual(parsedConfiguration.tabFilter, {
+			include: [ /^http:\/\/localhost:3000$/ ],
+			exclude: []
+		});
+	});
+
+	it('should create a corresponding ParsedTabFilterConfiguration if "tabFilter" is set to a string array', async function() {
+
+		let parsedConfiguration = await parseConfiguration({
+			request: 'launch',
+			file: '/home/user/project/index.html',
+			tabFilter: [ 'http://localhost:3000', 'about:newtab' ]
+		});
+
+		assert.deepEqual(parsedConfiguration.tabFilter, {
+			include: [ /^http:\/\/localhost:3000$/, /^about:newtab$/ ],
+			exclude: []
+		});
+	});
+
+	it('should add "exclude" to a detailed "tabFilter" containing only "include"', async function() {
+
+		let parsedConfiguration = await parseConfiguration({
+			request: 'launch',
+			file: '/home/user/project/index.html',
+			tabFilter: { include: '*localhost*' }
+		});
+
+		assert.deepEqual(parsedConfiguration.tabFilter, {
+			include: [ /^.*localhost.*$/ ],
+			exclude: []
+		});
+	});
+
+	it('should add "include" to a detailed "tabFilter" containing only "exclude"', async function() {
+
+		let parsedConfiguration = await parseConfiguration({
+			request: 'launch',
+			file: '/home/user/project/index.html',
+			tabFilter: { exclude: 'https://developer.mozilla.org/*' }
+		});
+
+		assert.deepEqual(parsedConfiguration.tabFilter, {
+			include: [ /.*/ ],
+			exclude: [ /^https:\/\/developer\.mozilla\.org\/.*$/ ]
+		});
+	});
+
+	it('should copy a detailed "tabFilter"', async function() {
+
+		let parsedConfiguration = await parseConfiguration({
+			request: 'launch',
+			file: '/home/user/project/index.html',
+			tabFilter: {
+				include: [ '*localhost*' ],
+				exclude: [ 'https://developer.mozilla.org/*' ]
+			}
+		});
+
+		assert.deepEqual(parsedConfiguration.tabFilter, {
+			include: [ /^.*localhost.*$/ ],
+			exclude: [ /^https:\/\/developer\.mozilla\.org\/.*$/ ]
+		});
+	});
+
 	it('should copy the "showConsoleCallLocation" value', async function() {
 
 		let parsedConfiguration = await parseConfiguration({
@@ -575,6 +677,18 @@ describe('The configuration parser', function() {
 
 		assert.equal(parsedConfiguration.launch!.profileDir, profileDir);
 		assert.equal(parsedConfiguration.launch!.srcProfileDir, undefined);
+	});
+
+	it('should use the specified tmpDir', async function() {
+
+		const tmpDir = '/home/user/tmp';
+		const parsedConfiguration = await parseConfiguration({
+			request: 'launch',
+			file: '/home/user/project/index.html',
+			tmpDir
+		});
+
+		assert.ok(parsedConfiguration.launch!.profileDir.startsWith(tmpDir + '/vscode-firefox-debug-profile-'));
 	});
 
 	it('should parse user-specified Firefox preferences', async function() {

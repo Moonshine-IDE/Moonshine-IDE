@@ -20,6 +20,7 @@ package actionScripts.plugin.templating
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
@@ -31,6 +32,7 @@ package actionScripts.plugin.templating
 	
 	import __AS3__.vec.Vector;
 	
+	import actionScripts.events.ASModulesEvent;
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.EditorPluginEvent;
 	import actionScripts.events.ExportVisualEditorProjectEvent;
@@ -78,6 +80,7 @@ package actionScripts.plugin.templating
 	import components.popup.newFile.NewHaxeFilePopup;
 	import components.popup.newFile.NewJavaFilePopup;
 	import components.popup.newFile.NewMXMLFilePopup;
+	import components.popup.newFile.NewMXMLGenericFilePopup;
 	import components.popup.newFile.NewVisualEditorFilePopup;
 
 	import actionScripts.interfaces.IVisualEditorProjectVO
@@ -112,6 +115,7 @@ package actionScripts.plugin.templating
 		protected var newGroovyComponentPopup:NewGroovyFilePopup;
 		protected var newHaxeComponentPopup:NewHaxeFilePopup;
 		protected var newCSSComponentPopup:NewCSSFilePopup;
+		protected var newMXMLModuleComponentPopup:NewMXMLGenericFilePopup;
 		protected var newVisualEditorFilePopup:NewVisualEditorFilePopup;
 		protected var newFilePopup:NewFilePopup;
 		
@@ -232,6 +236,10 @@ package actionScripts.plugin.templating
                 if (!file.isHidden && !file.isDirectory)
                     ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES.addItem(file);
             }
+			
+			files = templatesDir.resolvePath("files/MXML Module.mxml.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_MXML_MODULE = files;
 
 			files = templatesDir.resolvePath("files/AS3 Class.as.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
@@ -337,6 +345,9 @@ package actionScripts.plugin.templating
 				}
 			}
 			
+			// sort when done
+			fileTemplates.sortOn("name", Array.CASEINSENSITIVE);
+			
 			projects = customTemplatesDir.resolvePath("projects");
 			if (!projects.fileBridge.exists) projects.fileBridge.createDirectory();
 			var projectList:Array = projects.fileBridge.getDirectoryListing();
@@ -349,7 +360,7 @@ package actionScripts.plugin.templating
 					projectTemplates.push(new FileLocation(file.nativePath));
 				}
 			}
-
+			
 			generateTemplateProjects();
 		}
 
@@ -503,6 +514,7 @@ package actionScripts.plugin.templating
 			newFileMenu.items.push(separator);
 
 			var filteredProjectTemplatesToMenu:Array = allLoadedTemplates.filter(filterProjectsTemplates);
+			filteredProjectTemplatesToMenu.sortOn("title", Array.CASEINSENSITIVE);
 
 			for each (var projectTemplate:TemplateVO in filteredProjectTemplatesToMenu)
 			{
@@ -582,6 +594,7 @@ package actionScripts.plugin.templating
 			
 			// Update internal template list
 			fileTemplates.push(newTemplate);
+			fileTemplates.sortOn("name", Array.CASEINSENSITIVE);
 			
 			// send event to get the new item added immediately to File/New menu
 			var lbl:String = TemplatingHelper.getTemplateLabel(newTemplate);
@@ -620,6 +633,7 @@ package actionScripts.plugin.templating
 			NewTemplateRenderer(event.target).dispatchEvent(new Event('refresh'));
 			
 			projectTemplates.push(newTemplate);
+			projectTemplates.sortOn("name", Array.CASEINSENSITIVE);
 			
 			// send event to get the new item added immediately to File/New menu
 			// send event to get the new item added immediately to File/New menu
@@ -797,7 +811,14 @@ package actionScripts.plugin.templating
 					
 					// update file list
 					tmpOldIndex = fileTemplates.indexOf(custom);
-					if (tmpOldIndex != -1) fileTemplates[tmpOldIndex] = customNewLocation;
+					if (tmpOldIndex != -1) 
+					{
+						fileTemplates[tmpOldIndex] = customNewLocation;
+						setTimeout(function():void
+						{
+							fileTemplates.sortOn("name", Array.CASEINSENSITIVE);
+						}, 1000);
+					}
 					
 					// updating file/new menu
 					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, false, oldFileName, null, newFileName, customNewLocation));
@@ -812,7 +833,11 @@ package actionScripts.plugin.templating
 					
 					// update file list
 					tmpOldIndex = projectTemplates.indexOf(custom);
-					if (tmpOldIndex != -1) projectTemplates[tmpOldIndex] = customNewLocation;
+					if (tmpOldIndex != -1) 
+					{
+						projectTemplates[tmpOldIndex] = customNewLocation;
+						projectTemplates.sortOn("name", Array.CASEINSENSITIVE);
+					}
 					
 					// updating file/new menu
 					dispatcher.dispatchEvent(new TemplatingEvent(TemplatingEvent.RENAME_TEMPLATE, true, oldFileName, null, newFileName, customNewLocation));
@@ -873,6 +898,9 @@ package actionScripts.plugin.templating
 					case "CSS File":
 						openCSSComponentTypeChoose(event);
                         break;
+					case "MXML Module":
+						openMXMLModuleTypeChoose(event);
+						break;
 					case "XML File":
 						openNewComponentTypeChoose(event, NewFilePopup.AS_XML);
                         break;
@@ -1109,6 +1137,42 @@ package actionScripts.plugin.templating
 			}
 		}
 		
+		protected function openMXMLModuleTypeChoose(event:Event):void
+		{
+			if (!newMXMLModuleComponentPopup)
+			{
+				newMXMLModuleComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewMXMLGenericFilePopup, true) as NewMXMLGenericFilePopup;
+				newMXMLModuleComponentPopup.title = "New MXML Module File";
+				newMXMLModuleComponentPopup.fileTemplate = ConstantsCoreVO.TEMPLATE_MXML_MODULE;
+				newMXMLModuleComponentPopup.addEventListener(CloseEvent.CLOSE, handleMXMLModulePopupClose);
+				newMXMLModuleComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onMXMLModuleFileCreateRequest);
+				
+				// newFileEvent sends by TreeView when right-clicked 
+				// context menu
+				if (event is NewFileEvent) 
+				{
+					newMXMLModuleComponentPopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+					newMXMLModuleComponentPopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+					newMXMLModuleComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+				}
+				else
+				{
+					// try to check if there is any selection in 
+					// TreeView item
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+					if (treeSelectedItem)
+					{
+						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+						newMXMLModuleComponentPopup.folderLocation = creatingItemIn.file;
+						newMXMLModuleComponentPopup.wrapperOfFolderLocation = creatingItemIn;
+						newMXMLModuleComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+					}
+				}
+				
+				PopUpManager.centerPopUp(newMXMLModuleComponentPopup);
+			}
+		}
+		
 		protected function openNewComponentTypeChoose(event:Event, openType:String, fileTemplate:FileLocation=null):void
 		{
 			if (!newFilePopup)
@@ -1165,6 +1229,13 @@ package actionScripts.plugin.templating
 			newCSSComponentPopup.removeEventListener(CloseEvent.CLOSE, handleCSSPopupClose);
 			newCSSComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onCSSFileCreateRequest);
 			newCSSComponentPopup = null;
+		}
+		
+		protected function handleMXMLModulePopupClose(event:CloseEvent):void
+		{
+			newMXMLModuleComponentPopup.removeEventListener(CloseEvent.CLOSE, handleMXMLModulePopupClose);
+			newMXMLModuleComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onMXMLModuleFileCreateRequest);
+			newMXMLModuleComponentPopup = null;
 		}
 		
 		protected function handleMXMLPopupClose(event:CloseEvent):void
@@ -1435,7 +1506,7 @@ package actionScripts.plugin.templating
 			}
 		}
 
-		protected function onMXMLFileCreateRequest(event:NewFileEvent):void
+		protected function onMXMLFileCreateRequest(event:NewFileEvent):FileLocation
 		{
 			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
@@ -1445,6 +1516,21 @@ package actionScripts.plugin.templating
 				fileToSave.fileBridge.save(content);
 
                 notifyNewFileCreated(event.insideLocation, fileToSave);
+				return fileToSave;
+			}
+			
+			return null;
+		}
+		
+		protected function onMXMLModuleFileCreateRequest(event:NewFileEvent):void
+		{
+			if (event.fromTemplate.fileBridge.exists)
+			{
+				var tmpFile:FileLocation = onMXMLFileCreateRequest(event);
+				if (tmpFile)
+				{
+					dispatcher.dispatchEvent(new ASModulesEvent(ASModulesEvent.EVENT_ADD_MODULE, tmpFile, (event.ofProject as AS3ProjectVO)));
+				}
 			}
 		}
 		

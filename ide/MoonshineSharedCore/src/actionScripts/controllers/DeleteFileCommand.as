@@ -114,9 +114,12 @@ package actionScripts.controllers
 		
 		private function onFileDeletionConfirmed(fw:FileWrapper):void
 		{
+			var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fw);
 			var veSourceFile:FileLocation = null;
 			var tab:IContentWindow;
 			var ed:BasicTextEditor;
+			
+			project.projectFileDelete(fw);
 			
 			if (fw.file.fileBridge.isDirectory)
 			{

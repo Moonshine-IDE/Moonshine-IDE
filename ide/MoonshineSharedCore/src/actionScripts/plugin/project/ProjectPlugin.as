@@ -223,6 +223,12 @@ package actionScripts.plugin.project
 				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, settings)
 			);
 			
+			// notify project
+			if (!settings.isSaved && (settings.associatedData is ProjectVO))
+			{
+				(settings.associatedData as ProjectVO).cancelledSettings();
+			}
+			
 			settings.removeEventListener(SettingsView.EVENT_CLOSE, settingsClose);
 			settings.removeEventListener(SettingsView.EVENT_SAVE, settingsSave);
 		}
@@ -257,6 +263,10 @@ package actionScripts.plugin.project
 				{
 					// Save
 					pvo.saveSettings();
+					if (pvo is ProjectVO) 
+					{
+						(pvo as ProjectVO).closedSettings();
+					}
 				}
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SAVE_PROJECT_SETTINGS, pvo));
 			}
