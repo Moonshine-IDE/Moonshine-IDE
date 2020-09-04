@@ -129,9 +129,11 @@
 	<propertycopy property="FLEX_HOME" from="env.FLEX_HOME" silent="true" override="${Is.FLEX_HOME.Not.Exists}"/>
 	<propertycopy property="SIGNTOOL_HOME" from="env.SIGNTOOL_HOME" silent="true"/>
 	<propertycopy property="NSIS_HOME" from="env.NSIS_HOME" silent="true"/>
+	<propertycopy property="HAXE_LIB" from="env.HAXE_LIB" silent="true"/>
 	<echo>SDK : ${FLEX_HOME}</echo>
 	<echo>SIGNTOOL: ${SIGNTOOL_HOME}</echo>
 	<echo>NSIS: ${NSIS_HOME}</echo>
+	<echo>Haxe: ${HAXE_LIB}</echo>
 	
     <!-- Path to your Flex SDK with AIR 3.1 overlaid -->
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
@@ -815,28 +817,28 @@
 
 	<target name="InstallHaxeDependencies">
 		<echo>Installing Haxe Libraries</echo>
-		<exec executable="haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="feathersui"/>
 			<arg value="--quiet"/>
 		</exec>
-		<exec executable="haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="openfl"/>
 			<arg value="--quiet"/>
 		</exec>
-		<exec executable="haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="actuate"/>
 			<arg value="--quiet"/>
 		</exec>
-		<exec executable="haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
@@ -847,7 +849,7 @@
 
 	<target name="CompileGUICore" depends="InstallHaxeDependencies">
 		<echo>Compiling GUI Core SWC</echo>
-		<exec executable="haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="run"/>
