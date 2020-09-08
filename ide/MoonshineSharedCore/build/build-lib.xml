@@ -61,7 +61,7 @@
 			<property name="certSignedMacOSKeychainPass" value="${APP_PROPERTIES.certSignedMacOSKeychainPass}" />
 			<property name="bundledFlexSDK" value="${APP_PROPERTIES.bundledFlexSDK}" />
 			<property name="bundledFlexJSSDK" value="${APP_PROPERTIES.bundledFlexJSSDK}" />
-			<property name="HAXE_LIB" value="${APP_PROPERTIES.haxeLibDirectory}"/>
+			<property name="HAXE_LIB_DIRECTORY" value="${APP_PROPERTIES.haxeLibDirectory}"/>
 			<property name="svn.revision" value="917"/>
 			<property name="IsDebug" value="false" />
 		</then>
@@ -81,7 +81,7 @@
 			<property name="certSignedMacOSKeychainPass" value="${CERT_OSX_KEYCHAIN_PASS}" />
 			<property name="bundledFlexSDK" value="${BUNDLED_FLEX_SDK}" />
 			<property name="bundledFlexJSSDK" value="${BUNDLED_FLEXJS_SDK}" />
-			<property name="HAXE_LIB" value="${HAXE_LIB}"/>
+			<property name="HAXE_LIB_DIRECTORY" value="${HAXE_LIB}"/>
 			<property name="svn.revision" value="${svn.revision}" />
 			<property name="IsDebug" value="false" />
 		</else>
@@ -134,7 +134,7 @@
 	<echo>SDK : ${FLEX_HOME}</echo>
 	<echo>SIGNTOOL: ${SIGNTOOL_HOME}</echo>
 	<echo>NSIS: ${NSIS_HOME}</echo>
-	<echo>Haxe: ${HAXE_LIB}</echo>
+	<echo>Haxe: ${HAXE_LIB_DIRECTORY}</echo>
 	
     <!-- Path to your Flex SDK with AIR 3.1 overlaid -->
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
@@ -818,28 +818,28 @@
 
 	<target name="InstallHaxeDependencies">
 		<echo>Installing Haxe Libraries</echo>
-		<exec executable="${HAXE_LIB}/haxelib"
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="feathersui"/>
 			<arg value="--quiet"/>
 		</exec>
-		<exec executable="${HAXE_LIB}/haxelib"
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="openfl"/>
 			<arg value="--quiet"/>
 		</exec>
-		<exec executable="${HAXE_LIB}/haxelib"
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="actuate"/>
 			<arg value="--quiet"/>
 		</exec>
-		<exec executable="${HAXE_LIB}/haxelib"
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
@@ -850,7 +850,7 @@
 
 	<target name="CompileGUICore" depends="InstallHaxeDependencies">
 		<echo>Compiling GUI Core SWC</echo>
-		<exec executable="${HAXE_LIB}/haxelib"
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="run"/>
