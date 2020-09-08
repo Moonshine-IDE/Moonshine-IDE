@@ -818,28 +818,28 @@
 
 	<target name="InstallHaxeDependencies">
 		<echo>Installing Haxe Libraries</echo>
-		<exec executable="${HAXE_LIB}haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="feathersui"/>
 			<arg value="--quiet"/>
 		</exec>
-		<exec executable="${HAXE_LIB}haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="openfl"/>
 			<arg value="--quiet"/>
 		</exec>
-		<exec executable="${HAXE_LIB}haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
 			<arg value="actuate"/>
 			<arg value="--quiet"/>
 		</exec>
-		<exec executable="${HAXE_LIB}haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
@@ -850,7 +850,7 @@
 
 	<target name="CompileGUICore" depends="InstallHaxeDependencies">
 		<echo>Compiling GUI Core SWC</echo>
-		<exec executable="${HAXE_LIB}haxelib"
+		<exec executable="${HAXE_LIB}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="run"/>
