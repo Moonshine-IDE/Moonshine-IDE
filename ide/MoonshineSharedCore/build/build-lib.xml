@@ -61,6 +61,7 @@
 			<property name="certSignedMacOSKeychainPass" value="${APP_PROPERTIES.certSignedMacOSKeychainPass}" />
 			<property name="bundledFlexSDK" value="${APP_PROPERTIES.bundledFlexSDK}" />
 			<property name="bundledFlexJSSDK" value="${APP_PROPERTIES.bundledFlexJSSDK}" />
+			<property name="HAXE_LIB" value="${APP_PROPERTIES.haxeLibDirectory}"/>
 			<property name="svn.revision" value="917"/>
 			<property name="IsDebug" value="false" />
 		</then>
@@ -80,6 +81,7 @@
 			<property name="certSignedMacOSKeychainPass" value="${CERT_OSX_KEYCHAIN_PASS}" />
 			<property name="bundledFlexSDK" value="${BUNDLED_FLEX_SDK}" />
 			<property name="bundledFlexJSSDK" value="${BUNDLED_FLEXJS_SDK}" />
+			<property name="HAXE_LIB" value="${HAXE_LIB}"/>
 			<property name="svn.revision" value="${svn.revision}" />
 			<property name="IsDebug" value="false" />
 		</else>
@@ -129,7 +131,6 @@
 	<propertycopy property="FLEX_HOME" from="env.FLEX_HOME" silent="true" override="${Is.FLEX_HOME.Not.Exists}"/>
 	<propertycopy property="SIGNTOOL_HOME" from="env.SIGNTOOL_HOME" silent="true"/>
 	<propertycopy property="NSIS_HOME" from="env.NSIS_HOME" silent="true"/>
-	<propertycopy property="HAXE_LIB" from="env.HAXE_LIB" silent="true"/>
 	<echo>SDK : ${FLEX_HOME}</echo>
 	<echo>SIGNTOOL: ${SIGNTOOL_HOME}</echo>
 	<echo>NSIS: ${NSIS_HOME}</echo>
