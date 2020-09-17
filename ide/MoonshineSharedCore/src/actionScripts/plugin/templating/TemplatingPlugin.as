@@ -345,6 +345,7 @@ package actionScripts.plugin.templating
 				}
 			}
 			
+			var tmpABCD:Object = projectTemplates;
 			generateTemplateProjects();
 		}
 
@@ -498,7 +499,7 @@ package actionScripts.plugin.templating
 			newFileMenu.items.push(separator);
 
 			var filteredProjectTemplatesToMenu:Array = allLoadedTemplates.filter(filterProjectsTemplates);
-			filteredProjectTemplatesToMenu.sortOn("title", Array.CASEINSENSITIVE);
+			filteredProjectTemplatesToMenu.sortOn("homeTitle", Array.CASEINSENSITIVE);
 
 			for each (var projectTemplate:TemplateVO in filteredProjectTemplatesToMenu)
 			{
@@ -617,7 +618,7 @@ package actionScripts.plugin.templating
 			NewTemplateRenderer(event.target).dispatchEvent(new Event('refresh'));
 			
 			projectTemplates.push(newTemplate);
-			projectTemplates.sortOn("name", Array.CASEINSENSITIVE);
+			projectTemplates.sortOn("homeTitle", Array.CASEINSENSITIVE);
 			
 			// send event to get the new item added immediately to File/New menu
 			// send event to get the new item added immediately to File/New menu
@@ -820,7 +821,7 @@ package actionScripts.plugin.templating
 					if (tmpOldIndex != -1) 
 					{
 						projectTemplates[tmpOldIndex] = customNewLocation;
-						projectTemplates.sortOn("name", Array.CASEINSENSITIVE);
+						projectTemplates.sortOn("homeTitle", Array.CASEINSENSITIVE);
 					}
 					
 					// updating file/new menu
