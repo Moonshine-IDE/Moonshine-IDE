@@ -213,7 +213,7 @@ package actionScripts.utils
 		
 		public static function removeLocationOfEditorFile(editor:IContentWindow):void
 		{
-			if (!(editor is IFileContentWindow)) return;
+			if (!(editor is IFileContentWindow) || !(editor as IFileContentWindow).currentFile) return;
 			
 			var projectPath:String = ("projectPath" in editor) ? editor["projectPath"] : null;
 			removeLocationOfClosingProjectFile(
