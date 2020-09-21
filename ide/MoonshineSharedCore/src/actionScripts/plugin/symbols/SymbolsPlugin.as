@@ -87,6 +87,11 @@ package actionScripts.plugin.symbols
 		
 		private function handleQueryChange(event:Event):void
 		{
+			if(symbolsViewWrapper.parent == null)
+			{
+				//ignore query changes if they happen after the window is closed
+				return;
+			}
 			var query:String = this.symbolsView.query;
 			if(this.isWorkspace)
 			{
