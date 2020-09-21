@@ -77,6 +77,7 @@ package actionScripts.impls
 	import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
 	import actionScripts.plugin.syntax.XMLSyntaxPlugin;
 	import actionScripts.plugin.templating.TemplatingPlugin;
+	import actionScripts.plugin.workspace.WorkspacePlugin;
 	import actionScripts.plugins.ant.AntBuildPlugin;
 	import actionScripts.plugins.ant.AntBuildScreen;
 	import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
@@ -263,7 +264,8 @@ package actionScripts.impls
 				HttpServerPlugin,
 				RoyaleApiReportConfiguratorPlugin,
 				RoyaleApiReportPlugin,
-				ExternalEditorsPlugin
+				ExternalEditorsPlugin,
+				WorkspacePlugin
 			];
 		}
 		
@@ -272,7 +274,7 @@ package actionScripts.impls
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -318,6 +320,11 @@ package actionScripts.impls
 						'w', [Keyboard.CONTROL]),
 					new MenuItem("Close All", null, null, CloseTabEvent.EVENT_CLOSE_ALL_TABS),
 					/*new MenuItem("Define Workspace", null, ProjectEvent.SET_WORKSPACE),*/
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','WORKSPACE'),[
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_SAVE_AS'), null, null, WorkspacePlugin.EVENT_SAVE_AS),
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_NEW'), null, null, WorkspacePlugin.EVENT_NEW)
+					]),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','LINE_ENDINGS'), [
 						new MenuItem(resourceManager.getString('resources','WINDOWS_LINE_ENDINGS'), null, null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_WIN),
