@@ -90,14 +90,6 @@ package actionScripts.plugin.symbols
 			var query:String = this.symbolsView.query;
 			if(this.isWorkspace)
 			{
-				if(!query)
-				{
-					//no point in calling the language server here
-					//an empty query is supposed to have zero results
-					this.symbolsView.symbols.filterFunction = null;
-					this.symbolsView.symbols.removeAll();
-					return;
-				}
 				var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
 				//using newText instead of a dedicated field is kind of hacky...
 				languageServerEvent.newText = query;
@@ -163,6 +155,11 @@ package actionScripts.plugin.symbols
 			PopUpManager.centerPopUp(symbolsViewWrapper);
 			symbolsView.stage.focus = symbolsView.searchFieldTextInput;
 			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
+		
+			//start by listing all symbols, if the language server supports it
+			var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
+			languageServerEvent.newText = "";
+			dispatcher.dispatchEvent(languageServerEvent);
 		}
 
 		private function handleShowSymbols(event:SymbolsEvent):void
