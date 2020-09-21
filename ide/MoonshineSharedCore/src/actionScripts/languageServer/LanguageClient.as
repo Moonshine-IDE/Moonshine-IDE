@@ -170,7 +170,7 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DEFINITION_LINK, definitionLinkHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
-			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GO_TO_REFERENCES, findReferencesHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_CODE_ACTION, codeActionHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GO_TO_DEFINITION, gotoDefinitionHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
@@ -381,7 +381,7 @@ package actionScripts.languageServer
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DEFINITION_LINK, definitionLinkHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GO_TO_REFERENCES, findReferencesHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_CODE_ACTION, codeActionHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GO_TO_DEFINITION, gotoDefinitionHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
