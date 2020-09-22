@@ -63,6 +63,7 @@ package actionScripts.languageServer
 	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -2024,13 +2025,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			//TODO: fix this to properly merge symbols from all projects
 			var activeEditor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
-			if(!activeEditor)
+			if(!activeEditor && _model.activeProject != _project)
 			{
 				return;
 			}
-			if(!isUriInProject(activeEditor.currentFile.fileBridge.url, _project) && _model.projects.length != 1)
+			else if(activeEditor && !isUriInProject(activeEditor.currentFile.fileBridge.url, _project))
 			{
 				return;
 			}
