@@ -201,6 +201,7 @@ package actionScripts.impls
 		{
 			return [
 				SettingsPlugin, 
+				WorkspacePlugin,
 				ProjectPlugin,
 				ProjectPanelPlugin,
 				TemplatingPlugin,
@@ -264,8 +265,7 @@ package actionScripts.impls
 				HttpServerPlugin,
 				RoyaleApiReportConfiguratorPlugin,
 				RoyaleApiReportPlugin,
-				ExternalEditorsPlugin,
-				WorkspacePlugin
+				ExternalEditorsPlugin
 			];
 		}
 		
@@ -323,7 +323,8 @@ package actionScripts.impls
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','WORKSPACE'),[
 						new MenuItem(resourceManager.getString('resources','WORKSPACE_SAVE_AS'), null, null, WorkspacePlugin.EVENT_SAVE_AS),
-						new MenuItem(resourceManager.getString('resources','WORKSPACE_NEW'), null, null, WorkspacePlugin.EVENT_NEW)
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_NEW'), null, null, WorkspacePlugin.EVENT_NEW),
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_LOAD'), null, null, WorkspacePlugin.EVENT_LOAD)
 					]),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','LINE_ENDINGS'), [

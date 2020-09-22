@@ -30,7 +30,6 @@ package actionScripts.utils
 	import mx.controls.Alert;
 	
 	import actionScripts.locator.IDEModel;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;

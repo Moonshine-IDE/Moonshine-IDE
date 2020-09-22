@@ -19,19 +19,54 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.workspace
 {
+	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.net.SharedObject;
 	
+	import mx.collections.ArrayList;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.utils.MethodDescriptor;
+	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	
+	import components.popup.workspace.LoadWorkspacePopup;
 	
 	public class WorkspacePlugin extends PluginBase
 	{
 		public static const EVENT_SAVE_AS:String = "saveAsNewWorkspaceEvent";
 		public static const EVENT_NEW:String = "newWorkspaceEvent";
+		public static const EVENT_LOAD:String = "loadWorkspaceEvent";
+		
+		private static const LABEL_DEFAULT_WORKSPACE:String = "IDE-Default";
 		
 		override public function get name():String 			{return "Workspace";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Workspace manangement for the Moonshine projects.";}
+		
+		private var cookie:SharedObject;
+		private var currentWorkspaceLabel:String;
+		private var currentWorkspaceItems:Array;
+		private var workspaces:Object; // Dictionary<String, [String]>
+		private var methodToCallAfterClosingAllProjects:MethodDescriptor;
+		
+		private var loadWorkspacePopup:LoadWorkspacePopup;
+		
+		private function get workspaceLabels():Array
+		{
+			var tmpArray:Array = [];
+			for (var label:String in workspaces)
+			{
+				tmpArray.push(label);
+			}
+			
+			return tmpArray;
+		}
 		
 		public function WorkspacePlugin()
 		{
@@ -40,8 +75,34 @@ package actionScripts.plugin.workspace
 		
 		override public function activate():void
 		{
+			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_WORKSPACE);
+			restoreFromCookie();
+			
 			dispatcher.addEventListener(EVENT_SAVE_AS, onSaveAsNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(EVENT_NEW, onNewWorkspaceEvent, false, 0, true);
+			dispatcher.addEventListener(EVENT_LOAD, onLoadWorkspaceEvent, false, 0, true);
+			
+			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
+		}
+		
+		private function handleAddProject(event:ProjectEvent):void
+		{
+			if (getPathIndex(event.project.folderLocation.fileBridge.nativePath) == -1)
+			{
+				currentWorkspaceItems.push(event.project.folderLocation.fileBridge.nativePath);
+				saveToCookie();
+			}
+		}
+		
+		private function handleRemoveProject(event:ProjectEvent):void
+		{
+			var pathIndex:int = getPathIndex(event.project.folderLocation.fileBridge.nativePath);
+			if (pathIndex != -1)
+			{
+				currentWorkspaceItems.splice(pathIndex, 1);
+				saveToCookie();
+			}
 		}
 		
 		private function onSaveAsNewWorkspaceEvent(event:Event):void
@@ -52,6 +113,98 @@ package actionScripts.plugin.workspace
 		private function onNewWorkspaceEvent(event:Event):void
 		{
 			
+		}
+		
+		private function onLoadWorkspaceEvent(event:Event):void
+		{
+			if (!loadWorkspacePopup)
+			{
+				loadWorkspacePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, LoadWorkspacePopup, true) as LoadWorkspacePopup;
+				loadWorkspacePopup.workspaces = new ArrayList(workspaceLabels);
+				loadWorkspacePopup.addEventListener(CloseEvent.CLOSE, handleLoadWorkspacePopupClose);
+				loadWorkspacePopup.addEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
+				
+				PopUpManager.centerPopUp(loadWorkspacePopup);
+			}
+		}
+		
+		private function handleLoadWorkspacePopupClose(event:CloseEvent):void
+		{
+			loadWorkspacePopup.removeEventListener(CloseEvent.CLOSE, handleLoadWorkspacePopupClose);
+			loadWorkspacePopup.removeEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
+			loadWorkspacePopup = null;
+		}
+		
+		private function handleLoadWorkspaceEvent(event:GeneralEvent):void
+		{
+			var requestedWorkspace:String = event.value as String;
+			if (requestedWorkspace != currentWorkspaceLabel)
+			{
+				methodToCallAfterClosingAllProjects = 
+					new MethodDescriptor(this, 'changeToWorkspace', requestedWorkspace);
+				
+				closeAllEditorAsync();
+			}
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  GENERAL API
+		//
+		//--------------------------------------------------------------------------
+		
+		private function restoreFromCookie():void
+		{
+			currentWorkspaceLabel = ("currentWorkspace" in cookie.data) ? cookie.data["currentWorkspace"] : LABEL_DEFAULT_WORKSPACE;
+			
+			workspaces = new Object();
+			if ("workspaces" in cookie.data)
+			{
+				workspaces = cookie.data["workspaces"];
+			}
+			
+			currentWorkspaceItems = (workspaces[currentWorkspaceLabel] !== undefined) ? 
+				workspaces[currentWorkspaceLabel] : [];
+		}
+		
+		private function getPathIndex(path:String):int
+		{
+			return currentWorkspaceItems.indexOf(path);
+		}
+		
+		private function changeToWorkspace(label:String):void
+		{
+			currentWorkspaceLabel = label;
+			saveToCookie();
+		}
+		
+		private function saveToCookie():void
+		{
+			workspaces[currentWorkspaceLabel] = currentWorkspaceItems;
+			cookie.data["currentWorkspace"] = currentWorkspaceLabel;
+			cookie.data["workspaces"] = workspaces;
+			
+			cookie.flush();
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  CLOSING ALL PROJECTS ONE AT A TIME
+		//
+		//--------------------------------------------------------------------------
+		
+		private function closeAllEditorAsync():void
+		{
+			if (currentWorkspaceItems.length != 0)
+			{
+				var projectPath:String = currentWorkspaceItems[0];
+				
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.CLOSE_PROJECT, model.activeProject.projectFolder));
+			}
+			else
+			{
+				
+			}
 		}
 	}
 }
