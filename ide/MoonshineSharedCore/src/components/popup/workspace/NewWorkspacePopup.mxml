@@ -24,133 +24,56 @@
 				   xmlns:s="library://ns.adobe.com/flex/spark"
 				   backgroundColor="0xf5f5f5"
 				   width="350" minWidth="250" autoLayout="true"
-				   creationComplete="onCreationCompletes(event)" 
 				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin">
-	<fx:Metadata>
-		[Event(name="EVENT_FILE_RENAMED", type="actionScripts.events.NewFileEvent")]
-	</fx:Metadata>
+				   skinClass="components.skins.ResizableTitleWindowSkin" title="New Workspace"
+				   creationComplete="txtWorkspaceName.setFocus()">
 	<fx:Script>
 		<![CDATA[
-			import mx.events.FlexEvent;
+			import mx.utils.StringUtil;
 			
-			import spark.events.TextOperationEvent;
+			import actionScripts.events.GeneralEvent;
 			
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.NewFileEvent;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.ui.menu.MenuPlugin;
-			import actionScripts.valueObjects.FileWrapper;
+			public static const EVENT_NEW_WORKSPACE_WITH_LABEL:String = "createNewWorkspaceWithLabelEvent";
 			
-			public var wrapperOfFolderLocation:FileWrapper;
-			
-			[Bindable] private var fileExtension:String;
-			[Bindable] private var modifiedName:String = "";
-			[Bindable] private var originalFileName:String;
-			
-			override protected function closeByCrossSign(event:Event):void
-			{
-				doBeforeExit();
-				super.closeByCrossSign(event);
-			}
-			
-			override protected function onResizeKeyDownEvent(event:KeyboardEvent):void
-			{
-				doBeforeExit();
-				super.onResizeKeyDownEvent(event);
-			}
-			
-			protected function doBeforeExit():void
-			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
-			}
+			public var workspaces:Array;
 			
 			protected function onChangeButton(event:MouseEvent):void
 			{
-				// validation check for Enter key
-				if (!btnChange.enabled) return;
+				// non-blank
+				if (StringUtil.trim(txtWorkspaceName.text).length == 0) return;
 				
-				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_FILE_RENAMED, null, null, wrapperOfFolderLocation);
-				tmpEvent.fileName = txtFileName.text + fileExtension;
-				dispatchEvent(tmpEvent);
-				
-				doBeforeExit();
-				super.closeThis();
-			}
-			
-			protected function onCreationCompletes(event:FlexEvent):void
-			{
-				minHeight = height;
-				if (wrapperOfFolderLocation) 
+				// check if not a duplicate copy
+				for each (var label:String in workspaces)
 				{
-					/*var tempArr:Array = wrapperOfFolderLocation.file.fileBridge.name.split(".");
-					tempArr.pop();*/
-					
-					txtFileName.text = wrapperOfFolderLocation.file.fileBridge.nameWithoutExtension;
-					txtFileName.setFocus();
-					txtFileName.selectRange(0, txtFileName.text.length);
-					originalFileName = txtFileName.text;
-					
-					if (wrapperOfFolderLocation.file.fileBridge.isDirectory || !wrapperOfFolderLocation.file.fileBridge.extension) {
-						fileExtension = "";
-					}
-					else
+					if (label.toLowerCase() == txtWorkspaceName.text.toLowerCase())
 					{
-						fileExtension = wrapperOfFolderLocation.file.fileBridge.extension.toLowerCase();
-						if (fileExtension == "as" || fileExtension == "mxml")
-						{
-							txtFileName.restrict = "0-9A-Za-z_.";
-						}
-						fileExtension = "."+ fileExtension;
+						hgExistingWarning.visible = true;
+						return;
 					}
-					
-					this.title = (fileExtension == "") ? "Rename Package" : "Rename Class";
 				}
 				
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
-			}
-			
-			protected function onNameChanged(event:TextOperationEvent):void
-			{
-				// @note
-				// for some reason PromptTextInput.text is not binding properly
-				// to other Flex UI component, i.e. Label
-				// it shows only the origianl set text to PromptTextInput.text if
-				// binded to a label component, thus:
-				modifiedName = txtFileName.text;
-				
-				if (txtFileName.text == "") btnChange.enabled = false;
-				else 
-				{
-					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.parent.fileBridge.resolvePath(txtFileName.text + fileExtension);
-					targetFile.fileBridge.canonicalize();
-					
-					btnChange.enabled = !targetFile.fileBridge.exists;
-				}
+				dispatchEvent(new GeneralEvent(EVENT_NEW_WORKSPACE_WITH_LABEL, txtWorkspaceName.text));
+				closeThis();
 			}
 			
 		]]>
 	</fx:Script>
-	<fx:Declarations>
-	</fx:Declarations>
 	
 	<s:VGroup width="100%" height="100%" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13">
-		<s:Label text="New Name:"/>
-		<view:PromptTextInput id="txtFileName"
-							  prompt="Rename To" width="100%" styleName="textInput" restrict="0-9A-Za-z._\-"
-							  change="onNameChanged(event)" enter="onChangeButton(null)"/>
+		<s:Label text="Workspace Name:"/>
+		<view:PromptTextInput id="txtWorkspaceName"
+							  width="100%" styleName="textInput" restrict="0-9A-Za-z_\-"/>
 		<s:HGroup id="hgExistingWarning" 
 				  width="100%" verticalAlign="middle"
-				  visible="{!btnChange.enabled &amp;&amp; modifiedName != '' &amp;&amp; modifiedName != originalFileName}">
+				  visible="false">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
-			<s:Label text="{modifiedName + fileExtension + ' is already exists.'}" width="100%"/>
+			<s:Label text="Workspace is already exists." width="100%"/>
 		</s:HGroup>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
-		<s:Button id="btnChange" label="Change"
+		<s:Button id="btnChange" label="Create"
 				  styleName="darkButton"
-				  click="onChangeButton(event)"
-				  enabled="false"/>
+				  click="onChangeButton(event)"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

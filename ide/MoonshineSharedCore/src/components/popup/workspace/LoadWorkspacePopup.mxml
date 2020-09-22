@@ -27,9 +27,6 @@
 				   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 				   skinClass="components.skins.ResizableTitleWindowSkin"
 				   title="Load Workspace">
-	<fx:Metadata>
-		[Event(name="EVENT_FILE_RENAMED", type="actionScripts.events.NewFileEvent")]
-	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayList;
