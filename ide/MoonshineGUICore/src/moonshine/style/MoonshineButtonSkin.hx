@@ -45,18 +45,24 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 		var offset = 0.0;
 		this.graphics.clear();
 		if (this.outerBorderFill != null) {
+			var outerBorderEllipseSize = this.outerBorderRadius * 2.0;
+			outerBorderEllipseSize = Math.min(outerBorderEllipseSize, Math.min(this.actualWidth, this.actualHeight));
 			this.applyFillStyle(this.outerBorderFill);
-			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), this.outerBorderRadius);
+			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), outerBorderEllipseSize);
 			offset += this.outerBorderSize;
 		}
 		if (this.innerBorderFill != null) {
+			var innerBorderEllipseSize = this.innerBorderRadius * 2.0;
+			innerBorderEllipseSize = Math.min(innerBorderEllipseSize, Math.min(this.actualWidth, this.actualHeight));
 			this.applyFillStyle(this.innerBorderFill);
-			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), this.innerBorderRadius);
+			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), innerBorderEllipseSize);
 			offset += this.innerBorderSize;
 		}
 		if (this.fill != null) {
+			var borderEllipseSize = this.borderRadius * 2.0;
+			borderEllipseSize = Math.min(borderEllipseSize, Math.min(this.actualWidth, this.actualHeight));
 			this.applyFillStyle(this.fill);
-			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), this.borderRadius);
+			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), borderEllipseSize);
 		}
 	}
 

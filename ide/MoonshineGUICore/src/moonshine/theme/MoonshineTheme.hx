@@ -20,6 +20,7 @@
 
 package moonshine.theme;
 
+import feathers.controls.Radio;
 import feathers.controls.Button;
 import feathers.controls.Callout;
 import feathers.controls.Check;
@@ -65,6 +66,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	}
 
 	public static final THEME_VARIANT_DARK_BUTTON:String = "moonshine-button--dark";
+	public static final THEME_VARIANT_LIGHT_LABEL:String = "moonshine-label--light";
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
 
 	public function new() {
@@ -80,6 +82,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
+		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_LABEL, setLightLabelStyles);
 
 		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
 
@@ -90,6 +93,8 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		this.styleProvider.setStyleFunction(HScrollBar, null, setHScrollBarStyles);
 		this.styleProvider.setStyleFunction(VScrollBar, null, setVScrollBarStyles);
+
+		this.styleProvider.setStyleFunction(Radio, null, setRadioStyles);
 
 		this.styleProvider.setStyleFunction(SideBarViewHeader, null, setSideBarViewHeaderStyles);
 		this.styleProvider.setStyleFunction(Label, SideBarViewHeader.CHILD_VARIANT_TITLE, setSideBarViewHeaderTitleStyles);
@@ -112,35 +117,35 @@ class MoonshineTheme extends ClassVariantTheme {
 		var backgroundSkin = new MoonshineButtonSkin();
 		backgroundSkin.outerBorderFill = SolidColor(0x666666);
 		backgroundSkin.outerBorderSize = 3.0;
-		backgroundSkin.outerBorderRadius = 10.0;
+		backgroundSkin.outerBorderRadius = 6.0;
 		backgroundSkin.innerBorderFill = SolidColor(0xFFFFFF);
 		backgroundSkin.innerBorderSize = 1.0;
-		backgroundSkin.innerBorderRadius = 7.0;
+		backgroundSkin.innerBorderRadius = 4.0;
 		backgroundSkin.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		backgroundSkin.borderRadius = 7.0;
+		backgroundSkin.borderRadius = 4.0;
 		button.backgroundSkin = backgroundSkin;
 
 		var disabledSkin = new MoonshineButtonSkin();
 		disabledSkin.outerBorderFill = SolidColor(0xCCCCCC);
 		disabledSkin.outerBorderSize = 3.0;
-		disabledSkin.outerBorderRadius = 10.0;
+		disabledSkin.outerBorderRadius = 6.0;
 		disabledSkin.innerBorderFill = SolidColor(0xFFFFFF);
 		disabledSkin.innerBorderSize = 1.0;
-		disabledSkin.innerBorderRadius = 7.0;
+		disabledSkin.innerBorderRadius = 4.0;
 		disabledSkin.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		disabledSkin.borderRadius = 7.0;
+		disabledSkin.borderRadius = 4.0;
 		disabledSkin.alpha = 0.5;
 		button.setSkinForState(DISABLED, disabledSkin);
 
 		var downSkin = new MoonshineButtonSkin();
 		downSkin.outerBorderFill = SolidColor(0x666666);
 		downSkin.outerBorderSize = 3.0;
-		downSkin.outerBorderRadius = 10.0;
+		downSkin.outerBorderRadius = 6.0;
 		downSkin.innerBorderFill = SolidColor(0xFFFFFF);
 		downSkin.innerBorderSize = 1.0;
-		downSkin.innerBorderRadius = 7.0;
+		downSkin.innerBorderRadius = 4.0;
 		downSkin.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		downSkin.borderRadius = 7.0;
+		downSkin.borderRadius = 4.0;
 		downSkin.alpha = 0.5;
 		button.setSkinForState(DOWN, downSkin);
 
@@ -159,46 +164,46 @@ class MoonshineTheme extends ClassVariantTheme {
 		var backgroundSkin = new MoonshineButtonSkin();
 		backgroundSkin.outerBorderFill = SolidColor(0x292929);
 		backgroundSkin.outerBorderSize = 3.0;
-		backgroundSkin.outerBorderRadius = 10.0;
+		backgroundSkin.outerBorderRadius = 6.0;
 		backgroundSkin.innerBorderFill = SolidColor(0x4C4C4C);
 		backgroundSkin.innerBorderSize = 1.0;
-		backgroundSkin.innerBorderRadius = 7.0;
+		backgroundSkin.innerBorderRadius = 4.0;
 		backgroundSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x404040, 0x404040], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		backgroundSkin.borderRadius = 7.0;
+		backgroundSkin.borderRadius = 4.0;
 		button.backgroundSkin = backgroundSkin;
 
 		var hoverSkin = new MoonshineButtonSkin();
 		hoverSkin.outerBorderFill = SolidColor(0x292929);
 		hoverSkin.outerBorderSize = 3.0;
-		hoverSkin.outerBorderRadius = 10.0;
+		hoverSkin.outerBorderRadius = 6.0;
 		hoverSkin.innerBorderFill = SolidColor(0x4C4C4C);
 		hoverSkin.innerBorderSize = 1.0;
-		hoverSkin.innerBorderRadius = 7.0;
+		hoverSkin.innerBorderRadius = 4.0;
 		hoverSkin.fill = Gradient(LINEAR, [0x3F3F3F, 0x3F3F3F, 0x3B3B3B, 0x3B3B3B], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		hoverSkin.borderRadius = 7.0;
+		hoverSkin.borderRadius = 4.0;
 		button.setSkinForState(HOVER, hoverSkin);
 
 		var disabledSkin = new MoonshineButtonSkin();
 		disabledSkin.outerBorderFill = SolidColor(0x292929);
 		disabledSkin.outerBorderSize = 3.0;
-		disabledSkin.outerBorderRadius = 10.0;
+		disabledSkin.outerBorderRadius = 6.0;
 		disabledSkin.innerBorderFill = SolidColor(0x4C4C4C);
 		disabledSkin.innerBorderSize = 1.0;
-		disabledSkin.innerBorderRadius = 7.0;
+		disabledSkin.innerBorderRadius = 4.0;
 		disabledSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x404040, 0x404040], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		disabledSkin.borderRadius = 7.0;
+		disabledSkin.borderRadius = 4.0;
 		disabledSkin.alpha = 0.5;
 		button.setSkinForState(DISABLED, disabledSkin);
 
 		var downSkin = new MoonshineButtonSkin();
 		downSkin.outerBorderFill = SolidColor(0x292929);
 		downSkin.outerBorderSize = 3.0;
-		downSkin.outerBorderRadius = 10.0;
+		downSkin.outerBorderRadius = 6.0;
 		downSkin.innerBorderFill = SolidColor(0x474747);
 		downSkin.innerBorderSize = 1.0;
-		downSkin.innerBorderRadius = 7.0;
+		downSkin.innerBorderRadius = 4.0;
 		downSkin.fill = Gradient(LINEAR, [0x3F3F3F, 0x3F3F3F, 0x3C3C3C, 0x3C3C3C], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		downSkin.borderRadius = 7.0;
+		downSkin.borderRadius = 4.0;
 		downSkin.alpha = 0.5;
 		button.setSkinForState(DOWN, downSkin);
 
@@ -236,12 +241,12 @@ class MoonshineTheme extends ClassVariantTheme {
 		var icon = new MoonshineButtonSkin();
 		icon.outerBorderFill = SolidColor(0x666666);
 		icon.outerBorderSize = 2.0;
-		icon.outerBorderRadius = 4.0;
+		icon.outerBorderRadius = 2.0;
 		icon.innerBorderFill = SolidColor(0xFFFFFF);
 		icon.innerBorderSize = 1.0;
-		icon.innerBorderRadius = 2.0;
+		icon.innerBorderRadius = 1.0;
 		icon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		icon.borderRadius = 0.0;
+		icon.borderRadius = 1.0;
 		icon.width = 20.0;
 		icon.height = 20.0;
 		check.icon = icon;
@@ -249,40 +254,40 @@ class MoonshineTheme extends ClassVariantTheme {
 		var disabledIcon = new MoonshineButtonSkin();
 		disabledIcon.outerBorderFill = SolidColor(0xCCCCCC);
 		disabledIcon.outerBorderSize = 2.0;
-		disabledIcon.outerBorderRadius = 4.0;
+		disabledIcon.outerBorderRadius = 2.0;
 		disabledIcon.innerBorderFill = SolidColor(0xFFFFFF);
 		disabledIcon.innerBorderSize = 1.0;
-		disabledIcon.innerBorderRadius = 2.0;
+		disabledIcon.innerBorderRadius = 1.0;
 		disabledIcon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		disabledIcon.borderRadius = 0.0;
+		disabledIcon.borderRadius = 1.0;
 		disabledIcon.alpha = 0.5;
 		disabledIcon.width = 20.0;
 		disabledIcon.height = 20.0;
 		check.disabledIcon = disabledIcon;
 
-		var downSkin = new MoonshineButtonSkin();
-		downSkin.outerBorderFill = SolidColor(0x666666);
-		downSkin.outerBorderSize = 2.0;
-		downSkin.outerBorderRadius = 4.0;
-		downSkin.innerBorderFill = SolidColor(0xFFFFFF);
-		downSkin.innerBorderSize = 1.0;
-		downSkin.innerBorderRadius = 2.0;
-		downSkin.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		downSkin.borderRadius = 0.0;
-		downSkin.alpha = 0.5;
-		downSkin.width = 20.0;
-		downSkin.height = 20.0;
-		check.setIconForState(DOWN(false), downSkin);
+		var downIcon = new MoonshineButtonSkin();
+		downIcon.outerBorderFill = SolidColor(0x666666);
+		downIcon.outerBorderSize = 2.0;
+		downIcon.outerBorderRadius = 2.0;
+		downIcon.innerBorderFill = SolidColor(0xFFFFFF);
+		downIcon.innerBorderSize = 1.0;
+		downIcon.innerBorderRadius = 1.0;
+		downIcon.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		downIcon.borderRadius = 1.0;
+		downIcon.alpha = 0.5;
+		downIcon.width = 20.0;
+		downIcon.height = 20.0;
+		check.setIconForState(DOWN(false), downIcon);
 
 		var selectedIcon = new MoonshineButtonSkin();
 		selectedIcon.outerBorderFill = SolidColor(0x666666);
 		selectedIcon.outerBorderSize = 2.0;
-		selectedIcon.outerBorderRadius = 4.0;
+		selectedIcon.outerBorderRadius = 2.0;
 		selectedIcon.innerBorderFill = SolidColor(0xFFFFFF);
 		selectedIcon.innerBorderSize = 1.0;
-		selectedIcon.innerBorderRadius = 2.0;
+		selectedIcon.innerBorderRadius = 1.0;
 		selectedIcon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		selectedIcon.borderRadius = 0.0;
+		selectedIcon.borderRadius = 1.0;
 		selectedIcon.width = 20.0;
 		selectedIcon.height = 20.0;
 		check.selectedIcon = selectedIcon;
@@ -299,12 +304,12 @@ class MoonshineTheme extends ClassVariantTheme {
 		var selectedDownIcon = new MoonshineButtonSkin();
 		selectedDownIcon.outerBorderFill = SolidColor(0x666666);
 		selectedDownIcon.outerBorderSize = 2.0;
-		selectedDownIcon.outerBorderRadius = 4.0;
+		selectedDownIcon.outerBorderRadius = 2.0;
 		selectedDownIcon.innerBorderFill = SolidColor(0xFFFFFF);
 		selectedDownIcon.innerBorderSize = 1.0;
-		selectedDownIcon.innerBorderRadius = 2.0;
+		selectedDownIcon.innerBorderRadius = 1.0;
 		selectedDownIcon.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		selectedDownIcon.borderRadius = 0.0;
+		selectedDownIcon.borderRadius = 1.0;
 		selectedDownIcon.alpha = 0.5;
 		selectedDownIcon.width = 20.0;
 		selectedDownIcon.height = 20.0;
@@ -331,6 +336,108 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		check.horizontalAlign = LEFT;
 		check.gap = 4.0;
+	}
+
+	private function setRadioStyles(radio:Radio):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x000000, 0.0);
+		backgroundSkin.border = null;
+		radio.backgroundSkin = backgroundSkin;
+
+		var icon = new MoonshineButtonSkin();
+		icon.outerBorderFill = SolidColor(0x666666);
+		icon.outerBorderSize = 2.0;
+		icon.outerBorderRadius = 10.0;
+		icon.innerBorderFill = SolidColor(0xFFFFFF);
+		icon.innerBorderSize = 1.0;
+		icon.innerBorderRadius = 8.0;
+		icon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		icon.borderRadius = 8.0;
+		icon.width = 20.0;
+		icon.height = 20.0;
+		radio.icon = icon;
+
+		var disabledIcon = new MoonshineButtonSkin();
+		disabledIcon.outerBorderFill = SolidColor(0xCCCCCC);
+		disabledIcon.outerBorderSize = 2.0;
+		disabledIcon.outerBorderRadius = 10.0;
+		disabledIcon.innerBorderFill = SolidColor(0xFFFFFF);
+		disabledIcon.innerBorderSize = 1.0;
+		disabledIcon.innerBorderRadius = 8.0;
+		disabledIcon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		disabledIcon.borderRadius = 8.0;
+		disabledIcon.alpha = 0.5;
+		disabledIcon.width = 20.0;
+		disabledIcon.height = 20.0;
+		radio.disabledIcon = disabledIcon;
+
+		var downIcon = new MoonshineButtonSkin();
+		downIcon.outerBorderFill = SolidColor(0x666666);
+		downIcon.outerBorderSize = 2.0;
+		downIcon.outerBorderRadius = 10.0;
+		downIcon.innerBorderFill = SolidColor(0xFFFFFF);
+		downIcon.innerBorderSize = 1.0;
+		downIcon.innerBorderRadius = 8.0;
+		downIcon.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		downIcon.borderRadius = 8.0;
+		downIcon.alpha = 0.5;
+		downIcon.width = 20.0;
+		downIcon.height = 20.0;
+		radio.setIconForState(DOWN(false), downIcon);
+
+		var selectedIcon = new MoonshineButtonSkin();
+		selectedIcon.outerBorderFill = SolidColor(0x666666);
+		selectedIcon.outerBorderSize = 2.0;
+		selectedIcon.outerBorderRadius = 10.0;
+		selectedIcon.innerBorderFill = SolidColor(0xFFFFFF);
+		selectedIcon.innerBorderSize = 1.0;
+		selectedIcon.innerBorderRadius = 8.0;
+		selectedIcon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		selectedIcon.borderRadius = 8.0;
+		selectedIcon.width = 20.0;
+		selectedIcon.height = 20.0;
+		radio.selectedIcon = selectedIcon;
+		var symbol = new Shape();
+		symbol.graphics.beginFill(0x292929);
+		symbol.graphics.drawCircle(4.0, 4.0, 4.0);
+		symbol.graphics.endFill();
+		symbol.x = 6.0;
+		symbol.y = 6.0;
+		selectedIcon.addChild(symbol);
+
+		var selectedDownIcon = new MoonshineButtonSkin();
+		selectedDownIcon.outerBorderFill = SolidColor(0x666666);
+		selectedDownIcon.outerBorderSize = 2.0;
+		selectedDownIcon.outerBorderRadius = 10.0;
+		selectedDownIcon.innerBorderFill = SolidColor(0xFFFFFF);
+		selectedDownIcon.innerBorderSize = 1.0;
+		selectedDownIcon.innerBorderRadius = 8.0;
+		selectedDownIcon.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		selectedDownIcon.borderRadius = 8.0;
+		selectedDownIcon.alpha = 0.5;
+		selectedDownIcon.width = 20.0;
+		selectedDownIcon.height = 20.0;
+		radio.setIconForState(DOWN(true), selectedDownIcon);
+		var downSymbol = new Shape();
+		downSymbol.graphics.beginFill(0x292929);
+		downSymbol.graphics.drawCircle(4.0, 4.0, 4.0);
+		downSymbol.graphics.endFill();
+		downSymbol.x = 6.0;
+		downSymbol.y = 6.0;
+		selectedDownIcon.addChild(downSymbol);
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		focusRectSkin.cornerRadius = 10.0;
+		radio.focusRectSkin = focusRectSkin;
+
+		radio.textFormat = new TextFormat("DejaVuSansTF", 12, 0x292929);
+		radio.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x999999);
+		radio.embedFonts = true;
+
+		radio.horizontalAlign = LEFT;
+		radio.gap = 4.0;
 	}
 
 	private function setItemRendererStyles(itemRenderer:ItemRenderer):Void {
@@ -383,6 +490,12 @@ class MoonshineTheme extends ClassVariantTheme {
 	private function setLabelStyles(label:Label):Void {
 		label.textFormat = new TextFormat("DejaVuSansTF", 12, 0x292929);
 		label.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x999999);
+		label.embedFonts = true;
+	}
+
+	private function setLightLabelStyles(label:Label):Void {
+		label.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
+		label.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
 		label.embedFonts = true;
 	}
 
