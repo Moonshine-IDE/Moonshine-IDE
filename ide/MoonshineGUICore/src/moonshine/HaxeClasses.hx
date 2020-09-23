@@ -23,6 +23,7 @@ import feathers.core.DefaultFocusManager;
 import moonshine.plugin.findreplace.view.FindReplaceView;
 import moonshine.plugin.findreplace.view.GoToLineView;
 import moonshine.plugin.help.view.AS3DocsView;
+import moonshine.plugin.help.view.TourDeFlexContentsView;
 import moonshine.plugin.locations.view.LocationsView;
 import moonshine.plugin.outline.view.OutlineView;
 import moonshine.plugin.references.view.ReferencesView;
@@ -37,4 +38,5 @@ class HaxeClasses {
 	public var OutlineView:OutlineView;
 	public var ReferencesView:ReferencesView;
 	public var SymbolsView:SymbolsView;
+	public var TourDeFlexContentsView:TourDeFlexContentsView;
 }

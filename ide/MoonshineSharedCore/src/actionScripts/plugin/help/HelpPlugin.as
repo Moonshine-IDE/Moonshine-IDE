@@ -29,12 +29,19 @@ package actionScripts.plugin.help
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import moonshine.plugin.help.view.AS3DocsView;
+	import moonshine.plugin.help.view.TourDeFlexContentsView;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.ui.FeathersUIWrapper;
+	import moonshine.plugin.help.events.HelpViewEvent;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.factory.FileLocation;
+	import flash.filesystem.File;
+	import flash.filesystem.FileStream;
+	import flash.filesystem.FileMode;
 
 	public class HelpPlugin extends PluginBase implements IPlugin
 	{
@@ -45,6 +52,7 @@ package actionScripts.plugin.help
 		public static const EVENT_APACHE_SDK_DOWNLOADER_REQUEST:String = "EVENT_APACHE_SDK_DOWNLOADER_REQUEST";
 		public static const EVENT_ENSURE_JAVA_PATH:String = "EVENT_ENSURE_JAVA_PATH";
 		public static const EVENT_PRIVACY_POLICY:String = "EVENT_PRIVACY_POLICY";
+		private static const THIRD_PARTY_WARNING_TEXT:String = "<!--\n\nThis example or component has been developed by a 3rd party and is hosted outside of the Tour De Flex site and may contain links to non ASF sites.\nIt's code may not be Open Source or may be under a license other than the Apache license so please check carefully before using it.\nNeither the ASF or the Apache Flex PMC can endorse or recommend using this example but you may still find it useful.\n\n-->";
 		
 		public static var ABOUT_SUBSCRIBE_ID_TO_WORKER:String;
 		
@@ -68,13 +76,20 @@ package actionScripts.plugin.help
 
 		protected function handleTourDeFlexConfigure(event:Event):void
 		{
-            tourdeContentView = model.flexCore.getTourDeView();
-			LayoutModifier.addToSidebar(tourdeContentView, event);
+			var tourDeFlexView:TourDeFlexContentsView = new TourDeFlexContentsView();
+			tourDeFlexView.addEventListener(HelpViewEvent.OPEN_FILE, tourDeFlexView_openFileHandler);
+			tourDeFlexView.addEventListener(HelpViewEvent.OPEN_LINK, tourDeFlexView_openLinkHandler);
+			tourDeFlexView.addEventListener(Event.CLOSE, tourDeFlexView_closeHandler);
+			var tourDeFlexViewWrapper:TourDeFlexContentsViewWrapper = new TourDeFlexContentsViewWrapper(tourDeFlexView);
+			tourDeFlexViewWrapper.percentWidth = 100.0;
+			tourDeFlexViewWrapper.percentHeight = 100.0;
+			LayoutModifier.addToSidebar(tourDeFlexViewWrapper, event);
 		}
 		
 		protected function as3DocHandler(event:Event):void
 		{
 			var docsView:AS3DocsView = new AS3DocsView();
+			docsView.addEventListener(HelpViewEvent.OPEN_LINK, as3DocsView_openLinkHandler);
 			docsView.addEventListener(Event.CLOSE, as3DocsView_closeHandler);
 			var docsViewWrapper:AS3DocsViewWrapper = new AS3DocsViewWrapper(docsView);
 			docsViewWrapper.percentWidth = 100.0;
@@ -82,11 +97,65 @@ package actionScripts.plugin.help
 			LayoutModifier.addToSidebar(docsViewWrapper, event);
 		}
 
+		private function tourDeFlexView_openFileHandler(event:HelpViewEvent):void
+		{
+			var link:String = event.link;
+			var application:String = event.data;
+			if(application.indexOf("_ThirdParty.txt") != -1)
+			{
+				// Since we can't use same 'opened' file to open in multiple tabs.
+				// we need some extra works here
+				var tmpFile:File = File.applicationStorageDirectory.resolvePath(application);
+				if (!tmpFile.exists)
+				{
+					var fs : FileStream = new FileStream();
+					fs.open( tmpFile, FileMode.WRITE );
+					fs.writeUTFBytes(THIRD_PARTY_WARNING_TEXT);
+					fs.close();
+				}
+				if (tmpFile.exists)
+				{
+					dispatcher.dispatchEvent( 
+						new OpenFileEvent(OpenFileEvent.OPEN_FILE, [new FileLocation(tmpFile.nativePath)], -1, null, true, link) 
+					);
+				}
+			}
+			else {
+				tmpFile = File.applicationDirectory.resolvePath("tourDeFlex/"+application+".mxml");
+				if (tmpFile.exists)
+				{
+					dispatcher.dispatchEvent( 
+						new OpenFileEvent(OpenFileEvent.OPEN_FILE, [new FileLocation(tmpFile.nativePath)], -1, null, true, link) 
+					);
+				}
+			}
+		}
+
+		private function tourDeFlexView_openLinkHandler(event:HelpViewEvent):void
+		{
+			navigateToURL(new URLRequest(event.link), "_blank");
+		}
+
+		protected function tourDeFlexView_closeHandler(event:Event):void
+		{
+			var tourDeFlexView:TourDeFlexContentsView = TourDeFlexContentsView(event.currentTarget);
+			tourDeFlexView.removeEventListener(HelpViewEvent.OPEN_LINK, tourDeFlexView_openLinkHandler);
+			tourDeFlexView.removeEventListener(Event.CLOSE, tourDeFlexView_closeHandler);
+			var tourDeFlexViewWrapper:IPanelWindow = IPanelWindow(tourDeFlexView.parent);
+			LayoutModifier.removeFromSidebar(tourDeFlexViewWrapper);
+		}
+
+		private function as3DocsView_openLinkHandler(event:HelpViewEvent):void
+		{
+			navigateToURL(new URLRequest(event.link), "_blank");
+		}
+
 		protected function as3DocsView_closeHandler(event:Event):void
 		{
 			var docsView:AS3DocsView = AS3DocsView(event.currentTarget);
+			docsView.removeEventListener(HelpViewEvent.OPEN_LINK, as3DocsView_openLinkHandler);
 			docsView.removeEventListener(Event.CLOSE, as3DocsView_closeHandler);
-			var docsViewWrapper:AS3DocsViewWrapper = AS3DocsViewWrapper(docsView.parent);
+			var docsViewWrapper:IPanelWindow = IPanelWindow(docsView.parent);
 			LayoutModifier.removeFromSidebar(docsViewWrapper);
 		}
 		
@@ -127,6 +196,7 @@ import actionScripts.ui.FeathersUIWrapper;
 import actionScripts.ui.IPanelWindow;
 import actionScripts.interfaces.IViewWithTitle;
 import moonshine.plugin.help.view.AS3DocsView;
+import moonshine.plugin.help.view.TourDeFlexContentsView;
 
 //IPanelWindow used by LayoutModifier.addToSidebar() and removeFromSidebar()
 class AS3DocsViewWrapper extends FeathersUIWrapper implements IPanelWindow, IViewWithTitle {
@@ -144,5 +214,24 @@ class AS3DocsViewWrapper extends FeathersUIWrapper implements IPanelWindow, IVie
 	{
 		//className used by LayoutModifier.attachSidebarSections
 		return "AS3DocsView";
+	}
+}
+
+//IPanelWindow used by LayoutModifier.addToSidebar() and removeFromSidebar()
+class TourDeFlexContentsViewWrapper extends FeathersUIWrapper implements IPanelWindow, IViewWithTitle {
+	public function TourDeFlexContentsViewWrapper(feathersUIControl:TourDeFlexContentsView)
+	{
+		super(feathersUIControl);
+	}
+
+	public function get title():String
+	{
+		return TourDeFlexContentsView(feathersUIControl).title;
+	}
+
+	override public function get className():String
+	{
+		//className used by LayoutModifier.attachSidebarSections
+		return "TourDeFlexContentsView";
 	}
 }

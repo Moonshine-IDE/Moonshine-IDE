@@ -36,7 +36,7 @@ import openfl.events.IOErrorEvent;
 import openfl.net.URLLoader;
 import openfl.net.URLRequest;
 
-class AS3DocsView extends Panel implements IViewWithTitle {
+class TourDeFlexContentsView extends Panel implements IViewWithTitle {
 	public function new() {
 		super();
 	}
@@ -48,7 +48,7 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 	public var title(get, never):String;
 
 	public function get_title():String {
-		return "Useful Links";
+		return "Tour De Flex";
 	}
 
 	override private function initialize():Void {
@@ -71,9 +71,9 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 		super.initialize();
 
 		this.urlLoader = new URLLoader();
-		this.urlLoader.addEventListener(Event.COMPLETE, urlLoader_completeHandler);
+		this.urlLoader.addEventListener(Event.COMPLETE, urlLoader1_completeHandler);
 		this.urlLoader.addEventListener(IOErrorEvent.IO_ERROR, urlLoader_ioErrorHandler);
-		this.urlLoader.load(new URLRequest("/elements/data/UsefulLinks.xml"));
+		this.urlLoader.load(new URLRequest("/tourDeFlex/explorer.xml"));
 	}
 
 	private function cleanupURLLoader():Void {
@@ -82,7 +82,8 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 		}
 
 		this.urlLoader.close();
-		this.urlLoader.removeEventListener(Event.COMPLETE, urlLoader_completeHandler);
+		this.urlLoader.removeEventListener(Event.COMPLETE, urlLoader1_completeHandler);
+		this.urlLoader.removeEventListener(Event.COMPLETE, urlLoader2_completeHandler);
 		this.urlLoader.removeEventListener(IOErrorEvent.IO_ERROR, urlLoader_ioErrorHandler);
 		this.urlLoader = null;
 	}
@@ -103,7 +104,30 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
-	private function urlLoader_completeHandler(event:Event):Void {
+	private function urlLoader1_completeHandler(event:Event):Void {
+		var urlLoader = cast(event.currentTarget, URLLoader);
+
+		var xmlData:String = urlLoader.data;
+		var treeData:Array<TreeNode<Xml>> = [];
+		try {
+			var xml = Xml.parse(xmlData);
+			var xmlNodes = xml.firstElement().firstElement().elements();
+			this.addXmlNodes(xmlNodes, treeData);
+		} catch (e:Dynamic) {
+			treeData = [];
+			trace('ERROR: ${e}');
+		}
+
+		this.treeView.dataProvider = new TreeCollection(treeData);
+		this.cleanupURLLoader();
+
+		this.urlLoader = new URLLoader();
+		this.urlLoader.addEventListener(Event.COMPLETE, urlLoader2_completeHandler);
+		this.urlLoader.addEventListener(IOErrorEvent.IO_ERROR, urlLoader_ioErrorHandler);
+		this.urlLoader.load(new URLRequest("/tourDeFlex/3rdParty.xml"));
+	}
+
+	private function urlLoader2_completeHandler(event:Event):Void {
 		var urlLoader = cast(event.currentTarget, URLLoader);
 
 		var xmlData:String = urlLoader.data;
@@ -111,13 +135,15 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 		try {
 			var xml = Xml.parse(xmlData);
 			var xmlNodes = xml.firstElement().elements();
-			addXmlNodes(xmlNodes, treeData);
+			this.addXmlNodes(xmlNodes, treeData);
 		} catch (e:Dynamic) {
 			treeData = [];
 			trace('ERROR: ${e}');
 		}
 
-		this.treeView.dataProvider = new TreeCollection(treeData);
+		for (node in treeData) {
+			this.treeView.dataProvider.addAt(node, [this.treeView.dataProvider.getLength()]);
+		}
 		this.cleanupURLLoader();
 	}
 
@@ -131,12 +157,31 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 	private function treeView_itemTriggerHandler(event:TreeViewEvent):Void {
 		var treeNode = cast(event.state.data, TreeNode<Dynamic>);
 		var xml = cast(treeNode.data, Xml);
-		var link = xml.get("link");
-
-		if (link == null) {
+		var app = xml.get("app");
+		var thirdParty = xml.get("thirdParty") == "true";
+		if (thirdParty) {
+			var definedName = xml.get("label").split(" ").join("");
+			app = definedName + "_ThirdParty.txt";
+		}
+		if (app == null) {
 			return;
 		}
+		var link = xml.get("link");
 
-		this.dispatchEvent(new HelpViewEvent(HelpViewEvent.OPEN_LINK, link));
+		if (thirdParty) {
+			this.dispatchEvent(new HelpViewEvent(HelpViewEvent.OPEN_FILE, link, app));
+		} else {
+			var swfLink = "";
+			if (app.indexOf(".swf") != -1) {
+				swfLink = app;
+			} else if (app.indexOf(".jpg") != -1 || app.indexOf(".png") != -1) {
+				swfLink = app;
+			} else {
+				swfLink = app + ".swf";
+			}
+			this.dispatchEvent(new HelpViewEvent(HelpViewEvent.OPEN_FILE, "http://flex.apache.org/tourdeflex/" + swfLink, app));
+		}
 	}
+
+	private function loadApp(application:String, thirdParty:Bool, link:String = ""):Void {}
 }
