@@ -36,6 +36,7 @@
 			public static const EVENT_NEW_WORKSPACE_WITH_LABEL:String = "createNewWorkspaceWithLabelEvent";
 			
 			[Bindable] public var workspaces:ArrayList;
+			[Bindable] public var selectedWorkspace:String;
 			
 			protected function onChangeButton(event:MouseEvent):void
 			{
@@ -51,7 +52,7 @@
 	<s:VGroup width="100%" height="100%" paddingLeft="12" paddingBottom="9" paddingTop="9" paddingRight="13">
 		<s:DropDownList id="ddlWorkspace"
 						width="100%" height="25"
-						dataProvider="{workspaces}"
+						dataProvider="{workspaces}" selectedItem="{selectedWorkspace}"
 						requireSelection="true"/>
 	</s:VGroup>
 	

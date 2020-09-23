@@ -27,10 +27,13 @@ package actionScripts.plugin.workspace
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
+	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.utils.UtilsCore;
@@ -57,6 +60,7 @@ package actionScripts.plugin.workspace
 		private var currentWorkspaceItems:Array;
 		private var workspaces:Object; // Dictionary<String, [String]>
 		private var methodToCallAfterClosingAllProjects:MethodDescriptor;
+		private var closeAllProjectItems:Array;
 		
 		private var loadWorkspacePopup:LoadWorkspacePopup;
 		private var newWorkspacePopup:NewWorkspacePopup;
@@ -69,6 +73,7 @@ package actionScripts.plugin.workspace
 				tmpArray.push(label);
 			}
 			
+			tmpArray.sort(Array.CASEINSENSITIVE);
 			return tmpArray;
 		}
 		
@@ -101,16 +106,19 @@ package actionScripts.plugin.workspace
 		
 		private function handleRemoveProject(event:ProjectEvent):void
 		{
-			var pathIndex:int = getPathIndex(event.project.folderLocation.fileBridge.nativePath);
-			if (pathIndex != -1)
+			if (closeAllProjectItems && closeAllProjectItems.length > 0)
 			{
-				currentWorkspaceItems.splice(pathIndex, 1);
-				if (methodToCallAfterClosingAllProjects != null)
+				closeAllProjectItems.splice(
+					closeAllProjectItems.indexOf(event.project.folderLocation.fileBridge.nativePath), 
+					1);
+				closeAllEditorAsync();
+			}
+			else
+			{
+				var pathIndex:int = getPathIndex(event.project.folderLocation.fileBridge.nativePath);
+				if (pathIndex != -1)
 				{
-					closeAllEditorAsync();
-				}
-				else
-				{
+					currentWorkspaceItems.splice(pathIndex, 1);
 					saveToCookie();
 				}
 			}
@@ -118,13 +126,25 @@ package actionScripts.plugin.workspace
 		
 		private function onSaveAsNewWorkspaceEvent(event:Event):void
 		{
+			newWorkspacePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewWorkspacePopup, true) as NewWorkspacePopup;
+			newWorkspacePopup.workspaces = workspaceLabels;
+			newWorkspacePopup.title = "Save As Workspace";
+			newWorkspacePopup.addEventListener(CloseEvent.CLOSE, handleNewWorkspacePopupClose);
+			newWorkspacePopup.addEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
 			
+			PopUpManager.centerPopUp(newWorkspacePopup);
+		}
+		
+		private function handleSaveAsWorkspaceEvent(event:GeneralEvent):void
+		{
+			duplicateToNewWorkspace(event.value as String);
 		}
 		
 		private function onNewWorkspaceEvent(event:Event):void
 		{
 			newWorkspacePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewWorkspacePopup, true) as NewWorkspacePopup;
 			newWorkspacePopup.workspaces = workspaceLabels;
+			newWorkspacePopup.title = "New Workspace";
 			newWorkspacePopup.addEventListener(CloseEvent.CLOSE, handleNewWorkspacePopupClose);
 			newWorkspacePopup.addEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
 			
@@ -135,6 +155,7 @@ package actionScripts.plugin.workspace
 		{
 			newWorkspacePopup.removeEventListener(CloseEvent.CLOSE, handleNewWorkspacePopupClose);
 			newWorkspacePopup.removeEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
+			newWorkspacePopup.removeEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
 			newWorkspacePopup = null;
 		}
 		
@@ -143,6 +164,7 @@ package actionScripts.plugin.workspace
 			methodToCallAfterClosingAllProjects = 
 				new MethodDescriptor(this, 'changeToNewWorkspace', event.value as String);
 			
+			closeAllProjectItems = ObjectUtil.copy(currentWorkspaceItems) as Array;
 			closeAllEditorAsync();
 		}
 		
@@ -150,6 +172,7 @@ package actionScripts.plugin.workspace
 		{
 			loadWorkspacePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, LoadWorkspacePopup, true) as LoadWorkspacePopup;
 			loadWorkspacePopup.workspaces = new ArrayList(workspaceLabels);
+			loadWorkspacePopup.selectedWorkspace = currentWorkspaceLabel;
 			loadWorkspacePopup.addEventListener(CloseEvent.CLOSE, handleLoadWorkspacePopupClose);
 			loadWorkspacePopup.addEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
 			
@@ -171,6 +194,7 @@ package actionScripts.plugin.workspace
 				methodToCallAfterClosingAllProjects = 
 					new MethodDescriptor(this, 'changeToWorkspace', requestedWorkspace);
 				
+				closeAllProjectItems = ObjectUtil.copy(currentWorkspaceItems) as Array;
 				closeAllEditorAsync();
 			}
 		}
@@ -203,10 +227,22 @@ package actionScripts.plugin.workspace
 		public function changeToWorkspace(label:String):void
 		{
 			currentWorkspaceLabel = label;
+			currentWorkspaceItems = workspaces[currentWorkspaceLabel];
 			saveToCookie();
 			
 			// codes to re-open each projects
 			// saved from the active workspace
+			var tmpProjectLocation:FileLocation;
+			for each (var path:String in currentWorkspaceItems)
+			{
+				tmpProjectLocation = new FileLocation(path);
+				if (tmpProjectLocation.fileBridge.exists)
+				{
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, tmpProjectLocation.fileBridge.getFile));
+				}
+			}
+			
+			outputToConsole();
 		}
 		
 		public function changeToNewWorkspace(label:String):void
@@ -215,6 +251,16 @@ package actionScripts.plugin.workspace
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspaceItems;
 			saveToCookie();
+			outputToConsole();
+		}
+		
+		private function duplicateToNewWorkspace(label:String):void
+		{
+			currentWorkspaceItems = ObjectUtil.clone(currentWorkspaceItems) as Array;
+			currentWorkspaceLabel = label;
+			workspaces[currentWorkspaceLabel] = currentWorkspaceItems;
+			saveToCookie();
+			outputToConsole();
 		}
 		
 		private function saveToCookie():void
@@ -226,6 +272,11 @@ package actionScripts.plugin.workspace
 			cookie.flush();
 		}
 		
+		private function outputToConsole():void
+		{
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Workspace changed to: "+ currentWorkspaceLabel, false, false, ConsoleOutputEvent.TYPE_NOTE));
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  CLOSING ALL PROJECTS ONE AT A TIME
@@ -234,9 +285,9 @@ package actionScripts.plugin.workspace
 		
 		private function closeAllEditorAsync():void
 		{
-			if (currentWorkspaceItems.length != 0)
+			if (closeAllProjectItems.length != 0)
 			{
-				var projectPath:String = currentWorkspaceItems[0];
+				var projectPath:String = closeAllProjectItems[0];
 				var project:ProjectVO = UtilsCore.getProjectByPath(projectPath);
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.CLOSE_PROJECT, project.projectFolder));
 			}
@@ -244,6 +295,7 @@ package actionScripts.plugin.workspace
 			{
 				methodToCallAfterClosingAllProjects.callMethod();
 				methodToCallAfterClosingAllProjects = null;
+				closeAllProjectItems = null;
 			}
 		}
 	}
