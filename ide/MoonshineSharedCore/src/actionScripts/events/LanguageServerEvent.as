@@ -33,7 +33,7 @@ package actionScripts.events
 		public static const EVENT_DEFINITION_LINK:String = "newDefinitionLink";
 		public static const EVENT_DOCUMENT_SYMBOLS:String = "newDocumentSymbols";
 		public static const EVENT_WORKSPACE_SYMBOLS:String = "newWorkspaceSymbols";
-		public static const EVENT_FIND_REFERENCES:String = "newFindReferences";
+		public static const EVENT_GO_TO_REFERENCES:String = "newGoToReferences";
 		public static const EVENT_RENAME:String = "newRename";
 		public static const EVENT_CODE_ACTION:String = "newCodeAction";
 		public static const EVENT_GO_TO_DEFINITION:String = "newGoToDefinition";

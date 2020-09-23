@@ -344,6 +344,8 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','FIND_RESOURCES'), null, null, FindResourcesPlugin.EVENT_FIND_RESOURCES,
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'r', [Keyboard.CONTROL, Keyboard.SHIFT]),
+					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),
+					new MenuItem(resourceManager.getString('resources','WORKSPACE_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], SymbolsPlugin.EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','GO_TO_LINE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], FindReplacePlugin.EVENT_GO_TO_LINE,
 						'l', [Keyboard.COMMAND],
@@ -351,6 +353,9 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','GO_TO_DEFINITION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION),
 					new MenuItem(resourceManager.getString('resources','GO_TO_TYPE_DEFINITION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION),
 					new MenuItem(resourceManager.getString('resources','GO_TO_IMPLEMENTATION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION),
+					new MenuItem(resourceManager.getString('resources','GO_TO_REFERENCES'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], ReferencesPlugin.EVENT_OPEN_GO_TO_REFERENCES_VIEW, 
+						"f",[Keyboard.CONTROL, Keyboard.SHIFT], 
+						Keyboard.F7, [Keyboard.ALTERNATE]),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS], RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
 					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], LanguageServerMenuEvent.EVENT_MENU_ORGANIZE_IMPORTS,
@@ -373,13 +378,7 @@ package actionScripts.impls
 						"tab", [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','NAVIGATE_EDITORS_LIST'), null, null, TabEvent.EVENT_TAB_NAVIGATE_EDITORS_LIST_HOTKEYS,
 						"\t", [Keyboard.CONTROL, Keyboard.SHIFT],
-						"tab", [Keyboard.CONTROL, Keyboard.SHIFT]),
-					new MenuItem(null), //separator
-					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),
-					new MenuItem(resourceManager.getString('resources','WORKSPACE_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], SymbolsPlugin.EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW),
-					new MenuItem(resourceManager.getString('resources','FIND_REFERENCES'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], ReferencesPlugin.EVENT_OPEN_FIND_REFERENCES_VIEW, 
-						"f",[Keyboard.CONTROL, Keyboard.SHIFT], 
-						Keyboard.F7, [Keyboard.ALTERNATE])
+						"tab", [Keyboard.CONTROL, Keyboard.SHIFT])
 				]),
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, 

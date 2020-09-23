@@ -63,6 +63,7 @@ package actionScripts.languageServer
 	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -170,7 +171,7 @@ package actionScripts.languageServer
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DEFINITION_LINK, definitionLinkHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
-			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GO_TO_REFERENCES, findReferencesHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_CODE_ACTION, codeActionHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GO_TO_DEFINITION, gotoDefinitionHandler);
 			_globalDispatcher.addEventListener(LanguageServerEvent.EVENT_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
@@ -228,16 +229,26 @@ package actionScripts.languageServer
 		private var _socketBuffer:String = "";
 		private var _socketBytes:ByteArray = new ByteArray();
 		private var _gotoDefinitionLookup:Dictionary = new Dictionary();
+		private var _previousDefinitionLinkID:int = -1;
 		private var _definitionLinkLookup:Dictionary = new Dictionary();
+		private var _previousFindReferencesID:int = -1;
 		private var _findReferencesLookup:Dictionary = new Dictionary();
 		private var _gotoTypeDefinitionLookup:Dictionary = new Dictionary();
 		private var _gotoImplementationLookup:Dictionary = new Dictionary();
+		private var _previousCodeActionID:int = -1;
 		private var _codeActionLookup:Dictionary = new Dictionary();
+		private var _previousResolveCompletionID:int = -1;
 		private var _resolveCompletionLookup:Dictionary = new Dictionary();
+		private var _previousCompletionID:int = -1;
 		private var _completionLookup:Dictionary = new Dictionary();
+		private var _previousHoverID:int = -1;
 		private var _hoverLookup:Dictionary = new Dictionary();
+		private var _previousSignatureHelpID:int = -1;
 		private var _signatureHelpLookup:Dictionary = new Dictionary();
+		private var _previousDocumentSymbolsURI:String = null;
+		private var _previousDocumentSymbolsID:int = -1;
 		private var _documentSymbolsLookup:Dictionary = new Dictionary();
+		private var _previousWorkspaceSymbolsID:int = -1;
 		private var _workspaceSymbolsLookup:Dictionary = new Dictionary();
 		private var _schemes:Vector.<String> = new <String>[]
 		private var _savedDiagnostics:Object = {};
@@ -371,7 +382,7 @@ package actionScripts.languageServer
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DEFINITION_LINK, definitionLinkHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS, workspaceSymbolsHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS, documentSymbolsHandler);
-			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_FIND_REFERENCES, findReferencesHandler);
+			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GO_TO_REFERENCES, findReferencesHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_CODE_ACTION, codeActionHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GO_TO_DEFINITION, gotoDefinitionHandler);
 			_globalDispatcher.removeEventListener(LanguageServerEvent.EVENT_GO_TO_TYPE_DEFINITION, gotoTypeDefinitionHandler);
@@ -883,24 +894,48 @@ package actionScripts.languageServer
 				{
 					var uriAndCompletionItem:UriAndCompletionItem = UriAndCompletionItem(_resolveCompletionLookup[requestID]);
 					delete _resolveCompletionLookup[requestID];
+					if(_previousResolveCompletionID > requestID)
+					{
+						//we already handled a newer resolve completion response
+						return;
+					}
+					_previousResolveCompletionID = requestID;
 					handleCompletionResolveResponse(result, uriAndCompletionItem.uri, uriAndCompletionItem.item);
 				}
 				else if(result && FIELD_ITEMS in result) //completion (CompletionList)
 				{
 					var uri:String = _completionLookup[requestID] as String;
 					delete _completionLookup[requestID];
+					if(_previousCompletionID > requestID)
+					{
+						//we already handled a newer completion response
+						return;
+					}
+					_previousCompletionID = requestID;
 					handleCompletionResponse(result, uri);
 				}
 				else if(result && FIELD_SIGNATURES in result) //signature help
 				{
 					uri = _signatureHelpLookup[requestID] as String;
 					delete _signatureHelpLookup[requestID];
+					if(_previousSignatureHelpID > requestID)
+					{
+						//we already handled a newer signature help response
+						return;
+					}
+					_previousSignatureHelpID = requestID;
 					handleSignatureHelpResponse(result, uri);
 				}
 				else if(result && FIELD_CONTENTS in result) //hover
 				{
 					var uriAndPosition:UriAndPosition = _hoverLookup[requestID] as UriAndPosition;
 					delete _hoverLookup[requestID];
+					if(_previousHoverID > requestID)
+					{
+						//we already handled a newer hover response
+						return;
+					}
+					_previousHoverID = requestID;
 					handleHoverResponse(result, uriAndPosition.uri, uriAndPosition.position);
 				}
 				else if(result && FIELD_DOCUMENT_CHANGES in result) //rename
@@ -917,12 +952,24 @@ package actionScripts.languageServer
 					{
 						uri = _completionLookup[requestID] as String;
 						delete _completionLookup[requestID];
+						if(_previousCompletionID > requestID)
+						{
+							//we already handled a newer completion response
+							return;
+						}
+						_previousCompletionID = requestID;
 						handleCompletionResponse(result, uri);
 					}
 					else if(requestID in _definitionLinkLookup)
 					{
 						uriAndPosition = _definitionLinkLookup[requestID] as UriAndPosition;
 						delete _definitionLinkLookup[requestID];
+						if(_previousDefinitionLinkID > requestID)
+						{
+							//we already handled a newer definition link response
+							return;
+						}
+						_previousDefinitionLinkID = requestID;
 						handleDefinitionLinkResponse(result, uriAndPosition.uri, uriAndPosition.position);
 					}
 					else if(requestID in _gotoDefinitionLookup)
@@ -946,23 +993,48 @@ package actionScripts.languageServer
 					else if(requestID in _findReferencesLookup)
 					{
 						delete _findReferencesLookup[requestID];
+						if(_previousFindReferencesID > requestID)
+						{
+							//we already handled a newer find references response
+							return;
+						}
+						_previousFindReferencesID = requestID;
 						handleReferencesResponse(result);
 					}
 					else if(requestID in _codeActionLookup)
 					{
 						uri = _codeActionLookup[requestID] as String;
 						delete _codeActionLookup[requestID];
+						if(_previousCodeActionID > requestID)
+						{
+							//we already handled a newer code action response
+							return;
+						}
+						_previousCodeActionID = requestID;
 						handleCodeActionResponse(result, uri);
 					}
 					else if(requestID in _documentSymbolsLookup)
 					{
 						uri = _documentSymbolsLookup[requestID] as String;
 						delete _documentSymbolsLookup[requestID];
+						if(_previousDocumentSymbolsID > requestID && _previousDocumentSymbolsURI == uri)
+						{
+							//we already handled a newer document symbol response
+							return;
+						}
+						_previousDocumentSymbolsID = requestID;
+						_previousDocumentSymbolsURI = uri;
 						handleDocumentSymbolsResponse(result, uri);
 					}
 					else if(requestID in _workspaceSymbolsLookup)
 					{
 						delete _workspaceSymbolsLookup[requestID];
+						if(_previousWorkspaceSymbolsID > requestID)
+						{
+							//we already handled a newer workspace symbol response
+							return;
+						}
+						_previousWorkspaceSymbolsID = requestID;
 						handleWorkspaceSymbolsResponse(result);
 					}
 					else
@@ -1953,13 +2025,12 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			//TODO: fix this to properly merge symbols from all projects
 			var activeEditor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
-			if(!activeEditor)
+			if(!activeEditor && _model.activeProject != _project)
 			{
 				return;
 			}
-			if(!isUriInProject(activeEditor.currentFile.fileBridge.url, _project) && _model.projects.length != 1)
+			else if(activeEditor && !isUriInProject(activeEditor.currentFile.fileBridge.url, _project))
 			{
 				return;
 			}

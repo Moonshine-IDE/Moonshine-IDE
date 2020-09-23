@@ -87,17 +87,14 @@ package actionScripts.plugin.symbols
 		
 		private function handleQueryChange(event:Event):void
 		{
+			if(symbolsViewWrapper.parent == null)
+			{
+				//ignore query changes if they happen after the window is closed
+				return;
+			}
 			var query:String = this.symbolsView.query;
 			if(this.isWorkspace)
 			{
-				if(!query)
-				{
-					//no point in calling the language server here
-					//an empty query is supposed to have zero results
-					this.symbolsView.symbols.filterFunction = null;
-					this.symbolsView.symbols.removeAll();
-					return;
-				}
 				var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
 				//using newText instead of a dedicated field is kind of hacky...
 				languageServerEvent.newText = query;
@@ -122,6 +119,43 @@ package actionScripts.plugin.symbols
 				};
 				collection.refresh();
 			}
+		}
+
+		private function symbolSortCompareFunction(symbol1:Object, symbol2:Object):int
+		{
+			var symbol1Name:String = null;
+			var symbol2Name:String = null;
+			if(symbol1 is DocumentSymbol)
+			{
+				var docSymbol1:DocumentSymbol = DocumentSymbol(symbol1);
+				symbol1Name = docSymbol1.name;
+			}
+			else if(symbol1 is SymbolInformation)
+			{
+				var symbolInfo1:SymbolInformation = SymbolInformation(symbol1);
+				symbol1Name = symbolInfo1.name;
+			}
+			if(symbol2 is DocumentSymbol)
+			{
+				var docSymbol2:DocumentSymbol = DocumentSymbol(symbol2);
+				symbol2Name = docSymbol2.name;
+			}
+			else if(symbol2 is SymbolInformation)
+			{
+				var symbolInfo2:SymbolInformation = SymbolInformation(symbol2);
+				symbol2Name = symbolInfo2.name;
+			}
+			symbol1Name = symbol1Name.toLowerCase();
+			symbol2Name = symbol2Name.toLowerCase();
+			if(symbol1Name < symbol2Name)
+			{
+				return -1;
+			}
+			else if(symbol1Name > symbol2Name)
+			{
+				return 1;
+			}
+			return 0;
 		}
 
 		private function handleOpenDocumentSymbolsView(event:Event):void
@@ -163,12 +197,20 @@ package actionScripts.plugin.symbols
 			PopUpManager.centerPopUp(symbolsViewWrapper);
 			symbolsView.stage.focus = symbolsView.searchFieldTextInput;
 			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
+		
+			//start by listing all symbols, if the language server supports it
+			var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
+			languageServerEvent.newText = "";
+			dispatcher.dispatchEvent(languageServerEvent);
 		}
 
 		private function handleShowSymbols(event:SymbolsEvent):void
 		{
 			var collection:ArrayCollection = symbolsView.symbols;
 			collection.filterFunction = null;
+			//don't sort until after all items have been added because it's
+			//expensive to repeatedly sort when adding new items one by one
+			collection.sortCompareFunction = null;
 			collection.removeAll();
 			var symbols:Array = event.symbols;
 			var itemCount:int = symbols.length;
@@ -187,6 +229,8 @@ package actionScripts.plugin.symbols
 					this.addDocumentSymbolChildren(documentSymbol, collection);
 				}
 			}
+			collection.sortCompareFunction = symbolSortCompareFunction;
+			collection.refresh();
 		}
 
 		private function addDocumentSymbolChildren(documentSymbol:DocumentSymbol, collection:ArrayCollection):void
