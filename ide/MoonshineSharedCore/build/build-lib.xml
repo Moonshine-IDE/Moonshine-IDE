@@ -306,7 +306,7 @@
 			<arg value="/DTIMESTAMP=${timestamp.time}"/>
 			<arg value="nsis-build.nsi"/>
 		</exec>
-		<echo># Signed Process Running - Signing Installer</echo>
+		<echo># Signed Process Running - Signing Installer: ${certSignedWindowsBinary}</echo>
 		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/f"/>
