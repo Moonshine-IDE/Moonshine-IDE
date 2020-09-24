@@ -27,6 +27,8 @@ import moonshine.plugin.help.view.TourDeFlexContentsView;
 import moonshine.plugin.locations.view.LocationsView;
 import moonshine.plugin.outline.view.OutlineView;
 import moonshine.plugin.references.view.ReferencesView;
+import moonshine.plugin.rename.view.RenameFileView;
+import moonshine.plugin.rename.view.RenameSymbolView;
 import moonshine.plugin.symbols.view.SymbolsView;
 
 class HaxeClasses {
@@ -37,6 +39,8 @@ class HaxeClasses {
 	public var LocationsView:LocationsView;
 	public var OutlineView:OutlineView;
 	public var ReferencesView:ReferencesView;
+	public var RenameFileView:RenameFileView;
+	public var RenameSymbolView:RenameSymbolView;
 	public var SymbolsView:SymbolsView;
 	public var TourDeFlexContentsView:TourDeFlexContentsView;
 }
