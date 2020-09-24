@@ -20,6 +20,8 @@
 
 package moonshine.theme;
 
+import openfl.filters.GlowFilter;
+import moonshine.plugin.help.view.TourDeFlexTreeViewItemRenderer;
 import feathers.controls.Radio;
 import feathers.controls.Button;
 import feathers.controls.Callout;
@@ -110,6 +112,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeViewItemRenderer, null, setTreeViewItemRendererStyles);
+		this.styleProvider.setStyleFunction(TourDeFlexTreeViewItemRenderer, null, setTourDeFlexTreeViewItemRendererItemRendererStyles);
 		this.styleProvider.setStyleFunction(ToggleButton, TreeViewItemRenderer.CHILD_VARIANT_DISCLOSURE_BUTTON, setTreeViewItemRendererDisclosureButtonStyles);
 	}
 
@@ -813,6 +816,18 @@ class MoonshineTheme extends ClassVariantTheme {
 		itemRenderer.paddingBottom = 4.0;
 		itemRenderer.paddingLeft = 4.0;
 		itemRenderer.indentation = 12.0;
+	}
+
+	private function setTourDeFlexTreeViewItemRendererItemRendererStyles(itemRenderer:TourDeFlexTreeViewItemRenderer):Void {
+		this.setTreeViewItemRendererStyles(itemRenderer);
+
+		var activeFileIndicator = new Shape();
+		activeFileIndicator.graphics.clear();
+		activeFileIndicator.graphics.beginFill(0xe15fd5);
+		activeFileIndicator.graphics.drawCircle(2.0, 2.0, 2.0);
+		activeFileIndicator.graphics.endFill();
+		activeFileIndicator.filters = [new GlowFilter(0xff00e4, 0.4, 6, 6, 2)];
+		itemRenderer.activeFileIndicator = activeFileIndicator;
 	}
 
 	private function setTreeViewItemRendererDisclosureButtonStyles(button:ToggleButton):Void {

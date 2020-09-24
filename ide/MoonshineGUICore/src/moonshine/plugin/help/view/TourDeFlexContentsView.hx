@@ -20,6 +20,9 @@
 
 package moonshine.plugin.help.view;
 
+import feathers.data.TreeViewItemState;
+import feathers.utils.DisplayObjectRecycler;
+import feathers.core.InvalidationFlag;
 import moonshine.plugin.help.events.HelpViewEvent;
 import actionScripts.interfaces.IViewWithTitle;
 import feathers.controls.Panel;
@@ -51,14 +54,46 @@ class TourDeFlexContentsView extends Panel implements IViewWithTitle {
 		return "Tour De Flex";
 	}
 
+	private var _activeFilePath:String;
+
+	@:flash.property
+	public var activeFilePath(get, set):String;
+
+	private function get_activeFilePath():String {
+		return this._activeFilePath;
+	}
+
+	private function set_activeFilePath(value:String):String {
+		if (this._activeFilePath == value) {
+			return this._activeFilePath;
+		}
+		this._activeFilePath = value;
+		this.setInvalid(InvalidationFlag.DATA);
+		return this._activeFilePath;
+	}
+
 	override private function initialize():Void {
 		this.layout = new AnchorLayout();
+
+		var itemRendererRecycler = DisplayObjectRecycler.withClass(TourDeFlexTreeViewItemRenderer, (itemRenderer, state:TreeViewItemState) -> {
+			var treeNode = cast(state.data, TreeNode<Dynamic>);
+			var xml = cast(treeNode.data, Xml);
+			itemRenderer.text = state.text;
+			var app = xml.get("app");
+			if (this._activeFilePath == null || app == null) {
+				itemRenderer.showActiveFileIndicator = false;
+			} else {
+				var activeFilePath = ~/\\/g.replace(this._activeFilePath, "/");
+				itemRenderer.showActiveFileIndicator = activeFilePath.indexOf(app) != -1;
+			}
+		});
 
 		this.treeView = new TreeView();
 		this.treeView.variant = TreeView.VARIANT_BORDERLESS;
 		this.treeView.selectable = false;
 		this.treeView.layoutData = AnchorLayoutData.fill();
 		this.treeView.itemToText = (item:TreeNode<Xml>) -> item.data.get("label");
+		this.treeView.itemRendererRecycler = itemRendererRecycler;
 		this.treeView.addEventListener(TreeViewEvent.ITEM_TRIGGER, treeView_itemTriggerHandler);
 		this.addChild(this.treeView);
 
@@ -74,6 +109,16 @@ class TourDeFlexContentsView extends Panel implements IViewWithTitle {
 		this.urlLoader.addEventListener(Event.COMPLETE, urlLoader1_completeHandler);
 		this.urlLoader.addEventListener(IOErrorEvent.IO_ERROR, urlLoader_ioErrorHandler);
 		this.urlLoader.load(new URLRequest("/tourDeFlex/explorer.xml"));
+	}
+
+	override private function update():Void {
+		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
+
+		if (dataInvalid) {
+			this.treeView.dataProvider.updateAll();
+		}
+
+		super.update();
 	}
 
 	private function cleanupURLLoader():Void {

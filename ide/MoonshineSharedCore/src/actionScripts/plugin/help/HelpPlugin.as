@@ -42,6 +42,8 @@ package actionScripts.plugin.help
 	import flash.filesystem.File;
 	import flash.filesystem.FileStream;
 	import flash.filesystem.FileMode;
+	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.ui.editor.BasicTextEditor;
 
 	public class HelpPlugin extends PluginBase implements IPlugin
 	{
@@ -60,7 +62,7 @@ package actionScripts.plugin.help
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Help Plugin."; }
 
-		private var tourdeContentView: IPanelWindow;
+		private var tourDeFlexView:TourDeFlexContentsView;
 
 		override public function activate():void
 		{
@@ -72,11 +74,25 @@ package actionScripts.plugin.help
 			dispatcher.addEventListener(EVENT_AS3DOCS, as3DocHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, tabClosedHandler);
 			dispatcher.addEventListener(EVENT_PRIVACY_POLICY, privacyPolicyHandler);
+			dispatcher.addEventListener(EVENT_PRIVACY_POLICY, privacyPolicyHandler);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+		}
+
+		override public function deactivate():void
+		{
+			dispatcher.removeEventListener(EVENT_TOURDEFLEX, handleTourDeFlexConfigure);
+			dispatcher.removeEventListener(EVENT_ABOUT, abouthShowHandler);
+			dispatcher.removeEventListener(EVENT_AS3DOCS, as3DocHandler);
+			dispatcher.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, tabClosedHandler);
+			dispatcher.removeEventListener(EVENT_PRIVACY_POLICY, privacyPolicyHandler);
+			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+
+			super.deactivate();
 		}
 
 		protected function handleTourDeFlexConfigure(event:Event):void
 		{
-			var tourDeFlexView:TourDeFlexContentsView = new TourDeFlexContentsView();
+			tourDeFlexView = new TourDeFlexContentsView();
 			tourDeFlexView.addEventListener(HelpViewEvent.OPEN_FILE, tourDeFlexView_openFileHandler);
 			tourDeFlexView.addEventListener(HelpViewEvent.OPEN_LINK, tourDeFlexView_openLinkHandler);
 			tourDeFlexView.addEventListener(Event.CLOSE, tourDeFlexView_closeHandler);
@@ -84,6 +100,21 @@ package actionScripts.plugin.help
 			tourDeFlexViewWrapper.percentWidth = 100.0;
 			tourDeFlexViewWrapper.percentHeight = 100.0;
 			LayoutModifier.addToSidebar(tourDeFlexViewWrapper, event);
+		}
+		
+		private function tabSelectHandler(event:Event):void
+		{
+			if(!tourDeFlexView)
+			{
+				return;
+			}
+			var textEditor:BasicTextEditor = model.activeEditor as BasicTextEditor;
+			var activeFilePath:String = null;
+			if(textEditor && textEditor.currentFile)
+			{
+				activeFilePath = textEditor.currentFile.fileBridge.nativePath;
+			}
+			tourDeFlexView.activeFilePath = activeFilePath;
 		}
 		
 		protected function as3DocHandler(event:Event):void
@@ -138,7 +169,6 @@ package actionScripts.plugin.help
 
 		protected function tourDeFlexView_closeHandler(event:Event):void
 		{
-			var tourDeFlexView:TourDeFlexContentsView = TourDeFlexContentsView(event.currentTarget);
 			tourDeFlexView.removeEventListener(HelpViewEvent.OPEN_LINK, tourDeFlexView_openLinkHandler);
 			tourDeFlexView.removeEventListener(Event.CLOSE, tourDeFlexView_closeHandler);
 			var tourDeFlexViewWrapper:IPanelWindow = IPanelWindow(tourDeFlexView.parent);
@@ -180,7 +210,7 @@ package actionScripts.plugin.help
 			if (event is CloseTabEvent)
 			{
 				var tmpEvent:CloseTabEvent = event as CloseTabEvent;
-				if (!tmpEvent.tab || (tmpEvent.tab is IPanelWindow)) Object(tourdeContentView).refresh();
+				if (!tmpEvent.tab || (tmpEvent.tab is IPanelWindow)) Object(tourDeFlexView).refresh();
 			}
 		}
 
