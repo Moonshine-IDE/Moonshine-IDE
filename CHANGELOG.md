@@ -3,13 +3,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
-## Moonshine IDE [X.X.X]
+## Moonshine IDE [3.0.0]
 
 ### Summary
 
 ### Added
+* Added support for Flex modules.
+* Added support to open files in different editors than Moonshine (ex. Notepad++, VIM etc.).
+* Added ability to navigate between tabs using shortcuts. Ctrl/CMD+Tab to jump backward/forward between two last visited tabs. Ctrl+Shift+Tab opens opened editors list, navigates through by same key-combination or Ctrl+Tab or Ctrl+arrow-keys.
 
 ### Changed
+* Windows: Change installer from native Adobe Air installer to NSIS. 
+* Windows: Change Moonshine to 64 bit application.
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.2.2.
 * Updated [Haxe](https://as3mxml.com) engine to latest.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.59.0.
@@ -18,6 +23,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.0.
 
 ### Fixed
+* Fixed issue where shortcuts for **Build & Run** did not work on MacOS.
+* Fixed issue where project build is failing due to placing sources in the root folder.
+* Fixed issue where project files/folder were not sorted alphabetically. 
+* Fixed issue where reopen project from **Recent** list does not work.
 
 ## Moonshine IDE [2.7.0]
 
