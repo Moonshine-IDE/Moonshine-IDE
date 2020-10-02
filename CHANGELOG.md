@@ -9,11 +9,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 * Added support for Flex modules.
-* Added support to open files in different editors than Moonshine (ex. Notepad++, VIM etc.).
-* Added ability to navigate between tabs using shortcuts. Ctrl/CMD+Tab to jump backward/forward between two last visited tabs. Ctrl+Shift+Tab opens opened editors list, navigates through by same key-combination or Ctrl+Tab or Ctrl+arrow-keys.
-* Added Node.js and HCL Notes version to About screen.
-* Added and setup in project settings Node.js downloaded using installer.
+* Added support to open files with external editors (ex. Notepad++, VIM etc.).
+* Added ability to navigate between tabs using keyboard-shortcuts.
+* Added Node.js detection and setup support.
+* Added IBM/HCL Notes detection support.
+* Added debugging support for mobile projects using USB and Wi-Fi.
 * Added Haxe debugger.
+* Added ActionScript Mobile Project type.
+* Added Domino OnDisk Project type with Tabular Interface support.
 
 ### Changed
 * Windows: Change installer from native Adobe Air installer to NSIS. 
@@ -30,9 +33,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where project build is failing due to placing sources in the root folder.
 * Fixed issue where project files/folder were not sorted alphabetically. 
 * Fixed issue where reopen project from **Recent** list does not work.
+* MacOS: Fixed issue where menu options not sorted alphabetically.
 * MacOS: Fixed issue where closing editor using shortcut **CMD+W** throws exception.
+* MacOS: Fixed issue where Git failed to determine a private repository.
 * Debugging: Fixed issue where button **Step Over** does not work.
-* Fixed issue where code completion stopped working when tab was placed under haburger menu.
+* Fixed issue where code completion stopped working when tab was placed under hamburger menu.
+* Fixed issue where duplicate shortcut-keys applied against multiple options in menu. 
+* Fixed issue where right-click on tree-view items throws exception in New File creation dialog.
+* Fixed issue when committing changes from sub-project under a Git repository, throws error.
+* Fixed issue when abrupt throwing of Error #3218 in language-server.
+* Fixed issue when an opened editor does not update its content, when the file changed externally.
+* Fixed issue where Mobile stage dimension does not update when device model changed.
 
 ## Moonshine IDE [2.7.0]
 
