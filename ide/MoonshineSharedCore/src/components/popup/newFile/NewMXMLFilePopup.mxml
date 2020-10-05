@@ -142,7 +142,7 @@
             });
         }
 
-        protected function onNameChanged(event:TextOperationEvent):void
+        override protected function onNameChanged(event:TextOperationEvent):void
         {
             // @note
             // for some reason PromptTextInput.text is not binding properly

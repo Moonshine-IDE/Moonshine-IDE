@@ -750,13 +750,37 @@
 					newFileLocation = new FileLocation(TreeMenuItemEvent(event).menuLabel);
 				}
 	
-				var newFile:FileWrapper = new FileWrapper(newFileLocation, false, insideLocation.projectReference);
-				newFile.defaultName = fileName;
-				if(event in NewFileEvent) newFile.children = [];
-				insideLocation.children.push(newFile);
+				// generates the fileWrappers and add to the parent
+				var tmpFolders:Array = (fileName.indexOf("/") != -1) ? fileName.split("/") : [fileName];
+				var folderWrappers:FileWrapper;
+				var newFile:FileWrapper;
+				tmpFolders.forEach(function(folderName:String, index:int, arr:Array):void {
+					
+					newFile = new FileWrapper(
+						insideLocation.file.fileBridge.resolvePath(folderName), 
+						false, 
+						insideLocation.projectReference
+					);
+					newFile.defaultName = folderName;
+					if (event is NewFileEvent) newFile.children = [];
+					
+					if (index == 0) 
+					{
+						insideLocation.children.push(newFile);
+						
+					}
+					else
+					{
+						folderWrappers.children.push(newFile);
+					}
+					folderWrappers = newFile;
+				});
+				
+				
+				//insideLocation.children.push(folderWrappers);
 	
 				// Make sure item is open before adding
-				tree.callLater(tree.expandItem, [insideLocation, true]);
+				tree.callLater(tree.expandChildrenOf, [insideLocation, true]);
 	
 				// refresh the folder section and select
 				var timeoutValue:uint = setTimeout(function ():void
