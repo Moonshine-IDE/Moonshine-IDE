@@ -372,6 +372,9 @@ package actionScripts.plugins.as3project.mxmlc
 			stopShell();
 			resourceCopiedIndex = 0;
 			targets = new Dictionary();
+			
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
 		}
 		
 		private function onDefaultSDKUpdatedOutside(event:ProjectEvent):void
@@ -1223,7 +1226,12 @@ package actionScripts.plugins.as3project.mxmlc
 
 		protected function projectBuildSuccessfully():void
 		{
-            success("Build completed successfully.");
+			var currentSuccessfullProject:AS3ProjectVO = currentProject as AS3ProjectVO;
+			success("Build completed successfully.");
+			if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
+			{
+				reset();
+			}
 		}
 
 		private function launchDebuggingAfterBuild(debug:Boolean):void
@@ -1716,9 +1724,6 @@ package actionScripts.plugins.as3project.mxmlc
 				exiting = false;
 				startShell();
 			}
-
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildRequest);
 		}
 	}
 }
