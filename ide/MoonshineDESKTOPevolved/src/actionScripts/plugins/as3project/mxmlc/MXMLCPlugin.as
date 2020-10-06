@@ -1673,7 +1673,7 @@ package actionScripts.plugins.as3project.mxmlc
 					if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
                     {
                         //Let's wait with the reset because compiler may still have something to report
-						shellExit(null);
+						reset();
                     }
 					return;
 				}
@@ -1685,7 +1685,7 @@ package actionScripts.plugins.as3project.mxmlc
 
                     if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
                     {
-						shellExit(null);
+						reset();
                     }
 					return;
 				}
@@ -1708,7 +1708,7 @@ package actionScripts.plugins.as3project.mxmlc
 				print(data);
                 if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
                 {
-					shellExit(null);
+					reset();
                 }
 			}
 		}
