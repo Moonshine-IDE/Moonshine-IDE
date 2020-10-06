@@ -167,8 +167,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 				});
 			}
 			
-			updateModulesInSettings(modulesToRemove, true);
-			project.saveSettings();
+			if (modulesToRemove.length != 0)
+			{
+				updateModulesInSettings(modulesToRemove, true);
+				project.saveSettings();
+			}
 		}
 		
 		private function onAddModuleEvent(event:ASModulesEvent):void
@@ -252,6 +255,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function onModuleSearchProcessExit(modules:Array, isError:Boolean=false):void
 		{
+			if (!moduleSettings) return;
+			
 			if (!isError && modules)
 			{
 				var isExist:Boolean;
@@ -305,6 +310,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 		
 		private function updateModulesInSettings(modules:Array, isRemove:Boolean=false):void
 		{
+			if (!moduleSettings) return;
+			
 			if (isRemove)
 			{
 				moduleSettings.removeModules(modules);
