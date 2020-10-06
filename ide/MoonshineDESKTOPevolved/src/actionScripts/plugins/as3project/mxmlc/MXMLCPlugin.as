@@ -1223,12 +1223,7 @@ package actionScripts.plugins.as3project.mxmlc
 
 		protected function projectBuildSuccessfully():void
 		{
-            var currentSuccessfullProject:AS3ProjectVO = currentProject as AS3ProjectVO;
             success("Build completed successfully.");
-            if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
-            {
-                reset();
-            }
 		}
 
 		private function launchDebuggingAfterBuild(debug:Boolean):void
@@ -1670,7 +1665,7 @@ package actionScripts.plugins.as3project.mxmlc
 					if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
                     {
                         //Let's wait with the reset because compiler may still have something to report
-						reset();
+						shellExit(null);
                     }
 					return;
 				}
@@ -1682,7 +1677,7 @@ package actionScripts.plugins.as3project.mxmlc
 
                     if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
                     {
-						reset();
+						shellExit(null);
                     }
 					return;
 				}
@@ -1705,7 +1700,7 @@ package actionScripts.plugins.as3project.mxmlc
 				print(data);
                 if (currentAs3Project && !currentAs3Project.isRoyale && !currentAs3Project.isFlexJS)
                 {
-					reset();
+					shellExit(null);
                 }
 			}
 		}
