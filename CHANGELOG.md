@@ -3,13 +3,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
-## Moonshine IDE [X.X.X]
+## Moonshine IDE [3.0.0]
 
 ### Summary
 
+Moonshine 3.0.0 includes:
+* Support for Actionscript Mobile project and Flex Modules
+* Debugging improvements for mobile and Haxe projects
+* Miscellaneous bug fixes and quality-of-life improvements.
+
 ### Added
+* Configure and build modules for Flex projects.
+* Open files with external editors (ex. Notepad++, VIM etc.).
+* Navigate between tabs using keyboard-shortcuts (CTRL+Tab, CTRL+Shift+Tab).
+* Detect and configure NodeJS
+* Detect and configure IBM/HCL Notes.
+* Debug mobile projects using USB or Wi-Fi.
+* Debug Haxe projects
+* Create ActionScript Mobile Projects.
 
 ### Changed
+* Windows: Switched from the native AIR installer to NSIS to reduce installation times
+* Windows: Changed Moonshine to a 64-bit application.  You will be prompted to uninstall your old copy of Moonshine, but your settings will be saved.
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.2.2.
 * Updated [Haxe](https://as3mxml.com) engine to latest.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.59.0.
@@ -18,6 +33,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.0.
 
 ### Fixed
+* Fixed macOS shortcuts for **Build & Run**
+* Fixed issue where project build failed if source files were placed in the root folder.
+* Fixed issue where project files and folders were not sorted alphabetically. 
+* MacOS: Fixed issue where menu options were not sorted alphabetically.
+* Fixed issue where projects could not be reopened from the File > Recent Projects menu if the Home tab was closed
+* MacOS: Fixed issue where closing an editor using the shortcut **CMD+W** triggered an exception.
+* MacOS: Fixed issue where Moonshine could not clone a private Git repository
+* Fixed issue where button **Step Over** did not work during Debugging.
+* Fixed issue where code completion stopped working when tab was moved into the hamburger menu.
+* Fixed duplicate mappings for **CTRL+F** shortcut.  Find references has been updated to CMD+Shift+F
+* Fixed issue where right-click the file tree in the New File prompt triggered exceptions
+* Fixed error when committing a sub-project under a Git repository.
+* Fixed Error #3218 in the language-server output.
+* Fixed issue when opened editors did not update their content when the file was updated externally (for example, by an svn update or git pull).
+* Fixed issue where mobile Mobile stage dimensions did not update when changing the device model
+
+
 
 ## Moonshine IDE [2.7.0]
 
