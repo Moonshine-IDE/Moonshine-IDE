@@ -152,6 +152,12 @@ class MoonshineTheme extends ClassVariantTheme {
 		downSkin.alpha = 0.5;
 		button.setSkinForState(DOWN, downSkin);
 
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		focusRectSkin.cornerRadius = 5.0;
+		button.focusRectSkin = focusRectSkin;
+
 		button.textFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
 		button.setTextFormatForState(DISABLED, new TextFormat("DejaVuSansTF", 12, 0x999999));
 		button.embedFonts = true;
@@ -213,7 +219,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		var focusRectSkin = new RectangleSkin();
 		focusRectSkin.fill = null;
 		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
-		focusRectSkin.cornerRadius = 10.0;
+		focusRectSkin.cornerRadius = 5.0;
 		button.focusRectSkin = focusRectSkin;
 
 		button.textFormat = new TextFormat("DejaVuSansTF", 12, 0xBBBBBB);
