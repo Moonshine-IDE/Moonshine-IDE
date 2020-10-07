@@ -733,20 +733,21 @@
 				var fileName:String;
 				var newFileLocation:FileLocation;
 				var insideLocation:FileWrapper = (event is NewFileEvent) ? NewFileEvent(event).insideLocation : TreeMenuItemEvent(event).data;
-				if(event is NewFileEvent)
+				if (event is NewFileEvent)
 				{
 					fileName = NewFileEvent(event).fileName;
 	
 					newFileLocation = insideLocation.file.fileBridge.resolvePath(fileName);
-					if(!newFileLocation.fileBridge.exists) newFileLocation.fileBridge.createDirectory();
-				} else if((event as TreeMenuItemEvent).extra && ((event as TreeMenuItemEvent).extra is FileLocation))
+					if (!newFileLocation.fileBridge.exists) newFileLocation.fileBridge.createDirectory();
+				} 
+				else if ((event as TreeMenuItemEvent).extra && ((event as TreeMenuItemEvent).extra is FileLocation))
 				{
+					fileName = (event as TreeMenuItemEvent).menuLabel.replace((event as TreeMenuItemEvent).data.file.fileBridge.nativePath + model.fileCore.separator, "");
 					newFileLocation = (event as TreeMenuItemEvent).extra as FileLocation;
-				} else
+				} 
+				else
 				{
-					var tmpArray:Array = TreeMenuItemEvent(event).menuLabel.split(model.fileCore.separator);
-					fileName = tmpArray[tmpArray.length - 1];
-	
+					fileName = (event as TreeMenuItemEvent).menuLabel.replace((event as TreeMenuItemEvent).data.file.fileBridge.nativePath + model.fileCore.separator, "");
 					newFileLocation = new FileLocation(TreeMenuItemEvent(event).menuLabel);
 				}
 	
@@ -755,27 +756,65 @@
 				var folderWrappers:Array = [];
 				var newFile:FileWrapper;
 				var tmpNestedFolderPathString:String = "";
-				tmpFolders.forEach(function(folderName:String, index:int, arr:Array):void {
+				
+				if (event is NewFileEvent)
+				{
+					tmpFolders.forEach(function(folderName:String, index:int, arr:Array):void {
+						
+						tmpNestedFolderPathString += folderName +"/";
+						newFile = new FileWrapper(
+							insideLocation.file.fileBridge.resolvePath(tmpNestedFolderPathString), 
+							false, 
+							insideLocation.projectReference
+						);
+						newFile.defaultName = folderName;
+						if (event is NewFileEvent) newFile.children = [];
+						
+						if (index == 0) 
+						{
+							folderWrappers.push(newFile);
+						}
+						else
+						{
+							(folderWrappers[folderWrappers.length - 1] as FileWrapper).children.push(newFile);
+							folderWrappers.push(newFile);
+						}
+					});
+				}
+				else
+				{
+					if (tmpFolders.length > 1) tmpFolders.pop();
+					tmpFolders.forEach(function(folderName:String, index:int, arr:Array):void {
+						
+						tmpNestedFolderPathString += folderName +"/";
+						newFile = new FileWrapper(
+							insideLocation.file.fileBridge.resolvePath(tmpNestedFolderPathString), 
+							false, 
+							insideLocation.projectReference
+						);
+						newFile.defaultName = folderName;
+						newFile.children = [];
+						
+						if (index == 0) 
+						{
+							folderWrappers.push(newFile);
+						}
+						else
+						{
+							(folderWrappers[folderWrappers.length - 1] as FileWrapper).children.push(newFile);
+							folderWrappers.push(newFile);
+						}
+					});
 					
-					tmpNestedFolderPathString += folderName +"/";
-					newFile = new FileWrapper(
-						insideLocation.file.fileBridge.resolvePath(tmpNestedFolderPathString), 
-						false, 
-						insideLocation.projectReference
-					);
-					newFile.defaultName = folderName;
-					if (event is NewFileEvent) newFile.children = [];
-					
-					if (index == 0) 
-					{
-						folderWrappers.push(newFile);
-					}
-					else
-					{
-						(folderWrappers[folderWrappers.length - 1] as FileWrapper).children.push(newFile);
-						folderWrappers.push(newFile);
-					}
-				});
+					var newFileWrapper:FileWrapper = new FileWrapper(
+														newFileLocation, 
+														false, 
+														insideLocation.projectReference);
+					newFileWrapper.defaultName = newFileLocation.name;
+					newFile.children.push(newFileWrapper);
+					newFile = newFileWrapper;
+				}
+				
 				
 				insideLocation.children.push(folderWrappers[0]);
 	
