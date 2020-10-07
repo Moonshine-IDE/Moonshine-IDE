@@ -29,6 +29,7 @@ package actionScripts.utils
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.valueObjects.KeyboardShortcut;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.events.DebugActionEvent;
 
 	public class KeyboardShortcutManager
 	{
@@ -91,7 +92,18 @@ package actionScripts.utils
 				dispatcher.dispatchEvent(new ShortcutEvent(
 				ShortcutEvent.SHORTCUT_PRE_FIRED, false, true, event)))
 			{
-				dispatcher.dispatchEvent(data ? new MenuEvent(event, false, false, data) : new Event(event));
+				if(event.indexOf("debug") == 0)
+				{
+					dispatcher.dispatchEvent(new DebugActionEvent(event));
+				}
+				else if (data)
+				{
+					dispatcher.dispatchEvent(new MenuEvent(event, false, false, data));
+				}
+				else
+				{
+					dispatcher.dispatchEvent(new Event(event));
+				}
 			}
 		}
 
