@@ -33,9 +33,7 @@
   </item>
   <item name="$Fields">
     <textlist>
-      <text>test222</text>
-      <text>test188</text>
-      <text>test_center</text>
+   
     </textlist>
   </item>
   <item name="$Body" sign="true">
