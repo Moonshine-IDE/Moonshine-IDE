@@ -752,12 +752,14 @@
 	
 				// generates the fileWrappers and add to the parent
 				var tmpFolders:Array = (fileName.indexOf("/") != -1) ? fileName.split("/") : [fileName];
-				var folderWrappers:FileWrapper;
+				var folderWrappers:Array = [];
 				var newFile:FileWrapper;
+				var tmpNestedFolderPathString:String = "";
 				tmpFolders.forEach(function(folderName:String, index:int, arr:Array):void {
 					
+					tmpNestedFolderPathString += folderName +"/";
 					newFile = new FileWrapper(
-						insideLocation.file.fileBridge.resolvePath(folderName), 
+						insideLocation.file.fileBridge.resolvePath(tmpNestedFolderPathString), 
 						false, 
 						insideLocation.projectReference
 					);
@@ -766,21 +768,23 @@
 					
 					if (index == 0) 
 					{
-						insideLocation.children.push(newFile);
-						
+						folderWrappers.push(newFile);
 					}
 					else
 					{
-						folderWrappers.children.push(newFile);
+						(folderWrappers[folderWrappers.length - 1] as FileWrapper).children.push(newFile);
+						folderWrappers.push(newFile);
 					}
-					folderWrappers = newFile;
 				});
 				
-				
-				//insideLocation.children.push(folderWrappers);
+				insideLocation.children.push(folderWrappers[0]);
 	
 				// Make sure item is open before adding
-				tree.callLater(tree.expandChildrenOf, [insideLocation, true]);
+				tree.callLater(function():void
+				{
+					tree.expandItem(insideLocation, true);
+					tree.expandChildrenOf(folderWrappers[0], true);
+				});
 	
 				// refresh the folder section and select
 				var timeoutValue:uint = setTimeout(function ():void
