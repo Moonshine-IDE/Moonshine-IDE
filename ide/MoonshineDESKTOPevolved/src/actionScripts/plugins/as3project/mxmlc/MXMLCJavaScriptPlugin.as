@@ -746,7 +746,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			var as3Project:AS3ProjectVO = currentProject as AS3ProjectVO;
 
-			if(!debugAfterBuild && !UtilsCore.isNodeAvailable())
+			if(!debugAfterBuild && (!UtilsCore.isNodeAvailable() || ConstantsCoreVO.IS_APP_STORE_VERSION))
 			{
 				//the HTTP server and the debug adapter both require Node.js.
 				//it's not ideal, but if Node.js is not available and the user
