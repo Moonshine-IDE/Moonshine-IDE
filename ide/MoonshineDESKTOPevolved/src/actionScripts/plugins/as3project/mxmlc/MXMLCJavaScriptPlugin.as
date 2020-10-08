@@ -713,6 +713,7 @@ package actionScripts.plugins.as3project.mxmlc
         private function startDebugAdapter(project:AS3ProjectVO, debug:Boolean):void
         {
 			var url:String = getUrlToLaunch(project);
+			notice("Opening to URL: "+ url); 
 
 			var debugAdapterType:String = null;
 			for(var i:int = 0; i < ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.length; i++)
