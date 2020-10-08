@@ -180,8 +180,6 @@
 					}
 				}
 				
-				Alert.show("ConstantsCoreVO.IS_APP_STORE_VERSION ", ConstantsCoreVO.IS_APP_STORE_VERSION.toString());
-				
 				// update check for
 				// windows or osx-non-sandbox
 				if (!ConstantsCoreVO.IS_MACOS || !ConstantsCoreVO.IS_APP_STORE_VERSION)
