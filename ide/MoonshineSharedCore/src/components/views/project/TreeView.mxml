@@ -759,16 +759,33 @@
 				
 				if (event is NewFileEvent)
 				{
+					var runCheckFileWrapper:FileWrapper = insideLocation;
 					tmpFolders.forEach(function(folderName:String, index:int, arr:Array):void {
 						
+						var isExists:Boolean = runCheckFileWrapper.children.some(function(element:FileWrapper, index:int, arr:Array):Boolean {
+							if (element.file.fileBridge.nativePath == (runCheckFileWrapper.file.fileBridge.nativePath + model.fileCore.separator + folderName))
+							{
+								runCheckFileWrapper = element;
+								return true;
+							}
+							return false;
+						});
+						
 						tmpNestedFolderPathString += folderName +"/";
-						newFile = new FileWrapper(
-							insideLocation.file.fileBridge.resolvePath(tmpNestedFolderPathString), 
-							false, 
-							insideLocation.projectReference
-						);
-						newFile.defaultName = folderName;
-						if (event is NewFileEvent) newFile.children = [];
+						if (isExists)
+						{
+							newFile = runCheckFileWrapper;
+						}
+						else
+						{
+							newFile = new FileWrapper(
+								insideLocation.file.fileBridge.resolvePath(tmpNestedFolderPathString), 
+								false, 
+								insideLocation.projectReference
+							);
+							newFile.defaultName = folderName;
+							newFile.children = [];
+						}
 						
 						if (index == 0) 
 						{
@@ -776,47 +793,80 @@
 						}
 						else
 						{
-							(folderWrappers[folderWrappers.length - 1] as FileWrapper).children.push(newFile);
+							if (!isExists) (folderWrappers[folderWrappers.length - 1] as FileWrapper).children.push(newFile);
 							folderWrappers.push(newFile);
 						}
 					});
 				}
 				else
 				{
-					if (tmpFolders.length > 1) tmpFolders.pop();
-					tmpFolders.forEach(function(folderName:String, index:int, arr:Array):void {
+					if (tmpFolders.length > 1) 
+					{
+						tmpFolders.pop();
 						
-						tmpNestedFolderPathString += folderName +"/";
-						newFile = new FileWrapper(
-							insideLocation.file.fileBridge.resolvePath(tmpNestedFolderPathString), 
-							false, 
-							insideLocation.projectReference
-						);
-						newFile.defaultName = folderName;
-						newFile.children = [];
-						
-						if (index == 0) 
-						{
-							folderWrappers.push(newFile);
-						}
-						else
-						{
-							(folderWrappers[folderWrappers.length - 1] as FileWrapper).children.push(newFile);
-							folderWrappers.push(newFile);
-						}
-					});
+						var runCheckFileWrapper:FileWrapper = insideLocation;
+						tmpFolders.forEach(function(folderName:String, index:int, arr:Array):void {
+							
+							var isExists:Boolean = runCheckFileWrapper.children.some(function(element:FileWrapper, index:int, arr:Array):Boolean {
+								if (element.file.fileBridge.nativePath == (runCheckFileWrapper.file.fileBridge.nativePath + model.fileCore.separator + folderName))
+								{
+									runCheckFileWrapper = element;
+									return true;
+								}
+								return false;
+							});
+							
+							tmpNestedFolderPathString += folderName +"/";
+							if (isExists)
+							{
+								newFile = runCheckFileWrapper;
+							}
+							else
+							{
+								newFile = new FileWrapper(
+									insideLocation.file.fileBridge.resolvePath(tmpNestedFolderPathString), 
+									false, 
+									insideLocation.projectReference
+								);
+								newFile.defaultName = folderName;
+								newFile.children = [];
+							}
+							
+							if (index == 0) 
+							{
+								folderWrappers.push(newFile);
+							}
+							else
+							{
+								if (!isExists) (folderWrappers[folderWrappers.length - 1] as FileWrapper).children.push(newFile);
+								folderWrappers.push(newFile);
+							}
+						});
+					}
 					
 					var newFileWrapper:FileWrapper = new FileWrapper(
 														newFileLocation, 
 														false, 
 														insideLocation.projectReference);
 					newFileWrapper.defaultName = newFileLocation.name;
-					newFile.children.push(newFileWrapper);
-					newFile = newFileWrapper;
+					
+					if (newFile)
+					{
+						newFile.children.push(newFileWrapper);
+						newFile = newFileWrapper;
+					}
+					else
+					{
+						folderWrappers.push(newFileWrapper);
+						newFile = newFileWrapper;
+					}
 				}
 				
 				
-				insideLocation.children.push(folderWrappers[0]);
+				var isImmediateExists:Boolean = insideLocation.children.some(function(element:FileWrapper, index:int, arr:Array):Boolean {
+					return (element == folderWrappers[0]);
+				});
+				if (!isImmediateExists) insideLocation.children.push(folderWrappers[0]);
 	
 				// Make sure item is open before adding
 				tree.callLater(function():void
