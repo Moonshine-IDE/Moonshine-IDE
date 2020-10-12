@@ -74,7 +74,7 @@ package actionScripts.plugins.git.commands
 		override protected function shellError(value:Object):void
 		{
 			// call super - it might have some essential 
-			// commands to run
+			// commands to run.
 			super.shellError(value);
 			
 			var match:Array;
