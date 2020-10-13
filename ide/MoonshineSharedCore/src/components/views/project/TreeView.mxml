@@ -733,6 +733,7 @@
 				var isFolderCreationEvent:Boolean = (event is NewFileEvent);
 				var fileName:String;
 				var newFileLocation:FileLocation;
+				var fileSparator:String = model.fileCore.separator;
 				var insideLocation:FileWrapper = (event is NewFileEvent) ? NewFileEvent(event).insideLocation : TreeMenuItemEvent(event).data;
 				if (isFolderCreationEvent)
 				{
@@ -753,7 +754,7 @@
 				}
 	
 				// generates the fileWrappers and add to the parent
-				var tmpFolders:Array = (fileName.indexOf("/") != -1) ? fileName.split("/") : [fileName];
+				var tmpFolders:Array = (fileName.indexOf(fileSparator) != -1) ? fileName.split(fileSparator) : [fileName];
 				var folderWrappers:Array = [];
 				var newFile:FileWrapper;
 				var tmpNestedFolderPathString:String = "";
@@ -777,7 +778,7 @@
 						return false;
 					});
 					
-					tmpNestedFolderPathString += folderName +"/";
+					tmpNestedFolderPathString += folderName + fileSparator;
 					if (isExists)
 					{
 						newFile = runCheckFileWrapper;

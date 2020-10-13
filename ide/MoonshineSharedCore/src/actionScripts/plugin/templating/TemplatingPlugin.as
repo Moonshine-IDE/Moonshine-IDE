@@ -1704,7 +1704,7 @@ package actionScripts.plugin.templating
 				var tmpSplit:Array = fileName.split("/");
 				tmpSplit.pop();
 				
-				return insideLocationPath + model.fileCore.separator + tmpSplit.join("/");
+				return insideLocationPath + model.fileCore.separator + tmpSplit.join(model.fileCore.separator);
 			}
 			
 			return insideLocationPath;

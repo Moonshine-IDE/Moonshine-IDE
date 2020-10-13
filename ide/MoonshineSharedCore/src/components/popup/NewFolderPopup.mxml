@@ -54,7 +54,7 @@
 				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FOLDER, null, null, wrapperOfFolderLocation);
 				tmpEvent.isFolder = true;
 				tmpEvent.ofProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
-				tmpEvent.fileName = nestedFoldersRequested ? nestedFoldersRequested.join("/") : modifiedName;
+				tmpEvent.fileName = nestedFoldersRequested ? nestedFoldersRequested.join(model.fileCore.separator) : modifiedName;
 				dispatchEvent(tmpEvent);
 				
 				doBeforeExit();
