@@ -90,6 +90,7 @@ class TourDeFlexContentsView extends Panel implements IViewWithTitle {
 
 		this.treeView = new TreeView();
 		this.treeView.variant = TreeView.VARIANT_BORDERLESS;
+		this.treeView.dataProvider = new TreeCollection();
 		this.treeView.selectable = false;
 		this.treeView.layoutData = AnchorLayoutData.fill();
 		this.treeView.itemToText = (item:TreeNode<Xml>) -> item.data.get("label");
