@@ -20,6 +20,8 @@ package moonshine;
 	Use this software at your own risk.
  */
 import feathers.core.DefaultFocusManager;
+import moonshine.components.SDKDefineView;
+import moonshine.components.SDKSelectorView;
 import moonshine.plugin.findreplace.view.FindReplaceView;
 import moonshine.plugin.findreplace.view.GoToLineView;
 import moonshine.plugin.help.view.AS3DocsView;
@@ -33,6 +35,8 @@ import moonshine.plugin.symbols.view.SymbolsView;
 
 class HaxeClasses {
 	public var DefaultFocusManager:DefaultFocusManager;
+	public var SDKDefineView:SDKDefineView;
+	public var SDKSelectorView:SDKSelectorView;
 	public var AS3DocsView:AS3DocsView;
 	public var FindReplaceView:FindReplaceView;
 	public var GoToLineView:GoToLineView;

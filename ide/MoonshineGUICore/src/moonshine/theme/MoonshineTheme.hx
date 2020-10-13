@@ -20,6 +20,10 @@
 
 package moonshine.theme;
 
+import openfl.display.Sprite;
+import openfl.Lib;
+import feathers.core.PopUpManager;
+import feathers.controls.GridView;
 import openfl.filters.GlowFilter;
 import moonshine.plugin.help.view.TourDeFlexTreeViewItemRenderer;
 import feathers.controls.Radio;
@@ -70,6 +74,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	public static final THEME_VARIANT_DARK_BUTTON:String = "moonshine-button--dark";
 	public static final THEME_VARIANT_LIGHT_LABEL:String = "moonshine-label--light";
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
+	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
 
 	public function new() {
 		super();
@@ -81,12 +86,16 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		this.styleProvider.setStyleFunction(Check, null, setCheckStyles);
 
+		this.styleProvider.setStyleFunction(GridView, null, setGridViewStyles);
+		this.styleProvider.setStyleFunction(ItemRenderer, GridView.CHILD_VARIANT_HEADER, setGridViewHeaderStyles);
+
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_LABEL, setLightLabelStyles);
 
 		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
+		this.styleProvider.setStyleFunction(LayoutGroup, THEME_VARIANT_WARNING_BAR, setWarningBarLayoutGroupStyles);
 
 		this.styleProvider.setStyleFunction(ListView, null, setListViewStyles);
 		this.styleProvider.setStyleFunction(ListView, ListView.VARIANT_BORDERLESS, setBorderlessListViewStyles);
@@ -336,8 +345,12 @@ class MoonshineTheme extends ClassVariantTheme {
 		var focusRectSkin = new RectangleSkin();
 		focusRectSkin.fill = null;
 		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
-		focusRectSkin.cornerRadius = 10.0;
+		focusRectSkin.cornerRadius = 4.0;
 		check.focusRectSkin = focusRectSkin;
+		check.focusPaddingTop = 2.0;
+		check.focusPaddingRight = 2.0;
+		check.focusPaddingBottom = 2.0;
+		check.focusPaddingLeft = 2.0;
 
 		check.textFormat = new TextFormat("DejaVuSansTF", 12, 0x292929);
 		check.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x999999);
@@ -345,6 +358,46 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		check.horizontalAlign = LEFT;
 		check.gap = 4.0;
+	}
+
+	private function setGridViewStyles(gridView:GridView):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x444444);
+		backgroundSkin.border = SolidColor(1.0, 0x666666);
+		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
+		backgroundSkin.cornerRadius = 0.0;
+		backgroundSkin.minWidth = 160.0;
+		backgroundSkin.minHeight = 160.0;
+		gridView.backgroundSkin = backgroundSkin;
+
+		var columnResizeSkin = new RectangleSkin(SolidColor(0xC165B8), null);
+		columnResizeSkin.width = 2.0;
+		columnResizeSkin.height = 2.0;
+		gridView.columnResizeSkin = columnResizeSkin;
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		gridView.focusRectSkin = focusRectSkin;
+
+		gridView.fixedScrollBars = true;
+	}
+
+	private function setGridViewHeaderStyles(headerRenderer:ItemRenderer):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x555555);
+		headerRenderer.backgroundSkin = backgroundSkin;
+
+		headerRenderer.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
+		headerRenderer.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
+		headerRenderer.embedFonts = true;
+
+		headerRenderer.horizontalAlign = LEFT;
+		headerRenderer.paddingTop = 4.0;
+		headerRenderer.paddingRight = 4.0;
+		headerRenderer.paddingBottom = 4.0;
+		headerRenderer.paddingLeft = 4.0;
+		headerRenderer.gap = 4.0;
 	}
 
 	private function setRadioStyles(radio:Radio):Void {
@@ -438,8 +491,12 @@ class MoonshineTheme extends ClassVariantTheme {
 		var focusRectSkin = new RectangleSkin();
 		focusRectSkin.fill = null;
 		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
-		focusRectSkin.cornerRadius = 10.0;
+		focusRectSkin.cornerRadius = 4.0;
 		radio.focusRectSkin = focusRectSkin;
+		radio.focusPaddingTop = 2.0;
+		radio.focusPaddingRight = 2.0;
+		radio.focusPaddingBottom = 2.0;
+		radio.focusPaddingLeft = 2.0;
 
 		radio.textFormat = new TextFormat("DejaVuSansTF", 12, 0x292929);
 		radio.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x999999);
@@ -718,6 +775,23 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		var layout = new HorizontalLayout();
 		layout.horizontalAlign = RIGHT;
+		layout.verticalAlign = MIDDLE;
+		layout.paddingTop = 10.0;
+		layout.paddingRight = 10.0;
+		layout.paddingBottom = 10.0;
+		layout.paddingLeft = 10.0;
+		layout.gap = 4.0;
+		group.layout = layout;
+	}
+
+	private function setWarningBarLayoutGroupStyles(group:LayoutGroup):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0xffffcc);
+		backgroundSkin.cornerRadius = 4.0;
+		group.backgroundSkin = backgroundSkin;
+
+		var layout = new HorizontalLayout();
+		layout.horizontalAlign = LEFT;
 		layout.verticalAlign = MIDDLE;
 		layout.paddingTop = 10.0;
 		layout.paddingRight = 10.0;

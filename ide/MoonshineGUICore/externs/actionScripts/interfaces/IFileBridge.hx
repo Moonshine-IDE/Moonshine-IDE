@@ -53,4 +53,6 @@ extern interface IFileBridge {
 	public function canonicalize():Void;
 
 	public function resolvePath(path:String, toRelativePath:String = null):FileLocation;
+
+	public function browseForDirectory(title:String, selectListener:(file:Any) -> Void, ?cancelListener:() -> Void, ?startFromLocation:String):Void;
 }

@@ -51,8 +51,11 @@
 		import actionScripts.utils.UtilsCore;
 		import actionScripts.valueObjects.SDKReferenceVO;
 
-		import components.popup.SDKDefinePopup;
-		import components.popup.SDKSelectorPopup;
+		import moonshine.components.SDKDefineView;
+		import moonshine.components.SDKSelectorView;
+		import actionScripts.ui.FeathersUIWrapper;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+		import feathers.data.ArrayCollection;
 
 		[Bindable]
 		public var setting:PathSetting;
@@ -61,13 +64,15 @@
 		[Bindable]
 		public var isDropDown:Boolean;
 		[Bindable]
-		public var dropdownListItems:ArrayCollection;
+		public var dropdownListItems:mx.collections.ArrayCollection;
 
 		[Bindable]
 		private var model:IDEModel = IDEModel.getInstance();
 
-		private var sdkPopup:SDKSelectorPopup;
-		private var sdkPathPopup:SDKDefinePopup;
+		private var sdkPopup:SDKSelectorView;
+		private var sdkPopupWrapper:FeathersUIWrapper;
+		private var sdkPathPopup:SDKDefineView;
+		private var sdkPathPopupWrapper:FeathersUIWrapper;
 
 		private var message:String;
 		private var messageType:String;
@@ -117,10 +122,17 @@
 			{
 				if(!sdkPopup)
 				{
-					sdkPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKSelectorPopup, true) as SDKSelectorPopup;
-					sdkPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
-					sdkPopup.addEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
-					PopUpManager.centerPopUp(sdkPopup);
+					sdkPopup = new SDKSelectorView();
+					sdkPopup.sdks = new feathers.data.ArrayCollection(model.userSavedSDKs.source);
+					sdkPopupWrapper = new FeathersUIWrapper(sdkPopup);
+					PopUpManager.addPopUp(sdkPopupWrapper, DisplayObject(parentApplication), true);
+					sdkPopup.addEventListener(SDKSelectorView.EVENT_SDK_ADD, onSDKPopupAdd);
+					sdkPopup.addEventListener(SDKSelectorView.EVENT_SDK_REMOVE, onSDKPopupRemove);
+					sdkPopup.addEventListener(SDKSelectorView.EVENT_SDK_EDIT, onSDKPopupEdit);
+					sdkPopup.addEventListener(Event.CLOSE, onSDKPopupClosed);
+					PopUpManager.centerPopUp(sdkPopupWrapper);
+					sdkPopupWrapper.assignFocus("top");
+					sdkPopupWrapper.stage.addEventListener(Event.RESIZE, sdkPopup_stage_resizeHandler, false, 0, true);
 				}
 			}
 			else
@@ -143,36 +155,67 @@
 			}
 		}
 
+		private function sdkPopup_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(sdkPopupWrapper);
+		}
+
 		private function clearPath():void
 		{
 			setting.stringValue = "";
 			lblMessage.text = "";
 		}
 
-		private function onFlexSDKUpdated(event:ProjectEvent):void
+		private function onSDKPopupAdd(event:Event):void
 		{
-			// in case user deleted the entry
-			setting.stringValue = event.anObject.path;
-			lblValue.text = event.anObject.name;
-			if(event.anObject.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
-			hideDefineSDKLink(event.anObject.name);
-			onSDKPopupClosed(null);
-			
-			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
+			this.editSDK(null);
 		}
 
-		private function onSDKPopupClosed(event:CloseEvent):void
+		private function onSDKPopupRemove(event:Event):void
 		{
-			sdkPopup.removeEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
-			sdkPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
+			var sdk:SDKReferenceVO = sdkPopup.selectedSDK;
+			model.userSavedSDKs.removeItem(sdk);
+			sdkPopup.sdks = new feathers.data.ArrayCollection(model.userSavedSDKs.source);
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
+		}
+
+		private function onSDKPopupEdit(event:Event):void
+		{
+			var sdk:SDKReferenceVO = sdkPopup.selectedSDK;
+			this.editSDK(sdk);
+		}
+
+		private function onSDKPopupClosed(event:Event):void
+		{
+			var selectedSDK:SDKReferenceVO = sdkPopup.selectedSDK;
+			if(selectedSDK)
+			{
+				// in case user deleted the entry
+				setting.stringValue = selectedSDK.path;
+				lblValue.text = selectedSDK.name;
+				if(selectedSDK.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
+				hideDefineSDKLink(selectedSDK.name);
+			}
+
+			sdkPopupWrapper.stage.removeEventListener(Event.RESIZE, sdkPopup_stage_resizeHandler);
+			sdkPopup.removeEventListener(SDKSelectorView.EVENT_SDK_ADD, onSDKPopupAdd);
+			sdkPopup.removeEventListener(SDKSelectorView.EVENT_SDK_REMOVE, onSDKPopupRemove);
+			sdkPopup.removeEventListener(SDKSelectorView.EVENT_SDK_EDIT, onSDKPopupEdit);
+			PopUpManager.removePopUp(sdkPopupWrapper);
+			sdkPopup.removeEventListener(Event.CLOSE, onSDKPopupClosed);
 			sdkPopup = null;
+			
+			if(selectedSDK)
+			{
+				setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
+			}
 		}
 
 		private function openFile(fileDir:Object):void
 		{
 			setting.stringValue = fileDir.nativePath;
 			if(isDropDown) dropdownListItems.addItem(fileDir.nativePath);
-
+ 
 			cmbPath.selectedItem = setting.stringValue;
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 
@@ -240,73 +283,74 @@
 			}
 		}
 
-		protected function onSDKAddition(event:MouseEvent):void
+		private function editSDK(sdk:SDKReferenceVO):void
 		{
 			if(!sdkPathPopup)
 			{
-				sdkPathPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKDefinePopup, false) as SDKDefinePopup;
-				sdkPathPopup.addEventListener(CloseEvent.CLOSE, onSDKPathPopupClosed);
-				sdkPathPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKPathUpdated);
-				PopUpManager.centerPopUp(sdkPathPopup);
-			} else
+				sdkPathPopup = new SDKDefineView();
+				sdkPathPopup.sdk = sdk;
+				sdkPathPopup.showSandboxWarning = ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION;
+				sdkPathPopupWrapper = new FeathersUIWrapper(sdkPathPopup);
+				PopUpManager.addPopUp(sdkPathPopupWrapper, DisplayObject(parentApplication), true);
+				sdkPathPopup.addEventListener(Event.CLOSE, onSDKPathPopupClosed);
+				PopUpManager.centerPopUp(sdkPathPopupWrapper);
+				sdkPathPopupWrapper.assignFocus("top");
+				sdkPathPopupWrapper.stage.addEventListener(Event.RESIZE, sdkPathPopup_stage_resizeHandler, false, 0, true);
+			}
+			else
 			{
-				PopUpManager.bringToFront(sdkPathPopup);
+				PopUpManager.bringToFront(sdkPathPopupWrapper);
 			}
 		}
 
-		protected function onSDKPathPopupClosed(event:CloseEvent):void
+		protected function onSDKAddition(event:MouseEvent):void
 		{
-			if(!sdkPathPopup) return;
-			sdkPathPopup.removeEventListener(CloseEvent.CLOSE, onSDKPathPopupClosed);
-			sdkPathPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKPathUpdated);
-			sdkPathPopup = null;
+			this.editSDK(null);
 		}
 
-		protected function onFlexSDKPathUpdated(event:ProjectEvent):void
+		protected function sdkPathPopup_stage_resizeHandler(event:Event):void
 		{
-			onSDKPathPopupClosed(null);
-			// add sdk
-			// don't add if said sdk already added
-			var isAlreadyAdded:SDKReferenceVO = UtilsCore.getUserDefinedSDK(event.anObject.path, "path");
-			if(!isAlreadyAdded)
+			PopUpManager.centerPopUp(sdkPathPopupWrapper);
+		}
+
+		protected function onSDKPathPopupClosed(event:Event):void
+		{
+			if(!sdkPathPopup)
 			{
-				var tmp:SDKReferenceVO = new SDKReferenceVO();
-				tmp.name = event.anObject.label;
-				tmp.path = event.anObject.path;
-				model.userSavedSDKs.addItem(tmp);
+				return;
+			}
+			
+			var newSDK:SDKReferenceVO = sdkPathPopup.sdk;
+			// detects been new or edit situation
+			if (newSDK is SDKReferenceVO)
+			{
+				// check if the sdk is new or one that edited
+				if (model.userSavedSDKs.getItemIndex(newSDK) == -1)
+				{
+					// add sdk
+					var sdkResult:SDKReferenceVO = SDKUtils.isSDKAlreadySaved(newSDK);
+					if (sdkResult != newSDK)
+					{
+						// don't add if said sdk already added
+						Alert.show("SDK is already added in the list.", ConstantsCoreVO.MOONSHINE_IDE_LABEL);
+					}
+				}
+				else
+				{
+					// edited sdk
+					model.userSavedSDKs.refresh();
+				}
 				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
-			}
-			// check if newly added matches with customSDKpath
-			// in a project's environment case
-			if(setting.stringValue)
-			{
-				if(event.anObject.label != setting.stringValue)
+				if(sdkPopup)
 				{
-					Alert.show("New SDK is different than the defined one. Use it anyway?", "Confirm!", Alert.YES | Alert.NO, null, onSDKChooseConfirmed);
-				} else
-				{
-					onSDKChooseConfirmed(null);
+					sdkPopup.sdks = new feathers.data.ArrayCollection(model.userSavedSDKs.source);
 				}
 			}
 
-			/*
-            * @local
-            * we need this to be local
-            */
-			function onSDKChooseConfirmed(evnt:CloseEvent):void
-			{
-				if(!evnt || evnt.detail == Alert.YES)
-				{
-					setting.stringValue = event.anObject.path;
-					lblValue.text = event.anObject.label;
-					hideDefineSDKLink(setting.stringValue);
-				}
-			}
-		}
-
-		private function onFocusIn(event:FocusEvent):void
-		{
-			event.currentTarget.text = "";
+			sdkPathPopupWrapper.stage.removeEventListener(Event.RESIZE, sdkPathPopup_stage_resizeHandler);
+			PopUpManager.removePopUp(sdkPathPopupWrapper);
+			sdkPathPopup.removeEventListener(Event.CLOSE, onSDKPathPopupClosed);
+			sdkPathPopup = null;
 		}
 
 		protected function onDropDownListPathChange(event:IndexChangeEvent):void
