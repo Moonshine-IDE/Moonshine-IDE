@@ -22,28 +22,28 @@
 -->
 <mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009"
 		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   xmlns:renderers="actionScripts.plugin.settings.renderers.*"
+		   xmlns:vo="actionScripts.plugin.settings.vo.*"
 		   implements="actionScripts.ui.IContentWindow"
-		   xmlns:mx="library://ns.adobe.com/flex/mx" backgroundColor="0xf5f5f5" width="100%" height="100%"
-		   label="Ant Build" creationComplete="onAntBuildScreenCreationComplete(event)" horizontalCenter="0" verticalCenter="0" >
+		   backgroundColor="0xf5f5f5" width="100%" height="100%"
+		   label="Ant Build" horizontalCenter="0" verticalCenter="0"
+		   creationComplete="onAntBuildScreenCreationComplete(event)">
 	<fx:Script>
 		<![CDATA[
-			import mx.core.FlexGlobals;
-			import mx.events.CloseEvent;
-			import mx.events.FlexEvent;
-			import mx.managers.PopUpManager;
-			import mx.validators.Validator;
-			
-			import actionScripts.events.ProjectEvent;
-			import actionScripts.factory.FileLocation;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.plugin.settings.renderers.LinkButtonSkin;
-			import actionScripts.plugin.settings.vo.PluginSetting;
-			import actionScripts.plugins.ant.events.AntBuildEvent;
-			import actionScripts.utils.UtilsCore;
-			import actionScripts.valueObjects.ConstantsCoreVO;
-			
-			import components.popup.SDKDefinePopup;
-			import components.popup.SDKSelectorPopup;
+		import mx.events.FlexEvent;
+		import mx.validators.Validator;
+
+		import actionScripts.factory.FileLocation;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.settings.renderers.LinkButtonSkin;
+		import actionScripts.plugin.settings.renderers.PathRenderer;
+		import actionScripts.plugin.settings.vo.AbstractSetting;
+		import actionScripts.plugin.settings.vo.PathSetting;
+		import actionScripts.plugin.settings.vo.PluginSetting;
+		import actionScripts.plugins.ant.events.AntBuildEvent;
+		import actionScripts.utils.UtilsCore;
+		import actionScripts.valueObjects.ConstantsCoreVO;
 
 		[Bindable]
 		private var _isFlexSDK:Boolean;
@@ -54,13 +54,21 @@
 		[Bindable]
 		private var description:String = "\tAnt build process needs 3 files for build Flex application,i.e build.xml file,Apache Flex SDK and Ant Home. Pelase set these 3 files first before starting Ant Build.\n\n\tAnt Home : Set Ant Home path for Ant Build through browse Button.If you already set Ant Home path in setting then no need to set Ant Home path in this window.\n\n\tFlex SDK : Select Apache Flex SDK through Flex SDK Browse Button.If you already set Flex SDK in setting then no need to set Flex SDK in this window.\n\n\tAnt Configure : Set build.xml file for Ant build through Browse Button.You can also set Ant configure file from Menu also Ant -> Build Configure.If you already select build.xml file from Menu then no need to select file from this window.\n\n\tAnt Build : Start Ant Build if all paths are configured.";
 
+		private var settings:Object = {antHomePath: null, sdkPath: null};
+
 		private var model:IDEModel = IDEModel.getInstance();
 		private var file:FileLocation;
-		private var sdkPopup:SDKSelectorPopup;
-		private var sdkPathPopup:SDKDefinePopup;
 		private var _customSDKAvailable:Boolean;
 		private var buildSDK:FileLocation;
 		private var antHome:FileLocation;
+
+		[Bindable]
+		private var antHomePathSetting:PathSetting;
+		[Bindable]
+		private var sdkPathSetting:PathSetting;
+
+		private var antHomePathRenderer:PathRenderer;
+		private var sdkPathRenderer:PathRenderer;
 
 		public function get longLabel():String
 		{
@@ -125,55 +133,29 @@
 
 			var ps:PluginSetting = new PluginSetting("Ant Build", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Build Flex application through Ant script", false);
 			vgContainer.addElementAt(ps.renderer, 0);
+			
+			antHomePathSetting = new PathSetting(settings, "antHomePath", "Ant Home", true, null, false);
+			antHomePathRenderer = PathRenderer(antHomePathSetting.renderer);
+			hgAntBuild.addElementAt(antHomePathRenderer, 0);
+			sdkPathSetting = new PathSetting(settings, "sdkPath", "Flex SDK", true, null, true);
+			sdkPathRenderer = PathRenderer(sdkPathSetting.renderer);
+			hgFlexSDK.addElementAt(sdkPathRenderer, 0);
+
+			antHomePathSetting.addEventListener(AbstractSetting.PATH_SELECTED, antHomePathSetting_pathSelectedHandler);
+			sdkPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, sdkPathSetting_pathSelectedHandler);
 
 			/*   ps = new PluginSetting("Ant Build Description", "", description, false);
               groupContainer.addElementAt(ps.renderer, 0); */
 		}
 
-		protected function btnBrowseFlexSDK_clickHandler(event:MouseEvent):void
+		protected function antHomePathSetting_pathSelectedHandler(event:Event):void
 		{
-			// TODO Auto-generated method stub
-			if (!sdkPathPopup)
-			{
-				sdkPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKSelectorPopup, false) as SDKSelectorPopup;
-				sdkPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
-				sdkPopup.addEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
-				PopUpManager.centerPopUp(sdkPopup);
-			}
-			else
-			{
-				PopUpManager.bringToFront(sdkPathPopup);
-			}
+			antHomeV.validate();
 		}
 
-		private function onFlexSDKUpdated(event:ProjectEvent):void
+		protected function sdkPathSetting_pathSelectedHandler(event:Event):void
 		{
-			// in case user deleted the entry
-			txtFlexSdk.text = event.anObject.path;
-			onSDKPopupClosed(null);
-		}
-
-		private function onSDKPopupClosed(event:CloseEvent):void
-		{
-			sdkPopup.removeEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
-			sdkPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
-			sdkPopup = null;
-		}
-
-		protected function btnBrowseAnt_clickHandler(event:MouseEvent):void
-		{
-			// TODO Auto-generated method stub
-			model.fileCore.browseForDirectory("Select directory", openFile, openFileCancelled);
-		}
-
-		private function openFile(fileDir:Object):void
-		{
-			txtAntHome.text = fileDir.nativePath;
-			file = null;
-		}
-
-		private function openFileCancelled():void
-		{
+			flexSDKV.validate();
 		}
 
 		protected function btnAntConfigure_clickHandler(event:MouseEvent):void
@@ -203,78 +185,81 @@
 			if (hgAntConfigure.visible)
 				tmpArr.push(antConfigureV);
 			if (Validator.validateAll(tmpArr).length != 0) return;
-			if (txtAntHome.text) antHome = new FileLocation(txtAntHome.text);
+			if (antHomePathSetting.stringValue) antHome = new FileLocation(antHomePathSetting.stringValue);
 			if (txtAntConfigure.text) model.antScriptFile = new FileLocation(txtAntConfigure.text);
-			if (txtFlexSdk.text) buildSDK = new FileLocation(txtFlexSdk.text);
+			if (sdkPathSetting.stringValue) buildSDK = new FileLocation(sdkPathSetting.stringValue);
 			this.dispatchEvent(new AntBuildEvent(AntBuildEvent.ANT_BUILD, buildSDK, antHome));
 		}
 
 		private function clearPath(event:MouseEvent):void
 		{
-			if (event.currentTarget.id == "btnAntClear")
-				txtAntHome.text = "";
-			else if (event.currentTarget.id == "btnFlexSDK")
-				txtFlexSdk.text = "";
-			else if (event.currentTarget.id == "btnAntConfigure")
+			if (event.currentTarget.id == "btnAntConfigure")
 				txtAntConfigure.text = "";
+		}
+
+		private function sdkSettingInvalidHandler(event:Event):void
+		{
+			sdkPathRenderer.setMessage("Set Flex SDK path first.", AbstractSetting.MESSAGE_CRITICAL);
+		}
+
+		private function sdkSettingValidHandler(event:Event):void
+		{
+			sdkPathRenderer.setMessage(null, AbstractSetting.MESSAGE_CRITICAL);
+		}
+
+		private function antHomeSettingInvalidHandler(event:Event):void
+		{
+			antHomePathRenderer.setMessage("Set Ant Home path first.", AbstractSetting.MESSAGE_CRITICAL);
+		}
+
+		private function antHomeSettingValidHandler(event:Event):void
+		{
+			antHomePathRenderer.setMessage(null, AbstractSetting.MESSAGE_CRITICAL);
 		}
 		]]>
 	</fx:Script>
 	
 	<fx:Declarations>
-		<mx:StringValidator id="flexSDKV" source="{txtFlexSdk}"  property="text" requiredFieldError="Set Flex SDK path first." />
-		<mx:StringValidator id="antHomeV" source="{txtAntHome}" property="text" requiredFieldError="Set Ant Home path first." />
+		<mx:StringValidator id="flexSDKV" source="{sdkPathSetting}" property="stringValue"
+			invalid="sdkSettingInvalidHandler(event)"
+			valid="sdkSettingValidHandler(event)"/>
+		<mx:StringValidator id="antHomeV" source="{antHomePathSetting}" property="stringValue"
+			invalid="antHomeSettingInvalidHandler(event)"
+			valid="antHomeSettingValidHandler(event)"/>
 		<mx:StringValidator id="antConfigureV" source="{txtAntConfigure}" property="text" requiredFieldError="You need to configure the script first." />
 	</fx:Declarations>
-	<s:VGroup height="100%" width="100%"  id="vgContainer" paddingLeft="15"  paddingTop="15" paddingRight="15" paddingBottom="15"
+
+	<s:VGroup height="100%" width="100%" id="vgContainer" paddingLeft="15"  paddingTop="15" paddingRight="15" paddingBottom="15"
 			  horizontalAlign="center">
-		  <mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
-			<s:VGroup visible="{_isAntConfigurPath}" includeInLayout="{_isAntConfigurPath}" id="hbConfigurepath"
-				 paddingLeft="15"  paddingTop="15" paddingRight="15" paddingBottom="15" width="100%" >
-				<s:Label text="Ant Build File:" width="100%" styleName="uiTextSettingsLabel" />
-				<s:Label id="lblAntFilePath" width="100%" styleName="uiTextSettingsLabel"  />
-				<mx:Spacer width="100%" height="5"/>
-				<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
-			</s:VGroup>
-			<s:VGroup id="hgAntBuild" width="100%" includeInLayout="{!_isAntPath}" visible="{!_isAntPath}"
-					  paddingLeft="15" paddingTop="15" paddingRight="15"  paddingBottom="15">
-				<s:HGroup width="100%">
-					<s:Label styleName="uiTextSettingsLabel" text="Ant Home" />
-					<mx:Spacer width="100%"/>
-					<s:Button label="Clear" id="btnAntClear" skinClass="{LinkButtonSkin}"  click="clearPath(event)" />
-					<s:Button label="Change"  skinClass="{LinkButtonSkin}"  click="btnBrowseAnt_clickHandler(event)" />
-				</s:HGroup>
-				<s:TextInput id="txtAntHome" styleName="uiTextSettingsValue" paddingTop="10" width="98%"/>
-				<mx:Spacer width="100%" height="5"/>
-				<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
-		   </s:VGroup>
-		   <s:VGroup  width="100%" includeInLayout="{_isFlexSDK}" visible="{_isFlexSDK}" id="hgFlexSDK" paddingLeft="15"
-					  paddingTop="15" paddingRight="15"  paddingBottom="15">
-				<s:HGroup width="100%">
-					<s:Label styleName="uiTextSettingsLabel" text="Flex SDK" />
-					<mx:Spacer width="100%"/>
-					<s:Button label="Clear" id="btnFlexSDK" skinClass="{LinkButtonSkin}" click="clearPath(event)" />
-					<s:Button label="Change"  skinClass="{LinkButtonSkin}"  click="btnBrowseFlexSDK_clickHandler(event)" />
-				</s:HGroup>
-				<s:TextInput id="txtFlexSdk"  styleName="uiTextSettingsValue" paddingTop="10" width="98%"/>
-			   <mx:Spacer width="100%" height="5"/>
-			   <mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
-		  </s:VGroup>
-		  <s:VGroup visible="{!_isAntConfigurPath}" includeInLayout="{!_isAntConfigurPath}" id="hgAntConfigure"
-				  paddingLeft="15"  paddingTop="15" paddingRight="15" paddingBottom="15" width="100%">
-			  <s:HGroup width="100%">
-				 <s:Label styleName="uiTextSettingsLabel" text="Ant Script to Run" />
+		<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
+		<s:VGroup visible="{_isAntConfigurPath}" includeInLayout="{_isAntConfigurPath}" id="hbConfigurepath"
+				paddingLeft="15"  paddingTop="15" paddingRight="15" paddingBottom="15" width="100%" >
+			<s:Label text="Ant Build File:" width="100%" styleName="uiTextSettingsLabel" />
+			<s:Label id="lblAntFilePath" width="100%" styleName="uiTextSettingsLabel"  />
+			<mx:Spacer width="100%" height="15"/>
+		</s:VGroup>
+		<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
+		<s:VGroup id="hgAntBuild" width="100%" includeInLayout="{!_isAntPath}" visible="{!_isAntPath}" paddingBottom="15" gap="0">
+			<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
+		</s:VGroup>
+		<s:VGroup id="hgFlexSDK" width="100%" includeInLayout="{_isFlexSDK}" visible="{_isFlexSDK}" paddingBottom="15" gap="0">
+			<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
+		</s:VGroup>
+		<s:VGroup visible="{!_isAntConfigurPath}" includeInLayout="{!_isAntConfigurPath}" id="hgAntConfigure"
+				paddingLeft="15" paddingTop="15" paddingRight="15" paddingBottom="15" width="100%">
+			<s:HGroup width="100%">
+				<s:Label styleName="uiTextSettingsLabel" text="Ant Script to Run" />
 				<mx:Spacer width="100%"/>
 				<s:Button label="Clear" id="btnAntConfigure" skinClass="{LinkButtonSkin}"  click="clearPath(event)" />
 				<s:Button label="Change"  skinClass="{LinkButtonSkin}"  click="btnAntConfigure_clickHandler(event)" />
-			  </s:HGroup>
-			  <s:TextInput id="txtAntConfigure" styleName="uiTextSettingsValue" paddingTop="10" width="98%"/>
-			  <mx:Spacer width="100%" height="5"/>
-			  <mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
-		  </s:VGroup>
-		  <s:Spacer width="100%" height="100%" />
-		  <s:HGroup width="100%" horizontalAlign="center">
-			 <s:Button label="Ant Build" id="btnAntBuild" click="btnAntBuild_clickHandler(event)"  styleName="lightButton" />
-		  </s:HGroup>
+			</s:HGroup>
+			<s:TextInput id="txtAntConfigure" styleName="uiTextSettingsValue" paddingTop="10" width="98%"/>
+			<mx:Spacer width="100%" height="5"/>
+			<mx:HRule width="100%" strokeWidth="1" strokeColor="0xdadada" />
+		</s:VGroup>
+		<s:Spacer width="100%" height="100%" />
+		<s:HGroup width="100%" horizontalAlign="center">
+			<s:Button label="Ant Build" id="btnAntBuild" click="btnAntBuild_clickHandler(event)"  styleName="lightButton" />
+		</s:HGroup>
 	</s:VGroup>
 </mx:Canvas>
