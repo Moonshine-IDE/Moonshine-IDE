@@ -530,7 +530,7 @@
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>55.0</string>]]></replacevalue>
+					<string>56.0</string>]]></replacevalue>
 				</replace>
 			</then>
 			<else>
@@ -542,7 +542,7 @@
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>55.0</string>]]></replacevalue>
+					<string>56.0</string>]]></replacevalue>
 				</replace>
 			</else>			
 		</if>
@@ -614,7 +614,6 @@
 			<arg value="-c"/>
 			<arg value='rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/A2712Enabler'/>
 		</exec>
-
 		<!--exec executable="bash">
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64'/>
@@ -639,9 +638,54 @@
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
 		</exec>
+		<!-- @devsena: Node-modules files signing -->
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.10/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.11/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.12/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-10/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-11/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-12/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-4/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-5/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-6/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-7/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-8/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-9/deasync.node'/>
 		</exec>
 		<!-- @devsena: Duplicate a copy of the app file to be use in upcoming non-sandbox packaging process with different entitlement -->
 		<exec executable="bash" failonerror="true">
