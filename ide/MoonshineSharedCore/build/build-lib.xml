@@ -525,6 +525,7 @@
 				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
 							<replacevalue><![CDATA[<string>Icon.icns</string>
+					<key>ITSAppUsesNonExemptEncryption</key><false/>
 					<key>CFBundleName</key>
 					<string>MoonshineDevelopment</string>
 					<key>LSApplicationCategoryType</key>
@@ -537,6 +538,7 @@
 				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
 							<replacevalue><![CDATA[<string>Icon.icns</string>
+					<key>ITSAppUsesNonExemptEncryption</key><false/>
 					<key>CFBundleName</key>
 					<string>Moonshine</string>
 					<key>LSApplicationCategoryType</key>
