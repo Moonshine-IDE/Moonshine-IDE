@@ -639,6 +639,10 @@
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
 		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.10/deasync.node'/>
+		</exec>
 		<!-- @devsena: Duplicate a copy of the app file to be use in upcoming non-sandbox packaging process with different entitlement -->
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
