@@ -15,7 +15,5 @@
     	<true/>
     	<key>com.apple.security.device.usb</key>
     	<true/>
-    	<key>ITSAppUsesNonExemptEncryption</key>
-    	<false/>
 	</dict>
 </plist>
