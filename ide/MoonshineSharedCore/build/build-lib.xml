@@ -641,54 +641,17 @@
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
 		</exec>
 		<!-- @devsena: Node-modules files signing -->
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.10/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.11/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.12/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-10/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-11/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-12/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-4/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-5/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-6/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-7/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-8/deasync.node'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-9/deasync.node'/>
-		</exec>
+		<for param="file">
+		  <path>
+		    <fileset dir="${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin" includes="**/deasync.node"/>
+		  </path>
+		  <sequential>
+		  	<exec executable="bash">
+  				<arg value="-c"/>
+  				<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" @{file}'/>
+  			</exec>
+		  </sequential>
+		</for>
 		<!-- @devsena: Duplicate a copy of the app file to be use in upcoming non-sandbox packaging process with different entitlement -->
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
@@ -790,7 +753,7 @@
 		</copy>
 		
 		<antcall target="copyElementsFolder"/>
-
+		
 		<!-- Check if the self-signed certificate exists -->
 		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
 		<if>
