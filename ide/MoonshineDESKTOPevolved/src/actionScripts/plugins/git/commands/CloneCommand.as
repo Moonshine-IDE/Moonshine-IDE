@@ -25,7 +25,6 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.git.model.ConstructorDescriptor;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.valueObjects.RepositoryItemVO;
@@ -33,13 +32,14 @@ package actionScripts.plugins.git.commands
 
 	public class CloneCommand extends GitCommandBase
 	{
-		public static const CLONE_REQUEST:String = "gutCloneRequest";
+		public static const CLONE_REQUEST:String = "gitCloneRequest";
 		
 		private var repositoryUnderCursor:RepositoryItemVO;
 		private var lastCloneURL:String;
 		private var lastCloneTarget:String;
 		private var lastTargetFolder:String;
 		private var authWindowTriggerCountWindows:int;
+		private var isRequestWithAuth:Boolean;
 		
 		private var _cloningProjectName:String;
 		private function get cloningProjectName():String
@@ -65,7 +65,16 @@ package actionScripts.plugins.git.commands
 			lastCloneTarget = target;
 			lastTargetFolder = targetFolder;
 			
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ url +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
+			var tmpCommand:String;
+			if (repositoryUnderCursor.isRequireAuthentication && repositoryUnderCursor.userName)
+			{
+				var protocol:String = lastCloneURL.substring(0, lastCloneURL.indexOf("://")+3);
+				lastCloneURL = lastCloneURL.replace(protocol, "");
+				lastCloneURL = protocol + repositoryUnderCursor.userName +"@"+ lastCloneURL;
+				isRequestWithAuth = true;
+			}
+			
+			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ lastCloneURL +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);
@@ -92,6 +101,12 @@ package actionScripts.plugins.git.commands
 					else
 					{
 						dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:value.output}));
+					}
+					
+					match = value.output.toLowerCase().match(/fatal: .*not found/);
+					if (match && isRequestWithAuth)
+					{
+						error("Insufficient authentication to the repository.");
 					}
 				}
 			}

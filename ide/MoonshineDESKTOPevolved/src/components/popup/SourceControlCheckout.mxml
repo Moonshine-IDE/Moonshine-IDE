@@ -42,6 +42,7 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugins.versionControl.VersionControlUtils;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
+			import actionScripts.utils.SharedObjectUtil;
 			import actionScripts.valueObjects.RepositoryItemVO;
 			import actionScripts.valueObjects.VersionControlTypes;
 			
@@ -83,6 +84,13 @@
 					return;
 				}
 				
+				editingRepository.isRequireAuthentication = cbLogin.selected;
+				editingRepository.userName = editingRepository.isRequireAuthentication ? 
+					((StringUtil.trim(txtLogin.text).length != 0) ? txtLogin.text : null) : 
+					null;
+				
+				updateRepository();
+				
 				submitObject = new Object();
 				submitObject.url = txtSource.text;
 				submitObject.target = mappedPath;
@@ -93,6 +101,11 @@
 				dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_REQUESTED));
 				currentState = "progress";
 				addRemoveBusyIndicator();
+			}
+			
+			private function updateRepository():void
+			{
+				SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
 			}
 			
 			private function browse():void
@@ -160,6 +173,11 @@
 				if (editingRepository) 
 				{
 					txtSource.text = editingRepository.url;
+					if (editingRepository.isRequireAuthentication)
+					{
+						cbLogin.selected = true;
+						txtLogin.text = editingRepository.userName;
+					}
 				}
 				if (VersionControlUtils.IS_CHECKOUT_BROWSED_ONCE)
 				{
@@ -249,7 +267,6 @@
 	<fx:Declarations>
 		<mx:StringValidator id="fnValidator" source="{txtFolderName}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 		<mx:StringValidator id="eValidator" source="{txtLogin}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
-		<mx:StringValidator id="pValidator" source="{txtPassword}" property="text" trigger="{btnSubmit}" triggerEvent="click"/>
 	</fx:Declarations>
 	<resizableTitleWindow:states>
 		<s:State name="default"/>
@@ -280,25 +297,21 @@
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}"/>
-		<s:HGroup width="100%" verticalAlign="middle"
-				  includeInLayout="false" visible="false">
+		<s:HGroup width="100%" verticalAlign="middle">
 			<s:CheckBox id="cbLogin"
 						label="Need Authentication" selected="false"/>
-			<s:CheckBox label="Trust Server Certificate"
-						change="isTrustServerCertificate=event.target.selected"/>
+			<s:CheckBox id="cbTrustCert" label="Trust Server Certificate"
+						enabled="{type == VersionControlTypes.SVN}"/>
 		</s:HGroup>
 		<s:VGroup width="100%"
-				  visible="{cbLogin.selected &amp;&amp; type == VersionControlTypes.SVN}" includeInLayout="{cbLogin.selected &amp;&amp; type == VersionControlTypes.SVN}">
+				  visible="{cbLogin.selected}" includeInLayout="{cbLogin.selected}">
 			<view:PromptTextInput
 				id="txtLogin" 
 				prompt="User Name"
 				width="100%"
 				styleName="textInput"/>
-			<view:PromptTextInput
-				id="txtPassword" 
-				prompt="Password" change="txtPassword.displayAsPassword=true"
-				width="100%"
-				styleName="textInput"/>
+			<s:Label text="Password will be prompted when needed by version control software"
+					 color="0x444444"/>
 		</s:VGroup>
 	</s:VGroup>
 	
