@@ -112,7 +112,7 @@ package actionScripts.plugins.git.commands
 					match = value.output.toLowerCase().match(/fatal: .*not found/);
 					if (match && isRequestWithAuth)
 					{
-						error("Insufficient authentication to the repository.");
+						error("Insufficient permission.");
 					}
 				}
 			}
