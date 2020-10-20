@@ -66,15 +66,16 @@ package actionScripts.plugins.git.commands
 			lastTargetFolder = targetFolder;
 			
 			var tmpCommand:String;
+			var calculatedURL:String;
 			if (repositoryUnderCursor.isRequireAuthentication && repositoryUnderCursor.userName)
 			{
 				var protocol:String = lastCloneURL.substring(0, lastCloneURL.indexOf("://")+3);
-				lastCloneURL = lastCloneURL.replace(protocol, "");
-				lastCloneURL = protocol + repositoryUnderCursor.userName +"@"+ lastCloneURL;
+				calculatedURL = lastCloneURL.replace(protocol, "");
+				calculatedURL = protocol + repositoryUnderCursor.userName + ((repositoryUnderCursor.userPassword) ? ":"+ repositoryUnderCursor.userPassword : "") +"@"+ calculatedURL;
 				isRequestWithAuth = true;
 			}
 			
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ lastCloneURL +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
+			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);
@@ -82,6 +83,8 @@ package actionScripts.plugins.git.commands
 		
 		override protected function shellError(value:Object):void
 		{
+			var tmpPlugin:GitHubPlugin = plugin;
+			
 			// call super - it might have some essential 
 			// commands to run.
 			super.shellError(value);
@@ -91,11 +94,14 @@ package actionScripts.plugins.git.commands
 			{
 				case GitHubPlugin.CLONE_REQUEST:
 				{
-					match = value.output.toLowerCase().match(/fatal: .*username/);
-					if (match)
+					repositoryUnderCursor.userPassword = null;
+					
+					if (value.output.toLowerCase().match(/fatal: .*username/) || 
+						value.output.toLowerCase().match(/fatal: .*could not read password/))
 					{
-						plugin.requestToAuthenticate(
-							new ConstructorDescriptor(CloneCommand, lastCloneURL, lastCloneTarget, lastTargetFolder, repositoryUnderCursor)
+						tmpPlugin.requestToAuthenticate(
+							new ConstructorDescriptor(CloneCommand, lastCloneURL, lastCloneTarget, lastTargetFolder, repositoryUnderCursor),
+							repositoryUnderCursor
 						);
 					}
 					else

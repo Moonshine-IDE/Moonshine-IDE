@@ -238,12 +238,12 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		public function requestToAuthenticate(onComplete:MethodDescriptor=null):void
+		public function requestToAuthenticate(onComplete:MethodDescriptor=null, repositoryItem:RepositoryItemVO=null):void
 		{
-			if (!modelAgainstProject[model.activeProject].sessionUser)
+			openAuthentication(onComplete, repositoryItem);
+			/*if (!modelAgainstProject[model.activeProject].sessionUser)
 			{
-				openAuthentication(onComplete);
-			}
+			}*/
 		}
 		
 		public function setGitAvailable(value:Boolean):void
@@ -684,7 +684,7 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function openAuthentication(onComplete:MethodDescriptor=null):void
+		private function openAuthentication(onComplete:MethodDescriptor=null, repositoryItem:RepositoryItemVO=null):void
 		{
 			if (!gitAuthWindow)
 			{
@@ -697,8 +697,9 @@ package actionScripts.plugins.git
 				gitAuthWindow.isGitAvailable = isGitAvailable;
 				gitAuthWindow.type = VersionControlTypes.GIT;
 				gitAuthWindow.onComplete = onComplete;
+				gitAuthWindow.repositoryItem = repositoryItem;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToPush);
+				if (onComplete == null) gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToPush);
 				PopUpManager.centerPopUp(gitAuthWindow);
 			}
 			

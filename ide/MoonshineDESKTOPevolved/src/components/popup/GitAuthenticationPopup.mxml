@@ -10,6 +10,9 @@
 			import mx.validators.Validator;
 			
 			import actionScripts.plugins.git.model.MethodDescriptor;
+			import actionScripts.plugins.versionControl.VersionControlUtils;
+			import actionScripts.utils.SharedObjectUtil;
+			import actionScripts.valueObjects.RepositoryItemVO;
 			import actionScripts.valueObjects.VersionControlTypes;
 			
 			public static const AUTH_SUBMITTED:String = "gitAuthenticationCompleted";
@@ -20,6 +23,7 @@
 			
 			public var userObject:Object;
 			public var onComplete:MethodDescriptor;
+			public var repositoryItem:RepositoryItemVO;
 			
 			private function onSubmit():void
 			{
@@ -28,6 +32,20 @@
 				{
 					userObject = {userName:txtUser.text, password:txtPassword.text};
 					userObject.save = cbSaveAuth.selected;
+					
+					if (repositoryItem)
+					{
+						repositoryItem.isRequireAuthentication = true;
+						repositoryItem.userName = txtUser.text;
+						repositoryItem.userPassword = txtPassword.text;
+						
+						SharedObjectUtil.saveRepositoriesToSO(VersionControlUtils.REPOSITORIES);
+					}
+					
+					if (onComplete != null)
+					{
+						onComplete.callMethod();
+					}
 					
 					dispatchEvent(new Event(AUTH_SUBMITTED));
 					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
@@ -49,6 +67,9 @@
 		<view:PromptTextInput id="txtPassword" 
 							  prompt="Password" width="100%" styleName="textInput"
 							  displayAsPassword="true" enter="onSubmit()"/>
+		<s:Label text="Use Personal Access Token instead of Password in case you have dual-authentication enabled."
+				 width="100%" maxDisplayedLines="3" color="0xff0000"
+				 includeInLayout="{type==VersionControlTypes.GIT &amp;&amp; isGitAvailable}" visible="{type==VersionControlTypes.GIT &amp;&amp; isGitAvailable}"/>
 		<s:CheckBox id="cbSaveAuth"
 					label="Save until Moonshine exits"/>
 		<s:Label text="You need Git installed on your system to continue."
