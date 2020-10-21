@@ -41,6 +41,8 @@
 
 	<!-- Publisher ID. Used if you're updating an application created prior to 1.5.3 -->
 	<!-- <publisherID></publisherID> -->
+	
+	<architecture>64</architecture>
 
 	<!-- Settings for the application's initial window. Required. -->
 	<initialWindow>
