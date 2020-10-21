@@ -30,6 +30,8 @@ package actionScripts.plugins.git.commands
 	{
 		private const GIT_PUSH:String = "gitPush";
 		
+		private var lastUserObject:Object; 
+		
 		public function PushCommand(userObject:Object=null)
 		{
 			super();
@@ -40,6 +42,7 @@ package actionScripts.plugins.git.commands
 			var userName:String;
 			var password:String;
 			
+			lastUserObject = userObject;
 			userName = tmpModel.sessionUser ? tmpModel.sessionUser : (userObject ? userObject.userName : null);
 			password = tmpModel.sessionPassword ? tmpModel.sessionPassword : (userObject ? userObject.password : null);
 			
@@ -82,7 +85,6 @@ package actionScripts.plugins.git.commands
 		
 		override protected function shellData(value:Object):void
 		{
-			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var tmpProject:ProjectVO;
 			
@@ -90,16 +92,12 @@ package actionScripts.plugins.git.commands
 			{
 				case GIT_PUSH:
 				{
-					if (value.output.toLowerCase().match(/fatal.*username/) || 
-						value.output.toLowerCase().match(/permission.*denied/))
+					if (testMessageIfNeedsAuthentication(value.output))
 					{
-						// we'll need user to authenticate
-						plugin.requestToAuthenticate();
-						return;
+						openAuthentication();
 					}
 					
-					match = value.output.toLowerCase().match(/invalid username/);
-					if (match)
+					if (value.output.toLowerCase().match(/invalid username/))
 					{
 						// reset model information if saved by the user
 						tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
@@ -113,6 +111,17 @@ package actionScripts.plugins.git.commands
 			// call super - it might have some essential
 			// commands to run
 			super.shellData(value);
+		}
+		
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				lastUserObject.userName = username;
+				lastUserObject.password = password;
+				
+				new PushCommand(lastUserObject);
+			}
 		}
 	}
 }

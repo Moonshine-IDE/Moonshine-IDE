@@ -114,8 +114,8 @@ package actionScripts.plugins.git
 		
 		public var modelAgainstProject:Dictionary = new Dictionary();
 		public var projectsNotAcceptedByUserToPermitAsGitOnMacOS:Dictionary = new Dictionary();
-		
-		private var isGitAvailable:Boolean;
+		public var isGitAvailable:Boolean;
+
 		private var checkoutWindow:SourceControlCheckout;
 		private var xCodePermissionWindow:GitXCodePermissionPopup;
 		private var gitRepositoryPermissionWindow:GitRepositoryPermissionPopup;
@@ -696,8 +696,6 @@ package actionScripts.plugins.git
 				gitAuthWindow.title = "Git Needs Authentication";
 				gitAuthWindow.isGitAvailable = isGitAvailable;
 				gitAuthWindow.type = VersionControlTypes.GIT;
-				gitAuthWindow.onComplete = onComplete;
-				gitAuthWindow.repositoryItem = repositoryItem;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
 				if (onComplete == null) gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToPush);
 				PopUpManager.centerPopUp(gitAuthWindow);

@@ -18,6 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.GlobalEventDispatcher;
@@ -33,7 +39,11 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.IContentWindowReloadable;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.RepositoryItemVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
+	
+	import components.popup.GitAuthenticationPopup;
 	
 	public class GitCommandBase extends ConsoleOutputter implements IWorkerSubscriber
 	{
@@ -184,6 +194,53 @@ package actionScripts.plugins.git.commands
 			if (model.activeEditor && (model.activeEditor is IContentWindowReloadable))
 			{
 				(model.activeEditor as IContentWindowReloadable).checkFileIfChanged();
+			}
+		}
+		
+		protected function testMessageIfNeedsAuthentication(value:String):Boolean
+		{
+			if (value.toLowerCase().match(/fatal: .*username/) || 
+				value..toLowerCase().match(/fatal: .*could not read password/) ||
+				value.toLowerCase().match(/fatal: .*could not read password/))
+			{
+				return true;
+			}
+			
+			return false;
+		}
+		
+		protected function openAuthentication():void
+		{
+			var gitAuthWindow:GitAuthenticationPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
+			gitAuthWindow.title = "Git Needs Authentication";
+			gitAuthWindow.isGitAvailable = true;
+			gitAuthWindow.type = VersionControlTypes.GIT;
+			gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+			gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+			PopUpManager.centerPopUp(gitAuthWindow);
+			
+			/*
+			* @local
+			*/
+			function onGitAuthWindowClosed(event:CloseEvent):void
+			{
+				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+				gitAuthWindow.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+				PopUpManager.removePopUp(gitAuthWindow);
+				gitAuthWindow = null;
+			}
+		}
+		
+		protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+		}
+		
+		private function onAuthSubmitted(event:Event):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			if (target.userObject)
+			{
+				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
 			}
 		}
 		

@@ -24,7 +24,6 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.GitHubPlugin;
-	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.valueObjects.RepositoryItemVO;
@@ -83,8 +82,6 @@ package actionScripts.plugins.git.commands
 		
 		override protected function shellError(value:Object):void
 		{
-			var tmpPlugin:GitHubPlugin = plugin;
-			
 			// call super - it might have some essential 
 			// commands to run.
 			super.shellError(value);
@@ -96,13 +93,9 @@ package actionScripts.plugins.git.commands
 				{
 					repositoryUnderCursor.userPassword = null;
 					
-					if (value.output.toLowerCase().match(/fatal: .*username/) || 
-						value.output.toLowerCase().match(/fatal: .*could not read password/))
+					if (testMessageIfNeedsAuthentication(value.output))
 					{
-						tmpPlugin.requestToAuthenticate(
-							new ConstructorDescriptor(CloneCommand, lastCloneURL, lastCloneTarget, lastTargetFolder, repositoryUnderCursor),
-							repositoryUnderCursor
-						);
+						openAuthentication();
 					}
 					else
 					{
@@ -115,6 +108,18 @@ package actionScripts.plugins.git.commands
 						error("Insufficient permission.");
 					}
 				}
+			}
+		}
+		
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				repositoryUnderCursor.isRequireAuthentication = true;
+				repositoryUnderCursor.userName = username;
+				repositoryUnderCursor.userPassword = password;
+				
+				new CloneCommand(lastCloneURL, lastCloneTarget, lastTargetFolder, repositoryUnderCursor);
 			}
 		}
 		
