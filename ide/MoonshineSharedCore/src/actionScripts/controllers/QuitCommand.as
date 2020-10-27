@@ -47,16 +47,18 @@ package actionScripts.controllers
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
     
-    import components.popup.QuitPopup;
     import components.popup.StandardPopup;
     import components.views.splashscreen.SplashScreen;
+    import actionScripts.ui.FeathersUIWrapper;
+    import moonshine.components.QuitView;
 
 	public class QuitCommand implements ICommand
 	{
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var model:IDEModel = IDEModel.getInstance();
 		private static var pop:StandardPopup;
-		private var quitPopup:QuitPopup;
+		private var quitPopup:QuitView;
+		private var quitPopupWrapper:FeathersUIWrapper;
 		private var timedOutClosingLanguageServers:Boolean = false;
 		private var isGradleDaemonClosed:Boolean;
 		private var languageServerTimeoutID:uint = uint.MAX_VALUE;
@@ -68,12 +70,14 @@ package actionScripts.controllers
             if (!quitPopup && model.confirmApplicationExit)
             {
                 commandEvent = event;
-                quitPopup = new QuitPopup();
-                quitPopup.addEventListener("quitConfirmed", onQuitPopupConfirmed);
+                quitPopup = new QuitView();
+				quitPopupWrapper = new FeathersUIWrapper(quitPopup);
+				quitPopup.alwaysConfirmExit = model.confirmApplicationExit;
                 quitPopup.addEventListener(Event.CLOSE, onQuitPopupClose);
-
-                PopUpManager.addPopUp(quitPopup, FlexGlobals.topLevelApplication as DisplayObject, true);
-				PopUpManager.centerPopUp(quitPopup);
+                PopUpManager.addPopUp(quitPopupWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+				PopUpManager.centerPopUp(quitPopupWrapper);
+				quitPopupWrapper.assignFocus("top");
+				quitPopupWrapper.stage.addEventListener(Event.RESIZE, quitPopup_stage_resizeHandler, false, 0, true);
             }
 			else
 			{
@@ -83,15 +87,30 @@ package actionScripts.controllers
 
         private function onQuitPopupClose(event:Event):void
         {
-            saveStateOfQuitPopup();
-		   	cleanUpQuitPopup();
+			var confirmedExit:Boolean = this.quitPopup.confirmedExit;
+			var alwaysConfirmExit:Boolean = this.quitPopup.alwaysConfirmExit;
+			if(!alwaysConfirmExit)
+			{
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new BooleanSetting({confirmApplicationExit: alwaysConfirmExit}, "confirmApplicationExit", "")
+				]);
+				model.confirmApplicationExit = alwaysConfirmExit;
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, "actionScripts.plugin.actionscript.as3project.save::SaveFilesPlugin", settings));
+			}
+
+			cleanUpQuitPopup();
+
+			if(confirmedExit)
+			{
+				internalExecute();
+			}
         }
 
-        private function onQuitPopupConfirmed(event:Event):void
-        {
-            saveStateOfQuitPopup();
-			internalExecute();
-        }
+		private function quitPopup_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(quitPopupWrapper);
+		}
 
 		private function internalExecute(event:Event = null):void
 		{
@@ -329,9 +348,10 @@ package actionScripts.controllers
 		
 		private function cleanUp():void
 		{
+			cleanUpQuitPopup();
+
 			if (pop)
 			{
-                cleanUpQuitPopup();
 
 				FlexGlobals.topLevelApplication.removeEventListener(ResizeEvent.RESIZE, onApplicationResized);
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
@@ -341,26 +361,17 @@ package actionScripts.controllers
 			}
 		}
 
-		private function saveStateOfQuitPopup():void
-		{
-			if (!quitPopup.doNotAskMeAgain) return;
-
-			var settings:Vector.<ISetting> = Vector.<ISetting>([
-				new BooleanSetting({confirmApplicationExit: false}, "confirmApplicationExit", "")
-			]);
-
-			model.confirmApplicationExit = false;
-			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
-					null, "actionScripts.plugin.actionscript.as3project.save::SaveFilesPlugin", settings));
-        }
-
 		private function cleanUpQuitPopup():void
 		{
-			if (!quitPopup) return;
-
+			if(!quitPopup)
+			{
+				return;
+			}
+			quitPopupWrapper.stage.removeEventListener(Event.RESIZE, quitPopup_stage_resizeHandler);
+			PopUpManager.removePopUp(quitPopupWrapper);
             quitPopup.removeEventListener(Event.CLOSE, onQuitPopupClose);
-            quitPopup.removeEventListener("quitConfirmed", onQuitPopupConfirmed);
             quitPopup = null;
+			quitPopupWrapper = null;
 		}
 	}
 }

@@ -22,6 +22,7 @@ package moonshine;
 import feathers.core.DefaultFocusManager;
 import moonshine.components.SDKDefineView;
 import moonshine.components.SDKSelectorView;
+import moonshine.components.QuitView;
 import moonshine.plugin.findreplace.view.FindReplaceView;
 import moonshine.plugin.findreplace.view.GoToLineView;
 import moonshine.plugin.help.view.AS3DocsView;
@@ -47,4 +48,5 @@ class HaxeClasses {
 	public var RenameSymbolView:RenameSymbolView;
 	public var SymbolsView:SymbolsView;
 	public var TourDeFlexContentsView:TourDeFlexContentsView;
+	public var QuitView:QuitView;
 }
