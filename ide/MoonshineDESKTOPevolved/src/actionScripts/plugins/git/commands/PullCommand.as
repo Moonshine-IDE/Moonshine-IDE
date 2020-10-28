@@ -21,8 +21,8 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.GitProjectVO;
-	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.vo.NativeProcessQueueVO;
 
 	public class PullCommand extends GitCommandBase
@@ -38,10 +38,77 @@ package actionScripts.plugins.git.commands
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" pull --progress -v --no-rebase origin $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&pull&&--progress&&-v&&--no-rebase&&origin&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, PULL_REQUEST));
+			var calculatedURL:String;
+			if (tmpModel && tmpModel.sessionUser)
+			{
+				calculatedURL = tmpModel.remoteURL;
+				
+				if (calculatedURL.indexOf("@") != -1)
+				{
+					calculatedURL = calculatedURL.replace(
+						calculatedURL.substring(0, calculatedURL.indexOf("@")+1),
+						""
+					);
+				}
+				
+				calculatedURL = "https://"+ tmpModel.sessionUser + ((tmpModel.sessionPassword) ? ":"+ tmpModel.sessionPassword : "") +"@"+ calculatedURL;
+			}
+			
+			var command:String;
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				command = gitBinaryPathOSX +" pull ";
+				if (calculatedURL) command += calculatedURL;
+				command += " --progress -v --no-rebase";
+			}
+			else
+			{
+				command = gitBinaryPathOSX +'&&pull';
+				if (calculatedURL) command += '&&'+ calculatedURL;
+				command += '&&--progress&&-v&&--no-rebase';
+			}
+			
+			addToQueue(new NativeProcessQueueVO(command, false, PULL_REQUEST));
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Pull ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
+		}
+		
+		override protected function shellData(value:Object):void
+		{
+			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
+			var tmpProject:ProjectVO;
+			
+			switch(tmpQueue.processType)
+			{
+				case PULL_REQUEST:
+				{
+					if (testMessageIfNeedsAuthentication(value.output))
+					{
+						openAuthentication();
+					}
+					break;
+				}
+			}
+			
+			// call super - it might have some essential
+			// commands to run
+			super.shellData(value);
+		}
+		
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+				if (tmpModel)
+				{
+					tmpModel.sessionUser = username;
+					tmpModel.sessionPassword = password;
+					
+					new PullCommand();
+				}
+			}
 		}
 		
 		override protected function listOfProcessEnded():void

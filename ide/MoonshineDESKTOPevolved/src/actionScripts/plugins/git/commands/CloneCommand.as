@@ -64,8 +64,7 @@ package actionScripts.plugins.git.commands
 			lastCloneTarget = target;
 			lastTargetFolder = targetFolder;
 			
-			var tmpCommand:String;
-			var calculatedURL:String;
+			var calculatedURL:String = lastCloneURL;
 			if (repositoryUnderCursor.isRequireAuthentication && repositoryUnderCursor.userName)
 			{
 				var protocol:String = lastCloneURL.substring(0, lastCloneURL.indexOf("://")+3);

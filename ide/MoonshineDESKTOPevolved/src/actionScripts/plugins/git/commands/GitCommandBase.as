@@ -39,7 +39,6 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.IContentWindowReloadable;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	
@@ -77,7 +76,6 @@ package actionScripts.plugins.git.commands
 			worker = null;
 			queue = null;
 			methodStamp = null;
-			plugin = null;
 		}
 		
 		protected function getPlatformMessage(value:String):String
