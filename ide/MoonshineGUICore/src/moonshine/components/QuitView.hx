@@ -45,7 +45,7 @@ class QuitView extends ResizableTitleWindow {
 		this.resizeEnabled = false;
 	}
 
-	private var alwaysConfirmCheck:Check;
+	private var doNotAskCheck:Check;
 	private var cancelButton:Button;
 	private var exitButton:Button;
 
@@ -98,10 +98,10 @@ class QuitView extends ResizableTitleWindow {
 		messageLabel.wordWrap = true;
 		this.addChild(messageLabel);
 
-		this.alwaysConfirmCheck = new Check();
-		this.alwaysConfirmCheck.text = "Do not ask me again";
-		this.alwaysConfirmCheck.addEventListener(Event.CHANGE, alwaysConfirmCheck_changeHandler);
-		this.addChild(this.alwaysConfirmCheck);
+		this.doNotAskCheck = new Check();
+		this.doNotAskCheck.text = "Do not ask me again";
+		this.doNotAskCheck.addEventListener(Event.CHANGE, doNotAskCheck_changeHandler);
+		this.addChild(this.doNotAskCheck);
 
 		var footer = new LayoutGroup();
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
@@ -121,7 +121,7 @@ class QuitView extends ResizableTitleWindow {
 	}
 
 	override private function update():Void {
-		this.alwaysConfirmCheck.selected = this._alwaysConfirmExit;
+		this.doNotAskCheck.selected = !this._alwaysConfirmExit;
 		super.update();
 	}
 
@@ -135,7 +135,7 @@ class QuitView extends ResizableTitleWindow {
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
-	private function alwaysConfirmCheck_changeHandler(event:Event):Void {
-		this._alwaysConfirmExit = this.alwaysConfirmCheck.selected;
+	private function doNotAskCheck_changeHandler(event:Event):Void {
+		this._alwaysConfirmExit = !this.doNotAskCheck.selected;
 	}
 }
