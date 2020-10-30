@@ -94,7 +94,7 @@ package actionScripts.plugins.git.commands
 					
 					if (testMessageIfNeedsAuthentication(value.output))
 					{
-						openAuthentication();
+						openAuthentication(repositoryUnderCursor ? repositoryUnderCursor.userName : null);
 					}
 					else
 					{

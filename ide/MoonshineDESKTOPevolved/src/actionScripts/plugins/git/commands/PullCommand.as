@@ -21,8 +21,10 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.vo.NativeProcessQueueVO;
 
 	public class PullCommand extends GitCommandBase
@@ -85,7 +87,22 @@ package actionScripts.plugins.git.commands
 				{
 					if (testMessageIfNeedsAuthentication(value.output))
 					{
-						openAuthentication();
+						var userName:String;
+						var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+						if (tmpModel && tmpModel.sessionUser) userName = tmpModel.sessionUser;
+						else if (tmpModel)
+						{
+							VersionControlUtils.REPOSITORIES.source.some(function(element:RepositoryItemVO, index:int, arr:Array):Boolean {
+								if (element.url == tmpModel.remoteURL)
+								{
+									userName = element.userName;
+									return true;
+								}
+								return false;
+							});
+						}
+						
+						openAuthentication(userName);
 					}
 					break;
 				}

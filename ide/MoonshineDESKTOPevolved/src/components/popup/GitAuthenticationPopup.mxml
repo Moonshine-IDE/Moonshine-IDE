@@ -25,7 +25,8 @@
 			
 			private function onCreationCompletes():void
 			{
-				txtUser.setFocus();
+				if (userName) txtPassword.setFocus();
+				else txtUser.setFocus();
 				
 				if (type == VersionControlTypes.GIT && isGitAvailable)
 				{

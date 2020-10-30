@@ -207,12 +207,13 @@ package actionScripts.plugins.git.commands
 			return false;
 		}
 		
-		protected function openAuthentication():void
+		protected function openAuthentication(username:String=null):void
 		{
 			var gitAuthWindow:GitAuthenticationPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
 			gitAuthWindow.title = "Git Needs Authentication";
 			gitAuthWindow.isGitAvailable = true;
 			gitAuthWindow.type = VersionControlTypes.GIT;
+			gitAuthWindow.userName = username;
 			gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
 			gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
 			PopUpManager.centerPopUp(gitAuthWindow);
