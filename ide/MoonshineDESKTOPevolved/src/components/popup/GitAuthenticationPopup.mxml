@@ -6,6 +6,8 @@
 		 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="onCreationCompletes()">
 	<fx:Script>
 		<![CDATA[
+			import flash.utils.escapeMultiByte;
+			
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
@@ -37,7 +39,7 @@
 				var tmpArr : Array = new Array(eValidator, pValidator);
 				if (Validator.validateAll(tmpArr).length == 0)
 				{
-					userObject = {userName:txtUser.text, password:txtPassword.text};
+					userObject = {userName:txtUser.text, password:escapeMultiByte(txtPassword.text)};
 					userObject.save = cbSaveAuth.selected;
 					
 					dispatchEvent(new Event(AUTH_SUBMITTED));
