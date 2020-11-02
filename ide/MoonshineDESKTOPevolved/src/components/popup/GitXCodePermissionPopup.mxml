@@ -71,7 +71,7 @@
 				closeButton.addEventListener(MouseEvent.CLICK, closeButtonClickedRequest, false, 0, true);
 				closeButtonUIC.addChild(closeButton);
 				
-				addElement(closeButtonUIC);
+				addElement(closeButtonUIC); 
 				
 				var isCommandLineTools:Boolean = xCodePath.indexOf(".app") == -1;
 				
