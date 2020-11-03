@@ -225,6 +225,9 @@ package actionScripts.ui.menu
 			isFileNewMenuIsEnabled = false;
             disableMenuOptions();
 			disableNewFileMenuOptions();
+			
+			// generate initial source control menu
+			updateMenuOptionsInMenuSourceControl(null);
 		}
 
 		private function refreshMenuStateHandler(event:Event):void
@@ -244,6 +247,7 @@ package actionScripts.ui.menu
 		{
 			disableNewFileMenuOptions();
 			updateMenuOptionsInMenuProject(event.project);
+			updateMenuOptionsInMenuSourceControl(event.project);
 			disableMenuOptions();
 		}
 
@@ -361,6 +365,30 @@ package actionScripts.ui.menu
 					if (projectMenus)
 					{
 						addMenus(projectMenus, menuItem.submenu);
+					}
+					break;
+				}
+			}
+		}
+		
+		private function updateMenuOptionsInMenuSourceControl(project:ProjectVO):void
+		{
+			var resourceManager:IResourceManager = ResourceManager.getInstance();
+			var projectMenuItemName:String = resourceManager.getString('resources','SOURCECONTROL');
+			var menu:Object = getMenuObject();
+			var countMenuItems:int = menu.items.length;
+			var menuItem:Object;
+			for (var i:int = 0; i < countMenuItems; i++)
+			{
+				menuItem = menu.items[i];
+				if (menuItem.label == projectMenuItemName)
+				{
+					var tmpMenus:Vector.<MenuItem> = model.flexCore.getSourceControlMenusBasedOn(project);
+					menuItem.submenu.removeAllItems();
+					
+					if (tmpMenus)
+					{
+						addMenus(tmpMenus, menuItem.submenu);
 					}
 					break;
 				}
@@ -687,6 +715,7 @@ package actionScripts.ui.menu
 		{
 			applyNewNativeMenu(windowMenus);
 			updateMenuOptionsInMenuProject(lastSelectedProjectBeforeMacDisableStateChange);
+			updateMenuOptionsInMenuSourceControl(lastSelectedProjectBeforeMacDisableStateChange);
 
 			// update menus for VE project
 			disableMenuOptions(lastSelectedProjectBeforeMacDisableStateChange);

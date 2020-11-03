@@ -45,7 +45,7 @@
 			import actionScripts.events.ProjectEvent;
 			import actionScripts.plugins.git.GitHubPlugin;
 			import actionScripts.plugins.svn.SVNPlugin;
-			import actionScripts.plugins.versionControl.VersionControlUtils;
+			import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.FileUtils;
 			import actionScripts.utils.SharedObjectUtil;

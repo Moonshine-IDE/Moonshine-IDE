@@ -110,7 +110,9 @@ package actionScripts.impls
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
 	import actionScripts.plugins.ui.editor.TourDeTextEditor;
 	import actionScripts.plugins.versionControl.VersionControlPlugin;
+	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
+	import actionScripts.plugins.versionControl.utils.VersionControlMenuUtils;
 	import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -128,6 +130,7 @@ package actionScripts.impls
 	import actionScripts.utils.Untar;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	import components.containers.DownloadNewFlexSDK;
 	import components.popup.DefineFolderAccessPopup;
@@ -395,6 +398,7 @@ package actionScripts.impls
 						"t",[Keyboard.COMMAND],
 						"t", [Keyboard.CONTROL])
 				]),
+				new MenuItem(resourceManager.getString('resources','SOURCECONTROL'),[]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
 					new MenuItem((ConstantsCoreVO.IS_MACOS && !UtilsCore.isSVNPresent()) ? "Grant Permission" : resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN),
 					new MenuItem(null),
@@ -563,6 +567,11 @@ package actionScripts.impls
 		public function getModulesFinder():IModulesFinder
 		{
 			return (new ModulesFinder());
+		}
+		
+		public function getSourceControlMenusBasedOn(project:ProjectVO):Vector.<MenuItem>
+		{
+			return VersionControlMenuUtils.getSourceControlMenuItems(project);
 		}
 	}
 }

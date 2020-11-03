@@ -48,6 +48,7 @@ package actionScripts.plugins.versionControl
 	
 	import components.popup.AddRepositoryPopup;
 	import components.popup.ManageRepositoriesPopup;
+	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 
 	public class VersionControlPlugin extends PluginBase implements ISettingsProvider
 	{
@@ -66,6 +67,7 @@ package actionScripts.plugins.versionControl
 		public function set xcodePath(value:String):void
 		{
 			_xcodePath = value;
+			VersionControlUtils.SANDBOX_XCODE_PERMITTED_PATH = xcodePath;
 		}
 		
 		override public function activate():void

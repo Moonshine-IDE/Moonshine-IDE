@@ -40,7 +40,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.model.MethodDescriptor;
-	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;

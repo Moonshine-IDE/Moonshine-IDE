@@ -31,6 +31,7 @@ package actionScripts.interfaces
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.valueObjects.FileWrapper;
+    import actionScripts.valueObjects.ProjectVO;
 
 	/**
 	 * IFlexCoreBridge
@@ -78,6 +79,7 @@ package actionScripts.interfaces
 		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
 		function getExternalEditors():ArrayCollection;
 		function getModulesFinder():IModulesFinder;
+		function getSourceControlMenusBasedOn(project:ProjectVO):Vector.<MenuItem>;
 
         /**
          *

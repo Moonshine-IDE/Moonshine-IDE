@@ -27,7 +27,7 @@ package actionScripts.plugins.svn.commands
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugins.svn.event.SVNEvent;
-	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;

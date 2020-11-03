@@ -38,7 +38,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.git.GitProcessManager;
 	import actionScripts.plugins.svn.provider.SVNStatus;
-	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.VersionControlTypes;
 	

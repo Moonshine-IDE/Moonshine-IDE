@@ -31,7 +31,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugins.core.ExternalCommandBase;
 	import actionScripts.plugins.svn.view.ServerCertificateDialog;
-	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.IContentWindowReloadable;
 	import actionScripts.utils.SharedObjectUtil;

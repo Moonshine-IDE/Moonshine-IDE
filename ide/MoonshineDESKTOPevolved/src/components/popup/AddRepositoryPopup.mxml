@@ -35,7 +35,7 @@
 			import mx.utils.UIDUtil;
 			import mx.validators.Validator;
 			
-			import actionScripts.plugins.versionControl.VersionControlUtils;
+			import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.RepositoryItemVO;

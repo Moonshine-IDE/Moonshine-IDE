@@ -38,8 +38,8 @@ package actionScripts.impls
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.interfaces.IModulesFinder;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -75,6 +75,7 @@ package actionScripts.impls
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.FileWrapper;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.URLDescriptorVO;
 	
 	import components.popup.Authentication;
@@ -451,6 +452,11 @@ package actionScripts.impls
 		}
 		
 		public function getModulesFinder():IModulesFinder
+		{
+			return null;
+		}
+		
+		public function getSourceControlMenusBasedOn(project:ProjectVO):Vector.<MenuItem>
 		{
 			return null;
 		}

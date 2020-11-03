@@ -28,7 +28,7 @@ package actionScripts.plugins.svn.commands
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugins.versionControl.VersionControlUtils;
+	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 
 	public class UpdateCommand extends SVNCommandBase
 	{

@@ -14,7 +14,7 @@
 			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.TreeMenuItemEvent;
-			import actionScripts.plugins.versionControl.VersionControlUtils;
+			import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 			import actionScripts.plugins.versionControl.event.VersionControlEvent;
 			import actionScripts.ui.renderers.RepositoryTreeItemRenderer;
 			import actionScripts.valueObjects.RepositoryItemVO;
