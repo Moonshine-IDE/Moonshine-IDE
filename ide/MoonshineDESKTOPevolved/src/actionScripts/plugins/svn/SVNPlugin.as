@@ -30,16 +30,14 @@ package actionScripts.plugins.svn
 	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.PluginManager;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
-	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.plugins.svn.provider.SubversionProvider;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
@@ -79,8 +77,7 @@ package actionScripts.plugins.svn
 			if (_svnBinaryPath != value)
 			{
 				model.svnPath = _svnBinaryPath = value;
-				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
-				if (value != "") 
+				/*if (value != "") 
 				{
 					checkOpenedProjectsIfVersioned();
 				}
@@ -88,13 +85,18 @@ package actionScripts.plugins.svn
 				{
 					removeIfAlreadyVersioned();
 					PathSetupHelperUtil.updateSVNPath(null);
-				}
+				}*/
 			}
 		}
 		
 		private var checkoutWindow:SourceControlCheckout;
 		private var failedMethodObjectBeforeAuth:Array;
 		private var pathSetting:PathSetting;
+		
+		public function SVNPlugin()
+		{
+			PluginManager.getInstance().registerPlugin(this);
+		}
 		
 		override public function activate():void
 		{
@@ -135,11 +137,20 @@ package actionScripts.plugins.svn
 		{
 			onSettingsClose();
 			pathSetting = new PathSetting(this,'svnBinaryPath', 'SVN Binary', false, svnBinaryPath);
-			pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
-			setUsualMessage();
+			
+			// able to edit on Windows only
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
+				setUsualMessage();
+			}
+			else
+			{
+				pathSetting.editable = false;
+			}
 			
 			return Vector.<ISetting>([
-				new PathSetting(this,'svnBinaryPath', 'SVN Binary', false, svnBinaryPath)
+				pathSetting
 			]);
 		}
 		
@@ -150,6 +161,11 @@ package actionScripts.plugins.svn
 				pathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected);
 				pathSetting = null;
 			}
+		}
+		
+		public function setPathMessage(value:String):void
+		{
+			if (pathSetting) pathSetting.setMessage(value, AbstractSetting.MESSAGE_IMPORTANT);
 		}
 		
 		private function onSDKPathSelected(event:Event):void
@@ -173,8 +189,6 @@ package actionScripts.plugins.svn
 		private function setUsualMessage():void
 		{
 			var svnMessage:String = "SVN binary needs to be command-line compliant";
-			if (ConstantsCoreVO.IS_MACOS) svnMessage += "\nFor most users, it will be easier to set this with \"Subversion > Grant Permission\"";
-			
 			pathSetting.setMessage(svnMessage, AbstractSetting.MESSAGE_IMPORTANT);
 		}
 		
@@ -318,11 +332,6 @@ package actionScripts.plugins.svn
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
 			provider.update(model.activeProject.folderLocation.fileBridge.getFile as File, user, password, model.activeProject.isTrustServerCertificateSVN);
-		}
-		
-		protected function isVersioned(folder:FileLocation):Boolean
-		{
-			return folder.fileBridge.resolvePath(".svn/wc.db").fileBridge.exists;
 		}
 	}
 }

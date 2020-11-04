@@ -214,8 +214,6 @@ package actionScripts.ui.menu
 				dispatcher.addEventListener(CHANGE_MENU_MAC_DISABLE_STATE, onMacDisableStateChange);
 				dispatcher.addEventListener(CHANGE_MENU_MAC_NO_MENU_STATE, onMacNoMenuStateChange);
 				dispatcher.addEventListener(CHANGE_MENU_MAC_ENABLE_STATE, onMacEnableStateChange);
-				dispatcher.addEventListener(CHANGE_GIT_CLONE_PERMISSION_LABEL, onGitClonePermissionChange);
-				dispatcher.addEventListener(CHANGE_SVN_CHECKOUT_PERMISSION_LABEL, onSVNCheckoutPermissionChange);
 			}
 
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
@@ -719,26 +717,6 @@ package actionScripts.ui.menu
 
 			// update menus for VE project
 			disableMenuOptions(lastSelectedProjectBeforeMacDisableStateChange);
-		}
-		
-		private function onGitClonePermissionChange(event:Event):void
-		{
-			var menu:Object = getMenuObject();
-			if (!menu) return;
-
-			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
-			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[7].submenu.items[0];
-			subItemsInItemOfTopMenu.label = UtilsCore.isGitPresent() ? "Manage Repositories" : "Grant Permission";
-		}
-		
-		private function onSVNCheckoutPermissionChange(event:Event):void
-		{
-			var menu:Object = getMenuObject();
-			if (!menu) return;
-
-			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
-			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[6].submenu.items[0];
-			subItemsInItemOfTopMenu.label = UtilsCore.isSVNPresent() ? "Manage Repositories" : "Grant Permission";
 		}
 
 		protected function createNewMenu():*

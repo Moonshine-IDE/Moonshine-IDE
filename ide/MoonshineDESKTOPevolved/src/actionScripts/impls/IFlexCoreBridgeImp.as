@@ -110,9 +110,9 @@ package actionScripts.impls
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
 	import actionScripts.plugins.ui.editor.TourDeTextEditor;
 	import actionScripts.plugins.versionControl.VersionControlPlugin;
-	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.plugins.versionControl.utils.VersionControlMenuUtils;
+	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -244,11 +244,10 @@ package actionScripts.impls
 				HTMLSyntaxPlugin,
 				MXMLSyntaxPlugin,
 				XMLSyntaxPlugin,
+				VersionControlPlugin,
 				OrganizeImportsPlugin,
 				SplashScreenPlugin,
 				CleanProject,
-				VersionControlPlugin,
-				SVNPlugin,
 				DebugAdapterPlugin,
 				SaveFilesPlugin,
 				OutlinePlugin,
@@ -259,7 +258,6 @@ package actionScripts.impls
 				StartupHelperPlugin,
 				RenamePlugin,
 				Away3DPlugin,
-				GitHubPlugin,
 				HiddenFilesPlugin,
                 JavaScriptPlugin,
 				DominoPlugin,
@@ -274,7 +272,7 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
+					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, GitHubPlugin, SVNPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
 					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin];
 		}
 		

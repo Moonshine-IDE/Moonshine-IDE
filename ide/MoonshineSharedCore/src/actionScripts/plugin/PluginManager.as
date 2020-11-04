@@ -28,6 +28,8 @@ package actionScripts.plugin
 
     public class PluginManager
     {
+		private static var instance:PluginManager;
+		
 		private var model:IDEModel = IDEModel.getInstance();
 		
         // Core plugins
@@ -39,9 +41,10 @@ package actionScripts.plugin
         private var settingsPlugin:SettingsPlugin;
         private var pendingPlugMenuItems:Vector.<MenuItem> = new Vector.<MenuItem>();
 
-        public function PluginManager()
+		public static function getInstance():PluginManager
         {
-            model = IDEModel.getInstance();
+			if (!instance) instance = new PluginManager(); 
+			return instance;
         }
 
         public function setupPlugins():void

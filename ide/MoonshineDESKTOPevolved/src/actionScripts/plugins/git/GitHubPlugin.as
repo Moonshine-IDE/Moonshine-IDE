@@ -33,8 +33,8 @@ package actionScripts.plugins.git
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.ProjectEvent;
-	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.PluginManager;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
@@ -80,7 +80,7 @@ package actionScripts.plugins.git
 	import components.popup.GitXCodePermissionPopup;
 	import components.popup.SourceControlCheckout;
 	
-    public class GitHubPlugin extends PluginBase implements IPlugin, ISettingsProvider
+    public class GitHubPlugin extends PluginBase implements ISettingsProvider
 	{
 		public static const CLONE_REQUEST:String = "gutCloneRequest";
 		public static const CHECKOUT_REQUEST:String = "gitCheckoutRequestEvent";
@@ -108,7 +108,6 @@ package actionScripts.plugins.git
 			if (_gitBinaryPathOSX != value)
 			{
 				model.gitPath = _gitBinaryPathOSX = value;
-				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
 			}
 		}
 		
@@ -125,6 +124,11 @@ package actionScripts.plugins.git
 		private var gitNewBranchWindow:GitNewBranchPopup;
 		private var isStartupTest:Boolean;
 		private var pathSetting:PathSetting;
+		
+		public function GitHubPlugin()
+		{
+			PluginManager.getInstance().registerPlugin(this);
+		}
 		
 		override public function activate():void
 		{
@@ -194,9 +198,18 @@ package actionScripts.plugins.git
 		public function getSettingsList():Vector.<ISetting>
 		{
 			onSettingsClose();
+			
 			pathSetting = new PathSetting(this,'gitBinaryPathOSX', 'Git Binary', false, gitBinaryPathOSX, false);
-			pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
-			setUsualMessage();
+			
+			// able to edit on Windows only
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				pathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected, false, 0, true);
+			}
+			else
+			{
+				pathSetting.editable = false;
+			}
 			
 			return Vector.<ISetting>([
 				pathSetting
@@ -223,18 +236,6 @@ package actionScripts.plugins.git
 				{
 					pathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
 				}
-				else
-				{
-					setUsualMessage();
-				}
-			}
-		}
-		
-		private function setUsualMessage():void
-		{
-			if (ConstantsCoreVO.IS_MACOS) 
-			{
-				pathSetting.setMessage("For most users, it will be easier to set this with \"Git > Grant Permission\"", AbstractSetting.MESSAGE_IMPORTANT);
 			}
 		}
 		
@@ -253,6 +254,11 @@ package actionScripts.plugins.git
 			if (gitAuthWindow) gitAuthWindow.isGitAvailable = isGitAvailable;
 			if (gitBranchSelectionWindow) gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
 			if (gitNewBranchWindow) gitNewBranchWindow.isGitAvailable = isGitAvailable;
+		}
+		
+		public function setPathMessage(value:String):void
+		{
+			if (pathSetting) pathSetting.setMessage(value, AbstractSetting.MESSAGE_IMPORTANT);
 		}
 		
 		private function checkGitAvailability():void

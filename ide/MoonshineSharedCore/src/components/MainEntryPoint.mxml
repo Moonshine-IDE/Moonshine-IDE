@@ -91,7 +91,7 @@
 			{
 				ConstantsCoreVO.generate();
 				
-				var pluginManager:PluginManager = new PluginManager();
+				var pluginManager:PluginManager = PluginManager.getInstance();
 				pluginManager.setupPlugins();
 			}
 			

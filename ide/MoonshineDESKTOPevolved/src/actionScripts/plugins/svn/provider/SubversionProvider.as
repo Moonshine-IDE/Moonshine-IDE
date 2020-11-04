@@ -29,7 +29,6 @@ package actionScripts.plugins.svn.provider
 	import actionScripts.plugins.svn.commands.LoadRemoteListCommand;
 	import actionScripts.plugins.svn.commands.RepositoryTestCommand;
 	import actionScripts.plugins.svn.commands.UpdateCommand;
-	import actionScripts.plugins.svn.event.SVNEvent;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	

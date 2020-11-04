@@ -38,26 +38,32 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.svn.SVNPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
+	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.ui.menu.MenuPlugin;
+	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ComponentTypes;
+	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.AddRepositoryPopup;
 	import components.popup.ManageRepositoriesPopup;
-	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 
 	public class VersionControlPlugin extends PluginBase implements ISettingsProvider
 	{
-		override public function get name():String			{ return "Version Control"; }
+		override public function get name():String			{ return "Source Control"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String	{ return "Version Controls' Manager Plugin"; }
+		override public function get description():String	{ return "Source Controls' Manager Plugin"; }
 		
 		private var addRepositoryWindow:AddRepositoryPopup;
 		private var manageRepoWindow:ManageRepositoriesPopup;
+		
+		protected var gitPlugin:GitHubPlugin;
+		protected var svnPlugin:SVNPlugin;
 		
 		private var _xcodePath:String;
 		public function get xcodePath():String
@@ -68,11 +74,15 @@ package actionScripts.plugins.versionControl
 		{
 			_xcodePath = value;
 			VersionControlUtils.SANDBOX_XCODE_PERMITTED_PATH = xcodePath;
+			updateOtherPaths();
 		}
 		
 		override public function activate():void
 		{
 			super.activate();
+			
+			gitPlugin = new GitHubPlugin();
+			svnPlugin = new SVNPlugin();
 			
 			dispatcher.addEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN, handleOpenManageRepositories, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT, handleOpenManageRepositories, false, 0, true);
@@ -94,9 +104,21 @@ package actionScripts.plugins.versionControl
 		{
 			onSettingsClose();
 			
-			return Vector.<ISetting>([
-				new PathSetting(this,'xcodePath', 'XCode-Command-line', true, xcodePath, false)
-			]);
+			var baseSettings:Vector.<ISetting>;
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				var tmpPathSetting:PathSetting = new PathSetting(this,'xcodePath', 'XCode/CommandLineTools', true, xcodePath, false);
+				tmpPathSetting.setMessage("Git and Subversion paths shall be calculated on based this", AbstractSetting.MESSAGE_IMPORTANT);
+				
+				baseSettings = Vector.<ISetting>([
+					tmpPathSetting
+				]);
+			}
+			
+			if (gitPlugin) baseSettings = baseSettings.concat(gitPlugin.getSettingsList());
+			if (svnPlugin) baseSettings = baseSettings.concat(svnPlugin.getSettingsList());
+			
+			return baseSettings
 		}
 		
 		//--------------------------------------------------------------------------
@@ -143,6 +165,54 @@ package actionScripts.plugins.versionControl
 		protected function onCloseRepoWindowFromSomewhereElse(event:VersionControlEvent):void
 		{
 			onManageRepoWindowClosed(null);
+		}
+		
+		protected function updateOtherPaths():void
+		{
+			if (!xcodePath)
+			{
+				if (gitPlugin) gitPlugin.gitBinaryPathOSX = null;
+				if (svnPlugin) svnPlugin.svnBinaryPath = null;
+				return;
+			}
+			
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				var tmpComponent:ComponentVO;
+				var isValidSDKPath:Boolean;
+				if (gitPlugin) 
+				{
+					tmpComponent = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
+					if (tmpComponent)
+					{
+						isValidSDKPath = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_GIT, xcodePath, tmpComponent.pathValidation);
+						if (isValidSDKPath)
+						{
+							gitPlugin.gitBinaryPathOSX = xcodePath +"/"+ tmpComponent.pathValidation;
+						}
+						else
+						{
+							gitPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".");
+						}
+					}
+				}
+				if (svnPlugin) 
+				{
+					tmpComponent = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
+					if (tmpComponent)
+					{
+						isValidSDKPath = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_SVN, xcodePath, tmpComponent.pathValidation);
+						if (isValidSDKPath)
+						{
+							svnPlugin.svnBinaryPath = xcodePath +"/"+ tmpComponent.pathValidation;
+						}
+						else
+						{
+							svnPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".");
+						}
+					}
+				}
+			}
 		}
 		
 		//--------------------------------------------------------------------------
