@@ -10,7 +10,6 @@ package actionScripts.plugins.versionControl.utils
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.valueObjects.VersionControlTypes;
 
 	public class VersionControlMenuUtils
 	{
@@ -20,11 +19,11 @@ package actionScripts.plugins.versionControl.utils
 		{
 			var baseMenu:Vector.<MenuItem> = getBaseMenuItems();
 			
-			if (project && project.hasVersionControlType && (project.hasVersionControlType == VersionControlTypes.GIT))
+			if (project && (project.menuType.indexOf(ProjectMenuTypes.GIT_PROJECT) != -1))
 			{
 				return getGitMenuItems(baseMenu);
 			}
-			else if (project && project.hasVersionControlType && (project.hasVersionControlType == VersionControlTypes.SVN))
+			else if (project && (project.menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) != -1))
 			{
 				return getSVNMenuItems(baseMenu);
 			}
