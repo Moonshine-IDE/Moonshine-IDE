@@ -61,6 +61,7 @@ package actionScripts.plugins.versionControl
 		
 		private var addRepositoryWindow:AddRepositoryPopup;
 		private var manageRepoWindow:ManageRepositoriesPopup;
+		private var xcodePathSetting:PathSetting;
 		
 		protected var gitPlugin:GitHubPlugin;
 		protected var svnPlugin:SVNPlugin;
@@ -72,9 +73,12 @@ package actionScripts.plugins.versionControl
 		}
 		public function set xcodePath(value:String):void
 		{
-			_xcodePath = value;
-			VersionControlUtils.SANDBOX_XCODE_PERMITTED_PATH = xcodePath;
-			updateOtherPaths();
+			if (_xcodePath != value)
+			{
+				_xcodePath = value;
+				VersionControlUtils.SANDBOX_XCODE_PERMITTED_PATH = xcodePath;
+				updateOtherPaths();
+			}
 		}
 		
 		override public function activate():void
@@ -100,6 +104,15 @@ package actionScripts.plugins.versionControl
 			dispatcher.removeEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories);
 		}
 		
+		override public function onSettingsClose():void
+		{
+			if (xcodePathSetting)
+			{
+				xcodePathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onXCodePathSelected);
+				xcodePathSetting = null;
+			}
+		}
+		
 		public function getSettingsList():Vector.<ISetting>
 		{
 			onSettingsClose();
@@ -107,11 +120,12 @@ package actionScripts.plugins.versionControl
 			var baseSettings:Vector.<ISetting> = new Vector.<ISetting>();
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				var tmpPathSetting:PathSetting = new PathSetting(this,'xcodePath', 'XCode/CommandLineTools', true, xcodePath, false);
-				tmpPathSetting.setMessage("Git and Subversion paths shall be calculated on based this", AbstractSetting.MESSAGE_IMPORTANT);
+				xcodePathSetting = new PathSetting(this,'xcodePath', 'XCode/CommandLineTools', true, xcodePath, false);
+				xcodePathSetting.setMessage("Git and Subversion paths shall be calculated on based this", AbstractSetting.MESSAGE_IMPORTANT);
+				xcodePathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onXCodePathSelected, false, 0, true);
 				
 				baseSettings = baseSettings.concat(Vector.<ISetting>([
-					tmpPathSetting
+					xcodePathSetting
 				]));
 			}
 			
@@ -340,6 +354,11 @@ package actionScripts.plugins.versionControl
 			}
 			
 			return true;
+		}
+		
+		private function onXCodePathSelected(event:Event):void
+		{
+			xcodePath = xcodePathSetting.stringValue;
 		}
 		
 		protected function isVersioned(folder:FileLocation):Boolean
