@@ -38,6 +38,7 @@ package actionScripts.plugins.git
 	import actionScripts.plugin.PluginManager;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.renderers.PathRenderer;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
@@ -262,6 +263,16 @@ package actionScripts.plugins.git
 		public function setPathMessage(value:String):void
 		{
 			if (pathSetting) pathSetting.setMessage(value, AbstractSetting.MESSAGE_IMPORTANT);
+		}
+		
+		public function updatePathSetting():void
+		{
+			if (pathSetting)
+			{
+				// for some reason {stringValue} not updates automatically
+				// to its binding label
+				pathSetting.stringValue = (pathSetting.renderer as PathRenderer).lblValue.text = gitBinaryPathOSX;
+			}
 		}
 		
 		private function checkGitAvailability():void
