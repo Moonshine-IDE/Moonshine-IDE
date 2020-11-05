@@ -33,6 +33,7 @@ package actionScripts.plugins.git
 	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.SettingsEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.PluginManager;
 	import actionScripts.plugin.settings.ISettingsProvider;
@@ -148,6 +149,7 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			
 			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
+			dispatcher.addEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved, false, 0, true);
 			
 			isStartupTest = true;
 			if (checkOSXGitAccess()) 
@@ -174,6 +176,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			
 			model.projects.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged);
+			dispatcher.removeEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved);
 		}
 		
 		override public function resetSettings():void
@@ -279,6 +282,17 @@ package actionScripts.plugins.git
 		private function onXCodeAccessRequestBySVN(event:Event):void
 		{
 			checkOSXGitAccess(ProjectMenuTypes.SVN_PROJECT);
+		}
+		
+		private function onSettingsSaved(event:SettingsEvent):void
+		{
+			if (pathSetting)
+			{
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, NAMESPACE, Vector.<ISetting>([
+						pathSetting
+					])));
+			}
 		}
 		
 		protected function onOSXodePermission(event:VersionControlEvent):void

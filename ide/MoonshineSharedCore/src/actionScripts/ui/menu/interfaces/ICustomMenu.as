@@ -62,6 +62,8 @@ package actionScripts.ui.menu.interfaces
 
 
 		function getItemIndex(item:ICustomMenuItem):int
+		
+		function removeAllItems():void
 
 	}
 }

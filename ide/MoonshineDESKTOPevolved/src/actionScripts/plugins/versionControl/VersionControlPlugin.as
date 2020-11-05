@@ -104,15 +104,15 @@ package actionScripts.plugins.versionControl
 		{
 			onSettingsClose();
 			
-			var baseSettings:Vector.<ISetting>;
+			var baseSettings:Vector.<ISetting> = new Vector.<ISetting>();
 			if (ConstantsCoreVO.IS_MACOS)
 			{
 				var tmpPathSetting:PathSetting = new PathSetting(this,'xcodePath', 'XCode/CommandLineTools', true, xcodePath, false);
 				tmpPathSetting.setMessage("Git and Subversion paths shall be calculated on based this", AbstractSetting.MESSAGE_IMPORTANT);
 				
-				baseSettings = Vector.<ISetting>([
+				baseSettings = baseSettings.concat(Vector.<ISetting>([
 					tmpPathSetting
-				]);
+				]));
 			}
 			
 			if (gitPlugin) baseSettings = baseSettings.concat(gitPlugin.getSettingsList());
@@ -169,6 +169,8 @@ package actionScripts.plugins.versionControl
 		
 		protected function updateOtherPaths():void
 		{
+			if (!ConstantsCoreVO.IS_MACOS) return;
+			
 			if (!xcodePath)
 			{
 				if (gitPlugin) gitPlugin.gitBinaryPathOSX = null;
@@ -176,40 +178,31 @@ package actionScripts.plugins.versionControl
 				return;
 			}
 			
-			if (ConstantsCoreVO.IS_MACOS)
+			var tmpComponent:ComponentVO;
+			var isValidSDKPath:Boolean;
+			if (gitPlugin) 
 			{
-				var tmpComponent:ComponentVO;
-				var isValidSDKPath:Boolean;
-				if (gitPlugin) 
+				tmpComponent = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
+				if (tmpComponent)
 				{
-					tmpComponent = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
-					if (tmpComponent)
+					isValidSDKPath = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_GIT, xcodePath, tmpComponent.pathValidation);
+					gitPlugin.gitBinaryPathOSX = xcodePath +"/"+ tmpComponent.pathValidation;
+					if (!isValidSDKPath)
 					{
-						isValidSDKPath = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_GIT, xcodePath, tmpComponent.pathValidation);
-						if (isValidSDKPath)
-						{
-							gitPlugin.gitBinaryPathOSX = xcodePath +"/"+ tmpComponent.pathValidation;
-						}
-						else
-						{
-							gitPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".");
-						}
+						gitPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".");
 					}
 				}
-				if (svnPlugin) 
+			}
+			if (svnPlugin) 
+			{
+				tmpComponent = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
+				if (tmpComponent)
 				{
-					tmpComponent = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
-					if (tmpComponent)
+					isValidSDKPath = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_SVN, xcodePath, tmpComponent.pathValidation);
+					svnPlugin.svnBinaryPath = xcodePath +"/"+ tmpComponent.pathValidation;
+					if (!isValidSDKPath)
 					{
-						isValidSDKPath = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_SVN, xcodePath, tmpComponent.pathValidation);
-						if (isValidSDKPath)
-						{
-							svnPlugin.svnBinaryPath = xcodePath +"/"+ tmpComponent.pathValidation;
-						}
-						else
-						{
-							svnPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".");
-						}
+						svnPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".");
 					}
 				}
 			}

@@ -109,6 +109,7 @@ package actionScripts.plugins.svn
 			dispatcher.addEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 			dispatcher.addEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			dispatcher.addEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
+			dispatcher.addEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -122,6 +123,7 @@ package actionScripts.plugins.svn
 			dispatcher.removeEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
 			dispatcher.removeEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			dispatcher.removeEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
+			dispatcher.removeEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved);
 		}
 		
 		override public function resetSettings():void
@@ -332,6 +334,17 @@ package actionScripts.plugins.svn
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
 			provider.update(model.activeProject.folderLocation.fileBridge.getFile as File, user, password, model.activeProject.isTrustServerCertificateSVN);
+		}
+		
+		private function onSettingsSaved(event:SettingsEvent):void
+		{
+			if (pathSetting)
+			{
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, NAMESPACE, Vector.<ISetting>([
+						pathSetting
+					])));
+			}
 		}
 	}
 }

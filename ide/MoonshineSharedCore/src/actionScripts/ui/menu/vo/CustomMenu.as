@@ -81,18 +81,19 @@ package actionScripts.ui.menu.vo
 
 			return item;
 		}
+		
 		public function addSubmenu(submenu:ICustomMenu, label:String=null):ICustomMenuItem
 		{
 			return addItem(new CustomMenuItem(label||submenu.label,false,{
 				data:submenu
 			}));
 		}
+		
 		public function addSubMenuAt(submenu:ICustomMenu, index:int, label:String=null):ICustomMenuItem
 		{
 			return addItemAt(new CustomMenuItem(label || submenu.label,false,{
 				data:submenu
 			}),index);
-			
 		}
 		
 		public function containsItem(item:ICustomMenuItem):Boolean
@@ -137,6 +138,11 @@ package actionScripts.ui.menu.vo
 			items.splice(index, 1);
 
 			return removedItem;
+		}
+		
+		public function removeAllItems():void
+		{
+			_items = new Vector.<ICustomMenuItem>();
 		}
 
 		public function get menu():ICustomMenu
