@@ -38,7 +38,7 @@ package actionScripts.plugin.references
 
 	public class ReferencesPlugin extends PluginBase
 	{
-		public static const EVENT_OPEN_FIND_REFERENCES_VIEW:String = "openFindReferencesView";
+		public static const EVENT_OPEN_GO_TO_REFERENCES_VIEW:String = "openGoToReferencesView";
 		
 		public function ReferencesPlugin()
 		{
@@ -60,7 +60,7 @@ package actionScripts.plugin.references
 		{
 			super.activate();
 			referencesView.addEventListener(ReferencesView.EVENT_OPEN_SELECTED_REFERENCE, handleOpenSelectedReference);
-			dispatcher.addEventListener(EVENT_OPEN_FIND_REFERENCES_VIEW, handleOpenFindReferencesView);
+			dispatcher.addEventListener(EVENT_OPEN_GO_TO_REFERENCES_VIEW, handleOpenFindReferencesView);
 			dispatcher.addEventListener(ReferencesEvent.EVENT_SHOW_REFERENCES, handleShowReferences);
 		}
 
@@ -68,7 +68,7 @@ package actionScripts.plugin.references
 		{
 			super.deactivate();
 			referencesView.removeEventListener(ReferencesView.EVENT_OPEN_SELECTED_REFERENCE, handleOpenSelectedReference);
-			dispatcher.removeEventListener(EVENT_OPEN_FIND_REFERENCES_VIEW, handleOpenFindReferencesView);
+			dispatcher.removeEventListener(EVENT_OPEN_GO_TO_REFERENCES_VIEW, handleOpenFindReferencesView);
 			dispatcher.removeEventListener(ReferencesEvent.EVENT_SHOW_REFERENCES, handleShowReferences);
 		}
 
@@ -84,7 +84,7 @@ package actionScripts.plugin.references
 			var startChar:int = editor.editor.startPos;
 			var endLine:int = editor.editor.model.selectedLineIndex;
 			var endChar:int = editor.editor.model.caretIndex;
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_FIND_REFERENCES,
+			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_GO_TO_REFERENCES,
 				editor.currentFile.fileBridge.url, startChar, startLine, endChar, endLine));
 		}
 

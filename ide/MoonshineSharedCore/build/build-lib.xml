@@ -306,7 +306,7 @@
 			<arg value="/DTIMESTAMP=${timestamp.time}"/>
 			<arg value="nsis-build.nsi"/>
 		</exec>
-		<echo># Signed Process Running - Signing Installer</echo>
+		<echo># Signed Process Running - Signing Installer: ${certSignedWindowsBinary}</echo>
 		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/f"/>
@@ -525,24 +525,26 @@
 				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
 							<replacevalue><![CDATA[<string>Icon.icns</string>
+					<key>ITSAppUsesNonExemptEncryption</key><false/>
 					<key>CFBundleName</key>
 					<string>MoonshineDevelopment</string>
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>54.0</string>]]></replacevalue>
+					<string>60.0</string>]]></replacevalue>
 				</replace>
 			</then>
 			<else>
 				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
 							<replacevalue><![CDATA[<string>Icon.icns</string>
+					<key>ITSAppUsesNonExemptEncryption</key><false/>
 					<key>CFBundleName</key>
 					<string>Moonshine</string>
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>54.0</string>]]></replacevalue>
+					<string>60.0</string>]]></replacevalue>
 				</replace>
 			</else>			
 		</if>
@@ -614,7 +616,6 @@
 			<arg value="-c"/>
 			<arg value='rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/A2712Enabler'/>
 		</exec>
-
 		<!--exec executable="bash">
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64'/>
@@ -639,6 +640,18 @@
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
 		</exec>
+		<!-- @devsena: Node-modules files signing -->
+		<for param="file">
+		  <path>
+		    <fileset dir="${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin" includes="**/deasync.node"/>
+		  </path>
+		  <sequential>
+		  	<exec executable="bash">
+  				<arg value="-c"/>
+  				<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" @{file}'/>
+  			</exec>
+		  </sequential>
+		</for>
 		<!-- @devsena: Duplicate a copy of the app file to be use in upcoming non-sandbox packaging process with different entitlement -->
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
@@ -740,7 +753,7 @@
 		</copy>
 		
 		<antcall target="copyElementsFolder"/>
-
+		
 		<!-- Check if the self-signed certificate exists -->
 		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
 		<if>

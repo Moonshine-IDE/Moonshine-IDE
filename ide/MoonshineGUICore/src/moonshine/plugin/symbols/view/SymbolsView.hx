@@ -34,6 +34,7 @@ import feathers.layout.VerticalLayoutData;
 import feathers.utils.DisplayObjectRecycler;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
+import openfl.Lib;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
 
@@ -49,11 +50,14 @@ class SymbolsView extends ResizableTitleWindow {
 		this.minHeight = 300.0;
 		this.closeEnabled = true;
 		this.resizeEnabled = true;
+
+		this.addEventListener(Event.REMOVED_FROM_STAGE, symbolsView_removedFromStageHandler);
 	}
 
 	private var searchFieldTextInput:TextInput;
 	private var resultsListView:ListView;
 	private var openSymbolButton:Button;
+	private var queryChangeTimeoutID:Int = -1;
 
 	private var _query:String = "";
 
@@ -67,6 +71,10 @@ class SymbolsView extends ResizableTitleWindow {
 	private function set_query(value:String):String {
 		if (this._query == value) {
 			return this._query;
+		}
+		if (this.queryChangeTimeoutID != -1) {
+			Lib.clearTimeout(queryChangeTimeoutID);
+			this.queryChangeTimeoutID = -1;
 		}
 		this._query = value;
 		this.setInvalid(InvalidationFlag.DATA);
@@ -174,9 +182,28 @@ class SymbolsView extends ResizableTitleWindow {
 		super.update();
 	}
 
+	private function startOrResetQueryChangeTimer():Void {
+		if (this.queryChangeTimeoutID != -1) {
+			// we want to "debounce" this event, so reset the timer
+			Lib.clearTimeout(queryChangeTimeoutID);
+			this.queryChangeTimeoutID = -1;
+		}
+		this.queryChangeTimeoutID = Lib.setTimeout(() -> {
+			this.dispatchEvent(new Event(EVENT_QUERY_CHANGE));
+		}, 150);
+	}
+
+	private function symbolsView_removedFromStageHandler(event:Event):Void {
+		if (this.queryChangeTimeoutID != -1) {
+			Lib.clearTimeout(queryChangeTimeoutID);
+			this.queryChangeTimeoutID = -1;
+		}
+	}
+
 	private function searchFieldTextInput_changeHandler(event:Event):Void {
-		// use the setter so that the event is dispatched
-		this.query = this.searchFieldTextInput.text;
+		// set the variable so that the event isn't dispatched right away
+		this._query = this.searchFieldTextInput.text;
+		this.startOrResetQueryChangeTimer();
 	}
 
 	private function resultsListView_changeHandler(event:Event):Void {

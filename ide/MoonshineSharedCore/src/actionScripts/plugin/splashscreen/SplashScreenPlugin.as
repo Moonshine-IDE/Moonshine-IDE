@@ -120,7 +120,7 @@ package actionScripts.plugin.splashscreen
 			var specialTemplates:Array = ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS.source.filter(filterProjectsTemplates);
 
 			var fullCollection:ArrayCollection = new ArrayCollection(templates.concat(specialTemplates));
-			UtilsCore.sortCollection(fullCollection, ["title"]);
+			UtilsCore.sortCollection(fullCollection, ["homeTitle"]);
 			
 			return fullCollection;
 		}

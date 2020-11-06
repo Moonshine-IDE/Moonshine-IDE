@@ -126,6 +126,11 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		protected function compileModule():void
 		{
+			if (!modulesQueue || (compileFunctionForMainApplication == null))
+			{
+				return;
+			}
+			
 			if (modulesQueue.length != 0)
 			{
 				currentModule = modulesQueue.shift() as FlashModuleVO;

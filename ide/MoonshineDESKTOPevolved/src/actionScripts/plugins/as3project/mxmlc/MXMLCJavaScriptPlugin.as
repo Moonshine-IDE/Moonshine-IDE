@@ -713,6 +713,7 @@ package actionScripts.plugins.as3project.mxmlc
         private function startDebugAdapter(project:AS3ProjectVO, debug:Boolean):void
         {
 			var url:String = getUrlToLaunch(project);
+			notice("Opening to URL: "+ url); 
 
 			var debugAdapterType:String = null;
 			for(var i:int = 0; i < ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.length; i++)
@@ -745,7 +746,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			var as3Project:AS3ProjectVO = currentProject as AS3ProjectVO;
 
-			if(!debugAfterBuild && !UtilsCore.isNodeAvailable())
+			if(!debugAfterBuild && (!UtilsCore.isNodeAvailable() || ConstantsCoreVO.IS_APP_STORE_VERSION))
 			{
 				//the HTTP server and the debug adapter both require Node.js.
 				//it's not ideal, but if Node.js is not available and the user
