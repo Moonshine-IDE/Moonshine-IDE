@@ -30,9 +30,9 @@ package actionScripts.impls
 	{
 		protected var nativeMenuItem:NativeMenuItemMoonshine;
 		
-		public function createMenu(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null):void
+		public function createMenu(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null, isDefaultEnabled:Boolean=true):void
 		{
-			nativeMenuItem = new NativeMenuItemMoonshine(label, isSeparator);
+			nativeMenuItem = new NativeMenuItemMoonshine(label, isSeparator, isDefaultEnabled);
 			nativeMenuItem.enableTypes = enableTypes;
 		}
 	

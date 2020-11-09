@@ -25,12 +25,12 @@ package actionScripts.factory
 	{
 		public var item:INativeMenuItemBridge;
 		
-		public function NativeMenuItemLocation(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null)
+		public function NativeMenuItemLocation(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null, isDefaultEnabled:Boolean=true)
 		{
 			// ** IMPORTANT **
 			var obj:Object = BridgeFactory.getNativeMenuItemInstance();
 			item = new obj();
-			item.createMenu(label, isSeparator, listener, enableTypes);
+			item.createMenu(label, isSeparator, listener, enableTypes, isDefaultEnabled);
 		}
 	}
 }

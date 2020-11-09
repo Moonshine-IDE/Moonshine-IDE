@@ -418,7 +418,7 @@ package actionScripts.ui.menu
 					}
 					else if (!menuItem.enableTypes)
 					{
-						menuItem.enabled = true;
+						menuItem.enabled = menuItem.isDefaultEnabled ? true : false;
 					}
 					else if (currentProject && menuItem.enableTypes) 
 					{
@@ -428,7 +428,7 @@ package actionScripts.ui.menu
 							return currentProject.menuType.indexOf(item) != -1;
 						});
 						
-						menuItem.enabled = enable;
+						menuItem.enabled = menuItem.isDefaultEnabled ? enable : false;
 					}
 				}
 				
@@ -732,7 +732,7 @@ package actionScripts.ui.menu
 			if (buildingNativeMenu)
 			{
 				// in case of AIR
-				nativeMenuItem = new NativeMenuItemLocation(item.label, item.isSeparator, null, item.enableTypes);
+				nativeMenuItem = new NativeMenuItemLocation(item.label, item.isSeparator, null, item.enableTypes, item.isDefaultEnabled);
 				if (item[Settings.os + "_key"])
 					nativeMenuItem.item.keyEquivalent = item[Settings.os + "_key"];
 				if (item[Settings.os + "_mod"])

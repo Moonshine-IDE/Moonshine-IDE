@@ -23,7 +23,7 @@ package actionScripts.interfaces
 
 	public interface INativeMenuItemBridge
 	{
-		function createMenu(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null):void;
+		function createMenu(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null, isDefaultEnabled:Boolean=true):void;
 		
 		function get keyEquivalent():String;
 		function set keyEquivalent(value:String):void;

@@ -31,10 +31,12 @@ package actionScripts.vo
 	{
 		public var enableTypes:Array;
 		public var dynamicItem:Boolean;
+		public var isDefaultEnabled:Boolean;
 
-		public function NativeMenuItemMoonshine(label:String="", isSeparator:Boolean=false)
+		public function NativeMenuItemMoonshine(label:String="", isSeparator:Boolean=false, isDefaultEnabled:Boolean=true)
 		{
 			super(label, isSeparator);
+			this.isDefaultEnabled = isDefaultEnabled;
 		}
 	}
 }

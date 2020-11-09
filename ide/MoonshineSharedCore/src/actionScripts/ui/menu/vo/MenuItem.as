@@ -43,13 +43,15 @@ package actionScripts.ui.menu.vo
 		public var parents:Array;
 		public var enableTypes:Array;
 		public var dynamicItem:Boolean;
+		public var isDefaultEnabled:Boolean;
 
 		public function MenuItem(label:String , items:Array=null, enableTypes:Array=null, 
 								 event:String=null,
 								 mac_key:*=null, mac_mod:Array=null,
 								 win_key:*=null, win_mod:Array=null,
 								 lnx_key:*=null, lnx_mod:Array=null,
-								 parent:Array=null, dynamicItem:Boolean = false)
+								 parent:Array=null, dynamicItem:Boolean = false,
+								 isDefaultEnabled:Boolean = true)
 		{
 			this.label = label;
 
@@ -75,6 +77,7 @@ package actionScripts.ui.menu.vo
 			this.lnx_mod = lnx_mod;
 			
 			this.enableTypes = enableTypes;
+			this.isDefaultEnabled = isDefaultEnabled;
 
 			this.dynamicItem = dynamicItem;
 		}
