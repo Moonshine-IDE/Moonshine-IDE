@@ -117,6 +117,8 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.currentState = "flexVisualEditor";
 			}
 
+			//Alert.show("visualEditorView.currentState:"+visualEditorView.currentState);
+
 			
 			visualEditorView.visualEditorProject = visualEditorProject;
 			
@@ -450,7 +452,7 @@ package actionScripts.plugins.ui.editor
 				var filePath:String = file.fileBridge.nativePath
 						.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
 								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath)
-						.replace(/.mxml$|.xhtml$|.form$/, ".xml");
+						.replace(/.mxml$|.xhtml$|.form$|.dve$/, ".xml");
 			
 				return filePath;
 			}

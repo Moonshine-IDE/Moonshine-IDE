@@ -48,6 +48,10 @@ package actionScripts.plugin.ondiskproj
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SharedObjectConst;
+	import utils.MainApplicationCodeUtils;
+	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
 	
 	public class CreateOnDiskProject extends ConsoleOutputter
 	{
@@ -97,7 +101,7 @@ package actionScripts.plugin.ondiskproj
 			projectName = "New" + projectName.replace(/ /g, "");
 			
 			project = new OnDiskProjectVO(event.templateDir, projectName);
-			
+			//project.isDominoVisualEditorProject=true;
 			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ?
 				lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
 			project.folderLocation = new FileLocation(tmpProjectSourcePath);
@@ -215,7 +219,7 @@ package actionScripts.plugin.ondiskproj
 			
 			var view:SettingsView = event.target as SettingsView;
 			var project:OnDiskProjectVO = view.associatedData as OnDiskProjectVO;
-			
+			//project.isDominoVisualEditorProject=true;
 			//save project path in shared object
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			var tmpParent:FileLocation = project.folderLocation;
@@ -254,6 +258,7 @@ package actionScripts.plugin.ondiskproj
 		private function createFileSystemBeforeSave(pvo:OnDiskProjectVO, exportProject:OnDiskProjectVO = null):OnDiskProjectVO
 		{	
 			var templateDir:FileLocation = templateLookup[pvo];
+			//Alert.show("templateDir:"+templateDir.fileBridge.nativePath);
 			var projectName:String = pvo.projectName;
 			var sourceFileWithExtension:String = pvo.projectName + ".dve";
 			var sourcePath:String = "src" + model.fileCore.separator + "main";
@@ -293,6 +298,8 @@ package actionScripts.plugin.ondiskproj
 			th.templatingData["$addedOn"] = tmpDate.toString();
 			
 			th.projectTemplate(templateDir, targetFolder);
+			//this line will remove old .dve file and generate new dxl file template follow domino visual format.
+			fixVisualDveFileToDominoVisualTemplate(targetFolder.resolvePath(th.templatingData["$SourceFile"]),pvo.projectName)
 			
 			var projectSettingsFileName:String = projectName + ".ondiskproj";
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
@@ -304,8 +311,29 @@ package actionScripts.plugin.ondiskproj
 			}
 			
 			OnDiskExporter.export(pvo);
+
+			//pvo.isDominoVisualEditorProject=true;
+			//Alert.show(":"+pvo.isDominoVisualEditorProject)
 			
 			return pvo;
+		}
+
+
+		private function fixVisualDveFileToDominoVisualTemplate(dveFile:FileLocation,title:String):void{
+			//var dveFile:FileLocation = TemplatingHelper.getCustomFileFor(filePath);
+			var dveFilePath:String=dveFile.fileBridge.nativePath;
+			//Alert.show("dveFilePath:"+dveFilePath);
+			if (dveFile.fileBridge.exists)
+			{
+				dveFile.fileBridge.deleteFile();
+			}
+			var fileTo:File = new File(dveFilePath);
+			//create a new dve file from new template
+			var xml:XML=MainApplicationCodeUtils.getDominoParentContent(title,title);
+			var fs:FileStream = new FileStream();
+			fs.open(fileTo, FileMode.WRITE);
+			fs.writeUTFBytes(xml.toXMLString());
+			fs.close();
 		}
 	}
 }
