@@ -262,7 +262,9 @@ package actionScripts.plugin.ondiskproj
 			var projectName:String = pvo.projectName;
 			var sourceFileWithExtension:String = pvo.projectName + ".dve";
 			var sourcePath:String = "src" + model.fileCore.separator + "main";
+			var sourceDominoVisualFormPath:String="nsfs"+ model.fileCore.separator + "nsf-moonshine"+ model.fileCore.separator +"odp"+model.fileCore.separator +"Forms"+model.fileCore.separator +pvo.projectName + ".form";
 			
+
 			var targetFolder:FileLocation = pvo.folderLocation;
 			
 			// Create project root directory
@@ -299,7 +301,7 @@ package actionScripts.plugin.ondiskproj
 			
 			th.projectTemplate(templateDir, targetFolder);
 			//this line will remove old .dve file and generate new dxl file template follow domino visual format.
-			fixVisualDveFileToDominoVisualTemplate(targetFolder.resolvePath(th.templatingData["$SourceFile"]),pvo.projectName)
+			fixVisualDveFileToDominoVisualTemplate(targetFolder.resolvePath(th.templatingData["$SourceFile"]),pvo.projectName,sourceDominoVisualFormPath,targetFolder)
 			
 			var projectSettingsFileName:String = projectName + ".ondiskproj";
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
@@ -319,7 +321,7 @@ package actionScripts.plugin.ondiskproj
 		}
 
 
-		private function fixVisualDveFileToDominoVisualTemplate(dveFile:FileLocation,title:String):void{
+		private function fixVisualDveFileToDominoVisualTemplate(dveFile:FileLocation,title:String,sourceDominoVisualFormPath:String,targetFolder:FileLocation):void{
 			//var dveFile:FileLocation = TemplatingHelper.getCustomFileFor(filePath);
 			var dveFilePath:String=dveFile.fileBridge.nativePath;
 			//Alert.show("dveFilePath:"+dveFilePath);
@@ -334,6 +336,11 @@ package actionScripts.plugin.ondiskproj
 			fs.open(fileTo, FileMode.WRITE);
 			fs.writeUTFBytes(xml.toXMLString());
 			fs.close();
+
+			if(dveFile.fileBridge.exists){
+				var newFormFile:FileLocation =  targetFolder.resolvePath(sourceDominoVisualFormPath); 
+				dveFile.fileBridge.copyTo(newFormFile, true); 
+			}
 		}
 	}
 }

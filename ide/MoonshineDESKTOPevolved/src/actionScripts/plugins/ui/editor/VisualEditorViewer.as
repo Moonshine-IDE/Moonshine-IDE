@@ -71,7 +71,7 @@ package actionScripts.plugins.ui.editor
 	import view.suportClasses.events.PropertyEditorChangeEvent;
 
 	import mx.controls.Alert;
-	
+	import flash.filesystem.File;
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
 		private static const EVENT_SWITCH_TAB_TO_CODE:String = "switchTabToCode";
@@ -247,6 +247,25 @@ package actionScripts.plugins.ui.editor
 			hasChangedProperties = false;
 			
 			super.save();
+
+			//this line for sync .dve file to ODP form folder file
+			if(visualEditorProject is OnDiskProjectVO){
+				if((visualEditorProject as OnDiskProjectVO).isDominoVisualEditorProject){
+					var sourceVisualPath=(visualEditorProject as OnDiskProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
+					//visualeditor-src/main/webapp
+					var targetProjectPath:String = sourceVisualPath.substring(0, sourceVisualPath.lastIndexOf("visualeditor-src"));
+					var targetProject:FileLocation=new FileLocation(targetProjectPath);
+					var fileName:String=this.currentFile.fileBridge.name;
+					fileName= fileName.substring(0, fileName.lastIndexOf(".dve"));
+					
+					//this.currentFile.fileBridge.nativePath
+					// var original_form:FileLocation =  templateDir.resolvePath("src_domino_nsfs"+File.separator +"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"Template.form");
+					if(this.currentFile.fileBridge.exists){
+						var newFormFile:FileLocation =  targetProject.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+fileName + ".form"); 
+						this.currentFile.fileBridge.copyTo(newFormFile, true); 
+					}
+				}
+			}
 
 			refreshFileForPreview();
 		}
