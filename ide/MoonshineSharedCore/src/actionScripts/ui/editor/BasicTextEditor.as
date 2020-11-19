@@ -20,6 +20,8 @@ package actionScripts.ui.editor
 {
     import flash.display.DisplayObject;
     import flash.events.Event;
+    import flash.utils.clearInterval;
+    import flash.utils.setTimeout;
     
     import mx.core.FlexGlobals;
     import mx.events.FlexEvent;
@@ -478,8 +480,8 @@ package actionScripts.ui.editor
 			this.file = file;
 			dispatchEvent(new Event('labelChanged'));
 			editor.save();
-			updateChangeStatus();
 			dispatcher.dispatchEvent(new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this));
+			updateChangeStatus();
 		}
 		
 		protected function handleTextChange(event:ChangeEvent):void
@@ -493,8 +495,13 @@ package actionScripts.ui.editor
 		protected function updateChangeStatus():void
 		{
 			_isChanged = editor.hasChanged;
-			lastOpenedUpdatedInMoonshine = file.fileBridge.modificationDate;
 			dispatchEvent(new Event('labelChanged'));
+			
+			var setLastUpdateTime:uint = setTimeout(function():void
+			{
+				clearInterval(setLastUpdateTime);
+				lastOpenedUpdatedInMoonshine = file.fileBridge.modificationDate;
+			}, 1000);
 		}
 
 		protected function handleSaveAsSelect(fileObj:Object):void

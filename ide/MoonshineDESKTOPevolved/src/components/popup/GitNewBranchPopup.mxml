@@ -6,7 +6,6 @@
 		 creationComplete="txtName.setFocus()">
 	<fx:Script>
 		<![CDATA[
-			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
@@ -20,22 +19,28 @@
 			
 			public function onNameValidatedByGit(value:String):void
 			{
-				value = value.replace("\n", "");
-				var match:Array = value.match(/fatal: .*/);
-				if (match) 
+				// in case of branch exists value is null
+				if (!value)
 				{
-					showError(value);
-					return;
-				}
-				match = value.toLowerCase().match(/was unexpected at this time/);
-				if (match) 
-				{
-					showError(value);
-					return;
+					submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 				}
 				
-				lblMess.includeInLayout = lblMess.visible = false;
-				Alert.show("Branch name validated successfully:\n\""+ value +"\"\nDo you want to continue?", "Validation", Alert.YES|Alert.NO, this, onContinue);
+				value = value.replace("\n", "");
+				if (value.match(/fatal: .*/)) 
+				{
+					showError(value);
+					return;
+				}
+				else if (value.toLowerCase().match(/was unexpected at this time/)) 
+				{
+					showError(value);
+					return;
+				}
+				else
+				{
+					showError("Branch "+ txtName.text +" is already exists in remote.");
+				}
 				
 				/*
 				 * @local
@@ -45,18 +50,6 @@
 					lblMess.text = value;
 					lblMess.setStyle("color", 0xff0000);
 					lblMess.includeInLayout = lblMess.visible = true;
-				}
-				
-				/*
-				 * @local
-				 */
-				function onContinue(event:CloseEvent):void
-				{
-					if (event.detail == Alert.YES)
-					{
-						submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
-						dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-					}
 				}
 			}
 			

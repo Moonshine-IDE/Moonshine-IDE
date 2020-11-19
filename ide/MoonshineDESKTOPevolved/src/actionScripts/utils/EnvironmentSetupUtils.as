@@ -248,7 +248,7 @@ package actionScripts.utils
 					if (FileUtils.isPathExists(gitRootPath + "\\mingw64\\ssl\\cert.pem"))
 					{
 						setCommand += getSetExportWithoutQuote("GIT_HOME", gitRootPath);
-						additionalCommandLines += "%GIT_HOME%\\bin\\git config --global http.sslCAInfo %GIT_HOME%\\mingw64\\ssl\\cert.pem\r\n";
+						additionalCommandLines += "\"%GIT_HOME%\\bin\\git\" config --global http.sslCAInfo \"%GIT_HOME%\\mingw64\\ssl\\cert.pem\"\r\n";
 						isValidToExecute = true;
 					}
 				}

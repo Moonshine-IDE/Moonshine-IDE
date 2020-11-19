@@ -472,32 +472,57 @@ package actionScripts.plugins.debugAdapter
 			this.stepOutDebugAdapter(event.threadId);
 		}
 		
-		private function dispatcher_debugStepOverHandler(event:DebugActionEvent):void
+		private function dispatcher_debugStepOverHandler(event:Event):void
 		{
-			this.stepOverDebugAdapter(event.threadId);
+			var threadId:int = -1;
+			if(event is DebugActionEvent)
+			{
+				threadId = DebugActionEvent(event).threadId;
+			}
+			this.stepOverDebugAdapter(threadId);
 		}
 		
-		private function dispatcher_debugStepOutHandler(event:DebugActionEvent):void
+		private function dispatcher_debugStepOutHandler(event:Event):void
 		{
-			this.stepOutDebugAdapter(event.threadId);
+			var threadId:int = -1;
+			if(event is DebugActionEvent)
+			{
+				threadId = DebugActionEvent(event).threadId;
+			}
+			this.stepOutDebugAdapter(threadId);
 		}
 		
-		private function dispatcher_debugStepIntoHandler(event:DebugActionEvent):void
+		private function dispatcher_debugStepIntoHandler(event:Event):void
 		{
-			this.stepIntoDebugAdapter(event.threadId);
+			var threadId:int = -1;
+			if(event is DebugActionEvent)
+			{
+				threadId = DebugActionEvent(event).threadId;
+			}
+			this.stepIntoDebugAdapter(threadId);
 		}
 		
-		private function dispatcher_debugResumeHandler(event:DebugActionEvent):void
+		private function dispatcher_debugResumeHandler(event:Event):void
 		{
-			this.resumeDebugAdapter(event.threadId);
+			var threadId:int = -1;
+			if(event is DebugActionEvent)
+			{
+				threadId = DebugActionEvent(event).threadId;
+			}
+			this.resumeDebugAdapter(threadId);
 		}
 		
-		private function dispatcher_debugPauseHandler(event:DebugActionEvent):void
+		private function dispatcher_debugPauseHandler(event:Event):void
 		{
-			this.pauseDebugAdapter(event.threadId);
+			var threadId:int = -1;
+			if(event is DebugActionEvent)
+			{
+				threadId = DebugActionEvent(event).threadId;
+			}
+			this.pauseDebugAdapter(threadId);
 		}
 
-		protected function dispatcher_debugStopHandler(event:DebugActionEvent):void
+		protected function dispatcher_debugStopHandler(event:Event):void
 		{
 			if(!_debugAdapter)
 			{

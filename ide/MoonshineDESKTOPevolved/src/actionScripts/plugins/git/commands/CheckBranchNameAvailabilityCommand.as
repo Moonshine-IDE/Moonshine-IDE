@@ -28,15 +28,18 @@ package actionScripts.plugins.git.commands
 		private static const GIT_BRANCH_NAME_VALIDATION:String = "gitValidateProposedBranchName";
 		
 		private var onCompletion:Function;
+		private var targetBranchName:String;
+		private var remoteBranchFoundData:String;
 		
 		public function CheckBranchNameAvailabilityCommand(name:String, completion:Function)
 		{
 			super();
 			
+			targetBranchName = name;
 			onCompletion = completion;
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" check-ref-format --branch $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&check-ref-format&&--branch&&'+ UtilsCore.getEncodedForShell(name), false, GIT_BRANCH_NAME_VALIDATION));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" show-ref --heads $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&show-ref&&--heads&&'+ UtilsCore.getEncodedForShell(name), false, GIT_BRANCH_NAME_VALIDATION));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
@@ -49,11 +52,9 @@ package actionScripts.plugins.git.commands
 			{
 				case GIT_BRANCH_NAME_VALIDATION:
 				{
-					if (onCompletion != null)
+					if (value.output && !value.output.match(/fatal: .*/))
 					{
-						onCompletion(value.output);
-						onCompletion = null;
-						return;
+						remoteBranchFoundData = value.output;
 					}
 					
 					break;
@@ -67,6 +68,11 @@ package actionScripts.plugins.git.commands
 		
 		override protected function unsubscribeFromWorker():void
 		{
+			if (onCompletion != null)
+			{
+				onCompletion(remoteBranchFoundData);
+			}
+			
 			super.unsubscribeFromWorker();
 			onCompletion = null;
 		}

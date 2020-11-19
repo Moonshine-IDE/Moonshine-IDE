@@ -387,19 +387,19 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE)
 				]),
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
-					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.HAXE], ProjectActionEvent.BUILD_AND_DEBUG,
+					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.HAXE], ProjectActionEvent.BUILD_AND_DEBUG,
 						"d", [Keyboard.COMMAND],
 						"d", [Keyboard.CONTROL]),
 					new MenuItem(null),					
-					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_OVER,
+					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_OVER,
 						"e",[Keyboard.COMMAND],
 						"f6", []),
-					new MenuItem(resourceManager.getString('resources','STEP_INTO'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_INTO),
-					new MenuItem(resourceManager.getString('resources','STEP_OUT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_OUT),
-					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_RESUME,
+					new MenuItem(resourceManager.getString('resources','STEP_INTO'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_INTO),
+					new MenuItem(resourceManager.getString('resources','STEP_OUT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_OUT),
+					new MenuItem(resourceManager.getString('resources','RESUME'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_RESUME,
 						"r",[Keyboard.COMMAND],
 						"f8", []),
-					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STOP,
+					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STOP,
 						"t",[Keyboard.COMMAND],
 						"t", [Keyboard.CONTROL])
 				]),
@@ -459,6 +459,20 @@ package actionScripts.impls
 							if (ConstantsCoreVO.IS_APP_STORE_VERSION) firstMenuItems.splice(i+2, 0, (new MenuItem("Access Manager", null, null, ProjectEvent.ACCESS_MANAGER)));
 							firstMenuItems.splice(i+3, 0, (new MenuItem(ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? "Extract Bundled SDK" : "Moonshine Helper Application", null, null, ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT ? StartupHelperEvent.EVENT_SDK_UNZIP_REQUEST : StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST)));
 							break;
+						}
+					}
+				}
+				
+				// let's not avail 'Debug' menu in the App Store version
+				// due to the problem we seen as #701
+				if (!ConstantsCoreVO.IS_APP_STORE_VERSION)
+				{
+					var debugMenuItems:Vector.<MenuItem> = wmn[4].items;
+					for (var i:int; i < debugMenuItems.length; i++)
+					{
+						if (debugMenuItems[i].enableTypes)
+						{
+							debugMenuItems[i].enableTypes.push(ProjectMenuTypes.JS_ROYALE);
 						}
 					}
 				}

@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Summary
 
 Moonshine 3.0.0 includes:
-* Support for Actionscript Mobile project and Flex Modules
+* Support for Actionscript Mobile projects and Flex Modules
 * Debugging improvements for mobile and Haxe projects
 * Miscellaneous bug fixes and quality-of-life improvements.
 
@@ -21,12 +21,16 @@ Moonshine 3.0.0 includes:
 * Debug mobile projects using USB or Wi-Fi.
 * Debug Haxe projects
 * Create ActionScript Mobile Projects.
+* Choose between Chrome and Firefox when debugging Apache Royale and OpenFL projects targeting HTML/JS.
+* Debug OpenFL projects targeting native Windows, macOS, and Linux with the HXCPP debugger.
+* Debug OpenFL projects targeting HashLink (Windows).
 
 ### Changed
 * Windows: Switched from the native AIR installer to NSIS to reduce installation times
 * Windows: Changed Moonshine to a 64-bit application.  You will be prompted to uninstall your old copy of Moonshine, but your settings will be saved.
+* Updated application to use new icon new icon
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.2.2.
-* Updated [Haxe](https://as3mxml.com) engine to latest.
+* Updated [Haxe](https://as3mxml.com) engine to latest version.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.59.0.
 * Updated [SWF debug](https://as3mxml.com) engine to v1.2.2.
 * Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.10.
@@ -48,28 +52,9 @@ Moonshine 3.0.0 includes:
 * Fixed Error #3218 in the language-server output.
 * Fixed issue when opened editors did not update their content when the file was updated externally (for example, by an svn update or git pull).
 * Fixed issue where mobile Mobile stage dimensions did not update when changing the device model
+* Fixed file modification warning for new Java files
 
 
-
-## Moonshine IDE [2.7.0]
-
-### Summary
-
-### Added
-* Choose between Chrome and Firefox when debugging Apache Royale and OpenFL projects targeting HTML/JS.
-* Debug OpenFL projects targeting native Windows, macOS, and Linux with the HXCPP debugger.
-* Debug OpenFL projects targeting HashLink (Windows).
-* Choose between USB and Wi-Fi connection when debugging Adobe AIR mobile apps on a real device. 
-
-### Changed
-* Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.1.1.
-* Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.52.0.
-* Updated [Firefox debug adapter](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.7.0.
-* Updated [HashLink debug adapter](https://github.com/vshaxe/hashlink-debugger) engine to latest.
-* Updated [HXCPP debug adapter](https://github.com/vshaxe/hxcpp-debugger) engine to v1.2.4.
-* Updated [SWF debug adapter](https://as3mxml.com) engine to v1.2.1.
-
-### Fixed
 
 ## Moonshine IDE [2.6.0]
 
