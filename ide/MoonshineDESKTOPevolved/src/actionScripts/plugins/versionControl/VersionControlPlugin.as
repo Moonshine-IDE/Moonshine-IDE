@@ -23,6 +23,7 @@ package actionScripts.plugins.versionControl
 	import flash.events.Event;
 	
 	import mx.collections.ArrayList;
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
@@ -36,12 +37,15 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.plugins.git.commands.CheckIsGitRepositoryCommand;
+	import actionScripts.plugins.git.commands.GetXCodePathCommand;
 	import actionScripts.plugins.svn.SVNPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentTypes;
@@ -51,6 +55,7 @@ package actionScripts.plugins.versionControl
 	import actionScripts.valueObjects.VersionControlTypes;
 	
 	import components.popup.AddRepositoryPopup;
+	import components.popup.GitXCodePermissionPopup;
 	import components.popup.ManageRepositoriesPopup;
 
 	public class VersionControlPlugin extends PluginBase implements ISettingsProvider
@@ -61,6 +66,7 @@ package actionScripts.plugins.versionControl
 		
 		private var addRepositoryWindow:AddRepositoryPopup;
 		private var manageRepoWindow:ManageRepositoriesPopup;
+		private var xCodePermissionWindow:GitXCodePermissionPopup;
 		private var xcodePathSetting:PathSetting;
 		private var baseSettings:Vector.<ISetting>;
 		
@@ -347,7 +353,11 @@ package actionScripts.plugins.versionControl
 			{
 				if (ConstantsCoreVO.IS_MACOS) 
 				{
-					if ((!xcodePath && !isSVNPresent && !isGitPresent) || 
+					if (!xcodePath)
+					{
+						new GetXCodePathCommand(onXCodePathDetected);
+					}
+					else if ((!xcodePath && !isSVNPresent && !isGitPresent) || 
 						(xcodePath && ConstantsCoreVO.IS_APP_STORE_VERSION && !OSXBookmarkerNotifiers.isPathBookmarked(xcodePath)))
 					{
 						dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
@@ -392,6 +402,60 @@ package actionScripts.plugins.versionControl
 		protected function isVersioned(folder:FileLocation):Boolean
 		{
 			return folder.fileBridge.resolvePath(".svn/wc.db").fileBridge.exists;
+		}
+		
+		private function onXCodePathDetected(path:String, isXCodePath:Boolean):void
+		{
+			// if calls during startup 
+			// do not open the prompt
+			if (path && ConstantsCoreVO.IS_APP_STORE_VERSION && !xCodePermissionWindow)
+			{
+				xCodePermissionWindow = new GitXCodePermissionPopup;
+				xCodePermissionWindow.isXCodePath = isXCodePath;
+				xCodePermissionWindow.xCodePath = path;
+				xCodePermissionWindow.horizontalCenter = xCodePermissionWindow.verticalCenter = 0;
+				xCodePermissionWindow.addEventListener(Event.CLOSE, onXCodePermissionClosed, false, 0, true);
+				FlexGlobals.topLevelApplication.addElement(xCodePermissionWindow);
+			}
+			else if (path && !ConstantsCoreVO.IS_APP_STORE_VERSION)
+			{
+				updateXCodePath(path);
+			}
+		}
+		
+		private function onXCodePermissionClosed(event:Event):void
+		{
+			var isDiscarded:Boolean = xCodePermissionWindow.isDiscarded;
+			var isGranted:Boolean;
+			if (!isDiscarded) 
+			{
+				isGranted = true;
+				updateXCodePath(xCodePermissionWindow.xCodePath);
+			}
+			else
+			{
+				isGranted = false;
+			}
+			
+			if (ConstantsCoreVO.IS_GIT_OSX_AVAILABLE != isGranted)
+			{
+				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = isGranted;
+				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
+			}
+			
+			xCodePermissionWindow.removeEventListener(Event.CLOSE, onXCodePermissionClosed);
+			FlexGlobals.topLevelApplication.removeElement(xCodePermissionWindow);
+			xCodePermissionWindow = null;
+		}
+		
+		private function updateXCodePath(value:String):void
+		{
+			dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, value));
+			Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
+			
+			// save the xcode-only path for later use
+			PathSetupHelperUtil.updateXCodePath(value);
 		}
 	}
 }

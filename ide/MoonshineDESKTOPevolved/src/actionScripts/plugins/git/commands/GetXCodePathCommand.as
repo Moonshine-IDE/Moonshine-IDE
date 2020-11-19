@@ -26,15 +26,13 @@ package actionScripts.plugins.git.commands
 		private static const XCODE_PATH_DECTECTION:String = "xcodePathDectection";
 		
 		private var onXCodePathDetection:Function;
-		private var xCodePathDetectionType:String;
 		
-		public function GetXCodePathCommand(completion:Function, against:String)
+		public function GetXCodePathCommand(completion:Function)
 		{
 			super();
 			
 			queue = new Vector.<Object>();
 			onXCodePathDetection = completion;
-			xCodePathDetectionType = against;
 			
 			addToQueue(new NativeProcessQueueVO('xcode-select -p', false, XCODE_PATH_DECTECTION));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
@@ -71,7 +69,7 @@ package actionScripts.plugins.git.commands
 					match = value.output.toLowerCase().match(/xcode.app\/contents\/developer/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(value.output, true, xCodePathDetectionType);
+						onXCodePathDetection(value.output, true);
 						onXCodePathDetection = null;
 						return;
 					}
@@ -79,7 +77,7 @@ package actionScripts.plugins.git.commands
 					match = value.output.toLowerCase().match(/commandlinetools/);
 					if (match && (onXCodePathDetection != null))
 					{
-						onXCodePathDetection(value.output, false, xCodePathDetectionType);
+						onXCodePathDetection(value.output, false);
 						onXCodePathDetection = null;
 						return;
 					}

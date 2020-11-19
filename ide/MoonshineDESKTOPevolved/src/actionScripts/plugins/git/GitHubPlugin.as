@@ -319,12 +319,12 @@ package actionScripts.plugins.git
 		{
 			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
 			{
-				new GetXCodePathCommand(onXCodePathDetection, against);
+				new GetXCodePathCommand(onXCodePathDetection);
 				return false;
 			}
 			else if (ConstantsCoreVO.IS_MACOS && (against == ProjectMenuTypes.SVN_PROJECT) && !UtilsCore.isSVNPresent()) 
 			{
-				new GetXCodePathCommand(onXCodePathDetection, against);
+				new GetXCodePathCommand(onXCodePathDetection);
 				return false;
 			}
 			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)

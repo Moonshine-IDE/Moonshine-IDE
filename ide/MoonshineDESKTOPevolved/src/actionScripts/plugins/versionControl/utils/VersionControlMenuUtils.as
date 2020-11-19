@@ -34,8 +34,6 @@ package actionScripts.plugins.versionControl.utils
 		
 		private static function getBaseMenuItems():Vector.<MenuItem>
 		{
-			
-			
 			var tmpMenuItems:Vector.<MenuItem> = Vector.<MenuItem>([
 				new MenuItem((ConstantsCoreVO.IS_MACOS && !VersionControlUtils.isSandboxPermissionAcquired()) ? "Grant Permission" : resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT)
 			]);
