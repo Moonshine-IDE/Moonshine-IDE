@@ -166,9 +166,9 @@ package actionScripts.plugins.svn
 			}
 		}
 		
-		public function setPathMessage(value:String):void
+		public function setPathMessage(value:String, type:String=AbstractSetting.MESSAGE_NORMAL):void
 		{
-			if (pathSetting) pathSetting.setMessage(value, AbstractSetting.MESSAGE_IMPORTANT);
+			if (pathSetting) pathSetting.setMessage(value, type);
 		}
 		
 		public function updatePathSetting():void

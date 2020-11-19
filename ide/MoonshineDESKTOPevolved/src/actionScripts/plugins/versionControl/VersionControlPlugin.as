@@ -110,6 +110,7 @@ package actionScripts.plugins.versionControl
 			if (xcodePathSetting)
 			{
 				xcodePathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onXCodePathSelected);
+				xcodePathSetting.removeEventListener(AbstractSetting.PATH_REMOVED, onXCodePathSelected);
 				xcodePathSetting = null;
 			}
 			
@@ -126,6 +127,7 @@ package actionScripts.plugins.versionControl
 				xcodePathSetting = new PathSetting(this,'xcodePath', 'XCode/CommandLineTools', true, xcodePath, false);
 				xcodePathSetting.setMessage("Git and Subversion paths shall be calculated on based this", AbstractSetting.MESSAGE_IMPORTANT);
 				xcodePathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onXCodePathSelected, false, 0, true);
+				xcodePathSetting.addEventListener(AbstractSetting.PATH_REMOVED, onXCodePathSelected, false, 0, true);
 				
 				baseSettings = baseSettings.concat(Vector.<ISetting>([
 					xcodePathSetting
@@ -192,6 +194,7 @@ package actionScripts.plugins.versionControl
 			{
 				if (gitPlugin) gitPlugin.gitBinaryPathOSX = null;
 				if (svnPlugin) svnPlugin.svnBinaryPath = null;
+				updateSettingsScreen();
 				return;
 			}
 			
@@ -207,7 +210,7 @@ package actionScripts.plugins.versionControl
 					gitPlugin.gitBinaryPathOSX = xcodePath +"/"+ tmpComponent.pathValidation;
 					if (!isValidSDKPath)
 					{
-						gitPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".");
+						gitPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
 					}
 					else
 					{
@@ -224,7 +227,7 @@ package actionScripts.plugins.versionControl
 					svnPlugin.svnBinaryPath = xcodePath +"/"+ tmpComponent.pathValidation;
 					if (!isValidSDKPath)
 					{
-						svnPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".");
+						svnPlugin.setPathMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
 					}
 					else
 					{
@@ -233,13 +236,7 @@ package actionScripts.plugins.versionControl
 				}
 			}
 			
-			if (gitPlugin && svnPlugin)
-			{
-				gitPlugin.updatePathSetting();
-				svnPlugin.updatePathSetting();
-				
-				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
-			}
+			updateSettingsScreen();
 		}
 		
 		//--------------------------------------------------------------------------
@@ -330,6 +327,17 @@ package actionScripts.plugins.versionControl
 		//  PRIVATE API
 		//
 		//--------------------------------------------------------------------------
+		
+		private function updateSettingsScreen():void
+		{
+			if (gitPlugin && svnPlugin)
+			{
+				gitPlugin.updatePathSetting();
+				svnPlugin.updatePathSetting();
+				
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+			}
+		}
 		
 		private function continueIfVersionControlSupported(event:Event):Boolean
 		{

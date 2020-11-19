@@ -147,6 +147,8 @@
 		{
 			setting.stringValue = "";
 			lblMessage.text = "";
+			
+			setting.dispatchEvent(new Event(AbstractSetting.PATH_REMOVED));
 		}
 
 		private function onFlexSDKUpdated(event:ProjectEvent):void

@@ -45,7 +45,7 @@ package actionScripts.plugins.versionControl.utils
 		
 		private static function getGitMenuItems(baseMenu:Vector.<MenuItem>):Vector.<MenuItem>
 		{
-			var isGitAvailable = UtilsCore.isGitPresent();
+			var isGitAvailable:Boolean = UtilsCore.isGitPresent();
 			baseMenu = baseMenu.concat(Vector.<MenuItem>([
 				new MenuItem(null),
 				new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.GIT_PROJECT], GitHubPlugin.COMMIT_REQUEST, null, null, null, null, null, null, null, false, isGitAvailable),
