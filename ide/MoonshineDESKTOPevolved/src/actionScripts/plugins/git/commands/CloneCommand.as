@@ -25,7 +25,6 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.git.model.ConstructorDescriptor;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.valueObjects.RepositoryItemVO;

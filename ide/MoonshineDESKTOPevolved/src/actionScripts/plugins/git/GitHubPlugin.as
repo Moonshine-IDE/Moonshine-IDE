@@ -59,11 +59,11 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.commands.PushCommand;
 	import actionScripts.plugins.git.commands.RevertCommand;
 	import actionScripts.plugins.git.model.GitProjectVO;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentTypes;

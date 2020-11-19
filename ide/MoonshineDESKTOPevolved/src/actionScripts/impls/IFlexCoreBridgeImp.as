@@ -77,6 +77,7 @@ package actionScripts.impls
 	import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
 	import actionScripts.plugin.syntax.XMLSyntaxPlugin;
 	import actionScripts.plugin.templating.TemplatingPlugin;
+	import actionScripts.plugin.workspace.WorkspacePlugin;
 	import actionScripts.plugins.ant.AntBuildPlugin;
 	import actionScripts.plugins.ant.AntBuildScreen;
 	import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
@@ -92,7 +93,6 @@ package actionScripts.impls
 	import actionScripts.plugins.debugAdapter.DebugAdapterPlugin;
 	import actionScripts.plugins.domino.DominoPlugin;
 	import actionScripts.plugins.externalEditors.ExternalEditorsPlugin;
-	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.gradle.GradleBuildPlugin;
 	import actionScripts.plugins.help.view.TourDeFlexContentsView;
 	import actionScripts.plugins.help.view.events.VisualEditorEvent;
@@ -106,13 +106,11 @@ package actionScripts.impls
 	import actionScripts.plugins.royale.RoyaleApiReportPlugin;
 	import actionScripts.plugins.run.RunJavaProject;
 	import actionScripts.plugins.startup.StartupHelperPlugin;
-	import actionScripts.plugins.svn.SVNPlugin;
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
 	import actionScripts.plugins.ui.editor.TourDeTextEditor;
 	import actionScripts.plugins.versionControl.VersionControlPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.plugins.versionControl.utils.VersionControlMenuUtils;
-	import actionScripts.plugins.versionControl.utils.VersionControlUtils;
 	import actionScripts.plugins.visualEditor.PreviewPrimeFacesProjectPlugin;
 	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -128,7 +126,6 @@ package actionScripts.impls
 	import actionScripts.utils.SWFTrustPolicyModifier;
 	import actionScripts.utils.SoftwareVersionChecker;
 	import actionScripts.utils.Untar;
-	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
@@ -203,6 +200,7 @@ package actionScripts.impls
 		{
 			return [
 				SettingsPlugin, 
+				WorkspacePlugin,
 				ProjectPlugin,
 				ProjectPanelPlugin,
 				TemplatingPlugin,
@@ -272,8 +270,8 @@ package actionScripts.impls
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
-					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, GitHubPlugin, SVNPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin];
+					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -319,6 +317,12 @@ package actionScripts.impls
 						'w', [Keyboard.CONTROL]),
 					new MenuItem("Close All", null, null, CloseTabEvent.EVENT_CLOSE_ALL_TABS),
 					/*new MenuItem("Define Workspace", null, ProjectEvent.SET_WORKSPACE),*/
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','WORKSPACE'),[
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_SAVE_AS'), null, null, WorkspacePlugin.EVENT_SAVE_AS),
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_NEW'), null, null, WorkspacePlugin.EVENT_NEW),
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_LOAD'), null, null, WorkspacePlugin.EVENT_LOAD)
+					]),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','LINE_ENDINGS'), [
 						new MenuItem(resourceManager.getString('resources','WINDOWS_LINE_ENDINGS'), null, null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_WIN),

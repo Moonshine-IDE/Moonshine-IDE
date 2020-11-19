@@ -29,7 +29,6 @@ package actionScripts.utils
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.help.HelpPlugin;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;

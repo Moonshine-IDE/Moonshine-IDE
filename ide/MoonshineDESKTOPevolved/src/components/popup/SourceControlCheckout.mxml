@@ -56,6 +56,7 @@
 			[Bindable] private var isPathMapped:Boolean;
 			[Bindable] private var completionMessage:String;
 			[Bindable] private var initialContentHeight:Number;
+			[Bindable] private var isDestinationPathExists:Boolean;
 			
 			private var busyIndicator:BusyIndicator;
 			private var mappedPath:String
@@ -132,6 +133,7 @@
 							isFolderNameManuallyChanged = isFolderNameManuallyEmpty = false;
 						}
 						
+						validateTargetPath();
 						return;
 					}
 				}
@@ -147,12 +149,18 @@
 						moveCursorToTargetEnd();
 						txtFolderName.text = (txtFolderName.text != "") ? txtFolderName.text : txtSource.text.split("/").pop();
 						
+						validateTargetPath();
 						return;
 					}
 				}
 				
 				if (!results && !isFolderNameManuallyChanged) txtFolderName.text = "";
 				isValidURL = false;
+			}
+			
+			private function validateTargetPath():void
+			{
+				isDestinationPathExists = model.fileCore.isPathExists(txtTarget.text + model.fileCore.separator + txtFolderName.text);
 			}
 			
 			protected function onCreationCompletes():void
@@ -280,6 +288,9 @@
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}"/>
+		<s:Label text="Destination path is already exists."
+				 width="100%" textAlign="center" color="0xff0000"
+				 visible="{isDestinationPathExists}" includeInLayout="{isDestinationPathExists}"/>
 		<s:HGroup width="100%" verticalAlign="middle"
 				  includeInLayout="false" visible="false">
 			<s:CheckBox id="cbLogin"
@@ -326,7 +337,7 @@
 			<s:Spacer width="100%"/>
 			<s:Button id="btnSubmit" 
 					  label="{(type == VersionControlTypes.GIT) ? 'Clone' : 'Checkout'}" styleName="darkButton" 
-					  enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped}"
+					  enabled="{isGitAvailable &amp;&amp; isValidURL &amp;&amp; isPathMapped &amp;&amp; !isDestinationPathExists}"
 					  click="onCheckoutRequest()"/>
 		</s:HGroup>
 		<s:Spacer height="31" includeIn="progress"/>

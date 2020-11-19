@@ -24,6 +24,7 @@ package actionScripts.utils
         public static const CONSOLE_HISTORY:String = "consoleHistory";
 		public static const REPOSITORY_HISTORY:String = "repositoriesHistory";
         public static const MOONSHINE_IDE_PROJECT:String = "moonshine-ide-project";
+		public static const MOONSHINE_IDE_WORKSPACE:String = "moonshine-ide-workspace";
 		public static const SHARED_UPDATE_CHECKER:String = "sharedObjectTesterAndUpdater";
     }
 }

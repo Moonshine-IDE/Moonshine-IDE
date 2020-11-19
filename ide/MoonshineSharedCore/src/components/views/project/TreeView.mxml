@@ -240,6 +240,7 @@
 				dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onFileNewFolderCreationRequested, false, 0, true);
 				dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, onNewFilesFoldersCopied, false, 0, true);
 				dispatcher.addEventListener(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, onProjectRenameRequest, false, 0, true);
+				dispatcher.addEventListener(ProjectEvent.CLOSE_PROJECT, onCloseProjectRequest, false, 0, true);
 			}
 	
 			private function onRemoval():void
@@ -249,6 +250,7 @@
 				dispatcher.removeEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onFileNewFolderCreationRequested);
 				dispatcher.removeEventListener(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, onNewFilesFoldersCopied);
 				dispatcher.removeEventListener(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, onProjectRenameRequest);
+				dispatcher.removeEventListener(ProjectEvent.CLOSE_PROJECT, onCloseProjectRequest);
 			}
 	
 			private function refreshProjectFromServer(fw:FileWrapper, project:ProjectVO):void
@@ -827,6 +829,11 @@
 				}
 	
 				return null;
+			}
+			
+			private function onCloseProjectRequest(event:ProjectEvent):void
+			{
+				onFileDeletedOnServer([event.anObject], FTETreeItemRenderer.CLOSE);
 			}
 	
 			private function onFileDeletedOnServer(value:Array, removalType:String = null):void
