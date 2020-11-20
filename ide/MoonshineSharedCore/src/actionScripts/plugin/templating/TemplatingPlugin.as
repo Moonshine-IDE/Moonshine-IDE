@@ -82,9 +82,10 @@ package actionScripts.plugin.templating
 	import components.popup.newFile.NewMXMLFilePopup;
 	import components.popup.newFile.NewMXMLGenericFilePopup;
 	import components.popup.newFile.NewVisualEditorFilePopup;
+	import components.popup.newFile.NewOnDiskFilePopup;
 
-	import actionScripts.interfaces.IVisualEditorProjectVO
-
+	import actionScripts.interfaces.IVisualEditorProjectVO;
+	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
     /*
     Templating plugin
 
@@ -117,6 +118,7 @@ package actionScripts.plugin.templating
 		protected var newCSSComponentPopup:NewCSSFilePopup;
 		protected var newMXMLModuleComponentPopup:NewMXMLGenericFilePopup;
 		protected var newVisualEditorFilePopup:NewVisualEditorFilePopup;
+		protected var newOnDiskFilePopup:NewOnDiskFilePopup;
 		protected var newFilePopup:NewFilePopup;
 		
 		private var resetIndex:int = -1;
@@ -492,7 +494,6 @@ package actionScripts.plugin.templating
 			var enableTypes:Array;
 			newFileMenu.parents = ["File", "New"];
 			newFileMenu.items = new Vector.<MenuItem>();
-
 			for each (var fileTemplate:FileLocation in fileTemplates)
 			{
 				if (fileTemplate.fileBridge.isHidden) continue;
@@ -882,7 +883,9 @@ package actionScripts.plugin.templating
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				eventName = event.type.substr(24);
-				//Alert.show("eventName:"+eventName);
+				
+				//Alert.show("eventName1:"+event.type);
+				//Alert.show("eventName2:"+(event as NewFileEvent).type);
 				
 				// MXML type choose
 				switch (eventName)
@@ -1095,14 +1098,61 @@ package actionScripts.plugin.templating
 		
 		protected function openOnDiskVisualEditorTypeChoose(event:Event):void
 		{
-			var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
+			// if(!newOnDiskFilePopup){
+			// 	newOnDiskFilePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewOnDiskFilePopup, true) as NewOnDiskFilePopup;
+			// 	newOnDiskFilePopup.addEventListener(CloseEvent.CLOSE, handleNewFilePopupClose);
+			// 	if (event is NewFileEvent)
+            //     {
+            //         newOnDiskFilePopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+			// 		newOnDiskFilePopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+			// 		newOnDiskFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+			
+            //     }
+            //     else
+            //     {
+			// 		var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+            //         if (treeSelectedItem)
+            //         {
+            //             var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+            //             newOnDiskFilePopup.folderLocation = creatingItemIn.file;
+            //             newOnDiskFilePopup.wrapperOfFolderLocation = creatingItemIn;
+            //             newOnDiskFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+            //         }
+			// 	}
+			// 	PopUpManager.centerPopUp(newOnDiskFilePopup);
+			// }
+			
+			var tmpOnDiskEvent:NewFileEvent =null;
+			if(event is NewFileEvent){
+				tmpOnDiskEvent= new NewFileEvent(
 				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
 				ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE, (event as NewFileEvent).insideLocation
-			);
-			tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
+				);
+				tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
+			}else{
+				var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+				if(treeSelectedItem){
+				var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+				tmpOnDiskEvent= new NewFileEvent(
+				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, creatingItemIn.file.fileBridge.nativePath,
+				ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE, creatingItemIn
+				);
+				}
+			}
+			
+			//tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
 			
 			dispatcher.dispatchEvent(tmpOnDiskEvent);
 		}
+
+		protected function handleNewFilePopupClose(event:CloseEvent):void
+		{
+			newOnDiskFilePopup.removeEventListener(CloseEvent.CLOSE, handleNewFilePopupClose);
+			// newOnDiskFilePopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewFileCreateRequest);
+			newOnDiskFilePopup = null;
+		}
+
+		
 
 		protected function openCSSComponentTypeChoose(event:Event):void
 		{

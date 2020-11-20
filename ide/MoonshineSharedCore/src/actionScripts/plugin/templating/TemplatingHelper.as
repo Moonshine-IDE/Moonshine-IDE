@@ -28,6 +28,7 @@ package actionScripts.plugin.templating
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
+	import mx.controls.Alert;
 
 	public class TemplatingHelper
 	{
@@ -222,6 +223,7 @@ package actionScripts.plugin.templating
 				case "Haxe Interface":
 					return [ProjectMenuTypes.HAXE, ProjectMenuTypes.TEMPLATE];
 				case "Visual Editor DXL File":
+					//Alert.show("226 Visual Editor DXL File");
 				case "Form Builder DXL File":
 					return [ProjectMenuTypes.ON_DISK];
 			}
