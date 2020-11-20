@@ -192,7 +192,7 @@
 					var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
 					var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
 					
-					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+					dispatcher.dispatchEvent(new Event(GitHubPlugin.REQUEST_ON_XCODE_PERMISSION));
 					gitComponent.hasWarning = svnComponent.hasWarning = null;
 				}
 				else if (component.type == ComponentTypes.TYPE_NOTES && ConstantsCoreVO.IS_MACOS)

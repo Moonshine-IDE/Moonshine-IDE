@@ -37,7 +37,6 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
-	import actionScripts.plugins.git.commands.CheckIsGitRepositoryCommand;
 	import actionScripts.plugins.git.commands.GetXCodePathCommand;
 	import actionScripts.plugins.svn.SVNPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
@@ -69,6 +68,7 @@ package actionScripts.plugins.versionControl
 		private var xCodePermissionWindow:GitXCodePermissionPopup;
 		private var xcodePathSetting:PathSetting;
 		private var baseSettings:Vector.<ISetting>;
+		private var isStartupCall:Boolean;
 		
 		protected var gitPlugin:GitHubPlugin;
 		protected var svnPlugin:SVNPlugin;
@@ -99,6 +99,15 @@ package actionScripts.plugins.versionControl
 			dispatcher.addEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT, handleOpenManageRepositories, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories, false, 0, true);
+			dispatcher.addEventListener(VersionControlEvent.REQUEST_ON_XCODE_PERMISSION, onXCodeAccessPermissionRequested, false, 0, true);
+			
+			
+			// check and setup if needed for the non-sandbox versions
+			if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_APP_STORE_VERSION)
+			{
+				isStartupCall = true;
+				continueIfVersionControlSupported(null);
+			}
 		}
 		
 		override public function deactivate():void
@@ -109,6 +118,7 @@ package actionScripts.plugins.versionControl
 			dispatcher.removeEventListener(VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT, handleOpenManageRepositories);
 			dispatcher.removeEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository);
 			dispatcher.removeEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories);
+			dispatcher.removeEventListener(VersionControlEvent.REQUEST_ON_XCODE_PERMISSION, onXCodeAccessPermissionRequested);
 		}
 		
 		override public function onSettingsClose():void
@@ -330,19 +340,14 @@ package actionScripts.plugins.versionControl
 		
 		//--------------------------------------------------------------------------
 		//
-		//  PRIVATE API
+		//  XCODE PERMISSION TEST
+		//	AUTO-SETUP XCODE ON NON-SANDBOX
 		//
 		//--------------------------------------------------------------------------
 		
-		private function updateSettingsScreen():void
+		private function onXCodeAccessPermissionRequested(event:VersionControlEvent):void
 		{
-			if (gitPlugin && svnPlugin)
-			{
-				gitPlugin.updatePathSetting();
-				svnPlugin.updatePathSetting();
-				
-				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
-			}
+			testXCodeOnSandbox();
 		}
 		
 		private function continueIfVersionControlSupported(event:Event):Boolean
@@ -355,12 +360,11 @@ package actionScripts.plugins.versionControl
 				{
 					if (!xcodePath)
 					{
-						new GetXCodePathCommand(onXCodePathDetected);
+						testXCodeOnSandbox();
 					}
-					else if ((!xcodePath && !isSVNPresent && !isGitPresent) || 
-						(xcodePath && ConstantsCoreVO.IS_APP_STORE_VERSION && !OSXBookmarkerNotifiers.isPathBookmarked(xcodePath)))
+					else if (xcodePath && ConstantsCoreVO.IS_APP_STORE_VERSION && !OSXBookmarkerNotifiers.isPathBookmarked(xcodePath))
 					{
-						dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+						onXCodePathDetected(xcodePath, true);
 					}
 					else
 					{
@@ -394,21 +398,11 @@ package actionScripts.plugins.versionControl
 			return true;
 		}
 		
-		private function onXCodePathSelected(event:Event):void
-		{
-			xcodePath = xcodePathSetting.stringValue;
-		}
-		
-		protected function isVersioned(folder:FileLocation):Boolean
-		{
-			return folder.fileBridge.resolvePath(".svn/wc.db").fileBridge.exists;
-		}
-		
 		private function onXCodePathDetected(path:String, isXCodePath:Boolean):void
 		{
 			// if calls during startup 
 			// do not open the prompt
-			if (path && ConstantsCoreVO.IS_APP_STORE_VERSION && !xCodePermissionWindow)
+			if (path && ConstantsCoreVO.IS_APP_STORE_VERSION && !xCodePermissionWindow && !isStartupCall)
 			{
 				xCodePermissionWindow = new GitXCodePermissionPopup;
 				xCodePermissionWindow.isXCodePath = isXCodePath;
@@ -421,6 +415,8 @@ package actionScripts.plugins.versionControl
 			{
 				updateXCodePath(path);
 			}
+			
+			isStartupCall = false;
 		}
 		
 		private function onXCodePermissionClosed(event:Event):void
@@ -430,6 +426,7 @@ package actionScripts.plugins.versionControl
 			if (!isDiscarded) 
 			{
 				isGranted = true;
+				Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
 				updateXCodePath(xCodePermissionWindow.xCodePath);
 			}
 			else
@@ -452,10 +449,41 @@ package actionScripts.plugins.versionControl
 		private function updateXCodePath(value:String):void
 		{
 			dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, value));
-			Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
 			
 			// save the xcode-only path for later use
 			PathSetupHelperUtil.updateXCodePath(value);
+		}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE API
+		//
+		//--------------------------------------------------------------------------
+		
+		private function testXCodeOnSandbox():void
+		{
+			new GetXCodePathCommand(onXCodePathDetected);
+		}
+		
+		private function updateSettingsScreen():void
+		{
+			if (gitPlugin && svnPlugin)
+			{
+				gitPlugin.updatePathSetting();
+				svnPlugin.updatePathSetting();
+				
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+			}
+		}
+		
+		private function onXCodePathSelected(event:Event):void
+		{
+			xcodePath = xcodePathSetting.stringValue;
+		}
+		
+		private function isVersioned(folder:FileLocation):Boolean
+		{
+			return folder.fileBridge.resolvePath(".svn/wc.db").fileBridge.exists;
 		}
 	}
 }

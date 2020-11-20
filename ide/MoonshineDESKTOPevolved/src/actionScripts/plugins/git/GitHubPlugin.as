@@ -92,7 +92,7 @@ package actionScripts.plugins.git
 		public static const REVERT_REQUEST:String = "gitFilesRevertRequest";
 		public static const NEW_BRANCH_REQUEST:String = "gitNewBranchRequest";
 		public static const CHANGE_BRANCH_REQUEST:String = "gitChangeBranchRequest";
-		public static const RELAY_SVN_XCODE_REQUEST:String = "svnXCodePermissionRequest";
+		public static const REQUEST_ON_XCODE_PERMISSION:String = "requestOnXCodePermission";
 		
 		public static const NAMESPACE:String = "actionScripts.plugins.git::GitHubPlugin";
 		
@@ -145,7 +145,7 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest, false, 0, true);
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit, false, 0, true);
-			dispatcher.addEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN, false, 0, true);
+			//dispatcher.addEventListener(REQUEST_ON_XCODE_PERMISSION, onXCodeAccessRequestBySVN, false, 0, true);
 			dispatcher.addEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			
@@ -172,7 +172,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest);
 			dispatcher.removeEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit);
-			dispatcher.removeEventListener(RELAY_SVN_XCODE_REQUEST, onXCodeAccessRequestBySVN);
+			//dispatcher.removeEventListener(REQUEST_ON_XCODE_PERMISSION, onXCodeAccessRequestBySVN);
 			dispatcher.removeEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested);
 			dispatcher.removeEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			

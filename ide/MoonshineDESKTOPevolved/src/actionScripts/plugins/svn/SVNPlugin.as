@@ -276,7 +276,7 @@ package actionScripts.plugins.svn
 			{
 				if (ConstantsCoreVO.IS_MACOS)
 				{
-					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+					dispatcher.dispatchEvent(new Event(GitHubPlugin.REQUEST_ON_XCODE_PERMISSION));
                 }
 				else
 				{
