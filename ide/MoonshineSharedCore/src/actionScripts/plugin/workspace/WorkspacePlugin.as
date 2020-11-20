@@ -73,12 +73,6 @@ package actionScripts.plugin.workspace
 				tmpArray.push(label);
 			}
 			
-			// ideally when no saved workspace data
-			if (tmpArray.length == 0)
-			{
-				tmpArray.push(LABEL_DEFAULT_WORKSPACE);
-			}
-			
 			tmpArray.sort(Array.CASEINSENSITIVE);
 			return tmpArray;
 		}
@@ -219,6 +213,10 @@ package actionScripts.plugin.workspace
 			if ("workspaces" in cookie.data)
 			{
 				workspaces = cookie.data["workspaces"];
+			}
+			else
+			{
+				workspaces[LABEL_DEFAULT_WORKSPACE] = [];
 			}
 			
 			currentWorkspaceItems = (workspaces[currentWorkspaceLabel] !== undefined) ? 
