@@ -24,7 +24,6 @@ package actionScripts.plugins.git
 	import flash.utils.Dictionary;
 	
 	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.events.CollectionEvent;
@@ -50,7 +49,6 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.commands.CloneCommand;
 	import actionScripts.plugins.git.commands.CreateCheckoutNewBranchCommand;
 	import actionScripts.plugins.git.commands.GetCurrentBranchCommand;
-	import actionScripts.plugins.git.commands.GetXCodePathCommand;
 	import actionScripts.plugins.git.commands.GitChangeBranchToCommand;
 	import actionScripts.plugins.git.commands.GitCheckoutCommand;
 	import actionScripts.plugins.git.commands.GitCommitCommand;
@@ -64,8 +62,6 @@ package actionScripts.plugins.git
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.MethodDescriptor;
-	import actionScripts.utils.PathSetupHelperUtil;
-	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -79,7 +75,6 @@ package actionScripts.plugins.git
 	import components.popup.GitCommitSelectionPopup;
 	import components.popup.GitNewBranchPopup;
 	import components.popup.GitRepositoryPermissionPopup;
-	import components.popup.GitXCodePermissionPopup;
 	import components.popup.SourceControlCheckout;
 	
     public class GitHubPlugin extends PluginBase implements ISettingsProvider
@@ -118,7 +113,6 @@ package actionScripts.plugins.git
 		
 		private var isGitAvailable:Boolean;
 		private var checkoutWindow:SourceControlCheckout;
-		private var xCodePermissionWindow:GitXCodePermissionPopup;
 		private var gitRepositoryPermissionWindow:GitRepositoryPermissionPopup;
 		private var gitCommitWindow:GitCommitSelectionPopup;
 		private var gitAuthWindow:GitAuthenticationPopup;
@@ -145,7 +139,6 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest, false, 0, true);
 			dispatcher.addEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit, false, 0, true);
-			//dispatcher.addEventListener(REQUEST_ON_XCODE_PERMISSION, onXCodeAccessRequestBySVN, false, 0, true);
 			dispatcher.addEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			
@@ -153,10 +146,7 @@ package actionScripts.plugins.git
 			dispatcher.addEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved, false, 0, true);
 			
 			isStartupTest = true;
-			if (checkOSXGitAccess()) 
-			{
-				checkGitAvailability();
-			}
+			//checkGitAvailability();
 		}
 		
 		override public function deactivate():void 
@@ -172,7 +162,6 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(NEW_BRANCH_REQUEST, onNewBranchRequest);
 			dispatcher.removeEventListener(CHANGE_BRANCH_REQUEST, onChangeBranchRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_GIT_PROJECT, onMenuTypeUpdateAgainstGit);
-			//dispatcher.removeEventListener(REQUEST_ON_XCODE_PERMISSION, onXCodeAccessRequestBySVN);
 			dispatcher.removeEventListener(CheckIsGitRepositoryCommand.GIT_REPOSITORY_TESTED, onGitRepositoryTested);
 			dispatcher.removeEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			
@@ -290,11 +279,6 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function onXCodeAccessRequestBySVN(event:Event):void
-		{
-			checkOSXGitAccess(ProjectMenuTypes.SVN_PROJECT);
-		}
-		
 		private function onSettingsSaved(event:SettingsEvent):void
 		{
 			if (pathSetting)
@@ -315,93 +299,11 @@ package actionScripts.plugins.git
 			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, NAMESPACE, thisSettings));
 		}
 		
-		private function checkOSXGitAccess(against:String=ProjectMenuTypes.GIT_PROJECT):Boolean
-		{
-			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
-			{
-				new GetXCodePathCommand(onXCodePathDetection);
-				return false;
-			}
-			else if (ConstantsCoreVO.IS_MACOS && (against == ProjectMenuTypes.SVN_PROJECT) && !UtilsCore.isSVNPresent()) 
-			{
-				new GetXCodePathCommand(onXCodePathDetection);
-				return false;
-			}
-			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
-			{
-				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
-			}
-			
-			isStartupTest = false;
-			return true;
-		}
-		
-		private function onXCodePathDetection(path:String, isXCodePath:Boolean, against:String):void
-		{
-			// if calls during startup 
-			// do not open the prompt
-			if (!isStartupTest && path && !xCodePermissionWindow)
-			{
-				xCodePermissionWindow = new GitXCodePermissionPopup;
-				xCodePermissionWindow.isXCodePath = isXCodePath;
-				xCodePermissionWindow.xCodePath = path;
-				xCodePermissionWindow.xCodePathAgainst = against;
-				xCodePermissionWindow.horizontalCenter = xCodePermissionWindow.verticalCenter = 0;
-				xCodePermissionWindow.addEventListener(Event.CLOSE, onXCodePermissionClosed, false, 0, true);
-				FlexGlobals.topLevelApplication.addElement(xCodePermissionWindow);
-			}
-			
-			isStartupTest = false;
-		}
-		
-		private function onXCodePermissionClosed(event:Event):void
-		{
-			var isDiscarded:Boolean = xCodePermissionWindow.isDiscarded;
-			var isGranted:Boolean;
-			if (!isDiscarded) 
-			{
-				isGranted = true;
-				
-				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xCodePermissionWindow.xCodePath));
-				Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
-				
-				// re-test
-				checkGitAvailability();
-				// if an opened project lets test it if Git repository
-				if (model.activeProject) 
-				{
-					/*processManager.pendingProcess.push(
-						new MethodDescriptor(CheckIsGitRepositoryCommand, 'CheckIsGitRepositoryCommand', model.activeProject)
-					);*/
-					new CheckIsGitRepositoryCommand(model.activeProject);
-				}
-				// save the xcode-only path for later use
-				PathSetupHelperUtil.updateXCodePath(xCodePermissionWindow.xCodePath);
-			}
-			else
-			{
-				isGranted = false;
-			}
-			
-			if (ConstantsCoreVO.IS_GIT_OSX_AVAILABLE != isGranted)
-			{
-				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = isGranted;
-				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
-				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
-			}
-			
-			xCodePermissionWindow.removeEventListener(Event.CLOSE, onXCodePermissionClosed);
-			FlexGlobals.topLevelApplication.removeElement(xCodePermissionWindow);
-			xCodePermissionWindow = null;
-		}
-		
 		private function onCloneRequest(event:Event):void
 		{
 			if (!checkoutWindow)
 			{
-				if (!checkOSXGitAccess()) return;
-				
-				checkGitAvailability();
+				//checkGitAvailability();
 				
 				checkoutWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SourceControlCheckout, true) as SourceControlCheckout;
 				checkoutWindow.title = "Clone Repository";
@@ -444,9 +346,7 @@ package actionScripts.plugins.git
 		{
 			if (!gitCommitWindow)
 			{
-				if (!checkOSXGitAccess()) return;
-				
-				checkGitAvailability();
+				//checkGitAvailability();
 				
 				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
 				gitCommitWindow.title = "Commit";
@@ -533,9 +433,7 @@ package actionScripts.plugins.git
 		{
 			if (!gitCommitWindow)
 			{
-				if (!checkOSXGitAccess()) return;
-				
-				checkGitAvailability();
+				//checkGitAvailability();
 				
 				gitCommitWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitCommitSelectionPopup, false) as GitCommitSelectionPopup;
 				gitCommitWindow.title = "Modified File(s)";
@@ -577,9 +475,7 @@ package actionScripts.plugins.git
 		{
 			if (!gitBranchSelectionWindow)
 			{
-				if (!checkOSXGitAccess()) return;
-				
-				checkGitAvailability();
+				//checkGitAvailability();
 				
 				gitNewBranchWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitNewBranchPopup, false) as GitNewBranchPopup;
 				gitNewBranchWindow.title = "New Branch";
@@ -631,9 +527,7 @@ package actionScripts.plugins.git
 			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived);
 			if (!gitBranchSelectionWindow)
 			{
-				if (!checkOSXGitAccess()) return;
-				
-				checkGitAvailability();
+				//checkGitAvailability();
 				
 				gitBranchSelectionWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitBranchSelectionPopup, false) as GitBranchSelectionPopup;
 				gitBranchSelectionWindow.title = "Select Branch";
@@ -705,8 +599,6 @@ package actionScripts.plugins.git
 			if (isAccepted) 
 			{
 				tmpProject.menuType += ","+ ProjectMenuTypes.GIT_PROJECT;
-				
-				checkOSXGitAccess();
 				new CheckIsGitRepositoryCommand(tmpProject);
 			}
 			else
@@ -719,9 +611,7 @@ package actionScripts.plugins.git
 		{
 			if (!gitAuthWindow)
 			{
-				if (!checkOSXGitAccess()) return;
-				
-				checkGitAvailability();
+				//checkGitAvailability();
 				
 				gitAuthWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
 				gitAuthWindow.title = "Git Needs Authentication";

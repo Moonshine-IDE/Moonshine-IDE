@@ -37,6 +37,7 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.plugins.git.commands.CheckIsGitRepositoryCommand;
 	import actionScripts.plugins.git.commands.GetXCodePathCommand;
 	import actionScripts.plugins.svn.SVNPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
@@ -62,6 +63,8 @@ package actionScripts.plugins.versionControl
 		override public function get name():String			{ return "Source Control"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Source Controls' Manager Plugin"; }
+		
+		public static const NAMESPACE:String = "actionScripts.plugins.versionControl::VersionControlPlugin";
 		
 		private var addRepositoryWindow:AddRepositoryPopup;
 		private var manageRepoWindow:ManageRepositoriesPopup;
@@ -100,14 +103,6 @@ package actionScripts.plugins.versionControl
 			dispatcher.addEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.REQUEST_ON_XCODE_PERMISSION, onXCodeAccessPermissionRequested, false, 0, true);
-			
-			
-			// check and setup if needed for the non-sandbox versions
-			if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_APP_STORE_VERSION)
-			{
-				isStartupCall = true;
-				continueIfVersionControlSupported(null);
-			}
 		}
 		
 		override public function deactivate():void
@@ -345,9 +340,16 @@ package actionScripts.plugins.versionControl
 		//
 		//--------------------------------------------------------------------------
 		
-		private function onXCodeAccessPermissionRequested(event:VersionControlEvent):void
+		private function onXCodeAccessPermissionRequested(event:Event):void
 		{
-			testXCodeOnSandbox();
+			if (!xcodePath)
+			{
+				testXCodeOnSandbox();
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, VersionControlPlugin.NAMESPACE));
+			}
 		}
 		
 		private function continueIfVersionControlSupported(event:Event):Boolean
@@ -380,16 +382,7 @@ package actionScripts.plugins.versionControl
 				}
 				else 
 				{
-					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN) 
-					{
-						if (!isSVNPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, SVNPlugin.NAMESPACE));
-						else return true;
-					}
-					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT) 
-					{
-						if (!isGitPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, GitHubPlugin.NAMESPACE));
-						else return true;
-					}
+					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, VersionControlPlugin.NAMESPACE));
 				}
 				
 				return false;
@@ -452,6 +445,12 @@ package actionScripts.plugins.versionControl
 			
 			// save the xcode-only path for later use
 			PathSetupHelperUtil.updateXCodePath(value);
+			
+			// test if any already opened project is selected
+			if (model.activeProject)
+			{
+				new CheckIsGitRepositoryCommand(model.activeProject);
+			}
 		}
 		
 		//--------------------------------------------------------------------------

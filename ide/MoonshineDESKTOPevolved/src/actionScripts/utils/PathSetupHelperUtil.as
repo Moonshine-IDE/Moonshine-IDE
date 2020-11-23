@@ -33,6 +33,7 @@ package actionScripts.utils
 	import actionScripts.plugins.domino.DominoPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.svn.SVNPlugin;
+	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
@@ -122,6 +123,9 @@ package actionScripts.utils
 					break;
 				case SDKTypes.NOTES:
 					updateNotesPath(path);
+					break;
+				case SDKTypes.XCODE:
+					updateXCodePath(path);
 					break;
 			}
 		}
@@ -370,6 +374,8 @@ package actionScripts.utils
 		
 		public static function updateXCodePath(path:String):void
 		{
+			dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, path));
+			
 			var settings:Vector.<ISetting> = Vector.<ISetting>([
 				new PathSetting({xcodePath: path}, 'xcodePath', 'Xocde-CommandLine', true)
 			]);

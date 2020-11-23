@@ -23,6 +23,7 @@ package actionScripts.impls
 	import actionScripts.utils.MSDKIdownloadUtil;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKTypes;
 
 	public class IHelperMoonshineBridgeImp implements IHelperMoonshineBridge
@@ -95,6 +96,11 @@ package actionScripts.impls
 		public function isNotesDominoPresent():Boolean
 		{
 			return UtilsCore.isNotesDominoAvailable();
+		}
+		
+		public function isAppStoreVersion():Boolean
+		{
+			return ConstantsCoreVO.IS_APP_STORE_VERSION;
 		}
 
 		public function runOrDownloadSDKInstaller():void

@@ -33,5 +33,6 @@ package actionScripts.valueObjects
 		public static const OPENJAVA:String = "openjava";
 		public static const NODEJS:String = "nodejs";
 		public static const NOTES:String = "notes";
+		public static const XCODE:String = "xcode";
     }
 }
