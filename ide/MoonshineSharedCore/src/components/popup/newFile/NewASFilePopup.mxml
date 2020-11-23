@@ -194,7 +194,7 @@
 			tree.callLater(parseFolders);
 			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
 
-			newAsFileCompletionManager = new NewASFileCompletionManager(this);
+			newAsFileCompletionManager = new NewASFileCompletionManager(this, wrapperBelongToProject);
 			newAsFileCompletionManager.addEventListener("itemSelected", onCompletionManagerItemSelected);
 
 			this.btnCreate.setStyle("skinClass", DarkButtonSkin);
