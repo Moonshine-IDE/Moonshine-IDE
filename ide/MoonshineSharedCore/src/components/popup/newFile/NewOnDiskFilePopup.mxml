@@ -10,6 +10,9 @@
 		import actionScripts.factory.FileLocation;
 		import actionScripts.utils.SimpleValidator;
 		import actionScripts.valueObjects.ConstantsCoreVO;
+		import mx.controls.Alert;
+		import flash.filesystem.File;
+
 		
 		public var fromTemplate:FileLocation;
 		
@@ -27,10 +30,28 @@
 				tmpEvent.fileName = txtFileName.text;
 				tmpEvent.fileExtension = extensionLabel.text.substr(1, extensionLabel.text.length);
 				dispatchEvent(tmpEvent);
+
+				syncFormFile(tmpEvent.fileName,tmpEvent.fileExtension,wrapperBelongToProject.folderLocation)
 				
 				doBeforeExit();
 				super.closeThis();
 			}
+		}
+
+		//ProjectVO
+
+		private function syncFormFile(fileName:String,fileExtension:String,folderLocation:FileLocation):void
+		{
+
+			var targetFolder:String=folderLocation.fileBridge.nativePath;
+			var original_form:FileLocation =  folderLocation.resolvePath("src"+File.separator +"main"+File.separator+"visualeditor"+File.separator+fileName+".dve");
+			if(original_form.fileBridge.exists){
+				var newFormFile:FileLocation =  folderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+fileName + ".form"); 
+				original_form.fileBridge.copyTo(newFormFile, true); 
+			}
+			
+			
+
 		}
 		
 		protected function onWindowCompletes(event:FlexEvent):void
