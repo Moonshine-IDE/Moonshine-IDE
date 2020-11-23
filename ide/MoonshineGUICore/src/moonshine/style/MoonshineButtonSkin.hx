@@ -71,6 +71,10 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 			return;
 		}
 		switch (fillStyle) {
+			case None:
+				{
+					return;
+				}
 			case SolidColor(color, alpha):
 				{
 					if (alpha == null) {
@@ -78,10 +82,11 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 					}
 					this.graphics.beginFill(color, alpha);
 				}
-			case Gradient(type, colors, alphas, ratios, radians, spreadMethod, interpolationMethod, focalPointRatio):
+			case Gradient(type, colors, alphas, ratios, matrixCallback, spreadMethod, interpolationMethod, focalPointRatio):
 				{
-					if (radians == null) {
-						radians = 0.0;
+					var callback:(Float, Float, ?Float, ?Float, ?Float) -> Matrix = matrixCallback;
+					if (callback == null) {
+						callback = getDefaultGradientMatrix;
 					}
 					if (spreadMethod == null) {
 						spreadMethod = SpreadMethod.PAD;
@@ -92,7 +97,7 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 					if (focalPointRatio == null) {
 						focalPointRatio = 0.0;
 					}
-					var matrix = getGradientMatrix(radians);
+					var matrix = callback(this.actualWidth, this.actualHeight, 0.0, 0.0, 0.0);
 					this.graphics.beginGradientFill(type, #if flash cast #end colors, alphas, ratios, matrix, spreadMethod, interpolationMethod,
 						focalPointRatio);
 				}
@@ -109,9 +114,9 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 		}
 	}
 
-	private function getGradientMatrix(radians:Float):Matrix {
+	private function getDefaultGradientMatrix(width:Float, height:Float, ?radians:Float = 0.0, ?tx:Float = 0.0, ?ty:Float = 0.0):Matrix {
 		var matrix = new Matrix();
-		matrix.createGradientBox(this.actualWidth, this.actualHeight, radians);
+		matrix.createGradientBox(width, height, radians, tx, ty);
 		return matrix;
 	}
 }
