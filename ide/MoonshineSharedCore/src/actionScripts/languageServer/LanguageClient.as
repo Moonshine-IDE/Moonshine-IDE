@@ -253,6 +253,7 @@ package actionScripts.languageServer
 		private var _savedDiagnostics:Object = {};
 		private var _idToRequest:Object = {};
 
+		protected var _commandListeners:Object = {};
 		protected var _notificationListeners:Object = {};
 
 		private var _capabilities:Object = null;
@@ -455,6 +456,39 @@ package actionScripts.languageServer
 			}
 
 			return id;
+		}
+
+		public function addCommandListener(command:String, listener:Function):void
+		{
+			if(!(command in this._commandListeners))
+			{
+				this._commandListeners[command] = new <Function>[];
+			}
+			var listeners:Vector.<Function> = this._commandListeners[command] as Vector.<Function>;
+			var index:int = listeners.indexOf(listener);
+			if(index != -1)
+			{
+				//already added
+				return;
+			}
+			listeners.push(listener);
+		}
+
+		public function removeCommandListener(command:String, listener:Function):void
+		{
+			if(!(command in this._commandListeners))
+			{
+				//nothing to remove
+				return;
+			}
+			var listeners:Vector.<Function> = this._commandListeners[command] as Vector.<Function>;
+			var index:int = listeners.indexOf(listener);
+			if(index == -1)
+			{
+				//nothing to remove
+				return;
+			}
+			listeners.removeAt(index);
 		}
 
 		public function addNotificationListener(method:String, listener:Function):void
@@ -2237,6 +2271,16 @@ package actionScripts.languageServer
 				return;
 			}
 			var command:String = event.command;
+			if(command in this._commandListeners)
+			{
+				var listeners:Vector.<Function> = this._commandListeners[command] as Vector.<Function>;
+				var listenerCount:int = listeners.length;
+				for(var i:int = 0; i < listenerCount; i++)
+				{
+					var listener:Function = listeners[i];
+					listener.apply(null, event.arguments);
+				}
+			}
 			if(supportedCommands.indexOf(command) == -1)
 			{
 				return;
