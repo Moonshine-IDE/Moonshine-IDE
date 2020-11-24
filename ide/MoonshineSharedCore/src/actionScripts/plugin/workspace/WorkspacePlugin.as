@@ -56,7 +56,6 @@ package actionScripts.plugin.workspace
 		override public function get description():String 	{return "Workspace manangement for the Moonshine projects.";}
 		
 		private var cookie:SharedObject;
-		private var currentWorkspaceLabel:String;
 		private var currentWorkspaceItems:Array;
 		private var workspaces:Object; // Dictionary<String, [String]>
 		private var methodToCallAfterClosingAllProjects:MethodDescriptor;
@@ -64,6 +63,16 @@ package actionScripts.plugin.workspace
 		
 		private var loadWorkspacePopup:LoadWorkspacePopup;
 		private var newWorkspacePopup:NewWorkspacePopup;
+		
+		private var _currentWorkspaceLabel:String;
+		private function get currentWorkspaceLabel():String
+		{
+			return _currentWorkspaceLabel;
+		}
+		private function set currentWorkspaceLabel(value:String):void
+		{
+			ConstantsCoreVO.CURRENT_WORKSPACE =	_currentWorkspaceLabel = value;
+		}
 		
 		private function get workspaceLabels():Array
 		{

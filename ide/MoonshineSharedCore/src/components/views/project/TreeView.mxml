@@ -1196,11 +1196,12 @@
 			{
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SCROLL_FROM_SOURCE));
 			}
+			
 		]]>
 	</mx:Script>
 
 	<project:ProjectViewHeader id="header"
-							   label="Projects"
+							   label="{'&lt;span fontWeight=\'bold\'&gt;Projects &lt;/span&gt; &lt;span fontStyle=\'italic\'&gt;('+ ConstantsCoreVO.CURRENT_WORKSPACE +')&lt;/span&gt;'}"
 							   showScrollFromSourceIcon="true"
 							   width="100%"
 							   scrollFromSource="onScrollFromSource(event)"
