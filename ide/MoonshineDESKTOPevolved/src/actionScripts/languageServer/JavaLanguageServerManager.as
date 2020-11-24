@@ -88,6 +88,7 @@ package actionScripts.languageServer
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH_HELP:String = "java.ignoreIncompleteClasspath.help";
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
 		private static const COMMAND_JAVA_APPLY_WORKSPACE_EDIT:String = "java.apply.workspaceEdit";
+		private static const COMMAND_JAVA_CLEAN_WORKSPACE:String = "java.clean.workspace";
 		
 		private static const URI_SCHEME_FILE:String = "file";
 
@@ -101,6 +102,7 @@ package actionScripts.languageServer
 		private var _languageServerProcess:NativeProcess;
 		private var _languageStatusDone:Boolean = false;
 		private var _waitingToRestart:Boolean = false;
+		private var _waitingToCleanWorkspace:Boolean = false;
 		private var _previousJDKPath:String = null;
 		private var _languageServerLauncherJar:File;
 
@@ -178,6 +180,7 @@ package actionScripts.languageServer
 				return;
 			}
 			_languageStatusDone = false;
+			_languageClient.removeCommandListener(COMMAND_JAVA_CLEAN_WORKSPACE, command_javaCleanWorkspaceHandler);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
@@ -383,6 +386,7 @@ package actionScripts.languageServer
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
+			_languageClient.addCommandListener(COMMAND_JAVA_CLEAN_WORKSPACE, command_javaCleanWorkspaceHandler);
 		}
 
 		private function restartLanguageServer():void
@@ -392,6 +396,7 @@ package actionScripts.languageServer
 				//we'll just continue waiting
 				return;
 			}
+			_waitingToCleanWorkspace = false;
 			_waitingToRestart = false;
 			if(_languageClient)
 			{
@@ -408,6 +413,16 @@ package actionScripts.languageServer
 			{
 				startNativeProcess();
 			}
+		}
+
+		private function cleanWorkspace():void
+		{
+			var workspaceFolder:File = new File(getWorkspaceNativePath());
+			if(workspaceFolder.exists && workspaceFolder.isDirectory)
+			{
+				workspaceFolder.deleteDirectory(true);
+			}
+			restartLanguageServer();
 		}
 
 		private function createCommandListener(command:String, args:Array, popup:StandardPopup):Function
@@ -521,7 +536,12 @@ package actionScripts.languageServer
 
 		private function languageClient_closeHandler(event:Event):void
 		{
-			if(_waitingToRestart)
+			if(_waitingToCleanWorkspace)
+			{
+				cleanupLanguageClient();
+				cleanWorkspace();
+			}
+			else if(_waitingToRestart)
 			{
 				cleanupLanguageClient();
 				//the native process will automatically exit, so we continue
@@ -625,6 +645,19 @@ package actionScripts.languageServer
 			PopUpManager.addPopUp(popup, FlexGlobals.topLevelApplication as DisplayObject, true);
 			popup.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
 			popup.x = (FlexGlobals.topLevelApplication.width-popup.width)/2;
+		}
+
+		private function command_javaCleanWorkspaceHandler():void
+		{
+			if(_languageClient)
+			{
+				_waitingToCleanWorkspace = true;
+				_languageClient.stop();
+			}
+			else
+			{
+				cleanWorkspace();
+			}
 		}
 	}
 }
