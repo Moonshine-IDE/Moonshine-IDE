@@ -732,33 +732,110 @@
 				// NewFileEvent calls in case of folder creation, and
 				// it's TreeMenuItemEvent in case of file creation
 	
+				var isFolderCreationEvent:Boolean = (event is NewFileEvent);
 				var fileName:String;
 				var newFileLocation:FileLocation;
+				var fileSparator:String = model.fileCore.separator;
 				var insideLocation:FileWrapper = (event is NewFileEvent) ? NewFileEvent(event).insideLocation : TreeMenuItemEvent(event).data;
-				if(event is NewFileEvent)
+				if (isFolderCreationEvent)
 				{
 					fileName = NewFileEvent(event).fileName;
 	
 					newFileLocation = insideLocation.file.fileBridge.resolvePath(fileName);
-					if(!newFileLocation.fileBridge.exists) newFileLocation.fileBridge.createDirectory();
-				} else if((event as TreeMenuItemEvent).extra && ((event as TreeMenuItemEvent).extra is FileLocation))
+					if (!newFileLocation.fileBridge.exists) newFileLocation.fileBridge.createDirectory();
+				} 
+				else if ((event as TreeMenuItemEvent).extra && ((event as TreeMenuItemEvent).extra is FileLocation))
 				{
+					fileName = (event as TreeMenuItemEvent).menuLabel.replace((event as TreeMenuItemEvent).data.file.fileBridge.nativePath + model.fileCore.separator, "");
 					newFileLocation = (event as TreeMenuItemEvent).extra as FileLocation;
-				} else
+				} 
+				else
 				{
-					var tmpArray:Array = TreeMenuItemEvent(event).menuLabel.split(model.fileCore.separator);
-					fileName = tmpArray[tmpArray.length - 1];
-	
+					fileName = (event as TreeMenuItemEvent).menuLabel.replace((event as TreeMenuItemEvent).data.file.fileBridge.nativePath + model.fileCore.separator, "");
 					newFileLocation = new FileLocation(TreeMenuItemEvent(event).menuLabel);
 				}
 	
-				var newFile:FileWrapper = new FileWrapper(newFileLocation, false, insideLocation.projectReference);
-				newFile.defaultName = fileName;
-				if(event in NewFileEvent) newFile.children = [];
-				insideLocation.children.push(newFile);
+				// generates the fileWrappers and add to the parent
+				var tmpFolders:Array = (fileName.indexOf(fileSparator) != -1) ? fileName.split(fileSparator) : [fileName];
+				var folderWrappers:Array = [];
+				var newFile:FileWrapper;
+				var tmpNestedFolderPathString:String = "";
+				var isRequireFileNameAddition:Boolean;
+				
+				if (!isFolderCreationEvent && (tmpFolders.length > 1))
+				{
+					isRequireFileNameAddition = true;
+					tmpFolders.pop();
+				}
+				
+				var runCheckFileWrapper:FileWrapper = insideLocation;
+				tmpFolders.forEach(function(folderName:String, index:int, arr:Array):void {
+					
+					var isExists:Boolean = runCheckFileWrapper.children.some(function(element:FileWrapper, index:int, arr:Array):Boolean {
+						if (element.file.fileBridge.nativePath == (runCheckFileWrapper.file.fileBridge.nativePath + model.fileCore.separator + folderName))
+						{
+							runCheckFileWrapper = element;
+							return true;
+						}
+						return false;
+					});
+					
+					tmpNestedFolderPathString += folderName + fileSparator;
+					if (isExists)
+					{
+						newFile = runCheckFileWrapper;
+					}
+					else
+					{
+						newFile = new FileWrapper(
+							insideLocation.file.fileBridge.resolvePath(tmpNestedFolderPathString), 
+							false, 
+							insideLocation.projectReference
+						);
+						newFile.defaultName = folderName;
+						newFile.children = [];
+					}
+					
+					if (index == 0) 
+					{
+						folderWrappers.push(newFile);
+					}
+					else
+					{
+						if (!isExists) (folderWrappers[folderWrappers.length - 1] as FileWrapper).children.push(newFile);
+						folderWrappers.push(newFile);
+					}
+				});
+				
+				if (!isFolderCreationEvent && isRequireFileNameAddition)
+				{
+					var newFileWrapper:FileWrapper = new FileWrapper(newFileLocation, false, insideLocation.projectReference);
+					newFileWrapper.defaultName = newFileLocation.name;
+					
+					if (newFile)
+					{
+						newFile.children.push(newFileWrapper);
+						newFile = newFileWrapper;
+					}
+					else
+					{
+						folderWrappers.push(newFileWrapper);
+						newFile = newFileWrapper;
+					}
+				}
+				
+				
+				var isImmediateExists:Boolean = insideLocation.children.some(function(element:FileWrapper, index:int, arr:Array):Boolean {
+					return (element == folderWrappers[0]);
+				});
+				if (!isImmediateExists) insideLocation.children.push(folderWrappers[0]);
 	
 				// Make sure item is open before adding
-				tree.callLater(tree.expandItem, [insideLocation, true]);
+				tree.callLater(function():void
+				{
+					tree.expandItem(insideLocation, true);
+					tree.expandChildrenOf(folderWrappers[0], true);
+				});
 	
 				// refresh the folder section and select
 				var timeoutValue:uint = setTimeout(function ():void
@@ -1119,11 +1196,12 @@
 			{
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SCROLL_FROM_SOURCE));
 			}
+			
 		]]>
 	</mx:Script>
 
 	<project:ProjectViewHeader id="header"
-							   label="Projects"
+							   label="{'&lt;span fontWeight=\'bold\'&gt;Projects &lt;/span&gt; &lt;span fontStyle=\'italic\'&gt;('+ ConstantsCoreVO.CURRENT_WORKSPACE +')&lt;/span&gt;'}"
 							   showScrollFromSourceIcon="true"
 							   width="100%"
 							   scrollFromSource="onScrollFromSource(event)"

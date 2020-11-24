@@ -22,6 +22,7 @@ package actionScripts.plugins.svn.commands
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
 	
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ProjectVO;
@@ -45,9 +46,19 @@ package actionScripts.plugins.svn.commands
 			{
 				project.menuType += ","+ ProjectMenuTypes.SVN_PROJECT;
 				project.hasVersionControlType = VersionControlTypes.SVN;
-				// following will enable/disable Moonshine top menus based on project
-				dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
 			}
+			else
+			{
+				if (project.menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) != -1)
+				{
+					project.menuType = project.menuType.replace(","+ ProjectMenuTypes.SVN_PROJECT, "");
+					project.hasVersionControlType = null;
+				}
+			}
+			
+			// following will enable/disable Moonshine top menus based on project
+			dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, project));
 			
 			removeListeners();
 		}

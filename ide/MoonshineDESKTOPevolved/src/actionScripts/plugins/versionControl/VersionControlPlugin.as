@@ -28,6 +28,7 @@ package actionScripts.plugins.versionControl
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
@@ -37,7 +38,6 @@ package actionScripts.plugins.versionControl
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.git.GitHubPlugin;
-	import actionScripts.plugins.git.commands.CheckIsGitRepositoryCommand;
 	import actionScripts.plugins.git.commands.GetXCodePathCommand;
 	import actionScripts.plugins.svn.SVNPlugin;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
@@ -103,6 +103,11 @@ package actionScripts.plugins.versionControl
 			dispatcher.addEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories, false, 0, true);
 			dispatcher.addEventListener(VersionControlEvent.REQUEST_ON_XCODE_PERMISSION, onXCodeAccessPermissionRequested, false, 0, true);
+			
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				dispatcher.addEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved, false, 0, true);
+			}
 		}
 		
 		override public function deactivate():void
@@ -114,6 +119,8 @@ package actionScripts.plugins.versionControl
 			dispatcher.removeEventListener(VersionControlEvent.OPEN_ADD_REPOSITORY, handleOpenAddRepository);
 			dispatcher.removeEventListener(VersionControlEvent.RESTORE_DEFAULT_REPOSITORIES, restoreDefaultRepositories);
 			dispatcher.removeEventListener(VersionControlEvent.REQUEST_ON_XCODE_PERMISSION, onXCodeAccessPermissionRequested);
+			
+			dispatcher.removeEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved);
 		}
 		
 		override public function onSettingsClose():void
@@ -445,11 +452,16 @@ package actionScripts.plugins.versionControl
 			
 			// save the xcode-only path for later use
 			PathSetupHelperUtil.updateXCodePath(value);
+			// update calculated git/svn path
+			updateOtherPaths();
 			
 			// test if any already opened project is selected
 			if (model.activeProject)
 			{
-				new CheckIsGitRepositoryCommand(model.activeProject);
+				// git check
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_GIT_PROJECT, model.activeProject));
+				// svn check
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_SVN_PROJECT, model.activeProject));
 			}
 		}
 		
@@ -458,6 +470,11 @@ package actionScripts.plugins.versionControl
 		//  PRIVATE API
 		//
 		//--------------------------------------------------------------------------
+		
+		private function onSettingsSaved(event:SettingsEvent):void
+		{
+			updateXCodePath(xcodePath);
+		}
 		
 		private function testXCodeOnSandbox():void
 		{

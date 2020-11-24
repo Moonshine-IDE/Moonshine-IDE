@@ -44,7 +44,6 @@ package actionScripts.plugins.svn
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.HelperUtils;
-	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;

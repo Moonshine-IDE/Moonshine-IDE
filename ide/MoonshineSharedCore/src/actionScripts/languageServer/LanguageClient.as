@@ -63,7 +63,6 @@ package actionScripts.languageServer
 	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -1649,7 +1648,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1665,7 +1664,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1681,7 +1680,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1710,7 +1709,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1733,7 +1732,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1762,7 +1761,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1816,7 +1815,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1851,7 +1850,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1885,7 +1884,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1920,7 +1919,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1954,7 +1953,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1981,6 +1980,15 @@ package actionScripts.languageServer
 			_gotoTypeDefinitionLookup[id] = new UriAndPosition(uri, positionVO);
 		}
 
+		private function isInProject(uri:String, requestedProject:ProjectVO = null):Boolean
+		{
+			if(requestedProject != null)
+			{
+				return requestedProject == _project;
+			}
+			return isUriInProject(uri, _project);
+		}
+
 		private function gotoImplementationHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
@@ -1988,7 +1996,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -2025,12 +2033,20 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			var activeEditor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
-			if(!activeEditor && _model.activeProject != _project)
+			var project:ProjectVO = event.project;
+			if(project == null)
 			{
-				return;
+				var activeEditor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
+				if(!activeEditor)
+				{
+					project = _model.activeProject;
+				}
+				else if(isUriInProject(activeEditor.currentFile.fileBridge.url, _project))
+				{
+					project = _project;
+				}
 			}
-			else if(activeEditor && !isUriInProject(activeEditor.currentFile.fileBridge.url, _project))
+			if(project != _project)
 			{
 				return;
 			}
@@ -2057,7 +2073,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -2085,7 +2101,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -2122,7 +2138,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -2185,7 +2201,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}

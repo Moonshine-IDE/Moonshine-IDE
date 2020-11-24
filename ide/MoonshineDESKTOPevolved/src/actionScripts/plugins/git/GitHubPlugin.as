@@ -105,6 +105,7 @@ package actionScripts.plugins.git
 			if (_gitBinaryPathOSX != value)
 			{
 				model.gitPath = _gitBinaryPathOSX = value;
+				checkGitAvailability();
 			}
 		}
 		
@@ -561,14 +562,13 @@ package actionScripts.plugins.git
 		{
 			// don't go for a check if already decided as a git project
 			// or a project is not permitted to access as a git repository on sandbox macos
-			if (event.project.menuType.indexOf(ProjectMenuTypes.GIT_PROJECT) != -1 ||
-				projectsNotAcceptedByUserToPermitAsGitOnMacOS[event.project.folderLocation.fileBridge.nativePath] != undefined ||
-				!isGitAvailable) 
+			/*if (event.project.menuType.indexOf(ProjectMenuTypes.GIT_PROJECT) != -1 ||
+				projectsNotAcceptedByUserToPermitAsGitOnMacOS[event.project.folderLocation.fileBridge.nativePath] != undefined) 
 			{
 				// following will enable/disable Moonshine top menus based on project
 				dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
 				return;
-			}
+			}*/
 			
 			new CheckIsGitRepositoryCommand(event.project);
 		}

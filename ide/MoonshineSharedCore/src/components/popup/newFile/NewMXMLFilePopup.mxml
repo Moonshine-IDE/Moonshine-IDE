@@ -24,183 +24,170 @@
 					 xmlns:s="library://ns.adobe.com/flex/spark"
 					 xmlns:view="actionScripts.plugin.findreplace.view.*"
 					 xmlns:utils="actionScripts.utils.*" title="New MXML Component"
-					 xmlns:newfile="components.popup.newFile.*" xmlns:mx="library://ns.adobe.com/flex/mx">
+					 xmlns:newfile="components.popup.newFile.*" xmlns:mx="library://ns.adobe.com/flex/mx"
+					 preinitialize="onPreinitialize(event)">
 	<fx:Metadata>
 		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-        import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-
-        import mx.events.FlexEvent;
-        import mx.events.ListEvent;
-        import mx.managers.PopUpManager;
-
-        import spark.events.TextOperationEvent;
-
-        import actionScripts.events.GlobalEventDispatcher;
-        import actionScripts.events.NewFileEvent;
-        import actionScripts.extResources.com.validator.ValidatorType;
-        import actionScripts.factory.FileLocation;
-        import actionScripts.ui.menu.MenuPlugin;
-        import actionScripts.utils.SimpleValidator;
-        import actionScripts.utils.UtilsCore;
-        import actionScripts.valueObjects.ConstantsCoreVO;
-        import actionScripts.valueObjects.FileWrapper;
-
-        override protected function onBrowseButton(event:MouseEvent):void
-        {
-            super.onBrowseButton(event);
-
-            if(!projectSelectionWindow)
-            {
-                projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
-                PopUpManager.centerPopUp(projectSelectionWindow);
-            }
-        }
-
-        override protected function onProjectSelectionChanged(event:NewFileEvent):void
-        {
-            super.onProjectSelectionChanged(event);
-
-            txtDestination.text = wrapperBelongToProject.projectName;
-
-            refreshTemplatesBasedOnDropDownList();
-
-            var timeoutValue:uint = setTimeout(function ():void
-            {
-                parseFolders();
-                clearTimeout(timeoutValue);
-            }, 100);
-        }
-
-        protected function onCreateButton(event:MouseEvent):void
-        {
-            // validation check for Enter key
-            if(!btnCreate.enabled) return;
-
-            // validation 2
-            var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
-            if(SimpleValidator.validate(validateArr))
-            {
-                var tmpEvent:NewFileEvent = new NewFileEvent(
-					NewFileEvent.EVENT_NEW_FILE, 
-					null, 
-					(componentTemplates ? new FileLocation(ddlType.selectedItem.nativePath) : null), 
-					wrapperOfFolderLocation
-				);
-                tmpEvent.ofProject = wrapperBelongToProject;
-                tmpEvent.fileName = txtFileName.text;
-                dispatchEvent(tmpEvent);
-
-                doBeforeExit();
-                super.closeThis();
-            }
-        }
-
-        protected function refreshTemplatesBasedOnDropDownList():void
-        {
-            var currentProject:AS3ProjectVO = wrapperBelongToProject as AS3ProjectVO;
-            if(currentProject && currentProject.isFlexJS && !currentProject.isRoyale)
-            {
-                componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_FLEXJS_COMPONENTS;
-            } else if(currentProject && currentProject.isRoyale)
-            {
-                componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_ROYALE_COMPONENTS;
-                //Selects Group which is more common for Royale
-                ddlType.selectedIndex = 1;
-            } else
-            {
-                componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS;
-            }
-        }
-
-        protected function parseFolders():void
-        {
-            tree.expandItem(wrapperBelongToProject.projectFolder, true);
-
-            // 1. expand all items to our fileWrapper object
-            // 2. select the fileWrapper object
-            // 3. scroll to the fileWrapper object
-            UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
-            UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
-            tree.callLater(function ():void
-            {
-                var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
-                for (var j:int = 0; j < (wrappers.length - 1); j++)
-                {
-                    tree.expandItem(wrappers[j], true);
-                }
-
-                // selection
-                tree.selectedItem = wrapperOfFolderLocation;
-                // scroll-to
-                tree.callLater(function ():void
-                {
-                    tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
-                });
-            });
-        }
-
-        protected function onNameChanged(event:TextOperationEvent):void
-        {
-            // @note
-            // for some reason PromptTextInput.text is not binding properly
-            // to other Flex UI component, i.e. Label
-            // it shows only the origianl set text to PromptTextInput.text if
-            // binded to a label component, thus:
-            modifiedName = txtFileName.text;
-            if(isDestinationValid)
-            {
-                warningMessage = modifiedName + extensionLabel.text +" is already exists.";
-            }
-
-            if(!isDestinationValid || txtFileName.text == "")
-            {
-                btnCreate.enabled = false;
-            } else
-            {
-                var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + extensionLabel.text);
-                targetFile.fileBridge.canonicalize();
-
-                btnCreate.enabled = !targetFile.fileBridge.exists;
-            }
-        }
-
-        protected function onTreeItemClicked(event:ListEvent):void
-        {
-            txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-                    Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
-                    tree.selectedItem.nativePath);
-
-            // re-validate upon folder location change
-            wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
-            isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
-            onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
-        }
-
-        override protected function onNewFileCreationComplete(event:FlexEvent):void
-        {
-            super.onNewFileCreationComplete(event);
-
-            refreshTemplatesBasedOnDropDownList();
-
-            minHeight = height;
-            if(folderLocation)
-            {
-                txtDestination.text = wrapperBelongToProject.projectName;
-                txtFileName.setFocus();
-            }
-
-            // check if the file creation requested in the
-            // 'source folder' or not
-            isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
-            if(isDestinationValid) hgExistingWarning.visible = false;
-
-            tree.callLater(parseFolders);
-            GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
-        }
-        ]]>
+	        import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	
+	        import mx.events.FlexEvent;
+	        import mx.events.ListEvent;
+	        import mx.managers.PopUpManager;
+	
+	        import spark.events.TextOperationEvent;
+	
+	        import actionScripts.events.GlobalEventDispatcher;
+	        import actionScripts.events.NewFileEvent;
+	        import actionScripts.extResources.com.validator.ValidatorType;
+	        import actionScripts.factory.FileLocation;
+	        import actionScripts.ui.menu.MenuPlugin;
+	        import actionScripts.utils.SimpleValidator;
+	        import actionScripts.utils.UtilsCore;
+	        import actionScripts.valueObjects.ConstantsCoreVO;
+	        import actionScripts.valueObjects.FileWrapper;
+	
+	        override protected function onBrowseButton(event:MouseEvent):void
+	        {
+	            super.onBrowseButton(event);
+	
+	            if(!projectSelectionWindow)
+	            {
+	                projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
+	                PopUpManager.centerPopUp(projectSelectionWindow);
+	            }
+	        }
+	
+	        override protected function onProjectSelectionChanged(event:NewFileEvent):void
+	        {
+	            super.onProjectSelectionChanged(event);
+	
+	            txtDestination.text = wrapperBelongToProject.projectName;
+	
+	            refreshTemplatesBasedOnDropDownList();
+	
+	            var timeoutValue:uint = setTimeout(function ():void
+	            {
+	                parseFolders();
+	                clearTimeout(timeoutValue);
+	            }, 100);
+	        }
+	
+	        protected function onCreateButton(event:MouseEvent):void
+	        {
+	            // validation check for Enter key
+	            if(!isSubmitButtonEnabled) return;
+	
+	            // validation 2
+	            var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
+	            if(SimpleValidator.validate(validateArr))
+	            {
+	                var tmpEvent:NewFileEvent = new NewFileEvent(
+						NewFileEvent.EVENT_NEW_FILE, 
+						null, 
+						(componentTemplates ? new FileLocation(ddlType.selectedItem.nativePath) : null), 
+						wrapperOfFolderLocation
+					);
+	                tmpEvent.ofProject = wrapperBelongToProject;
+	                tmpEvent.fileName = txtFileName.text;
+	                dispatchEvent(tmpEvent);
+	
+	                doBeforeExit();
+	                super.closeThis();
+	            }
+	        }
+	
+	        protected function refreshTemplatesBasedOnDropDownList():void
+	        {
+	            var currentProject:AS3ProjectVO = wrapperBelongToProject as AS3ProjectVO;
+	            if(currentProject && currentProject.isFlexJS && !currentProject.isRoyale)
+	            {
+	                componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_FLEXJS_COMPONENTS;
+	            } else if(currentProject && currentProject.isRoyale)
+	            {
+	                componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_ROYALE_COMPONENTS;
+	                //Selects Group which is more common for Royale
+	                ddlType.selectedIndex = 1;
+	            } else
+	            {
+	                componentTemplates = ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS;
+	            }
+	        }
+	
+	        protected function parseFolders():void
+	        {
+	            tree.expandItem(wrapperBelongToProject.projectFolder, true);
+	
+	            // 1. expand all items to our fileWrapper object
+	            // 2. select the fileWrapper object
+	            // 3. scroll to the fileWrapper object
+	            UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+	            UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
+	            tree.callLater(function ():void
+	            {
+	                var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+	                for (var j:int = 0; j < (wrappers.length - 1); j++)
+	                {
+	                    tree.expandItem(wrappers[j], true);
+	                }
+	
+	                // selection
+	                tree.selectedItem = wrapperOfFolderLocation;
+	                // scroll-to
+	                tree.callLater(function ():void
+	                {
+	                    tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
+	                });
+	            });
+	        }
+	
+	        override protected function onNameChanged(event:TextOperationEvent):void
+	        {
+	            super.onNameChanged(event);
+	        }
+	
+	        protected function onTreeItemClicked(event:ListEvent):void
+	        {
+	            txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+	                    Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+	                    tree.selectedItem.nativePath);
+	
+	            // re-validate upon folder location change
+	            wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
+	            isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
+	            onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+	        }
+	
+	        override protected function onNewFileCreationComplete(event:FlexEvent):void
+	        {
+	            super.onNewFileCreationComplete(event);
+	
+	            refreshTemplatesBasedOnDropDownList();
+	
+	            minHeight = height;
+	            if(folderLocation)
+	            {
+	                txtDestination.text = wrapperBelongToProject.projectName;
+	                txtFileName.setFocus();
+	            }
+	
+	            // check if the file creation requested in the
+	            // 'source folder' or not
+	            isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
+	            if(isDestinationValid) hgExistingWarning.visible = false;
+	
+	            tree.callLater(parseFolders);
+	            GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
+	        }
+			
+			protected function onPreinitialize(event:FlexEvent):void
+			{
+				createdFileExtension = ".mxml";
+			}
+			
+		]]>
 	</fx:Script>
 	<s:VGroup width="100%">
 		<s:Label text="Source Folder:"/>
@@ -233,9 +220,9 @@
 		<s:Label text="Name:"/>
 		<s:Group width="100%">
 			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
+								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_/"
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
-			<s:Label id="extensionLabel" text=".mxml" styleName="textInputLabel" textAlign="right"
+			<s:Label id="extensionLabel" text="{createdFileExtension}" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
 	</s:VGroup>
@@ -250,7 +237,7 @@
 						open="lastSelectedItem=ddlType.selectedItem" close="onDropDownClosed(event)"/>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  visible="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}">
+				  visible="{!isDestinationValid || (!isSubmitButtonEnabled &amp;&amp; modifiedName != '')}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
@@ -259,6 +246,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onCreateButton(event)"
-				  enabled="false"/>
+				  enabled="{isSubmitButtonEnabled}"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>

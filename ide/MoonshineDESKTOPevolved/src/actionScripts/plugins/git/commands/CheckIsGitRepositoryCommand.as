@@ -22,6 +22,7 @@ package actionScripts.plugins.git.commands
 	import flash.filesystem.File;
 	
 	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.GitProjectVO;
@@ -55,13 +56,22 @@ package actionScripts.plugins.git.commands
 			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var tmpProject:ProjectVO;
-			var isFatal:Boolean = value.output.match(/fatal: .*/) != null;
+			var isFatal:Boolean = (value.output.match(/fatal: .*/) != null) || (value.output.match(/No such file or directory/) != null);
 			
 			switch(tmpQueue.processType)
 			{
 				case GIT_REPOSITORY_TESTED:
 				{
 					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
+					if (isFatal && tmpProject)
+					{
+						if (tmpProject.menuType.indexOf(ProjectMenuTypes.GIT_PROJECT) != -1)
+						{
+							tmpProject.menuType = tmpProject.menuType.replace(","+ ProjectMenuTypes.GIT_PROJECT, "");
+							tmpProject.hasVersionControlType = null;
+						}
+					}
+					
 					if (!isFatal)
 					{
 						if (tmpProject)
@@ -105,6 +115,7 @@ package actionScripts.plugins.git.commands
 					if (tmpProject)
 					{
 						dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
+						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, tmpProject));
 					}
 					return;
 				}

@@ -126,6 +126,7 @@ package actionScripts.valueObjects
 		public static var NON_CLOSEABLE_TABS:Array;
 		public static var STARTUP_PROJECT_OPEN_QUEUE_LEFT:int;
 		public static var LAST_BROWSED_LOCATION:String;
+		public static var CURRENT_WORKSPACE:String;
 		
 		public static var AS3PROJ_CONFIG_SOURCE: XML = <project version="2">
 		  <!-- Output SWF options -->

@@ -31,6 +31,8 @@ package actionScripts.ui.tabview
     import mx.core.UIComponent;
     
     import spark.components.Label;
+    import spark.components.RichEditableText;
+    import spark.utils.TextFlowUtil;
     
     import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.tabNavigator.CloseTabButton;
@@ -45,7 +47,7 @@ package actionScripts.ui.tabview
 
 		protected var closeButton:CloseTabButton;
 		protected var background:Sprite;
-		protected var labelView:Label;
+		protected var labelView:RichEditableText;
 		protected var labelViewMask:Sprite;
 		
 		protected var closeButtonWidth:int = 27;
@@ -124,7 +126,11 @@ package actionScripts.ui.tabview
 		public function set label(value:String):void
 		{
 			_label = value;
-			if (labelView) labelView.text = value;
+			if (labelView) 
+			{
+				//labelView.text = value;
+				labelView.textFlow = TextFlowUtil.importFromString(value);
+			}
 		}
 
 		public function get label():String
@@ -153,14 +159,17 @@ package actionScripts.ui.tabview
 			background.addEventListener(MouseEvent.CLICK, tabClicked);
 			addChild(background);
 			
-			labelView = new Label();
+			labelView = new RichEditableText();
 			labelView.x = 8;
 			labelView.y = 8;
-			labelView.width = width - 36;
+			labelView.width = width;
 			labelView.height = height;
-			labelView.maxDisplayedLines = 1;
+			//labelView.maxChars = 50;
+			//labelView.maxDisplayedLines = 1;
 			labelView.mouseEnabled = false;
 			labelView.mouseChildren = false;
+			labelView.editable = false;
+			labelView.focusEnabled = false;
 			labelView.setStyle('color', textColor);
 			labelView.setStyle('fontFamily', 'DejaVuSans');
 			labelView.setStyle('fontSize', 11);
