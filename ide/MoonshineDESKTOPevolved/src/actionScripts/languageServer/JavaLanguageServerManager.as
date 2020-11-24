@@ -417,10 +417,17 @@ package actionScripts.languageServer
 
 		private function cleanWorkspace():void
 		{
-			var workspaceFolder:File = new File(getWorkspaceNativePath());
-			if(workspaceFolder.exists && workspaceFolder.isDirectory)
+			try
 			{
-				workspaceFolder.deleteDirectory(true);
+				var workspaceFolder:File = new File(getWorkspaceNativePath());
+				if(workspaceFolder.exists && workspaceFolder.isDirectory)
+				{
+					workspaceFolder.deleteDirectory(true);
+				}
+			}
+			catch(e:Error)
+			{
+				error("Failed to clean project workspace");
 			}
 			restartLanguageServer();
 		}
