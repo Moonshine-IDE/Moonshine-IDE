@@ -87,7 +87,7 @@
         protected function onCreateButton(event:MouseEvent):void
         {
             // validation check for Enter key
-            if(!btnCreate.enabled) return;
+            if(!isSubmitButtonEnabled) return;
 
             // validation 2
             var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
@@ -156,29 +156,9 @@
             });
         }
 
-        protected function onNameChanged(event:TextOperationEvent):void
+        override protected function onNameChanged(event:TextOperationEvent):void
         {
-            // @note
-            // for some reason PromptTextInput.text is not binding properly
-            // to other Flex UI component, i.e. Label
-            // it shows only the origianl set text to PromptTextInput.text if
-            // binded to a label component, thus:
-            modifiedName = txtFileName.text;
-
-            if(txtFileName.text == "")
-            {
-                btnCreate.enabled = false;
-            } else
-            {
-                var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + lblExtension.text);
-                targetFile.fileBridge.canonicalize();
-
-                btnCreate.enabled = !targetFile.fileBridge.exists;
-                if(!btnCreate.enabled)
-                {
-                    warningMessage = modifiedName + lblExtension.text + " is already exists.";
-                }
-            }
+            super.onNameChanged(event);
         }
 
         protected function onTreeItemClicked(event:ListEvent):void
@@ -189,7 +169,6 @@
 
             // re-validate upon folder location change
             wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
-            isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
             onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
         }
 
@@ -207,10 +186,10 @@
                 if(folderFileLocation.fileBridge.extension)
                 {
                     extension = folderFileLocation.fileBridge.extension.toLowerCase();
-                    lblExtension.text = "." + extension;
+                    createdFileExtension = lblExtension.text = "." + extension;
                 } else
                 {
-                    lblExtension.text = "";
+					createdFileExtension = lblExtension.text = "";
                 }
 
                 if(extension == "as" || extension == "mxml")
@@ -224,13 +203,14 @@
             } else if(openType == AS_XML)
             {
                 title = "New XML File";
-                lblExtension.text = ".xml";
+				createdFileExtension = lblExtension.text = ".xml";
             } else
             {
                 title = "New File";
+				createdFileExtension = "";
                 if(!fileTemplate)
                 {
-                    txtFileName.text = ".txt";
+					txtFileName.text = ".txt";
                 } else
                 {
                     var tmpArr:Array = fileTemplate.fileBridge.name.split(".");
@@ -246,6 +226,7 @@
                 txtFileName.setFocus();
             }
 
+			isDestinationValid = true;
             tree.callLater(parseFolders);
             GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
         }
@@ -276,7 +257,7 @@
 		<s:Label id="lblName" text="Name:"/>
 		<s:Group width="100%">
 			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z._\-"
+								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z._\-/"
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
 			<s:Label id="lblExtension"
 					 styleName="textInputLabel" textAlign="right"
@@ -285,7 +266,7 @@
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  visible="{!btnCreate.enabled &amp;&amp; modifiedName != ''}">
+				  visible="{!isSubmitButtonEnabled &amp;&amp; modifiedName != ''}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
@@ -294,6 +275,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onCreateButton(event)"
-				  enabled="false"/>
+				  enabled="{isSubmitButtonEnabled}"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>

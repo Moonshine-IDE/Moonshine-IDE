@@ -23,221 +23,209 @@
 <newfile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009"
 					 xmlns:s="library://ns.adobe.com/flex/spark"
 					 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
-					 xmlns:newfile="components.popup.newFile.*" defaultButton="{btnCreate}">
+					 xmlns:newfile="components.popup.newFile.*" defaultButton="{btnCreate}" preinitialize="onPreinitialize(event)">
 	<fx:Metadata>
 		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.factory.FileLocation;
-		import actionScripts.ui.editor.text.NewASFileCompletionManager;
-
-		import elements.skins.DarkButtonSkin;
-
-		import mx.events.FlexEvent;
-		import mx.events.ListEvent;
-		import mx.managers.PopUpManager;
-
-		import spark.events.TextOperationEvent;
-
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.NewFileEvent;
-		import actionScripts.extResources.com.validator.ValidatorType;
-		import actionScripts.ui.menu.MenuPlugin;
-		import actionScripts.utils.SimpleValidator;
-		import actionScripts.utils.UtilsCore;
-		import actionScripts.valueObjects.AS3ClassAttributes;
-		import actionScripts.valueObjects.ConstantsCoreVO;
-		import actionScripts.valueObjects.FileWrapper;
-
-		[Bindable]
-		public var isInterfaceDialog:Boolean;
-		[Bindable]
-		public var hasInternalClasses:Boolean = true;
-
-		[Bindable]
-		protected var newAsFileCompletionManager:NewASFileCompletionManager;
-
-		[Bindable]
-		protected var createdFileExtension:String = ".as";
-
-		override protected function onBrowseButton(event:MouseEvent):void
-		{
-			super.onBrowseButton(event);
-
-			if(!projectSelectionWindow)
+			import actionScripts.factory.FileLocation;
+			import actionScripts.ui.editor.text.NewASFileCompletionManager;
+	
+			import elements.skins.DarkButtonSkin;
+	
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+	
+			import spark.events.TextOperationEvent;
+	
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.extResources.com.validator.ValidatorType;
+			import actionScripts.ui.menu.MenuPlugin;
+			import actionScripts.utils.SimpleValidator;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.AS3ClassAttributes;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+	
+			[Bindable]
+			public var isInterfaceDialog:Boolean;
+			[Bindable]
+			public var hasInternalClasses:Boolean = true;
+	
+			[Bindable]
+			protected var newAsFileCompletionManager:NewASFileCompletionManager;
+			
+			protected function onPreinitialize(event:FlexEvent):void
 			{
-				projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
-				PopUpManager.centerPopUp(projectSelectionWindow);
+				createdFileExtension = ".as";
 			}
-		}
-
-		override protected function onProjectSelectionChanged(event:NewFileEvent):void
-		{
-			super.onProjectSelectionChanged(event);
-
-			txtDestination.text = wrapperBelongToProject.projectName;
-
-			var timeoutValue:uint = setTimeout(function ():void
+	
+			override protected function onBrowseButton(event:MouseEvent):void
 			{
-				parseFolders();
-				clearTimeout(timeoutValue);
-			}, 100);
-		}
-
-		protected function onBtnCreateClick(event:MouseEvent):void
-		{
-			// validation check for Enter key
-			if(!btnCreate.enabled) return;
-
-			// validation 2
-			var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
-			if(SimpleValidator.validate(validateArr))
-			{
-				var attributes:AS3ClassAttributes = new AS3ClassAttributes();
-				attributes.modifierA = String(rgModifiersA.selectedValue);
-				attributes.extendsClassInterface = txtSuperclass.text;
-				attributes.implementsInterface = txtInterfaces.text;
-				attributes.modifierB = cbDynamic.selected ? "dynamic" : "";
-				attributes.modifierC = cbFinal.selected ? "final" : "";
-
-				attributes.imports = newAsFileCompletionManager.classesImports.concat(newAsFileCompletionManager.interfacesImports);
-
-				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? ConstantsCoreVO.TEMPLATE_AS3INTERFACE : ConstantsCoreVO.TEMPLATE_AS3CLASS, wrapperOfFolderLocation, attributes);
-				tmpEvent.fileName = txtFileName.text;
-				tmpEvent.ofProject = wrapperBelongToProject;
-				tmpEvent.fileExtension = this.createdFileExtension;
-
-				dispatchEvent(tmpEvent);
-
-				doBeforeExit();
-				super.closeThis();
-			}
-		}
-
-		protected function parseFolders():void
-		{
-			tree.expandItem(wrapperBelongToProject.projectFolder, true);
-
-			// 1. expand all items to our fileWrapper object
-			// 2. select the fileWrapper object
-			// 3. scroll to the fileWrapper object
-			UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
-			UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
-			tree.callLater(function ():void
-			{
-				var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
-				for (var j:int = 0; j < (wrappers.length - 1); j++)
+				super.onBrowseButton(event);
+	
+				if(!projectSelectionWindow)
 				{
-					tree.expandItem(wrappers[j], true);
+					projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
+					PopUpManager.centerPopUp(projectSelectionWindow);
 				}
-
-				// selection
-				tree.selectedItem = wrapperOfFolderLocation;
-				// scroll-to
+			}
+	
+			override protected function onProjectSelectionChanged(event:NewFileEvent):void
+			{
+				super.onProjectSelectionChanged(event);
+	
+				txtDestination.text = wrapperBelongToProject.projectName;
+	
+				var timeoutValue:uint = setTimeout(function ():void
+				{
+					parseFolders();
+					clearTimeout(timeoutValue);
+				}, 100);
+			}
+	
+			protected function onBtnCreateClick(event:MouseEvent):void
+			{
+				// validation check for Enter key
+				if(!isSubmitButtonEnabled) return;
+	
+				// validation 2
+				var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
+				if(SimpleValidator.validate(validateArr))
+				{
+					var attributes:AS3ClassAttributes = new AS3ClassAttributes();
+					attributes.modifierA = String(rgModifiersA.selectedValue);
+					attributes.extendsClassInterface = txtSuperclass.text;
+					attributes.implementsInterface = txtInterfaces.text;
+					attributes.modifierB = cbDynamic.selected ? "dynamic" : "";
+					attributes.modifierC = cbFinal.selected ? "final" : "";
+	
+					attributes.imports = newAsFileCompletionManager.classesImports.concat(newAsFileCompletionManager.interfacesImports);
+	
+					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? ConstantsCoreVO.TEMPLATE_AS3INTERFACE : ConstantsCoreVO.TEMPLATE_AS3CLASS, wrapperOfFolderLocation, attributes);
+					tmpEvent.fileName = nestedFoldersRequested ? nestedFoldersRequested.join("/") : modifiedName;
+					tmpEvent.ofProject = wrapperBelongToProject;
+					tmpEvent.fileExtension = this.createdFileExtension;
+	
+					dispatchEvent(tmpEvent);
+	
+					doBeforeExit();
+					super.closeThis();
+				}
+			}
+	
+			protected function parseFolders():void
+			{
+				tree.expandItem(wrapperBelongToProject.projectFolder, true);
+	
+				// 1. expand all items to our fileWrapper object
+				// 2. select the fileWrapper object
+				// 3. scroll to the fileWrapper object
+				UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+				UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
 				tree.callLater(function ():void
 				{
-					tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
+					var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+					for (var j:int = 0; j < (wrappers.length - 1); j++)
+					{
+						tree.expandItem(wrappers[j], true);
+					}
+	
+					// selection
+					tree.selectedItem = wrapperOfFolderLocation;
+					// scroll-to
+					tree.callLater(function ():void
+					{
+						tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
+					});
 				});
-			});
-		}
-
-		protected function onNameChanged(event:TextOperationEvent):void
-		{
-			// @note
-			// for some reason PromptTextInput.text is not binding properly
-			// to other Flex UI component, i.e. Label
-			// it shows only the origianl set text to PromptTextInput.text if
-			// binded to a label component, thus:
-			modifiedName = txtFileName.text;
-			if(isDestinationValid) warningMessage = modifiedName + createdFileExtension + " is already exists.";
-
-			if(!isDestinationValid || txtFileName.text == "") btnCreate.enabled = false;
-			else
-			{
-				var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + createdFileExtension);
-				targetFile.fileBridge.canonicalize();
-
-				btnCreate.enabled = !targetFile.fileBridge.exists;
 			}
-		}
-
-		protected function onTreeItemClicked(event:ListEvent):void
-		{
-			txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-					Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
-					tree.selectedItem.nativePath);
-
-			// re-validate upon folder location change
-			wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
-			isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
-			onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
-		}
-
-		override protected function onNewFileCreationComplete(event:FlexEvent):void
-		{
-			super.onNewFileCreationComplete(event);
-
-			minHeight = height;
-			title = isInterfaceDialog ? "New Interface Class" : "New ActionScript Class";
-
-			if(folderLocation)
+	
+			override protected function onNameChanged(event:TextOperationEvent):void
 			{
-				txtDestination.text = wrapperBelongToProject.projectName;
-				txtFileName.setFocus();
+				super.onNameChanged(event);
 			}
-
-			// check if the file creation requested in the
-			// 'source folder' or classpaths exists
-			isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
-
-			tree.callLater(parseFolders);
-			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
-
-			newAsFileCompletionManager = new NewASFileCompletionManager(this, wrapperBelongToProject);
-			newAsFileCompletionManager.addEventListener("itemSelected", onCompletionManagerItemSelected);
-
-			this.btnCreate.setStyle("skinClass", DarkButtonSkin);
-		}
-
-		override protected function closeThis():void
-		{
-			newAsFileCompletionManager.removeEventListener("itemSelected", onCompletionManagerItemSelected);
-			super.closeThis();
-		}
-
-		override protected function closeByCrossSign(event:Event):void
-		{
-			newAsFileCompletionManager.removeEventListener("itemSelected", onCompletionManagerItemSelected);
-			super.closeByCrossSign(event);
-		}
-
-		private function onTxtSuperClassChange(event:TextOperationEvent):void
-		{
-			var completionListPosition:Point = this.txtSuperclass.localToGlobal(
-					new Point(this.txtSuperclass.x, this.txtSuperclass.y));
-
-			if(isInterfaceDialog)
+	
+			protected function onTreeItemClicked(event:ListEvent):void
 			{
-				newAsFileCompletionManager.showCompletionListInterfaces(this.txtSuperclass.text, completionListPosition);
-			} else
-			{
-				newAsFileCompletionManager.showCompletionListClasses(this.txtSuperclass.text, completionListPosition);
+				txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+						Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+						tree.selectedItem.nativePath);
+	
+				// re-validate upon folder location change
+				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
+				isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
+				onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
 			}
-		}
-
-		private function onTxtInterfaceChange(event:TextOperationEvent):void
-		{
-			var completionListPosition:Point = this.txtInterfaces.localToGlobal(
-					new Point(this.txtInterfaces.x, this.txtInterfaces.y));
-			newAsFileCompletionManager.showCompletionListInterfaces(this.txtInterfaces.text, completionListPosition);
-		}
-
-		private function onCompletionManagerItemSelected(event:Event):void
-		{
-			txtSuperclass.selectRange(txtSuperclass.text.length, txtSuperclass.text.length);
-			txtInterfaces.selectRange(txtInterfaces.text.length, txtInterfaces.text.length);
-		}
+	
+			override protected function onNewFileCreationComplete(event:FlexEvent):void
+			{
+				super.onNewFileCreationComplete(event);
+	
+				minHeight = height;
+				title = isInterfaceDialog ? "New Interface Class" : "New ActionScript Class";
+	
+				if(folderLocation)
+				{
+					txtDestination.text = wrapperBelongToProject.projectName;
+					txtFileName.setFocus();
+				}
+	
+				// check if the file creation requested in the
+				// 'source folder' or classpaths exists
+				isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
+	
+				tree.callLater(parseFolders);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
+	
+				newAsFileCompletionManager = new NewASFileCompletionManager(this, wrapperBelongToProject);
+				newAsFileCompletionManager.addEventListener("itemSelected", onCompletionManagerItemSelected);
+	
+				this.btnCreate.setStyle("skinClass", DarkButtonSkin);
+			}
+	
+			override protected function closeThis():void
+			{
+				newAsFileCompletionManager.removeEventListener("itemSelected", onCompletionManagerItemSelected);
+				super.closeThis();
+			}
+	
+			override protected function closeByCrossSign(event:Event):void
+			{
+				newAsFileCompletionManager.removeEventListener("itemSelected", onCompletionManagerItemSelected);
+				super.closeByCrossSign(event);
+			}
+	
+			private function onTxtSuperClassChange(event:TextOperationEvent):void
+			{
+				var completionListPosition:Point = this.txtSuperclass.localToGlobal(
+						new Point(this.txtSuperclass.x, this.txtSuperclass.y));
+	
+				if(isInterfaceDialog)
+				{
+					newAsFileCompletionManager.showCompletionListInterfaces(this.txtSuperclass.text, completionListPosition);
+				} else
+				{
+					newAsFileCompletionManager.showCompletionListClasses(this.txtSuperclass.text, completionListPosition);
+				}
+			}
+	
+			private function onTxtInterfaceChange(event:TextOperationEvent):void
+			{
+				var completionListPosition:Point = this.txtInterfaces.localToGlobal(
+						new Point(this.txtInterfaces.x, this.txtInterfaces.y));
+				newAsFileCompletionManager.showCompletionListInterfaces(this.txtInterfaces.text, completionListPosition);
+			}
+	
+			private function onCompletionManagerItemSelected(event:Event):void
+			{
+				txtSuperclass.selectRange(txtSuperclass.text.length, txtSuperclass.text.length);
+				txtInterfaces.selectRange(txtInterfaces.text.length, txtInterfaces.text.length);
+			}
+			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -275,7 +263,7 @@
 		<s:Label text="Name:"/>
 		<s:Group width="100%">
 			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
+								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_/"
 								  change="onNameChanged(event)" enter="onBtnCreateClick(null)" marginRight="50"/>
 			<s:Label text="{createdFileExtension}" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
@@ -310,8 +298,8 @@
 							  change="onTxtInterfaceChange(event)" text="{newAsFileCompletionManager.interfaceName}"/>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  includeInLayout="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}"
-				  visible="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}">
+				  includeInLayout="{!isDestinationValid || (!isSubmitButtonEnabled &amp;&amp; modifiedName != '')}"
+				  visible="{!isDestinationValid || (!isSubmitButtonEnabled &amp;&amp; modifiedName != '')}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
@@ -321,6 +309,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onBtnCreateClick(event)"
-				  enabled="false"/>
+				  enabled="{isSubmitButtonEnabled}"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>

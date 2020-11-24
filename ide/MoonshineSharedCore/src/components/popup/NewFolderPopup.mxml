@@ -20,20 +20,18 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+<newFile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009" 
 				   xmlns:s="library://ns.adobe.com/flex/spark" 
 				   xmlns:mx="library://ns.adobe.com/flex/mx"
 				   backgroundColor="0xf5f5f5" title="New Folder"
 				   width="600" height="400" minWidth="400"
-				   creationComplete="onCreationCompletes(event)" 
 				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin">
+				   skinClass="components.skins.ResizableTitleWindowSkin" xmlns:newFile="components.popup.newFile.*">
 	<fx:Metadata>
 		[Event(name="EVENT_NEW_FOLDER", type="actionScripts.events.NewFileEvent")]
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
 			import mx.events.FlexEvent;
 			import mx.events.ListEvent;
 			
@@ -42,54 +40,28 @@
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.NewFileEvent;
 			import actionScripts.factory.FileLocation;
-			import actionScripts.locator.IDEModel;
 			import actionScripts.ui.menu.MenuPlugin;
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.FileWrapper;
-			import actionScripts.valueObjects.ProjectVO;
-			
-			public var wrapperOfFolderLocation:FileWrapper;
-			public var wrapperBelongToProject:ProjectVO;
-			
-			[Bindable] private var modifiedName:String = "";
-			[Bindable] private var projectFolders:ArrayCollection;
-			[Bindable] private var model:IDEModel = IDEModel.getInstance();
-			
-			override protected function closeByCrossSign(event:Event):void
-			{
-				doBeforeExit();
-				super.closeByCrossSign(event);
-			}
-			
-			override protected function onResizeKeyDownEvent(event:KeyboardEvent):void
-			{
-				doBeforeExit();
-				super.onResizeKeyDownEvent(event);
-			}
-			
-			protected function doBeforeExit():void
-			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
-			}
 			
 			protected function onChangeButton(event:MouseEvent):void
 			{
 				// validation check for Enter key
-				if (!btnCreate.enabled) return;
+				if (!isSubmitButtonEnabled) return;
 				
-				btnCreate.enabled = false;
+				isSubmitButtonEnabled = false;
 				
 				var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FOLDER, null, null, wrapperOfFolderLocation);
 				tmpEvent.isFolder = true;
 				tmpEvent.ofProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
-				tmpEvent.fileName = txtFileName.text;
+				tmpEvent.fileName = nestedFoldersRequested ? nestedFoldersRequested.join(model.fileCore.separator) : modifiedName;
 				dispatchEvent(tmpEvent);
 				
 				doBeforeExit();
 				super.closeThis();
 			}
 			
-			protected function onCreationCompletes(event:FlexEvent):void
+			override protected function onNewFileCreationComplete(event:FlexEvent):void
 			{
 				minHeight = height;
 				if (wrapperOfFolderLocation) 
@@ -99,6 +71,7 @@
 				
 				tree.callLater(parseFolders);
 				txtFileName.setFocus();
+				isDestinationValid = true;
 				
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
 			}
@@ -130,23 +103,9 @@
 				});
 			}
 			
-			protected function onNameChanged(event:TextOperationEvent):void
+			override protected function onNameChanged(event:TextOperationEvent):void
 			{
-				// @note
-				// for some reason PromptTextInput.text is not binding properly
-				// to other Flex UI component, i.e. Label
-				// it shows only the origianl set text to PromptTextInput.text if
-				// binded to a label component, thus:
-				modifiedName = txtFileName.text;
-				
-				if (txtFileName.text == "") btnCreate.enabled = false;
-				else 
-				{
-					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text);
-					targetFile.fileBridge.canonicalize();
-					
-					btnCreate.enabled = !targetFile.fileBridge.exists;
-				}
+				super.onNameChanged(event);
 			}
 			
 			protected function onTreeItemClicked(event:ListEvent):void
@@ -190,21 +149,21 @@
                                      itemClick="onTreeItemClicked(event)"/>
 			<s:Label text="Folder Name:"/>
 			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_"
+								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_/"
 								  change="onNameChanged(event)" enter="onChangeButton(null)"/>
 			<s:HGroup id="hgExistingWarning" 
 					  width="100%" verticalAlign="middle"
-					  visible="{!btnCreate.enabled &amp;&amp; modifiedName != ''}">
+					  visible="{!isSubmitButtonEnabled &amp;&amp; modifiedName != ''}">
 				<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 				<s:Label text="{modifiedName + ' is already exists.'}" width="100%"/>
 			</s:HGroup>
 		</s:VGroup>
 	</s:VGroup>
 	
-	<resizableTitleWindow:controlBarContent>
-		<s:Button id="btnCreate" label="Create"
+	<newFile:controlBarContent>
+		<s:Button label="Create"
 				  styleName="darkButton"
 				  click="onChangeButton(event)"
-				  enabled="false"/>
-	</resizableTitleWindow:controlBarContent>
-</resizableTitleWindow:ResizableTitleWindow>
+				  enabled="{isSubmitButtonEnabled}"/>
+	</newFile:controlBarContent>
+</newFile:NewFileBase>
