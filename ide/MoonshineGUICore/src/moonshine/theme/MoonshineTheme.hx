@@ -20,21 +20,16 @@
 
 package moonshine.theme;
 
-import openfl.display.Sprite;
-import openfl.Lib;
-import feathers.core.PopUpManager;
-import feathers.controls.GridView;
-import openfl.filters.GlowFilter;
-import moonshine.plugin.help.view.TourDeFlexTreeViewItemRenderer;
-import feathers.controls.Radio;
 import feathers.controls.Button;
 import feathers.controls.Callout;
 import feathers.controls.Check;
+import feathers.controls.GridView;
 import feathers.controls.HScrollBar;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
 import feathers.controls.ListView;
 import feathers.controls.Panel;
+import feathers.controls.Radio;
 import feathers.controls.TextInput;
 import feathers.controls.TextInputState;
 import feathers.controls.ToggleButton;
@@ -43,6 +38,7 @@ import feathers.controls.TreeView;
 import feathers.controls.VScrollBar;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.controls.dataRenderers.TreeViewItemRenderer;
+import feathers.core.DefaultToolTipManager;
 import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
 import feathers.layout.VerticalListLayout;
@@ -50,6 +46,7 @@ import feathers.skins.CircleSkin;
 import feathers.skins.RectangleSkin;
 import feathers.style.Theme;
 import feathers.themes.ClassVariantTheme;
+import moonshine.plugin.help.view.TourDeFlexTreeViewItemRenderer;
 import moonshine.style.MoonshineButtonSkin;
 import moonshine.style.MoonshineControlBarSkin;
 import moonshine.style.MoonshineHScrollBarThumbSkin;
@@ -58,6 +55,7 @@ import moonshine.ui.ResizableTitleWindow;
 import moonshine.ui.SideBarViewHeader;
 import moonshine.ui.TitleWindow;
 import openfl.display.Shape;
+import openfl.filters.GlowFilter;
 import openfl.text.TextFormat;
 
 class MoonshineTheme extends ClassVariantTheme {
@@ -93,6 +91,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_LABEL, setLightLabelStyles);
+		this.styleProvider.setStyleFunction(Label, DefaultToolTipManager.CHILD_VARIANT_TOOL_TIP, setToolTipLabelStyles);
 
 		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
 		this.styleProvider.setStyleFunction(LayoutGroup, THEME_VARIANT_WARNING_BAR, setWarningBarLayoutGroupStyles);
@@ -563,6 +562,22 @@ class MoonshineTheme extends ClassVariantTheme {
 		label.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
 		label.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
 		label.embedFonts = true;
+	}
+
+	private function setToolTipLabelStyles(toolTip:Label):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x222222);
+		backgroundSkin.border = SolidColor(1.0, 0x000000);
+		toolTip.backgroundSkin = backgroundSkin;
+
+		toolTip.textFormat = new TextFormat("DejaVuSansTF", 12, 0xf3f3f3);
+		toolTip.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
+		toolTip.embedFonts = true;
+
+		toolTip.paddingTop = 4.0;
+		toolTip.paddingRight = 4.0;
+		toolTip.paddingBottom = 4.0;
+		toolTip.paddingLeft = 4.0;
 	}
 
 	private function setListViewStyles(listView:ListView):Void {

@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui
 {
+	import feathers.core.DefaultToolTipManager;
 	import feathers.core.FeathersControl;
 	import feathers.core.FocusManager;
 	import feathers.core.IFocusContainer;
@@ -51,6 +52,7 @@ package actionScripts.ui
 		}
 
 		private var _feathersUIFocusManager:IFocusManager;
+		private var _feathersUIToolTipManager:DefaultToolTipManager;
 
 		public function get defaultButton():IFlexDisplayObject
 		{
@@ -288,16 +290,21 @@ package actionScripts.ui
 			
 			this._feathersUIFocusManager = FocusManager.addRoot(this._feathersUIControl);
 			this._feathersUIFocusManager.enabled = false;
+			this._feathersUIToolTipManager = new DefaultToolTipManager(this._feathersUIControl);
 		}
 
 		protected function feathersUIWrapper_removedFromStageHandler(event:Event):void
 		{
-			if(!this._feathersUIFocusManager)
+			if(this._feathersUIToolTipManager)
 			{
-				return;
+				this._feathersUIToolTipManager.dispose();
+				this._feathersUIToolTipManager = null;
 			}
-			FocusManager.removeRoot(this._feathersUIControl);
-			this._feathersUIFocusManager = null;
+			if(this._feathersUIFocusManager)
+			{
+				FocusManager.removeRoot(this._feathersUIControl);
+				this._feathersUIFocusManager = null;
+			}
 		}
 
 		protected function feathersUIWrapper_focusOutHandler(event:FocusEvent):void

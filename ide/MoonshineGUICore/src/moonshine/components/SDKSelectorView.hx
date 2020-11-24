@@ -20,20 +20,23 @@
 
 package moonshine.components;
 
-import feathers.core.PopUpManager;
-import openfl.events.Event;
 import actionScripts.valueObjects.SDKReferenceVO;
-import feathers.controls.GridViewColumn;
-import feathers.data.ArrayCollection;
-import feathers.controls.LayoutGroup;
-import feathers.layout.AnchorLayoutData;
-import feathers.layout.AnchorLayout;
-import feathers.layout.HorizontalLayoutData;
-import feathers.events.TriggerEvent;
-import feathers.controls.GridView;
 import feathers.controls.Button;
+import feathers.controls.GridView;
+import feathers.controls.GridViewColumn;
+import feathers.controls.LayoutGroup;
+import feathers.controls.dataRenderers.ItemRenderer;
+import feathers.core.PopUpManager;
+import feathers.data.ArrayCollection;
+import feathers.data.GridViewCellState;
+import feathers.events.TriggerEvent;
+import feathers.layout.AnchorLayout;
+import feathers.layout.AnchorLayoutData;
+import feathers.layout.HorizontalLayoutData;
+import feathers.utils.DisplayObjectRecycler;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
+import openfl.events.Event;
 
 class SDKSelectorView extends ResizableTitleWindow {
 	private static final EVENT_SDK_ADD:String = "sdkAdd";
@@ -91,10 +94,23 @@ class SDKSelectorView extends ResizableTitleWindow {
 
 		this.sdkGrid = new GridView();
 		this.sdkGrid.resizableColumns = true;
-		this.sdkGrid.columns = new ArrayCollection([
-			new GridViewColumn("Description", (sdk:SDKReferenceVO) -> sdk.name),
-			new GridViewColumn("Path", (sdk:SDKReferenceVO) -> sdk.path)
-		]);
+		var descriptionColumn = new GridViewColumn("Description", (sdk:SDKReferenceVO) -> sdk.name);
+		descriptionColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
+			target.text = state.text;
+			target.toolTip = state.text;
+		});
+		var pathColumn = new GridViewColumn("Path", (sdk:SDKReferenceVO) -> sdk.path);
+		pathColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
+			target.text = state.text;
+			target.toolTip = state.text;
+		});
+		var statusColumn = new GridViewColumn("", (sdk:SDKReferenceVO) -> sdk.status);
+		statusColumn.width = 60.0;
+		statusColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
+			target.text = state.text;
+			target.toolTip = state.text;
+		});
+		this.sdkGrid.columns = new ArrayCollection([descriptionColumn, pathColumn, statusColumn]);
 		this.sdkGrid.layoutData = AnchorLayoutData.fill();
 		this.sdkGrid.addEventListener(Event.CHANGE, sdkGrid_changeHandler);
 		this.addChild(this.sdkGrid);

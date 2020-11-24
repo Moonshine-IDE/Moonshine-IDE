@@ -19,7 +19,8 @@ package moonshine;
 	No warranty of merchantability or fitness of any kind.
 	Use this software at your own risk.
  */
-import feathers.core.DefaultFocusManager;
+import feathers.core.FocusManager;
+import feathers.core.DefaultToolTipManager;
 import moonshine.components.SDKDefineView;
 import moonshine.components.SDKSelectorView;
 import moonshine.components.QuitView;
@@ -35,7 +36,8 @@ import moonshine.plugin.rename.view.RenameSymbolView;
 import moonshine.plugin.symbols.view.SymbolsView;
 
 class HaxeClasses {
-	public var DefaultFocusManager:DefaultFocusManager;
+	public var FocusManager:FocusManager;
+	public var DefaultToolTipManager:DefaultToolTipManager;
 	public var SDKDefineView:SDKDefineView;
 	public var SDKSelectorView:SDKSelectorView;
 	public var AS3DocsView:AS3DocsView;
