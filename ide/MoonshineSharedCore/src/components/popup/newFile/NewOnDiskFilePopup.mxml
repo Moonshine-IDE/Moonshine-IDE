@@ -12,9 +12,11 @@
 		import actionScripts.valueObjects.ConstantsCoreVO;
 		import mx.controls.Alert;
 		import flash.filesystem.File;
-
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.RefreshTreeEvent;
 		
 		public var fromTemplate:FileLocation;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		override protected function onCreateButton(event:MouseEvent):void
 		{
@@ -48,6 +50,7 @@
 			if(original_form.fileBridge.exists){
 				var newFormFile:FileLocation =  folderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+fileName + ".form"); 
 				original_form.fileBridge.copyTo(newFormFile, true); 
+				dispatcher.dispatchEvent(new RefreshTreeEvent(folderLocation));
 			}
 			
 			
