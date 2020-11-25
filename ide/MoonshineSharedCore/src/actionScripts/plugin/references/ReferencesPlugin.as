@@ -145,4 +145,10 @@ class ReferencesViewWrapper extends FeathersUIWrapper implements IViewWithTitle 
 	public function get title():String {
 		return ReferencesView(feathersUIControl).title;
 	}
+
+	override public function get className():String
+	{
+		//className may be used by LayoutModifier
+		return "ReferencesView";
+	}
 }
