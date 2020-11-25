@@ -31,6 +31,7 @@ package actionScripts.ui.tabview
     import mx.core.UIComponent;
     
     import spark.components.Label;
+    import spark.utils.TextFlowUtil;
     
     import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.tabNavigator.CloseTabButton;
@@ -124,7 +125,10 @@ package actionScripts.ui.tabview
 		public function set label(value:String):void
 		{
 			_label = value;
-			if (labelView) labelView.text = value;
+			if (labelView) 
+			{
+				labelView.text = value;
+			}
 		}
 
 		public function get label():String
@@ -156,8 +160,9 @@ package actionScripts.ui.tabview
 			labelView = new Label();
 			labelView.x = 8;
 			labelView.y = 8;
-			labelView.width = width - 36;
+			labelView.width = width;
 			labelView.height = height;
+			//labelView.maxChars = 50;
 			labelView.maxDisplayedLines = 1;
 			labelView.mouseEnabled = false;
 			labelView.mouseChildren = false;

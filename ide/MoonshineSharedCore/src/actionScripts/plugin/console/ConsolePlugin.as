@@ -336,7 +336,7 @@ package actionScripts.plugin.console
                     success(event.text);
                     break;
                 case ConsoleOutputEvent.TYPE_NOTE:
-                    notice(event.text);
+                    warning(event.text);
                     break;
                 default:
                     print(event.text);

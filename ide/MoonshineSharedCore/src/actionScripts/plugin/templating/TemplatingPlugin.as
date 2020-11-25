@@ -1473,7 +1473,7 @@ package actionScripts.plugin.templating
 				PopUpManager.centerPopUp(newHaxeComponentPopup);
 			}
 		}
-
+		
 		protected function onNewAS3FileCreateRequest(event:NewFileEvent):void
 		{
 			checkAndUpdateIfTemplateModified(event);
@@ -1483,9 +1483,9 @@ package actionScripts.plugin.templating
 				var pattern:RegExp = new RegExp(TextUtil.escapeRegex("$fileName"), "g");
 				var as3FileAttributes:AS3ClassAttributes = event.extraParameters[0] as AS3ClassAttributes;
 
-				content = content.replace(pattern, event.fileName);
+				content = content.replace(pattern, getNestingClassName(event.fileName));
 				
-				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath(event.ofProject["classpaths"], event.insideLocation.nativePath, null, null, false);
+				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath(event.ofProject["classpaths"], getNestedPackagePath(event.fileName, event.insideLocation.nativePath), null, null, false);
 				if (packagePath != "")
 				{
 					packagePath = packagePath.substr(1, packagePath.length);
@@ -1539,9 +1539,9 @@ package actionScripts.plugin.templating
 				var pattern:RegExp = new RegExp(TextUtil.escapeRegex("$fileName"), "g");
                 var as3InterfaceAttributes:AS3ClassAttributes = event.extraParameters[0] as AS3ClassAttributes;
 
-				content = content.replace(pattern, event.fileName);
+				content = content.replace(pattern, getNestingClassName(event.fileName));
 				
-				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath(event.ofProject["classpaths"], event.insideLocation.nativePath, null, null, false);
+				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath(event.ofProject["classpaths"], getNestedPackagePath(event.fileName, event.insideLocation.nativePath), null, null, false);
 				if (packagePath != "") packagePath = packagePath.substr(1, packagePath.length); // removing . at index 0
 				content = content.replace("$packageName", packagePath);
                 content = content.replace("$imports", as3InterfaceAttributes.getImports());
@@ -1778,6 +1778,29 @@ package actionScripts.plugin.templating
 				treeEvent.extra = fileToSave;
 				dispatcher.dispatchEvent(treeEvent);
             }
+		}
+		
+		private function getNestingClassName(value:String):String
+		{
+			if (value.indexOf("/") != -1)
+			{
+				return value.split("/").pop() as String;
+			}
+			
+			return value;
+		}
+		
+		private function getNestedPackagePath(fileName:String, insideLocationPath:String):String
+		{
+			if (fileName.indexOf("/") != -1)
+			{
+				var tmpSplit:Array = fileName.split("/");
+				tmpSplit.pop();
+				
+				return insideLocationPath + model.fileCore.separator + tmpSplit.join(model.fileCore.separator);
+			}
+			
+			return insideLocationPath;
 		}
 	}
 }

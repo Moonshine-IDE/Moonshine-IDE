@@ -24,13 +24,13 @@
               {
                     componentTemplates = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES;
                     title = "New Visual Editor PrimeFaces File";
-                    extensionLabel.text = ".xhtml";
+                    createdFileExtension = ".xhtml";
                 }
                 else
                 {
                     componentTemplates = ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_FLEX;
                     title = "New Visual Editor Flex File";
-                    extensionLabel.text = ".mxml";
+                    createdFileExtension = ".mxml";
                 }
             }
         }
@@ -38,7 +38,7 @@
 		override protected function onCreateButton(event:MouseEvent):void
 		{
 			// validation check for Enter key
-			if (!btnCreate.enabled) return;
+			if (!isSubmitButtonEnabled) return;
 			
 			// validation 2
 			var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));

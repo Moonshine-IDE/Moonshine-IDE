@@ -24,7 +24,7 @@
 					 xmlns:s="library://ns.adobe.com/flex/spark"
 					 title="New MXML File"
 					 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
-					 xmlns:newfile="components.popup.newFile.*">
+					 xmlns:newfile="components.popup.newFile.*" preinitialize="onPreinitialize(event)">
 	<fx:Metadata>
 		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
 	</fx:Metadata>
@@ -74,7 +74,7 @@
 			protected function onCreateButton(event:MouseEvent):void
 			{
 				// validation check for Enter key
-				if(!btnCreate.enabled || !fileTemplate) return;
+				if(!isSubmitButtonEnabled || !fileTemplate) return;
 	
 				// validation 2
 				var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
@@ -117,26 +117,9 @@
 				});
 			}
 	
-			protected function onNameChanged(event:TextOperationEvent):void
+			override protected function onNameChanged(event:TextOperationEvent):void
 			{
-				// @note
-				// for some reason PromptTextInput.text is not binding properly
-				// to other Flex UI component, i.e. Label
-				// it shows only the origianl set text to PromptTextInput.text if
-				// binded to a label component, thus:
-				modifiedName = txtFileName.text;
-				if(isDestinationValid) warningMessage = modifiedName + ".mxml is already exists.";
-	
-				if(!isDestinationValid || txtFileName.text == "")
-				{
-					btnCreate.enabled = false;
-				} else
-				{
-					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(txtFileName.text + ".mxml");
-					targetFile.fileBridge.canonicalize();
-	
-					btnCreate.enabled = !targetFile.fileBridge.exists;
-				}
+				super.onNameChanged(event);
 			}
 	
 			protected function onTreeItemClicked(event:ListEvent):void
@@ -170,6 +153,12 @@
 				tree.callLater(parseFolders);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
 			}
+			
+			protected function onPreinitialize(event:FlexEvent):void
+			{
+				createdFileExtension = ".mxml";
+			}
+			
 		]]>
 	</fx:Script>
 	<s:VGroup width="100%">
@@ -203,14 +192,14 @@
 		<s:Label text="Name:"/>
 		<s:Group width="100%">
 			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_\-"
+								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_\-/"
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
-			<s:Label text=".mxml" styleName="textInputLabel" textAlign="right"
+			<s:Label text="{createdFileExtension}" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  visible="{!isDestinationValid || (!btnCreate.enabled &amp;&amp; modifiedName != '')}">
+				  visible="{!isDestinationValid || (!isSubmitButtonEnabled &amp;&amp; modifiedName != '')}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
@@ -220,6 +209,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onCreateButton(event)"
-				  enabled="false"/>
+				  enabled="{isSubmitButtonEnabled}"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>

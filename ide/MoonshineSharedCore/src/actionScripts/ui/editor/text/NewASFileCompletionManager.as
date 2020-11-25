@@ -41,6 +41,7 @@ package actionScripts.ui.editor.text
     import actionScripts.valueObjects.SymbolKind;
     import actionScripts.valueObjects.DocumentSymbol;
     import actionScripts.utils.symbolKindToCompletionItemKind;
+    import actionScripts.valueObjects.ProjectVO;
 
     [Event(name="itemSelected", type="flash.events.Event")]
     public class NewASFileCompletionManager extends EventDispatcher
@@ -52,15 +53,17 @@ package actionScripts.ui.editor.text
         protected var dispatcher:EventDispatcher = GlobalEventDispatcher.getInstance();
 
         private var view:TitleWindow;
+        private var project:ProjectVO;
 
         private var completionList:CodeCompletionList;
         private var menuCollection:ArrayCollection;
 
         private var completionListType:String;
 
-        public function NewASFileCompletionManager(view:TitleWindow)
+        public function NewASFileCompletionManager(view:TitleWindow, project:ProjectVO)
         {
             this.view = view;
+            this.project = project;
 
             completionList = new CodeCompletionList();
             completionList.requireSelection = true;
@@ -224,6 +227,7 @@ package actionScripts.ui.editor.text
         {
             var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
             languageServerEvent.newText = text;
+            languageServerEvent.project = project;
             dispatcher.dispatchEvent(languageServerEvent);
 
             completionList.x = position.x;

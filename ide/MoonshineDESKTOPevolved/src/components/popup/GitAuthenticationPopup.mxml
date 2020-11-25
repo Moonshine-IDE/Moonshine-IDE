@@ -9,7 +9,7 @@
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
-			import actionScripts.plugins.git.model.MethodDescriptor;
+			import actionScripts.utils.MethodDescriptor;
 			import actionScripts.valueObjects.VersionControlTypes;
 			
 			public static const AUTH_SUBMITTED:String = "gitAuthenticationCompleted";

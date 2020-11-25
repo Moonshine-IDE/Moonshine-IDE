@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.model
 {
+	import actionScripts.utils.MethodDescriptor;
+
 	public class ConstructorDescriptor extends MethodDescriptor
 	{
 		public function ConstructorDescriptor(origin:*, ...param)

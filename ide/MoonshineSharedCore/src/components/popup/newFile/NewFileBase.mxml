@@ -37,123 +37,167 @@
 	</resizableTitleWindow:layout>
 	<fx:Script>
 		<![CDATA[
-		import mx.collections.ArrayCollection;
-		import mx.events.CloseEvent;
-		import mx.events.FlexEvent;
-		import mx.managers.PopUpManager;
-
-		import spark.events.DropDownEvent;
-		import actionScripts.events.GlobalEventDispatcher;
-		import actionScripts.events.NewFileEvent;
-		import actionScripts.factory.FileLocation;
-		import actionScripts.locator.IDEModel;
-		import actionScripts.ui.menu.MenuPlugin;
-		import actionScripts.valueObjects.FileWrapper;
-		import actionScripts.valueObjects.ProjectVO;
-
-		import components.renderers.DividerRenderer;
-		import components.renderers.FileTypeRenderer;
-
-		[Bindable]
-		public var wrapperBelongToProject:ProjectVO;
-
-		public var wrapperOfFolderLocation:FileWrapper;
-		public var folderLocation:FileLocation;
-
-		[Bindable]
-		protected var modifiedName:String = "";
-		[Bindable]
-		protected var projectFolders:ArrayCollection;
-		[Bindable]
-		protected var model:IDEModel = IDEModel.getInstance();
-		[Bindable]
-		protected var warningMessage:String = "Class files allowed to create inside source folder only.";
-
-		[Bindable]
-		protected var componentTemplates:ArrayCollection;
-
-		protected var lastSelectedItem:Object;
-		protected var projectSelectionWindow:NewFileProjectSelectionPopup;
-
-		private var _isDestinationValid:Boolean;
-
-		[Bindable]
-		protected function set isDestinationValid(value:Boolean):void
-		{
-			_isDestinationValid = value;
-			if (!value) warningMessage = "Class files allowed to create inside source folder only.";
-		}
-
-		protected function get isDestinationValid():Boolean
-		{
-			return _isDestinationValid;
-		}
-
-		override protected function closeByCrossSign(event:Event):void
-		{
-			doBeforeExit();
-			super.closeByCrossSign(event);
-		}
-
-		override protected function onResizeKeyDownEvent(event:KeyboardEvent):void
-		{
-			doBeforeExit();
-			super.onResizeKeyDownEvent(event);
-		}
-
-		protected function doBeforeExit():void
-		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
-		}
-
-		protected function onBrowseButton(event:MouseEvent):void
-		{
-			if (!projectSelectionWindow)
+			import mx.collections.ArrayCollection;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.DropDownEvent;
+			import spark.events.TextOperationEvent;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.factory.FileLocation;
+			import actionScripts.locator.IDEModel;
+			import actionScripts.ui.menu.MenuPlugin;
+			import actionScripts.valueObjects.FileWrapper;
+			import actionScripts.valueObjects.ProjectVO;
+			
+			import components.renderers.DividerRenderer;
+			import components.renderers.FileTypeRenderer;
+	
+			[Bindable]
+			public var wrapperBelongToProject:ProjectVO;
+	
+			public var wrapperOfFolderLocation:FileWrapper;
+			public var folderLocation:FileLocation;
+	
+			[Bindable]
+			protected var modifiedName:String = "";
+			[Bindable]
+			protected var projectFolders:ArrayCollection;
+			[Bindable]
+			protected var model:IDEModel = IDEModel.getInstance();
+			[Bindable]
+			protected var warningMessage:String = "Class files allowed to create inside source folder only.";
+			[Bindable]
+			protected var createdFileExtension:String = "";
+			[Bindable]
+			protected var componentTemplates:ArrayCollection;
+			[Bindable]
+			protected var isSubmitButtonEnabled:Boolean;
+	
+			protected var lastSelectedItem:Object;
+			protected var projectSelectionWindow:NewFileProjectSelectionPopup;
+			protected var nestedFoldersRequested:Array;
+	
+			private var _isDestinationValid:Boolean;
+	
+			[Bindable]
+			protected function set isDestinationValid(value:Boolean):void
 			{
-				projectSelectionWindow = PopUpManager.createPopUp(this, NewFileProjectSelectionPopup, true) as NewFileProjectSelectionPopup;
-				projectSelectionWindow.addEventListener(CloseEvent.CLOSE, handleProjectSelectionPopupClose);
-				projectSelectionWindow.addEventListener(NewFileEvent.EVENT_PROJECT_SELECTED, onProjectSelectionChanged);
-
-				//projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
-				//PopUpManager.centerPopUp(projectSelectionWindow);
+				_isDestinationValid = value;
+				if (!value) warningMessage = "Class files allowed to create inside source folder only.";
 			}
-		}
-
-		protected function handleProjectSelectionPopupClose(event:CloseEvent):void
-		{
-			projectSelectionWindow.removeEventListener(CloseEvent.CLOSE, handleProjectSelectionPopupClose);
-			projectSelectionWindow.removeEventListener(NewFileEvent.EVENT_PROJECT_SELECTED, onProjectSelectionChanged);
-			projectSelectionWindow = null;
-		}
-
-		protected function onProjectSelectionChanged(event:NewFileEvent):void
-		{
-			wrapperBelongToProject = event.ofProject;
-			wrapperOfFolderLocation = wrapperBelongToProject.projectFolder;
-			projectFolders = new ArrayCollection();
-
-		}
-
-		protected function getTemplateLabel(item:Object):String
-		{
-			return (!(item is String) ? item.name.split(".")[0] : "");
-		}
-
-		protected function getItemRenderer(item:*):IFactory
-		{
-			var renderer:Class = item is String ? DividerRenderer : FileTypeRenderer;
-			return new ClassFactory(renderer);
-		}
-
-		protected function onDropDownClosed(event:DropDownEvent):void
-		{
-			if (event.target.selectedItem is String) event.target.selectedItem = lastSelectedItem;
-		}
-
-		protected function onNewFileCreationComplete(event:FlexEvent):void
-		{
-
-		}
+	
+			protected function get isDestinationValid():Boolean
+			{
+				return _isDestinationValid;
+			}
+	
+			override protected function closeByCrossSign(event:Event):void
+			{
+				doBeforeExit();
+				super.closeByCrossSign(event);
+			}
+	
+			override protected function onResizeKeyDownEvent(event:KeyboardEvent):void
+			{
+				doBeforeExit();
+				super.onResizeKeyDownEvent(event);
+			}
+	
+			protected function doBeforeExit():void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
+			}
+	
+			protected function onBrowseButton(event:MouseEvent):void
+			{
+				if (!projectSelectionWindow)
+				{
+					projectSelectionWindow = PopUpManager.createPopUp(this, NewFileProjectSelectionPopup, true) as NewFileProjectSelectionPopup;
+					projectSelectionWindow.addEventListener(CloseEvent.CLOSE, handleProjectSelectionPopupClose);
+					projectSelectionWindow.addEventListener(NewFileEvent.EVENT_PROJECT_SELECTED, onProjectSelectionChanged);
+	
+					//projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
+					//PopUpManager.centerPopUp(projectSelectionWindow);
+				}
+			}
+	
+			protected function handleProjectSelectionPopupClose(event:CloseEvent):void
+			{
+				projectSelectionWindow.removeEventListener(CloseEvent.CLOSE, handleProjectSelectionPopupClose);
+				projectSelectionWindow.removeEventListener(NewFileEvent.EVENT_PROJECT_SELECTED, onProjectSelectionChanged);
+				projectSelectionWindow = null;
+			}
+	
+			protected function onProjectSelectionChanged(event:NewFileEvent):void
+			{
+				wrapperBelongToProject = event.ofProject;
+				wrapperOfFolderLocation = wrapperBelongToProject.projectFolder;
+				projectFolders = new ArrayCollection();
+	
+			}
+	
+			protected function getTemplateLabel(item:Object):String
+			{
+				return (!(item is String) ? item.name.split(".")[0] : "");
+			}
+	
+			protected function getItemRenderer(item:*):IFactory
+			{
+				var renderer:Class = item is String ? DividerRenderer : FileTypeRenderer;
+				return new ClassFactory(renderer);
+			}
+	
+			protected function onDropDownClosed(event:DropDownEvent):void
+			{
+				if (event.target.selectedItem is String) event.target.selectedItem = lastSelectedItem;
+			}
+	
+			protected function onNewFileCreationComplete(event:FlexEvent):void
+			{
+	
+			}
+			
+			protected function onNameChanged(event:TextOperationEvent):void
+			{
+				if (!event || !event.target) return;
+				
+				var inputText:String = event.target.text;
+				
+				// checks for nested folders path
+				if (inputText.indexOf("/") != -1)
+				{
+					nestedFoldersRequested = inputText.split("/");
+					if (nestedFoldersRequested[nestedFoldersRequested.length - 1] == "") nestedFoldersRequested.pop();
+					
+					modifiedName = nestedFoldersRequested[nestedFoldersRequested.length - 1];
+				}
+				else
+				{
+					nestedFoldersRequested = null;
+					modifiedName = inputText;
+				}
+				
+				// validates the target file path
+				if (!isDestinationValid || modifiedName == "") isSubmitButtonEnabled = false;
+				else
+				{
+					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(
+						(nestedFoldersRequested ? nestedFoldersRequested.join("/") : modifiedName) + createdFileExtension
+					);
+					targetFile.fileBridge.canonicalize();
+					
+					isSubmitButtonEnabled = !targetFile.fileBridge.exists;
+					if (!isSubmitButtonEnabled)
+					{
+						warningMessage = modifiedName + createdFileExtension + " is already exists.";
+					}
+				}
+			}
+			
 		]]>
 	</fx:Script>
 	<fx:Declarations>

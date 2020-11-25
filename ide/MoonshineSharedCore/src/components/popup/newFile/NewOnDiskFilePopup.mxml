@@ -21,7 +21,7 @@
 		override protected function onCreateButton(event:MouseEvent):void
 		{
 			// validation check for Enter key
-			if (!btnCreate.enabled) return;
+			if (!isSubmitButtonEnabled) return;
 			
 			// validation 2
 			var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
@@ -63,12 +63,12 @@
 			if (fromTemplate == ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE)
 			{
 				title = "New Form Builder DXL File";
-				extensionLabel.text = ".dfb";
+				createdFileExtension = ".dfb";
 			}
 			else if (fromTemplate == ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE)
 			{
 				title = "New Visual Editor DXL File";
-				extensionLabel.text = ".dve";
+				createdFileExtension = ".dve";
 			}
 		}
 		
