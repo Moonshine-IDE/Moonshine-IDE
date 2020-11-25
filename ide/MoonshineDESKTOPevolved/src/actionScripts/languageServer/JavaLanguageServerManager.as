@@ -36,7 +36,7 @@ package actionScripts.languageServer
     import mx.managers.PopUpManager;
     import mx.utils.SHA256;
 
-    import spark.components.Button;
+    import feathers.controls.Button;
 
     import actionScripts.events.ExecuteLanguageServerCommandEvent;
     import actionScripts.events.FilePluginEvent;
@@ -49,6 +49,7 @@ package actionScripts.languageServer
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.console.ConsoleOutputter;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.JavaTextEditor;
     import actionScripts.utils.CommandLineUtil;
@@ -64,7 +65,8 @@ package actionScripts.languageServer
 
     import com.adobe.utils.StringUtil;
 
-    import components.popup.StandardPopup;
+    import moonshine.components.StandardPopupView;
+    import moonshine.theme.MoonshineTheme;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -535,7 +537,7 @@ package actionScripts.languageServer
 			restartLanguageServer();
 		}
 
-		private function createCommandListener(command:String, args:Array, popup:StandardPopup):Function
+		private function createCommandListener(command:String, args:Array, popup:StandardPopupView, popupWrapper:FeathersUIWrapper):Function
 		{
 			return function(event:Event):void
 			{
@@ -544,7 +546,7 @@ package actionScripts.languageServer
 					project, command, args ? args : []));
 				if(popup)
 				{
-					PopUpManager.removePopUp(popup);
+					PopUpManager.removePopUp(popupWrapper);
 					popup.data = null;
 				}
 			};
@@ -783,7 +785,7 @@ package actionScripts.languageServer
 				return;
 			}
 
-			var popup:StandardPopup = new StandardPopup();
+			var popup:StandardPopupView = new StandardPopupView();
 			popup.data = this; // Keep the command from getting GC'd
 			popup.text = message;
 
@@ -797,17 +799,19 @@ package actionScripts.languageServer
 				var args:Array = command.arguments as Array;
 
 				var button:Button = new Button();
-				button.styleName = "lightButton";
-				button.label = title;
-				button.addEventListener(MouseEvent.CLICK, createCommandListener(commandName, args, popup), false, 0, false);
+				button.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+				button.text = title;
+				button.addEventListener(MouseEvent.CLICK, createCommandListener(commandName, args, popup, popupWrapper), false, 0, false);
 				buttons.push(button);
 			}
 			
-			popup.buttons = buttons;
+			popup.controls = buttons;
 			
-			PopUpManager.addPopUp(popup, FlexGlobals.topLevelApplication as DisplayObject, true);
-			popup.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
-			popup.x = (FlexGlobals.topLevelApplication.width-popup.width)/2;
+			var popupWrapper:FeathersUIWrapper = new FeathersUIWrapper(popup);
+			PopUpManager.addPopUp(popupWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+			popupWrapper.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
+			popupWrapper.x = (FlexGlobals.topLevelApplication.width-popupWrapper.width)/2;
+			popupWrapper.assignFocus("top");
 		}
 
 		private function command_javaCleanWorkspaceHandler():void

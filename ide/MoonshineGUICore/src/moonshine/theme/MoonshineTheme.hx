@@ -20,6 +20,7 @@
 
 package moonshine.theme;
 
+import moonshine.components.StandardPopupView;
 import feathers.controls.Button;
 import feathers.controls.Callout;
 import feathers.controls.Check;
@@ -69,6 +70,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		Theme.setTheme(_instance);
 	}
 
+	public static final THEME_VARIANT_LIGHT_BUTTON:String = "moonshine-button--light";
 	public static final THEME_VARIANT_DARK_BUTTON:String = "moonshine-button--dark";
 	public static final THEME_VARIANT_LIGHT_LABEL:String = "moonshine-label--light";
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
@@ -78,6 +80,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		super();
 
 		this.styleProvider.setStyleFunction(Button, null, setLightButtonStyles);
+		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_LIGHT_BUTTON, setLightButtonStyles);
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_DARK_BUTTON, setDarkButtonStyles);
 
 		this.styleProvider.setStyleFunction(Callout, null, setCalloutStyles);
@@ -111,6 +114,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(Label, SideBarViewHeader.CHILD_VARIANT_TITLE, setSideBarViewHeaderTitleStyles);
 		this.styleProvider.setStyleFunction(Button, SideBarViewHeader.CHILD_VARIANT_CLOSE_BUTTON, setSideBarViewHeaderCloseButtonStyles);
 
+		this.styleProvider.setStyleFunction(StandardPopupView, null, setStandardPopupViewStyles);
+
 		this.styleProvider.setStyleFunction(TitleWindow, null, setTitleWindowStyles);
 		this.styleProvider.setStyleFunction(Label, TitleWindow.CHILD_VARIANT_TITLE, setTitleWindowTitleStyles);
 		this.styleProvider.setStyleFunction(LayoutGroup, THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR, setTitleWindowControlBarStyles);
@@ -127,15 +132,40 @@ class MoonshineTheme extends ClassVariantTheme {
 
 	private function setLightButtonStyles(button:Button):Void {
 		var backgroundSkin = new MoonshineButtonSkin();
-		backgroundSkin.outerBorderFill = SolidColor(0x666666);
+		backgroundSkin.outerBorderFill = SolidColor(0xFCFCFC);
 		backgroundSkin.outerBorderSize = 3.0;
 		backgroundSkin.outerBorderRadius = 6.0;
-		backgroundSkin.innerBorderFill = SolidColor(0xFFFFFF);
+		backgroundSkin.innerBorderFill = SolidColor(0xD3D3D3);
 		backgroundSkin.innerBorderSize = 1.0;
 		backgroundSkin.innerBorderRadius = 4.0;
-		backgroundSkin.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		backgroundSkin.fill = Gradient(LINEAR, [0xF9F9F7, 0xF9F9F7, 0xEFEFED, 0xEFEFED], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
 		backgroundSkin.borderRadius = 4.0;
+		backgroundSkin.filters = [new GlowFilter(0xE5E5E5, 1.0, 2.0, 2.0, 3.0)];
 		button.backgroundSkin = backgroundSkin;
+
+		var hoverSkin = new MoonshineButtonSkin();
+		hoverSkin.outerBorderFill = SolidColor(0xFCFCFC);
+		hoverSkin.outerBorderSize = 3.0;
+		hoverSkin.outerBorderRadius = 6.0;
+		hoverSkin.innerBorderFill = SolidColor(0xD3D3D3);
+		hoverSkin.innerBorderSize = 1.0;
+		hoverSkin.innerBorderRadius = 4.0;
+		hoverSkin.fill = Gradient(LINEAR, [0xF9F9F7, 0xF9F9F7, 0xEAEAE8, 0xEAEAE8], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		hoverSkin.borderRadius = 4.0;
+		hoverSkin.filters = [new GlowFilter(0xE5E5E5, 1.0, 2.0, 2.0, 3.0)];
+		button.setSkinForState(HOVER, hoverSkin);
+
+		var downSkin = new MoonshineButtonSkin();
+		downSkin.outerBorderFill = SolidColor(0xFCFCFC);
+		downSkin.outerBorderSize = 3.0;
+		downSkin.outerBorderRadius = 6.0;
+		downSkin.innerBorderFill = SolidColor(0xD3D3D3);
+		downSkin.innerBorderSize = 1.0;
+		downSkin.innerBorderRadius = 4.0;
+		downSkin.fill = Gradient(LINEAR, [0xF1F1F1, 0xF1F1F1, 0xE7E7E7, 0xE7E7E7], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		downSkin.borderRadius = 4.0;
+		downSkin.filters = [new GlowFilter(0xDDDDDD, 1.0, 2.0, 2.0, 3.0)];
+		button.setSkinForState(DOWN, downSkin);
 
 		var disabledSkin = new MoonshineButtonSkin();
 		disabledSkin.outerBorderFill = SolidColor(0xCCCCCC);
@@ -147,19 +177,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		disabledSkin.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
 		disabledSkin.borderRadius = 4.0;
 		disabledSkin.alpha = 0.5;
+		disabledSkin.filters = [new GlowFilter(0xE5E5E5, 1.0, 2.0, 2.0, 3.0)];
 		button.setSkinForState(DISABLED, disabledSkin);
-
-		var downSkin = new MoonshineButtonSkin();
-		downSkin.outerBorderFill = SolidColor(0x666666);
-		downSkin.outerBorderSize = 3.0;
-		downSkin.outerBorderRadius = 6.0;
-		downSkin.innerBorderFill = SolidColor(0xFFFFFF);
-		downSkin.innerBorderSize = 1.0;
-		downSkin.innerBorderRadius = 4.0;
-		downSkin.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		downSkin.borderRadius = 4.0;
-		downSkin.alpha = 0.5;
-		button.setSkinForState(DOWN, downSkin);
 
 		var focusRectSkin = new RectangleSkin();
 		focusRectSkin.fill = null;
@@ -172,9 +191,9 @@ class MoonshineTheme extends ClassVariantTheme {
 		button.embedFonts = true;
 
 		button.paddingTop = 8.0;
-		button.paddingRight = 8.0;
+		button.paddingRight = 16.0;
 		button.paddingBottom = 8.0;
-		button.paddingLeft = 8.0;
+		button.paddingLeft = 16.0;
 		button.gap = 4.0;
 	}
 
@@ -744,6 +763,15 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		button.horizontalAlign = CENTER;
 		button.verticalAlign = MIDDLE;
+	}
+
+	private function setStandardPopupViewStyles(view:LayoutGroup):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0xf9f9f7);
+		backgroundSkin.cornerRadius = 0.0;
+		view.backgroundSkin = backgroundSkin;
+
+		view.filters = [new GlowFilter(0x000000, 0.3, 6, 6, 2)];
 	}
 
 	private function setTitleWindowStyles(window:TitleWindow):Void {

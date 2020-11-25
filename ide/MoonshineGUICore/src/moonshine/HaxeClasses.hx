@@ -19,11 +19,12 @@ package moonshine;
 	No warranty of merchantability or fitness of any kind.
 	Use this software at your own risk.
  */
-import feathers.core.FocusManager;
 import feathers.core.DefaultToolTipManager;
+import feathers.core.FocusManager;
+import moonshine.components.QuitView;
 import moonshine.components.SDKDefineView;
 import moonshine.components.SDKSelectorView;
-import moonshine.components.QuitView;
+import moonshine.components.StandardPopupView;
 import moonshine.plugin.findreplace.view.FindReplaceView;
 import moonshine.plugin.findreplace.view.GoToLineView;
 import moonshine.plugin.help.view.AS3DocsView;
@@ -50,6 +51,7 @@ class HaxeClasses {
 	public var ReferencesView:ReferencesView;
 	public var RenameFileView:RenameFileView;
 	public var RenameSymbolView:RenameSymbolView;
+	public var StandardPopupView:StandardPopupView;
 	public var SymbolsView:SymbolsView;
 	public var TourDeFlexContentsView:TourDeFlexContentsView;
 	public var QuitView:QuitView;
