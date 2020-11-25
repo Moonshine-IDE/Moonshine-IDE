@@ -1201,7 +1201,7 @@
 	</mx:Script>
 
 	<project:ProjectViewHeader id="header"
-							   label="{'&lt;span fontWeight=\'bold\'&gt;Projects &lt;/span&gt; &lt;span fontStyle=\'italic\'&gt;('+ ConstantsCoreVO.CURRENT_WORKSPACE +')&lt;/span&gt;'}"
+							   label="{'Workspace: '+ ConstantsCoreVO.CURRENT_WORKSPACE}"
 							   showScrollFromSourceIcon="true"
 							   width="100%"
 							   scrollFromSource="onScrollFromSource(event)"
