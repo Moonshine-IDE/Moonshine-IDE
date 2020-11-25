@@ -47,14 +47,6 @@ package actionScripts.plugins.svn.commands
 				project.menuType += ","+ ProjectMenuTypes.SVN_PROJECT;
 				project.hasVersionControlType = VersionControlTypes.SVN;
 			}
-			else
-			{
-				if (project.menuType.indexOf(ProjectMenuTypes.SVN_PROJECT) != -1)
-				{
-					project.menuType = project.menuType.replace(","+ ProjectMenuTypes.SVN_PROJECT, "");
-					project.hasVersionControlType = null;
-				}
-			}
 			
 			// following will enable/disable Moonshine top menus based on project
 			dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));

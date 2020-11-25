@@ -63,15 +63,6 @@ package actionScripts.plugins.git.commands
 				case GIT_REPOSITORY_TESTED:
 				{
 					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
-					if (isFatal && tmpProject)
-					{
-						if (tmpProject.menuType.indexOf(ProjectMenuTypes.GIT_PROJECT) != -1)
-						{
-							tmpProject.menuType = tmpProject.menuType.replace(","+ ProjectMenuTypes.GIT_PROJECT, "");
-							tmpProject.hasVersionControlType = null;
-						}
-					}
-					
 					if (!isFatal)
 					{
 						if (tmpProject)
