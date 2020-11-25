@@ -30,6 +30,7 @@ import moonshine.plugin.help.view.AS3DocsView;
 import moonshine.plugin.help.view.TourDeFlexContentsView;
 import moonshine.plugin.locations.view.LocationsView;
 import moonshine.plugin.outline.view.OutlineView;
+import moonshine.plugin.problems.view.ProblemsView;
 import moonshine.plugin.references.view.ReferencesView;
 import moonshine.plugin.rename.view.RenameFileView;
 import moonshine.plugin.rename.view.RenameSymbolView;
@@ -45,6 +46,7 @@ class HaxeClasses {
 	public var GoToLineView:GoToLineView;
 	public var LocationsView:LocationsView;
 	public var OutlineView:OutlineView;
+	public var ProblemsView:ProblemsView;
 	public var ReferencesView:ReferencesView;
 	public var RenameFileView:RenameFileView;
 	public var RenameSymbolView:RenameSymbolView;

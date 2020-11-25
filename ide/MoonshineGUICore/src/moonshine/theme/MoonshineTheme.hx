@@ -85,6 +85,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(Check, null, setCheckStyles);
 
 		this.styleProvider.setStyleFunction(GridView, null, setGridViewStyles);
+		this.styleProvider.setStyleFunction(GridView, GridView.VARIANT_BORDERLESS, setBorderlessGridViewStyles);
 		this.styleProvider.setStyleFunction(ItemRenderer, GridView.CHILD_VARIANT_HEADER, setGridViewHeaderStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
@@ -363,6 +364,29 @@ class MoonshineTheme extends ClassVariantTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = SolidColor(1.0, 0x666666);
+		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
+		backgroundSkin.cornerRadius = 0.0;
+		backgroundSkin.minWidth = 160.0;
+		backgroundSkin.minHeight = 160.0;
+		gridView.backgroundSkin = backgroundSkin;
+
+		var columnResizeSkin = new RectangleSkin(SolidColor(0xC165B8), null);
+		columnResizeSkin.width = 2.0;
+		columnResizeSkin.height = 2.0;
+		gridView.columnResizeSkin = columnResizeSkin;
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		gridView.focusRectSkin = focusRectSkin;
+
+		gridView.fixedScrollBars = true;
+	}
+
+	private function setBorderlessGridViewStyles(gridView:GridView):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x444444);
+		backgroundSkin.border = null;
 		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
 		backgroundSkin.minWidth = 160.0;
