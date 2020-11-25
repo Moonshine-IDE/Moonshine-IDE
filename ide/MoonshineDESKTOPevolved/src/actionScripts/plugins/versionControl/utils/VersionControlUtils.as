@@ -244,13 +244,12 @@ package actionScripts.plugins.versionControl.utils
 		
 		public static function isSandboxPermissionAcquired():Boolean
 		{
-			if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION)
+			if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION && SANDBOX_XCODE_PERMITTED_PATH)
 			{
 				return OSXBookmarkerNotifiers.isPathBookmarked(SANDBOX_XCODE_PERMITTED_PATH);
 			}
 			
-			// no need permission on Windows or non-sandbox version
-			return true;
+			return false;
 		}
 		
 		private static function setStateOfRepositoryIfNotExists(repo:RepositoryItemVO):void
