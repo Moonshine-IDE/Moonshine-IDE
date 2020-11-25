@@ -30,6 +30,9 @@ package actionScripts.plugin.java.javaproject.vo
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.plugin.settings.vo.ButtonSetting;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 
 	public class JavaProjectVO extends ProjectVO
 	{
@@ -101,6 +104,15 @@ package actionScripts.plugin.java.javaproject.vo
 			JavaExporter.export(this);
 		}
 
+		public var cleanWorkspaceButtonLabel:String = "Clean";
+
+		public function cleanJavaWorkspaceButtonClickHandler():void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new ExecuteLanguageServerCommandEvent(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
+				this, "java.clean.workspace"));
+		}
+
 		private function getJavaSettings():Vector.<SettingsWrapper>
 		{
 			var pathsSettings:Vector.<ISetting> = new Vector.<ISetting>();
@@ -118,6 +130,9 @@ package actionScripts.plugin.java.javaproject.vo
 			}
 
 			var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
+				new SettingsWrapper("Java Project", new <ISetting>[
+					new ButtonSetting(this, "cleanWorkspaceButtonLabel", "Clean Java Project Workspace Cache", "cleanJavaWorkspaceButtonClickHandler")
+				]),
 				new SettingsWrapper("Paths", pathsSettings)
 			]);
 
