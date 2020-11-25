@@ -30,11 +30,14 @@ import feathers.data.TreeCollection;
 import feathers.data.TreeNode;
 import feathers.layout.AnchorLayout;
 import feathers.layout.AnchorLayoutData;
+import moonshine.theme.MoonshineTheme;
 import moonshine.ui.SideBarViewHeader;
 import openfl.events.Event;
 
 class OutlineView extends Panel implements IViewWithTitle {
 	public function new() {
+		MoonshineTheme.initializeTheme();
+
 		super();
 	}
 
