@@ -216,21 +216,9 @@ class MoonshineTheme extends ClassVariantTheme {
 		hoverSkin.innerBorderFill = SolidColor(0x4C4C4C);
 		hoverSkin.innerBorderSize = 1.0;
 		hoverSkin.innerBorderRadius = 4.0;
-		hoverSkin.fill = Gradient(LINEAR, [0x3F3F3F, 0x3F3F3F, 0x3B3B3B, 0x3B3B3B], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		hoverSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x3E3E3E, 0x3E3E3E], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
 		hoverSkin.borderRadius = 4.0;
 		button.setSkinForState(HOVER, hoverSkin);
-
-		var disabledSkin = new MoonshineButtonSkin();
-		disabledSkin.outerBorderFill = SolidColor(0x292929);
-		disabledSkin.outerBorderSize = 3.0;
-		disabledSkin.outerBorderRadius = 6.0;
-		disabledSkin.innerBorderFill = SolidColor(0x4C4C4C);
-		disabledSkin.innerBorderSize = 1.0;
-		disabledSkin.innerBorderRadius = 4.0;
-		disabledSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x404040, 0x404040], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		disabledSkin.borderRadius = 4.0;
-		disabledSkin.alpha = 0.5;
-		button.setSkinForState(DISABLED, disabledSkin);
 
 		var downSkin = new MoonshineButtonSkin();
 		downSkin.outerBorderFill = SolidColor(0x292929);
@@ -241,8 +229,18 @@ class MoonshineTheme extends ClassVariantTheme {
 		downSkin.innerBorderRadius = 4.0;
 		downSkin.fill = Gradient(LINEAR, [0x3F3F3F, 0x3F3F3F, 0x3C3C3C, 0x3C3C3C], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
 		downSkin.borderRadius = 4.0;
-		downSkin.alpha = 0.5;
 		button.setSkinForState(DOWN, downSkin);
+
+		var disabledSkin = new MoonshineButtonSkin();
+		disabledSkin.outerBorderFill = SolidColor(0x292929);
+		disabledSkin.outerBorderSize = 3.0;
+		disabledSkin.outerBorderRadius = 6.0;
+		disabledSkin.innerBorderFill = SolidColor(0x4C4C4C);
+		disabledSkin.innerBorderSize = 1.0;
+		disabledSkin.innerBorderRadius = 4.0;
+		disabledSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x404040, 0x404040], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		disabledSkin.alpha = 0.5;
+		button.setSkinForState(DISABLED, disabledSkin);
 
 		var focusRectSkin = new RectangleSkin();
 		focusRectSkin.fill = null;
