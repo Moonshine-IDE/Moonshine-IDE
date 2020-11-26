@@ -113,20 +113,23 @@ package actionScripts.plugin.workspace
 			}
 		}
 		
-		private function handleRemoveProject(event:ProjectEvent, projectPath:String=null):void
+		private function handleRemoveProject(event:ProjectEvent):void
+		{	
+			handleRemoveProjectByPath(event.project.folderLocation.fileBridge.nativePath);
+		}
+		
+		private function handleRemoveProjectByPath(value:String):void
 		{
-			if (!event && !projectPath) return;
-			
 			if (closeAllProjectItems && closeAllProjectItems.length > 0)
 			{
 				closeAllProjectItems.splice(
-					closeAllProjectItems.indexOf(event ? event.project.folderLocation.fileBridge.nativePath : projectPath), 
+					closeAllProjectItems.indexOf(value), 
 					1);
 				closeAllEditorAsync();
 			}
 			else
 			{
-				var pathIndex:int = getPathIndex(event ? event.project.folderLocation.fileBridge.nativePath : projectPath);
+				var pathIndex:int = getPathIndex(value);
 				if (pathIndex != -1)
 				{
 					currentWorkspaceItems.splice(pathIndex, 1);
@@ -305,7 +308,7 @@ package actionScripts.plugin.workspace
 				var projectPath:String = closeAllProjectItems[0];
 				var project:ProjectVO = UtilsCore.getProjectByPath(projectPath);
 				if (project) dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.CLOSE_PROJECT, project.projectFolder));
-				else handleRemoveProject(null, projectPath);
+				else handleRemoveProjectByPath(projectPath);
 			}
 			else
 			{
