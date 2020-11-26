@@ -82,7 +82,7 @@
 							  prompt="New Branch Name" enter="onSubmit()"
 							  restrict="a-zA-Z0-9`!@#$%()_+={}';.\-\/\&amp;"/>
 		<s:CheckBox id="cbPush"
-					label="Push newly created branch to remote" selected="true"/>
+					label="Push newly created branch to remote"/>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>
