@@ -35,10 +35,11 @@ package actionScripts.ui.menu.vo
 			return _data is ICustomMenu && (_data as ICustomMenu).items.length;
 		}
 
-		public function CustomMenuItem(label:String = "", isSeparator:Boolean = false, options:Object = null)
+		public function CustomMenuItem(label:String = "", isSeparator:Boolean = false, options:Object = null, isDefaultEnabled:Boolean=true)
 		{
 			super();
 			this.label = label;
+			this.isDefaultEnabled = isDefaultEnabled;
 			_isSeparator = isSeparator;
 			init(options);
 		}
@@ -154,5 +155,15 @@ package actionScripts.ui.menu.vo
         {
             _dynamicItem = value;
         }
+		
+		private var _isDefaultEnabled:Boolean;
+		public function get isDefaultEnabled():Boolean
+		{
+			return _isDefaultEnabled;
+		}
+		public function set isDefaultEnabled(value:Boolean):void
+		{
+			_isDefaultEnabled = value;
+		}
 	}
 }

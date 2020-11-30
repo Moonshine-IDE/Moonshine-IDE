@@ -751,7 +751,7 @@ package actionScripts.ui.menu
 			}
 			else
 			{
-				menuItem = new CustomMenuItem(item.label, item.isSeparator, {enableTypes:item.enableTypes});
+				menuItem = new CustomMenuItem(item.label, item.isSeparator, {enableTypes:item.enableTypes}, item.isDefaultEnabled);
 				if (shortcut)
 				{
 					menuItem.shortcut = shortcut;
