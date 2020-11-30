@@ -349,7 +349,7 @@ package actionScripts.plugins.versionControl
 		
 		private function onXCodeAccessPermissionRequested(event:Event):void
 		{
-			if (!xcodePath)
+			if (!xcodePath && ConstantsCoreVO.IS_MACOS)
 			{
 				testXCodeOnSandbox();
 			}

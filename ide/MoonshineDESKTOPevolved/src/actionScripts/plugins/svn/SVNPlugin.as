@@ -77,6 +77,18 @@ package actionScripts.plugins.svn
 			if (_svnBinaryPath != value)
 			{
 				model.svnPath = _svnBinaryPath = value;
+				// in case of macOS this handles by VersionControlPlugin
+				if (!ConstantsCoreVO.IS_MACOS)
+				{
+					if (model.activeProject)
+					{
+						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_SVN_PROJECT, model.activeProject));
+					}
+					else
+					{
+						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, null));
+					}
+				}
 				/*if (value != "") 
 				{
 					checkOpenedProjectsIfVersioned();

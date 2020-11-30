@@ -186,8 +186,7 @@
 			private function onOpenSettings(event:HelperEvent):void
 			{
 				var component:ComponentVO = event.value as ComponentVO;
-				if ((component.type == ComponentTypes.TYPE_GIT || component.type == ComponentTypes.TYPE_SVN) && 
-					ConstantsCoreVO.IS_MACOS)
+				if (component.type == ComponentTypes.TYPE_GIT || component.type == ComponentTypes.TYPE_SVN)
 				{
 					var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
 					var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);

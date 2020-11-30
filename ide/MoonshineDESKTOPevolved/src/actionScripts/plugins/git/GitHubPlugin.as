@@ -248,6 +248,19 @@ package actionScripts.plugins.git
 			if (gitAuthWindow) gitAuthWindow.isGitAvailable = isGitAvailable;
 			if (gitBranchSelectionWindow) gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
 			if (gitNewBranchWindow) gitNewBranchWindow.isGitAvailable = isGitAvailable;
+			
+			// in case of macOS this handles by VersionControlPlugin
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				if (model.activeProject)
+				{
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.CHECK_GIT_PROJECT, model.activeProject));
+				}
+				else
+				{
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, null));
+				}
+			}
 		}
 		
 		public function setPathMessage(value:String, type:String=AbstractSetting.MESSAGE_NORMAL):void
