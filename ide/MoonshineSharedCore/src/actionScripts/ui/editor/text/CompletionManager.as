@@ -195,57 +195,71 @@ package actionScripts.ui.editor.text
 
 		private function completeItem(item:CompletionItem):void
 		{
-            var startIndex:int = caret - menuStr.length;
-			var endIndex:int = caret;
-			var baseText:String = item.insertText;
-			if(!baseText)
-			{
-				baseText = item.label;
-			}
-
-			var text:String = baseText;
-            var hasSelectedLineAutoCloseAttr:Boolean = false;
-			if (item.kind != CompletionItemKind.CLASS && item.kind != CompletionItemKind.VALUE && isPlaceInLineAllowedToAutoCloseAttr(startIndex, endIndex))
-            {
-                var itemWithNamespaceRegExp:RegExp = /\w+(?=:)/;
-                if (!itemWithNamespaceRegExp.test(item.insertText))
-                {
-                    hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr(startIndex, endIndex);
-                    if (item.kind == CompletionItemKind.VARIABLE && item.insertText != null)
-                    {
-                        hasSelectedLineAutoCloseAttr = false;
-                    }
-
-                    if (hasSelectedLineAutoCloseAttr)
-                    {
-                        text = baseText + "=\"\"";
-                    }
-                }
-            }
-
-			if (!hasSelectedLineAutoCloseAttr && item.kind == CompletionItemKind.METHOD)
-			{
-				text = baseText + "()";
-			}
-
-            editor.setCompletionData(startIndex, endIndex, text);
-
-			if ((item.kind == CompletionItemKind.METHOD || hasSelectedLineAutoCloseAttr)
-					&& item.kind != CompletionItemKind.CLASS && item.kind != CompletionItemKind.VALUE)
-			{
-                var lineIndex:int = model.selectedLineIndex;
-                var cursorIndex:int = startIndex + text.length - 1;
-				model.setSelection(lineIndex, cursorIndex, lineIndex, cursorIndex);
-			}
-
 			var activeEditor:BasicTextEditor = IDEModel.getInstance().activeEditor as BasicTextEditor;
 			var uri:String = (activeEditor && activeEditor.currentFile) ? activeEditor.currentFile.fileBridge.url : null;
+			if(item.textEdit)
+			{
+				var textEdit:TextEdit = item.textEdit;
+				var workspaceEdit:WorkspaceEdit = new WorkspaceEdit();
+				var changes:Object = {};
+				changes[uri] = new <TextEdit>[textEdit];
+				workspaceEdit.changes = changes;
+				applyWorkspaceEdit(workspaceEdit);
+				var lineIndex:int = textEdit.range.start.line;
+				var cursorIndex:int = textEdit.range.start.character + textEdit.newText.length;
+				model.setSelection(lineIndex, cursorIndex, lineIndex, cursorIndex);
+			}
+			else
+			{
+				var startIndex:int = caret - menuStr.length;
+				var endIndex:int = caret;
+				var baseText:String = item.insertText;
+				if(!baseText)
+				{
+					baseText = item.label;
+				}
+
+				var text:String = baseText;
+				var hasSelectedLineAutoCloseAttr:Boolean = false;
+				if (item.kind != CompletionItemKind.CLASS && item.kind != CompletionItemKind.VALUE && isPlaceInLineAllowedToAutoCloseAttr(startIndex, endIndex))
+				{
+					var itemWithNamespaceRegExp:RegExp = /\w+(?=:)/;
+					if (!itemWithNamespaceRegExp.test(item.insertText))
+					{
+						hasSelectedLineAutoCloseAttr = checkSelectedLineIfItIsForAutoCloseAttr(startIndex, endIndex);
+						if (item.kind == CompletionItemKind.VARIABLE && item.insertText != null)
+						{
+							hasSelectedLineAutoCloseAttr = false;
+						}
+
+						if (hasSelectedLineAutoCloseAttr)
+						{
+							text = baseText + "=\"\"";
+						}
+					}
+				}
+
+				if (!hasSelectedLineAutoCloseAttr && item.kind == CompletionItemKind.METHOD)
+				{
+					text = baseText + "()";
+				}
+
+				editor.setCompletionData(startIndex, endIndex, text);
+
+				if ((item.kind == CompletionItemKind.METHOD || hasSelectedLineAutoCloseAttr)
+						&& item.kind != CompletionItemKind.CLASS && item.kind != CompletionItemKind.VALUE)
+				{
+					lineIndex = model.selectedLineIndex;
+					cursorIndex = startIndex + text.length - 1;
+					model.setSelection(lineIndex, cursorIndex, lineIndex, cursorIndex);
+				}
+			}
 
 			var additionalTextEdits:Vector.<TextEdit> = item.additionalTextEdits;
 			if(additionalTextEdits)
 			{
-				var workspaceEdit:WorkspaceEdit = new WorkspaceEdit();
-				var changes:Object = {};
+				workspaceEdit = new WorkspaceEdit();
+				changes = {};
 				changes[uri] = additionalTextEdits;
 				workspaceEdit.changes = changes;
 				applyWorkspaceEdit(workspaceEdit);
@@ -525,7 +539,7 @@ package actionScripts.ui.editor.text
 			}
 			//we don't need to call toLowerCase() on sortLabel and menuStr here
 			//because they are already lower case
-			return item.sortLabel.indexOf(menuStr) > -1;
+			return item.sortText.indexOf(menuStr) > -1;
         }
 
 		private function sortCodeCompletionMenu(itemA:CompletionItem, itemB:CompletionItem, fields:Array):int
@@ -535,13 +549,13 @@ package actionScripts.ui.editor.text
 				//sortLabel is already lowercase, so telling stringCompare() to
 				//compare case-sensitive can be faster by avoiding a call to
 				//toLowerCase()
-				return ObjectUtil.stringCompare(itemA.sortLabel, itemB.sortLabel, false);
+				return ObjectUtil.stringCompare(itemA.sortText, itemB.sortText, false);
 			}
 
 			//we don't need to call toLowerCase() on sortLabel and menuStr here
 			//because they are already lower case
-			var indexOfLabelItemA:int = itemA.sortLabel.indexOf(menuStr);
-            var indexOfLabelItemB:int = itemB.sortLabel.indexOf(menuStr);
+			var indexOfLabelItemA:int = itemA.sortText.indexOf(menuStr);
+            var indexOfLabelItemB:int = itemB.sortText.indexOf(menuStr);
 
 			return ObjectUtil.numericCompare(indexOfLabelItemA, indexOfLabelItemB);
 		}

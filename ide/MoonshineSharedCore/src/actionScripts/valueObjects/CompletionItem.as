@@ -15,9 +15,11 @@ package actionScripts.valueObjects
 	{
 		private static const FIELD_COMMAND:String = "command";
 		private static const FIELD_IS_INCOMPLETE:String = "isIncomplete";
+		private static const FIELD_TEXT_EDIT:String = "textEdit";
 		private static const FIELD_ADDITIONAL_TEXT_EDITS:String = "additionalTextEdits";
 		private static const FIELD_LABEL:String = "label";
 		private static const FIELD_INSERT_TEXT:String = "insertText";
+		private static const FIELD_SORT_TEXT:String = "sortText";
 		private static const FIELD_DOCUMENTATION:String = "documentation";
 		private static const FIELD_DETAIL:String = "detail";
 		private static const FIELD_DEPRECATED:String = "deprecated";
@@ -32,12 +34,11 @@ package actionScripts.valueObjects
 			return this._label;
 		}
 		
-		private var _sortLabel:String;
+		private var _sortText:String;
 		
-		//TODO: remove sortLabel because it does not exist in language server protocol
-		public function get sortLabel():String
+		public function get sortText():String
 		{
-			return this._sortLabel;
+			return this._sortText;
 		}
 		
 		private var _kind:int;
@@ -70,6 +71,14 @@ package actionScripts.valueObjects
 		public function get insertText():String
 		{
 			return this._insertText;
+		}
+
+		private var _textEdit:TextEdit = null;
+
+		[Bindable("textEditChange")]
+		public function get textEdit():TextEdit
+		{
+			return this._textEdit;
 		}
 
 		private var _command: Command;
@@ -118,7 +127,7 @@ package actionScripts.valueObjects
 			deprecated:Boolean = false, additionalTextEdits:Vector.<TextEdit> = null):void
 		{
 			this._label = label;
-			this._sortLabel = label.toLowerCase();
+			this._sortText = label.toLowerCase();
 			this._insertText = insertText;
 			this._kind = kind;
 			this._detail = detail;
@@ -134,7 +143,14 @@ package actionScripts.valueObjects
 			if(FIELD_LABEL in resolvedFields)
 			{
 				item._label = resolvedFields[FIELD_LABEL];
-				item._sortLabel = item.label.toLowerCase();
+			}
+			if(FIELD_SORT_TEXT in resolvedFields)
+			{
+				item._sortText = resolvedFields[FIELD_SORT_TEXT].toLowerCase();
+			}
+			else
+			{
+				item._sortText = item.label.toLowerCase();
 			}
 			if(FIELD_INSERT_TEXT in resolvedFields)
 			{
@@ -164,6 +180,11 @@ package actionScripts.valueObjects
 			{
 				trace("WARNING: Completion item is incomplete. Resolving a completion item is not supported yet. Item: " + item.label);
 			}
+			if(FIELD_TEXT_EDIT in resolvedFields)
+			{
+				var jsonTextEdit:Object = resolvedFields[FIELD_TEXT_EDIT];
+				item._textEdit = TextEdit.parse(jsonTextEdit);
+			}
 			if(FIELD_ADDITIONAL_TEXT_EDITS in resolvedFields)
 			{
 				var additionalTextEdits:Vector.<TextEdit> = new <TextEdit>[];
@@ -171,7 +192,7 @@ package actionScripts.valueObjects
 				var textEditCount:int = jsonTextEdits.length;
 				for(var i:int = 0; i < textEditCount; i++)
 				{
-					var jsonTextEdit:Object = jsonTextEdits[i];
+					jsonTextEdit = jsonTextEdits[i];
 					additionalTextEdits[i] = TextEdit.parse(jsonTextEdit);
 				}
 				item._additionalTextEdits = additionalTextEdits;
