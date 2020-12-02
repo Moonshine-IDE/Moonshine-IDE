@@ -452,7 +452,7 @@ package actionScripts.plugins.startup
 		private function onWarningUpdated(event:HelperEvent):void
 		{
 			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(event.value.type);
-			tmpComponent.hasWarning = event.value.message;
+			if (tmpComponent) tmpComponent.hasWarning = event.value.message;
 		}
 		
 		/**
