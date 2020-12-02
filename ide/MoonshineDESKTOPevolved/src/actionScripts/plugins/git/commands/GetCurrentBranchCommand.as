@@ -21,6 +21,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.vo.NativeProcessQueueVO;
@@ -52,12 +53,14 @@ package actionScripts.plugins.git.commands
 			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var tmpModel:GitProjectVO;
+			var tmpProject:ProjectVO;
 			
 			switch(tmpQueue.processType)
 			{
 				case GIT_CURRENT_BRANCH_NAME:
 				{
-					tmpModel = plugin.modelAgainstProject[model.activeProject];
+					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
+					tmpModel = plugin.modelAgainstProject[tmpProject];
 					if (tmpModel) parseCurrentBranch(value.output, tmpModel);
 					return;
 				}
