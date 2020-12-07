@@ -253,7 +253,7 @@ package actionScripts.valueObjects
 
 				if (projectReference.showHiddenPaths)
 				{
-					fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
+					fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, false);
 					fw.sourceController = _sourceController;
 					_children.push(fw);
 				}
@@ -266,7 +266,8 @@ package actionScripts.valueObjects
 
 					if (!currentIsHidden)
                     {
-                        fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
+                        fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, false);
+						fw.children = [];
                         fw.sourceController = _sourceController;
                         _children.push(fw)
                     }

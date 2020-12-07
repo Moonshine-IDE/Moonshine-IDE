@@ -30,6 +30,8 @@ package actionScripts.utils {
     
     import actionScripts.valueObjects.FileWrapper;
 
+    import mx.utils.ObjectUtil;
+
     use namespace mx_internal;
 
     public class CustomTree extends Tree
@@ -157,6 +159,7 @@ package actionScripts.utils {
         private function onCustomTreeItemEventHandler(event:TreeEvent):void
         {
             isItemOpening = event.type == TreeEvent.ITEM_OPENING;
+            updateItemChildren(event.item as FileWrapper);
         }
 
         private function reopenPreviouslyClosedItems(eventKind:String, items:Array):void
@@ -198,23 +201,41 @@ package actionScripts.utils {
 			if (projectTree && items.length > 0)
 			{
                 var item:Object = items.shift();
+                trace(">>>>> ", (item as FileWrapper).nativePath);
                 if (!isItemOpen(item))
                 {
+                    trace("------- ", (item as FileWrapper).nativePath);
                     var hasItemForOpen:Boolean = projectTree.some(
                             function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean {
                                 return itemForOpen.hasOwnProperty(item[propertyNameKey]) &&
                                         itemForOpen[item[propertyNameKey]] == item[propertyNameKeyValue];
                             });
-
+                    trace("++++++ ", hasItemForOpen);
                     if (hasItemForOpen)
                     {
+                        trace("=========== ", (item as FileWrapper).nativePath);
                         expandItem(item, true);
-						(item as FileWrapper).sortChildren();
-                    }
-                }
+                        updateItemChildren(item as FileWrapper);
+                        //(item as FileWrapper).sortChildren();
+                        this.callLater(function():void
+                        {
 
-                setItemsAsOpen(items);
+                            (item as FileWrapper).sortChildren();
+                            setItemsAsOpen(items);
+                        });
+
+                    }
+                    else
+                        setItemsAsOpen(items);
+                }
+                else
+                    setItemsAsOpen(items);
 			}
 		}
+
+        private function updateItemChildren(item:FileWrapper):void
+        {
+            if (item.children.length == 0) item.updateChildren();
+        }
     }
 }
