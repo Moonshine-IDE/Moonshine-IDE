@@ -206,7 +206,7 @@ package actionScripts.languageServer
 
 		private function extractVersionStringFromStandardErrorOutput(versionOutput:String):String
 		{
-			var result:Array = versionOutput.match(/version "(\d+\.\d+\.\d+(_\d+)?(\-\w+)?)"/);
+			var result:Array = versionOutput.match(/version "(\d+(\.\d+)+(_\d+)?(\-\w+)?)"/);
 			if(result.length > 1)
 			{
 				return result[1];
@@ -221,17 +221,18 @@ package actionScripts.languageServer
 			parts = versionNumberWithUpdate.split("_");
 			var versionNumber:String = parts[0];
 			var versionNumberParts:Array = versionNumber.split(".");
-			if(versionNumberParts.length != 3)
+			var partsCount:int = versionNumberParts.length;
+			for(var i:int = 0; i < partsCount; i++)
 			{
-				return false;
+				var part:String = versionNumberParts[i];
+				var parsed:Number = parseInt(part, 10);
+				if(isNaN(parsed))
+				{
+					return false;
+				}
+				versionNumberParts[i] = parsed;
 			}
-			var major:Number = parseInt(versionNumberParts[0], 10);
-			var minor:Number = parseInt(versionNumberParts[1], 10);
-			var revision:Number = parseInt(versionNumberParts[2], 10);
-			if(isNaN(major) || isNaN(minor) || isNaN(revision))
-			{
-				return false;
-			}
+			var major:Number = versionNumberParts[0];
 			if(major < 11)
 			{
 				return false;
