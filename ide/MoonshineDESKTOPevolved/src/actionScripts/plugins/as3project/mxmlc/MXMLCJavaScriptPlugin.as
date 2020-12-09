@@ -264,11 +264,14 @@ package actionScripts.plugins.as3project.mxmlc
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-					if (projectReference && filteredProjects.indexOf(projectReference) != -1)
+					if(tmpTreeView) //might be null if closed by user
 					{
-						checkForUnsavedEdior(projectReference);
-						return;
+						var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
+						if (projectReference && filteredProjects.indexOf(projectReference) != -1)
+						{
+							checkForUnsavedEdior(projectReference);
+							return;
+						}
 					}
 				}
 				
