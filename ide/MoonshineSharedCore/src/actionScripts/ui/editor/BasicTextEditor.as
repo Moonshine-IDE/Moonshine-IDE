@@ -41,6 +41,7 @@ package actionScripts.ui.editor
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IContentWindowReloadable;
     import actionScripts.ui.IFileContentWindow;
@@ -55,8 +56,11 @@ package actionScripts.ui.editor
     import actionScripts.valueObjects.URLDescriptorVO;
     
     import components.popup.FileSavePopup;
-    import components.popup.SelectOpenedProject;
     import components.views.project.TreeView;
+
+	import feathers.data.ArrayCollection;
+
+    import moonshine.components.SelectOpenedProjectView;
 
     public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
@@ -76,7 +80,8 @@ package actionScripts.ui.editor
         protected var _isChanged:Boolean;
 
 		private var pop:FileSavePopup;
-		private var selectProjectPopup:SelectOpenedProject;
+		private var selectProjectPopup:SelectOpenedProjectView;
+		private var selectProjectPopupWrapper:FeathersUIWrapper;
 		protected var isVisualEditor:Boolean;
 
 		private var _readOnly:Boolean = false;
@@ -442,11 +447,14 @@ package actionScripts.ui.editor
 							}
 						}
 					}
-					selectProjectPopup = new SelectOpenedProject();
-					PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
-					PopUpManager.centerPopUp(selectProjectPopup);
-					selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-					selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+					selectProjectPopup = new SelectOpenedProjectView();
+					selectProjectPopup.projects = new ArrayCollection(model.projects.source);
+					selectProjectPopupWrapper = new FeathersUIWrapper(selectProjectPopup);
+					PopUpManager.addPopUp(selectProjectPopupWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
+					PopUpManager.centerPopUp(selectProjectPopupWrapper);
+					selectProjectPopup.addEventListener(Event.CLOSE, onSelectProjectPopupClose);
+					selectProjectPopupWrapper.assignFocus("top");	
+					selectProjectPopupWrapper.stage.addEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler, false, 0, true);
 				}
 				else if (model.projects.length != 0)
 				{
@@ -464,16 +472,22 @@ package actionScripts.ui.editor
 			function saveAsPath(path:String):void{
 				model.fileCore.browseForSave(handleSaveAsSelect, null, "Save As", path);
 			}
-			function onProjectSelected(event:Event):void
+			function onSelectProjectPopupClose(event:Event):void
 			{
-				saveAsPath((selectProjectPopup.selectedProject as AS3ProjectVO).folderPath );
-				onProjectSelectionCancelled(null);
-			}
-			function onProjectSelectionCancelled(event:Event):void
-			{
-				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				var selectedProject:ProjectVO = selectProjectPopup.selectedProject;selectedProject.folderPath
+				if(selectedProject)
+				{
+					saveAsPath(selectedProject.folderPath);
+				}
+				selectProjectPopupWrapper.stage.removeEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler);
+				PopUpManager.removePopUp(selectProjectPopupWrapper);
+				selectProjectPopup.removeEventListener(Event.CLOSE, onSelectProjectPopupClose);
 				selectProjectPopup = null;
+				selectProjectPopupWrapper = null;
+			}
+			function selectProjectPopup_stage_resizeHandler(event:Event):void
+			{
+				PopUpManager.centerPopUp(selectProjectPopupWrapper);
 			}
 		}
 		

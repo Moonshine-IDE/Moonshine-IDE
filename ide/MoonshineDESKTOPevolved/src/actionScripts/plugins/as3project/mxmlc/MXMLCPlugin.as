@@ -64,6 +64,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
 	import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
+	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.ui.editor.text.DebugHighlightManager;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
@@ -80,8 +81,11 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
 	
-	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
+
+	import feathers.data.ArrayCollection;
+
+	import moonshine.components.SelectOpenedProjectView;
 	
 	import flashx.textLayout.elements.LinkElement;
 	import flashx.textLayout.elements.ParagraphElement;
@@ -128,7 +132,8 @@ package actionScripts.plugins.as3project.mxmlc
 		private var	tempObj:Object;
 		private var fschstr:String;
 		private var SDKstr:String;
-		private var selectProjectPopup:SelectOpenedProject;
+		private var selectProjectPopup:SelectOpenedProjectView;
+		private var selectProjectPopupWrapper:FeathersUIWrapper;
 
 		private function get mxmlcPath():String
 		{
@@ -489,12 +494,14 @@ package actionScripts.plugins.as3project.mxmlc
 					}
 				}
 				// if above is false
-				selectProjectPopup = new SelectOpenedProject();
-				selectProjectPopup.projects = new ArrayCollection(filteredProjects);
-				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
-				PopUpManager.centerPopUp(selectProjectPopup);
-				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				selectProjectPopup = new SelectOpenedProjectView();
+				selectProjectPopup.projects = new feathers.data.ArrayCollection(filteredProjects);
+				selectProjectPopupWrapper = new FeathersUIWrapper(selectProjectPopup);
+				PopUpManager.addPopUp(selectProjectPopupWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
+				PopUpManager.centerPopUp(selectProjectPopupWrapper);
+				selectProjectPopup.addEventListener(Event.CLOSE, onSelectProjectPopupClose);
+				selectProjectPopupWrapper.assignFocus("top");	
+				selectProjectPopupWrapper.stage.addEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler, false, 0, true);
 			}
 			else if (filteredProjects.length != 0)
 			{
@@ -504,17 +511,23 @@ package actionScripts.plugins.as3project.mxmlc
 			/*
 			* @local
 			*/
-			function onProjectSelected(event:Event):void
+			function onSelectProjectPopupClose(event:Event):void
 			{
-				checkForUnsavedEditor(selectProjectPopup.selectedProject);
-				onProjectSelectionCancelled(null);
-			}
-			
-			function onProjectSelectionCancelled(event:Event):void
-			{
-				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				var selectedProject:ProjectVO = selectProjectPopup.selectedProject;
+				if(selectedProject)
+				{
+					checkForUnsavedEditor(selectedProject);
+				}
+				selectProjectPopupWrapper.stage.removeEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler);
+				PopUpManager.removePopUp(selectProjectPopupWrapper);
+				selectProjectPopup.removeEventListener(Event.CLOSE, onSelectProjectPopupClose);
 				selectProjectPopup = null;
+				selectProjectPopupWrapper = null;
+			}
+
+			function selectProjectPopup_stage_resizeHandler(event:Event):void
+			{
+				PopUpManager.centerPopUp(selectProjectPopupWrapper);
 			}
 			
 			/*
@@ -554,7 +567,7 @@ package actionScripts.plugins.as3project.mxmlc
 			CONFIG::OSX
 			{
 				// before proceed, check file access dependencies
-				if (!OSXBookmarkerNotifiers.checkAccessDependencies(new ArrayCollection([as3Pvo]), "Access Manager - Build Halt!")) 
+				if (!OSXBookmarkerNotifiers.checkAccessDependencies(new mx.collections.ArrayCollection([as3Pvo]), "Access Manager - Build Halt!")) 
 				{
 					Alert.show("Please fix the dependencies before build.", "Error!");
 					return;
@@ -1300,7 +1313,7 @@ package actionScripts.plugins.as3project.mxmlc
 							var mobileDevice:MobileDeviceVO = null;
 							if (as3Project.buildOptions.isMobileHasSimulatedDevice.name && !as3Project.buildOptions.isMobileHasSimulatedDevice.key)
 							{
-								var deviceCollection:ArrayCollection = as3Project.buildOptions.targetPlatform == "iOS" ? ConstantsCoreVO.TEMPLATES_IOS_DEVICES : ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
+								var deviceCollection:mx.collections.ArrayCollection = as3Project.buildOptions.targetPlatform == "iOS" ? ConstantsCoreVO.TEMPLATES_IOS_DEVICES : ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
 								for (var i:int=0; i < deviceCollection.length; i++)
 								{
 									if (as3Project.buildOptions.isMobileHasSimulatedDevice.name == deviceCollection[i].name)

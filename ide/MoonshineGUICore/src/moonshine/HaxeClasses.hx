@@ -24,6 +24,7 @@ import feathers.core.FocusManager;
 import moonshine.components.QuitView;
 import moonshine.components.SDKDefineView;
 import moonshine.components.SDKSelectorView;
+import moonshine.components.SelectOpenedProjectView;
 import moonshine.components.StandardPopupView;
 import moonshine.plugin.findreplace.view.FindReplaceView;
 import moonshine.plugin.findreplace.view.GoToLineView;
@@ -51,6 +52,7 @@ class HaxeClasses {
 	public var ReferencesView:ReferencesView;
 	public var RenameFileView:RenameFileView;
 	public var RenameSymbolView:RenameSymbolView;
+	public var SelectOpenedProjectView:SelectOpenedProjectView;
 	public var StandardPopupView:StandardPopupView;
 	public var SymbolsView:SymbolsView;
 	public var TourDeFlexContentsView:TourDeFlexContentsView;
