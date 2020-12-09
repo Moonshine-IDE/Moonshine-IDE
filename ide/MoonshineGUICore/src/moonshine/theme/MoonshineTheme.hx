@@ -397,6 +397,10 @@ class MoonshineTheme extends ClassVariantTheme {
 		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
 		gridView.focusRectSkin = focusRectSkin;
 
+		var layout = new VerticalListLayout();
+		layout.requestedRowCount = 5;
+		gridView.layout = layout;
+
 		gridView.fixedScrollBars = true;
 	}
 
@@ -419,6 +423,10 @@ class MoonshineTheme extends ClassVariantTheme {
 		focusRectSkin.fill = null;
 		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
 		gridView.focusRectSkin = focusRectSkin;
+
+		var layout = new VerticalListLayout();
+		layout.requestedRowCount = 5;
+		gridView.layout = layout;
 
 		gridView.fixedScrollBars = true;
 	}
