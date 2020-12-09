@@ -376,7 +376,8 @@ package actionScripts.languageServer
 			trace("AS3 & MXML language server SDK: " + sdkPath);
 
 			var debugMode:Boolean = false;
-			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, debugMode, {},
+			var initOptions:Object = {config: getProjectConfiguration()};
+			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, debugMode, initOptions,
 				_dispatcher, _languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _languageServerProcess.standardInput);
 			_languageClient.registerScheme("swc");
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
@@ -422,12 +423,8 @@ package actionScripts.languageServer
 			_languageClient.sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
 		}
 
-		private function sendProjectConfiguration():void
+		private function getProjectConfiguration():Object
 		{
-			if(!_languageClient || !_languageClient.initialized)
-			{
-				return;
-			}
 			var type:String = "app";
 			if(_project.isLibraryProject)
 			{
@@ -502,6 +499,16 @@ package actionScripts.languageServer
 			params.files = files;
 			params.compilerOptions = compilerOptions;
 			params.additionalOptions = buildArgs;
+			return params;
+		}
+
+		private function sendProjectConfiguration():void
+		{
+			if(!_languageClient || !_languageClient.initialized)
+			{
+				return;
+			}
+			var params:Object = this.getProjectConfiguration();
 			_languageClient.sendNotification(METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION, params);
 		}
 
@@ -587,9 +594,7 @@ package actionScripts.languageServer
 		}
 
 		private function languageClient_initHandler(event:Event):void
-		{
-			sendProjectConfiguration();
-			
+		{	
 			this.dispatchEvent(new Event(Event.INIT));
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
