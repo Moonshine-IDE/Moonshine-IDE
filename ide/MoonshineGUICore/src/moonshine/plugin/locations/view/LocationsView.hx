@@ -36,7 +36,9 @@ import feathers.utils.DisplayObjectRecycler;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
 import openfl.events.MouseEvent;
+import openfl.ui.Keyboard;
 
 class LocationsView extends ResizableTitleWindow {
 	public function new() {
@@ -111,6 +113,7 @@ class LocationsView extends ResizableTitleWindow {
 			return itemRenderer;
 		});
 		this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
+		this.resultsListView.addEventListener(KeyboardEvent.KEY_DOWN, resultsListView_keyDownHandler);
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
 		this.addChild(this.resultsListView);
 
@@ -135,6 +138,17 @@ class LocationsView extends ResizableTitleWindow {
 		}
 
 		super.update();
+	}
+
+	private function resultsListView_keyDownHandler(event:KeyboardEvent):Void {
+		if (event.keyCode != Keyboard.ENTER) {
+			return;
+		}
+		if (!this.openLocationButton.enabled) {
+			return;
+		}
+		this._selectedLocation = cast(this.resultsListView.selectedItem, Location);
+		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
 	private function resultsListView_changeHandler(event:Event):Void {

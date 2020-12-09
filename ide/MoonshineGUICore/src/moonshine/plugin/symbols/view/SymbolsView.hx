@@ -36,7 +36,9 @@ import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.Lib;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
 import openfl.events.MouseEvent;
+import openfl.ui.Keyboard;
 
 class SymbolsView extends ResizableTitleWindow {
 	public static final EVENT_QUERY_CHANGE = "queryChange";
@@ -159,6 +161,7 @@ class SymbolsView extends ResizableTitleWindow {
 			return itemRenderer;
 		});
 		this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
+		this.resultsListView.addEventListener(KeyboardEvent.KEY_DOWN, resultsListView_keyDownHandler);
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
 		resultsField.addChild(this.resultsListView);
 
@@ -204,6 +207,17 @@ class SymbolsView extends ResizableTitleWindow {
 		// set the variable so that the event isn't dispatched right away
 		this._query = this.searchFieldTextInput.text;
 		this.startOrResetQueryChangeTimer();
+	}
+
+	private function resultsListView_keyDownHandler(event:KeyboardEvent):Void {
+		if (event.keyCode != Keyboard.ENTER) {
+			return;
+		}
+		if (!this.openSymbolButton.enabled) {
+			return;
+		}
+		this._selectedSymbol = this.resultsListView.selectedItem;
+		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
 	private function resultsListView_changeHandler(event:Event):Void {
