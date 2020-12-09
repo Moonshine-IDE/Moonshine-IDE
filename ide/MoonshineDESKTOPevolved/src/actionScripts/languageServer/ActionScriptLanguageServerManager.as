@@ -582,14 +582,14 @@ package actionScripts.languageServer
 				trace("Java version: " + this._javaVersion);
 				if(!isJavaVersionSupported(this._javaVersion))
 				{
-					error("Java version 8 or newer is required. Version not supported: " + this._javaVersion + ". ActionScript & MXML code intelligence disabled.");
+					error("Java version 8 or newer is required. Version not supported: " + this._javaVersion + ". ActionScript & MXML code intelligence disabled for project: " + project.name + ".");
 					return;
 				}
 				startNativeProcess();
 			}
 			else
 			{
-				error("Failed to load Java version. ActionScript & MXML code intelligence disabled.");
+				error("Failed to load Java version. ActionScript & MXML code intelligence disabled for project: " + project.name + ".");
 			}
 		}
 

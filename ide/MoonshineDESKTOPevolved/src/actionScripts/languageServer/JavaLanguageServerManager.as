@@ -623,14 +623,14 @@ package actionScripts.languageServer
 				trace("Java version: " + this._javaVersion);
 				if(!isJavaVersionSupported(this._javaVersion))
 				{
-					error("Java version 11.0.0 or newer is required. Version not supported: " + this._javaVersion + ". Java code intelligence disabled.");
+					error("Java version 11.0.0 or newer is required. Version not supported: " + this._javaVersion + ". Java code intelligence disabled for project: " + project.name + ".");
 					return;
 				}
 				startNativeProcess();
 			}
 			else
 			{
-				error("Failed to load Java version. Java code intelligence disabled.");
+				error("Failed to load Java version. Java code intelligence disabled for project: " + project.name + ".");
 			}
 		}
 

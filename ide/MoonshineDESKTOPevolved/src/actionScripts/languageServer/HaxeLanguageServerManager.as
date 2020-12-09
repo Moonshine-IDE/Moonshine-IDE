@@ -571,7 +571,7 @@ package actionScripts.languageServer
 			}
 			else
 			{
-				error("Failed to load Lime project settings. Haxe code intelligence disabled.");
+				error("Failed to load Lime project settings. Haxe code intelligence disabled for project: " + project.name + ".");
 			}
 		}
 		
@@ -615,14 +615,14 @@ package actionScripts.languageServer
 				trace("Haxe version: " + this._haxeVersion);
 				if(!isHaxeVersionSupported(this._haxeVersion))
 				{
-					error("Haxe version 4.0.0 or newer is required. Version not supported: " + this._haxeVersion + ". Haxe code intelligence disabled.");
+					error("Haxe version 4.0.0 or newer is required. Version not supported: " + this._haxeVersion + ". Haxe code intelligence disabled for project: " + project.name + ".");
 					return;
 				}
 				getProjectSettings();
 			}
 			else
 			{
-				error("Failed to load Haxe version. Haxe code intelligence disabled.");
+				error("Failed to load Haxe version. Haxe code intelligence disabled for project: " + project.name + ".");
 			}
 		}
 
