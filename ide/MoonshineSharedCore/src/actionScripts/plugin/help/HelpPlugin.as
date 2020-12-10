@@ -39,9 +39,6 @@ package actionScripts.plugin.help
 	import moonshine.plugin.help.events.HelpViewEvent;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.factory.FileLocation;
-	import flash.filesystem.File;
-	import flash.filesystem.FileStream;
-	import flash.filesystem.FileMode;
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.ui.editor.BasicTextEditor;
 
@@ -132,31 +129,30 @@ package actionScripts.plugin.help
 		{
 			var link:String = event.link;
 			var application:String = event.data;
+			var tmpFileLocation:FileLocation;
 			if(application.indexOf("_ThirdParty.txt") != -1)
 			{
 				// Since we can't use same 'opened' file to open in multiple tabs.
 				// we need some extra works here
-				var tmpFile:File = File.applicationStorageDirectory.resolvePath(application);
-				if (!tmpFile.exists)
+				tmpFileLocation = model.fileCore.resolveApplicationStorageDirectoryPath(application);
+				if (!tmpFileLocation.fileBridge.exists)
 				{
-					var fs : FileStream = new FileStream();
-					fs.open( tmpFile, FileMode.WRITE );
-					fs.writeUTFBytes(THIRD_PARTY_WARNING_TEXT);
-					fs.close();
+					tmpFileLocation.fileBridge.save(THIRD_PARTY_WARNING_TEXT);
 				}
-				if (tmpFile.exists)
+				if (tmpFileLocation.fileBridge.exists)
 				{
-					dispatcher.dispatchEvent( 
-						new OpenFileEvent(OpenFileEvent.OPEN_FILE, [new FileLocation(tmpFile.nativePath)], -1, null, true, link) 
+					dispatcher.dispatchEvent(
+							new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpFileLocation], -1, null, true, link)
 					);
 				}
 			}
-			else {
-				tmpFile = File.applicationDirectory.resolvePath("tourDeFlex/"+application+".mxml");
-				if (tmpFile.exists)
+			else
+			{
+				tmpFileLocation = model.fileCore.resolveApplicationDirectoryPath("tourDeFlex/"+application+".mxml");
+				if (tmpFileLocation.fileBridge.exists)
 				{
 					dispatcher.dispatchEvent( 
-						new OpenFileEvent(OpenFileEvent.OPEN_FILE, [new FileLocation(tmpFile.nativePath)], -1, null, true, link) 
+						new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpFileLocation], -1, null, true, link)
 					);
 				}
 			}
