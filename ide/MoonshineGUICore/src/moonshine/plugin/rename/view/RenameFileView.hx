@@ -20,8 +20,8 @@
 
 package moonshine.plugin.rename.view;
 
+import actionScripts.valueObjects.FileWrapper;
 import feathers.controls.Button;
-import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
 import feathers.controls.TextInput;
 import feathers.core.InvalidationFlag;
@@ -33,12 +33,11 @@ import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
 
-class RenameView extends ResizableTitleWindow {
+class RenameFileView extends ResizableTitleWindow {
 	public function new() {
 		MoonshineTheme.initializeTheme();
 
 		super();
-		this.title = "Rename Symbol";
 		this.width = 600.0;
 		this.minWidth = 300.0;
 		this.minHeight = 170.0;
@@ -46,40 +45,38 @@ class RenameView extends ResizableTitleWindow {
 		this.resizeEnabled = true;
 	}
 
-	private var symbolNameFieldLabel:Label;
-	private var symbolNameTextInput:TextInput;
+	private var nameTextInput:TextInput;
 	private var renameButton:Button;
 	private var cancelButton:Button;
 
-	private var _existingSymbolNameChanged = false;
-
-	private var _existingSymbolName:String;
+	private var _fileWrapper:FileWrapper;
 
 	@:flash.property
-	public var existingSymbolName(get, set):String;
+	public var fileWrapper(get, set):FileWrapper;
 
-	private function get_existingSymbolName():String {
-		return this._existingSymbolName;
+	private function get_fileWrapper():FileWrapper {
+		return this._fileWrapper;
 	}
 
-	private function set_existingSymbolName(value:String):String {
-		if (this._existingSymbolName == value) {
-			return this._existingSymbolName;
+	private function set_fileWrapper(value:FileWrapper):FileWrapper {
+		if (this._fileWrapper == value) {
+			return this._fileWrapper;
 		}
-		this._existingSymbolName = value;
-		this._newSymbolName = null;
-		this._existingSymbolNameChanged = true;
+		this._fileWrapper = value;
+		this._newName = null;
 		this.setInvalid(InvalidationFlag.DATA);
-		return this._existingSymbolName;
+		return this._fileWrapper;
 	}
 
-	private var _newSymbolName:String;
+	private var _fileExtension:String = "";
+
+	private var _newName:String;
 
 	@:flash.property
-	public var newSymbolName(get, never):String;
+	public var newName(get, never):String;
 
-	private function get_newSymbolName():String {
-		return this._newSymbolName;
+	private function get_newName():String {
+		return this._newName;
 	}
 
 	override private function initialize():Void {
@@ -99,16 +96,12 @@ class RenameView extends ResizableTitleWindow {
 		symbolNameField.layout = symbolNameFieldLayout;
 		this.addChild(symbolNameField);
 
-		this.symbolNameFieldLabel = new Label();
-		// setting text in update() because it depends on the old symbol name
-		symbolNameField.addChild(this.symbolNameFieldLabel);
-
-		this.symbolNameTextInput = new TextInput();
-		this.symbolNameTextInput.prompt = "New symbol name";
-		this.symbolNameTextInput.restrict = "^ ";
-		this.symbolNameTextInput.addEventListener(Event.CHANGE, symbolNameTextInput_changeHandler);
-		this.symbolNameTextInput.addEventListener(KeyboardEvent.KEY_DOWN, symbolNameTextInput_keyDownHandler);
-		symbolNameField.addChild(this.symbolNameTextInput);
+		this.nameTextInput = new TextInput();
+		this.nameTextInput.prompt = "New name";
+		this.nameTextInput.restrict = "^ ";
+		this.nameTextInput.addEventListener(Event.CHANGE, nameTextInput_changeHandler);
+		this.nameTextInput.addEventListener(KeyboardEvent.KEY_DOWN, nameTextInput_keyDownHandler);
+		symbolNameField.addChild(this.nameTextInput);
 
 		var footer = new LayoutGroup();
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
@@ -128,11 +121,22 @@ class RenameView extends ResizableTitleWindow {
 	}
 
 	override private function update():Void {
-		if (this._existingSymbolNameChanged) {
-			this._existingSymbolNameChanged = false;
-			this.symbolNameTextInput.text = this._existingSymbolName;
-			this.symbolNameTextInput.selectAll();
-			this.symbolNameFieldLabel.text = 'Rename symbol \'${this._existingSymbolName}\' and its usages to:';
+		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
+
+		if (dataInvalid) {
+			if (this._fileWrapper != null) {
+				if (this._fileWrapper.file.fileBridge.isDirectory) {
+					this.title = "Rename Package";
+				} else {
+					this.title = "Rename Class";
+				}
+				this._fileExtension = this._fileWrapper.file.fileBridge.extension;
+				if (this._fileExtension != null) {
+					this._fileExtension = this._fileExtension.toLowerCase();
+				}
+				this.nameTextInput.text = this._fileWrapper.file.fileBridge.nameWithoutExtension;
+				this.nameTextInput.selectAll();
+			}
 		}
 
 		super.update();
@@ -142,12 +146,22 @@ class RenameView extends ResizableTitleWindow {
 		if (!this.renameButton.enabled) {
 			return;
 		}
-		this._newSymbolName = this.symbolNameTextInput.text;
+		this._newName = this.nameTextInput.text;
+		if (this._fileExtension != null) {
+			this._newName += "." + this._fileExtension;
+		}
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
-	private function symbolNameTextInput_changeHandler(event:Event):Void {
-		this.renameButton.enabled = this.symbolNameTextInput.text.length > 0;
+	private function nameTextInput_changeHandler(event:Event):Void {
+		var newName:String = this.nameTextInput.text;
+		if (this._fileExtension != null) {
+			newName += "." + this._fileExtension;
+		}
+		var targetFile = this._fileWrapper.file.fileBridge.parent.fileBridge.resolvePath(newName);
+		targetFile.fileBridge.canonicalize();
+
+		this.renameButton.enabled = newName.length > 0 && !targetFile.fileBridge.exists;
 	}
 
 	private function renameButton_triggerHandler(event:TriggerEvent):Void {
@@ -155,11 +169,11 @@ class RenameView extends ResizableTitleWindow {
 	}
 
 	private function cancelButton_triggerHandler(event:TriggerEvent):Void {
-		this._newSymbolName = null;
+		this._newName = null;
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
-	private function symbolNameTextInput_keyDownHandler(event:KeyboardEvent):Void {
+	private function nameTextInput_keyDownHandler(event:KeyboardEvent):Void {
 		switch (event.keyCode) {
 			case Keyboard.ENTER:
 				this.submit();

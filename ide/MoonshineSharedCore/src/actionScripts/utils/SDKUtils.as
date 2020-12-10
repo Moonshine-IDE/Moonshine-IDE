@@ -288,7 +288,6 @@ package actionScripts.utils
 		{
 			// add sdk
 			// don't add if said sdk already added
-			var isAlreadyAdded:Boolean;
 			var model:IDEModel = IDEModel.getInstance();
 			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
@@ -298,21 +297,16 @@ package actionScripts.utils
 				}
 			}
 			
-			if (!(sdkObject is SDKReferenceVO) && !isAlreadyAdded)
+			if (!(sdkObject is SDKReferenceVO))
 			{
 				var tmp:SDKReferenceVO = getSDKReference(new FileLocation(sdkObject.path));
 				model.userSavedSDKs.addItem(tmp);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, tmp));
 				return tmp;
 			}
-			else if (!isAlreadyAdded)
-			{
-				model.userSavedSDKs.addItem(sdkObject);
-				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, sdkObject));
-				return (sdkObject as SDKReferenceVO);
-			}
-			
-			return null;
+			model.userSavedSDKs.addItem(sdkObject);
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED, sdkObject));
+			return (sdkObject as SDKReferenceVO);
 		}
 		
 		public static function getSDKFromSavedList(byPath:String):SDKReferenceVO

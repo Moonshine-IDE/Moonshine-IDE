@@ -56,6 +56,7 @@ package actionScripts.impls
 	import actionScripts.plugin.findreplace.FindReplacePlugin;
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
 	import actionScripts.plugin.help.HelpPlugin;
+	import moonshine.plugin.help.view.TourDeFlexContentsView;
 	import actionScripts.plugin.locations.LocationsPlugin;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
@@ -95,7 +96,6 @@ package actionScripts.impls
 	import actionScripts.plugins.externalEditors.ExternalEditorsPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.gradle.GradleBuildPlugin;
-	import actionScripts.plugins.help.view.TourDeFlexContentsView;
 	import actionScripts.plugins.help.view.events.VisualEditorEvent;
 	import actionScripts.plugins.httpServer.HttpServerPlugin;
 	import actionScripts.plugins.js.JavaScriptPlugin;
@@ -185,11 +185,6 @@ package actionScripts.impls
 		public function exportFlashBuilder(project:AS3ProjectVO, file:FileLocation):void
 		{
 			FlashBuilderExporter.export(project, file.fileBridge.getFile as File);
-		}
-		
-		public function getTourDeView():IPanelWindow
-		{
-			return (new TourDeFlexContentsView);
 		}
 
 		public function getTourDeEditor(swfSource:String):BasicTextEditor

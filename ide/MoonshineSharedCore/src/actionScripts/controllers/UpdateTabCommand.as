@@ -26,7 +26,7 @@ package actionScripts.controllers
     import mx.events.ResizeEvent;
     import mx.managers.PopUpManager;
     
-    import spark.components.Button;
+    import feathers.controls.Button;
     
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.UpdateTabEvent;
@@ -38,7 +38,9 @@ package actionScripts.controllers
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
     
-    import components.popup.StandardPopup;
+    import moonshine.components.StandardPopupView;
+    import actionScripts.ui.FeathersUIWrapper;
+    import moonshine.theme.MoonshineTheme;
 
 	public class UpdateTabCommand implements ICommand
 	{
@@ -46,7 +48,8 @@ package actionScripts.controllers
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		private var tabToUpdate:IContentWindow;
-		private var pop:StandardPopup;
+		private var pop:StandardPopupView;
+		private var popWrapper:FeathersUIWrapper;
 
 		public function execute(event:Event):void
 		{
@@ -62,41 +65,41 @@ package actionScripts.controllers
 				return;
 			}
 			
-			pop = new StandardPopup();
+			pop = new StandardPopupView();
 			pop.data = this; // Keep the command from getting GC'd
 			
 			var yesButton:Button = new Button();
-			yesButton.styleName = "lightButton";
+			yesButton.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
 			
 			var cancel:Button = new Button();
-			cancel.styleName = "lightButton";
+			cancel.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
 			
 			if (event.type == UpdateTabEvent.EVENT_TAB_FILE_EXIST_NOMORE)
 			{
 				pop.text = tabToUpdate.label + " is removed from the filesystem. Do you want to save it?";
 				
-				yesButton.label = "Save Again";
+				yesButton.text = "Save Again";
 				yesButton.addEventListener(MouseEvent.CLICK, saveButtonTab, false, 0, true);
-				cancel.label = "Cancel";
+				cancel.text = "Cancel";
 				cancel.addEventListener(MouseEvent.CLICK, seeFileAgain, false, 0, true);
 				
 				var close:Button = new Button();
-				close.styleName = "lightButton";
-				close.label = "Close";
+				close.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+				close.text = "Close";
 				close.addEventListener(MouseEvent.CLICK, closeFileAgain, false, 0, true);
 				
-				pop.buttons = [yesButton, close, cancel];
+				pop.controls = [yesButton, close, cancel];
 			}
 			else
 			{
 				pop.text = tabToUpdate.label + " is changed outside. Do you want to reload it?";
 				
-				yesButton.label = "Yes";
+				yesButton.text = "Yes";
 				yesButton.addEventListener(MouseEvent.CLICK, yesButtonTab, false, 0, true);
-				cancel.label = "No";
+				cancel.text = "No";
 				cancel.addEventListener(MouseEvent.CLICK, seeFileAgain, false, 0, true);
 				
-				pop.buttons = [yesButton, cancel];
+				pop.controls = [yesButton, cancel];
 			}
 			
 			// Changed tabs are marked with * before the filename. Strip if found.
@@ -105,9 +108,11 @@ package actionScripts.controllers
 				pop.text = pop.text.substr(1);
 			}
 			
-			PopUpManager.addPopUp(pop, FlexGlobals.topLevelApplication as DisplayObject, true);
-			pop.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
-			pop.x = (FlexGlobals.topLevelApplication.width-pop.width)/2;
+			popWrapper = new FeathersUIWrapper(pop);
+			PopUpManager.addPopUp(popWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+			popWrapper.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
+			popWrapper.x = (FlexGlobals.topLevelApplication.width-popWrapper.width)/2;
+			popWrapper.assignFocus("top");
 			
 			model.isIndividualCloseTabAlertShowing = true;
 			model.individualTabAlertShowingFilePath = (tabToUpdate is BasicTextEditor) ? 
@@ -128,14 +133,15 @@ package actionScripts.controllers
 		
 		private function cleanUp():void
 		{
-			if (pop)
+			if (popWrapper)
 			{
 				FlexGlobals.topLevelApplication.removeEventListener(ResizeEvent.RESIZE, onApplicationResized);
 				dispatcher.removeEventListener(CloseTabEvent.EVENT_DISMISS_INDIVIDUAL_TAB_CLOSE_ALERT, onForceCloseRequest);
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
-				PopUpManager.removePopUp(pop);
+				PopUpManager.removePopUp(popWrapper);
 				pop.data = null;
 				pop = null;
+				popWrapper = null;
 				model.isIndividualCloseTabAlertShowing = false;
 			}
 			
@@ -145,7 +151,7 @@ package actionScripts.controllers
 		
 		private function onApplicationResized(event:ResizeEvent):void
 		{
-			if (pop) pop.x = (FlexGlobals.topLevelApplication.width-pop.width)/2;
+			if (popWrapper) popWrapper.x = (FlexGlobals.topLevelApplication.width-popWrapper.width)/2;
 		}
 		
 		private function onForceCloseRequest(event:Event):void

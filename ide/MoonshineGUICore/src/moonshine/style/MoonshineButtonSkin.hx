@@ -45,18 +45,24 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 		var offset = 0.0;
 		this.graphics.clear();
 		if (this.outerBorderFill != null) {
+			var outerBorderEllipseSize = this.outerBorderRadius * 2.0;
+			outerBorderEllipseSize = Math.min(outerBorderEllipseSize, Math.min(this.actualWidth, this.actualHeight));
 			this.applyFillStyle(this.outerBorderFill);
-			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), this.outerBorderRadius);
+			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), outerBorderEllipseSize);
 			offset += this.outerBorderSize;
 		}
 		if (this.innerBorderFill != null) {
+			var innerBorderEllipseSize = this.innerBorderRadius * 2.0;
+			innerBorderEllipseSize = Math.min(innerBorderEllipseSize, Math.min(this.actualWidth, this.actualHeight));
 			this.applyFillStyle(this.innerBorderFill);
-			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), this.innerBorderRadius);
+			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), innerBorderEllipseSize);
 			offset += this.innerBorderSize;
 		}
 		if (this.fill != null) {
+			var borderEllipseSize = this.borderRadius * 2.0;
+			borderEllipseSize = Math.min(borderEllipseSize, Math.min(this.actualWidth, this.actualHeight));
 			this.applyFillStyle(this.fill);
-			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), this.borderRadius);
+			this.graphics.drawRoundRect(offset, offset, this.actualWidth - (2.0 * offset), this.actualHeight - (2.0 * offset), borderEllipseSize);
 		}
 	}
 
@@ -65,6 +71,10 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 			return;
 		}
 		switch (fillStyle) {
+			case None:
+				{
+					return;
+				}
 			case SolidColor(color, alpha):
 				{
 					if (alpha == null) {
@@ -72,10 +82,11 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 					}
 					this.graphics.beginFill(color, alpha);
 				}
-			case Gradient(type, colors, alphas, ratios, radians, spreadMethod, interpolationMethod, focalPointRatio):
+			case Gradient(type, colors, alphas, ratios, matrixCallback, spreadMethod, interpolationMethod, focalPointRatio):
 				{
-					if (radians == null) {
-						radians = 0.0;
+					var callback:(Float, Float, ?Float, ?Float, ?Float) -> Matrix = matrixCallback;
+					if (callback == null) {
+						callback = getDefaultGradientMatrix;
 					}
 					if (spreadMethod == null) {
 						spreadMethod = SpreadMethod.PAD;
@@ -86,7 +97,7 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 					if (focalPointRatio == null) {
 						focalPointRatio = 0.0;
 					}
-					var matrix = getGradientMatrix(radians);
+					var matrix = callback(this.actualWidth, this.actualHeight, 0.0, 0.0, 0.0);
 					this.graphics.beginGradientFill(type, #if flash cast #end colors, alphas, ratios, matrix, spreadMethod, interpolationMethod,
 						focalPointRatio);
 				}
@@ -103,9 +114,9 @@ class MoonshineButtonSkin extends ProgrammaticSkin {
 		}
 	}
 
-	private function getGradientMatrix(radians:Float):Matrix {
+	private function getDefaultGradientMatrix(width:Float, height:Float, ?radians:Float = 0.0, ?tx:Float = 0.0, ?ty:Float = 0.0):Matrix {
 		var matrix = new Matrix();
-		matrix.createGradientBox(this.actualWidth, this.actualHeight, radians);
+		matrix.createGradientBox(width, height, radians, tx, ty);
 		return matrix;
 	}
 }

@@ -30,11 +30,14 @@ import feathers.data.TreeCollection;
 import feathers.data.TreeNode;
 import feathers.layout.AnchorLayout;
 import feathers.layout.AnchorLayoutData;
+import moonshine.theme.MoonshineTheme;
 import moonshine.ui.SideBarViewHeader;
 import openfl.events.Event;
 
 class OutlineView extends Panel implements IViewWithTitle {
 	public function new() {
+		MoonshineTheme.initializeTheme();
+
 		super();
 	}
 
@@ -111,6 +114,12 @@ class OutlineView extends Panel implements IViewWithTitle {
 
 		if (dataInvalid) {
 			this.treeView.dataProvider = this._outline;
+		}
+
+		super.update();
+
+		if (dataInvalid) {
+			// TODO: move this back above super.update() after beta.3
 			if (this._outline != null && this._outline.getLength() > 0) {
 				var rootBranch = this._outline.get([0]);
 				if (this._outline.isBranch(rootBranch)) {
@@ -118,8 +127,6 @@ class OutlineView extends Panel implements IViewWithTitle {
 				}
 			}
 		}
-
-		super.update();
 	}
 
 	private function header_closeHandler(event:Event):Void {

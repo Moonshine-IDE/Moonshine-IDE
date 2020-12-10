@@ -36,7 +36,7 @@ package actionScripts.languageServer
     import mx.managers.PopUpManager;
     import mx.utils.SHA256;
 
-    import spark.components.Button;
+    import feathers.controls.Button;
 
     import actionScripts.events.ExecuteLanguageServerCommandEvent;
     import actionScripts.events.FilePluginEvent;
@@ -49,6 +49,7 @@ package actionScripts.languageServer
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.console.ConsoleOutputter;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.JavaTextEditor;
     import actionScripts.utils.CommandLineUtil;
@@ -64,7 +65,8 @@ package actionScripts.languageServer
 
     import com.adobe.utils.StringUtil;
 
-    import components.popup.StandardPopup;
+    import moonshine.components.StandardPopupView;
+    import moonshine.theme.MoonshineTheme;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -206,7 +208,7 @@ package actionScripts.languageServer
 
 		private function extractVersionStringFromStandardErrorOutput(versionOutput:String):String
 		{
-			var result:Array = versionOutput.match(/version "(\d+\.\d+\.\d+(_\d+)?(\-\w+)?)"/);
+			var result:Array = versionOutput.match(/version "(\d+(\.\d+)+(_\d+)?(\-\w+)?)"/);
 			if(result.length > 1)
 			{
 				return result[1];
@@ -221,17 +223,18 @@ package actionScripts.languageServer
 			parts = versionNumberWithUpdate.split("_");
 			var versionNumber:String = parts[0];
 			var versionNumberParts:Array = versionNumber.split(".");
-			if(versionNumberParts.length != 3)
+			var partsCount:int = versionNumberParts.length;
+			for(var i:int = 0; i < partsCount; i++)
 			{
-				return false;
+				var part:String = versionNumberParts[i];
+				var parsed:Number = parseInt(part, 10);
+				if(isNaN(parsed))
+				{
+					return false;
+				}
+				versionNumberParts[i] = parsed;
 			}
-			var major:Number = parseInt(versionNumberParts[0], 10);
-			var minor:Number = parseInt(versionNumberParts[1], 10);
-			var revision:Number = parseInt(versionNumberParts[2], 10);
-			if(isNaN(major) || isNaN(minor) || isNaN(revision))
-			{
-				return false;
-			}
+			var major:Number = versionNumberParts[0];
 			if(major < 11)
 			{
 				return false;
@@ -534,7 +537,7 @@ package actionScripts.languageServer
 			restartLanguageServer();
 		}
 
-		private function createCommandListener(command:String, args:Array, popup:StandardPopup):Function
+		private function createCommandListener(command:String, args:Array, popup:StandardPopupView, popupWrapper:FeathersUIWrapper):Function
 		{
 			return function(event:Event):void
 			{
@@ -543,7 +546,7 @@ package actionScripts.languageServer
 					project, command, args ? args : []));
 				if(popup)
 				{
-					PopUpManager.removePopUp(popup);
+					PopUpManager.removePopUp(popupWrapper);
 					popup.data = null;
 				}
 			};
@@ -620,14 +623,14 @@ package actionScripts.languageServer
 				trace("Java version: " + this._javaVersion);
 				if(!isJavaVersionSupported(this._javaVersion))
 				{
-					error("Java version 11.0.0 or newer is required. Version not supported: " + this._javaVersion + ". Java code intelligence disabled.");
+					error("Java version 11.0.0 or newer is required. Version not supported: " + this._javaVersion + ". Java code intelligence disabled for project: " + project.name + ".");
 					return;
 				}
 				startNativeProcess();
 			}
 			else
 			{
-				error("Failed to load Java version. Java code intelligence disabled.");
+				error("Failed to load Java version. Java code intelligence disabled for project: " + project.name + ".");
 			}
 		}
 
@@ -782,7 +785,7 @@ package actionScripts.languageServer
 				return;
 			}
 
-			var popup:StandardPopup = new StandardPopup();
+			var popup:StandardPopupView = new StandardPopupView();
 			popup.data = this; // Keep the command from getting GC'd
 			popup.text = message;
 
@@ -796,17 +799,19 @@ package actionScripts.languageServer
 				var args:Array = command.arguments as Array;
 
 				var button:Button = new Button();
-				button.styleName = "lightButton";
-				button.label = title;
-				button.addEventListener(MouseEvent.CLICK, createCommandListener(commandName, args, popup), false, 0, false);
+				button.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+				button.text = title;
+				button.addEventListener(MouseEvent.CLICK, createCommandListener(commandName, args, popup, popupWrapper), false, 0, false);
 				buttons.push(button);
 			}
 			
-			popup.buttons = buttons;
+			popup.controls = buttons;
 			
-			PopUpManager.addPopUp(popup, FlexGlobals.topLevelApplication as DisplayObject, true);
-			popup.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
-			popup.x = (FlexGlobals.topLevelApplication.width-popup.width)/2;
+			var popupWrapper:FeathersUIWrapper = new FeathersUIWrapper(popup);
+			PopUpManager.addPopUp(popupWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+			popupWrapper.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
+			popupWrapper.x = (FlexGlobals.topLevelApplication.width-popupWrapper.width)/2;
+			popupWrapper.assignFocus("top");
 		}
 
 		private function command_javaCleanWorkspaceHandler():void

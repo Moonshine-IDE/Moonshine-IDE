@@ -432,11 +432,14 @@ package actionScripts.ui.editor
 					if (model.mainView.isProjectViewAdded)
 					{
 						var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-						var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-						if (projectReference)
+						if(tmpTreeView) //might be null if closed by user
 						{
-							saveAsPath(projectReference.folderPath);
-							return;
+							var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
+							if (projectReference)
+							{
+								saveAsPath(projectReference.folderPath);
+								return;
+							}
 						}
 					}
 					selectProjectPopup = new SelectOpenedProject();

@@ -590,24 +590,15 @@ package actionScripts.plugins.git
 		
 		private function onChangeBranchRequest(event:Event):void
 		{
-			if (!dispatcher.hasEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED))
-				dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived, false, 0, true);
-			new GitSwitchBranchCommand();
-		}
-		
-		private function onGitRemoteBranchListReceived(event:GeneralEvent):void
-		{
-			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived);
 			if (!gitBranchSelectionWindow)
 			{
 				if (!checkOSXGitAccess()) return;
-				
+
 				checkGitAvailability();
-				
+
 				gitBranchSelectionWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitBranchSelectionPopup, false) as GitBranchSelectionPopup;
 				gitBranchSelectionWindow.title = "Select Branch";
 				gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
-				gitBranchSelectionWindow.branchCollection = event.value as ArrayCollection;
 				gitBranchSelectionWindow.addEventListener(CloseEvent.CLOSE, onGitBranchSelectionWindowClosed);
 				PopUpManager.centerPopUp(gitBranchSelectionWindow);
 			}

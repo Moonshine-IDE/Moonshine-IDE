@@ -20,29 +20,35 @@
 package actionScripts.languageServer
 {
 	import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
-    import flash.events.Event;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.ProgressEvent;
-    import flash.filesystem.File;
-    import flash.utils.IDataInput;
-    
+	import flash.desktop.NativeProcessStartupInfo;
+	import flash.events.Event;
+	import flash.events.NativeProcessExitEvent;
+	import flash.events.ProgressEvent;
+	import flash.filesystem.File;
+	import flash.utils.IDataInput;
+
+	import actionScripts.events.EditorPluginEvent;
+	import actionScripts.events.FilePluginEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SdkEvent;
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
-    import actionScripts.plugin.console.ConsoleOutputter;
-    import actionScripts.utils.getProjectSDKPath;
-    import actionScripts.valueObjects.Settings;
-    import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.ui.editor.ActionScriptTextEditor;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.events.EditorPluginEvent;
-    import actionScripts.events.StatusBarEvent;
-    import actionScripts.events.FilePluginEvent;
-    import actionScripts.events.SettingsEvent;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
+	import actionScripts.plugin.console.ConsoleOutputter;
+	import actionScripts.ui.editor.ActionScriptTextEditor;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.utils.CommandLineUtil;
+	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.utils.getProjectSDKPath;
+	import actionScripts.valueObjects.EnvironmentExecPaths;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.Settings;
+
+	import com.adobe.utils.StringUtil;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -66,9 +72,12 @@ package actionScripts.languageServer
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _languageServerProcess:NativeProcess;
+		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
 		private var _previousJavaPath:String = null;
 		private var _previousSDKPath:String = null;
+		private var _javaVersion:String = null;
+		private var _waitingToDispose:Boolean = false;
 
 		public function ActionScriptLanguageServerManager(project:AS3ProjectVO)
 		{
@@ -81,7 +90,7 @@ package actionScripts.languageServer
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 
-			startNativeProcess();
+			bootstrapThenStartNativeProcess();
 		}
 
 		public function get project():ProjectVO
@@ -172,6 +181,12 @@ package actionScripts.languageServer
 			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_dispatcher.removeEventListener(SdkEvent.CHANGE_SDK, changeMenuSDKStateHandler);
 			_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, javaPathSaveHandler);
+
+			if(_javaVersionProcess)
+			{
+				_waitingToDispose = true;
+				_javaVersionProcess.exit(true);
+			}
 		}
 
 		protected function cleanupLanguageClient():void
@@ -183,6 +198,97 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
+		}
+
+		private function extractVersionStringFromStandardErrorOutput(versionOutput:String):String
+		{
+			var result:Array = versionOutput.match(/version "(\d+(\.\d+)+(_\d+)?(\-\w+)?)"/);
+			if(result.length > 1)
+			{
+				return result[1];
+			}
+			return versionOutput;
+		}
+
+		private function isJavaVersionSupported(version:String):Boolean
+		{
+			var parts:Array = version.split("-");
+			var versionNumberWithUpdate:String = parts[0];
+			parts = versionNumberWithUpdate.split("_");
+			var versionNumber:String = parts[0];
+			var versionNumberParts:Array = versionNumber.split(".");
+			var partsCount:int = versionNumberParts.length;
+			for(var i:int = 0; i < partsCount; i++)
+			{
+				var part:String = versionNumberParts[i];
+				var parsed:Number = parseInt(part, 10);
+				if(isNaN(parsed))
+				{
+					return false;
+				}
+				versionNumberParts[i] = parsed;
+			}
+			var major:Number = versionNumberParts[0];
+			if(major < 9)
+			{
+				var minor:Number = versionNumberParts[1];
+				if(major != 1 || minor < 8)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
+		private function bootstrapThenStartNativeProcess():void
+		{
+			if(!UtilsCore.isJavaForTypeaheadAvailable())
+			{
+				return;
+			}
+			checkJavaVersion();
+		}
+
+		private function checkJavaVersion():void
+		{
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name, "ActionScript: Checking Java version...", false
+			));
+
+			this._javaVersion = "";
+			var javaVersionCommand:Vector.<String> = new <String>[
+				EnvironmentExecPaths.JAVA_ENVIRON_EXEC_PATH,
+				"-version"
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+
+				_javaVersionProcess = new NativeProcess();
+				_javaVersionProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, javaVersionProcess_standardErrorDataHandler);
+				_javaVersionProcess.addEventListener(NativeProcessExitEvent.EXIT, javaVersionProcess_exitHandler);
+				_javaVersionProcess.start(processInfo);
+			}, null, [CommandLineUtil.joinOptions(javaVersionCommand)]);
 		}
 
 		private function startNativeProcess():void
@@ -270,7 +376,8 @@ package actionScripts.languageServer
 			trace("AS3 & MXML language server SDK: " + sdkPath);
 
 			var debugMode:Boolean = false;
-			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, debugMode, {},
+			var initOptions:Object = {config: getProjectConfiguration()};
+			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, debugMode, initOptions,
 				_dispatcher, _languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _languageServerProcess.standardInput);
 			_languageClient.registerScheme("swc");
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
@@ -298,7 +405,7 @@ package actionScripts.languageServer
 
 			if(!_waitingToRestart)
 			{
-				startNativeProcess();
+				bootstrapThenStartNativeProcess();
 			}
 		}
 
@@ -316,12 +423,8 @@ package actionScripts.languageServer
 			_languageClient.sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
 		}
 
-		private function sendProjectConfiguration():void
+		private function getProjectConfiguration():Object
 		{
-			if(!_languageClient || !_languageClient.initialized)
-			{
-				return;
-			}
 			var type:String = "app";
 			if(_project.isLibraryProject)
 			{
@@ -396,6 +499,16 @@ package actionScripts.languageServer
 			params.files = files;
 			params.compilerOptions = compilerOptions;
 			params.additionalOptions = buildArgs;
+			return params;
+		}
+
+		private function sendProjectConfiguration():void
+		{
+			if(!_languageClient || !_languageClient.initialized)
+			{
+				return;
+			}
+			var params:Object = this.getProjectConfiguration();
 			_languageClient.sendNotification(METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION, params);
 		}
 
@@ -424,14 +537,64 @@ package actionScripts.languageServer
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
+				bootstrapThenStartNativeProcess();
+			}
+		}
+
+		private function javaVersionProcess_standardErrorDataHandler(event:ProgressEvent):void 
+		{
+			if(_javaVersionProcess)
+			{
+				//for some reason, java -version writes to stderr
+				var output:IDataInput = _javaVersionProcess.standardError;
+				var data:String = output.readUTFBytes(output.bytesAvailable);
+				this._javaVersion += data;
+			}
+		}
+
+		private function javaVersionProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
+			));
+
+			_javaVersionProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, javaVersionProcess_standardErrorDataHandler);
+			_javaVersionProcess.removeEventListener(NativeProcessExitEvent.EXIT, javaVersionProcess_exitHandler);
+			_javaVersionProcess.exit();
+			_javaVersionProcess = null;
+
+			if(_waitingToDispose)
+			{
+				//don't continue if we've disposed during the bootstrap process
+				return;
+			}
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				bootstrapThenStartNativeProcess();
+				return;
+			}
+
+			if(event.exitCode == 0)
+			{
+				this._javaVersion = extractVersionStringFromStandardErrorOutput(StringUtil.trim(this._javaVersion));
+				trace("Java version: " + this._javaVersion);
+				if(!isJavaVersionSupported(this._javaVersion))
+				{
+					error("Java version 8 or newer is required. Version not supported: " + this._javaVersion + ". ActionScript & MXML code intelligence disabled for project: " + project.name + ".");
+					return;
+				}
 				startNativeProcess();
+			}
+			else
+			{
+				error("Failed to load Java version. ActionScript & MXML code intelligence disabled for project: " + project.name + ".");
 			}
 		}
 
 		private function languageClient_initHandler(event:Event):void
-		{
-			sendProjectConfiguration();
-			
+		{	
 			this.dispatchEvent(new Event(Event.INIT));
 			
 			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(

@@ -63,7 +63,6 @@ package actionScripts.interfaces
 		function getHTMLView(url:String):DisplayObject;
 		function getAccessManagerPopup():IFlexDisplayObject;
 		function getSDKInstallerView():IFlexDisplayObject;
-		function getTourDeView():IPanelWindow;
 		function getTourDeEditor(swfSource:String):BasicTextEditor;
 		function getNewAntBuild():IFlexDisplayObject;
 		function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void;
