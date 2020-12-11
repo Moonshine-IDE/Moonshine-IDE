@@ -21,44 +21,49 @@ package actionScripts.plugin.findResources
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
-	import feathers.data.ArrayCollection;
+	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
+	import mx.events.CollectionEvent;
 	import mx.managers.PopUpManager;
 	
+	import actionScripts.events.OpenFileEvent;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import moonshine.plugin.findResources.view.FindResourcesView;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.utils.UtilsCore;
-	import mx.collections.ArrayList;
-	import actionScripts.events.OpenFileEvent;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ResourceVO;
+	
+	import feathers.data.ArrayCollection;
+	
+	import moonshine.plugin.findResources.view.FindResourcesView;
 
 	public class FindResourcesPlugin extends PluginBase
 	{
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
+		override public function get description():String { return "Find Resources"; }
+		override public function get name():String { return "Find Resources"; }
+		
+		[Bindable] public static var previouslySelectedPatterns:ArrayCollection;
 		public static const EVENT_FIND_RESOURCES: String = "findResources";
 
 		private var findResourcesView:FindResourcesView;
 		private var findResourcesViewWrapper:FeathersUIWrapper;
-
-		[Bindable]
-		public static var previouslySelectedPatterns:ArrayCollection;
 
 		public function FindResourcesPlugin()
 		{
 			super();
 		}
 		
-		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String { return "Find Resources"; }
-		override public function get name():String { return "Find Resources"; }
-		
 		override public function activate():void
 		{
 			super.activate();
-
-			dispatcher.addEventListener(EVENT_FIND_RESOURCES, findResourcesHandler);
+			dispatcher.addEventListener(EVENT_FIND_RESOURCES, findResourcesHandler, false, 0, true);
+		}
+		
+		override public function deactivate():void
+		{
+			super.deactivate();
+			dispatcher.removeEventListener(EVENT_FIND_RESOURCES, findResourcesHandler);
 		}
 
 		protected function findResourcesHandler(event:Event):void
@@ -85,16 +90,20 @@ package actionScripts.plugin.findResources
 			findResourcesView.patterns = previouslySelectedPatterns;
 
 			var parsedFilesList:ArrayList = new ArrayList();
+			parsedFilesList.addEventListener(CollectionEvent.COLLECTION_CHANGE, onCollectionUpdates, false, 0, true);
 			UtilsCore.parseFilesList(parsedFilesList);
 
 			var resources:ArrayCollection = findResourcesView.resources;
 			resources.removeAll();
-
-			var fileCount:int = parsedFilesList.length;
+		}
+		
+		private function onCollectionUpdates(event:CollectionEvent):void
+		{
+			var fileCount:int = event.items.length;
+			var resources:ArrayCollection = findResourcesView.resources;
 			for(var i:int = 0; i < fileCount; i++)
 			{
-				var resource:ResourceVO = ResourceVO(parsedFilesList.getItemAt(i));
-				resources.add(resource);
+				resources.add(event.items[i] as ResourceVO);
 			}
 		}
 

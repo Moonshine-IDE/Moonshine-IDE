@@ -840,7 +840,8 @@ package actionScripts.utils
 			{
 				for each (var i:ProjectVO in model.projects)
 				{
-					parseChildrens(i.projectFolder, collection, readableExtensions);
+					//parseChildrens(i.projectFolder, collection, readableExtensions);
+					FileSystemParser.getInstance().parseFilesPaths(i.projectFolder.nativePath, collection, readableExtensions);
 				}
 			}
 		}

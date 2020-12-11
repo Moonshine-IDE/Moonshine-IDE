@@ -21,7 +21,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class CheckBranchNameAvailabilityCommand extends GitCommandBase
 	{

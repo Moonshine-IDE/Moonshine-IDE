@@ -24,7 +24,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class CreateCheckoutNewBranchCommand extends GitCommandBase
 	{

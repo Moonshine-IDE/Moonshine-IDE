@@ -31,7 +31,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.VersionControlTypes;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class CheckIsGitRepositoryCommand extends GitCommandBase
 	{

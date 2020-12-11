@@ -49,7 +49,7 @@ package actionScripts.plugins.git
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 	
 	public class GitProcessManager extends ConsoleOutputter implements IWorkerSubscriber
 	{
