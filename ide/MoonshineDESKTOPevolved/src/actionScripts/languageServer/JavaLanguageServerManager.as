@@ -209,7 +209,7 @@ package actionScripts.languageServer
 		private function extractVersionStringFromStandardErrorOutput(versionOutput:String):String
 		{
 			var result:Array = versionOutput.match(/version "(\d+(\.\d+)+(_\d+)?(\-\w+)?)"/);
-			if(result.length > 1)
+			if(result && result.length > 1)
 			{
 				return result[1];
 			}
