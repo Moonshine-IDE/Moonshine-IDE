@@ -23,7 +23,7 @@ package actionScripts.utils
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var collection:IList;
 		private var readableExtensions:Array;
-		private var parsedFiles:Array;
+		private var parsedFiles:Array = [];
 		
 		public static function getInstance():FileSystemParser 
 		{	
@@ -41,13 +41,12 @@ package actionScripts.utils
 		{
 			this.collection = collection;
 			this.readableExtensions = readableExtensions;
-			this.parsedFiles = [];
 			
 			queue = new Vector.<Object>();
 			addToQueue(new NativeProcessQueueVO(
 				ConstantsCoreVO.IS_MACOS ? 
 					"find $'"+ UtilsCore.getEncodedForShell(fromPath) : 
-					"dir /a-d /b /s", 
+					UtilsCore.getEncodedForShell("dir /a-d /b /s"), 
 				false, 
 				PARSE_FILES_ON_PATH)
 			);
@@ -121,8 +120,8 @@ package actionScripts.utils
 			}
 			else
 			{
-				value.output = value.output.replace(/\s\n/g, "\n"); // remove all the blank lines
-				parsedFiles = value.output.split("\n");
+				value.output = value.output.replace(/\s\r\n/g, "\r\n"); // remove all the blank lines
+				parsedFiles = value.output.split("\r\n");
 			}
 		}
 	}
