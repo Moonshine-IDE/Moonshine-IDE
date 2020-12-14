@@ -22,24 +22,24 @@ package actionScripts.ui.editor
     import flash.events.Event;
     import flash.utils.clearInterval;
     import flash.utils.setTimeout;
-    
+
     import mx.core.FlexGlobals;
     import mx.events.FlexEvent;
     import mx.managers.IFocusManagerComponent;
     import mx.managers.PopUpManager;
     import mx.utils.ObjectUtil;
-    
+
     import spark.components.Group;
-    
+	
     import actionScripts.controllers.DataAgent;
     import actionScripts.events.ChangeEvent;
     import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.ProjectEvent;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.SaveFileEvent;
     import actionScripts.events.UpdateTabEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsoleOutputEvent;
     import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.IContentWindow;
@@ -52,14 +52,17 @@ package actionScripts.ui.editor
     import actionScripts.ui.tabview.TabEvent;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
-    
-    import components.popup.FileSavePopup;
+
     import components.views.project.TreeView;
 
-	import feathers.data.ArrayCollection;
+    import feathers.data.ArrayCollection;
+    import feathers.data.TreeCollection;
+    import feathers.data.TreeNode;
 
+    import moonshine.components.FileSavePopupView;
     import moonshine.components.SelectOpenedProjectView;
 
     public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
@@ -79,7 +82,8 @@ package actionScripts.ui.editor
         protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
         protected var _isChanged:Boolean;
 
-		private var pop:FileSavePopup;
+		private var fileSavePopup:FileSavePopupView;
+		private var fileSavePopupWrapper:FeathersUIWrapper;
 		private var selectProjectPopup:SelectOpenedProjectView;
 		private var selectProjectPopupWrapper:FeathersUIWrapper;
 		protected var isVisualEditor:Boolean;
@@ -461,39 +465,198 @@ package actionScripts.ui.editor
 					saveAsPath((model.projects[0] as ProjectVO).folderPath);
 				}
 			    else
-					saveAsPath(null)
+				{
+					saveAsPath(null);
+				}
 			}
 			else
 			{
-				pop = new FileSavePopup();
-				PopUpManager.addPopUp(pop, FlexGlobals.topLevelApplication as DisplayObject, false);
-				PopUpManager.centerPopUp(pop);
-			}
-			function saveAsPath(path:String):void{
-				model.fileCore.browseForSave(handleSaveAsSelect, null, "Save As", path);
-			}
-			function onSelectProjectPopupClose(event:Event):void
-			{
-				var selectedProject:ProjectVO = selectProjectPopup.selectedProject;selectedProject.folderPath
-				if(selectedProject)
+				function parseChildrens(value:FileWrapper):FileWrapper
 				{
-					saveAsPath(selectedProject.folderPath);
+					if (!value) return null;
+					
+					var tmpLocation: FileLocation = new FileLocation(value.file.fileBridge.nativePath);
+					tmpLocation.fileBridge.isDirectory = (value.file.fileBridge.isDirectory.toString() == "true") ? true : false;
+					tmpLocation.fileBridge.isHidden = (value.file.fileBridge.isHidden.toString() == "true") ? true : false;
+					tmpLocation.fileBridge.name = String(value.file.fileBridge.name);
+					tmpLocation.fileBridge.extension = String(value.file.fileBridge.extension);
+					tmpLocation.fileBridge.exists = true;
+					
+					var tmpFW: FileWrapper = new FileWrapper(tmpLocation, false, value.projectReference);
+					tmpFW.isRoot = value.isRoot;
+					tmpFW.originalReference = value; // we'll need this to update children in saveFileHandler()
+					
+					if ((value.children is Array) && (value.children as Array).length > 0) 
+					{
+						var tmpSubChildren:Array = [];
+						for each (var c:FileWrapper in value.children)
+						{
+							if (c.file.fileBridge.isDirectory) {
+								tmpSubChildren.push(parseChildrens(c));
+							}
+						}
+						
+						tmpFW.children = tmpSubChildren;
+					}
+					
+					if (tmpFW.children.length == 0 && !tmpFW.file.fileBridge.isDirectory) tmpFW.children = null;
+					return tmpFW;
 				}
-				selectProjectPopupWrapper.stage.removeEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler);
-				PopUpManager.removePopUp(selectProjectPopupWrapper);
-				selectProjectPopup.removeEventListener(Event.CLOSE, onSelectProjectPopupClose);
-				selectProjectPopup = null;
-				selectProjectPopupWrapper = null;
+
+				function parseChildrensAsTreeNode(fileWrapper:FileWrapper, depth:int = 0):TreeNode
+				{
+					if(depth == 0)
+					{
+						fileWrapper = parseChildrens(fileWrapper);
+					}
+					var treeNode:TreeNode = new TreeNode(fileWrapper);
+					if(fileWrapper.file.fileBridge.isDirectory)
+					{
+						var nodeChildren:Array = [];
+						for each (var c:FileWrapper in fileWrapper.children)
+						{
+							if(c.file.fileBridge.isDirectory)
+							{
+								var cNode:TreeNode = parseChildrensAsTreeNode(c, depth + 1);
+								nodeChildren.push(cNode);
+							}
+						}
+						treeNode.children = nodeChildren;
+					}
+					
+					return treeNode;
+				}
+
+				var projectFolders:TreeCollection = new TreeCollection();
+				for(var i:int=0;i<model.selectedprojectFolders.length;i++)
+				{
+					projectFolders.addAt(parseChildrensAsTreeNode(model.selectedprojectFolders[i]), [i]);
+				}
+
+				var fileName:String = "";
+				var fileExtension:String = "";
+				if(this.file)
+				{
+					fileName = this.file.name;
+				}
+				else
+				{
+					fileName = this.defaultLabel;
+				}
+				var extensionIndex:int = fileName.indexOf(".");
+				if(extensionIndex != -1) {
+					fileExtension = fileName.substr(extensionIndex + 1);
+					fileName = fileName.substr(0, extensionIndex);
+				}
+				fileName = "CopyOf" + fileName;
+				fileSavePopup = new FileSavePopupView();
+				fileSavePopup.projectFolders = projectFolders;
+				fileSavePopup.fileName = fileName;
+				fileSavePopup.fileExtension = fileExtension;
+				//TODO: this should be in the Feathers UI theme
+				fileSavePopup.loaderSkin = new ConstantsCoreVO.loaderIcon();
+				fileSavePopupWrapper = new FeathersUIWrapper(fileSavePopup);
+				PopUpManager.addPopUp(fileSavePopupWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
+				PopUpManager.centerPopUp(fileSavePopupWrapper);
+				fileSavePopup.addEventListener(Event.COMPLETE, onFileSavePopupComplete);
+				fileSavePopup.addEventListener(Event.CLOSE, onFileSavePopupClose);
+				fileSavePopupWrapper.assignFocus("top");	
+				fileSavePopupWrapper.stage.addEventListener(Event.RESIZE, fileSavePopup_stage_resizeHandler, false, 0, true);
 			}
-			function selectProjectPopup_stage_resizeHandler(event:Event):void
+		}
+
+		private function saveAsPath(path:String):void{
+			model.fileCore.browseForSave(handleSaveAsSelect, null, "Save As", path);
+		}
+
+		private function onSelectProjectPopupClose(event:Event):void
+		{
+			var selectedProject:ProjectVO = selectProjectPopup.selectedProject;selectedProject.folderPath
+			if(selectedProject)
 			{
-				PopUpManager.centerPopUp(selectProjectPopupWrapper);
+				saveAsPath(selectedProject.folderPath);
 			}
+			selectProjectPopupWrapper.stage.removeEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler);
+			PopUpManager.removePopUp(selectProjectPopupWrapper);
+			selectProjectPopup.removeEventListener(Event.CLOSE, onSelectProjectPopupClose);
+			selectProjectPopup = null;
+			selectProjectPopupWrapper = null;
+		}
+
+		private function selectProjectPopup_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(selectProjectPopupWrapper);
+		}
+
+		private function onFileSavePopupClose(event:Event):void
+		{
+			closeFileSavePopup();
+		}
+
+		private function onFileSavePopupComplete(event:Event):void
+		{
+			var fileToSave:FileLocation = new FileLocation();
+			fileToSave.fileBridge.name = fileSavePopup.fileName + "." + fileSavePopup.fileExtension;
+			fileToSave.fileBridge.nativePath = fileSavePopup.selectedFolder.file.fileBridge.nativePath;
+			var lastSelectedFolder:FileWrapper = fileSavePopup.selectedFolder;
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, fileToSave.fileBridge.name +": Saving in process..."));
+			loader = new DataAgent(URLDescriptorVO.FILE_NEW, onSaveSuccess, onSaveFault, {path:fileToSave.fileBridge.nativePath,name:fileToSave.fileBridge.name,type:(fileToSave.fileBridge.isDirectory?"folder":"file"),text:text});
+			
+			//for testing without loader
+			/*setTimeout(function():void {
+				onDataAgentSaveSuccess(JSON.stringify({nativePath: fileToSave.fileBridge.nativePath, isDirectory: false, isHidden: false, name: fileToSave.name, extension: fileToSave.fileBridge.extension}));
+			}, 2000);*/
+
+			function onDataAgentSaveSuccess(value:Object, message:String=null):void
+			{
+				var jsonObj:Object = JSON.parse(String(value));
+				if (!jsonObj || jsonObj.nativePath == "") return;
+				
+				// create new object to update in tree view
+				var tmpLocation: FileLocation = new FileLocation(jsonObj.nativePath);
+				tmpLocation.fileBridge.isDirectory = (jsonObj.isDirectory.toString() == "true") ? true : false;
+				tmpLocation.fileBridge.isHidden = (jsonObj.isHidden.toString() == "true") ? true : false;
+				tmpLocation.fileBridge.name = String(jsonObj.name);
+				tmpLocation.fileBridge.extension = String(jsonObj.extension);
+				tmpLocation.fileBridge.exists = true;
+				
+				var tmpFW: FileWrapper = new FileWrapper(tmpLocation, false, FileWrapper(lastSelectedFolder.originalReference).projectReference);
+				tmpFW.children = null;
+				FileWrapper(lastSelectedFolder.originalReference).children.push(tmpFW);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, fileToSave.fileBridge.name +": Saved successfully."));
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.PROJECT_FILES_UPDATES, tmpFW));
+				onFileSaveSuccess(tmpLocation);
+				
+				closeFileSavePopup();
+			}
+			
+			function onDataAgentSaveFault(message:String):void
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, fileToSave.fileBridge.name +": Save error!"));
+				closeFileSavePopup();
+			}
+		}
+
+		private function closeFileSavePopup():void
+		{
+			if(!fileSavePopup)
+			{
+				return;
+			}
+			fileSavePopupWrapper.stage.removeEventListener(Event.RESIZE, fileSavePopup_stage_resizeHandler);
+			PopUpManager.removePopUp(fileSavePopupWrapper);
+			fileSavePopup.removeEventListener(Event.COMPLETE, onFileSavePopupComplete);
+			fileSavePopup = null;
+			fileSavePopupWrapper = null;
+		}
+		private function fileSavePopup_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(fileSavePopupWrapper);
 		}
 		
 		public function onFileSaveSuccess(file:FileLocation=null):void
 		{
-			//saveAs(file);
 			this.file = file;
 			dispatchEvent(new Event('labelChanged'));
 			editor.save();

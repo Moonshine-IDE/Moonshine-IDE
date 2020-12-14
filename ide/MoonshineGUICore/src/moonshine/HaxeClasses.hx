@@ -21,6 +21,7 @@ package moonshine;
  */
 import feathers.core.DefaultToolTipManager;
 import feathers.core.FocusManager;
+import moonshine.components.FileSavePopupView;
 import moonshine.components.QuitView;
 import moonshine.components.SDKDefineView;
 import moonshine.components.SDKSelectorView;
@@ -44,6 +45,7 @@ class HaxeClasses {
 	public var SDKDefineView:SDKDefineView;
 	public var SDKSelectorView:SDKSelectorView;
 	public var AS3DocsView:AS3DocsView;
+	public var FileSavePopupView:FileSavePopupView;
 	public var FindReplaceView:FindReplaceView;
 	public var GoToLineView:GoToLineView;
 	public var LocationsView:LocationsView;
