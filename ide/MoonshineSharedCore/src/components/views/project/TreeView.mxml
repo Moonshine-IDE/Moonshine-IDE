@@ -381,6 +381,7 @@
 							}
 							clearTimeout(timeoutValue);
 							refreshActiveProject(tree.selectedItem as FileWrapper);
+							dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
 						}, 100);
 						break;
 					}
@@ -932,16 +933,6 @@
 							if(project.projectFolder.nativePath === value[0].nativePath)
 							{
 								projects.removeItem(project);
-	
-								// in case of Close project we shall need to close the lang-server here
-								// in case of Delete project this handles by the command class
-								tree.callLater(function():void
-								{
-									if(removalType == FTETreeItemRenderer.CLOSE)
-									{
-										dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
-									}
-								});
 								break;
 							}
 						}
