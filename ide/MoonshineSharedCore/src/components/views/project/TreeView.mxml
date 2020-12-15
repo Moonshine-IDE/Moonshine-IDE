@@ -935,10 +935,13 @@
 	
 								// in case of Close project we shall need to close the lang-server here
 								// in case of Delete project this handles by the command class
-								if(removalType == FTETreeItemRenderer.CLOSE)
+								tree.callLater(function():void
 								{
-									dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
-								}
+									if(removalType == FTETreeItemRenderer.CLOSE)
+									{
+										dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
+									}
+								});
 								break;
 							}
 						}
