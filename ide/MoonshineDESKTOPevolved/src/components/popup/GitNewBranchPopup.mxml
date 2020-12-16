@@ -6,7 +6,10 @@
 		 creationComplete="txtName.setFocus()">
 	<fx:Script>
 		<![CDATA[
-			import mx.events.CloseEvent;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
+
+		import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
 			import actionScripts.events.GeneralEvent;
@@ -14,33 +17,49 @@
 			public static const VALIDATE_NAME:String = "validateName";
 			
 			[Bindable] public var isGitAvailable:Boolean;
-			
 			public var submitObject:Object;
+
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			
-			public function onNameValidatedByGit(value:String):void
+			public function onNameValidatedByGit(localValue:String, remoteValue:String):void
 			{
 				// in case of branch exists value is null
-				if (!value)
+				if (!localValue && !remoteValue)
 				{
 					submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
 					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-				}
-				
-				value = value.replace("\n", "");
-				if (value.match(/fatal: .*/)) 
-				{
-					showError(value);
 					return;
 				}
-				else if (value.toLowerCase().match(/was unexpected at this time/)) 
+
+				var errorMessage:String = "";
+				if (localValue)
 				{
-					showError(value);
-					return;
+					localValue = localValue.replace("\n", "");
+					if (localValue.match(/fatal: .*/) || localValue.toLowerCase().match(/was unexpected at this time/))
+					{
+						dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, localValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
+					}
+					else
+					{
+						errorMessage = "Branch already exists in local; ";
+					}
 				}
-				else
+
+				if (remoteValue)
 				{
-					showError("Branch "+ txtName.text +" is already exists in remote.");
+					remoteValue = remoteValue.replace("\n", "");
+					if (remoteValue.match(/fatal: .*/) || remoteValue.toLowerCase().match(/was unexpected at this time/))
+					{
+						dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, remoteValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
+					}
+					else
+					{
+						errorMessage += "Branch already exists at remote;";
+					}
 				}
+
+				if (errorMessage)
+					showError(errorMessage);
 				
 				/*
 				 * @local

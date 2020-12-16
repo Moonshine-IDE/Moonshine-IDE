@@ -583,9 +583,9 @@ package actionScripts.plugins.git
 			new CheckBranchNameAvailabilityCommand(event.value as String, onNameValidatedByGit);
 		}
 		
-		private function onNameValidatedByGit(value:String):void
+		private function onNameValidatedByGit(localValue:String, remoteValue:String):void
 		{
-			gitNewBranchWindow.onNameValidatedByGit(value);
+			gitNewBranchWindow.onNameValidatedByGit(localValue, remoteValue);
 		}
 		
 		private function onChangeBranchRequest(event:Event):void
