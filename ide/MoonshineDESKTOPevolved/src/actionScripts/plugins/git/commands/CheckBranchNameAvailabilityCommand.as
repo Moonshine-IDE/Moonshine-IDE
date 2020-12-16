@@ -25,12 +25,13 @@ package actionScripts.plugins.git.commands
 
 	public class CheckBranchNameAvailabilityCommand extends GitCommandBase
 	{
-		private static const GIT_REMOTE_ORIGINS_LISTING:String = "gitRemoteOriginsListing";
-		private static const GIT_BRANCH_NAME_VALIDATION:String = "gitValidateProposedBranchName";
+		private static const GIT_REMOTE_BRANCH_NAME_VALIDATION:String = "gitRemoteValidateProposedBranchName";
+		private static const GIT_LOCAL_BRANCH_NAME_VALIDATION:String = "gitLocalValidateProposedBranchName";
 		
 		private var onCompletion:Function;
 		private var targetBranchName:String;
 		private var localBranchFoundData:String;
+		private var remoteBranchFoundData:String;
 		
 		public function CheckBranchNameAvailabilityCommand(name:String, completion:Function)
 		{
@@ -40,8 +41,8 @@ package actionScripts.plugins.git.commands
 			onCompletion = completion;
 			queue = new Vector.<Object>();
 
-			//addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" show-ref --heads $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&show-ref&&--heads&&'+ UtilsCore.getEncodedForShell(name), false, GIT_BRANCH_NAME_VALIDATION));
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(" remote -v"), false, GIT_REMOTE_ORIGINS_LISTING));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" show-ref --heads $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&show-ref&&--heads&&'+ UtilsCore.getEncodedForShell(name), false, GIT_LOCAL_BRANCH_NAME_VALIDATION));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" ls-remote origin --heads $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&ls-remote&&origin&&--heads&&'+ UtilsCore.getEncodedForShell(name), false, GIT_REMOTE_BRANCH_NAME_VALIDATION));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
@@ -58,29 +59,44 @@ package actionScripts.plugins.git.commands
 			
 			switch(tmpQueue.processType)
 			{
-				case GIT_BRANCH_NAME_VALIDATION:
+				case GIT_LOCAL_BRANCH_NAME_VALIDATION:
 				{
 					localBranchFoundData = value.output;
 					break;
 				}
-				case GIT_REMOTE_ORIGINS_LISTING:
+				case GIT_REMOTE_BRANCH_NAME_VALIDATION:
 				{
-					var tmpOriginsValue:Array = value.output.split("\n");
-					var eachLine:Array = tmpOriginsValue[0].split("\t")
+					remoteBranchFoundData = value.output;
 					break;
 				}
 			}
 		}
-		
-		override protected function unsubscribeFromWorker():void
+
+		override public function onWorkerValueIncoming(value:Object):void
 		{
+			super.onWorkerValueIncoming(value);
+
+			var tmpValue:Object = value.value;
+			if (tmpValue.queue.processType == GIT_LOCAL_BRANCH_NAME_VALIDATION && !localBranchFoundData)
+			{
+				localBranchFoundData = tmpValue.output;
+			}
+
+			if (tmpValue.queue.processType == GIT_REMOTE_BRANCH_NAME_VALIDATION && !remoteBranchFoundData)
+			{
+				remoteBranchFoundData = tmpValue.output;
+			}
+		}
+
+		override protected  function listOfProcessEnded():void
+		{
+			super.listOfProcessEnded();
+
 			if (onCompletion != null)
 			{
-				onCompletion(localBranchFoundData);
+				onCompletion(localBranchFoundData, remoteBranchFoundData);
+				onCompletion = null;
 			}
-			
-			super.unsubscribeFromWorker();
-			onCompletion = null;
 		}
 	}
 }
