@@ -31,6 +31,7 @@
 					return;
 				}
 
+				btnCommit.enabled = true;
 				var errorMessage:String = "";
 				if (localValue)
 				{
@@ -41,7 +42,7 @@
 					}
 					else
 					{
-						errorMessage = "Branch already exists in local; ";
+						errorMessage = "Local branch already exists; ";
 					}
 				}
 
@@ -54,7 +55,7 @@
 					}
 					else
 					{
-						errorMessage += "Branch already exists at remote;";
+						errorMessage += "Branch exists on remote;";
 					}
 				}
 
@@ -81,9 +82,10 @@
 				if (Validator.validateAll(tmpArr).length == 0)
 				{
 					lblMess.text = "Validating..";
-					lblMess.setStyle("color", 0xFFBF0F);
+					lblMess.setStyle("color", 0xF4F4F4);
 					lblMess.includeInLayout = lblMess.visible = true;
-					
+
+					btnCommit.enabled = false;
 					dispatchEvent(new GeneralEvent(VALIDATE_NAME, txtName.text));
 				}
 			}

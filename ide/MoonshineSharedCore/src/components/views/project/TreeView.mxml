@@ -377,11 +377,14 @@
 								tree.selectedItem = lastSelectedItem;
 							} else if(model.selectedprojectFolders.length != 0)
 							{
-								tree.selectedItem = (--tmpFWIndex != -1) ? model.selectedprojectFolders[tmpFWIndex] : model.selectedprojectFolders[++tmpFWIndex];
+								try
+								{
+									tree.selectedItem = (--tmpFWIndex != -1) ? model.selectedprojectFolders[tmpFWIndex] : model.selectedprojectFolders[++tmpFWIndex];
+								}
+								catch (e:Error) {}
 							}
 							clearTimeout(timeoutValue);
 							refreshActiveProject(tree.selectedItem as FileWrapper);
-							dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
 						}, 100);
 						break;
 					}
@@ -933,6 +936,7 @@
 							if(project.projectFolder.nativePath === value[0].nativePath)
 							{
 								projects.removeItem(project);
+								dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
 								break;
 							}
 						}
