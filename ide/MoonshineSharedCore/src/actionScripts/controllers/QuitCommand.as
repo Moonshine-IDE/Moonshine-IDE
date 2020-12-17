@@ -29,7 +29,7 @@ package actionScripts.controllers
     import mx.events.ResizeEvent;
     import mx.managers.PopUpManager;
     
-    import spark.components.Button;
+    import feathers.controls.Button;
     
     import actionScripts.events.ApplicationEvent;
     import actionScripts.events.GlobalEventDispatcher;
@@ -47,16 +47,20 @@ package actionScripts.controllers
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
     
-    import components.popup.QuitPopup;
-    import components.popup.StandardPopup;
+    import moonshine.components.StandardPopupView;
     import components.views.splashscreen.SplashScreen;
+    import actionScripts.ui.FeathersUIWrapper;
+    import moonshine.components.QuitView;
+    import moonshine.theme.MoonshineTheme;
 
 	public class QuitCommand implements ICommand
 	{
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var model:IDEModel = IDEModel.getInstance();
-		private static var pop:StandardPopup;
-		private var quitPopup:QuitPopup;
+		private static var pop:StandardPopupView;
+		private static var popWrapper:FeathersUIWrapper;
+		private var quitPopup:QuitView;
+		private var quitPopupWrapper:FeathersUIWrapper;
 		private var timedOutClosingLanguageServers:Boolean = false;
 		private var isGradleDaemonClosed:Boolean;
 		private var languageServerTimeoutID:uint = uint.MAX_VALUE;
@@ -68,12 +72,14 @@ package actionScripts.controllers
             if (!quitPopup && model.confirmApplicationExit)
             {
                 commandEvent = event;
-                quitPopup = new QuitPopup();
-                quitPopup.addEventListener("quitConfirmed", onQuitPopupConfirmed);
+                quitPopup = new QuitView();
+				quitPopupWrapper = new FeathersUIWrapper(quitPopup);
+				quitPopup.alwaysConfirmExit = model.confirmApplicationExit;
                 quitPopup.addEventListener(Event.CLOSE, onQuitPopupClose);
-
-                PopUpManager.addPopUp(quitPopup, FlexGlobals.topLevelApplication as DisplayObject, true);
-				PopUpManager.centerPopUp(quitPopup);
+                PopUpManager.addPopUp(quitPopupWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+				PopUpManager.centerPopUp(quitPopupWrapper);
+				quitPopupWrapper.assignFocus("top");
+				quitPopupWrapper.stage.addEventListener(Event.RESIZE, quitPopup_stage_resizeHandler, false, 0, true);
             }
 			else
 			{
@@ -83,15 +89,30 @@ package actionScripts.controllers
 
         private function onQuitPopupClose(event:Event):void
         {
-            saveStateOfQuitPopup();
-		   	cleanUpQuitPopup();
+			var confirmedExit:Boolean = this.quitPopup.confirmedExit;
+			var alwaysConfirmExit:Boolean = this.quitPopup.alwaysConfirmExit;
+			if(!alwaysConfirmExit)
+			{
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new BooleanSetting({confirmApplicationExit: alwaysConfirmExit}, "confirmApplicationExit", "")
+				]);
+				model.confirmApplicationExit = alwaysConfirmExit;
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, "actionScripts.plugin.actionscript.as3project.save::SaveFilesPlugin", settings));
+			}
+
+			cleanUpQuitPopup();
+
+			if(confirmedExit)
+			{
+				internalExecute();
+			}
         }
 
-        private function onQuitPopupConfirmed(event:Event):void
-        {
-            saveStateOfQuitPopup();
-			internalExecute();
-        }
+		private function quitPopup_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(quitPopupWrapper);
+		}
 
 		private function internalExecute(event:Event = null):void
 		{
@@ -191,7 +212,7 @@ package actionScripts.controllers
 		private function askToSave(num:int):void
 		{
 			if (pop) return;
-			pop = new StandardPopup();
+			pop = new StandardPopupView();
 			pop.data = this; // Keep the command from getting GC'd
 			if (model.editors.length == 1)
 			{
@@ -213,27 +234,29 @@ package actionScripts.controllers
 			}
 			
 			var save:Button = new Button();
-			save.styleName = "lightButton";
-			save.label = "Save file";
-			if (num > 1) save.label += "s";
+			save.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+			save.text = "Save file";
+			if (num > 1) save.text += "s";
 			save.addEventListener(MouseEvent.CLICK, saveFiles, false, 0, false);
 			
 			var close:Button = new Button();
-			close.styleName = "lightButton";
-			close.label = "Quit anyway";
+			close.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+			close.text = "Quit anyway";
 			close.addEventListener(MouseEvent.CLICK, closeFiles, false, 0, false);
 			
 			var cancel:Button = new Button();
-			cancel.styleName = "lightButton";
-			cancel.label = "See file";
-			if (num > 1) cancel.label += "s";
+			cancel.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+			cancel.text = "See file";
+			if (num > 1) cancel.text += "s";
 			cancel.addEventListener(MouseEvent.CLICK, cancelQuit, false, 0, false);
 			 
-			pop.buttons = [save, close, cancel];
+			pop.controls = [save, close, cancel];
 			
-			PopUpManager.addPopUp(pop, FlexGlobals.topLevelApplication as DisplayObject, true);
-			pop.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
-			pop.x = ((FlexGlobals.topLevelApplication as DisplayObject).width-pop.width)/2;
+			popWrapper = new FeathersUIWrapper(pop);
+			PopUpManager.addPopUp(popWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+			popWrapper.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
+			popWrapper.x = ((FlexGlobals.topLevelApplication as DisplayObject).width-popWrapper.width)/2;
+			popWrapper.assignFocus("top");
 			
 			// @devsena
 			// we need this because if application frame resized when above alert
@@ -273,7 +296,7 @@ package actionScripts.controllers
 		
 		private function onApplicationResized(event:ResizeEvent):void
 		{
-			if (pop) pop.x = (FlexGlobals.topLevelApplication.width-pop.width)/2;
+			if (popWrapper) popWrapper.x = (FlexGlobals.topLevelApplication.width-popWrapper.width)/2;
 		}
 		
 		private function saveFiles(event:Event):void
@@ -329,38 +352,31 @@ package actionScripts.controllers
 		
 		private function cleanUp():void
 		{
-			if (pop)
+			cleanUpQuitPopup();
+
+			if (popWrapper)
 			{
-                cleanUpQuitPopup();
 
 				FlexGlobals.topLevelApplication.removeEventListener(ResizeEvent.RESIZE, onApplicationResized);
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
-				PopUpManager.removePopUp(pop);
+				PopUpManager.removePopUp(popWrapper);
 				pop.data = null;
 				pop = null;
+				popWrapper = null;
 			}
 		}
 
-		private function saveStateOfQuitPopup():void
-		{
-			if (!quitPopup.doNotAskMeAgain) return;
-
-			var settings:Vector.<ISetting> = Vector.<ISetting>([
-				new BooleanSetting({confirmApplicationExit: false}, "confirmApplicationExit", "")
-			]);
-
-			model.confirmApplicationExit = false;
-			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
-					null, "actionScripts.plugin.actionscript.as3project.save::SaveFilesPlugin", settings));
-        }
-
 		private function cleanUpQuitPopup():void
 		{
-			if (!quitPopup) return;
-
+			if(!quitPopup)
+			{
+				return;
+			}
+			quitPopupWrapper.stage.removeEventListener(Event.RESIZE, quitPopup_stage_resizeHandler);
+			PopUpManager.removePopUp(quitPopupWrapper);
             quitPopup.removeEventListener(Event.CLOSE, onQuitPopupClose);
-            quitPopup.removeEventListener("quitConfirmed", onQuitPopupConfirmed);
             quitPopup = null;
+			quitPopupWrapper = null;
 		}
 	}
 }

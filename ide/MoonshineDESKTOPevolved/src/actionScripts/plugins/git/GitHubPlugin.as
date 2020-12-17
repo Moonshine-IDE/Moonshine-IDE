@@ -57,11 +57,11 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.commands.PushCommand;
 	import actionScripts.plugins.git.commands.RevertCommand;
 	import actionScripts.plugins.git.model.GitProjectVO;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentTypes;
@@ -583,31 +583,22 @@ package actionScripts.plugins.git
 			new CheckBranchNameAvailabilityCommand(event.value as String, onNameValidatedByGit);
 		}
 		
-		private function onNameValidatedByGit(value:String):void
+		private function onNameValidatedByGit(localValue:String, remoteValue:String):void
 		{
-			gitNewBranchWindow.onNameValidatedByGit(value);
+			gitNewBranchWindow.onNameValidatedByGit(localValue, remoteValue);
 		}
 		
 		private function onChangeBranchRequest(event:Event):void
 		{
-			if (!dispatcher.hasEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED))
-				dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived, false, 0, true);
-			new GitSwitchBranchCommand();
-		}
-		
-		private function onGitRemoteBranchListReceived(event:GeneralEvent):void
-		{
-			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived);
 			if (!gitBranchSelectionWindow)
 			{
 				if (!checkOSXGitAccess()) return;
-				
+
 				checkGitAvailability();
-				
+
 				gitBranchSelectionWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitBranchSelectionPopup, false) as GitBranchSelectionPopup;
 				gitBranchSelectionWindow.title = "Select Branch";
 				gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
-				gitBranchSelectionWindow.branchCollection = event.value as ArrayCollection;
 				gitBranchSelectionWindow.addEventListener(CloseEvent.CLOSE, onGitBranchSelectionWindowClosed);
 				PopUpManager.centerPopUp(gitBranchSelectionWindow);
 			}

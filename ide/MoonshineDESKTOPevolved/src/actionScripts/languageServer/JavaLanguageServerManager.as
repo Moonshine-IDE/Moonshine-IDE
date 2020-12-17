@@ -36,7 +36,7 @@ package actionScripts.languageServer
     import mx.managers.PopUpManager;
     import mx.utils.SHA256;
 
-    import spark.components.Button;
+    import feathers.controls.Button;
 
     import actionScripts.events.ExecuteLanguageServerCommandEvent;
     import actionScripts.events.FilePluginEvent;
@@ -49,16 +49,24 @@ package actionScripts.languageServer
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.console.ConsoleOutputter;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.JavaTextEditor;
+    import actionScripts.utils.CommandLineUtil;
+    import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.utils.applyWorkspaceEdit;
     import actionScripts.utils.getProjectSDKPath;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
     import actionScripts.valueObjects.WorkspaceEdit;
 
-    import components.popup.StandardPopup;
+    import com.adobe.utils.StringUtil;
+
+    import moonshine.components.StandardPopupView;
+    import moonshine.theme.MoonshineTheme;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -88,6 +96,7 @@ package actionScripts.languageServer
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH_HELP:String = "java.ignoreIncompleteClasspath.help";
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
 		private static const COMMAND_JAVA_APPLY_WORKSPACE_EDIT:String = "java.apply.workspaceEdit";
+		private static const COMMAND_JAVA_CLEAN_WORKSPACE:String = "java.clean.workspace";
 		
 		private static const URI_SCHEME_FILE:String = "file";
 
@@ -101,8 +110,12 @@ package actionScripts.languageServer
 		private var _languageServerProcess:NativeProcess;
 		private var _languageStatusDone:Boolean = false;
 		private var _waitingToRestart:Boolean = false;
+		private var _waitingToCleanWorkspace:Boolean = false;
 		private var _previousJDKPath:String = null;
 		private var _languageServerLauncherJar:File;
+		private var _javaVersion:String = null;
+		private var _javaVersionProcess:NativeProcess;
+		private var _waitingToDispose:Boolean = false;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
 		{
@@ -115,7 +128,7 @@ package actionScripts.languageServer
 			//dispose()
 
 			prepareApplicationStorage();
-			startNativeProcess();
+			bootstrapThenStartNativeProcess();
 		}
 
 		public function get project():ProjectVO
@@ -168,7 +181,14 @@ package actionScripts.languageServer
 			_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler);
 			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
 			_dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
+
 			cleanupLanguageClient();
+
+			if(_javaVersionProcess)
+			{
+				_waitingToDispose = true;
+				_javaVersionProcess.exit(true);
+			}
 		}
 
 		protected function cleanupLanguageClient():void
@@ -178,11 +198,48 @@ package actionScripts.languageServer
 				return;
 			}
 			_languageStatusDone = false;
+			_languageClient.removeCommandListener(COMMAND_JAVA_CLEAN_WORKSPACE, command_javaCleanWorkspaceHandler);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient = null;
+		}
+
+		private function extractVersionStringFromStandardErrorOutput(versionOutput:String):String
+		{
+			var result:Array = versionOutput.match(/version "(\d+(\.\d+)*(_\d+)?(\-\w+)?)"/);
+			if(result && result.length > 1)
+			{
+				return result[1];
+			}
+			return versionOutput;
+		}
+
+		private function isJavaVersionSupported(version:String):Boolean
+		{
+			var parts:Array = version.split("-");
+			var versionNumberWithUpdate:String = parts[0];
+			parts = versionNumberWithUpdate.split("_");
+			var versionNumber:String = parts[0];
+			var versionNumberParts:Array = versionNumber.split(".");
+			var partsCount:int = versionNumberParts.length;
+			for(var i:int = 0; i < partsCount; i++)
+			{
+				var part:String = versionNumberParts[i];
+				var parsed:Number = parseInt(part, 10);
+				if(isNaN(parsed))
+				{
+					return false;
+				}
+				versionNumberParts[i] = parsed;
+			}
+			var major:Number = versionNumberParts[0];
+			if(major < 11)
+			{
+				return false;
+			}
+			return true;
 		}
 
 		private function prepareApplicationStorage():void
@@ -238,6 +295,57 @@ package actionScripts.languageServer
 				//something went wrong!
 				error("Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath);
 			}
+		}
+
+		private function bootstrapThenStartNativeProcess():void
+		{
+			if(!UtilsCore.isJavaForTypeaheadAvailable())
+			{
+				return;
+			}
+			checkJavaVersion();
+		}
+		
+		private function checkJavaVersion():void
+		{
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name, "Java: Checking version...", false
+			));
+
+			this._javaVersion = "";
+			var javaVersionCommand:Vector.<String> = new <String>[
+				EnvironmentExecPaths.JAVA_ENVIRON_EXEC_PATH,
+				"-version"
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
+
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_javaVersionProcess = new NativeProcess();
+				_javaVersionProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, javaVersionProcess_standardErrorDataHandler);
+				_javaVersionProcess.addEventListener(NativeProcessExitEvent.EXIT, javaVersionProcess_exitHandler);
+				_javaVersionProcess.start(processInfo);
+			}, null, [CommandLineUtil.joinOptions(javaVersionCommand)]);
 		}
 
 		private function startNativeProcess():void
@@ -383,6 +491,7 @@ package actionScripts.languageServer
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
+			_languageClient.addCommandListener(COMMAND_JAVA_CLEAN_WORKSPACE, command_javaCleanWorkspaceHandler);
 		}
 
 		private function restartLanguageServer():void
@@ -392,6 +501,7 @@ package actionScripts.languageServer
 				//we'll just continue waiting
 				return;
 			}
+			_waitingToCleanWorkspace = false;
 			_waitingToRestart = false;
 			if(_languageClient)
 			{
@@ -406,11 +516,28 @@ package actionScripts.languageServer
 
 			if(!_waitingToRestart)
 			{
-				startNativeProcess();
+				bootstrapThenStartNativeProcess();
 			}
 		}
 
-		private function createCommandListener(command:String, args:Array, popup:StandardPopup):Function
+		private function cleanWorkspace():void
+		{
+			try
+			{
+				var workspaceFolder:File = new File(getWorkspaceNativePath());
+				if(workspaceFolder.exists && workspaceFolder.isDirectory)
+				{
+					workspaceFolder.deleteDirectory(true);
+				}
+			}
+			catch(e:Error)
+			{
+				error("Failed to clean project workspace");
+			}
+			restartLanguageServer();
+		}
+
+		private function createCommandListener(command:String, args:Array, popup:StandardPopupView, popupWrapper:FeathersUIWrapper):Function
 		{
 			return function(event:Event):void
 			{
@@ -419,7 +546,7 @@ package actionScripts.languageServer
 					project, command, args ? args : []));
 				if(popup)
 				{
-					PopUpManager.removePopUp(popup);
+					PopUpManager.removePopUp(popupWrapper);
 					popup.data = null;
 				}
 			};
@@ -450,7 +577,60 @@ package actionScripts.languageServer
 			if(_waitingToRestart)
 			{
 				_waitingToRestart = false;
+				bootstrapThenStartNativeProcess();
+				return;
+			}
+		}
+		
+		private function javaVersionProcess_standardErrorDataHandler(event:ProgressEvent):void 
+		{
+			if(_javaVersionProcess)
+			{
+				//for some reason, java -version writes to stderr
+				var output:IDataInput = _javaVersionProcess.standardError;
+				var data:String = output.readUTFBytes(output.bytesAvailable);
+				this._javaVersion += data;
+			}
+		}
+		
+		private function javaVersionProcess_exitHandler(event:NativeProcessExitEvent):void
+		{
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
+			));
+
+			_javaVersionProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, javaVersionProcess_standardErrorDataHandler);
+			_javaVersionProcess.removeEventListener(NativeProcessExitEvent.EXIT, javaVersionProcess_exitHandler);
+			_javaVersionProcess.exit();
+			_javaVersionProcess = null;
+
+			if(_waitingToDispose)
+			{
+				//don't continue if we've disposed during the bootstrap process
+				return;
+			}
+			if(_waitingToRestart)
+			{
+				_waitingToRestart = false;
+				bootstrapThenStartNativeProcess();
+				return;
+			}
+
+			if(event.exitCode == 0)
+			{
+				this._javaVersion = extractVersionStringFromStandardErrorOutput(StringUtil.trim(this._javaVersion));
+				trace("Java version: " + this._javaVersion);
+				if(!isJavaVersionSupported(this._javaVersion))
+				{
+					error("Java version 11.0.0 or newer is required. Version not supported: " + this._javaVersion + ". Java code intelligence disabled for project: " + project.name + ".");
+					return;
+				}
 				startNativeProcess();
+			}
+			else
+			{
+				error("Failed to load Java version. Java code intelligence disabled for project: " + project.name + ".");
 			}
 		}
 
@@ -521,7 +701,12 @@ package actionScripts.languageServer
 
 		private function languageClient_closeHandler(event:Event):void
 		{
-			if(_waitingToRestart)
+			if(_waitingToCleanWorkspace)
+			{
+				cleanupLanguageClient();
+				cleanWorkspace();
+			}
+			else if(_waitingToRestart)
 			{
 				cleanupLanguageClient();
 				//the native process will automatically exit, so we continue
@@ -600,7 +785,7 @@ package actionScripts.languageServer
 				return;
 			}
 
-			var popup:StandardPopup = new StandardPopup();
+			var popup:StandardPopupView = new StandardPopupView();
 			popup.data = this; // Keep the command from getting GC'd
 			popup.text = message;
 
@@ -614,17 +799,32 @@ package actionScripts.languageServer
 				var args:Array = command.arguments as Array;
 
 				var button:Button = new Button();
-				button.styleName = "lightButton";
-				button.label = title;
-				button.addEventListener(MouseEvent.CLICK, createCommandListener(commandName, args, popup), false, 0, false);
+				button.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+				button.text = title;
+				button.addEventListener(MouseEvent.CLICK, createCommandListener(commandName, args, popup, popupWrapper), false, 0, false);
 				buttons.push(button);
 			}
 			
-			popup.buttons = buttons;
+			popup.controls = buttons;
 			
-			PopUpManager.addPopUp(popup, FlexGlobals.topLevelApplication as DisplayObject, true);
-			popup.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
-			popup.x = (FlexGlobals.topLevelApplication.width-popup.width)/2;
+			var popupWrapper:FeathersUIWrapper = new FeathersUIWrapper(popup);
+			PopUpManager.addPopUp(popupWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+			popupWrapper.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
+			popupWrapper.x = (FlexGlobals.topLevelApplication.width-popupWrapper.width)/2;
+			popupWrapper.assignFocus("top");
+		}
+
+		private function command_javaCleanWorkspaceHandler():void
+		{
+			if(_languageClient)
+			{
+				_waitingToCleanWorkspace = true;
+				_languageClient.stop();
+			}
+			else
+			{
+				cleanWorkspace();
+			}
 		}
 	}
 }

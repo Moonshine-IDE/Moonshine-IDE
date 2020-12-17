@@ -6,8 +6,10 @@
 		 creationComplete="txtName.setFocus()">
 	<fx:Script>
 		<![CDATA[
-			import mx.controls.Alert;
-			import mx.events.CloseEvent;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
+
+		import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
 			import actionScripts.events.GeneralEvent;
@@ -15,27 +17,49 @@
 			public static const VALIDATE_NAME:String = "validateName";
 			
 			[Bindable] public var isGitAvailable:Boolean;
-			
 			public var submitObject:Object;
+
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			
-			public function onNameValidatedByGit(value:String):void
+			public function onNameValidatedByGit(localValue:String, remoteValue:String):void
 			{
-				value = value.replace("\n", "");
-				var match:Array = value.match(/fatal: .*/);
-				if (match) 
+				// in case of branch exists value is null
+				if (!localValue && !remoteValue)
 				{
-					showError(value);
+					submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 					return;
 				}
-				match = value.toLowerCase().match(/was unexpected at this time/);
-				if (match) 
+
+				var errorMessage:String = "";
+				if (localValue)
 				{
-					showError(value);
-					return;
+					localValue = localValue.replace("\n", "");
+					if (localValue.match(/fatal: .*/) || localValue.toLowerCase().match(/was unexpected at this time/))
+					{
+						dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, localValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
+					}
+					else
+					{
+						errorMessage = "Branch already exists in local; ";
+					}
 				}
-				
-				lblMess.includeInLayout = lblMess.visible = false;
-				Alert.show("Branch name validated successfully:\n\""+ value +"\"\nDo you want to continue?", "Validation", Alert.YES|Alert.NO, this, onContinue);
+
+				if (remoteValue)
+				{
+					remoteValue = remoteValue.replace("\n", "");
+					if (remoteValue.match(/fatal: .*/) || remoteValue.toLowerCase().match(/was unexpected at this time/))
+					{
+						dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, remoteValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
+					}
+					else
+					{
+						errorMessage += "Branch already exists at remote;";
+					}
+				}
+
+				if (errorMessage)
+					showError(errorMessage);
 				
 				/*
 				 * @local
@@ -45,18 +69,6 @@
 					lblMess.text = value;
 					lblMess.setStyle("color", 0xff0000);
 					lblMess.includeInLayout = lblMess.visible = true;
-				}
-				
-				/*
-				 * @local
-				 */
-				function onContinue(event:CloseEvent):void
-				{
-					if (event.detail == Alert.YES)
-					{
-						submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
-						dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-					}
 				}
 			}
 			
@@ -89,7 +101,7 @@
 							  prompt="New Branch Name" enter="onSubmit()"
 							  restrict="a-zA-Z0-9`!@#$%()_+={}';.\-\/\&amp;"/>
 		<s:CheckBox id="cbPush"
-					label="Push newly created branch to remote" selected="true"/>
+					label="Push newly created branch to remote"/>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>

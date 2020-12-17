@@ -19,6 +19,7 @@
 package actionScripts.events
 {
 	import flash.events.Event;
+	import actionScripts.valueObjects.ProjectVO;
 	
 	public class LanguageServerEvent extends Event
 	{
@@ -48,11 +49,12 @@ package actionScripts.events
 		public var textlen:Number;
 		public var version:Number;
 		public var uri:String;
+		public var project:ProjectVO;
 		
 		public function LanguageServerEvent(type:String, uri:String = null,
 			startLinePos:Number = 0,startLineNumber:Number = 0,
 			endLinePos:Number = 0, endLineNumber:Number = 0,
-			newText:String = null, version:Number=0)
+			newText:String = null, version:Number=0, project:ProjectVO = null)
 		{
 			this.startLinePos = startLinePos;
 			this.endLinePos = endLinePos;
@@ -61,6 +63,7 @@ package actionScripts.events
 			this.newText = newText;
 			this.version = version;
 			this.uri = uri;
+			this.project = project;
 			super(type, false, true);
 		}
 		

@@ -20,6 +20,8 @@
 
 package actionScripts.interfaces;
 
+import actionScripts.factory.FileLocation;
+
 extern interface IFileBridge {
 	@:flash.property
 	public var url(default, default):String;
@@ -29,4 +31,28 @@ extern interface IFileBridge {
 
 	@:flash.property
 	public var nativePath(default, default):String;
+
+	@:flash.property
+	public var extension(default, default):String;
+
+	@:flash.property
+	public var name(default, default):String;
+
+	@:flash.property
+	public var nameWithoutExtension(default, null):String;
+
+	@:flash.property
+	public var parent(default, null):FileLocation;
+
+	@:flash.property
+	public var exists(default, null):Bool;
+
+	@:flash.property
+	public var isDirectory(default, default):Bool;
+
+	public function canonicalize():Void;
+
+	public function resolvePath(path:String, toRelativePath:String = null):FileLocation;
+
+	public function browseForDirectory(title:String, selectListener:(file:Any) -> Void, ?cancelListener:() -> Void, ?startFromLocation:String):Void;
 }

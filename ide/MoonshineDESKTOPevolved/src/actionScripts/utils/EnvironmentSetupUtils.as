@@ -30,7 +30,6 @@ package actionScripts.utils
 	import mx.controls.Alert;
 	
 	import actionScripts.locator.IDEModel;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
@@ -140,8 +139,20 @@ package actionScripts.utils
 				return;
 			}
 			
+			//this previously used FileUtils.writeToFileAsync(), but commands
+			//would sometimes fail because the file would still be in use, even
+			//after the FileStream dispatched Event.CLOSE
 			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.cmd");
-			FileUtils.writeToFileAsync(windowsBatchFile, setCommand, onBatchFileWriteComplete, onBatchFileWriteError);
+			try
+			{
+				FileUtils.writeToFile(windowsBatchFile, setCommand);
+			}
+			catch(e:Error)
+			{
+				onBatchFileWriteError(e.toString());
+				return;
+			}
+			onBatchFileWriteComplete();
 		}
 		
 		private function executeOSX():void
@@ -312,26 +323,19 @@ package actionScripts.utils
 
 		private function onBatchFileWriteComplete():void
 		{
-			// following timeout is to overcome process-holding error
-			// in vagarant as reported by Joel at
-			// https://github.com/prominic/Moonshine-IDE/issues/449#issuecomment-473418675
-			var timeoutValue:uint = setTimeout(function():void
+			if (externalCallCompletionHandler != null)
 			{
-				clearTimeout(timeoutValue);
-				if (externalCallCompletionHandler != null)
-				{
-					// returns batch file path to be 
-					// executed by the caller's nativeProcess process
-					if (windowsBatchFile) externalCallCompletionHandler(windowsBatchFile.nativePath);
+				// returns batch file path to be 
+				// executed by the caller's nativeProcess process
+				if (windowsBatchFile) externalCallCompletionHandler(windowsBatchFile.nativePath);
 
-					isSingleProcessRunning = false;
-					flush();
-				}
-				else if (windowsBatchFile)
-				{
-					onCommandLineExecutionWith(windowsBatchFile.nativePath);
-				}
-			}, 1000);
+				isSingleProcessRunning = false;
+				flush();
+			}
+			else if (windowsBatchFile)
+			{
+				onCommandLineExecutionWith(windowsBatchFile.nativePath);
+			}
 		}
 		
 		private function onCommandLineExecutionWith(command:String):void

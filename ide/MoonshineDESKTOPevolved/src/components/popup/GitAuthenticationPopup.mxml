@@ -9,10 +9,8 @@
 			import flash.utils.escapeMultiByte;
 			
 			import mx.events.CloseEvent;
-			import mx.validators.Validator;
-			
+			import mx.validators.Validator;			
 			import spark.utils.TextFlowUtil;
-			
 			import actionScripts.valueObjects.VersionControlTypes;
 			
 			public static const AUTH_SUBMITTED:String = "gitAuthenticationCompleted";

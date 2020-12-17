@@ -98,11 +98,14 @@ package actionScripts.plugins.clean
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-					if (projectReference)
+					if(tmpTreeView) //might be null if closed by user
 					{
-						cleanActiveProject(projectReference);
-						return;
+						var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
+						if (projectReference)
+						{
+							cleanActiveProject(projectReference);
+							return;
+						}
 					}
 				}
 				

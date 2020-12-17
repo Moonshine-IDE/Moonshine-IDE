@@ -62,8 +62,6 @@ package actionScripts.utils
 	import actionScripts.valueObjects.SDKTypes;
 	
 	import components.popup.ModifiedFileListPopup;
-	import components.popup.SDKDefinePopup;
-	import components.popup.SDKSelectorPopup;
 	import components.renderers.CustomToolTipGBA;
 	import components.views.splashscreen.SplashScreen;
 
@@ -71,8 +69,6 @@ package actionScripts.utils
 	{
 		public static var wrappersFoundThroughFindingAWrapper:Vector.<FileWrapper>;
 		
-		private static var sdkPopup:SDKSelectorPopup;
-		private static var sdkPathPopup:SDKDefinePopup;
 		private static var model:IDEModel = IDEModel.getInstance();
 		
 		/**
@@ -505,39 +501,6 @@ package actionScripts.utils
 			}
 			
 			return true;
-		}
-		
-		public static function sdkSelection():void
-		{
-			if (!sdkPathPopup)
-			{
-				if(!sdkPopup)
-				{
-					sdkPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SDKSelectorPopup, false) as SDKSelectorPopup;
-					sdkPopup.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
-					sdkPopup.addEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
-					PopUpManager.centerPopUp(sdkPopup);
-				}
-				else
-				{
-					PopUpManager.bringToFront(sdkPopup);
-				}
-			}
-			else
-			{
-				PopUpManager.bringToFront(sdkPathPopup);
-			}
-			
-			function onFlexSDKUpdated(event:ProjectEvent):void
-			{
-				onSDKPopupClosed(null);
-			}
-			function onSDKPopupClosed(event:CloseEvent):void
-			{
-				sdkPopup.removeEventListener(CloseEvent.CLOSE, onSDKPopupClosed);
-				sdkPopup.removeEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
-				sdkPopup = null;
-			}
 		}
 		
 		/**

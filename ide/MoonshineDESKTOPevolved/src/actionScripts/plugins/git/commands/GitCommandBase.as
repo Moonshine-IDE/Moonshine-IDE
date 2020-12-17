@@ -36,8 +36,8 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.settings.event.RequestSettingByNameEvent;
 	import actionScripts.plugins.git.GitHubPlugin;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.IContentWindowReloadable;
+	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;

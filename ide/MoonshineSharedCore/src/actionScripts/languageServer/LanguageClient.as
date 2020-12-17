@@ -63,7 +63,6 @@ package actionScripts.languageServer
 	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
 	/**
 	 * Dispatched when the language client has been initialized.
@@ -254,6 +253,7 @@ package actionScripts.languageServer
 		private var _savedDiagnostics:Object = {};
 		private var _idToRequest:Object = {};
 
+		protected var _commandListeners:Object = {};
 		protected var _notificationListeners:Object = {};
 
 		private var _capabilities:Object = null;
@@ -456,6 +456,39 @@ package actionScripts.languageServer
 			}
 
 			return id;
+		}
+
+		public function addCommandListener(command:String, listener:Function):void
+		{
+			if(!(command in this._commandListeners))
+			{
+				this._commandListeners[command] = new <Function>[];
+			}
+			var listeners:Vector.<Function> = this._commandListeners[command] as Vector.<Function>;
+			var index:int = listeners.indexOf(listener);
+			if(index != -1)
+			{
+				//already added
+				return;
+			}
+			listeners.push(listener);
+		}
+
+		public function removeCommandListener(command:String, listener:Function):void
+		{
+			if(!(command in this._commandListeners))
+			{
+				//nothing to remove
+				return;
+			}
+			var listeners:Vector.<Function> = this._commandListeners[command] as Vector.<Function>;
+			var index:int = listeners.indexOf(listener);
+			if(index == -1)
+			{
+				//nothing to remove
+				return;
+			}
+			listeners.removeAt(index);
 		}
 
 		public function addNotificationListener(method:String, listener:Function):void
@@ -1649,7 +1682,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1665,7 +1698,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1681,7 +1714,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1710,7 +1743,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1733,7 +1766,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1762,7 +1795,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1816,7 +1849,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1851,7 +1884,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1885,7 +1918,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1920,7 +1953,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1954,7 +1987,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -1981,6 +2014,15 @@ package actionScripts.languageServer
 			_gotoTypeDefinitionLookup[id] = new UriAndPosition(uri, positionVO);
 		}
 
+		private function isInProject(uri:String, requestedProject:ProjectVO = null):Boolean
+		{
+			if(requestedProject != null)
+			{
+				return requestedProject == _project;
+			}
+			return isUriInProject(uri, _project);
+		}
+
 		private function gotoImplementationHandler(event:LanguageServerEvent):void
 		{
 			if(!_initialized || _stopped || _shutdownID != -1)
@@ -1988,7 +2030,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -2025,12 +2067,20 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			var activeEditor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
-			if(!activeEditor && _model.activeProject != _project)
+			var project:ProjectVO = event.project;
+			if(project == null)
 			{
-				return;
+				var activeEditor:LanguageServerTextEditor = _model.activeEditor as LanguageServerTextEditor;
+				if(!activeEditor)
+				{
+					project = _model.activeProject;
+				}
+				else if(isUriInProject(activeEditor.currentFile.fileBridge.url, _project))
+				{
+					project = _project;
+				}
 			}
-			else if(activeEditor && !isUriInProject(activeEditor.currentFile.fileBridge.url, _project))
+			if(project != _project)
 			{
 				return;
 			}
@@ -2057,7 +2107,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -2085,7 +2135,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -2122,7 +2172,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -2185,7 +2235,7 @@ package actionScripts.languageServer
 				return;
 			}
 			var uri:String = event.uri;
-			if(event.isDefaultPrevented() || !isUriInProject(uri, _project))
+			if(event.isDefaultPrevented() || !isInProject(uri, event.project))
 			{
 				return;
 			}
@@ -2221,6 +2271,16 @@ package actionScripts.languageServer
 				return;
 			}
 			var command:String = event.command;
+			if(command in this._commandListeners)
+			{
+				var listeners:Vector.<Function> = this._commandListeners[command] as Vector.<Function>;
+				var listenerCount:int = listeners.length;
+				for(var i:int = 0; i < listenerCount; i++)
+				{
+					var listener:Function = listeners[i];
+					listener.apply(null, event.arguments);
+				}
+			}
 			if(supportedCommands.indexOf(command) == -1)
 			{
 				return;

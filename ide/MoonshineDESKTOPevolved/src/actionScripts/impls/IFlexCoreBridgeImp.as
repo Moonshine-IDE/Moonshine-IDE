@@ -56,6 +56,7 @@ package actionScripts.impls
 	import actionScripts.plugin.findreplace.FindReplacePlugin;
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
 	import actionScripts.plugin.help.HelpPlugin;
+	import moonshine.plugin.help.view.TourDeFlexContentsView;
 	import actionScripts.plugin.locations.LocationsPlugin;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
@@ -77,6 +78,7 @@ package actionScripts.impls
 	import actionScripts.plugin.syntax.MXMLSyntaxPlugin;
 	import actionScripts.plugin.syntax.XMLSyntaxPlugin;
 	import actionScripts.plugin.templating.TemplatingPlugin;
+	import actionScripts.plugin.workspace.WorkspacePlugin;
 	import actionScripts.plugins.ant.AntBuildPlugin;
 	import actionScripts.plugins.ant.AntBuildScreen;
 	import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
@@ -94,7 +96,6 @@ package actionScripts.impls
 	import actionScripts.plugins.externalEditors.ExternalEditorsPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.gradle.GradleBuildPlugin;
-	import actionScripts.plugins.help.view.TourDeFlexContentsView;
 	import actionScripts.plugins.help.view.events.VisualEditorEvent;
 	import actionScripts.plugins.httpServer.HttpServerPlugin;
 	import actionScripts.plugins.js.JavaScriptPlugin;
@@ -185,11 +186,6 @@ package actionScripts.impls
 		{
 			FlashBuilderExporter.export(project, file.fileBridge.getFile as File);
 		}
-		
-		public function getTourDeView():IPanelWindow
-		{
-			return (new TourDeFlexContentsView);
-		}
 
 		public function getTourDeEditor(swfSource:String):BasicTextEditor
 		{
@@ -200,6 +196,7 @@ package actionScripts.impls
 		{
 			return [
 				SettingsPlugin, 
+				WorkspacePlugin,
 				ProjectPlugin,
 				ProjectPanelPlugin,
 				TemplatingPlugin,
@@ -272,7 +269,7 @@ package actionScripts.impls
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -318,6 +315,12 @@ package actionScripts.impls
 						'w', [Keyboard.CONTROL]),
 					new MenuItem("Close All", null, null, CloseTabEvent.EVENT_CLOSE_ALL_TABS),
 					/*new MenuItem("Define Workspace", null, ProjectEvent.SET_WORKSPACE),*/
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','WORKSPACE'),[
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_SAVE_AS'), null, null, WorkspacePlugin.EVENT_SAVE_AS),
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_NEW'), null, null, WorkspacePlugin.EVENT_NEW),
+						new MenuItem(resourceManager.getString('resources','WORKSPACE_LOAD'), null, null, WorkspacePlugin.EVENT_LOAD)
+					]),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','LINE_ENDINGS'), [
 						new MenuItem(resourceManager.getString('resources','WINDOWS_LINE_ENDINGS'), null, null, ChangeLineEncodingEvent.EVENT_CHANGE_TO_WIN),
