@@ -25,6 +25,7 @@ package actionScripts.plugins.git.commands
 
 	public class CheckBranchNameAvailabilityCommand extends GitCommandBase
 	{
+		private static const GIT_GET_REMOTE_ORIGINS:String = "gitGetRemoteOrigins";
 		private static const GIT_REMOTE_BRANCH_NAME_VALIDATION:String = "gitRemoteValidateProposedBranchName";
 		private static const GIT_LOCAL_BRANCH_NAME_VALIDATION:String = "gitLocalValidateProposedBranchName";
 		
@@ -32,17 +33,18 @@ package actionScripts.plugins.git.commands
 		private var targetBranchName:String;
 		private var localBranchFoundData:String;
 		private var remoteBranchFoundData:String;
+		private var isRemoteBranchParsed:Boolean;
 		
 		public function CheckBranchNameAvailabilityCommand(name:String, completion:Function)
 		{
 			super();
-			
+
 			targetBranchName = name;
 			onCompletion = completion;
 			queue = new Vector.<Object>();
 
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" show-ref --heads $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&show-ref&&--heads&&'+ UtilsCore.getEncodedForShell(name), false, GIT_LOCAL_BRANCH_NAME_VALIDATION));
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" ls-remote origin --heads $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&ls-remote&&origin&&--heads&&'+ UtilsCore.getEncodedForShell(name), false, GIT_REMOTE_BRANCH_NAME_VALIDATION));
+			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' remote'), false, GIT_GET_REMOTE_ORIGINS));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
 		
@@ -50,7 +52,6 @@ package actionScripts.plugins.git.commands
 		{
 			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
-
 			if (value.output && value.output.match(/fatal: .*/))
 			{
 				super.shellError(value);
@@ -59,6 +60,16 @@ package actionScripts.plugins.git.commands
 			
 			switch(tmpQueue.processType)
 			{
+				case GIT_GET_REMOTE_ORIGINS:
+				{
+					var tmpOrigins:Array = value.output.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
+					tmpOrigins.forEach(function (origin:String, index:int, arr:Array):void {
+						if (origin != "")
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" ls-remote "+ origin +" --heads $'"+ UtilsCore.getEncodedForShell(targetBranchName) +"'" : gitBinaryPathOSX +'&&ls-remote&&'+ origin +'&&--heads&&'+ UtilsCore.getEncodedForShell(targetBranchName), false, GIT_REMOTE_BRANCH_NAME_VALIDATION));
+					});
+					worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
+					break;
+				}
 				case GIT_LOCAL_BRANCH_NAME_VALIDATION:
 				{
 					localBranchFoundData = value.output;
@@ -66,7 +77,9 @@ package actionScripts.plugins.git.commands
 				}
 				case GIT_REMOTE_BRANCH_NAME_VALIDATION:
 				{
-					remoteBranchFoundData = value.output;
+					isRemoteBranchParsed = true;
+					if (!remoteBranchFoundData)
+						remoteBranchFoundData = value.output;
 					break;
 				}
 			}
@@ -74,9 +87,16 @@ package actionScripts.plugins.git.commands
 
 		override public function onWorkerValueIncoming(value:Object):void
 		{
-			super.onWorkerValueIncoming(value);
-
 			var tmpValue:Object = value.value;
+
+			// we do not want to call listOfProcessEnded or
+			// unsubscribe until we completes more process from line#69
+			if (value.event != WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED ||
+					(value.event == WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED && isRemoteBranchParsed))
+			{
+				super.onWorkerValueIncoming(value);
+			}
+
 			if (tmpValue.queue.processType == GIT_LOCAL_BRANCH_NAME_VALIDATION && !localBranchFoundData)
 			{
 				localBranchFoundData = tmpValue.output;
@@ -84,11 +104,12 @@ package actionScripts.plugins.git.commands
 
 			if (tmpValue.queue.processType == GIT_REMOTE_BRANCH_NAME_VALIDATION && !remoteBranchFoundData)
 			{
+				isRemoteBranchParsed = true;
 				remoteBranchFoundData = tmpValue.output;
 			}
 		}
 
-		override protected  function listOfProcessEnded():void
+		override protected function listOfProcessEnded():void
 		{
 			super.listOfProcessEnded();
 
