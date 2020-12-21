@@ -2,6 +2,7 @@ package actionScripts.utils
 {
 	import mx.collections.ArrayList;
 	import mx.collections.IList;
+	import mx.utils.StringUtil;
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.WorkerEvent;
@@ -90,12 +91,12 @@ package actionScripts.utils
 		
 		protected function listOfProcessEnded():void
 		{
+			trace("--------------------- ", parsedFiles.join("\n"));
 			parsedFiles.forEach(function(path:String, index:int, arr:Array):void
 			{
 				if (!collection) collection = new ArrayList();
 				collection.addItem(new ResourceVO(path));
 			});
-			trace("ello");
 		}
 		
 		protected function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
@@ -120,8 +121,10 @@ package actionScripts.utils
 			}
 			else
 			{
-				value.output = value.output.replace(/\s\r\n/g, "\r\n"); // remove all the blank lines
-				parsedFiles = value.output.split("\r\n");
+				//trace(value.output);
+				value.output = value.output.replace(/^[ \r\n]/gm, "\r\n"); // remove all the blank lines
+				value.output = StringUtil.trim(value.output);
+				parsedFiles = parsedFiles.concat(value.output.split("\r\n"));
 			}
 		}
 	}

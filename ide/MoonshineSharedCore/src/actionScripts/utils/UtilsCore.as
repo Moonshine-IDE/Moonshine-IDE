@@ -841,6 +841,7 @@ package actionScripts.utils
 				for each (var i:ProjectVO in model.projects)
 				{
 					//parseChildrens(i.projectFolder, collection, readableExtensions);
+					trace(">>>>>>>>>>>>>>>>>>>>>>>>>> ", i.name);
 					FileSystemParser.getInstance().parseFilesPaths(i.projectFolder.nativePath, collection, readableExtensions);
 				}
 			}
