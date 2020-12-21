@@ -33,7 +33,9 @@ package actionScripts.plugins.git.commands
 		private var targetBranchName:String;
 		private var localBranchFoundData:String;
 		private var remoteBranchFoundData:String;
+		private var remoteOriginWhereBranchFound:String;
 		private var isRemoteBranchParsed:Boolean;
+		private var isMultipleOrigin:Boolean;
 		
 		public function CheckBranchNameAvailabilityCommand(name:String, completion:Function)
 		{
@@ -63,9 +65,10 @@ package actionScripts.plugins.git.commands
 				case GIT_GET_REMOTE_ORIGINS:
 				{
 					var tmpOrigins:Array = value.output.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
+					isMultipleOrigin = tmpOrigins.length > 1;
 					tmpOrigins.forEach(function (origin:String, index:int, arr:Array):void {
 						if (origin != "")
-							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" ls-remote "+ origin +" --heads $'"+ UtilsCore.getEncodedForShell(targetBranchName) +"'" : gitBinaryPathOSX +'&&ls-remote&&'+ origin +'&&--heads&&'+ UtilsCore.getEncodedForShell(targetBranchName), false, GIT_REMOTE_BRANCH_NAME_VALIDATION));
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" ls-remote "+ origin +" --heads $'"+ UtilsCore.getEncodedForShell(targetBranchName) +"'" : gitBinaryPathOSX +'&&ls-remote&&'+ origin +'&&--heads&&'+ UtilsCore.getEncodedForShell(targetBranchName), false, GIT_REMOTE_BRANCH_NAME_VALIDATION, origin));
 					});
 					worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 					break;
@@ -79,7 +82,11 @@ package actionScripts.plugins.git.commands
 				{
 					isRemoteBranchParsed = true;
 					if (!remoteBranchFoundData)
+					{
 						remoteBranchFoundData = value.output;
+						remoteOriginWhereBranchFound = tmpQueue.extraArguments[0];
+					}
+
 					break;
 				}
 			}
@@ -106,6 +113,7 @@ package actionScripts.plugins.git.commands
 			{
 				isRemoteBranchParsed = true;
 				remoteBranchFoundData = tmpValue.output;
+				remoteOriginWhereBranchFound = tmpValue.queue.extraArguments[0];
 			}
 		}
 
@@ -115,7 +123,7 @@ package actionScripts.plugins.git.commands
 
 			if (onCompletion != null)
 			{
-				onCompletion(localBranchFoundData, remoteBranchFoundData);
+				onCompletion(localBranchFoundData, remoteBranchFoundData, isMultipleOrigin, remoteOriginWhereBranchFound);
 				onCompletion = null;
 			}
 		}
