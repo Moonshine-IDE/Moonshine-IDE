@@ -19,8 +19,9 @@
 package actionScripts.plugins.git.commands
 {
 import actionScripts.events.GeneralEvent;
+	import actionScripts.plugins.git.utils.GitUtils;
 
-import mx.collections.ArrayCollection;
+	import mx.collections.ArrayCollection;
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
@@ -48,7 +49,14 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			
 			queue = new Vector.<Object>();
 
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' fetch'), false, null));
+			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+			var calculatedURL:String;
+			if (tmpModel && tmpModel.sessionUser)
+			{
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
+			}
+
+			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : '')), false, null));
 			switch (type) {
 				case BRANCH_TYPE_LOCAL:
 					addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch'), false, GIT_REMOTE_BRANCH_LIST));
@@ -89,6 +97,27 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			// call super - it might have some essential
 			// commands to run
 			super.shellData(value);
+		}
+
+		override protected function shellError(value:Object):void
+		{
+			// call super - it might have some essential
+			// commands to run.
+			super.shellError(value);
+
+			if (testMessageIfNeedsAuthentication(value.output))
+			{
+				openAuthentication(null);
+			}
+		}
+
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				super.onAuthenticationSuccess(username, password);
+				new GitSwitchBranchCommand();
+			}
 		}
 		
 		private function parseRemoteBranchList(value:String):void
