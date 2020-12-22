@@ -219,17 +219,6 @@ package actionScripts.plugins.git.commands
 			gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
 			gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
 			PopUpManager.centerPopUp(gitAuthWindow);
-			
-			/*
-			* @local
-			*/
-			function onGitAuthWindowClosed(event:CloseEvent):void
-			{
-				gitAuthWindow.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
-				PopUpManager.removePopUp(gitAuthWindow);
-				gitAuthWindow = null;
-			}
 		}
 		
 		protected function onAuthenticationSuccess(username:String, password:String):void
@@ -244,6 +233,14 @@ package actionScripts.plugins.git.commands
 				}
 			}
 		}
+
+		private function onGitAuthWindowClosed(event:Event):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			target.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+			target.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+			target = null;
+		}
 		
 		private function onAuthSubmitted(event:Event):void
 		{
@@ -252,6 +249,9 @@ package actionScripts.plugins.git.commands
 			{
 				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
 			}
+
+			PopUpManager.removePopUp(target);
+			onGitAuthWindowClosed(event);
 		}
 		
 		private function getGitPluginReference():void

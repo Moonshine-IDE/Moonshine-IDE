@@ -64,6 +64,7 @@
 			private var isFolderNameManuallyChanged:Boolean;
 			private var isFolderNameManuallyEmpty:Boolean;
 			private var model:IDEModel = IDEModel.getInstance();
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			
 			public function notifySVNCheckoutError():void
 			{
@@ -71,10 +72,11 @@
 				btnSubmit.enabled = true;
 			}
 			
-			override protected function closeThis():void
+			override protected function closeByCrossSign(event:Event):void
 			{
-				GlobalEventDispatcher.getInstance().removeEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted);
-				super.closeThis();
+				dispatcher.removeEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted);
+				dispatcher.removeEventListener(VersionControlEvent.REPOSITORY_AUTH_CANCELLED, onAuthRequestCancelled);
+				super.closeByCrossSign(event);
 			}
 			
 			private function onCheckoutRequest():void
@@ -97,8 +99,8 @@
 				submitObject.target = mappedPath;
 				submitObject.targetFolder = txtFolderName.text;
 				submitObject.repository = editingRepository;
-				
-				GlobalEventDispatcher.getInstance().addEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted, false, 0, true);
+
+				dispatcher.addEventListener(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, onCloneCheckoutCompleted, false, 0, true);
 				dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_REQUESTED));
 				currentState = "progress";
 				addRemoveBusyIndicator();
@@ -196,6 +198,8 @@
 				lblSeparator.text = File.separator;
 				txtSource.setFocus();
 				validateURLInput();
+
+				dispatcher.addEventListener(VersionControlEvent.REPOSITORY_AUTH_CANCELLED, onAuthRequestCancelled, false, 0, true);
 			}
 			
 			protected function onFolderNameChanged(event:TextOperationEvent):void
@@ -241,6 +245,12 @@
 					completionMessage += "\nRepository downloaded at:\n"+ mappedPath + File.separator + txtFolderName.text;
 					txtCompletionMessage.setStyle("color", 0x000);
 				}
+			}
+
+			private function onAuthRequestCancelled(event:VersionControlEvent):void
+			{
+				currentState = "default";
+				addRemoveBusyIndicator();
 			}
 			
 			private function addRemoveBusyIndicator():void

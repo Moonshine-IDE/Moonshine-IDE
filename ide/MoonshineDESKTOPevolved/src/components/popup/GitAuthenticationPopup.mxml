@@ -6,7 +6,10 @@
 		 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="onCreationCompletes()">
 	<fx:Script>
 		<![CDATA[
-			import flash.utils.escapeMultiByte;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.plugins.versionControl.event.VersionControlEvent;
+
+		import flash.utils.escapeMultiByte;
 			
 			import mx.events.CloseEvent;
 			import mx.validators.Validator;			
@@ -20,6 +23,12 @@
 			[Bindable] public var userName:String;
 			
 			public var userObject:Object;
+
+			override protected function closeByCrossSign(event:Event):void
+			{
+				super.closeByCrossSign(event);
+				GlobalEventDispatcher.getInstance().dispatchEvent(new VersionControlEvent(VersionControlEvent.REPOSITORY_AUTH_CANCELLED));
+			}
 			
 			private function onCreationCompletes():void
 			{
@@ -42,7 +51,6 @@
 					userObject.save = cbSaveAuth.selected;
 					
 					dispatchEvent(new Event(AUTH_SUBMITTED));
-					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 				}
 			}
 			

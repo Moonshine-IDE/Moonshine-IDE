@@ -12,6 +12,7 @@
         import actionScripts.plugins.git.commands.GetCurrentBranchCommand;
         import actionScripts.plugins.git.commands.GitSwitchBranchCommand;
         import actionScripts.plugins.git.model.GitConstantsVO;
+        import actionScripts.plugins.versionControl.event.VersionControlEvent;
 
         import mx.collections.ArrayCollection;
         import mx.controls.Alert;
@@ -35,6 +36,7 @@
 			if (GitConstantsVO.LAST_SELECTED_BRANCH_LISTING_TYPE == GitSwitchBranchCommand.BRANCH_TYPE_LOCAL) rbLocalBranch.selected = true;
 			else rbRemoteBranch.selected = true;
 
+            dispatcher.addEventListener(VersionControlEvent.REPOSITORY_AUTH_CANCELLED, onAuthRequestCancelled, false, 0, true);
             dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived, false, 0, true);
             new GitSwitchBranchCommand(GitConstantsVO.LAST_SELECTED_BRANCH_LISTING_TYPE);
         }
@@ -42,6 +44,7 @@
         override protected function closeByCrossSign(event:Event):void
         {
             dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived);
+            dispatcher.removeEventListener(VersionControlEvent.REPOSITORY_AUTH_CANCELLED, onAuthRequestCancelled);
             super.closeByCrossSign(event);
         }
 
@@ -56,6 +59,12 @@
             {
                 new GitSwitchBranchCommand(GitConstantsVO.LAST_SELECTED_BRANCH_LISTING_TYPE = GitSwitchBranchCommand.BRANCH_TYPE_REMOTE);
             }
+        }
+
+        private function onAuthRequestCancelled(event:VersionControlEvent):void
+        {
+            currentState = "default";
+            addRemoveBusyIndicator(false);
         }
 
         private function onGitRemoteBranchListReceived(event:GeneralEvent):void
