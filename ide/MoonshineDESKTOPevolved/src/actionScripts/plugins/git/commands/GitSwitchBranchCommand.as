@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
-import actionScripts.events.GeneralEvent;
 	import actionScripts.plugins.git.utils.GitUtils;
 
 	import mx.collections.ArrayCollection;
@@ -28,7 +27,6 @@ import actionScripts.events.GeneralEvent;
 	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
-	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.vo.NativeProcessQueueVO;
 
 import mx.utils.StringUtil;
@@ -37,11 +35,10 @@ public class GitSwitchBranchCommand extends GitCommandBase
 	{
 		public static const BRANCH_TYPE_REMOTE:String = "branchTypeRemote";
 		public static const BRANCH_TYPE_LOCAL:String = "branchTypeLocal";
-		public static const BRANCH_TYPE_ALL:String = "branchTypeAll";
 
 		private static const GIT_REMOTE_BRANCH_LIST:String = "getGitRemoteBranchList";
 
-		public function GitSwitchBranchCommand(type:String=BRANCH_TYPE_LOCAL)
+		public function GitSwitchBranchCommand(listingType:String=BRANCH_TYPE_LOCAL)
 		{
 			super();
 			
@@ -57,7 +54,7 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			}
 
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : '')), false, null));
-			switch (type) {
+			switch (listingType) {
 				case BRANCH_TYPE_LOCAL:
 					addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch'), false, GIT_REMOTE_BRANCH_LIST));
 					break;
@@ -77,13 +74,10 @@ public class GitSwitchBranchCommand extends GitCommandBase
 		
 		override protected function shellData(value:Object):void
 		{
-			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var isFatal:Boolean;
-			var tmpProject:ProjectVO;
-			
-			match = value.output.match(/fatal: .*/);
-			if (match) isFatal = true;
+
+			if (value.output.match(/fatal: .*/)) isFatal = true;
 			
 			switch(tmpQueue.processType)
 			{
