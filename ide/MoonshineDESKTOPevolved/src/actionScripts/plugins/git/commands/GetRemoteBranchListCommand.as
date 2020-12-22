@@ -24,7 +24,6 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.GitProjectVO;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.vo.NativeProcessQueueVO;
 

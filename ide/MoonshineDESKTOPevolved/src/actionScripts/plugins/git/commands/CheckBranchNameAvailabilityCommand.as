@@ -19,9 +19,13 @@
 package actionScripts.plugins.git.commands
 {
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.vo.NativeProcessQueueVO;
+
+	import mx.utils.StringUtil;
 
 	public class CheckBranchNameAvailabilityCommand extends GitCommandBase
 	{
@@ -52,11 +56,10 @@ package actionScripts.plugins.git.commands
 		
 		override protected function shellData(value:Object):void
 		{
-			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			if (value.output && value.output.match(/fatal: .*/))
 			{
-				super.shellError(value);
+				shellError(value);
 				return;
 			}
 			
@@ -64,11 +67,21 @@ package actionScripts.plugins.git.commands
 			{
 				case GIT_GET_REMOTE_ORIGINS:
 				{
+					value.output = StringUtil.trim(value.output);
+
 					var tmpOrigins:Array = value.output.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
 					isMultipleOrigin = tmpOrigins.length > 1;
+
+					var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+					var calculatedURL:String;
+					if (tmpModel && tmpModel.sessionUser)
+					{
+						calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
+					}
+
 					tmpOrigins.forEach(function (origin:String, index:int, arr:Array):void {
 						if (origin != "")
-							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" ls-remote "+ origin +" --heads $'"+ UtilsCore.getEncodedForShell(targetBranchName) +"'" : gitBinaryPathOSX +'&&ls-remote&&'+ origin +'&&--heads&&'+ UtilsCore.getEncodedForShell(targetBranchName), false, GIT_REMOTE_BRANCH_NAME_VALIDATION, origin));
+							addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" ls-remote "+ (calculatedURL ? calculatedURL +' ' : '') + origin +" --heads $'"+ UtilsCore.getEncodedForShell(targetBranchName) +"'" : gitBinaryPathOSX +'&&ls-remote&&'+ origin +'&&--heads&&'+ UtilsCore.getEncodedForShell(targetBranchName), false, GIT_REMOTE_BRANCH_NAME_VALIDATION, origin));
 					});
 					worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 					break;
@@ -89,6 +102,40 @@ package actionScripts.plugins.git.commands
 
 					break;
 				}
+			}
+		}
+
+		override protected function shellError(value:Object):void
+		{
+			// call super - it might have some essential
+			// commands to run.
+			super.shellError(value);
+
+			switch (value.queue.processType)
+			{
+				case GIT_GET_REMOTE_ORIGINS:
+				case GIT_REMOTE_BRANCH_NAME_VALIDATION:
+				{
+					if (testMessageIfNeedsAuthentication(value.output))
+					{
+						openAuthentication(null);
+					}
+					else
+					{
+						onCompletion = null;
+					}
+				}
+			}
+		}
+
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				super.onAuthenticationSuccess(username, password);
+
+				new CheckBranchNameAvailabilityCommand(targetBranchName, onCompletion);
+				onCompletion = null;
 			}
 		}
 

@@ -21,6 +21,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.GitProjectVO;
+	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
@@ -43,17 +44,10 @@ package actionScripts.plugins.git.commands
 			var calculatedURL:String;
 			if (tmpModel && tmpModel.sessionUser)
 			{
-				calculatedURL = tmpModel.remoteURL;
-				
-				if (calculatedURL.indexOf("@") != -1)
+				if (tmpModel && tmpModel.sessionUser)
 				{
-					calculatedURL = calculatedURL.replace(
-						calculatedURL.substring(0, calculatedURL.indexOf("@")+1),
-						""
-					);
+					calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
 				}
-				
-				calculatedURL = "https://"+ tmpModel.sessionUser + ((tmpModel.sessionPassword) ? ":"+ tmpModel.sessionPassword : "") +"@"+ calculatedURL;
 			}
 			
 			var command:String;
@@ -117,14 +111,8 @@ package actionScripts.plugins.git.commands
 		{
 			if (username && password)
 			{
-				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
-				if (tmpModel)
-				{
-					tmpModel.sessionUser = username;
-					tmpModel.sessionPassword = password;
-					
-					new PullCommand();
-				}
+				super.onAuthenticationSuccess(username, password);
+				new PullCommand();
 			}
 		}
 		

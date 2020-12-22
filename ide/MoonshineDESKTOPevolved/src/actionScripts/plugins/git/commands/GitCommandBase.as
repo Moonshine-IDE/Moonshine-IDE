@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugins.git.model.GitProjectVO;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
@@ -232,6 +234,15 @@ package actionScripts.plugins.git.commands
 		
 		protected function onAuthenticationSuccess(username:String, password:String):void
 		{
+			if (username && password)
+			{
+				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+				if (tmpModel)
+				{
+					tmpModel.sessionUser = username;
+					tmpModel.sessionPassword = password;
+				}
+			}
 		}
 		
 		private function onAuthSubmitted(event:Event):void
