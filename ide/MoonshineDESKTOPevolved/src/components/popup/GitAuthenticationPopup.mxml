@@ -29,6 +29,11 @@
 				super.closeByCrossSign(event);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new VersionControlEvent(VersionControlEvent.REPOSITORY_AUTH_CANCELLED));
 			}
+
+			override protected function closeThis():void
+			{
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE, true));
+			}
 			
 			private function onCreationCompletes():void
 			{
@@ -49,7 +54,7 @@
 				{
 					userObject = {userName:txtUser.text, password:escapeMultiByte(txtPassword.text)};
 					userObject.save = cbSaveAuth.selected;
-					
+
 					dispatchEvent(new Event(AUTH_SUBMITTED));
 				}
 			}

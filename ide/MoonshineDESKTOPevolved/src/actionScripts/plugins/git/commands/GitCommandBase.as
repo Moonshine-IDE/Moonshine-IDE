@@ -201,7 +201,8 @@ package actionScripts.plugins.git.commands
 		{
 			if (value.toLowerCase().match(/fatal: .*username/) || 
 				value..toLowerCase().match(/fatal: .*could not read password/) ||
-				value.toLowerCase().match(/fatal: .*could not read password/))
+				value.toLowerCase().match(/fatal: .*could not read password/) ||
+					value.toLowerCase().match(/fatal: authentication failed/))
 			{
 				return true;
 			}
@@ -239,19 +240,18 @@ package actionScripts.plugins.git.commands
 			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
 			target.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
 			target.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
-			target = null;
 		}
 		
 		private function onAuthSubmitted(event:Event):void
 		{
 			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			PopUpManager.removePopUp(target);
+			onGitAuthWindowClosed(event);
+
 			if (target.userObject)
 			{
 				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
 			}
-
-			PopUpManager.removePopUp(target);
-			onGitAuthWindowClosed(event);
 		}
 		
 		private function getGitPluginReference():void

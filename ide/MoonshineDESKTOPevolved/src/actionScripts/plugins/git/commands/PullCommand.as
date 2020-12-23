@@ -62,46 +62,23 @@ package actionScripts.plugins.git.commands
 			}
 			
 			addToQueue(new NativeProcessQueueVO(command, false, PULL_REQUEST));
-			
+
+			warning("Requesting Pull...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Pull ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
-		
-		override protected function shellData(value:Object):void
+
+		override protected function shellError(value:Object):void
 		{
-			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
-			var tmpProject:ProjectVO;
-			
-			switch(tmpQueue.processType)
-			{
-				case PULL_REQUEST:
-				{
-					if (testMessageIfNeedsAuthentication(value.output))
-					{
-						var userName:String;
-						var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
-						if (tmpModel && tmpModel.sessionUser) userName = tmpModel.sessionUser;
-						else if (tmpModel)
-						{
-							VersionControlUtils.REPOSITORIES.source.some(function(element:RepositoryItemVO, index:int, arr:Array):Boolean {
-								if (element.url == tmpModel.remoteURL)
-								{
-									userName = element.userName;
-									return true;
-								}
-								return false;
-							});
-						}
-						
-						openAuthentication(userName);
-					}
-					break;
-				}
-			}
-			
 			// call super - it might have some essential
-			// commands to run
-			super.shellData(value);
+			// commands to run.
+			super.shellError(value);
+
+			if (testMessageIfNeedsAuthentication(value.output))
+			{
+				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+				openAuthentication(tmpModel ? tmpModel.sessionUser : null);
+			}
 		}
 		
 		override protected function onAuthenticationSuccess(username:String, password:String):void
