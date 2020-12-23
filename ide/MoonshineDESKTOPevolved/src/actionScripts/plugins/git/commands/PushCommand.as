@@ -106,15 +106,20 @@ package actionScripts.plugins.git.commands
 			{
 				case GIT_PUSH:
 				{
+					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
 					if (testMessageIfNeedsAuthentication(value.output))
 					{
-						openAuthentication();
+						var userName:String = lastUserObject ? lastUserObject.userName : "";
+						if (!userName && plugin.modelAgainstProject[tmpProject])
+						{
+							userName = plugin.modelAgainstProject[tmpProject].sessionUser;
+						}
+						openAuthentication(userName);
 					}
 					
 					if (value.output.toLowerCase().match(/invalid username/))
 					{
 						// reset model information if saved by the user
-						tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
 						plugin.modelAgainstProject[tmpProject].sessionUser = null; 
 						plugin.modelAgainstProject[tmpProject].sessionPassword = null;
 					}
@@ -131,8 +136,15 @@ package actionScripts.plugins.git.commands
 		{
 			if (username && password)
 			{
-				lastUserObject.userName = username;
-				lastUserObject.password = password;
+				if (lastUserObject)
+				{
+					lastUserObject.userName = username;
+					lastUserObject.password = password;
+				}
+				else
+				{
+					super.onAuthenticationSuccess(username, password);
+				}
 				
 				new PushCommand(lastUserObject);
 			}
