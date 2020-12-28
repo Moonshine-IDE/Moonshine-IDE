@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugins.git.utils.GitUtils;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+
 	import flash.filesystem.File;
 	
 	import actionScripts.events.ProjectEvent;
@@ -69,12 +72,20 @@ package actionScripts.plugins.git.commands
 			{
 				var protocol:String = lastCloneURL.substring(0, lastCloneURL.indexOf("://")+3);
 				calculatedURL = lastCloneURL.replace(protocol, "");
-				calculatedURL = protocol + repositoryUnderCursor.userName + ((repositoryUnderCursor.userPassword) ? ":"+ repositoryUnderCursor.userPassword : "") +"@"+ calculatedURL;
+				calculatedURL = protocol + repositoryUnderCursor.userName +"@"+ calculatedURL;
 				isRequestWithAuth = true;
 			}
-			
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
-			
+
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				var tmpExpFile:String = GitUtils.writeExpOnMacAuthentication(getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder));
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFile +'" "'+ repositoryUnderCursor.userPassword +'" "'+ File.applicationStorageDirectory.nativePath +'"', true, GitHubPlugin.CLONE_REQUEST));
+			}
+			else
+			{
+				addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
+			}
+
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);
 		}

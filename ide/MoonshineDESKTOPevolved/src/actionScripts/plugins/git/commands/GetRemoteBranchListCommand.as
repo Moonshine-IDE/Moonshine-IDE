@@ -29,6 +29,8 @@ package actionScripts.plugins.git.commands
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.vo.NativeProcessQueueVO;
 
+	import mx.utils.StringUtil;
+
 	public class GetRemoteBranchListCommand extends GitCommandBase
 	{
 		public static const GIT_REMOTE_BRANCH_LIST:String = "getGitRemoteBranchList";
@@ -108,7 +110,8 @@ package actionScripts.plugins.git.commands
 				{
 					if (element != "" && element.indexOf("origin/") != -1 && element.indexOf("->") == -1)
 					{
-						tmpModel.branchList.addItem(new GenericSelectableObject(false, element.substr(element.indexOf("origin/")+7, element.length)));
+						element = StringUtil.trim(element);
+						tmpModel.branchList.addItem(new GenericSelectableObject(false, element));
 					}
 				});
 			}
