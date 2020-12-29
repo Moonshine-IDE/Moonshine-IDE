@@ -44,7 +44,7 @@ package actionScripts.plugins.git.commands
 			var calculatedURL:String;
 			if (tmpModel && tmpModel.sessionUser)
 			{
-				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
 			}
 			
 			var command:String;
@@ -60,9 +60,17 @@ package actionScripts.plugins.git.commands
 				if (calculatedURL) command += '&&'+ calculatedURL;
 				command += '&&--progress&&-v&&--no-rebase';
 			}
-			
-			addToQueue(new NativeProcessQueueVO(command, false, PULL_REQUEST));
 
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(command);
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'" "'+ tmpModel.sessionPassword +'"', true, PULL_REQUEST));
+			}
+			else
+			{
+				addToQueue(new NativeProcessQueueVO(command, false, PULL_REQUEST));
+			}
+			
 			warning("Requesting Pull...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Pull ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);

@@ -76,14 +76,15 @@ package actionScripts.plugins.git.commands
 				isRequestWithAuth = true;
 			}
 
+			var gitCommand:String = getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder);
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				var tmpExpFile:String = GitUtils.writeExpOnMacAuthentication(getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder));
-				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFile +'" "'+ repositoryUnderCursor.userPassword +'" "'+ File.applicationStorageDirectory.nativePath +'"', true, GitHubPlugin.CLONE_REQUEST));
+				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitCommand);
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'" "'+ repositoryUnderCursor.userPassword +'"', true, GitHubPlugin.CLONE_REQUEST));
 			}
 			else
 			{
-				addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
+				addToQueue(new NativeProcessQueueVO(gitCommand, false, GitHubPlugin.CLONE_REQUEST));
 			}
 
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));

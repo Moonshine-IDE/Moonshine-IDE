@@ -42,14 +42,17 @@ package actionScripts.plugins.git.commands
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			var calculatedURL:String;
 			var hasUserName:Boolean;
+			var hasUserPassword:String;
 			if (userObject && userObject.userName && userObject.password)
 			{
-				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, userObject.userName, userObject.password);
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, userObject.userName);
+				hasUserPassword = userObject.password;
 				hasUserName = true;
 			}
 			else if (tmpModel && tmpModel.sessionUser)
 			{
-				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
+				hasUserPassword = tmpModel.sessionPassword;
 				hasUserName = true;
 			}
 			else if (userObject && userObject.userName)
@@ -73,9 +76,15 @@ package actionScripts.plugins.git.commands
 			}
 			else
 			{
-				//git push https://user:pass@github.com/user/project.git
-				addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" push "+ (calculatedURL ? calculatedURL : '') +" $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" :
-						gitBinaryPathOSX +'&&push'+ (calculatedURL ? '&&'+ calculatedURL : '') +'&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" push "+ (calculatedURL ? calculatedURL : '') +" $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'");
+					addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'" "'+ hasUserPassword +'"', true, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
+				}
+				else
+				{
+					addToQueue(new NativeProcessQueueVO(gitBinaryPathOSX +'&&push'+ (calculatedURL ? '&&'+ calculatedURL : '') +'&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
+				}
 			}
 			
 			isErrorEncountered = false;

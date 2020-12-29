@@ -19,6 +19,7 @@
 package actionScripts.plugins.git.commands
 {
 	import actionScripts.plugins.git.utils.GitUtils;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	import mx.collections.ArrayCollection;
 	
@@ -50,10 +51,20 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			var calculatedURL:String;
 			if (tmpModel && tmpModel.sessionUser)
 			{
-				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
 			}
 
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : '')), false, null));
+			var gitFetchCommand:String = getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : ''));
+			if (ConstantsCoreVO.IS_MACOS && calculatedURL)
+			{
+				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitFetchCommand);
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'" "'+ tmpModel.sessionPassword +'"', true, null));
+			}
+			else
+			{
+				addToQueue(new NativeProcessQueueVO(gitFetchCommand, false, null));
+			}
+
 			switch (listingType) {
 				case BRANCH_TYPE_LOCAL:
 					addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch'), false, GIT_REMOTE_BRANCH_LIST));

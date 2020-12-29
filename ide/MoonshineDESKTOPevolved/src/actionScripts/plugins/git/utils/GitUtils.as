@@ -10,13 +10,9 @@ package actionScripts.plugins.git.utils
 			#!/bin/sh
 
 			set password [lindex $argv 0]
-			set tempPath [lindex $argv 1]
 			set newPromptA ".*password:"
 			set newPromptB "Password.*:"
 
-			log_user 0
-			spawn sh -c "rm -r $tempPath/spawn/*"
-			interact
 			log_user 1
 			spawn %GIT_COMMAND%
 
