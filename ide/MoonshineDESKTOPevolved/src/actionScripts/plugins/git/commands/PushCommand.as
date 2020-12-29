@@ -78,7 +78,7 @@ package actionScripts.plugins.git.commands
 			{
 				if (ConstantsCoreVO.IS_MACOS)
 				{
-					var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" push "+ (calculatedURL ? calculatedURL : '') +" $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'");
+					var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" push "+ (calculatedURL ? calculatedURL : '') +' "'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'"');
 					addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'" "'+ hasUserPassword +'"', true, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
 				}
 				else
@@ -116,16 +116,6 @@ package actionScripts.plugins.git.commands
 				case GIT_PUSH:
 				{
 					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
-					if (testMessageIfNeedsAuthentication(value.output))
-					{
-						var userName:String = lastUserObject ? lastUserObject.userName : "";
-						if (!userName && plugin.modelAgainstProject[tmpProject])
-						{
-							userName = plugin.modelAgainstProject[tmpProject].sessionUser;
-						}
-						openAuthentication(userName);
-					}
-					
 					if (value.output.toLowerCase().match(/invalid username/))
 					{
 						// reset model information if saved by the user
@@ -140,7 +130,23 @@ package actionScripts.plugins.git.commands
 			// commands to run
 			super.shellData(value);
 		}
-		
+
+		override protected function shellError(value:Object):void
+		{
+			super.shellError(value);
+
+			if (testMessageIfNeedsAuthentication(value.output))
+			{
+				var userName:String = lastUserObject ? lastUserObject.userName : "";
+				var tmpProject:ProjectVO = UtilsCore.getProjectByPath(value.queue.extraArguments[0]);
+				if (!userName && plugin.modelAgainstProject[tmpProject])
+				{
+					userName = plugin.modelAgainstProject[tmpProject].sessionUser;
+				}
+				openAuthentication(userName);
+			}
+		}
+
 		override protected function onAuthenticationSuccess(username:String, password:String):void
 		{
 			if (username && password)

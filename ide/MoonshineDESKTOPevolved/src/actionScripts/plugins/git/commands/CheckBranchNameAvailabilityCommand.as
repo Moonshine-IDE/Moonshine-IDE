@@ -78,6 +78,10 @@ package actionScripts.plugins.git.commands
 					{
 						calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
 					}
+					else
+					{
+						calculatedURL = "https://"+ tmpModel.remoteURL;
+					}
 
 					tmpOrigins.forEach(function (origin:String, index:int, arr:Array):void {
 						if (origin != "")
@@ -87,7 +91,7 @@ package actionScripts.plugins.git.commands
 							// information of one origin
 							if (ConstantsCoreVO.IS_MACOS && index == 0)
 							{
-								var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" ls-remote "+ (calculatedURL ? calculatedURL +' ' : '') + origin +" --heads $'"+ UtilsCore.getEncodedForShell(targetBranchName) +"'");
+								var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" ls-remote "+ (calculatedURL ? calculatedURL +' ' : '') + origin +' --heads "'+ UtilsCore.getEncodedForShell(targetBranchName) +'"');
 								addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'" "'+ tmpModel.sessionPassword +'"', true, GIT_REMOTE_BRANCH_NAME_VALIDATION, origin));
 							}
 							else
