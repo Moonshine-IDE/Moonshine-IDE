@@ -160,6 +160,13 @@ package actionScripts.plugins.git.commands
 		{
 			var tmpValue:Object = value.value;
 
+			// do not print exp password on console
+			if (ConstantsCoreVO.IS_MACOS && (value.value is String) &&
+					value.value.match(/expect -f .*/))
+			{
+				value.value = value.value.replace(/expect -f .*/, "Checking for authentication..");
+			}
+
 			// we do not want to call listOfProcessEnded or
 			// unsubscribe until we completes more process from line#69
 			if (value.event != WorkerEvent.RUN_LIST_OF_NATIVEPROCESS_ENDED ||

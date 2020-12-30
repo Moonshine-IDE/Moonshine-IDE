@@ -88,6 +88,18 @@ package actionScripts.plugins.git.commands
 				openAuthentication(tmpModel ? tmpModel.sessionUser : null);
 			}
 		}
+
+		override public function onWorkerValueIncoming(value:Object):void
+		{
+			// do not print exp password on console
+			if (ConstantsCoreVO.IS_MACOS && (value.value is String) &&
+					value.value.match(/expect -f .*/))
+			{
+				value.value = value.value.replace(/expect -f .*/, "Checking for authentication..");
+			}
+
+			super.onWorkerValueIncoming(value);
+		}
 		
 		override protected function onAuthenticationSuccess(username:String, password:String):void
 		{

@@ -90,6 +90,18 @@ package actionScripts.plugins.git.commands
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);
 		}
+
+		override public function onWorkerValueIncoming(value:Object):void
+		{
+			// do not print exp password on console
+			if (ConstantsCoreVO.IS_MACOS && (value.value is String) &&
+					value.value.match(/expect -f .*/))
+			{
+				value.value = value.value.replace(/expect -f .*/, "Checking for authentication..");
+			}
+
+			super.onWorkerValueIncoming(value);
+		}
 		
 		override protected function shellError(value:Object):void
 		{
