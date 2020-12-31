@@ -49,6 +49,14 @@ package actionScripts.utils
 			
 			flush();
 		}
+
+		public function writeToProcesses(processDescriptor:Object):void
+		{
+			if (customProcess && customProcess.running)
+			{
+				customProcess.standardInput.writeUTFBytes(processDescriptor.value);
+			}
+		}
 		
 		private function renewProcessInfo():NativeProcessStartupInfo
 		{

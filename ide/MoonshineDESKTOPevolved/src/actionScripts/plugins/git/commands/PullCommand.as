@@ -64,7 +64,7 @@ package actionScripts.plugins.git.commands
 			if (ConstantsCoreVO.IS_MACOS)
 			{
 				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(command);
-				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'" "'+ tmpModel.sessionPassword +'"', true, PULL_REQUEST));
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, PULL_REQUEST));
 			}
 			else
 			{
@@ -89,13 +89,25 @@ package actionScripts.plugins.git.commands
 			}
 		}
 
+		override protected function shellData(value:Object):void
+		{
+			super.shellData(value);
+
+			if (!value.output.match(/fatal: .*/) &&
+					value.output.match(/Checking for any authentication...*/))
+			{
+				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+				worker.sendToWorker(WorkerEvent.PROCESS_STDINPUT_WRITEUTF, {value:tmpModel.sessionPassword +"\n"}, subscribeIdToWorker);
+			}
+		}
+
 		override public function onWorkerValueIncoming(value:Object):void
 		{
-			// do not print exp password on console
-			if (ConstantsCoreVO.IS_MACOS && (value.value is String) &&
-					value.value.match(/expect -f .*/))
+			// do not print enter password line
+			if (ConstantsCoreVO.IS_MACOS && ("output" in value.value) &&
+					value.value.output.match(/Enter password \(exp\):.*/))
 			{
-				value.value = value.value.replace(/expect -f .*/, "Checking for authentication..");
+				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
 			}
 
 			super.onWorkerValueIncoming(value);

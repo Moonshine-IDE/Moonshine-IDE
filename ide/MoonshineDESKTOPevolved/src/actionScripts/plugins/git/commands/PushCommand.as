@@ -31,7 +31,8 @@ package actionScripts.plugins.git.commands
 	{
 		private const GIT_PUSH:String = "gitPush";
 		
-		private var lastUserObject:Object; 
+		private var lastUserObject:Object;
+		private var hasUserPassword:String;
 		
 		public function PushCommand(userObject:Object=null)
 		{
@@ -42,7 +43,7 @@ package actionScripts.plugins.git.commands
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			var calculatedURL:String;
 			var hasUserName:Boolean;
-			var hasUserPassword:String;
+
 			if (userObject && userObject.userName && userObject.password)
 			{
 				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, userObject.userName);
@@ -79,7 +80,7 @@ package actionScripts.plugins.git.commands
 				if (ConstantsCoreVO.IS_MACOS)
 				{
 					var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" push "+ (calculatedURL ? calculatedURL : '') +' "'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'"');
-					addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'" "'+ hasUserPassword +'"', true, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
+					addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
 				}
 				else
 				{
@@ -95,11 +96,11 @@ package actionScripts.plugins.git.commands
 
 		override public function onWorkerValueIncoming(value:Object):void
 		{
-			// do not print exp password on console
-			if (ConstantsCoreVO.IS_MACOS && (value.value is String) &&
-					value.value.match(/expect -f .*/))
+			// do not print enter password line
+			if (ConstantsCoreVO.IS_MACOS && ("output" in value.value) &&
+					value.value.output.match(/Enter password \(exp\):.*/))
 			{
-				value.value = value.value.replace(/expect -f .*/, "Checking for authentication..");
+				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
 			}
 
 			super.onWorkerValueIncoming(value);
@@ -135,6 +136,14 @@ package actionScripts.plugins.git.commands
 						plugin.modelAgainstProject[tmpProject].sessionPassword = null;
 					}
 					break;
+				}
+				default:
+				{
+					if (!value.output.match(/fatal: .*/) &&
+							value.output.match(/Checking for any authentication...*/))
+					{
+						worker.sendToWorker(WorkerEvent.PROCESS_STDINPUT_WRITEUTF, {value:hasUserPassword +"\n"}, subscribeIdToWorker);
+					}
 				}
 			}
 			

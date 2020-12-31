@@ -9,7 +9,10 @@ package actionScripts.plugins.git.utils
 		public static const GIT_EXPECT		: XML = <root><![CDATA[
 			#!/bin/sh
 
-			set password [lindex $argv 0]
+			log_user 0
+			puts -nonewline "Enter password (exp): "
+			flush stdout
+			gets stdin password
 			set newPromptA ".*password:"
 			set newPromptB "Password.*:"
 

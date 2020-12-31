@@ -92,7 +92,7 @@ package actionScripts.plugins.git.commands
 							if (ConstantsCoreVO.IS_MACOS && index == 0)
 							{
 								var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" ls-remote "+ (calculatedURL ? calculatedURL +' ' : '') + origin +' --heads "'+ UtilsCore.getEncodedForShell(targetBranchName) +'"');
-								addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'" "'+ tmpModel.sessionPassword +'"', true, GIT_REMOTE_BRANCH_NAME_VALIDATION, origin));
+								addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GIT_REMOTE_BRANCH_NAME_VALIDATION, origin));
 							}
 							else
 							{
@@ -111,7 +111,11 @@ package actionScripts.plugins.git.commands
 				case GIT_REMOTE_BRANCH_NAME_VALIDATION:
 				{
 					isRemoteBranchParsed = true;
-					if (!remoteBranchFoundData)
+					if (value.output.match(/Checking for any authentication...*/))
+					{
+						worker.sendToWorker(WorkerEvent.PROCESS_STDINPUT_WRITEUTF, {value:tmpModel.sessionPassword +"\n"}, subscribeIdToWorker);
+					}
+					else if (!remoteBranchFoundData)
 					{
 						remoteBranchFoundData = value.output;
 						remoteOriginWhereBranchFound = tmpQueue.extraArguments[0];
@@ -160,11 +164,11 @@ package actionScripts.plugins.git.commands
 		{
 			var tmpValue:Object = value.value;
 
-			// do not print exp password on console
-			if (ConstantsCoreVO.IS_MACOS && (value.value is String) &&
-					value.value.match(/expect -f .*/))
+			// do not print enter password line
+			if (ConstantsCoreVO.IS_MACOS && ("output" in value.value) &&
+					value.value.output.match(/Enter password \(exp\):.*/))
 			{
-				value.value = value.value.replace(/expect -f .*/, "Checking for authentication..");
+				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
 			}
 
 			// we do not want to call listOfProcessEnded or
