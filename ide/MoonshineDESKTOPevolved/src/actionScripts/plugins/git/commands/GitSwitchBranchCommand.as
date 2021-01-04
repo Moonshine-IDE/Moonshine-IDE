@@ -28,7 +28,7 @@ import mx.collections.ArrayCollection;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 import mx.utils.StringUtil;
 

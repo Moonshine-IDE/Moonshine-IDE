@@ -28,7 +28,7 @@ package actionScripts.plugins.royale
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.RoyaleApiReportVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;

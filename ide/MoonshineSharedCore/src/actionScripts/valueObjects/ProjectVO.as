@@ -33,6 +33,7 @@ package actionScripts.valueObjects
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
+	import actionScripts.utils.FileSystemParser;
 	
 	public class ProjectVO extends EventDispatcher
 	{
@@ -101,6 +102,9 @@ package actionScripts.valueObjects
 
 			folderLocation.fileBridge.name = this.projectName = projectName;
 			shallUpdateToTreeView = updateToTreeView;
+			
+			var tmpFSP:FileSystemParser = new FileSystemParser();
+			tmpFSP.parseFilesPaths(folder.fileBridge.nativePath, null);
 			
 			// download the directory structure from remote
 			// for the project if a Web run
