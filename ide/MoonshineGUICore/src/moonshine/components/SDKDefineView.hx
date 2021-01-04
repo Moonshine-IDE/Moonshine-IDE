@@ -118,7 +118,7 @@ class SDKDefineView extends ResizableTitleWindow {
 		sdkNameField.addChild(this.sdkNameLabel);
 
 		this.sdkNameTextInput = new TextInput();
-		this.sdkNameTextInput.editable = false;
+		//this.sdkNameTextInput.editable = false;
 		this.sdkNameTextInput.addEventListener(Event.CHANGE, sdkNameTextInput_changeHandler);
 		this.sdkNameTextInput.addEventListener(KeyboardEvent.KEY_DOWN, sdkNameTextInput_keyDownHandler);
 		sdkNameField.addChild(this.sdkNameTextInput);
@@ -193,6 +193,8 @@ class SDKDefineView extends ResizableTitleWindow {
 		if (!this.defineSDKButton.enabled) {
 			return;
 		}
+		if (this._sdk != null) 
+			this._sdk.name = this.sdkNameTextInput.text;
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
@@ -216,7 +218,7 @@ class SDKDefineView extends ResizableTitleWindow {
 	}
 
 	private function refreshSubmitEnabled():Void {
-		this.defineSDKButton.enabled = this.sdkNameTextInput.text.length > 0 && this.sdkPathTextInput.text.length > 0;
+		this.defineSDKButton.enabled = StringTools.trim(this.sdkNameTextInput.text).length > 0 && this.sdkPathTextInput.text.length > 0;
 	}
 
 	private function sdkNameTextInput_changeHandler(event:Event):Void {
