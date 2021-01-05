@@ -32,6 +32,8 @@ package actionScripts.plugins.git.commands
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.vo.NativeProcessQueueVO;
 
+	import spark.components.Alert;
+
 	public class CloneCommand extends GitCommandBase
 	{
 		public static const CLONE_REQUEST:String = "gitCloneRequest";
@@ -81,6 +83,7 @@ package actionScripts.plugins.git.commands
 			{
 				// experimental async file creation as Joel experienced
 				// exp file creation issue in his tests
+				Alert.show("Exp generates at:\n" + GitUtils.GIT_EXPECT_PATH.nativePath);
 				addToQueue(new NativeProcessQueueVO('expect -f "'+ GitUtils.GIT_EXPECT_PATH.nativePath +'"', true, GitHubPlugin.CLONE_REQUEST));
 				GitUtils.writeExpOnMacAuthentication(gitCommand, executeProcesses);
 			}
@@ -208,6 +211,7 @@ package actionScripts.plugins.git.commands
 
 		private function executeProcesses():void
 		{
+			Alert.show("Running process after exp generated.");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:lastCloneTarget}, subscribeIdToWorker);
 		}
