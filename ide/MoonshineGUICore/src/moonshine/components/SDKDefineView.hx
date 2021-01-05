@@ -1,4 +1,4 @@
-/*
+/*event
 	Copyright 2020 Prominic.NET, Inc.
 
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -224,7 +224,6 @@ class SDKDefineView extends ResizableTitleWindow {
 	}
 
 	private function sdkNameTextInput_changeHandler(event:Event):Void {
-		this.isUserNameInput = StringTools.trim(this.sdkNameTextInput.text).length > 0;
 		this.refreshSubmitEnabled();
 	}
 
@@ -245,6 +244,8 @@ class SDKDefineView extends ResizableTitleWindow {
 		switch (event.keyCode) {
 			case Keyboard.ENTER:
 				this.submit();
+			default:
+				this.isUserNameInput = StringTools.trim(this.sdkNameTextInput.text).length > 0;
 		}
 	}
 
