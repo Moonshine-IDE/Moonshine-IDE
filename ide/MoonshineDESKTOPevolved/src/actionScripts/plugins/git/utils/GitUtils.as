@@ -6,6 +6,7 @@ package actionScripts.plugins.git.utils
 
 	public class GitUtils
 	{
+		public static const GIT_EXPECT_PATH:File = File.applicationStorageDirectory.resolvePath("spawn/connectgit.exp");
 		public static const GIT_EXPECT		: XML = <root><![CDATA[
 			#!/bin/sh
 
@@ -58,15 +59,14 @@ package actionScripts.plugins.git.utils
 			return (calculatedURL = "https://"+ username +"@"+ calculatedURL);
 		}
 
-		public static function writeExpOnMacAuthentication(withCommand:String):String
+		public static function writeExpOnMacAuthentication(withCommand:String, successHandler:Function=null):String
 		{
 			var tmpExp:String = GIT_EXPECT.valueOf().toString();
 			tmpExp = tmpExp.replace("%GIT_COMMAND%", withCommand);
 
-			var tmpExpFile:File = File.applicationStorageDirectory.resolvePath("spawn/connectgit.exp");
-			FileUtils.writeToFile(tmpExpFile, tmpExp);
+			FileUtils.writeToFileAsync(GIT_EXPECT_PATH, tmpExp, successHandler);
 
-			return tmpExpFile.nativePath;
+			return '';
 		}
 	}
 }

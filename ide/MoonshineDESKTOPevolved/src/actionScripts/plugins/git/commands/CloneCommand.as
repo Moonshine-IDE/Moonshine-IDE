@@ -79,16 +79,16 @@ package actionScripts.plugins.git.commands
 			var gitCommand:String = getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder);
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitCommand);
-				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GitHubPlugin.CLONE_REQUEST));
+				// experimental async file creation as Joel experienced
+				// exp file creation issue in his tests
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ GitUtils.GIT_EXPECT_PATH.nativePath +'"', true, GitHubPlugin.CLONE_REQUEST));
+				GitUtils.writeExpOnMacAuthentication(gitCommand, executeProcesses);
 			}
 			else
 			{
 				addToQueue(new NativeProcessQueueVO(gitCommand, false, GitHubPlugin.CLONE_REQUEST));
+				executeProcesses();
 			}
-
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
-			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);
 		}
 
 		override public function onWorkerValueIncoming(value:Object):void
@@ -204,6 +204,12 @@ package actionScripts.plugins.git.commands
 					doPostCloneProcess(new File(lastCloneTarget).resolvePath(cloningProjectName));
 					break;
 			}
+		}
+
+		private function executeProcesses():void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
+			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:lastCloneTarget}, subscribeIdToWorker);
 		}
 		
 		private function doPostCloneProcess(path:File):void
