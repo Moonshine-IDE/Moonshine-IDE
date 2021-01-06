@@ -96,7 +96,7 @@ package actionScripts.plugins.git.commands
 		override public function onWorkerValueIncoming(value:Object):void
 		{
 			// do not print enter password line
-			if (ConstantsCoreVO.IS_MACOS && ("output" in value.value) &&
+			if (ConstantsCoreVO.IS_MACOS && value.value && ("output" in value.value) &&
 					value.value.output.match(/Enter password \(exp\):.*/))
 			{
 				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
@@ -150,39 +150,33 @@ package actionScripts.plugins.git.commands
 		
 		override protected function shellData(value:Object):void
 		{
-			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			
 			switch(tmpQueue.processType)
 			{
 				case GitHubPlugin.CLONE_REQUEST:
 				{
-					match = value.output.toLowerCase().match(/cloning into/);
 					if (value.output.match(/Checking for any authentication...*/))
 					{
 						worker.sendToWorker(WorkerEvent.PROCESS_STDINPUT_WRITEUTF, {value:repositoryUnderCursor.userPassword +"\n"}, subscribeIdToWorker);
 					}
-					else if (match)
+					else if (value.output.toLowerCase().match(/cloning into/))
 					{
 						// for some weird reason git clone always
 						// turns to errordata first
 						cloningProjectName = value.output;
 						warning(value.output);
 					}
-					else
+					else if (value.output.toLowerCase().match(/logon failed/))
 					{
-						match = value.output.toLowerCase().match(/logon failed/);
-						if (match)
+						authWindowTriggerCountWindows ++;
+						if (authWindowTriggerCountWindows == 2)
 						{
-							authWindowTriggerCountWindows ++;
-							if (authWindowTriggerCountWindows == 2)
-							{
-								// terminates the process as on Windows
-								// git-native authentication window
-								// pops only twice
-								shellError(value);
-								return;
-							}
+							// terminates the process as on Windows
+							// git-native authentication window
+							// pops only twice
+							shellError(value);
+							return;
 						}
 					}
 					break;
