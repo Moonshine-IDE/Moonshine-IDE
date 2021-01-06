@@ -1,4 +1,4 @@
-/*
+/*event
 	Copyright 2020 Prominic.NET, Inc.
 
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,6 +59,7 @@ class SDKDefineView extends ResizableTitleWindow {
 	private var defineSDKButton:Button;
 	private var cancelButton:Button;
 	private var sandboxWarningGroup:LayoutGroup;
+	private var isUserNameInput:Bool;
 
 	private var _sdk:SDKReferenceVO;
 
@@ -104,24 +105,7 @@ class SDKDefineView extends ResizableTitleWindow {
 		viewLayout.paddingBottom = 10.0;
 		viewLayout.paddingLeft = 10.0;
 		viewLayout.gap = 10.0;
-		this.layout = viewLayout;
-
-		var sdkNameField = new LayoutGroup();
-		var sdkNameFieldLayout = new VerticalLayout();
-		sdkNameFieldLayout.horizontalAlign = JUSTIFY;
-		sdkNameFieldLayout.gap = 10.0;
-		sdkNameField.layout = sdkNameFieldLayout;
-		this.addChild(sdkNameField);
-
-		this.sdkNameLabel = new Label();
-		this.sdkNameLabel.text = "Label";
-		sdkNameField.addChild(this.sdkNameLabel);
-
-		this.sdkNameTextInput = new TextInput();
-		this.sdkNameTextInput.editable = false;
-		this.sdkNameTextInput.addEventListener(Event.CHANGE, sdkNameTextInput_changeHandler);
-		this.sdkNameTextInput.addEventListener(KeyboardEvent.KEY_DOWN, sdkNameTextInput_keyDownHandler);
-		sdkNameField.addChild(this.sdkNameTextInput);
+		this.layout = viewLayout;		
 
 		var sdkPathField = new LayoutGroup();
 		var sdkPathFieldLayout = new VerticalLayout();
@@ -147,6 +131,23 @@ class SDKDefineView extends ResizableTitleWindow {
 		this.sdkPathTextInput.addEventListener(KeyboardEvent.KEY_DOWN, sdkPathTextInput_keyDownHandler);
 		this.sdkPathTextInput.layoutData = new HorizontalLayoutData(100.0);
 		sdkPathInputGroup.addChild(this.sdkPathTextInput);
+		
+		var sdkNameField = new LayoutGroup();
+		var sdkNameFieldLayout = new VerticalLayout();
+		sdkNameFieldLayout.horizontalAlign = JUSTIFY;
+		sdkNameFieldLayout.gap = 10.0;
+		sdkNameField.layout = sdkNameFieldLayout;
+		this.addChild(sdkNameField);
+
+		this.sdkNameLabel = new Label();
+		this.sdkNameLabel.text = "Label";
+		sdkNameField.addChild(this.sdkNameLabel);
+
+		this.sdkNameTextInput = new TextInput();
+		//this.sdkNameTextInput.editable = false;
+		this.sdkNameTextInput.addEventListener(Event.CHANGE, sdkNameTextInput_changeHandler);
+		this.sdkNameTextInput.addEventListener(KeyboardEvent.KEY_DOWN, sdkNameTextInput_keyDownHandler);
+		sdkNameField.addChild(this.sdkNameTextInput);
 
 		this.sdkPathBrowseButton = new Button();
 		this.sdkPathBrowseButton.text = "Browse";
@@ -181,7 +182,8 @@ class SDKDefineView extends ResizableTitleWindow {
 
 	override private function update():Void {
 		if (this._sdk != null) {
-			this.sdkNameTextInput.text = this._sdk.name;
+			if (!this.isUserNameInput) 
+				this.sdkNameTextInput.text = this._sdk.name;
 			this.sdkPathTextInput.text = this._sdk.path;
 		}
 		this.sandboxWarningGroup.visible = this._showSandboxWarning;
@@ -193,6 +195,8 @@ class SDKDefineView extends ResizableTitleWindow {
 		if (!this.defineSDKButton.enabled) {
 			return;
 		}
+		if (this._sdk != null) 
+			this._sdk.name = this.sdkNameTextInput.text;
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
@@ -216,7 +220,7 @@ class SDKDefineView extends ResizableTitleWindow {
 	}
 
 	private function refreshSubmitEnabled():Void {
-		this.defineSDKButton.enabled = this.sdkNameTextInput.text.length > 0 && this.sdkPathTextInput.text.length > 0;
+		this.defineSDKButton.enabled = StringTools.trim(this.sdkNameTextInput.text).length > 0 && this.sdkPathTextInput.text.length > 0;
 	}
 
 	private function sdkNameTextInput_changeHandler(event:Event):Void {
@@ -240,6 +244,8 @@ class SDKDefineView extends ResizableTitleWindow {
 		switch (event.keyCode) {
 			case Keyboard.ENTER:
 				this.submit();
+			default:
+				this.isUserNameInput = StringTools.trim(this.sdkNameTextInput.text).length > 0;
 		}
 	}
 
