@@ -23,6 +23,7 @@ package actionScripts.valueObjects;
 extern class SDKReferenceVO {
 	public var path:String;
 	public var name:String;
+	public var nameUncalculated:String;
 	public var status:String;
 
 	public function new();

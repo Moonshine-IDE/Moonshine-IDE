@@ -196,7 +196,7 @@ class SDKDefineView extends ResizableTitleWindow {
 			return;
 		}
 		if (this._sdk != null) 
-			this._sdk.name = this.sdkNameTextInput.text;
+			this._sdk.nameUncalculated = this.sdkNameTextInput.text;
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
