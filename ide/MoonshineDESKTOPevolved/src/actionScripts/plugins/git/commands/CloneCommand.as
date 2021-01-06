@@ -77,7 +77,7 @@ package actionScripts.plugins.git.commands
 			}
 
 			var gitCommand:String = getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder);
-			if (ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_MACOS && repositoryUnderCursor.isRequireAuthentication)
 			{
 				// experimental async file creation as Joel experienced
 				// exp file creation issue in his tests
@@ -111,7 +111,6 @@ package actionScripts.plugins.git.commands
 			// commands to run.
 			super.shellError(value);
 			
-			var match:Array;
 			switch (value.queue.processType)
 			{
 				case GitHubPlugin.CLONE_REQUEST:
@@ -127,8 +126,7 @@ package actionScripts.plugins.git.commands
 						dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:value.output}));
 					}
 					
-					match = value.output.toLowerCase().match(/fatal: .*not found/);
-					if (match && isRequestWithAuth)
+					if (value.output.toLowerCase().match(/fatal: .*not found/) && isRequestWithAuth)
 					{
 						error("Insufficient permission.");
 					}

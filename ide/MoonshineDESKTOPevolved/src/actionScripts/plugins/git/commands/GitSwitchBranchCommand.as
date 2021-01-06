@@ -55,7 +55,7 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			}
 
 			var gitFetchCommand:String = getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : ''));
-			if (ConstantsCoreVO.IS_MACOS && calculatedURL)
+			if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
 			{
 				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitFetchCommand);
 				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, null));
@@ -86,7 +86,7 @@ public class GitSwitchBranchCommand extends GitCommandBase
 		override public function onWorkerValueIncoming(value:Object):void
 		{
 			// do not print enter password line
-			if (ConstantsCoreVO.IS_MACOS && ("output" in value.value) &&
+			if (ConstantsCoreVO.IS_MACOS && value.value && ("output" in value.value) &&
 					value.value.output.match(/Enter password \(exp\):.*/))
 			{
 				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");

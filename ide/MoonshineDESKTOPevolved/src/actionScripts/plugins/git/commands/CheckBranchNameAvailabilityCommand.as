@@ -89,7 +89,7 @@ package actionScripts.plugins.git.commands
 							// we'll run this for first instance
 							// since we have only one exp file can contain
 							// information of one origin
-							if (ConstantsCoreVO.IS_MACOS && index == 0)
+							if (ConstantsCoreVO.IS_MACOS && index == 0 && tmpModel.sessionUser)
 							{
 								var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" ls-remote "+ (calculatedURL ? calculatedURL +' ' : '') + origin +' --heads "'+ UtilsCore.getEncodedForShell(targetBranchName) +'"');
 								addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GIT_REMOTE_BRANCH_NAME_VALIDATION, origin));
@@ -165,7 +165,7 @@ package actionScripts.plugins.git.commands
 			var tmpValue:Object = value.value;
 
 			// do not print enter password line
-			if (ConstantsCoreVO.IS_MACOS && ("output" in value.value) &&
+			if (ConstantsCoreVO.IS_MACOS && value.value && ("output" in value.value) &&
 					value.value.output.match(/Enter password \(exp\):.*/))
 			{
 				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
