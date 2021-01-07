@@ -56,11 +56,13 @@ The `@:flash.property` annotation will not be required in the future, when every
 
 ### Loosely-coupled views
 
-Converting views to Haxe is an opportunity for a bit of light refactoring to make them less tightly-coupled to the rest of the Moonshine. In particular, avoid accessing global singletons like `IDEModel.getModel()` or `GlobalEventDispatcher.getInstance()` inside views. These should be accessed from the view's associated plugin class only (generally still written in ActionScript). Any necessary data should be passed from plugins to views through setters. Views can notify plugins of changes using events.
+Converting views to Haxe is an opportunity for a bit of light refactoring to make them less tightly-coupled to the rest of the Moonshine. In particular, avoid accessing global singletons like `IDEModel.getModel()` or `GlobalEventDispatcher.getInstance()` inside views. These should be accessed from the view's associated plugin class only (generally still written in ActionScript, but they all will be converted to Haxe eventually). Any necessary data should be passed from plugins to views through setters. Views can notify plugins of changes using events.
+
+See _src/moonshine/plugins/findreplace/view/GoToLineView.hx_ for a relatively simple example of a view that has a setter and dispatches an event. In this case, it has a `maxLineNumber` setter and dispatches `Event.CLOSE`.
 
 ### Externs
 
-Various common utility classes and value objects are used throughout Moonshine. These have not yet been ported to Haxe, but they can be accessed by Haxe code if they are exposed "externs" in the _externs_ folder. If an extern class or property is missing, feel free to add it. However, try to avoid global singletons like `IDEModel` and `GlobalEventDispatcher`, which generally should not be accessed directly from views.
+Various common utility classes and value objects are used throughout Moonshine. These classes have not yet been ported to Haxe, but they can be accessed by Haxe code if they are exposed as Haxe "externs" in the _externs_ folder. If an extern class is missing, feel free to add it. Some existing extern classes may be missing properties or methods, and they may be added, if needed. Warning: As explained above, try to avoid exposing global singletons like `IDEModel` and `GlobalEventDispatcher` as extern classes.
 
 Here's a simple example of how to create an extern class:
 
@@ -89,3 +91,5 @@ var feathersView:MyFeathersView = new MyFeathersView();
 var flexView:FeathersUIWrapper = new FeathersUIWrapper(feathersView);
 otherFlexView.addChild(flexView);
 ```
+
+It is not possible to add Apache Flex views as children of Feathers UI views, and we do not intend to make this possible in the future. As a rule, you should start converting to Feathers UI at the deepest level of the display list and work your way up.
