@@ -20,6 +20,7 @@
 
 package moonshine.components;
 
+import feathers.controls.dataRenderers.TreeViewItemRenderer;
 import openfl.display.DisplayObject;
 import actionScripts.factory.FileLocation;
 import feathers.layout.HorizontalLayoutData;
@@ -137,6 +138,8 @@ class FileSavePopupView extends ResizableTitleWindow {
 		this.layout = viewLayout;
 
 		this.foldersTreeView = new TreeView();
+		// TODO: uncomment when customItemRendererVariant and VARIANT_FILE_SYSTEM are supported
+		// this.foldersTreeView.customItemRendererVariant = TreeViewItemRenderer.VARIANT_FILE_SYSTEM;
 		this.foldersTreeView.itemToText = (item:TreeNode<FileWrapper>) -> {
 			return item.data.file.name;
 		};
