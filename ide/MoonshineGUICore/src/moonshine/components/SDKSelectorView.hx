@@ -101,6 +101,7 @@ class SDKSelectorView extends ResizableTitleWindow {
 			target.text = state.text;
 			target.toolTip = state.text;
 			target.doubleClickEnabled = true;
+			target.mouseChildren = false;
 			target.addEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
 		}, (target, state:GridViewCellState) -> {
 			target.removeEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
@@ -110,6 +111,7 @@ class SDKSelectorView extends ResizableTitleWindow {
 			target.text = state.text;
 			target.toolTip = state.text;
 			target.doubleClickEnabled = true;
+			target.mouseChildren = false;
 			target.addEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
 		}, (target, state:GridViewCellState) -> {
 			target.removeEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
@@ -120,6 +122,7 @@ class SDKSelectorView extends ResizableTitleWindow {
 			target.text = state.text;
 			target.toolTip = state.text;
 			target.doubleClickEnabled = true;
+			target.mouseChildren = false;
 			target.addEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
 		}, (target, state:GridViewCellState) -> {
 			target.removeEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
