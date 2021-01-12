@@ -86,6 +86,7 @@ package actionScripts.valueObjects
         protected var projectReference: ProjectReferenceVO;
 
 		protected var model:IDEModel = IDEModel.getInstance();
+		public var kudduRam:String = "";
 
 		public function ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true)
 		{
@@ -104,7 +105,7 @@ package actionScripts.valueObjects
 			shallUpdateToTreeView = updateToTreeView;
 			
 			var tmpFSP:FileSystemParser = new FileSystemParser();
-			tmpFSP.parseFilesPaths(folder.fileBridge.nativePath, null);
+			tmpFSP.parseFilesPaths(folder.fileBridge.nativePath, "kudduRam", this);
 			
 			// download the directory structure from remote
 			// for the project if a Web run

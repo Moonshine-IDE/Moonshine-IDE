@@ -13,6 +13,7 @@ package actionScripts.utils
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.NativeProcessQueueVO;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	
 	public class FileSystemParser implements IWorkerSubscriber
@@ -27,6 +28,8 @@ package actionScripts.utils
 		private var filesTreeByDirectory:Dictionary = new Dictionary();
 		private var allOutput:String = "";
 		private var fileSeparator:String;
+		private var stringVar:String;
+		private var project:ProjectVO;
 		
 		public function FileSystemParser() 
 		{	
@@ -36,10 +39,12 @@ package actionScripts.utils
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
 		
-		public function parseFilesPaths(fromPath:String, collection:IList, readableExtensions:Array=null):void
+		public function parseFilesPaths(fromPath:String, stringVar:String, project:ProjectVO, readableExtensions:Array=null):void
 		{
-			this.collection = collection;
+			//this.collection = collection;
 			this.readableExtensions = readableExtensions;
+			this.stringVar = stringVar;
+			this.project = project;
 			
 			queue = new Vector.<Object>();
 			addToQueue(new NativeProcessQueueVO(
@@ -89,7 +94,7 @@ package actionScripts.utils
 		
 		protected function listOfProcessEnded():void
 		{
-			trace("--------------------- ", allOutput);
+			trace("--------------------- ", project[stringVar]);
 			/*parsedFiles.forEach(function(path:String, index:int, arr:Array):void
 			{
 				if (!collection) collection = new ArrayList();
@@ -122,7 +127,7 @@ package actionScripts.utils
 			else
 			{
 				//trace(value.output);
-				allOutput += value.output.replace(/^[ \r\n]/gm, "\r\n"); // remove all the blank lines
+				project[stringVar] += value.output.replace(/^[ \r\n]/gm, "\r\n"); // remove all the blank lines
 				//allOutput += StringUtil.trim(value.output);
 				//parsedFiles = parsedFiles.concat(value.output.split("\r\n"));
 			}
