@@ -20,6 +20,7 @@
 
 package moonshine.components;
 
+import openfl.events.MouseEvent;
 import actionScripts.valueObjects.SDKReferenceVO;
 import feathers.controls.Button;
 import feathers.controls.GridView;
@@ -37,6 +38,7 @@ import feathers.utils.DisplayObjectRecycler;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
+
 
 class SDKSelectorView extends ResizableTitleWindow {
 	private static final EVENT_SDK_ADD:String = "sdkAdd";
@@ -98,17 +100,32 @@ class SDKSelectorView extends ResizableTitleWindow {
 		descriptionColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
 			target.text = state.text;
 			target.toolTip = state.text;
+			target.doubleClickEnabled = true;
+			target.mouseChildren = false;
+			target.addEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
+		}, (target, state:GridViewCellState) -> {
+			target.removeEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
 		});
 		var pathColumn = new GridViewColumn("Path", (sdk:SDKReferenceVO) -> sdk.path);
 		pathColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
 			target.text = state.text;
 			target.toolTip = state.text;
+			target.doubleClickEnabled = true;
+			target.mouseChildren = false;
+			target.addEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
+		}, (target, state:GridViewCellState) -> {
+			target.removeEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
 		});
 		var statusColumn = new GridViewColumn("", (sdk:SDKReferenceVO) -> sdk.status);
 		statusColumn.width = 60.0;
 		statusColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
 			target.text = state.text;
 			target.toolTip = state.text;
+			target.doubleClickEnabled = true;
+			target.mouseChildren = false;
+			target.addEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
+		}, (target, state:GridViewCellState) -> {
+			target.removeEventListener(MouseEvent.DOUBLE_CLICK, this.sdkGrid_doubleClickHandler);
 		});
 		this.sdkGrid.columns = new ArrayCollection([descriptionColumn, pathColumn, statusColumn]);
 		this.sdkGrid.layoutData = AnchorLayoutData.fill();
@@ -166,6 +183,11 @@ class SDKSelectorView extends ResizableTitleWindow {
 		this.removeButton.enabled = this.sdkGrid.selectedItem != null;
 		this.editButton.enabled = this.sdkGrid.selectedItem != null;
 		this.selectButton.enabled = this.sdkGrid.selectedItem != null;
+	}
+	
+	private function sdkGrid_doubleClickHandler(event:MouseEvent):Void
+	{
+		this.editButton_triggerHandler(null);
 	}
 
 	private function addButton_triggerHandler(event:TriggerEvent):Void {

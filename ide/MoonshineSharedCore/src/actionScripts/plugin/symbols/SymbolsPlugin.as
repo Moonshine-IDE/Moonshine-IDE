@@ -38,7 +38,6 @@ package actionScripts.plugin.symbols
 
 	import moonshine.plugin.symbols.view.SymbolsView;
 
-	import mx.controls.Alert;
 	import mx.core.UIComponent;
 	import mx.managers.PopUpManager;
 

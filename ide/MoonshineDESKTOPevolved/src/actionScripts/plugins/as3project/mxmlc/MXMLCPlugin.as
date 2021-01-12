@@ -232,8 +232,6 @@ package actionScripts.plugins.as3project.mxmlc
 			// for now, I'm directing the access from here rather than
 			// automated process, I shall need to check this later.
 			activate();
-			
-			SDKUtils.initBundledSDKs();
 		}
 		
 		override public function activate():void 
