@@ -247,7 +247,7 @@ package actionScripts.valueObjects
 			}
 			
 			var filePathPattern:String = file.fileBridge.nativePath + file.fileBridge.separator;
-			var filesToFilePath:Array = project.kudduRam.match(new RegExp(filePathPattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '.+?(?=\\\\)', 'gm'));
+			var filesToFilePath:Array = project.kudduRam.match(new RegExp(filePathPattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '.+?(?=\\\\|\r\n|\n|$)', 'gm'));
 			var isPathDirectory:Boolean;
 			
             var fw:FileWrapper;
