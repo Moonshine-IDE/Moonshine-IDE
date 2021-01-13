@@ -481,7 +481,7 @@ package actionScripts.plugin.project
 
                     if (project)
                     {
-                        dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
+                        //dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
                         project = null;
                     }
 					else

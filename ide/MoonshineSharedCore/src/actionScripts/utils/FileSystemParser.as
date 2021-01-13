@@ -1,5 +1,7 @@
 package actionScripts.utils
 {
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.utils.Dictionary;
 	
 	import mx.collections.ArrayList;
@@ -16,7 +18,8 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	
-	public class FileSystemParser implements IWorkerSubscriber
+	[Event(name="ParseCompleted", type="flash.events.Event")]
+	public class FileSystemParser extends EventDispatcher implements IWorkerSubscriber
 	{
 		private static const PARSE_FILES_ON_PATH:String = "parseFilesOnPath";
 		private static const subscribeIdToWorker:String = UIDUtil.createUID();
@@ -101,6 +104,7 @@ package actionScripts.utils
 				collection.addItem(new ResourceVO(path));
 			});*/
 			unsubscribeFromWorker();
+			dispatchEvent(new Event("ParseCompleted"));
 		}
 		
 		protected function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 

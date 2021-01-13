@@ -105,6 +105,7 @@ package actionScripts.valueObjects
 			shallUpdateToTreeView = updateToTreeView;
 			
 			var tmpFSP:FileSystemParser = new FileSystemParser();
+			tmpFSP.addEventListener("ParseCompleted", onParseCompleted, false, 0, true);
 			tmpFSP.parseFilesPaths(folder.fileBridge.nativePath, "kudduRam", this);
 			
 			// download the directory structure from remote
@@ -115,6 +116,13 @@ package actionScripts.valueObjects
 			}
 		}
 		
+		private function onParseCompleted(event:Event):void
+		{
+			projectFolder.project = this;
+			projectFolder.updateChildren();
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, this));
+		}
+		
 		[Bindable(event="projectFolderChanged")]
 		public function get projectFolder():FileWrapper
 		{
@@ -122,6 +130,7 @@ package actionScripts.valueObjects
 				_projectFolder.file.fileBridge.nativePath != folderLocation.fileBridge.nativePath))
 			{
 				_projectFolder = new FileWrapper(folderLocation, true, projectReference, shallUpdateToTreeView);
+				//GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, this));
 			}
 
 			return _projectFolder;

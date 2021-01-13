@@ -79,6 +79,11 @@ package actionScripts.impls
 			return FileUtils.isPathExists(value);
 		}
 		
+		public function isPathDirectory(value:String):Boolean
+		{
+			return FileUtils.isPathDirectory(value);
+		}
+		
 		public function getDirectoryListing():Array
 		{
 			if (!checkFileExistenceAndReport()) return [];

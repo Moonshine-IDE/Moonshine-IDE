@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.valueObjects
 {
+	import flash.utils.Dictionary;
+	
 	import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
+	import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
 
     [Bindable]
     public dynamic class FileWrapper
@@ -37,6 +39,16 @@ package actionScripts.valueObjects
         private var _sourceController:ISourceControlProvider;
         private var _shallUpdateChildren: Boolean;
 		private var _isHidden:Boolean;
+		
+		private var _project:ProjectVO;
+		public function get project():ProjectVO
+		{
+			return _project;
+		}
+		public function set project(value:ProjectVO):void
+		{
+			_project = value;
+		}
 
 		public function FileWrapper(file:FileLocation, isRoot:Boolean = false,
 									projectRef:ProjectReferenceVO=null, shallUpdateChildren:Boolean = true)
@@ -44,6 +56,7 @@ package actionScripts.valueObjects
 			_file = file;
 			_isRoot = isRoot;
 			_shallUpdateChildren = shallUpdateChildren;
+			
 			projectReference = projectRef;
 
 			if (isRoot && projectRef && projectRef.name)
@@ -223,55 +236,34 @@ package actionScripts.valueObjects
                 }
             }
 
-            if (!file.fileBridge.isDirectory)
+            if (!file.fileBridge.isDirectory || !project)
             {
+				_children = null;
                 return;
             }
-
-            var directoryListing:Array = file.fileBridge.getDirectoryListing();
-            if (directoryListing.length == 0 && !file.fileBridge.isDirectory)
-            {
-                _children = null;
-                return;
-            }
-            else
-            {
-                _children = [];
-            }
-
+			else if (file.fileBridge.isDirectory)
+			{
+				_children = [];
+			}
+			
+			var filePathPattern:String = file.fileBridge.nativePath + file.fileBridge.separator;
+			var filesToFilePath:Array = project.kudduRam.match(new RegExp(filePathPattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '.+?(?=\\\\)', 'gm'));
+			var isPathDirectory:Boolean;
+			
             var fw:FileWrapper;
-            var directoryListingCount:int = directoryListing.length;
-
-            for (var i:int = 0; i < directoryListingCount; i++)
-            {
-                var currentDirectory:Object = directoryListing[i];
-
-				if (currentDirectory.isHidden)
+			var fwd:Dictionary = new Dictionary();
+			for each (var path:String in filesToFilePath)
+			{
+				if (fwd[path] == undefined)
 				{
-					continue;
-                }
-
-				if (projectReference.showHiddenPaths)
-				{
-					fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
+					fw = new FileWrapper(new FileLocation(path), false, projectReference, _shallUpdateChildren);
+					fw.project = project;
 					fw.sourceController = _sourceController;
 					_children.push(fw);
+					
+					fwd[path] = path;
 				}
-                else
-                {
-                    var currentIsHidden:Boolean = projectReference && projectReference.hiddenPaths.some(function (item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
-                    {
-                        return currentDirectory.nativePath == item.fileBridge.nativePath;
-                    });
-
-					if (!currentIsHidden)
-                    {
-                        fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, _shallUpdateChildren);
-                        fw.sourceController = _sourceController;
-                        _children.push(fw)
-                    }
-                }
-            }
+			}
         }
 
         public function containsFile(file:FileLocation):Boolean
