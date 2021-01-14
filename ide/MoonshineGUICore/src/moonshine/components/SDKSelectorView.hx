@@ -45,7 +45,6 @@ class SDKSelectorView extends ResizableTitleWindow {
 	private static final EVENT_SDK_ADD:String = "sdkAdd";
 	private static final EVENT_SDK_REMOVE:String = "sdkRemove";
 	private static final EVENT_SDK_EDIT:String = "sdkEdit";
-	private static final BUNDLED:String = "Bundled";
 
 	public function new() {
 		MoonshineTheme.initializeTheme();
@@ -182,14 +181,14 @@ class SDKSelectorView extends ResizableTitleWindow {
 	}
 
 	private function sdkGrid_changeHandler(event:Event):Void {
-		this.removeButton.enabled = (this.sdkGrid.selectedItem != null) && (cast(this.sdkGrid.selectedItem, SDKReferenceVO).status != BUNDLED);
-		this.editButton.enabled = (this.sdkGrid.selectedItem != null) && (cast(this.sdkGrid.selectedItem, SDKReferenceVO).status != BUNDLED);
+		this.removeButton.enabled = (this.sdkGrid.selectedItem != null) && (cast(this.sdkGrid.selectedItem, SDKReferenceVO).status != SDKUtils.BUNDLED);
+		this.editButton.enabled = (this.sdkGrid.selectedItem != null) && (cast(this.sdkGrid.selectedItem, SDKReferenceVO).status != SDKUtils.BUNDLED);
 		this.selectButton.enabled = this.sdkGrid.selectedItem != null;
 	}
 	
 	private function sdkGrid_doubleClickHandler(event:MouseEvent):Void
 	{
-		if (cast(this.sdkGrid.selectedItem, SDKReferenceVO).status != BUNDLED) 
+		if (cast(this.sdkGrid.selectedItem, SDKReferenceVO).status != SDKUtils.BUNDLED) 
 			this.editButton_triggerHandler(null);
 	}
 

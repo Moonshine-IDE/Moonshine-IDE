@@ -24,5 +24,6 @@ import actionScripts.valueObjects.SDKReferenceVO;
 import actionScripts.factory.FileLocation;
 
 extern class SDKUtils {
+	public static final BUNDLED:String;
 	public static function getSDKReference(location:FileLocation):SDKReferenceVO;
 }
