@@ -43,6 +43,8 @@ import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
+import openfl.events.KeyboardEvent;
+import openfl.ui.Keyboard;
 
 class FindResourcesView extends ResizableTitleWindow {
 	public function new() {
@@ -118,7 +120,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		viewLayout.paddingLeft = 10.0;
 		viewLayout.gap = 10.0;
 		this.layout = viewLayout;
-
+		
 		var searchField = new LayoutGroup();
 		var searchFieldLayout = new VerticalLayout();
 		searchFieldLayout.horizontalAlign = JUSTIFY;
@@ -129,7 +131,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		var searchFieldLabel = new Label();
 		searchFieldLabel.text = "Search for resource by name:";
 		searchField.addChild(searchFieldLabel);
-
+		
 		var searchFieldContent = new LayoutGroup();
 		var searchFieldContentLayout = new HorizontalLayout();
 		searchFieldContentLayout.gap = 10.0;
@@ -139,9 +141,10 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.searchFieldTextInput = new TextInput();
 		this.searchFieldTextInput.prompt = "File name";
 		this.searchFieldTextInput.addEventListener(Event.CHANGE, searchFieldTextInput_changeHandler);
+
 		this.searchFieldTextInput.layoutData = new HorizontalLayoutData(100.0);
 		searchFieldContent.addChild(this.searchFieldTextInput);
-
+		
 		this.filterExtensionsButton = new Button();
 		this.filterExtensionsButton.text = "Extensions";
 		this.filterExtensionsButton.addEventListener(TriggerEvent.TRIGGER, filterExtensionsButton_triggerHandler);
@@ -171,6 +174,8 @@ class FindResourcesView extends ResizableTitleWindow {
 		});
 		this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
+		this.resultsListView.addEventListener(KeyboardEvent.KEY_DOWN, resultsListView_keyDownHandler);
+				
 		resultsField.addChild(this.resultsListView);
 
 		var footer = new LayoutGroup();
@@ -284,7 +289,16 @@ class FindResourcesView extends ResizableTitleWindow {
 	private function resultsListView_changeHandler(event:Event):Void {
 		this.openResourceButton.enabled = this.resultsListView.selectedItem != null;
 	}
-
+	
+	private function resultsListView_keyDownHandler(event:KeyboardEvent):Void {
+		if (event.keyCode != Keyboard.ENTER && this.resultsListView.selectedItem == null) {
+			return;
+		}
+		
+		this._selectedResource = this.resultsListView.selectedItem;
+		this.dispatchEvent(new Event(Event.CLOSE));	
+	}	
+	
 	private function openResourceButton_triggerHandler(event:TriggerEvent):Void {
 		if (this.resultsListView.selectedItem == null) {
 			// this shouldn't happen, but to be safe...
@@ -294,7 +308,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		this._selectedResource = this.resultsListView.selectedItem;
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
-
+	
 	private function itemRenderer_doubleClickHandler(event:MouseEvent):Void {
 		this._selectedResource = this.resultsListView.selectedItem;
 		this.dispatchEvent(new Event(Event.CLOSE));
