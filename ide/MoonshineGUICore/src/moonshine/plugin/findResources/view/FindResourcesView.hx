@@ -57,6 +57,8 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.minHeight = 300.0;
 		this.closeEnabled = true;
 		this.resizeEnabled = true;
+		
+		this.addEventListener(Event.ADDED_TO_STAGE, findResourcesView_addedToStageHandler);		
 	}
 
 	private var searchFieldTextInput:TextInput;
@@ -141,7 +143,8 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.searchFieldTextInput = new TextInput();
 		this.searchFieldTextInput.prompt = "File name";
 		this.searchFieldTextInput.addEventListener(Event.CHANGE, searchFieldTextInput_changeHandler);
-
+		this.searchFieldTextInput.addEventListener(KeyboardEvent.KEY_DOWN, searchFieldTextInput_keyDownHandler, false, 10);
+		
 		this.searchFieldTextInput.layoutData = new HorizontalLayoutData(100.0);
 		searchFieldContent.addChild(this.searchFieldTextInput);
 		
@@ -174,7 +177,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		});
 		this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
-		this.resultsListView.addEventListener(KeyboardEvent.KEY_DOWN, resultsListView_keyDownHandler);
+		//this.resultsListView.addEventListener(KeyboardEvent.KEY_DOWN, resultsListView_keyDownHandler);
 				
 		resultsField.addChild(this.resultsListView);
 
@@ -189,7 +192,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.footer = footer;
 
 		super.initialize();
-
+		
 		this.updateFilterFunction();
 	}
 
@@ -233,7 +236,21 @@ class FindResourcesView extends ResizableTitleWindow {
 			return true;
 		}
 	}
-
+	
+	private function findResourcesView_addedToStageHandler(event:Event):Void
+	{
+		this.removeEventListener(Event.ADDED_TO_STAGE, findResourcesView_addedToStageHandler);	
+		this.stage.addEventListener(KeyboardEvent.KEY_DOWN, stage_keyDownHandler);	
+	}	
+		
+	private function stage_keyDownHandler(event:KeyboardEvent):Void {
+		if (event.keyCode == Keyboard.ENTER && this.resultsListView.selectedItem != null) 
+		{	
+			this._selectedResource = this.resultsListView.selectedItem;
+			this.dispatchEvent(new Event(Event.CLOSE));	
+		}
+	}	
+	
 	private function filterExtensionsButton_triggerHandler(event:TriggerEvent):Void {
 		var content = new LayoutGroup();
 		var contentLayout = new VerticalLayout();
@@ -285,20 +302,53 @@ class FindResourcesView extends ResizableTitleWindow {
 	private function searchFieldTextInput_changeHandler(event:Event):Void {
 		this.updateFilterFunction();
 	}
+	
+	private function searchFieldTextInput_keyDownHandler(event:KeyboardEvent) {
+		if (event.isDefaultPrevented()) {
+			return;
+		}
+		
+		var isKeyDown = event.keyCode == Keyboard.DOWN;
+		var isKeyUp = event.keyCode == Keyboard.UP;
+	
+		if(isKeyDown || isKeyUp) {
+			event.preventDefault();
+			
+			var focusedComponent = this.focusManager.focus;
+			
+			if (this.resultsListView != focusedComponent) {
+				event.preventDefault();
+				
+				var resourceSelectedIndex = this.resultsListView.selectedIndex;
+				
+				if (isKeyDown) {
+					if (resourceSelectedIndex < resources.length - 1)
+					{
+						this.resultsListView.selectedIndex = resourceSelectedIndex + 1;
+					}
+					else if (resources.length > 0)
+					{
+						this.resultsListView.selectedIndex = 0;
+					}
+				} else if (isKeyUp) {
+					resourceSelectedIndex = this.resultsListView.selectedIndex - 1;
+					if (resourceSelectedIndex == -1 && resources.length > 0)
+					{
+						this.resultsListView.selectedIndex = resources.length - 1;
+					}					
+					else if (resourceSelectedIndex > -1)
+					{
+						this.resultsListView.selectedIndex = resourceSelectedIndex;
+					}
+				}
+			}
+		}
+	}
 
 	private function resultsListView_changeHandler(event:Event):Void {
 		this.openResourceButton.enabled = this.resultsListView.selectedItem != null;
 	}
-	
-	private function resultsListView_keyDownHandler(event:KeyboardEvent):Void {
-		if (event.keyCode != Keyboard.ENTER && this.resultsListView.selectedItem == null) {
-			return;
-		}
-		
-		this._selectedResource = this.resultsListView.selectedItem;
-		this.dispatchEvent(new Event(Event.CLOSE));	
-	}	
-	
+
 	private function openResourceButton_triggerHandler(event:TriggerEvent):Void {
 		if (this.resultsListView.selectedItem == null) {
 			// this shouldn't happen, but to be safe...
