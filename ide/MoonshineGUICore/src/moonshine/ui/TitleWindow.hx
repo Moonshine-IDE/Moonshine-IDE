@@ -32,13 +32,15 @@ import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
 import feathers.style.IStyleObject;
 import feathers.style.IVariantStyleObject;
-import lime.ui.KeyCode;
 import openfl.display.DisplayObject;
 import openfl.display.DisplayObjectContainer;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.events.MouseEvent;
 import openfl.ui.Keyboard;
+#if lime
+import lime.ui.KeyCode;
+#end
 
 @:styleContext
 class TitleWindow extends Panel {
@@ -177,10 +179,12 @@ class TitleWindow extends Panel {
 					this.dispatchEvent(new Event(Event.CLOSE));
 				}
 			#end
+			#if lime
 			case KeyCode.APP_CONTROL_BACK:
 				{
 					this.dispatchEvent(new Event(Event.CLOSE));
 				}
+			#end
 		}
 	}
 
