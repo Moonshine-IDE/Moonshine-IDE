@@ -654,7 +654,7 @@
 		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
-			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}_DONOTUSE.pkg --sign "${certSignedMacOSKeychainInstallerName}"'/>
+			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}_DONOTUSE.pkg --sign "Developer ID Installer: Prominic.NET, Inc."'/>
 		</exec>
 		<!-- @devsena; Following part not suppose to go to source distribution. Referring the certificate as "${certSignedDevIDKeychainName}" always fails by unknown reason but if static name referencing  !-->
 		<exec executable="bash" failonerror="true">
