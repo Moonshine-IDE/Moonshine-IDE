@@ -296,6 +296,8 @@
 			<arg value="${certSignedWindowsBinary}"/>
 			<arg value="/p"/>
 			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="/tr"/>
+			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
 			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
 		</exec>
 		<echo># Signed Process Running - Praparing Installer</echo>
