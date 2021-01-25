@@ -167,7 +167,7 @@ class SDKDefineView extends ResizableTitleWindow {
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
 		this.defineSDKButton = new Button();
 		this.defineSDKButton.variant = MoonshineTheme.THEME_VARIANT_DARK_BUTTON;
-		this.defineSDKButton.text = "Create";
+		this.defineSDKButton.text = (this._sdk == null) ? "Create" : "Update";
 		this.defineSDKButton.addEventListener(TriggerEvent.TRIGGER, defineSDKButton_triggerHandler);
 		footer.addChild(this.defineSDKButton);
 		this.cancelButton = new Button();
@@ -185,6 +185,7 @@ class SDKDefineView extends ResizableTitleWindow {
 			if (!this.isUserNameInput) 
 				this.sdkNameTextInput.text = this._sdk.name;
 			this.sdkPathTextInput.text = this._sdk.path;
+			this.sdkPathTextInput.toolTip = this._sdk.path;
 		}
 		this.sandboxWarningGroup.visible = this._showSandboxWarning;
 		this.sandboxWarningGroup.includeInLayout = this._showSandboxWarning;
@@ -196,7 +197,7 @@ class SDKDefineView extends ResizableTitleWindow {
 			return;
 		}
 		if (this._sdk != null) 
-			this._sdk.name = this.sdkNameTextInput.text;
+			this._sdk.nameUncalculated = this.sdkNameTextInput.text;
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
