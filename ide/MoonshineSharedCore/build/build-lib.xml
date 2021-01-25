@@ -293,9 +293,9 @@
 		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/f"/>
-			<arg value="${debug_dir}/${certSelfSigned}"/>
+			<arg value="${certSignedWindowsBinary}"/>
 			<arg value="/p"/>
-			<arg value="${certSelfSignedPassword}"/>
+			<arg value="${certSignedWindowsBinaryPassword}"/>
 			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
 		</exec>
 		<echo># Signed Process Running - Praparing Installer</echo>
