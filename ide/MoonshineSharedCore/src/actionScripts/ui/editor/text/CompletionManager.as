@@ -537,9 +537,7 @@ package actionScripts.ui.editor.text
 				//all items are visible
 				return true;
 			}
-			//we don't need to call toLowerCase() on sortLabel and menuStr here
-			//because they are already lower case
-			return item.sortText.indexOf(menuStr) > -1;
+			return item.label.toLowerCase().indexOf(menuStr) > -1;
         }
 
 		private function sortCodeCompletionMenu(itemA:CompletionItem, itemB:CompletionItem, fields:Array):int
