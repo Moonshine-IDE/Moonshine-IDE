@@ -200,6 +200,11 @@ package actionScripts.ui.editor.text
 			if(item.textEdit)
 			{
 				var textEdit:TextEdit = item.textEdit;
+				if(textEdit.range.end.character < caret) {
+					//account for the user typing more since the initial
+					//completion request
+					textEdit.range.end.character = caret;
+				}
 				var workspaceEdit:WorkspaceEdit = new WorkspaceEdit();
 				var changes:Object = {};
 				changes[uri] = new <TextEdit>[textEdit];
