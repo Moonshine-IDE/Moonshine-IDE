@@ -1,5 +1,6 @@
 package moonshine.plugin.workspace.view;
 
+import feathers.layout.AnchorLayoutData;
 import feathers.controls.PopUpListView;
 import feathers.layout.VerticalLayout;
 import feathers.controls.Button;
@@ -79,8 +80,9 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		this.layout = viewLayout;
 		
 		this.workspacePopUpListView = new PopUpListView();
+		this.workspacePopUpListView.layoutData = AnchorLayoutData.middleLeft();
 		this.workspacePopUpListView.addEventListener(Event.CHANGE, workspacePopUpListView_changeHandler);
-		this.addChild(this.workspacePopUpListView);
+		this.addChild(this.workspacePopUpListView);		
 		
 		var footer = new LayoutGroup();
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
@@ -101,16 +103,24 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 			this.workspacePopUpListView.dataProvider = this._workspaces;
 		}		
 		
+		var selectionInvalid = this.isInvalid(InvalidationFlag.SELECTION);
+		
+		if (selectionInvalid) {
+			this.workspacePopUpListView.selectedItem = this._selectedWorkspace;	
+		}		
+		
 		super.update();
 	}
 	
 	private function workspacePopUpListView_changeHandler(event:Event):Void {
-		this.set_selectedWorkspace(this.workspacePopUpListView.selectedItem);	
+		this.selectedWorkspace = this.workspacePopUpListView.selectedItem;	
 	}	
 	
 	private function loadWorkspaceButton_triggerHandler(event:Event):Void {
-		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL);
+		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, this._selectedWorkspace);
 		
-		dispatchEvent(workspaceEvent);
+		this.dispatchEvent(workspaceEvent);
+		
+		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 }
