@@ -775,11 +775,11 @@
 				<property name="windowsBundleFilename" value="${deploy_dir}/${installerName}EXE" />
 			</else>
 		</if>
-		<replaceregexp file="${desktopApplicationDescriptor}" match="filenameToBeReplacedByANT" replace="${executableName}" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="nameToBeReplacedByANT" replace="${applicationName} ${BuildVersion}" encoding="utf-8" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="idToBeReplacedByANT" replace="${applicationID}" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="0.0.0" replace="${BuildVersion}" />
-		<replace file="${desktopApplicationDescriptor}" token="[This value will be overwritten by Flash Builder in the output app.xml]" value="${swfFilename}" />
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;id&gt;[^&lt;]*&lt;/id&gt;" replace="&lt;id&gt;${applicationID}&lt;/id&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;filename&gt;[^&lt;]*&lt;/filename&gt;" replace="&lt;filename&gt;${executableName}&lt;/filename&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;name&gt;[^&lt;]*&lt;/name&gt;" replace="&lt;name&gt;${applicationName} ${BuildVersion}&lt;/name&gt;" encoding="utf-8" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;versionNumber&gt;[^&lt;]*&lt;/versionNumber&gt;" replace="&lt;versionNumber&gt;${BuildVersion}&lt;/versionNumber&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content&gt;" flags="g"/>
 		<!-- More robust replacing technique than above one (commented) -->
         <!--replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content>" /-->
 	</target>
