@@ -22,7 +22,7 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		this.title = "Load Workspace";
 		this.width = 350.0;
 		this.minWidth = 300.0;
-		this.minHeight = 300.0;
+		this.minHeight = 150.0;
 		this.closeEnabled = true;
 		this.resizeEnabled = true;
 		
@@ -44,6 +44,7 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		if (this._selectedWorkspace == value) {
 			return this._selectedWorkspace;
 		}
+		
 		
 		this._selectedWorkspace = value;
 		this.setInvalid(InvalidationFlag.SELECTION);
@@ -80,7 +81,8 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		this.layout = viewLayout;
 		
 		this.workspacePopUpListView = new PopUpListView();
-		this.workspacePopUpListView.layoutData = AnchorLayoutData.middleLeft();
+		this.workspacePopUpListView.width = 300;
+		this.workspacePopUpListView.layoutData = AnchorLayoutData.center();
 		this.workspacePopUpListView.addEventListener(Event.CHANGE, workspacePopUpListView_changeHandler);
 		this.addChild(this.workspacePopUpListView);		
 		
@@ -105,14 +107,15 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		
 		var selectionInvalid = this.isInvalid(InvalidationFlag.SELECTION);
 		
-		if (selectionInvalid) {
-			this.workspacePopUpListView.selectedItem = this._selectedWorkspace;	
+		if (selectionInvalid) {		
+			this.workspacePopUpListView.selectedItem = this._selectedWorkspace;
 		}		
 		
 		super.update();
 	}
 	
 	private function workspacePopUpListView_changeHandler(event:Event):Void {
+		trace("[Haxe] workspacePopUpListView_changeHandler " + this.workspacePopUpListView.selectedItem);
 		this.selectedWorkspace = this.workspacePopUpListView.selectedItem;	
 	}	
 	

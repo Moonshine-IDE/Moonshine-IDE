@@ -27,13 +27,11 @@ package actionScripts.plugin.workspace
 
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
 
-	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
-	
-	import actionScripts.events.GeneralEvent;
+
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
@@ -156,9 +154,9 @@ package actionScripts.plugin.workspace
 			PopUpManager.centerPopUp(newWorkspacePopup);
 		}
 		
-		private function handleSaveAsWorkspaceEvent(event:GeneralEvent):void
+		private function handleSaveAsWorkspaceEvent(event:WorkspaceEvent):void
 		{
-			duplicateToNewWorkspace(event.value as String);
+			duplicateToNewWorkspace(event.workspaceLabel);
 		}
 		
 		private function onNewWorkspaceEvent(event:Event):void
@@ -181,10 +179,10 @@ package actionScripts.plugin.workspace
 			newWorkspacePopup = null;
 		}
 		
-		private function handleNewWorkspaceEvent(event:GeneralEvent):void
+		private function handleNewWorkspaceEvent(event:WorkspaceEvent):void
 		{
 			methodToCallAfterClosingAllProjects = 
-				new MethodDescriptor(this, 'changeToNewWorkspace', event.value as String);
+				new MethodDescriptor(this, 'changeToNewWorkspace', event.workspaceLabel);
 			
 			closeAllProjectItems = ObjectUtil.copy(currentWorkspaceItems) as Array;
 			closeAllEditorAsync();

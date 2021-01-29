@@ -30,9 +30,9 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.utils.StringUtil;
-			
-			import actionScripts.events.GeneralEvent;
-			
+
+			import moonshine.plugin.workspace.events.WorkspaceEvent;
+
 			public static const EVENT_NEW_WORKSPACE_WITH_LABEL:String = "createNewWorkspaceWithLabelEvent";
 			
 			public var workspaces:Array;
@@ -52,7 +52,7 @@
 					}
 				}
 				
-				dispatchEvent(new GeneralEvent(EVENT_NEW_WORKSPACE_WITH_LABEL, txtWorkspaceName.text));
+				dispatchEvent(new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, txtWorkspaceName.text));
 				closeThis();
 			}
 			
