@@ -22,6 +22,7 @@ package moonshine.components;
 
 import openfl.events.MouseEvent;
 import actionScripts.valueObjects.SDKReferenceVO;
+import actionScripts.utils.SDKUtils;
 import feathers.controls.Button;
 import feathers.controls.GridView;
 import feathers.controls.GridViewColumn;
@@ -180,14 +181,15 @@ class SDKSelectorView extends ResizableTitleWindow {
 	}
 
 	private function sdkGrid_changeHandler(event:Event):Void {
-		this.removeButton.enabled = this.sdkGrid.selectedItem != null;
-		this.editButton.enabled = this.sdkGrid.selectedItem != null;
+		this.removeButton.enabled = (this.sdkGrid.selectedItem != null) && (cast(this.sdkGrid.selectedItem, SDKReferenceVO).status != SDKUtils.BUNDLED);
+		this.editButton.enabled = (this.sdkGrid.selectedItem != null) && (cast(this.sdkGrid.selectedItem, SDKReferenceVO).status != SDKUtils.BUNDLED);
 		this.selectButton.enabled = this.sdkGrid.selectedItem != null;
 	}
 	
 	private function sdkGrid_doubleClickHandler(event:MouseEvent):Void
 	{
-		this.editButton_triggerHandler(null);
+		if (cast(this.sdkGrid.selectedItem, SDKReferenceVO).status != SDKUtils.BUNDLED) 
+			this.editButton_triggerHandler(null);
 	}
 
 	private function addButton_triggerHandler(event:TriggerEvent):Void {
