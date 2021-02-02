@@ -22,6 +22,8 @@ import feathers.events.TriggerEvent;
 class NewWorkspaceView extends ResizableTitleWindow {
 
 	public function new() {
+		MoonshineTheme.initializeTheme();
+		
 		super();
 			
 		this.title = "New Workspace";
