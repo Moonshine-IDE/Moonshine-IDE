@@ -86,7 +86,7 @@ package actionScripts.valueObjects
         protected var projectReference: ProjectReferenceVO;
 
 		protected var model:IDEModel = IDEModel.getInstance();
-		public var kudduRam:String = "";
+		public var projectFilesList:String = "";
 
 		public function ProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true)
 		{
@@ -106,7 +106,7 @@ package actionScripts.valueObjects
 			
 			var tmpFSP:FileSystemParser = new FileSystemParser();
 			tmpFSP.addEventListener("ParseCompleted", onParseCompleted, false, 0, true);
-			tmpFSP.parseFilesPaths(folder.fileBridge.nativePath, "kudduRam", this);
+			tmpFSP.parseFilesPaths(folder.fileBridge.nativePath, "projectFilesList", this);
 			
 			// download the directory structure from remote
 			// for the project if a Web run
@@ -118,6 +118,8 @@ package actionScripts.valueObjects
 		
 		private function onParseCompleted(event:Event):void
 		{
+			event.target.removeEventListener("ParseCompleted", onParseCompleted);
+			
 			projectFolder.project = this;
 			projectFolder.updateChildren();
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, this));
