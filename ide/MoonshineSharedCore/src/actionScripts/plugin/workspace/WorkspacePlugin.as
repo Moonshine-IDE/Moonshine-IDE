@@ -27,10 +27,8 @@ package actionScripts.plugin.workspace
 
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
 	import moonshine.plugin.workspace.view.NewWorkspaceView;
-	import moonshine.plugin.workspace.view.NewWorkspaceView;
 
 	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
 
@@ -45,7 +43,6 @@ package actionScripts.plugin.workspace
 	import actionScripts.valueObjects.ProjectVO;
 	import feathers.data.ArrayCollection;
 
-	import components.popup.workspace.NewWorkspacePopup;
 	import moonshine.plugin.workspace.view.LoadWorkspaceView;
 
 	public class WorkspacePlugin extends PluginBase
@@ -68,8 +65,6 @@ package actionScripts.plugin.workspace
 		
 		private var loadWorkspaceView:LoadWorkspaceView;
 		private var loadWorkspaceViewWrapper:FeathersUIWrapper;
-
-		private var newWorkspacePopup:NewWorkspacePopup;
 
 		private var newWorkspaceView:NewWorkspaceView;
 		private var newWorkspaceViewWrapper:FeathersUIWrapper;
