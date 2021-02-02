@@ -21,7 +21,7 @@
 
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			
-			public function onNameValidatedByGit(localValue:String, remoteValue:String):void
+			public function onNameValidatedByGit(localValue:String, remoteValue:String, isMultipleOrigin:Boolean, originWhereBranchFound:String=null):void
 			{
 				// in case of branch exists value is null
 				if (!localValue && !remoteValue)
@@ -32,7 +32,9 @@
 				}
 
 				btnCommit.enabled = true;
-				var errorMessage:String = "";
+
+				var isLocalExists:Boolean;
+				var isRemoteExists:Boolean;
 				if (localValue)
 				{
 					localValue = localValue.replace("\n", "");
@@ -42,7 +44,7 @@
 					}
 					else
 					{
-						errorMessage = "Local branch already exists; ";
+						isLocalExists = true;
 					}
 				}
 
@@ -55,12 +57,24 @@
 					}
 					else
 					{
-						errorMessage += "Branch exists on remote;";
+						isRemoteExists = true;
 					}
 				}
 
-				if (errorMessage)
+				if (isLocalExists || isRemoteExists)
+				{
+					var errorMessage:String = "";
+					if (isLocalExists)
+					{
+						errorMessage = "Local branch already exists.";
+					}
+					else if (isRemoteExists)
+					{
+						errorMessage = "Branch already exists in remote"+ (isMultipleOrigin ? ": "+ originWhereBranchFound : "") +".";
+					}
+
 					showError(errorMessage);
+				}
 				
 				/*
 				 * @local

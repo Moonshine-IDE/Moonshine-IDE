@@ -293,9 +293,11 @@
 		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/f"/>
-			<arg value="${debug_dir}/${certSelfSigned}"/>
+			<arg value="${certSignedWindowsBinary}"/>
 			<arg value="/p"/>
-			<arg value="${certSelfSignedPassword}"/>
+			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="/tr"/>
+			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
 			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
 		</exec>
 		<echo># Signed Process Running - Praparing Installer</echo>
@@ -313,6 +315,8 @@
 			<arg value="${certSignedWindowsBinary}"/>
 			<arg value="/p"/>
 			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="/tr"/>
+			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
 			<arg value="${deploy_dir}/${installerName}-${BuildVersion}.exe"/>
 		</exec>
 	 </target>
@@ -548,6 +552,15 @@
 				</replace>
 			</else>			
 		</if>
+		<if>
+			<equals arg1="${IsDevelopmentBuild}" arg2="true"/>
+			<then>
+				<replaceregexp file="${desktopBinaryFilename}/Contents/Info.plist" match="macapp-identifier" replace="com.moonshine-ide.development" flags="g"/>
+			</then>
+			<else>
+				<replaceregexp file="${desktopBinaryFilename}/Contents/Info.plist" match="macapp-identifier" replace="com.moonshine-ide" flags="g"/>
+			</else>			
+		</if>
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value='security unlock-keychain -p "${certSignedMacOSKeychainPass}"'/>
@@ -560,10 +573,6 @@
 			<arg value="-c"/>
 			<arg value="chmod -R 777 ${desktopBinaryFilename}"/>
 		</exec>
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/AdobeCP15.plugin/Contents/Info.plist"/>
-		</exec-->
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/Info.plist"/>
@@ -576,121 +585,90 @@
 			<arg value="-c"/>
 			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64"/>
 		</exec>
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/AdobeCP15.plugin/Contents/MacOS/AdobeCP'/>
-		</exec-->
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/AdobeCP15.plugin'/>
-		</exec-->
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin'/>
-		</exec-->
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/Resources/FlashPlayer-10.6.rsrc'/>
-		</exec-->
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/MacOS/FlashPlayer-10.6'/>
-		</exec>
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR_64\ Helper'/>
-		</exec-->
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR_64'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Adobe\ AIR.vch'/>
-		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value='rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/A2712Enabler'/>
 		</exec>
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64'/>
-		</exec-->
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/adobecp.plugin'/>
-		</exec-->
 		<exec executable="bash">
 			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0'/>
+			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/MacOS/FlashPlayer-10.6'/>
 		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework'/>
+			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A/SecurityScopeBookmark'/>
 		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A/SecurityScopeBookmark'/>
+			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
 		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
-		</exec>
-		<!-- @devsena: Node-modules files signing -->
-		<for param="file">
-		  <path>
-		    <fileset dir="${desktopBinaryFilename}/Contents/Resources/elements/hashlink-debug-adapter/node_modules/deasync/bin" includes="**/deasync.node"/>
-		  </path>
-		  <sequential>
-		  	<exec executable="bash">
-  				<arg value="-c"/>
-  				<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" @{file}'/>
-  			</exec>
-		  </sequential>
-		</for>
-		<!-- @devsena: Duplicate a copy of the app file to be use in upcoming non-sandbox packaging process with different entitlement -->
-		<exec executable="bash" failonerror="true">
-			<arg value="-c"/>
-			<arg value='cp -rf ${desktopBinaryFilename} ${deploy_dir}/${installerName}_NonSandbox.app'/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" --deep ${desktopBinaryFilename}'/>
 		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
+			<arg value='codesign -f --options runtime --timestamp -v -s "${certSignedDevIDKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Signing checks on Sandbox APP: spctl -vvv --assess --type exec ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='spctl -vvv --assess --type exec ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Hardened runtime checks on Sandbox APP: codesign --display --verbose ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign --display --verbose ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Timestamp check on Sandbox APP: codesign -dvv ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -dvv ${desktopBinaryFilename}'/>
 		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
-			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}.pkg --sign "${certSignedMacOSKeychainInstallerName}"'/>
+			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}.pkg --sign "Developer ID Installer: Prominic.NET, Inc."'/>
 		</exec>
-		<!-- @devsena: Delete the existing sandbox-entitlement app file -->
-		<exec executable="bash" failonerror="true">
+		<echo>Installer check on Sandbox PKG: pkgutil --check-signature ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg</echo>
+		<exec executable="bash">
 			<arg value="-c"/>
-			<arg value='rm -R ${desktopBinaryFilename}'/>
+			<arg value='pkgutil --check-signature ${deploy_dir}/${installerName}.pkg'/>
 		</exec>
-		<!-- @devsena: Rename the non-sandbox app file to regular app file name -->
-		<exec executable="bash" failonerror="true">
-			<arg value="-c"/>
-			<arg value='mv ${deploy_dir}/${installerName}_NonSandbox.app ${desktopBinaryFilename}'/>
-		</exec>
-		<!-- @devsena; We shall going to maintain a flag for non-App-Store version to determine when app starts, by adding certain value to a certain XML file and re-package as a "DONOTUSE" pkg -->
-		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml" token="$isAppStoreVersion" value="false" />
+		
+
 		<!-- @devsena: Avail non-sandbox entitlement to be use in upcoming process -->
 		<copy file="entitlement-non-sandbox.plist" tofile="${debug_dir}/entitlement.plist" overwrite="true"/>
 		<exec executable="bash">
 			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
+			<arg value='codesign -f --options runtime --timestamp -v -s "${certSignedDevIDKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Signing checks on Non-Sandbox APP: spctl -vvv --assess --type exec ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='spctl -vvv --assess --type exec ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Hardened runtime checks: codesign --display --verbose ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign --display --verbose ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Timestamp check: codesign -dvv ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -dvv ${desktopBinaryFilename}'/>
 		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
-			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}_DONOTUSE.pkg --sign "${certSignedMacOSKeychainInstallerName}"'/>
+			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}_DONOTUSE.pkg --sign "Developer ID Installer: Prominic.NET, Inc."'/>
 		</exec>
-		<!-- @devsena; Following part not suppose to go to source distribution. Referring the certificate as "${certSignedDevIDKeychainName}" always fails by unknown reason but if static name referencing -->
+		<!-- @devsena; Following part not suppose to go to source distribution. Referring the certificate as "${certSignedDevIDKeychainName}" always fails by unknown reason but if static name referencing  !-->
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='productsign --sign "Developer ID Installer: Prominic.NET, Inc." ${deploy_dir}/${installerName}_DONOTUSE.pkg ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg'/>
+		</exec>
+		<echo>Installer check on Non-Sandbox PKG: pkgutil --check-signature ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='pkgutil --check-signature ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg'/>
 		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
@@ -797,11 +775,11 @@
 				<property name="windowsBundleFilename" value="${deploy_dir}/${installerName}EXE" />
 			</else>
 		</if>
-		<replaceregexp file="${desktopApplicationDescriptor}" match="filenameToBeReplacedByANT" replace="${executableName}" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="nameToBeReplacedByANT" replace="${applicationName} ${BuildVersion}" encoding="utf-8" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="idToBeReplacedByANT" replace="${applicationID}" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="0.0.0" replace="${BuildVersion}" />
-		<replace file="${desktopApplicationDescriptor}" token="[This value will be overwritten by Flash Builder in the output app.xml]" value="${swfFilename}" />
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;id&gt;[^&lt;]*&lt;/id&gt;" replace="&lt;id&gt;${applicationID}&lt;/id&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;filename&gt;[^&lt;]*&lt;/filename&gt;" replace="&lt;filename&gt;${executableName}&lt;/filename&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;name&gt;[^&lt;]*&lt;/name&gt;" replace="&lt;name&gt;${applicationName} ${BuildVersion}&lt;/name&gt;" encoding="utf-8" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;versionNumber&gt;[^&lt;]*&lt;/versionNumber&gt;" replace="&lt;versionNumber&gt;${BuildVersion}&lt;/versionNumber&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content&gt;" flags="g"/>
 		<!-- More robust replacing technique than above one (commented) -->
         <!--replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content>" /-->
 	</target>

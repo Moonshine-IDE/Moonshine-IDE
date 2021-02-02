@@ -38,7 +38,6 @@ package actionScripts.plugin.symbols
 
 	import moonshine.plugin.symbols.view.SymbolsView;
 
-	import mx.controls.Alert;
 	import mx.core.UIComponent;
 	import mx.managers.PopUpManager;
 
@@ -48,7 +47,7 @@ package actionScripts.plugin.symbols
 		public static const EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW:String = "openWorkspaceSymbolsView";
 
 		private static const TITLE_DOCUMENT:String = "Find Symbol in Document";
-		private static const TITLE_WORKSPACE:String = "Find Symbol in Workspace";
+		private static const TITLE_WORKSPACE:String = "Find Symbol in Project";
 
 		public function SymbolsPlugin()
 		{

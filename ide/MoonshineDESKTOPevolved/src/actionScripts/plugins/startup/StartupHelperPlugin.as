@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.startup
 {
+	import actionScripts.utils.SDKUtils;
+
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.filesystem.File;
@@ -107,7 +109,8 @@ package actionScripts.plugins.startup
 				//dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
 				dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
 			}
-				
+
+			SDKUtils.initBundledSDKs();
 			preInitHelping();
 		}
 		

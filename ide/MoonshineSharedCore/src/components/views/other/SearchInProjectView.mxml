@@ -43,9 +43,10 @@
 			import actionScripts.plugin.search.SearchPlugin;
 			import actionScripts.ui.tabview.TabEvent;
 			import actionScripts.utils.TextUtil;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ProjectVO;
 			
 			import components.popup.ReplaceProjectSearchPopup;
-			import actionScripts.valueObjects.ProjectVO;
 			
 			[Embed("/elements/images/icoTreeFolder_open.png")]
 			private var iconFolderOpen:Class;
@@ -125,6 +126,7 @@
 				tmpObj.isRegexp = isRegexp;
 				tmpObj.isEscapeChars = isEscapeChars;
 				tmpObj.isShowReplaceWhenDone = isShowReplaceWhenDone;
+				tmpObj.allRedableExtensions = ConstantsCoreVO.READABLE_FILES;
 				
 				tmpObj.projects = getProjectPaths();
 				
