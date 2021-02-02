@@ -26,6 +26,7 @@ class NewWorkspaceView extends ResizableTitleWindow {
 			
 		this.title = "New Workspace";
 		this.minHeight = 150.0;
+		this.minWidth = 300.0;
 		this.closeEnabled = true;
 		this.resizeEnabled = true;
 	}
