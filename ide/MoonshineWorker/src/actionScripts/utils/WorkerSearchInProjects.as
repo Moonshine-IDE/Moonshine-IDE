@@ -14,9 +14,6 @@ package actionScripts.utils
 
 	public class WorkerSearchInProjects
 	{
-		public static const READABLE_FILES_PATTERNS:Array = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", 
-			"actionScriptProperties", "html", "js", "veditorproj", "javaproj", "java", "groovy", "gradle", "yml", "gsp", "properties", "sh", "ini"];
-		
 		public static var FILES_COUNT:int;
 		public static var FILE_PROCESSED_COUNT:int;
 		public static var FILES_FOUND_IN_COUNT:int;
@@ -25,6 +22,7 @@ package actionScripts.utils
 		public var projectSearchObject:Object;
 		public var storedPathsForProbableReplace:Array;
 		
+		private var allRedableExtensions:Array;
 		private var projects:Array;
 		private var totalFoundCount:int;
 		private var customFilePatterns:Array = [];
@@ -37,6 +35,7 @@ package actionScripts.utils
 		
 		public function initiateBeforeNewSearch():void
 		{
+			allRedableExtensions = projectSearchObject.value.allRedableExtensions;
 			projects = projectSearchObject.value.projects;
 			isStorePathsForProbableReplace = projectSearchObject.value.isShowReplaceWhenDone;
 			FILES_FOUND_IN_COUNT = 0;
@@ -202,7 +201,7 @@ package actionScripts.utils
 					});
 			}
 			
-			return READABLE_FILES_PATTERNS.some(
+			return allRedableExtensions.some(
 				function isValidExtension(item:Object, index:int, arr:Array):Boolean {
 					return item == extension;
 				});
