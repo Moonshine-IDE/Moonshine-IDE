@@ -20,7 +20,7 @@
 
 package moonshine.plugin.findResources.view;
 
-import actionScripts.valueObjects.ResourceVO;
+import openfl.utils.Object;
 import feathers.controls.Button;
 import feathers.controls.Callout;
 import feathers.controls.Check;
@@ -66,16 +66,16 @@ class FindResourcesView extends ResizableTitleWindow {
 	private var resultsListView:ListView;
 	private var openResourceButton:Button;
 
-	private var _resources:ArrayCollection<ResourceVO> = new ArrayCollection();
+	private var _resources:ArrayCollection<Dynamic> = new ArrayCollection();
 
 	@:flash.property
-	public var resources(get, set):ArrayCollection<ResourceVO>;
+	public var resources(get, set):ArrayCollection<Dynamic>;
 
-	private function get_resources():ArrayCollection<ResourceVO> {
+	private function get_resources():ArrayCollection<Dynamic> {
 		return this._resources;
 	}
 
-	private function set_resources(value:ArrayCollection<ResourceVO>):ArrayCollection<ResourceVO> {
+	private function set_resources(value:ArrayCollection<Dynamic>):ArrayCollection<Dynamic> {
 		if (this._resources == value) {
 			return this._resources;
 		}
@@ -104,12 +104,12 @@ class FindResourcesView extends ResizableTitleWindow {
 		return this._patterns;
 	}
 
-	private var _selectedResource:ResourceVO;
+	private var _selectedResource:Dynamic;
 
 	@:flash.property
-	public var selectedResource(get, never):ResourceVO;
+	public var selectedResource(get, never):Dynamic;
 
-	public function get_selectedResource():ResourceVO {
+	public function get_selectedResource():Dynamic {
 		return this._selectedResource;
 	}
 
@@ -166,7 +166,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		resultsField.addChild(resultsFieldLabel);
 
 		this.resultsListView = new ListView();
-		this.resultsListView.itemToText = (item:ResourceVO) -> item.name + " - " + item.resourcePath;
+		this.resultsListView.itemToText = (item:Dynamic) -> item.name + " - " + item.resourcePath;
 		this.resultsListView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
 			var itemRenderer = new ItemRenderer();
 			itemRenderer.doubleClickEnabled = true;
@@ -211,7 +211,7 @@ class FindResourcesView extends ResizableTitleWindow {
 			return;
 		}
 		var query = this.searchFieldTextInput.text.toLowerCase();
-		this._resources.filterFunction = function(item:ResourceVO):Bool {
+		this._resources.filterFunction = function(item:Dynamic):Bool {
 			var itemName = item.name.toLowerCase();
 
 			if (query.length > 0 && itemName.indexOf(query) == -1) {

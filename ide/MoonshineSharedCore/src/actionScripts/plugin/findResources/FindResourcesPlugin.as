@@ -29,8 +29,10 @@ package actionScripts.plugin.findResources
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.FeathersUIWrapper;
+	import actionScripts.utils.FileSystemParser;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
 	
 	import feathers.data.ArrayCollection;
@@ -88,22 +90,32 @@ package actionScripts.plugin.findResources
                 }
 			}
 			findResourcesView.patterns = previouslySelectedPatterns;
-
-			var parsedFilesList:ArrayList = new ArrayList();
-			parsedFilesList.addEventListener(CollectionEvent.COLLECTION_CHANGE, onCollectionUpdates, false, 0, true);
-			UtilsCore.parseFilesList(parsedFilesList);
-
-			var resources:ArrayCollection = findResourcesView.resources;
-			resources.removeAll();
+			
+			var tmpFSP:FileSystemParser = new FileSystemParser();
+			tmpFSP.addEventListener("ParseCompleted", onParseCompleted, false, 0, true);
+			// *** TEMP ***
+			tmpFSP.parseFilesPaths((model.projects[0] as ProjectVO).folderLocation.fileBridge.nativePath, ConstantsCoreVO.READABLE_FILES);
 		}
 		
-		private function onCollectionUpdates(event:CollectionEvent):void
+		protected function onParseCompleted(event:Event):void
 		{
-			var fileCount:int = event.items.length;
+			event.target.removeEventListener("ParseCompleted", onParseCompleted);
+			
+			var parsedFilesList:Array = (event.target as FileSystemParser).resultsArrayFormat;
 			var resources:ArrayCollection = findResourcesView.resources;
-			for(var i:int = 0; i < fileCount; i++)
+			resources.removeAll();
+			
+			var fileCount:int = parsedFilesList.length;
+			var separator:String = model.fileCore.separator;
+			for each (var i:String in parsedFilesList)
 			{
-				resources.add(event.items[i] as ResourceVO);
+				//var resource:ResourceVO = ResourceVO(parsedFilesList.getItemAt(i));
+				//resources.add(resource);
+				if (i != "")
+				{
+					// *** TEMP ****
+					resources.add({name:i.substr(i.lastIndexOf(separator)+1, i.length), resourcePath: i});
+				}
 			}
 		}
 

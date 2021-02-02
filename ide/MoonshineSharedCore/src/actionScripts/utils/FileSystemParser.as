@@ -1,46 +1,56 @@
 package actionScripts.utils
 {
-	import mx.collections.ArrayList;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.utils.Dictionary;
+	
 	import mx.collections.IList;
-	import mx.utils.StringUtil;
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.interfaces.IWorkerSubscriber;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.NativeProcessQueueVO;
-	import actionScripts.valueObjects.ResourceVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	
-	public class FileSystemParser implements IWorkerSubscriber
+	[Event(name="ParseCompleted", type="flash.events.Event")]
+	public class FileSystemParser extends EventDispatcher implements IWorkerSubscriber
 	{
 		private static const PARSE_FILES_ON_PATH:String = "parseFilesOnPath";
 		private static const subscribeIdToWorker:String = UIDUtil.createUID();
-		
-		private static var instance:FileSystemParser;
 		
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var collection:IList;
 		private var readableExtensions:Array;
-		private var parsedFiles:Array = [];
+		private var filesTreeByDirectory:Dictionary = new Dictionary();
+		private var allOutput:String = "";
+		private var fileSeparator:String;
 		
-		public static function getInstance():FileSystemParser 
-		{	
-			if (!instance) 
-			{
-				instance = new FileSystemParser();
-				instance.worker.subscribeAsIndividualComponent(subscribeIdToWorker, instance);
-				instance.worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
-			}
-			
-			return instance;
+		private var _resultsStringFormat:String = "";
+		public function get resultsStringFormat():String
+		{
+			return _resultsStringFormat;
+		}
+
+		public function get resultsArrayFormat():Array
+		{
+			return _resultsStringFormat.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
 		}
 		
-		public function parseFilesPaths(fromPath:String, collection:IList, readableExtensions:Array=null):void
+		public function FileSystemParser() 
+		{	
+			fileSeparator = IDEModel.getInstance().fileCore.separator;
+			
+			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
+			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
+		}
+		
+		public function parseFilesPaths(fromPath:String, readableExtensions:Array=null):void
 		{
-			this.collection = collection;
+			//this.collection = collection;
 			this.readableExtensions = readableExtensions;
 			
 			queue = new Vector.<Object>();
@@ -91,17 +101,20 @@ package actionScripts.utils
 		
 		protected function listOfProcessEnded():void
 		{
-			trace("--------------------- ", parsedFiles.join("\n"));
-			parsedFiles.forEach(function(path:String, index:int, arr:Array):void
+			trace("--------------------- ", resultsStringFormat);
+			/*parsedFiles.forEach(function(path:String, index:int, arr:Array):void
 			{
 				if (!collection) collection = new ArrayList();
 				collection.addItem(new ResourceVO(path));
-			});
+			});*/
+			unsubscribeFromWorker();
+			dispatchEvent(new Event("ParseCompleted"));
 		}
 		
 		protected function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
 		{
 			trace("File System Parsing Error: ", value.output);
+			unsubscribeFromWorker();
 		}
 		
 		protected function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
@@ -122,9 +135,9 @@ package actionScripts.utils
 			else
 			{
 				//trace(value.output);
-				value.output = value.output.replace(/^[ \r\n]/gm, "\r\n"); // remove all the blank lines
-				value.output = StringUtil.trim(value.output);
-				parsedFiles = parsedFiles.concat(value.output.split("\r\n"));
+				_resultsStringFormat += value.output.replace(/^[ \r\n]/gm, "\r\n"); // remove all the blank lines
+				//allOutput += StringUtil.trim(value.output);
+				//parsedFiles = parsedFiles.concat(value.output.split("\r\n"));
 			}
 		}
 	}

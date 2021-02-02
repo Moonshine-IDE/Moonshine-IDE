@@ -842,7 +842,7 @@ package actionScripts.utils
 				{
 					//parseChildrens(i.projectFolder, collection, readableExtensions);
 					trace(">>>>>>>>>>>>>>>>>>>>>>>>>> ", i.name);
-					FileSystemParser.getInstance().parseFilesPaths(i.projectFolder.nativePath, collection, readableExtensions);
+					//FileSystemParser.getInstance().parseFilesPaths(i.projectFolder.nativePath, collection, readableExtensions);
 				}
 			}
 		}
