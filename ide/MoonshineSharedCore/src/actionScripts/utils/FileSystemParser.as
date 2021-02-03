@@ -28,6 +28,7 @@ package actionScripts.utils
 		private var filesTreeByDirectory:Dictionary = new Dictionary();
 		private var allOutput:String = "";
 		private var fileSeparator:String;
+		private var newLineCharacter:String = ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n";
 		
 		private var _resultsStringFormat:String = "";
 		public function get resultsStringFormat():String
@@ -37,7 +38,7 @@ package actionScripts.utils
 
 		public function get resultsArrayFormat():Array
 		{
-			return _resultsStringFormat.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
+			return _resultsStringFormat.split(newLineCharacter);
 		}
 		
 		public function FileSystemParser() 
@@ -56,7 +57,7 @@ package actionScripts.utils
 			queue = new Vector.<Object>();
 			addToQueue(new NativeProcessQueueVO(
 				ConstantsCoreVO.IS_MACOS ? 
-					"find $'"+ UtilsCore.getEncodedForShell(fromPath) : 
+					"find $'"+ UtilsCore.getEncodedForShell(fromPath) +"' -type f" :
 					UtilsCore.getEncodedForShell("dir /a-d /b /s"), 
 				false, 
 				PARSE_FILES_ON_PATH)
@@ -135,7 +136,7 @@ package actionScripts.utils
 			else
 			{
 				//trace(value.output);
-				_resultsStringFormat += value.output.replace(/^[ \r\n]/gm, "\r\n"); // remove all the blank lines
+				_resultsStringFormat += value.output.replace(/^[ \n|\r\n]/gm, newLineCharacter); // remove all the blank lines
 				//allOutput += StringUtil.trim(value.output);
 				//parsedFiles = parsedFiles.concat(value.output.split("\r\n"));
 			}
