@@ -20,6 +20,9 @@
 
 package moonshine.plugin.findResources.view;
 
+import feathers.core.IUIControl;
+import feathers.layout.AnchorLayoutData;
+import feathers.layout.AnchorLayout;
 import openfl.utils.Object;
 import feathers.controls.Button;
 import feathers.controls.Callout;
@@ -58,13 +61,14 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.closeEnabled = true;
 		this.resizeEnabled = true;
 		
-		this.addEventListener(Event.ADDED_TO_STAGE, findResourcesView_addedToStageHandler);		
+		this.addEventListener(Event.ADDED_TO_STAGE, findResourcesView_addedToStageHandler);
 	}
 
 	private var searchFieldTextInput:TextInput;
 	private var filterExtensionsButton:Button;
 	private var resultsListView:ListView;
 	private var openResourceButton:Button;
+	private var busyLabel:Label;
 
 	private var _resources:ArrayCollection<Dynamic> = new ArrayCollection();
 
@@ -84,6 +88,25 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.updateFilterFunction();
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._resources;
+	}
+	
+	private var _isBusyState:Bool;
+	
+	@:flash.property
+	public var isBusyState(get, set):Bool;
+
+	private function get_isBusyState():Bool {
+		return this._isBusyState;
+	}
+
+	private function set_isBusyState(value:Bool):Bool {
+		if (this._isBusyState == value) {
+			return this._isBusyState;
+		}
+		
+		this.busyLabel.visible = value;
+		_isBusyState = value;
+		return this._isBusyState;
 	}
 
 	private var _patterns:ArrayCollection<Dynamic> = new ArrayCollection();
@@ -164,6 +187,17 @@ class FindResourcesView extends ResizableTitleWindow {
 		var resultsFieldLabel = new Label();
 		resultsFieldLabel.text = "Matching items:";
 		resultsField.addChild(resultsFieldLabel);
+		
+		var resultsListViewContainer = new LayoutGroup();
+		resultsListViewContainer.layoutData = new VerticalLayoutData(null, 100.0);
+		resultsListViewContainer.layout = new AnchorLayout();
+		resultsField.addChild(resultsListViewContainer);
+		
+		var resultsListViewLayoutData = new AnchorLayoutData();
+		resultsListViewLayoutData.top = 0;
+		resultsListViewLayoutData.bottom = 0;
+		resultsListViewLayoutData.left = 0;
+		resultsListViewLayoutData.right = 0;
 
 		this.resultsListView = new ListView();
 		this.resultsListView.itemToText = (item:Dynamic) -> item.name + " - " + item.resourcePath;
@@ -175,11 +209,22 @@ class FindResourcesView extends ResizableTitleWindow {
 			itemRenderer.addEventListener(MouseEvent.DOUBLE_CLICK, itemRenderer_doubleClickHandler);
 			return itemRenderer;
 		});
-		this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
+		this.resultsListView.layoutData = resultsListViewLayoutData;
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
 		//this.resultsListView.addEventListener(KeyboardEvent.KEY_DOWN, resultsListView_keyDownHandler);
 				
-		resultsField.addChild(this.resultsListView);
+		resultsListViewContainer.addChild(this.resultsListView);
+		
+		var busyLabelLayoutData = new AnchorLayoutData();
+		busyLabelLayoutData.left = 10;
+		busyLabelLayoutData.right = 10;
+		busyLabelLayoutData.verticalCenter = 0;
+		
+		this.busyLabel = new Label();
+		this.busyLabel.text = "Fetching files... Hold on Tiger!";
+		this.busyLabel.variant = MoonshineTheme.THEME_VARIANT_BUSY_LABEL;
+		this.busyLabel.layoutData = AnchorLayoutData.center();
+		resultsListViewContainer.addChild(this.busyLabel);
 
 		var footer = new LayoutGroup();
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
@@ -190,6 +235,8 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.openResourceButton.addEventListener(TriggerEvent.TRIGGER, openResourceButton_triggerHandler);
 		footer.addChild(this.openResourceButton);
 		this.footer = footer;
+		
+		
 
 		super.initialize();
 		

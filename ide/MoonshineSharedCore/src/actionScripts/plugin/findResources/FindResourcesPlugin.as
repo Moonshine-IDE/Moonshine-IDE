@@ -93,13 +93,14 @@ package actionScripts.plugin.findResources
 			
 			var tmpFSP:FileSystemParser = new FileSystemParser();
 			tmpFSP.addEventListener("ParseCompleted", onParseCompleted, false, 0, true);
-			// *** TEMP ***
-			tmpFSP.parseFilesPaths((model.projects[0] as ProjectVO).folderLocation.fileBridge.nativePath, ConstantsCoreVO.READABLE_FILES);
+			tmpFSP.parseFilesPaths(model.activeProject.folderLocation.fileBridge.nativePath, ConstantsCoreVO.READABLE_FILES);
 		}
 		
 		protected function onParseCompleted(event:Event):void
 		{
 			event.target.removeEventListener("ParseCompleted", onParseCompleted);
+			
+			findResourcesView.isBusyState = false;
 			
 			var parsedFilesList:Array = (event.target as FileSystemParser).resultsArrayFormat;
 			var resources:ArrayCollection = findResourcesView.resources;
