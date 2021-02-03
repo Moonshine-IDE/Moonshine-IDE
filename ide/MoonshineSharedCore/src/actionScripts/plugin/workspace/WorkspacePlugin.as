@@ -198,6 +198,7 @@ package actionScripts.plugin.workspace
 			newWorkspaceView.addEventListener(Event.CLOSE, handleNewWorkspacePopupClose);
 
 			PopUpManager.centerPopUp(newWorkspaceViewWrapper);
+			newWorkspaceViewWrapper.assignFocus("top");
 			newWorkspaceViewWrapper.stage.addEventListener(Event.RESIZE, newWorkspaceView_stage_resizeHandler, false, 0, true);
 
 			return newWorkspaceView;
@@ -215,6 +216,7 @@ package actionScripts.plugin.workspace
 			loadWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
 
 			PopUpManager.centerPopUp(loadWorkspaceViewWrapper);
+			loadWorkspaceViewWrapper.assignFocus("top");
 			loadWorkspaceViewWrapper.stage.addEventListener(Event.RESIZE, loadWorkspaceView_stage_resizeHandler, false, 0, true);
 		}
 		
