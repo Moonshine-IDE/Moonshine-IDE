@@ -217,7 +217,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		busyLabelLayoutData.verticalCenter = 0;
 		
 		this.busyLabel = new Label();
-		this.busyLabel.text = "Fetching files... Hold on Tiger!";
+		this.busyLabel.text = "Collecting files... Hold on Tiger.";
 		this.busyLabel.variant = MoonshineTheme.THEME_VARIANT_BUSY_LABEL;
 		this.busyLabel.layoutData = AnchorLayoutData.center();
 		resultsListViewContainer.addChild(this.busyLabel);
