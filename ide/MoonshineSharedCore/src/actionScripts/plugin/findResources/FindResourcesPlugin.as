@@ -108,14 +108,19 @@ package actionScripts.plugin.findResources
 			
 			var fileCount:int = parsedFilesList.length;
 			var separator:String = model.fileCore.separator;
+			var tmpNameLabel:String;
+			var tmpNameExtension:String;
 			for each (var i:String in parsedFilesList)
 			{
 				//var resource:ResourceVO = ResourceVO(parsedFilesList.getItemAt(i));
 				//resources.add(resource);
 				if (i != "")
 				{
+					tmpNameLabel = i.substr(i.lastIndexOf(separator)+1, i.length);
+					tmpNameExtension = tmpNameLabel.substr(tmpNameLabel.lastIndexOf(".")+1, tmpNameLabel.length);
+					
 					// *** TEMP ****
-					resources.add({name:i.substr(i.lastIndexOf(separator)+1, i.length), resourcePath: i});
+					resources.add({name:tmpNameLabel, extension: tmpNameExtension, resourcePath: i});
 				}
 			}
 		}

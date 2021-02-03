@@ -100,10 +100,6 @@ class FindResourcesView extends ResizableTitleWindow {
 	}
 
 	private function set_isBusyState(value:Bool):Bool {
-		if (this._isBusyState == value) {
-			return this._isBusyState;
-		}
-		
 		this.busyLabel.visible = value;
 		_isBusyState = value;
 		return this._isBusyState;
@@ -235,11 +231,8 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.openResourceButton.addEventListener(TriggerEvent.TRIGGER, openResourceButton_triggerHandler);
 		footer.addChild(this.openResourceButton);
 		this.footer = footer;
-		
-		
 
 		super.initialize();
-		
 		this.updateFilterFunction();
 	}
 
@@ -271,7 +264,7 @@ class FindResourcesView extends ResizableTitleWindow {
 				if (pattern.isSelected) {
 					someSelected = true;
 				}
-				if (pattern.label == item.resourceExtension && pattern.isSelected) {
+				if (pattern.label == item.extension && pattern.isSelected) {
 					isSelected = true;
 				}
 			}
