@@ -27,6 +27,7 @@ package actionScripts.plugin.findResources
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.events.OpenFileEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.utils.FileSystemParser;
@@ -127,11 +128,11 @@ package actionScripts.plugin.findResources
 
 		protected function findResourcesView_closeHandler(event:Event):void
 		{
-			var selectedResource:ResourceVO = findResourcesView.selectedResource;
+			var selectedResource:Object = findResourcesView.selectedResource;
 			if(selectedResource)
 			{
 				dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [selectedResource.sourceWrapper.file], -1, [selectedResource.sourceWrapper]));
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [new FileLocation(selectedResource.resourcePath)]));
 			}
 
 			previouslySelectedPatterns = findResourcesView.patterns;
