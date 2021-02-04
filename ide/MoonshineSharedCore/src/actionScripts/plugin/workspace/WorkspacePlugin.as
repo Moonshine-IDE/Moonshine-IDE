@@ -20,6 +20,7 @@
 package actionScripts.plugin.workspace
 {
 	import actionScripts.ui.FeathersUIWrapper;
+	import actionScripts.valueObjects.WorkspaceVO;
 
 	import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -58,8 +59,9 @@ package actionScripts.plugin.workspace
 		override public function get description():String 	{return "Workspace manangement for the Moonshine projects.";}
 		
 		private var cookie:SharedObject;
-		private var currentWorkspaceItems:Array;
+		private var currentWorkspacePaths:Array;
 		private var workspaces:Object; // Dictionary<String, [String]>
+		private var workspacesForViews:Array;
 		private var methodToCallAfterClosingAllProjects:MethodDescriptor;
 		private var closeAllProjectItems:Array;
 		
@@ -113,7 +115,7 @@ package actionScripts.plugin.workspace
 		{
 			if (getPathIndex(event.project.folderLocation.fileBridge.nativePath) == -1)
 			{
-				currentWorkspaceItems.push(event.project.folderLocation.fileBridge.nativePath);
+				currentWorkspacePaths.push(event.project.folderLocation.fileBridge.nativePath);
 				saveToCookie();
 			}
 		}
@@ -137,7 +139,7 @@ package actionScripts.plugin.workspace
 				var pathIndex:int = getPathIndex(value);
 				if (pathIndex != -1)
 				{
-					currentWorkspaceItems.splice(pathIndex, 1);
+					currentWorkspacePaths.splice(pathIndex, 1);
 					saveToCookie();
 				}
 			}
@@ -183,7 +185,7 @@ package actionScripts.plugin.workspace
 			methodToCallAfterClosingAllProjects = 
 				new MethodDescriptor(this, 'changeToNewWorkspace', event.workspaceLabel);
 			
-			closeAllProjectItems = ObjectUtil.copy(currentWorkspaceItems) as Array;
+			closeAllProjectItems = ObjectUtil.copy(currentWorkspacePaths) as Array;
 			closeAllEditorAsync();
 		}
 
@@ -193,7 +195,7 @@ package actionScripts.plugin.workspace
 			newWorkspaceViewWrapper = new FeathersUIWrapper(newWorkspaceView);
 			PopUpManager.addPopUp(newWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
 
-			newWorkspaceView.workspaces = new ArrayCollection(workspaceLabels);
+			newWorkspaceView.workspaces = new ArrayCollection(this.workspacesForViews);
 			newWorkspaceView.title = title;
 			newWorkspaceView.addEventListener(Event.CLOSE, handleNewWorkspacePopupClose);
 
@@ -210,8 +212,8 @@ package actionScripts.plugin.workspace
 			loadWorkspaceViewWrapper = new FeathersUIWrapper(loadWorkspaceView);
 			PopUpManager.addPopUp(loadWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
 
-			loadWorkspaceView.workspaces = new ArrayCollection(workspaceLabels);
-			loadWorkspaceView.selectedWorkspace = currentWorkspaceLabel;
+			loadWorkspaceView.workspaces = new ArrayCollection(workspacesForViews);
+			loadWorkspaceView.selectedWorkspace = this.getCurrentWorkspaceForView(currentWorkspaceLabel);
 			loadWorkspaceView.addEventListener(Event.CLOSE, handleLoadWorkspacePopupClose);
 			loadWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
 
@@ -239,7 +241,7 @@ package actionScripts.plugin.workspace
 				methodToCallAfterClosingAllProjects = 
 					new MethodDescriptor(this, 'changeToWorkspace', requestedWorkspace);
 				
-				closeAllProjectItems = ObjectUtil.copy(currentWorkspaceItems) as Array;
+				closeAllProjectItems = ObjectUtil.copy(currentWorkspacePaths) as Array;
 				closeAllEditorAsync();
 			}
 		}
@@ -257,7 +259,8 @@ package actionScripts.plugin.workspace
 		private function restoreFromCookie():void
 		{
 			currentWorkspaceLabel = ("currentWorkspace" in cookie.data) ? cookie.data["currentWorkspace"] : LABEL_DEFAULT_WORKSPACE;
-			
+
+			workspacesForViews = [];
 			workspaces = new Object();
 			if ("workspaces" in cookie.data)
 			{
@@ -267,26 +270,31 @@ package actionScripts.plugin.workspace
 			{
 				workspaces[LABEL_DEFAULT_WORKSPACE] = [];
 			}
-			
-			currentWorkspaceItems = (workspaces[currentWorkspaceLabel] !== undefined) ? 
+
+			for (var workspace:String in workspaces)
+			{
+				this.workspacesForViews.push(new WorkspaceVO(workspace, workspaces[workspace]));
+			}
+
+			currentWorkspacePaths = (workspaces[currentWorkspaceLabel] !== undefined) ?
 				workspaces[currentWorkspaceLabel] : [];
 		}
 		
 		private function getPathIndex(path:String):int
 		{
-			return currentWorkspaceItems.indexOf(path);
+			return currentWorkspacePaths.indexOf(path);
 		}
 		
 		public function changeToWorkspace(label:String):void
 		{
 			currentWorkspaceLabel = label;
-			currentWorkspaceItems = workspaces[currentWorkspaceLabel];
+			currentWorkspacePaths = workspaces[currentWorkspaceLabel];
 			saveToCookie();
 			
 			// codes to re-open each projects
 			// saved from the active workspace
 			var tmpProjectLocation:FileLocation;
-			for each (var path:String in currentWorkspaceItems)
+			for each (var path:String in currentWorkspacePaths)
 			{
 				tmpProjectLocation = new FileLocation(path);
 				if (tmpProjectLocation.fileBridge.exists)
@@ -300,25 +308,25 @@ package actionScripts.plugin.workspace
 		
 		public function changeToNewWorkspace(label:String):void
 		{
-			currentWorkspaceItems = [];
+			currentWorkspacePaths = [];
 			currentWorkspaceLabel = label;
-			workspaces[currentWorkspaceLabel] = currentWorkspaceItems;
+			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 			saveToCookie();
 			outputToConsole();
 		}
 		
 		private function duplicateToNewWorkspace(label:String):void
 		{
-			currentWorkspaceItems = ObjectUtil.clone(currentWorkspaceItems) as Array;
+			currentWorkspacePaths = ObjectUtil.clone(currentWorkspacePaths) as Array;
 			currentWorkspaceLabel = label;
-			workspaces[currentWorkspaceLabel] = currentWorkspaceItems;
+			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 			saveToCookie();
 			outputToConsole();
 		}
 		
 		private function saveToCookie():void
 		{
-			workspaces[currentWorkspaceLabel] = currentWorkspaceItems;
+			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 			cookie.data["currentWorkspace"] = currentWorkspaceLabel;
 			cookie.data["workspaces"] = workspaces;
 			
@@ -351,6 +359,16 @@ package actionScripts.plugin.workspace
 				methodToCallAfterClosingAllProjects = null;
 				closeAllProjectItems = null;
 			}
+		}
+
+		private function getCurrentWorkspaceForView(label:String):WorkspaceVO
+		{
+			for each (var workspace:WorkspaceVO in this.workspacesForViews)
+			{
+				if (workspace.label == label) return workspace;
+			}
+
+			return null;
 		}
 	}
 }

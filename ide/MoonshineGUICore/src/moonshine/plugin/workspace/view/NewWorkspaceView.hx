@@ -17,6 +17,7 @@ import feathers.layout.AnchorLayoutData;
 import feathers.controls.LayoutGroup;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
+import actionScripts.valueObjects.WorkspaceVO;
 
 import feathers.events.TriggerEvent;
 class NewWorkspaceView extends ResizableTitleWindow {
@@ -36,16 +37,16 @@ class NewWorkspaceView extends ResizableTitleWindow {
 	private var newWorkspaceButton:Button;
 	private var workspaceNameTextInput:TextInput;
 	
-	private var _workspaces:ArrayCollection<String> = new ArrayCollection();
+	private var _workspaces:ArrayCollection<WorkspaceVO> = new ArrayCollection();
 	
 	@:flash.property
-	public var workspaces(get, set):ArrayCollection<String>;
+	public var workspaces(get, set):ArrayCollection<WorkspaceVO>;
 
-	private function get_workspaces():ArrayCollection<String> {
+	private function get_workspaces():ArrayCollection<WorkspaceVO> {
 		return this._workspaces;
 	}
 
-	private function set_workspaces(value:ArrayCollection<String>):ArrayCollection<String> {
+	private function set_workspaces(value:ArrayCollection<WorkspaceVO>):ArrayCollection<WorkspaceVO> {
 		if (this._workspaces == value) {
 			return this._workspaces;
 		}
@@ -91,15 +92,15 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		
 		if (workspaceName == null || workspaceName.length == 0) return;
 		
-		if (this._workspaces.contains(workspaceName)) return;
+		var hasWorkspace = this._workspaces.some(
+				function hasWorkspace(workspace:WorkspaceVO, index:Int, arr:ArrayCollection<WorkspaceVO>):Bool {
+										return workspace.label == workspaceName;
+						  			});
+		if (hasWorkspace) return;
 		
 		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, workspaceName);
 		this.dispatchEvent(workspaceEvent);
 		
 		this.dispatchEvent(new Event(Event.CLOSE));
-	}
-	
-	private function hasWorkspace(workspace:String, index:Int, arr:ArrayCollection<String>):Bool {
-		return workspace == this.workspaceNameTextInput.text;
 	}
 }
