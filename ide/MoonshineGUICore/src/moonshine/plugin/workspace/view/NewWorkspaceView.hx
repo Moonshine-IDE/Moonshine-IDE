@@ -90,13 +90,17 @@ class NewWorkspaceView extends ResizableTitleWindow {
 	private function newWorkspaceButton_triggerHandler(event:Event):Void {
 		var workspaceName = StringTools.trim(this.workspaceNameTextInput.text);
 		
-		if (workspaceName == null || workspaceName.length == 0) return;
+		if (workspaceName == null || workspaceName.length == 0) {
+			return;
+		}
 		
 		var hasWorkspace = this._workspaces.some(
 				function hasWorkspace(workspace:WorkspaceVO, index:Int, arr:ArrayCollection<WorkspaceVO>):Bool {
 										return workspace.label == workspaceName;
 						  			});
-		if (hasWorkspace) return;
+		if (hasWorkspace) {
+			return;
+		}
 		
 		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, workspaceName);
 		this.dispatchEvent(workspaceEvent);
