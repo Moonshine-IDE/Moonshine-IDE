@@ -19,7 +19,8 @@ package actionScripts.utils
 	public class FileSystemParser extends EventDispatcher implements IWorkerSubscriber
 	{
 		private static const PARSE_FILES_ON_PATH:String = "parseFilesOnPath";
-		private static const subscribeIdToWorker:String = UIDUtil.createUID();
+		
+		private static var subscribeIdToWorker:String;
 		
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
@@ -44,6 +45,7 @@ package actionScripts.utils
 		public function FileSystemParser() 
 		{	
 			fileSeparator = IDEModel.getInstance().fileCore.separator;
+			subscribeIdToWorker = UIDUtil.createUID();
 			
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);

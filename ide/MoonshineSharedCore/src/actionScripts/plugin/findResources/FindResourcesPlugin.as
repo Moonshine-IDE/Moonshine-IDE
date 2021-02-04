@@ -21,9 +21,7 @@ package actionScripts.plugin.findResources
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
-	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
-	import mx.events.CollectionEvent;
 	import mx.managers.PopUpManager;
 	
 	import actionScripts.events.OpenFileEvent;
@@ -34,7 +32,6 @@ package actionScripts.plugin.findResources
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.valueObjects.ResourceVO;
 	
 	import feathers.data.ArrayCollection;
 	
@@ -90,22 +87,25 @@ package actionScripts.plugin.findResources
                     previouslySelectedPatterns.add({label: extension, isSelected: false});
                 }
 			}
+			
 			findResourcesView.patterns = previouslySelectedPatterns;
 			
-			var tmpFSP:FileSystemParser = new FileSystemParser();
-			tmpFSP.addEventListener("ParseCompleted", onParseCompleted, false, 0, true);
-			tmpFSP.parseFilesPaths(model.activeProject.folderLocation.fileBridge.nativePath, ConstantsCoreVO.READABLE_FILES);
+			for each (var project:ProjectVO in model.projects)
+			{
+				var tmpFSP:FileSystemParser = new FileSystemParser();
+				tmpFSP.addEventListener("ParseCompleted", onParseCompleted, false, 0, true);
+				tmpFSP.parseFilesPaths(project.folderLocation.fileBridge.nativePath, ConstantsCoreVO.READABLE_FILES);
+			}
 		}
 		
 		protected function onParseCompleted(event:Event):void
 		{
-			event.target.removeEventListener("ParseCompleted", onParseCompleted);
+			event.currentTarget.removeEventListener("ParseCompleted", onParseCompleted);
 			
 			findResourcesView.isBusyState = false;
 			
 			var parsedFilesList:Array = (event.target as FileSystemParser).resultsArrayFormat;
 			var resources:ArrayCollection = findResourcesView.resources;
-			resources.removeAll();
 			
 			var fileCount:int = parsedFilesList.length;
 			var separator:String = model.fileCore.separator;
@@ -119,8 +119,6 @@ package actionScripts.plugin.findResources
 				{
 					tmpNameLabel = i.substr(i.lastIndexOf(separator)+1, i.length);
 					tmpNameExtension = tmpNameLabel.substr(tmpNameLabel.lastIndexOf(".")+1, tmpNameLabel.length);
-					
-					// *** TEMP ****
 					resources.add({name:tmpNameLabel, extension: tmpNameExtension, resourcePath: i});
 				}
 			}
