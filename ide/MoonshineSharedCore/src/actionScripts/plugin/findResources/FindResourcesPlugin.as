@@ -29,7 +29,6 @@ package actionScripts.plugin.findResources
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.utils.FileSystemParser;
-	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
@@ -48,6 +47,8 @@ package actionScripts.plugin.findResources
 
 		private var findResourcesView:FindResourcesView;
 		private var findResourcesViewWrapper:FeathersUIWrapper;
+		private var projectsPaths:Array = [];
+		private var parsedStrings:String = "";
 
 		public function FindResourcesPlugin()
 		{
@@ -89,22 +90,46 @@ package actionScripts.plugin.findResources
 			}
 			
 			findResourcesView.patterns = previouslySelectedPatterns;
-			
+			parsedStrings = "";
 			for each (var project:ProjectVO in model.projects)
 			{
-				var tmpFSP:FileSystemParser = new FileSystemParser();
-				tmpFSP.addEventListener("ParseCompleted", onParseCompleted, false, 0, true);
-				tmpFSP.parseFilesPaths(project.folderLocation.fileBridge.nativePath, ConstantsCoreVO.READABLE_FILES);
+				projectsPaths.push({path:project.folderLocation.fileBridge.nativePath, name:project.name});
 			}
+			
+			readFilePaths();
 		}
+		
+		private function readFilePaths():void
+		{
+			if (projectsPaths.length == 0) return;
+			
+			var tmpObj:Object = projectsPaths.shift();
+			var tmpFSP:FileSystemParser = new FileSystemParser();
+			tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onParseCompleted, false, 0, true);
+			tmpFSP.parseFilesPaths(tmpObj.path, tmpObj.name, ConstantsCoreVO.READABLE_FILES);
+		}
+		
 		
 		protected function onParseCompleted(event:Event):void
 		{
-			event.currentTarget.removeEventListener("ParseCompleted", onParseCompleted);
+			event.currentTarget.removeEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onParseCompleted);
 			
+			parsedStrings += (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n") + (event.currentTarget as FileSystemParser).resultsStringFormat;
+			if (projectsPaths.length == 0)
+			{
+				prepareDisplayOnUI();
+			}
+			else
+			{
+				readFilePaths();
+			}
+		}
+		
+		private function prepareDisplayOnUI():void
+		{
 			findResourcesView.isBusyState = false;
 			
-			var parsedFilesList:Array = (event.target as FileSystemParser).resultsArrayFormat;
+			var parsedFilesList:Array = parsedStrings.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
 			var resources:ArrayCollection = findResourcesView.resources;
 			
 			var fileCount:int = parsedFilesList.length;

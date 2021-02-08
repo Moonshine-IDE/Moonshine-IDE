@@ -837,12 +837,13 @@ package actionScripts.utils
 					if (sourceWrapper) 
 					{
 						initiateFilesParsingByPath(sourceWrapper.file.fileBridge.nativePath);
-						parseChildrens(sourceWrapper, flexCollection, readableExtensions);
+						//parseChildrens(sourceWrapper, flexCollection, readableExtensions);
 						return;
 					}
 				}
 				
-				parseChildrens(project.projectFolder, flexCollection, readableExtensions);
+				initiateFilesParsingByPath(project.projectFolder.nativePath);
+				//parseChildrens(project.projectFolder, flexCollection, readableExtensions);
 			}
 			else
 			{
@@ -862,12 +863,12 @@ package actionScripts.utils
 			function initiateFilesParsingByPath(value:String):void
 			{
 				var tmpFSP:FileSystemParser = new FileSystemParser();
-				tmpFSP.addEventListener("ParseCompleted", onFilesListParseCompleted, false, 0, true);
-				tmpFSP.parseFilesPaths(value, readableExtensions);
+				tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onFilesListParseCompleted, false, 0, true);
+				tmpFSP.parseFilesPaths(value, "", readableExtensions);
 			}
 			function onFilesListParseCompleted(event:Event):void
 			{
-				event.currentTarget.removeEventListener("ParseCompleted", onFilesListParseCompleted);
+				event.currentTarget.removeEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onFilesListParseCompleted);
 				
 				var parsedFilesList:Array = (event.target as FileSystemParser).resultsArrayFormat;
 				var fileCount:int = parsedFilesList.length;

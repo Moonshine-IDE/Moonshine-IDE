@@ -4,10 +4,10 @@ package actionScripts.utils
 	import flash.events.EventDispatcher;
 	import flash.utils.Dictionary;
 	
-	import mx.collections.IList;
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IWorkerSubscriber;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.locator.IDEWorker;
@@ -15,21 +15,34 @@ package actionScripts.utils
 	import actionScripts.valueObjects.NativeProcessQueueVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	
-	[Event(name="ParseCompleted", type="flash.events.Event")]
+	[Event(name=EVENT_PARSE_COMPLETED, type="flash.events.Event")]
 	public class FileSystemParser extends EventDispatcher implements IWorkerSubscriber
 	{
+		public static const EVENT_PARSE_COMPLETED:String = "ParseCompleted";
+		
 		private static const PARSE_FILES_ON_PATH:String = "parseFilesOnPath";
 		
 		private static var subscribeIdToWorker:String;
 		
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
-		private var collection:IList;
 		private var readableExtensions:Array;
 		private var filesTreeByDirectory:Dictionary = new Dictionary();
 		private var allOutput:String = "";
 		private var fileSeparator:String;
 		private var newLineCharacter:String = ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n";
+		
+		private var _filePath:String;
+		public function get filePath():String
+		{
+			return _filePath;
+		}
+		
+		private var _fileName:String;
+		public function get fileName():String
+		{
+			return _fileName;
+		}
 		
 		private var _resultsStringFormat:String = "";
 		public function get resultsStringFormat():String
@@ -51,16 +64,26 @@ package actionScripts.utils
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
 		
-		public function parseFilesPaths(fromPath:String, readableExtensions:Array=null):void
+		public function parseFilesPaths(fromPath:String, fileName:String, readableExtensions:Array=null):void
 		{
-			//this.collection = collection;
 			this.readableExtensions = readableExtensions;
+			this._fileName = fileName;
+			this._filePath = IDEModel.getInstance().fileCore.resolveTemporaryDirectoryPath(fileName +".txt").fileBridge.nativePath;
+			
+			var tmpExtensions:String = "";
+			if (readableExtensions)
+			{
+				for each (var ext:String in readableExtensions)
+				{
+					tmpExtensions += "*."+ ext +" ";
+				}
+			}
 			
 			queue = new Vector.<Object>();
 			addToQueue(new NativeProcessQueueVO(
 				ConstantsCoreVO.IS_MACOS ? 
-					"find $'"+ UtilsCore.getEncodedForShell(fromPath) +"' -type f" :
-					UtilsCore.getEncodedForShell("dir /a-d /b /s"), 
+					"find $'"+ UtilsCore.getEncodedForShell(fromPath) +"' -type f > '"+ _filePath +"'" :
+					"dir /a-d /b /s "+ tmpExtensions +" > \""+ _filePath +"\"", 
 				false, 
 				PARSE_FILES_ON_PATH)
 			);
@@ -104,14 +127,31 @@ package actionScripts.utils
 		
 		protected function listOfProcessEnded():void
 		{
-			trace("--------------------- ", resultsStringFormat);
-			/*parsedFiles.forEach(function(path:String, index:int, arr:Array):void
-			{
-				if (!collection) collection = new ArrayList();
-				collection.addItem(new ResourceVO(path));
-			});*/
 			unsubscribeFromWorker();
-			dispatchEvent(new Event("ParseCompleted"));
+			
+			// read the file content
+			IDEModel.getInstance().fileCore.readAsyncWithListener(
+				onReadCompletes, 
+				onReadError, 
+				new FileLocation(filePath)
+			);
+			
+			/*
+			* @local
+			*/
+			function onReadCompletes(output:String):void
+			{
+				if (output)
+				{
+					_resultsStringFormat += (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n") + output;
+				}
+				dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
+			}
+			function onReadError(value:String):void
+			{
+				trace(value);
+				dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
+			}
 		}
 		
 		protected function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
@@ -138,7 +178,7 @@ package actionScripts.utils
 			else
 			{
 				//trace(value.output);
-				_resultsStringFormat += value.output.replace(/^[ \n|\r\n]/gm, newLineCharacter); // remove all the blank lines
+				//_resultsStringFormat += value.output.replace(/^[ \n|\r\n]/gm, newLineCharacter); // remove all the blank lines
 				//allOutput += StringUtil.trim(value.output);
 				//parsedFiles = parsedFiles.concat(value.output.split("\r\n"));
 			}
