@@ -6,11 +6,13 @@ package actionScripts.utils
 	
 	import mx.utils.UIDUtil;
 	
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IWorkerSubscriber;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.locator.IDEWorker;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.NativeProcessQueueVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
@@ -69,6 +71,10 @@ package actionScripts.utils
 			this.readableExtensions = readableExtensions;
 			this._fileName = fileName;
 			this._filePath = IDEModel.getInstance().fileCore.resolveTemporaryDirectoryPath(fileName +".txt").fileBridge.nativePath;
+			
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _filePath, false, false, ConsoleOutputEvent.TYPE_NOTE)
+			);
 			
 			var tmpExtensions:String = "";
 			if (readableExtensions && !ConstantsCoreVO.IS_MACOS)
@@ -144,15 +150,23 @@ package actionScripts.utils
 			*/
 			function onReadCompletes(output:String):void
 			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "OnReadCompletes", false, false, ConsoleOutputEvent.TYPE_NOTE)
+				);
 				if (output)
 				{
 					_resultsStringFormat += (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n") + output;
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _resultsStringFormat, false, false, ConsoleOutputEvent.TYPE_NOTE)
+					);
 				}
 				dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
 			}
 			function onReadError(value:String):void
 			{
-				trace(value);
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, value, false, false, ConsoleOutputEvent.TYPE_ERROR)
+				);
 				dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
 			}
 		}
