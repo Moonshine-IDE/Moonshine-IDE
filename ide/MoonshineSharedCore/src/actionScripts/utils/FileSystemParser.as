@@ -71,18 +71,21 @@ package actionScripts.utils
 			this._filePath = IDEModel.getInstance().fileCore.resolveTemporaryDirectoryPath(fileName +".txt").fileBridge.nativePath;
 			
 			var tmpExtensions:String = "";
-			if (readableExtensions)
+			if (readableExtensions && !ConstantsCoreVO.IS_MACOS)
 			{
 				for each (var ext:String in readableExtensions)
 				{
 					tmpExtensions += "*."+ ext +" ";
 				}
 			}
-			
+
+			// @example
+			// macOS: find -E $'folderPath' -regex '.*\.(mxml|xml)' -type f
+			// windows: dir /a-d /b /s *.mxml *.xml
 			queue = new Vector.<Object>();
 			addToQueue(new NativeProcessQueueVO(
 				ConstantsCoreVO.IS_MACOS ? 
-					"find $'"+ UtilsCore.getEncodedForShell(fromPath) +"' -type f > '"+ _filePath +"'" :
+					"find -E $'"+ UtilsCore.getEncodedForShell(fromPath) +"' -regex '.*\\.("+ readableExtensions.join("|") +")' -type f > '"+ _filePath +"'" :
 					"dir /a-d /b /s "+ tmpExtensions +" > \""+ _filePath +"\"", 
 				false, 
 				PARSE_FILES_ON_PATH)

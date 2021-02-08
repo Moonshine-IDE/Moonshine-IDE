@@ -837,23 +837,17 @@ package actionScripts.utils
 					if (sourceWrapper) 
 					{
 						initiateFilesParsingByPath(sourceWrapper.file.fileBridge.nativePath);
-						//parseChildrens(sourceWrapper, flexCollection, readableExtensions);
 						return;
 					}
 				}
 				
 				initiateFilesParsingByPath(project.projectFolder.nativePath);
-				//parseChildrens(project.projectFolder, flexCollection, readableExtensions);
 			}
 			else
 			{
 				for each (var i:ProjectVO in model.projects)
 				{
 					initiateFilesParsingByPath(i.projectFolder.nativePath);
-					
-					//parseChildrens(i.projectFolder, collection, readableExtensions);
-					//trace(">>>>>>>>>>>>>>>>>>>>>>>>>> ", i.name);
-					//FileSystemParser.getInstance().parseFilesPaths(i.projectFolder.nativePath, collection, readableExtensions);
 				}
 			}
 			
