@@ -71,11 +71,7 @@ package actionScripts.utils
 			this.readableExtensions = readableExtensions;
 			this._fileName = fileName;
 			this._filePath = IDEModel.getInstance().fileCore.resolveTemporaryDirectoryPath(fileName +".txt").fileBridge.nativePath;
-			
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _filePath, false, false, ConsoleOutputEvent.TYPE_NOTE)
-			);
-			
+
 			var tmpExtensions:String = "";
 			if (readableExtensions && !ConstantsCoreVO.IS_MACOS)
 			{
@@ -92,7 +88,7 @@ package actionScripts.utils
 			addToQueue(new NativeProcessQueueVO(
 				ConstantsCoreVO.IS_MACOS ? 
 					"find -E $'"+ UtilsCore.getEncodedForShell(fromPath) +"' -regex '.*\\.("+ readableExtensions.join("|") +")' -type f > '"+ _filePath +"'" :
-					"dir /a-d /b /s "+ tmpExtensions +" > \""+ _filePath +"\"", 
+					"dir /a-d /b /s "+ tmpExtensions +" > "+ UtilsCore.getEncodedForShell(_filePath), 
 				false, 
 				PARSE_FILES_ON_PATH)
 			);
@@ -150,31 +146,27 @@ package actionScripts.utils
 			*/
 			function onReadCompletes(output:String):void
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "OnReadCompletes", false, false, ConsoleOutputEvent.TYPE_NOTE)
-				);
 				if (output)
 				{
 					_resultsStringFormat += (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n") + output;
-					GlobalEventDispatcher.getInstance().dispatchEvent(
-						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, _resultsStringFormat, false, false, ConsoleOutputEvent.TYPE_NOTE)
-					);
 				}
 				dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
 			}
 			function onReadError(value:String):void
 			{
+				dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, value, false, false, ConsoleOutputEvent.TYPE_ERROR)
 				);
-				dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
 			}
 		}
 		
 		protected function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
 		{
-			trace("File System Parsing Error: ", value.output);
 			unsubscribeFromWorker();
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, value.output, false, false, ConsoleOutputEvent.TYPE_ERROR)
+			);
 		}
 		
 		protected function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 

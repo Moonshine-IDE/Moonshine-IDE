@@ -106,9 +106,8 @@ package actionScripts.plugin.findResources
 			var tmpObj:Object = projectsPaths.shift();
 			var tmpFSP:FileSystemParser = new FileSystemParser();
 			tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onParseCompleted, false, 0, true);
-			tmpFSP.parseFilesPaths(tmpObj.path, tmpObj.name, ConstantsCoreVO.READABLE_FILES);
+			tmpFSP.parseFilesPaths(tmpObj.path, tmpObj.name);
 		}
-		
 		
 		protected function onParseCompleted(event:Event):void
 		{
@@ -147,6 +146,9 @@ package actionScripts.plugin.findResources
 					resources.add({name:tmpNameLabel, extension: tmpNameExtension, resourcePath: i});
 				}
 			}
+			
+			// this will update the files count on UI
+			findResourcesView.isFilesLoadCompleted = true;
 		}
 
 		protected function findResourcesView_closeHandler(event:Event):void

@@ -20,6 +20,8 @@
 
 package moonshine.plugin.findResources.view;
 
+import openfl.text.TextFormatAlign;
+import openfl.text.TextFormat;
 import feathers.core.IUIControl;
 import feathers.layout.AnchorLayoutData;
 import feathers.layout.AnchorLayout;
@@ -68,6 +70,7 @@ class FindResourcesView extends ResizableTitleWindow {
 	private var filterExtensionsButton:Button;
 	private var resultsListView:ListView;
 	private var openResourceButton:Button;
+	private var filesCountLabel:Label;
 	private var busyLabel:Label;
 
 	private var _resources:ArrayCollection<Dynamic> = new ArrayCollection();
@@ -101,8 +104,23 @@ class FindResourcesView extends ResizableTitleWindow {
 
 	private function set_isBusyState(value:Bool):Bool {
 		this.busyLabel.visible = value;
-		_isBusyState = value;
+		_isBusyState = value;	
 		return this._isBusyState;
+	}
+	
+	private var _isFilesLoadCompleted:Bool;
+	
+	@:flash.property
+	public var isFilesLoadCompleted(get, set):Bool;
+
+	private function get_isFilesLoadCompleted():Bool {
+		return this._isFilesLoadCompleted;
+	}
+
+	private function set_isFilesLoadCompleted(value:Bool):Bool {
+		_isFilesLoadCompleted = value;
+		this.updateFilesCount();		
+		return this._isFilesLoadCompleted;
 	}
 
 	private var _patterns:ArrayCollection<Dynamic> = new ArrayCollection();
@@ -179,10 +197,24 @@ class FindResourcesView extends ResizableTitleWindow {
 		resultsField.layout = resultsFieldLayout;
 		resultsField.layoutData = new VerticalLayoutData(null, 100.0);
 		this.addChild(resultsField);
+		
+		var listTitleContainer = new LayoutGroup();
+		var listTitleContainerLayout = new HorizontalLayout();
+		listTitleContainerLayout.horizontalAlign = RIGHT;
+		listTitleContainer.layout = listTitleContainerLayout;
+		listTitleContainer.layoutData = new HorizontalLayoutData(100, null);
+		resultsField.addChild(listTitleContainer);
 
 		var resultsFieldLabel = new Label();
 		resultsFieldLabel.text = "Matching items:";
-		resultsField.addChild(resultsFieldLabel);
+		resultsFieldLabel.layoutData = new HorizontalLayoutData(50, null);
+		listTitleContainer.addChild(resultsFieldLabel);
+		
+		filesCountLabel = new Label();
+		filesCountLabel.text = "(Total: 0 files)";
+		filesCountLabel.layoutData = new HorizontalLayoutData(50, null);
+		filesCountLabel.textFormat = new TextFormat("DejaVuSansTF", 12, 0x333333, false, false, false, null, null, TextFormatAlign.RIGHT);
+		listTitleContainer.addChild(filesCountLabel);
 		
 		var resultsListViewContainer = new LayoutGroup();
 		resultsListViewContainer.layoutData = new VerticalLayoutData(null, 100.0);
@@ -217,7 +249,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		busyLabelLayoutData.verticalCenter = 0;
 		
 		this.busyLabel = new Label();
-		this.busyLabel.text = "Collecting files... Hold on Tiger.";
+		this.busyLabel.text = "Collecting files...";
 		this.busyLabel.variant = MoonshineTheme.THEME_VARIANT_BUSY_LABEL;
 		this.busyLabel.layoutData = AnchorLayoutData.center();
 		resultsListViewContainer.addChild(this.busyLabel);
@@ -274,6 +306,16 @@ class FindResourcesView extends ResizableTitleWindow {
 			}
 
 			return true;
+		}
+		
+		this.updateFilesCount();
+	}
+	
+	private function updateFilesCount():Void
+	{
+		if (this._resources != null)
+		{
+			this.filesCountLabel.text = "(Total: "+ this._resources.length +" files)";
 		}
 	}
 	
