@@ -68,9 +68,15 @@ package actionScripts.utils
 		
 		public function parseFilesPaths(fromPath:String, fileName:String, readableExtensions:Array=null):void
 		{
+			var tempDirectory:FileLocation = IDEModel.getInstance().fileCore.resolveTemporaryDirectoryPath("moonshine");
+			if (!tempDirectory.fileBridge.exists)
+			{
+				tempDirectory.fileBridge.createDirectory();
+			}
+			
 			this.readableExtensions = readableExtensions;
 			this._fileName = fileName;
-			this._filePath = IDEModel.getInstance().fileCore.resolveTemporaryDirectoryPath(fileName +".txt").fileBridge.nativePath;
+			this._filePath = tempDirectory.fileBridge.resolvePath(fileName +".txt").fileBridge.nativePath;
 
 			var tmpExtensions:String = "";
 			if (readableExtensions && !ConstantsCoreVO.IS_MACOS)
