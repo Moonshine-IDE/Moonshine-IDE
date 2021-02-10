@@ -86,11 +86,18 @@ package actionScripts.utils
 			this._filePath = tempDirectory.fileBridge.resolvePath(fileName +".txt").fileBridge.nativePath;
 
 			var tmpExtensions:String = "";
-			if (readableExtensions && !ConstantsCoreVO.IS_MACOS)
+			if (readableExtensions)
 			{
-				for each (var ext:String in readableExtensions)
+				if (ConstantsCoreVO.IS_MACOS)
 				{
-					tmpExtensions += "*."+ ext +" ";
+					tmpExtensions = " -regex '.*\\.("+ readableExtensions.join("|") +")'";
+				}
+				else
+				{
+					for each (var ext:String in readableExtensions)
+					{
+						tmpExtensions += "*."+ ext +" ";
+					}
 				}
 			}
 
@@ -100,7 +107,7 @@ package actionScripts.utils
 			queue = new Vector.<Object>();
 			addToQueue(new NativeProcessQueueVO(
 				ConstantsCoreVO.IS_MACOS ? 
-					"find -E $'"+ UtilsCore.getEncodedForShell(fromPath) +"' -regex '.*\\.("+ readableExtensions.join("|") +")' -type f > '"+ _filePath +"'" :
+					"find -E $'"+ UtilsCore.getEncodedForShell(fromPath) +"'"+ tmpExtensions +" -type f > '"+ _filePath +"'" :
 					"dir /a-d /b /s "+ tmpExtensions +" > "+ UtilsCore.getEncodedForShell(_filePath), 
 				false, 
 				PARSE_FILES_ON_PATH)
