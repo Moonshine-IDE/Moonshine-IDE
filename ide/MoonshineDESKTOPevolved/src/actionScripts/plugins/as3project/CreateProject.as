@@ -72,9 +72,9 @@ package actionScripts.plugins.as3project
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
-	import actionScripts.valueObjects.SDKTypes;
 	import actionScripts.valueObjects.TemplateVO;
 	
     public class CreateProject
@@ -1097,15 +1097,15 @@ package actionScripts.plugins.as3project
 			var sdkReference:SDKReferenceVO;
 			if (isFeathersProject)
 			{
-				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.FEATHERS);
+				sdkReference = SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_FEATHERS);
 			}
 			else if (isFlexJSRoyalProject)
 			{
-				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.ROYALE);
+				sdkReference = SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_ROYALE);
 			}
 			else if (!isJavaProject && !isFlexJSRoyalProject)
 			{
-				sdkReference = SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
+				sdkReference = SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_FLEX);
 			}
 			
 			if (sdkReference)

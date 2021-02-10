@@ -23,7 +23,7 @@ package actionScripts.impls
 	import actionScripts.utils.MSDKIdownloadUtil;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.SDKTypes;
+	import actionScripts.valueObjects.ComponentTypes;
 
 	public class IHelperMoonshineBridgeImp implements IHelperMoonshineBridge
 	{
@@ -34,22 +34,27 @@ package actionScripts.impls
 		
 		public function isFlexSDKAvailable():Object
 		{
-			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
+			return SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_FLEX);
+		}
+		
+		public function isFlexHarmanSDKAvailable():Object
+		{
+			return SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_FLEX_HARMAN);
 		}
 		
 		public function isFlexJSSDKAvailable():Object
 		{
-			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEXJS);
+			return SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_FLEXJS);
 		}
 		
 		public function isRoyaleSDKAvailable():Object
 		{
-			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.ROYALE);
+			return SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_ROYALE);
 		}
 		
 		public function isFeathersSDKAvailable():Object
 		{
-			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FEATHERS);
+			return SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_FEATHERS);
 		}
 		
 		public function isJavaPresent():Boolean

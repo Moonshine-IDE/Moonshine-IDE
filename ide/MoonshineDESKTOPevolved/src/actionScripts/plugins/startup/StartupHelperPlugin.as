@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.startup
 {
-	import actionScripts.utils.SDKUtils;
-
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.filesystem.File;
@@ -47,12 +45,12 @@ package actionScripts.plugins.startup
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.SDKInstallerPolling;
+	import actionScripts.utils.SDKUtils;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKReferenceVO;
-	import actionScripts.valueObjects.SDKTypes;
 	
 	import components.popup.GettingStartedPopup;
 	import components.popup.JavaPathSetupPopup;
@@ -249,10 +247,10 @@ package actionScripts.plugins.startup
 				// sdk installer default location or system
 				// environment variable, and if a relevant sdk
 				// exists in sdk-list, set it
-				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isFlexSDKAvailable(), SDKTypes.FLEX)) return;
-				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isFlexJSSDKAvailable(), SDKTypes.FLEXJS)) return;
-				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isRoyaleSDKAvailable(), SDKTypes.ROYALE)) return;
-				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isFeathersSDKAvailable(), SDKTypes.FEATHERS)) return;
+				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isFlexSDKAvailable(), ComponentTypes.TYPE_FLEX)) return;
+				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isFlexJSSDKAvailable(), ComponentTypes.TYPE_FLEXJS)) return;
+				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isRoyaleSDKAvailable(), ComponentTypes.TYPE_ROYALE)) return;
+				if (checkAndSetDefaultSDKObject(dependencyCheckUtil.isFeathersSDKAvailable(), ComponentTypes.TYPE_FEATHERS)) return;
 			}
 			
 			/*

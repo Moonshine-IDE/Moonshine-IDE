@@ -24,15 +24,13 @@ package actionScripts.utils
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
 	
 	import mx.controls.Alert;
 	
 	import actionScripts.locator.IDEModel;
+	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
-	import actionScripts.valueObjects.SDKTypes;
 	
 	public class EnvironmentSetupUtils
 	{
@@ -267,11 +265,11 @@ package actionScripts.utils
 			}
 			if (defaultOrCustomSDKPath)
 			{
-				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
+				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == ComponentTypes.TYPE_ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
 				setCommand += getSetExportWithoutQuote(flexRoyaleHomeType, defaultOrCustomSDKPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
 				
-				if (!defaultSDKtype || (defaultSDKtype && defaultSDKtype != SDKTypes.ROYALE))
+				if (!defaultSDKtype || (defaultSDKtype && defaultSDKtype != ComponentTypes.TYPE_ROYALE))
 				{
 					var airHomeType:String = "AIR_SDK_HOME";
 					setCommand += getSetExportWithoutQuote(airHomeType, defaultOrCustomSDKPath);

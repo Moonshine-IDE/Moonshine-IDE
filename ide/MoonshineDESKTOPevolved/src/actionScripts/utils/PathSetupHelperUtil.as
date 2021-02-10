@@ -37,7 +37,6 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKReferenceVO;
-	import actionScripts.valueObjects.SDKTypes;
 
 	public class PathSetupHelperUtil
 	{
@@ -50,35 +49,35 @@ package actionScripts.utils
 			var pluginClass:String;
 			switch (type)
 			{
-				case SDKTypes.FLEX:
-				case SDKTypes.ROYALE:
-				case SDKTypes.FLEXJS:
-				case SDKTypes.FEATHERS:
-				case SDKTypes.OPENJAVA:
+				case ComponentTypes.TYPE_FLEX:
+				case ComponentTypes.TYPE_ROYALE:
+				case ComponentTypes.TYPE_FLEXJS:
+				case ComponentTypes.TYPE_FEATHERS:
+				case ComponentTypes.TYPE_OPENJAVA:
 					pluginClass = "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin";
 					break;
-				case SDKTypes.ANT:
+				case ComponentTypes.TYPE_ANT:
 					pluginClass = "actionScripts.plugins.ant::AntBuildPlugin";
 					break;
-				case SDKTypes.GIT:
+				case ComponentTypes.TYPE_GIT:
 					pluginClass = GitHubPlugin.NAMESPACE;
 					break;
-				case SDKTypes.MAVEN:
+				case ComponentTypes.TYPE_MAVEN:
 					pluginClass = "actionScripts.plugins.maven::MavenBuildPlugin";
 					break;
-				case SDKTypes.GRADLE:
+				case ComponentTypes.TYPE_GRADLE:
 					pluginClass = "actionScripts.plugins.gradle::GradleBuildPlugin";
 					break;
-				case SDKTypes.GRAILS:
+				case ComponentTypes.TYPE_GRAILS:
 					pluginClass = "actionScripts.plugins.grails::GrailsBuildPlugin";
 					break;
-				case SDKTypes.SVN:
+				case ComponentTypes.TYPE_SVN:
 					pluginClass = SVNPlugin.NAMESPACE;
 					break;
-				case SDKTypes.NODEJS:
+				case ComponentTypes.TYPE_NODEJS:
 					pluginClass = "actionScripts.plugins.js::JavaScriptPlugin";
 					break;
-				case SDKTypes.NOTES:
+				case ComponentTypes.TYPE_NOTES:
 					pluginClass = DominoPlugin.NAMESPACE;
 					break;
 			}
@@ -90,37 +89,37 @@ package actionScripts.utils
 		{
 			switch (type)
 			{
-				case SDKTypes.FLEX:
-				case SDKTypes.ROYALE:
-				case SDKTypes.FLEXJS:
-				case SDKTypes.FEATHERS:
+				case ComponentTypes.TYPE_FLEX:
+				case ComponentTypes.TYPE_ROYALE:
+				case ComponentTypes.TYPE_FLEXJS:
+				case ComponentTypes.TYPE_FEATHERS:
 					addProgramingSDK(path);
 					break;
-				case SDKTypes.OPENJAVA:
+				case ComponentTypes.TYPE_OPENJAVA:
 					updateJavaPath(path);
 					break;
-				case SDKTypes.ANT:
+				case ComponentTypes.TYPE_ANT:
 					updateAntPath(path);
 					break;
-				case SDKTypes.GIT:
+				case ComponentTypes.TYPE_GIT:
 					updateGitPath(path);
 					break;
-				case SDKTypes.MAVEN:
+				case ComponentTypes.TYPE_MAVEN:
 					updateMavenPath(path);
 					break;
-				case SDKTypes.GRADLE:
+				case ComponentTypes.TYPE_GRADLE:
 					updateGradlePath(path);
 					break;
-				case SDKTypes.GRAILS:
+				case ComponentTypes.TYPE_GRAILS:
 					updateGrailsPath(path);
 					break;
-				case SDKTypes.SVN:
+				case ComponentTypes.TYPE_SVN:
 					updateSVNPath(path);
 					break;
-				case SDKTypes.NODEJS:
+				case ComponentTypes.TYPE_NODEJS:
 					updateNodeJsPath(path);
 					break;
-				case SDKTypes.NOTES:
+				case ComponentTypes.TYPE_NOTES:
 					updateNotesPath(path);
 					break;
 			}
