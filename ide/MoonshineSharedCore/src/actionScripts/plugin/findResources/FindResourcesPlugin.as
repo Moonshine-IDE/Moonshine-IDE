@@ -114,9 +114,11 @@ package actionScripts.plugin.findResources
 			event.currentTarget.removeEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onParseCompleted);
 			
 			parsedStrings += (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n") + (event.currentTarget as FileSystemParser).resultsStringFormat;
+			updatesFilesInUI(event.currentTarget as FileSystemParser);
+			
 			if (projectsPaths.length == 0)
 			{
-				prepareDisplayOnUI();
+				findResourcesView.isBusyState = false;
 			}
 			else
 			{
@@ -124,15 +126,15 @@ package actionScripts.plugin.findResources
 			}
 		}
 		
-		private function prepareDisplayOnUI():void
+		private function updatesFilesInUI(parser:FileSystemParser):void
 		{
-			findResourcesView.isBusyState = false;
-			
-			var parsedFilesList:Array = parsedStrings.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
 			var resources:ArrayCollection = findResourcesView.resources;
 			
+			var parsedFilesList:Array = parser.resultsArrayFormat;
 			var fileCount:int = parsedFilesList.length;
 			var separator:String = model.fileCore.separator;
+			var projectPath:String = parser.projectPath;
+			var projectName:String = parser.fileName;
 			var tmpNameLabel:String;
 			var tmpNameExtension:String;
 			for each (var i:String in parsedFilesList)
@@ -143,12 +145,10 @@ package actionScripts.plugin.findResources
 				{
 					tmpNameLabel = i.substr(i.lastIndexOf(separator)+1, i.length);
 					tmpNameExtension = tmpNameLabel.substr(tmpNameLabel.lastIndexOf(".")+1, tmpNameLabel.length);
-					resources.add({name:tmpNameLabel, extension: tmpNameExtension, resourcePath: i});
+					resources.add({name:tmpNameLabel, extension: tmpNameExtension, labelPath:i.replace(projectPath, projectName), 
+						resourcePath: i});
 				}
 			}
-			
-			// this will update the files count on UI
-			findResourcesView.isFilesLoadCompleted = true;
 		}
 
 		protected function findResourcesView_closeHandler(event:Event):void

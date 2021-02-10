@@ -34,6 +34,12 @@ package actionScripts.utils
 		private var fileSeparator:String;
 		private var newLineCharacter:String = ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n";
 		
+		private var _projectPath:String;
+		public function get projectPath():String
+		{
+			return _projectPath;
+		}
+
 		private var _filePath:String;
 		public function get filePath():String
 		{
@@ -75,6 +81,7 @@ package actionScripts.utils
 			}
 			
 			this.readableExtensions = readableExtensions;
+			this._projectPath = fromPath;
 			this._fileName = fileName;
 			this._filePath = tempDirectory.fileBridge.resolvePath(fileName +".txt").fileBridge.nativePath;
 
