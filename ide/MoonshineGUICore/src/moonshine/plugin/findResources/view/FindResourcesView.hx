@@ -70,7 +70,7 @@ class FindResourcesView extends ResizableTitleWindow {
 	private var filterExtensionsButton:Button;
 	private var resultsListView:ListView;
 	private var openResourceButton:Button;
-	private var filesCountLabel:Label;
+	private var resultsFieldLabel:Label;
 
 	private var _resources:ArrayCollection<Dynamic> = new ArrayCollection();
 
@@ -185,23 +185,11 @@ class FindResourcesView extends ResizableTitleWindow {
 		resultsField.layoutData = new VerticalLayoutData(null, 100.0);
 		this.addChild(resultsField);
 		
-		var listTitleContainer = new LayoutGroup();
-		var listTitleContainerLayout = new HorizontalLayout();
-		listTitleContainerLayout.horizontalAlign = RIGHT;
-		listTitleContainer.layout = listTitleContainerLayout;
-		listTitleContainer.layoutData = new HorizontalLayoutData(100, null);
-		resultsField.addChild(listTitleContainer);
-
-		var resultsFieldLabel = new Label();
-		resultsFieldLabel.text = "Matching items:";
+		resultsFieldLabel = new Label();
+		resultsFieldLabel.text = "(Total: Working...)";
 		resultsFieldLabel.layoutData = new HorizontalLayoutData(50, null);
-		listTitleContainer.addChild(resultsFieldLabel);
-		
-		filesCountLabel = new Label();
-		filesCountLabel.text = "(Working...)";
-		filesCountLabel.layoutData = new HorizontalLayoutData(50, null);
-		filesCountLabel.textFormat = new TextFormat("DejaVuSansTF", 12, 0x812137, false, false, false, null, null, TextFormatAlign.RIGHT);
-		listTitleContainer.addChild(filesCountLabel);
+		resultsFieldLabel.textFormat = new TextFormat("DejaVuSansTF", 12, 0x812137);
+		resultsField.addChild(resultsFieldLabel);
 		
 		var resultsListViewContainer = new LayoutGroup();
 		resultsListViewContainer.layoutData = new VerticalLayoutData(null, 100.0);
@@ -291,7 +279,7 @@ class FindResourcesView extends ResizableTitleWindow {
 	{
 		if (this._resources != null)
 		{
-			this.filesCountLabel.text = "("+ this._resources.length +" files)";
+			this.resultsFieldLabel.text = "(Total: "+ this._resources.length +" files)";
 		}
 	}
 	
