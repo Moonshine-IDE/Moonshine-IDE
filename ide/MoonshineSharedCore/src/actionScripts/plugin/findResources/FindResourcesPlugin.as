@@ -91,6 +91,7 @@ package actionScripts.plugin.findResources
 			
 			findResourcesView.patterns = previouslySelectedPatterns;
 			parsedStrings = "";
+			projectsPaths = [];
 			for each (var project:ProjectVO in model.projects)
 			{
 				projectsPaths.push({path:project.folderLocation.fileBridge.nativePath, name:project.name});
@@ -101,7 +102,8 @@ package actionScripts.plugin.findResources
 		
 		private function readFilePaths():void
 		{
-			if (projectsPaths.length == 0) return;
+			if (projectsPaths.length == 0 || !findResourcesView) 
+				return;
 			
 			var tmpObj:Object = projectsPaths.shift();
 			var tmpFSP:FileSystemParser = new FileSystemParser();
@@ -112,6 +114,9 @@ package actionScripts.plugin.findResources
 		protected function onParseCompleted(event:Event):void
 		{
 			event.currentTarget.removeEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onParseCompleted);
+			
+			// don't update anything if the window closed
+			if (!findResourcesView) return;
 			
 			parsedStrings += (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n") + (event.currentTarget as FileSystemParser).resultsStringFormat;
 			updatesFilesInUI(event.currentTarget as FileSystemParser);
@@ -128,8 +133,10 @@ package actionScripts.plugin.findResources
 		
 		private function updatesFilesInUI(parser:FileSystemParser):void
 		{
-			var resources:ArrayCollection = findResourcesView.resources;
+			// don't update anything if the window closed
+			if (!findResourcesView) return;
 			
+			var resources:ArrayCollection = findResourcesView.resources;
 			var parsedFilesList:Array = parser.resultsArrayFormat;
 			var fileCount:int = parsedFilesList.length;
 			var separator:String = model.fileCore.separator;

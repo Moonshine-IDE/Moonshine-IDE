@@ -198,9 +198,9 @@ class FindResourcesView extends ResizableTitleWindow {
 		listTitleContainer.addChild(resultsFieldLabel);
 		
 		filesCountLabel = new Label();
-		filesCountLabel.text = "(Total: Working...)";
+		filesCountLabel.text = "(Working...)";
 		filesCountLabel.layoutData = new HorizontalLayoutData(50, null);
-		filesCountLabel.textFormat = new TextFormat("DejaVuSansTF", 12, 0x333333, false, false, false, null, null, TextFormatAlign.RIGHT);
+		filesCountLabel.textFormat = new TextFormat("DejaVuSansTF", 12, 0x812137, false, false, false, null, null, TextFormatAlign.RIGHT);
 		listTitleContainer.addChild(filesCountLabel);
 		
 		var resultsListViewContainer = new LayoutGroup();
@@ -291,7 +291,7 @@ class FindResourcesView extends ResizableTitleWindow {
 	{
 		if (this._resources != null)
 		{
-			this.filesCountLabel.text = "(Total: "+ this._resources.length +" files)";
+			this.filesCountLabel.text = "("+ this._resources.length +" files)";
 		}
 	}
 	
