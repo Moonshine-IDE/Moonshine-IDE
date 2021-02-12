@@ -87,59 +87,53 @@ package actionScripts.utils {
 
         private function expandChildrenOfByName(children:ICollectionView, itemPropertyName:String, childrenForOpen:Array):void
         {
-            if (children)
-            {
-                var childrenForOpenCount:int = childrenForOpen.length;
-                for (var i:int = 0; i < childrenForOpenCount; i++)
-                {
-                    var cursor:IViewCursor = children.createCursor();
-                    var currentItem:Object;
-
-                    if (childrenForOpenCount == 1)
-                    {
-                        while (!cursor.afterLast)
-                        {
-                            currentItem = cursor.current;
-                            if (currentItem[itemPropertyName] == childrenForOpen[i])
-                            {
-                                selectedItem = currentItem;
-                                scrollToIndex(getItemIndex(currentItem));
-                                break;
-                            }
-                            cursor.moveNext();
-                        }
-                    }
-                    else
-                    {
-                        var itemForOpenFound:Boolean = false;
-                        while (!cursor.afterLast)
-                        {
-                            currentItem = cursor.current;
-                            if (dataDescriptor.isBranch(currentItem) && currentItem[itemPropertyName] == childrenForOpen[i])
-                            {
-                                if (!isItemOpen(currentItem))
-                                {
-                                    saveItemForOpen(currentItem);
-                                    expandItem(currentItem, true);
-                                }
-                                childrenForOpen = childrenForOpen.slice(i + 1, childrenForOpen.length);
-                                expandChildrenOfByName(getChildren(currentItem, iterator.view), itemPropertyName, childrenForOpen);
-                                itemForOpenFound = true;
-                                break;
-                            }
-                            else
-                            {
-                                cursor.moveNext();
-                            }
-                        }
-
-                        if (itemForOpenFound)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
+			if (children)
+			{
+				var firstItem:String = childrenForOpen.shift();
+				var cursor:IViewCursor = children.createCursor();
+				var currentItem:Object;
+				
+				if (childrenForOpen.length == 0)
+				{
+					while (!cursor.afterLast)
+					{
+						currentItem = cursor.current;
+						if (currentItem[itemPropertyName] == firstItem)
+						{
+							selectedItem = currentItem;
+							scrollToIndex(getItemIndex(currentItem));
+							break;
+						}
+						cursor.moveNext();
+					}
+				}
+				else
+				{
+					var itemForOpenFound:Boolean = false;
+					while (!cursor.afterLast)
+					{
+						currentItem = cursor.current;
+						if (dataDescriptor.isBranch(currentItem) && currentItem[itemPropertyName] == firstItem)
+						{
+							if (!isItemOpen(currentItem))
+							{
+								updateItemChildren(currentItem as FileWrapper);
+								expandItem(currentItem, true);
+								(currentItem as FileWrapper).sortChildren();
+								saveItemForOpen(currentItem);
+							}
+							
+							expandChildrenOfByName(getChildren(currentItem, iterator.view), itemPropertyName, childrenForOpen);
+							itemForOpenFound = true;
+							break;
+						}
+						else
+						{
+							cursor.moveNext();
+						}
+					}
+				}
+			}
         }
         
         override protected function keyDownHandler(event:KeyboardEvent):void
