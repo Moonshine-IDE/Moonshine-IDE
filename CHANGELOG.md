@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
 * Updated [Haxe](https://as3mxml.com) engine to latest version.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.69.0.
+* Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.12.
 
 ### Fixed
 
