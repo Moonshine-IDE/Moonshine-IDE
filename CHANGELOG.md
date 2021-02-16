@@ -11,7 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
-Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
+* Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
+* Updated [Haxe](https://as3mxml.com) engine to latest version.
 
 ### Fixed
 
