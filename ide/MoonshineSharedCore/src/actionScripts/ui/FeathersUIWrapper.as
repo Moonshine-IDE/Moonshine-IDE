@@ -48,6 +48,7 @@ package actionScripts.ui
 			this.feathersUIControl = feathersUIControl;
 			this.addEventListener(Event.ADDED_TO_STAGE, feathersUIWrapper_addedToStageHandler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, feathersUIWrapper_removedFromStageHandler);
+			this.addEventListener(FocusEvent.FOCUS_IN, feathersUIWrapper_focusInHandler);
 			this.addEventListener(FocusEvent.FOCUS_OUT, feathersUIWrapper_focusOutHandler);
 		}
 
@@ -305,6 +306,14 @@ package actionScripts.ui
 				FocusManager.removeRoot(this._feathersUIControl);
 				this._feathersUIFocusManager = null;
 			}
+		}
+
+		protected function feathersUIWrapper_focusInHandler(event:FocusEvent):void
+		{
+			if(event.target != this) {
+				return;
+			}
+			this.assignFocus("top");
 		}
 
 		protected function feathersUIWrapper_focusOutHandler(event:FocusEvent):void
