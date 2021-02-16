@@ -1,3 +1,8 @@
+### Version 2.9.1
+* add `enableCRAWorkaround` configuration property
+* fix the conditions for the `keepProfileChanges` configuration property on MacOS
+* fix the sorting of Arrays in the Variables view
+
 ### Version 2.9.0
 * add `tabFilter` configuration property
 * open a new Firefox tab if no tab matches the `tabFilter`
