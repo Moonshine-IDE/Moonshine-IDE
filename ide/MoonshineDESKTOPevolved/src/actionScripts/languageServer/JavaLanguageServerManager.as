@@ -310,7 +310,7 @@ package actionScripts.languageServer
 		{
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
-				project.name, "Java: Checking version...", false
+				project.name, "Checking Java version...", false
 			));
 
 			this._javaVersion = "";
