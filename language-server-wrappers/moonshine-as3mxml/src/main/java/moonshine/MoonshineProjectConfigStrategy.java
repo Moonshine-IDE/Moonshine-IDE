@@ -21,15 +21,17 @@ package moonshine;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.as3mxml.asconfigc.TopLevelFields;
 import com.as3mxml.asconfigc.compiler.CompilerOptions;
 import com.as3mxml.asconfigc.compiler.ProjectType;
+import com.as3mxml.asconfigc.utils.OptionsUtils;
 import com.as3mxml.vscode.project.IProjectConfigStrategy;
 import com.as3mxml.vscode.project.ProjectOptions;
 import com.as3mxml.vscode.utils.LanguageServerCompilerUtils;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import org.eclipse.lsp4j.WorkspaceFolder;
 
@@ -40,15 +42,21 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
 {
     private ProjectOptions options;
     private boolean changed = true;
+    private Path projectPath;
     private WorkspaceFolder workspaceFolder;
 
-    public MoonshineProjectConfigStrategy(WorkspaceFolder workspaceFolder)
+    public MoonshineProjectConfigStrategy(Path projectPath, WorkspaceFolder workspaceFolder)
     {
+        this.projectPath = projectPath;
     	this.workspaceFolder = workspaceFolder;
         options = new ProjectOptions();
         options.type = ProjectType.APP;
         options.config = "flex";
         options.files = new String[0];
+    }
+
+    public Path getProjectPath() {
+        return projectPath;
     }
 
     public WorkspaceFolder getWorkspaceFolder()
@@ -112,10 +120,11 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
             }
         }
         
-        String additionalOptions = null;
+        List<String> additionalOptions = null;
         if(params.has(TopLevelFields.ADDITIONAL_OPTIONS))
         {
-            additionalOptions = params.get(TopLevelFields.ADDITIONAL_OPTIONS).getAsString();
+            String additionalOptionsText = params.get(TopLevelFields.ADDITIONAL_OPTIONS).getAsString();
+            additionalOptions = OptionsUtils.parseAdditionalOptions(additionalOptionsText);
         }
         
         options.type = projectType;

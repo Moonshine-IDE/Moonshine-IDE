@@ -3,6 +3,7 @@ package moonshine;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.file.Path;
 
 import com.as3mxml.vscode.project.IProjectConfigStrategy;
 import com.as3mxml.vscode.project.IProjectConfigStrategyFactory;
@@ -56,9 +57,9 @@ public class Main
 
     private static class MoonshineProjectConfigStrategyFactory implements IProjectConfigStrategyFactory
     {
-        public IProjectConfigStrategy create(WorkspaceFolder folder)
+        public IProjectConfigStrategy create(Path projectPath, WorkspaceFolder folder)
         {
-            return new MoonshineProjectConfigStrategy(folder);
+            return new MoonshineProjectConfigStrategy(projectPath, folder);
         }
     }
 }
