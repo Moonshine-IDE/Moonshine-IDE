@@ -70,6 +70,12 @@
 			{
 				version.text = IDEModel.getInstance().getVersionWithBuildNumber();
 				if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) version.text += " (App Store Version)";
+
+				var applicationDescriptor:XML = NativeApplication.nativeApplication.applicationDescriptor;
+				var namespaceArraySplit:Array = (new Namespace(applicationDescriptor.namespace())).uri.split("/");
+				var airVersion:Number = Number(namespaceArraySplit[namespaceArraySplit.length-1]);
+				var isHarman:Boolean = airVersion > 32;
+				version.text += ", Player: "+ airVersion +"("+ (isHarman ? "Harman" : "Adobe") +")";
 			}
 			
 			protected function onInfoBackground(event:MouseEvent):void

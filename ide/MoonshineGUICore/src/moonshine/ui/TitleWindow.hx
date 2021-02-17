@@ -20,21 +20,27 @@
 
 package moonshine.ui;
 
-import feathers.layout.HorizontalLayout;
+import actionScripts.ui.FeathersUIWrapper;
 import feathers.controls.Button;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
 import feathers.controls.Panel;
+import feathers.core.IFocusObject;
 import feathers.core.InvalidationFlag;
 import feathers.events.TriggerEvent;
+import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
 import feathers.style.IStyleObject;
 import feathers.style.IVariantStyleObject;
-import lime.ui.KeyCode;
+import openfl.display.DisplayObject;
 import openfl.display.DisplayObjectContainer;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
+import openfl.events.MouseEvent;
 import openfl.ui.Keyboard;
+#if lime
+import lime.ui.KeyCode;
+#end
 
 @:styleContext
 class TitleWindow extends Panel {
@@ -91,6 +97,12 @@ class TitleWindow extends Panel {
 	private var titleLabel:Label;
 	private var closeButton:Button;
 
+	private var _dragTarget:DisplayObject;
+	private var _dragStartX:Float;
+	private var _dragStartY:Float;
+	private var _dragStartStageX:Float;
+	private var _dragStartStageY:Float;
+
 	override private function initialize():Void {
 		if (this.header == null) {
 			var headerLayout = new HorizontalLayout();
@@ -104,6 +116,7 @@ class TitleWindow extends Panel {
 
 			var header = new LayoutGroup();
 			header.layout = headerLayout;
+			header.addEventListener(MouseEvent.MOUSE_DOWN, titleWindow_header_mouseDownHandler);
 			this.header = header;
 		}
 		if (this.titleLabel == null) {
@@ -166,10 +179,48 @@ class TitleWindow extends Panel {
 					this.dispatchEvent(new Event(Event.CLOSE));
 				}
 			#end
+			#if lime
 			case KeyCode.APP_CONTROL_BACK:
 				{
 					this.dispatchEvent(new Event(Event.CLOSE));
 				}
+			#end
 		}
+	}
+
+	private function titleWindow_header_mouseDownHandler(event:MouseEvent):Void {
+		var header = cast(event.currentTarget, DisplayObject);
+		var current = cast(event.target, DisplayObject);
+		while (current != null && current != header) {
+			if (current == this.closeButton) {
+				return;
+			}
+			if (Std.is(current, IFocusObject)) {
+				var focusable = cast(current, IFocusObject);
+				if (focusable.focusEnabled) {
+					return;
+				}
+			}
+			current = current.parent;
+		}
+
+		this._dragTarget = Std.is(this.parent, FeathersUIWrapper) ? this.parent : this;
+		this._dragStartX = this._dragTarget.x;
+		this._dragStartY = this._dragTarget.y;
+		this._dragStartStageX = event.stageX;
+		this._dragStartStageY = event.stageY;
+		this.stage.addEventListener(MouseEvent.MOUSE_MOVE, titleWindow_header_stage_mouseMoveHandler, false, 0, true);
+		this.stage.addEventListener(MouseEvent.MOUSE_UP, titleWindow_header_stage_mouseUpHandler, false, 0, true);
+	}
+
+	private function titleWindow_header_stage_mouseMoveHandler(event:MouseEvent):Void {
+		this._dragTarget.x = this._dragStartX + event.stageX - this._dragStartStageX;
+		this._dragTarget.y = this._dragStartY + event.stageY - this._dragStartStageY;
+	}
+
+	private function titleWindow_header_stage_mouseUpHandler(event:MouseEvent):Void {
+		this.stage.removeEventListener(MouseEvent.MOUSE_MOVE, titleWindow_header_stage_mouseMoveHandler);
+		this.stage.removeEventListener(MouseEvent.MOUSE_UP, titleWindow_header_stage_mouseUpHandler);
+		this._dragTarget = null;
 	}
 }

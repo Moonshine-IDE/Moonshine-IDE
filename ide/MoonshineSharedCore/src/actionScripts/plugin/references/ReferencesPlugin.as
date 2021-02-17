@@ -46,6 +46,8 @@ package actionScripts.plugin.references
 			referencesViewWrapper = new ReferencesViewWrapper(this.referencesView);
 			referencesViewWrapper.percentWidth = 100;
 			referencesViewWrapper.percentHeight = 100;
+			referencesViewWrapper.minWidth = 0;
+			referencesViewWrapper.minHeight = 0;
 		}
 
 		override public function get name():String { return "References Plugin"; }
@@ -144,5 +146,11 @@ class ReferencesViewWrapper extends FeathersUIWrapper implements IViewWithTitle 
 
 	public function get title():String {
 		return ReferencesView(feathersUIControl).title;
+	}
+
+	override public function get className():String
+	{
+		//className may be used by LayoutModifier
+		return "ReferencesView";
 	}
 }

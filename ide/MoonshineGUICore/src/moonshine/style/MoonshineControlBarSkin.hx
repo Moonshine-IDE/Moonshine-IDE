@@ -31,7 +31,7 @@ class MoonshineControlBarSkin extends ProgrammaticSkin {
 	override private function update():Void {
 		this.graphics.clear();
 
-		var cornerRadius = 3.0;
+		var cornerRadius = 7.0;
 
 		// top shadow
 		var matrix = new Matrix();

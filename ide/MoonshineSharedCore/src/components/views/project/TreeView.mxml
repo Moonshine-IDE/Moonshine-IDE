@@ -380,7 +380,11 @@
 								tree.selectedItem = lastSelectedItem;
 							} else if(model.selectedprojectFolders.length != 0)
 							{
-								tree.selectedItem = (--tmpFWIndex != -1) ? model.selectedprojectFolders[tmpFWIndex] : model.selectedprojectFolders[++tmpFWIndex];
+								try
+								{
+									tree.selectedItem = (--tmpFWIndex != -1) ? model.selectedprojectFolders[tmpFWIndex] : model.selectedprojectFolders[++tmpFWIndex];
+								}
+								catch (e:Error) {}
 							}
 							clearTimeout(timeoutValue);
 							refreshActiveProject(tree.selectedItem as FileWrapper);
@@ -948,13 +952,7 @@
 							if(project.projectFolder.nativePath === value[0].nativePath)
 							{
 								projects.removeItem(project);
-	
-								// in case of Close project we shall need to close the lang-server here
-								// in case of Delete project this handles by the command class
-								if(removalType == FTETreeItemRenderer.CLOSE)
-								{
-									dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
-								}
+								dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
 								break;
 							}
 						}

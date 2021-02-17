@@ -18,23 +18,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui
 {
+	import feathers.core.DefaultToolTipManager;
 	import feathers.core.FeathersControl;
+	import feathers.core.FocusManager;
+	import feathers.core.IFocusContainer;
+	import feathers.core.IFocusManager;
+	import feathers.core.IFocusObject;
 	import feathers.layout.Measurements;
 
+	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
+	import flash.display.MovieClip;
 	import flash.events.Event;
+	import flash.events.FocusEvent;
 
 	import mx.core.IFlexDisplayObject;
 	import mx.core.UIComponent;
-	import mx.managers.IFocusManagerContainer;
 	import mx.managers.IFocusManagerComplexComponent;
-	import flash.display.DisplayObject;
-	import feathers.core.IFocusObject;
-	import flash.display.DisplayObjectContainer;
-	import feathers.core.IFocusContainer;
-	import feathers.core.DefaultFocusManager;
-	import flash.display.InteractiveObject;
+	import mx.managers.IFocusManagerContainer;
+
 	import openfl._internal.Lib;
-	import flash.display.MovieClip;
 
 	[DefaultProperty("feathersUIControl")]
 	public class FeathersUIWrapper extends UIComponent implements IFocusManagerContainer, IFocusManagerComplexComponent
@@ -45,9 +48,12 @@ package actionScripts.ui
 			this.feathersUIControl = feathersUIControl;
 			this.addEventListener(Event.ADDED_TO_STAGE, feathersUIWrapper_addedToStageHandler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, feathersUIWrapper_removedFromStageHandler);
+			this.addEventListener(FocusEvent.FOCUS_IN, feathersUIWrapper_focusInHandler);
+			this.addEventListener(FocusEvent.FOCUS_OUT, feathersUIWrapper_focusOutHandler);
 		}
 
-		private var _feathersUIFocusManager:DefaultFocusManager;
+		private var _feathersUIFocusManager:IFocusManager;
+		private var _feathersUIToolTipManager:DefaultToolTipManager;
 
 		public function get defaultButton():IFlexDisplayObject
 		{
@@ -106,7 +112,7 @@ package actionScripts.ui
 			this._feathersUIFocusManager.enabled = true;
 			if(this._feathersUIFocusManager.focus == null) {
 				var nextFocus:IFocusObject = this._feathersUIFocusManager.findNextFocus(direction == "bottom");
-				this.stage.focus = InteractiveObject(nextFocus);
+				this._feathersUIFocusManager.focus = nextFocus;
 			}
 		}
 
@@ -282,17 +288,41 @@ package actionScripts.ui
 			{
 				return;
 			}
-			this._feathersUIFocusManager = new DefaultFocusManager(this._feathersUIControl);
+			
+			this._feathersUIFocusManager = FocusManager.addRoot(this._feathersUIControl);
 			this._feathersUIFocusManager.enabled = false;
+			this._feathersUIToolTipManager = new DefaultToolTipManager(this._feathersUIControl);
 		}
 
 		protected function feathersUIWrapper_removedFromStageHandler(event:Event):void
 		{
-			if(!this._feathersUIFocusManager)
+			if(this._feathersUIToolTipManager)
 			{
+				this._feathersUIToolTipManager.dispose();
+				this._feathersUIToolTipManager = null;
+			}
+			if(this._feathersUIFocusManager)
+			{
+				FocusManager.removeRoot(this._feathersUIControl);
+				this._feathersUIFocusManager = null;
+			}
+		}
+
+		protected function feathersUIWrapper_focusInHandler(event:FocusEvent):void
+		{
+			if(event.target != this) {
 				return;
 			}
-			this._feathersUIFocusManager = null;
+			this.assignFocus("top");
+		}
+
+		protected function feathersUIWrapper_focusOutHandler(event:FocusEvent):void
+		{
+			if(this.stage != null && this.stage.focus != null && this.contains(this.stage.focus)) {
+				return;
+			}
+			this._feathersUIFocusManager.focus = null;
+			this._feathersUIFocusManager.enabled = false;
 		}
 	}
 }

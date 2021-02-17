@@ -42,7 +42,7 @@ LangString stopMsg 0 "Stopping ${WND_PROCESS_TITLE} Application"
     Push $1
     Push $2 ; process handle
     DetailPrint "$(stopMsg)"	
-	ExecCmd::exec "%SystemRoot%\System32\tasklist /NH /FI $\"IMAGENAME eq ${processName}$\" | %SystemRoot%\System32\find /I $\"${processName}$\"" 
+	ExecCmd::exec "%SystemRoot%\System32\tasklist /NH /FI $\"IMAGENAME eq ${processName}$\" | %SystemRoot%\System32\find /I $\"Console$\"" 
     Pop $0 ; The handle for the process
     ExecCmd::wait $0
     StrCmp $0 "0" 0 doneTerminateApp

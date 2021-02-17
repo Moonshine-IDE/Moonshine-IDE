@@ -70,11 +70,13 @@ class ChromeConfigurationProvider {
                     config.websocketUrl = selectedTarget.websocketDebuggerUrl;
                 }
             }
-            resolveRemoteUris(folder, config);
             if (v3) {
                 folder = folder || (vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0] : undefined);
                 config['__workspaceFolder'] = folder === null || folder === void 0 ? void 0 : folder.uri.fsPath;
                 config.type = 'pwa-chrome';
+            }
+            else {
+                resolveRemoteUris(folder, config);
             }
             return config;
         });

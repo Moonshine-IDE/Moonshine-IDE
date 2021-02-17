@@ -87,7 +87,7 @@ export class FirefoxDebugSession {
 			this.threads, this.config.suggestPathMappingWizard, this.sendEvent);
 		this.skipFilesManager = new SkipFilesManager(this.config.filesToSkip, this.threads);
 		if (this.config.addon) {
-			this.addonManager = new AddonManager(this);
+			this.addonManager = new AddonManager(config.enableCRAWorkaround, this);
 		}
 	}
 
@@ -106,7 +106,7 @@ export class FirefoxDebugSession {
 				return;
 			}
 
-			this.firefoxDebugConnection = new DebugConnection(this.pathMapper, socket);
+			this.firefoxDebugConnection = new DebugConnection(this.config.enableCRAWorkaround, this.pathMapper, socket);
 			let rootActor = this.firefoxDebugConnection.rootActor;
 
 			// attach to all tabs, register the corresponding threads and inform VSCode about them

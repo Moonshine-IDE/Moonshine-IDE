@@ -677,7 +677,8 @@ package actionScripts.plugins.ant
 
             var syntaxMatch:Array;
             var generalMatch:Array;
-            print(data);
+            var javaOptionsMatch:Array;
+
             syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
             if (syntaxMatch)
             {
@@ -698,9 +699,16 @@ package actionScripts.plugins.ant
 
                 errors += HtmlFormatter.sprintf("%s: %s", pathStr, errorStr);
             }
+            else
+            {
+                javaOptionsMatch = data.match(/.*JAVA_TOOL_OPTIONS:*/);
+            }
 
-            debug("%s", data);
-			reset();
+            print(data);
+            if (!javaOptionsMatch)
+            {
+                reset();
+            }
         }
 
         private function shellExit(e:NativeProcessExitEvent):void

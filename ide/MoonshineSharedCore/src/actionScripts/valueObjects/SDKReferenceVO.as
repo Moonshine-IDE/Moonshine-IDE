@@ -81,6 +81,15 @@ package actionScripts.valueObjects
 			}
 		}
 		
+		public function get nameUncalculated():String
+		{
+			return _name;
+		}
+		public function set nameUncalculated(value:String):void
+		{
+			_name = value;
+		}
+		
         public function get isJSOnlySdk():Boolean
         {
 			if (outputTargets && outputTargets.length == 1)

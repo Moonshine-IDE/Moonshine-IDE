@@ -20,6 +20,7 @@
 
 package moonshine.plugin.help.view;
 
+import moonshine.plugin.help.events.HelpViewEvent;
 import actionScripts.interfaces.IViewWithTitle;
 import feathers.controls.Panel;
 import feathers.controls.TreeView;
@@ -86,6 +87,18 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 		this.urlLoader = null;
 	}
 
+	private function addXmlNodes(xmlNodes:Iterator<Xml>, treeData:Array<TreeNode<Xml>>):Void {
+		for (xmlNode in xmlNodes) {
+			var children:Array<TreeNode<Xml>> = null;
+			var xmlSubNodes = xmlNode.elements();
+			if (xmlSubNodes.hasNext()) {
+				children = [];
+				this.addXmlNodes(xmlSubNodes, children);
+			}
+			treeData.push(new TreeNode(xmlNode, children));
+		}
+	}
+
 	private function header_closeHandler(event:Event):Void {
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
@@ -98,17 +111,7 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 		try {
 			var xml = Xml.parse(xmlData);
 			var xmlNodes = xml.firstElement().elements();
-			for (xmlNode in xmlNodes) {
-				var children:Array<TreeNode<Xml>> = null;
-				var xmlSubNodes = xmlNode.elements();
-				if (xmlSubNodes.hasNext()) {
-					children = [];
-				}
-				for (xmlSubNode in xmlSubNodes) {
-					children.push(new TreeNode(xmlSubNode));
-				}
-				treeData.push(new TreeNode(xmlNode, children));
-			}
+			addXmlNodes(xmlNodes, treeData);
 		} catch (e:Dynamic) {
 			treeData = [];
 			trace('ERROR: ${e}');
@@ -134,6 +137,6 @@ class AS3DocsView extends Panel implements IViewWithTitle {
 			return;
 		}
 
-		Lib.navigateToURL(new URLRequest(link), "_blank");
+		this.dispatchEvent(new HelpViewEvent(HelpViewEvent.OPEN_LINK, link));
 	}
 }

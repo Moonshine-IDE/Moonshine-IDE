@@ -232,8 +232,6 @@ package actionScripts.plugins.as3project.mxmlc
 			// for now, I'm directing the access from here rather than
 			// automated process, I shall need to check this later.
 			activate();
-			
-			SDKUtils.initBundledSDKs();
 		}
 		
 		override public function activate():void 
@@ -478,11 +476,14 @@ package actionScripts.plugins.as3project.mxmlc
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-					if (projectReference && filteredProjects.indexOf(projectReference) != -1)
+					if(tmpTreeView) //might be null if closed by user
 					{
-						checkForUnsavedEditor(projectReference);
-						return;
+						var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
+						if (projectReference && filteredProjects.indexOf(projectReference) != -1)
+						{
+							checkForUnsavedEditor(projectReference);
+							return;
+						}
 					}
 				}
 				// if above is false

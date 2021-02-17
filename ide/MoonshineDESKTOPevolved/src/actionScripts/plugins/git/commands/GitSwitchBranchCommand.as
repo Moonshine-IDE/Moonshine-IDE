@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
-	import mx.collections.ArrayCollection;
+import actionScripts.events.GeneralEvent;
+
+import mx.collections.ArrayCollection;
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
@@ -28,20 +30,36 @@ package actionScripts.plugins.git.commands
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.vo.NativeProcessQueueVO;
 
-	public class GitSwitchBranchCommand extends GitCommandBase
+import mx.utils.StringUtil;
+
+public class GitSwitchBranchCommand extends GitCommandBase
 	{
+		public static const BRANCH_TYPE_REMOTE:String = "branchTypeRemote";
+		public static const BRANCH_TYPE_LOCAL:String = "branchTypeLocal";
+		public static const BRANCH_TYPE_ALL:String = "branchTypeAll";
+
 		private static const GIT_REMOTE_BRANCH_LIST:String = "getGitRemoteBranchList";
-		
-		public function GitSwitchBranchCommand()
+
+		public function GitSwitchBranchCommand(type:String=BRANCH_TYPE_LOCAL)
 		{
 			super();
 			
 			if (!model.activeProject) return;
 			
 			queue = new Vector.<Object>();
-			
+
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' fetch'), false, null));
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch -r'), false, GIT_REMOTE_BRANCH_LIST));
+			switch (type) {
+				case BRANCH_TYPE_LOCAL:
+					addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch'), false, GIT_REMOTE_BRANCH_LIST));
+					break;
+				case BRANCH_TYPE_REMOTE:
+					addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch -r'), false, GIT_REMOTE_BRANCH_LIST));
+					break;
+				default:
+					addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch --all'), false, GIT_REMOTE_BRANCH_LIST));
+			}
+
 			pendingProcess.push(new ConstructorDescriptor(GetCurrentBranchCommand)); // next method we need to fire when above done
 			
 			warning("Fetching branch details...");
@@ -83,9 +101,17 @@ package actionScripts.plugins.git.commands
 				var contentInLineBreaks:Array = value.split("\n");
 				contentInLineBreaks.forEach(function(element:String, index:int, arr:Array):void
 				{
-					if (element != "" && element.indexOf("origin/") != -1 && element.indexOf("->") == -1)
+					if (element != "" && element.indexOf("->") == -1)
 					{
-						tmpModel.branchList.addItem(new GenericSelectableObject(false, element.substr(element.indexOf("origin/")+7, element.length)));
+						if (element.indexOf("origin/") != -1)
+						{
+							tmpModel.branchList.addItem(new GenericSelectableObject(false, element.substr(element.indexOf("origin/")+7, element.length)));
+						}
+						else
+						{
+							if (element.indexOf("* ") != -1) element = element.replace(/\*\s+/, '');
+							tmpModel.branchList.addItem(new GenericSelectableObject(false, StringUtil.trim(element)));
+						}
 					}
 				});
 			}

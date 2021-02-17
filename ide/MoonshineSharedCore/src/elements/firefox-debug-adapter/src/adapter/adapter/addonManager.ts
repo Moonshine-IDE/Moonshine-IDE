@@ -25,6 +25,7 @@ export class AddonManager {
 	private addonActor: TabActorProxy | undefined = undefined;
 
 	constructor(
+		private readonly enableCRAWorkaround: boolean,
 		private readonly debugSession: FirefoxDebugSession
 	) {
 		this.config = debugSession.config.addon!;
@@ -73,7 +74,7 @@ export class AddonManager {
 
 					let consoleActor: ConsoleActorProxy;
 					let webExtensionActor = new WebExtensionActorProxy(
-						addon, this.debugSession.pathMapper,
+						addon, this.enableCRAWorkaround, this.debugSession.pathMapper,
 						this.debugSession.firefoxDebugConnection);
 
 					if (useConnect) {

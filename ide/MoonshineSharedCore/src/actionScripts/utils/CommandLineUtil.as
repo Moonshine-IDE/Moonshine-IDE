@@ -39,6 +39,11 @@ package actionScripts.utils
 			var index:int = option.indexOf(" ");
 			if(index == -1)
 			{
+				//check for environment variables, which may include spaces after they are expanded
+				index = option.indexOf("%");
+			}
+			if(index == -1)
+			{
 				return option;
 			}
 			//on Windows, options containing spaces should be wrapped in quotes

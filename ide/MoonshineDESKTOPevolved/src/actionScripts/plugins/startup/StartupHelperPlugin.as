@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.startup
 {
+	import actionScripts.utils.SDKUtils;
+
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.filesystem.File;
@@ -107,7 +109,8 @@ package actionScripts.plugins.startup
 				//dispatcher.addEventListener(StartupHelperEvent.EVENT_SDK_SETUP_REQUEST, onSDKSetupRequest, false, 0, true);
 				dispatcher.addEventListener(StartupHelperEvent.EVENT_MOONSHINE_HELPER_DOWNLOAD_REQUEST, onMoonshineHelperDownloadRequest, false, 0, true);
 			}
-				
+
+			SDKUtils.initBundledSDKs();
 			preInitHelping();
 		}
 		
@@ -452,7 +455,7 @@ package actionScripts.plugins.startup
 		private function onWarningUpdated(event:HelperEvent):void
 		{
 			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(event.value.type);
-			tmpComponent.hasWarning = event.value.message;
+			if (tmpComponent) tmpComponent.hasWarning = event.value.message;
 		}
 		
 		/**
