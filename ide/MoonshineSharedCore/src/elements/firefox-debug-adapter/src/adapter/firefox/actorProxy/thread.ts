@@ -48,6 +48,7 @@ export class ThreadActorProxy extends EventEmitter implements ActorProxy, IThrea
 
 	constructor(
 		public readonly name: string,
+		private readonly enableCRAWorkaround: boolean,
 		private connection: DebugConnection
 	) {
 		super();
@@ -340,7 +341,13 @@ export class ThreadActorProxy extends EventEmitter implements ActorProxy, IThrea
 			this.pendingSourcesRequests.resolveOne(sources);
 
 			for (let source of sources) {
-				if (!this.connection.has(source.actor)) {
+
+				if (this.enableCRAWorkaround && source.url?.endsWith('hot-update.js')) {
+
+					log.debug('Ignoring this source because the CRA workaround is enabled');
+	
+				} else if (!this.connection.has(source.actor)) {
+
 					const sourceActor = new SourceActorProxy(source, this.connection);
 					this.emit('newSource', sourceActor);
 				}
@@ -350,7 +357,13 @@ export class ThreadActorProxy extends EventEmitter implements ActorProxy, IThrea
 
 			let source = <FirefoxDebugProtocol.Source>(response['source']);
 			log.debug(`New source ${source.url} on thread ${this.name}`);
-			if (!this.connection.has(source.actor)) {
+
+			if (this.enableCRAWorkaround && source.url?.endsWith('hot-update.js')) {
+
+				log.debug('Ignoring this source because the CRA workaround is enabled');
+
+			} else if (!this.connection.has(source.actor)) {
+
 				const sourceActor = new SourceActorProxy(source, this.connection);
 				this.emit('newSource', sourceActor);
 			}

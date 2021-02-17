@@ -18,6 +18,7 @@ export class WorkerActorProxy extends EventEmitter implements ActorProxy {
 	constructor(
 		public readonly name: string,
 		public readonly url: string,
+		private readonly enableCRAWorkaround: boolean,
 		private readonly pathMapper: PathMapper,
 		private readonly connection: DebugConnection
 	) {
@@ -94,7 +95,7 @@ export class WorkerActorProxy extends EventEmitter implements ActorProxy {
 
 				let threadActor: IThreadActorProxy = this.connection.getOrCreate(
 					connectedResponse.threadActor, 
-					() => new ThreadActorProxy(connectedResponse.threadActor, this.connection));
+					() => new ThreadActorProxy(connectedResponse.threadActor, this.enableCRAWorkaround, this.connection));
 
 				threadActor = new SourceMappingThreadActorProxy(threadActor, this.pathMapper, this.connection);
 

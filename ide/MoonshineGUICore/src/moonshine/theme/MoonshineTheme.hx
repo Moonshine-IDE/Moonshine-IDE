@@ -582,7 +582,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	private function setTitleWindowCloseButtonStyles(button:Button):Void {
 		var backgroundSkin = new CircleSkin();
 		backgroundSkin.border = SolidColor(1.0, 0xffffff);
-		backgroundSkin.fill = null;
+		backgroundSkin.fill = SolidColor(0xff00ff, 0.0);
 		backgroundSkin.width = 16.0;
 		backgroundSkin.height = 16.0;
 		button.backgroundSkin = backgroundSkin;
@@ -752,7 +752,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	private function setSideBarViewHeaderCloseButtonStyles(button:Button):Void {
 		var backgroundSkin = new CircleSkin();
 		backgroundSkin.border = SolidColor(1.0, 0x444444, 0.8);
-		backgroundSkin.fill = null;
+		backgroundSkin.fill = SolidColor(0xff00ff, 0.0);
 		backgroundSkin.width = 14.0;
 		backgroundSkin.height = 14.0;
 		button.backgroundSkin = backgroundSkin;

@@ -332,6 +332,8 @@ popup auto-hide" (`extension.firefox.enablePopupAutohide` / `disablePopupAutohid
   breakpoint in an unmapped source during a debug session. You may want to turn this off if some
   of the sources in your project are loaded on-demand (e.g. if you create multiple bundles with
   webpack and some of these bundles are only loaded as needed).
+* `enableCRAWorkaround`: Enable a workaround for facebook/create-react-app#6074: Adding/removing
+  breakpoints doesn't work for sources that were changed after the dev-server was started
 
 ### Overriding configuration properties in your settings
 You can override some of the `launch.json` configuration properties in your user, workspace or

@@ -306,7 +306,7 @@ describe('The configuration parser', function() {
 		assert.equal(parsedConfiguration.attach!.reloadTabs, true);
 	});
 
-	it('should not allow both "reAttach" and "keepProfileChanges" to be true on MacOS', async function() {
+	it('should not allow "reAttach" to be false while "keepProfileChanges" is true on MacOS', async function() {
 
 		if (os.platform() !== 'darwin') {
 			this.skip();

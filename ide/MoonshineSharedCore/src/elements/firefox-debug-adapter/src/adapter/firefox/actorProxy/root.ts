@@ -34,6 +34,7 @@ export class RootActorProxy extends EventEmitter implements ActorProxy {
 	private pendingAddonsRequests = new PendingRequests<FirefoxDebugProtocol.Addon[]>();
 
 	constructor(
+		private readonly enableCRAWorkaround: boolean,
 		private readonly pathMapper: PathMapper,
 		private readonly connection: DebugConnection
 	) {
@@ -131,15 +132,15 @@ export class RootActorProxy extends EventEmitter implements ActorProxy {
 
 						const _tab = tab as FirefoxDebugProtocol.Tab;
 						actorsForTab = [
-							new TabActorProxy(
-								tab.actor, _tab.title, _tab.url, this.pathMapper, this.connection),
+							new TabActorProxy(tab.actor, _tab.title, _tab.url,
+								this.enableCRAWorkaround, this.pathMapper, this.connection),
 							new ConsoleActorProxy(_tab.consoleActor, this.connection)
 						];
 
 					} else {
 
 						const tabDescriptorActor = new TabDescriptorActorProxy(
-							tab.actor, this.pathMapper, this.connection);
+							tab.actor, this.enableCRAWorkaround, this.pathMapper, this.connection);
 						actorsForTab = await tabDescriptorActor.getTarget();
 
 					}
@@ -220,7 +221,7 @@ export class RootActorProxy extends EventEmitter implements ActorProxy {
 			this.pendingProcessRequests.resolveOne([
 				new TabActorProxy(
 					processResponse.form.actor, 'Browser', processResponse.form.url,
-					this.pathMapper, this.connection),
+					this.enableCRAWorkaround, this.pathMapper, this.connection),
 				new ConsoleActorProxy(processResponse.form.consoleActor, this.connection)
 			]);
 
