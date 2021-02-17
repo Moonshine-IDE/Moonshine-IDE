@@ -19,6 +19,7 @@ export class WebExtensionActorProxy extends EventEmitter implements ActorProxy {
 
 	constructor(
 		private readonly webExtensionInfo: FirefoxDebugProtocol.Addon,
+		private readonly enableCRAWorkaround: boolean,
 		private readonly pathMapper: PathMapper,
 		private readonly connection: DebugConnection
 	) {
@@ -59,7 +60,7 @@ export class WebExtensionActorProxy extends EventEmitter implements ActorProxy {
 			this.pendingConnectRequests.resolveOne([
 				new TabActorProxy(
 					connectResponse.form.actor, this.webExtensionInfo.name, connectResponse.form.url,
-					this.pathMapper, this.connection),
+					this.enableCRAWorkaround, this.pathMapper, this.connection),
 				new ConsoleActorProxy(connectResponse.form.consoleActor, this.connection)
 			]);
 

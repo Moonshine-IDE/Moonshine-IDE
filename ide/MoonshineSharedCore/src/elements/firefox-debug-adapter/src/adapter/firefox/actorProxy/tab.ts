@@ -26,6 +26,7 @@ export class TabActorProxy extends EventEmitter implements ActorProxy {
 		public readonly name: string,
 		private _title: string,
 		private _url: string,
+		private readonly enableCRAWorkaround: boolean,
 		private readonly pathMapper: PathMapper,
 		private readonly connection: DebugConnection
 	) {
@@ -94,7 +95,7 @@ export class TabActorProxy extends EventEmitter implements ActorProxy {
 
 			let threadActor: IThreadActorProxy = this.connection.getOrCreate(
 				tabAttachedResponse.threadActor, 
-				() => new ThreadActorProxy(tabAttachedResponse.threadActor, this.connection));
+				() => new ThreadActorProxy(tabAttachedResponse.threadActor, this.enableCRAWorkaround, this.connection));
 
 			threadActor = new SourceMappingThreadActorProxy(threadActor, this.pathMapper, this.connection);
 
@@ -172,7 +173,7 @@ export class TabActorProxy extends EventEmitter implements ActorProxy {
 					log.debug(`Worker ${worker.actor} started`);
 
 					workerActor = new WorkerActorProxy(
-						worker.actor, worker.url, this.pathMapper, this.connection);
+						worker.actor, worker.url, this.enableCRAWorkaround, this.pathMapper, this.connection);
 					this.emit('workerStarted', workerActor);
 
 				}

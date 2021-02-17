@@ -1,7 +1,7 @@
 {
   "name": "vscode-firefox-debug",
   "displayName": "Debugger for Firefox",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "author": "Holger Benl <hbenl@evandor.de>",
   "publisher": "firefox-devtools",
   "description": "Debug your web application or browser extension in Firefox",
@@ -28,8 +28,8 @@
     "publish-npm": "npm run rebuild && cd dist && npm publish"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.10.1",
-    "chokidar": "^3.4.0",
+    "@babel/polyfill": "^7.10.4",
+    "chokidar": "^3.4.2",
     "core-js": "^3.6.5",
     "data-uri-to-buffer": "3.0.1",
     "debounce": "^1.2.0",
@@ -41,18 +41,18 @@
     "is-absolute-url": "^3.0.3",
     "minimatch": "^3.0.4",
     "source-map": "^0.7.3",
-    "strip-json-comments": "^3.1.0",
-    "uuid": "^8.1.0",
-    "vscode-debugadapter": "^1.41.0",
+    "strip-json-comments": "^3.1.1",
+    "uuid": "^8.3.0",
+    "vscode-debugadapter": "^1.41.1",
     "vscode-uri": "^2.1.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.10.1",
-    "@babel/core": "^7.10.2",
-    "@babel/plugin-proposal-class-properties": "^7.10.1",
-    "@babel/plugin-proposal-object-rest-spread": "^7.10.1",
-    "@babel/preset-env": "^7.10.2",
-    "@babel/preset-typescript": "^7.10.1",
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.11.1",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-typescript": "^7.10.4",
     "@gulp-sourcemaps/map-sources": "^1.0.0",
     "@types/debounce": "^1.2.0",
     "@types/fs-extra": "^9.0.1",
@@ -62,28 +62,28 @@
     "@types/gulp-sourcemaps": "^0.0.32",
     "@types/gulp-uglify": "^3.0.6",
     "@types/minimatch": "^3.0.3",
-    "@types/mocha": "^7.0.2",
-    "@types/node": "^10.17.24",
+    "@types/mocha": "^8.0.3",
+    "@types/node": "^10.17.28",
     "@types/rimraf": "^3.0.0",
-    "@types/uuid": "^8.0.0",
+    "@types/uuid": "^8.3.0",
     "@types/vscode": "~1.40.0",
-    "@types/webpack": "^4.41.17",
+    "@types/webpack": "^4.41.21",
     "babel-loader": "^8.1.0",
-    "copy-webpack-plugin": "^6.0.2",
+    "copy-webpack-plugin": "^6.0.3",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-nop": "0.0.3",
     "gulp-rename": "^2.0.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-uglify": "^3.0.2",
-    "mocha": "^7.2.0",
+    "mocha": "^8.1.1",
     "nyc": "^15.1.0",
     "ts-node": "^8.10.2",
-    "typescript": "~3.9.5",
-    "vsce": "^1.76.0",
+    "typescript": "~3.9.7",
+    "vsce": "^1.78.0",
     "vscode-debugadapter-testsupport": "^1.41.0",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
   },
   "babel": {
     "presets": [
@@ -581,6 +581,11 @@
                 "description": "Suggest using the Path Mapping Wizard when the user tries to set a breakpoint in an unmapped source during a debug session",
                 "default": true
               },
+              "enableCRAWorkaround": {
+                "type": "boolean",
+                "description": "Enable a workaround for breakpoints not working in projects created using create-react-app",
+                "default": true
+              },
               "log": {
                 "type": "object",
                 "description": "Configuration for diagnostic logging of the debug adapter",
@@ -834,6 +839,11 @@
               "suggestPathMappingWizard": {
                 "type": "boolean",
                 "description": "Suggest using the Path Mapping Wizard when the user tries to set a breakpoint in an unmapped source during a debug session",
+                "default": true
+              },
+              "enableCRAWorkaround": {
+                "type": "boolean",
+                "description": "Enable a workaround for breakpoints not working in projects created using create-react-app",
                 "default": true
               },
               "log": {

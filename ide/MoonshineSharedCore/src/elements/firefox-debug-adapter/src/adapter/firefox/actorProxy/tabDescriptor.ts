@@ -18,6 +18,7 @@ export class TabDescriptorActorProxy implements ActorProxy {
 
 	constructor(
 		public readonly name: string,
+		private readonly enableCRAWorkaround: boolean,
 		private readonly pathMapper: PathMapper,
 		private readonly connection: DebugConnection
 	) {
@@ -52,7 +53,7 @@ export class TabDescriptorActorProxy implements ActorProxy {
 				this.pendingGetTargetRequest.resolve([
 					new TabActorProxy(
 						getTargetResponse.frame.actor, getTargetResponse.frame.title, getTargetResponse.frame.url,
-						this.pathMapper, this.connection),
+						this.enableCRAWorkaround, this.pathMapper, this.connection),
 					new ConsoleActorProxy(getTargetResponse.frame.consoleActor, this.connection)
 				]);
 
