@@ -265,7 +265,7 @@ package actionScripts.languageServer
 
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
-				project.name, "Haxe: Checking version...", false
+				project.name, "Checking Haxe version...", false
 			));
 
 			this._haxeVersion = "";
@@ -318,7 +318,7 @@ package actionScripts.languageServer
 
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
-				project.name, "Haxe: Loading project...", false
+				project.name, "Loading Haxe project...", false
 			));
 
 			this._displayArguments = "";

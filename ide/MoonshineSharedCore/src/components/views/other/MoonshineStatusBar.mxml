@@ -51,7 +51,7 @@
 						break;
 					}
 				}
-				lblLanguageServer.text = message;
+				lblLanguageServer.text = lastProjectName + ": " + message;
 				hgLanguageServer.visible = message != null && message.length > 0;
 				if(hgLanguageServer.visible && !languageServerLoaderBar)
 				{

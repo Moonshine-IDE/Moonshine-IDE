@@ -88,7 +88,11 @@ export class ObjectGripAdapter implements VariablesProvider {
 			}
 		}
 
-		VariableAdapter.sortVariables(variables);
+		/** Array-Objects are already sorted, sorting them again as strings messes up the order */
+		let isArray = (prototypeAndProperties.prototype.type == 'object' && prototypeAndProperties.prototype.class == 'Array');
+		if (!isArray) {
+			VariableAdapter.sortVariables(variables);
+		}
 		VariableAdapter.sortVariables(symbolVariables);
 		VariableAdapter.sortVariables(accessorsFromPrototypes);
 		variables.push(...symbolVariables);
