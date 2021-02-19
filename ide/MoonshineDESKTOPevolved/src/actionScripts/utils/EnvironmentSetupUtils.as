@@ -24,8 +24,6 @@ package actionScripts.utils
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
 	
 	import mx.controls.Alert;
 	
@@ -145,14 +143,13 @@ package actionScripts.utils
 			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.cmd");
 			try
 			{
-				FileUtils.writeToFile(windowsBatchFile, setCommand);
+				FileUtils.writeToFileAsync(windowsBatchFile, setCommand, onBatchFileWriteComplete, onBatchFileWriteError);
 			}
 			catch(e:Error)
 			{
 				onBatchFileWriteError(e.toString());
 				return;
 			}
-			onBatchFileWriteComplete();
 		}
 		
 		private function executeOSX():void
