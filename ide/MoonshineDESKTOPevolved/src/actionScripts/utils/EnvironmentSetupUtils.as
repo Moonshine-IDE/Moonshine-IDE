@@ -47,11 +47,27 @@ package actionScripts.utils
 		private var isDelayRunInProcess:Boolean;
 		private var processQueus:Array = [];
 		private var isSingleProcessRunning:Boolean;
+		private var lastSavedContent:String;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
 			if (!instance) instance = new EnvironmentSetupUtils();
 			return instance;
+		}
+		
+		public function EnvironmentSetupUtils()
+		{
+			loadLastSavedContent();
+		}
+		
+		protected function loadLastSavedContent():void
+		{
+			if (File.applicationStorageDirectory.resolvePath("setLocalEnvironment.cmd").exists)
+			{
+				lastSavedContent = FileUtils.readFromFile(
+					File.applicationStorageDirectory.resolvePath("setLocalEnvironment.cmd")
+					) as String;
+			}
 		}
 		
 		public function updateToCurrentEnvironmentVariable():void
@@ -137,12 +153,26 @@ package actionScripts.utils
 				return;
 			}
 			
-			//this previously used FileUtils.writeToFileAsync(), but commands
-			//would sometimes fail because the file would still be in use, even
-			//after the FileStream dispatched Event.CLOSE
+			// to reduce file-writing process
+			// re-run by the existing file if the
+			// contents matched
 			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.cmd");
+			if (windowsBatchFile && 
+				setCommand == lastSavedContent)
+			{
+				onBatchFileWriteComplete();
+				return;
+			}
+			else
+			{
+				lastSavedContent = setCommand; 
+			}
+			
 			try
 			{
+				//this previously used FileUtils.writeToFileAsync(), but commands
+				//would sometimes fail because the file would still be in use, even
+				//after the FileStream dispatched Event.CLOSE
 				FileUtils.writeToFileAsync(windowsBatchFile, setCommand, onBatchFileWriteComplete, onBatchFileWriteError);
 			}
 			catch(e:Error)
