@@ -22,6 +22,8 @@ package actionScripts.plugin.workspace
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
@@ -312,9 +314,14 @@ package actionScripts.plugin.workspace
 			}
 			else
 			{
-				methodToCallAfterClosingAllProjects.callMethod();
-				methodToCallAfterClosingAllProjects = null;
-				closeAllProjectItems = null;
+				var tmpTimeout:uint = setTimeout(function():void
+				{
+					clearTimeout(tmpTimeout);
+					
+					methodToCallAfterClosingAllProjects.callMethod();
+					methodToCallAfterClosingAllProjects = null;
+					closeAllProjectItems = null;
+				}, 1000);
 			}
 		}
 	}
