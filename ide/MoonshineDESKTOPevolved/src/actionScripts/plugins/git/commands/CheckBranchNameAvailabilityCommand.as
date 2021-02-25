@@ -62,7 +62,8 @@ package actionScripts.plugins.git.commands
 				shellError(value);
 				return;
 			}
-			
+
+			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			switch(tmpQueue.processType)
 			{
 				case GIT_GET_REMOTE_ORIGINS:
@@ -72,7 +73,6 @@ package actionScripts.plugins.git.commands
 					var tmpOrigins:Array = value.output.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
 					isMultipleOrigin = tmpOrigins.length > 1;
 
-					var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 					var calculatedURL:String;
 					if (tmpModel && tmpModel.sessionUser)
 					{

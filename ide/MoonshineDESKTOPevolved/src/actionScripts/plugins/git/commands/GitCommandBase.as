@@ -59,7 +59,7 @@ package actionScripts.plugins.git.commands
 		protected var model:IDEModel = IDEModel.getInstance();
 		protected var processType:String;
 		protected var queue:Vector.<Object> = new Vector.<Object>();
-		protected var subscribeIdToWorker:String = UIDUtil.createUID();
+		protected var subscribeIdToWorker:String;
 		protected var worker:IDEWorker = IDEWorker.getInstance();
 		protected var isErrorEncountered:Boolean;
 		
@@ -67,6 +67,7 @@ package actionScripts.plugins.git.commands
 		{
 			getGitPluginReference();
 			gitBinaryPathOSX = plugin.gitBinaryPathOSX;
+			subscribeIdToWorker = UIDUtil.createUID();
 			
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
