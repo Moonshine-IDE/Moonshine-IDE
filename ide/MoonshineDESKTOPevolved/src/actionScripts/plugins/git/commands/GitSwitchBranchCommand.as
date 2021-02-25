@@ -28,9 +28,9 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
-import mx.utils.StringUtil;
+	import mx.utils.StringUtil;
 
 public class GitSwitchBranchCommand extends GitCommandBase
 	{

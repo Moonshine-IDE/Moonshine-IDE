@@ -34,7 +34,7 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class SoftwareVersionChecker extends ConsoleOutputter implements IWorkerSubscriber
 	{

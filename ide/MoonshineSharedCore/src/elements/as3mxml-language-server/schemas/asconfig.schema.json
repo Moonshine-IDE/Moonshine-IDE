@@ -75,6 +75,8 @@
 						"application": { "$ref": "#/definitions/application" },
 						"airOptions": { "$ref": "#/definitions/airOptions" },
 						"animateOptions": { "$ref" : "#/definitions/animateOptions" },
+						"modules": { "$ref": "#/definitions/modules" },
+						"workers": { "$ref": "#/definitions/workers" },
 						"htmlTemplate": { "$ref": "#/definitions/htmlTemplate" },
 						"mainClass": { "$ref": "#/definitions/mainClass" }
 					}
@@ -88,7 +90,19 @@
 		},
 		"additionalOptions":
 		{
-			"type": "string",
+			"anyOf":
+			[
+				{ 
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"items":
+					{
+						"type": "string"
+					}
+				}
+			],
 			"description": "Additional options to send to the compiler, formatted as command line arguments. Useful for testing new options that are not yet supported by the compilerOptions field of asconfig.json."
 		},
 		"htmlTemplate":
@@ -369,6 +383,11 @@
 						"connect": { "$ref": "#/definitions/airOptionsConnect" },
 						"listen": { "$ref": "#/definitions/airOptionsListen" },
 						"platformsdk": { "$ref": "#/definitions/airOptionsPlatformSDK" },
+						"resdir":
+						{
+							"type": "string",
+							"description": "Optionally specify a folder containing files to include as Android resources."
+						},
 						"signingOptions": { "$ref": "#/definitions/signingOptions" },
 						"target":
 						{
@@ -961,6 +980,64 @@
 					"type": "boolean",
 					"description": "In an Apache Royale project, enables or disables warnings about public variables." 
 				}
+			}
+		},
+		"modules":
+		{
+			"type": "array",
+			"description": "One or more modules that will be compiled along with the application.",
+			"items":
+			{
+				"type": "object",
+				"description": "A module compiled with the application.",
+				"additionalProperties": false,
+				"properties": {
+					"file": {
+						"type": "string",
+						"description": "The specified file will be used as the entry point of the module."
+					},
+					"optimize": {
+						"type": "boolean",
+						"description": "Indicates if the module will be optimized specifically for this project's application, or if it may be loaded by any application."
+					},
+					"output": {
+						"type": "string",
+						"description": "The path where the generated output of the module should be saved."
+					}
+				},
+				"required":
+				[
+					"file"
+				]
+			}
+		},
+		"workers":
+		{
+			"type": "array",
+			"description": "One or more workers that will be compiled along with the application.",
+			"items":
+			{
+				"type": "object",
+				"description": "A worker compiled with the application.",
+				"additionalProperties": false,
+				"properties": {
+					"file": {
+						"type": "string",
+						"description": "The specified file will be used as the entry point of the worker."
+					},
+					"optimize": {
+						"type": "boolean",
+						"description": "Indicates if the module will be optimized specifically for this project's application, or if it may be loaded by any application."
+					},
+					"output": {
+						"type": "string",
+						"description": "The path where the generated output of the worker should be saved."
+					}
+				},
+				"required":
+				[
+					"file"
+				]
 			}
 		},
 		"config":

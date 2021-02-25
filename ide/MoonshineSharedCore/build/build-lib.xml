@@ -293,9 +293,11 @@
 		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/f"/>
-			<arg value="${debug_dir}/${certSelfSigned}"/>
+			<arg value="${certSignedWindowsBinary}"/>
 			<arg value="/p"/>
-			<arg value="${certSelfSignedPassword}"/>
+			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="/tr"/>
+			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
 			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
 		</exec>
 		<echo># Signed Process Running - Praparing Installer</echo>
@@ -313,6 +315,8 @@
 			<arg value="${certSignedWindowsBinary}"/>
 			<arg value="/p"/>
 			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="/tr"/>
+			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
 			<arg value="${deploy_dir}/${installerName}-${BuildVersion}.exe"/>
 		</exec>
 	 </target>
@@ -771,11 +775,11 @@
 				<property name="windowsBundleFilename" value="${deploy_dir}/${installerName}EXE" />
 			</else>
 		</if>
-		<replaceregexp file="${desktopApplicationDescriptor}" match="filenameToBeReplacedByANT" replace="${executableName}" />
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;id&gt;[^&lt;]*&lt;/id&gt;" replace="&lt;id&gt;${applicationID}&lt;/id&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;filename&gt;[^&lt;]*&lt;/filename&gt;" replace="&lt;filename&gt;${executableName}&lt;/filename&gt;" flags="g"/>
 		<replaceregexp file="${desktopApplicationDescriptor}" match="nameToBeReplacedByANT" replace="${applicationName} ${BuildVersion}" encoding="utf-8" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="idToBeReplacedByANT" replace="${applicationID}" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="0.0.0" replace="${BuildVersion}" />
-		<replace file="${desktopApplicationDescriptor}" token="[This value will be overwritten by Flash Builder in the output app.xml]" value="${swfFilename}" />
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;versionNumber&gt;[^&lt;]*&lt;/versionNumber&gt;" replace="&lt;versionNumber&gt;${BuildVersion}&lt;/versionNumber&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content&gt;" flags="g"/>
 		<!-- More robust replacing technique than above one (commented) -->
         <!--replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content>" /-->
 	</target>

@@ -227,7 +227,7 @@ package actionScripts.languageServer
 				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [CommandLineUtil.joinOptions(eclipseCommand)]);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,
-					project.name, "Updating Gradle classpath", false
+					project.name, "Updating Gradle classpath...", false
 				));
 				return true;
 			}

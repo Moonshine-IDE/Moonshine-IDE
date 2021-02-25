@@ -23,7 +23,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	import mx.utils.StringUtil;
 

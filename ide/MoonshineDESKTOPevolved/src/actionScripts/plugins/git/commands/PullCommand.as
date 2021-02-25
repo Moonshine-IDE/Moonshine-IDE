@@ -24,9 +24,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.valueObjects.RepositoryItemVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class PullCommand extends GitCommandBase
 	{

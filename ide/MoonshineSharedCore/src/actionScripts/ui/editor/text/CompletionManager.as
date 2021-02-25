@@ -200,6 +200,11 @@ package actionScripts.ui.editor.text
 			if(item.textEdit)
 			{
 				var textEdit:TextEdit = item.textEdit;
+				if(textEdit.range.end.character < caret) {
+					//account for the user typing more since the initial
+					//completion request
+					textEdit.range.end.character = caret;
+				}
 				var workspaceEdit:WorkspaceEdit = new WorkspaceEdit();
 				var changes:Object = {};
 				changes[uri] = new <TextEdit>[textEdit];
@@ -537,9 +542,7 @@ package actionScripts.ui.editor.text
 				//all items are visible
 				return true;
 			}
-			//we don't need to call toLowerCase() on sortLabel and menuStr here
-			//because they are already lower case
-			return item.sortText.indexOf(menuStr) > -1;
+			return item.label.toLowerCase().indexOf(menuStr) > -1;
         }
 
 		private function sortCodeCompletionMenu(itemA:CompletionItem, itemB:CompletionItem, fields:Array):int

@@ -19,7 +19,7 @@
 package actionScripts.plugins.git.commands
 {
 	import actionScripts.events.WorkerEvent;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class GetXCodePathCommand extends GitCommandBase
 	{

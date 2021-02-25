@@ -21,7 +21,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class GetRemoteURLCommand extends GitCommandBase
 	{

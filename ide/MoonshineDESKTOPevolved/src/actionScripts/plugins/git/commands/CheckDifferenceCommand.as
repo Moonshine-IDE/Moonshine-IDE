@@ -25,7 +25,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.valueObjects.GenericSelectableObject;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class CheckDifferenceCommand extends GitCommandBase
 	{
