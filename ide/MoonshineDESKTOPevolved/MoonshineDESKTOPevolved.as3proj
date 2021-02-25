@@ -34,7 +34,7 @@
     <option antBuildPath=""/>
     <option verboseStackTraces="False"/>
     <option loadConfig=""/>
-    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false  +configname=air "/>
+    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false  +configname=air -debug=true "/>
     <option linkReport=""/>
     <option showUnusedTypeSelectorWarnings="True"/>
     <option benchmark="False"/>
@@ -83,22 +83,22 @@
   <postBuildCommand alwaysRun="False">null</postBuildCommand>
   <trustSVNCertificate>False</trustSVNCertificate>
   <options>
-    <option showHiddenPaths="False"/>
     <option isPrimeFacesVisualEditor="False"/>
     <option testMovie="AIR"/>
     <option visualEditorExportPath=""/>
     <option testMovieCommand=""/>
+    <option showHiddenPaths="False"/>
     <option defaultBuildTargets=""/>
     <option isRoyale="False"/>
     <option isExportedToExistingSource="False"/>
   </options>
   <moonshineRunCustomization>
-    <option deviceSimulator="null"/>
     <option launchMethod="Simulator"/>
-    <option urlToLaunch=""/>
+    <option projectType="1"/>
     <option targetPlatform="1"/>
     <option customUrlToLaunch=""/>
-    <option projectType="1"/>
+    <option urlToLaunch=""/>
+    <option deviceSimulator="null"/>
     <deviceSimulator>null</deviceSimulator>
     <certAndroid>null</certAndroid>
     <certIos>null</certIos>
