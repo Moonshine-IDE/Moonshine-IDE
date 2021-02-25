@@ -22,12 +22,13 @@ package actionScripts.plugins.git.utils
 			expect {
 				-re $newPromptA {
 					send "$password\r"
+					interact
 				} -re $newPromptB {
 					send "$password\r"
+					interact
 				}
 			}
 
-			interact
 			]]></root>
 
 		public static function getCalculatedRemotePathWithAuth(initialPath:String, username:String, password:String=null):String
