@@ -128,22 +128,20 @@ package actionScripts.plugins.git.commands
 			{
 				case GIT_PUSH:
 				{
-					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
-					if (value.output.toLowerCase().match(/invalid username/))
-					{
-						// reset model information if saved by the user
-						plugin.modelAgainstProject[tmpProject].sessionUser = null; 
-						plugin.modelAgainstProject[tmpProject].sessionPassword = null;
-					}
-					break;
-				}
-				default:
-				{
 					if (!value.output.match(/fatal: .*/) &&
 							value.output.match(/Checking for any authentication...*/))
 					{
 						worker.sendToWorker(WorkerEvent.PROCESS_STDINPUT_WRITEUTF, {value:hasUserPassword +"\n"}, subscribeIdToWorker);
 					}
+					else if (value.output.toLowerCase().match(/invalid username/))
+					{
+						tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
+
+						// reset model information if saved by the user
+						plugin.modelAgainstProject[tmpProject].sessionUser = null; 
+						plugin.modelAgainstProject[tmpProject].sessionPassword = null;
+					}
+					break;
 				}
 			}
 			
