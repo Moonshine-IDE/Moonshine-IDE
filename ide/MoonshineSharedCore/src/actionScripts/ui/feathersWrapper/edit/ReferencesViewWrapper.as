@@ -16,50 +16,31 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.ui.feathersWrapper.gettingStarted
+package actionScripts.ui.feathersWrapper.edit
 {
 	import actionScripts.interfaces.IViewWithTitle;
 	import actionScripts.ui.FeathersUIWrapper;
-	import actionScripts.ui.IContentWindow;
 	
 	import feathers.core.FeathersControl;
 	
-	public class GettingStartedViewWrapper extends FeathersUIWrapper implements IViewWithTitle, IContentWindow
+	import moonshine.plugin.references.view.ReferencesView;
+	
+	public class ReferencesViewWrapper extends FeathersUIWrapper implements IViewWithTitle
 	{
-		private static const LABEL:String = "Getting Started Haxe";
-		
-		public function GettingStartedViewWrapper(feathersUIControl:FeathersControl=null)
+		public function ReferencesViewWrapper(feathersUIControl:FeathersControl=null)
 		{
 			super(feathersUIControl);
 		}
 		
 		public function get title():String
 		{
-			return LABEL;
+			return ReferencesView(feathersUIControl).title;
 		}
 		
-		public function get label():String
+		override public function get className():String
 		{
-			return LABEL;
-		}
-		
-		public function get longLabel():String
-		{
-			return LABEL;
-		}
-		
-		public function save():void
-		{
-		}
-		
-		public function isChanged():Boolean
-		{
-			return false;
-		}
-		
-		public function isEmpty():Boolean
-		{
-			return false;
+			//className may be used by LayoutModifier
+			return "ReferencesView";
 		}
 	}
 }

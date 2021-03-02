@@ -18,23 +18,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.references
 {
-	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
-
 	import flash.events.Event;
+	
+	import mx.controls.Alert;
+	
+	import actionScripts.events.LanguageServerEvent;
+	import actionScripts.events.OpenLocationEvent;
+	import actionScripts.events.ReferencesEvent;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
+	import actionScripts.ui.feathersWrapper.edit.ReferencesViewWrapper;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.Location;
 	
 	import feathers.data.ArrayCollection;
 	
-	import actionScripts.events.LanguageServerEvent;
-	import actionScripts.events.ReferencesEvent;
-	import actionScripts.plugin.PluginBase;
 	import moonshine.plugin.references.view.ReferencesView;
-	import actionScripts.ui.editor.LanguageServerTextEditor;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.Location;
-	import actionScripts.ui.FeathersUIWrapper;
-	import actionScripts.ui.FeathersUIWrapper;
-	import mx.controls.Alert;
-	import actionScripts.events.OpenLocationEvent;
 
 	public class ReferencesPlugin extends PluginBase
 	{
@@ -131,26 +131,5 @@ package actionScripts.plugin.references
 			isReferencesViewVisible = false;
 			referencesView.removeEventListener(Event.REMOVED_FROM_STAGE, onReferenceViewRemovedFromStage);
 		}
-	}
-}
-
-import actionScripts.interfaces.IViewWithTitle;
-import actionScripts.ui.FeathersUIWrapper;
-import moonshine.plugin.references.view.ReferencesView;
-
-class ReferencesViewWrapper extends FeathersUIWrapper implements IViewWithTitle {
-	public function ReferencesViewWrapper(feathersUIControl:ReferencesView)
-	{
-		super(feathersUIControl);
-	}
-
-	public function get title():String {
-		return ReferencesView(feathersUIControl).title;
-	}
-
-	override public function get className():String
-	{
-		//className may be used by LayoutModifier
-		return "ReferencesView";
 	}
 }

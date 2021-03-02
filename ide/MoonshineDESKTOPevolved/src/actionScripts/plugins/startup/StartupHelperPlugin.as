@@ -39,7 +39,7 @@ package actionScripts.plugins.startup
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.feathersWrapper.gettingStarted.GettingStartedViewWrapper;
+	import actionScripts.ui.feathersWrapper.help.GettingStartedViewWrapper;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.EnvironmentUtils;
 	import actionScripts.utils.FileUtils;
