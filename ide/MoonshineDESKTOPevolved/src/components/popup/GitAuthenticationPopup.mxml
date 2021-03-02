@@ -52,7 +52,7 @@
 				var tmpArr : Array = new Array(eValidator, pValidator);
 				if (Validator.validateAll(tmpArr).length == 0)
 				{
-					userObject = {userName:txtUser.text, password:escapeMultiByte(txtPassword.text)};
+					userObject = {userName:txtUser.text, password:txtPassword.text};
 					userObject.save = cbSaveAuth.selected;
 
 					dispatchEvent(new Event(AUTH_SUBMITTED));

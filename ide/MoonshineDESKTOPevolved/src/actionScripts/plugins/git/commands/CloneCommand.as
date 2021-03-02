@@ -19,6 +19,7 @@
 package actionScripts.plugins.git.commands
 {
 	import actionScripts.plugins.git.utils.GitUtils;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	import flash.filesystem.File;
@@ -156,7 +157,11 @@ package actionScripts.plugins.git.commands
 				{
 					if (value.output.match(/Checking for any authentication...*/))
 					{
-						worker.sendToWorker(WorkerEvent.PROCESS_STDINPUT_WRITEUTF, {value:repositoryUnderCursor.userPassword +"\n"}, subscribeIdToWorker);
+						worker.sendToWorker(
+								WorkerEvent.PROCESS_STDINPUT_WRITEUTF,
+								{value:repositoryUnderCursor.userPassword +"\n"},
+								subscribeIdToWorker
+						);
 					}
 					else if (value.output.toLowerCase().match(/cloning into/))
 					{
