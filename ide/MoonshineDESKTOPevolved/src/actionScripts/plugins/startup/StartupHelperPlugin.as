@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.startup
 {
-	import actionScripts.utils.SDKUtils;
-
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.filesystem.File;
@@ -41,12 +39,14 @@ package actionScripts.plugins.startup
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.feathersWrapper.gettingStarted.GettingStartedViewWrapper;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.EnvironmentUtils;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.HelperUtils;
 	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.SDKInstallerPolling;
+	import actionScripts.utils.SDKUtils;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -58,6 +58,8 @@ package actionScripts.plugins.startup
 	import components.popup.JavaPathSetupPopup;
 	import components.popup.SDKUnzipConfirmPopup;
 	
+	import moonshine.plugin.findResources.view.FindResourcesView;
+	
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
 	{
 		override public function get name():String			{ return "Startup Helper Plugin"; }
@@ -65,6 +67,7 @@ package actionScripts.plugins.startup
 		override public function get description():String	{ return "Startup Helper Plugin."; }
 		
 		public static const EVENT_GETTING_STARTED:String = "gettingStarted";
+		public static const EVENT_GETTING_STARTED_HAXE:String = "gettingStartedHaxe";
 		
 		private var dependencyCheckUtil:IHelperMoonshineBridgeImp = new IHelperMoonshineBridgeImp();
 		private var installerItemsManager:InstallerItemsManager = InstallerItemsManager.getInstance();
@@ -73,6 +76,7 @@ package actionScripts.plugins.startup
 		private var gettingStartedPopup:GettingStartedPopup;
 		private var environmentUtil:EnvironmentUtils;
 		private var isSDKSetupShowing:Boolean;
+		private var gettingStartedViewWrapper:GettingStartedViewWrapper;
 		
 		private var javaSetupPathTimeout:uint;
 		private var startHelpingTimeout:uint;
@@ -100,6 +104,7 @@ package actionScripts.plugins.startup
 			
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
 			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedRequest, false, 0, true);
+			dispatcher.addEventListener(EVENT_GETTING_STARTED_HAXE, onGettingStartedHaxeRequest, false, 0, true);
 			dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
 			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 			
@@ -337,6 +342,15 @@ package actionScripts.plugins.startup
 		}
 		
 		/**
+		 * On getting started menu item
+		 */
+		private function onGettingStartedHaxeRequest(event:Event):void
+		{
+			openOrFocusGettingStartedHaxe();
+			//startHelpingTimeout = setTimeout(preInitHelping, 300);
+		}
+		
+		/**
 		 * Opens or focus Getting Started tab
 		 */
 		private function openOrFocusGettingStarted():void
@@ -358,6 +372,29 @@ package actionScripts.plugins.startup
 			{
 				model.activeEditor = gettingStartedPopup;
 			}
+		}
+		
+		/**
+		 * Opens or focus Getting Started tab
+		 */
+		private function openOrFocusGettingStartedHaxe():void
+		{
+			gettingStartedViewWrapper = new GettingStartedViewWrapper(new FindResourcesView());
+			gettingStartedViewWrapper.percentWidth = 100;
+			gettingStartedViewWrapper.percentHeight = 100;
+			gettingStartedViewWrapper.minWidth = 0;
+			gettingStartedViewWrapper.minHeight = 0;
+			
+			/*var tmpHaxePopup:GettingStartedHaxePopup = new GettingStartedHaxePopup;
+			tmpHaxePopup.dependencyCheckUtil = dependencyCheckUtil;
+			tmpHaxePopup.environmentUtil = environmentUtil;*/
+			//tmpHaxePopup.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed, false, 0, true);
+			
+			// start polling only in case of Windows
+			//togglePolling(true);
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+				new AddTabEvent(gettingStartedViewWrapper as IContentWindow)
+			);
 		}
 		
 		/**

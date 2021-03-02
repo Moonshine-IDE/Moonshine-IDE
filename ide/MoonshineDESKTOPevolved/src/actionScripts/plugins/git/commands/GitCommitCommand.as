@@ -18,6 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+	import flash.filesystem.File;
+	
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.events.StatusBarEvent;
@@ -45,7 +49,14 @@ package actionScripts.plugins.git.commands
 				}
 			}
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" commit -m $'"+ UtilsCore.getEncodedForShell(withMessage) +"'" : gitBinaryPathOSX +'&&commit&&-m&&"'+ UtilsCore.getEncodedForShell(withMessage, true) +'"', false, GIT_COMMIT));
+			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" commit -m $'"+ UtilsCore.getEncodedForShell(withMessage) +"'" : gitBinaryPathOSX +'&&commit&&-m&&'+ UtilsCore.convertString(withMessage), false, GIT_COMMIT));
+			
+			/*var customProcess:NativeProcess = new NativeProcess();
+			var customInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+			customInfo.executable = new File(model.gitPath);
+			customInfo.workingDirectory = plugin.modelAgainstProject[model.activeProject].rootLocal;
+			customInfo.arguments = Vector.<String>(["commit", "-m", withMessage]);
+			customProcess.start(customInfo);*/
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Commit ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:plugin.modelAgainstProject[model.activeProject].rootLocal.nativePath}, subscribeIdToWorker);
