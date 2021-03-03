@@ -18,29 +18,28 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
-import actionScripts.events.GeneralEvent;
+	import actionScripts.plugins.git.utils.GitUtils;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
-import mx.collections.ArrayCollection;
+	import mx.collections.ArrayCollection;
 	
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
-	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.NativeProcessQueueVO;
 
-import mx.utils.StringUtil;
+	import mx.utils.StringUtil;
 
 public class GitSwitchBranchCommand extends GitCommandBase
 	{
 		public static const BRANCH_TYPE_REMOTE:String = "branchTypeRemote";
 		public static const BRANCH_TYPE_LOCAL:String = "branchTypeLocal";
-		public static const BRANCH_TYPE_ALL:String = "branchTypeAll";
 
 		private static const GIT_REMOTE_BRANCH_LIST:String = "getGitRemoteBranchList";
 
-		public function GitSwitchBranchCommand(type:String=BRANCH_TYPE_LOCAL)
+		public function GitSwitchBranchCommand(listingType:String=BRANCH_TYPE_LOCAL)
 		{
 			super();
 			
@@ -48,8 +47,25 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			
 			queue = new Vector.<Object>();
 
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' fetch'), false, null));
-			switch (type) {
+			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+			var calculatedURL:String;
+			if (tmpModel && tmpModel.sessionUser)
+			{
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
+			}
+
+			var gitFetchCommand:String = getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : ''));
+			if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
+			{
+				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitFetchCommand);
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, null));
+			}
+			else
+			{
+				addToQueue(new NativeProcessQueueVO(gitFetchCommand, false, null));
+			}
+
+			switch (listingType) {
 				case BRANCH_TYPE_LOCAL:
 					addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch'), false, GIT_REMOTE_BRANCH_LIST));
 					break;
@@ -66,16 +82,25 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Branch Details ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
 		}
+
+		override public function onWorkerValueIncoming(value:Object):void
+		{
+			// do not print enter password line
+			if (ConstantsCoreVO.IS_MACOS && value.value && ("output" in value.value) &&
+					value.value.output.match(/Enter password \(exp\):.*/))
+			{
+				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
+			}
+
+			super.onWorkerValueIncoming(value);
+		}
 		
 		override protected function shellData(value:Object):void
 		{
-			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var isFatal:Boolean;
-			var tmpProject:ProjectVO;
-			
-			match = value.output.match(/fatal: .*/);
-			if (match) isFatal = true;
+
+			if (value.output.match(/fatal: .*/)) isFatal = true;
 			
 			switch(tmpQueue.processType)
 			{
@@ -84,11 +109,40 @@ public class GitSwitchBranchCommand extends GitCommandBase
 					if (!isFatal) parseRemoteBranchList(value.output);
 					return;
 				}
+				default:
+				{
+					if (!isFatal && value.output.match(/Checking for any authentication...*/))
+					{
+						var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+						worker.sendToWorker(WorkerEvent.PROCESS_STDINPUT_WRITEUTF, {value:tmpModel.sessionPassword +"\n"}, subscribeIdToWorker);
+					}
+				}
 			}
 			
 			// call super - it might have some essential
 			// commands to run
 			super.shellData(value);
+		}
+
+		override protected function shellError(value:Object):void
+		{
+			// call super - it might have some essential
+			// commands to run.
+			super.shellError(value);
+
+			if (testMessageIfNeedsAuthentication(value.output))
+			{
+				openAuthentication(null);
+			}
+		}
+
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				super.onAuthenticationSuccess(username, password);
+				new GitSwitchBranchCommand();
+			}
 		}
 		
 		private function parseRemoteBranchList(value:String):void
