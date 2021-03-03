@@ -35,7 +35,7 @@ package actionScripts.plugin.references
 	import feathers.data.ArrayCollection;
 	
 	import moonshine.plugin.references.view.ReferencesView;
-
+	
 	public class ReferencesPlugin extends PluginBase
 	{
 		public static const EVENT_OPEN_GO_TO_REFERENCES_VIEW:String = "openGoToReferencesView";

@@ -73,9 +73,11 @@ class MoonshineTheme extends ClassVariantTheme {
 	public static final THEME_VARIANT_LIGHT_BUTTON:String = "moonshine-button--light";
 	public static final THEME_VARIANT_DARK_BUTTON:String = "moonshine-button--dark";
 	public static final THEME_VARIANT_LIGHT_LABEL:String = "moonshine-label--light";
+	public static final THEME_VARIANT_ITALIC_LABEL:String = "moonshine-label--italic";
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
 	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
 	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
+	public static final THEME_VARIANT_PLUGIN_LARGE_TITLE:String = "moonshine-plugin-large-title";
 
 	public function new() {
 		super();
@@ -96,6 +98,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_LABEL, setLightLabelStyles);
+		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_ITALIC_LABEL, setItalicLabelStyles);
 		this.styleProvider.setStyleFunction(Label, DefaultToolTipManager.CHILD_VARIANT_TOOL_TIP, setToolTipLabelStyles);
 
 		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
@@ -125,6 +128,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(TextInput, null, setTextInputStyles);
 		
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_BUSY_LABEL, setBusyLabelStyles);
+		
+		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_PLUGIN_LARGE_TITLE, setPluginLargeTitleStyles);
 
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
@@ -615,6 +620,12 @@ class MoonshineTheme extends ClassVariantTheme {
 		label.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x555555);
 		label.embedFonts = true;
 	}
+	
+	private function setItalicLabelStyles(label:Label):Void {
+		label.textFormat = new TextFormat("DejaVuSansTF", 12, 0x292929, false, true);
+		label.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x999999, false, true);
+		label.embedFonts = true;
+	}
 
 	private function setToolTipLabelStyles(toolTip:Label):Void {
 		var backgroundSkin = new RectangleSkin();
@@ -831,6 +842,11 @@ class MoonshineTheme extends ClassVariantTheme {
 	
 	private function setBusyLabelStyles(label:Label):Void {
 		label.textFormat = new TextFormat("DejaVuSansTF", 12, 0xffffff, false);
+		label.embedFonts = true;
+	}
+	
+	private function setPluginLargeTitleStyles(label:Label):Void {
+		label.textFormat = new TextFormat("DejaVuSansTF", 24, 0xe252d3, false);
 		label.embedFonts = true;
 	}
 

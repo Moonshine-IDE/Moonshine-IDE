@@ -38,6 +38,7 @@ package actionScripts.plugins.startup
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.SettingsView;
+	import actionScripts.plugin.settings.vo.PluginSetting;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.feathersWrapper.help.GettingStartedViewWrapper;
 	import actionScripts.ui.tabview.CloseTabEvent;
@@ -58,7 +59,7 @@ package actionScripts.plugins.startup
 	import components.popup.JavaPathSetupPopup;
 	import components.popup.SDKUnzipConfirmPopup;
 	
-	import moonshine.plugin.findResources.view.FindResourcesView;
+	import moonshine.plugin.help.view.GettingStartedView;
 	
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
 	{
@@ -77,6 +78,7 @@ package actionScripts.plugins.startup
 		private var environmentUtil:EnvironmentUtils;
 		private var isSDKSetupShowing:Boolean;
 		private var gettingStartedViewWrapper:GettingStartedViewWrapper;
+		private var gettingStartedView:GettingStartedView;
 		
 		private var javaSetupPathTimeout:uint;
 		private var startHelpingTimeout:uint;
@@ -379,22 +381,34 @@ package actionScripts.plugins.startup
 		 */
 		private function openOrFocusGettingStartedHaxe():void
 		{
-			gettingStartedViewWrapper = new GettingStartedViewWrapper(new FindResourcesView());
-			gettingStartedViewWrapper.percentWidth = 100;
-			gettingStartedViewWrapper.percentHeight = 100;
-			gettingStartedViewWrapper.minWidth = 0;
-			gettingStartedViewWrapper.minHeight = 0;
-			
-			/*var tmpHaxePopup:GettingStartedHaxePopup = new GettingStartedHaxePopup;
-			tmpHaxePopup.dependencyCheckUtil = dependencyCheckUtil;
-			tmpHaxePopup.environmentUtil = environmentUtil;*/
-			//tmpHaxePopup.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed, false, 0, true);
-			
-			// start polling only in case of Windows
-			//togglePolling(true);
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-				new AddTabEvent(gettingStartedViewWrapper as IContentWindow)
-			);
+			if (!gettingStartedView)
+			{
+				var ps:PluginSetting = new PluginSetting(ConstantsCoreVO.MOONSHINE_IDE_LABEL +" is Installed. What's Next?", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Moonshine includes an extensive set of features by default. Some optional features (shown below) require access to third-party software. If you already have the third-party software installed, press the Configure button, otherwise press Download button.", false);
+				gettingStartedView = new GettingStartedView();
+				gettingStartedView.setting = ps;
+				
+				gettingStartedViewWrapper = new GettingStartedViewWrapper(gettingStartedView);
+				gettingStartedViewWrapper.percentWidth = 100;
+				gettingStartedViewWrapper.percentHeight = 100;
+				gettingStartedViewWrapper.minWidth = 0;
+				gettingStartedViewWrapper.minHeight = 0;
+
+				gettingStartedViewWrapper.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedHaxeClosed, false, 0, true);
+				
+				/*var tmpHaxePopup:GettingStartedHaxePopup = new GettingStartedHaxePopup;
+				tmpHaxePopup.dependencyCheckUtil = dependencyCheckUtil;
+				tmpHaxePopup.environmentUtil = environmentUtil;*/
+				
+				// start polling only in case of Windows
+				//togglePolling(true);
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new AddTabEvent(gettingStartedViewWrapper as IContentWindow)
+				);
+			}
+			else
+			{
+				model.activeEditor = gettingStartedViewWrapper;
+			}
 		}
 		
 		/**
@@ -407,6 +421,13 @@ package actionScripts.plugins.startup
 			
 			gettingStartedPopup.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed);
 			gettingStartedPopup = null;
+		}
+		
+		private function onGettingStartedHaxeClosed(event:Event):void
+		{
+			gettingStartedViewWrapper.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedHaxeClosed);
+			gettingStartedView = null;
+			gettingStartedViewWrapper = null;
 		}
 		
 		/**
