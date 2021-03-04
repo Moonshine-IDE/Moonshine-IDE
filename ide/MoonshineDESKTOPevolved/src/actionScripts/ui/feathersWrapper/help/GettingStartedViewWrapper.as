@@ -18,48 +18,83 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.feathersWrapper.help
 {
+	import flash.events.Event;
+	
+	import spark.components.Alert;
+	
 	import actionScripts.interfaces.IViewWithTitle;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.ui.IContentWindow;
 	
-	import feathers.core.FeathersControl;
+	import moonshine.plugin.help.events.GettingStartedViewEvent;
+	import moonshine.plugin.help.view.GettingStartedView;
 	
 	public class GettingStartedViewWrapper extends FeathersUIWrapper implements IViewWithTitle, IContentWindow
 	{
 		private static const LABEL:String = "Getting Started Haxe";
 		
-		public function GettingStartedViewWrapper(feathersUIControl:FeathersControl=null)
+		//--------------------------------------------------------------------------
+		//
+		//  CLASS API
+		//
+		//--------------------------------------------------------------------------
+		
+		public function GettingStartedViewWrapper(feathersUIControl:GettingStartedView=null)
 		{
 			super(feathersUIControl);
 		}
 		
-		public function get title():String
+		override public function initialize():void
 		{
-			return LABEL;
+			super.initialize();
+			this.feathersUIControl.addEventListener(
+				GettingStartedView.EVENT_DOWNLOAD_3RDPARTY_SOFTWARE, onDownload3rdPartySoftware,
+				false, 0, true);
+			this.feathersUIControl.addEventListener(
+				GettingStartedViewEvent.EVENT_DO_NOT_SHOW, onDoNotShowCheckboxChanged,
+				false, 0, true
+			);
 		}
 		
-		public function get label():String
+		//--------------------------------------------------------------------------
+		//
+		//  INTERFACE API
+		//
+		//--------------------------------------------------------------------------
+		
+		public function get title():String 		{	return LABEL;	}
+		public function get label():String 		{	return LABEL;	}
+		public function get longLabel():String 	{	return LABEL;	}
+		public function save():void				{}
+		public function isChanged():Boolean 	{	return false;	}
+		public function isEmpty():Boolean		{	return false;	}
+		
+		//--------------------------------------------------------------------------
+		//
+		//  PUBLIC API
+		//
+		//--------------------------------------------------------------------------
+		
+		public function dispose():void
 		{
-			return LABEL;
+			this.feathersUIControl.removeEventListener(GettingStartedViewEvent.EVENT_DO_NOT_SHOW, onDoNotShowCheckboxChanged);
+			this.feathersUIControl.removeEventListener(GettingStartedView.EVENT_DOWNLOAD_3RDPARTY_SOFTWARE, onDownload3rdPartySoftware);
 		}
 		
-		public function get longLabel():String
+		//--------------------------------------------------------------------------
+		//
+		//  PRIVATE API
+		//
+		//--------------------------------------------------------------------------
+		
+		private function onDoNotShowCheckboxChanged(event:GettingStartedViewEvent):void
 		{
-			return LABEL;
+			Alert.show(event.data.toString());
 		}
 		
-		public function save():void
+		private function onDownload3rdPartySoftware(event:Event):void
 		{
-		}
-		
-		public function isChanged():Boolean
-		{
-			return false;
-		}
-		
-		public function isEmpty():Boolean
-		{
-			return false;
+			Alert.show("3rd Party Software Download Requested");
 		}
 	}
 }

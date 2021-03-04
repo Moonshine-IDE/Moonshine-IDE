@@ -78,6 +78,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
 	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
 	public static final THEME_VARIANT_PLUGIN_LARGE_TITLE:String = "moonshine-plugin-large-title";
+	public static final THEME_VARIANT_BODY_WITH_GREY_BACKGROUND:String = "moonshine-layoutgroup-grey-background";
 
 	public function new() {
 		super();
@@ -119,6 +120,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(Button, SideBarViewHeader.CHILD_VARIANT_CLOSE_BUTTON, setSideBarViewHeaderCloseButtonStyles);
 
 		this.styleProvider.setStyleFunction(StandardPopupView, null, setStandardPopupViewStyles);
+		this.styleProvider.setStyleFunction(LayoutGroup, THEME_VARIANT_BODY_WITH_GREY_BACKGROUND, setBodyWithGreyBackgroundViewStyles);
 
 		this.styleProvider.setStyleFunction(TitleWindow, null, setTitleWindowStyles);
 		this.styleProvider.setStyleFunction(Label, TitleWindow.CHILD_VARIANT_TITLE, setTitleWindowTitleStyles);
@@ -792,6 +794,13 @@ class MoonshineTheme extends ClassVariantTheme {
 		view.backgroundSkin = backgroundSkin;
 
 		view.filters = [new GlowFilter(0x000000, 0.3, 6, 6, 2)];
+	}
+	
+	private function setBodyWithGreyBackgroundViewStyles(view:LayoutGroup):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0xf5f5f5);
+		backgroundSkin.cornerRadius = 0.0;
+		view.backgroundSkin = backgroundSkin;
 	}
 
 	private function setTitleWindowStyles(window:TitleWindow):Void {

@@ -20,6 +20,12 @@
 
 package moonshine.plugin.help.view;
 
+import feathers.events.TriggerEvent;
+import moonshine.plugin.help.events.GettingStartedViewEvent;
+import feathers.controls.Check;
+import moonshine.plugin.help.view.HelperView;
+import feathers.controls.Label;
+import feathers.controls.Button;
 import actionScripts.plugin.settings.vo.PluginSetting;
 import feathers.layout.VerticalLayout;
 import feathers.layout.VerticalLayoutData;
@@ -39,6 +45,7 @@ import openfl.events.Event;
 class GettingStartedView extends LayoutGroup implements IViewWithTitle 
 {
 	public static final EVENT_OPEN_SELECTED_REFERENCE = "openSelectedReference";
+	public static final EVENT_DOWNLOAD_3RDPARTY_SOFTWARE = "eventDownload3rdPartySoftware";
 
 	public function new() 
 	{
@@ -48,6 +55,10 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 
 	private var resultsListView:ListView;
 	private var titleRenderer:PluginTitleRenderer;
+	private var downloadThirdPartyButton:Button;
+	private var sdkInstallerInstallationMessageLabel:Label;
+	private var helperView:HelperView;
+	private var doNotShowCheckbox:Check;
 
 	@:flash.property
 	public var title(get, never):String;
@@ -73,6 +84,24 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		this._setting = value;
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._setting;
+	}
+	
+	private var _sdkInstallerInstallingMess:String;
+
+	@:flash.property
+	public var sdkInstallerInstallingMess(get, set):String;
+
+	private function get_sdkInstallerInstallingMess():String {
+		return this._sdkInstallerInstallingMess;
+	}
+
+	private function set_sdkInstallerInstallingMess(value:String):String {
+		if (this._sdkInstallerInstallingMess == value) {
+			return this._sdkInstallerInstallingMess;
+		}
+		this._sdkInstallerInstallingMess = value;
+		this.setInvalid(InvalidationFlag.DATA);
+		return this._sdkInstallerInstallingMess;
 	}
 
 	private var _references:ArrayCollection<Location> = new ArrayCollection();
@@ -108,20 +137,46 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 
 	override private function initialize():Void 
 	{
+		this.variant = MoonshineTheme.THEME_VARIANT_BODY_WITH_GREY_BACKGROUND;
+		
+		// root container
 		var viewLayout = new VerticalLayout();
-		viewLayout.horizontalAlign = JUSTIFY;
+		viewLayout.horizontalAlign = CENTER;
 		viewLayout.paddingTop = 10.0;
 		viewLayout.paddingRight = 10.0;
-		viewLayout.paddingBottom = 10.0;
+		viewLayout.paddingBottom = 4.0;
 		viewLayout.paddingLeft = 10.0;
 		viewLayout.gap = 10.0;
 		this.layout = viewLayout;
 		
+		// title area
 		this.titleRenderer = new PluginTitleRenderer();
 		this.titleRenderer.setting = this.setting;
 		this.titleRenderer.layoutData = new VerticalLayoutData(100, null);
 		this.titleRenderer.layout = new AnchorLayout();
 		this.addChild(this.titleRenderer);
+		
+		// 3rd-party button
+		this.downloadThirdPartyButton = new Button();
+		this.downloadThirdPartyButton.text = "Download Third-Party Software";
+		this.downloadThirdPartyButton.addEventListener(TriggerEvent.TRIGGER, onDownload3rdPatySoftware);
+		this.addChild(this.downloadThirdPartyButton);
+		
+		// 3rd-party software-installation message
+		this.sdkInstallerInstallationMessageLabel = new Label();
+		this.sdkInstallerInstallationMessageLabel.text = this.sdkInstallerInstallingMess;
+		this.addChild(this.sdkInstallerInstallationMessageLabel);
+		
+		// helper view
+		this.helperView = new HelperView();
+		this.helperView.layoutData = new VerticalLayoutData(100, 96);
+		this.addChild(this.helperView);
+		
+		// do not show
+		this.doNotShowCheckbox = new Check();
+		this.doNotShowCheckbox.text = "Do not show this tab on startup";
+		this.doNotShowCheckbox.addEventListener(Event.CHANGE, onDoNotShowCheckChangeHandler);
+		this.addChild(this.doNotShowCheckbox);
 
 		super.initialize();
 	}
@@ -133,6 +188,7 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		if (dataInvalid) {
 			//this.resultsListView.dataProvider = this._references;
 			this.titleRenderer.setting = this.setting;
+			this.sdkInstallerInstallationMessageLabel.text = this.sdkInstallerInstallingMess;
 		}
 
 		super.update();
@@ -144,5 +200,20 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 			return;
 		}*/
 		this.dispatchEvent(new Event(EVENT_OPEN_SELECTED_REFERENCE));
+	}
+	
+	private function onDoNotShowCheckChangeHandler(event:Event):Void 
+	{
+    	this.dispatchEvent(
+    		new GettingStartedViewEvent(
+    			GettingStartedViewEvent.EVENT_DO_NOT_SHOW,
+    			this.doNotShowCheckbox.selected
+    		)
+    	);
+	}
+	
+	private function onDownload3rdPatySoftware(event:TriggerEvent):Void
+	{
+		this.dispatchEvent(new Event(EVENT_DOWNLOAD_3RDPARTY_SOFTWARE));
 	}
 }

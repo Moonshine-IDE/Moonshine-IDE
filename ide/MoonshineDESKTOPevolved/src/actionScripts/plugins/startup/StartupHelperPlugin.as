@@ -59,6 +59,7 @@ package actionScripts.plugins.startup
 	import components.popup.JavaPathSetupPopup;
 	import components.popup.SDKUnzipConfirmPopup;
 	
+	import moonshine.plugin.help.events.GettingStartedViewEvent;
 	import moonshine.plugin.help.view.GettingStartedView;
 	
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
@@ -425,6 +426,7 @@ package actionScripts.plugins.startup
 		
 		private function onGettingStartedHaxeClosed(event:Event):void
 		{
+			gettingStartedViewWrapper.dispose();
 			gettingStartedViewWrapper.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedHaxeClosed);
 			gettingStartedView = null;
 			gettingStartedViewWrapper = null;
