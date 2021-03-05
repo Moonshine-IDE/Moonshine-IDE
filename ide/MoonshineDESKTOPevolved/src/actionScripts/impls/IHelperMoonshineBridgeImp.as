@@ -37,6 +37,11 @@ package actionScripts.impls
 			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
 		}
 		
+		public function isFlexHarmanSDKAvailable():Object
+		{
+			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEX);
+		}
+		
 		public function isFlexJSSDKAvailable():Object
 		{
 			return SDKUtils.checkSDKTypeInSDKList(SDKTypes.FLEXJS);

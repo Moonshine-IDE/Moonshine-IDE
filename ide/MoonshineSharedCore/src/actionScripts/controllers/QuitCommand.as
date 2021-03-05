@@ -29,8 +29,6 @@ package actionScripts.controllers
     import mx.events.ResizeEvent;
     import mx.managers.PopUpManager;
     
-    import feathers.controls.Button;
-    
     import actionScripts.events.ApplicationEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.GradleBuildEvent;
@@ -40,6 +38,7 @@ package actionScripts.controllers
     import actionScripts.plugin.settings.event.SetSettingsEvent;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.LayoutModifier;
     import actionScripts.ui.editor.BasicTextEditor;
@@ -47,24 +46,26 @@ package actionScripts.controllers
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
     
-    import moonshine.components.StandardPopupView;
     import components.views.splashscreen.SplashScreen;
-    import actionScripts.ui.FeathersUIWrapper;
+    
+    import feathers.controls.Button;
+    
     import moonshine.components.QuitView;
+    import moonshine.components.StandardPopupView;
     import moonshine.theme.MoonshineTheme;
 
 	public class QuitCommand implements ICommand
 	{
-		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var model:IDEModel = IDEModel.getInstance();
 		private static var pop:StandardPopupView;
 		private static var popWrapper:FeathersUIWrapper;
+		
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var model:IDEModel = IDEModel.getInstance();
 		private var quitPopup:QuitView;
 		private var quitPopupWrapper:FeathersUIWrapper;
 		private var timedOutClosingLanguageServers:Boolean = false;
 		private var isGradleDaemonClosed:Boolean;
 		private var languageServerTimeoutID:uint = uint.MAX_VALUE;
-
 		private var commandEvent:Event;
 		
 		public function execute(event:Event):void
@@ -204,6 +205,10 @@ package actionScripts.controllers
 				
 				return;
 			}
+			
+			// deletes the files generated during
+			// local environmen setup on Windows
+			dispatcher.dispatchEvent(new ApplicationEvent(ApplicationEvent.DISPOSE_FOOTPRINT));
 			
 			// for non-CONFIG:OSX
 			FlexGlobals.topLevelApplication.stage.nativeWindow.close();

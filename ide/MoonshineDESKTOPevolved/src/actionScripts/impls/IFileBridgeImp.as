@@ -374,6 +374,12 @@ package actionScripts.impls
 			return (new FileLocation(File.applicationDirectory.resolvePath(pathWith).nativePath));
 		}
 		
+		public function resolveTemporaryDirectoryPath(pathWith:String=null):FileLocation
+		{
+			if (!pathWith) return (new FileLocation(File.cacheDirectory.nativePath));
+			return (new FileLocation(File.cacheDirectory.resolvePath(pathWith).nativePath));
+		}
+		
 		public function resolvePath(path:String, toRelativePath:String=null):FileLocation
 		{
 			var tmpFile:File = toRelativePath ? new File(toRelativePath).resolvePath(path) : _file.resolvePath(path);
@@ -418,6 +424,19 @@ package actionScripts.impls
 			{
 
 			}
+		}
+		
+		public function readAsyncWithListener(onComplete:Function, onError:Function=null, fileToRead:Object=null):void
+		{
+			if (fileToRead && 
+				!(fileToRead is FileLocation) && 
+					!(fileToRead is File)) return;
+			
+			fileToRead ||= _file;
+			
+			FileUtils.readFromFileAsync((fileToRead is FileLocation) ? ((fileToRead as FileLocation).fileBridge.getFile as File) : fileToRead as File, 
+				FileUtils.DATA_FORMAT_STRING, 
+				onComplete, onError);
 		}
 		
 		public function deleteFile():void

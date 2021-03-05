@@ -23,6 +23,7 @@ package actionScripts.events
     public class ApplicationEvent extends Event
     {
         public static const APPLICATION_EXIT:String = "applicationExit";
+		public static const DISPOSE_FOOTPRINT:String = "disposeFootprints";
         
         public function ApplicationEvent(type:String)
         {

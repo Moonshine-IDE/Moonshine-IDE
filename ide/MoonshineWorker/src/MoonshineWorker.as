@@ -78,6 +78,12 @@ package
 					if (incomingObject.subscriberUdid) 
 						getListProcessClass(incomingObject.subscriberUdid).runProcesses(incomingObject.value);
 					break;
+				case WorkerEvent.PROCESS_STDINPUT_WRITEUTF:
+					// the list of np must have a non-null sub-id
+					if (incomingObject.subscriberUdid &&
+							gitListProcessClasses[incomingObject.subscriberUdid] != undefined)
+						getListProcessClass(incomingObject.subscriberUdid).writeToProcesses(incomingObject.value);
+					break;
 				case WorkerEvent.SEARCH_PROJECTS_IN_DIRECTORIES:
 					searchForProjects.projectSearchObject = incomingObject;
 					searchForProjects.initiateNewSearch();

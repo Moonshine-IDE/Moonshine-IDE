@@ -18,27 +18,31 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugins.git.utils.GitUtils;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+
 	import flash.filesystem.File;
 	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.GitHubPlugin;
-	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.valueObjects.RepositoryItemVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class CloneCommand extends GitCommandBase
 	{
-		public static const CLONE_REQUEST:String = "gutCloneRequest";
+		public static const CLONE_REQUEST:String = "gitCloneRequest";
 		
 		private var repositoryUnderCursor:RepositoryItemVO;
 		private var lastCloneURL:String;
 		private var lastCloneTarget:String;
 		private var lastTargetFolder:String;
 		private var authWindowTriggerCountWindows:int;
+		private var isRequestWithAuth:Boolean;
 		
 		private var _cloningProjectName:String;
 		private function get cloningProjectName():String
@@ -64,69 +68,118 @@ package actionScripts.plugins.git.commands
 			lastCloneTarget = target;
 			lastTargetFolder = targetFolder;
 			
-			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' clone --progress -v '+ url +' '+ targetFolder), false, GitHubPlugin.CLONE_REQUEST));
-			
+			var calculatedURL:String = lastCloneURL;
+			if (repositoryUnderCursor.isRequireAuthentication && repositoryUnderCursor.userName)
+			{
+				var protocol:String = lastCloneURL.substring(0, lastCloneURL.indexOf("://")+3);
+				calculatedURL = lastCloneURL.replace(protocol, "");
+				calculatedURL = protocol + repositoryUnderCursor.userName +"@"+ calculatedURL;
+				isRequestWithAuth = true;
+			}
+
+			var gitCommand:String = getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder);
+			if (ConstantsCoreVO.IS_MACOS && repositoryUnderCursor.isRequireAuthentication)
+			{
+				// experimental async file creation as Joel experienced
+				// exp file creation issue in his tests
+				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitCommand);
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GitHubPlugin.CLONE_REQUEST));
+			}
+			else
+			{
+				addToQueue(new NativeProcessQueueVO(gitCommand, false, GitHubPlugin.CLONE_REQUEST));
+			}
+
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);
+		}
+
+		override public function onWorkerValueIncoming(value:Object):void
+		{
+			// do not print enter password line
+			if (ConstantsCoreVO.IS_MACOS && value.value && ("output" in value.value) &&
+					value.value.output.match(/Enter password \(exp\):.*/))
+			{
+				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
+			}
+
+			super.onWorkerValueIncoming(value);
 		}
 		
 		override protected function shellError(value:Object):void
 		{
 			// call super - it might have some essential 
-			// commands to run
+			// commands to run.
 			super.shellError(value);
 			
-			var match:Array;
 			switch (value.queue.processType)
 			{
 				case GitHubPlugin.CLONE_REQUEST:
 				{
-					match = value.output.toLowerCase().match(/fatal: .*username/);
-					if (match)
+					repositoryUnderCursor.userPassword = null;
+					
+					if (testMessageIfNeedsAuthentication(value.output))
 					{
-						plugin.requestToAuthenticate(
-							new ConstructorDescriptor(CloneCommand, lastCloneURL, lastCloneTarget, lastTargetFolder, repositoryUnderCursor)
-						);
+						openAuthentication(repositoryUnderCursor ? repositoryUnderCursor.userName : null);
 					}
 					else
 					{
 						dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED, {hasError:true, message:value.output}));
 					}
+					
+					if (value.output.toLowerCase().match(/fatal: .*not found/) && isRequestWithAuth)
+					{
+						error("Insufficient permission.");
+					}
 				}
+			}
+		}
+		
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				repositoryUnderCursor.isRequireAuthentication = true;
+				repositoryUnderCursor.userName = username;
+				repositoryUnderCursor.userPassword = password;
+				
+				new CloneCommand(lastCloneURL, lastCloneTarget, lastTargetFolder, repositoryUnderCursor);
 			}
 		}
 		
 		override protected function shellData(value:Object):void
 		{
-			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			
 			switch(tmpQueue.processType)
 			{
 				case GitHubPlugin.CLONE_REQUEST:
 				{
-					match = value.output.toLowerCase().match(/cloning into/);
-					if (match)
+					if (value.output.match(/Checking for any authentication...*/))
+					{
+						worker.sendToWorker(
+								WorkerEvent.PROCESS_STDINPUT_WRITEUTF,
+								{value:repositoryUnderCursor.userPassword +"\n"},
+								subscribeIdToWorker
+						);
+					}
+					else if (value.output.toLowerCase().match(/cloning into/))
 					{
 						// for some weird reason git clone always
 						// turns to errordata first
 						cloningProjectName = value.output;
 						warning(value.output);
 					}
-					else
+					else if (value.output.toLowerCase().match(/logon failed/))
 					{
-						match = value.output.toLowerCase().match(/logon failed/);
-						if (match)
+						authWindowTriggerCountWindows ++;
+						if (authWindowTriggerCountWindows == 2)
 						{
-							authWindowTriggerCountWindows ++;
-							if (authWindowTriggerCountWindows == 2)
-							{
-								// terminates the process as on Windows
-								// git-native authentication window
-								// pops only twice
-								shellError(value);
-								return;
-							}
+							// terminates the process as on Windows
+							// git-native authentication window
+							// pops only twice
+							shellError(value);
+							return;
 						}
 					}
 					break;

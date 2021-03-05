@@ -19,6 +19,7 @@
 package actionScripts.utils
 {
 	import flash.display.DisplayObject;
+	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.system.Capabilities;
 	
@@ -65,6 +66,8 @@ package actionScripts.utils
 	import components.popup.ModifiedFileListPopup;
 	import components.renderers.CustomToolTipGBA;
 	import components.views.splashscreen.SplashScreen;
+	
+	import feathers.data.ArrayCollection;
 
 	import flash.filesystem.File;
 
@@ -272,7 +275,7 @@ package actionScripts.utils
 			return null;
 		}
 		
-		public static function sortCollection(collection:ArrayCollection, fields:Array):void
+		public static function sortCollection(collection:mx.collections.ArrayCollection, fields:Array):void
 		{
 			var sortFields:Array = [];
 			fields.forEach(function(field:String, index:int, arr:Array):void
@@ -768,7 +771,7 @@ package actionScripts.utils
 		{
 			var projectReferencePath:String;
 			var editorsCount:int = model.editors.length;
-			var hasChangesEditors:ArrayCollection = new ArrayCollection();
+			var hasChangesEditors:mx.collections.ArrayCollection = new mx.collections.ArrayCollection();
 			var editorsToClose:Array = [];
 			
 			// closes all opened file editor instances belongs to the deleted project
@@ -866,7 +869,11 @@ package actionScripts.utils
 		/**
 		 * Parse all acceptable files in a given project
 		 */
-		public static function parseFilesList(collection:IList, project:ProjectVO=null, readableExtensions:Array=null, isSourceFolderOnly:Boolean=false):void
+		public static function parseFilesList(flexCollection:IList=null, 
+											  feathersCollection:feathers.data.ArrayCollection=null, 
+											  project:ProjectVO=null, 
+											  readableExtensions:Array=null, 
+											  isSourceFolderOnly:Boolean=false):void
 		{
 			if (project)
 			{
@@ -877,22 +884,59 @@ package actionScripts.utils
 					var sourceWrapper:FileWrapper = findFileWrapperAgainstFileLocation(project.projectFolder, (project as AS3ProjectVO).sourceFolder);
 					if (sourceWrapper) 
 					{
-						parseChildrens(sourceWrapper, collection, readableExtensions);
+						initiateFilesParsingByPath(sourceWrapper.file.fileBridge.nativePath);
 						return;
 					}
 				}
 				
-				parseChildrens(project.projectFolder, collection, readableExtensions);
+				initiateFilesParsingByPath(project.projectFolder.nativePath);
 			}
 			else
 			{
 				for each (var i:ProjectVO in model.projects)
 				{
-					parseChildrens(i.projectFolder, collection, readableExtensions);
+					initiateFilesParsingByPath(i.projectFolder.nativePath);
+				}
+			}
+			
+			/*
+			 * @local
+			 */
+			function initiateFilesParsingByPath(value:String):void
+			{
+				var tmpFSP:FileSystemParser = new FileSystemParser();
+				tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onFilesListParseCompleted, false, 0, true);
+				tmpFSP.parseFilesPaths(value, "", readableExtensions);
+			}
+			function onFilesListParseCompleted(event:Event):void
+			{
+				event.currentTarget.removeEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onFilesListParseCompleted);
+				
+				var parsedFilesList:Array = (event.target as FileSystemParser).resultsArrayFormat;
+				var fileCount:int = parsedFilesList.length;
+				var separator:String = model.fileCore.separator;
+				var tmpNameLabel:String;
+				var tmpNameExtension:String;
+				for each (var i:String in parsedFilesList)
+				{
+					//var resource:ResourceVO = ResourceVO(parsedFilesList.getItemAt(i));
+					//resources.add(resource);
+					if (i != "")
+					{
+						tmpNameLabel = i.substr(i.lastIndexOf(separator)+1, i.length);
+						tmpNameExtension = tmpNameLabel.substr(tmpNameLabel.lastIndexOf(".")+1, tmpNameLabel.length);
+						if (!readableExtensions || (readableExtensions && isAcceptableResource(tmpNameExtension, readableExtensions)))
+						{
+							if (flexCollection) 
+								flexCollection.addItem({name:tmpNameLabel, extension: tmpNameExtension, resourcePath: i});
+							if (feathersCollection) 
+								feathersCollection.add({name:tmpNameLabel, extension: tmpNameExtension, resourcePath: i});
+						}
+					}
 				}
 			}
 		}
-
+		
 		/**
 		 * Returns menu options on current
 		 * recent opened projects
