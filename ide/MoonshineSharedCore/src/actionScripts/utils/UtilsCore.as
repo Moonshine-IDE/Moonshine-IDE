@@ -1315,6 +1315,11 @@ package actionScripts.utils
 			return true;
 		}
 		
+		public static function isJava8Present():Boolean
+		{
+			return false;
+		}
+		
 		public static function isAntAvailable():Boolean
 		{
 			if (!model.antHomePath || !model.antHomePath.fileBridge.exists)

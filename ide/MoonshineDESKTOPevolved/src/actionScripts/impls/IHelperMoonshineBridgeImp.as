@@ -62,6 +62,11 @@ package actionScripts.impls
 			return UtilsCore.isJavaForTypeaheadAvailable();
 		}
 		
+		public function isJava8Present():Boolean
+		{
+			return UtilsCore.isJava8Present();
+		}
+		
 		public function isAntPresent():Boolean
 		{
 			return UtilsCore.isAntAvailable();
