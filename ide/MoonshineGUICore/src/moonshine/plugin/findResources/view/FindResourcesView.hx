@@ -20,7 +20,12 @@
 
 package moonshine.plugin.findResources.view;
 
-import actionScripts.valueObjects.ResourceVO;
+import openfl.text.TextFormatAlign;
+import openfl.text.TextFormat;
+import feathers.core.IUIControl;
+import feathers.layout.AnchorLayoutData;
+import feathers.layout.AnchorLayout;
+import openfl.utils.Object;
 import feathers.controls.Button;
 import feathers.controls.Callout;
 import feathers.controls.Check;
@@ -58,24 +63,25 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.closeEnabled = true;
 		this.resizeEnabled = true;
 		
-		this.addEventListener(Event.ADDED_TO_STAGE, findResourcesView_addedToStageHandler);		
+		this.addEventListener(Event.ADDED_TO_STAGE, findResourcesView_addedToStageHandler);
 	}
 
 	private var searchFieldTextInput:TextInput;
 	private var filterExtensionsButton:Button;
 	private var resultsListView:ListView;
 	private var openResourceButton:Button;
+	private var resultsFieldLabel:Label;
 
-	private var _resources:ArrayCollection<ResourceVO> = new ArrayCollection();
+	private var _resources:ArrayCollection<Dynamic> = new ArrayCollection();
 
 	@:flash.property
-	public var resources(get, set):ArrayCollection<ResourceVO>;
+	public var resources(get, set):ArrayCollection<Dynamic>;
 
-	private function get_resources():ArrayCollection<ResourceVO> {
+	private function get_resources():ArrayCollection<Dynamic> {
 		return this._resources;
 	}
 
-	private function set_resources(value:ArrayCollection<ResourceVO>):ArrayCollection<ResourceVO> {
+	private function set_resources(value:ArrayCollection<Dynamic>):ArrayCollection<Dynamic> {
 		if (this._resources == value) {
 			return this._resources;
 		}
@@ -84,6 +90,24 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.updateFilterFunction();
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._resources;
+	}
+	
+	private var _isBusyState:Bool = true;
+	
+	@:flash.property
+	public var isBusyState(get, set):Bool;
+
+	private function get_isBusyState():Bool {
+		return this._isBusyState;
+	}
+
+	private function set_isBusyState(value:Bool):Bool {
+		_isBusyState = value;
+		if (!value)
+		{
+			this.updateFilesCount();
+		}		
+		return this._isBusyState;
 	}
 
 	private var _patterns:ArrayCollection<Dynamic> = new ArrayCollection();
@@ -104,12 +128,12 @@ class FindResourcesView extends ResizableTitleWindow {
 		return this._patterns;
 	}
 
-	private var _selectedResource:ResourceVO;
+	private var _selectedResource:Dynamic;
 
 	@:flash.property
-	public var selectedResource(get, never):ResourceVO;
+	public var selectedResource(get, never):Dynamic;
 
-	public function get_selectedResource():ResourceVO {
+	public function get_selectedResource():Dynamic {
 		return this._selectedResource;
 	}
 
@@ -160,13 +184,26 @@ class FindResourcesView extends ResizableTitleWindow {
 		resultsField.layout = resultsFieldLayout;
 		resultsField.layoutData = new VerticalLayoutData(null, 100.0);
 		this.addChild(resultsField);
-
-		var resultsFieldLabel = new Label();
-		resultsFieldLabel.text = "Matching items:";
+		
+		resultsFieldLabel = new Label();
+		resultsFieldLabel.text = "(Total: Working...)";
+		resultsFieldLabel.layoutData = new HorizontalLayoutData(50, null);
+		resultsFieldLabel.textFormat = new TextFormat("DejaVuSansTF", 12, 0x812137);
 		resultsField.addChild(resultsFieldLabel);
+		
+		var resultsListViewContainer = new LayoutGroup();
+		resultsListViewContainer.layoutData = new VerticalLayoutData(null, 100.0);
+		resultsListViewContainer.layout = new AnchorLayout();
+		resultsField.addChild(resultsListViewContainer);
+		
+		var resultsListViewLayoutData = new AnchorLayoutData();
+		resultsListViewLayoutData.top = 0;
+		resultsListViewLayoutData.bottom = 0;
+		resultsListViewLayoutData.left = 0;
+		resultsListViewLayoutData.right = 0;
 
 		this.resultsListView = new ListView();
-		this.resultsListView.itemToText = (item:ResourceVO) -> item.name + " - " + item.resourcePath;
+		this.resultsListView.itemToText = (item:Dynamic) -> item.name + " - " + item.labelPath;
 		this.resultsListView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
 			var itemRenderer = new ItemRenderer();
 			itemRenderer.doubleClickEnabled = true;
@@ -175,11 +212,10 @@ class FindResourcesView extends ResizableTitleWindow {
 			itemRenderer.addEventListener(MouseEvent.DOUBLE_CLICK, itemRenderer_doubleClickHandler);
 			return itemRenderer;
 		});
-		this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
+		this.resultsListView.layoutData = resultsListViewLayoutData;
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
-		//this.resultsListView.addEventListener(KeyboardEvent.KEY_DOWN, resultsListView_keyDownHandler);
 				
-		resultsField.addChild(this.resultsListView);
+		resultsListViewContainer.addChild(this.resultsListView);
 
 		var footer = new LayoutGroup();
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
@@ -192,7 +228,6 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.footer = footer;
 
 		super.initialize();
-		
 		this.updateFilterFunction();
 	}
 
@@ -211,7 +246,7 @@ class FindResourcesView extends ResizableTitleWindow {
 			return;
 		}
 		var query = this.searchFieldTextInput.text.toLowerCase();
-		this._resources.filterFunction = function(item:ResourceVO):Bool {
+		this._resources.filterFunction = function(item:Dynamic):Bool {
 			var itemName = item.name.toLowerCase();
 
 			if (query.length > 0 && itemName.indexOf(query) == -1) {
@@ -224,7 +259,7 @@ class FindResourcesView extends ResizableTitleWindow {
 				if (pattern.isSelected) {
 					someSelected = true;
 				}
-				if (pattern.label == item.resourceExtension && pattern.isSelected) {
+				if (pattern.label == item.extension && pattern.isSelected) {
 					isSelected = true;
 				}
 			}
@@ -234,6 +269,17 @@ class FindResourcesView extends ResizableTitleWindow {
 			}
 
 			return true;
+		}
+		
+		if (!this.isBusyState) 
+			this.updateFilesCount();
+	}
+	
+	private function updateFilesCount():Void
+	{
+		if (this._resources != null)
+		{
+			this.resultsFieldLabel.text = "(Total: "+ this._resources.length +" files)";
 		}
 	}
 	

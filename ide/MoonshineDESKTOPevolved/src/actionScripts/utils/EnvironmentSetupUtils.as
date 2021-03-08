@@ -24,11 +24,13 @@ package actionScripts.utils
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
 	
 	import mx.controls.Alert;
+	import mx.utils.UIDUtil;
 	
+	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
@@ -54,6 +56,15 @@ package actionScripts.utils
 		{	
 			if (!instance) instance = new EnvironmentSetupUtils();
 			return instance;
+		}
+		
+		public function EnvironmentSetupUtils()
+		{
+			GlobalEventDispatcher.getInstance().addEventListener(
+				ApplicationEvent.DISPOSE_FOOTPRINT,
+				onDisposeFootprints,
+				false, 0, true
+			);
 		}
 		
 		public function updateToCurrentEnvironmentVariable():void
@@ -139,20 +150,23 @@ package actionScripts.utils
 				return;
 			}
 			
-			//this previously used FileUtils.writeToFileAsync(), but commands
-			//would sometimes fail because the file would still be in use, even
-			//after the FileStream dispatched Event.CLOSE
-			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.cmd");
+			// to reduce file-writing process
+			// re-run by the existing file if the
+			// contents matched
+			windowsBatchFile = getBatchFilePath();
 			try
 			{
+				//this previously used FileUtils.writeToFileAsync(), but commands
+				//would sometimes fail because the file would still be in use, even
+				//after the FileStream dispatched Event.CLOSE
 				FileUtils.writeToFile(windowsBatchFile, setCommand);
+				onBatchFileWriteComplete();
 			}
 			catch(e:Error)
 			{
 				onBatchFileWriteError(e.toString());
 				return;
 			}
-			onBatchFileWriteComplete();
 		}
 		
 		private function executeOSX():void
@@ -350,11 +364,37 @@ package actionScripts.utils
 			customProcess.start(customInfo);
 		}
 		
+		private function getBatchFilePath():File
+		{
+			var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine/environmental");
+			if (!tempDirectory.fileBridge.exists)
+			{
+				tempDirectory.fileBridge.createDirectory();
+			}
+			
+			return tempDirectory.fileBridge.resolvePath(UIDUtil.createUID() +".cmd").fileBridge.getFile as File;
+		}
+		
 		private function onBatchFileWriteError(value:String):void
 		{
 			Alert.show("Local environment setup failed[1]!\n"+ value, "Error!");
 			isSingleProcessRunning = false;
 			flush();
+		}
+		
+		private function onDisposeFootprints(event:ApplicationEvent):void
+		{
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine/environmental");
+				
+				customInfo = new NativeProcessStartupInfo();
+				customInfo.executable = new File("c:\\Windows\\System32\\cmd.exe");
+				
+				customInfo.arguments = Vector.<String>(["/c", "rmdir", "/q", "/s", tempDirectory.fileBridge.nativePath]);
+				customProcess = new NativeProcess();
+				customProcess.start(customInfo);
+			}
 		}
 		
 		private function startShell(start:Boolean):void 

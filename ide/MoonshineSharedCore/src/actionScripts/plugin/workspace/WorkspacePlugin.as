@@ -355,9 +355,14 @@ package actionScripts.plugin.workspace
 			}
 			else
 			{
-				methodToCallAfterClosingAllProjects.callMethod();
-				methodToCallAfterClosingAllProjects = null;
-				closeAllProjectItems = null;
+				var tmpTimeout:uint = setTimeout(function():void
+				{
+					clearTimeout(tmpTimeout);
+					
+					methodToCallAfterClosingAllProjects.callMethod();
+					methodToCallAfterClosingAllProjects = null;
+					closeAllProjectItems = null;
+				}, 1000);
 			}
 		}
 
