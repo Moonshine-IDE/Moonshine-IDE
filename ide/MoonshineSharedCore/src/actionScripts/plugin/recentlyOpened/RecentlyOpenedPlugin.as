@@ -218,6 +218,7 @@ package actionScripts.plugin.recentlyOpened
 			if (cookie.data.hasOwnProperty('isSDKhelperPromptDNS')) ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = (cookie.data["isSDKhelperPromptDNS"] == "true") ? true : false;
 			if (cookie.data.hasOwnProperty('isGettingStartedDNS')) ConstantsCoreVO.IS_GETTING_STARTED_DNS = (cookie.data["isGettingStartedDNS"] == "true") ? true : false;
 			if (cookie.data.hasOwnProperty('javaPathForTypeahead')) model.javaPathForTypeAhead = new FileLocation(cookie.data["javaPathForTypeahead"]);
+			if (cookie.data.hasOwnProperty('java8Path')) model.java8Path = new FileLocation(cookie.data["java8Path"]);
 			if (cookie.data.hasOwnProperty('devicesAndroid'))
 			{
 				ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES = new ArrayCollection();

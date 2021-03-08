@@ -39,6 +39,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
 	
+	import actionScripts.events.DebugActionEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.SdkEvent;
@@ -54,6 +55,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.providers.Java8SettingsProvider;
 	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
@@ -61,6 +63,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.plugins.build.CompilerPluginBase;
+	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
 	import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
@@ -76,6 +79,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
@@ -87,10 +91,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
-	
-	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
-	import actionScripts.valueObjects.MobileDeviceVO;
-	import actionScripts.events.DebugActionEvent;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -115,6 +115,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private var shellInfo:NativeProcessStartupInfo;
 		private var isLibraryProject:Boolean;
 		private var javaPathSetting:PathSetting;
+		private var java8PathSetting:PathSetting;
 		private var adtProcess:NativeProcess
 		private var adtProcessInfo:NativeProcessStartupInfo;
 		private var lastTarget:File;
@@ -316,10 +317,16 @@ package actionScripts.plugins.as3project.mxmlc
 				"Java Development Kit Path", true);
 			javaPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected, false, 0, true);
 			
+			java8PathSetting = new PathSetting(new Java8SettingsProvider(),
+				"currentJava8Path",
+				"Java Development Kit 8 Path", true);
+			java8PathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected, false, 0, true);
+			
 			return Vector.<ISetting>([
 				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex®, Apache Royale® or Feathers SDK', true, defaultFlexSDK, true),
 				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation'),
-				javaPathSetting
+				javaPathSetting,
+				java8PathSetting
 			]);
 		}
 		
@@ -328,6 +335,7 @@ package actionScripts.plugins.as3project.mxmlc
 			if (javaPathSetting)
 			{
 				javaPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected);
+				java8PathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected);
 				javaPathSetting = null;
 			}
 		}

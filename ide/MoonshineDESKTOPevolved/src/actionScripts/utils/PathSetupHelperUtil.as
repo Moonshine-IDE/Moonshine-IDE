@@ -27,6 +27,7 @@ package actionScripts.utils
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.providers.Java8SettingsProvider;
 	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
@@ -98,6 +99,9 @@ package actionScripts.utils
 					break;
 				case SDKTypes.OPENJAVA:
 					updateJavaPath(path);
+					break;
+				case SDKTypes.OPENJAVA8:
+					updateJava8Path(path);
 					break;
 				case SDKTypes.ANT:
 					updateAntPath(path);
@@ -225,6 +229,28 @@ package actionScripts.utils
 				
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
 					new PathSetting({currentJavaPath: path}, 'currentJavaPath', 'Java Development Kit Path', true, path)
+				]);
+				
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin", settings));
+				
+				// update local env.variable
+				environmentSetupUtils.updateToCurrentEnvironmentVariable();
+			}
+		}
+		
+		public static function updateJava8Path(path:String):void
+		{
+			// update only if ant path not set
+			// or the existing ant path does not exists
+			if (!UtilsCore.isJava8Present())
+			{
+				var javaSettingsProvider:Java8SettingsProvider = new Java8SettingsProvider();
+				javaSettingsProvider.currentJava8Path = path;
+				
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({currentJava8Path: path}, 'currentJava8Path', 'Java Development Kit 8 Path', true, path)
 				]);
 				
 				// save as moonshine settings

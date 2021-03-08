@@ -184,6 +184,7 @@ package actionScripts.plugin.settings
 
             var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
             delete cookie.data["javaPathForTypeahead"];
+			delete cookie.data["java8Path"];
             delete cookie.data["userSDKs"];
             delete cookie.data["moonshineWorkspace"];
             delete cookie.data["isWorkspaceAcknowledged"];
@@ -194,6 +195,7 @@ package actionScripts.plugin.settings
 			delete cookie.data["doNotShowRoyaleApiPrompt"];
 
             model.javaPathForTypeAhead = null;
+			model.java8Path = null;
             model.isCodeCompletionJavaPresent = false;
             ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = false;
             ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = false;

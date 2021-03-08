@@ -1317,6 +1317,11 @@ package actionScripts.utils
 		
 		public static function isJava8Present():Boolean
 		{
+			if (model.java8Path && model.java8Path.fileBridge.exists)
+			{
+				return true;
+			}
+			
 			return false;
 		}
 		
