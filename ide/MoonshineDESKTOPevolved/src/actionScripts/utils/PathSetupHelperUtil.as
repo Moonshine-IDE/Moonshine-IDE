@@ -218,11 +218,11 @@ package actionScripts.utils
 			}
 		}
 		
-		public static function updateJavaPath(path:String):void
+		public static function updateJavaPath(path:String, isForceUpdate:Boolean=false):void
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!UtilsCore.isJavaForTypeaheadAvailable())
+			if (!UtilsCore.isJavaForTypeaheadAvailable() || isForceUpdate)
 			{
 				var javaSettingsProvider:JavaSettingsProvider = new JavaSettingsProvider();
 				javaSettingsProvider.currentJavaPath = path;
@@ -238,13 +238,17 @@ package actionScripts.utils
 				// update local env.variable
 				environmentSetupUtils.updateToCurrentEnvironmentVariable();
 			}
+			else
+			{
+				checkJavaVersionAndUpdateOnlyIfRequires(path, model.javaVersionForTypeAhead, updateJavaPath);
+			}
 		}
 		
-		public static function updateJava8Path(path:String):void
+		public static function updateJava8Path(path:String, isForceUpdate:Boolean=false):void
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!UtilsCore.isJava8Present())
+			if (!UtilsCore.isJava8Present() || isForceUpdate)
 			{
 				var javaSettingsProvider:Java8SettingsProvider = new Java8SettingsProvider();
 				javaSettingsProvider.currentJava8Path = path;
@@ -422,6 +426,23 @@ package actionScripts.utils
 				
 				// update local env.variable
 				environmentSetupUtils.updateToCurrentEnvironmentVariable();
+			}
+		}
+		
+		private static function checkJavaVersionAndUpdateOnlyIfRequires(path:String, currentVersion:String, updateFn:Function):void
+		{
+			if (!FileUtils.isPathExists(path) || !currentVersion) 
+				return;
+			
+			var javaVersionReader:JavaVersionReader = new JavaVersionReader();
+			javaVersionReader.readVersion(path, onJavaVersionReadCompletes);
+			
+			function onJavaVersionReadCompletes(value:String):void
+			{
+				if (HelperUtils.isNewUpdateVersion(currentVersion, value) == 1)
+				{
+					updateFn(path, true);
+				}
 			}
 		}
 	}
