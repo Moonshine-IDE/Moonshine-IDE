@@ -56,7 +56,6 @@ package actionScripts.impls
 	import actionScripts.plugin.findreplace.FindReplacePlugin;
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
 	import actionScripts.plugin.help.HelpPlugin;
-	import moonshine.plugin.help.view.TourDeFlexContentsView;
 	import actionScripts.plugin.locations.LocationsPlugin;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
@@ -122,6 +121,7 @@ package actionScripts.impls
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.JavaVersionReader;
 	import actionScripts.utils.ModulesFinder;
 	import actionScripts.utils.SHClassTest;
 	import actionScripts.utils.SWFTrustPolicyModifier;
@@ -132,6 +132,8 @@ package actionScripts.impls
 	
 	import components.containers.DownloadNewFlexSDK;
 	import components.popup.DefineFolderAccessPopup;
+	
+	import moonshine.plugin.help.view.TourDeFlexContentsView;
 	
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
@@ -566,6 +568,12 @@ package actionScripts.impls
 		public function getModulesFinder():IModulesFinder
 		{
 			return (new ModulesFinder());
+		}
+		
+		public function getJavaVersion(javaPath:String=null, onComplete:Function=null):void
+		{
+			var javaVersionReader:JavaVersionReader = new JavaVersionReader();
+			javaVersionReader.readVersion(javaPath, onComplete);
 		}
 	}
 }

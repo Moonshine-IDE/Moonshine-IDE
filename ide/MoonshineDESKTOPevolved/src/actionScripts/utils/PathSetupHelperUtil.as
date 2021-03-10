@@ -228,7 +228,7 @@ package actionScripts.utils
 				javaSettingsProvider.currentJavaPath = path;
 				
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({currentJavaPath: path}, 'currentJavaPath', 'Java Development Kit Path', true, path)
+					new PathSetting({currentJavaPath: path}, 'currentJavaPath', 'Java Development Kit Root Path', true, path)
 				]);
 				
 				// save as moonshine settings
@@ -250,7 +250,7 @@ package actionScripts.utils
 				javaSettingsProvider.currentJava8Path = path;
 				
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({currentJava8Path: path}, 'currentJava8Path', 'Java Development Kit 8 Path', true, path)
+					new PathSetting({currentJava8Path: path}, 'currentJava8Path', 'Java Development Kit 8 Root Path', true, path)
 				]);
 				
 				// save as moonshine settings

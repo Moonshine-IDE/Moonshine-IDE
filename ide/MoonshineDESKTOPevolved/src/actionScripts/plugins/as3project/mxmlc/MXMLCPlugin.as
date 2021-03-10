@@ -314,12 +314,12 @@ package actionScripts.plugins.as3project.mxmlc
 			onSettingsClose();
 			javaPathSetting = new PathSetting(new JavaSettingsProvider(),
 				"currentJavaPath",
-				"Java Development Kit Path", true);
+				"Java Development Kit Root Path", true);
 			javaPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected, false, 0, true);
 			
 			java8PathSetting = new PathSetting(new Java8SettingsProvider(),
 				"currentJava8Path",
-				"Java Development Kit 8 Path", true);
+				"Java Development Kit 8 Root Path", true);
 			java8PathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected, false, 0, true);
 			
 			return Vector.<ISetting>([

@@ -86,6 +86,8 @@ package actionScripts.locator
 		public var notesPath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var java8Path:FileLocation;
+		public var javaVersionForTypeAhead:String;
+		public var javaVersionInJava8Path:String;
 		public var svnPath:String;
 		public var gitPath:String;
 		public var isCodeCompletionJavaPresent:Boolean;

@@ -27,7 +27,6 @@ package actionScripts.interfaces
     import actionScripts.events.NewProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.ui.IPanelWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.valueObjects.FileWrapper;
@@ -77,6 +76,7 @@ package actionScripts.interfaces
 		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
 		function getExternalEditors():ArrayCollection;
 		function getModulesFinder():IModulesFinder;
+		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
 
         /**
          *

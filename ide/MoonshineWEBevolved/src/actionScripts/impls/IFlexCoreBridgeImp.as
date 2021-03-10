@@ -455,6 +455,11 @@ package actionScripts.impls
 			return null;
 		}
 		
+		public function getJavaVersion(javaPath:String=null, onComplete:Function=null):void
+		{
+		
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE LISTENERS

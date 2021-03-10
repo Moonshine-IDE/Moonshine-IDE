@@ -66,6 +66,10 @@ package actionScripts.plugin.settings.providers
 				.getInstance()
 					.dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));*/
 			}
+			else if (!model.javaVersionInJava8Path)
+			{
+				updateJavaVersion();
+			}
 		}
 		
 		public function onSettingsClose():void
@@ -99,7 +103,19 @@ package actionScripts.plugin.settings.providers
 			}
 			
 			model.java8Path = value;
+			updateJavaVersion();
 			cookie.flush();
+		}
+		
+		private function updateJavaVersion():void
+		{
+			if (model.java8Path) 
+				model.flexCore.getJavaVersion(model.java8Path.fileBridge.nativePath, onJavaVersionReadCompletes);
+		}
+		
+		private function onJavaVersionReadCompletes(value:String):void
+		{
+			model.javaVersionInJava8Path = value;
 		}
 	}
 }
