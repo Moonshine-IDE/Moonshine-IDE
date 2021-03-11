@@ -98,10 +98,10 @@ package actionScripts.utils
 					addProgramingSDK(path);
 					break;
 				case SDKTypes.OPENJAVA:
-					updateJavaPath(path);
+					updateJavaPath(path, !path ? true : false);
 					break;
 				case SDKTypes.OPENJAVA8:
-					updateJava8Path(path);
+					updateJava8Path(path, !path ? true : false);
 					break;
 				case SDKTypes.ANT:
 					updateAntPath(path);
