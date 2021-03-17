@@ -101,6 +101,7 @@ package actionScripts.plugins.as3project
 		private var isOpenProjectCall:Boolean;
 		private var isFeathersProject:Boolean;
 		private var isVisualEditorProject:Boolean;
+		private var isVisualDominoEditorProject:Boolean;
 		private var isAway3DProject:Boolean;
 		private var isLibraryProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
@@ -127,7 +128,8 @@ package actionScripts.plugins.as3project
 			// if opened by Open project, event.settingsFile will be false
 			// and event.templateDir will be open folder location
 			isOpenProjectCall = !event.settingsFile;
-
+			
+			
 			if (isOpenProjectCall)
 			{
 				projectFolder = event.templateDir;
@@ -143,6 +145,9 @@ package actionScripts.plugins.as3project
 					event.settingsFile = modifiedTemplate.resolvePath(event.settingsFile.fileBridge.name);
 				}
 			}
+
+			//Alert.show("event:"+event.settingsFile);
+			
 			
 			if (!allProjectTemplates)
 			{
@@ -961,8 +966,18 @@ package actionScripts.plugins.as3project
 					original.fileBridge.copyTo(newFile, true); 
 					original.fileBridge.deleteFile(); 
 				}
-				
-				
+
+				//fix veditorproj file to domino config file.
+				var projectSettingsFile_old:String = projectName + ".veditorproj";
+				var projectSettingsFile_original:FileLocation =  targetFolder.resolvePath(projectSettingsFile_old);
+				if (projectSettingsFile_original.fileBridge.exists)projectSettingsFile_original.fileBridge.deleteFile();
+				//copy new domino config file to default .
+				var projectSettingsFile_new:String = projectSettingsFile_old + "_domino";
+				var projectSettingsFile_new_file:FileLocation =  targetFolder.resolvePath(projectSettingsFile_new);
+				projectSettingsFile_new_file.fileBridge.copyTo(projectSettingsFile_original, true); 
+
+				//remove the new config
+				if (projectSettingsFile_new_file.fileBridge.exists)projectSettingsFile_new_file.fileBridge.deleteFile();
 
 			}
 			if (isLibraryProject)
@@ -1018,12 +1033,14 @@ package actionScripts.plugins.as3project
 
 			// Figure out which one is the settings file
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
-            var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
+            
+			var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
-
+			//Alert.show("projectSettingsFile:"+projectSettingsFile);
 			if (!isJavaProject && !isGrailsProject)
 			{
+				//Alert.show("Line 1032");
 				// Set some stuff to get the paths right
 				pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile, true, projectTemplateType);
 				pvo.isLibraryProject = isLibraryProject;
@@ -1117,6 +1134,7 @@ package actionScripts.plugins.as3project
 					}
 				}
 			}
+	
             if (isOpenProjectCall || isFlexJSRoyalProject)
             {
 				setProjectType(projectTemplateType);
@@ -1140,7 +1158,14 @@ package actionScripts.plugins.as3project
 							if(isVisualEditorProject && !exportProject)
 							{
 								templateSettingsName = "$Settings.veditorproj.template";
+						
+								// if(pvo.isDominoVisualEditorProject){
+								// 	templateSettingsName = "$Settings.veditorproj_domino.template";
+								// }else{
+								// 	}
+									
 							}
+					;
 
 							var tmpLocation:FileLocation = pvo.folderLocation;
 							var tmpName:String = pvo.projectName;
@@ -1200,6 +1225,7 @@ package actionScripts.plugins.as3project
         {
 			isJavaProject = false;
             isVisualEditorProject = false;
+			isVisualDominoEditorProject =false;
             isLibraryProject = false;
             isFeathersProject = false;
             isMobileProject = false;
@@ -1211,6 +1237,10 @@ package actionScripts.plugins.as3project
 			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
 			{
 				isVisualEditorProject = true;
+			}
+			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR_DOMINO) != -1)
+			{
+				isVisualDominoEditorProject = true;
 			}
 			
 			if (templateName.indexOf(ProjectTemplateType.LIBRARY_PROJECT) != -1)

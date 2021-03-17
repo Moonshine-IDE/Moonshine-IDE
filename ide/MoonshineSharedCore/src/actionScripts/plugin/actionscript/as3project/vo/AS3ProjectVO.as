@@ -794,7 +794,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			//1. fix the default to clean and install .
 			var setting_new:BuildActionsListSettings=new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions");
-			setting_new.stringValue="clean install";
+			//setting_new.stringValue="clean install";
 			
             return Vector.<SettingsWrapper>([
 					new SettingsWrapper("Paths",
