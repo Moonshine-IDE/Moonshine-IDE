@@ -68,6 +68,7 @@
     <element path="../MoonshineSharedCore/libs/AsWing.swc"/>
     <element path="../MoonshineSharedCore/libs/Global.swc"/>
     <element path="../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"/>
+	<element path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/bin/flash/bin/MoonshineSDKInstallerGUICore.swc"/>
   </libraryPaths>
   <externalLibraryPaths></externalLibraryPaths>
   <rslPaths></rslPaths>

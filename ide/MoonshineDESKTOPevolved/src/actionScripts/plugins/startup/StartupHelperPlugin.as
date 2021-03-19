@@ -42,6 +42,7 @@ package actionScripts.plugins.startup
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.feathersWrapper.help.GettingStartedViewWrapper;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.ui.views.HelperViewWrapper;
 	import actionScripts.utils.EnvironmentUtils;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.HelperUtils;
@@ -59,6 +60,7 @@ package actionScripts.plugins.startup
 	import components.popup.JavaPathSetupPopup;
 	import components.popup.SDKUnzipConfirmPopup;
 	
+	import moonshine.components.HelperView;
 	import moonshine.plugin.help.events.GettingStartedViewEvent;
 	import moonshine.plugin.help.view.GettingStartedView;
 	
@@ -388,6 +390,12 @@ package actionScripts.plugins.startup
 				gettingStartedView = new GettingStartedView();
 				gettingStartedView.setting = ps;
 				
+				var tmpHelperViewWrapper:HelperViewWrapper = new HelperViewWrapper(new HelperView());
+				tmpHelperViewWrapper.isRunningInsideMoonshine = true;
+				tmpHelperViewWrapper.dependencyCheckUtil = dependencyCheckUtil;
+				tmpHelperViewWrapper.environmentUtil = environmentUtil;
+				gettingStartedView.helperView = tmpHelperViewWrapper.feathersUIControl;
+				
 				gettingStartedViewWrapper = new GettingStartedViewWrapper(gettingStartedView);
 				gettingStartedViewWrapper.percentWidth = 100;
 				gettingStartedViewWrapper.percentHeight = 100;
@@ -396,15 +404,16 @@ package actionScripts.plugins.startup
 
 				gettingStartedViewWrapper.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedHaxeClosed, false, 0, true);
 				
-				/*var tmpHaxePopup:GettingStartedHaxePopup = new GettingStartedHaxePopup;
-				tmpHaxePopup.dependencyCheckUtil = dependencyCheckUtil;
-				tmpHaxePopup.environmentUtil = environmentUtil;*/
-				
 				// start polling only in case of Windows
 				//togglePolling(true);
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new AddTabEvent(gettingStartedViewWrapper as IContentWindow)
 				);
+				
+				// since we're not attaching the HelperViewWrapper to
+				// the displayObject physically, we need call its 
+				// initialize() manually to start its operation.
+				tmpHelperViewWrapper.initialize();
 			}
 			else
 			{

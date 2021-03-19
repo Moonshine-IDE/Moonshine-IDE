@@ -20,10 +20,10 @@
 
 package moonshine.plugin.help.view;
 
+import feathers.core.FeathersControl;
 import feathers.events.TriggerEvent;
 import moonshine.plugin.help.events.GettingStartedViewEvent;
 import feathers.controls.Check;
-import moonshine.plugin.help.view.HelperView;
 import feathers.controls.Label;
 import feathers.controls.Button;
 import actionScripts.plugin.settings.vo.PluginSetting;
@@ -57,7 +57,6 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 	private var titleRenderer:PluginTitleRenderer;
 	private var downloadThirdPartyButton:Button;
 	private var sdkInstallerInstallationMessageLabel:Label;
-	private var helperView:HelperView;
 	private var doNotShowCheckbox:Check;
 
 	@:flash.property
@@ -134,6 +133,24 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		}
 		return cast(this.resultsListView.selectedItem, Location);
 	}
+	
+	private var _helperView:FeathersControl;
+	
+	@:flash.property
+	public var helperView(get, set):FeathersControl;
+	
+	private function get_helperView():FeathersControl
+	{
+		return this._helperView;
+	}
+
+	private function set_helperView(value:FeathersControl):FeathersControl
+	{
+		if (this._helperView == null) {
+			this._helperView = value;
+		}
+		return this._helperView;
+	}
 
 	override private function initialize():Void 
 	{
@@ -168,7 +185,6 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		this.addChild(this.sdkInstallerInstallationMessageLabel);
 		
 		// helper view
-		this.helperView = new HelperView();
 		this.helperView.layoutData = new VerticalLayoutData(100, 96);
 		this.addChild(this.helperView);
 		
