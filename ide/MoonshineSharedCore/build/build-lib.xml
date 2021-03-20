@@ -61,7 +61,22 @@
 			<property name="certSignedMacOSKeychainPass" value="${APP_PROPERTIES.certSignedMacOSKeychainPass}" />
 			<property name="bundledFlexSDK" value="${APP_PROPERTIES.bundledFlexSDK}" />
 			<property name="bundledFlexJSSDK" value="${APP_PROPERTIES.bundledFlexJSSDK}" />
-			<property name="HAXE_LIB_DIRECTORY" value="${APP_PROPERTIES.haxeLibDirectory}"/>
+			<condition property="HAXE_LIB_DIRECTORY" value="${APP_PROPERTIES.haxeLibDirectory}">
+				<isset property="APP_PROPERTIES.haxeLibDirectory"/>
+			</condition>
+			<!-- fall back to default Haxe install location, if available -->
+			<condition property="HAXE_LIB_DIRECTORY" value="c:/HaxeToolkit/haxe/haxelib.exe">
+				<and>
+					<os family="windows" />
+					<available file="c:/HaxeToolkit/haxe" />
+				</and>
+			</condition>
+			<condition property="HAXE_LIB_DIRECTORY" value="/usr/local/lib/haxe">
+				<and>
+					<os family="mac" />
+					<available file="/usr/local/lib/haxe/haxelib" />
+				</and>
+			</condition>
 			<property name="svn.revision" value="917"/>
 			<property name="IsDebug" value="false" />
 		</then>
