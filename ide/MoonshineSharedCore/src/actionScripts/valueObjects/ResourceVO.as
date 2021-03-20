@@ -33,12 +33,15 @@ package actionScripts.valueObjects
 
 		private var sourcePath:String;
 
-		public function ResourceVO(_name:String, _sourceWrapper:FileWrapper)
+		public function ResourceVO(_name:String, _sourceWrapper:FileWrapper=null)
 		{
 			name = _name;
-			resourcePath = _sourceWrapper.file.fileBridge.nativePath;
-			_resourceExtension = _sourceWrapper.file.fileBridge.extension;
-			sourceWrapper = _sourceWrapper;
+			if (_sourceWrapper)
+			{
+				resourcePath = _sourceWrapper.file.fileBridge.nativePath;
+				_resourceExtension = _sourceWrapper.file.fileBridge.extension;
+				sourceWrapper = _sourceWrapper;
+			}
 		}
 		
 		public function set resourcePath(value:String):void
@@ -65,7 +68,7 @@ package actionScripts.valueObjects
 		
 		public function get resourcePath():String
 		{
-			return _resourcePath;
+			return "";
 		}
 
 		public function get resourceExtension():String

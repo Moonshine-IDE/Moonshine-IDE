@@ -24,7 +24,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class GetCurrentBranchCommand extends GitCommandBase
 	{

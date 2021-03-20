@@ -27,6 +27,10 @@ package actionScripts.plugin.workspace
 
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
 
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+	
+	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
@@ -330,9 +334,14 @@ package actionScripts.plugin.workspace
 			}
 			else
 			{
-				methodToCallAfterClosingAllProjects.callMethod();
-				methodToCallAfterClosingAllProjects = null;
-				closeAllProjectItems = null;
+				var tmpTimeout:uint = setTimeout(function():void
+				{
+					clearTimeout(tmpTimeout);
+					
+					methodToCallAfterClosingAllProjects.callMethod();
+					methodToCallAfterClosingAllProjects = null;
+					closeAllProjectItems = null;
+				}, 1000);
 			}
 		}
 	}

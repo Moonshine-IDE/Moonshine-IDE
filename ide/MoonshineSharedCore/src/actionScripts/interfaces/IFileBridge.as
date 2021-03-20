@@ -50,10 +50,12 @@ package actionScripts.interfaces
 		function resolveUserDirectoryPath(pathWith:String=null):FileLocation;
 		function resolveApplicationStorageDirectoryPath(pathWith:String=null):FileLocation;
 		function resolveApplicationDirectoryPath(pathWith:String=null):FileLocation;
+		function resolveTemporaryDirectoryPath(pathWith:String=null):FileLocation;
 		function resolvePath(path:String, toRelativePath:String=null):FileLocation;
 		function resolveDocumentDirectoryPath(pathWith:String=null):FileLocation;
 		function read():Object;
 		function readAsync(provider:Object, fieldTypeReadObject:*, fieldTypeProvider:*, fieldInProvider:String=null, fieldInReadObject:String=null):void;
+		function readAsyncWithListener(onComplete:Function, onError:Function=null, fileToRead:Object=null):void;
 		function deleteFile():void;
 		function deleteFileAsync():void;
 		function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null, startFromLocation:String=null):void;

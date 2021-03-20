@@ -38,5 +38,6 @@ package actionScripts.events
 		public static const CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT:String = "CONSOLE_MESSAGE_NATIVEPROCESS_OUTPUT";
 		public static const SEARCH_PROJECTS_IN_DIRECTORIES:String = "SEARCH_PROJECTS_IN_DIRECTORIES";
 		public static const FOUND_PROJECTS_IN_DIRECTORIES:String = "FOUND_PROJECTS_IN_DIRECTORIES";
+		public static const PROCESS_STDINPUT_WRITEUTF:String = "PROCESS_STDINPUT_WRITEUTF"; // can be use to write to stdInput for an already running process
 	}
 }

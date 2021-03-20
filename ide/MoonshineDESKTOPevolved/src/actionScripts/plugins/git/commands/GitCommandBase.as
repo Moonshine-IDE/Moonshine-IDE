@@ -18,6 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugins.git.model.GitProjectVO;
+
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.GlobalEventDispatcher;
@@ -33,7 +41,10 @@ package actionScripts.plugins.git.commands
 	import actionScripts.ui.IContentWindowReloadable;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
+	
+	import components.popup.GitAuthenticationPopup;
 	
 	public class GitCommandBase extends ConsoleOutputter implements IWorkerSubscriber
 	{
@@ -48,7 +59,7 @@ package actionScripts.plugins.git.commands
 		protected var model:IDEModel = IDEModel.getInstance();
 		protected var processType:String;
 		protected var queue:Vector.<Object> = new Vector.<Object>();
-		protected var subscribeIdToWorker:String = UIDUtil.createUID();
+		protected var subscribeIdToWorker:String;
 		protected var worker:IDEWorker = IDEWorker.getInstance();
 		protected var isErrorEncountered:Boolean;
 		
@@ -56,6 +67,7 @@ package actionScripts.plugins.git.commands
 		{
 			getGitPluginReference();
 			gitBinaryPathOSX = plugin.gitBinaryPathOSX;
+			subscribeIdToWorker = UIDUtil.createUID();
 			
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
@@ -67,7 +79,6 @@ package actionScripts.plugins.git.commands
 			worker = null;
 			queue = null;
 			methodStamp = null;
-			plugin = null;
 		}
 		
 		protected function getPlatformMessage(value:String):String
@@ -184,6 +195,63 @@ package actionScripts.plugins.git.commands
 			if (model.activeEditor && (model.activeEditor is IContentWindowReloadable))
 			{
 				(model.activeEditor as IContentWindowReloadable).checkFileIfChanged();
+			}
+		}
+		
+		protected function testMessageIfNeedsAuthentication(value:String):Boolean
+		{
+			if (value.toLowerCase().match(/fatal: .*username/) || 
+				value..toLowerCase().match(/fatal: .*could not read password/) ||
+				value.toLowerCase().match(/fatal: .*could not read password/) ||
+					value.toLowerCase().match(/fatal: authentication failed/))
+			{
+				return true;
+			}
+			
+			return false;
+		}
+		
+		protected function openAuthentication(username:String=null):void
+		{
+			var gitAuthWindow:GitAuthenticationPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
+			gitAuthWindow.title = "Git Needs Authentication";
+			gitAuthWindow.isGitAvailable = true;
+			gitAuthWindow.type = VersionControlTypes.GIT;
+			gitAuthWindow.userName = username;
+			gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+			gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+			PopUpManager.centerPopUp(gitAuthWindow);
+		}
+		
+		protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+				if (tmpModel)
+				{
+					tmpModel.sessionUser = username;
+					tmpModel.sessionPassword = password;
+				}
+			}
+		}
+
+		private function onGitAuthWindowClosed(event:Event):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			target.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+			target.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+		}
+		
+		private function onAuthSubmitted(event:Event):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			PopUpManager.removePopUp(target);
+			onGitAuthWindowClosed(event);
+
+			if (target.userObject)
+			{
+				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
 			}
 		}
 		
