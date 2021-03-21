@@ -25,6 +25,8 @@ package actionScripts.plugin.workspace
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
 	import moonshine.plugin.workspace.view.NewWorkspaceView;

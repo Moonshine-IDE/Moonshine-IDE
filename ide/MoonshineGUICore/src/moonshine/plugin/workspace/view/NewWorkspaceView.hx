@@ -1,5 +1,9 @@
 package moonshine.plugin.workspace.view;
 
+import feathers.layout.HorizontalLayout;
+import feathers.controls.Label;
+import openfl.utils.Assets;
+import flash.display.Bitmap;
 import feathers.controls.Button;
 import feathers.controls.LayoutGroup;
 import feathers.controls.PopUpListView;
@@ -36,6 +40,7 @@ class NewWorkspaceView extends ResizableTitleWindow {
 	
 	private var newWorkspaceButton:Button;
 	private var workspaceNameTextInput:TextInput;
+	private var errorContainer:LayoutGroup;
 	
 	private var _workspaces:ArrayCollection<WorkspaceVO> = new ArrayCollection();
 	
@@ -71,6 +76,15 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		this.workspaceNameTextInput.addEventListener(Event.CHANGE, workspaceNameTextInput_changeHandler);
 		this.addChild(this.workspaceNameTextInput);
 		
+		this.errorContainer = new LayoutGroup();
+		this.errorContainer.layout = new HorizontalLayout();
+		this.errorContainer.visible = this.errorContainer.includeInLayout = false;
+		this.addChild(errorContainer);
+
+		var errorLabel:Label = new Label();
+			errorLabel.text = "Workspace is already exists.";
+		this.errorContainer.addChild(errorLabel);
+		
 		var footer = new LayoutGroup();
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
 		this.newWorkspaceButton = new Button();
@@ -84,7 +98,7 @@ class NewWorkspaceView extends ResizableTitleWindow {
 	}
 	
 	private function workspaceNameTextInput_changeHandler(event:Event):Void {
-			
+		this.errorContainer.visible = this.errorContainer.includeInLayout = false;			
 	}	
 	
 	private function newWorkspaceButton_triggerHandler(event:Event):Void {
@@ -99,6 +113,7 @@ class NewWorkspaceView extends ResizableTitleWindow {
 										return workspace.label == workspaceName;
 						  			});
 		if (hasWorkspace) {
+			this.errorContainer.visible = this.errorContainer.includeInLayout = true;	
 			return;
 		}
 		
