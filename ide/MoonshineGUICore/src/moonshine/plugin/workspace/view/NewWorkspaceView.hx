@@ -22,8 +22,9 @@ import feathers.controls.LayoutGroup;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
 import actionScripts.valueObjects.WorkspaceVO;
-
 import feathers.events.TriggerEvent;
+import moonshine.theme.assets.ExclamationRedIcon;
+
 class NewWorkspaceView extends ResizableTitleWindow {
 
 	public function new() {
@@ -80,7 +81,9 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		this.errorContainer.layout = new HorizontalLayout();
 		this.errorContainer.visible = this.errorContainer.includeInLayout = false;
 		this.addChild(errorContainer);
-
+		
+		this.errorContainer.addChild(new Bitmap(new ExclamationRedIcon(0, 0)));
+		
 		var errorLabel:Label = new Label();
 			errorLabel.text = "Workspace is already exists.";
 		this.errorContainer.addChild(errorLabel);
