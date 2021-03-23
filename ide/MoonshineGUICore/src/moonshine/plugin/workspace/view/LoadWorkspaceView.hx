@@ -46,7 +46,6 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 			return this._selectedWorkspace;
 		}
 		
-		
 		this._selectedWorkspace = value;
 		this.setInvalid(InvalidationFlag.SELECTION);
 		return this._selectedWorkspace;
@@ -84,7 +83,6 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		this.workspacePopUpListView = new PopUpListView();
 		this.workspacePopUpListView.width = 300;
 		this.workspacePopUpListView.layoutData = AnchorLayoutData.center();
-		this.workspacePopUpListView.addEventListener(Event.CHANGE, workspacePopUpListView_changeHandler);
 		this.workspacePopUpListView.itemToText = function(item:WorkspaceVO):String {
 													 return item.label;
   												  };
@@ -105,25 +103,20 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 	override private function update():Void {
 		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
 
-		if (dataInvalid) {
+		if (dataInvalid == true) {
 			this.workspacePopUpListView.dataProvider = this._workspaces;
 		}		
 		
 		var selectionInvalid = this.isInvalid(InvalidationFlag.SELECTION);
-		
-		if (selectionInvalid) {		
+		if (selectionInvalid == true) {	
 			this.workspacePopUpListView.selectedItem = this._selectedWorkspace;
 		}		
 		
 		super.update();
 	}
 	
-	private function workspacePopUpListView_changeHandler(event:Event):Void {
-		this.selectedWorkspace = this.workspacePopUpListView.selectedItem;	
-	}	
-	
 	private function loadWorkspaceButton_triggerHandler(event:Event):Void {
-		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, this._selectedWorkspace.label);
+		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, this.workspacePopUpListView.selectedItem.label);
 		
 		this.dispatchEvent(workspaceEvent);
 		

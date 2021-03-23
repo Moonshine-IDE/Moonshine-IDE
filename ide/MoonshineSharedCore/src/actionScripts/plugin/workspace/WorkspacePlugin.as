@@ -212,13 +212,13 @@ package actionScripts.plugin.workspace
 		{
 			loadWorkspaceView = new LoadWorkspaceView();
 			loadWorkspaceViewWrapper = new FeathersUIWrapper(loadWorkspaceView);
-			PopUpManager.addPopUp(loadWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
 
 			loadWorkspaceView.workspaces = new ArrayCollection(workspacesForViews);
 			loadWorkspaceView.selectedWorkspace = this.getCurrentWorkspaceForView(currentWorkspaceLabel);
 			loadWorkspaceView.addEventListener(Event.CLOSE, handleLoadWorkspacePopupClose);
 			loadWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
 
+			PopUpManager.addPopUp(loadWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
 			PopUpManager.centerPopUp(loadWorkspaceViewWrapper);
 			loadWorkspaceViewWrapper.assignFocus("top");
 			loadWorkspaceViewWrapper.stage.addEventListener(Event.RESIZE, loadWorkspaceView_stage_resizeHandler, false, 0, true);
