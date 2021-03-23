@@ -20,7 +20,6 @@
 
 package moonshine.theme;
 
-import moonshine.components.StandardPopupView;
 import feathers.controls.Button;
 import feathers.controls.Callout;
 import feathers.controls.Check;
@@ -47,6 +46,7 @@ import feathers.skins.CircleSkin;
 import feathers.skins.RectangleSkin;
 import feathers.style.Theme;
 import feathers.themes.ClassVariantTheme;
+import moonshine.components.StandardPopupView;
 import moonshine.plugin.help.view.TourDeFlexTreeViewItemRenderer;
 import moonshine.style.MoonshineButtonSkin;
 import moonshine.style.MoonshineControlBarSkin;
@@ -129,6 +129,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeViewItemRenderer, null, setTreeViewItemRendererStyles);
+		// TODO: uncomment when VARIANT_FILE_SYSTEM is supported
+		// this.styleProvider.setStyleFunction(TreeViewItemRenderer, TreeViewItemRenderer.VARIANT_FILE_SYSTEM, setFileSystemTreeViewItemRendererStyles);
 		this.styleProvider.setStyleFunction(TourDeFlexTreeViewItemRenderer, null, setTourDeFlexTreeViewItemRendererItemRendererStyles);
 		this.styleProvider.setStyleFunction(ToggleButton, TreeViewItemRenderer.CHILD_VARIANT_DISCLOSURE_BUTTON, setTreeViewItemRendererDisclosureButtonStyles);
 	}
@@ -977,8 +979,27 @@ class MoonshineTheme extends ClassVariantTheme {
 		itemRenderer.paddingBottom = 4.0;
 		itemRenderer.paddingLeft = 4.0;
 		itemRenderer.indentation = 12.0;
+		itemRenderer.gap = 4.0;
 	}
 
+	/*private function setFileSystemTreeViewItemRendererStyles(itemRenderer:TreeViewItemRenderer):Void {
+		this.setTreeViewItemRendererStyles(itemRenderer);
+
+		var branchIcon = new Bitmap(new FolderClosedIcon(0, 0));
+		itemRenderer.branchIcon = branchIcon;
+
+		var branchOpenIcon = new Bitmap(new FolderOpenIcon(0, 0));
+		itemRenderer.branchOpenIcon = branchOpenIcon;
+
+		var leafIcon = new Bitmap(new FileIcon(0, 0));
+		itemRenderer.leafIcon = leafIcon;
+
+		var leafIcon = new RectangleSkin();
+		leafIcon.fill = SolidColor(0x0000ff);
+		leafIcon.width = 12.0;
+		leafIcon.height = 12.0;
+		itemRenderer.leafIcon = leafIcon;
+	}*/
 	private function setTourDeFlexTreeViewItemRendererItemRendererStyles(itemRenderer:TourDeFlexTreeViewItemRenderer):Void {
 		this.setTreeViewItemRendererStyles(itemRenderer);
 

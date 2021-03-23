@@ -18,10 +18,11 @@
 	Use this software at your own risk.
  */
 
-package moonshine.plugin.locations.view;
+package moonshine.components;
 
-import actionScripts.factory.FileLocation;
-import actionScripts.valueObjects.Location;
+import openfl.ui.Keyboard;
+import openfl.events.KeyboardEvent;
+import actionScripts.valueObjects.ProjectVO;
 import feathers.controls.Button;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
@@ -36,16 +37,14 @@ import feathers.utils.DisplayObjectRecycler;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
-import openfl.events.KeyboardEvent;
 import openfl.events.MouseEvent;
-import openfl.ui.Keyboard;
 
-class LocationsView extends ResizableTitleWindow {
+class SelectOpenedProjectView extends ResizableTitleWindow {
 	public function new() {
 		MoonshineTheme.initializeTheme();
 
 		super();
-		this.title = "Go To Location";
+		this.title = "Select Project";
 		this.width = 600.0;
 		this.minWidth = 300.0;
 		this.minHeight = 300.0;
@@ -53,35 +52,35 @@ class LocationsView extends ResizableTitleWindow {
 		this.resizeEnabled = true;
 	}
 
-	private var resultsListView:ListView;
-	private var openLocationButton:Button;
+	private var projectsListView:ListView;
+	private var selectProjectButton:Button;
 
-	private var _locations:ArrayCollection<Location> = new ArrayCollection();
+	private var _projects:ArrayCollection<ProjectVO> = new ArrayCollection();
 
 	@:flash.property
-	public var locations(get, set):ArrayCollection<Location>;
+	public var projects(get, set):ArrayCollection<ProjectVO>;
 
-	private function get_locations():ArrayCollection<Location> {
-		return this._locations;
+	private function get_projects():ArrayCollection<ProjectVO> {
+		return this._projects;
 	}
 
-	private function set_locations(value:ArrayCollection<Location>):ArrayCollection<Location> {
-		if (this._locations == value) {
-			return this._locations;
+	private function set_projects(value:ArrayCollection<ProjectVO>):ArrayCollection<ProjectVO> {
+		if (this._projects == value) {
+			return this._projects;
 		}
-		this._locations = value;
-		this._selectedLocation = null;
+		this._projects = value;
+		this._selectedProject = null;
 		this.setInvalid(InvalidationFlag.DATA);
-		return this._locations;
+		return this._projects;
 	}
 
-	private var _selectedLocation:Location;
+	private var _selectedProject:ProjectVO;
 
 	@:flash.property
-	public var selectedLocation(get, never):Location;
+	public var selectedProject(get, never):ProjectVO;
 
-	public function get_selectedLocation():Location {
-		return this._selectedLocation;
+	public function get_selectedProject():ProjectVO {
+		return this._selectedProject;
 	}
 
 	override private function initialize():Void {
@@ -94,17 +93,11 @@ class LocationsView extends ResizableTitleWindow {
 		viewLayout.gap = 10.0;
 		this.layout = viewLayout;
 
-		var resultsFieldLabel = new Label();
-		resultsFieldLabel.text = "Matching locations:";
-		this.addChild(resultsFieldLabel);
-
-		this.resultsListView = new ListView();
-		this.resultsListView.itemToText = (item:Location) -> {
-			var start = item.range.start;
-			var fileLocation:FileLocation = new FileLocation(item.uri, true);
-			return fileLocation.name + " (" + start.line + ", " + start.character + ") - " + fileLocation.fileBridge.nativePath;
+		this.projectsListView = new ListView();
+		this.projectsListView.itemToText = (item:ProjectVO) -> {
+			return item.projectName;
 		};
-		this.resultsListView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
+		this.projectsListView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
 			var itemRenderer = new ItemRenderer();
 			itemRenderer.doubleClickEnabled = true;
 			// required for double-click too
@@ -112,19 +105,19 @@ class LocationsView extends ResizableTitleWindow {
 			itemRenderer.addEventListener(MouseEvent.DOUBLE_CLICK, itemRenderer_doubleClickHandler);
 			return itemRenderer;
 		});
-		this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
-		this.resultsListView.addEventListener(KeyboardEvent.KEY_DOWN, resultsListView_keyDownHandler);
-		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
-		this.addChild(this.resultsListView);
+		this.projectsListView.layoutData = new VerticalLayoutData(null, 100.0);
+		this.projectsListView.addEventListener(KeyboardEvent.KEY_DOWN, projectsListView_keyDownHandler);
+		this.projectsListView.addEventListener(Event.CHANGE, projectsListView_changeHandler);
+		this.addChild(this.projectsListView);
 
 		var footer = new LayoutGroup();
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
-		this.openLocationButton = new Button();
-		this.openLocationButton.variant = MoonshineTheme.THEME_VARIANT_DARK_BUTTON;
-		this.openLocationButton.enabled = false;
-		this.openLocationButton.text = "Open Location";
-		this.openLocationButton.addEventListener(TriggerEvent.TRIGGER, openLocationButton_triggerHandler);
-		footer.addChild(this.openLocationButton);
+		this.selectProjectButton = new Button();
+		this.selectProjectButton.variant = MoonshineTheme.THEME_VARIANT_DARK_BUTTON;
+		this.selectProjectButton.enabled = false;
+		this.selectProjectButton.text = "Select & Continue";
+		this.selectProjectButton.addEventListener(TriggerEvent.TRIGGER, selectProjectButton_triggerHandler);
+		footer.addChild(this.selectProjectButton);
 		this.footer = footer;
 
 		super.initialize();
@@ -134,39 +127,39 @@ class LocationsView extends ResizableTitleWindow {
 		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
 
 		if (dataInvalid) {
-			this.resultsListView.dataProvider = this._locations;
+			this.projectsListView.dataProvider = this._projects;
 		}
 
 		super.update();
 	}
 
-	private function resultsListView_keyDownHandler(event:KeyboardEvent):Void {
+	private function projectsListView_keyDownHandler(event:KeyboardEvent):Void {
 		if (event.keyCode != Keyboard.ENTER) {
 			return;
 		}
-		if (!this.openLocationButton.enabled) {
+		if (!this.selectProjectButton.enabled) {
 			return;
 		}
-		this._selectedLocation = cast(this.resultsListView.selectedItem, Location);
+		this._selectedProject = cast(this.projectsListView.selectedItem, ProjectVO);
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
-	private function resultsListView_changeHandler(event:Event):Void {
-		this.openLocationButton.enabled = this.resultsListView.selectedItem != null;
+	private function projectsListView_changeHandler(event:Event):Void {
+		this.selectProjectButton.enabled = this.projectsListView.selectedItem != null;
 	}
 
-	private function openLocationButton_triggerHandler(event:TriggerEvent):Void {
-		if (this.resultsListView.selectedItem == null) {
+	private function selectProjectButton_triggerHandler(event:TriggerEvent):Void {
+		if (this.projectsListView.selectedItem == null) {
 			// this shouldn't happen, but to be safe...
 			// TODO: show an alert message to select an item
 			return;
 		}
-		this._selectedLocation = cast(this.resultsListView.selectedItem, Location);
+		this._selectedProject = cast(this.projectsListView.selectedItem, ProjectVO);
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 
 	private function itemRenderer_doubleClickHandler(event:MouseEvent):Void {
-		this._selectedLocation = cast(this.resultsListView.selectedItem, Location);
+		this._selectedProject = cast(this.projectsListView.selectedItem, ProjectVO);
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 }

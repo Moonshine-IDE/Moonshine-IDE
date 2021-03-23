@@ -43,18 +43,23 @@ package actionScripts.plugins.clean
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.project.ProjectType;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
 	
-	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
+
+	import feathers.data.ArrayCollection;
+
+	import moonshine.components.SelectOpenedProjectView;
 
 	public class CleanProject extends ConsoleBuildPluginBase implements IPlugin
 	{
 		private var loader: DataAgent;
-		private var selectProjectPopup:SelectOpenedProject;
+		private var selectProjectPopup:SelectOpenedProjectView;
+		private var selectProjectPopupWrapper:FeathersUIWrapper;
 
 		private var currentTargets:Array;
 		private var folderCount:int;
@@ -110,11 +115,14 @@ package actionScripts.plugins.clean
 				}
 				
 				// if above is false open popup for project selection
-				selectProjectPopup = new SelectOpenedProject();
-				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
-				PopUpManager.centerPopUp(selectProjectPopup);
-				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);				
+				selectProjectPopup = new SelectOpenedProjectView();
+				selectProjectPopup.projects = new ArrayCollection(model.projects.source);
+				selectProjectPopupWrapper = new FeathersUIWrapper(selectProjectPopup);
+				PopUpManager.addPopUp(selectProjectPopupWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
+				PopUpManager.centerPopUp(selectProjectPopupWrapper);
+				selectProjectPopup.addEventListener(Event.CLOSE, onSelectProjectPopupClose);
+				selectProjectPopupWrapper.assignFocus("top");	
+				selectProjectPopupWrapper.stage.addEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler, false, 0, true);
 			}
 			else
 			{
@@ -124,17 +132,23 @@ package actionScripts.plugins.clean
 			/*
 			* @local
 			*/
-			function onProjectSelected(event:Event):void
+			function onSelectProjectPopupClose(event:Event):void
 			{
-				cleanActiveProject(selectProjectPopup.selectedProject);
-				onProjectSelectionCancelled(null);
-			}
-			
-			function onProjectSelectionCancelled(event:Event):void
-			{
-				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				var selectedProject:ProjectVO = selectProjectPopup.selectedProject;
+				if(selectedProject)
+				{
+					cleanActiveProject(selectedProject);
+				}
+				selectProjectPopupWrapper.stage.removeEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler);
+				PopUpManager.removePopUp(selectProjectPopupWrapper);
+				selectProjectPopup.removeEventListener(Event.CLOSE, onSelectProjectPopupClose);
 				selectProjectPopup = null;
+				selectProjectPopupWrapper = null;
+			}
+
+			function selectProjectPopup_stage_resizeHandler(event:Event):void
+			{
+				PopUpManager.centerPopUp(selectProjectPopupWrapper);
 			}
 		}
 		private function cleanActiveProject(project:ProjectVO):void

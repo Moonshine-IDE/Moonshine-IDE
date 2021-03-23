@@ -71,7 +71,11 @@ class TourDeFlexTreeViewItemRenderer extends TreeViewItemRenderer {
 			if (Std.is(this._currentActiveFileIndicator, IValidating)) {
 				cast(this._currentActiveFileIndicator, IValidating).validateNow();
 			}
-			this._currentActiveFileIndicator.x = this.textField.x - this._currentActiveFileIndicator.width - 4.0;
+			if (this._branch) {
+				this._currentActiveFileIndicator.x = this.disclosureButton.x - this._currentActiveFileIndicator.width - 4.0;
+			} else {
+				this._currentActiveFileIndicator.x = this.textField.x - this._currentActiveFileIndicator.width - 4.0;
+			}
 			this._currentActiveFileIndicator.y = this.textField.y + (this.textField.height - this._currentActiveFileIndicator.height) / 2.0;
 		}
 	}

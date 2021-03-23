@@ -47,6 +47,7 @@ import feathers.utils.DisplayObjectRecycler;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
 import openfl.events.MouseEvent;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
@@ -213,6 +214,7 @@ class FindResourcesView extends ResizableTitleWindow {
 			return itemRenderer;
 		});
 		this.resultsListView.layoutData = resultsListViewLayoutData;
+		this.resultsListView.addEventListener(KeyboardEvent.KEY_DOWN, resultsListView_keyDownHandler);
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
 				
 		resultsListViewContainer.addChild(this.resultsListView);
@@ -391,6 +393,17 @@ class FindResourcesView extends ResizableTitleWindow {
 		}
 	}
 
+	private function resultsListView_keyDownHandler(event:KeyboardEvent):Void {
+		if (event.keyCode != Keyboard.ENTER) {
+			return;
+		}
+		if (!this.openResourceButton.enabled) {
+			return;
+		}
+		this._selectedResource = cast(this.resultsListView.selectedItem, ResourceVO);
+		this.dispatchEvent(new Event(Event.CLOSE));
+	}
+
 	private function resultsListView_changeHandler(event:Event):Void {
 		this.openResourceButton.enabled = this.resultsListView.selectedItem != null;
 	}
@@ -401,12 +414,12 @@ class FindResourcesView extends ResizableTitleWindow {
 			// TODO: show an alert message to select an item
 			return;
 		}
-		this._selectedResource = this.resultsListView.selectedItem;
+		this._selectedResource = cast(this.resultsListView.selectedItem, ResourceVO);
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 	
 	private function itemRenderer_doubleClickHandler(event:MouseEvent):Void {
-		this._selectedResource = this.resultsListView.selectedItem;
+		this._selectedResource = cast(this.resultsListView.selectedItem, ResourceVO);
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
 }

@@ -58,6 +58,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 	import actionScripts.plugins.httpServer.events.HttpServerEvent;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
+	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.NoSDKNotifier;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -68,8 +69,11 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
 	
-	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
+	
+	import feathers.data.ArrayCollection;
+
+	import moonshine.components.SelectOpenedProjectView;
 	
 	import flashx.textLayout.elements.LinkElement;
 	import flashx.textLayout.elements.ParagraphElement;
@@ -114,7 +118,8 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private var fschstr:String;
 		private var SDKstr:String;
-		private var selectProjectPopup:SelectOpenedProject;
+		private var selectProjectPopup:SelectOpenedProjectView;
+		private var selectProjectPopupWrapper:FeathersUIWrapper;
 		protected var runAfterBuild:Boolean;
 		protected var debugAfterBuild:Boolean;
 		protected var release:Boolean;
@@ -269,42 +274,50 @@ package actionScripts.plugins.as3project.mxmlc
 						var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
 						if (projectReference && filteredProjects.indexOf(projectReference) != -1)
 						{
-							checkForUnsavedEdior(projectReference);
+							checkForUnsavedEditor(projectReference);
 							return;
 						}
 					}
 				}
 				
 				// if above is false
-				selectProjectPopup = new SelectOpenedProject();
-				selectProjectPopup.projects = new ArrayCollection(filteredProjects);
-				PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
-				PopUpManager.centerPopUp(selectProjectPopup);
-				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);				
+				selectProjectPopup = new SelectOpenedProjectView();
+				selectProjectPopup.projects = new feathers.data.ArrayCollection(filteredProjects);
+				selectProjectPopupWrapper = new FeathersUIWrapper(selectProjectPopup);
+				PopUpManager.addPopUp(selectProjectPopupWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
+				PopUpManager.centerPopUp(selectProjectPopupWrapper);
+				selectProjectPopup.addEventListener(Event.CLOSE, onSelectProjectPopupClose);
+				selectProjectPopupWrapper.assignFocus("top");	
+				selectProjectPopupWrapper.stage.addEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler, false, 0, true);
 			}
 			else if(filteredProjects.length != 0)
 			{
-				checkForUnsavedEdior(filteredProjects[0] as ProjectVO);	
+				checkForUnsavedEditor(filteredProjects[0] as ProjectVO);	
 			}
 			
 			/*
 			* @local
 			*/
-			function onProjectSelected(event:Event):void
+			function onSelectProjectPopupClose(event:Event):void
 			{
-				checkForUnsavedEdior(selectProjectPopup.selectedProject);
-				onProjectSelectionCancelled(null);
-			}
-			
-			function onProjectSelectionCancelled(event:Event):void
-			{
-				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-				selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+				var selectedProject:ProjectVO = selectProjectPopup.selectedProject;
+				if(selectedProject)
+				{
+					checkForUnsavedEditor(selectedProject);
+				}
+				selectProjectPopupWrapper.stage.removeEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler);
+				PopUpManager.removePopUp(selectProjectPopupWrapper);
+				selectProjectPopup.removeEventListener(Event.CLOSE, onSelectProjectPopupClose);
 				selectProjectPopup = null;
+				selectProjectPopupWrapper = null;
+			}
+
+			function selectProjectPopup_stage_resizeHandler(event:Event):void
+			{
+				PopUpManager.centerPopUp(selectProjectPopupWrapper);
 			}
 		}
-		private function checkForUnsavedEdior(activeProject:ProjectVO):void
+		private function checkForUnsavedEditor(activeProject:ProjectVO):void
 		{
 			model.activeProject = activeProject;
 			UtilsCore.closeAllRelativeEditors(activeProject, false, proceedWithBuild, false);
@@ -333,7 +346,7 @@ package actionScripts.plugins.as3project.mxmlc
 			CONFIG::OSX
 			{
 				// before proceed, check file access dependencies
-				if (!OSXBookmarkerNotifiers.checkAccessDependencies(new ArrayCollection([activeProject as AS3ProjectVO]), "Access Manager - Build Halt!")) 
+				if (!OSXBookmarkerNotifiers.checkAccessDependencies(new mx.collections.ArrayCollection([activeProject as AS3ProjectVO]), "Access Manager - Build Halt!")) 
 				{
 					Alert.show("Please fix the dependencies before build.", "Error!");
 					return;

@@ -52,6 +52,7 @@ package actionScripts.plugins.ant
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.plugin.settings.vo.PathSetting;
     import actionScripts.plugins.ant.events.AntBuildEvent;
+	import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.text.TextLineModel;
     import actionScripts.ui.tabview.CloseTabEvent;
@@ -65,7 +66,10 @@ package actionScripts.plugins.ant
     import actionScripts.valueObjects.Settings;
     
     import components.popup.SelectAntFile;
-    import components.popup.SelectOpenedProject;
+
+    import feathers.data.ArrayCollection;
+
+    import moonshine.components.SelectOpenedProjectView;
 
     public class AntBuildPlugin extends PluginBase implements IPlugin, ISettingsProvider
     {
@@ -93,9 +97,10 @@ package actionScripts.plugins.ant
         private var errors:String = "";
         private var antPath:String = "ant";
         private var workingDir:FileLocation;
-        private var selectProjectPopup:SelectOpenedProject;
+        private var selectProjectPopup:SelectOpenedProjectView;
+        private var selectProjectPopupWrapper:FeathersUIWrapper;
         private var selectAntPopup:SelectAntFile;
-        private var antFiles:ArrayCollection = new ArrayCollection();
+        private var antFiles:mx.collections.ArrayCollection = new mx.collections.ArrayCollection();
         private var currentSDK:FileLocation;
         private var antBuildScreen:IFlexDisplayObject;
         private var isASuccessBuild:Boolean;
@@ -298,29 +303,37 @@ package actionScripts.plugins.ant
                 else
                 {
                     //Popup of project list if there is not any selected project in Project explorer
-                    selectProjectPopup = new SelectOpenedProject();
-                    PopUpManager.addPopUp(selectProjectPopup, FlexGlobals.topLevelApplication as DisplayObject, false);
-                    PopUpManager.centerPopUp(selectProjectPopup);
-                    selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-                    selectProjectPopup.addEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
+                    selectProjectPopup = new SelectOpenedProjectView();
+                    selectProjectPopup.projects = new feathers.data.ArrayCollection(model.projects.source);
+                    selectProjectPopupWrapper = new FeathersUIWrapper(selectProjectPopup);
+                    PopUpManager.addPopUp(selectProjectPopupWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
+                    PopUpManager.centerPopUp(selectProjectPopupWrapper);
+				    selectProjectPopup.addEventListener(Event.CLOSE, onSelectProjectPopupClose);
+                    selectProjectPopupWrapper.assignFocus("top");	
+                    selectProjectPopupWrapper.stage.addEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler, false, 0, true);
                 }
             }
         }
 
 
-        private function onProjectSelected(event:Event):void
+        private function onSelectProjectPopupClose(event:Event):void
         {
-            this.selectedProject = event.currentTarget.selectedProject;
-
-            checkForAntFile(selectProjectPopup.selectedProject as AS3ProjectVO);
-            onProjectSelectionCancelled(null);
+            var selectedProject:AS3ProjectVO = selectProjectPopup.selectedProject as AS3ProjectVO;
+            if(selectedProject)
+            {
+                this.selectedProject = selectedProject;
+                checkForAntFile(selectedProject);
+            }
+            selectProjectPopupWrapper.stage.removeEventListener(Event.RESIZE, selectProjectPopup_stage_resizeHandler);
+            PopUpManager.removePopUp(selectProjectPopupWrapper);
+            selectProjectPopup.removeEventListener(Event.CLOSE, onSelectProjectPopupClose);
+            selectProjectPopup = null;
+            selectProjectPopupWrapper = null;
         }
 
-        private function onProjectSelectionCancelled(event:Event):void
+        private function selectProjectPopup_stage_resizeHandler(event:Event):void
         {
-            selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTED, onProjectSelected);
-            selectProjectPopup.removeEventListener(SelectOpenedProject.PROJECT_SELECTION_CANCELLED, onProjectSelectionCancelled);
-            selectProjectPopup = null;
+            PopUpManager.centerPopUp(selectProjectPopupWrapper);
         }
 
         private function onAntFileSelected(event:Event):void
@@ -342,7 +355,7 @@ package actionScripts.plugins.ant
             // Check if Ant file is set for project or not
             var buildFlag:Boolean = false;
             var AntFlag:Boolean = false;
-            antFiles = new ArrayCollection();
+            antFiles = new mx.collections.ArrayCollection();
             if (!selectedAntProject.antBuildPath)
             {
                 // Find build folder within the selected folder
