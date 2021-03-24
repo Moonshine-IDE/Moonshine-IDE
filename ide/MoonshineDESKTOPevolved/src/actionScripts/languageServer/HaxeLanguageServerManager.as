@@ -327,7 +327,8 @@ package actionScripts.languageServer
 				"run",
 				"lime",
 				"display",
-				_project.limeTargetPlatform
+				_project.limeTargetPlatform,
+				"-Ddisable-version-check"
 			];
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{

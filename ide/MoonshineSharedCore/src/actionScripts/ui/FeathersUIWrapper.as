@@ -31,13 +31,12 @@ package actionScripts.ui
 	import flash.display.MovieClip;
 	import flash.events.Event;
 	import flash.events.FocusEvent;
+	import flash.Lib;
 
 	import mx.core.IFlexDisplayObject;
 	import mx.core.UIComponent;
 	import mx.managers.IFocusManagerComplexComponent;
 	import mx.managers.IFocusManagerContainer;
-
-	import openfl._internal.Lib;
 
 	[DefaultProperty("feathersUIControl")]
 	public class FeathersUIWrapper extends UIComponent implements IFocusManagerContainer, IFocusManagerComplexComponent
