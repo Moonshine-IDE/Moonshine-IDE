@@ -61,7 +61,22 @@
 			<property name="certSignedMacOSKeychainPass" value="${APP_PROPERTIES.certSignedMacOSKeychainPass}" />
 			<property name="bundledFlexSDK" value="${APP_PROPERTIES.bundledFlexSDK}" />
 			<property name="bundledFlexJSSDK" value="${APP_PROPERTIES.bundledFlexJSSDK}" />
-			<property name="HAXE_LIB_DIRECTORY" value="${APP_PROPERTIES.haxeLibDirectory}"/>
+			<condition property="HAXE_LIB_DIRECTORY" value="${APP_PROPERTIES.haxeLibDirectory}">
+				<isset property="APP_PROPERTIES.haxeLibDirectory"/>
+			</condition>
+			<!-- fall back to default Haxe install location, if available -->
+			<condition property="HAXE_LIB_DIRECTORY" value="c:/HaxeToolkit/haxe/haxelib.exe">
+				<and>
+					<os family="windows" />
+					<available file="c:/HaxeToolkit/haxe" />
+				</and>
+			</condition>
+			<condition property="HAXE_LIB_DIRECTORY" value="/usr/local/lib/haxe">
+				<and>
+					<os family="mac" />
+					<available file="/usr/local/lib/haxe/haxelib" />
+				</and>
+			</condition>
 			<property name="svn.revision" value="917"/>
 			<property name="IsDebug" value="false" />
 		</then>
@@ -149,6 +164,7 @@
 	<property name="LibraryMoonshineCore" value="../../MoonshineSharedCore"/>
 	<property name="LibraryGUICore" value="../../MoonshineGUICore"/>
 	<property name="LibraryHelperSharedCore" value="../../../../Moonshine-SDK-Installer/InstallerSharedCore"/>
+	<property name="LibrarySDKInstallerGUICore" value="../../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore"/>
 	<property name="applicationSourceDirectory" value="../src"/>
 	<property name="desktopMainSource" value="${applicationSourceDirectory}/MoonshineDESKTOP.mxml" />
 	<property name="webMainSource" value="${applicationSourceDirectory}/MoonshineWEB.mxml" />
@@ -839,7 +855,19 @@
 		</exec>
 	</target>
 
-	<target name="CompileGUICore" depends="InstallHaxeDependencies">
+	<target name="CompileSDKInstallerGUICore" depends="InstallHaxeDependencies">
+		<echo>Compiling Moonshine SDK Installer GUI Core SWC</echo>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibrarySDKInstallerGUICore}"
+			failonerror="true">
+			<arg value="run"/>
+			<arg value="openfl"/>
+			<arg value="build"/>
+			<arg value="flash"/>
+		</exec>
+	</target>
+	
+	<target name="CompileGUICore" depends="CompileSDKInstallerGUICore">
 		<echo>Compiling GUI Core SWC</echo>
 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
@@ -880,6 +908,9 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
+			<compiler.library-path dir="${LibrarySDKInstallerGUICore}/bin/flash/bin" append="true">
+				<include name="*.swc" />
+			</compiler.library-path>
 			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
@@ -915,6 +946,9 @@
 			</compiler.library-path>
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
+			</compiler.library-path>
+			<compiler.library-path dir="${LibrarySDKInstallerGUICore}/bin/flash/bin" append="true">
+				<include name="*.swc" />
 			</compiler.library-path>
 			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
 				<include name="*.swc" />
