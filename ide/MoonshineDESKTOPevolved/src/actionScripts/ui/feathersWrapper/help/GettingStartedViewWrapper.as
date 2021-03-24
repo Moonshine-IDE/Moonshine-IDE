@@ -20,11 +20,13 @@ package actionScripts.ui.feathersWrapper.help
 {
 	import flash.events.Event;
 	
-	import spark.components.Alert;
-	
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.StartupHelperEvent;
 	import actionScripts.interfaces.IViewWithTitle;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.ui.IContentWindow;
+	import actionScripts.utils.MSDKIdownloadUtil;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import moonshine.plugin.help.events.GettingStartedViewEvent;
 	import moonshine.plugin.help.view.GettingStartedView;
@@ -32,6 +34,9 @@ package actionScripts.ui.feathersWrapper.help
 	public class GettingStartedViewWrapper extends FeathersUIWrapper implements IViewWithTitle, IContentWindow
 	{
 		private static const LABEL:String = "Getting Started Haxe";
+		
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var msdkiDownloadUtil:MSDKIdownloadUtil = MSDKIdownloadUtil.getInstance();
 		
 		//--------------------------------------------------------------------------
 		//
@@ -89,12 +94,26 @@ package actionScripts.ui.feathersWrapper.help
 		
 		private function onDoNotShowCheckboxChanged(event:GettingStartedViewEvent):void
 		{
-			Alert.show(event.data.toString());
+			ConstantsCoreVO.IS_GETTING_STARTED_DNS = event.data;
+			dispatcher.dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_DNS_GETTING_STARTED));
 		}
 		
 		private function onDownload3rdPartySoftware(event:Event):void
 		{
-			Alert.show("3rd Party Software Download Requested");
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				if (!msdkiDownloadUtil.is64BitSDKInstallerExists())
+				{
+					//addRemoveInstallerDownloadEvents(true);
+					//startMessageAnimateProcess();
+				}
+				else
+				{
+					//sdkInstallerInstallingMess = "Moonshine SDK Installer requested. This may take a few seconds.";
+				}
+			}
+			
+			msdkiDownloadUtil.runOrDownloadSDKInstaller();
 		}
 	}
 }

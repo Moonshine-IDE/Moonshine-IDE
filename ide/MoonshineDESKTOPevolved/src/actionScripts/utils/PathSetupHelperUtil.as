@@ -21,7 +21,6 @@ package actionScripts.utils
 	import flash.filesystem.File;
 	
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.HelperEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
@@ -38,6 +37,8 @@ package actionScripts.utils
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
+	
+	import moonshine.events.HelperEvent;
 
 	public class PathSetupHelperUtil
 	{

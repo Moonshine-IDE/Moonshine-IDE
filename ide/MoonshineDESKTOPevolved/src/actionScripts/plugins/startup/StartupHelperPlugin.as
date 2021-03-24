@@ -28,7 +28,6 @@ package actionScripts.plugins.startup
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.HelperEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SdkEvent;
 	import actionScripts.events.StartupHelperEvent;
@@ -61,7 +60,7 @@ package actionScripts.plugins.startup
 	import components.popup.SDKUnzipConfirmPopup;
 	
 	import moonshine.components.HelperView;
-	import moonshine.plugin.help.events.GettingStartedViewEvent;
+	import moonshine.events.HelperEvent;
 	import moonshine.plugin.help.view.GettingStartedView;
 	
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
@@ -191,13 +190,13 @@ package actionScripts.plugins.startup
 		private function onComponentNotDownloadedEvent(event:HelperEvent):void
 		{
 			isAllDependenciesPresent = false;
-			onPostDetectionEvent(event.value as ComponentVO);
+			onPostDetectionEvent(event.data as ComponentVO);
 		}
 		
 		private function onAnyComponentDownloaded(event:HelperEvent):void
 		{
 			// autoset moonshine internal fields as appropriate
-			var component:ComponentVO = event.value as ComponentVO;
+			var component:ComponentVO = event.data as ComponentVO;
 			PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
 			onPostDetectionEvent(component);
 		}
@@ -322,7 +321,7 @@ package actionScripts.plugins.startup
 		
 		private function onEnvironmentVariableReadError(event:HelperEvent):void
 		{
-			error("Unable to read environment variable: "+ (event.value as String));
+			error("Unable to read environment variable: "+ (event.data as String));
 			continueOnHelping();
 		}
 		
@@ -523,8 +522,8 @@ package actionScripts.plugins.startup
 		 */
 		private function onWarningUpdated(event:HelperEvent):void
 		{
-			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(event.value.type);
-			if (tmpComponent) tmpComponent.hasWarning = event.value.message;
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(event.data.type);
+			if (tmpComponent) tmpComponent.hasWarning = event.data.message;
 		}
 		
 		/**
