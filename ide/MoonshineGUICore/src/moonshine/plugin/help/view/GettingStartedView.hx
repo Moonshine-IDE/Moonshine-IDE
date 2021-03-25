@@ -182,6 +182,7 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		// 3rd-party software-installation message
 		this.sdkInstallerInstallationMessageLabel = new Label();
 		this.sdkInstallerInstallationMessageLabel.text = this.sdkInstallerInstallingMess;
+		this.sdkInstallerInstallationMessageLabel.visible = this.sdkInstallerInstallationMessageLabel.includeInLayout = false;
 		this.addChild(this.sdkInstallerInstallationMessageLabel);
 		
 		// helper view
@@ -204,7 +205,16 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		if (dataInvalid) {
 			//this.resultsListView.dataProvider = this._references;
 			this.titleRenderer.setting = this.setting;
-			this.sdkInstallerInstallationMessageLabel.text = this.sdkInstallerInstallingMess;
+			
+			if (this.sdkInstallerInstallingMess != null)
+			{
+				this.sdkInstallerInstallationMessageLabel.visible = this.sdkInstallerInstallationMessageLabel.includeInLayout = true;
+				this.sdkInstallerInstallationMessageLabel.text = this.sdkInstallerInstallingMess;
+			}
+			else
+			{
+				this.sdkInstallerInstallationMessageLabel.visible = this.sdkInstallerInstallationMessageLabel.includeInLayout = false;
+			}
 		}
 
 		super.update();

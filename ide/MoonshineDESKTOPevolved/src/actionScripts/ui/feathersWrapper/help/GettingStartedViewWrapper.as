@@ -20,6 +20,9 @@ package actionScripts.ui.feathersWrapper.help
 {
 	import flash.events.Event;
 	
+	import mx.controls.Alert;
+	
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.StartupHelperEvent;
 	import actionScripts.interfaces.IViewWithTitle;
@@ -27,6 +30,8 @@ package actionScripts.ui.feathersWrapper.help
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.utils.MSDKIdownloadUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	
+	import air.update.events.DownloadErrorEvent;
 	
 	import moonshine.plugin.help.events.GettingStartedViewEvent;
 	import moonshine.plugin.help.view.GettingStartedView;
@@ -104,16 +109,44 @@ package actionScripts.ui.feathersWrapper.help
 			{
 				if (!msdkiDownloadUtil.is64BitSDKInstallerExists())
 				{
-					//addRemoveInstallerDownloadEvents(true);
-					//startMessageAnimateProcess();
+					addRemoveInstallerDownloadEvents(true);
+					(this.feathersUIControl as GettingStartedView).sdkInstallerInstallingMess = 
+						"Moonshine SDK Installer is downloading. Please wait.";
 				}
 				else
 				{
-					//sdkInstallerInstallingMess = "Moonshine SDK Installer requested. This may take a few seconds.";
+					(this.feathersUIControl as GettingStartedView).sdkInstallerInstallingMess = 
+						"Moonshine SDK Installer requested. This may take a few seconds.";
 				}
 			}
 			
 			msdkiDownloadUtil.runOrDownloadSDKInstaller();
+		}
+		
+		private function addRemoveInstallerDownloadEvents(add:Boolean):void
+		{
+			if (add)
+			{
+				msdkiDownloadUtil.addEventListener(GeneralEvent.DONE, onUnzipCompleted, false, 0, true);
+				msdkiDownloadUtil.addEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, onSDKInstallerDownloadError, false, 0, true);
+			}
+			else
+			{
+				msdkiDownloadUtil.removeEventListener(GeneralEvent.DONE, onUnzipCompleted);
+				msdkiDownloadUtil.removeEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, onSDKInstallerDownloadError);
+			}
+		}
+		
+		private function onUnzipCompleted(event:GeneralEvent):void
+		{
+			(this.feathersUIControl as GettingStartedView).sdkInstallerInstallingMess = null;
+			addRemoveInstallerDownloadEvents(false);
+		}
+		
+		private function onSDKInstallerDownloadError(event:DownloadErrorEvent):void
+		{
+			addRemoveInstallerDownloadEvents(false);
+			Alert.show(event.text, "Error!");
 		}
 	}
 }
