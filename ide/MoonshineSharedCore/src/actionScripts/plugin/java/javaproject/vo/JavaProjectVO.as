@@ -18,21 +18,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject.vo
 {
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.GradleBuildOptions;
 	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
 	import actionScripts.plugin.java.javaproject.exporter.JavaExporter;
 	import actionScripts.plugin.settings.vo.BuildActionsListSettings;
+	import actionScripts.plugin.settings.vo.ButtonSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.MainClassSetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.plugin.settings.vo.ButtonSetting;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 
 	public class JavaProjectVO extends ProjectVO
 	{
@@ -41,6 +42,7 @@ package actionScripts.plugin.java.javaproject.vo
 		public var mavenBuildOptions:MavenBuildOptions;
 		public var gradleBuildOptions:GradleBuildOptions;
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public var jdkType:String = JavaTypes.JAVA_DEFAULT;
 
 		private var _mainClassName:String;
 		private var _mainClassPath:String;
@@ -128,10 +130,16 @@ package actionScripts.plugin.java.javaproject.vo
 
 				pathsSettings.push(new MainClassSetting(this, "mainClassName", "Main class", this.mainClassName, defaultMainClassPath));
 			}
-
+			
 			var settings:Vector.<SettingsWrapper> = Vector.<SettingsWrapper>([
 				new SettingsWrapper("Java Project", new <ISetting>[
-					new ButtonSetting(this, "cleanWorkspaceButtonLabel", "Clean Java Project Workspace Cache", "cleanJavaWorkspaceButtonClickHandler")
+					new ButtonSetting(this, "cleanWorkspaceButtonLabel", "Clean Java Project Workspace Cache", "cleanJavaWorkspaceButtonClickHandler"),
+					new MultiOptionSetting(this, 'jdkType', "JDK", 
+						Vector.<NameValuePair>([
+							new NameValuePair("Use Default JDK", JavaTypes.JAVA_DEFAULT),
+							new NameValuePair("Use JDK 8", JavaTypes.JAVA_8)
+						])
+					)
 				]),
 				new SettingsWrapper("Paths", pathsSettings)
 			]);

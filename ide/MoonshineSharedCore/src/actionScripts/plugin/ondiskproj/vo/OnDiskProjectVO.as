@@ -24,9 +24,12 @@ package actionScripts.plugin.ondiskproj.vo
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskExporter;
 	import actionScripts.plugin.settings.vo.BuildActionsListSettings;
 	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
@@ -48,6 +51,7 @@ package actionScripts.plugin.ondiskproj.vo
 		public var postbuildCommands:String;
 		public var postbuildAlways:Boolean;
 		public var visualEditorExportPath:String;
+		public var jdkType:String = JavaTypes.JAVA_8;
 		
 		private var _isVisualEditorProject:Boolean;
 		public function get isVisualEditorProject():Boolean						{	return _isVisualEditorProject;	}
@@ -95,7 +99,14 @@ package actionScripts.plugin.ondiskproj.vo
 					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
 					/*new PathSetting(this.mavenBuildOptions, "dominoNotesProgram", "Notes Programe Path", true, this.mavenBuildOptions.dominoNotesProgram, false),
 					new PathSetting(this.mavenBuildOptions, "dominoNotesPlatform", "Notes Platform Path", true, this.mavenBuildOptions.dominoNotesPlatform, false)*/
-				]))
+				])),
+				new SettingsWrapper("Java Project", new <ISetting>[
+					new MultiOptionSetting(this, 'jdkType', "JDK", 
+						Vector.<NameValuePair>([
+							new NameValuePair("Use JDK 8", JavaTypes.JAVA_8)
+						])
+					)
+				])
 			]);
 			
 			settings.sort(order);

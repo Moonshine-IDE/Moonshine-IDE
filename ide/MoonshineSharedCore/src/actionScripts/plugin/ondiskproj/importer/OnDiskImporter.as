@@ -92,6 +92,8 @@ package actionScripts.plugin.ondiskproj.importer
             project.prebuildCommands = SerializeUtil.deserializeString(data.preBuildCommand);
             project.postbuildCommands = SerializeUtil.deserializeString(data.postBuildCommand);
             project.postbuildAlways = SerializeUtil.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+			if (data.options.option.hasOwnProperty('@jdkType')) 
+				project.jdkType = SerializeUtil.deserializeString(data.options.option.@jdkType); 
 
             project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
 			

@@ -18,12 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject.importer
 {
+	import flash.filesystem.File;
+	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import flash.filesystem.File;
-	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.MavenPomUtil;
+	import actionScripts.utils.SerializeUtil;
 
 	public class JavaImporter extends FlashDevelopImporterBase
 	{
@@ -161,6 +162,9 @@ package actionScripts.plugin.java.javaproject.importer
 			{
 				javaProject.mainClassName = projectName;
 			}
+			
+			if (settingsData.options.option.hasOwnProperty('@jdkType')) 
+				javaProject.jdkType = SerializeUtil.deserializeString(settingsData.options.option.@jdkType);
 
 			return javaProject;
 		}

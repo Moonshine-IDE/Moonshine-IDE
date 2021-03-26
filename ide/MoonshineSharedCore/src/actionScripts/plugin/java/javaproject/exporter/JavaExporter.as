@@ -54,8 +54,14 @@ package actionScripts.plugin.java.javaproject.exporter
                 mainClassPath: project.mainClassPath
             };
             buildXML.appendChild(SerializeUtil.serializePairs(build, <option/>));
-
             projectXML.appendChild(buildXML);
+			
+			var options:XML = <options />;
+			var optionPairs:Object = {
+				jdkType		:	SerializeUtil.serializeString(project.jdkType)
+			}
+			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
+			projectXML.appendChild(options);
 
             var projectSettings:FileLocation = project.folderLocation.resolvePath(project.projectName + ".javaproj");
             if (!projectSettings.fileBridge.exists)
