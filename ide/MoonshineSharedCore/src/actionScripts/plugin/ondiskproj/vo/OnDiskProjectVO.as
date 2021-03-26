@@ -21,6 +21,7 @@ package actionScripts.plugin.ondiskproj.vo
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IJavaProject;
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
@@ -35,7 +36,7 @@ package actionScripts.plugin.ondiskproj.vo
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO
+	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO, IJavaProject
 	{
 		public static const DOMINO_EXPORT_PATH:String = "nsfs/nsf-moonshine";
 		
@@ -51,7 +52,6 @@ package actionScripts.plugin.ondiskproj.vo
 		public var postbuildCommands:String;
 		public var postbuildAlways:Boolean;
 		public var visualEditorExportPath:String;
-		public var jdkType:String = JavaTypes.JAVA_8;
 		
 		private var _isVisualEditorProject:Boolean;
 		public function get isVisualEditorProject():Boolean						{	return _isVisualEditorProject;	}
@@ -72,6 +72,10 @@ package actionScripts.plugin.ondiskproj.vo
 		private var _filesList:ArrayCollection;
 		[Bindable] public function get filesList():ArrayCollection				{	return _filesList;	}
 		public function set filesList(value:ArrayCollection):void				{	_filesList = value;	}
+		
+		private var _jdkType:String = JavaTypes.JAVA_8;
+		public function get jdkType():String									{	return _jdkType;	}
+		public function set jdkType(value:String):void							{	_jdkType = value;	}
 
 		public function OnDiskProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
 		{

@@ -21,6 +21,7 @@ package actionScripts.plugin.java.javaproject.vo
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IJavaProject;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.GradleBuildOptions;
 	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
@@ -35,14 +36,17 @@ package actionScripts.plugin.java.javaproject.vo
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class JavaProjectVO extends ProjectVO
+	public class JavaProjectVO extends ProjectVO implements IJavaProject
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 
 		public var mavenBuildOptions:MavenBuildOptions;
 		public var gradleBuildOptions:GradleBuildOptions;
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
-		public var jdkType:String = JavaTypes.JAVA_DEFAULT;
+		
+		private var _jdkType:String = JavaTypes.JAVA_DEFAULT;
+		public function get jdkType():String									{	return _jdkType;	}
+		public function set jdkType(value:String):void							{	_jdkType = value;	}
 
 		private var _mainClassName:String;
 		private var _mainClassPath:String;
