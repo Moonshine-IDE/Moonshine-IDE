@@ -272,6 +272,12 @@
 			<description>Moonshine Project Configuration File 4</description>
 			<contentType>text/plain</contentType>
 		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.File.5</name>
+			<extension>ondiskproj</extension>
+			<description>Moonshine Project Configuration File 5</description>
+			<contentType>text/plain</contentType>
+		</fileType>
 	</fileTypes>
 
     <!-- iOS specific capabilities -->
