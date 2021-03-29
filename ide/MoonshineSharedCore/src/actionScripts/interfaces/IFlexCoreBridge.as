@@ -29,6 +29,7 @@ package actionScripts.interfaces
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.FileWrapper;
 
 	/**
@@ -71,7 +72,7 @@ package actionScripts.interfaces
         function createProject(event:NewProjectEvent):void;
 		function importArchiveProject():void;
 		function updateToCurrentEnvironmentVariable():void;
-		function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void;
+		function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void;
 		function getComponentByType(type:String):Object;
 		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
 		function getExternalEditors():ArrayCollection;

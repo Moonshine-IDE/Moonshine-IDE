@@ -129,11 +129,10 @@ package actionScripts.impls
 	import actionScripts.utils.Untar;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	
 	import components.containers.DownloadNewFlexSDK;
 	import components.popup.DefineFolderAccessPopup;
-	
-	import moonshine.plugin.help.view.TourDeFlexContentsView;
 	
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
@@ -555,9 +554,9 @@ package actionScripts.impls
 			EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
 		}
 		
-		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
 		{
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(completion, customSDK, withCommands);
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(completion, customSDKs, withCommands);
 		}
 		
 		public function getExternalEditors():ArrayCollection

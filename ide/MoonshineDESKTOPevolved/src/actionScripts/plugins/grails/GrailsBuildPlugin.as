@@ -23,6 +23,7 @@ package actionScripts.plugins.grails
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     
+    import actionScripts.events.ApplicationEvent;
     import actionScripts.events.CustomCommandsEvent;
     import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.SettingsEvent;
@@ -47,9 +48,9 @@ package actionScripts.plugins.grails
     import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.EnvironmentExecPaths;
+    import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
-    import actionScripts.events.ApplicationEvent;
 
     public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider, ICustomCommandRunProvider
     {
@@ -183,7 +184,7 @@ package actionScripts.plugins.grails
             return args;
         }
 
-		override public function start(args:Vector.<String>, buildDirectory:*):void
+		override public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
 		{
             if (nativeProcess.running && running)
             {

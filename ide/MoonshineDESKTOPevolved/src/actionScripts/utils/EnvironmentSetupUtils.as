@@ -33,6 +33,7 @@ package actionScripts.utils
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
 	
@@ -47,7 +48,7 @@ package actionScripts.utils
 		private var windowsBatchFile:File;
 		private var externalCallCompletionHandler:Function;
 		private var executeWithCommands:Array;
-		private var customSDKPath:String;
+		private var customSDKPaths:EnvironmentUtilsCusomSDKsVO;
 		private var isDelayRunInProcess:Boolean;
 		private var processQueus:Array = [];
 		private var isSingleProcessRunning:Boolean;
@@ -78,16 +79,16 @@ package actionScripts.utils
 			executeSetCommand();
 		}
 		
-		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
 		{
 			if (isSingleProcessRunning)
 			{
 				// we'll call the method in our way later
-				processQueus.push(new MethodDescriptor(null, null, completion, customSDK, withCommands));
+				processQueus.push(new MethodDescriptor(null, null, completion, customSDKs, withCommands));
 				return;
 			}
 			
-			executeCommandWithSetLocalEnvironment(completion, customSDK, withCommands);
+			executeCommandWithSetLocalEnvironment(completion, customSDKs, withCommands);
 		}
 		
 		private function flush():void
@@ -95,7 +96,7 @@ package actionScripts.utils
 			externalCallCompletionHandler = null;
 			executeWithCommands = null;
 			windowsBatchFile = null;
-			customSDKPath = null;
+			customSDKPaths = null;
 			
 			if (processQueus.length != 0)
 			{
@@ -128,13 +129,13 @@ package actionScripts.utils
 			}
 		}
 		
-		private function executeCommandWithSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		private function executeCommandWithSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
 		{
 			isSingleProcessRunning = true;
 			
 			externalCallCompletionHandler = completion;
 			executeWithCommands = withCommands;
-			customSDKPath = customSDK;
+			customSDKPaths = customSDKs;
 			executeSetCommand();
 		}
 		
@@ -208,24 +209,21 @@ package actionScripts.utils
 			var defaultSDKtype:String;
 			var defaultSDKreferenceVo:SDKReferenceVO;
 			
-			if (customSDKPath && FileUtils.isPathExists(customSDKPath))
-			{
-				defaultOrCustomSDKPath = customSDKPath;
-			}
-			else if (UtilsCore.isDefaultSDKAvailable())
-			{
-				defaultOrCustomSDKPath = model.defaultSDK.fileBridge.nativePath;
-			}
 			
-			defaultSDKreferenceVo = SDKUtils.getSDKFromSavedList(defaultOrCustomSDKPath);
-			if (defaultSDKreferenceVo) defaultSDKtype = defaultSDKreferenceVo.type;
 			
-			if (UtilsCore.isJavaForTypeaheadAvailable())
+			// JDK
+			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.JDK_FIELD);
+			if (!defaultOrCustomSDKPath && UtilsCore.isJavaForTypeaheadAvailable())
 			{
-				setCommand += getSetExportWithoutQuote("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath);
+				defaultOrCustomSDKPath = model.javaPathForTypeAhead.fileBridge.nativePath;
+			}
+			if (defaultOrCustomSDKPath)
+			{
+				setCommand += getSetExportWithoutQuote("JAVA_HOME", defaultOrCustomSDKPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$JAVA_HOME/bin:" : "%JAVA_HOME%\\bin;");
 				isValidToExecute = true;
 			}
+			
 			if (UtilsCore.isAntAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("ANT_HOME", model.antHomePath.fileBridge.nativePath);
@@ -279,6 +277,15 @@ package actionScripts.utils
 					}
 				}
 			}
+			// PROJECT SDK
+			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.SDK_FIELD);
+			if (!defaultOrCustomSDKPath && UtilsCore.isDefaultSDKAvailable())
+			{
+				defaultOrCustomSDKPath = model.defaultSDK.fileBridge.nativePath;
+			}
+			
+			defaultSDKreferenceVo = SDKUtils.getSDKFromSavedList(defaultOrCustomSDKPath);
+			if (defaultSDKreferenceVo) defaultSDKtype = defaultSDKreferenceVo.type;
 			if (defaultOrCustomSDKPath)
 			{
 				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
@@ -451,6 +458,18 @@ package actionScripts.utils
 			/*var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			Alert.show(data, "shell Data");*/
+		}
+		
+		private function hasCustomSDKRequest(forPathField:String):String
+		{
+			if (customSDKPaths && 
+				customSDKPaths[forPathField] && 
+				FileUtils.isPathExists(customSDKPaths[forPathField]))
+			{
+				return customSDKPaths[forPathField];
+			}
+			
+			return null;
 		}
 	}
 }

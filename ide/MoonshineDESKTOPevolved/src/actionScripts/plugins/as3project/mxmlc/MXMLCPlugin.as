@@ -79,6 +79,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
@@ -699,7 +700,10 @@ package actionScripts.plugins.as3project.mxmlc
 				// update build config file
 				AS3ProjectVO(pvo).updateConfig();
 				compileStr = getFlexJSBuildArgs(pvo as AS3ProjectVO);
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
+				
+				var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+				envCustomSDK.sdkPath = SDKstr;
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compileStr]);
 			}
 			
 			/*
@@ -820,7 +824,9 @@ package actionScripts.plugins.as3project.mxmlc
 				compileStr = compile(pvo as AS3ProjectVO, release);
 				print("Command: %s"+ compileStr);
 				
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
+				var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+				envCustomSDK.sdkPath = SDKstr;
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compileStr]);
 			}
 			
 			/*
@@ -883,7 +889,9 @@ package actionScripts.plugins.as3project.mxmlc
 				);
 			}
 			
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compilerArg]);
+			var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomSDK.sdkPath = SDKstr;
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compilerArg]);
 			
 			/*
 			* @local
@@ -1489,6 +1497,8 @@ package actionScripts.plugins.as3project.mxmlc
 			var adtCommand:String = CommandLineUtil.joinOptions(adtPackagingOptions);
 			debug("Sending to adt: %s", adtCommand);
 			
+			var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomSDK.sdkPath = SDKstr;
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
 				var processArgs:Vector.<String> = new <String>[];
@@ -1513,7 +1523,7 @@ package actionScripts.plugins.as3project.mxmlc
 				adtProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, adtProcess_standardErrorDataHandler);
 				adtProcess.addEventListener(NativeProcessExitEvent.EXIT, adtProcess_exitHandler);
 				adtProcess.start(adtProcessInfo);
-			}, SDKstr, [adtCommand]);
+			}, envCustomSDK, [adtCommand]);
 		}
 		
 		private function ensureCredentialsPresent(project:AS3ProjectVO):Boolean

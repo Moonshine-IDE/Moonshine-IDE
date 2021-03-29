@@ -30,7 +30,9 @@ package actionScripts.plugins.gradle
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.interfaces.IJavaProject;
     import actionScripts.plugin.build.MavenBuildStatus;
+    import actionScripts.plugin.java.javaproject.vo.JavaTypes;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
@@ -38,10 +40,12 @@ package actionScripts.plugins.gradle
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.GradleBuildUtil;
     import actionScripts.utils.HelperUtils;
+    import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ComponentTypes;
     import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.EnvironmentExecPaths;
+    import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
 
@@ -158,7 +162,7 @@ package actionScripts.plugins.gradle
 			}
 		}
 
-        override public function start(args:Vector.<String>, buildDirectory:*):void
+        override public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
         {
             if (nativeProcess.running && running)
             {
@@ -175,8 +179,12 @@ package actionScripts.plugins.gradle
             }
 
             warning("Starting Gradle build...");
+			
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomJava.jdkPath = ((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) ? 
+				model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
 
-            super.start(args, buildDirectory);
+            super.start(args, buildDirectory, envCustomJava);
             status = MavenBuildStatus.STARTED;
 
             print("Gradle path: %s", gradlePath);
@@ -221,6 +229,13 @@ package actionScripts.plugins.gradle
                 dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject, "Gradle Build"));
                 return;
             }
+			
+			if (!checkRequireJava())
+			{
+				clearOutput();
+				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
+				return;
+			}
 			
 			checkProjectForInvalidPaths(model.activeProject);
 			if (isProjectHasInvalidPaths)
@@ -466,5 +481,24 @@ package actionScripts.plugins.gradle
                 clearTimeout(stopDelay);
             }, 800);
         }
+		
+		private function checkRequireJava():Boolean
+		{
+			if (model.activeProject is IJavaProject)
+			{
+				if (((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_DEFAULT) && 
+					!UtilsCore.isJavaForTypeaheadAvailable())
+				{
+					return false;
+				}
+				if (((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) && 
+					!UtilsCore.isJava8Present())
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
     }
 }
