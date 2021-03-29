@@ -535,6 +535,13 @@
 				<string>Owner</string>]]>
 				</replacevalue>
 			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 5</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 5</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
 		</replace>
 		<!-- Since its found impossible to call an ANT variable inside ![CDATA[ section to replace <cfBundleName> value
 			I need to make a conditional statement -->
