@@ -76,6 +76,7 @@ package actionScripts.impls
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.URLDescriptorVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	
 	import components.popup.Authentication;
 	import components.popup.AuthenticationPopUp;
@@ -445,7 +446,7 @@ package actionScripts.impls
 			
 		}
 		
-		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
 		{
 			
 		}
