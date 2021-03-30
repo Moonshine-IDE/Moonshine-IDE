@@ -1717,8 +1717,8 @@ package actionScripts.plugins.as3project.mxmlc
 					return;
 				}
 				
-				var javaToolsOptionsMatch:Array = data.match(new RegExp("JAVA_TOOL_OPTIONS", "i"));
-				if (javaToolsOptionsMatch)
+				if (data.match(new RegExp("JAVA_TOOL_OPTIONS", "i")) || 
+					data.match(new RegExp("JAVA_OPTIONS", "i")))
 				{
 					print(data);
 					return;
