@@ -878,7 +878,7 @@
 		<echo>Compiling SWF Windows (Debug: ${IsDebug})</echo>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
-			   swf-version="44" 
+			   swf-version="41" 
 			   configname="air" 
 			   locale="${locale.list}" 
 			   fork="true" 
@@ -914,7 +914,7 @@
 		</copy>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
-			   swf-version="44" 
+			   swf-version="41" 
 			   configname="air" 
 			   locale="${locale.list}" 
 			   fork="true" 
