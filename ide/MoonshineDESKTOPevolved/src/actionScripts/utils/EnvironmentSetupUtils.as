@@ -209,7 +209,30 @@ package actionScripts.utils
 			var defaultSDKtype:String;
 			var defaultSDKreferenceVo:SDKReferenceVO;
 			
+			// PROJECT SDK
+			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.SDK_FIELD);
+			if (!defaultOrCustomSDKPath && UtilsCore.isDefaultSDKAvailable())
+			{
+				defaultOrCustomSDKPath = model.defaultSDK.fileBridge.nativePath;
+			}
 			
+			defaultSDKreferenceVo = SDKUtils.getSDKFromSavedList(defaultOrCustomSDKPath);
+			if (defaultSDKreferenceVo) defaultSDKtype = defaultSDKreferenceVo.type;
+			if (defaultOrCustomSDKPath)
+			{
+				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
+				setCommand += getSetExportWithoutQuote(flexRoyaleHomeType, defaultOrCustomSDKPath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
+				
+				if (!defaultSDKtype || (defaultSDKtype && defaultSDKtype != SDKTypes.ROYALE))
+				{
+					var airHomeType:String = "AIR_SDK_HOME";
+					setCommand += getSetExportWithoutQuote(airHomeType, defaultOrCustomSDKPath);
+					setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ airHomeType +"/bin:" : "%"+ airHomeType +"%\\bin;");
+				}
+				
+				isValidToExecute = true;
+			}
 			
 			// JDK
 			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.JDK_FIELD);
@@ -276,30 +299,6 @@ package actionScripts.utils
 						isValidToExecute = true;
 					}
 				}
-			}
-			// PROJECT SDK
-			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.SDK_FIELD);
-			if (!defaultOrCustomSDKPath && UtilsCore.isDefaultSDKAvailable())
-			{
-				defaultOrCustomSDKPath = model.defaultSDK.fileBridge.nativePath;
-			}
-			
-			defaultSDKreferenceVo = SDKUtils.getSDKFromSavedList(defaultOrCustomSDKPath);
-			if (defaultSDKreferenceVo) defaultSDKtype = defaultSDKreferenceVo.type;
-			if (defaultOrCustomSDKPath)
-			{
-				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
-				setCommand += getSetExportWithoutQuote(flexRoyaleHomeType, defaultOrCustomSDKPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
-				
-				if (!defaultSDKtype || (defaultSDKtype && defaultSDKtype != SDKTypes.ROYALE))
-				{
-					var airHomeType:String = "AIR_SDK_HOME";
-					setCommand += getSetExportWithoutQuote(airHomeType, defaultOrCustomSDKPath);
-					setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ airHomeType +"/bin:" : "%"+ airHomeType +"%\\bin;");
-				}
-				
-				isValidToExecute = true;
 			}
 			
 			// if nothing found in above three don't run

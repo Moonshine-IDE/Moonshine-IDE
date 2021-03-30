@@ -45,7 +45,8 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			if (activated) return;
 			
-			super.activate();
+			this._activated = true;
+			//super.activate();
 			
 			dispatcher.addEventListener(FlashModuleBuildEvent.BUILD, onProjectBuild, false, 0, true);
 			dispatcher.addEventListener(FlashModuleBuildEvent.BUILD_AND_RUN, onProjectBuildAndRun, false, 0, true);
