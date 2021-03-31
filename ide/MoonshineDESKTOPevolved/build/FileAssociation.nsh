@@ -10,7 +10,7 @@ _____________________________________________________________________________
  1. !include "FileAssociation.nsh"
  2. [Section|Function]
       ${FileAssociationFunction} "Param1" "Param2" "..." $var
-    [SectionEnd|FunctionEnd]
+		[SectionEnd|FunctionEnd]
  
  FileAssociationFunction=[RegisterExtension|UnRegisterExtension]
  

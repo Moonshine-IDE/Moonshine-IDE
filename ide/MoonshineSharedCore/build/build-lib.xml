@@ -752,7 +752,7 @@
 			<fileset dir="${LibraryHelperSharedCore}/src/helperResources"/>
 		</copy>
 		
-		<antcall target="copyElementsFolder"/>
+			<antcall target="copyElementsFolder"/>
 		
 		<!-- Check if the self-signed certificate exists -->
 		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
