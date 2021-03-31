@@ -24,7 +24,6 @@ package actionScripts.plugin.findreplace
     import flash.events.Event;
     
     import mx.core.FlexGlobals;
-    import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
     
     import actionScripts.events.ApplicationEvent;

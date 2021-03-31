@@ -21,7 +21,6 @@ package actionScripts.plugin.locations
 	import actionScripts.events.LocationsEvent;
 	import actionScripts.plugin.PluginBase;
 	import moonshine.plugin.locations.view.LocationsView;
-	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Location;
 

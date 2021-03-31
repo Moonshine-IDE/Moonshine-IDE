@@ -50,6 +50,7 @@ import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
+import actionScripts.valueObjects.ResourceVO;
 
 class FindResourcesView extends ResizableTitleWindow {
 	public function new() {
