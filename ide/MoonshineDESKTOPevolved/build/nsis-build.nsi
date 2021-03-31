@@ -8,6 +8,7 @@
 	!include "MUI2.nsh"
 	!include "FileFunc.nsh"
 	!include "WinMessages.nsh"
+	!include "FileAssociation.nsh"
 
 ;--------------------------------
 ;General
@@ -215,6 +216,22 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	;copy all files
 	SetOutPath "$INSTDIR"
 	File /r "DEPLOY\${INSTALLERNAME}EXE\*"
+	
+	;File-type associations
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".as" "Moonshine.ActionScript.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".css" "Moonshine.CSS.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".txt" "Moonshine.Text.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".mxml" "Moonshine.MXML.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".xml" "Moonshine.XML.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".js" "Moonshine.JavaScript.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".htm" "Moonshine.HTML.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".html" "Moonshine.HTML.File.2"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".awd" "Moonshine.AwayBuilder.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".as3proj" "Moonshine.Project.Configuration.File.1"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".veditorproj" "Moonshine.Project.Configuration.File.2"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".javaproj" "Moonshine.Project.Configuration.File.3"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".grailsproj" "Moonshine.Project.Configuration.File.4"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".ondiskproj" "Moonshine.Project.Configuration.File.5"
 	
 	;Store installation folder
 	WriteRegStr HKCU "Software\${INSTALLERNAME}" "" $INSTDIR
