@@ -217,7 +217,6 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	SetOutPath "$INSTDIR"
 	File /r "DEPLOY\${INSTALLERNAME}EXE\*"
 	
-	
 	;File-type associations
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".as" "Moonshine.ActionScript.File"
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".css" "Moonshine.CSS.File"
@@ -284,6 +283,22 @@ Section "Uninstall"
 	RMDir "$INSTDIR"
 	
 	Delete "$SMPROGRAMS\${INSTALLERNAME}.lnk"
+	
+	;Cleanup of file-type associations
+	${unregisterExtension} ".as" "Moonshine.ActionScript.File"
+	${unregisterExtension} ".css" "Moonshine.CSS.File"
+	${unregisterExtension} ".txt" "Moonshine.Text.File"
+	${unregisterExtension} ".mxml" "Moonshine.MXML.File"
+	${unregisterExtension} ".xml" "Moonshine.XML.File"
+	${unregisterExtension} ".js" "Moonshine.JavaScript.File"
+	${unregisterExtension} ".htm" "Moonshine.HTML.File"
+	${unregisterExtension} ".html" "Moonshine.HTML.File.2"
+	${unregisterExtension} ".awd" "Moonshine.AwayBuilder.File"
+	${unregisterExtension} ".as3proj" "Moonshine.Project.Configuration.File.1"
+	${unregisterExtension} ".veditorproj" "Moonshine.Project.Configuration.File.2"
+	${unregisterExtension} ".javaproj" "Moonshine.Project.Configuration.File.3"
+	${unregisterExtension} ".grailsproj" "Moonshine.Project.Configuration.File.4"
+	${unregisterExtension} ".ondiskproj" "Moonshine.Project.Configuration.File.5"
 	
 	DeleteRegKey /ifempty HKCU "Software\${INSTALLERNAME}"
 	
