@@ -20,6 +20,7 @@
 
 package moonshine.plugin.findResources.view;
 
+import moonshine.components.events.FileTypesCalloutEvent;
 import openfl.text.TextFormatAlign;
 import openfl.text.TextFormat;
 import feathers.core.IUIControl;
@@ -36,8 +37,6 @@ import feathers.controls.TextInput;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayCollection;
-import feathers.data.ListViewItemState;
-import feathers.events.ListViewEvent;
 import feathers.events.TriggerEvent;
 import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
@@ -51,6 +50,7 @@ import openfl.events.MouseEvent;
 import openfl.events.KeyboardEvent;
 import openfl.ui.Keyboard;
 import actionScripts.valueObjects.ResourceVO;
+import moonshine.components.FileTypesCallout;
 
 class FindResourcesView extends ResizableTitleWindow {
 	public function new() {
@@ -206,7 +206,7 @@ class FindResourcesView extends ResizableTitleWindow {
 		this.resultsListView = new ListView();
 		this.resultsListView.itemToText = (item:Dynamic) -> item.name + " - " + item.labelPath;
 		this.resultsListView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
-			var itemRenderer = new ItemRenderer();
+		var itemRenderer = new ItemRenderer();
 			itemRenderer.doubleClickEnabled = true;
 			// required for double-click too
 			itemRenderer.mouseChildren = false;
@@ -299,45 +299,14 @@ class FindResourcesView extends ResizableTitleWindow {
 	}	
 	
 	private function filterExtensionsButton_triggerHandler(event:TriggerEvent):Void {
-		var content = new LayoutGroup();
-		var contentLayout = new VerticalLayout();
-		contentLayout.horizontalAlign = JUSTIFY;
-		contentLayout.paddingTop = 10.0;
-		contentLayout.paddingRight = 10.0;
-		contentLayout.paddingBottom = 10.0;
-		contentLayout.paddingLeft = 10.0;
-		contentLayout.gap = 10.0;
-		content.layout = contentLayout;
-		var description = new Label();
-		description.text = "Reduce selection to only files of type(s):";
-		content.addChild(description);
-		var extensionListView = new ListView();
-		extensionListView.dataProvider = this._patterns;
-		extensionListView.itemToText = (item:Dynamic) -> "*." + item.label;
-		extensionListView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
-			var itemRenderer = new ItemRenderer();
-			var check = new Check();
-			check.mouseEnabled = false;
-			itemRenderer.icon = check;
-			return itemRenderer;
-		}, (itemRenderer, state : ListViewItemState) -> {
-				itemRenderer.text = state.text;
-				var check = cast(itemRenderer.icon, Check);
-				check.selected = state.data.isSelected;
-			}, (itemRenderer, state:ListViewItemState) -> {
-				itemRenderer.text = null;
-				var check = cast(itemRenderer.icon, Check);
-				check.selected = false;
-			});
-		extensionListView.addEventListener(ListViewEvent.ITEM_TRIGGER, extensionsListView_itemTriggerHandler);
-		extensionListView.selectable = false;
-		extensionListView.layoutData = new VerticalLayoutData(null, 100.0);
-		content.addChild(extensionListView);
-		Callout.show(content, this.filterExtensionsButton);
+		var fileTypesCallout = new FileTypesCallout(); 
+			fileTypesCallout.patterns = this._patterns;
+			fileTypesCallout.addEventListener(FileTypesCalloutEvent.SELECT_FILETYPE, extensionsListView_itemTriggerHandler);
+		Callout.show(fileTypesCallout, this.filterExtensionsButton);
 	}
 
-	private function extensionsListView_itemTriggerHandler(event:ListViewEvent):Void {
-		var index = event.state.index;
+	private function extensionsListView_itemTriggerHandler(event:FileTypesCalloutEvent):Void {
+		var index = event.index;
 		var pattern = this._patterns.get(index);
 		pattern.isSelected = !pattern.isSelected;
 		this._patterns.updateAt(index);
