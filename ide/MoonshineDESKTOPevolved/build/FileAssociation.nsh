@@ -170,6 +170,7 @@ Skip:
   ReadRegStr $1 HKCR $R0 "backup_val"
   StrCmp $1 "" 0 Restore ; if backup="" then delete the whole key
   DeleteRegKey HKCR $R0
+  DeleteRegKey HKCR $R1
   Goto NoOwn
  
 Restore:
