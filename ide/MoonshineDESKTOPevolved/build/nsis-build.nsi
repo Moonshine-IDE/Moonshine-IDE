@@ -8,6 +8,7 @@
 	!include "MUI2.nsh"
 	!include "FileFunc.nsh"
 	!include "WinMessages.nsh"
+	!include "FileAssociation.nsh"
 
 ;--------------------------------
 ;General
@@ -216,6 +217,22 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	SetOutPath "$INSTDIR"
 	File /r "DEPLOY\${INSTALLERNAME}EXE\*"
 	
+	;File-type associations
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".as" "Moonshine.ActionScript.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".css" "Moonshine.CSS.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".txt" "Moonshine.Text.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".mxml" "Moonshine.MXML.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".xml" "Moonshine.XML.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".js" "Moonshine.JavaScript.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".htm" "Moonshine.HTML.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".html" "Moonshine.HTML.File.2"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".awd" "Moonshine.AwayBuilder.File"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".as3proj" "Moonshine.Project.Configuration.File.1"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".veditorproj" "Moonshine.Project.Configuration.File.2"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".javaproj" "Moonshine.Project.Configuration.File.3"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".grailsproj" "Moonshine.Project.Configuration.File.4"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".ondiskproj" "Moonshine.Project.Configuration.File.5"
+	
 	;Store installation folder
 	WriteRegStr HKCU "Software\${INSTALLERNAME}" "" $INSTDIR
 	
@@ -266,6 +283,22 @@ Section "Uninstall"
 	RMDir "$INSTDIR"
 	
 	Delete "$SMPROGRAMS\${INSTALLERNAME}.lnk"
+	
+	;Cleanup of file-type associations
+	${unregisterExtension} ".as" "Moonshine.ActionScript.File"
+	${unregisterExtension} ".css" "Moonshine.CSS.File"
+	${unregisterExtension} ".txt" "Moonshine.Text.File"
+	${unregisterExtension} ".mxml" "Moonshine.MXML.File"
+	${unregisterExtension} ".xml" "Moonshine.XML.File"
+	${unregisterExtension} ".js" "Moonshine.JavaScript.File"
+	${unregisterExtension} ".htm" "Moonshine.HTML.File"
+	${unregisterExtension} ".html" "Moonshine.HTML.File.2"
+	${unregisterExtension} ".awd" "Moonshine.AwayBuilder.File"
+	${unregisterExtension} ".as3proj" "Moonshine.Project.Configuration.File.1"
+	${unregisterExtension} ".veditorproj" "Moonshine.Project.Configuration.File.2"
+	${unregisterExtension} ".javaproj" "Moonshine.Project.Configuration.File.3"
+	${unregisterExtension} ".grailsproj" "Moonshine.Project.Configuration.File.4"
+	${unregisterExtension} ".ondiskproj" "Moonshine.Project.Configuration.File.5"
 	
 	DeleteRegKey /ifempty HKCU "Software\${INSTALLERNAME}"
 	
