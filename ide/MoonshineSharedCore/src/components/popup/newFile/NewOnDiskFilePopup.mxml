@@ -11,7 +11,6 @@
 		import actionScripts.utils.SimpleValidator;
 		import actionScripts.valueObjects.ConstantsCoreVO;
 		import mx.controls.Alert;
-		import flash.filesystem.File;
 		import actionScripts.events.GlobalEventDispatcher;
 		import actionScripts.events.RefreshTreeEvent;
 		
@@ -46,9 +45,9 @@
 		{
 
 			var targetFolder:String=folderLocation.fileBridge.nativePath;
-			var original_form:FileLocation =  folderLocation.resolvePath("src"+File.separator +"main"+File.separator+"visualeditor"+File.separator+fileName+".dve");
+			var original_form:FileLocation =  folderLocation.resolvePath("src"+folderLocation.fileBridge.separator +"main"+folderLocation.fileBridge.separator+"visualeditor"+folderLocation.fileBridge.separator+fileName+".dve");
 			if(original_form.fileBridge.exists){
-				var newFormFile:FileLocation =  folderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+fileName + ".form"); 
+				var newFormFile:FileLocation =  folderLocation.resolvePath("nsfs"+folderLocation.fileBridge.separator+"nsf-moonshine"+folderLocation.fileBridge.separator+"odp"+folderLocation.fileBridge.separator+"Forms"+folderLocation.fileBridge.separator+fileName + ".form"); 
 				original_form.fileBridge.copyTo(newFormFile, true); 
 				dispatcher.dispatchEvent(new RefreshTreeEvent(folderLocation));
 			}

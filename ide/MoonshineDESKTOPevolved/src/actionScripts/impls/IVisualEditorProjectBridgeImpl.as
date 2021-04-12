@@ -37,6 +37,12 @@ package actionScripts.impls
             return new VisualEditorViewer(visualEditorProject);
         }
 
+        public function renameDominoFormFileSave(visualEditorProject:ProjectVO,fileName:String):String
+        {
+            var v:VisualEditorViewer=new VisualEditorViewer(visualEditorProject);
+            return v.renameDominoFormFileSave(fileName);
+        }
+
         public function getCorePlugins():Array
         {
             return [

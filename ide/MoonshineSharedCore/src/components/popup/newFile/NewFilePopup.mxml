@@ -50,9 +50,8 @@
         import actionScripts.valueObjects.ProjectReferenceVO;
 
         import actionScripts.interfaces.IVisualEditorProjectVO;
-        import actionScripts.utils.FileUtils;
         import actionScripts.locator.IDEModel;
-        import actionScripts.plugins.ui.editor.VisualEditorViewer;
+
 
         [Bindable]
         public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
@@ -148,46 +147,40 @@
                     if(lblExtension.text&&lblExtension.text==".form"){
                         //Alert.show("duplication file name:"+fileName);
                         var targetXmlFilePath:String=wrapperBelongToProject.projectFolder.nativePath+"/visualeditor-src/main/webapp/"+fileName+".xml";
-                        var destinationXmlFile:File=new File(targetXmlFilePath);
+                        var destinationXmlFile:FileLocation=new FileLocation(targetXmlFilePath);
                         var sourceXmlFileName:String=txtFileName.prompt;
                         var sourceXmlFilePath:String= wrapperBelongToProject.projectFolder.nativePath+"/visualeditor-src/main/webapp/"+sourceXmlFileName+".xml";
-                        var sourceXmlFile=new File(sourceXmlFilePath);
+                        var sourceXmlFile:FileLocation=new FileLocation(sourceXmlFilePath);
                         //Alert.show("source xml file name:"+sourceXmlFilePath);
                         //Alert.show("target  xml file name:"+targetXmlFilePath);
-                        if(destinationXmlFile.exists){
-                            destinationXmlFile.deleteFile();
+                        if(destinationXmlFile.fileBridge.exists){
+                            destinationXmlFile.fileBridge.deleteFile();
                         }
-                        if(sourceXmlFile.exists){
-                            sourceXmlFile.copyTo(destinationXmlFile, true);
+                        if(sourceXmlFile.fileBridge.exists){
+                            sourceXmlFile.fileBridge.copyTo(destinationXmlFile, true);
                         }
                         //2.update title from form file 
                         var model:IDEModel = IDEModel.getInstance();
 						var formXmlString:String=null;
 						if(model){
-							//Alert.show("found model");
-							var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
-							if(editor){
-								//Alert.show("found editor");
-								formXmlString =editor.renameDominoFormFileSave(txtFileName.text);
-
-							}
+                            formXmlString=model.visualEditorCore.renameDominoFormFileSave(model.activeProject,txtFileName.text);
 						}
                         if(formXmlString!=null){
 
-                            var destinationFormFile:File=new File(wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms/"+fileName+".form")
+                            var destinationFormFile:FileLocation=new FileLocation(wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms/"+fileName+".form")
 							
-							if(destinationFormFile.exists){
-								destinationFormFile.deleteFile();
+							if(destinationFormFile.fileBridge.exists){
+								destinationFormFile.fileBridge.deleteFile();
 							}
-							FileUtils.writeToFile(destinationFormFile,formXmlString);
+                            destinationFormFile.fileBridge.save(formXmlString);
 								
 						} 
-                        //FileUtils.writeToFile(destinationFormFile,formXmlString);
                     }
                 
                 
             }
         }
+       
         private var dominoToProjectFileWrapper:FileWrapper=null;
         
 

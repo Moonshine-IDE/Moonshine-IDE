@@ -653,9 +653,9 @@
 							var projectPath:String=parentFolder.substring(0,parentFolder.indexOf("nsfs/nsf-moonshine/odp/Forms"));
 							var xmlFilePath:String=projectPath+"visualeditor-src/main/webapp/"+fileWrapper.file.fileBridge.nameWithoutExtension+".xml";
 							//Alert.show("xmlFilePath:"+xmlFilePath);
-							var xmlFile:File = new File(xmlFilePath);
-							if(xmlFile.exists){
-								xmlFile.deleteFile()
+							var xmlFile:FileLocation = new FileLocation(xmlFilePath);
+							if(xmlFile.fileBridge.exists){
+								xmlFile.fileBridge.deleteFile()
 							}
 						}
 
