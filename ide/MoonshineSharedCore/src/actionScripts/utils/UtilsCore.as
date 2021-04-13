@@ -69,7 +69,7 @@ package actionScripts.utils
 	
 	import feathers.data.ArrayCollection;
 
-	import flash.filesystem.File;
+	//import flash.filesystem.File;
 
 	public class UtilsCore 
 	{
