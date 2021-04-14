@@ -2,9 +2,7 @@
 <application xmlns="http://ns.adobe.com/air/application/33.1">
 
 <!-- Adobe AIR Application Descriptor File Template.
-
 	Specifies parameters for identifying, installing, and launching AIR applications.
-
 	xmlns - The Adobe AIR namespace: http://ns.adobe.com/air/application/3.5
 			The last segment of the namespace specifies the version 
 			of the AIR runtime required for this application to run.
@@ -270,6 +268,12 @@
 			<name>Moonshine.Project.Configuration.File.4</name>
 			<extension>grailsproj</extension>
 			<description>Moonshine Project Configuration File 4</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.File.5</name>
+			<extension>ondiskproj</extension>
+			<description>Moonshine Project Configuration File 5</description>
 			<contentType>text/plain</contentType>
 		</fileType>
 	</fileTypes>

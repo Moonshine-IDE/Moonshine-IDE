@@ -27,6 +27,7 @@ package actionScripts.plugin.project
         public static const VISUAL_EDITOR:String = "Visual Editor";
 		public static const VISUAL_EDITOR_FLEX:String = "Flex Visual Editor";
 		public static const VISUAL_EDITOR_PRIMEFACES:String = "PrimeFaces Visual Editor";
+        public static const VISUAL_EDITOR_DOMINO:String = "Domino NSF Database Visual Editor";
 		public static const AWAY3D:String = "Away3D Project";
         public static const JAVA:String = "Java";
         public static const GRAILS:String = "Grails";

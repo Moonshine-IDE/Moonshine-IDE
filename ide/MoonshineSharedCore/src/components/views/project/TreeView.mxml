@@ -127,7 +127,10 @@
 				var dataSort:Sort = new Sort();
 				dataSort.fields = [dataSortField];
 				model.selectedprojectFolders.sort = dataSort;
+				
 				model.selectedprojectFolders.refresh();
+
+				
 			}
 			
 			public function sortChildren(wrapper:FileWrapper):void
@@ -643,6 +646,19 @@
 					{
 						var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(tree.selectedItems[0] as FileWrapper);
 						dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, isMultiSelection ? tree.selectedItems : [fileWrapper], onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
+						//Alert.show("delete file:"+fileWrapper.file.fileBridge.nativePath);
+						var parentFolder:String=fileWrapper.file.fileBridge.parent.fileBridge.nativePath;
+						//Alert.show("parentFolder file:"+parentFolder);
+						if(UtilsCore.endsWith(parentFolder,"nsfs/nsf-moonshine/odp/Forms")){
+							var projectPath:String=parentFolder.substring(0,parentFolder.indexOf("nsfs/nsf-moonshine/odp/Forms"));
+							var xmlFilePath:String=projectPath+"visualeditor-src/main/webapp/"+fileWrapper.file.fileBridge.nameWithoutExtension+".xml";
+							//Alert.show("xmlFilePath:"+xmlFilePath);
+							var xmlFile:FileLocation = new FileLocation(xmlFilePath);
+							if(xmlFile.fileBridge.exists){
+								xmlFile.fileBridge.deleteFile()
+							}
+						}
+
 					}
 				}
 	

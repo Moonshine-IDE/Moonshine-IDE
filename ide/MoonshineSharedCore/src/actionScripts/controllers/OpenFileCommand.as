@@ -248,6 +248,12 @@ package actionScripts.controllers
 				}
 				else
 				{
+					//try to open dve with domino visual editor.
+					 if ((project is OnDiskProjectVO) && (extension == "dve"))
+					 {
+						 (project as OnDiskProjectVO).isDominoVisualEditorProject=true;
+					 } 
+
 					openTextFile(project, fileData);
 				}
 			}
@@ -345,7 +351,7 @@ package actionScripts.controllers
 			
 			if ((project is AS3ProjectVO &&
 				(project as AS3ProjectVO).isVisualEditorProject &&
-				(extension == "mxml" || extension == "xhtml") && !lastOpenEvent.independentOpenFile) || 
+				(extension == "mxml" || extension == "xhtml" || extension == "form") && !lastOpenEvent.independentOpenFile) || 
 				(project is OnDiskProjectVO) && (extension == "dve"))
 			{
 				editor = model.visualEditorCore.getVisualEditor(project);

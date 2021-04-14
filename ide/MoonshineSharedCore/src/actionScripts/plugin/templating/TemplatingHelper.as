@@ -28,6 +28,7 @@ package actionScripts.plugin.templating
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
+	import mx.controls.Alert;
 
 	public class TemplatingHelper
 	{
@@ -203,12 +204,17 @@ package actionScripts.plugin.templating
 						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE];
 				case "File":
 					return [ProjectMenuTypes.JAVA, ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, 
-						ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, 
+						ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,
+						ProjectMenuTypes.VISUAL_EDITOR_DOMINO,  
 						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE];
 				case "Visual Editor Flex File":
 					return [ProjectMenuTypes.VISUAL_EDITOR_FLEX];
 				case "Visual Editor PrimeFaces File":
 					return [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES];
+				case "Visual Editor Domino File":
+					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO];
+				case "Domino Visual Editor Form":
+					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];	
 				case "Java Class":
 					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE];
 				case "Groovy Class":
@@ -217,6 +223,7 @@ package actionScripts.plugin.templating
 				case "Haxe Interface":
 					return [ProjectMenuTypes.HAXE, ProjectMenuTypes.TEMPLATE];
 				case "Visual Editor DXL File":
+					//Alert.show("226 Visual Editor DXL File");
 				case "Form Builder DXL File":
 					return [ProjectMenuTypes.ON_DISK];
 			}

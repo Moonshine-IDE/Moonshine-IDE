@@ -5,6 +5,7 @@ package actionScripts.events
     public class MavenBuildEvent extends Event
     {
         public static const START_MAVEN_BUILD:String = "startMavenBuild";
+        public static const INSTALL_MAVEN_BUILD:String = "installMavenBuild";
         public static const STOP_MAVEN_BUILD:String = "stopMavenBuild";
 
         public static const MAVEN_BUILD_FAILED:String = "mavenBuildFailed";

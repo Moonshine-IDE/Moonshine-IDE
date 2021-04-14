@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<note xmlns="http://www.lotus.com/dxl" class="form">
+  <item name="$Flags">
+    <text>gC~4K</text>
+  </item>
+  <item name="$TITLE">
+    <text>home.xsp</text>
+  </item>
+  <item name="$FileNames" sign="true">
+    <text>home.xsp</text>
+  </item>
+</note>

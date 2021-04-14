@@ -102,7 +102,9 @@ package actionScripts.plugins.as3project.importer
 			project.isTrustServerCertificateSVN = SerializeUtil.deserializeBoolean(data.trustSVNCertificate);
 
             project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
-            project.isPrimeFacesVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
+            project.isDominoVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isDominoVisualEditor);
+			
+			project.isPrimeFacesVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
 			project.isExportedToExistingSource = SerializeUtil.deserializeBoolean(data.options.option.@isExportedToExistingSource);
 			project.visualEditorExportPath = SerializeUtil.deserializeString(data.options.option.@visualEditorExportPath);
 

@@ -536,6 +536,13 @@
 				<string>Owner</string>]]>
 				</replacevalue>
 			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 5</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 5</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
 		</replace>
 		<!-- Since its found impossible to call an ANT variable inside ![CDATA[ section to replace <cfBundleName> value
 			I need to make a conditional statement -->
@@ -746,7 +753,7 @@
 			<fileset dir="${LibraryHelperSharedCore}/src/helperResources"/>
 		</copy>
 		
-		<antcall target="copyElementsFolder"/>
+			<antcall target="copyElementsFolder"/>
 		
 		<!-- Check if the self-signed certificate exists -->
 		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
@@ -774,7 +781,6 @@
 				<if>
 					<equals arg1="${Is.Signed.Build}" arg2="true"/>
 					<then>
-						<copy file="${certSignedAIR}" todir="${debug_dir}" overwrite="true"/>
 						<copy file="${certSignedWindowsBinary}" todir="${debug_dir}" overwrite="true"/>
 						 <script language="javascript">
 						  	arr = project.getProperty('certSignedWindowsBinary').split('/');

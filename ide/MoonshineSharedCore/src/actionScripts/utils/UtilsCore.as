@@ -35,6 +35,7 @@ package actionScripts.utils
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
 	import mx.utils.UIDUtil;
+	import mx.controls.Alert;
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
@@ -67,6 +68,8 @@ package actionScripts.utils
 	import components.views.splashscreen.SplashScreen;
 	
 	import feathers.data.ArrayCollection;
+
+	//import flash.filesystem.File;
 
 	public class UtilsCore 
 	{
@@ -456,6 +459,51 @@ package actionScripts.utils
 			
 			return wrapper;
 		}
+
+		public static  function findDominoFileWrapperInDepth(wrapper:FileWrapper, searchPath:String):FileWrapper
+		{
+			//Alert.show("searchPath:"+searchPath);
+
+
+			for each (var child:FileWrapper in wrapper.children)
+			{
+			
+			
+				if (searchPath == child.nativePath || searchPath.indexOf(child.nativePath + child.file.fileBridge.separator) == 0)
+				{
+					wrappersFoundThroughFindingAWrapper.push(child);
+					if (searchPath == child.nativePath) 
+					{
+						return child;
+					}
+					if (child.children && child.children.length > 0) return findFileWrapperInDepth(child, searchPath);
+				}
+
+				
+				if(child.children && child.children.length > 0){
+					
+					if(endsWith(child.nativePath,"nsfs")|| endsWith(child.nativePath,"nsf-moonshine")||endsWith(child.nativePath,"odp")){
+						findDominoFileWrapperInDepth(child, searchPath);
+					}
+					
+					//
+				}
+				
+			
+			
+			}
+			
+			return wrapper;
+		}
+
+		public static  function endsWith(str:String, ending:String):Boolean {
+   			 var index:int = str.lastIndexOf(ending)
+    		return index > -1 && index == str.length - ending.length;
+		}
+
+		
+		
+	
 		
 		/**
 		 * Finding fileWrapper by its UDID
@@ -960,6 +1008,9 @@ package actionScripts.utils
 				else if ((value as AS3ProjectVO).isPrimeFacesVisualEditorProject)
 				{
 					currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
+				}else if ((value as AS3ProjectVO).isDominoVisualEditorProject)
+				{
+					currentMenuType = ProjectMenuTypes.VISUAL_EDITOR_DOMINO;
 				}
 				else if ((value as AS3ProjectVO).isVisualEditorProject)
 				{

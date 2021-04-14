@@ -24,5 +24,6 @@ package actionScripts.interfaces
     public interface IVisualEditorBridge extends IProject
     {
         function getVisualEditor(visualEditorProject:ProjectVO):BasicTextEditor;
+        function renameDominoFormFileSave(visualEditorProject:ProjectVO,fileName:String):String;
     }
 }

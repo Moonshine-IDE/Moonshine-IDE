@@ -46,6 +46,12 @@
         import actionScripts.utils.UtilsCore;
         import actionScripts.valueObjects.ConstantsCoreVO;
         import actionScripts.valueObjects.FileWrapper;
+        import actionScripts.valueObjects.ProjectVO;
+        import actionScripts.valueObjects.ProjectReferenceVO;
+
+        import actionScripts.interfaces.IVisualEditorProjectVO;
+        import actionScripts.locator.IDEModel;
+
 
         [Bindable]
         public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
@@ -59,6 +65,8 @@
 
         public var fileTemplate:FileLocation;
         public var folderFileLocation:FileLocation;
+
+        private var dominoWarning:Boolean = false;
 
         override protected function onBrowseButton(event:MouseEvent):void
         {
@@ -117,6 +125,7 @@
                     var tmpDuplicateEvent:DuplicateEvent = new DuplicateEvent(DuplicateEvent.EVENT_APPLY_DUPLICATE, wrapperOfFolderLocation, folderFileLocation);
                     tmpDuplicateEvent.fileName = txtFileName.text;
                     dispatchEvent(tmpDuplicateEvent);
+                    updateDuplicationFormXmlFile(tmpDuplicateEvent.fileName);
                 } else
                 {
                     var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, fileTemplate, wrapperOfFolderLocation);
@@ -129,15 +138,68 @@
             }
         }
 
+        private function updateDuplicationFormXmlFile(fileName:String):void 
+        {
+
+            var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+            if(project.isDominoVisualEditorProject)
+            {
+                    if(lblExtension.text&&lblExtension.text==".form"){
+                        //Alert.show("duplication file name:"+fileName);
+                        var targetXmlFilePath:String=wrapperBelongToProject.projectFolder.nativePath+"/visualeditor-src/main/webapp/"+fileName+".xml";
+                        var destinationXmlFile:FileLocation=new FileLocation(targetXmlFilePath);
+                        var sourceXmlFileName:String=txtFileName.prompt;
+                        var sourceXmlFilePath:String= wrapperBelongToProject.projectFolder.nativePath+"/visualeditor-src/main/webapp/"+sourceXmlFileName+".xml";
+                        var sourceXmlFile:FileLocation=new FileLocation(sourceXmlFilePath);
+                        //Alert.show("source xml file name:"+sourceXmlFilePath);
+                        //Alert.show("target  xml file name:"+targetXmlFilePath);
+                        if(destinationXmlFile.fileBridge.exists){
+                            destinationXmlFile.fileBridge.deleteFile();
+                        }
+                        if(sourceXmlFile.fileBridge.exists){
+                            sourceXmlFile.fileBridge.copyTo(destinationXmlFile, true);
+                        }
+                        //2.update title from form file 
+                        var model:IDEModel = IDEModel.getInstance();
+						var formXmlString:String=null;
+						if(model){
+                            formXmlString=model.visualEditorCore.renameDominoFormFileSave(model.activeProject,txtFileName.text);
+						}
+                        if(formXmlString!=null){
+
+                            var destinationFormFile:FileLocation=new FileLocation(wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms/"+fileName+".form")
+							
+							if(destinationFormFile.fileBridge.exists){
+								destinationFormFile.fileBridge.deleteFile();
+							}
+                            destinationFormFile.fileBridge.save(formXmlString);
+								
+						} 
+                    }
+                
+                
+            }
+        }
+       
+        private var dominoToProjectFileWrapper:FileWrapper=null;
+        
+
         protected function parseFolders():void
         {
             tree.expandItem(wrapperBelongToProject.projectFolder, true);
+                
+           
 
             // 1. expand all items to our fileWrapper object
             // 2. select the fileWrapper object
             // 3. scroll to the fileWrapper object
             UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
             UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
+            var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+            if(project.isDominoVisualEditorProject)
+            {
+                wrapperOfFolderLocation=UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms");
+            }
             tree.callLater(function ():void
             {
                 var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
@@ -147,7 +209,8 @@
                 }
 
                 // selection
-                tree.selectedItem = wrapperOfFolderLocation;
+               tree.selectedItem = wrapperOfFolderLocation;
+               
                 // scroll-to
                 tree.callLater(function ():void
                 {
@@ -163,13 +226,38 @@
 
         protected function onTreeItemClicked(event:ListEvent):void
         {
-            txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-                    Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
-                    tree.selectedItem.nativePath);
+            //we only allow domin form generate into Forms folder
+            var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+            if(project.isDominoVisualEditorProject)
+            {
+                 //we should only limit the form file
+                if(lblExtension.text&&lblExtension.text==".form"){
+                    //get the domino project form folder value:
+                    var dominoFormFolder:String=wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms"
+                    var currentPath:String=UtilsCore.getPackageReferenceByProjectPath(
+                Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+                tree.selectedItem.nativePath);
+                    //btnCreate.enabled = false;
+                    if(currentPath!=dominoFormFolder){
+                        warningMessage= "Domino forms are only supported in the Forms folder.";
+                        hgExistingWarning.visible=hgExistingWarning.includeInLayout=true;
+                        tree.selectedItem=wrapperOfFolderLocation;
+                    }
+                }
+                
 
-            // re-validate upon folder location change
-            wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
-            onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+            }else{
+                txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+                tree.selectedItem.nativePath);
+
+                // re-validate upon folder location change
+                wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
+                isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
+                onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+            }
+
+            
         }
 
         override protected function onNewFileCreationComplete(event:FlexEvent):void
@@ -192,7 +280,7 @@
 					createdFileExtension = lblExtension.text = "";
                 }
 
-                if(extension == "as" || extension == "mxml")
+                if(extension == "as" || extension == "mxml" || extension=="form")
                 {
                     txtFileName.restrict = "0-9A-Za-z_.";
                 }
@@ -221,14 +309,32 @@
             if(wrapperBelongToProject)
             {
                 txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-                        Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
-                        wrapperOfFolderLocation.nativePath);
+                Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+                wrapperOfFolderLocation.nativePath);
+                var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+                if(project.isDominoVisualEditorProject)
+                {
+                        if(lblExtension.text&&lblExtension.text==".form"){
+                               txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                                Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+                             wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms");
+                        }
+                   
+                   
+                }
+               
+                //Alert.show(":"+txtDestination.text);        
                 txtFileName.setFocus();
             }
 
 			isDestinationValid = true;
             tree.callLater(parseFolders);
             GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
+        }
+
+        protected function dominoDefaultSetting():void
+        {
+            var project:ProjectVO;
         }
         ]]>
 	</fx:Script>
@@ -248,10 +354,11 @@
                                  borderVisible="false"
                                  rowHeight="18"
                                  useRollOver="true"
-                                 doubleClickEnabled="true"
+                                 doubleClickEnabled="false"
                                  labelField="name"
                                  itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
-                                 itemClick="onTreeItemClicked(event)"/>
+                                 itemClick="onTreeItemClicked(event)"
+                                 creationComplete="dominoDefaultSetting()"/>
 	</s:VGroup>
 	<s:VGroup width="100%">
 		<s:Label id="lblName" text="Name:"/>

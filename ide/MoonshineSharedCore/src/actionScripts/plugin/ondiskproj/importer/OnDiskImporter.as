@@ -24,6 +24,7 @@ package actionScripts.plugin.ondiskproj.importer
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.utils.SerializeUtil;
 	import actionScripts.utils.UtilsCore;
+	import flash.filesystem.File;
 
 	public class OnDiskImporter extends FlashDevelopImporterBase
 	{
@@ -142,6 +143,10 @@ package actionScripts.plugin.ondiskproj.importer
 			project.mavenBuildOptions.parse(data.mavenBuild);
 			
 			UtilsCore.setProjectMenuType(project);
+
+			project.visualEditorSourceFolder = new FileLocation(
+                        project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src/main/webapp"
+                );
 
 			return project;
 		}
