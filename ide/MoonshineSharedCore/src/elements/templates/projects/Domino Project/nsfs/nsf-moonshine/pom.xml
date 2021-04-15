@@ -29,9 +29,6 @@
 				<groupId>org.openntf.maven</groupId>
 				<artifactId>nsfodp-maven-plugin</artifactId>
 				<configuration>
-					<updateSites>
-						<updateSite>${project.baseDir}/../../../releng/org.openntf.nsfodp.example.updatesite/target/site</updateSite>
-					</updateSites>
 					<binaryDxl>true</binaryDxl>
 				</configuration>
 			</plugin>
