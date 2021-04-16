@@ -54,7 +54,7 @@ package actionScripts.ui.menu
 	import actionScripts.valueObjects.KeyboardShortcut;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-
+	import mx.controls.Alert;
 	// This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
@@ -601,10 +601,16 @@ package actionScripts.ui.menu
 		private function recentFilesListUpdatedHandler(event:Event):void
 		{
 			var menu:Object = getMenuObject();
+			if(menu==null){
+				Alert.show("meau is null");
+			}
 			var subItemsLength:int = -1;
 			if (buildingNativeMenu)
-			{
-				subItemsLength = menu.items[1].submenu.items[5].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+			{	
+				if(menu.items[1]){
+					if(menu.items[1].submenu.items[5])
+					subItemsLength = menu.items[1].submenu.items[5].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+				}
 			}
 			else
 			{
