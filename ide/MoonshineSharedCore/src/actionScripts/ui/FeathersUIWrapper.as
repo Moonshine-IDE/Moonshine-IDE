@@ -24,14 +24,16 @@ package actionScripts.ui
 	import feathers.core.IFocusContainer;
 	import feathers.core.IFocusManager;
 	import feathers.core.IFocusObject;
+	import feathers.core.PopUpManager;
 	import feathers.layout.Measurements;
 
+	import flash.Lib;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.FocusEvent;
-	import flash.Lib;
 
 	import mx.core.IFlexDisplayObject;
 	import mx.core.UIComponent;
@@ -53,6 +55,7 @@ package actionScripts.ui
 
 		private var _feathersUIFocusManager:IFocusManager;
 		private var _feathersUIToolTipManager:DefaultToolTipManager;
+		private var _popUpRoot:Sprite;
 
 		public function get defaultButton():IFlexDisplayObject
 		{
@@ -286,6 +289,12 @@ package actionScripts.ui
 			if(!this._feathersUIControl)
 			{
 				return;
+			}
+
+			if(this._popUpRoot == null) {
+				this._popUpRoot = new Sprite();
+				DisplayObjectContainer(this.systemManager).addChild(this._popUpRoot);
+				PopUpManager.forStage(this.stage).root = this._popUpRoot;
 			}
 			
 			this._feathersUIFocusManager = FocusManager.addRoot(this._feathersUIControl);
