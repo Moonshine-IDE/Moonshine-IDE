@@ -163,7 +163,7 @@
                         var model:IDEModel = IDEModel.getInstance();
 						var formXmlString:String=null;
 						if(model){
-                            formXmlString=model.visualEditorCore.renameDominoFormFileSave(model.activeProject,txtFileName.text);
+                            formXmlString=model.visualEditorCore.renameDominoFormFileSave(model.activeEditor,txtFileName.text);
 						}
                         if(formXmlString!=null){
 

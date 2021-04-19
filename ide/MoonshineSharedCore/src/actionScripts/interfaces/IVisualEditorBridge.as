@@ -20,10 +20,11 @@ package actionScripts.interfaces
 {
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.ui.IContentWindow;
 
     public interface IVisualEditorBridge extends IProject
     {
         function getVisualEditor(visualEditorProject:ProjectVO):BasicTextEditor;
-        function renameDominoFormFileSave(visualEditorProject:ProjectVO,fileName:String):String;
+        function renameDominoFormFileSave(visualEditor:IContentWindow,fileName:String):String;
     }
 }
