@@ -109,6 +109,25 @@ class SearchView extends ResizableTitleWindow {
 		return this._projects;
 	}
 	
+	private var _selectedProject:ProjectVO;
+	
+	@:flash.property
+	public var selectedProject(get, set):ProjectVO;
+
+	private function get_selectedProject():ProjectVO {
+		return this._selectedProject;
+	}
+	
+	private function set_selectedProject(value:ProjectVO):ProjectVO {
+		if (this._selectedProject == value) {
+			return this._selectedProject;
+		}
+		
+		this._selectedProject = value;
+		this.setInvalid(InvalidationFlag.SELECTION);
+		return this._selectedProject;
+	}
+	
 	private var _patterns:ArrayCollection<Dynamic> = new ArrayCollection();
 
 	@:flash.property
@@ -256,6 +275,12 @@ class SearchView extends ResizableTitleWindow {
 		if (dataInvalid) {
 			this.projectListPopUpListView.dataProvider = this._projects;
 		}
+				
+		var selection = this.isInvalid(InvalidationFlag.SELECTION);
+		
+		if (selection) {
+			this.projectListPopUpListView.selectedItem = this._selectedProject;	
+		}		
 		
 		var stateInvalid = this.isInvalid(InvalidationFlag.STATE);
 		
