@@ -46,8 +46,6 @@
         import actionScripts.utils.UtilsCore;
         import actionScripts.valueObjects.ConstantsCoreVO;
         import actionScripts.valueObjects.FileWrapper;
-        import actionScripts.valueObjects.ProjectVO;
-        import actionScripts.valueObjects.ProjectReferenceVO;
 
         import actionScripts.interfaces.IVisualEditorProjectVO;
         import actionScripts.locator.IDEModel;
@@ -65,8 +63,6 @@
 
         public var fileTemplate:FileLocation;
         public var folderFileLocation:FileLocation;
-
-        private var dominoWarning:Boolean = false;
 
         override protected function onBrowseButton(event:MouseEvent):void
         {
@@ -140,9 +136,8 @@
 
         private function updateDuplicationFormXmlFile(fileName:String):void 
         {
-
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
-            if(project.isDominoVisualEditorProject)
+            if(project && project.isDominoVisualEditorProject)
             {
                     if(lblExtension.text&&lblExtension.text==".form"){
                         //Alert.show("duplication file name:"+fileName);
@@ -180,9 +175,6 @@
                 
             }
         }
-       
-        private var dominoToProjectFileWrapper:FileWrapper=null;
-        
 
         protected function parseFolders():void
         {
@@ -196,7 +188,7 @@
             UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
             UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
-            if(project.isDominoVisualEditorProject)
+            if(project && project.isDominoVisualEditorProject)
             {
                 wrapperOfFolderLocation=UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms");
             }
@@ -228,7 +220,7 @@
         {
             //we only allow domin form generate into Forms folder
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
-            if(project.isDominoVisualEditorProject)
+            if(project && project.isDominoVisualEditorProject)
             {
                  //we should only limit the form file
                 if(lblExtension.text&&lblExtension.text==".form"){
@@ -306,13 +298,15 @@
                 }
             }
 
+
             if(wrapperBelongToProject)
             {
                 txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
                 Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
-                wrapperOfFolderLocation.nativePath);
-                var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
-                if(project.isDominoVisualEditorProject)
+                										wrapperOfFolderLocation.nativePath);
+
+				var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+                if(project && project.isDominoVisualEditorProject)
                 {
                         if(lblExtension.text&&lblExtension.text==".form"){
                                txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
@@ -330,11 +324,6 @@
 			isDestinationValid = true;
             tree.callLater(parseFolders);
             GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
-        }
-
-        protected function dominoDefaultSetting():void
-        {
-            var project:ProjectVO;
         }
         ]]>
 	</fx:Script>
@@ -357,8 +346,7 @@
                                  doubleClickEnabled="false"
                                  labelField="name"
                                  itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
-                                 itemClick="onTreeItemClicked(event)"
-                                 creationComplete="dominoDefaultSetting()"/>
+                                 itemClick="onTreeItemClicked(event)"/>
 	</s:VGroup>
 	<s:VGroup width="100%">
 		<s:Label id="lblName" text="Name:"/>
