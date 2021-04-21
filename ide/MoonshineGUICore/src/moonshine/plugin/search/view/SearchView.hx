@@ -273,6 +273,8 @@ class SearchView extends ResizableTitleWindow {
 		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
 
 		if (dataInvalid) {
+			this._projects.sortCompareFunction = this.sortProjects;
+			this._projects.refresh();
 			this.projectListPopUpListView.dataProvider = this._projects;
 		}
 				
@@ -384,6 +386,21 @@ class SearchView extends ResizableTitleWindow {
 			this.patternsTextInput.text = selectedExt;
 		} else {
 			this.patternsTextInput.text = "*";
+		}
+	}
+	
+	private function sortProjects(a:ProjectVO, b:ProjectVO):Int {
+		var nameA = a.name.toLowerCase();
+		var nameB = b.name.toLowerCase();
+	
+		if (nameA < nameB) {
+			return -1;
+		}	 
+		else if (nameA > nameB) {
+			return 1; 
+		}
+		else {
+			return 0;
 		}
 	}	
 }
