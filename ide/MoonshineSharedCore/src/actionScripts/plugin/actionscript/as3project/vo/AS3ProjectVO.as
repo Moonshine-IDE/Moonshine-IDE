@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import flash.events.Event;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+
+	import flash.events.Event;
     import flash.events.MouseEvent;
     
     import mx.collections.ArrayCollection;
@@ -69,6 +72,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var swfOutput:SWFOutputVO;
 		public var buildOptions:BuildOptions;
         public var mavenBuildOptions:MavenBuildOptions;
+		public var mavenDominoBuildOptions:MavenDominoBuildOptions;
 		public var flashModuleOptions:FlashModuleOptions;
 		public var customHTMLPath:String;
 		
@@ -106,6 +110,9 @@ package actionScripts.plugin.actionscript.as3project.vo
         public var isMobile:Boolean;
         public var isProjectFromExistingSource:Boolean;
 		public var isActionScriptOnly:Boolean;
+		//public var isPrimeFacesVisualEditorProject:Boolean;
+		//public var isDominoVisualEditorProject:Boolean;
+		//public var isPreviewRunning:Boolean;
 		public var isExportedToExistingSource:Boolean;
 		public var visualEditorExportPath:String;
 
@@ -121,6 +128,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 
         private var _jsOutputPath:String;
 		private var _urlToLaunch:String;
+
+		private var _jdkType:String = JavaTypes.JAVA_DEFAULT;
+		public function get jdkType():String
+		{	return _jdkType;	}
+		public function set jdkType(value:String):void
+		{	_jdkType = value;	}
 
 		override public function set folderLocation(value:FileLocation):void
 		{
@@ -238,6 +251,17 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function set isPrimeFacesVisualEditorProject(value:Boolean):void
 		{
 			_isPrimeFacesVisualEditorProject = value;
+		}
+
+
+		private var _isDominoVisualEditorProject:Boolean;
+		public function get isDominoVisualEditorProject():Boolean
+		{
+			return _isDominoVisualEditorProject;
+		}
+		public function set isDominoVisualEditorProject(value:Boolean):void
+		{
+			_isDominoVisualEditorProject = value;
 		}
 		
 		private var _isPreviewRunning:Boolean;
@@ -446,7 +470,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 
 			if (isVisualEditorProject)
 			{
-				settings = getSettingsForVisualEditorTypeOfProjects();
+				if(isDominoVisualEditorProject){
+					settings = getSettingsForVisualEditorDominoTypeOfProjects();
+				}else{
+					settings = getSettingsForVisualEditorTypeOfProjects();
+				}
 			}
 			else if (isRoyale)
 			{
@@ -771,6 +799,38 @@ package actionScripts.plugin.actionscript.as3project.vo
 				]);
 		}
 		
+		private function getSettingsForVisualEditorDominoTypeOfProjects():Vector.<SettingsWrapper>
+		{
+			//1. fix the default to clean and install .
+			var setting_new:BuildActionsListSettings=new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions");
+			//setting_new.stringValue="clean install";
+			
+            return Vector.<SettingsWrapper>([
+					new SettingsWrapper("Paths",
+							Vector.<ISetting>([
+								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
+                                new PathSetting(this, "visualEditorExportPath", "Export Path", true, visualEditorExportPath)
+							])
+					),
+					new SettingsWrapper("Java Project", new <ISetting>[
+						new MultiOptionSetting(this, 'jdkType', "JDK",
+								Vector.<NameValuePair>([
+									new NameValuePair("Use Default JDK", JavaTypes.JAVA_DEFAULT),
+									new NameValuePair("Use JDK 8", JavaTypes.JAVA_8)
+								])
+						)
+					]),
+					new SettingsWrapper("Maven Build", Vector.<ISetting>([
+						new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
+						setting_new,	
+						new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false),
+						new PathSetting(this.mavenBuildOptions, "dominoNotesProgram", "Notes Programe Path", true, this.mavenBuildOptions.dominoNotesProgram, false),
+						new PathSetting(this.mavenBuildOptions, "dominoNotesPlatform", "Notes Platform Path", true, this.mavenBuildOptions.dominoNotesPlatform, false)
+						//new ProjectDirectoryPathSetting(this.mavenDominoBuildOptions, this.projectFolder.nativePath, "buildPath", "Notes Programe File Path", this.mavenDominoBuildOptions.buildPath),
+					]))
+				]);
+		}
+
 		private function generateSettingsForSVNProject(value:Vector.<SettingsWrapper>):void
 		{
 			if (isSVN)
@@ -856,6 +916,7 @@ package actionScripts.plugin.actionscript.as3project.vo
             as3Project.isMobile = this.isMobile;
             as3Project.isProjectFromExistingSource = this.isProjectFromExistingSource;
             as3Project.isVisualEditorProject = this.isVisualEditorProject;
+			as3Project.isDominoVisualEditorProject = this.isDominoVisualEditorProject;
             as3Project.isLibraryProject = this.isLibraryProject;
             as3Project.isActionScriptOnly = this.isActionScriptOnly;
             as3Project.isPrimeFacesVisualEditorProject = this.isPrimeFacesVisualEditorProject;

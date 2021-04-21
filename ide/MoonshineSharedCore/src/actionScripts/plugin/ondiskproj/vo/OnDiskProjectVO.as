@@ -60,6 +60,10 @@ package actionScripts.plugin.ondiskproj.vo
 		private var _isPrimeFacesVisualEditorProject:Boolean;
 		public function get isPrimeFacesVisualEditorProject():Boolean			{	return _isPrimeFacesVisualEditorProject;	}
 		public function set isPrimeFacesVisualEditorProject(value:Boolean):void	{	_isPrimeFacesVisualEditorProject = value;	}
+
+		private var _isDominoVisualEditorProject:Boolean;
+		public function get isDominoVisualEditorProject():Boolean			{	return _isDominoVisualEditorProject;	}
+		public function set isDominoVisualEditorProject(value:Boolean):void	{	_isDominoVisualEditorProject = value;	}
 		
 		private var _isPreviewRunning:Boolean;
 		public function get isPreviewRunning():Boolean							{	return _isPreviewRunning;	}

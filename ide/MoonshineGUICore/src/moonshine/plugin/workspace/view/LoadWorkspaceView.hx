@@ -104,6 +104,8 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
 
 		if (dataInvalid == true) {
+			this._workspaces.sortCompareFunction = this.sortWorkspaces;
+			this._workspaces.refresh();
 			this.workspacePopUpListView.dataProvider = this._workspaces;
 		}		
 		
@@ -121,5 +123,20 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		this.dispatchEvent(workspaceEvent);
 		
 		this.dispatchEvent(new Event(Event.CLOSE));
+	}
+	
+	private function sortWorkspaces(a:WorkspaceVO, b:WorkspaceVO):Int {
+		var labelA = a.label.toLowerCase();
+		var labelB = b.label.toLowerCase();
+	
+		if (labelA < labelB) {
+			return -1;
+		}	 
+		else if (labelA > labelB) {
+			return 1; 
+		}
+		else {
+			return 0;
+		}
 	}
 }

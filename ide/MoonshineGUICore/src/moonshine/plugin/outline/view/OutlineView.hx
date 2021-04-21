@@ -90,9 +90,9 @@ class OutlineView extends Panel implements IViewWithTitle {
 		this.treeView.layoutData = AnchorLayoutData.fill();
 		this.treeView.itemToText = (item:TreeNode<Dynamic>) -> {
 			var symbol = item.data;
-			if (Std.is(symbol, SymbolInformation)) {
+			if (Std.isOfType(symbol, SymbolInformation)) {
 				return cast(symbol, SymbolInformation).name;
-			} else if (Std.is(symbol, DocumentSymbol)) {
+			} else if (Std.isOfType(symbol, DocumentSymbol)) {
 				return cast(symbol, DocumentSymbol).name;
 			}
 			return "";

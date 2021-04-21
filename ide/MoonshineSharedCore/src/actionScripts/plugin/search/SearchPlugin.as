@@ -18,12 +18,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.search
 {
-    import flash.display.DisplayObject;
+	import actionScripts.ui.FeathersUIWrapper;
+
+	import flash.display.DisplayObject;
     import flash.events.Event;
-    
-    import mx.collections.ArrayCollection;
+
+	import moonshine.plugin.search.events.SearchViewEvent;
+
+	import moonshine.plugin.search.view.SearchView;
+
     import mx.core.FlexGlobals;
-    import mx.events.CloseEvent;
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
     import mx.managers.PopUpManager;
@@ -31,32 +35,34 @@ package actionScripts.plugin.search
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.tabview.TabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
-    
-    import components.popup.SearchInProjectPopup;
+
     import components.views.other.SearchInProjectView;
+	import feathers.data.ArrayCollection;
 
     public class SearchPlugin extends PluginBase
     {
 		public static const SEARCH_IN_PROJECTS:String = "SEARCH_IN_PROJECTS";
 		public static const WORKSPACE:String = "WORKSPACE";
-		public static const PROJECT:String = "PROJECT";
-		public static const LINKED_PROJECTS:String = "LINKED_PROJECTS";
-		
-		[Bindable] public static var IS_REPLACE_APPLIED:Boolean;
-		
-		public static var LAST_SCOPE_INDEX:int = 1;
-		public static var LAST_SELECTED_SCOPE_ENCLOSING_PROJECTS:Boolean;
-		public static var LAST_SELECTED_PATTERNS:ArrayCollection;
-		public static var LAST_SEARCH:String;
-		public static var LAST_SELECTED_PROJECT:ProjectVO;
-		
-		private var searchPopup:SearchInProjectPopup;
+		private static const PROJECT:String = "PROJECT";
+
+		public static var previouslySelectedPatterns:ArrayCollection;
+		public static var previouslySelectedScope:int = 1;
+		public static var previouslySelectedIncludeExternalSourcePath:Boolean;
+		public static var previousSearchPhrase:String;
+		public static var previouslySelectedProject:ProjectVO;
+
+		[Bindable]
+		public static var isReplaceActive:Boolean;
+
+		private var searchView:SearchView;
+		private var searchViewWrapper:FeathersUIWrapper;
+
 		private var searchResultView:SearchInProjectView;
+
 		private var isCollectionChangeListenerAdded:Boolean;
 		
         override public function get name():String 	{return "Search in Projects";}
@@ -84,13 +90,35 @@ package actionScripts.plugin.search
 		{
 			// probable termination
 			if (model.projects.length == 0) return;
-			
-			if (!searchPopup)
+
+			if (!searchView)
 			{
-				searchPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SearchInProjectPopup, false) as SearchInProjectPopup;
-				searchPopup.addEventListener(CloseEvent.CLOSE, onSearchPopupClosed);
-				PopUpManager.centerPopUp(searchPopup);
-				
+				searchView = new SearchView();
+				searchView.addEventListener(SearchViewEvent.SEARCH_PHRASE, searchView_searchPhraseHandler);
+				searchView.addEventListener(SearchViewEvent.REPLACE_PHRASE, searchView_replacePhraseHandler);
+				searchView.addEventListener(Event.CLOSE, searchView_closeHandler);
+
+				searchViewWrapper = new FeathersUIWrapper(searchView);
+				PopUpManager.addPopUp(searchViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
+				PopUpManager.centerPopUp(searchViewWrapper);
+
+				searchViewWrapper.assignFocus("top");
+				searchViewWrapper.stage.addEventListener(Event.RESIZE, searchView_stage_resizeHandler, false, 0, true);
+
+				searchView.projects = new feathers.data.ArrayCollection(model.projects.source);
+				searchView.selectedProject = model.activeProject;
+
+				if(!previouslySelectedPatterns)
+				{
+					previouslySelectedPatterns = new ArrayCollection();
+					for each (var extension:String in ConstantsCoreVO.READABLE_FILES)
+					{
+						previouslySelectedPatterns.add({label: extension, isSelected: false});
+					}
+				}
+
+				searchView.patterns = previouslySelectedPatterns;
+
 				if (!isCollectionChangeListenerAdded) 
 				{
 					model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, onProjectsCollectionChanged, false, 0, true);
@@ -99,74 +127,93 @@ package actionScripts.plugin.search
 			}
 			else
 			{
-				PopUpManager.bringToFront(searchPopup);
+				searchViewWrapper.assignFocus("top");
 			}
 		}
 		
 		private function onProjectsCollectionChanged(event:CollectionEvent):void
 		{
-			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == LAST_SELECTED_PROJECT) 
+			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == previouslySelectedProject)
 			{
-				LAST_SELECTED_PROJECT = null;
+				previouslySelectedPatterns = null;
 			}
 		}
-		
-		private function onSearchPopupClosed(event:CloseEvent):void
+
+		private function searchView_searchPhraseHandler(event:SearchViewEvent):void
 		{
-			event.target.removeEventListener(CloseEvent.CLOSE, onSearchPopupClosed);
-			
-			// probable termination
-			if (!searchPopup.isClosedAsSubmit || !searchPopup.ddlProjects.selectedItem)
-			{
-				searchPopup = null;
-				return;
-			}
-			
-			LAST_SCOPE_INDEX = searchPopup.rbgScope.selectedIndex;
-			LAST_SEARCH = searchPopup.txtSearch.text;
-			IS_REPLACE_APPLIED = false;
-			LAST_SELECTED_SCOPE_ENCLOSING_PROJECTS = searchPopup.cbEnclosingProjects.selected;
-			LAST_SELECTED_PROJECT = searchPopup.ddlProjects.selectedItem ? searchPopup.ddlProjects.selectedItem as ProjectVO : null;
-			
+			previouslySelectedScope = event.selectedSearchScopeIndex;
+			previousSearchPhrase = event.searchText;
+			previouslySelectedIncludeExternalSourcePath = event.includeExternalSourcePath;
+			previouslySelectedProject = event.selectedProject;
+
+			initializeSearchView(event, false);
+		}
+
+		private function searchView_replacePhraseHandler(event:SearchViewEvent):void
+		{
+			previouslySelectedScope = event.selectedSearchScopeIndex;
+			previousSearchPhrase = event.searchText;
+			previouslySelectedIncludeExternalSourcePath = event.includeExternalSourcePath;
+			previouslySelectedProject = event.selectedProject;
+
+			initializeSearchView(event, true);
+		}
+
+		private function searchView_closeHandler(event:Event):void
+		{
+			previouslySelectedPatterns = searchView.patterns;
+			isReplaceActive = false;
+
+			searchViewWrapper.stage.removeEventListener(Event.RESIZE, searchView_stage_resizeHandler);
+			PopUpManager.removePopUp(searchViewWrapper);
+
+			searchView.removeEventListener(SearchViewEvent.SEARCH_PHRASE, searchView_searchPhraseHandler);
+			searchView.removeEventListener(SearchViewEvent.REPLACE_PHRASE, searchView_replacePhraseHandler);
+			searchView.removeEventListener(Event.CLOSE, searchView_closeHandler);
+			searchView = null;
+			searchViewWrapper = null;
+		}
+
+		private function initializeSearchView(event:SearchViewEvent, isReplace:Boolean):void
+		{
 			if (!searchResultView)
 			{
 				searchResultView = new SearchInProjectView();
 				searchResultView.addEventListener(TabEvent.EVENT_TAB_CLOSE, onSearchResultsClosed);
-				updateProperties();	
-				
+				updateSearchViewProperties(event, isReplace);
+
 				// adding as a tab
 				GlobalEventDispatcher.getInstance().dispatchEvent(
-					new AddTabEvent(searchResultView as IContentWindow)
+						new AddTabEvent(searchResultView as IContentWindow)
 				);
 			}
 			else
 			{
 				// another new search initiated
 				// while existing search tab already opens
-				updateProperties();
+				updateSearchViewProperties(event, isReplace);
 				model.activeEditor = searchResultView;
 				searchResultView.resetSearch();
 			}
-			
-			searchPopup = null;
-			
-			/*
-			 * @local
-			 */
-			function updateProperties():void
-			{
-				searchResultView.valueToSearch = searchPopup.txtSearch.text;
-				searchResultView.patterns = searchPopup.txtPatterns.text;
-				searchResultView.scope = String(searchPopup.rbgScope.selectedValue);
-				searchResultView.isEnclosingProjects = searchPopup.cbEnclosingProjects.selected;
-				searchResultView.isMatchCase = searchPopup.optionMatchCase.selected;
-				searchResultView.isRegexp = searchPopup.optionRegExp.selected;
-				searchResultView.isEscapeChars = searchPopup.optionEscapeChars.selected;
-				searchResultView.isShowReplaceWhenDone = searchPopup.isShowReplaceWhenDone;
-				searchResultView.selectedProjectToSearch = LAST_SELECTED_PROJECT ? LAST_SELECTED_PROJECT : null;
-			}
 		}
-		
+
+		private function updateSearchViewProperties(event:SearchViewEvent, isReplace:Boolean = false):void
+		{
+			searchResultView.valueToSearch = event.searchText;
+			searchResultView.patterns = event.patternsText;
+			searchResultView.scope = event.selectedSearchScopeIndex == 0 ? SearchPlugin.WORKSPACE : SearchPlugin.PROJECT;
+			searchResultView.isEnclosingProjects = event.includeExternalSourcePath;
+			searchResultView.isMatchCase = event.matchCaseEnabled;
+			searchResultView.isRegexp = event.regExpEnabled;
+			searchResultView.isEscapeChars = event.escapeCharsEnabled;
+			searchResultView.isShowReplaceWhenDone = isReplace;
+			searchResultView.selectedProjectToSearch = previouslySelectedProject ? previouslySelectedProject : null;
+		}
+		protected function searchView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(searchViewWrapper);
+		}
+
 		private function onSearchResultsClosed(event:TabEvent):void
 		{
 			event.target.removeEventListener(TabEvent.EVENT_TAB_CLOSE, onSearchResultsClosed);

@@ -752,7 +752,7 @@
 			<fileset dir="${LibraryHelperSharedCore}/src/helperResources"/>
 		</copy>
 		
-		<antcall target="copyElementsFolder"/>
+			<antcall target="copyElementsFolder"/>
 		
 		<!-- Check if the self-signed certificate exists -->
 		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
@@ -780,7 +780,6 @@
 				<if>
 					<equals arg1="${Is.Signed.Build}" arg2="true"/>
 					<then>
-						<copy file="${certSignedAIR}" todir="${debug_dir}" overwrite="true"/>
 						<copy file="${certSignedWindowsBinary}" todir="${debug_dir}" overwrite="true"/>
 						 <script language="javascript">
 						  	arr = project.getProperty('certSignedWindowsBinary').split('/');

@@ -143,10 +143,10 @@ class TitleWindow extends Panel {
 			this.updateCloseButton();
 		}
 
-		if (this.header != null && Std.is(this.header, IVariantStyleObject) && this.customHeaderVariant != null) {
+		if (this.header != null && Std.isOfType(this.header, IVariantStyleObject) && this.customHeaderVariant != null) {
 			cast(this.header, IVariantStyleObject).variant = this.customHeaderVariant;
 		}
-		if (this.footer != null && Std.is(this.footer, IVariantStyleObject) && this.customFooterVariant != null) {
+		if (this.footer != null && Std.isOfType(this.footer, IVariantStyleObject) && this.customFooterVariant != null) {
 			cast(this.footer, IVariantStyleObject).variant = this.customFooterVariant;
 		}
 
@@ -195,7 +195,7 @@ class TitleWindow extends Panel {
 			if (current == this.closeButton) {
 				return;
 			}
-			if (Std.is(current, IFocusObject)) {
+			if (Std.isOfType(current, IFocusObject)) {
 				var focusable = cast(current, IFocusObject);
 				if (focusable.focusEnabled) {
 					return;
@@ -204,7 +204,7 @@ class TitleWindow extends Panel {
 			current = current.parent;
 		}
 
-		this._dragTarget = Std.is(this.parent, FeathersUIWrapper) ? this.parent : this;
+		this._dragTarget = Std.isOfType(this.parent, FeathersUIWrapper) ? this.parent : this;
 		this._dragStartX = this._dragTarget.x;
 		this._dragStartY = this._dragTarget.y;
 		this._dragStartStageX = event.stageX;

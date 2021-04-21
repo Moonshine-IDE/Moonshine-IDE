@@ -75,8 +75,12 @@ package actionScripts.impls
 		
 		public function getVisualEditorComponent():VisualEditor
 		{
-			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
-			if (editor) return editor.editorView.visualEditor;
+			if(model==null){ 
+				
+			}else{
+				var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+				if (editor) return editor.editorView.visualEditor;
+			}
 			
 			return null;
 		}

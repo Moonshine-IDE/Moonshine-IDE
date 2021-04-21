@@ -24,6 +24,7 @@ package actionScripts.impls
     import actionScripts.plugins.ui.editor.VisualEditorViewer;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.ui.IContentWindow;
 
     public class IVisualEditorProjectBridgeImpl extends ProjectBridgeImplBase implements IVisualEditorBridge
     {
@@ -35,6 +36,16 @@ package actionScripts.impls
         public function getVisualEditor(visualEditorProject:ProjectVO):BasicTextEditor
         {
             return new VisualEditorViewer(visualEditorProject);
+        }
+
+        public function renameDominoFormFileSave(visualEditor:IContentWindow,fileName:String):String
+        {
+            var formXmlString:String=null;
+            var editor:VisualEditorViewer = visualEditor as VisualEditorViewer;
+            if(editor){
+                formXmlString =editor.renameDominoFormFileSave(fileName);
+            }
+            return formXmlString;
         }
 
         public function getCorePlugins():Array

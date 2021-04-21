@@ -28,6 +28,30 @@ package actionScripts.plugins.ui.editor
 	import actionScripts.events.ChangeEvent;
 	import actionScripts.events.PreviewPluginEvent;
 	import actionScripts.factory.FileLocation;
+    import actionScripts.utils.MavenPomUtil;
+
+    import flash.events.Event;
+
+	import mx.events.CollectionEvent;
+    import mx.events.CollectionEventKind;
+    import mx.events.FlexEvent;
+    
+    import actionScripts.events.AddTabEvent;
+    import actionScripts.events.ChangeEvent;
+    import actionScripts.impls.IVisualEditorLibraryBridgeImp;
+    import actionScripts.interfaces.IVisualEditorViewer;
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugins.help.view.VisualEditorView;
+    import actionScripts.plugins.help.view.events.VisualEditorEvent;
+    import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+    import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.text.TextEditor;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.ui.tabview.TabEvent;
+
+    import view.suportClasses.events.PropertyEditorChangeEvent;
+	import flash.filesystem.File;
 	import actionScripts.impls.IVisualEditorLibraryBridgeImp;
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.interfaces.IVisualEditorViewer;
@@ -45,7 +69,9 @@ package actionScripts.plugins.ui.editor
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.suportClasses.events.PropertyEditorChangeEvent;
-	
+
+	import mx.controls.Alert;
+	import flash.filesystem.File;
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
 		private static const EVENT_SWITCH_TAB_TO_CODE:String = "switchTabToCode";
@@ -75,7 +101,7 @@ package actionScripts.plugins.ui.editor
 			
 			// at this moment prifefaces projects only using the bridge
 			// this condition can be remove if requires
-			if ((visualEditorProject as IVisualEditorProjectVO).isPrimeFacesVisualEditorProject)
+			if ((visualEditorProject as IVisualEditorProjectVO).isPrimeFacesVisualEditorProject || (visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject)
 			{
 				visualEditoryLibraryCore = new IVisualEditorLibraryBridgeImp();
 				visualEditoryLibraryCore.visualEditorProject = visualEditorProject;
@@ -83,9 +109,17 @@ package actionScripts.plugins.ui.editor
 			
 			visualEditorView = new VisualEditorView();
 			
-			(visualEditorProject as IVisualEditorProjectVO).isPrimeFacesVisualEditorProject ?
-				visualEditorView.currentState = "primeFacesVisualEditor" :
+			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){
+				visualEditorView.currentState = "dominoVisualEditor" 
+			}else if((visualEditorProject as IVisualEditorProjectVO).isPrimeFacesVisualEditorProject){
+				visualEditorView.currentState = "primeFacesVisualEditor" 
+			}else{
 				visualEditorView.currentState = "flexVisualEditor";
+			}
+
+			//Alert.show("visualEditorView.currentState:"+visualEditorView.currentState);
+
+			
 			visualEditorView.visualEditorProject = visualEditorProject;
 			
 			visualEditorView.percentWidth = 100;
@@ -104,6 +138,8 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.codeEditor = editor;
 			
 			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, addTabHandler);
+			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 			dispatcher.addEventListener(VisualEditorEvent.DUPLICATE_ELEMENT, duplicateSelectedElementHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_COMPLETE, previewStartCompleteHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STOPPED, previewStoppedHandler);
@@ -212,7 +248,39 @@ package actionScripts.plugins.ui.editor
 			
 			super.save();
 
+			//this line for sync .dve file to ODP form folder file
+			if(visualEditorProject is OnDiskProjectVO){
+				if((visualEditorProject as OnDiskProjectVO).isDominoVisualEditorProject){
+					var sourceVisualPath=(visualEditorProject as OnDiskProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
+					//visualeditor-src/main/webapp
+					var targetProjectPath:String = sourceVisualPath.substring(0, sourceVisualPath.lastIndexOf("visualeditor-src"));
+					var targetProject:FileLocation=new FileLocation(targetProjectPath);
+					var fileName:String=this.currentFile.fileBridge.name;
+					fileName= fileName.substring(0, fileName.lastIndexOf(".dve"));
+					
+					//this.currentFile.fileBridge.nativePath
+					// var original_form:FileLocation =  templateDir.resolvePath("src_domino_nsfs"+File.separator +"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"Template.form");
+					if(this.currentFile.fileBridge.exists){
+						var newFormFile:FileLocation =  targetProject.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+fileName + ".form"); 
+						this.currentFile.fileBridge.copyTo(newFormFile, true); 
+					}
+				}
+			}
+
 			refreshFileForPreview();
+		}
+
+		/**
+		 *When user rename the form file, it require the title match the file name.
+		 *So in this case , we need save the form file again
+		 */
+
+		public function renameDominoFormFileSave(fileName:String):String 
+		{
+			//visualEditorView.visualEditor.saveEditedFile();
+			return getDominoMxmlCode(fileName);
+			
+
 		}
 
         private function refreshFileForPreview():void
@@ -354,9 +422,27 @@ package actionScripts.plugins.ui.editor
 
 		private function getMxmlCode():String
 		{
-			var mxmlCode:XML = visualEditorView.visualEditor.editingSurface.toCode();
+			var mxmlCode:XML = null;
+
+			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){			
+				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
+			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0){
+				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
+			} 
+			else{
+				mxmlCode=visualEditorView.visualEditor.editingSurface.toCode();
+			
+			}
 			var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 			
+			return markAsXml + mxmlCode.toXMLString();
+		}
+
+		private function getDominoMxmlCode(fileName:String):String
+		{
+			var mxmlCode:XML = null;
+			mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(fileName);
+			var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 			return markAsXml + mxmlCode.toXMLString();
 		}
 		
@@ -368,6 +454,15 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditor.loadFile(veFilePath);
 			}
 		}
+
+		private function getDominoFormFileName():String
+		{
+			var fullPath:String = getVisualEditorFilePath();
+			//maybe this will broken on windows env ,it need be improve in next
+			var fileName:String = fullPath.substr(fullPath.lastIndexOf("/") + 1);
+			fileName = fileName.slice(0, -4);
+			return fileName;
+		}
 		
 		private function getVisualEditorFilePath():String
 		{
@@ -375,9 +470,9 @@ package actionScripts.plugins.ui.editor
 			{
 				var filePath:String = file.fileBridge.nativePath
 						.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
-							(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath)
-						.replace(/.mxml$|.xhtml$/, ".xml");
-
+								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath)
+						.replace(/.mxml$|.xhtml$|.form$|.dve$/, ".xml");
+			
 				return filePath;
 			}
 

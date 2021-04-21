@@ -119,6 +119,7 @@ package actionScripts.plugins.maven
         {
             super.activate();
 
+           // dispatcher.addEventListener(MavenBuildEvent.INSTALL_MAVEN_BUILD, startConsoleBuildHandlerInstall);
             dispatcher.addEventListener(MavenBuildEvent.START_MAVEN_BUILD, startConsoleBuildHandler);
             dispatcher.addEventListener(MavenBuildEvent.STOP_MAVEN_BUILD, stopConsoleBuildHandler);
         }
@@ -126,7 +127,7 @@ package actionScripts.plugins.maven
         override public function deactivate():void
         {
             super.deactivate();
-
+           // dispatcher.removeEventListener(MavenBuildEvent.INSTALL_MAVEN_BUILD, startConsoleBuildHandlerInstall);
             dispatcher.removeEventListener(MavenBuildEvent.START_MAVEN_BUILD, startConsoleBuildHandler);
             dispatcher.removeEventListener(MavenBuildEvent.STOP_MAVEN_BUILD, stopConsoleBuildHandler);
         }
@@ -249,6 +250,20 @@ package actionScripts.plugins.maven
 
             prepareStart(this.buildId, preArguments, arguments, buildDirectory);
         }
+
+        // public function startConsoleBuildHandlerInstall (event:Event):void
+        // {
+        //     super.startConsoleBuildHandler(event);
+
+		// 	this.isProjectHasInvalidPaths = false;
+        //     this.status = 0;
+        //     this.buildId = this.getBuildId(event);
+        //     var preArguments:Array =this.getPreCommandLine(event);
+        //     var arguments:Array = ["clean install"];
+        //     var buildDirectory:FileLocation = this.getBuildDirectory(event);
+
+        //     prepareStart(this.buildId, preArguments, arguments, buildDirectory);
+        // }
 
         override protected function stopConsoleBuildHandler(event:Event):void
         {

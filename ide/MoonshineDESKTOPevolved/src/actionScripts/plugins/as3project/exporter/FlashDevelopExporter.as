@@ -116,10 +116,12 @@ package actionScripts.plugins.as3project.exporter
 				testMovie			:	SerializeUtil.serializeString(p.testMovie),
 				defaultBuildTargets	:	SerializeUtil.serializeString(p.defaultBuildTargets),
 				testMovieCommand	:	SerializeUtil.serializeString(p.testMovieCommand),
+				isDominoVisualEditor: SerializeUtil.serializeBoolean(p.isDominoVisualEditorProject),
                 isPrimeFacesVisualEditor: SerializeUtil.serializeBoolean(p.isPrimeFacesVisualEditorProject),
                 isExportedToExistingSource: SerializeUtil.serializeBoolean(p.isExportedToExistingSource),
                 visualEditorExportPath: SerializeUtil.serializeString(p.visualEditorExportPath),
-				isRoyale: SerializeUtil.serializeBoolean(p.isRoyale)
+				isRoyale: SerializeUtil.serializeBoolean(p.isRoyale),
+				jdkType: SerializeUtil.serializeString(p.jdkType)
 			}
 			if (p.testMovieCommand && p.testMovieCommand != "") 
 			{
