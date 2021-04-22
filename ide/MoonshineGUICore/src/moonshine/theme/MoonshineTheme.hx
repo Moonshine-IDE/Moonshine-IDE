@@ -810,7 +810,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		backgroundSkin.cornerRadius = 7.0;
 		window.backgroundSkin = backgroundSkin;
 
-		if (Std.is(window, ResizableTitleWindow)) {
+		if (Std.isOfType(window, ResizableTitleWindow)) {
 			var resizableWindow = cast(window, ResizableTitleWindow);
 
 			var resizeHandleSkin = new Shape();

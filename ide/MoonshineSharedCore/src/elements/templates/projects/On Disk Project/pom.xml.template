@@ -152,7 +152,7 @@
       <plugin>
         <groupId>org.openntf.maven</groupId>
         <artifactId>nsfodp-maven-plugin</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.4.0</version>
         <extensions>true</extensions>
       </plugin>
       <plugin>

@@ -251,7 +251,7 @@ package actionScripts.plugins.ui.editor
 			//this line for sync .dve file to ODP form folder file
 			if(visualEditorProject is OnDiskProjectVO){
 				if((visualEditorProject as OnDiskProjectVO).isDominoVisualEditorProject){
-					var sourceVisualPath=(visualEditorProject as OnDiskProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
+					var sourceVisualPath:String=(visualEditorProject as OnDiskProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
 					//visualeditor-src/main/webapp
 					var targetProjectPath:String = sourceVisualPath.substring(0, sourceVisualPath.lastIndexOf("visualeditor-src"));
 					var targetProject:FileLocation=new FileLocation(targetProjectPath);

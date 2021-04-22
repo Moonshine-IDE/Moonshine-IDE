@@ -145,7 +145,7 @@
                                      useRollOver="true"
                                      doubleClickEnabled="true"
                                      labelField="name"
-                                     itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+                                     itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
                                      itemClick="onTreeItemClicked(event)"/>
 			<s:Label text="Folder Name:"/>
 			<view:PromptTextInput id="txtFileName"

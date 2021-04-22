@@ -240,8 +240,8 @@ class FindResourcesView extends ResizableTitleWindow {
 		}
 
 		super.update();
-	}
-
+	}	
+	
 	private function updateFilterFunction():Void {
 		if (this._resources == null) {
 			return;
@@ -340,23 +340,25 @@ class FindResourcesView extends ResizableTitleWindow {
 				if (isKeyDown) {
 					if (resourceSelectedIndex < resources.length - 1)
 					{
-						this.resultsListView.selectedIndex = resourceSelectedIndex + 1;
+						resourceSelectedIndex = this.resultsListView.selectedIndex = resourceSelectedIndex + 1;
 					}
 					else if (resources.length > 0)
 					{
-						this.resultsListView.selectedIndex = 0;
+						resourceSelectedIndex = this.resultsListView.selectedIndex = 0;
 					}
 				} else if (isKeyUp) {
 					resourceSelectedIndex = this.resultsListView.selectedIndex - 1;
 					if (resourceSelectedIndex == -1 && resources.length > 0)
 					{
-						this.resultsListView.selectedIndex = resources.length - 1;
+						resourceSelectedIndex = this.resultsListView.selectedIndex = resources.length - 1;
 					}					
 					else if (resourceSelectedIndex > -1)
 					{
-						this.resultsListView.selectedIndex = resourceSelectedIndex;
+						resourceSelectedIndex = this.resultsListView.selectedIndex = resourceSelectedIndex;
 					}
 				}
+				
+				this.resultsListView.scrollToIndex(resourceSelectedIndex);
 			}
 		}
 	}

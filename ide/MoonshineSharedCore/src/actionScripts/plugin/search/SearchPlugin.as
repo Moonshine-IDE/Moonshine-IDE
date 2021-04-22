@@ -90,7 +90,7 @@ package actionScripts.plugin.search
 		{
 			// probable termination
 			if (model.projects.length == 0) return;
-			
+
 			if (!searchView)
 			{
 				searchView = new SearchView();
@@ -106,6 +106,7 @@ package actionScripts.plugin.search
 				searchViewWrapper.stage.addEventListener(Event.RESIZE, searchView_stage_resizeHandler, false, 0, true);
 
 				searchView.projects = new feathers.data.ArrayCollection(model.projects.source);
+				searchView.selectedProject = model.activeProject;
 
 				if(!previouslySelectedPatterns)
 				{
