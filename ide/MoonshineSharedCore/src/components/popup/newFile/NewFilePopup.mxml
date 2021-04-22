@@ -246,10 +246,8 @@
                 // re-validate upon folder location change
                 wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
                 isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
-                onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
             }
-
-            
         }
 
         override protected function onNewFileCreationComplete(event:FlexEvent):void
@@ -361,7 +359,8 @@
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  visible="{!isSubmitButtonEnabled &amp;&amp; modifiedName != ''}">
+				  visible="{!isSubmitButtonEnabled &amp;&amp; modifiedName != ''}"
+				  includeInLayout="{!isSubmitButtonEnabled &amp;&amp; modifiedName != ''}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>

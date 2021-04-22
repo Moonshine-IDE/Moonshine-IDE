@@ -131,7 +131,7 @@
 				// re-validate upon folder location change
 				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
 				isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
-				onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
 			}
 	
 			override protected function onNewFileCreationComplete(event:FlexEvent):void
