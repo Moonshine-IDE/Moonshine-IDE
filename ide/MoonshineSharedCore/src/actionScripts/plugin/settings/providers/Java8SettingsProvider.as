@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.settings.providers
 {
+	import actionScripts.events.FilePluginEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+
 	import flash.net.SharedObject;
 	
 	import actionScripts.factory.FileLocation;
@@ -62,9 +65,9 @@ package actionScripts.plugin.settings.providers
 					setNewJavaPath();
 				}
 				
-				/*GlobalEventDispatcher
-				.getInstance()
-					.dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));*/
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+						new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.java8Path)
+				);
 			}
 			else if (!model.javaVersionInJava8Path)
 			{
