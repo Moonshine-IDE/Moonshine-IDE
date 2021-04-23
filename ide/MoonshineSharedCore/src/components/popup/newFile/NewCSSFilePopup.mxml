@@ -159,7 +159,7 @@
 			}
 		]]>
 	</fx:Script>
-	<s:VGroup width="100%">
+	<s:VGroup width="100%" height="100%">
 		<s:Label text="Source Folder:"/>
 		<s:HGroup width="100%" verticalAlign="middle">
 			<view:PromptTextInput id="txtDestination"

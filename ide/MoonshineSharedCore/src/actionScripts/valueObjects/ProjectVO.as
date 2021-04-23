@@ -58,7 +58,8 @@ package actionScripts.valueObjects
 		}
 		public function set sourceFolder(value:FileLocation):void
 		{
-			_sourceFolder = value;
+			projectReference.sourceFolder = _sourceFolder = value;
+			projectFolder.updateChildren(); // this will help rendered the 's' icon in already opened tree
 		}
 
 		public var projectFile: FileLocation;

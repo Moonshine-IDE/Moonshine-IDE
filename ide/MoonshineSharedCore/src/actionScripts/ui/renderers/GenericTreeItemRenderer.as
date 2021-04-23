@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
-    import flash.display.Sprite;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+
+	import flash.display.Sprite;
     import flash.events.Event;
     
     import mx.binding.utils.ChangeWatcher;
@@ -26,8 +28,10 @@ package actionScripts.ui.renderers
     import mx.core.UIComponent;
     import mx.core.mx_internal;
     import mx.events.ToolTipEvent;
-    
-    import spark.components.Label;
+
+	import spark.components.Image;
+
+	import spark.components.Label;
     
     import actionScripts.locator.IDEModel;
     import actionScripts.utils.UtilsCore;
@@ -45,6 +49,7 @@ package actionScripts.ui.renderers
 		private var sourceControlText:Label;
 		private var sourceControlSystem:Label;
 		private var isTooltipListenerAdded:Boolean;
+		private var isSourceFolderIcon:Image;
 
 		public function GenericTreeItemRenderer()
 		{
@@ -182,6 +187,24 @@ package actionScripts.ui.renderers
 	        	sourceControlSystem.visible = false;
 	        	sourceControlText.visible = false;
 	        	sourceControlBackground.visible = false;
+
+				if (data.isSourceFolder && !isSourceFolderIcon)
+				{
+					isSourceFolderIcon = new Image();
+					isSourceFolderIcon.toolTip = "Source folder";
+					isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon;
+					isSourceFolderIcon.width = isSourceFolderIcon.height = 14;
+					isSourceFolderIcon.x = label2.x - (this.icon ? 44 : 28);
+					addChild(isSourceFolderIcon);
+				}
+				else if (data.isSourceFolder && isSourceFolderIcon)
+				{
+					isSourceFolderIcon.visible = true;
+				}
+				else if (!data.isSourceFolder && isSourceFolderIcon)
+				{
+					isSourceFolderIcon.visible = false;
+				}
 	        	
 	        	if (data.hasOwnProperty("sourceController") && data.sourceController)
 	        	{

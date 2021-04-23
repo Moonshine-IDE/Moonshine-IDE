@@ -288,19 +288,20 @@
                 nameOnly.pop();
                 txtFileName.prompt = nameOnly.join(".");
             }
-			else if (openType == AS_XML)
+            else if (openType == AS_XML)
             {
                 title = "New XML File";
                 createdFileExtension = lblExtension.text = ".xml";
             }
-			else
+            else
             {
                 title = "New File";
                 createdFileExtension = "";
                 if (!fileTemplate)
                 {
                     txtFileName.text = ".txt";
-                } else
+                }
+                else
                 {
                     var tmpArr:Array = fileTemplate.fileBridge.name.split(".");
                     if (tmpArr.length >= 3) lblExtension.text = "." + tmpArr[tmpArr.length - 2];
@@ -335,7 +336,7 @@
         ]]>
 	</fx:Script>
 
-    <s:VGroup width="100%">
+    <s:VGroup width="100%" height="100%">
         <s:Label text="Source Folder:"/>
         <view:PromptTextInput id="txtDestination"
                               prompt="Select Destination" editable="false" width="100%" styleName="textInput"/>

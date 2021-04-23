@@ -183,25 +183,7 @@
 				{
 					fileWrapper.sourceController.refresh(fileWrapper.file);
 				}
-	
-				var project:ProjectVO;
-				if (fileWrapper.projectReference)
-				{
-					project = UtilsCore.getProjectByPath(fileWrapper.projectReference.path) as ProjectVO;
-				}
-				if (project && project.sourceFolder && 
-					(project.sourceFolder.fileBridge.nativePath.indexOf(fileWrapper.nativePath + model.fileCore.separator) != -1))
-				{
-					if (project.sourceFolder) 
-					{
-						var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
-						if (sourceWrapper && sourceWrapper != project.projectFolder) 
-						{
-							sourceWrapper.isSourceFolder = true;
-						}
-					}
-				}
-				
+
 				if (fileWrapper.file.fileBridge.isDirectory) 
 				{
 					sortChildren(fileWrapper);
@@ -394,15 +376,6 @@
 					case CollectionEventKind.ADD:
 					{
 						project = projects.getItemAt(event.location) as ProjectVO;
-						if (project.sourceFolder) 
-						{
-							var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
-							if (sourceWrapper && sourceWrapper != project.projectFolder) 
-							{
-								sourceWrapper.isSourceFolder = true;
-							}
-						}
-
 						model.selectedprojectFolders.addItemAt(project.projectFolder, 0);
 						
 						if (((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject))
