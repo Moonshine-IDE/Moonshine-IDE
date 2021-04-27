@@ -55,6 +55,8 @@
 			
 			import components.renderers.DividerRenderer;
 			import components.renderers.FileTypeRenderer;
+
+			private static const SOURCE_ONLY_CREATION_ERROR:String = "Class files may only be created inside a source folder.";
 	
 			[Bindable]
 			public var wrapperBelongToProject:ProjectVO;
@@ -69,7 +71,7 @@
 			[Bindable]
 			protected var model:IDEModel = IDEModel.getInstance();
 			[Bindable]
-			protected var warningMessage:String = "Class files allowed to create inside source folder only.";
+			protected var warningMessage:String = SOURCE_ONLY_CREATION_ERROR;
 			[Bindable]
 			protected var createdFileExtension:String = "";
 			[Bindable]
@@ -87,7 +89,7 @@
 			protected function set isDestinationValid(value:Boolean):void
 			{
 				_isDestinationValid = value;
-				if (!value) warningMessage = "Class files allowed to create inside source folder only.";
+				if (!value) warningMessage = SOURCE_ONLY_CREATION_ERROR;
 			}
 	
 			protected function get isDestinationValid():Boolean
