@@ -385,7 +385,7 @@ package actionScripts.ui.renderers
 					loadingIcon.source = new ConstantsCoreVO.loaderIcon;
 					loadingIcon.width = loadingIcon.height = 10;
 					loadingIcon.y = (this.height - loadingIcon.height)/2;
-					loadingIcon.x = this.width - loadingIcon.width - 10;
+					loadingIcon.x = label2.x - loadingIcon.width - 10;
 					addChild(loadingIcon);
 				}
 				else if (!fw.isWorking && loadingIcon)
