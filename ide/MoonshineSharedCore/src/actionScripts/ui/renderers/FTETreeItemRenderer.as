@@ -402,6 +402,14 @@ package actionScripts.ui.renderers
 				{
 					label2.setStyle("lineThrough", false);
 				}
+
+				if (fw.isSourceFolder && !isSourceFolderIcon)
+				{
+					isSourceFolderIcon = new Image();
+					isSourceFolderIcon.toolTip = "Source folder";
+					isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon;
+					addChild(isSourceFolderIcon);
+				}
 			}
 			
 			isOpenIcon.visible = false;
@@ -657,17 +665,10 @@ package actionScripts.ui.renderers
 	        	}
 	        	else isOpenIcon.visible = false;
 				
-				if (data.isSourceFolder && !isSourceFolderIcon)
+				if (data.isSourceFolder && isSourceFolderIcon)
 				{
-					isSourceFolderIcon = new Image();
-					isSourceFolderIcon.toolTip = "Source folder";
-					isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon;
 					isSourceFolderIcon.width = isSourceFolderIcon.height = 14;
 					isSourceFolderIcon.x = label2.x - (this.icon ? 44 : 28);
-					addChild(isSourceFolderIcon);
-				}
-				else if (data.isSourceFolder && isSourceFolderIcon)
-				{
 					isSourceFolderIcon.visible = true;
 				}
 				else if (!data.isSourceFolder && isSourceFolderIcon) 
