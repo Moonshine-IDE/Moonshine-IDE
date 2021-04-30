@@ -21,13 +21,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <newfile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009"
-					 xmlns:s="library://ns.adobe.com/flex/spark"
-					 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
-				     xmlns:newfile="components.popup.newFile.*">
-	<fx:Metadata>
-		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
-	</fx:Metadata>
-	<fx:Script>
+                     xmlns:s="library://ns.adobe.com/flex/spark"
+                     xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
+                     xmlns:newfile="components.popup.newFile.*">
+    <fx:Metadata>
+        [Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
+    </fx:Metadata>
+    <fx:Script>
 		<![CDATA[
         import mx.controls.Alert;
         import mx.events.FlexEvent;
@@ -64,11 +64,13 @@
         public var fileTemplate:FileLocation;
         public var folderFileLocation:FileLocation;
 
+        private var isClassFile:Boolean;
+
         override protected function onBrowseButton(event:MouseEvent):void
         {
             super.onBrowseButton(event);
 
-            if(!projectSelectionWindow)
+            if (!projectSelectionWindow)
             {
                 projectSelectionWindow.wrapperProject = UtilsCore.getProjectFromProjectFolder(tree.selectedItem as FileWrapper);
                 PopUpManager.centerPopUp(projectSelectionWindow);
@@ -81,8 +83,7 @@
 
             txtDestination.text = wrapperBelongToProject.projectName;
 
-            var timeoutValue:uint = setTimeout(function ():void
-            {
+            var timeoutValue:uint = setTimeout(function ():void {
                 parseFolders();
                 clearTimeout(timeoutValue);
             }, 100);
@@ -91,22 +92,22 @@
         protected function onCreateButton(event:MouseEvent):void
         {
             // validation check for Enter key
-            if(!isSubmitButtonEnabled) return;
+            if (!isSubmitButtonEnabled) return;
 
             // validation 2
             var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
-            if(SimpleValidator.validate(validateArr))
+            if (SimpleValidator.validate(validateArr))
             {
-                if(openType == AS_XML)
+                if (openType == AS_XML)
                 {
                     fileTemplate = ConstantsCoreVO.TEMPLATE_XML;
-                } else if(openType == AS_PLAIN_TEXT)
+                } else if (openType == AS_PLAIN_TEXT)
                 {
                     // test if filename.extension
-                    if(txtFileName.text.indexOf(".") != -1)
+                    if (txtFileName.text.indexOf(".") != -1)
                     {
                         var tmpNameSplit:Array = txtFileName.text.split(".");
-                        if(tmpNameSplit[tmpNameSplit.length - 1] == "")
+                        if (tmpNameSplit[tmpNameSplit.length - 1] == "")
                         {
                             Alert.show("Trailing '.' not permitted for file name", "Error!");
                             return;
@@ -116,7 +117,7 @@
                     fileTemplate = ConstantsCoreVO.TEMPLATE_TEXT;
                 }
 
-                if(openType == AS_DUPLICATE_FILE)
+                if (openType == AS_DUPLICATE_FILE)
                 {
                     var tmpDuplicateEvent:DuplicateEvent = new DuplicateEvent(DuplicateEvent.EVENT_APPLY_DUPLICATE, wrapperOfFolderLocation, folderFileLocation);
                     tmpDuplicateEvent.fileName = txtFileName.text;
@@ -134,53 +135,52 @@
             }
         }
 
-        private function updateDuplicationFormXmlFile(fileName:String):void 
+        private function updateDuplicationFormXmlFile(fileName:String):void
         {
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
-            if(project && project.isDominoVisualEditorProject)
+            if (project && project.isDominoVisualEditorProject)
             {
-                    if(lblExtension.text&&lblExtension.text==".form"){
-                        //Alert.show("duplication file name:"+fileName);
-                        var targetXmlFilePath:String=wrapperBelongToProject.projectFolder.nativePath+"/visualeditor-src/main/webapp/"+fileName+".xml";
-                        var destinationXmlFile:FileLocation=new FileLocation(targetXmlFilePath);
-                        var sourceXmlFileName:String=txtFileName.prompt;
-                        var sourceXmlFilePath:String= wrapperBelongToProject.projectFolder.nativePath+"/visualeditor-src/main/webapp/"+sourceXmlFileName+".xml";
-                        var sourceXmlFile:FileLocation=new FileLocation(sourceXmlFilePath);
-                        //Alert.show("source xml file name:"+sourceXmlFilePath);
-                        //Alert.show("target  xml file name:"+targetXmlFilePath);
-                        if(destinationXmlFile.fileBridge.exists){
-                            destinationXmlFile.fileBridge.deleteFile();
-                        }
-                        if(sourceXmlFile.fileBridge.exists){
-                            sourceXmlFile.fileBridge.copyTo(destinationXmlFile, true);
-                        }
-                        //2.update title from form file 
-                        var model:IDEModel = IDEModel.getInstance();
-						var formXmlString:String=null;
-						if(model){
-                            formXmlString=model.visualEditorCore.renameDominoFormFileSave(model.activeEditor,txtFileName.text);
-						}
-                        if(formXmlString!=null){
-
-                            var destinationFormFile:FileLocation=new FileLocation(wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms/"+fileName+".form")
-							
-							if(destinationFormFile.fileBridge.exists){
-								destinationFormFile.fileBridge.deleteFile();
-							}
-                            destinationFormFile.fileBridge.save(formXmlString);
-								
-						} 
+                if (lblExtension.text && lblExtension.text == ".form")
+                {
+                    //Alert.show("duplication file name:"+fileName);
+                    var targetXmlFilePath:String = wrapperBelongToProject.projectFolder.nativePath + "/visualeditor-src/main/webapp/" + fileName + ".xml";
+                    var destinationXmlFile:FileLocation = new FileLocation(targetXmlFilePath);
+                    var sourceXmlFileName:String = txtFileName.prompt;
+                    var sourceXmlFilePath:String = wrapperBelongToProject.projectFolder.nativePath + "/visualeditor-src/main/webapp/" + sourceXmlFileName + ".xml";
+                    var sourceXmlFile:FileLocation = new FileLocation(sourceXmlFilePath);
+                    //Alert.show("source xml file name:"+sourceXmlFilePath);
+                    //Alert.show("target  xml file name:"+targetXmlFilePath);
+                    if (destinationXmlFile.fileBridge.exists)
+                    {
+                        destinationXmlFile.fileBridge.deleteFile();
                     }
-                
-                
+                    if (sourceXmlFile.fileBridge.exists)
+                    {
+                        sourceXmlFile.fileBridge.copyTo(destinationXmlFile, true);
+                    }
+                    //2.update title from form file
+                    var model:IDEModel = IDEModel.getInstance();
+                    var formXmlString:String = null;
+                    if (model)
+                    {
+                        formXmlString = model.visualEditorCore.renameDominoFormFileSave(model.activeEditor, txtFileName.text);
+                    }
+                    if (formXmlString != null)
+                    {
+                        var destinationFormFile:FileLocation = new FileLocation(wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms/" + fileName + ".form")
+                        if (destinationFormFile.fileBridge.exists)
+                        {
+                            destinationFormFile.fileBridge.deleteFile();
+                        }
+                        destinationFormFile.fileBridge.save(formXmlString);
+                    }
+                }
             }
         }
 
         protected function parseFolders():void
         {
             tree.expandItem(wrapperBelongToProject.projectFolder, true);
-                
-           
 
             // 1. expand all items to our fileWrapper object
             // 2. select the fileWrapper object
@@ -188,12 +188,11 @@
             UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
             UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
-            if(project && project.isDominoVisualEditorProject)
+            if (project && project.isDominoVisualEditorProject)
             {
-                wrapperOfFolderLocation=UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms");
+                wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms");
             }
-            tree.callLater(function ():void
-            {
+            tree.callLater(function ():void {
                 var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
                 for (var j:int = 0; j < (wrappers.length - 1); j++)
                 {
@@ -201,11 +200,10 @@
                 }
 
                 // selection
-               tree.selectedItem = wrapperOfFolderLocation;
-               
+                tree.selectedItem = wrapperOfFolderLocation;
+
                 // scroll-to
-                tree.callLater(function ():void
-                {
+                tree.callLater(function ():void {
                     tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
                 });
             });
@@ -220,33 +218,43 @@
         {
             //we only allow domin form generate into Forms folder
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
-            if(project && project.isDominoVisualEditorProject)
+            if (project && project.isDominoVisualEditorProject)
             {
-                 //we should only limit the form file
-                if(lblExtension.text&&lblExtension.text==".form"){
+                //we should only limit the form file
+                if (lblExtension.text && lblExtension.text == ".form")
+                {
                     //get the domino project form folder value:
-                    var dominoFormFolder:String=wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms"
-                    var currentPath:String=UtilsCore.getPackageReferenceByProjectPath(
-                Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
-                tree.selectedItem.nativePath);
+                    var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms"
+                    var currentPath:String = UtilsCore.getPackageReferenceByProjectPath(
+                            Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+                            tree.selectedItem.nativePath);
                     //btnCreate.enabled = false;
-                    if(currentPath!=dominoFormFolder){
-                        warningMessage= "Domino forms are only supported in the Forms folder.";
-                        hgExistingWarning.visible=hgExistingWarning.includeInLayout=true;
-                        tree.selectedItem=wrapperOfFolderLocation;
+                    if (currentPath != dominoFormFolder)
+                    {
+                        warningMessage = "Domino forms are only supported in the Forms folder.";
+                        hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
+                        tree.selectedItem = wrapperOfFolderLocation;
                     }
                 }
-                
-
-            }else{
+            }
+			else
+            {
                 txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-                Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
-                tree.selectedItem.nativePath);
+                        Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+                        tree.selectedItem.nativePath);
 
                 // re-validate upon folder location change
                 wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
-                isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
-				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
+                if (!isClassFile)
+                {
+                    isDestinationValid = true;
+                    isSubmitButtonEnabled = (modifiedName != null);
+                }
+				else
+                {
+                    isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
+                    txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
+                }
             }
         }
 
@@ -255,81 +263,84 @@
             super.onNewFileCreationComplete(event);
 
             minHeight = height;
-            if(openType == AS_DUPLICATE_FILE)
+            if (openType == AS_DUPLICATE_FILE)
             {
                 title = "Duplicate File";
                 lblName.text = "New File Name:";
 
                 var extension:String;
-                if(folderFileLocation.fileBridge.extension)
+                if (folderFileLocation.fileBridge.extension)
                 {
                     extension = folderFileLocation.fileBridge.extension.toLowerCase();
                     createdFileExtension = lblExtension.text = "." + extension;
                 } else
                 {
-					createdFileExtension = lblExtension.text = "";
+                    createdFileExtension = lblExtension.text = "";
                 }
 
-                if(extension == "as" || extension == "mxml" || extension=="form")
+                if (ConstantsCoreVO.READABLE_CLASS_FILES.indexOf(extension) != -1)
                 {
                     txtFileName.restrict = "0-9A-Za-z_.";
+                    isClassFile = true;
                 }
 
                 var nameOnly:Array = folderFileLocation.fileBridge.name.split(".");
                 nameOnly.pop();
                 txtFileName.prompt = nameOnly.join(".");
-            } else if(openType == AS_XML)
+            }
+            else if (openType == AS_XML)
             {
                 title = "New XML File";
-				createdFileExtension = lblExtension.text = ".xml";
-            } else
+                createdFileExtension = lblExtension.text = ".xml";
+            }
+            else
             {
                 title = "New File";
-				createdFileExtension = "";
-                if(!fileTemplate)
+                createdFileExtension = "";
+                if (!fileTemplate)
                 {
-					txtFileName.text = ".txt";
-                } else
+                    txtFileName.text = ".txt";
+                }
+                else
                 {
                     var tmpArr:Array = fileTemplate.fileBridge.name.split(".");
-                    if(tmpArr.length >= 3) lblExtension.text = "." + tmpArr[tmpArr.length - 2];
+                    if (tmpArr.length >= 3) lblExtension.text = "." + tmpArr[tmpArr.length - 2];
                 }
             }
 
-
-            if(wrapperBelongToProject)
+            if (wrapperBelongToProject)
             {
                 txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
-                Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
-                										wrapperOfFolderLocation.nativePath);
+                        Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+                        wrapperOfFolderLocation.nativePath);
 
-				var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
-                if(project && project.isDominoVisualEditorProject)
+                var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+                if (project && project.isDominoVisualEditorProject)
                 {
-                        if(lblExtension.text&&lblExtension.text==".form"){
-                               txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                    if (lblExtension.text && lblExtension.text == ".form")
+                    {
+                        txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
                                 Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
-                             wrapperBelongToProject.projectFolder.nativePath+"/nsfs/nsf-moonshine/odp/Forms");
-                        }
-                   
-                   
+                                wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms");
+                    }
                 }
-               
-                //Alert.show(":"+txtDestination.text);        
+
+                //Alert.show(":"+txtDestination.text);
                 txtFileName.setFocus();
             }
 
-			isDestinationValid = true;
+            isDestinationValid = true;
             tree.callLater(parseFolders);
             GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
         }
         ]]>
 	</fx:Script>
-	<s:VGroup width="100%">
-		<s:Label text="Source Folder:"/>
-		<view:PromptTextInput id="txtDestination"
-							  prompt="Select Destination" editable="false" width="100%" styleName="textInput"/>
-		<utils:CustomTreeFolders id="tree"
+
+    <s:VGroup width="100%" height="100%">
+        <s:Label text="Source Folder:"/>
+        <view:PromptTextInput id="txtDestination"
+                              prompt="Select Destination" editable="false" width="100%" styleName="textInput"/>
+        <utils:CustomTreeFolders id="tree"
                                  width="100%" height="100%"
                                  dataProvider="{model.selectedprojectFolders}"
                                  color="0xEEEEEE"
@@ -345,30 +356,30 @@
                                  labelField="name"
                                  itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
                                  itemClick="onTreeItemClicked(event)"/>
-	</s:VGroup>
-	<s:VGroup width="100%">
-		<s:Label id="lblName" text="Name:"/>
-		<s:Group width="100%">
-			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z._\-/"
-								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
-			<s:Label id="lblExtension"
-					 styleName="textInputLabel" textAlign="right"
-					 right="6" verticalCenter="0"
-					 visible="{openType != AS_PLAIN_TEXT}"/>
-		</s:Group>
-		<s:HGroup id="hgExistingWarning"
-				  width="100%" verticalAlign="middle"
-				  visible="{!isSubmitButtonEnabled &amp;&amp; modifiedName != ''}"
-				  includeInLayout="{!isSubmitButtonEnabled &amp;&amp; modifiedName != ''}">
-			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
-			<s:Label text="{warningMessage}" width="100%"/>
-		</s:HGroup>
-	</s:VGroup>
-	<newfile:controlBarContent>
-		<s:Button id="btnCreate" label="Create"
-				  styleName="darkButton"
-				  click="onCreateButton(event)"
-				  enabled="{isSubmitButtonEnabled}"/>
-	</newfile:controlBarContent>
+    </s:VGroup>
+    <s:VGroup width="100%">
+        <s:Label id="lblName" text="Name:"/>
+        <s:Group width="100%">
+            <view:PromptTextInput id="txtFileName"
+                                  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z._\-/"
+                                  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
+            <s:Label id="lblExtension"
+                     styleName="textInputLabel" textAlign="right"
+                     right="6" verticalCenter="0"
+                     visible="{openType != AS_PLAIN_TEXT}"/>
+        </s:Group>
+        <s:HGroup id="hgExistingWarning"
+                  width="100%" verticalAlign="middle"
+                  visible="{!isSubmitButtonEnabled &amp;&amp; modifiedName != ''}"
+                  includeInLayout="{!isSubmitButtonEnabled &amp;&amp; modifiedName != ''}">
+            <s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+            <s:Label text="{warningMessage}" width="100%"/>
+        </s:HGroup>
+    </s:VGroup>
+    <newfile:controlBarContent>
+        <s:Button id="btnCreate" label="Create"
+                  styleName="darkButton"
+                  click="onCreateButton(event)"
+                  enabled="{isSubmitButtonEnabled}"/>
+    </newfile:controlBarContent>
 </newfile:NewFileBase>

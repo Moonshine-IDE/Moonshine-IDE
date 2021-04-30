@@ -270,6 +270,8 @@ package actionScripts.valueObjects
                         fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, false);
 						fw.children = [];
                         fw.sourceController = _sourceController;
+						if (fw.file.fileBridge.isDirectory)
+							fw.isSourceFolder = testIfSourceFolder(fw);
                         _children.push(fw)
                     }
                 }
@@ -281,5 +283,18 @@ package actionScripts.valueObjects
             if (file.fileBridge.nativePath.indexOf(nativePath) == 0) return true;
             return false;
         }
+
+		private function testIfSourceFolder(wrapper:FileWrapper):Boolean
+		{
+			if (!projectReference.sourceFolder) return false;
+
+			if (projectReference.sourceFolder &&
+					(wrapper.nativePath == projectReference.sourceFolder.fileBridge.nativePath))
+			{
+				return true;
+			}
+
+			return false;
+		}
     }
 }
