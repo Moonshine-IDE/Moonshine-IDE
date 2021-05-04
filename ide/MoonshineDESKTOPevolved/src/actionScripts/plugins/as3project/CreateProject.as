@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.filesystem.File;
@@ -1068,6 +1070,7 @@ package actionScripts.plugins.as3project
 					}
 				
 					if(projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_DOMINO){
+							pvo.jdkType = JavaTypes.JAVA_8;
 							pvo.isDominoVisualEditorProject = true;
 					}else{
 							pvo.isDominoVisualEditorProject = false;

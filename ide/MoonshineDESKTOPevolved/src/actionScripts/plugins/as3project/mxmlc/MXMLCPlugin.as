@@ -39,6 +39,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
 	
+	import actionScripts.events.DebugActionEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.SdkEvent;
@@ -54,6 +55,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.providers.Java8SettingsProvider;
 	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.BooleanSetting;
@@ -61,6 +63,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.plugins.build.CompilerPluginBase;
+	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
 	import actionScripts.plugins.swflauncher.SWFLauncherPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
 	import actionScripts.plugins.swflauncher.launchers.NativeExtensionExpander;
@@ -76,6 +79,8 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
+	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
@@ -87,10 +92,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
-	
-	import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
-	import actionScripts.valueObjects.MobileDeviceVO;
-	import actionScripts.events.DebugActionEvent;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -115,6 +116,7 @@ package actionScripts.plugins.as3project.mxmlc
 		private var shellInfo:NativeProcessStartupInfo;
 		private var isLibraryProject:Boolean;
 		private var javaPathSetting:PathSetting;
+		private var java8PathSetting:PathSetting;
 		private var adtProcess:NativeProcess
 		private var adtProcessInfo:NativeProcessStartupInfo;
 		private var lastTarget:File;
@@ -313,13 +315,19 @@ package actionScripts.plugins.as3project.mxmlc
 			onSettingsClose();
 			javaPathSetting = new PathSetting(new JavaSettingsProvider(),
 				"currentJavaPath",
-				"Java Development Kit Path", true);
+				"Java Development Kit Root Path", true);
 			javaPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected, false, 0, true);
+			
+			java8PathSetting = new PathSetting(new Java8SettingsProvider(),
+				"currentJava8Path",
+				"Java Development Kit 8 Root Path", true);
+			java8PathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected, false, 0, true);
 			
 			return Vector.<ISetting>([
 				new PathSetting(this,'defaultFlexSDK', 'Default Apache Flex®, Apache Royale® or Feathers SDK', true, defaultFlexSDK, true),
 				new BooleanSetting(this,'incrementalCompile', 'Incremental Compilation'),
-				javaPathSetting
+				javaPathSetting,
+				java8PathSetting
 			]);
 		}
 		
@@ -328,6 +336,7 @@ package actionScripts.plugins.as3project.mxmlc
 			if (javaPathSetting)
 			{
 				javaPathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected);
+				java8PathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onJavaPathSelected);
 				javaPathSetting = null;
 			}
 		}
@@ -691,7 +700,10 @@ package actionScripts.plugins.as3project.mxmlc
 				// update build config file
 				AS3ProjectVO(pvo).updateConfig();
 				compileStr = getFlexJSBuildArgs(pvo as AS3ProjectVO);
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
+				
+				var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+				envCustomSDK.sdkPath = SDKstr;
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compileStr]);
 			}
 			
 			/*
@@ -812,7 +824,9 @@ package actionScripts.plugins.as3project.mxmlc
 				compileStr = compile(pvo as AS3ProjectVO, release);
 				print("Command: %s"+ compileStr);
 				
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
+				var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+				envCustomSDK.sdkPath = SDKstr;
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compileStr]);
 			}
 			
 			/*
@@ -875,7 +889,9 @@ package actionScripts.plugins.as3project.mxmlc
 				);
 			}
 			
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compilerArg]);
+			var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomSDK.sdkPath = SDKstr;
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compilerArg]);
 			
 			/*
 			* @local
@@ -1481,6 +1497,8 @@ package actionScripts.plugins.as3project.mxmlc
 			var adtCommand:String = CommandLineUtil.joinOptions(adtPackagingOptions);
 			debug("Sending to adt: %s", adtCommand);
 			
+			var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomSDK.sdkPath = SDKstr;
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
 				var processArgs:Vector.<String> = new <String>[];
@@ -1505,7 +1523,7 @@ package actionScripts.plugins.as3project.mxmlc
 				adtProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, adtProcess_standardErrorDataHandler);
 				adtProcess.addEventListener(NativeProcessExitEvent.EXIT, adtProcess_exitHandler);
 				adtProcess.start(adtProcessInfo);
-			}, SDKstr, [adtCommand]);
+			}, envCustomSDK, [adtCommand]);
 		}
 		
 		private function ensureCredentialsPresent(project:AS3ProjectVO):Boolean
@@ -1699,8 +1717,8 @@ package actionScripts.plugins.as3project.mxmlc
 					return;
 				}
 				
-				var javaToolsOptionsMatch:Array = data.match(new RegExp("JAVA_TOOL_OPTIONS", "i"));
-				if (javaToolsOptionsMatch)
+				if (data.match(new RegExp("JAVA_TOOL_OPTIONS", "i")) || 
+					data.match(new RegExp("JAVA_OPTIONS", "i")))
 				{
 					print(data);
 					return;

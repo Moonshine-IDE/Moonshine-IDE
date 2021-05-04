@@ -18,24 +18,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.settings.providers
 {
-	import flash.net.SharedObject;
-	
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.GlobalEventDispatcher;
+
+	import flash.net.SharedObject;
+	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.utils.SharedObjectConst;
 	
-	public class JavaSettingsProvider implements ISettingsProvider
+	public class Java8SettingsProvider implements ISettingsProvider
 	{
-		private var model:IDEModel = IDEModel.getInstance();
-		private var _currentJavaPath:String;
+		protected var model:IDEModel = IDEModel.getInstance();
 		
-		public function JavaSettingsProvider()
+		private var _currentJava8Path:String;
+		
+		public function Java8SettingsProvider()
 		{
-			_currentJavaPath = model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null
+			_currentJava8Path = model.java8Path ? model.java8Path.fileBridge.nativePath : null
 		}
 		
 		public function getSettingsList():Vector.<ISetting>
@@ -43,16 +45,16 @@ package actionScripts.plugin.settings.providers
 			return null;
 		}
 		
-		public function get currentJavaPath():String
+		public function get currentJava8Path():String
 		{
-			return _currentJavaPath;
+			return _currentJava8Path;
 		}
 		
-		public function set currentJavaPath(value:String):void
+		public function set currentJava8Path(value:String):void
 		{
-			if (_currentJavaPath != value)
+			if (_currentJava8Path != value)
 			{
-				_currentJavaPath = value;
+				_currentJava8Path = value;
 				
 				if (!value)
 				{
@@ -62,11 +64,12 @@ package actionScripts.plugin.settings.providers
 				{
 					setNewJavaPath();
 				}
-				GlobalEventDispatcher
-				.getInstance()
-					.dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+						new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.java8Path)
+				);
 			}
-			else if (!model.javaVersionForTypeAhead)
+			else if (!model.javaVersionInJava8Path)
 			{
 				updateJavaVersion();
 			}
@@ -77,37 +80,45 @@ package actionScripts.plugin.settings.providers
 			
 		}
 		
-		private function resetJavaPath():void
+		protected function resetJavaPath():void
 		{
-			if (!model.javaPathForTypeAhead) return;
-			
-			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
-			if (model.activeEditor)
-			{
-				delete cookie.data["javaPathForTypeahead"];
-				model.javaPathForTypeAhead = null;
-				model.javaVersionForTypeAhead = null;
-				
-				cookie.flush();
-			}
+			if (!model.java8Path) return;
+			updateToCookie(null);
 		}
 		
-		private function setNewJavaPath():void
+		protected function setNewJavaPath():void
 		{
-			model.javaPathForTypeAhead = new FileLocation(currentJavaPath);
-			model.flexCore.updateToCurrentEnvironmentVariable();
+			updateToCookie(new FileLocation(currentJava8Path));
+			
+			//model.flexCore.updateToCurrentEnvironmentVariable();
+		}
+		
+		protected function updateToCookie(value:FileLocation):void
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+			if (value) 
+			{
+				cookie.data["java8Path"] = value.fileBridge.nativePath;
+			}
+			else 
+			{
+				delete cookie.data["java8Path"];
+			}
+			
+			model.java8Path = value;
 			updateJavaVersion();
+			cookie.flush();
 		}
 		
 		private function updateJavaVersion():void
 		{
-			if (model.javaPathForTypeAhead) 
-				model.flexCore.getJavaVersion(model.javaPathForTypeAhead.fileBridge.nativePath, onJavaVersionReadCompletes);
+			if (model.java8Path) 
+				model.flexCore.getJavaVersion(model.java8Path.fileBridge.nativePath, onJavaVersionReadCompletes);
 		}
 		
 		private function onJavaVersionReadCompletes(value:String):void
 		{
-			model.javaVersionForTypeAhead = value;
+			model.javaVersionInJava8Path = value;
 		}
 	}
 }

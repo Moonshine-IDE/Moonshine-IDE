@@ -128,6 +128,7 @@ package actionScripts.valueObjects
         public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
 		public static var READABLE_FILES:Array;
+		public static var READABLE_CLASS_FILES:Array;
 		public static var NON_CLOSEABLE_TABS:Array;
 		public static var STARTUP_PROJECT_OPEN_QUEUE_LEFT:int;
 		public static var LAST_BROWSED_LOCATION:String;
@@ -304,6 +305,8 @@ package actionScripts.valueObjects
 			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj", "xhtml",
 								"java", "groovy", "gradle", "yml", "gsp", "properties", "javaproj", "sh", "ini", "jar", "hx", "hxproj", "grailsproj",
 								"json", "md"];
+
+			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
 			
 			TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";

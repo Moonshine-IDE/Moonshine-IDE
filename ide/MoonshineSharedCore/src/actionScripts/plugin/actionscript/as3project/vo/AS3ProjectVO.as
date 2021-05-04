@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
-    import flash.events.Event;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+
+	import flash.events.Event;
     import flash.events.MouseEvent;
     
     import mx.collections.ArrayCollection;
@@ -125,6 +128,12 @@ package actionScripts.plugin.actionscript.as3project.vo
 
         private var _jsOutputPath:String;
 		private var _urlToLaunch:String;
+
+		private var _jdkType:String = JavaTypes.JAVA_DEFAULT;
+		public function get jdkType():String
+		{	return _jdkType;	}
+		public function set jdkType(value:String):void
+		{	_jdkType = value;	}
 
 		override public function set folderLocation(value:FileLocation):void
 		{
@@ -803,6 +812,14 @@ package actionScripts.plugin.actionscript.as3project.vo
                                 new PathSetting(this, "visualEditorExportPath", "Export Path", true, visualEditorExportPath)
 							])
 					),
+					new SettingsWrapper("Java Project", new <ISetting>[
+						new MultiOptionSetting(this, 'jdkType', "JDK",
+								Vector.<NameValuePair>([
+									new NameValuePair("Use Default JDK", JavaTypes.JAVA_DEFAULT),
+									new NameValuePair("Use JDK 8", JavaTypes.JAVA_8)
+								])
+						)
+					]),
 					new SettingsWrapper("Maven Build", Vector.<ISetting>([
 						new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
 						setting_new,	

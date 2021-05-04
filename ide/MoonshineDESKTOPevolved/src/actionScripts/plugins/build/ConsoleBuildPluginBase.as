@@ -12,6 +12,7 @@ package actionScripts.plugins.build
     import actionScripts.factory.FileLocation;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.Settings;
 
     public class ConsoleBuildPluginBase extends CompilerPluginBase
@@ -59,7 +60,7 @@ package actionScripts.plugins.build
             nativeProcessStartupInfo = null;
         }
 
-        public function start(args:Vector.<String>, buildDirectory:*):void
+        public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
         {
             if (nativeProcess.running && _running)
             {
@@ -77,7 +78,7 @@ package actionScripts.plugins.build
 			}
 			
 			var newArray:Array = new Array().concat(args);
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, newArray);
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, customSDKs, newArray);
 			
 			/*
 			* @local

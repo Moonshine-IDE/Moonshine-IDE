@@ -33,6 +33,7 @@ package actionScripts.valueObjects
 		public var isTemplate:Boolean;
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean;
+		public var sourceFolder:FileLocation;
 
 		public function ProjectReferenceVO()
 		{

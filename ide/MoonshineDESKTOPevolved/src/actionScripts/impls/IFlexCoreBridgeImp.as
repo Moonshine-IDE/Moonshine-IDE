@@ -56,7 +56,6 @@ package actionScripts.impls
 	import actionScripts.plugin.findreplace.FindReplacePlugin;
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
 	import actionScripts.plugin.help.HelpPlugin;
-	import moonshine.plugin.help.view.TourDeFlexContentsView;
 	import actionScripts.plugin.locations.LocationsPlugin;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
@@ -122,6 +121,7 @@ package actionScripts.impls
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.JavaVersionReader;
 	import actionScripts.utils.ModulesFinder;
 	import actionScripts.utils.SHClassTest;
 	import actionScripts.utils.SWFTrustPolicyModifier;
@@ -129,6 +129,7 @@ package actionScripts.impls
 	import actionScripts.utils.Untar;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	
 	import components.containers.DownloadNewFlexSDK;
 	import components.popup.DefineFolderAccessPopup;
@@ -554,9 +555,9 @@ package actionScripts.impls
 			EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
 		}
 		
-		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
 		{
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(completion, customSDK, withCommands);
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(completion, customSDKs, withCommands);
 		}
 		
 		public function getExternalEditors():ArrayCollection
@@ -567,6 +568,12 @@ package actionScripts.impls
 		public function getModulesFinder():IModulesFinder
 		{
 			return (new ModulesFinder());
+		}
+		
+		public function getJavaVersion(javaPath:String=null, onComplete:Function=null):void
+		{
+			var javaVersionReader:JavaVersionReader = new JavaVersionReader();
+			javaVersionReader.readVersion(javaPath, onComplete);
 		}
 	}
 }

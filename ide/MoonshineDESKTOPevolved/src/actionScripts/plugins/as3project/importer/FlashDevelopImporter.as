@@ -16,6 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.importer
 {
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugin.project.ProjectTemplateType;
 	import actionScripts.utils.SerializeUtil;
 
@@ -103,10 +104,16 @@ package actionScripts.plugins.as3project.importer
 
             project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
             project.isDominoVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isDominoVisualEditor);
+			if (project.isDominoVisualEditorProject)
+			{
+				project.jdkType = JavaTypes.JAVA_8;
+			}
 			
 			project.isPrimeFacesVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
 			project.isExportedToExistingSource = SerializeUtil.deserializeBoolean(data.options.option.@isExportedToExistingSource);
 			project.visualEditorExportPath = SerializeUtil.deserializeString(data.options.option.@visualEditorExportPath);
+			if (data.options.option.hasOwnProperty('@jdkType'))
+				project.jdkType = SerializeUtil.deserializeString(data.options.option.@jdkType);
 
 			if (project.targets.length > 0)
 			{

@@ -62,7 +62,8 @@ package actionScripts.plugin.ondiskproj.exporter
 			
 			var options:XML = <options />;
 			var optionPairs:Object = {
-				showHiddenPaths		:	SerializeUtil.serializeBoolean(project.showHiddenPaths)
+				showHiddenPaths		:	SerializeUtil.serializeBoolean(project.showHiddenPaths),
+				jdkType				:	SerializeUtil.serializeString(project.jdkType)
 			}
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			projectXML.appendChild(options);

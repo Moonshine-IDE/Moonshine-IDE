@@ -16,23 +16,11 @@
 //  limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.valueObjects
+package actionScripts.interfaces
 {
-    public class SDKTypes
+    public interface IJavaProject
     {
-        public static const FEATHERS:String = "feathers";
-        public static const ROYALE:String = "royale";
-		public static const FLEX:String = "flex";
-        public static const FLEXJS:String = "flexjs";
-		public static const ANT:String = "ant";
-		public static const SVN:String = "svn";
-		public static const GIT:String = "git";
-		public static const MAVEN:String = "maven";
-		public static const GRADLE:String = "gradle";
-		public static const GRAILS:String = "grails";
-		public static const OPENJAVA:String = "openjava";
-		public static const OPENJAVA8:String = "openjava8";
-		public static const NODEJS:String = "nodejs";
-		public static const NOTES:String = "notes";
+		function get jdkType():String;
+		function set jdkType(value:String):void;
     }
 }

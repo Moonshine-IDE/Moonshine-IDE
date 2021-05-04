@@ -26,6 +26,7 @@ package actionScripts.utils
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.providers.Java8SettingsProvider;
 	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
@@ -98,7 +99,10 @@ package actionScripts.utils
 					addProgramingSDK(path);
 					break;
 				case SDKTypes.OPENJAVA:
-					updateJavaPath(path);
+					updateJavaPath(path, !path ? true : false);
+					break;
+				case SDKTypes.OPENJAVA8:
+					updateJava8Path(path, !path ? true : false);
 					break;
 				case SDKTypes.ANT:
 					updateAntPath(path);
@@ -215,17 +219,43 @@ package actionScripts.utils
 			}
 		}
 		
-		public static function updateJavaPath(path:String):void
+		public static function updateJavaPath(path:String, isForceUpdate:Boolean=false):void
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!UtilsCore.isJavaForTypeaheadAvailable())
+			if (!UtilsCore.isJavaForTypeaheadAvailable() || isForceUpdate)
 			{
 				var javaSettingsProvider:JavaSettingsProvider = new JavaSettingsProvider();
 				javaSettingsProvider.currentJavaPath = path;
 				
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({currentJavaPath: path}, 'currentJavaPath', 'Java Development Kit Path', true, path)
+					new PathSetting({currentJavaPath: path}, 'currentJavaPath', 'Java Development Kit Root Path', true, path)
+				]);
+				
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin", settings));
+				
+				// update local env.variable
+				environmentSetupUtils.updateToCurrentEnvironmentVariable();
+			}
+			else
+			{
+				checkJavaVersionAndUpdateOnlyIfRequires(path, model.javaVersionForTypeAhead, updateJavaPath);
+			}
+		}
+		
+		public static function updateJava8Path(path:String, isForceUpdate:Boolean=false):void
+		{
+			// update only if ant path not set
+			// or the existing ant path does not exists
+			if (!UtilsCore.isJava8Present() || isForceUpdate)
+			{
+				var javaSettingsProvider:Java8SettingsProvider = new Java8SettingsProvider();
+				javaSettingsProvider.currentJava8Path = path;
+				
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({currentJava8Path: path}, 'currentJava8Path', 'Java Development Kit 8 Root Path', true, path)
 				]);
 				
 				// save as moonshine settings
@@ -397,6 +427,23 @@ package actionScripts.utils
 				
 				// update local env.variable
 				environmentSetupUtils.updateToCurrentEnvironmentVariable();
+			}
+		}
+		
+		private static function checkJavaVersionAndUpdateOnlyIfRequires(path:String, currentVersion:String, updateFn:Function):void
+		{
+			if (!FileUtils.isPathExists(path) || !currentVersion) 
+				return;
+			
+			var javaVersionReader:JavaVersionReader = new JavaVersionReader();
+			javaVersionReader.readVersion(path, onJavaVersionReadCompletes);
+			
+			function onJavaVersionReadCompletes(value:String):void
+			{
+				if (HelperUtils.isNewUpdateVersion(currentVersion, value) == 1)
+				{
+					updateFn(path, true);
+				}
 			}
 		}
 	}

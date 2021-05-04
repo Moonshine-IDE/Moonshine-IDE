@@ -36,8 +36,6 @@ package actionScripts.languageServer
     import mx.managers.PopUpManager;
     import mx.utils.SHA256;
 
-    import feathers.controls.Button;
-
     import actionScripts.events.ExecuteLanguageServerCommandEvent;
     import actionScripts.events.FilePluginEvent;
     import actionScripts.events.GlobalEventDispatcher;
@@ -49,6 +47,7 @@ package actionScripts.languageServer
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.console.ConsoleOutputter;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.plugin.java.javaproject.vo.JavaTypes;
     import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.JavaTextEditor;
@@ -64,6 +63,8 @@ package actionScripts.languageServer
     import actionScripts.valueObjects.WorkspaceEdit;
 
     import com.adobe.utils.StringUtil;
+
+    import feathers.controls.Button;
 
     import moonshine.components.StandardPopupView;
     import moonshine.theme.MoonshineTheme;
@@ -92,6 +93,7 @@ package actionScripts.languageServer
 		private static const METHOD_LANGUAGE__STATUS:String = "language/status";
 		private static const METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION:String = "language/actionableNotification";
 		private static const METHOD_JAVA__PROJECT_CONFIG_UPDATE:String = "java/projectConfigurationUpdate";
+		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH_HELP:String = "java.ignoreIncompleteClasspath.help";
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
@@ -455,7 +457,11 @@ package actionScripts.languageServer
 			}
 
 			trace("Java language server workspace root: " + project.folderPath);
-			trace("Java language Server JDK: " + sdkPath);
+			trace("Java language server JDK: " + sdkPath);
+			if(_project.jdkType == JavaTypes.JAVA_8) {
+				var jdk8NativePath:String = (_model.java8Path != null) ? _model.java8Path.fileBridge.nativePath : null;
+				trace("Java JDK 8: " + jdk8NativePath);
+			}
 
 			var initOptions:Object = 
 			{
@@ -518,6 +524,35 @@ package actionScripts.languageServer
 			{
 				bootstrapThenStartNativeProcess();
 			}
+		}
+
+		private function sendWorkspaceSettings():void
+		{
+			if(!_languageClient || !_languageClient.initialized)
+			{
+				return;
+			}
+			var runtimes:Array = [];
+			var java8Path:FileLocation = _model.java8Path;
+			if(java8Path != null) {
+				runtimes.push({
+					"name": "JavaSE-1.8",
+					"path": java8Path.fileBridge.nativePath
+				});
+			}
+			var versionParts:Array = _model.javaVersionForTypeAhead.split(".");
+			var sourcesZip:FileLocation = _model.javaPathForTypeAhead.fileBridge.resolvePath("lib/src.zip");
+			runtimes.push({
+				"name": "JavaSE-" + versionParts[0],
+				"path": _model.javaPathForTypeAhead.fileBridge.nativePath,
+				"sources": sourcesZip.fileBridge.nativePath,
+				"javadoc": "https://docs.oracle.com/en/java/javase/" + versionParts[0] + "/docs/api",
+				"default":  true
+			});
+			var settings:Object = { java: { configuration: { runtimes: runtimes } } };
+			var params:Object = new Object();
+			params.settings = settings;
+			_languageClient.sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
 		}
 
 		private function cleanWorkspace():void
@@ -697,6 +732,7 @@ package actionScripts.languageServer
 		private function languageClient_initHandler(event:Event):void
 		{
 			this.dispatchEvent(new Event(Event.INIT));
+			sendWorkspaceSettings();
 		}
 
 		private function languageClient_closeHandler(event:Event):void

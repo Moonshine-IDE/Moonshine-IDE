@@ -1366,6 +1366,16 @@ package actionScripts.utils
 			return true;
 		}
 		
+		public static function isJava8Present():Boolean
+		{
+			if (model.java8Path && model.java8Path.fileBridge.exists)
+			{
+				return true;
+			}
+			
+			return false;
+		}
+		
 		public static function isAntAvailable():Boolean
 		{
 			if (!model.antHomePath || !model.antHomePath.fileBridge.exists)

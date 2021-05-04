@@ -214,7 +214,7 @@ package actionScripts.utils {
 
         private function updateItemChildren(item:FileWrapper):void
         {
-            if (item.children.length == 0) item.updateChildren();
+            item.updateChildren();
         }
     }
 }
