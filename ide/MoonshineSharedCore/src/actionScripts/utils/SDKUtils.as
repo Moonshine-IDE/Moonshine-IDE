@@ -20,8 +20,6 @@
 package actionScripts.utils
 {
 	import actionScripts.factory.FileLocation;
-	import actionScripts.managers.StartupHelper;
-	import actionScripts.valueObjects.HelperConstants;
 
 	import flash.events.Event;
     import flash.events.EventDispatcher;
@@ -65,7 +63,8 @@ package actionScripts.utils
 		{
 			CONFIG::OSX
 				{
-					var downloadsFolder:FileLocation = new FileLocation(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath);
+					var model:IDEModel = IDEModel.getInstance();
+					var downloadsFolder:FileLocation = new FileLocation(model.flexCore.defaultInstallationPathSDKs);
 					if (!downloadsFolder.fileBridge.exists) return;
 
 					var tmpDirListing:Array;
@@ -117,12 +116,12 @@ package actionScripts.utils
 				return;
 			}
 
-			var downloadsFolder:FileLocation = new FileLocation(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath)
+			var model:IDEModel = IDEModel.getInstance();
+			var downloadsFolder:FileLocation = new FileLocation(model.flexCore.defaultInstallationPathSDKs)
 			if (!downloadsFolder.fileBridge.exists) downloadsFolder.fileBridge.createDirectory();
 
 			if (currentSDKIndex < SDKS.length)
 			{
-				var model:IDEModel = IDEModel.getInstance();
 				var tmpLocation:FileLocation = model.fileCore.resolveApplicationDirectoryPath("defaultSDKs/"+ SDKS[currentSDKIndex] +".tar.gz");
 				if (tmpLocation.fileBridge.exists)
 				{
@@ -145,16 +144,19 @@ package actionScripts.utils
 
 		public static function initBundledSDKs():Array
 		{
+			if (!ConstantsCoreVO.IS_AIR) return [];
+
+			var model:IDEModel = IDEModel.getInstance();
+
 			// paths managed by MSDKI for downloading folder
-			StartupHelper.setLocalPathConfig();
+			model.flexCore.setMSDKILocalPathConfig();
 
 			// this method should run once on application startup
 			var isFound:Boolean;
-			var downloadsFolder:FileLocation = new FileLocation(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath)
+			var downloadsFolder:FileLocation = new FileLocation(model.flexCore.defaultInstallationPathSDKs)
 			if (!downloadsFolder.fileBridge.exists) return [];
 
 			var totalBundledSDKs:Array = [];
-			var model:IDEModel = IDEModel.getInstance();
 			if (!model.userSavedSDKs) model.userSavedSDKs = new ArrayCollection();
 			for (var i:String in SDKS)
 			{

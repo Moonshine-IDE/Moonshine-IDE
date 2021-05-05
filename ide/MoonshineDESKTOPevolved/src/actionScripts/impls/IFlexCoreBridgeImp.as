@@ -19,6 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+	import actionScripts.managers.StartupHelper;
+	import actionScripts.valueObjects.HelperConstants;
+
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.Screen;
@@ -547,6 +550,16 @@ package actionScripts.impls
 			var appVersion:String = appDescriptor.ns::versionNumber;
 			
 			return appVersion;
+		}
+
+		public function get defaultInstallationPathSDKs():String
+		{
+			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
+		}
+
+		public function setMSDKILocalPathConfig():void
+		{
+			StartupHelper.setLocalPathConfig();
 		}
 		
 		public function updateToCurrentEnvironmentVariable():void

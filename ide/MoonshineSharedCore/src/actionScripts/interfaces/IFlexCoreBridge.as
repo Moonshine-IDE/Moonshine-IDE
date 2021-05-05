@@ -78,6 +78,7 @@ package actionScripts.interfaces
 		function getExternalEditors():ArrayCollection;
 		function getModulesFinder():IModulesFinder;
 		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
+		function setMSDKILocalPathConfig():void;
 
         /**
          *
@@ -92,5 +93,6 @@ package actionScripts.interfaces
 
 		function get runtimeVersion():String;
 		function get version():String;
+		function get defaultInstallationPathSDKs():String;
 	}
 }
