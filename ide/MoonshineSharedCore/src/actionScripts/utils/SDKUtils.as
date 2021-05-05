@@ -19,13 +19,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-    import flash.events.Event;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.managers.StartupHelper;
+	import actionScripts.valueObjects.HelperConstants;
+
+	import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
-    
+
     import mx.collections.ArrayCollection;
-    
+
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.ProjectEvent;
@@ -34,7 +38,7 @@ package actionScripts.utils
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.RoyaleOutputTarget;
     import actionScripts.valueObjects.SDKReferenceVO;
-	
+
 	public class SDKUtils extends EventDispatcher
 	{
 		public static const BUNDLED: String = "Bundled";
@@ -42,12 +46,12 @@ package actionScripts.utils
 		public static const EVENT_SDK_EXTRACTION_FAILED: String = "EVENT_SDK_EXTRACTION_FAILED";
 		public static const EVENT_SDK_PROMPT_DNS: String = "EVENT_SDK_PROMPT_DNS";
 		public static const EXTRACTED_FOLDER_NAME:String = "MoonshineSDKs";
-		
+
 		private static const SDKS:Array = ["FlexJS_SDK", "Flex_SDK", "Royale_SDK"];
-		
+
 		private static var currentSDKIndex:int;
 		private static var isSDKExtractionFailed:Boolean;
-		
+
 		public static function checkBundledSDKPresence():void
 		{
 			CONFIG::OSX
@@ -56,23 +60,23 @@ package actionScripts.utils
 					if (tmpLocation.fileBridge.exists) ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT = true;
 				}
 		}
-		
+
 		public static function checkHelperDownloadedSDKPresence():void
 		{
 			CONFIG::OSX
 				{
-					var downloadsFolder:FileLocation = getUserDownloadsSDKFolder();
+					var downloadsFolder:FileLocation = new FileLocation(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath);
 					if (!downloadsFolder.fileBridge.exists) return;
-					
+
 					var tmpDirListing:Array;
 					var tmpFolder:FileLocation;
 					var j:Object;
-					
+
 					// finding probable Flex/JS SDKs
 					for (var i:String in SDKS)
 					{
 						tmpFolder = downloadsFolder.resolvePath(SDKS[i]);
-						if (tmpFolder.fileBridge.exists) 
+						if (tmpFolder.fileBridge.exists)
 						{
 							tmpDirListing = tmpFolder.fileBridge.getDirectoryListing();
 							for each (j in tmpDirListing)
@@ -85,10 +89,10 @@ package actionScripts.utils
 							}
 						}
 					}
-					
+
 					// finding probable Ant SDK
 					tmpFolder = downloadsFolder.resolvePath("Ant");
-					if (tmpFolder.fileBridge.exists) 
+					if (tmpFolder.fileBridge.exists)
 					{
 						tmpDirListing = tmpFolder.fileBridge.getDirectoryListing();
 						for each (j in tmpDirListing)
@@ -103,7 +107,7 @@ package actionScripts.utils
 					}
 				}
 		}
-		
+
 		public static function extractBundledSDKs(event:Event):void
 		{
 			if (isSDKExtractionFailed)
@@ -112,10 +116,10 @@ package actionScripts.utils
 				currentSDKIndex = 0;
 				return;
 			}
-			
-			var downloadsFolder:FileLocation = getUserDownloadsSDKFolder();
+
+			var downloadsFolder:FileLocation = new FileLocation(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath)
 			if (!downloadsFolder.fileBridge.exists) downloadsFolder.fileBridge.createDirectory();
-			
+
 			if (currentSDKIndex < SDKS.length)
 			{
 				var model:IDEModel = IDEModel.getInstance();
@@ -130,7 +134,7 @@ package actionScripts.utils
 			{
 				currentSDKIndex = 0;
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(EVENT_SDK_EXTRACTED));
-				
+
 				// remove com.apple.quarantine from extracted folders
 				for (var i:String in SDKS)
 				{
@@ -138,77 +142,74 @@ package actionScripts.utils
 				}
 			}
 		}
-		
+
 		public static function initBundledSDKs():Array
 		{
-			CONFIG::OSX
+			// paths managed by MSDKI for downloading folder
+			StartupHelper.setLocalPathConfig();
+
+			// this method should run once on application startup
+			var isFound:Boolean;
+			var downloadsFolder:FileLocation = new FileLocation(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath)
+			if (!downloadsFolder.fileBridge.exists) return [];
+
+			var totalBundledSDKs:Array = [];
+			var model:IDEModel = IDEModel.getInstance();
+			if (!model.userSavedSDKs) model.userSavedSDKs = new ArrayCollection();
+			for (var i:String in SDKS)
 			{
-				// this method should run once on application startup
-				var isFound:Boolean;
-				var downloadsFolder:FileLocation = getUserDownloadsSDKFolder();
-				if (!downloadsFolder.fileBridge.exists) return [];
-				
-				var totalBundledSDKs:Array = [];
-				var model:IDEModel = IDEModel.getInstance();
-				if (!model.userSavedSDKs) model.userSavedSDKs = new ArrayCollection();
-				for (var i:String in SDKS)
+				var targetDir:FileLocation = new FileLocation(downloadsFolder.fileBridge.nativePath +"/"+ SDKS[i]);
+				var bundledFlexSDK:SDKReferenceVO = getSDKReference(targetDir);
+				if (bundledFlexSDK)
 				{
-					var targetDir:FileLocation = new FileLocation(downloadsFolder.fileBridge.nativePath +"/"+ SDKS[i]);
-					var bundledFlexSDK:SDKReferenceVO = getSDKReference(targetDir);
-					if (bundledFlexSDK)
+					addSDKDirectory(bundledFlexSDK);
+				}
+				else if (targetDir.fileBridge.exists)
+				{
+					// parse through if sdk folders present
+					var tmpDirListing:Array = targetDir.fileBridge.getDirectoryListing();
+					for each (var j:Object in tmpDirListing)
 					{
-						addSDKDirectory(bundledFlexSDK);
-					}
-					else if (targetDir.fileBridge.exists)
-					{
-						// parse through if sdk folders present
-						var tmpDirListing:Array = targetDir.fileBridge.getDirectoryListing();
-						for each (var j:Object in tmpDirListing)
+						if (j.isDirectory && ((j.name.toLowerCase().indexOf("flex") != -1) || (j.name.toLowerCase().indexOf("royale") != -1)))
 						{
-							if (j.isDirectory && ((j.name.toLowerCase().indexOf("flex") != -1) || (j.name.toLowerCase().indexOf("royale") != -1)))
+							bundledFlexSDK = getSDKReference(new FileLocation(j.nativePath));
+							if (bundledFlexSDK)
 							{
-								bundledFlexSDK = getSDKReference(new FileLocation(j.nativePath));
-								if (bundledFlexSDK)
-								{
-									addSDKDirectory(bundledFlexSDK);
-									totalBundledSDKs.push(bundledFlexSDK);
-								}
+								addSDKDirectory(bundledFlexSDK);
+								totalBundledSDKs.push(bundledFlexSDK);
 							}
 						}
 					}
 				}
-				
-				// set one as default sdk if requires
-				var timeoutValue:uint = setTimeout(function():void
-				{
-					if (isFound && model.defaultSDK == null)
-					{
-						setDefaultSDKByBundledSDK();
-						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, model.userSavedSDKs[0]));
-					}
-
-					clearTimeout(timeoutValue);
-				}, 500);
-				
-				// send to owner
-				return totalBundledSDKs;
-				
-				/**
-				 * @local
-				 */
-				function addSDKDirectory(value:SDKReferenceVO):void
-				{
-					var tmpPR:SDKReferenceVO = new SDKReferenceVO();
-					tmpPR.name = String(value.name);
-					tmpPR.path = value.path;
-					tmpPR.status = BUNDLED;
-					model.userSavedSDKs.addItemAt(tmpPR, 0);
-					isFound = true;
-				}
 			}
-			
-			// for non-OSX
-			return [];
+
+			// set one as default sdk if requires
+			var timeoutValue:uint = setTimeout(function():void
+			{
+				if (isFound && model.defaultSDK == null)
+				{
+					setDefaultSDKByBundledSDK();
+					GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, model.userSavedSDKs[0]));
+				}
+
+				clearTimeout(timeoutValue);
+			}, 500);
+
+			// send to owner
+			return totalBundledSDKs;
+
+			/**
+			 * @local
+			 */
+			function addSDKDirectory(value:SDKReferenceVO):void
+			{
+				var tmpPR:SDKReferenceVO = new SDKReferenceVO();
+				tmpPR.name = String(value.name);
+				tmpPR.path = value.path;
+				tmpPR.status = BUNDLED;
+				model.userSavedSDKs.addItemAt(tmpPR, 0);
+				isFound = true;
+			}
 		}
 
 		public static function setDefaultSDKByBundledSDK():void
@@ -321,20 +322,6 @@ package actionScripts.utils
 			}
 			
 			return null;
-		}
-		
-		private static function getUserDownloadsSDKFolder(onlyDownloadsFolder:Boolean=false):FileLocation
-		{
-			var tmpUserFolderSplit: Array = IDEModel.getInstance().fileCore.resolveUserDirectoryPath().fileBridge.nativePath.split(IDEModel.getInstance().fileCore.separator);
-			if (tmpUserFolderSplit[1] == "Users")
-			{
-				tmpUserFolderSplit = tmpUserFolderSplit.slice(1, 3);
-			}
-			
-			var extractionDir:FileLocation = (!onlyDownloadsFolder) ? new FileLocation("/" + tmpUserFolderSplit.join("/") + "/Downloads/"+ EXTRACTED_FOLDER_NAME) : new FileLocation("/" + tmpUserFolderSplit.join("/") + "/Downloads");
-			//if (!extractionDir.fileBridge.exists) extractionDir.fileBridge.createDirectory();
-			
-			return extractionDir;
 		}
 		
         public static function getSdkSwfMajorVersion(sdkPath:String=null, providerToUpdateAsync:Object=null, fieldToUpdateAsync:String=null):int
