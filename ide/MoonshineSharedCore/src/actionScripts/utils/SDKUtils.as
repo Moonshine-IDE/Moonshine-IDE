@@ -172,7 +172,9 @@ package actionScripts.utils
 					var tmpDirListing:Array = targetDir.fileBridge.getDirectoryListing();
 					for each (var j:Object in tmpDirListing)
 					{
-						if (j.isDirectory && ((j.name.toLowerCase().indexOf("flex") != -1) || (j.name.toLowerCase().indexOf("royale") != -1)))
+						if (j.isDirectory && ((j.name.toLowerCase().indexOf("flex") != -1) ||
+								(j.name.toLowerCase().indexOf("royale") != -1) ||
+								(j.name.toLowerCase().indexOf("feathers") != -1)))
 						{
 							bundledFlexSDK = getSDKReference(new FileLocation(j.nativePath));
 							if (bundledFlexSDK)
