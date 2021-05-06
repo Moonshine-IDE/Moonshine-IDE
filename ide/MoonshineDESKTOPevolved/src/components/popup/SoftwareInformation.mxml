@@ -96,6 +96,10 @@
 							if(model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists)
 								component.installToPath = model.javaPathForTypeAhead.fileBridge.nativePath;
 							break;
+						case ComponentTypes.TYPE_OPENJAVA_V8:
+							if(model.java8Path && model.java8Path.fileBridge.exists)
+								component.installToPath = model.java8Path.fileBridge.nativePath;
+							break;
 						case ComponentTypes.TYPE_GIT:
 							if(model.gitPath && FileUtils.isPathExists(model.gitPath))
 								component.installToPath = model.gitPath;

@@ -56,6 +56,7 @@ package actionScripts.utils
 				case SDKTypes.FLEXJS:
 				case SDKTypes.FEATHERS:
 				case SDKTypes.OPENJAVA:
+				case SDKTypes.OPENJAVA8:
 					pluginClass = "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin";
 					break;
 				case SDKTypes.ANT:
