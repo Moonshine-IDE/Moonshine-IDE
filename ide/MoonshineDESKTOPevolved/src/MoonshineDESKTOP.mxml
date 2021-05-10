@@ -24,7 +24,8 @@
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
 					   xmlns:s="library://ns.adobe.com/flex/spark"
 					   frameRate="60" height="768" minWidth="1024" applicationDPI="120"
-					   preinitialize="onPreinit(event)" initialize="onInitialized()" creationComplete="onComplete()" xmlns:containers="components.containers.*" xmlns:nativeApplicationUpdater="actionScripts.extResources.riaspace.nativeApplicationUpdater.*">
+					   preinitialize="onPreinit(event)" initialize="onInitialized()" creationComplete="onComplete()" closing="onApplicationClosing(event)"
+					   xmlns:containers="components.containers.*" xmlns:nativeApplicationUpdater="actionScripts.extResources.riaspace.nativeApplicationUpdater.*">
 	<fx:Metadata>
 		[ResourceBundle("resources")]
 	</fx:Metadata>
@@ -131,8 +132,7 @@
 	
 				// addedToStage
 				addEventListener(Event.ADDED_TO_STAGE, initStage);
-				nativeWindow.addEventListener(Event.CLOSING, onApplicationClosing);
-	
+
 				IDEModel.getInstance().refreshIdeBuildVersion();
 			}
 	
@@ -242,11 +242,11 @@
 	
 			protected function onApplicationClosing(event:Event):void
 			{
-				var internalClosingEvent:Event = new Event(MenuPlugin.MENU_QUIT_EVENT, false, true);
-				GlobalEventDispatcher.getInstance().dispatchEvent(internalClosingEvent);
-	
 				event.stopImmediatePropagation();
 				event.preventDefault();
+
+				var internalClosingEvent:Event = new Event(MenuPlugin.MENU_QUIT_EVENT, false, true);
+				GlobalEventDispatcher.getInstance().dispatchEvent(internalClosingEvent);
 			}
 		]]>
 	</fx:Script>
