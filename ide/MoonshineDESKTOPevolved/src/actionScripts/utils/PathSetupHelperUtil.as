@@ -52,6 +52,7 @@ package actionScripts.utils
 			switch (type)
 			{
 				case SDKTypes.FLEX:
+				case SDKTypes.FLEX_HARMAN:
 				case SDKTypes.ROYALE:
 				case SDKTypes.FLEXJS:
 				case SDKTypes.FEATHERS:
@@ -93,6 +94,7 @@ package actionScripts.utils
 			switch (type)
 			{
 				case SDKTypes.FLEX:
+				case SDKTypes.FLEX_HARMAN:
 				case SDKTypes.ROYALE:
 				case SDKTypes.FLEXJS:
 				case SDKTypes.FEATHERS:
