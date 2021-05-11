@@ -28,7 +28,6 @@ package actionScripts.impls
 	import flash.display.Stage;
 	import flash.filesystem.File;
 	import flash.ui.Keyboard;
-	import flash.utils.setTimeout;
 
 	import mx.collections.ArrayCollection;
 	import mx.controls.HTML;
