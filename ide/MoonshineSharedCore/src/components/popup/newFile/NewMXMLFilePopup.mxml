@@ -157,7 +157,7 @@
 	            // re-validate upon folder location change
 	            wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
 	            isDestinationValid = UtilsCore.validatePathAgainstSources(wrapperBelongToProject, wrapperOfFolderLocation);
-	            onNameChanged(new TextOperationEvent(TextOperationEvent.CHANGE));
+				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
 	        }
 	
 	        override protected function onNewFileCreationComplete(event:FlexEvent):void
@@ -189,7 +189,7 @@
 			
 		]]>
 	</fx:Script>
-	<s:VGroup width="100%">
+	<s:VGroup width="100%" height="100%">
 		<s:Label text="Source Folder:"/>
 		<s:HGroup width="100%" verticalAlign="middle">
 			<view:PromptTextInput id="txtDestination"

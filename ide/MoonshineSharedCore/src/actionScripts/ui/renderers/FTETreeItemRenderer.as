@@ -27,6 +27,8 @@ package actionScripts.ui.renderers
 	import flash.filters.GlowFilter;
 	import flash.ui.ContextMenuItem;
 	import flash.ui.Keyboard;
+
+	import mx.controls.Alert;
 	
 	import mx.binding.utils.ChangeWatcher;
 	import mx.collections.ArrayCollection;
@@ -383,7 +385,7 @@ package actionScripts.ui.renderers
 					loadingIcon.source = new ConstantsCoreVO.loaderIcon;
 					loadingIcon.width = loadingIcon.height = 10;
 					loadingIcon.y = (this.height - loadingIcon.height)/2;
-					loadingIcon.x = this.width - loadingIcon.width - 10;
+					loadingIcon.x = label2.x - loadingIcon.width - 10;
 					addChild(loadingIcon);
 				}
 				else if (!fw.isWorking && loadingIcon)
@@ -399,6 +401,14 @@ package actionScripts.ui.renderers
 				else
 				{
 					label2.setStyle("lineThrough", false);
+				}
+
+				if (fw.isSourceFolder && !isSourceFolderIcon)
+				{
+					isSourceFolderIcon = new Image();
+					isSourceFolderIcon.toolTip = "Source folder";
+					isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon;
+					addChild(isSourceFolderIcon);
 				}
 			}
 			
@@ -655,17 +665,10 @@ package actionScripts.ui.renderers
 	        	}
 	        	else isOpenIcon.visible = false;
 				
-				if (data.isSourceFolder && !isSourceFolderIcon)
+				if (data.isSourceFolder && isSourceFolderIcon)
 				{
-					isSourceFolderIcon = new Image();
-					isSourceFolderIcon.toolTip = "Source folder";
-					isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon;
 					isSourceFolderIcon.width = isSourceFolderIcon.height = 14;
 					isSourceFolderIcon.x = label2.x - (this.icon ? 44 : 28);
-					addChild(isSourceFolderIcon);
-				}
-				else if (data.isSourceFolder && isSourceFolderIcon)
-				{
 					isSourceFolderIcon.visible = true;
 				}
 				else if (!data.isSourceFolder && isSourceFolderIcon) 

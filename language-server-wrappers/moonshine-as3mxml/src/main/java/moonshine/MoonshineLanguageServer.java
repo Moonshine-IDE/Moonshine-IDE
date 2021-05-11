@@ -28,14 +28,13 @@ import com.google.gson.JsonObject;
 
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
-import org.eclipse.lsp4j.services.TextDocumentService;
-import org.eclipse.lsp4j.services.WorkspaceService;
 
 public class MoonshineLanguageServer extends ActionScriptLanguageServer
 {
     public MoonshineLanguageServer(IProjectConfigStrategyFactory factory)
     {
         super(factory);
+        actionScriptServices = new MoonshineActionScriptServices(factory);
 	}
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
@@ -54,25 +53,5 @@ public class MoonshineLanguageServer extends ActionScriptLanguageServer
             e.printStackTrace(System.err);
         }
         return result;
-    }
-
-    @Override
-    public TextDocumentService getTextDocumentService()
-    {
-        if (actionScriptServices == null)
-        {
-            actionScriptServices = new MoonshineActionScriptServices();
-        }
-        return actionScriptServices;
-    }
-
-    @Override
-    public WorkspaceService getWorkspaceService()
-    {
-        if (actionScriptServices == null)
-        {
-            actionScriptServices = new MoonshineActionScriptServices();
-        }
-        return actionScriptServices;
     }
 }

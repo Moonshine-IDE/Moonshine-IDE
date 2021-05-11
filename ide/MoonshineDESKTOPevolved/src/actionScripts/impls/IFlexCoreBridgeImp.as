@@ -19,13 +19,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+	import actionScripts.managers.StartupHelper;
+	import actionScripts.valueObjects.HelperConstants;
+
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.Screen;
 	import flash.display.Stage;
 	import flash.filesystem.File;
 	import flash.ui.Keyboard;
-	
+
 	import mx.collections.ArrayCollection;
 	import mx.controls.HTML;
 	import mx.core.FlexGlobals;
@@ -56,7 +59,6 @@ package actionScripts.impls
 	import actionScripts.plugin.findreplace.FindReplacePlugin;
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
 	import actionScripts.plugin.help.HelpPlugin;
-	import moonshine.plugin.help.view.TourDeFlexContentsView;
 	import actionScripts.plugin.locations.LocationsPlugin;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
@@ -122,6 +124,7 @@ package actionScripts.impls
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.JavaVersionReader;
 	import actionScripts.utils.ModulesFinder;
 	import actionScripts.utils.SHClassTest;
 	import actionScripts.utils.SWFTrustPolicyModifier;
@@ -129,6 +132,7 @@ package actionScripts.impls
 	import actionScripts.utils.Untar;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	
 	import components.containers.DownloadNewFlexSDK;
 	import components.popup.DefineFolderAccessPopup;
@@ -330,7 +334,7 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources','EDIT'), [
 					new MenuItem(resourceManager.getString('resources','FIND'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,
-								ProjectMenuTypes.JAVA, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], FindReplacePlugin.EVENT_FIND_NEXT,
+								ProjectMenuTypes.JAVA, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], FindReplacePlugin.EVENT_FIND_NEXT,
 						'f', [Keyboard.COMMAND],
 						'f', [Keyboard.CONTROL]),
 					/*new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, null, FindReplacePlugin.EVENT_FIND_PREV,
@@ -357,7 +361,7 @@ package actionScripts.impls
 						'i', [Keyboard.COMMAND, Keyboard.SHIFT],
 						'i', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(null),
-					new MenuItem(resourceManager.getString('resources', 'DUPLICATE'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.VISUAL_EDITOR_FLEX], VisualEditorEvent.DUPLICATE_ELEMENT,
+					new MenuItem(resourceManager.getString('resources', 'DUPLICATE'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.VISUAL_EDITOR_FLEX,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], VisualEditorEvent.DUPLICATE_ELEMENT,
 						'u', [Keyboard.COMMAND], 'u', [Keyboard.CONTROL])
 				]),
 				new MenuItem(resourceManager.getString('resources','VIEW'), [
@@ -498,14 +502,24 @@ package actionScripts.impls
 			//versionChecker.getJavaPath(completionHandler);
 		}
 		
-		public function reAdjustApplicationSize(width:Number, height:Number):void
+		public function reAdjustApplicationSize(width:Number=NaN, height:Number=NaN):void
 		{
 			var tmpStage:Stage = FlexGlobals.topLevelApplication.stage as Stage;
-			tmpStage.nativeWindow.width = width;
-			tmpStage.nativeWindow.height = height;
-			
-			tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - width)/2;
-			tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - height)/2;
+			if (!isNaN(width))
+			{
+				tmpStage.nativeWindow.width = width;
+				tmpStage.nativeWindow.height = height;
+				tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - width)/2;
+				tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - height)/2;
+			}
+			else
+			{
+				FlexGlobals.topLevelApplication.callLater(function():void
+				{
+					tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - tmpStage.nativeWindow.width)/2;
+					tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - tmpStage.nativeWindow.height)/2;
+				});
+			}
 		}
 		
 		public function getNewAntBuild():IFlexDisplayObject
@@ -547,15 +561,25 @@ package actionScripts.impls
 			
 			return appVersion;
 		}
+
+		public function get defaultInstallationPathSDKs():String
+		{
+			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
+		}
+
+		public function setMSDKILocalPathConfig():void
+		{
+			StartupHelper.setLocalPathConfig();
+		}
 		
 		public function updateToCurrentEnvironmentVariable():void
 		{
 			EnvironmentSetupUtils.getInstance().updateToCurrentEnvironmentVariable();
 		}
 		
-		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
 		{
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(completion, customSDK, withCommands);
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(completion, customSDKs, withCommands);
 		}
 		
 		public function getExternalEditors():ArrayCollection
@@ -566,6 +590,12 @@ package actionScripts.impls
 		public function getModulesFinder():IModulesFinder
 		{
 			return (new ModulesFinder());
+		}
+		
+		public function getJavaVersion(javaPath:String=null, onComplete:Function=null):void
+		{
+			var javaVersionReader:JavaVersionReader = new JavaVersionReader();
+			javaVersionReader.readVersion(javaPath, onComplete);
 		}
 	}
 }

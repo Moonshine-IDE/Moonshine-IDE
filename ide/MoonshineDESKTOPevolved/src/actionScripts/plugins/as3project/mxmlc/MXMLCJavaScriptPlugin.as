@@ -64,9 +64,11 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
+	import actionScripts.valueObjects.WebBrowserVO;
 	
 	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
@@ -75,7 +77,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
-	import actionScripts.valueObjects.WebBrowserVO;
 
     public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -401,7 +402,10 @@ package actionScripts.plugins.as3project.mxmlc
 					as3Pvo.updateConfig();
 
 					compileStr = getBuildArgs(as3Pvo);
-					EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
+					
+					var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+					envCustomSDK.sdkPath = SDKstr;
+					EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compileStr]);
 				}
 				else
 				{

@@ -20,6 +20,7 @@
 package actionScripts.impls
 {
 	import actionScripts.interfaces.IHelperMoonshineBridge;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.utils.MSDKIdownloadUtil;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
@@ -60,6 +61,11 @@ package actionScripts.impls
 		public function isJavaPresent():Boolean
 		{
 			return UtilsCore.isJavaForTypeaheadAvailable();
+		}
+		
+		public function isJava8Present():Boolean
+		{
+			return UtilsCore.isJava8Present();
 		}
 		
 		public function isAntPresent():Boolean
@@ -116,6 +122,16 @@ package actionScripts.impls
 		public function set playerglobalExists(value:Boolean):void
 		{
 			_playerglobalExists = value;
+		}
+		
+		public function get javaVersionForTypeahead():String
+		{
+			return IDEModel.getInstance().javaVersionForTypeAhead;
+		}
+		
+		public function get javaVersionInJava8Path():String
+		{
+			return IDEModel.getInstance().javaVersionInJava8Path;
 		}
 	}
 }

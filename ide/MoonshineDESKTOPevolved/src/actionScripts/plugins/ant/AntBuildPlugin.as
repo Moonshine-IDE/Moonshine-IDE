@@ -44,9 +44,11 @@ package actionScripts.plugins.ant
     import actionScripts.events.RunANTScriptEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.interfaces.IJavaProject;
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.java.javaproject.vo.JavaTypes;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
@@ -62,6 +64,7 @@ package actionScripts.plugins.ant
     import actionScripts.valueObjects.ComponentTypes;
     import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.Settings;
     
     import components.popup.SelectAntFile;
@@ -540,7 +543,10 @@ package actionScripts.plugins.ant
             }
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, buildDir.fileBridge.name, "Building ", false));
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, sdkPath, [compileStr]);
+			
+			var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomSDK.sdkPath = sdkPath;
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compileStr]);
 
 			/*
 			* @local

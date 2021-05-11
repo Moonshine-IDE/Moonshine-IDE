@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<note default='true' class='view' xmlns='http://www.lotus.com/dxl' version='11.0'
+ replicaid='8525846B005C28D2'>
+<noteinfo noteid='1a2' unid='3F30E94182403E568525846B00645880' sequence='3'>
+<created><datetime dst='true'>20190904T141602,56-04</datetime></created>
+<modified><datetime dst='true'>20190906T100534,38-04</datetime></modified>
+<revised><datetime dst='true'>20190906T100534,37-04</datetime></revised>
+<lastaccessed><datetime dst='true'>20190906T100534,37-04</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20190904T141602,56-04</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Jesse Gallagher/O=IKSG</name></updatedby>
+<wassignedby><name>CN=Jesse Gallagher/O=IKSG</name></wassignedby>
+<item name='$Formula' summary='true' sign='true'><formula compiled='true'>
+HAAFAA4ACgABAAQAJCQkJAQABAAAAAgAZgADAA==
+</formula></item>
+<item name='$FormulaClass' sign='true'><text>1</text></item>
+<item name='$TITLE' sign='true'><text>Example View</text></item>
+<item name='$DesignerVersion' sign='true'><text>8.5.3</text></item></note>
+

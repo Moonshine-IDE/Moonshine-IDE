@@ -19,17 +19,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.workspace
 {
+	import actionScripts.ui.FeathersUIWrapper;
+	import actionScripts.valueObjects.WorkspaceVO;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
-	
-	import mx.collections.ArrayList;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+
+	import moonshine.plugin.workspace.events.WorkspaceEvent;
+	import moonshine.plugin.workspace.view.NewWorkspaceView;
+
 	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
-	
-	import actionScripts.events.GeneralEvent;
+
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
@@ -39,10 +44,10 @@ package actionScripts.plugin.workspace
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
-	
-	import components.popup.workspace.LoadWorkspacePopup;
-	import components.popup.workspace.NewWorkspacePopup;
-	
+	import feathers.data.ArrayCollection;
+
+	import moonshine.plugin.workspace.view.LoadWorkspaceView;
+
 	public class WorkspacePlugin extends PluginBase
 	{
 		public static const EVENT_SAVE_AS:String = "saveAsNewWorkspaceEvent";
@@ -56,14 +61,18 @@ package actionScripts.plugin.workspace
 		override public function get description():String 	{return "Workspace manangement for the Moonshine projects.";}
 		
 		private var cookie:SharedObject;
-		private var currentWorkspaceItems:Array;
+		private var currentWorkspacePaths:Array;
 		private var workspaces:Object; // Dictionary<String, [String]>
+		private var workspacesForViews:Array;
 		private var methodToCallAfterClosingAllProjects:MethodDescriptor;
 		private var closeAllProjectItems:Array;
 		
-		private var loadWorkspacePopup:LoadWorkspacePopup;
-		private var newWorkspacePopup:NewWorkspacePopup;
-		
+		private var loadWorkspaceView:LoadWorkspaceView;
+		private var loadWorkspaceViewWrapper:FeathersUIWrapper;
+
+		private var newWorkspaceView:NewWorkspaceView;
+		private var newWorkspaceViewWrapper:FeathersUIWrapper;
+
 		private var _currentWorkspaceLabel:String;
 		private function get currentWorkspaceLabel():String
 		{
@@ -108,7 +117,7 @@ package actionScripts.plugin.workspace
 		{
 			if (getPathIndex(event.project.folderLocation.fileBridge.nativePath) == -1)
 			{
-				currentWorkspaceItems.push(event.project.folderLocation.fileBridge.nativePath);
+				currentWorkspacePaths.push(event.project.folderLocation.fileBridge.nativePath);
 				saveToCookie();
 			}
 		}
@@ -132,87 +141,117 @@ package actionScripts.plugin.workspace
 				var pathIndex:int = getPathIndex(value);
 				if (pathIndex != -1)
 				{
-					currentWorkspaceItems.splice(pathIndex, 1);
+					currentWorkspacePaths.splice(pathIndex, 1);
 					saveToCookie();
 				}
 			}
 		}
-		
+
+		private function handleSaveAsWorkspaceEvent(event:WorkspaceEvent):void
+		{
+			duplicateToNewWorkspace(event.workspaceLabel);
+		}
+
 		private function onSaveAsNewWorkspaceEvent(event:Event):void
 		{
-			newWorkspacePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewWorkspacePopup, true) as NewWorkspacePopup;
-			newWorkspacePopup.workspaces = workspaceLabels;
-			newWorkspacePopup.title = "Save As Workspace";
-			newWorkspacePopup.addEventListener(CloseEvent.CLOSE, handleNewWorkspacePopupClose);
-			newWorkspacePopup.addEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
-			
-			PopUpManager.centerPopUp(newWorkspacePopup);
+			var newWorkspaceView:NewWorkspaceView = createNewWorkspaceViewWithTitle("Save As Workspace");
+			newWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
 		}
-		
-		private function handleSaveAsWorkspaceEvent(event:GeneralEvent):void
-		{
-			duplicateToNewWorkspace(event.value as String);
-		}
-		
+
 		private function onNewWorkspaceEvent(event:Event):void
 		{
-			newWorkspacePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewWorkspacePopup, true) as NewWorkspacePopup;
-			newWorkspacePopup.workspaces = workspaceLabels;
-			newWorkspacePopup.title = "New Workspace";
-			newWorkspacePopup.addEventListener(CloseEvent.CLOSE, handleNewWorkspacePopupClose);
-			newWorkspacePopup.addEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
-			
-			PopUpManager.centerPopUp(newWorkspacePopup);
+			var newWorkspaceView:NewWorkspaceView = createNewWorkspaceViewWithTitle("New Workspace");
+			newWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
 		}
-		
-		private function handleNewWorkspacePopupClose(event:CloseEvent):void
+
+		protected function newWorkspaceView_stage_resizeHandler(event:Event):void
 		{
-			newWorkspacePopup.removeEventListener(CloseEvent.CLOSE, handleNewWorkspacePopupClose);
-			newWorkspacePopup.removeEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
-			newWorkspacePopup.removeEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
-			newWorkspacePopup = null;
+			PopUpManager.centerPopUp(newWorkspaceViewWrapper);
+		}
+
+		private function handleNewWorkspacePopupClose(event:Event):void
+		{
+			newWorkspaceViewWrapper.stage.removeEventListener(Event.RESIZE, newWorkspaceView_stage_resizeHandler);
+			PopUpManager.removePopUp(newWorkspaceViewWrapper);
+			newWorkspaceViewWrapper = null;
+
+			newWorkspaceView.removeEventListener(Event.CLOSE, handleNewWorkspacePopupClose);
+			newWorkspaceView.removeEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
+			newWorkspaceView.removeEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
+
+			newWorkspaceView = null;
 		}
 		
-		private function handleNewWorkspaceEvent(event:GeneralEvent):void
+		private function handleNewWorkspaceEvent(event:WorkspaceEvent):void
 		{
 			methodToCallAfterClosingAllProjects = 
-				new MethodDescriptor(this, 'changeToNewWorkspace', event.value as String);
+				new MethodDescriptor(this, 'changeToNewWorkspace', event.workspaceLabel);
 			
-			closeAllProjectItems = ObjectUtil.copy(currentWorkspaceItems) as Array;
+			closeAllProjectItems = ObjectUtil.copy(currentWorkspacePaths) as Array;
 			closeAllEditorAsync();
 		}
-		
+
+		private function createNewWorkspaceViewWithTitle(title:String):NewWorkspaceView
+		{
+			newWorkspaceView = new NewWorkspaceView();
+			newWorkspaceViewWrapper = new FeathersUIWrapper(newWorkspaceView);
+			PopUpManager.addPopUp(newWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
+
+			newWorkspaceView.workspaces = new ArrayCollection(this.workspacesForViews);
+			newWorkspaceView.title = title;
+			newWorkspaceView.addEventListener(Event.CLOSE, handleNewWorkspacePopupClose);
+
+			PopUpManager.centerPopUp(newWorkspaceViewWrapper);
+			newWorkspaceViewWrapper.assignFocus("top");
+			newWorkspaceViewWrapper.stage.addEventListener(Event.RESIZE, newWorkspaceView_stage_resizeHandler, false, 0, true);
+
+			return newWorkspaceView;
+		}
+
 		private function onLoadWorkspaceEvent(event:Event):void
 		{
-			loadWorkspacePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, LoadWorkspacePopup, true) as LoadWorkspacePopup;
-			loadWorkspacePopup.workspaces = new ArrayList(workspaceLabels);
-			loadWorkspacePopup.selectedWorkspace = currentWorkspaceLabel;
-			loadWorkspacePopup.addEventListener(CloseEvent.CLOSE, handleLoadWorkspacePopupClose);
-			loadWorkspacePopup.addEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
-			
-			PopUpManager.centerPopUp(loadWorkspacePopup);
+			loadWorkspaceView = new LoadWorkspaceView();
+			loadWorkspaceViewWrapper = new FeathersUIWrapper(loadWorkspaceView);
+
+			loadWorkspaceView.workspaces = new ArrayCollection(workspacesForViews);
+			loadWorkspaceView.selectedWorkspace = this.getCurrentWorkspaceForView(currentWorkspaceLabel);
+			loadWorkspaceView.addEventListener(Event.CLOSE, handleLoadWorkspacePopupClose);
+			loadWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
+
+			PopUpManager.addPopUp(loadWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
+			PopUpManager.centerPopUp(loadWorkspaceViewWrapper);
+			loadWorkspaceViewWrapper.assignFocus("top");
+			loadWorkspaceViewWrapper.stage.addEventListener(Event.RESIZE, loadWorkspaceView_stage_resizeHandler, false, 0, true);
 		}
 		
-		private function handleLoadWorkspacePopupClose(event:CloseEvent):void
+		private function handleLoadWorkspacePopupClose(event:Event):void
 		{
-			loadWorkspacePopup.removeEventListener(CloseEvent.CLOSE, handleLoadWorkspacePopupClose);
-			loadWorkspacePopup.removeEventListener(LoadWorkspacePopup.EVENT_NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
-			loadWorkspacePopup = null;
+			loadWorkspaceViewWrapper.stage.removeEventListener(Event.RESIZE, loadWorkspaceView_stage_resizeHandler);
+			PopUpManager.removePopUp(loadWorkspaceViewWrapper);
+			loadWorkspaceViewWrapper = null;
+
+			loadWorkspaceView.removeEventListener(Event.CLOSE, handleLoadWorkspacePopupClose);
+			loadWorkspaceView.removeEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
+			loadWorkspaceView = null;
 		}
 		
-		private function handleLoadWorkspaceEvent(event:GeneralEvent):void
+		private function handleLoadWorkspaceEvent(event:WorkspaceEvent):void
 		{
-			var requestedWorkspace:String = event.value as String;
+			var requestedWorkspace:String = event.workspaceLabel;
 			if (requestedWorkspace != currentWorkspaceLabel)
 			{
 				methodToCallAfterClosingAllProjects = 
 					new MethodDescriptor(this, 'changeToWorkspace', requestedWorkspace);
 				
-				closeAllProjectItems = ObjectUtil.copy(currentWorkspaceItems) as Array;
+				closeAllProjectItems = ObjectUtil.copy(currentWorkspacePaths) as Array;
 				closeAllEditorAsync();
 			}
 		}
-		
+
+		protected function loadWorkspaceView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(loadWorkspaceViewWrapper);
+		}
 		//--------------------------------------------------------------------------
 		//
 		//  GENERAL API
@@ -222,7 +261,8 @@ package actionScripts.plugin.workspace
 		private function restoreFromCookie():void
 		{
 			currentWorkspaceLabel = ("currentWorkspace" in cookie.data) ? cookie.data["currentWorkspace"] : LABEL_DEFAULT_WORKSPACE;
-			
+
+			workspacesForViews = [];
 			workspaces = new Object();
 			if ("workspaces" in cookie.data)
 			{
@@ -232,26 +272,31 @@ package actionScripts.plugin.workspace
 			{
 				workspaces[LABEL_DEFAULT_WORKSPACE] = [];
 			}
-			
-			currentWorkspaceItems = (workspaces[currentWorkspaceLabel] !== undefined) ? 
+
+			for (var workspace:String in workspaces)
+			{
+				this.workspacesForViews.push(new WorkspaceVO(workspace, workspaces[workspace]));
+			}
+
+			currentWorkspacePaths = (workspaces[currentWorkspaceLabel] !== undefined) ?
 				workspaces[currentWorkspaceLabel] : [];
 		}
 		
 		private function getPathIndex(path:String):int
 		{
-			return currentWorkspaceItems.indexOf(path);
+			return currentWorkspacePaths.indexOf(path);
 		}
 		
 		public function changeToWorkspace(label:String):void
 		{
 			currentWorkspaceLabel = label;
-			currentWorkspaceItems = workspaces[currentWorkspaceLabel];
+			currentWorkspacePaths = workspaces[currentWorkspaceLabel];
 			saveToCookie();
 			
 			// codes to re-open each projects
 			// saved from the active workspace
 			var tmpProjectLocation:FileLocation;
-			for each (var path:String in currentWorkspaceItems)
+			for each (var path:String in currentWorkspacePaths)
 			{
 				tmpProjectLocation = new FileLocation(path);
 				if (tmpProjectLocation.fileBridge.exists)
@@ -265,25 +310,25 @@ package actionScripts.plugin.workspace
 		
 		public function changeToNewWorkspace(label:String):void
 		{
-			currentWorkspaceItems = [];
+			currentWorkspacePaths = [];
 			currentWorkspaceLabel = label;
-			workspaces[currentWorkspaceLabel] = currentWorkspaceItems;
+			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 			saveToCookie();
 			outputToConsole();
 		}
 		
 		private function duplicateToNewWorkspace(label:String):void
 		{
-			currentWorkspaceItems = ObjectUtil.clone(currentWorkspaceItems) as Array;
+			currentWorkspacePaths = ObjectUtil.clone(currentWorkspacePaths) as Array;
 			currentWorkspaceLabel = label;
-			workspaces[currentWorkspaceLabel] = currentWorkspaceItems;
+			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 			saveToCookie();
 			outputToConsole();
 		}
 		
 		private function saveToCookie():void
 		{
-			workspaces[currentWorkspaceLabel] = currentWorkspaceItems;
+			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 			cookie.data["currentWorkspace"] = currentWorkspaceLabel;
 			cookie.data["workspaces"] = workspaces;
 			
@@ -312,10 +357,25 @@ package actionScripts.plugin.workspace
 			}
 			else
 			{
-				methodToCallAfterClosingAllProjects.callMethod();
-				methodToCallAfterClosingAllProjects = null;
-				closeAllProjectItems = null;
+				var tmpTimeout:uint = setTimeout(function():void
+				{
+					clearTimeout(tmpTimeout);
+					
+					methodToCallAfterClosingAllProjects.callMethod();
+					methodToCallAfterClosingAllProjects = null;
+					closeAllProjectItems = null;
+				}, 1000);
 			}
+		}
+
+		private function getCurrentWorkspaceForView(label:String):WorkspaceVO
+		{
+			for each (var workspace:WorkspaceVO in this.workspacesForViews)
+			{
+				if (workspace.label == label) return workspace;
+			}
+
+			return null;
 		}
 	}
 }

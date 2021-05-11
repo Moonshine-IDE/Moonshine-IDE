@@ -75,6 +75,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	public static final THEME_VARIANT_LIGHT_LABEL:String = "moonshine-label--light";
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
 	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
+	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
 
 	public function new() {
 		super();
@@ -122,6 +123,8 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(Button, TitleWindow.CHILD_VARIANT_CLOSE_BUTTON, setTitleWindowCloseButtonStyles);
 
 		this.styleProvider.setStyleFunction(TextInput, null, setTextInputStyles);
+		
+		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_BUSY_LABEL, setBusyLabelStyles);
 
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
@@ -582,7 +585,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	private function setTitleWindowCloseButtonStyles(button:Button):Void {
 		var backgroundSkin = new CircleSkin();
 		backgroundSkin.border = SolidColor(1.0, 0xffffff);
-		backgroundSkin.fill = null;
+		backgroundSkin.fill = SolidColor(0xff00ff, 0.0);
 		backgroundSkin.width = 16.0;
 		backgroundSkin.height = 16.0;
 		button.backgroundSkin = backgroundSkin;
@@ -752,7 +755,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	private function setSideBarViewHeaderCloseButtonStyles(button:Button):Void {
 		var backgroundSkin = new CircleSkin();
 		backgroundSkin.border = SolidColor(1.0, 0x444444, 0.8);
-		backgroundSkin.fill = null;
+		backgroundSkin.fill = SolidColor(0xff00ff, 0.0);
 		backgroundSkin.width = 14.0;
 		backgroundSkin.height = 14.0;
 		button.backgroundSkin = backgroundSkin;
@@ -787,7 +790,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		backgroundSkin.cornerRadius = 7.0;
 		window.backgroundSkin = backgroundSkin;
 
-		if (Std.is(window, ResizableTitleWindow)) {
+		if (Std.isOfType(window, ResizableTitleWindow)) {
 			var resizableWindow = cast(window, ResizableTitleWindow);
 
 			var resizeHandleSkin = new Shape();
@@ -823,6 +826,11 @@ class MoonshineTheme extends ClassVariantTheme {
 
 	private function setTitleWindowTitleStyles(label:Label):Void {
 		label.textFormat = new TextFormat("DejaVuSansTF", 12, 0x292929, true);
+		label.embedFonts = true;
+	}
+	
+	private function setBusyLabelStyles(label:Label):Void {
+		label.textFormat = new TextFormat("DejaVuSansTF", 12, 0xffffff, false);
 		label.embedFonts = true;
 	}
 

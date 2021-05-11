@@ -109,7 +109,7 @@ class ResizableTitleWindow extends TitleWindow {
 		if (this._currentResizeHandleSkin == null) {
 			return;
 		}
-		if (Std.is(this._currentResizeHandleSkin, IValidating)) {
+		if (Std.isOfType(this._currentResizeHandleSkin, IValidating)) {
 			cast(this._currentResizeHandleSkin, IValidating).validateNow();
 		}
 		this._resizeHandle.x = this.actualWidth - this.paddingRight - this._currentResizeHandleSkin.width;

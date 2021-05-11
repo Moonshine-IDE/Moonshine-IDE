@@ -24,11 +24,14 @@ package actionScripts.ui
 	import feathers.core.IFocusContainer;
 	import feathers.core.IFocusManager;
 	import feathers.core.IFocusObject;
+	import feathers.core.PopUpManager;
 	import feathers.layout.Measurements;
 
+	import flash.Lib;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.FocusEvent;
 
@@ -36,8 +39,6 @@ package actionScripts.ui
 	import mx.core.UIComponent;
 	import mx.managers.IFocusManagerComplexComponent;
 	import mx.managers.IFocusManagerContainer;
-
-	import openfl._internal.Lib;
 
 	[DefaultProperty("feathersUIControl")]
 	public class FeathersUIWrapper extends UIComponent implements IFocusManagerContainer, IFocusManagerComplexComponent
@@ -48,11 +49,13 @@ package actionScripts.ui
 			this.feathersUIControl = feathersUIControl;
 			this.addEventListener(Event.ADDED_TO_STAGE, feathersUIWrapper_addedToStageHandler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, feathersUIWrapper_removedFromStageHandler);
+			this.addEventListener(FocusEvent.FOCUS_IN, feathersUIWrapper_focusInHandler);
 			this.addEventListener(FocusEvent.FOCUS_OUT, feathersUIWrapper_focusOutHandler);
 		}
 
 		private var _feathersUIFocusManager:IFocusManager;
 		private var _feathersUIToolTipManager:DefaultToolTipManager;
+		private var _popUpRoot:Sprite;
 
 		public function get defaultButton():IFlexDisplayObject
 		{
@@ -287,6 +290,12 @@ package actionScripts.ui
 			{
 				return;
 			}
+
+			if(this._popUpRoot == null) {
+				this._popUpRoot = new Sprite();
+				DisplayObjectContainer(this.systemManager).addChild(this._popUpRoot);
+				PopUpManager.forStage(this.stage).root = this._popUpRoot;
+			}
 			
 			this._feathersUIFocusManager = FocusManager.addRoot(this._feathersUIControl);
 			this._feathersUIFocusManager.enabled = false;
@@ -305,6 +314,14 @@ package actionScripts.ui
 				FocusManager.removeRoot(this._feathersUIControl);
 				this._feathersUIFocusManager = null;
 			}
+		}
+
+		protected function feathersUIWrapper_focusInHandler(event:FocusEvent):void
+		{
+			if(event.target != this) {
+				return;
+			}
+			this.assignFocus("top");
 		}
 
 		protected function feathersUIWrapper_focusOutHandler(event:FocusEvent):void

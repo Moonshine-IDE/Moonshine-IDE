@@ -385,6 +385,7 @@ package actionScripts.plugin.project
                                     (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 
                             projectReferenceVO.path = project.folderLocation.fileBridge.nativePath;
+							projectReferenceVO.sourceFolder = project.sourceFolder;
 
                             var fileWrapper:FileWrapper = new FileWrapper(fileLocation, false, projectReferenceVO);
 							dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [fileLocation], -1, [fileWrapper]));

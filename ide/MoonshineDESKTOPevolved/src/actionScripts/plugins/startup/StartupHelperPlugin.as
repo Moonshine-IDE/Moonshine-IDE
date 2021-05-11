@@ -179,6 +179,8 @@ package actionScripts.plugins.startup
 		private function onComponentNotDownloadedEvent(event:HelperEvent):void
 		{
 			isAllDependenciesPresent = false;
+			var component:ComponentVO = event.value as ComponentVO;
+			PathSetupHelperUtil.updateFieldPath(component.type, null);
 			onPostDetectionEvent(event.value as ComponentVO);
 		}
 		

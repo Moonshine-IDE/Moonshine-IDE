@@ -1,5 +1,6 @@
 package moonshine.plugin.workspace.view;
 
+import feathers.layout.AnchorLayoutData;
 import feathers.controls.PopUpListView;
 import feathers.layout.VerticalLayout;
 import feathers.controls.Button;
@@ -11,6 +12,7 @@ import feathers.core.InvalidationFlag;
 import openfl.events.Event;
 import feathers.events.TriggerEvent;
 import moonshine.plugin.workspace.events.WorkspaceEvent;
+import actionScripts.valueObjects.WorkspaceVO;
 
 class LoadWorkspaceView extends ResizableTitleWindow {
 	public function new() {
@@ -21,7 +23,7 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		this.title = "Load Workspace";
 		this.width = 350.0;
 		this.minWidth = 300.0;
-		this.minHeight = 300.0;
+		this.minHeight = 150.0;
 		this.closeEnabled = true;
 		this.resizeEnabled = true;
 		
@@ -30,16 +32,16 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 	private var loadWorkspaceButton:Button;
 	private var workspacePopUpListView:PopUpListView;
 	
-	private var _selectedWorkspace:String;
+	private var _selectedWorkspace:WorkspaceVO;
 	
 	@:flash.property
-	public var selectedWorkspace(get, set):String;
+	public var selectedWorkspace(get, set):WorkspaceVO;
 	
-	private function get_selectedWorkspace():String {
+	private function get_selectedWorkspace():WorkspaceVO {
 		return this._selectedWorkspace;
 	}
 
-	private function set_selectedWorkspace(value:String):String {
+	private function set_selectedWorkspace(value:WorkspaceVO):WorkspaceVO {
 		if (this._selectedWorkspace == value) {
 			return this._selectedWorkspace;
 		}
@@ -49,16 +51,16 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		return this._selectedWorkspace;
 	}
 	
-	private var _workspaces:ArrayCollection<String> = new ArrayCollection();
+	private var _workspaces:ArrayCollection<WorkspaceVO> = new ArrayCollection();
 	
 	@:flash.property
-	public var workspaces(get, set):ArrayCollection<String>;
+	public var workspaces(get, set):ArrayCollection<WorkspaceVO>;
 
-	private function get_workspaces():ArrayCollection<String> {
+	private function get_workspaces():ArrayCollection<WorkspaceVO> {
 		return this._workspaces;
 	}
 
-	private function set_workspaces(value:ArrayCollection<String>):ArrayCollection<String> {
+	private function set_workspaces(value:ArrayCollection<WorkspaceVO>):ArrayCollection<WorkspaceVO> {
 		if (this._workspaces == value) {
 			return this._workspaces;
 		}
@@ -79,8 +81,12 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 		this.layout = viewLayout;
 		
 		this.workspacePopUpListView = new PopUpListView();
-		this.workspacePopUpListView.addEventListener(Event.CHANGE, workspacePopUpListView_changeHandler);
-		this.addChild(this.workspacePopUpListView);
+		this.workspacePopUpListView.width = 300;
+		this.workspacePopUpListView.layoutData = AnchorLayoutData.center();
+		this.workspacePopUpListView.itemToText = function(item:WorkspaceVO):String {
+													 return item.label;
+  												  };
+		this.addChild(this.workspacePopUpListView);		
 		
 		var footer = new LayoutGroup();
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
@@ -97,20 +103,40 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 	override private function update():Void {
 		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
 
-		if (dataInvalid) {
+		if (dataInvalid == true) {
+			this._workspaces.sortCompareFunction = this.sortWorkspaces;
+			this._workspaces.refresh();
 			this.workspacePopUpListView.dataProvider = this._workspaces;
+		}		
+		
+		var selectionInvalid = this.isInvalid(InvalidationFlag.SELECTION);
+		if (selectionInvalid == true) {	
+			this.workspacePopUpListView.selectedItem = this._selectedWorkspace;
 		}		
 		
 		super.update();
 	}
 	
-	private function workspacePopUpListView_changeHandler(event:Event):Void {
-		this.set_selectedWorkspace(this.workspacePopUpListView.selectedItem);	
-	}	
-	
 	private function loadWorkspaceButton_triggerHandler(event:Event):Void {
-		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL);
+		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, this.workspacePopUpListView.selectedItem.label);
 		
-		dispatchEvent(workspaceEvent);
+		this.dispatchEvent(workspaceEvent);
+		
+		this.dispatchEvent(new Event(Event.CLOSE));
+	}
+	
+	private function sortWorkspaces(a:WorkspaceVO, b:WorkspaceVO):Int {
+		var labelA = a.label.toLowerCase();
+		var labelB = b.label.toLowerCase();
+	
+		if (labelA < labelB) {
+			return -1;
+		}	 
+		else if (labelA > labelB) {
+			return 1; 
+		}
+		else {
+			return 0;
+		}
 	}
 }

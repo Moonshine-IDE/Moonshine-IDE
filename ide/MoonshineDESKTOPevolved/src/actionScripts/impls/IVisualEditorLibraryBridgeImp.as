@@ -53,7 +53,7 @@ package actionScripts.impls
 			if (!(visualEditorProject as IVisualEditorProjectVO).filesList)
 			{
 				(visualEditorProject as IVisualEditorProjectVO).filesList = new ArrayCollection();
-				UtilsCore.parseFilesList((visualEditorProject as IVisualEditorProjectVO).filesList, visualEditorProject as ProjectVO, ["xhtml"], true); // to be use in includes files list in primefaces
+				UtilsCore.parseFilesList((visualEditorProject as IVisualEditorProjectVO).filesList, null, visualEditorProject as ProjectVO, ["xhtml"], true); // to be use in includes files list in primefaces
 				dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onNewFileAdded, false, 0, true);
 				dispatcher.addEventListener(TreeMenuItemEvent.FILE_DELETED, onFileRemoved, false, 0, true);
 				dispatcher.addEventListener(TreeMenuItemEvent.FILE_RENAMED, onFileRenamed, false, 0, true);
@@ -75,8 +75,12 @@ package actionScripts.impls
 		
 		public function getVisualEditorComponent():VisualEditor
 		{
-			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
-			if (editor) return editor.editorView.visualEditor;
+			if(model==null){ 
+				
+			}else{
+				var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+				if (editor) return editor.editorView.visualEditor;
+			}
 			
 			return null;
 		}

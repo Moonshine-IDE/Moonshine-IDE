@@ -3,11 +3,12 @@
 		 xmlns:s="library://ns.adobe.com/flex/spark"
 		 width="500" minWidth="400" minHeight="100" autoLayout="true"
 		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:view="actionScripts.plugin.findreplace.view.*"
-		 creationComplete="txtName.setFocus()">
+		 creationComplete="onCreationCompletes()">
 	<fx:Script>
 		<![CDATA[
 		import actionScripts.events.GlobalEventDispatcher;
 		import actionScripts.plugin.console.ConsoleOutputEvent;
+		import actionScripts.plugins.versionControl.event.VersionControlEvent;
 
 		import mx.events.CloseEvent;
 			import mx.validators.Validator;
@@ -20,6 +21,12 @@
 			public var submitObject:Object;
 
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+
+			override protected function closeByCrossSign(event:Event):void
+			{
+				dispatcher.removeEventListener(VersionControlEvent.REPOSITORY_AUTH_CANCELLED, onAuthRequestCancelled);
+				super.closeByCrossSign(event);
+			}
 			
 			public function onNameValidatedByGit(localValue:String, remoteValue:String, isMultipleOrigin:Boolean, originWhereBranchFound:String=null):void
 			{
@@ -86,6 +93,12 @@
 					lblMess.includeInLayout = lblMess.visible = true;
 				}
 			}
+
+			private function onCreationCompletes():void
+			{
+				txtName.setFocus();
+				dispatcher.addEventListener(VersionControlEvent.REPOSITORY_AUTH_CANCELLED, onAuthRequestCancelled, false, 0, true);
+			}
 			
 			private function onSubmit():void
 			{
@@ -102,6 +115,11 @@
 					btnCommit.enabled = false;
 					dispatchEvent(new GeneralEvent(VALIDATE_NAME, txtName.text));
 				}
+			}
+
+			private function onAuthRequestCancelled(event:VersionControlEvent):void
+			{
+				btnCommit.enabled = true;
 			}
 			
 		]]>

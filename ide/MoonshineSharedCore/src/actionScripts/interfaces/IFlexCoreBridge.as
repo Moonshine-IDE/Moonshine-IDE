@@ -27,9 +27,9 @@ package actionScripts.interfaces
     import actionScripts.events.NewProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.ui.IPanelWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.FileWrapper;
 
 	/**
@@ -68,15 +68,17 @@ package actionScripts.interfaces
 		function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void;
 		function removeExAttributesTo(path:String):void;
 		function getJavaPath(completionHandler:Function):void;
-		function reAdjustApplicationSize(width:Number, height:Number):void;
+		function reAdjustApplicationSize(width:Number=NaN, height:Number=NaN):void;
         function createProject(event:NewProjectEvent):void;
 		function importArchiveProject():void;
 		function updateToCurrentEnvironmentVariable():void;
-		function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void;
+		function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void;
 		function getComponentByType(type:String):Object;
 		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
 		function getExternalEditors():ArrayCollection;
 		function getModulesFinder():IModulesFinder;
+		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
+		function setMSDKILocalPathConfig():void;
 
         /**
          *
@@ -91,5 +93,6 @@ package actionScripts.interfaces
 
 		function get runtimeVersion():String;
 		function get version():String;
+		function get defaultInstallationPathSDKs():String;
 	}
 }

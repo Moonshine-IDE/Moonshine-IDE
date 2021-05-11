@@ -37,6 +37,8 @@ package actionScripts.plugin.recentlyOpened
     import actionScripts.plugin.IMenuPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.settings.providers.Java8SettingsProvider;
+    import actionScripts.plugin.settings.providers.JavaSettingsProvider;
     import actionScripts.ui.LayoutModifier;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -217,7 +219,6 @@ package actionScripts.plugin.recentlyOpened
 			if (cookie.data.hasOwnProperty('isBundledSDKpromptDNS')) ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = (cookie.data["isBundledSDKpromptDNS"] == "true") ? true : false;
 			if (cookie.data.hasOwnProperty('isSDKhelperPromptDNS')) ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = (cookie.data["isSDKhelperPromptDNS"] == "true") ? true : false;
 			if (cookie.data.hasOwnProperty('isGettingStartedDNS')) ConstantsCoreVO.IS_GETTING_STARTED_DNS = (cookie.data["isGettingStartedDNS"] == "true") ? true : false;
-			if (cookie.data.hasOwnProperty('javaPathForTypeahead')) model.javaPathForTypeAhead = new FileLocation(cookie.data["javaPathForTypeahead"]);
 			if (cookie.data.hasOwnProperty('devicesAndroid'))
 			{
 				ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES = new ArrayCollection();
@@ -235,6 +236,20 @@ package actionScripts.plugin.recentlyOpened
 			else
 			{
 				ConstantsCoreVO.generateDevices();
+			}
+			if (cookie.data.hasOwnProperty('javaPathForTypeahead')) 
+			{
+				model.javaPathForTypeAhead = new FileLocation(cookie.data["javaPathForTypeahead"]);
+				
+				var javaSettingsProvider:JavaSettingsProvider = new JavaSettingsProvider();
+				javaSettingsProvider.currentJavaPath = model.javaPathForTypeAhead.fileBridge.nativePath;
+			}
+			if (cookie.data.hasOwnProperty('java8Path')) 
+			{
+				model.java8Path = new FileLocation(cookie.data["java8Path"]);
+				
+				var java8SettingsProvider:Java8SettingsProvider = new Java8SettingsProvider();
+				java8SettingsProvider.currentJava8Path = model.java8Path.fileBridge.nativePath;
 			}
 			
 			LayoutModifier.parseCookie(cookie);
@@ -270,6 +285,7 @@ package actionScripts.plugin.recentlyOpened
 			tmpSOReference.name = event.project.name;
 			tmpSOReference.sdk = customSDKPath ? customSDKPath : (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 			tmpSOReference.path = event.project.folderLocation.fileBridge.nativePath;
+			tmpSOReference.sourceFolder = event.project.sourceFolder;
 			//tmpSOReference.projectId = event.project.projectId;
 			//tmpSOReference.isAway3D = (event.type == ProjectEvent.ADD_PROJECT_AWAY3D);
 			

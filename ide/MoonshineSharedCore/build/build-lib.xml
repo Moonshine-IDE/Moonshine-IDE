@@ -61,7 +61,22 @@
 			<property name="certSignedMacOSKeychainPass" value="${APP_PROPERTIES.certSignedMacOSKeychainPass}" />
 			<property name="bundledFlexSDK" value="${APP_PROPERTIES.bundledFlexSDK}" />
 			<property name="bundledFlexJSSDK" value="${APP_PROPERTIES.bundledFlexJSSDK}" />
-			<property name="HAXE_LIB_DIRECTORY" value="${APP_PROPERTIES.haxeLibDirectory}"/>
+			<condition property="HAXE_LIB_DIRECTORY" value="${APP_PROPERTIES.haxeLibDirectory}">
+				<isset property="APP_PROPERTIES.haxeLibDirectory"/>
+			</condition>
+			<!-- fall back to default Haxe install location, if available -->
+			<condition property="HAXE_LIB_DIRECTORY" value="c:/HaxeToolkit/haxe/haxelib.exe">
+				<and>
+					<os family="windows" />
+					<available file="c:/HaxeToolkit/haxe" />
+				</and>
+			</condition>
+			<condition property="HAXE_LIB_DIRECTORY" value="/usr/local/lib/haxe">
+				<and>
+					<os family="mac" />
+					<available file="/usr/local/lib/haxe/haxelib" />
+				</and>
+			</condition>
 			<property name="svn.revision" value="917"/>
 			<property name="IsDebug" value="false" />
 		</then>
@@ -520,6 +535,13 @@
 				<string>Owner</string>]]>
 				</replacevalue>
 			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 5</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 5</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
 		</replace>
 		<!-- Since its found impossible to call an ANT variable inside ![CDATA[ section to replace <cfBundleName> value
 			I need to make a conditional statement -->
@@ -635,6 +657,11 @@
 		</exec>
 		
 
+		<!-- @devsena: Marking something in the app file to determine between App Store or non-App-Store build -->
+		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml">
+			<replacetoken><![CDATA[$isAppStoreVersion]]></replacetoken>
+			<replacevalue><![CDATA[false]]></replacevalue>
+		</replace>
 		<!-- @devsena: Avail non-sandbox entitlement to be use in upcoming process -->
 		<copy file="entitlement-non-sandbox.plist" tofile="${debug_dir}/entitlement.plist" overwrite="true"/>
 		<exec executable="bash">
@@ -730,7 +757,7 @@
 			<fileset dir="${LibraryHelperSharedCore}/src/helperResources"/>
 		</copy>
 		
-		<antcall target="copyElementsFolder"/>
+			<antcall target="copyElementsFolder"/>
 		
 		<!-- Check if the self-signed certificate exists -->
 		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
@@ -758,7 +785,6 @@
 				<if>
 					<equals arg1="${Is.Signed.Build}" arg2="true"/>
 					<then>
-						<copy file="${certSignedAIR}" todir="${debug_dir}" overwrite="true"/>
 						<copy file="${certSignedWindowsBinary}" todir="${debug_dir}" overwrite="true"/>
 						 <script language="javascript">
 						  	arr = project.getProperty('certSignedWindowsBinary').split('/');
@@ -856,7 +882,7 @@
 		<echo>Compiling SWF Windows (Debug: ${IsDebug})</echo>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
-			   swf-version="39" 
+			   swf-version="44" 
 			   configname="air" 
 			   locale="${locale.list}" 
 			   fork="true" 
@@ -892,7 +918,7 @@
 		</copy>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
-			   swf-version="39" 
+			   swf-version="44" 
 			   configname="air" 
 			   locale="${locale.list}" 
 			   fork="true" 

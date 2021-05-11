@@ -101,7 +101,7 @@
 			{
 				if (isWorking) return;
 				
-				SearchPlugin.IS_REPLACE_APPLIED = isReplaceApplied;
+				SearchPlugin.isReplaceActive = isReplaceApplied;
 				worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
 				super.closeByCrossSign(event);
 			}

@@ -80,6 +80,8 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_MXML_MODULE: FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_FLEX:FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_PRIMEFACES:FileLocation;
+		public static var TEMPLATE_VISUAL_EDITOR_DOMINO:FileLocation;
+
 		public static var TEMPLATE_JAVACLASS: FileLocation;
 		public static var TEMPLATE_GROOVYCLASS: FileLocation;
 		public static var TEMPLATE_HAXECLASS: FileLocation;
@@ -101,6 +103,9 @@ package actionScripts.valueObjects
         
 		public static var TEMPLATES_VISUALEDITOR_FILES_FLEX:ArrayCollection = new ArrayCollection();
         public static var TEMPLATES_VISUALEDITOR_FILES_PRIMEFACES:ArrayCollection = new ArrayCollection();
+		public static var TEMPLATES_VISUALEDITOR_FILES_DOMINO:ArrayCollection = new ArrayCollection();
+		public static var TEMPLATES_VISUALEDITOR_FILES_DOMINO_FORM:FileLocation ;
+
 		
 		public static var TEMPLATE_ODP_VISUALEDITOR_FILE:FileLocation;
 		public static var TEMPLATE_ODP_FORMBUILDER_FILE:FileLocation;
@@ -123,6 +128,7 @@ package actionScripts.valueObjects
         public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
 		public static var READABLE_FILES:Array;
+		public static var READABLE_CLASS_FILES:Array;
 		public static var NON_CLOSEABLE_TABS:Array;
 		public static var STARTUP_PROJECT_OPEN_QUEUE_LEFT:int;
 		public static var LAST_BROWSED_LOCATION:String;
@@ -299,6 +305,8 @@ package actionScripts.valueObjects
 			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj", "xhtml",
 								"java", "groovy", "gradle", "yml", "gsp", "properties", "javaproj", "sh", "ini", "jar", "hx", "hxproj", "grailsproj",
 								"json", "md"];
+
+			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
 			
 			TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";
@@ -338,25 +346,98 @@ package actionScripts.valueObjects
 																					  xmlns:h="http://xmlns.jcp.org/jsf/html"
 																					  xmlns:p="http://primefaces.org/ui">
 
-																					<h:head>
-																						<title></title>
-																					</h:head>
-
-																					<h:body>
-																						<div>
-																						</div>
-																					</h:body>
-																				</html>]]></root>;
-
-			TEMPLATE_JAVACLASS = new FileLocation("TEMPLATE");
-			TEMPLATE_JAVACLASS.fileBridge.name = "Java Class.java";
-			TEMPLATE_JAVACLASS.fileBridge.isDirectory = false;
-			TEMPLATE_JAVACLASS.fileBridge.extension = "java";
-			TEMPLATE_JAVACLASS.fileBridge.data = <root><![CDATA[package $packageName;
-
-public class $fileName
-{
-}]]></root>;
+			TEMPLATE_VISUAL_EDITOR_DOMINO = new FileLocation("TEMPLATE");
+            TEMPLATE_VISUAL_EDITOR_DOMINO.fileBridge.name = "Visual Editor Domino Form.mxml";
+            TEMPLATE_VISUAL_EDITOR_DOMINO.fileBridge.isDirectory = false;
+            TEMPLATE_VISUAL_EDITOR_DOMINO.fileBridge.extension = "form";
+          	TEMPLATE_VISUAL_EDITOR_DOMINO.fileBridge.data = <root><![CDATA[
+				<?xml version='1.0' encoding='utf-8'?>
+<form name='BGP Network' xmlns='http://www.lotus.com/dxl'  publicaccess='false' designerversion='8.5.3' renderpassthrough='true'>
+<noteinfo noteid='1eda' unid='4D129C5913A7BF5986256E51003F7C01' sequence='17'>
+<created><datetime>20040308T053325,13-06</datetime></created>
+<modified><datetime>20161216T182619,73+08</datetime></modified>
+<revised><datetime dst='true'>20140927T005250,50-05</datetime></revised>
+<lastaccessed><datetime>20161216T182619,72+08</datetime></lastaccessed>
+<addedtofile><datetime>20161216T182619,72+08</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Jeffrey J. Schindler/OU=A55D86/O=PNI</name><name>CN=Justin M. Hill/OU=A55555/O=PNI</name></updatedby>
+<wassignedby><name>CN=Justin M. Hill/OU=A55555/O=PNI</name></wassignedby>
+<code
+ event='windowtitle'><formula>Form + ": " + BGPNetwork1122</formula></code>
+<actionbar bgcolor='#ece9d8' bordercolor='black'>
+<actionbuttonstyle bgcolor='#ece9d8'/><font color='system'/><border style='solid'
+ width='0px 0px 1px'/>
+<sharedactionref id='224'>
+<action title='Save and Close' icon='10' hide='preview read'><code event='click'><formula
+>@Command([FileSave]);
+@Command([FileCloseWindow])</formula></code></action></sharedactionref>
+<sharedactionref id='222'>
+<action title='Close' icon='149'><code event='click'><formula>@Command([FileCloseWindow])</formula></code></action></sharedactionref>
+<sharedactionref id='223'>
+<action title='Edit' icon='5' hide='edit previewedit'><code event='click'><formula
+>@Command([EditDocument])</formula></code></action></sharedactionref></actionbar>
+<body><richtext>
+<pardef id='1' hide='read edit print notes web mobile'/>
+<par def='1'/><subformref name='ControlledDelete'/>
+<pardef id='2' firstlineleftmargin='1in' hide='read edit print notes web mobile'/>
+<par def='2'/>
+<table cellbordercolor='#efefef' widthtype='fixedleft' refwidth='5.1660in'><tablecolumn
+ width='1.5833in'/><tablecolumn width='3.5826in'/>
+<tablerow>
+<tablecell columnspan='2' borderwidth='0px' bgcolor='#9f9fff'>
+<pardef id='5' keepwithnext='true' keeptogether='true'/>
+<par def='5'><run><font style='bold' color='white'/>Network Info</run></par></tablecell></tablerow>
+<tablerow>
+<tablecell borderwidth='0px'>
+<pardef id='4' keepwithnext='true' keeptogether='true'/>
+<par def='4'/></tablecell>
+<tablecell borderwidth='0px'>
+<pardef id='6' keepwithnext='true' keeptogether='true'/>
+<par def='6'/></tablecell></tablerow>
+<tablerow>
+<tablecell borderwidth='0px 0px 1px'>
+<par def='4'>Site ID:</par></tablecell>
+<tablecell borderwidth='0px 0px 1px'>
+<par def='6'><field choicesdialog='view' viewdatabase='' view='Sites' viewcolumn='1'
+ lookupeachchar='false' lookupaddressonrefresh='false' type='keyword' kind='editable'
+ name='Site_UNID_FK'><keywords recalconchange='true' recalcchoices='true'
+ columns='1' ui='dialoglist'/></field></par></tablecell></tablerow>
+<tablerow>
+<tablecell borderwidth='1px 0px'>
+<par def='4'>Network:</par></tablecell>
+<tablecell borderwidth='1px 0px'>
+<par def='6'><field type='text' kind='editable' name='BGPNetwork'/><compositedata
+ type='98' prevtype='65418' nexttype='222' afterparcount='6' containertype='65418'
+ aftercontainercount='1' afterbegincount='3'>
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata></par></tablecell></tablerow>
+<tablerow>
+<tablecell borderwidth='1px 0px'>
+<par def='4'>Mask:</par></tablecell>
+<tablecell borderwidth='1px 0px'>
+<par def='6'><field type='text' kind='editable' name='BGPMask'/><compositedata
+ type='98' prevtype='65418' nexttype='222' afterparcount='6' containertype='65418'
+ aftercontainercount='1' afterbegincount='3'>
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata></par></tablecell></tablerow>
+<tablerow>
+<tablecell borderwidth='1px 0px'>
+<par def='4'>Provider:</par></tablecell>
+<tablecell borderwidth='1px 0px'>
+<par def='6'><field type='keyword' kind='editable' name='BGPNetblockProvider'><keywords
+ ui='dialoglist'><textlist><text>McLeod</text><text>Sprint</text></textlist></keywords></field></par></tablecell></tablerow>
+<tablerow>
+<tablecell borderwidth='1px 0px'>
+<par def='4'>Partition Name Tag:</par></tablecell>
+<tablecell borderwidth='1px 0px'>
+<par def='6'><field type='text' kind='editable' name='BGPNetwork_PartitionNameTag'/><compositedata
+ type='98' prevtype='65418' nexttype='222' afterparcount='6' containertype='65418'
+ aftercontainercount='1' afterbegincount='3'>
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata></par></tablecell></tablerow></table>
+<pardef id='7'/>
+<par def='7'/></richtext></body>
+</form>
+			]]></root>;
 
 			TEMPLATE_GROOVYCLASS = new FileLocation("TEMPLATE");
 			TEMPLATE_GROOVYCLASS.fileBridge.name = "Groovy Class.groovy";
@@ -420,7 +501,8 @@ public class $fileName
 			openTemplateProjectVO.file = openTemplateProject;
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
-			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_JAVACLASS, TEMPLATE_GROOVYCLASS, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES]);
+
+			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_JAVACLASS, TEMPLATE_GROOVYCLASS, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES, TEMPLATE_VISUAL_EDITOR_DOMINO]);
 			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT]);
 			
 			MENU_TOOLTIP = new ArrayCollection([{label:"Open",tooltip:"Open File/Project"},{label:"Save",tooltip:"Save File"},{label:"Save As",tooltip:"Save As"},{label:"Close",tooltip:"Close File"},{label:"Find",tooltip:"Find/Replace Text"},

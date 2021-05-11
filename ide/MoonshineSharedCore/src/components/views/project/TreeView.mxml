@@ -127,7 +127,10 @@
 				var dataSort:Sort = new Sort();
 				dataSort.fields = [dataSortField];
 				model.selectedprojectFolders.sort = dataSort;
+				
 				model.selectedprojectFolders.refresh();
+
+				
 			}
 			
 			public function sortChildren(wrapper:FileWrapper):void
@@ -180,25 +183,7 @@
 				{
 					fileWrapper.sourceController.refresh(fileWrapper.file);
 				}
-	
-				var project:ProjectVO;
-				if (fileWrapper.projectReference)
-				{
-					project = UtilsCore.getProjectByPath(fileWrapper.projectReference.path) as ProjectVO;
-				}
-				if (project && project.sourceFolder && 
-					(project.sourceFolder.fileBridge.nativePath.indexOf(fileWrapper.nativePath + model.fileCore.separator) != -1))
-				{
-					if (project.sourceFolder) 
-					{
-						var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
-						if (sourceWrapper && sourceWrapper != project.projectFolder) 
-						{
-							sourceWrapper.isSourceFolder = true;
-						}
-					}
-				}
-				
+
 				if (fileWrapper.file.fileBridge.isDirectory) 
 				{
 					sortChildren(fileWrapper);
@@ -391,15 +376,6 @@
 					case CollectionEventKind.ADD:
 					{
 						project = projects.getItemAt(event.location) as ProjectVO;
-						if (project.sourceFolder) 
-						{
-							var sourceWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
-							if (sourceWrapper && sourceWrapper != project.projectFolder) 
-							{
-								sourceWrapper.isSourceFolder = true;
-							}
-						}
-
 						model.selectedprojectFolders.addItemAt(project.projectFolder, 0);
 						
 						if (((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject))
@@ -643,6 +619,19 @@
 					{
 						var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(tree.selectedItems[0] as FileWrapper);
 						dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, isMultiSelection ? tree.selectedItems : [fileWrapper], onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
+						//Alert.show("delete file:"+fileWrapper.file.fileBridge.nativePath);
+						var parentFolder:String=fileWrapper.file.fileBridge.parent.fileBridge.nativePath;
+						//Alert.show("parentFolder file:"+parentFolder);
+						if(UtilsCore.endsWith(parentFolder,"nsfs/nsf-moonshine/odp/Forms")){
+							var projectPath:String=parentFolder.substring(0,parentFolder.indexOf("nsfs/nsf-moonshine/odp/Forms"));
+							var xmlFilePath:String=projectPath+"visualeditor-src/main/webapp/"+fileWrapper.file.fileBridge.nameWithoutExtension+".xml";
+							//Alert.show("xmlFilePath:"+xmlFilePath);
+							var xmlFile:FileLocation = new FileLocation(xmlFilePath);
+							if(xmlFile.fileBridge.exists){
+								xmlFile.fileBridge.deleteFile()
+							}
+						}
+
 					}
 				}
 	

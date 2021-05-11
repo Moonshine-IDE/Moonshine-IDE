@@ -46,6 +46,7 @@ export interface CommonConfiguration {
 	popupAutohideButton?: boolean;
 	liftAccessorsFromPrototypes?: number;
 	suggestPathMappingWizard?: boolean;
+	enableCRAWorkaround?: boolean;
 }
 
 export type ReloadConfiguration = string | string[] | DetailedReloadConfiguration;

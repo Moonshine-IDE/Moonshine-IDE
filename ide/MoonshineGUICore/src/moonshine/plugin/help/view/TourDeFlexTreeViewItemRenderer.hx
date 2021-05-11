@@ -68,7 +68,7 @@ class TourDeFlexTreeViewItemRenderer extends TreeViewItemRenderer {
 		super.layoutContent();
 
 		if (this._currentActiveFileIndicator != null) {
-			if (Std.is(this._currentActiveFileIndicator, IValidating)) {
+			if (Std.isOfType(this._currentActiveFileIndicator, IValidating)) {
 				cast(this._currentActiveFileIndicator, IValidating).validateNow();
 			}
 			this._currentActiveFileIndicator.x = this.textField.x - this._currentActiveFileIndicator.width - 4.0;

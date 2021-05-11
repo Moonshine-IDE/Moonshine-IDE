@@ -26,11 +26,17 @@ package actionScripts.utils
 	import flash.filesystem.File;
 	
 	import mx.controls.Alert;
+	import mx.utils.UIDUtil;
 	
+	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
+	import actionScripts.valueObjects.SDKTypes;
 	
 	public class EnvironmentSetupUtils
 	{
@@ -43,7 +49,7 @@ package actionScripts.utils
 		private var windowsBatchFile:File;
 		private var externalCallCompletionHandler:Function;
 		private var executeWithCommands:Array;
-		private var customSDKPath:String;
+		private var customSDKPaths:EnvironmentUtilsCusomSDKsVO;
 		private var isDelayRunInProcess:Boolean;
 		private var processQueus:Array = [];
 		private var isSingleProcessRunning:Boolean;
@@ -52,6 +58,15 @@ package actionScripts.utils
 		{	
 			if (!instance) instance = new EnvironmentSetupUtils();
 			return instance;
+		}
+		
+		public function EnvironmentSetupUtils()
+		{
+			GlobalEventDispatcher.getInstance().addEventListener(
+				ApplicationEvent.DISPOSE_FOOTPRINT,
+				onDisposeFootprints,
+				false, 0, true
+			);
 		}
 		
 		public function updateToCurrentEnvironmentVariable():void
@@ -65,16 +80,16 @@ package actionScripts.utils
 			executeSetCommand();
 		}
 		
-		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
 		{
 			if (isSingleProcessRunning)
 			{
 				// we'll call the method in our way later
-				processQueus.push(new MethodDescriptor(null, null, completion, customSDK, withCommands));
+				processQueus.push(new MethodDescriptor(null, null, completion, customSDKs, withCommands));
 				return;
 			}
 			
-			executeCommandWithSetLocalEnvironment(completion, customSDK, withCommands);
+			executeCommandWithSetLocalEnvironment(completion, customSDKs, withCommands);
 		}
 		
 		private function flush():void
@@ -82,7 +97,7 @@ package actionScripts.utils
 			externalCallCompletionHandler = null;
 			executeWithCommands = null;
 			windowsBatchFile = null;
-			customSDKPath = null;
+			customSDKPaths = null;
 			
 			if (processQueus.length != 0)
 			{
@@ -115,13 +130,13 @@ package actionScripts.utils
 			}
 		}
 		
-		private function executeCommandWithSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		private function executeCommandWithSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
 		{
 			isSingleProcessRunning = true;
 			
 			externalCallCompletionHandler = completion;
 			executeWithCommands = withCommands;
-			customSDKPath = customSDK;
+			customSDKPaths = customSDKs;
 			executeSetCommand();
 		}
 		
@@ -137,20 +152,23 @@ package actionScripts.utils
 				return;
 			}
 			
-			//this previously used FileUtils.writeToFileAsync(), but commands
-			//would sometimes fail because the file would still be in use, even
-			//after the FileStream dispatched Event.CLOSE
-			windowsBatchFile = File.applicationStorageDirectory.resolvePath("setLocalEnvironment.cmd");
+			// to reduce file-writing process
+			// re-run by the existing file if the
+			// contents matched
+			windowsBatchFile = getBatchFilePath();
 			try
 			{
+				//this previously used FileUtils.writeToFileAsync(), but commands
+				//would sometimes fail because the file would still be in use, even
+				//after the FileStream dispatched Event.CLOSE
 				FileUtils.writeToFile(windowsBatchFile, setCommand);
+				onBatchFileWriteComplete();
 			}
 			catch(e:Error)
 			{
 				onBatchFileWriteError(e.toString());
 				return;
 			}
-			onBatchFileWriteComplete();
 		}
 		
 		private function executeOSX():void
@@ -192,24 +210,44 @@ package actionScripts.utils
 			var defaultSDKtype:String;
 			var defaultSDKreferenceVo:SDKReferenceVO;
 			
-			if (customSDKPath && FileUtils.isPathExists(customSDKPath))
-			{
-				defaultOrCustomSDKPath = customSDKPath;
-			}
-			else if (UtilsCore.isDefaultSDKAvailable())
+			// PROJECT SDK
+			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.SDK_FIELD);
+			if (!defaultOrCustomSDKPath && UtilsCore.isDefaultSDKAvailable())
 			{
 				defaultOrCustomSDKPath = model.defaultSDK.fileBridge.nativePath;
 			}
 			
 			defaultSDKreferenceVo = SDKUtils.getSDKFromSavedList(defaultOrCustomSDKPath);
 			if (defaultSDKreferenceVo) defaultSDKtype = defaultSDKreferenceVo.type;
-			
-			if (UtilsCore.isJavaForTypeaheadAvailable())
+			if (defaultOrCustomSDKPath)
 			{
-				setCommand += getSetExportWithoutQuote("JAVA_HOME", model.javaPathForTypeAhead.fileBridge.nativePath);
+				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
+				setCommand += getSetExportWithoutQuote(flexRoyaleHomeType, defaultOrCustomSDKPath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
+				
+				if (!defaultSDKtype || (defaultSDKtype && defaultSDKtype != SDKTypes.ROYALE))
+				{
+					var airHomeType:String = "AIR_SDK_HOME";
+					setCommand += getSetExportWithoutQuote(airHomeType, defaultOrCustomSDKPath);
+					setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ airHomeType +"/bin:" : "%"+ airHomeType +"%\\bin;");
+				}
+				
+				isValidToExecute = true;
+			}
+			
+			// JDK
+			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.JDK_FIELD);
+			if (!defaultOrCustomSDKPath && UtilsCore.isJavaForTypeaheadAvailable())
+			{
+				defaultOrCustomSDKPath = model.javaPathForTypeAhead.fileBridge.nativePath;
+			}
+			if (defaultOrCustomSDKPath)
+			{
+				setCommand += getSetExportWithoutQuote("JAVA_HOME", defaultOrCustomSDKPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$JAVA_HOME/bin:" : "%JAVA_HOME%\\bin;");
 				isValidToExecute = true;
 			}
+			
 			if (UtilsCore.isAntAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("ANT_HOME", model.antHomePath.fileBridge.nativePath);
@@ -262,21 +300,6 @@ package actionScripts.utils
 						isValidToExecute = true;
 					}
 				}
-			}
-			if (defaultOrCustomSDKPath)
-			{
-				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == ComponentTypes.TYPE_ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
-				setCommand += getSetExportWithoutQuote(flexRoyaleHomeType, defaultOrCustomSDKPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
-				
-				if (!defaultSDKtype || (defaultSDKtype && defaultSDKtype != ComponentTypes.TYPE_ROYALE))
-				{
-					var airHomeType:String = "AIR_SDK_HOME";
-					setCommand += getSetExportWithoutQuote(airHomeType, defaultOrCustomSDKPath);
-					setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ airHomeType +"/bin:" : "%"+ airHomeType +"%\\bin;");
-				}
-				
-				isValidToExecute = true;
 			}
 			
 			// if nothing found in above three don't run
@@ -348,11 +371,37 @@ package actionScripts.utils
 			customProcess.start(customInfo);
 		}
 		
+		private function getBatchFilePath():File
+		{
+			var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine/environmental");
+			if (!tempDirectory.fileBridge.exists)
+			{
+				tempDirectory.fileBridge.createDirectory();
+			}
+			
+			return tempDirectory.fileBridge.resolvePath(UIDUtil.createUID() +".cmd").fileBridge.getFile as File;
+		}
+		
 		private function onBatchFileWriteError(value:String):void
 		{
 			Alert.show("Local environment setup failed[1]!\n"+ value, "Error!");
 			isSingleProcessRunning = false;
 			flush();
+		}
+		
+		private function onDisposeFootprints(event:ApplicationEvent):void
+		{
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine/environmental");
+				
+				customInfo = new NativeProcessStartupInfo();
+				customInfo.executable = new File("c:\\Windows\\System32\\cmd.exe");
+				
+				customInfo.arguments = Vector.<String>(["/c", "rmdir", "/q", "/s", tempDirectory.fileBridge.nativePath]);
+				customProcess = new NativeProcess();
+				customProcess.start(customInfo);
+			}
 		}
 		
 		private function startShell(start:Boolean):void 
@@ -409,6 +458,18 @@ package actionScripts.utils
 			/*var output:IDataInput = (customProcess.standardOutput.bytesAvailable != 0) ? customProcess.standardOutput : customProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			Alert.show(data, "shell Data");*/
+		}
+		
+		private function hasCustomSDKRequest(forPathField:String):String
+		{
+			if (customSDKPaths && 
+				customSDKPaths[forPathField] && 
+				FileUtils.isPathExists(customSDKPaths[forPathField]))
+			{
+				return customSDKPaths[forPathField];
+			}
+			
+			return null;
 		}
 	}
 }

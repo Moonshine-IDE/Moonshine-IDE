@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.filesystem.File;
@@ -101,6 +103,7 @@ package actionScripts.plugins.as3project
 		private var isOpenProjectCall:Boolean;
 		private var isFeathersProject:Boolean;
 		private var isVisualEditorProject:Boolean;
+		private var isVisualDominoEditorProject:Boolean;
 		private var isAway3DProject:Boolean;
 		private var isLibraryProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
@@ -127,7 +130,8 @@ package actionScripts.plugins.as3project
 			// if opened by Open project, event.settingsFile will be false
 			// and event.templateDir will be open folder location
 			isOpenProjectCall = !event.settingsFile;
-
+			
+			
 			if (isOpenProjectCall)
 			{
 				projectFolder = event.templateDir;
@@ -143,6 +147,9 @@ package actionScripts.plugins.as3project
 					event.settingsFile = modifiedTemplate.resolvePath(event.settingsFile.fileBridge.name);
 				}
 			}
+
+			//Alert.show("event:"+event.settingsFile);
+			
 			
 			if (!allProjectTemplates)
 			{
@@ -471,7 +478,7 @@ package actionScripts.plugins.as3project
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
                     newProjectPathSetting,
-					new DropDownListSetting(this, "projectTemplateType", "Select Template Type", new ArrayCollection([ProjectTemplateType.VISUAL_EDITOR_FLEX, ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES]))
+					new DropDownListSetting(this, "projectTemplateType", "Select Template Type", new ArrayCollection([ProjectTemplateType.VISUAL_EDITOR_FLEX, ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES,ProjectTemplateType.VISUAL_EDITOR_DOMINO]))
                 ]));
             }
 
@@ -734,7 +741,10 @@ package actionScripts.plugins.as3project
 			{
 				sourcePath = "src/main/webapp";
 			}
-
+			if (!isProjectFromExistingSource && isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_DOMINO)
+			{
+				sourcePath = "nsfs" + File.separator + "nsf-moonshine" + File.separator + "odp" + File.separator + "Forms";
+			}
 			var targetFolder:FileLocation = pvo.folderLocation;
 			// lets load the target flash/air player version
 			// since swf and air player both versioning same now,
@@ -784,6 +794,11 @@ package actionScripts.plugins.as3project
 			{
 				// we creates library project without any default created file inside
 				sourceFileWithExtension = null;
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_DOMINO)
+			{
+				sourceFileWithExtension = pvo.projectName + ".form";
 				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
 			}
 			else if (isVisualEditorProject && projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
@@ -878,15 +893,32 @@ package actionScripts.plugins.as3project
 						{}
 					}
 				}
+				else
+				{
+					th.projectTemplate(templateDir.resolvePath("build_web"), targetFolder.resolvePath("build"));
+					th.projectTemplate(templateDir.resolvePath("bin-debug_web"), targetFolder.resolvePath("bin-debug"));
+					th.projectTemplate(templateDir.resolvePath("html-template_web"), targetFolder.resolvePath("html-template"));
+				}
+
+
 				
 				// we also needs to delete unnecessary folders
 				var folderToDelete1:FileLocation = targetFolder.resolvePath("build_air");
-				var folderToDelete2:FileLocation = targetFolder.resolvePath("build");
+				var folderToDelete2:FileLocation = targetFolder.resolvePath("build_web");
+				var folderToDelete3:FileLocation = targetFolder.resolvePath("bin-debug_web");
+				var folderToDelete4:FileLocation = targetFolder.resolvePath("html-template_web");
+				var folderToDelete5:FileLocation = targetFolder.resolvePath("build");
 				
 				if (folderToDelete1.fileBridge.exists) folderToDelete1.fileBridge.deleteDirectory(true);
-				if (isAway3DProject)
+				if (isActionScriptProject)
 				{
 					if (folderToDelete2.fileBridge.exists) folderToDelete2.fileBridge.deleteDirectory(true);
+					if (folderToDelete3.fileBridge.exists) folderToDelete3.fileBridge.deleteDirectory(true);
+					if (folderToDelete4.fileBridge.exists) folderToDelete4.fileBridge.deleteDirectory(true);
+				}
+				if (isAway3DProject)
+				{
+					if (folderToDelete5.fileBridge.exists) folderToDelete5.fileBridge.deleteDirectory(true);
 				}
 
 			}
@@ -900,12 +932,55 @@ package actionScripts.plugins.as3project
 				{
 					th.projectTemplate(templateDir.resolvePath("src_primeface"), targetFolder.resolvePath("src"));
 				}
+				else if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_DOMINO)
+				{
+					th.projectTemplate(templateDir.resolvePath("src_domino_nsfs"), targetFolder.resolvePath("nsfs"));
+					th.projectTemplate(templateDir.resolvePath("src_domino_releng"), targetFolder.resolvePath("releng"));
+					//copy form template
+					var original_form:FileLocation =  templateDir.resolvePath("src_domino_nsfs"+File.separator +"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"Template.form");
+					if(original_form.fileBridge.exists){
+						var newFormFile:FileLocation =  targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+pvo.projectName + ".form"); 
+						original_form.fileBridge.copyTo(newFormFile, true); 
+					}
+					
+					
+				}
 				
 				var folderToDelete6:FileLocation = targetFolder.resolvePath("src_primeface");
 				var folderToDelete7:FileLocation = targetFolder.resolvePath("src_flex");
-					
+				var folderToDelete8:FileLocation = targetFolder.resolvePath("src_domino_nsfs");
+				var folderToDelete9:FileLocation = targetFolder.resolvePath("src_domino_releng");
+	
 				if (folderToDelete6.fileBridge.exists) folderToDelete6.fileBridge.deleteDirectory(true);
 				if (folderToDelete7.fileBridge.exists) folderToDelete7.fileBridge.deleteDirectory(true);
+				if (folderToDelete8.fileBridge.exists) folderToDelete8.fileBridge.deleteDirectory(true);
+				if (folderToDelete9.fileBridge.exists) folderToDelete9.fileBridge.deleteDirectory(true);
+				//remove old pom file 
+				var pomfile:FileLocation = targetFolder.resolvePath("pom.xml");
+				if (pomfile.fileBridge.exists)pomfile.fileBridge.deleteFile();
+				//remove old template file
+				var templatefile:FileLocation = targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"Template.form"); 
+				if (templatefile.fileBridge.exists)templatefile.fileBridge.deleteFile();
+
+				var original:FileLocation =  targetFolder.resolvePath("$domino-pom.xml");
+				if(original.fileBridge.exists){
+					var newFile:FileLocation =  targetFolder.resolvePath("pom.xml"); 
+					original.fileBridge.copyTo(newFile, true); 
+					original.fileBridge.deleteFile(); 
+				}
+
+				//fix veditorproj file to domino config file.
+				var projectSettingsFile_old:String = projectName + ".veditorproj";
+				var projectSettingsFile_original:FileLocation =  targetFolder.resolvePath(projectSettingsFile_old);
+				if (projectSettingsFile_original.fileBridge.exists)projectSettingsFile_original.fileBridge.deleteFile();
+				//copy new domino config file to default .
+				var projectSettingsFile_new:String = projectSettingsFile_old + "_domino";
+				var projectSettingsFile_new_file:FileLocation =  targetFolder.resolvePath(projectSettingsFile_new);
+				projectSettingsFile_new_file.fileBridge.copyTo(projectSettingsFile_original, true); 
+
+				//remove the new config
+				if (projectSettingsFile_new_file.fileBridge.exists)projectSettingsFile_new_file.fileBridge.deleteFile();
+
 			}
 			if (isLibraryProject)
 			{
@@ -960,12 +1035,14 @@ package actionScripts.plugins.as3project
 
 			// Figure out which one is the settings file
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
-            var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
+            
+			var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
-
+			//Alert.show("projectSettingsFile:"+projectSettingsFile);
 			if (!isJavaProject && !isGrailsProject)
 			{
+				//Alert.show("Line 1032");
 				// Set some stuff to get the paths right
 				pvo = FlashDevelopImporter.parse(settingsFile, projectName, descriptorFile, true, projectTemplateType);
 				pvo.isLibraryProject = isLibraryProject;
@@ -983,8 +1060,23 @@ package actionScripts.plugins.as3project
 				_customSdk = null;
 
 				if (isVisualEditorProject)
+
 				{
-					pvo.isPrimeFacesVisualEditorProject = projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES;
+					if(projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_PRIMEFACES)
+					{
+						pvo.isPrimeFacesVisualEditorProject = true
+					}else{
+						pvo.isPrimeFacesVisualEditorProject = false
+					}
+				
+					if(projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_DOMINO){
+							pvo.jdkType = JavaTypes.JAVA_8;
+							pvo.isDominoVisualEditorProject = true;
+					}else{
+							pvo.isDominoVisualEditorProject = false;
+					}				
+					
+
 				}
 
 				// in case of Flex project (where mx or spark controls can be included)
@@ -1045,6 +1137,7 @@ package actionScripts.plugins.as3project
 					}
 				}
 			}
+	
             if (isOpenProjectCall || isFlexJSRoyalProject)
             {
 				setProjectType(projectTemplateType);
@@ -1068,7 +1161,14 @@ package actionScripts.plugins.as3project
 							if(isVisualEditorProject && !exportProject)
 							{
 								templateSettingsName = "$Settings.veditorproj.template";
+						
+								// if(pvo.isDominoVisualEditorProject){
+								// 	templateSettingsName = "$Settings.veditorproj_domino.template";
+								// }else{
+								// 	}
+									
 							}
+					;
 
 							var tmpLocation:FileLocation = pvo.folderLocation;
 							var tmpName:String = pvo.projectName;
@@ -1128,6 +1228,7 @@ package actionScripts.plugins.as3project
         {
 			isJavaProject = false;
             isVisualEditorProject = false;
+			isVisualDominoEditorProject =false;
             isLibraryProject = false;
             isFeathersProject = false;
             isMobileProject = false;
@@ -1139,6 +1240,10 @@ package actionScripts.plugins.as3project
 			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1)
 			{
 				isVisualEditorProject = true;
+			}
+			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR_DOMINO) != -1)
+			{
+				isVisualDominoEditorProject = true;
 			}
 			
 			if (templateName.indexOf(ProjectTemplateType.LIBRARY_PROJECT) != -1)
@@ -1186,7 +1291,11 @@ package actionScripts.plugins.as3project
         }
 		
 		private function getProjectMenuType(pvo:Object):String
-		{
+		{			
+			if (pvo.hasOwnProperty("isDominoVisualEditorProject") && pvo.isDominoVisualEditorProject)
+			{
+				return ProjectMenuTypes.VISUAL_EDITOR_DOMINO;
+			}
 			if (pvo.hasOwnProperty("isPrimeFacesVisualEditorProject") && pvo.isPrimeFacesVisualEditorProject)
 			{
 				return ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES;
