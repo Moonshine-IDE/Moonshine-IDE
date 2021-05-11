@@ -41,6 +41,7 @@ package actionScripts.utils
 		private static const QUERY_FLEX_AIR_VERSION:String = "getFlexAIRversion";
 		private static const QUERY_ROYALE_FJS_VERSION:String = "getRoyaleFlexJSversion";
 		private static const QUERY_JDK_VERSION:String = "getJDKVersion";
+		private static const QUERY_JDK_8_VERSION:String = "getJDK8Version";
 		private static const QUERY_ANT_VERSION:String = "getAntVersion";
 		private static const QUERY_MAVEN_VERSION:String = "getMavenVersion";
 		private static const QUERY_SVN_GIT_VERSION:String = "getSVNGitVersion";
@@ -118,8 +119,10 @@ package actionScripts.utils
 							itemTypeUnderCursor = QUERY_ROYALE_FJS_VERSION;
 							break;
 						case ComponentTypes.TYPE_OPENJAVA:
+						case ComponentTypes.TYPE_OPENJAVA_V8:
 							commands = '"'+ itemUnderCursor.installToPath+'/bin/java" -version';
-							itemTypeUnderCursor = QUERY_JDK_VERSION;
+							itemTypeUnderCursor = (itemUnderCursor.type == ComponentTypes.TYPE_OPENJAVA_V8) ?
+									QUERY_JDK_8_VERSION : QUERY_JDK_VERSION;
 							break;
 						case ComponentTypes.TYPE_ANT:
 							executable = ConstantsCoreVO.IS_MACOS ? "ant" : "ant.bat";
@@ -307,8 +310,8 @@ package actionScripts.utils
 						}
 						break;
 					case QUERY_JDK_VERSION:
+					case QUERY_JDK_8_VERSION:
 					case QUERY_ANT_VERSION:
-					case QUERY_GRAILS_VERSION:
 					case QUERY_SVN_GIT_VERSION:
 					case QUERY_NODEJS_VERSION:
 					{
@@ -316,6 +319,15 @@ package actionScripts.utils
 						{
 							versionNumberString = getVersionNumberedTypeLine(value.output);
 							if (versionNumberString) components[int(tmpQueue.extraArguments[0])].version = versionNumberString;
+						}
+						break;
+					}
+					case QUERY_GRAILS_VERSION:
+					{
+						match = value.output.match(/Version:/);
+						if (match && !components[int(tmpQueue.extraArguments[0])].version)
+						{
+							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
 						}
 						break;
 					}

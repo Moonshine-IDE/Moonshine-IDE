@@ -19,13 +19,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+	import actionScripts.managers.StartupHelper;
+	import actionScripts.valueObjects.HelperConstants;
+
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.Screen;
 	import flash.display.Stage;
 	import flash.filesystem.File;
 	import flash.ui.Keyboard;
-	
+
 	import mx.collections.ArrayCollection;
 	import mx.controls.HTML;
 	import mx.core.FlexGlobals;
@@ -500,14 +503,24 @@ package actionScripts.impls
 			//versionChecker.getJavaPath(completionHandler);
 		}
 		
-		public function reAdjustApplicationSize(width:Number, height:Number):void
+		public function reAdjustApplicationSize(width:Number=NaN, height:Number=NaN):void
 		{
 			var tmpStage:Stage = FlexGlobals.topLevelApplication.stage as Stage;
-			tmpStage.nativeWindow.width = width;
-			tmpStage.nativeWindow.height = height;
-			
-			tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - width)/2;
-			tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - height)/2;
+			if (!isNaN(width))
+			{
+				tmpStage.nativeWindow.width = width;
+				tmpStage.nativeWindow.height = height;
+				tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - width)/2;
+				tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - height)/2;
+			}
+			else
+			{
+				FlexGlobals.topLevelApplication.callLater(function():void
+				{
+					tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - tmpStage.nativeWindow.width)/2;
+					tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - tmpStage.nativeWindow.height)/2;
+				});
+			}
 		}
 		
 		public function getNewAntBuild():IFlexDisplayObject
@@ -548,6 +561,16 @@ package actionScripts.impls
 			var appVersion:String = appDescriptor.ns::versionNumber;
 			
 			return appVersion;
+		}
+
+		public function get defaultInstallationPathSDKs():String
+		{
+			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
+		}
+
+		public function setMSDKILocalPathConfig():void
+		{
+			StartupHelper.setLocalPathConfig();
 		}
 		
 		public function updateToCurrentEnvironmentVariable():void

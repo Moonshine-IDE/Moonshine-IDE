@@ -68,7 +68,7 @@ package actionScripts.interfaces
 		function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void;
 		function removeExAttributesTo(path:String):void;
 		function getJavaPath(completionHandler:Function):void;
-		function reAdjustApplicationSize(width:Number, height:Number):void;
+		function reAdjustApplicationSize(width:Number=NaN, height:Number=NaN):void;
         function createProject(event:NewProjectEvent):void;
 		function importArchiveProject():void;
 		function updateToCurrentEnvironmentVariable():void;
@@ -78,6 +78,7 @@ package actionScripts.interfaces
 		function getExternalEditors():ArrayCollection;
 		function getModulesFinder():IModulesFinder;
 		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
+		function setMSDKILocalPathConfig():void;
 
         /**
          *
@@ -92,5 +93,6 @@ package actionScripts.interfaces
 
 		function get runtimeVersion():String;
 		function get version():String;
+		function get defaultInstallationPathSDKs():String;
 	}
 }

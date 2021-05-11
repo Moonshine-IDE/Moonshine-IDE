@@ -141,7 +141,7 @@ package actionScripts.impls
 			
 		}
 		
-		public function reAdjustApplicationSize(width:Number, height:Number):void
+		public function reAdjustApplicationSize(width:Number=NaN, height:Number=NaN):void
 		{
 			
 		}
@@ -434,6 +434,15 @@ package actionScripts.impls
 		public function get version():String
 		{
 			return IDEModel.getInstance().version;
+		}
+		
+		public function get defaultInstallationPathSDKs():String
+		{
+			return null;
+		}
+
+		public function setMSDKILocalPathConfig():void
+		{
 		}
 		
 		public function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean
