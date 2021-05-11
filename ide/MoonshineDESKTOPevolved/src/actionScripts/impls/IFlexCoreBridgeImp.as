@@ -502,14 +502,21 @@ package actionScripts.impls
 			//versionChecker.getJavaPath(completionHandler);
 		}
 		
-		public function reAdjustApplicationSize(width:Number, height:Number):void
+		public function reAdjustApplicationSize(width:Number=NaN, height:Number=NaN):void
 		{
 			var tmpStage:Stage = FlexGlobals.topLevelApplication.stage as Stage;
-			tmpStage.nativeWindow.width = width;
-			tmpStage.nativeWindow.height = height;
-			
-			tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - width)/2;
-			tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - height)/2;
+			if (!isNaN(width))
+			{
+				tmpStage.nativeWindow.width = width;
+				tmpStage.nativeWindow.height = height;
+				tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - width)/2;
+				tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - height)/2;
+			}
+			else
+			{
+				tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - tmpStage.nativeWindow.width)/2;
+				tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - tmpStage.nativeWindow.height)/2;
+			}
 		}
 		
 		public function getNewAntBuild():IFlexDisplayObject

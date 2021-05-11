@@ -72,15 +72,8 @@ package actionScripts.ui
 			if (value.data.hasOwnProperty(PROJECT_PANEL_CHILDREN)) projectPanelChildren = value.data[PROJECT_PANEL_CHILDREN];
 			
 			if (isAppMaximized) FlexGlobals.topLevelApplication.stage.nativeWindow.maximize();
-			else if (applicationSize)
-			{
-				var tmpStage:Object = FlexGlobals.topLevelApplication.stage;
-				var widthHeight:Array = applicationSize.split(":");
-				if (tmpStage.nativeWindow.width != widthHeight[0] || tmpStage.nativeWindow.height != widthHeight[1])
-				{
-					model.flexCore.reAdjustApplicationSize(Number(widthHeight[0]), Number(widthHeight[1]));
-				}
-			}
+			else if (applicationSize) reAdjustApplicationSize();
+
 			if (sidebarWidth != -1) model.mainView.sidebar.width = (sidebarWidth >= 0) ? sidebarWidth : 0;
 		}
 		
@@ -177,7 +170,12 @@ package actionScripts.ui
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:SIDEBAR_CHILDREN, value:ordering}));
 			
 			// saving application window width height
-			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:MAIN_WINDOW_WIDTH_HEIGHT, value:FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height}));
+			// if only its not maximized; else it should be null
+			// to restore to default size if not-maximized
+			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {
+				label:MAIN_WINDOW_WIDTH_HEIGHT,
+				value:isAppMaximized ? null : FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height
+			}));
 		}
 		
 		public static function addToSidebar(section:IPanelWindow, event:Event = null):void
@@ -238,6 +236,22 @@ package actionScripts.ui
 			{
 				childWithLargestHeight.percentHeight = childWithLargestHeight.percentHeight / 2;
 				section.percentHeight = childWithLargestHeight.percentHeight;
+			}
+		}
+
+		private static function reAdjustApplicationSize():void
+		{
+			if (!applicationSize)
+			{
+				model.flexCore.reAdjustApplicationSize();
+				return;
+			}
+
+			var tmpStage:Object = FlexGlobals.topLevelApplication.stage;
+			var widthHeight:Array = applicationSize.split(":");
+			if (tmpStage.nativeWindow.width != widthHeight[0] || tmpStage.nativeWindow.height != widthHeight[1])
+			{
+				model.flexCore.reAdjustApplicationSize(Number(widthHeight[0]), Number(widthHeight[1]));
 			}
 		}
 
@@ -316,6 +330,7 @@ package actionScripts.ui
 		{
 			_isAppMaximized = value;
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:IS_MAIN_WINDOW_MAXIMIZED, value:value}));
+			if (!_isAppMaximized) reAdjustApplicationSize();
 		}
 	}
 }

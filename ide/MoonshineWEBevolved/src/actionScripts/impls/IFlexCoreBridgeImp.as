@@ -141,7 +141,7 @@ package actionScripts.impls
 			
 		}
 		
-		public function reAdjustApplicationSize(width:Number, height:Number):void
+		public function reAdjustApplicationSize(width:Number=NaN, height:Number=NaN):void
 		{
 			
 		}
