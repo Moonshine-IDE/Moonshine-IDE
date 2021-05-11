@@ -28,7 +28,8 @@ package actionScripts.impls
 	import flash.display.Stage;
 	import flash.filesystem.File;
 	import flash.ui.Keyboard;
-	
+	import flash.utils.setTimeout;
+
 	import mx.collections.ArrayCollection;
 	import mx.controls.HTML;
 	import mx.core.FlexGlobals;
@@ -514,8 +515,11 @@ package actionScripts.impls
 			}
 			else
 			{
-				tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - tmpStage.nativeWindow.width)/2;
-				tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - tmpStage.nativeWindow.height)/2;
+				FlexGlobals.topLevelApplication.callLater(function():void
+				{
+					tmpStage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - tmpStage.nativeWindow.width)/2;
+					tmpStage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - tmpStage.nativeWindow.height)/2;
+				});
 			}
 		}
 		
