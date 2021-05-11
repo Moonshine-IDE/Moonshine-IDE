@@ -22,9 +22,9 @@ package actionScripts.ui
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.Dictionary;
-
+	
 	import mx.core.FlexGlobals;
-
+	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.interfaces.IViewWithTitle;
@@ -33,7 +33,7 @@ package actionScripts.ui
 	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-
+	
 	import components.views.project.TreeView;
 
 	public class LayoutModifier
@@ -172,9 +172,10 @@ package actionScripts.ui
 			// saving application window width height
 			// if only its not maximized; else it should be null
 			// to restore to default size if not-maximized
+			applicationSize = isAppMaximized ? null : FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height;
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {
 				label:MAIN_WINDOW_WIDTH_HEIGHT,
-				value:isAppMaximized ? null : FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height
+				value:applicationSize
 			}));
 		}
 		
@@ -285,7 +286,6 @@ package actionScripts.ui
 		}
 		
 		private static var _isProjectPanelCollapsed:Boolean;
-		
 		public static function get isProjectPanelCollapsed():Boolean
 		{
 			return _isProjectPanelCollapsed;
@@ -297,7 +297,6 @@ package actionScripts.ui
 		}
 		
 		private static var _projectPanelHeight:int = 165;
-		
 		public static function get projectPanelHeight():int
 		{
 			return _projectPanelHeight;
@@ -309,7 +308,6 @@ package actionScripts.ui
 		}
 		
 		private static var _sidebarWidth:int = -1;
-		
 		public static function get sidebarWidth():int
 		{
 			return _sidebarWidth;
@@ -321,7 +319,6 @@ package actionScripts.ui
 		}
 		
 		private static var _isAppMaximized:Boolean;
-		
 		public static function get isAppMaximized():Boolean
 		{
 			return _isAppMaximized;
@@ -331,6 +328,20 @@ package actionScripts.ui
 			_isAppMaximized = value;
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:IS_MAIN_WINDOW_MAXIMIZED, value:value}));
 			if (!_isAppMaximized) reAdjustApplicationSize();
+		}
+		
+		private static var _isMinimized:Boolean;
+		public static function get isMinimized():Boolean
+		{
+			return _isMinimized;
+		}
+		public static function set isMinimized(value:Boolean):void
+		{
+			_isMinimized = value;
+			if (_isMinimized && !_isAppMaximized)
+			{
+				applicationSize = FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height;
+			}
 		}
 	}
 }
