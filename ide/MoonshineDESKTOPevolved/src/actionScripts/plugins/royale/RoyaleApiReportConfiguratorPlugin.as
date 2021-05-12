@@ -18,7 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.royale
 {
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	import flash.net.SharedObject;
+	
+	import mx.events.CloseEvent;
+	
 	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.RoyaleApiReportEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
@@ -29,21 +36,13 @@ package actionScripts.plugins.royale
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.events.RoyaleApiReportEvent;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.RoyaleApiReportVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
-	import actionScripts.valueObjects.SDKTypes;
-
-	import flash.display.DisplayObject;
-
-	import flash.events.Event;
-	import flash.net.SharedObject;
-
-	import mx.events.CloseEvent;
 
 	public class RoyaleApiReportConfiguratorPlugin extends PluginBase implements IPlugin
 	{
@@ -117,7 +116,7 @@ package actionScripts.plugins.royale
 			var royaleSdkPath:String = null;
 			for each (var sdk:SDKReferenceVO in model.userSavedSDKs)
 			{
-				if (sdk.type == SDKTypes.ROYALE)
+				if (sdk.type == ComponentTypes.TYPE_ROYALE)
 				{
 					royaleSdkPath = sdk.path;
 					break;

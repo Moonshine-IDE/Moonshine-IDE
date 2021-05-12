@@ -61,28 +61,28 @@ package actionScripts.utils
 				case SDKTypes.OPENJAVA8:
 					pluginClass = "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin";
 					break;
-				case SDKTypes.ANT:
+				case ComponentTypes.TYPE_ANT:
 					pluginClass = "actionScripts.plugins.ant::AntBuildPlugin";
 					break;
-				case SDKTypes.GIT:
+				case ComponentTypes.TYPE_GIT:
 					pluginClass = GitHubPlugin.NAMESPACE;
 					break;
-				case SDKTypes.MAVEN:
+				case ComponentTypes.TYPE_MAVEN:
 					pluginClass = "actionScripts.plugins.maven::MavenBuildPlugin";
 					break;
-				case SDKTypes.GRADLE:
+				case ComponentTypes.TYPE_GRADLE:
 					pluginClass = "actionScripts.plugins.gradle::GradleBuildPlugin";
 					break;
-				case SDKTypes.GRAILS:
+				case ComponentTypes.TYPE_GRAILS:
 					pluginClass = "actionScripts.plugins.grails::GrailsBuildPlugin";
 					break;
-				case SDKTypes.SVN:
+				case ComponentTypes.TYPE_SVN:
 					pluginClass = SVNPlugin.NAMESPACE;
 					break;
-				case SDKTypes.NODEJS:
+				case ComponentTypes.TYPE_NODEJS:
 					pluginClass = "actionScripts.plugins.js::JavaScriptPlugin";
 					break;
-				case SDKTypes.NOTES:
+				case ComponentTypes.TYPE_NOTES:
 					pluginClass = DominoPlugin.NAMESPACE;
 					break;
 			}
@@ -99,7 +99,7 @@ package actionScripts.utils
 				case SDKTypes.ROYALE:
 				case SDKTypes.FLEXJS:
 				case SDKTypes.FEATHERS:
-					addProgramingSDK(path);
+					addProgramingSDK(path, type);
 					break;
 				case SDKTypes.OPENJAVA:
 					updateJavaPath(path, !path ? true : false);
@@ -107,28 +107,28 @@ package actionScripts.utils
 				case SDKTypes.OPENJAVA8:
 					updateJava8Path(path, !path ? true : false);
 					break;
-				case SDKTypes.ANT:
+				case ComponentTypes.TYPE_ANT:
 					updateAntPath(path);
 					break;
-				case SDKTypes.GIT:
+				case ComponentTypes.TYPE_GIT:
 					updateGitPath(path);
 					break;
-				case SDKTypes.MAVEN:
+				case ComponentTypes.TYPE_MAVEN:
 					updateMavenPath(path);
 					break;
-				case SDKTypes.GRADLE:
+				case ComponentTypes.TYPE_GRADLE:
 					updateGradlePath(path);
 					break;
-				case SDKTypes.GRAILS:
+				case ComponentTypes.TYPE_GRAILS:
 					updateGrailsPath(path);
 					break;
-				case SDKTypes.SVN:
+				case ComponentTypes.TYPE_SVN:
 					updateSVNPath(path);
 					break;
-				case SDKTypes.NODEJS:
+				case ComponentTypes.TYPE_NODEJS:
 					updateNodeJsPath(path);
 					break;
-				case SDKTypes.NOTES:
+				case ComponentTypes.TYPE_NOTES:
 					updateNotesPath(path);
 					break;
 			}
@@ -413,13 +413,14 @@ package actionScripts.utils
 				null, "actionScripts.plugins.versionControl::VersionControlPlugin", settings));
 		}
 		
-		public static function addProgramingSDK(path:String):void
+		public static function addProgramingSDK(path:String, type:String=null):void
 		{
 			var sdkPath:FileLocation = new FileLocation(path);
 			if (!sdkPath.fileBridge.exists) return;
 			
-			var tmpSDK:SDKReferenceVO = SDKUtils.getSDKReference(sdkPath);
+			var tmpSDK:SDKReferenceVO = SDKUtils.getSDKReference(sdkPath, type);
 			if (!tmpSDK) return;
+			tmpSDK.status = SDKUtils.BUNDLED;
 			SDKUtils.isSDKAlreadySaved(tmpSDK);
 			
 			// if only not already set

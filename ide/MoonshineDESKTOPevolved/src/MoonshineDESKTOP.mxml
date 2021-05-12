@@ -226,7 +226,10 @@
 			 */
 			private function onNativeWindowDisplayChanged(event:NativeWindowDisplayStateEvent):void
 			{
-				LayoutModifier.isAppMaximized = (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED);
+				if (event.afterDisplayState == NativeWindowDisplayState.MINIMIZED)
+					LayoutModifier.isMinimized = true;
+				else 
+					LayoutModifier.isAppMaximized = (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED);
 
 				// for any respective popup which extends resizableTitleWindow
 				if (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED && event.beforeDisplayState != NativeWindowDisplayState.MINIMIZED)
