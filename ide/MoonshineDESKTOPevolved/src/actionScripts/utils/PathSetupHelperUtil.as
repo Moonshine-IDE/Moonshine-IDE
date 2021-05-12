@@ -98,7 +98,7 @@ package actionScripts.utils
 				case SDKTypes.ROYALE:
 				case SDKTypes.FLEXJS:
 				case SDKTypes.FEATHERS:
-					addProgramingSDK(path);
+					addProgramingSDK(path, type);
 					break;
 				case SDKTypes.OPENJAVA:
 					updateJavaPath(path, !path ? true : false);
@@ -412,13 +412,14 @@ package actionScripts.utils
 				null, "actionScripts.plugins.versionControl::VersionControlPlugin", settings));
 		}
 		
-		public static function addProgramingSDK(path:String):void
+		public static function addProgramingSDK(path:String, type:String=null):void
 		{
 			var sdkPath:FileLocation = new FileLocation(path);
 			if (!sdkPath.fileBridge.exists) return;
 			
-			var tmpSDK:SDKReferenceVO = SDKUtils.getSDKReference(sdkPath);
+			var tmpSDK:SDKReferenceVO = SDKUtils.getSDKReference(sdkPath, type);
 			if (!tmpSDK) return;
+			tmpSDK.status = SDKUtils.BUNDLED;
 			SDKUtils.isSDKAlreadySaved(tmpSDK);
 			
 			// if only not already set

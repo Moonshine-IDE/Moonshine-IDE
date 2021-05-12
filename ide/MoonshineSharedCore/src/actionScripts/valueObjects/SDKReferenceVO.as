@@ -117,6 +117,10 @@ package actionScripts.valueObjects
 			if (!_type) _type = getType();
 			return _type;
 		}
+		public function set type(value:String):void
+		{
+			_type = value;
+		}
 
 		public function get hasPlayerglobal():Boolean
 		{
@@ -259,5 +263,5 @@ package actionScripts.valueObjects
 			
 			return null;
 		}
-    }
+	}
 }

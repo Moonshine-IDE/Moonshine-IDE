@@ -222,7 +222,7 @@ package actionScripts.utils
 			model.defaultSDK = new FileLocation(model.userSavedSDKs[0].path);
 		}
 		
-		public static function getSDKReference(location:FileLocation):SDKReferenceVO
+		public static function getSDKReference(location:FileLocation, type:String=null):SDKReferenceVO
 		{
 			if (!location) return null;
 
@@ -276,6 +276,7 @@ package actionScripts.utils
 				}
 				
 				var tmpSDK:SDKReferenceVO = new SDKReferenceVO();
+				tmpSDK.type = type;
 				tmpSDK.path = description.fileBridge.parent.fileBridge.nativePath;
 				tmpSDK.name = displayName;
 				tmpSDK.version = String(tmpXML.version);
