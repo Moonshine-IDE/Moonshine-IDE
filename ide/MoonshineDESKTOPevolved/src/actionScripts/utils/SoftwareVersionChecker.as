@@ -105,6 +105,7 @@ package actionScripts.utils
 					switch (itemUnderCursor.type)
 					{
 						case ComponentTypes.TYPE_FLEX:
+						case ComponentTypes.TYPE_FLEX_HARMAN:
 						case ComponentTypes.TYPE_FEATHERS:
 						case ComponentTypes.TYPE_FLEXJS:
 							executable = ConstantsCoreVO.IS_MACOS ? "mxmlc" : "mxmlc.bat";

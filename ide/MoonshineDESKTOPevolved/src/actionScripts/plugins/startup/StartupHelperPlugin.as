@@ -216,6 +216,7 @@ package actionScripts.plugins.startup
 			switch (item.type)
 			{
 				case ComponentTypes.TYPE_FLEX:
+				case ComponentTypes.TYPE_FLEX_HARMAN:
 				case ComponentTypes.TYPE_FEATHERS:
 				case ComponentTypes.TYPE_FLEXJS:
 				case ComponentTypes.TYPE_ROYALE:

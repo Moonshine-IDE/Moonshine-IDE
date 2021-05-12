@@ -208,7 +208,15 @@ package actionScripts.valueObjects
 			if (compilerFile.fileBridge.exists)
 			{
 				if (fileLocation.resolvePath("frameworks/libs/spark.swc").fileBridge.exists || 
-					fileLocation.resolvePath("frameworks/libs/flex.swc").fileBridge.exists) return SDKTypes.FLEX;
+					fileLocation.resolvePath("frameworks/libs/flex.swc").fileBridge.exists)
+				{
+					if (fileLocation.resolvePath("lib/adt.cfg").fileBridge.exists ||
+					fileLocation.resolvePath("lib/adt.lic").fileBridge.exists)
+					{
+						return SDKTypes.FLEX_HARMAN;
+					}
+					return SDKTypes.FLEX;
+				}
 			}
 			
 			// royale
