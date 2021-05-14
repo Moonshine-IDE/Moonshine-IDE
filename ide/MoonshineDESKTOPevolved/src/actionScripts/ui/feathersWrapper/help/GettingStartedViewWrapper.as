@@ -18,8 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.feathersWrapper.help
 {
+	import actionScripts.plugins.domino.DominoPlugin;
+	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.utils.PathSetupHelperUtil;
+
 	import flash.events.Event;
-	
+
+	import moonshine.events.HelperEvent;
+
 	import mx.controls.Alert;
 	
 	import actionScripts.events.GeneralEvent;
@@ -30,6 +36,9 @@ package actionScripts.ui.feathersWrapper.help
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.utils.MSDKIdownloadUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ComponentVO;
+	import actionScripts.valueObjects.ComponentTypes;
+	import actionScripts.utils.HelperUtils;
 	
 	import air.update.events.DownloadErrorEvent;
 	
@@ -64,6 +73,20 @@ package actionScripts.ui.feathersWrapper.help
 				GettingStartedViewEvent.EVENT_DO_NOT_SHOW, onDoNotShowCheckboxChanged,
 				false, 0, true
 			);
+
+			// events from the HelperView
+			(this.feathersUIControl as GettingStartedView).helperView.addEventListener(
+					HelperEvent.DOWNLOAD_COMPONENT, onDownload3rdPartySoftware,
+					false, 0, true
+			);
+			(this.feathersUIControl as GettingStartedView).helperView.addEventListener(
+					HelperEvent.OPEN_MOON_SETTINGS, onOpenSettings,
+					false, 0, true
+			);
+			(this.feathersUIControl as GettingStartedView).helperView.addEventListener(
+					HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded,
+					false, 0, true
+			);
 		}
 		
 		//--------------------------------------------------------------------------
@@ -89,6 +112,16 @@ package actionScripts.ui.feathersWrapper.help
 		{
 			this.feathersUIControl.removeEventListener(GettingStartedViewEvent.EVENT_DO_NOT_SHOW, onDoNotShowCheckboxChanged);
 			this.feathersUIControl.removeEventListener(GettingStartedView.EVENT_DOWNLOAD_3RDPARTY_SOFTWARE, onDownload3rdPartySoftware);
+
+			(this.feathersUIControl as GettingStartedView).helperView.removeEventListener(
+					HelperEvent.DOWNLOAD_COMPONENT, onDownload3rdPartySoftware
+			);
+			(this.feathersUIControl as GettingStartedView).helperView.removeEventListener(
+					HelperEvent.OPEN_MOON_SETTINGS, onOpenSettings
+			);
+			(this.feathersUIControl as GettingStartedView).helperView.removeEventListener(
+					HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded
+			);
 		}
 		
 		//--------------------------------------------------------------------------
@@ -121,6 +154,35 @@ package actionScripts.ui.feathersWrapper.help
 			}
 			
 			msdkiDownloadUtil.runOrDownloadSDKInstaller();
+		}
+
+		private function onOpenSettings(event:HelperEvent):void
+		{
+			var component:ComponentVO = event.data as ComponentVO;
+			if ((component.type == ComponentTypes.TYPE_GIT || component.type == ComponentTypes.TYPE_SVN) &&
+					ConstantsCoreVO.IS_MACOS)
+			{
+				var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
+				var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
+
+				dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+				gitComponent.hasWarning = svnComponent.hasWarning = null;
+			}
+			else if (component.type == ComponentTypes.TYPE_NOTES && ConstantsCoreVO.IS_MACOS)
+			{
+				dispatcher.dispatchEvent(new Event(DominoPlugin.RELAY_MAC_NOTES_PERMISSION_REQUEST));
+			}
+			else
+			{
+				PathSetupHelperUtil.openSettingsViewFor(component.type);
+			}
+		}
+
+		private function onAnyComponentDownloaded(event:HelperEvent):void
+		{
+			// autoset moonshine internal fields as appropriate
+			var component:ComponentVO = event.data as ComponentVO;
+			PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
 		}
 		
 		private function addRemoveInstallerDownloadEvents(add:Boolean):void
