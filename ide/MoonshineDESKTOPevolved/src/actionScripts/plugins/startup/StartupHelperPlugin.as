@@ -389,9 +389,13 @@ package actionScripts.plugins.startup
 				var ps:PluginSetting = new PluginSetting(ConstantsCoreVO.MOONSHINE_IDE_LABEL +" is Installed. What's Next?", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Moonshine includes an extensive set of features by default. Some optional features (shown below) require access to third-party software. If you already have the third-party software installed, press the Configure button, otherwise press Download button.", false);
 				gettingStartedView = new GettingStartedView();
 				gettingStartedView.setting = ps;
+
+				// HelperView initialize get called before
+				// HelperViewWrapper could set the value to const
+				HelperConstants.IS_RUNNING_IN_MOON = true;
 				
 				var tmpHelperViewWrapper:HelperViewWrapper = new HelperViewWrapper(new HelperView());
-				tmpHelperViewWrapper.isRunningInsideMoonshine = true;
+				tmpHelperViewWrapper.isRunningInsideMoonshine = HelperConstants.IS_RUNNING_IN_MOON;
 				tmpHelperViewWrapper.dependencyCheckUtil = dependencyCheckUtil;
 				tmpHelperViewWrapper.environmentUtil = environmentUtil;
 				gettingStartedView.helperView = tmpHelperViewWrapper.feathersUIControl;
