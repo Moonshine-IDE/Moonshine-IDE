@@ -217,7 +217,7 @@ package actionScripts.utils
 			
 			// remove all the leading space/tabs in a line
 			// so we can show the lines without having space/tabs in search results
-			content = content.replace(/^[ \t]+(?=\S)/gm, "");
+			//content = content.replace(/^[ \t]+(?=\S)/gm, "");
 			content = StringUtil.trim(content);
 			
 			var searchString:String = projectSearchObject.value.isEscapeChars ? escapeRegex(projectSearchObject.value.valueToSearch) : projectSearchObject.value.valueToSearch;
