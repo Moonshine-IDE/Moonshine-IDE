@@ -35,6 +35,7 @@
 		import actionScripts.plugin.PluginManager;
 		import actionScripts.valueObjects.ConstantsCoreVO;
 		import actionScripts.valueObjects.Settings;
+		import moonshine.theme.MoonshineTheme;
 			
 			//--------------------------------------------------------------------------
 			//
@@ -55,6 +56,8 @@
 			 */
 			private function onPreInit(): void
 			{
+				MoonshineTheme.initializeTheme();
+
 				var ideModel:IDEModel = IDEModel.getInstance();
 
 				ideModel.fileCore = BridgeFactory.getFileInstance();

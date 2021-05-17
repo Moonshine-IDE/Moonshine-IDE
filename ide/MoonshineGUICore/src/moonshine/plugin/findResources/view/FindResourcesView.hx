@@ -54,8 +54,6 @@ import moonshine.components.FileTypesCallout;
 
 class FindResourcesView extends ResizableTitleWindow {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.title = "Find Resources";
 		this.width = 600.0;

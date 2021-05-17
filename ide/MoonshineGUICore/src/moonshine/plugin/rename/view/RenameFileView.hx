@@ -35,8 +35,6 @@ import openfl.ui.Keyboard;
 
 class RenameFileView extends ResizableTitleWindow {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.width = 600.0;
 		this.minWidth = 300.0;

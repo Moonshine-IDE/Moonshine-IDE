@@ -36,8 +36,6 @@ class ReferencesView extends LayoutGroup implements IViewWithTitle {
 	public static final EVENT_OPEN_SELECTED_REFERENCE = "openSelectedReference";
 
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 	}
 

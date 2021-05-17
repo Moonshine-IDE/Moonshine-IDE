@@ -47,8 +47,6 @@ class SDKSelectorView extends ResizableTitleWindow {
 	private static final EVENT_SDK_EDIT:String = "sdkEdit";
 
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.title = "Select SDK";
 		this.width = 600.0;

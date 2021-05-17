@@ -33,8 +33,6 @@ import openfl.events.Event;
 
 class QuitView extends ResizableTitleWindow {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 
 		this.title = ConstantsCoreVO.MOONSHINE_IDE_LABEL;

@@ -42,8 +42,6 @@ class SymbolsView extends ResizableTitleWindow {
 	public static final EVENT_QUERY_CHANGE = "queryChange";
 
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.width = 600.0;
 		this.minWidth = 300.0;

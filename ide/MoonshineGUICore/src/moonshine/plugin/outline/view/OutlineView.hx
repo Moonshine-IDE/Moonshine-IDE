@@ -36,8 +36,6 @@ import openfl.events.Event;
 
 class OutlineView extends Panel implements IViewWithTitle {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 	}
 
