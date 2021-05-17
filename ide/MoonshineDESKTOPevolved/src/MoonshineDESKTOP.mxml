@@ -133,8 +133,6 @@
 	
 				// addedToStage
 				addEventListener(Event.ADDED_TO_STAGE, initStage);
-
-				IDEModel.getInstance().refreshIdeBuildVersion();
 			}
 	
 			/**
@@ -166,6 +164,8 @@
 	                var fcsh:NativeProcess = new NativeProcess();
 	                fcsh.start(shellInfo);
 	            }*/
+
+				IDEModel.getInstance().refreshIdeBuildVersion();
 				
 				// verify if an App Store version
 				if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
