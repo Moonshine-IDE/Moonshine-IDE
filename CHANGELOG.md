@@ -13,7 +13,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+* Find Symbol: General improvements to filter ans search features. ([#724](https://github.com/prominic/Moonshine-IDE/issues/724))
+* Git: Improvement to git branch update ([#751](https://github.com/prominic/Moonshine-IDE/issues/751))
+* Performance improvements for startup big projects ([#756](https://github.com/prominic/Moonshine-IDE/issues/756))
 * Haxe Migration: Update **Find Resources** window with ability to navigate by arrows. ([#771](https://github.com/prominic/Moonshine-IDE/issues/771))
+* Haxe Migration: Move **Load Workspace** view to Haxe. ([#775](https://github.com/prominic/Moonshine-IDE/issues/775))
+* Haxe Migration: Move **Search** view to Haxe. ([#798](https://github.com/prominic/Moonshine-IDE/issues/798))
+* Haxe Migration: Move **New Workspace** view to Haxe. ([#779](https://github.com/prominic/Moonshine-IDE/issues/779))
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
 * Updated [Haxe](https://as3mxml.com) engine to latest version.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.69.0.
@@ -22,6 +28,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 * Git Mac OSX: Fixed issue with authentication prompt. ([#617](https://github.com/prominic/Moonshine-IDE/issues/617))
+* Royale Debugging: Fixed issue with failing debugging with custom url ([#701](https://github.com/prominic/Moonshine-IDE/issues/701))
+* Windows: Fixed broken file association for *.as3proj ([#800](https://github.com/prominic/Moonshine-IDE/issues/800))
 * Java Gradle project: Fixed issue with creating new file. ([#805](https://github.com/prominic/Moonshine-IDE/issues/805))
 * Java project: Fixed display of source icon. ([#814](https://github.com/prominic/Moonshine-IDE/issues/814))
 * Getting Started: Fixed issue where installed SDK was not updated on the list. ([#817](https://github.com/prominic/Moonshine-IDE/issues/817))
