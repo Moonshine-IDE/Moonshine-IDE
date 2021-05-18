@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Summary
 
 ### Added
+* Java JDK: Updated default OpenJDK to v11.0.10 to support the latest language server. ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
+* Java JDK: Added additional OpenJDK 8 SDK for projects that still require JDK 8 (including HCL Domino projects). ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
 
 ### Changed
 
@@ -18,6 +20,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.1.
 
 ### Fixed
+* Java project: Fixed display of source icon. ([#814](https://github.com/prominic/Moonshine-IDE/issues/814))
+* Getting Started: Fixed issue where installed SDK was not updated on the list. ([#817](https://github.com/prominic/Moonshine-IDE/issues/817))
+* About page: Fixed issue where Grails version displayed error. ([#818](https://github.com/prominic/Moonshine-IDE/issues/818))
+* Mac OSX: Fixed display for build number in About page. ([#824](https://github.com/prominic/Moonshine-IDE/issues/824))
+* Mac OSX: Fixed issue where Non-sandbox version indicate "App Store" version in About section. ([#816](https://github.com/prominic/Moonshine-IDE/issues/816))
 
 ## Moonshine IDE [3.0.0]
 
