@@ -13,8 +13,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+* Workspace: Improvement to workspace mechanism. ([#416](https://github.com/prominic/Moonshine-IDE/issues/416))
+* New Folder: Allow create neasted folders by typing path in input. ([#468](https://github.com/prominic/Moonshine-IDE/issues/468))
 * Find Symbol: General improvements to filter ans search features. ([#724](https://github.com/prominic/Moonshine-IDE/issues/724))
+* Git and SVN: Improvement to Clone Repository target path validation ([#750](https://github.com/prominic/Moonshine-IDE/issues/750))
 * Git: Improvement to git branch update ([#751](https://github.com/prominic/Moonshine-IDE/issues/751))
+* Git: Improvement to new branch creation. ([#754](https://github.com/prominic/Moonshine-IDE/issues/754))
 * Performance improvements for startup big projects ([#756](https://github.com/prominic/Moonshine-IDE/issues/756))
 * Haxe Migration: Update **Find Resources** window with ability to navigate by arrows. ([#771](https://github.com/prominic/Moonshine-IDE/issues/771))
 * Haxe Migration: Move **Load Workspace** view to Haxe. ([#775](https://github.com/prominic/Moonshine-IDE/issues/775))
@@ -29,6 +33,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Fixed
 * Git Mac OSX: Fixed issue with authentication prompt. ([#617](https://github.com/prominic/Moonshine-IDE/issues/617))
 * Royale Debugging: Fixed issue with failing debugging with custom url ([#701](https://github.com/prominic/Moonshine-IDE/issues/701))
+* Fixed issue where java uses Flex Language Server for Superclass and Interface Completion. ([#742](https://github.com/prominic/Moonshine-IDE/issues/742))
+* Git: Fixed broken changes Pull. ([#758]https://github.com/prominic/Moonshine-IDE/issues/758))
 * Windows: Fixed broken file association for *.as3proj ([#800](https://github.com/prominic/Moonshine-IDE/issues/800))
 * Java Gradle project: Fixed issue with creating new file. ([#805](https://github.com/prominic/Moonshine-IDE/issues/805))
 * Java project: Fixed display of source icon. ([#814](https://github.com/prominic/Moonshine-IDE/issues/814))
