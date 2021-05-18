@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+* Haxe Migration: Update **Find Resources** window with ability to navigate by arrows. ([#771](https://github.com/prominic/Moonshine-IDE/issues/771))
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
 * Updated [Haxe](https://as3mxml.com) engine to latest version.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.69.0.
@@ -20,6 +21,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.1.
 
 ### Fixed
+* Git Mac OSX: Fixed issue with authentication prompt. ([#617](https://github.com/prominic/Moonshine-IDE/issues/617))
+* Java Gradle project: Fixed issue with creating new file. ([#805](https://github.com/prominic/Moonshine-IDE/issues/805))
 * Java project: Fixed display of source icon. ([#814](https://github.com/prominic/Moonshine-IDE/issues/814))
 * Getting Started: Fixed issue where installed SDK was not updated on the list. ([#817](https://github.com/prominic/Moonshine-IDE/issues/817))
 * About page: Fixed issue where Grails version displayed error. ([#818](https://github.com/prominic/Moonshine-IDE/issues/818))
