@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Summary
 
+Moonshine 3.1.0 includes:
+- Quickly switch between sets of projects using the improved workspace support
+- Better performance for opening large projects.
+- Default JDK updated to OpenJDK v11.0.10.  OpenJDK 8 is still supported.
+
 ### Added
 * Java JDK: Updated default OpenJDK to v11.0.10 to support the latest language server. ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
 * Java JDK: Added additional OpenJDK 8 SDK for projects that still require JDK 8 (including HCL Domino projects). ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
@@ -33,21 +38,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * You may customize the SDK label when adding a Flex or Royale SDK. ([#767](https://github.com/prominic/Moonshine-IDE/issues/767))
 
 ### Fixed
-* Git Mac OSX: Fixed issue with authentication prompt. ([#617](https://github.com/prominic/Moonshine-IDE/issues/617))
-* Royale Debugging: Fixed issue with failing debugging with custom url ([#701](https://github.com/prominic/Moonshine-IDE/issues/701))
-* Fixed issue where java uses Flex Language Server for Superclass and Interface Completion. ([#742](https://github.com/prominic/Moonshine-IDE/issues/742))
-* Git: Fixed broken changes Pull. ([#758](https://github.com/prominic/Moonshine-IDE/issues/758))
+* Windows: Fixed file association Windows Moonshine ([#800](https://github.com/prominic/Moonshine-IDE/issues/800))
+* Git: Branches will not be pushed to remote by default ([#754](https://github.com/prominic/Moonshine-IDE/issues/754))
+* Git: Fixed issue with authentication prompt on macOS. ([#617](https://github.com/prominic/Moonshine-IDE/issues/617))
+* Language server:  Fixed issue where Java project used wrong language server for superclass and interface completion. ([#742](https://github.com/prominic/Moonshine-IDE/issues/742))
+* Git: Fixed broken Pull action. ([#758](https://github.com/prominic/Moonshine-IDE/issues/758))
 * Haxe: Fixed issue where code completion was closing immediately. ([#772](https://github.com/prominic/Moonshine-IDE/issues/772))
-* Haxe: Fixed issue where text was not replaced correctly in editor after picking up from code completion. ([#776](https://github.com/prominic/Moonshine-IDE/issues/776))
-* Fixed issue "Local environment setup failed" ([#785](https://github.com/prominic/Moonshine-IDE/issues/785))
-* Fixed issue where previously opened project do not open after Moonshine restart. ([#786](https://github.com/prominic/Moonshine-IDE/issues/786))
-* Windows: Fixed broken file association for *.as3proj ([#800](https://github.com/prominic/Moonshine-IDE/issues/800))
-* Java Gradle project: Fixed issue with creating new file. ([#805](https://github.com/prominic/Moonshine-IDE/issues/805))
-* Java project: Fixed display of source icon. ([#814](https://github.com/prominic/Moonshine-IDE/issues/814))
-* Getting Started: Fixed issue where installed SDK was not updated on the list. ([#817](https://github.com/prominic/Moonshine-IDE/issues/817))
+* Haxe: Fixed issue where code completion did not insert the correct text. ([#776](https://github.com/prominic/Moonshine-IDE/issues/776))
+* Fixed "Local environment setup failed" error ([#785](https://github.com/prominic/Moonshine-IDE/issues/785))
+* Fixed issue where previously opened projects did not open after a Moonshine restart. ([#786](https://github.com/prominic/Moonshine-IDE/issues/786))
+* Java Gradle: Fixed bug which prevented users from creating new Java classes. ([#805](https://github.com/prominic/Moonshine-IDE/issues/805))
+* Java: Fixed display of source directory icon. ([#814](https://github.com/prominic/Moonshine-IDE/issues/814))
+* Getting Started: Fixed issue where SDKs installed by Moonshine SDK Installer were not automatically detected on Windows. ([#817](https://github.com/prominic/Moonshine-IDE/issues/817))
 * About page: Fixed issue where Grails version displayed error. ([#818](https://github.com/prominic/Moonshine-IDE/issues/818))
-* Mac OSX: Fixed display for build number in About page. ([#824](https://github.com/prominic/Moonshine-IDE/issues/824))
-* Mac OSX: Fixed issue where Non-sandbox version indicate "App Store" version in About section. ([#816](https://github.com/prominic/Moonshine-IDE/issues/816))
+* macOS: Display build number in About page. ([#824](https://github.com/prominic/Moonshine-IDE/issues/824))
+* macOS: Fixed issue where About page showed "App Store" for Non-Sandbox build ([#816](https://github.com/prominic/Moonshine-IDE/issues/816))
 
 ## Moonshine IDE [3.0.0]
 
