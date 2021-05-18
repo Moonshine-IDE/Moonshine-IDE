@@ -10,27 +10,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 * Java JDK: Updated default OpenJDK to v11.0.10 to support the latest language server. ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
 * Java JDK: Added additional OpenJDK 8 SDK for projects that still require JDK 8 (including HCL Domino projects). ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
-* Select SDK: Added ability to add custom name for sdk. ([#767](https://github.com/prominic/Moonshine-IDE/issues/767))
 
 ### Changed
 
-* Workspace: Improvement to workspace mechanism. ([#416](https://github.com/prominic/Moonshine-IDE/issues/416))
-* New Folder: Allow create neasted folders by typing path in input. ([#468](https://github.com/prominic/Moonshine-IDE/issues/468))
-* Find Symbol: General improvements to filter ans search features. ([#724](https://github.com/prominic/Moonshine-IDE/issues/724))
-* Git and SVN: Improvement to Clone Repository target path validation ([#750](https://github.com/prominic/Moonshine-IDE/issues/750))
-* Git: Improvement to git branch update ([#751](https://github.com/prominic/Moonshine-IDE/issues/751))
-* Git: Improvement to new branch creation. ([#754](https://github.com/prominic/Moonshine-IDE/issues/754))
-* Performance improvements for startup big projects ([#756](https://github.com/prominic/Moonshine-IDE/issues/756))
-* Haxe Migration: Update **Find Resources** window with ability to navigate by arrows. ([#771](https://github.com/prominic/Moonshine-IDE/issues/771))
-* Moonshine source code: Switch from Adobe Air to Harman Air. ([#773](https://github.com/prominic/Moonshine-IDE/issues/773))
-* Haxe Migration: Move **Load Workspace** view to Haxe. ([#775](https://github.com/prominic/Moonshine-IDE/issues/775))
-* Haxe Migration: Move **Search** view to Haxe. ([#798](https://github.com/prominic/Moonshine-IDE/issues/798))
-* Haxe Migration: Move **New Workspace** view to Haxe. ([#779](https://github.com/prominic/Moonshine-IDE/issues/779))
-* Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
-* Updated [Haxe](https://as3mxml.com) engine to latest version.
-* Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.69.0.
-* Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.12.
-* Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.1.
+* Workspace: Create and manage project workspaces from the File > Workspace menu. ([#416](https://github.com/prominic/Moonshine-IDE/issues/416))
+* Improved performance when launching large projects ([#756](https://github.com/prominic/Moonshine-IDE/issues/756))
+* New Folder:  Create multiple folders at once by separating the folders with '/' ([#468](https://github.com/prominic/Moonshine-IDE/issues/468))
+* Find Symbol: General improvements to filter and search functionality. ([#724](https://github.com/prominic/Moonshine-IDE/issues/724))
+* Git and SVN: Improved validation for the Clone Repository target path ([#750](https://github.com/prominic/Moonshine-IDE/issues/750))
+* Git: Added validation for new branch name ([#751](https://github.com/prominic/Moonshine-IDE/issues/751))
+* Git: List local and remote branches separately. ([#754](https://github.com/prominic/Moonshine-IDE/issues/754))
+* Haxe Migration: Updated **Find Resources** window to allow navigation with the arrow keys. ([#771](https://github.com/prominic/Moonshine-IDE/issues/771))
+* Moonshine source code: Switched from Adobe AIR to Harman AIR. ([#773](https://github.com/prominic/Moonshine-IDE/issues/773))
+* Haxe Migration: Converted **Load Workspace** view to Haxe. ([#775](https://github.com/prominic/Moonshine-IDE/issues/775))
+* Haxe Migration: Converted **Search** view to Haxe. ([#798](https://github.com/prominic/Moonshine-IDE/issues/798))
+* Haxe Migration: Converted **New Workspace** view to Haxe. ([#779](https://github.com/prominic/Moonshine-IDE/issues/779))
+* Language Server:  Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
+* Language Server:  Updated [Haxe](https://as3mxml.com) engine to latest version.
+* Language Server:  Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.69.0.
+* Debugging:  Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.12.
+* Debugging:  Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.1.
+* You may customize the SDK label when adding a Flex or Royale SDK. ([#767](https://github.com/prominic/Moonshine-IDE/issues/767))
 
 ### Fixed
 * Git Mac OSX: Fixed issue with authentication prompt. ([#617](https://github.com/prominic/Moonshine-IDE/issues/617))
