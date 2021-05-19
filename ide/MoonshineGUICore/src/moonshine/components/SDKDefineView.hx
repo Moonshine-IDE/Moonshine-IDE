@@ -40,8 +40,6 @@ import openfl.ui.Keyboard;
 
 class SDKDefineView extends ResizableTitleWindow {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.title = "Define an SDK Path";
 		this.width = 600.0;

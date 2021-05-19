@@ -35,8 +35,6 @@ import openfl.ui.Keyboard;
 
 class GoToLineView extends ResizableTitleWindow {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.title = "Go To Line";
 		this.width = 400.0;

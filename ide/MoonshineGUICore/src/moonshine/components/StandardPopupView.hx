@@ -31,8 +31,6 @@ import moonshine.theme.MoonshineTheme;
 @:styleContext
 class StandardPopupView extends LayoutGroup {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 
 		this.minWidth = 350.0;

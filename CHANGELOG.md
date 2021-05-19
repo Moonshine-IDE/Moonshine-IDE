@@ -7,17 +7,52 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Summary
 
+Moonshine 3.1.0 includes:
+- Quickly switch between sets of projects using the improved workspace support
+- Better performance for opening large projects.
+- Default JDK updated to OpenJDK v11.0.10.  OpenJDK 8 is still supported.
+
 ### Added
+* Java JDK: Updated default OpenJDK to v11.0.10 to support the latest language server. ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
+* Java JDK: Added additional OpenJDK 8 SDK for projects that still require JDK 8 (including HCL Domino projects). ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
 
 ### Changed
 
-* Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
-* Updated [Haxe](https://as3mxml.com) engine to latest version.
-* Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.69.0.
-* Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.12.
-* Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.1.
+* Workspace: Create and manage project workspaces from the File > Workspace menu. ([#416](https://github.com/prominic/Moonshine-IDE/issues/416))
+* Improved performance when launching large projects ([#756](https://github.com/prominic/Moonshine-IDE/issues/756))
+* New Folder:  Create multiple folders at once by separating the folders with '/' ([#468](https://github.com/prominic/Moonshine-IDE/issues/468))
+* Find Symbol: General improvements to filter and search functionality. ([#724](https://github.com/prominic/Moonshine-IDE/issues/724))
+* Git and SVN: Improved validation for the Clone Repository target path ([#750](https://github.com/prominic/Moonshine-IDE/issues/750))
+* Git: Added validation for new branch name ([#751](https://github.com/prominic/Moonshine-IDE/issues/751))
+* Git: List local and remote branches separately. ([#754](https://github.com/prominic/Moonshine-IDE/issues/754))
+* Haxe Migration: Updated **Find Resources** window to allow navigation with the arrow keys. ([#771](https://github.com/prominic/Moonshine-IDE/issues/771))
+* Moonshine source code: Switched from Adobe AIR to Harman AIR. ([#773](https://github.com/prominic/Moonshine-IDE/issues/773))
+* Haxe Migration: Converted **Load Workspace** view to Haxe. ([#775](https://github.com/prominic/Moonshine-IDE/issues/775))
+* Haxe Migration: Converted **Search** view to Haxe. ([#798](https://github.com/prominic/Moonshine-IDE/issues/798))
+* Haxe Migration: Converted **New Workspace** view to Haxe. ([#779](https://github.com/prominic/Moonshine-IDE/issues/779))
+* Language Server:  Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
+* Language Server:  Updated [Haxe](https://as3mxml.com) engine to latest version.
+* Language Server:  Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.69.0.
+* Debugging:  Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.12.
+* Debugging:  Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.1.
+* You may customize the SDK label when adding a Flex or Royale SDK. ([#767](https://github.com/prominic/Moonshine-IDE/issues/767))
 
 ### Fixed
+* Windows: Fixed file association Windows Moonshine ([#800](https://github.com/prominic/Moonshine-IDE/issues/800))
+* Git: Branches will not be pushed to remote by default ([#754](https://github.com/prominic/Moonshine-IDE/issues/754))
+* Git: Fixed issue with authentication prompt on macOS. ([#617](https://github.com/prominic/Moonshine-IDE/issues/617))
+* Language server:  Fixed issue where Java project used wrong language server for superclass and interface completion. ([#742](https://github.com/prominic/Moonshine-IDE/issues/742))
+* Git: Fixed broken Pull action. ([#758](https://github.com/prominic/Moonshine-IDE/issues/758))
+* Haxe: Fixed issue where code completion was closing immediately. ([#772](https://github.com/prominic/Moonshine-IDE/issues/772))
+* Haxe: Fixed issue where code completion did not insert the correct text. ([#776](https://github.com/prominic/Moonshine-IDE/issues/776))
+* Fixed "Local environment setup failed" error ([#785](https://github.com/prominic/Moonshine-IDE/issues/785))
+* Fixed issue where previously opened projects did not open after a Moonshine restart. ([#786](https://github.com/prominic/Moonshine-IDE/issues/786))
+* Java Gradle: Fixed bug which prevented users from creating new Java classes. ([#805](https://github.com/prominic/Moonshine-IDE/issues/805))
+* Java: Fixed display of source directory icon. ([#814](https://github.com/prominic/Moonshine-IDE/issues/814))
+* Getting Started: Fixed issue where SDKs installed by Moonshine SDK Installer were not automatically detected on Windows. ([#817](https://github.com/prominic/Moonshine-IDE/issues/817))
+* About page: Fixed issue where Grails version displayed error. ([#818](https://github.com/prominic/Moonshine-IDE/issues/818))
+* macOS: Display build number in About page. ([#824](https://github.com/prominic/Moonshine-IDE/issues/824))
+* macOS: Fixed issue where About page showed "App Store" for Non-Sandbox build ([#816](https://github.com/prominic/Moonshine-IDE/issues/816))
 
 ## Moonshine IDE [3.0.0]
 

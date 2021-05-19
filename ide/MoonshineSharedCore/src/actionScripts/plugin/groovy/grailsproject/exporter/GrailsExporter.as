@@ -78,8 +78,14 @@ package actionScripts.plugin.groovy.grailsproject.exporter
                         {path: project.folderLocation.fileBridge.getRelativePath(path, true)},
                         <class />));
             }
-
             projectXML.appendChild(classPathsXML);
+
+			var options:XML = <options />;
+			var optionPairs:Object = {
+				jdkType		:	SerializeUtil.serializeString(project.jdkType)
+			}
+			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
+			projectXML.appendChild(options);
 
 			return projectXML;
 		}

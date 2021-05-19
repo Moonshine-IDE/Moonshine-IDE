@@ -19,6 +19,8 @@
 package actionScripts.plugin.groovy.grailsproject.importer
 {
 	import actionScripts.factory.FileLocation;
+	import actionScripts.utils.SerializeUtil;
+
 	import flash.filesystem.File;
 	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import flash.filesystem.FileStream;
@@ -99,6 +101,9 @@ package actionScripts.plugin.groovy.grailsproject.importer
 			{
 				project.classpaths.push(project.sourceFolder);
 			}
+
+			if (data.options.option.hasOwnProperty('@jdkType'))
+				project.jdkType = SerializeUtil.deserializeString(data.options.option.@jdkType);
 
 			return project;
 		}

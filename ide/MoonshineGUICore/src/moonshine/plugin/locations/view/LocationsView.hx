@@ -40,8 +40,6 @@ import openfl.events.MouseEvent;
 
 class LocationsView extends ResizableTitleWindow {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.title = "Go To Location";
 		this.width = 600.0;

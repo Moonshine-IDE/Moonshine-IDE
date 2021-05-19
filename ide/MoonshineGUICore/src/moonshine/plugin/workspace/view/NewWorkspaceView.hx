@@ -28,8 +28,6 @@ import moonshine.theme.assets.ExclamationRedIcon;
 class NewWorkspaceView extends ResizableTitleWindow {
 
 	public function new() {
-		MoonshineTheme.initializeTheme();
-		
 		super();
 			
 		this.title = "New Workspace";

@@ -45,8 +45,6 @@ class FindReplaceView extends ResizableTitleWindow {
 	public static final EVENT_REPLACE_ALL = "replaceAll";
 
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.width = 500.0;
 		this.minWidth = 350.0;

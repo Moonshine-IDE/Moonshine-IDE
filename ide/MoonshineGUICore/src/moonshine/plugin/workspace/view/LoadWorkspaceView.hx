@@ -16,8 +16,6 @@ import actionScripts.valueObjects.WorkspaceVO;
 
 class LoadWorkspaceView extends ResizableTitleWindow {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 			
 		this.title = "Load Workspace";

@@ -35,8 +35,6 @@ import openfl.ui.Keyboard;
 
 class RenameSymbolView extends ResizableTitleWindow {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.title = "Rename Symbol";
 		this.width = 600.0;

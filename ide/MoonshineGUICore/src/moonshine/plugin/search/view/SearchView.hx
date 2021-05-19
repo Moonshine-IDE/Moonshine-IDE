@@ -52,8 +52,6 @@ class SearchView extends ResizableTitleWindow {
 	public static final EVENT_SEARCH_ALL = "searchAll";
 	
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 		this.title = "Search";
 		this.width = 500.0;

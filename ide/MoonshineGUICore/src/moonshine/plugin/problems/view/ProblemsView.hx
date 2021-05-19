@@ -40,8 +40,6 @@ import openfl.events.Event;
 
 class ProblemsView extends LayoutGroup implements IViewWithTitle {
 	public function new() {
-		MoonshineTheme.initializeTheme();
-
 		super();
 	}
 
