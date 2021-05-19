@@ -8,11 +8,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Summary
 
 Moonshine 3.1.0 includes:
-- Quickly switch between sets of projects using the improved workspace support
-- Better performance for opening large projects.
-- Default JDK updated to OpenJDK v11.0.10.  OpenJDK 8 is still supported.
+* Quickly switch between sets of projects using the improved workspace support
+* Better performance for opening large projects.
+* Create HCL Domino forms from a Visual Editor mockup
+* Default JDK updated to OpenJDK v11.0.10.  OpenJDK 8 is still supported.
 
 ### Added
+* Domino On Disk Project:  Use a Visual Editor mockup to create HCL Domino forms.   This is based on the [ODP Compiler](https://frostillic.us/blog/posts/2019/7/8/f9643d0349dfd211852584310054b892)  ([#646](https://github.com/prominic/Moonshine-IDE/issues/646))
 * Java JDK: Updated default OpenJDK to v11.0.10 to support the latest language server. ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
 * Java JDK: Added additional OpenJDK 8 SDK for projects that still require JDK 8 (including HCL Domino projects). ([#755](https://github.com/prominic/Moonshine-IDE/issues/755))
 
