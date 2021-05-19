@@ -1,6 +1,9 @@
 package actionScripts.plugins.build
 {
-    import flash.desktop.NativeProcess;
+	import actionScripts.interfaces.IJavaProject;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+
+	import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
@@ -194,5 +197,24 @@ package actionScripts.plugins.build
             nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, onNativeProcessExit);
 			running = false;
         }
+
+		protected function checkRequireJava():Boolean
+		{
+			if (model.activeProject is IJavaProject)
+			{
+				if (((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_DEFAULT) &&
+						!UtilsCore.isJavaForTypeaheadAvailable())
+				{
+					return false;
+				}
+				if (((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) &&
+						!UtilsCore.isJava8Present())
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
     }
 }

@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.grails
 {
-    import flash.events.Event;
+	import actionScripts.interfaces.IJavaProject;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+
+	import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
@@ -203,7 +206,11 @@ package actionScripts.plugins.grails
 			isDebugging = false;
             warning("Starting Grails build...");
 
-			super.start(args, buildDirectory);
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomJava.jdkPath = ((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) ?
+					model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+
+			super.start(args, buildDirectory, envCustomJava);
 			
             print("Grails build directory: %s", buildDirectory.fileBridge.nativePath);
             print("Command: %s", args.join(" "));
@@ -232,11 +239,22 @@ package actionScripts.plugins.grails
                 dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.grails::GrailsBuildPlugin"));
                 return;
             }
-			
+
+			if (!checkRequireJava())
+			{
+				clearOutput();
+				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
+				return;
+			}
+
 			isDebugging = true;
             warning("Starting Grails build...");
 
-			super.start(args, buildDirectory);
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomJava.jdkPath = ((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) ?
+					model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+
+			super.start(args, buildDirectory, envCustomJava);
 			
             print("Grails build directory: %s", buildDirectory.fileBridge.nativePath);
             print("Command: %s", args.join(" "));
@@ -339,6 +357,13 @@ package actionScripts.plugins.grails
 			{
 				warning("Specify Grails commands (Ex. clean install)");
 				dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject, "Grails Build"));
+				return;
+			}
+
+			if (!checkRequireJava())
+			{
+				clearOutput();
+				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
 				return;
 			}
 			

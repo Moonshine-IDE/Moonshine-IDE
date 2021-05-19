@@ -456,24 +456,5 @@ package actionScripts.plugins.maven
                 clearTimeout(stopDelay);
             }, 800);
         }
-		
-		private function checkRequireJava():Boolean
-		{
-			if (model.activeProject is IJavaProject)
-			{
-				if (((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_DEFAULT) && 
-					!UtilsCore.isJavaForTypeaheadAvailable())
-				{
-					return false;
-				}
-				if (((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) && 
-					!UtilsCore.isJava8Present())
-				{
-					return false;
-				}
-			}
-			
-			return true;
-		}
     }
 }
