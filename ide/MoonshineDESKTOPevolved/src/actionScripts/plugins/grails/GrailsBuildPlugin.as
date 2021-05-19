@@ -20,6 +20,7 @@ package actionScripts.plugins.grails
 {
 	import actionScripts.interfaces.IJavaProject;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 
 	import flash.events.Event;
     import flash.events.IOErrorEvent;
@@ -240,7 +241,7 @@ package actionScripts.plugins.grails
                 return;
             }
 
-			if (!checkRequireJava())
+			if (!ConsoleBuildPluginBase.checkRequireJava())
 			{
 				clearOutput();
 				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
@@ -360,7 +361,7 @@ package actionScripts.plugins.grails
 				return;
 			}
 
-			if (!checkRequireJava())
+			if (!ConsoleBuildPluginBase.checkRequireJava())
 			{
 				clearOutput();
 				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");

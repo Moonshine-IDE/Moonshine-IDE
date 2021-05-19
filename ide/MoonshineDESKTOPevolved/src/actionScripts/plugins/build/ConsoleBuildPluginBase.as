@@ -1,7 +1,9 @@
 package actionScripts.plugins.build
 {
 	import actionScripts.interfaces.IJavaProject;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.valueObjects.ProjectVO;
 
 	import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
@@ -198,16 +200,17 @@ package actionScripts.plugins.build
 			running = false;
         }
 
-		protected function checkRequireJava():Boolean
+		public static function checkRequireJava(project:ProjectVO=null):Boolean
 		{
-			if (model.activeProject is IJavaProject)
+			if (!project) project = IDEModel.getInstance().activeProject;
+			if (project is IJavaProject)
 			{
-				if (((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_DEFAULT) &&
+				if (((project as IJavaProject).jdkType == JavaTypes.JAVA_DEFAULT) &&
 						!UtilsCore.isJavaForTypeaheadAvailable())
 				{
 					return false;
 				}
-				if (((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) &&
+				if (((project as IJavaProject).jdkType == JavaTypes.JAVA_8) &&
 						!UtilsCore.isJava8Present())
 				{
 					return false;

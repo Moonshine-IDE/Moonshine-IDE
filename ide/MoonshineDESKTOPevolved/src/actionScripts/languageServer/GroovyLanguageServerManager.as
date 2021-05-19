@@ -19,7 +19,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
-    import flash.desktop.NativeProcess;
+	import actionScripts.interfaces.IJavaProject;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+
+	import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
     import flash.events.NativeProcessExitEvent;
@@ -40,6 +44,7 @@ package actionScripts.languageServer
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.GradleBuildUtil;
     import actionScripts.utils.getProjectSDKPath;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
@@ -214,6 +219,13 @@ package actionScripts.languageServer
 			// update its eclipse plugin
 			if (IDEModel.getInstance().gradlePath)
 			{
+				if (!ConsoleBuildPluginBase.checkRequireJava(project))
+				{
+					clearOutput();
+					error("Error: Updating Gradle classpath for "+ project.name +" with JDK version is not present.");
+					return false;
+				}
+
 				if(_languageServerProcess)
 				{
 					trace("Error: Groovy language server process already exists!");
@@ -224,7 +236,16 @@ package actionScripts.languageServer
 					EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH,
 					"eclipse"
 				];
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [CommandLineUtil.joinOptions(eclipseCommand)]);
+
+				var envCustomJava:EnvironmentUtilsCusomSDKsVO;
+				if (project is IJavaProject)
+				{
+					envCustomJava = new EnvironmentUtilsCusomSDKsVO();
+					envCustomJava.jdkPath = ((project as IJavaProject).jdkType == JavaTypes.JAVA_8) ?
+							IDEModel.getInstance().java8Path.fileBridge.nativePath : IDEModel.getInstance().javaPathForTypeAhead.fileBridge.nativePath;
+				}
+
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomJava, [CommandLineUtil.joinOptions(eclipseCommand)]);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,
 					project.name, "Updating Gradle classpath...", false
