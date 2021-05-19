@@ -1446,6 +1446,21 @@ package actionScripts.utils
 			return (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
 		}
 
+		public static function getVisualEditorSourceFile(fw:FileWrapper):FileLocation
+		{
+			var as3ProjectVO:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;
+			if (as3ProjectVO && as3ProjectVO.isVisualEditorProject)
+			{
+				var veSourcePathFile:String = fw.file.fileBridge.nativePath
+						.replace(as3ProjectVO.sourceFolder.fileBridge.nativePath,
+								as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath)
+						.replace(/.mxml$|.xhtml$/, ".xml");
+				return new FileLocation(veSourcePathFile);
+			}
+
+			return null;
+		}
+
         private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
         {
             if (!value) return;

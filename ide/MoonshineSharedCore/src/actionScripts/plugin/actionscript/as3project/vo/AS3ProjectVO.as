@@ -262,6 +262,11 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function set isDominoVisualEditorProject(value:Boolean):void
 		{
 			_isDominoVisualEditorProject = value;
+
+			if (projectReference)
+			{
+				projectReference.isDominoVisualEditorProject = value;
+			}
 		}
 		
 		private var _isPreviewRunning:Boolean;
