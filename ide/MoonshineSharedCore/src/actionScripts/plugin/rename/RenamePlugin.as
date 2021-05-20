@@ -184,7 +184,7 @@ package actionScripts.plugin.rename
 			fileWrapper.file.fileBridge.moveTo(newFile, false);
 			fileWrapper.file = newFile;
 
-			if (fileVisualEditor && !fileWrapper.projectReference.isDominoVisualEditorProject)
+			if (fileVisualEditor)
 			{
 				var newVisualEditorFile:FileLocation = fileVisualEditor.fileBridge.parent.resolvePath(newFile.fileBridge.nameWithoutExtension + ".xml");
 				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);

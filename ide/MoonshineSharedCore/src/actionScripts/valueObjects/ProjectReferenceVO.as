@@ -34,7 +34,6 @@ package actionScripts.valueObjects
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean;
 		public var sourceFolder:FileLocation;
-		public var isDominoVisualEditorProject:Boolean;
 
 		public function ProjectReferenceVO()
 		{
@@ -63,7 +62,6 @@ package actionScripts.valueObjects
 			if ( value.hasOwnProperty("sdk") ) tmpVO.sdk = value.sdk;
 			if ( value.hasOwnProperty("isAway3D") ) tmpVO.isAway3D = value.isAway3D;
 			if ( value.hasOwnProperty("isTemplate") ) tmpVO.isTemplate = value.isTemplate;
-			if ( value.hasOwnProperty("isDominoVisualEditorProject")) tmpVO.isDominoVisualEditorProject = value.isDominoVisualEditorProject;
 
 			// finally
 			return tmpVO;
