@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.grails
 {
+	import actionScripts.events.DebugActionEvent;
 	import actionScripts.interfaces.IJavaProject;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 
 	import flash.events.Event;
     import flash.events.IOErrorEvent;
@@ -218,7 +220,7 @@ package actionScripts.plugins.grails
             var project:ProjectVO = model.activeProject;
             if (project)
             {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building "));
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building ", true));
                 dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
 				dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
             }
@@ -240,7 +242,7 @@ package actionScripts.plugins.grails
                 return;
             }
 
-			if (!checkRequireJava())
+			if (!ConsoleBuildPluginBase.checkRequireJava())
 			{
 				clearOutput();
 				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
@@ -262,8 +264,8 @@ package actionScripts.plugins.grails
             var project:ProjectVO = model.activeProject;
             if (project)
             {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running "));
-                dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running ", true));
+                dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, onProjectBuildTerminate);
 				dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
             }
 		}
@@ -360,7 +362,7 @@ package actionScripts.plugins.grails
 				return;
 			}
 
-			if (!checkRequireJava())
+			if (!ConsoleBuildPluginBase.checkRequireJava())
 			{
 				clearOutput();
 				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
@@ -430,7 +432,7 @@ package actionScripts.plugins.grails
 			isDebugging = false;
         }
 
-        private function onProjectBuildTerminate(event:StatusBarEvent):void
+        private function onProjectBuildTerminate(event:Event):void
         {
             stop();
         }

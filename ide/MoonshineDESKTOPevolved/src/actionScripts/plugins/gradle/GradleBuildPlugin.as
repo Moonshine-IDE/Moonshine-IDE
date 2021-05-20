@@ -230,7 +230,7 @@ package actionScripts.plugins.gradle
                 return;
             }
 			
-			if (!checkRequireJava())
+			if (!ConsoleBuildPluginBase.checkRequireJava())
 			{
 				clearOutput();
 				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");

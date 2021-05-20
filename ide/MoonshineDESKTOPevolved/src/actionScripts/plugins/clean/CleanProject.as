@@ -19,6 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.clean
 {
+	import actionScripts.interfaces.IJavaProject;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -47,6 +50,7 @@ package actionScripts.plugins.clean
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	
 	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
@@ -187,8 +191,15 @@ package actionScripts.plugins.clean
 			{
 				if (UtilsCore.isGradleAvailable())
 				{
-					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
-					start(Vector.<String>([EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH +" clean"]), project.folderLocation);
+					if (isProjectJavaIsAvailable(project))
+					{
+						dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
+						start(Vector.<String>([EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH +" clean"]), project.folderLocation, getEnvCustomJDKFor(project));
+					}
+					else
+					{
+						error("Error: "+ project.name +" configures to build with JDK version is not present.");
+					}
 				}
 				else
 				{
@@ -217,8 +228,15 @@ package actionScripts.plugins.clean
 		{
 			if (UtilsCore.isGrailsAvailable())
 			{
-				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
-				start(Vector.<String>([EnvironmentExecPaths.GRAILS_ENVIRON_EXEC_PATH +" clean"]), project.folderLocation);
+				if (isProjectJavaIsAvailable(project))
+				{
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
+					start(Vector.<String>([EnvironmentExecPaths.GRAILS_ENVIRON_EXEC_PATH +" clean"]), project.folderLocation, getEnvCustomJDKFor(project));
+				}
+				else
+				{
+					error("Error: "+ project.name +" configures to build with JDK version is not present.");
+				}
 			}
 			else
 			{
@@ -374,5 +392,18 @@ package actionScripts.plugins.clean
             event.target.removeEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
 			error("Cannot delete file or folder: " + event.target.nativePath + "\nError: " + event.text);
         }
+
+		private function isProjectJavaIsAvailable(project:ProjectVO):Boolean
+		{
+			return ConsoleBuildPluginBase.checkRequireJava(project);
+		}
+
+		private function getEnvCustomJDKFor(project:ProjectVO):EnvironmentUtilsCusomSDKsVO
+		{
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomJava.jdkPath = ((project as IJavaProject).jdkType == JavaTypes.JAVA_8) ?
+					model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+			return envCustomJava;
+		}
 	}
 }

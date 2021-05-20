@@ -19,6 +19,7 @@
 package actionScripts.plugin.groovy.grailsproject
 {
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.utils.UtilsCore;
 
 	import flash.desktop.NativeProcess;
@@ -281,7 +282,7 @@ package actionScripts.plugin.groovy.grailsproject
 
 		private function grailsCreateApp():void
 		{
-			if (!checkRequireJava())
+			if (!ConsoleBuildPluginBase.checkRequireJava(project))
 			{
 				clearOutput();
 				error("Error: "+ project.name +" configures to build with JDK version is not present.");
@@ -430,22 +431,6 @@ package actionScripts.plugin.groovy.grailsproject
 			GrailsExporter.export(pvo);
 
 			return pvo;
-		}
-
-		private function checkRequireJava():Boolean
-		{
-			if ((project.jdkType == JavaTypes.JAVA_DEFAULT) &&
-					!UtilsCore.isJavaForTypeaheadAvailable())
-			{
-				return false;
-			}
-			if ((project.jdkType == JavaTypes.JAVA_8) &&
-					!UtilsCore.isJava8Present())
-			{
-				return false;
-			}
-
-			return true;
 		}
 	}
 }

@@ -97,6 +97,7 @@
 				{
 					debugText = event.notificationSuffix + debugText;
 				}
+				btnStop.includeInLayout = btnStop.visible = event.isShowStopButton;
 				lblDebugging.text = debugText;
 				hgProjectDebug.visible = true;
 			}
@@ -141,7 +142,7 @@
 							   width="32" height="12"/>
 		<s:Image id="btnStop" 
 				 source="@Embed('/elements/images/icoStop.png')"
-				 click="onTerminateBuild(event)"/>
+				 click="onTerminateBuild(event)" useHandCursor="true"/>
 	</s:HGroup>
 	
 	<s:HGroup id="hgProjectDebug" 
@@ -152,6 +153,6 @@
 				 fontSize="11" paddingTop="3"
 				 color="#333333"/>
 		<s:Image source="@Embed('/elements/images/icoStop.png')"
-				 click="onTerminateDebug(event)"/>
+				 click="onTerminateDebug(event)" useHandCursor="true"/>
 	</s:HGroup>
 </s:Group>

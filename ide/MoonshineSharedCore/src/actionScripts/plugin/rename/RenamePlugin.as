@@ -177,12 +177,19 @@ package actionScripts.plugin.rename
 		
 		private function onFileRenamedRequest(fileWrapper:FileWrapper, newName:String):void
 		{
+			var fileVisualEditor:FileLocation = UtilsCore.getVisualEditorSourceFile(fileWrapper);
 			var newFile:FileLocation = fileWrapper.file.fileBridge.parent.resolvePath(newName);
 			_existingFilePath = fileWrapper.nativePath;
 			
 			fileWrapper.file.fileBridge.moveTo(newFile, false);
 			fileWrapper.file = newFile;
-			
+
+			if (fileVisualEditor && !fileWrapper.projectReference.isDominoVisualEditorProject)
+			{
+				var newVisualEditorFile:FileLocation = fileVisualEditor.fileBridge.parent.resolvePath(newFile.fileBridge.nameWithoutExtension + ".xml");
+				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);
+			}
+
 			// we need to update file location of the (if any) opened instance 
 			// of the file template
 			if (newFile.fileBridge.isDirectory)
