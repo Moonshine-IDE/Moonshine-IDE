@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-    import flash.display.DisplayObject;
+	import actionScripts.valueObjects.ProjectVO;
+
+	import flash.display.DisplayObject;
     
     import mx.collections.ArrayCollection;
     import mx.core.IFlexDisplayObject;
@@ -79,6 +81,7 @@ package actionScripts.interfaces
 		function getModulesFinder():IModulesFinder;
 		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
 		function setMSDKILocalPathConfig():void;
+		function checkRequireJava(project:ProjectVO=null):Boolean;
 
         /**
          *

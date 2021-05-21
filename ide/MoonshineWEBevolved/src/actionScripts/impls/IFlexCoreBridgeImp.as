@@ -36,6 +36,7 @@ package actionScripts.impls
 	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
 	import actionScripts.locator.IDEModel;
@@ -468,6 +469,11 @@ package actionScripts.impls
 		public function getJavaVersion(javaPath:String=null, onComplete:Function=null):void
 		{
 		
+		}
+		
+		public function checkRequireJava(project:ProjectVO=null):Boolean
+		{
+			return false;
 		}
 		
 		//--------------------------------------------------------------------------
