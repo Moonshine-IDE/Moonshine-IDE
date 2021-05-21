@@ -20,7 +20,9 @@
 package actionScripts.impls
 {
 	import actionScripts.managers.StartupHelper;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.valueObjects.HelperConstants;
+	import actionScripts.valueObjects.ProjectVO;
 
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
@@ -597,6 +599,11 @@ package actionScripts.impls
 		{
 			var javaVersionReader:JavaVersionReader = new JavaVersionReader();
 			javaVersionReader.readVersion(javaPath, onComplete);
+		}
+
+		public function checkRequireJava(project:ProjectVO=null):Boolean
+		{
+			return ConsoleBuildPluginBase.checkRequireJava(project);
 		}
 	}
 }
