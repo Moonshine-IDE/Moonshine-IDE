@@ -182,6 +182,7 @@ package actionScripts.plugin.rename
 			_existingFilePath = fileWrapper.nativePath;
 			
 			fileWrapper.file.fileBridge.moveTo(newFile, false);
+			fileWrapper.name = newFile.name;
 			fileWrapper.file = newFile;
 
 			if (fileVisualEditor)
