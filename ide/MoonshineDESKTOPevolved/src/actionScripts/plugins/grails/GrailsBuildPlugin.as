@@ -63,6 +63,7 @@ package actionScripts.plugins.grails
 		private var isProjectHasInvalidPaths:Boolean;
 		private var runCommandType:String;
 		private var isDebugging:Boolean;
+		private var isStopAppExecuted:Boolean;
 		
         public function GrailsBuildPlugin()
         {
@@ -172,6 +173,11 @@ package actionScripts.plugins.grails
 		private function grailsBuildReleaseHandler(event:Event):void
 		{
 			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "war"].join(" ")], model.activeProject.folderLocation);
+		}
+
+		private function grailsStopApp():void
+		{
+			this.startDebug(new <String>[[UtilsCore.getGrailsBinPath(), "stop-app"].join(" ")], model.activeProject.folderLocation);
 		}
 
         private function getConstantArguments():Vector.<String>
@@ -418,7 +424,7 @@ package actionScripts.plugins.grails
 				success("Grails build has completed successfully.");
 			}
 
-
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STOP, onProjectBuildTerminate);
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
             if(isDebugging)
@@ -430,6 +436,16 @@ package actionScripts.plugins.grails
             	dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			}
 			isDebugging = false;
+
+			if (!isStopAppExecuted)
+			{
+				isStopAppExecuted = true;
+				grailsStopApp();
+			}
+			else
+			{
+				isStopAppExecuted = false;
+			}
         }
 
         private function onProjectBuildTerminate(event:Event):void
