@@ -18,17 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
-	import flash.events.Event;
-	
-	import mx.events.CollectionEvent;
-	import mx.events.CollectionEventKind;
-	import mx.events.FlexEvent;
-	
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.events.ChangeEvent;
 	import actionScripts.events.PreviewPluginEvent;
-	import actionScripts.factory.FileLocation;
-    import actionScripts.utils.MavenPomUtil;
+import actionScripts.events.TreeMenuItemEvent;
+import actionScripts.factory.FileLocation;
 
     import flash.events.Event;
 
@@ -38,20 +30,7 @@ package actionScripts.plugins.ui.editor
     
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.ChangeEvent;
-    import actionScripts.impls.IVisualEditorLibraryBridgeImp;
-    import actionScripts.interfaces.IVisualEditorViewer;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugins.help.view.VisualEditorView;
-    import actionScripts.plugins.help.view.events.VisualEditorEvent;
-    import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-    import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.editor.text.TextEditor;
     import actionScripts.ui.tabview.CloseTabEvent;
-    import actionScripts.ui.tabview.TabEvent;
-
-    import view.suportClasses.events.PropertyEditorChangeEvent;
-	import flash.filesystem.File;
 	import actionScripts.impls.IVisualEditorLibraryBridgeImp;
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.interfaces.IVisualEditorViewer;
@@ -69,9 +48,8 @@ package actionScripts.plugins.ui.editor
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.suportClasses.events.PropertyEditorChangeEvent;
-
-	import mx.controls.Alert;
 	import flash.filesystem.File;
+
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
 		private static const EVENT_SWITCH_TAB_TO_CODE:String = "switchTabToCode";
@@ -117,9 +95,6 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.currentState = "flexVisualEditor";
 			}
 
-			//Alert.show("visualEditorView.currentState:"+visualEditorView.currentState);
-
-			
 			visualEditorView.visualEditorProject = visualEditorProject;
 			
 			visualEditorView.percentWidth = 100;
@@ -145,6 +120,7 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STOPPED, previewStoppedHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_START_FAILED, previewStartFailedHandler);
 			dispatcher.addEventListener(PreviewPluginEvent.PREVIEW_STARTING, previewStartingHandler);
+			dispatcher.addEventListener(TreeMenuItemEvent.FILE_RENAMED, fileRenamedHandler);
 
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 		}
@@ -173,6 +149,7 @@ package actionScripts.plugins.ui.editor
 				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_START_FAILED, previewStartFailedHandler);
 				dispatcher.removeEventListener(PreviewPluginEvent.PREVIEW_STARTING, previewStartingHandler);
 				dispatcher.removeEventListener(EVENT_SWITCH_TAB_TO_CODE, switchTabToCodeHandler);
+				dispatcher.removeEventListener(TreeMenuItemEvent.FILE_RENAMED, fileRenamedHandler);
 
 				model.editors.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 				undoManager.dispose();
@@ -215,6 +192,11 @@ package actionScripts.plugins.ui.editor
 		private function previewStartFailedHandler(event:PreviewPluginEvent):void
 		{
 			visualEditorView.currentState = "primeFacesVisualEditor";
+		}
+
+		private function fileRenamedHandler(event:TreeMenuItemEvent):void
+		{
+			reload();
 		}
 
 		private function onVisualEditorSaveCode(event:Event):void

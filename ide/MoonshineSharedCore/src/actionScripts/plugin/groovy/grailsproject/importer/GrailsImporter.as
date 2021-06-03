@@ -102,8 +102,10 @@ package actionScripts.plugin.groovy.grailsproject.importer
 				project.classpaths.push(project.sourceFolder);
 			}
 
-			if (data.options.option.hasOwnProperty('@jdkType'))
+			if (data && data.options.option.hasOwnProperty('@jdkType'))
+			{
 				project.jdkType = SerializeUtil.deserializeString(data.options.option.@jdkType);
+			}
 
 			return project;
 		}
