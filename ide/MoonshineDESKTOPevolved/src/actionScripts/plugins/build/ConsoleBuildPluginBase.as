@@ -202,16 +202,21 @@ package actionScripts.plugins.build
 
 		public static function checkRequireJava(project:ProjectVO=null):Boolean
 		{
-			if (!project) project = IDEModel.getInstance().activeProject;
-			if (project is IJavaProject)
+			if (!project)
+            {
+                project = IDEModel.getInstance().activeProject;
+            }
+
+            var javaProject:IJavaProject = project as IJavaProject;
+			if (javaProject)
 			{
-				if (((project as IJavaProject).jdkType == JavaTypes.JAVA_DEFAULT) &&
-						!UtilsCore.isJavaForTypeaheadAvailable())
+				if ((javaProject.jdkType == JavaTypes.JAVA_DEFAULT) &&
+                    !UtilsCore.isJavaForTypeaheadAvailable())
 				{
 					return false;
 				}
-				if (((project as IJavaProject).jdkType == JavaTypes.JAVA_8) &&
-						!UtilsCore.isJava8Present())
+				if ((javaProject.jdkType == JavaTypes.JAVA_8) &&
+                    !UtilsCore.isJava8Present())
 				{
 					return false;
 				}
