@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
+## Moonshine IDE [3.1.1]
+
+### Summary
+
+Moonshine 3.1.1 is a quick-fix release for an error with Apache Maven builds.
+
+### Added
+
+### Changed
+
+### Fixed
+
+* Fixed error with build for Java Maven projects ([#834](https://github.com/prominic/Moonshine-IDE/issues/837))
+* Fixed error with build for Domino Visual Editor projects ([#834](https://github.com/prominic/Moonshine-IDE/issues/834))
+
+
 ## Moonshine IDE [3.1.0]
 
 ### Summary
