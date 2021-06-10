@@ -181,8 +181,15 @@ package actionScripts.plugins.gradle
             warning("Starting Gradle build...");
 			
 			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
-			envCustomJava.jdkPath = ((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) ? 
-				model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+            var javaProject:IJavaProject = model.activeProject as IJavaProject;
+            if (javaProject && javaProject.jdkType == JavaTypes.JAVA_8)
+            {
+                envCustomJava.jdkPath = model.java8Path.fileBridge.nativePath;
+            }
+            else
+            {
+                envCustomJava.jdkPath = model.javaPathForTypeAhead.fileBridge.nativePath;
+            }
 
             super.start(args, buildDirectory, envCustomJava);
             status = MavenBuildStatus.STARTED;
