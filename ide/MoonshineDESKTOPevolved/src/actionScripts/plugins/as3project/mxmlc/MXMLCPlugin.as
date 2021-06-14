@@ -1245,7 +1245,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			var currentSuccessfullProject:AS3ProjectVO = currentProject as AS3ProjectVO;
 			success("Build completed successfully.");
-			if (!currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
+			if (currentSuccessfullProject && !currentSuccessfullProject.isFlexJS && !currentSuccessfullProject.isRoyale)
 			{
 				reset();
 			}
