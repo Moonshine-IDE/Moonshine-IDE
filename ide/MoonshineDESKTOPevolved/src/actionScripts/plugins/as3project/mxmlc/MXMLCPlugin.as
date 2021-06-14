@@ -1257,7 +1257,7 @@ package actionScripts.plugins.as3project.mxmlc
             dispatcher.dispatchEvent(new ProjectEvent(ActionScriptBuildEvent.POSTBUILD, currentProject));
 
 			var as3Project:AS3ProjectVO = AS3ProjectVO(currentProject);
-			if(as3Project.isMobile && !as3Project.buildOptions.isMobileRunOnSimulator)
+			if(as3Project && as3Project.isMobile && !as3Project.buildOptions.isMobileRunOnSimulator)
 			{
 				var isAndroid:Boolean = as3Project.buildOptions.targetPlatform == "Android";
 				var descriptorName:String = as3Project.swfOutput.path.fileBridge.name.split(".")[0] + "-app.xml";
