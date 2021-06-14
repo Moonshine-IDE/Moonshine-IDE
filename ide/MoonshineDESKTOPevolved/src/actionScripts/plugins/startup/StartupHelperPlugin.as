@@ -69,7 +69,7 @@ package actionScripts.plugins.startup
 		override public function get description():String	{ return "Startup Helper Plugin."; }
 		
 		public static const EVENT_GETTING_STARTED:String = "gettingStarted";
-		public static const EVENT_GETTING_STARTED_HAXE:String = "gettingStartedHaxe";
+		public static const EVENT_GETTING_STARTED_AS3:String = "gettingStartedAS3";
 		
 		private var dependencyCheckUtil:IHelperMoonshineBridgeImp = new IHelperMoonshineBridgeImp();
 		private var installerItemsManager:InstallerItemsManager = InstallerItemsManager.getInstance();
@@ -106,8 +106,8 @@ package actionScripts.plugins.startup
 			if (!ConstantsCoreVO.IS_AIR) return;
 			
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
-			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedRequest, false, 0, true);
-			dispatcher.addEventListener(EVENT_GETTING_STARTED_HAXE, onGettingStartedHaxeRequest, false, 0, true);
+			dispatcher.addEventListener(EVENT_GETTING_STARTED_AS3, onGettingStartedRequest, false, 0, true);
+			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedHaxeRequest, false, 0, true);
 			dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
 			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 			
@@ -211,7 +211,7 @@ package actionScripts.plugins.startup
 			
 			if (!isAllDependenciesPresent && !ConstantsCoreVO.IS_GETTING_STARTED_DNS)
 			{
-				openOrFocusGettingStarted();
+				openOrFocusGettingStartedHaxe();
 			}
 		}
 		
@@ -352,7 +352,7 @@ package actionScripts.plugins.startup
 		private function onGettingStartedHaxeRequest(event:Event):void
 		{
 			openOrFocusGettingStartedHaxe();
-			//startHelpingTimeout = setTimeout(preInitHelping, 300);
+			startHelpingTimeout = setTimeout(preInitHelping, 300);
 		}
 		
 		/**
