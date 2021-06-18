@@ -1302,69 +1302,66 @@ package actionScripts.plugins.as3project.mxmlc
 				{
 					launchArgs["noDebug"] = true;
 				}
-				if(as3Project)
+				var swfFile:File = as3Project.swfOutput.path.fileBridge.getFile as File;
+				if(as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
 				{
-					var swfFile:File = as3Project.swfOutput.path.fileBridge.getFile as File;
-					if(as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
+					//switch to the Adobe AIR application descriptor XML file
+					launchArgs["program"] = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
+					if(as3Project.isMobile)
 					{
-						//switch to the Adobe AIR application descriptor XML file
-						launchArgs["program"] = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
-						if(as3Project.isMobile)
+						var mobileDevice:MobileDeviceVO = null;
+						if (as3Project.buildOptions.isMobileHasSimulatedDevice.name && !as3Project.buildOptions.isMobileHasSimulatedDevice.key)
 						{
-							var mobileDevice:MobileDeviceVO = null;
-							if (as3Project.buildOptions.isMobileHasSimulatedDevice.name && !as3Project.buildOptions.isMobileHasSimulatedDevice.key)
+							var deviceCollection:ArrayCollection = as3Project.buildOptions.targetPlatform == "iOS" ? ConstantsCoreVO.TEMPLATES_IOS_DEVICES : ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
+							for (var i:int=0; i < deviceCollection.length; i++)
 							{
-								var deviceCollection:ArrayCollection = as3Project.buildOptions.targetPlatform == "iOS" ? ConstantsCoreVO.TEMPLATES_IOS_DEVICES : ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES;
-								for (var i:int=0; i < deviceCollection.length; i++)
+								if (as3Project.buildOptions.isMobileHasSimulatedDevice.name == deviceCollection[i].name)
 								{
-									if (as3Project.buildOptions.isMobileHasSimulatedDevice.name == deviceCollection[i].name)
-									{
-										mobileDevice = deviceCollection[i];
-										break;
-									}
+									mobileDevice = deviceCollection[i];
+									break;
 								}
 							}
-							else if (!as3Project.buildOptions.isMobileHasSimulatedDevice.name)
-							{
-								mobileDevice = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0];
-							}
-							else 
-							{
-								mobileDevice = as3Project.buildOptions.isMobileHasSimulatedDevice;
-							}
-
-							launchArgs["profile"] = "mobileDevice";
-							launchArgs["screensize"] = mobileDevice.key;
-							launchArgs["screenDPI"] = parseInt(mobileDevice.dpi, 10);
-							launchArgs["versionPlatform"] = mobileDevice.type;
 						}
-					}
-					else
-					{
-						var swfProgram:String = as3Project.customHTMLPath;
-						if(!swfProgram && as3Project.urlToLaunch)
+						else if (!as3Project.buildOptions.isMobileHasSimulatedDevice.name)
 						{
-							//for some reason, relative paths might be saved with a starting slash
-							var firstChar:String = as3Project.urlToLaunch.charAt(0);
-							if(firstChar == "/" || firstChar == "\\")
+							mobileDevice = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES[0];
+						}
+						else
+						{
+							mobileDevice = as3Project.buildOptions.isMobileHasSimulatedDevice;
+						}
+
+						launchArgs["profile"] = "mobileDevice";
+						launchArgs["screensize"] = mobileDevice.key;
+						launchArgs["screenDPI"] = parseInt(mobileDevice.dpi, 10);
+						launchArgs["versionPlatform"] = mobileDevice.type;
+					}
+				}
+				else
+				{
+					var swfProgram:String = as3Project.customHTMLPath;
+					if(!swfProgram && as3Project.urlToLaunch)
+					{
+						//for some reason, relative paths might be saved with a starting slash
+						var firstChar:String = as3Project.urlToLaunch.charAt(0);
+						if(firstChar == "/" || firstChar == "\\")
+						{
+							var relativeFile:FileLocation = as3Project.projectFolder.file.resolvePath(as3Project.urlToLaunch.substr(1));
+							if(relativeFile.fileBridge.exists)
 							{
-								var relativeFile:FileLocation = as3Project.projectFolder.file.resolvePath(as3Project.urlToLaunch.substr(1));
-								if(relativeFile.fileBridge.exists)
-								{
-									swfProgram = relativeFile.fileBridge.nativePath;
-								}
-							}
-							if(!swfProgram)
-							{
-								swfProgram = as3Project.urlToLaunch;
+								swfProgram = relativeFile.fileBridge.nativePath;
 							}
 						}
 						if(!swfProgram)
 						{
-							swfProgram = swfFile.nativePath;
+							swfProgram = as3Project.urlToLaunch;
 						}
-						launchArgs["program"] = swfProgram;
 					}
+					if(!swfProgram)
+					{
+						swfProgram = swfFile.nativePath;
+					}
+					launchArgs["program"] = swfProgram;
 				}
 				dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER, as3Project, "swf", "launch", launchArgs));
 			}
