@@ -27,7 +27,6 @@ package actionScripts.utils
 
 	public function getProjectSDKPath(project:ProjectVO, model:IDEModel):String
 	{
-		var sdkPath:String = null;
 		if(project is AS3ProjectVO)
 		{
 			var as3Project:AS3ProjectVO = AS3ProjectVO(project);
