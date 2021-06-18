@@ -1107,6 +1107,7 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private function stopShell():void
 		{
+			print("Stopping MXMLC shell");
             if (!fcsh)
 			{
 				return;
@@ -1294,6 +1295,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else if(as3Project)
 			{
+				print("MXMLCPlugin.launchDebuggingAfterBuild: Initialize launch for AS3 project");
 				var launchArgs:Object =
 				{
 					"name": "Moonshine SWF Launch"
@@ -1303,8 +1305,11 @@ package actionScripts.plugins.as3project.mxmlc
 					launchArgs["noDebug"] = true;
 				}
 				var swfFile:File = as3Project.swfOutput.path.fileBridge.getFile as File;
+				print("MXMLCPlugin.launchDebuggingAfterBuild: Launch swf file: " + swfFile.nativePath);
+
 				if(as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
 				{
+					print("MXMLCPlugin.launchDebuggingAfterBuild: AS3ProjectVO.TEST_MOVIE_AIR");
 					//switch to the Adobe AIR application descriptor XML file
 					launchArgs["program"] = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
 					if(as3Project.isMobile)
@@ -1340,6 +1345,7 @@ package actionScripts.plugins.as3project.mxmlc
 				else
 				{
 					var swfProgram:String = as3Project.customHTMLPath;
+					print("MXMLCPlugin.launchDebuggingAfterBuild: Custom HTML path: " + swfProgram + " and urlToLaunch: " + as3Project.urlToLaunch);
 					if(!swfProgram && as3Project.urlToLaunch)
 					{
 						//for some reason, relative paths might be saved with a starting slash

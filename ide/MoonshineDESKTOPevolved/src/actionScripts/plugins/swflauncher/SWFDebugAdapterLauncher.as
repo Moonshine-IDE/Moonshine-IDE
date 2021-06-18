@@ -41,15 +41,21 @@ package actionScripts.plugins.swflauncher
 		public function getStartupInfo(project:ProjectVO):NativeProcessStartupInfo
 		{
 			var sdkFile:File = null;
+			print("SWFDebugAdapterLauncher.getStartupInfo: Retrieving startup information");
 			if(project is AS3ProjectVO)
 			{
-				sdkFile = new File(getProjectSDKPath(project, model));
+				var sdkPathAS3Proj = getProjectSDKPath(project, model);
+				print("SWFDebugAdapterLauncher.getStartupInfo: SDK path when AS3 project" + sdkPathAS3Proj);
+
+				sdkFile = new File(sdkPathAS3Proj);
 			}
 			else
 			{
+				print("SWFDebugAdapterLauncher.getStartupInfo: Init calculation SDK path for non AS3 project");
 				if(model.defaultSDK)
 				{
 					sdkFile = model.defaultSDK.fileBridge.getFile as File;
+					print("SWFDebugAdapterLauncher.getStartupInfo: SDK path for non AS3 project" + sdkFile.nativePath);
 				}
 			}
 
@@ -87,7 +93,10 @@ package actionScripts.plugins.swflauncher
 			startupInfo.arguments = processArgs;
 			var javaFile:File = File(model.javaPathForTypeAhead.fileBridge.getFile);
 			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
-			startupInfo.executable = javaFile.resolvePath("bin/" + javaFileName);
+			var javaPathFile:File = javaFile.resolvePath("bin/" + javaFileName);
+			print("getStartupInfo: Calculated Javapath: " + javaPathFile.nativePath);
+
+			startupInfo.executable = javaPathFile;
 			return startupInfo;
 		}
 	}
