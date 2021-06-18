@@ -68,10 +68,19 @@ package actionScripts.plugins.swflauncher
 
 			var processArgs:Vector.<String> = new <String>[];
 			var startupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			processArgs.push("-Dflexlib=" + sdkFile.resolvePath("frameworks").nativePath);
-			processArgs.push("-Dworkspace=" + project.folderLocation.fileBridge.nativePath);
+
+			var sdkFramework:String = sdkFile.resolvePath("frameworks").nativePath;
+			print("SWFDebugAdapterLauncher.getStartupInfo: Path to SDK framework: " + sdkFramework);
+			processArgs.push("-Dflexlib=" + sdkFramework);
+
+			var projectFolderLocation:String = project.folderLocation.fileBridge.nativePath;
+			print("SWFDebugAdapterLauncher.getStartupInfo: Project folder location: " + projectFolderLocation);
+			processArgs.push("-Dworkspace=" + projectFolderLocation);
 			processArgs.push("-cp");
+
 			var cp:String = File.applicationDirectory.resolvePath(DEBUG_ADAPTER_BIN_PATH).nativePath + File.separator + "*";
+			print("SWFDebugAdapterLauncher.getStartupInfo: Debug adapter bin path: " + cp);
+
 			if (Settings.os == "win")
 			{
 				cp += ";"
@@ -81,6 +90,8 @@ package actionScripts.plugins.swflauncher
 				cp += ":";
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_DEBUGGER_PATH).nativePath + File.separator + "*";
+			print("SWFDebugAdapterLauncher.getStartupInfo: Bundled debugger path: " + cp);
+
 			processArgs.push(cp);
 			processArgs.push("com.as3mxml.vscode.SWFDebug");
 			var cwd:File = new File(project.folderLocation.fileBridge.nativePath);
@@ -91,7 +102,10 @@ package actionScripts.plugins.swflauncher
 			}
 			startupInfo.workingDirectory = cwd;
 			startupInfo.arguments = processArgs;
+
 			var javaFile:File = File(model.javaPathForTypeAhead.fileBridge.getFile);
+			print("SWFDebugAdapterLauncher.getStartupInfo: Java path for type ahead: " + javaFile.nativePath);
+
 			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
 			var javaPathFile:File = javaFile.resolvePath("bin/" + javaFileName);
 			print("getStartupInfo: Calculated Javapath: " + javaPathFile.nativePath);
