@@ -727,8 +727,12 @@
 		<if>
 			<equals arg1="${Is.Bundled.SDK.Available}" arg2="true"/>
 			<then>
-				<copy file="${bundledFlexSDK}" todir="${basedir}/defaultSDKs" overwrite="true"/>
-				<copy file="${bundledFlexJSSDK}" todir="${basedir}/defaultSDKs" overwrite="true"/>
+				<copy todir="${basedir}/defaultSDKs" overwrite="true">
+					<fileset dir="${bundledFlexSDK}"/>
+				</copy>
+				<copy todir="${basedir}/defaultSDKs" overwrite="true">
+					<fileset dir="${bundledFlexJSSDK}"/>
+				</copy>
 			</then>
 		</if>
 		
