@@ -18,7 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
-    import mx.collections.ArrayCollection;
+import actionScripts.events.GlobalEventDispatcher;
+import actionScripts.plugin.console.ConsoleOutputEvent;
+
+import flash.events.IEventDispatcher;
+
+import mx.collections.ArrayCollection;
     import mx.core.IFlexDisplayObject;
     
     import actionScripts.factory.FileLocation;
@@ -86,7 +91,6 @@ package actionScripts.locator
 		public var notesPath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var java8Path:FileLocation;
-		public var javaVersionForTypeAhead:String;
 		public var javaVersionInJava8Path:String;
 		public var svnPath:String;
 		public var gitPath:String;
@@ -111,7 +115,24 @@ package actionScripts.locator
 
 		public var version: String = "1.0.0";
 		public var build: String = "";
-		
+
+		private var _javaVersionForTypeAhead:String;
+
+		public function get javaVersionForTypeAhead():String
+		{
+			return _javaVersionForTypeAhead;
+		}
+
+		public function set javaVersionForTypeAhead(value:String):void
+		{
+			var dispatcher:IEventDispatcher = GlobalEventDispatcher.getInstance();
+			var message:String = "IDEModel.javaVersionForTypeAhead: Value: " + value;
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT,
+					message, false, false, ConsoleOutputEvent.TYPE_INFO));
+
+			_javaVersionForTypeAhead = value;
+		}
+
 		public function removeEditor(editor:Object):Boolean
 		{
 			var index:int = editors.getItemIndex(editor);
