@@ -18,12 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
-import actionScripts.events.GlobalEventDispatcher;
-import actionScripts.plugin.console.ConsoleOutputEvent;
-
-import flash.events.IEventDispatcher;
-
-import mx.collections.ArrayCollection;
+	import mx.collections.ArrayCollection;
     import mx.core.IFlexDisplayObject;
     
     import actionScripts.factory.FileLocation;
@@ -125,11 +120,6 @@ import mx.collections.ArrayCollection;
 
 		public function set javaVersionForTypeAhead(value:String):void
 		{
-			var dispatcher:IEventDispatcher = GlobalEventDispatcher.getInstance();
-			var message:String = "IDEModel.javaVersionForTypeAhead: Value: " + value;
-			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT,
-					message, false, false, ConsoleOutputEvent.TYPE_INFO));
-
 			_javaVersionForTypeAhead = value;
 		}
 
