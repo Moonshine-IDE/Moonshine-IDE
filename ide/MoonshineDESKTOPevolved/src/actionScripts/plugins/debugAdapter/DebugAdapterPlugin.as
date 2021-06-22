@@ -141,7 +141,6 @@ package actionScripts.plugins.debugAdapter
 		{
 			if(!_debugPanel.parent)
 			{
-				print("DebugAdapterPlugin.refreshView: Refresh view doesn't have parent");
 				return;
 			}
 
@@ -149,8 +148,6 @@ package actionScripts.plugins.debugAdapter
 			_debugPanel.pausedThreads = _debugAdapter ? _debugAdapter.pausedThreads : null;
 			_debugPanel.threadsAndStackFrames = _debugAdapter ? _debugAdapter.threadsAndStackFrames : null;
 			_debugPanel.scopesAndVars = _debugAdapter ? _debugAdapter.scopesAndVars : null;
-
-			print("DebugAdapterPlugin.refreshView: DebugPanel: " + _debugPanel.active);
 		}
 		
 		private function saveEditorBreakpoints(editor:BasicTextEditor):void
@@ -237,7 +234,7 @@ package actionScripts.plugins.debugAdapter
 		protected function dispatcher_startDebugAdapterHandler(event:DebugAdapterEvent):void
 		{
 			var launcher:IDebugAdapterLauncher = null;
-			print("Initialize debug adapter: " + event.adapterID);
+			print("Launching application using adapter: " + event.adapterID);
 			switch(event.adapterID)
 			{
 				case "swf":
@@ -274,18 +271,15 @@ package actionScripts.plugins.debugAdapter
 			var startupInfo:NativeProcessStartupInfo = launcher.getStartupInfo(event.project);
 			if(!startupInfo)
 			{
-				print("DebugAdapterPlugin.dispatcher_startDebugAdapterHandler: No startup info return");
 				return;
 			}
 			
 			if(_nativeProcess)
 			{
 				//if we're already debugging, kill the previous process
-				print("Killing previous process of debugging");
 				_nativeProcess.exit(true);
 			}
 
-			print("Initialize new process for debugging");
 			_nativeProcess = new NativeProcess();
 			_nativeProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, nativeProcess_standardErrorDataHandler);
 			_nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, nativeProcess_exitHandler);
@@ -293,8 +287,6 @@ package actionScripts.plugins.debugAdapter
 
 			if(!event.additionalProperties || !event.additionalProperties.noDebug)
 			{
-				print("DebugAdapterPlugin.dispatcher_startDebugAdapterHandler: No additional properties or no debug");
-
 				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, this._debugPanel));
 				initializeDebugViewEventHandlers(event);
 				isDebugViewVisible = true;
@@ -302,11 +294,9 @@ package actionScripts.plugins.debugAdapter
 			
 			_calledStop = false;
 			DebugHighlightManager.IS_DEBUGGER_CONNECTED = false;
-			print("DebugAdapterPlugin.dispatcher_startDebugAdapterHandler: PROJECT_DEBUG_STARTED: " + event.project.projectName);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, event.project.projectName));
 
 			var debugMode:Boolean = false;
-			print("DebugAdapterPlugin.dispatcher_startDebugAdapterHandler: Initialize DebugAdapter");
 			_debugAdapter = new DebugAdapter(CLIENT_ID, CLIENT_NAME, debugMode, dispatcher,
 				_nativeProcess.standardOutput, _nativeProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_debugAdapter.addEventListener(Event.INIT, debugAdapter_initHandler);
@@ -314,7 +304,7 @@ package actionScripts.plugins.debugAdapter
 			_debugAdapter.addEventListener(Event.CHANGE, debugAdapter_changeHandler);
 			_debugAdapter.addEventListener(Event.SUSPEND, debugAdapter_suspendHandler);
 			_debugAdapter.start(event.adapterID, event.request, event.additionalProperties);
-			print("DebugAdapterPlugin.dispatcher_startDebugAdapterHandler: Start refresh view");
+
 			refreshView();
 		}
 

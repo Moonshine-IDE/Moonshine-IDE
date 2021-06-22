@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.swflauncher
 {
-	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugins.debugAdapter.IDebugAdapterLauncher;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.filesystem.File;
@@ -42,21 +41,17 @@ package actionScripts.plugins.swflauncher
 		public function getStartupInfo(project:ProjectVO):NativeProcessStartupInfo
 		{
 			var sdkFile:File = null;
-			print("SWFDebugAdapterLauncher.getStartupInfo: Retrieving startup information");
 			if(project is AS3ProjectVO)
 			{
 				var sdkPathAS3Proj:String = getProjectSDKPath(project, model);
-				print("SWFDebugAdapterLauncher.getStartupInfo: SDK path when AS3 project" + sdkPathAS3Proj);
 
 				sdkFile = new File(sdkPathAS3Proj);
 			}
 			else
 			{
-				print("SWFDebugAdapterLauncher.getStartupInfo: Init calculation SDK path for non AS3 project");
 				if(model.defaultSDK)
 				{
 					sdkFile = model.defaultSDK.fileBridge.getFile as File;
-					print("SWFDebugAdapterLauncher.getStartupInfo: SDK path for non AS3 project" + sdkFile.nativePath);
 				}
 			}
 
@@ -71,16 +66,13 @@ package actionScripts.plugins.swflauncher
 			var startupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 
 			var sdkFramework:String = sdkFile.resolvePath("frameworks").nativePath;
-			print("SWFDebugAdapterLauncher.getStartupInfo: Path to SDK framework: " + sdkFramework);
 			processArgs.push("-Dflexlib=" + sdkFramework);
 
 			var projectFolderLocation:String = project.folderLocation.fileBridge.nativePath;
-			print("SWFDebugAdapterLauncher.getStartupInfo: Project folder location: " + projectFolderLocation);
 			processArgs.push("-Dworkspace=" + projectFolderLocation);
 			processArgs.push("-cp");
 
 			var cp:String = File.applicationDirectory.resolvePath(DEBUG_ADAPTER_BIN_PATH).nativePath + File.separator + "*";
-			print("SWFDebugAdapterLauncher.getStartupInfo: Debug adapter bin path: " + cp);
 
 			if (Settings.os == "win")
 			{
@@ -91,7 +83,6 @@ package actionScripts.plugins.swflauncher
 				cp += ":";
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_DEBUGGER_PATH).nativePath + File.separator + "*";
-			print("SWFDebugAdapterLauncher.getStartupInfo: Bundled debugger path: " + cp);
 
 			processArgs.push(cp);
 			processArgs.push("com.as3mxml.vscode.SWFDebug");
@@ -108,12 +99,10 @@ package actionScripts.plugins.swflauncher
 			if (model.javaPathForTypeAhead != null)
 			{
 				javaFile = File(model.javaPathForTypeAhead.fileBridge.getFile);
-				print("SWFDebugAdapterLauncher.getStartupInfo: Java path for type ahead: " + javaFile.nativePath);
 			}
 			else if (model.java8Path != null)
 			{
 				javaFile = File(model.java8Path.fileBridge.getFile);
-				warning("SWFDebugAdapterLauncher.getStartupInfo: Java 8. Suggested using OpenJDK 11 installing from Moonshine SDK Installer.");
 			}
 			else if (!model.javaPathForTypeAhead && !model.java8Path)
 			{
@@ -123,7 +112,6 @@ package actionScripts.plugins.swflauncher
 
 			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
 			var javaPathFile:File = javaFile.resolvePath("bin/" + javaFileName);
-			print("getStartupInfo: Calculated Javapath: " + javaPathFile.nativePath);
 
 			startupInfo.executable = javaPathFile;
 			return startupInfo;

@@ -33,18 +33,11 @@ import flash.filesystem.File;
 	{
 		var dispatcher:IEventDispatcher = GlobalEventDispatcher.getInstance();
 
-		var message:String = "Find and copy application descriptor where swf path is: " + file.nativePath;
-		dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT,
-				message, false, false, ConsoleOutputEvent.TYPE_INFO));
 		// Guesstimate app-xml name
 		var rootPath:String = File(project.folderLocation.fileBridge.getFile).getRelativePath(file.parent);
 		var descriptorName:String = project.swfOutput.path.fileBridge.name.split(".")[0] +"-app.xml";
 		var appXML:String = project.targets[0].fileBridge.parent.fileBridge.nativePath + File.separator + descriptorName;
 		var descriptorFile:File = new File(appXML);
-
-		message = "Application descriptor path: " + descriptorFile.nativePath;
-		dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT,
-				message, false, false, ConsoleOutputEvent.TYPE_INFO));
 
 		// in case /src/app-xml present update to bin-debug folder
 		if (descriptorFile.exists)
@@ -52,16 +45,12 @@ import flash.filesystem.File;
 			appXML = rootPath + File.separator + descriptorName;
 			var descriptorCopyTo:File = project.folderLocation.resolvePath(appXML).fileBridge.getFile as File;
 
-			message = "Application descriptor file: " + descriptorFile.nativePath + " copy to " + descriptorCopyTo.nativePath;
+			var message:String = "Application descriptor file: " + descriptorFile.nativePath + " copy to " + descriptorCopyTo.nativePath;
 			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT,
 					message, false, false, ConsoleOutputEvent.TYPE_INFO));
 
 			descriptorFile.copyTo(descriptorCopyTo, true);
 			descriptorFile =  project.folderLocation.resolvePath(appXML).fileBridge.getFile as File;
-
-			message = "Application descriptor file after copy: " + descriptorFile.nativePath;
-			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT,
-					message, false, false, ConsoleOutputEvent.TYPE_INFO));
 
 			var stream:FileStream = new FileStream();
 			stream.open(descriptorFile, FileMode.READ);
