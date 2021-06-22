@@ -697,6 +697,23 @@ package actionScripts.ui.menu
 			// update menus for VE project
 			disableMenuOptions(lastSelectedProjectBeforeMacDisableStateChange);
 		}
+
+		private function removeMacDefaultFullScreen():void
+		{
+			var menu:Object = getMenuObject();
+			if (!menu) return;
+
+			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
+			var subItemsInItemOfTopMenu:Array = itemsInTopMenu[3].submenu.items as Array;
+			for (var i:int = 0; i < subItemsInItemOfTopMenu.length; i++)
+			{
+				if (subItemsInItemOfTopMenu[i].label == "Enter Full Screen")
+				{
+					subItemsInItemOfTopMenu.splice(i, 1);
+					return;
+				}
+			}
+		}
 		
 		private function onGitClonePermissionChange(event:Event):void
 		{
