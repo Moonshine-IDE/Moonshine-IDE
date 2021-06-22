@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.swflauncher
 {
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugins.debugAdapter.IDebugAdapterLauncher;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.filesystem.File;
@@ -103,8 +104,22 @@ package actionScripts.plugins.swflauncher
 			startupInfo.workingDirectory = cwd;
 			startupInfo.arguments = processArgs;
 
-			var javaFile:File = File(model.javaPathForTypeAhead.fileBridge.getFile);
-			print("SWFDebugAdapterLauncher.getStartupInfo: Java path for type ahead: " + javaFile.nativePath);
+			var javaFile:File;
+			if ((project is AS3ProjectVO) && (model.javaPathForTypeAhead != null))
+			{
+				javaFile = File(model.javaPathForTypeAhead.fileBridge.getFile);
+				print("SWFDebugAdapterLauncher.getStartupInfo: Java path for type ahead: " + javaFile.nativePath);
+			}
+			else if (model.java8Path != null)
+			{
+				javaFile = File(model.java8Path.fileBridge.getFile);
+				warning("SWFDebugAdapterLauncher.getStartupInfo: Java 8. Suggested using OpenJDK 11 installing from Moonshine SDK Installer.");
+			}
+			else if (!model.javaPathForTypeAhead && !model.java8Path)
+			{
+				error("Error: Present no Java. Process terminates.");
+				return null;
+			}
 
 			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
 			var javaPathFile:File = javaFile.resolvePath("bin/" + javaFileName);
