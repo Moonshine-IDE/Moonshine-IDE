@@ -29,8 +29,8 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
-			import mx.events.FlexEvent;
+		import mx.collections.ArrayCollection;
+		import mx.events.FlexEvent;
 			import mx.utils.ObjectUtil;
 			
 			import actionScripts.locator.HelperModel;
@@ -58,8 +58,17 @@
 			 */
 			public function onSoftwareInfoCreationComplete(event:FlexEvent):void
 			{
-				registerClassAlias("actionScripts.valueObjects.ComponentVO", ComponentVO);
-				components = ObjectUtil.copy(HelperModel.getInstance().components) as ArrayCollection;
+				// we need to parse this to Flex ArrayCollection to have it use
+				// with datagrid
+				components = new ArrayCollection();
+				for each (var component:ComponentVO in HelperModel.getInstance().components.array)
+				{
+					var clonedComponent:ComponentVO;
+					registerClassAlias("actionScripts.valueObjects.ComponentVO", ComponentVO);
+					clonedComponent = ObjectUtil.copy(component) as ComponentVO;
+					components.addItem(clonedComponent);
+				}
+
 				updateWithMoonshinePaths();
 	
 				var tmpAddition:ComponentVO = new ComponentVO();

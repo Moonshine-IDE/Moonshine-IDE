@@ -45,7 +45,7 @@ package actionScripts.plugins.swflauncher
 			print("SWFDebugAdapterLauncher.getStartupInfo: Retrieving startup information");
 			if(project is AS3ProjectVO)
 			{
-				var sdkPathAS3Proj = getProjectSDKPath(project, model);
+				var sdkPathAS3Proj:String = getProjectSDKPath(project, model);
 				print("SWFDebugAdapterLauncher.getStartupInfo: SDK path when AS3 project" + sdkPathAS3Proj);
 
 				sdkFile = new File(sdkPathAS3Proj);
