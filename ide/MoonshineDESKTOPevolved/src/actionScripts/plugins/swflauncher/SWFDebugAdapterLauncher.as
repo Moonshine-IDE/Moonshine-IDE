@@ -105,7 +105,7 @@ package actionScripts.plugins.swflauncher
 			startupInfo.arguments = processArgs;
 
 			var javaFile:File;
-			if ((project is AS3ProjectVO) && (model.javaPathForTypeAhead != null))
+			if (model.javaPathForTypeAhead != null)
 			{
 				javaFile = File(model.javaPathForTypeAhead.fileBridge.getFile);
 				print("SWFDebugAdapterLauncher.getStartupInfo: Java path for type ahead: " + javaFile.nativePath);
