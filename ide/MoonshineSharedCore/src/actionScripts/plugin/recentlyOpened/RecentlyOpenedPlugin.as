@@ -203,22 +203,51 @@ package actionScripts.plugin.recentlyOpened
 				for each (object in cookie.data.userSDKs)
 				{
 					var tmpSDK:SDKReferenceVO = SDKReferenceVO.getNewReference(object);
-					if (new FileLocation(tmpSDK.path).fileBridge.exists) model.userSavedSDKs.addItem(tmpSDK);
+					if (new FileLocation(tmpSDK.path).fileBridge.exists)
+					{
+						model.userSavedSDKs.addItem(tmpSDK);
+					}
 				}
 			}
 			
 			if (cookie.data.hasOwnProperty('lastBrowsedLocation')) 
 			{
 				ConstantsCoreVO.LAST_BROWSED_LOCATION = cookie.data.lastBrowsedLocation;
-				if (!model.fileCore.isPathExists(ConstantsCoreVO.LAST_BROWSED_LOCATION)) ConstantsCoreVO.LAST_BROWSED_LOCATION = null;
-				else model.fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
+				if (!model.fileCore.isPathExists(ConstantsCoreVO.LAST_BROWSED_LOCATION))
+				{
+					ConstantsCoreVO.LAST_BROWSED_LOCATION = null;
+				}
+				else
+				{
+					model.fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
+				}
 			}
 			
-			if (cookie.data.hasOwnProperty('moonshineWorkspace')) OSXBookmarkerNotifiers.workspaceLocation = new FileLocation(cookie.data.moonshineWorkspace);
-			if (cookie.data.hasOwnProperty('isWorkspaceAcknowledged')) OSXBookmarkerNotifiers.isWorkspaceAcknowledged = (cookie.data["isWorkspaceAcknowledged"] == "true") ? true : false;
-			if (cookie.data.hasOwnProperty('isBundledSDKpromptDNS')) ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = (cookie.data["isBundledSDKpromptDNS"] == "true") ? true : false;
-			if (cookie.data.hasOwnProperty('isSDKhelperPromptDNS')) ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = (cookie.data["isSDKhelperPromptDNS"] == "true") ? true : false;
-			if (cookie.data.hasOwnProperty('isGettingStartedDNS')) ConstantsCoreVO.IS_GETTING_STARTED_DNS = (cookie.data["isGettingStartedDNS"] == "true") ? true : false;
+			if (cookie.data.hasOwnProperty('moonshineWorkspace'))
+			{
+				OSXBookmarkerNotifiers.workspaceLocation = new FileLocation(cookie.data.moonshineWorkspace);
+			}
+
+			if (cookie.data.hasOwnProperty('isWorkspaceAcknowledged'))
+			{
+				OSXBookmarkerNotifiers.isWorkspaceAcknowledged = (cookie.data["isWorkspaceAcknowledged"] == "true") ? true : false;
+			}
+
+			if (cookie.data.hasOwnProperty('isBundledSDKpromptDNS'))
+			{
+				ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = (cookie.data["isBundledSDKpromptDNS"] == "true") ? true : false;
+			}
+
+			if (cookie.data.hasOwnProperty('isSDKhelperPromptDNS'))
+			{
+				ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = (cookie.data["isSDKhelperPromptDNS"] == "true") ? true : false;
+			}
+
+			if (cookie.data.hasOwnProperty('isGettingStartedDNS'))
+			{
+				ConstantsCoreVO.IS_GETTING_STARTED_DNS = (cookie.data["isGettingStartedDNS"] == "true") ? true : false;
+			}
+
 			if (cookie.data.hasOwnProperty('devicesAndroid'))
 			{
 				ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES = new ArrayCollection();
