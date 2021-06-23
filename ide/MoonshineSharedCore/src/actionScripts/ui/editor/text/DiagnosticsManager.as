@@ -1,9 +1,9 @@
 package actionScripts.ui.editor.text
 {
 	import actionScripts.utils.TextUtil;
-	import actionScripts.valueObjects.Diagnostic;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.Range;
+	import moonshine.lsp.Diagnostic;
+	import moonshine.lsp.Position;
+	import moonshine.lsp.Range;
 
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
@@ -131,7 +131,7 @@ package actionScripts.ui.editor.text
 			var char:int = charAndLine.x;
 			var filtered:Vector.<Diagnostic> = savedDiagnostics.filter(function(item:Diagnostic, index:int, source:Vector.<Diagnostic>):Boolean
 			{
-				if(item.severity === Diagnostic.SEVERITY_HINT)
+				if(item.severity === 4 /* DiagnosticSeverity.Hint */)
 				{
 					return false;
 				}

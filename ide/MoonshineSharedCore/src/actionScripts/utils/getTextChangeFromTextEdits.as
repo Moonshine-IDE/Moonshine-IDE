@@ -21,18 +21,18 @@ package actionScripts.utils
 	import actionScripts.ui.editor.text.change.TextChangeBase;
 	import actionScripts.ui.editor.text.change.TextChangeInsert;
 	import actionScripts.ui.editor.text.change.TextChangeRemove;
-	import actionScripts.valueObjects.TextEdit;
-	import actionScripts.valueObjects.Range;
-	import actionScripts.valueObjects.Position;
+	import moonshine.lsp.TextEdit;
+	import moonshine.lsp.Range;
+	import moonshine.lsp.Position;
 	import actionScripts.ui.editor.text.change.TextChangeMulti;
 
-	public function getTextChangeFromTextEdits(textEdits:Vector.<TextEdit>):TextChangeBase
+	public function getTextChangeFromTextEdits(textEdits:Array /* Array<TextEdit> */):TextChangeBase
 	{
 		var multi:TextChangeMulti = new TextChangeMulti();
 		var textEditsCount:int = textEdits.length;
 		for(var i:int = 0; i < textEditsCount; i++)
 		{
-			var textEdit:TextEdit = textEdits[i];
+			var textEdit:TextEdit = TextEdit(textEdits[i]);
 			var range:Range = textEdit.range;
 			var start:Position = range.start;
 			var end:Position = range.end;

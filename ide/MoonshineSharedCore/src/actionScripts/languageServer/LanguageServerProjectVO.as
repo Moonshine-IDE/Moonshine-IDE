@@ -16,17 +16,19 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.events
+package actionScripts.languageServer
 {
-	import actionScripts.valueObjects.Location;
+	import actionScripts.valueObjects.ProjectVO;
+	import moonshine.lsp.LanguageClient;
+	import actionScripts.factory.FileLocation;
 
-	public class ReferencesEvent extends LocationsEvent
+	public class LanguageServerProjectVO extends ProjectVO
 	{
-		public static const EVENT_SHOW_REFERENCES:String = "newShowReferences";
-
-		public function ReferencesEvent(type:String, locations:Vector.<Location>)
+		public function LanguageServerProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true) 
 		{
-			super(type, locations);
+			super(folder, projectName, updateToTreeView);
 		}
+
+		public var languageClient:LanguageClient;
 	}
 }

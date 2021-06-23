@@ -22,13 +22,13 @@ package moonshine.plugin.references.view;
 
 import actionScripts.factory.FileLocation;
 import actionScripts.interfaces.IViewWithTitle;
-import actionScripts.valueObjects.Location;
 import feathers.controls.LayoutGroup;
 import feathers.controls.ListView;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayCollection;
 import feathers.layout.AnchorLayout;
 import feathers.layout.AnchorLayoutData;
+import moonshine.lsp.Location;
 import moonshine.theme.MoonshineTheme;
 import openfl.events.Event;
 

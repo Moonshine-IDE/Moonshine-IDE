@@ -21,11 +21,11 @@ package actionScripts.utils
 	import actionScripts.events.ChangeEvent;
 	import actionScripts.ui.editor.text.TextEditor;
 	import actionScripts.ui.editor.text.change.TextChangeBase;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.Range;
-	import actionScripts.valueObjects.TextEdit;
+	import moonshine.lsp.Position;
+	import moonshine.lsp.Range;
+	import moonshine.lsp.TextEdit;
 
-	public function applyTextEditsToTextEditor(textEditor:TextEditor, textEdits:Vector.<TextEdit>):void
+	public function applyTextEditsToTextEditor(textEditor:TextEditor, textEdits:Array /* Array<TextEdit> */):void
 	{
 		var change:TextChangeBase = getTextChangeFromTextEdits(textEdits);
 

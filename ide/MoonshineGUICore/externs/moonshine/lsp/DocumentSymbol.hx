@@ -18,9 +18,16 @@
 	Use this software at your own risk.
  */
 
-package actionScripts.valueObjects;
+package moonshine.lsp;
 
-extern class Location {
-	public var uri:String;
+import openfl.Vector;
+
+extern class DocumentSymbol {
+	public var name:String;
+	public var detail:String;
+	public var kind:Int;
+	public var deprecated:Bool;
 	public var range:Range;
+	public var selectionRange:Range;
+	public var children:Vector<DocumentSymbol>;
 }

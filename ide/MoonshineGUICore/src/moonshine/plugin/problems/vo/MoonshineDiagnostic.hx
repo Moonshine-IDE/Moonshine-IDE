@@ -1,5 +1,5 @@
 /*
-	Copyright 2020 Prominic.NET, Inc.
+	Copyright 2021 Prominic.NET, Inc.
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -18,12 +18,18 @@
 	Use this software at your own risk.
  */
 
-package actionScripts.valueObjects;
+package moonshine.plugin.problems.vo;
 
-extern class SymbolInformation {
-	public var name:String;
-	public var containerName:String;
-	public var kind:Int;
-	public var deprecated:Bool;
-	public var location:Location;
+import actionScripts.valueObjects.ProjectVO;
+import actionScripts.factory.FileLocation;
+import moonshine.lsp.Diagnostic;
+
+class MoonshineDiagnostic extends Diagnostic {
+	public function new(fileLocation:FileLocation, project:ProjectVO) {
+		this.fileLocation = fileLocation;
+		this.project = project;
+	}
+
+	public var fileLocation:FileLocation;
+	public var project:ProjectVO;
 }

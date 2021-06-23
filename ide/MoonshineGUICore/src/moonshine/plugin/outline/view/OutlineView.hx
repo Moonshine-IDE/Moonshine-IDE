@@ -21,8 +21,6 @@
 package moonshine.plugin.outline.view;
 
 import actionScripts.interfaces.IViewWithTitle;
-import actionScripts.valueObjects.DocumentSymbol;
-import actionScripts.valueObjects.SymbolInformation;
 import feathers.controls.Panel;
 import feathers.controls.TreeView;
 import feathers.core.InvalidationFlag;
@@ -30,7 +28,8 @@ import feathers.data.TreeCollection;
 import feathers.data.TreeNode;
 import feathers.layout.AnchorLayout;
 import feathers.layout.AnchorLayoutData;
-import moonshine.theme.MoonshineTheme;
+import moonshine.lsp.DocumentSymbol;
+import moonshine.lsp.SymbolInformation;
 import moonshine.ui.SideBarViewHeader;
 import openfl.events.Event;
 

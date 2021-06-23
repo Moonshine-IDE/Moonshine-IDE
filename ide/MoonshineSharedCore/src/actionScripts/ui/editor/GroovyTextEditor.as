@@ -19,6 +19,7 @@
 package actionScripts.ui.editor
 {
 	import actionScripts.events.ChangeEvent;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import actionScripts.ui.editor.text.change.TextChangeInsert;
 	import actionScripts.ui.editor.text.change.TextChangeMulti;
 
@@ -36,9 +37,9 @@ package actionScripts.ui.editor
 		private var dispatchSignatureHelpPending:Boolean;
 		private var mouseOverForHover:Boolean = false;
 
-		public function GroovyTextEditor(readOnly:Boolean = false)
+		public function GroovyTextEditor(project:GrailsProjectVO, readOnly:Boolean = false)
 		{
-			super(LANGUAGE_ID_GROOVY, readOnly);
+			super(LANGUAGE_ID_GROOVY, project, readOnly);
 			editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			editor.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
 		}

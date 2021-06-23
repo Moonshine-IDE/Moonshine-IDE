@@ -19,6 +19,7 @@
 package actionScripts.ui.editor
 {
 	import actionScripts.events.ChangeEvent;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.ui.editor.text.change.TextChangeInsert;
 	import actionScripts.ui.editor.text.change.TextChangeMulti;
 
@@ -35,9 +36,9 @@ package actionScripts.ui.editor
 		private var dispatchCompletionPending:Boolean;
 		private var dispatchSignatureHelpPending:Boolean;
 
-		public function ActionScriptTextEditor(readOnly:Boolean = false)
+		public function ActionScriptTextEditor(project:AS3ProjectVO, readOnly:Boolean = false)
 		{
-			super(LANGUAGE_ID_ACTIONSCRIPT, readOnly);
+			super(LANGUAGE_ID_ACTIONSCRIPT, project, readOnly);
 			editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			editor.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
 		}

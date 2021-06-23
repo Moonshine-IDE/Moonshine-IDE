@@ -22,9 +22,9 @@ package actionScripts.utils
 	import actionScripts.ui.editor.text.TextEditor;
 	import actionScripts.ui.editor.text.TextLineModel;
 	import actionScripts.ui.editor.text.change.TextChangeBase;
-	import actionScripts.valueObjects.TextEdit;
+	import moonshine.lsp.TextEdit;
 
-	public function applyTextEditsToFile(file:FileLocation, textEdits:Vector.<TextEdit>):void
+	public function applyTextEditsToFile(file:FileLocation, textEdits:Array /* Array<TextEdit> */):void
 	{
 		var textEditor:TextEditor = findOpenTextEditor(file);
 		if(textEditor !== null)

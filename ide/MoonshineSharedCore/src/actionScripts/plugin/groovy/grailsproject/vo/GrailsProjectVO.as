@@ -31,8 +31,9 @@ package actionScripts.plugin.groovy.grailsproject.vo
 	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.languageServer.LanguageServerProjectVO;
 
-	public class GrailsProjectVO extends ProjectVO implements IJavaProject
+	public class GrailsProjectVO extends LanguageServerProjectVO implements IJavaProject
 	{
 		private static const TARGET_BYTECODE_VALUES:Array = ["1.4", "1.5", "1.6", "1.7", "1.8", "9", "10", "11", "12", "13"];
 

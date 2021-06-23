@@ -21,6 +21,7 @@ package actionScripts.ui.editor.text
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
+	import flash.events.Event;
 	import flash.events.TimerEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -34,13 +35,15 @@ package actionScripts.ui.editor.text
 	import flash.text.engine.TextLine;
 	import flash.utils.Timer;
 	
-	import actionScripts.valueObjects.Diagnostic;
+	import mx.managers.PopUpManager;
+
 	import actionScripts.valueObjects.Settings;
+
+	import moonshine.lsp.Diagnostic;
 	
 	import no.doomsday.utilities.math.MathUtils;
+
 	import org.apache.flex.collections.VectorCollection;
-	import mx.managers.PopUpManager;
-	import flash.events.Event;
 
     public class TextLineRenderer extends Sprite
 	{	
@@ -567,7 +570,7 @@ package actionScripts.ui.editor.text
 				for(var i:int = 0; i < diagnosticsCount; i++)
 				{
 					var diagnostic:Diagnostic = diagnostics[i];
-					if(diagnostic.severity == Diagnostic.SEVERITY_HINT)
+					if(diagnostic.severity == 4 /* DiagnosticSeverity.Hint */)
 					{
 						//skip hints because they are not meant to be displayed
 						//to the user like regular problems. they're used
@@ -591,13 +594,13 @@ package actionScripts.ui.editor.text
 					var lineColor:uint = 0xfa0707; //error
 					switch(diagnostic.severity)
 					{
-						case Diagnostic.SEVERITY_WARNING:
+						case 2 /*DiagnosticSeverity.Warning*/:
 						{
 							lineColor = 0x078a07;
 							break;
 						}
-						case Diagnostic.SEVERITY_HINT:
-						case Diagnostic.SEVERITY_INFORMATION:
+						case 4 /*DiagnosticSeverity.Hint*/:
+						case 3 /*DiagnosticSeverity.Info*/:
 						{
 							lineColor = 0x0707fa;
 							break;

@@ -41,8 +41,9 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 	import mx.collections.ArrayCollection;
 	import mx.utils.StringUtil;
+	import actionScripts.languageServer.LanguageServerProjectVO;
 
-	public class HaxeProjectVO extends ProjectVO
+	public class HaxeProjectVO extends LanguageServerProjectVO
 	{
 		public static const TEST_MOVIE_WEBSERVER:String = "Webserver";
 		public static const TEST_MOVIE_CUSTOM:String = "Custom";

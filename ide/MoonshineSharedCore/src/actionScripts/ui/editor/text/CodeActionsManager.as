@@ -1,15 +1,8 @@
 package actionScripts.ui.editor.text
 {
-	import actionScripts.utils.TextUtil;
-	import actionScripts.valueObjects.Diagnostic;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.Range;
-
-	import flash.events.MouseEvent;
-	import flash.geom.Point;
-	import actionScripts.valueObjects.Command;
-	import actionScripts.valueObjects.CodeAction;
 	import flash.events.FocusEvent;
+
+	import moonshine.lsp.CodeAction;
 
 	public class CodeActionsManager
 	{
@@ -47,7 +40,7 @@ package actionScripts.ui.editor.text
 			{
 				model.selectedLine.codeActions = codeActions.filter(function(codeAction:CodeAction, index:int, original:Vector.<CodeAction>):Boolean
 				{
-					if(codeAction.kind == CodeAction.KIND_SOURCE_ORGANIZE_IMPORTS)
+					if(codeAction.kind == "source.organizeImports")
 					{
 						//we don't display this one in the light bulb
 						return false;

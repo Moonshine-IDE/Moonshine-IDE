@@ -27,8 +27,6 @@ package actionScripts.plugin.actionscript.as3project.vo
     import mx.collections.ArrayCollection;
     import mx.controls.LinkButton;
     
-    import __AS3__.vec.Vector;
-    
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.ICloneable;
@@ -53,9 +51,9 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.MobileDeviceVO;
-    import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.languageServer.LanguageServerProjectVO;
 	
-	public class AS3ProjectVO extends ProjectVO implements ICloneable, IVisualEditorProjectVO
+	public class AS3ProjectVO extends LanguageServerProjectVO implements ICloneable, IVisualEditorProjectVO
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 		public static const NATIVE_EXTENSION_MESSAGE:String = "NATIVE_EXTENSION_MESSAGE";

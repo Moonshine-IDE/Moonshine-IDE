@@ -18,38 +18,39 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-	import actionScripts.events.ExecuteLanguageServerCommandEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.ui.codeCompletionList.CodeCompletionList;
-    import actionScripts.utils.CompletionListCodeTokens;
-    import actionScripts.valueObjects.Command;
-	import actionScripts.valueObjects.CompletionItem;
-    import flash.events.Event;
+	import flash.events.Event;
 	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.ui.Keyboard;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 
 	import mx.collections.ArrayCollection;
-    import mx.managers.PopUpManager;
-    import mx.utils.ObjectUtil;
+	import mx.managers.PopUpManager;
+	import mx.utils.ObjectUtil;
 
-    import spark.collections.Sort;
-
-    import spark.collections.SortField;
-    import actionScripts.valueObjects.CompletionItemKind;
-    import actionScripts.valueObjects.TextEdit;
-    import actionScripts.valueObjects.WorkspaceEdit;
-    import actionScripts.locator.IDEModel;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.utils.applyWorkspaceEdit;
-    import actionScripts.events.ResolveCompletionItemEvent;
-    import actionScripts.ui.editor.LanguageServerTextEditor;
-    import actionScripts.utils.getProjectForUri;
-    import actionScripts.valueObjects.ProjectVO;
+	import spark.collections.Sort;
+	import spark.collections.SortField;
+	
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.ui.codeCompletionList.CodeCompletionList;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
+	import actionScripts.utils.CompletionListCodeTokens;
+	import actionScripts.utils.applyWorkspaceEdit;
+	import actionScripts.utils.getProjectForUri;
+	import actionScripts.valueObjects.ProjectVO;
+	import moonshine.lsp.Command;
+	import moonshine.lsp.CompletionItem;
+	import moonshine.lsp.TextEdit;
+	import moonshine.lsp.WorkspaceEdit;
+	import actionScripts.valueObjects.CompletionItemKind;
+	import haxe.IMap;
+	import haxe.ds.ObjectMap;
+	import haxe.ds.StringMap;
 
     public class CompletionManager
 	{
@@ -140,12 +141,10 @@ package actionScripts.ui.editor.text
 			
 			if(items.length > 0)
 			{
-				var activeEditor:LanguageServerTextEditor = IDEModel.getInstance().activeEditor as LanguageServerTextEditor;
-				if(activeEditor.getEditorComponent() == editor)
+				var lspEditor:LanguageServerTextEditor = IDEModel.getInstance().activeEditor as LanguageServerTextEditor;
+				if(lspEditor.getEditorComponent() == editor && lspEditor.languageClient)
 				{
-					var resolveEvent:ResolveCompletionItemEvent = new ResolveCompletionItemEvent(
-						ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, activeEditor.currentFile.fileBridge.url, items[0]);
-					GlobalEventDispatcher.getInstance().dispatchEvent(resolveEvent);
+					lspEditor.languageClient.resolveCompletion(items[0], resolveCompletionItem);
 				}
 			}
 		}
@@ -195,8 +194,8 @@ package actionScripts.ui.editor.text
 
 		private function completeItem(item:CompletionItem):void
 		{
-			var activeEditor:BasicTextEditor = IDEModel.getInstance().activeEditor as BasicTextEditor;
-			var uri:String = (activeEditor && activeEditor.currentFile) ? activeEditor.currentFile.fileBridge.url : null;
+			var lspEditor:LanguageServerTextEditor = IDEModel.getInstance().activeEditor as LanguageServerTextEditor;
+			var uri:String = (lspEditor && lspEditor.currentFile) ? lspEditor.currentFile.fileBridge.url : null;
 			if(item.textEdit)
 			{
 				var textEdit:TextEdit = item.textEdit;
@@ -206,8 +205,8 @@ package actionScripts.ui.editor.text
 					textEdit.range.end.character = caret;
 				}
 				var workspaceEdit:WorkspaceEdit = new WorkspaceEdit();
-				var changes:Object = {};
-				changes[uri] = new <TextEdit>[textEdit];
+				var changes:IMap = new StringMap();
+				changes.set(uri, [textEdit]);
 				workspaceEdit.changes = changes;
 				applyWorkspaceEdit(workspaceEdit);
 				var lineIndex:int = textEdit.range.start.line;
@@ -260,12 +259,12 @@ package actionScripts.ui.editor.text
 				}
 			}
 
-			var additionalTextEdits:Vector.<TextEdit> = item.additionalTextEdits;
+			var additionalTextEdits:Array = item.additionalTextEdits;
 			if(additionalTextEdits)
 			{
 				workspaceEdit = new WorkspaceEdit();
-				changes = {};
-				changes[uri] = additionalTextEdits;
+				changes = new StringMap();
+				changes.set(uri, additionalTextEdits);
 				workspaceEdit.changes = changes;
 				applyWorkspaceEdit(workspaceEdit);
 			}
@@ -299,14 +298,12 @@ package actionScripts.ui.editor.text
 			{
 				return;
 			}
-			var activeEditor:LanguageServerTextEditor = IDEModel.getInstance().activeEditor as LanguageServerTextEditor;
-			if(activeEditor.getEditorComponent() != editor)
+			var lspEditor:LanguageServerTextEditor = IDEModel.getInstance().activeEditor as LanguageServerTextEditor;
+			if(lspEditor.getEditorComponent() != editor || !lspEditor.languageClient)
 			{
 				return;
 			}
-			var resolveEvent:ResolveCompletionItemEvent = new ResolveCompletionItemEvent(
-				ResolveCompletionItemEvent.EVENT_RESOLVE_COMPLETION_ITEM, activeEditor.currentFile.fileBridge.url, item);
-			GlobalEventDispatcher.getInstance().dispatchEvent(resolveEvent);
+			lspEditor.languageClient.resolveCompletion(item, resolveCompletionItem);
 		}
 
 		private function onMenuKey(e:KeyboardEvent):void

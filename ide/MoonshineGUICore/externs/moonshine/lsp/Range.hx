@@ -18,17 +18,9 @@
 	Use this software at your own risk.
  */
 
-package actionScripts.valueObjects;
+package moonshine.lsp;
 
-extern class Diagnostic {
-	public static final SEVERITY_ERROR:Int;
-	public static final SEVERITY_WARNING:Int;
-	public static final SEVERITY_INFORMATION:Int;
-	public static final SEVERITY_HINT:Int;
-
-	public var path:String;
-	public var message:String;
-	public var range:Range;
-	public var severity:Int;
-	public var code:String;
+extern class Range {
+	public var start:Position;
+	public var end:Position;
 }

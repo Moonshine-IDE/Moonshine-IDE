@@ -19,6 +19,7 @@
 package actionScripts.ui.editor
 {
 	import actionScripts.events.ChangeEvent;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.ui.editor.text.change.TextChangeInsert;
 	import actionScripts.ui.editor.text.change.TextChangeMulti;
 
@@ -36,9 +37,9 @@ package actionScripts.ui.editor
 		private var dispatchSignatureHelpPending:Boolean;
 		private var mouseOverForHover:Boolean = false;
 
-		public function JavaTextEditor(readOnly:Boolean = false)
+		public function JavaTextEditor(project:JavaProjectVO, readOnly:Boolean = false)
 		{
-			super(LANGUAGE_ID_JAVA, readOnly);
+			super(LANGUAGE_ID_JAVA, project, readOnly);
 			editor.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			editor.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
 		}

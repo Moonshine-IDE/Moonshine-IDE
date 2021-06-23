@@ -32,8 +32,6 @@ package actionScripts.ui.editor.text
     import mx.events.ScrollEvent;
     import mx.managers.IFocusManagerComponent;
     
-    import __AS3__.vec.Vector;
-    
     import actionScripts.events.ChangeEvent;
     import actionScripts.events.LayoutEvent;
     import actionScripts.events.LineEvent;
@@ -41,13 +39,14 @@ package actionScripts.ui.editor.text
     import actionScripts.ui.editor.text.vo.SearchResult;
     import actionScripts.ui.parser.ILineParser;
     import actionScripts.utils.TextUtil;
-    import actionScripts.valueObjects.Diagnostic;
-    import actionScripts.valueObjects.Location;
-    import actionScripts.valueObjects.Position;
-    import actionScripts.valueObjects.SignatureHelp;
-    import actionScripts.valueObjects.Command;
-    import actionScripts.valueObjects.CodeAction;
-    import actionScripts.valueObjects.CompletionItem;
+    import moonshine.lsp.Location;
+    import moonshine.lsp.Position;
+    import moonshine.lsp.SignatureHelp;
+    import moonshine.lsp.CompletionItem;
+	
+    import moonshine.lsp.Diagnostic;
+    import moonshine.lsp.CodeAction;
+    import moonshine.lsp.Hover;
 
     /**
      *	Line-based text editor. Text rendering with Flash Text Engine.
@@ -831,12 +830,12 @@ package actionScripts.ui.editor.text
 			signatureHelpManager.showSignatureHelp(data);
 		}
 
-		public function showHover(contents:Vector.<String>):void
+		public function showHover(hover:Hover):void
 		{
-			hoverManager.showHover(contents);
+			hoverManager.showHover(hover);
 		}
 
-		public function showDefinitionLink(locations:Vector.<Location>, position:Position):void
+		public function showDefinitionLink(locations:Array, position:Position):void
 		{
 			gotoDefinitionManager.showDefinitionLink(locations, position);
 		}

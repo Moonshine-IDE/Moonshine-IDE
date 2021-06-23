@@ -47,7 +47,7 @@
              text.Method="M"
              text.info="i"/>
     <fx:Script><![CDATA[
-        import actionScripts.valueObjects.CompletionItem;
+        import moonshine.lsp.CompletionItem;
 
         [Bindable]
         private var _data:CompletionItem;

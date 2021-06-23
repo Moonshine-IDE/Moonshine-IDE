@@ -18,19 +18,17 @@
 		<![CDATA[
 			import mx.collections.ICollectionView;
 			import flash.events.MouseEvent;
-			import mx.controls.Menu;
-			import mx.collections.IViewCursor;
-			import actionScripts.valueObjects.Command;
+			import moonshine.lsp.Command;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.ExecuteLanguageServerCommandEvent;
-			import actionScripts.valueObjects.CodeAction;
-			import actionScripts.valueObjects.WorkspaceEdit;
-			import actionScripts.events.LanguageServerEvent;
+			import moonshine.lsp.CodeAction;
+			import moonshine.lsp.WorkspaceEdit;
 			import actionScripts.utils.applyWorkspaceEdit;
 			import actionScripts.utils.getProjectForUri;
 			import actionScripts.valueObjects.ProjectVO;
 			import actionScripts.ui.editor.BasicTextEditor;
 			import actionScripts.locator.IDEModel;
+			import actionScripts.ui.editor.LanguageServerTextEditor;
 
 			[Bindable]
 			public var codeActions:ICollectionView;
@@ -56,12 +54,12 @@
 				var command:Command = codeAction.command;
 				if(command)
 				{
-					var activeEditor:BasicTextEditor = IDEModel.getInstance().activeEditor as BasicTextEditor;
-					if(!activeEditor || !activeEditor.currentFile)
+					var lspEditor:LanguageServerTextEditor = IDEModel.getInstance().activeEditor as LanguageServerTextEditor;
+					if(!lspEditor || !lspEditor.currentFile)
 					{
 						return;
 					}
-					var uri:String = activeEditor.currentFile.fileBridge.url;
+					var uri:String = lspEditor.currentFile.fileBridge.url;
 					var project:ProjectVO = getProjectForUri(uri);
 					GlobalEventDispatcher.getInstance().dispatchEvent(new ExecuteLanguageServerCommandEvent(
 						ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,

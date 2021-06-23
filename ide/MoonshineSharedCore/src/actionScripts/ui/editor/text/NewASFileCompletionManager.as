@@ -18,14 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.SymbolsEvent;
-    import actionScripts.events.LanguageServerEvent;
-    import actionScripts.ui.codeCompletionList.CodeCompletionList;
-    import actionScripts.valueObjects.CompletionItem;
-    import actionScripts.valueObjects.CompletionItemKind;
-    import actionScripts.valueObjects.SymbolInformation;
-
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.KeyboardEvent;
@@ -38,10 +30,17 @@ package actionScripts.ui.editor.text
     import mx.managers.PopUpManager;
 
     import spark.components.TitleWindow;
-    import actionScripts.valueObjects.SymbolKind;
-    import actionScripts.valueObjects.DocumentSymbol;
+
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.ui.codeCompletionList.CodeCompletionList;
     import actionScripts.utils.symbolKindToCompletionItemKind;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.SymbolKind;
+
+    import moonshine.lsp.CompletionItem;
+    import moonshine.lsp.DocumentSymbol;
+    import moonshine.lsp.SymbolInformation;
+    import actionScripts.languageServer.LanguageServerProjectVO;
 
     [Event(name="itemSelected", type="flash.events.Event")]
     public class NewASFileCompletionManager extends EventDispatcher
@@ -71,7 +70,6 @@ package actionScripts.ui.editor.text
             menuCollection = new ArrayCollection();
             completionList.dataProvider = menuCollection;
 
-            dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, handleShowWorkspaceSymbols);
             view.addEventListener(MouseEvent.CLICK, onViewClick);
             view.addEventListener(CloseEvent.CLOSE, onViewClose);
             view.addEventListener(KeyboardEvent.KEY_DOWN, onViewKeyDown);
@@ -107,10 +105,10 @@ package actionScripts.ui.editor.text
             this.internalShowCompletionList(text, position);
         }
 
-        private function handleShowWorkspaceSymbols(event:SymbolsEvent):void
+        private function handleShowWorkspaceSymbols(symbols:Array):void
         {
             menuCollection.source.splice(0, menuCollection.length);
-            if (event.symbols.length == 0)
+            if (symbols.length == 0)
             {
                 if (this.completionListType == CLASSES_LIST)
                 {
@@ -123,14 +121,13 @@ package actionScripts.ui.editor.text
                 return;
             }
 
-            var symbols:Array;
             if (this.completionListType == CLASSES_LIST)
             {
-                symbols = event.symbols.filter(filterClasses);
+                symbols = symbols.filter(filterClasses);
             }
             else
             {
-                symbols = event.symbols.filter(filterInterfaces);
+                symbols = symbols.filter(filterInterfaces);
             }
 
             if (symbols.length == 0)
@@ -149,8 +146,11 @@ package actionScripts.ui.editor.text
                 var packageName:String = symbolInformation.containerName ? symbolInformation.containerName + "." + symbolInformation.name : "";
                 var completionItemKind:int = symbolKindToCompletionItemKind(symbolInformation.kind);
 
-                menuCollection.source.push(new CompletionItem(symbolInformation.name,
-                        "", completionItemKind, packageName));
+                var completionItem:CompletionItem = new CompletionItem();
+                completionItem.label = symbolInformation.name;
+                completionItem.detail = packageName;
+                completionItem.kind = completionItemKind;
+                menuCollection.source.push(completionItem);
             }
 
             menuCollection.refresh();
@@ -160,7 +160,6 @@ package actionScripts.ui.editor.text
 
         private function onViewClose(event:Event):void
         {
-            dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, handleShowWorkspaceSymbols);
             view.removeEventListener(MouseEvent.CLICK, onViewClick);
             view.removeEventListener(CloseEvent.CLOSE, onViewClose);
             view.removeEventListener(KeyboardEvent.KEY_DOWN, onViewKeyDown);
@@ -225,10 +224,14 @@ package actionScripts.ui.editor.text
 
         private function internalShowCompletionList(text:String, position:Point):void
         {
-            var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
-            languageServerEvent.newText = text;
-            languageServerEvent.project = project;
-            dispatcher.dispatchEvent(languageServerEvent);
+            var lspProject:LanguageServerProjectVO = project as LanguageServerProjectVO;
+            if(!lspProject || !lspProject.languageClient)
+            {
+                return;
+            }
+            lspProject.languageClient.workspaceSymbols({
+                query: text
+            }, handleShowWorkspaceSymbols);
 
             completionList.x = position.x;
             completionList.y = position.y;

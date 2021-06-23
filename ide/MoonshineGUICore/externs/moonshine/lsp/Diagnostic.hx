@@ -18,16 +18,16 @@
 	Use this software at your own risk.
  */
 
-package actionScripts.valueObjects;
+package moonshine.lsp;
 
-import openfl.Vector;
+extern class Diagnostic {
+	public static final SEVERITY_ERROR:Int;
+	public static final SEVERITY_WARNING:Int;
+	public static final SEVERITY_INFORMATION:Int;
+	public static final SEVERITY_HINT:Int;
 
-extern class DocumentSymbol {
-	public var name:String;
-	public var detail:String;
-	public var kind:Int;
-	public var deprecated:Bool;
+	public var message:String;
 	public var range:Range;
-	public var selectionRange:Range;
-	public var children:Vector<DocumentSymbol>;
+	public var severity:Int;
+	public var code:String;
 }

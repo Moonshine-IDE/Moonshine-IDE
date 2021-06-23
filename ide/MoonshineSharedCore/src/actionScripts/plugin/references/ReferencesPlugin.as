@@ -18,24 +18,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.references
 {
-	import flash.events.Event;
-	
-	import mx.controls.Alert;
-	
-	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.events.OpenLocationEvent;
-	import actionScripts.events.ReferencesEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
+	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
-	import actionScripts.ui.feathersWrapper.edit.ReferencesViewWrapper;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.Location;
-	
+
 	import feathers.data.ArrayCollection;
-	
+
+	import flash.events.Event;
+
+	import moonshine.lsp.Location;
+	import moonshine.lsp.Position;
 	import moonshine.plugin.references.view.ReferencesView;
-	
+
+	import mx.controls.Alert;
+
 	public class ReferencesPlugin extends PluginBase
 	{
 		public static const EVENT_OPEN_GO_TO_REFERENCES_VIEW:String = "openGoToReferencesView";
@@ -63,7 +62,6 @@ package actionScripts.plugin.references
 			super.activate();
 			referencesView.addEventListener(ReferencesView.EVENT_OPEN_SELECTED_REFERENCE, handleOpenSelectedReference);
 			dispatcher.addEventListener(EVENT_OPEN_GO_TO_REFERENCES_VIEW, handleOpenFindReferencesView);
-			dispatcher.addEventListener(ReferencesEvent.EVENT_SHOW_REFERENCES, handleShowReferences);
 		}
 
 		override public function deactivate():void
@@ -71,30 +69,33 @@ package actionScripts.plugin.references
 			super.deactivate();
 			referencesView.removeEventListener(ReferencesView.EVENT_OPEN_SELECTED_REFERENCE, handleOpenSelectedReference);
 			dispatcher.removeEventListener(EVENT_OPEN_GO_TO_REFERENCES_VIEW, handleOpenFindReferencesView);
-			dispatcher.removeEventListener(ReferencesEvent.EVENT_SHOW_REFERENCES, handleShowReferences);
 		}
 
 		private function handleOpenFindReferencesView(event:Event):void
 		{
-			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-			if(!editor)
+			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			if(!lspEditor || !lspEditor.languageClient)
 			{
 				return;
 			}
 
-			var startLine:int = editor.editor.model.selectedLineIndex;
-			var startChar:int = editor.editor.startPos;
-			var endLine:int = editor.editor.model.selectedLineIndex;
-			var endChar:int = editor.editor.model.caretIndex;
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_GO_TO_REFERENCES,
-				editor.currentFile.fileBridge.url, startChar, startLine, endChar, endLine));
+			var startLine:int = lspEditor.editor.model.selectedLineIndex;
+			var startChar:int = lspEditor.editor.model.caretIndex;
+			lspEditor.languageClient.references({
+				textDocument: {
+					uri: lspEditor.currentFile.fileBridge.url
+				},
+				position: new Position(startLine, startChar),
+				context: {
+					includeDeclaration: true
+				}
+			}, handleShowReferences);
 		}
 
-		private function handleShowReferences(event:ReferencesEvent):void
+		private function handleShowReferences(references:Array /* Array<Location> */):void
 		{
 			var collection:ArrayCollection = referencesView.references;
 			collection.removeAll();
-			var references:Vector.<Location> = event.locations;
 			var itemCount:int = references.length;
 			for(var i:int = 0; i < itemCount; i++)
 			{
@@ -131,5 +132,27 @@ package actionScripts.plugin.references
 			isReferencesViewVisible = false;
 			referencesView.removeEventListener(Event.REMOVED_FROM_STAGE, onReferenceViewRemovedFromStage);
 		}
+	}
+}
+
+import actionScripts.interfaces.IViewWithTitle;
+import actionScripts.ui.FeathersUIWrapper;
+
+import moonshine.plugin.references.view.ReferencesView;
+
+class ReferencesViewWrapper extends FeathersUIWrapper implements IViewWithTitle {
+	public function ReferencesViewWrapper(feathersUIControl:ReferencesView)
+	{
+		super(feathersUIControl);
+	}
+
+	public function get title():String {
+		return ReferencesView(feathersUIControl).title;
+	}
+
+	override public function get className():String
+	{
+		//className may be used by LayoutModifier
+		return "ReferencesView";
 	}
 }

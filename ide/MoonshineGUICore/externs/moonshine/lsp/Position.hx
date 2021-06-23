@@ -18,7 +18,7 @@
 	Use this software at your own risk.
  */
 
-package actionScripts.valueObjects;
+package moonshine.lsp;
 
 extern class Position {
 	public var line:Int;

@@ -18,9 +18,9 @@
 	Use this software at your own risk.
  */
 
-package actionScripts.valueObjects;
+package moonshine.lsp;
 
-extern class Range {
-	public var start:Position;
-	public var end:Position;
+extern class Location {
+	public var uri:String;
+	public var range:Range;
 }

@@ -19,6 +19,7 @@
 package actionScripts.ui.editor.text
 {
 	import com.dogcatfishdish.markdown.Markdown;
+	import moonshine.lsp.Hover;
 
 	public class HoverManager
 	{
@@ -33,23 +34,33 @@ package actionScripts.ui.editor.text
 			this.model = model;
 		}
 
-		public function showHover(contents:Vector.<String>):void
+		public function showHover(hover:Hover):void
 		{
-			if(contents == null || contents.length == 0)
+			if(!hover || !hover.contents)
 			{
 				this.closeHover();
 				return;
 			}
 
-			var contentsCount:int = contents.length;
 			var hoverText:String = "";
-			for(var i:int = 0; i < contentsCount; i++)
+			if(hover.contents is Array)
 			{
-				if(i > 0)
+				var contents:Array = hover.contents;
+				var contentsCount:int = contents.length;
+				for(var i:int = 0; i < contentsCount; i++)
 				{
-					hoverText += "\n\n";
+					if(i > 0)
+					{
+						hoverText += "\n\n";
+					}
+					var content:String = parseHoverText(contents[i]);
+					content = Markdown.MakeHtml(content, true);
+					hoverText += content;
 				}
-				var content:String = contents[i];
+			}
+			else
+			{
+				content = parseHoverText(hover.contents);
 				content = Markdown.MakeHtml(content, true);
 				hoverText += content;
 			}
@@ -60,6 +71,19 @@ package actionScripts.ui.editor.text
 				return;
 			}
 			editor.setTooltip(TOOL_TIP_ID, hoverText, true);
+		}
+
+		private function parseHoverText(contents:Object):String
+		{
+			if(contents == null)
+			{
+				return null;
+			}
+			if(contents is String)
+			{
+				return contents as String;
+			}
+			return contents.value;
 		}
 
 		public function closeHover():void

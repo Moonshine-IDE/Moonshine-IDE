@@ -18,11 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.OpenFileEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.valueObjects.Position;
-
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
@@ -30,15 +25,16 @@ package actionScripts.ui.editor.text
 
 	import mx.core.UIComponent;
 	import mx.managers.PopUpManager;
-	
-	import actionScripts.valueObjects.Location;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.events.AddTabEvent;
-	import actionScripts.locator.IDEModel;
-	import actionScripts.interfaces.ILanguageServerBridge;
-	import actionScripts.valueObjects.ProjectVO;
+
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.OpenLocationEvent;
+	import actionScripts.interfaces.ILanguageServerBridge;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.valueObjects.ProjectVO;
+
+	import moonshine.lsp.Location;
+	import moonshine.lsp.LocationLink;
+	import moonshine.lsp.Position;
 
 	public class GotoDefinitionManager
 	{
@@ -48,7 +44,7 @@ package actionScripts.ui.editor.text
 		protected var model:TextEditorModel;
 
 		protected var definitionOverlay:UIComponent;
-		protected var savedLocation:Location;
+		protected var savedLocation:Object;
 
 		public function GotoDefinitionManager(editor:TextEditor, model:TextEditorModel)
 		{
@@ -63,7 +59,7 @@ package actionScripts.ui.editor.text
 			definitionOverlay.mouseFocusEnabled = false;
 		}
 
-		public function showDefinitionLink(locations:Vector.<Location>, position:Position):void
+		public function showDefinitionLink(locations:Array, position:Position):void
 		{
 			if(position == null || locations == null || locations.length === 0)
 			{

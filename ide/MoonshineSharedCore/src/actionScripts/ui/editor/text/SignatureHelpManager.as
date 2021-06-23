@@ -28,9 +28,9 @@ package actionScripts.ui.editor.text
 	
 	import spark.components.RichText;
 	
-	import actionScripts.valueObjects.ParameterInformation;
-	import actionScripts.valueObjects.SignatureHelp;
-	import actionScripts.valueObjects.SignatureInformation;
+	import moonshine.lsp.ParameterInformation;
+	import moonshine.lsp.SignatureHelp;
+	import moonshine.lsp.SignatureInformation;
 	
 	import flashx.textLayout.conversion.TextConverter;
 	import mx.collections.ArrayCollection;
@@ -64,10 +64,10 @@ package actionScripts.ui.editor.text
 				closeSignatureHelp();
 				return;
 			}
-			var signatures:Vector.<SignatureInformation> = data.signatures;
+			var signatures:Array = data.signatures;
 			var activeSignature:int = data.activeSignature;
 			var activeParameter:int = data.activeParameter;
-			view.signatures = new VectorCollection(signatures);
+			view.signatures = new ArrayCollection(signatures);
 			view.activeSignature = activeSignature;
 			view.activeParameter = activeParameter;
 			if(activeSignature >= 0 && !view.isPopUp)

@@ -18,28 +18,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.symbols
 {
-	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.events.OpenLocationEvent;
-	import actionScripts.events.SymbolsEvent;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.DocumentSymbol;
-	import actionScripts.valueObjects.Location;
-	import actionScripts.valueObjects.Range;
-	import actionScripts.valueObjects.SymbolInformation;
 
 	import feathers.data.ArrayCollection;
 
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 
+	import moonshine.lsp.DocumentSymbol;
+	import moonshine.lsp.Location;
+	import moonshine.lsp.Range;
+	import moonshine.lsp.SymbolInformation;
 	import moonshine.plugin.symbols.view.SymbolsView;
 
 	import mx.core.UIComponent;
 	import mx.managers.PopUpManager;
+	import moonshine.lsp.LanguageClient;
 
 	public class SymbolsPlugin extends PluginBase
 	{
@@ -70,8 +69,6 @@ package actionScripts.plugin.symbols
 			symbolsView.addEventListener(SymbolsView.EVENT_QUERY_CHANGE, handleQueryChange);
 			dispatcher.addEventListener(EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW, handleOpenDocumentSymbolsView);
 			dispatcher.addEventListener(EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW, handleOpenWorkspaceSymbolsView);
-			dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowSymbols);
-			dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, handleShowSymbols);
 		}
 
 		override public function deactivate():void
@@ -80,8 +77,6 @@ package actionScripts.plugin.symbols
 			symbolsView.removeEventListener(SymbolsView.EVENT_QUERY_CHANGE, handleQueryChange);
 			dispatcher.removeEventListener(EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW, handleOpenDocumentSymbolsView);
 			dispatcher.removeEventListener(EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW, handleOpenWorkspaceSymbolsView);
-			dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowSymbols);
-			dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_WORKSPACE_SYMBOLS, handleShowSymbols);
 		}
 		
 		private function handleQueryChange(event:Event):void
@@ -94,25 +89,30 @@ package actionScripts.plugin.symbols
 			var query:String = this.symbolsView.query;
 			if(this.isWorkspace)
 			{
-				var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
-				//using newText instead of a dedicated field is kind of hacky...
-				languageServerEvent.newText = query;
-				dispatcher.dispatchEvent(languageServerEvent);
+				var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+				if(!lspEditor || !lspEditor.languageClient)
+				{
+					return;
+				}
+				lspEditor.languageClient.workspaceSymbols({
+					query: query
+				}, handleShowSymbols);
 			}
 			else
 			{
+				query = query.toLowerCase();
 				var collection:ArrayCollection = this.symbolsView.symbols;
 				collection.filterFunction = function(item:Object):Boolean
 				{
 					if(item is SymbolInformation)
 					{
 						var symbolInfo:SymbolInformation = SymbolInformation(item);
-						return symbolInfo.name.indexOf(query) >= 0;
+						return symbolInfo.name.toLowerCase().indexOf(query) >= 0;
 					}
 					else if(item is DocumentSymbol)
 					{
 						var documentSymbol:DocumentSymbol = DocumentSymbol(item);
-						return documentSymbol.name.indexOf(query) >= 0;
+						return documentSymbol.name.toLowerCase().indexOf(query) >= 0;
 					}
 					return false;
 				};
@@ -159,8 +159,8 @@ package actionScripts.plugin.symbols
 
 		private function handleOpenDocumentSymbolsView(event:Event):void
 		{
-			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-			if(!editor)
+			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			if(!lspEditor || !lspEditor.languageClient)
 			{
 				return;
 			}
@@ -173,15 +173,19 @@ package actionScripts.plugin.symbols
 			var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
 			PopUpManager.addPopUp(symbolsViewWrapper, DisplayObject(parentApp), true);
 			PopUpManager.centerPopUp(symbolsViewWrapper);
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS,
-				editor.currentFile.fileBridge.url));
+			lspEditor.languageClient.documentSymbols({
+				textDocument: {
+					uri: lspEditor.currentFile.fileBridge.url
+				}
+			}, handleShowSymbols);
 			symbolsViewWrapper.assignFocus("top");
 			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
 		}
 
 		private function handleOpenWorkspaceSymbolsView(event:Event):void
 		{
-			if(!model.activeProject)
+			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			if(!lspEditor || !lspEditor.languageClient)
 			{
 				return;
 			}
@@ -198,12 +202,12 @@ package actionScripts.plugin.symbols
 			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
 		
 			//start by listing all symbols, if the language server supports it
-			var languageServerEvent:LanguageServerEvent = new LanguageServerEvent(LanguageServerEvent.EVENT_WORKSPACE_SYMBOLS);
-			languageServerEvent.newText = "";
-			dispatcher.dispatchEvent(languageServerEvent);
+			lspEditor.languageClient.workspaceSymbols({
+				query: ""
+			}, handleShowSymbols);
 		}
 
-		private function handleShowSymbols(event:SymbolsEvent):void
+		private function handleShowSymbols(symbols:Array):void
 		{
 			var collection:ArrayCollection = symbolsView.symbols;
 			collection.filterFunction = null;
@@ -211,7 +215,12 @@ package actionScripts.plugin.symbols
 			//expensive to repeatedly sort when adding new items one by one
 			collection.sortCompareFunction = null;
 			collection.removeAll();
-			var symbols:Array = event.symbols;
+
+			if(!symbols || symbols.length == 0)
+			{
+				return;
+			}
+
 			var itemCount:int = symbols.length;
 			for(var i:int = 0; i < itemCount; i++)
 			{
@@ -238,7 +247,7 @@ package actionScripts.plugin.symbols
 			{
 				return;
 			}
-			var children:Vector.<DocumentSymbol> = documentSymbol.children;
+			var children:Array = documentSymbol.children;
 			var childCount:int = children.length;
 			for(var j:int = 0; j < childCount; j++)
 			{

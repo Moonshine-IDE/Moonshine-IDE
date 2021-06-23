@@ -35,8 +35,9 @@ package actionScripts.plugin.java.javaproject.vo
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.languageServer.LanguageServerProjectVO;
 
-	public class JavaProjectVO extends ProjectVO implements IJavaProject
+	public class JavaProjectVO extends LanguageServerProjectVO implements IJavaProject
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 
