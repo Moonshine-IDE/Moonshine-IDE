@@ -208,8 +208,9 @@ package actionScripts.plugins.startup
 		{
 			toggleListenersInstallerItemsManager(false);
 			checkDefaultSDK();
-			
-			if (!isAllDependenciesPresent && !ConstantsCoreVO.IS_GETTING_STARTED_DNS)
+
+			var isGettingStarted:Boolean = ConstantsCoreVO.IS_GETTING_STARTED_DNS;
+			if (!isAllDependenciesPresent && !isGettingStarted)
 			{
 				openOrFocusGettingStartedHaxe();
 			}
