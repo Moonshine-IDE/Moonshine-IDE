@@ -106,7 +106,7 @@ package actionScripts.plugins.swflauncher
 			}
 			else if (!model.javaPathForTypeAhead && !model.java8Path)
 			{
-				error("Error: Present no Java. Process terminates.");
+				error("Java Development Kit path has not been set. Please set path to JDK.");
 				return null;
 			}
 
