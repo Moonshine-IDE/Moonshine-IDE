@@ -6,7 +6,9 @@
 		  creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
+		import actionScripts.utils.UtilsCore;
+
+		import mx.collections.ArrayCollection;
 			import mx.collections.Sort;
 			import mx.collections.SortField;
 			import mx.events.FlexEvent;
@@ -34,18 +36,47 @@
 			
 			public function setRepositories(value:ArrayCollection):void
 			{
-				repositories = value;
+				repositories = new ArrayCollection();
+
+				var isNonCompliantItem:Boolean;
+				var isGitAvailable:Boolean = UtilsCore.isGitPresent();
+				var isSVNAvailable:Boolean = UtilsCore.isSVNPresent();
+				for each (var repository:RepositoryItemVO in value)
+				{
+					if ((repository.type == VersionControlTypes.GIT && isGitAvailable) ||
+							(repository.type == VersionControlTypes.SVN && isSVNAvailable) ||
+							(repository.type != VersionControlTypes.SVN && repository.type != VersionControlTypes.GIT))
+					{
+						repositories.addItem(repository);
+					}
+					else
+					{
+						isNonCompliantItem = true;
+					}
+				}
+
+				var tmpArray:Array = [];
+				if (!isGitAvailable) tmpArray.push("Git");
+				if (!isSVNAvailable) tmpArray.push("Subversion");
+				if (isNonCompliantItem)
+				{
+					lblError.visible = lblError.includeInLayout = true;
+					lblError.text = tmpArray.join(" &amp; ") +" is unavailable. Unable to Browse the related reposiories";
+				}
+
 				if (!repositories.sort)
 				{
 					repositories.sort = new Sort([new SortField("type"), new SortField("url")]);
 					repositories.refresh();
 				}
-				
+
 				treeRepositories.callLater(expandItems);
 			}
 			
 			public function onBackEvent():void
 			{
+				repositories = null;
+				lblError.visible = lblError.includeInLayout = false;
 				if (remoteReuestedObject) 
 				{
 					remoteReuestedObject.isUpdating = false;
@@ -211,4 +242,8 @@
 			 alternatingItemColors="[0xEEEEEE,0xFFFFFF]"
 			 itemOpen="onTreeItemOpen(event)"
 			 itemClick="selectedItem = treeRepositories.selectedItem"/>
+
+	<s:Label id="lblError"
+			 width="100%" textAlign="center" color="0xff0000"
+			 includeInLayout="false" visible="false"/>
 </s:VGroup>

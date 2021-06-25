@@ -125,7 +125,6 @@ package actionScripts.plugins.svn
 		override public function resetSettings():void
 		{
 			svnBinaryPath = null;
-			ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = false;
 			dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
 			
 			removeIfAlreadyVersioned();
@@ -247,14 +246,8 @@ package actionScripts.plugins.svn
 			// Need to check OSX svn existence someway
 			if (!UtilsCore.isSVNPresent())
 			{
-				if (ConstantsCoreVO.IS_MACOS)
-				{
-					dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
-                }
-				else
-				{
-					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, NAMESPACE));
-                }
+				error("Error: Subversion path has not been set.");
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, NAMESPACE));
 				return;
 			}
 			
