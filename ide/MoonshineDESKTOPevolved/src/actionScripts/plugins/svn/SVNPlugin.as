@@ -138,7 +138,7 @@ package actionScripts.plugins.svn
 			setUsualMessage();
 			
 			return Vector.<ISetting>([
-				new PathSetting(this,'svnBinaryPath', 'SVN Binary', false, svnBinaryPath)
+				pathSetting
 			]);
 		}
 		
@@ -172,7 +172,7 @@ package actionScripts.plugins.svn
 		private function setUsualMessage():void
 		{
 			var svnMessage:String = "SVN binary needs to be command-line compliant";
-			if (ConstantsCoreVO.IS_MACOS) svnMessage += "\nFor most users, it will be easier to set this with \"Subversion > Grant Permission\"";
+			//if (ConstantsCoreVO.IS_MACOS) svnMessage += "\nFor most users, it will be easier to set this with \"Subversion > Grant Permission\"";
 			
 			pathSetting.setMessage(svnMessage, AbstractSetting.MESSAGE_IMPORTANT);
 		}
