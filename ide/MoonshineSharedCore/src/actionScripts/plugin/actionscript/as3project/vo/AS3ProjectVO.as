@@ -168,6 +168,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 			}
 			buildOptions.customSDKPath = value;
 			swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(value);
+			swfOutput.swfMinorVersion = SDKUtils.getSdkSwfMinorVersion(value);
 			this.dispatchEvent(new Event(CHANGE_CUSTOM_SDK));
 		}
 
