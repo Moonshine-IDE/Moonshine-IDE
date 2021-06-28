@@ -283,7 +283,6 @@ package actionScripts.plugins.as3project.mxmlc
 		
 		override public function resetSettings():void
 		{
-			print("MXMLCPlugin.resetSettings: Initialize method");
 			for (var i:int=0; i < model.userSavedSDKs.length; i++)
 			{
 				if (model.userSavedSDKs[i].status != SDKUtils.BUNDLED)

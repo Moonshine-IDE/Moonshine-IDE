@@ -298,6 +298,7 @@ package actionScripts.utils
                                                   propertyNameKeyValue:String, cookieName:String):Boolean
 		{
 			var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            var itemsRemoved:Boolean = false;
 
             if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
             {
@@ -307,19 +308,20 @@ package actionScripts.utils
                 for (var i:int = 0; i < data[cookieName].length; i++)
                 {
                     var itemForRemove:Object = data[cookieName][i];
-                    var itemForRemoveProperty:String = itemForRemove[item[propertyNameKey]];
-                    var itemValue:String = item[propertyNameKeyValue];
-                    if (itemForRemove.hasOwnProperty(item[propertyNameKey]) &&
-                        itemForRemoveProperty == itemValue)
+                    if (itemForRemove.hasOwnProperty(item[propertyNameKey]))
                     {
                         data[cookieName].removeAt(i);
-                        cookie.flush();
-                        return true;
+                        itemsRemoved = true;
                     }
                 }
             }
 
-            return false;
+            if (itemsRemoved)
+            {
+                cookie.flush();
+            }
+
+            return itemsRemoved;
 		}
 
         private static function removeProjectLefovers(item:Object, propertyNameKeyValue:String):void
