@@ -328,74 +328,66 @@ package actionScripts.utils
 			
 			return null;
 		}
+
+		public static function getSdkSwfFullVersion(sdkPath:String=null, providerToUpdateAsync:Object=null, fieldToUpdateAsync:String=null):Number
+		{
+			var currentSDKVersion: Number = 10;
+			var sdk:FileLocation;
+			if (sdkPath)
+			{
+				var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
+				if (isFound) sdk = new FileLocation(isFound.path);
+			}
+			else
+			{
+				sdk = IDEModel.getInstance().defaultSDK;
+			}
+
+			if (sdk && sdk.fileBridge.exists)
+			{
+				var configFile:FileLocation = getSDKConfig(sdk);
+				if (configFile.fileBridge.exists)
+				{
+					// for async type of read and update to specific object's field
+					if (providerToUpdateAsync)
+					{
+						providerToUpdateAsync[fieldToUpdateAsync] = currentSDKVersion;
+						configFile.fileBridge.readAsync(providerToUpdateAsync, XML, int, fieldToUpdateAsync, "target-player");
+					}
+					// non-async direct return only
+					else
+					{
+						var tmpConfigXML: XML = XML(configFile.fileBridge.read());
+						currentSDKVersion = Number(tmpConfigXML["target-player"]);
+					}
+				}
+			}
+
+			return currentSDKVersion;
+		}
 		
         public static function getSdkSwfMajorVersion(sdkPath:String=null, providerToUpdateAsync:Object=null, fieldToUpdateAsync:String=null):int
         {
-            var currentSDKVersion: int = 10;
-            var sdk:FileLocation;
-            if (sdkPath)
-            {
-                var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
-                if (isFound) sdk = new FileLocation(isFound.path);
-            }
-            else
-            {
-                sdk = IDEModel.getInstance().defaultSDK;
-            }
+			var swfFullVersion:Number = getSdkSwfFullVersion(sdkPath, providerToUpdateAsync, fieldToUpdateAsync);
+			var versionParts:Array = swfFullVersion.toString().split(".");
+			if (versionParts.length > 1)
+			{
+				return int(versionParts[0]);
+			}
 
-            if (sdk && sdk.fileBridge.exists)
-            {
-				var configFile:FileLocation = getSDKConfig(sdk);
-                if (configFile.fileBridge.exists)
-                {
-                    // for async type of read and update to specific object's field
-                    if (providerToUpdateAsync)
-                    {
-                        providerToUpdateAsync[fieldToUpdateAsync] = currentSDKVersion;
-                        configFile.fileBridge.readAsync(providerToUpdateAsync, XML, int, fieldToUpdateAsync, "target-player");
-                    }
-                    // non-async direct return only
-                    else
-                    {
-                        var tmpConfigXML: XML = XML(configFile.fileBridge.read());
-                        currentSDKVersion = int(tmpConfigXML["target-player"]);
-                    }
-                }
-            }
-
-            return currentSDKVersion;
+			return swfFullVersion;
         }
 
         public static function getSdkSwfMinorVersion(sdkPath:String=null):int
         {
-            var currentSdkMinorVersion: int = 0;
-            var sdk:FileLocation;
-            if (sdkPath)
-            {
-                var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(sdkPath, "path");
-                if (isFound) sdk = new FileLocation(isFound.path);
-            }
-            else
-            {
-                sdk = IDEModel.getInstance().defaultSDK;
-            }
+			var swfFullVersion:Number = getSdkSwfFullVersion(sdkPath);
+			var versionParts:Array = swfFullVersion.toString().split(".");
+			if (versionParts.length > 1)
+			{
+				return int(versionParts[1]);
+			}
 
-            if (sdk && sdk.fileBridge.exists)
-            {
-                var configFile:FileLocation = getSDKConfig(sdk);
-                if (configFile.fileBridge.exists)
-                {
-					var tmpConfigXML: XML = XML(configFile.fileBridge.read());
-					var targetPlayerVersion:String = tmpConfigXML["target-player"].toString();
-					var versionParts:Array = targetPlayerVersion.split(".");
-					if (versionParts.length > 1)
-					{
-                        currentSdkMinorVersion = int(versionParts[1]);
-					}
-                }
-            }
-
-            return currentSdkMinorVersion;
+			return 0;
         }
 		
 		public static function checkSDKTypeInSDKList(type:String):SDKReferenceVO
