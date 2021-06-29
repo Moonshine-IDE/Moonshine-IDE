@@ -109,6 +109,10 @@ package actionScripts.plugins.git
 			{
 				model.gitPath = _gitBinaryPathOSX = value;
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+				if (_gitBinaryPathOSX == "")
+				{
+					PathSetupHelperUtil.updateXCodePath("");
+				}
 			}
 		}
 		

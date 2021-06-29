@@ -105,7 +105,6 @@ package actionScripts.plugins.svn
 			dispatcher.addEventListener(COMMIT_REQUEST, handleCommitRequest);
 			dispatcher.addEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.addEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
-			dispatcher.addEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			dispatcher.addEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
 		}
 		
@@ -118,7 +117,6 @@ package actionScripts.plugins.svn
 			dispatcher.removeEventListener(COMMIT_REQUEST, handleCommitRequest);
 			dispatcher.removeEventListener(UPDATE_REQUEST, handleUpdateRequest);
 			dispatcher.removeEventListener(ProjectEvent.CHECK_SVN_PROJECT, handleCheckSVNRepository);
-			dispatcher.removeEventListener(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, onOSXodePermission);
 			dispatcher.removeEventListener(VersionControlEvent.LOAD_REMOTE_SVN_LIST, onLoadRemoteSVNList);
 		}
 		
@@ -197,19 +195,6 @@ package actionScripts.plugins.svn
 			{
 				dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
 			}
-		}
-		
-		protected function onOSXodePermission(event:VersionControlEvent):void
-		{
-			svnBinaryPath = String(event.value) +"/usr/bin/svn";
-			
-			// save the settings
-			var thisSettings: Vector.<ISetting> = getSettingsList();
-			var pathSettingToDefaultSDK:PathSetting = thisSettings[0] as PathSetting;
-			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, NAMESPACE, thisSettings));
-			
-			// if an opened project lets test it if Git repository
-			if (model.activeProject) handleProjectOpen(new ProjectEvent(ProjectEvent.ADD_PROJECT, model.activeProject));
 		}
 		
 		protected function handleProjectOpen(event:ProjectEvent):void
