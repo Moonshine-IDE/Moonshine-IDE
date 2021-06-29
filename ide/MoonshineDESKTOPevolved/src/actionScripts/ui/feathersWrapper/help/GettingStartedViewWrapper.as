@@ -47,7 +47,7 @@ package actionScripts.ui.feathersWrapper.help
 	
 	public class GettingStartedViewWrapper extends FeathersUIWrapper implements IViewWithTitle, IContentWindow
 	{
-		private static const LABEL:String = "Getting Started Haxe";
+		private static const LABEL:String = "Getting Started";
 		
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var msdkiDownloadUtil:MSDKIdownloadUtil = MSDKIdownloadUtil.getInstance();
@@ -159,8 +159,7 @@ package actionScripts.ui.feathersWrapper.help
 		private function onOpenSettings(event:HelperEvent):void
 		{
 			var component:ComponentVO = event.data as ComponentVO;
-			if ((component.type == ComponentTypes.TYPE_GIT || component.type == ComponentTypes.TYPE_SVN) &&
-					ConstantsCoreVO.IS_MACOS)
+			if ((component.type == ComponentTypes.TYPE_GIT) && ConstantsCoreVO.IS_MACOS)
 			{
 				var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
 				var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
