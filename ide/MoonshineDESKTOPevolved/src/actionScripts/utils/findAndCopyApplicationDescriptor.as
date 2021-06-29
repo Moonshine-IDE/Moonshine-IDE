@@ -65,7 +65,7 @@ import flash.filesystem.File;
 			// replace if appropriate
 			data = data.replace(/<content>.*?<\/content>/, "<content>"+ project.swfOutput.path.fileBridge.name +"</content>");
 			data = data.replace(currentAIRNamespaceVersion, "http://ns.adobe.com/air/application/"+ (
-				(project.swfOutput.swfVersionStrict != 0) ? project.swfOutput.swfVersionStrict : project.swfOutput.swfVersion +".0"
+				(project.swfOutput.swfVersionStrict != 0) ? project.swfOutput.swfVersionStrict : project.swfOutput.swfVersion +"."+ project.swfOutput.swfMinorVersion
 			));
 			if (data.indexOf("_") != -1)
 			{

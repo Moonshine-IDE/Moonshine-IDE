@@ -167,6 +167,7 @@ package actionScripts.plugins.as3project.importer
 			p.swfOutput.path = outputFolder.resolvePath(p.targets[0].fileBridge.name.split(".")[0] + ".swf");
 			// lets update SWF version too per current SDK version (if setup a default SDK)
 			p.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(p.buildOptions.customSDKPath);
+			p.swfOutput.swfMinorVersion = SDKUtils.getSdkSwfMinorVersion(p.buildOptions.customSDKPath);
 			
 			p.classpaths.push(sourceFolder);
 			p.isFlashBuilderProject = true;

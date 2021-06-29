@@ -227,11 +227,13 @@ package actionScripts.plugin.actionscript.as3project.vo
 			if (!pvo.buildOptions.customSDK && IDEModel.getInstance().defaultSDK)
 			{
 				pvo.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion();
+				pvo.swfOutput.swfMinorVersion = SDKUtils.getSdkSwfMinorVersion();
 				sdkPath = IDEModel.getInstance().defaultSDK.fileBridge.nativePath;
 			}
 			else if (pvo.buildOptions.customSDK)
 			{
 				pvo.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(pvo.buildOptions.customSDKPath);
+				pvo.swfOutput.swfMinorVersion = SDKUtils.getSdkSwfMinorVersion(pvo.buildOptions.customSDKPath);
 				sdkPath = pvo.buildOptions.customSDKPath;
 			}
 			
@@ -272,7 +274,7 @@ package actionScripts.plugin.actionscript.as3project.vo
             }
 
 			data.appendChild(
-				<target-player>{pvo.swfOutput.swfVersion}</target-player>
+				<target-player>{pvo.swfOutput.swfVersion}.{pvo.swfOutput.swfMinorVersion}</target-player>
 			);
 			data.appendChild(
 				<output>{pvo.swfOutput.path.fileBridge.nativePath}</output>
