@@ -18,6 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+	import actionScripts.plugin.settings.vo.NameValuePair;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.setTimeout;
@@ -97,12 +101,17 @@ package actionScripts.plugin.templating
 	
 	public class TemplatingPlugin extends PluginBase implements ISettingsProvider,IMenuPlugin
 	{
+		protected static const CATEGORY_PROJECTS:String = "categoryProjects";
+		protected static const CATEGORY_FILES:String = "categoryFiles";
+
 		override public function get name():String 			{return "Templating";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return ResourceManager.getInstance().getString('resources','plugin.desc.templating');}
 		
 		public static var fileTemplates:Array = [];
 		public static var projectTemplates:Array = [];
+
+		public var categoryType:String = CATEGORY_PROJECTS;
 		
 		protected var templatesDir:FileLocation;
 		protected var customTemplatesDir:FileLocation;
@@ -125,6 +134,7 @@ package actionScripts.plugin.templating
 
 		private var templateConfigs:Array;
 		private var allLoadedTemplates:Array;
+		private var settings:Vector.<ISetting>;
 
 		public function TemplatingPlugin()
 		{
@@ -446,48 +456,28 @@ package actionScripts.plugin.templating
 			ConstantsCoreVO.TEMPLATES_PROJECTS_HAXE = haxeProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ACTIONSCRIPT = actionScriptProjectTemplates;
         }
-		
-		public function getSettingsList():Vector.<ISetting>	
+
+		public function getSettingsList():Vector.<ISetting>
 		{	
 			// Build settings on each template (just a File object pointing to a directory)
 			//  requires good names for the directories, but shouldn't be a problem
-			var settings:Vector.<ISetting> = new Vector.<ISetting>();
+			settings = new Vector.<ISetting>();
 			
-			var fileLabel:StaticLabelSetting = new StaticLabelSetting("Files", 14);
-			settings.push(fileLabel);
-			
-			var setting:TemplateSetting;
-			for each (var t:FileLocation in fileTemplates)
-			{
-				if (t.fileBridge.isHidden) continue;
-				setting = getTemplateSetting(t);
-				settings.push(setting);
-			}
-			
-			newFileTemplateSetting = new NewTemplateSetting("Add file template");
-			newFileTemplateSetting.renderer.addEventListener('create', handleFileTemplateCreate, false, 0, true);
-			
-			settings.push(newFileTemplateSetting);
-			
-			var projectLabel:StaticLabelSetting = new StaticLabelSetting("Projects", 14);
-			settings.push(projectLabel);
-			
-			for each (var p:FileLocation in projectTemplates)
-			{
-				if (p.fileBridge.isHidden) continue;
-				setting = getTemplateSetting(p);				
-				settings.push(setting);
-			}
-			
-			newProjectTemplateSetting = new NewTemplateSetting("Add project template");
-			newProjectTemplateSetting.renderer.addEventListener('create', handleProjectTemplateCreate, false, 0, true);
-			
-			settings.push(newProjectTemplateSetting);
-			
+			var categorySetting:MultiOptionSetting = new MultiOptionSetting(this, 'categoryType', "Select Category",
+					Vector.<NameValuePair>([
+						new NameValuePair("Projects", CATEGORY_PROJECTS),
+						new NameValuePair("Files", CATEGORY_FILES)
+					])
+			);
+			categorySetting.addEventListener(MultiOptionSetting.EVENT_MULTIOPTION_CHANGE, onCategorySettingsChanged, false, 0, true);
+			settings.push(categorySetting);
+
+			addProjectsOptions();
+
 			settingsList = settings;
 			return settings;
 		}
-		
+
 		public function getMenu():MenuItem
 		{	
 			var newFileMenu:MenuItem = new MenuItem('New');
@@ -536,6 +526,44 @@ package actionScripts.plugin.templating
 			}
 			
 			return newFileMenu;
+		}
+
+		protected function addFilesOptions():void
+		{
+			var fileLabel:StaticLabelSetting = new StaticLabelSetting("Files", 14);
+			settings.push(fileLabel);
+
+			var setting:TemplateSetting;
+			for each (var t:FileLocation in fileTemplates)
+			{
+				if (t.fileBridge.isHidden) continue;
+				setting = getTemplateSetting(t);
+				settings.push(setting);
+			}
+
+			newFileTemplateSetting = new NewTemplateSetting("Add file template");
+			newFileTemplateSetting.renderer.addEventListener('create', handleFileTemplateCreate, false, 0, true);
+
+			settings.push(newFileTemplateSetting);
+		}
+
+		protected function addProjectsOptions():void
+		{
+			var projectLabel:StaticLabelSetting = new StaticLabelSetting("Projects", 14);
+			settings.push(projectLabel);
+
+			var setting:TemplateSetting;
+			for each (var p:FileLocation in projectTemplates)
+			{
+				if (p.fileBridge.isHidden) continue;
+				setting = getTemplateSetting(p);
+				settings.push(setting);
+			}
+
+			newProjectTemplateSetting = new NewTemplateSetting("Add project template");
+			newProjectTemplateSetting.renderer.addEventListener('create', handleProjectTemplateCreate, false, 0, true);
+
+			settings.push(newProjectTemplateSetting);
 		}
 		
 		protected function getTemplateSetting(template:FileLocation):TemplateSetting
@@ -1151,8 +1179,6 @@ package actionScripts.plugin.templating
 			// newOnDiskFilePopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewFileCreateRequest);
 			newOnDiskFilePopup = null;
 		}
-
-		
 
 		protected function openCSSComponentTypeChoose(event:Event):void
 		{
@@ -1801,6 +1827,23 @@ package actionScripts.plugin.templating
 			}
 			
 			return insideLocationPath;
+		}
+
+		private function onCategorySettingsChanged(event:Event):void
+		{
+			// remove everything
+			settings.splice(2,settings.length-2);
+
+			if ((event.target as MultiOptionSetting).value == CATEGORY_FILES)
+			{
+				addFilesOptions();
+			}
+			else
+			{
+				addProjectsOptions();
+			}
+
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
 		}
 	}
 }
