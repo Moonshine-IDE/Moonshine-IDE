@@ -20,6 +20,7 @@
 
 package moonshine.ui;
 
+import feathers.layout.HorizontalLayoutData;
 import feathers.layout.VerticalLayoutData;
 import feathers.layout.VerticalLayout;
 import actionScripts.plugin.settings.vo.PluginSetting;
@@ -71,10 +72,10 @@ class PluginTitleRenderer extends LayoutGroup
 		var viewLayout = new VerticalLayout();
 		viewLayout.horizontalAlign = JUSTIFY;
 		viewLayout.paddingTop = 20.0;
-		viewLayout.paddingRight = 10.0;
+		viewLayout.paddingRight = 2.0;
+		viewLayout.paddingLeft = 2.0;
 		viewLayout.paddingBottom = 10.0;
-		viewLayout.paddingLeft = 10.0;
-		viewLayout.gap = 2;
+		viewLayout.gap = 0;
 		this.layout = viewLayout;
 		
 		this.largeTitle = new Label();
@@ -87,11 +88,16 @@ class PluginTitleRenderer extends LayoutGroup
 		this.authorTitle.variant = MoonshineTheme.THEME_VARIANT_ITALIC_LABEL;
 		this.addChild(this.authorTitle);
 		
+		var descriptionContainer = new LayoutGroup();
+		descriptionContainer.layout = new AnchorLayout();
+		descriptionContainer.layoutData = new VerticalLayoutData(100, null);
+		this.addChild(descriptionContainer);
+
 		this.description = new Label();
-		this.description.layoutData = new VerticalLayoutData(100, null);
+		this.description.layoutData = new AnchorLayoutData(20, 0, null, 0);
 		this.description.text = this.setting.description;
 		this.description.wordWrap = true;
-		this.addChild(this.description);
+		descriptionContainer.addChild(this.description);
 
 		super.initialize();
 	}

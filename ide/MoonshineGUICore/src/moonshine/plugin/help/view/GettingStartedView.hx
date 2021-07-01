@@ -160,9 +160,9 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		var viewLayout = new VerticalLayout();
 		viewLayout.horizontalAlign = CENTER;
 		viewLayout.paddingTop = 10.0;
-		viewLayout.paddingRight = 10.0;
+		viewLayout.paddingRight = 12.0;
 		viewLayout.paddingBottom = 4.0;
-		viewLayout.paddingLeft = 10.0;
+		viewLayout.paddingLeft = 12.0;
 		viewLayout.gap = 10.0;
 		this.layout = viewLayout;
 		
@@ -176,6 +176,7 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		// 3rd-party button
 		this.downloadThirdPartyButton = new Button();
 		this.downloadThirdPartyButton.text = "Download Third-Party Software";
+		this.downloadThirdPartyButton.variant = MoonshineTheme.THEME_VARIANT_LARGE_BUTTON;
 		this.downloadThirdPartyButton.addEventListener(TriggerEvent.TRIGGER, onDownload3rdPatySoftware);
 		this.addChild(this.downloadThirdPartyButton);
 		
