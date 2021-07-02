@@ -416,6 +416,7 @@
 	<!-- Compile .app to next use in .pkg building -->
 	<!--target name="compile app project" depends="compile dmg project"-->
 	<target name="compile app project" depends="CompileSWFOSX,CompileSWFWindows">
+		<antcall target="signItemsBeforePackaging"/>
 		<java jar="${adt_path}" fork="true" failonerror="true">
 			<arg line="-package" />
 			<arg line="-storetype pkcs12" />
@@ -701,6 +702,50 @@
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='rm ${deploy_dir}/${installerName}_DONOTUSE.pkg'/>
+		</exec>
+	</target>
+	
+	<target name="signItemsBeforePackaging">
+		<mkdir dir="${debug_dir}/groovy-language-server-all" />
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='tar -xf elements/groovy-language-server/groovy-language-server-all.jar -C ${debug_dir}/groovy-language-server-all'/>
+		</exec>
+		<copy file="elements/groovy-language-server/groovy-language-server-all.jar" todir="${debug_dir}" overwrite="true"/>
+		<rename src="${debug_dir}/groovy-language-server-all.jar" dest="${debug_dir}/groovy-language-server-all.zip"/>
+		<echo>${certSignedDevIDKeychainName}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" --deep elements/hashlink-debug-adapter/node_modules/deasync/bin'/>
+		</exec>
+		<echo>Signing checks on Sandbox APP: spctl -vvv --assess --type exec ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='spctl -vvv --assess --type exec ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib'/>
+		</exec>
+		<echo>Signing checks on Sandbox APP: spctl -vvv --assess --type exec elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.10/deasync.node</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='spctl -vvv --assess --type exec elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.10/deasync.node'/>
+		</exec>
+		<echo>Hardened runtime checks on Sandbox APP: codesign --display --verbose ${debug_dir}/groovy-language-server-all.zip/META-INF/native/osx/libjansi.jnilib</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign --display --verbose ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib'/>
+		</exec>
+		<echo>Timestamp check on Sandbox APP: codesign -dvv ${debug_dir}/groovy-language-server-all.zip/META-INF/native/osx/libjansi.jnilib</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -dvv ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib'/>
+		</exec>
+		<delete file="elements/groovy-language-server/groovy-language-server-all.jar"/>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='tar -czf elements/groovy-language-server/groovy-language-server-all.jar -C ${debug_dir}/groovy-language-server-all .'/>
 		</exec>
 	</target>
 	
