@@ -709,8 +709,8 @@ class MoonshineTheme extends ClassVariantTheme {
 	}
 	
 	private function setItalicLabelStyles(label:Label):Void {
-		label.textFormat = new TextFormat("DejaVuSansTF", 12, 0x292929, false, true);
-		label.disabledTextFormat = new TextFormat("DejaVuSansTF", 12, 0x999999, false, true);
+		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, 12, 0x292929, false, true);
+		label.disabledTextFormat = new TextFormat(DEFAULT_FONT_NAME, 12, 0x999999, false, true);
 		//label.embedFonts = true;
 	}
 
@@ -940,7 +940,7 @@ class MoonshineTheme extends ClassVariantTheme {
 	}
 	
 	private function setPluginLargeTitleStyles(label:Label):Void {
-		label.textFormat = new TextFormat("DejaVuSansTF", 22, 0xe252d3, false);
+		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, 22, 0xe252d3, false);
 		//label.embedFonts = true;
 	}
 
