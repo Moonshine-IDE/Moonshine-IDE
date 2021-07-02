@@ -41,6 +41,7 @@ import feathers.layout.AnchorLayout;
 import feathers.layout.AnchorLayoutData;
 import moonshine.theme.MoonshineTheme;
 import openfl.events.Event;
+import moonshine.theme.SDKInstallerTheme;
 
 class GettingStartedView extends LayoutGroup implements IViewWithTitle 
 {
@@ -154,7 +155,7 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 
 	override private function initialize():Void 
 	{
-		this.variant = MoonshineTheme.THEME_VARIANT_BODY_WITH_GREY_BACKGROUND;
+		this.variant = SDKInstallerTheme.THEME_VARIANT_BODY_WITH_GREY_BACKGROUND;
 		
 		// root container
 		var viewLayout = new VerticalLayout();
