@@ -22,4 +22,5 @@ package actionScripts.valueObjects;
 
 extern class ConstantsCoreVO {
 	public static final MOONSHINE_IDE_LABEL:String;
+	public static final IS_MACOS:Bool;
 }

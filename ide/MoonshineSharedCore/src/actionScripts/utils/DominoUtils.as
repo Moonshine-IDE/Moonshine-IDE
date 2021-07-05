@@ -49,7 +49,7 @@ package actionScripts.utils
 				xml_str=xml_str+"<item name='$Flags'><text/></item>"
 				xml_str=xml_str+"<item name='$TITLE'><text>"+title+"</text></item>"
 				xml_str=xml_str+"<item name='$Fields'><textlist></textlist></item>"
-				xml_str=xml_str+"<item name='$Body' sign='true'></item>"
+				xml_str=xml_str+"<item name='$Body' sign='true'> <richtext style='width:700px;height:700px;' class='flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop' direction='Horizontal' vdirection='Vertical'/></item>"
 				
 				xml_str=xml_str+"</note>";
 			

@@ -18,12 +18,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.settings.vo
 {
+	import flash.events.Event;
+
 	import mx.core.IVisualElement;
 	
 	import actionScripts.plugin.settings.renderers.MultiOptionRenderer;
 
 	public class MultiOptionSetting extends StringSetting
 	{
+		public static const EVENT_MULTIOPTION_CHANGE:String = "eventMultiOptionChange";
+
 		public var isCommitOnChange:Boolean;
 		
 		private var _options:Vector.<NameValuePair>;
@@ -49,6 +53,7 @@ package actionScripts.plugin.settings.vo
 		override public function get renderer():IVisualElement
 		{
 			rdr = new MultiOptionRenderer();
+			rdr.addEventListener(EVENT_MULTIOPTION_CHANGE, onOptionChange, false, 0, true);
 			rdr.options = _options;
 			rdr.setting = this;			
 			return rdr;
@@ -66,6 +71,11 @@ package actionScripts.plugin.settings.vo
 		override public function get isEditable():Boolean
 		{
 			return _isEditable;
+		}
+
+		private function onOptionChange(event:Event):void
+		{
+			dispatchEvent(event);
 		}
 	}
 }
