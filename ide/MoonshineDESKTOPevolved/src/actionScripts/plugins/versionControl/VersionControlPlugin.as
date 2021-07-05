@@ -234,44 +234,38 @@ package actionScripts.plugins.versionControl
 		
 		private function continueIfVersionControlSupported(event:Event):Boolean
 		{
-			var isSVNPresent:Boolean = UtilsCore.isSVNPresent();
-			var isGitPresent:Boolean = UtilsCore.isGitPresent();
-			if (!isSVNPresent || !isGitPresent)
+			if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT)
 			{
-				if (ConstantsCoreVO.IS_MACOS) 
+				var isGitPresent:Boolean = UtilsCore.isGitPresent();
+				if (!isGitPresent)
 				{
-					if ((!xcodePath && !isSVNPresent && !isGitPresent) || 
-						(xcodePath && ConstantsCoreVO.IS_APP_STORE_VERSION && !OSXBookmarkerNotifiers.isPathBookmarked(xcodePath)))
+					if (ConstantsCoreVO.IS_MACOS)
 					{
-						dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+						if ((!xcodePath && !isGitPresent) ||
+								(xcodePath && ConstantsCoreVO.IS_APP_STORE_VERSION && !OSXBookmarkerNotifiers.isPathBookmarked(xcodePath)))
+						{
+							dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
+						}
+						else
+						{
+							// re-update both Git and SVN with common
+							// XCode/Command-line path
+							dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xcodePath));
+
+							ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
+							dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+							dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
+							return true;
+						}
 					}
 					else
-					{
-						// re-update both Git and SVN with common 
-						// XCode/Command-line path
-						dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xcodePath));
-						
-						ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
-						dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
-						dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
-						return true;
-					}
-				}
-				else 
-				{
-					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN) 
-					{
-						if (!isSVNPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, SVNPlugin.NAMESPACE));
-						else return true;
-					}
-					if (event.type == VersionControlEvent.OPEN_MANAGE_REPOSITORIES_GIT) 
 					{
 						if (!isGitPresent) dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, GitHubPlugin.NAMESPACE));
 						else return true;
 					}
+
+					return false;
 				}
-				
-				return false;
 			}
 			
 			return true;

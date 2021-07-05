@@ -109,6 +109,10 @@ package actionScripts.plugins.git
 			{
 				model.gitPath = _gitBinaryPathOSX = value;
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+				if (_gitBinaryPathOSX == "")
+				{
+					PathSetupHelperUtil.updateXCodePath("");
+				}
 			}
 		}
 		
@@ -298,7 +302,7 @@ package actionScripts.plugins.git
 			}
 			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
 			{
-				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
+				ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
 			}
 			
 			isStartupTest = false;
@@ -354,7 +358,7 @@ package actionScripts.plugins.git
 			
 			if (ConstantsCoreVO.IS_GIT_OSX_AVAILABLE != isGranted)
 			{
-				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = isGranted;
+				ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = isGranted;
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
 			}
