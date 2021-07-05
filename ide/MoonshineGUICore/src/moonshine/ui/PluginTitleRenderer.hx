@@ -20,6 +20,7 @@
 
 package moonshine.ui;
 
+import moonshine.theme.SDKInstallerTheme;
 import feathers.layout.HorizontalLayoutData;
 import feathers.layout.VerticalLayoutData;
 import feathers.layout.VerticalLayout;
@@ -85,7 +86,7 @@ class PluginTitleRenderer extends LayoutGroup
 		
 		this.authorTitle = new Label();
 		this.authorTitle.text = this.setting.author;
-		this.authorTitle.variant = MoonshineTheme.THEME_VARIANT_ITALIC_LABEL;
+		this.authorTitle.variant = SDKInstallerTheme.THEME_VARIANT_ITALIC_LABEL;
 		this.addChild(this.authorTitle);
 		
 		var descriptionContainer = new LayoutGroup();

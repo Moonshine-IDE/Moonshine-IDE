@@ -76,7 +76,6 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final THEME_VARIANT_DARK_BUTTON:String = "moonshine-button--dark";
 	public static final THEME_VARIANT_LARGE_BUTTON:String = "moonshine-button--large";
 	public static final THEME_VARIANT_LIGHT_LABEL:String = "moonshine-label--light";
-	public static final THEME_VARIANT_ITALIC_LABEL:String = "moonshine-label--italic";
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
 	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
 	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
@@ -101,7 +100,6 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_LABEL, setLightLabelStyles);
-		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_ITALIC_LABEL, setItalicLabelStyles);
 		this.styleProvider.setStyleFunction(Label, DefaultToolTipManager.CHILD_VARIANT_TOOL_TIP, setToolTipLabelStyles);
 
 		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
@@ -285,48 +283,28 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 	private function setLargeButtonStyles(button:Button):Void
 	{
-		var backgroundSkin = new MoonshineButtonSkin();
-		backgroundSkin.outerBorderFill = SolidColor(0x666666);
-		backgroundSkin.outerBorderSize = 4.0;
-		backgroundSkin.outerBorderRadius = 7.0;
-		backgroundSkin.innerBorderFill = SolidColor(0x4C4C4C);
-		backgroundSkin.innerBorderSize = 1.0;
-		backgroundSkin.innerBorderRadius = 7.0;
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.border = SolidColor(4.0, 0x666666);
+		backgroundSkin.cornerRadius = 7.0;
 		backgroundSkin.fill = Gradient(LINEAR, [0xe2e2e2, 0xe2e2e2, 0xd7d5d7, 0xd7d5d7], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		backgroundSkin.borderRadius = 7.0;
 		button.backgroundSkin = backgroundSkin;
 
-		var hoverSkin = new MoonshineButtonSkin();
-		hoverSkin.outerBorderFill = SolidColor(0x666666);
-		hoverSkin.outerBorderSize = 4.0;
-		hoverSkin.outerBorderRadius = 7.0;
-		hoverSkin.innerBorderFill = SolidColor(0x4C4C4C);
-		hoverSkin.innerBorderSize = 1.0;
-		hoverSkin.innerBorderRadius = 7.0;
+		var hoverSkin = new RectangleSkin();
+		hoverSkin.border = SolidColor(4.0, 0x666666);
+		hoverSkin.cornerRadius = 7.0;
 		hoverSkin.fill = Gradient(LINEAR, [0xe2e2e2, 0xe2e2e2, 0xd4d0d1, 0xd4d0d1], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		hoverSkin.borderRadius = 7.0;
 		button.setSkinForState(HOVER, hoverSkin);
 
-		var downSkin = new MoonshineButtonSkin();
-		downSkin.outerBorderFill = SolidColor(0x666666);
-		downSkin.outerBorderSize = 4.0;
-		downSkin.outerBorderRadius = 7.0;
-		downSkin.innerBorderFill = SolidColor(0x474747);
-		downSkin.innerBorderSize = 1.0;
-		downSkin.innerBorderRadius = 7.0;
+		var downSkin = new RectangleSkin();
+		downSkin.border = SolidColor(4.0, 0x666666);
+		downSkin.cornerRadius = 7.0;
 		downSkin.fill = Gradient(LINEAR, [0xcccccc, 0xcccccc, 0x999999, 0x999999], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		downSkin.borderRadius = 7.0;
 		button.setSkinForState(DOWN, downSkin);
 
-		var disabledSkin = new MoonshineButtonSkin();
-		disabledSkin.outerBorderFill = SolidColor(0x666666);
-		disabledSkin.outerBorderSize = 4.0;
-		disabledSkin.outerBorderRadius = 7.0;
-		disabledSkin.innerBorderFill = SolidColor(0x4C4C4C);
-		disabledSkin.innerBorderSize = 1.0;
-		disabledSkin.innerBorderRadius = 7.0;
+		var disabledSkin = new RectangleSkin();
+		disabledSkin.border = SolidColor(4.0, 0x666666);
+		disabledSkin.cornerRadius = 7.0;
 		disabledSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x404040, 0x404040], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		disabledSkin.alpha = 0.5;
 		button.setSkinForState(DISABLED, disabledSkin);
 
 		var focusRectSkin = new RectangleSkin();
@@ -335,14 +313,12 @@ class MoonshineTheme extends SDKInstallerTheme {
 		focusRectSkin.cornerRadius = 6.0;
 		button.focusRectSkin = focusRectSkin;
 
-		button.textFormat = new TextFormat(DEFAULT_FONT_NAME, 14, 0xBBBBBB, true);
-		button.setTextFormatForState(DISABLED, new TextFormat(DEFAULT_FONT_NAME, 14, 0x666666));
+		button.textFormat = new TextFormat(DEFAULT_FONT_NAME, 15, 0x333333);
+		button.setTextFormatForState(DISABLED, new TextFormat(DEFAULT_FONT_NAME, 15, 0x999999));
 		//button.embedFonts = true;
 
-		button.paddingTop = 8.0;
-		button.paddingRight = 8.0;
-		button.paddingBottom = 8.0;
-		button.paddingLeft = 8.0;
+		button.paddingTop = button.paddingBottom = 8.0;
+		button.paddingRight = button.paddingLeft = 20.0;
 		button.gap = 4.0;
 	}
 
@@ -582,9 +558,9 @@ class MoonshineTheme extends SDKInstallerTheme {
 		//label.embedFonts = true;
 	}
 	
-	private function setItalicLabelStyles(label:Label):Void {
-		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, 12, 0x292929, false, true);
-		label.disabledTextFormat = new TextFormat(DEFAULT_FONT_NAME, 12, 0x999999, false, true);
+	override public function setItalicLabelStyles(label:Label):Void {
+		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x292929, false, true);
+		label.disabledTextFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x999999, false, true);
 		//label.embedFonts = true;
 	}
 
@@ -631,7 +607,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		listView.fixedScrollBars = true;
 	}
 
-	override public function setBorderlessListViewStyles(listView:ListView):Void 
+	/*override public function setBorderlessListViewStyles(listView:ListView):Void 
 	{
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
@@ -657,7 +633,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		listView.paddingLeft = 0.0;
 
 		listView.fixedScrollBars = true;
-	}
+	}*/
 
 	private function setPanelStyles(panel:Panel):Void {
 		var backgroundSkin = new RectangleSkin();
