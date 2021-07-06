@@ -164,7 +164,6 @@
 	<property name="LibraryMoonshineCore" value="../../MoonshineSharedCore"/>
 	<property name="LibraryGUICore" value="../../MoonshineGUICore"/>
 	<property name="LibraryHelperSharedCore" value="../../../../Moonshine-SDK-Installer/InstallerSharedCore"/>
-	<property name="LibrarySDKInstallerGUICore" value="../../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore"/>
 	<property name="applicationSourceDirectory" value="../src"/>
 	<property name="desktopMainSource" value="${applicationSourceDirectory}/MoonshineDESKTOP.mxml" />
 	<property name="webMainSource" value="${applicationSourceDirectory}/MoonshineWEB.mxml" />
@@ -869,20 +868,8 @@
 			<arg value="--quiet"/>
 		</exec>
 	</target>
-
-	<target name="CompileSDKInstallerGUICore" depends="InstallHaxeDependencies">
-		<echo>Compiling Moonshine SDK Installer GUI Core SWC</echo>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibrarySDKInstallerGUICore}"
-			failonerror="true">
-			<arg value="run"/>
-			<arg value="openfl"/>
-			<arg value="build"/>
-			<arg value="flash"/>
-		</exec>
-	</target>
 	
-	<target name="CompileGUICore" depends="CompileSDKInstallerGUICore">
+	<target name="CompileGUICore" depends="InstallHaxeDependencies">
 		<echo>Compiling GUI Core SWC</echo>
 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
@@ -923,9 +910,6 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
-			<compiler.library-path dir="${LibrarySDKInstallerGUICore}/bin/flash/bin" append="true">
-				<include name="*.swc" />
-			</compiler.library-path>
 			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
@@ -961,9 +945,6 @@
 			</compiler.library-path>
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
-			</compiler.library-path>
-			<compiler.library-path dir="${LibrarySDKInstallerGUICore}/bin/flash/bin" append="true">
-				<include name="*.swc" />
 			</compiler.library-path>
 			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
 				<include name="*.swc" />
