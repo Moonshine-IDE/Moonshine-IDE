@@ -81,7 +81,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
 	public static final THEME_VARIANT_PLUGIN_LARGE_TITLE:String = "moonshine-plugin-large-title";
 
-	public static final DEFAULT_FONT_NAME:String = (ConstantsCoreVO.IS_MACOS) ? "System Font" : "Calibri";
+	public static final DEFAULT_FONT_NAME:String = (ConstantsCoreVO.IS_MACOS) ? "System Font" : "Segoe UI";
 	public static final DEFAULT_FONT_SIZE:Int = 14;
 
 	override public function new() {
