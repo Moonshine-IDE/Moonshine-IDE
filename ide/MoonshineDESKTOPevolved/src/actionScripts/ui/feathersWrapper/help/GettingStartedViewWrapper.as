@@ -21,6 +21,7 @@ package actionScripts.ui.feathersWrapper.help
 	import actionScripts.plugins.domino.DominoPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.utils.PathSetupHelperUtil;
+	import actionScripts.utils.UtilsCore;
 
 	import flash.events.Event;
 
@@ -159,13 +160,12 @@ package actionScripts.ui.feathersWrapper.help
 		private function onOpenSettings(event:HelperEvent):void
 		{
 			var component:ComponentVO = event.data as ComponentVO;
-			if ((component.type == ComponentTypes.TYPE_GIT) && ConstantsCoreVO.IS_MACOS)
+			if ((component.type == ComponentTypes.TYPE_GIT) && ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent())
 			{
 				var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
-				var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
 
 				dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
-				gitComponent.hasWarning = svnComponent.hasWarning = null;
+				gitComponent.hasWarning = null;
 			}
 			else if (component.type == ComponentTypes.TYPE_NOTES && ConstantsCoreVO.IS_MACOS)
 			{
