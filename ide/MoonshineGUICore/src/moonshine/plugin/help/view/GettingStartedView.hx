@@ -20,6 +20,7 @@
 
 package moonshine.plugin.help.view;
 
+import feathers.layout.HorizontalLayout;
 import feathers.core.FeathersControl;
 import feathers.events.TriggerEvent;
 import moonshine.plugin.help.events.GettingStartedViewEvent;
@@ -47,6 +48,7 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 {
 	public static final EVENT_OPEN_SELECTED_REFERENCE = "openSelectedReference";
 	public static final EVENT_DOWNLOAD_3RDPARTY_SOFTWARE = "eventDownload3rdPartySoftware";
+	public static final EVENT_REFRESH_STATUS = "eventRefreshStatus";
 
 	public function new() 
 	{
@@ -59,6 +61,8 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 	private var downloadThirdPartyButton:Button;
 	private var sdkInstallerInstallationMessageLabel:Label;
 	private var doNotShowCheckbox:Check;
+	private var btnRefresh:Button;
+	private var lblRefreshMessage:Label;
 
 	@:flash.property
 	public var title(get, never):String;
@@ -153,11 +157,27 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		return this._helperView;
 	}
 
+	private var _isRefreshInProgress:Bool;
+	@:flash.property
+	public var isRefreshInProgress(get, set):Bool;
+	private function get_isRefreshInProgress():Bool {
+		return this._isRefreshInProgress;
+	}
+	private function set_isRefreshInProgress(value:Bool):Bool {
+		if (this._isRefreshInProgress == value) {
+			return this._isRefreshInProgress;
+		}
+		this._isRefreshInProgress = value;
+		this.setInvalid(InvalidationFlag.DATA);
+		return this._isRefreshInProgress;
+	}
+
 	override private function initialize():Void 
 	{
 		this.variant = SDKInstallerTheme.THEME_VARIANT_BODY_WITH_GREY_BACKGROUND;
+		this.layout = new AnchorLayout();
 		
-		// root container
+		// root container layout
 		var viewLayout = new VerticalLayout();
 		viewLayout.horizontalAlign = CENTER;
 		viewLayout.paddingTop = 10.0;
@@ -165,37 +185,60 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		viewLayout.paddingBottom = 4.0;
 		viewLayout.paddingLeft = 12.0;
 		viewLayout.gap = 10.0;
-		this.layout = viewLayout;
+
+		// root container
+		var viewContainer = new LayoutGroup();
+		viewContainer.layoutData = AnchorLayoutData.fill();
+		viewContainer.layout = viewLayout;
+		this.addChild(viewContainer);
 		
 		// title area
 		this.titleRenderer = new PluginTitleRenderer();
 		this.titleRenderer.setting = this.setting;
 		this.titleRenderer.layoutData = new VerticalLayoutData(100, null);
 		this.titleRenderer.layout = new AnchorLayout();
-		this.addChild(this.titleRenderer);
+		viewContainer.addChild(this.titleRenderer);
 		
 		// 3rd-party button
 		this.downloadThirdPartyButton = new Button();
 		this.downloadThirdPartyButton.text = "Download Third-Party Software";
 		this.downloadThirdPartyButton.variant = MoonshineTheme.THEME_VARIANT_LARGE_BUTTON;
 		this.downloadThirdPartyButton.addEventListener(TriggerEvent.TRIGGER, onDownload3rdPatySoftware);
-		this.addChild(this.downloadThirdPartyButton);
+		viewContainer.addChild(this.downloadThirdPartyButton);
 		
 		// 3rd-party software-installation message
 		this.sdkInstallerInstallationMessageLabel = new Label();
 		this.sdkInstallerInstallationMessageLabel.text = this.sdkInstallerInstallingMess;
 		this.sdkInstallerInstallationMessageLabel.visible = this.sdkInstallerInstallationMessageLabel.includeInLayout = false;
-		this.addChild(this.sdkInstallerInstallationMessageLabel);
+		viewContainer.addChild(this.sdkInstallerInstallationMessageLabel);
 		
 		// helper view
 		this.helperView.layoutData = new VerticalLayoutData(100, 96);
-		this.addChild(this.helperView);
+		viewContainer.addChild(this.helperView);
 		
 		// do not show
 		this.doNotShowCheckbox = new Check();
 		this.doNotShowCheckbox.text = "Do not show this tab on startup";
 		this.doNotShowCheckbox.addEventListener(Event.CHANGE, onDoNotShowCheckChangeHandler);
-		this.addChild(this.doNotShowCheckbox);
+		viewContainer.addChild(this.doNotShowCheckbox);
+
+		// refresh button container
+		var refreshContainer = new LayoutGroup();
+		refreshContainer.layoutData = new AnchorLayoutData(10, 10);
+		refreshContainer.layout = new HorizontalLayout();
+		cast(refreshContainer.layout, HorizontalLayout).gap = 4;
+		this.addChild(refreshContainer);
+
+		this.lblRefreshMessage = new Label("Updating..");
+		this.lblRefreshMessage.visible = this.lblRefreshMessage.includeInLayout = false;
+		refreshContainer.addChild(this.lblRefreshMessage);
+
+		this.btnRefresh = new Button();
+		this.btnRefresh.variant = MoonshineTheme.IMAGE_VARIANT_LARGE_REFRESH_ICON;
+		this.btnRefresh.width = this.btnRefresh.height = 23;
+		this.btnRefresh.useHandCursor = true;
+		this.btnRefresh.addEventListener(TriggerEvent.TRIGGER, onRefreshRequest, false, 0, true);
+		refreshContainer.addChild(this.btnRefresh);
 
 		super.initialize();
 	}
@@ -217,6 +260,9 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 			{
 				this.sdkInstallerInstallationMessageLabel.visible = this.sdkInstallerInstallationMessageLabel.includeInLayout = false;
 			}
+
+			this.lblRefreshMessage.visible = this.lblRefreshMessage.includeInLayout = this.isRefreshInProgress;
+			this.btnRefresh.alpha = this.isRefreshInProgress ? 0.5 : 1.0;
 		}
 
 		super.update();
@@ -243,5 +289,13 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 	private function onDownload3rdPatySoftware(event:TriggerEvent):Void
 	{
 		this.dispatchEvent(new Event(EVENT_DOWNLOAD_3RDPARTY_SOFTWARE));
+	}
+
+	private function onRefreshRequest(event:TriggerEvent):Void
+	{
+		if (!this.isRefreshInProgress)
+		{
+			this.dispatchEvent(new Event(EVENT_REFRESH_STATUS));
+		}
 	}
 }

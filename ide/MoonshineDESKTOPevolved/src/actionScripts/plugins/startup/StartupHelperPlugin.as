@@ -402,6 +402,7 @@ package actionScripts.plugins.startup
 				gettingStartedView.helperView = tmpHelperViewWrapper.feathersUIControl;
 				
 				gettingStartedViewWrapper = new GettingStartedViewWrapper(gettingStartedView);
+				gettingStartedViewWrapper.helperViewWrapper = tmpHelperViewWrapper;
 				gettingStartedViewWrapper.percentWidth = 100;
 				gettingStartedViewWrapper.percentHeight = 100;
 				gettingStartedViewWrapper.minWidth = 0;

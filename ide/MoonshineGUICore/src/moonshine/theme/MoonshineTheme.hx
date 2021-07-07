@@ -20,6 +20,7 @@
 
 package moonshine.theme;
 
+import openfl.geom.Matrix;
 import actionScripts.valueObjects.ConstantsCoreVO;
 import moonshine.components.StandardPopupView;
 import feathers.controls.Button;
@@ -60,6 +61,7 @@ import openfl.display.Shape;
 import openfl.filters.GlowFilter;
 import openfl.text.TextFormat;
 import moonshine.theme.SDKInstallerTheme;
+import moonshine.theme.assets.RefreshIcon;
 
 class MoonshineTheme extends SDKInstallerTheme {
 	private static var _instance:MoonshineTheme;
@@ -80,6 +82,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
 	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
 	public static final THEME_VARIANT_PLUGIN_LARGE_TITLE:String = "moonshine-plugin-large-title";
+	public static final IMAGE_VARIANT_LARGE_REFRESH_ICON:String = "image-icon-large-refresh";
 
 	public static final DEFAULT_FONT_NAME:String = (ConstantsCoreVO.IS_MACOS) ? "System Font" : "Segoe UI";
 	public static final DEFAULT_FONT_SIZE:Int = 14;
@@ -134,6 +137,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(TreeViewItemRenderer, null, setTreeViewItemRendererStyles);
 		this.styleProvider.setStyleFunction(TourDeFlexTreeViewItemRenderer, null, setTourDeFlexTreeViewItemRendererItemRendererStyles);
 		this.styleProvider.setStyleFunction(ToggleButton, TreeViewItemRenderer.CHILD_VARIANT_DISCLOSURE_BUTTON, setTreeViewItemRendererDisclosureButtonStyles);
+
+		this.styleProvider.setStyleFunction(Button, IMAGE_VARIANT_LARGE_REFRESH_ICON, setImageLargeRefreshStyles);
 	}
 
 	private function getDarkOnLightTextFormat():TextFormat {
@@ -969,5 +974,16 @@ class MoonshineTheme extends SDKInstallerTheme {
 		selectedIcon.graphics.lineTo(2.0, 2.0);
 		selectedIcon.graphics.endFill();
 		button.selectedIcon = selectedIcon;
+	}
+
+	private function setImageLargeRefreshStyles(layout:Button):Void 
+	{
+		var refreshIconBitmap = new RefreshIcon(cast(layout.width, Int), cast(layout.height, Int));
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = Bitmap(refreshIconBitmap, new Matrix(), false);
+		backgroundSkin.width = layout.width;
+		backgroundSkin.height = layout.height;
+
+		layout.backgroundSkin = backgroundSkin;
 	}
 }

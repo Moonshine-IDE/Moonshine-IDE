@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.feathersWrapper.help
 {
+	import actionScripts.managers.DetectionManager;
 	import actionScripts.plugins.domino.DominoPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.ui.views.HelperViewWrapper;
 	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.UtilsCore;
 
@@ -49,6 +51,8 @@ package actionScripts.ui.feathersWrapper.help
 	public class GettingStartedViewWrapper extends FeathersUIWrapper implements IViewWithTitle, IContentWindow
 	{
 		private static const LABEL:String = "Getting Started";
+
+		public var helperViewWrapper:HelperViewWrapper;
 		
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var msdkiDownloadUtil:MSDKIdownloadUtil = MSDKIdownloadUtil.getInstance();
@@ -74,6 +78,10 @@ package actionScripts.ui.feathersWrapper.help
 				GettingStartedViewEvent.EVENT_DO_NOT_SHOW, onDoNotShowCheckboxChanged,
 				false, 0, true
 			);
+			this.feathersUIControl.addEventListener(
+					GettingStartedView.EVENT_REFRESH_STATUS, onRefreshStatusRequest,
+					false, 0, true
+			);
 
 			// events from the HelperView
 			(this.feathersUIControl as GettingStartedView).helperView.addEventListener(
@@ -88,6 +96,11 @@ package actionScripts.ui.feathersWrapper.help
 					HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded,
 					false, 0, true
 			);
+
+			// events from helperViewWrapper
+			this.helperViewWrapper.itemsManager.detectionManager.addEventListener(
+					DetectionManager.EVENT_DETECTION_ENDS, onStatusUpdateEnds, false, 0, true
+			)
 		}
 		
 		//--------------------------------------------------------------------------
@@ -113,6 +126,7 @@ package actionScripts.ui.feathersWrapper.help
 		{
 			this.feathersUIControl.removeEventListener(GettingStartedViewEvent.EVENT_DO_NOT_SHOW, onDoNotShowCheckboxChanged);
 			this.feathersUIControl.removeEventListener(GettingStartedView.EVENT_DOWNLOAD_3RDPARTY_SOFTWARE, onDownload3rdPartySoftware);
+			this.feathersUIControl.removeEventListener(GettingStartedView.EVENT_REFRESH_STATUS, onRefreshStatusRequest);
 
 			(this.feathersUIControl as GettingStartedView).helperView.removeEventListener(
 					HelperEvent.DOWNLOAD_COMPONENT, onDownload3rdPartySoftware
@@ -123,6 +137,10 @@ package actionScripts.ui.feathersWrapper.help
 			(this.feathersUIControl as GettingStartedView).helperView.removeEventListener(
 					HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded
 			);
+
+			this.helperViewWrapper.itemsManager.detectionManager.removeEventListener(
+					DetectionManager.EVENT_DETECTION_ENDS, onStatusUpdateEnds
+			)
 		}
 		
 		//--------------------------------------------------------------------------
@@ -135,6 +153,17 @@ package actionScripts.ui.feathersWrapper.help
 		{
 			ConstantsCoreVO.IS_GETTING_STARTED_DNS = event.data;
 			dispatcher.dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_DNS_GETTING_STARTED));
+		}
+
+		private function onRefreshStatusRequest(event:Event):void
+		{
+			(this.feathersUIControl as GettingStartedView).isRefreshInProgress = true;
+			helperViewWrapper.checkForUpdate();
+		}
+
+		private function onStatusUpdateEnds(event:Event):void
+		{
+			(this.feathersUIControl as GettingStartedView).isRefreshInProgress = false;
 		}
 		
 		private function onDownload3rdPartySoftware(event:Event):void
