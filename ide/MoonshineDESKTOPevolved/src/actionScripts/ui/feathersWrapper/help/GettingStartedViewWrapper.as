@@ -101,6 +101,12 @@ package actionScripts.ui.feathersWrapper.help
 			this.helperViewWrapper.itemsManager.detectionManager.addEventListener(
 					DetectionManager.EVENT_DETECTION_ENDS, onStatusUpdateEnds, false, 0, true
 			)
+			this.dispatcher.addEventListener(
+					StartupHelperEvent.REFRESH_GETTING_STARTED, onRefreshStatusRequest, false, 0, true
+			);
+			this.msdkiDownloadUtil.addEventListener(
+					MSDKIdownloadUtil.EVENT_NEW_VERSION_DETECTED, onNewVersionDetected, false, 0, true
+			);
 		}
 		
 		//--------------------------------------------------------------------------
@@ -141,6 +147,12 @@ package actionScripts.ui.feathersWrapper.help
 			this.helperViewWrapper.itemsManager.detectionManager.removeEventListener(
 					DetectionManager.EVENT_DETECTION_ENDS, onStatusUpdateEnds
 			)
+			this.dispatcher.removeEventListener(
+					StartupHelperEvent.REFRESH_GETTING_STARTED, onRefreshStatusRequest
+			);
+			this.msdkiDownloadUtil.removeEventListener(
+					MSDKIdownloadUtil.EVENT_NEW_VERSION_DETECTED, onNewVersionDetected
+			);
 		}
 		
 		//--------------------------------------------------------------------------
@@ -237,6 +249,12 @@ package actionScripts.ui.feathersWrapper.help
 		{
 			addRemoveInstallerDownloadEvents(false);
 			Alert.show(event.text, "Error!");
+		}
+
+		private function onNewVersionDetected(event:Event):void
+		{
+			(this.feathersUIControl as GettingStartedView).sdkInstallerInstallingMess =
+					"Downloading new version of Moonshine SDK Installer. Please wait.";
 		}
 	}
 }
