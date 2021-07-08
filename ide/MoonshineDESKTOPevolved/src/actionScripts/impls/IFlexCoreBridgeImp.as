@@ -405,7 +405,7 @@ package actionScripts.impls
 						"t", [Keyboard.CONTROL])
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
-					new MenuItem((ConstantsCoreVO.IS_MACOS && !UtilsCore.isSVNPresent()) ? "Grant Permission" : resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN),
+					new MenuItem(resourceManager.getString('resources','MANAGE_REPOSITORIES'), null, null, VersionControlEvent.OPEN_MANAGE_REPOSITORIES_SVN),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','COMMIT'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.COMMIT_REQUEST),
 					new MenuItem(resourceManager.getString('resources','UPDATE'), null, [ProjectMenuTypes.SVN_PROJECT], SVNPlugin.UPDATE_REQUEST)

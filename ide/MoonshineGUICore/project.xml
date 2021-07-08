@@ -6,6 +6,8 @@
 	
 	<source path="src" />
 	<source path="externs" />
+	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/src" />
+	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/externs" />
 	
 	<haxelib name="openfl" />
 	<haxelib name="actuate" />

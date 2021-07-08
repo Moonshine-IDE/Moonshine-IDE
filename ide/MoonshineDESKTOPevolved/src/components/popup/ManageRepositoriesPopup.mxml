@@ -34,10 +34,14 @@
 	</resizableTitleWindow:layout>
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
+		import actionScripts.events.SettingsEvent;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
+		import actionScripts.utils.UtilsCore;
+
+		import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.events.FlexEvent;
-			
+
 			import spark.events.GridEvent;
 			import spark.events.GridSelectionEvent;
 			
@@ -88,7 +92,7 @@
 			{
 				// check and update dependency repositories
 				VersionControlUtils.updateDependentRepositories(selectedRepository);
-				selectedRepository.isUpdating = false;
+				if (selectedRepository) selectedRepository.isUpdating = false;
 				
 				// continue to browsing
 				onBrowseRepository(selectedRepository);

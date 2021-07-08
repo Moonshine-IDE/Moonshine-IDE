@@ -18,9 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.feathersWrapper.help
 {
+	import actionScripts.managers.DetectionManager;
 	import actionScripts.plugins.domino.DominoPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
+	import actionScripts.ui.views.HelperViewWrapper;
 	import actionScripts.utils.PathSetupHelperUtil;
+	import actionScripts.utils.UtilsCore;
 
 	import flash.events.Event;
 
@@ -47,7 +50,9 @@ package actionScripts.ui.feathersWrapper.help
 	
 	public class GettingStartedViewWrapper extends FeathersUIWrapper implements IViewWithTitle, IContentWindow
 	{
-		private static const LABEL:String = "Getting Started Haxe";
+		private static const LABEL:String = "Getting Started";
+
+		public var helperViewWrapper:HelperViewWrapper;
 		
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var msdkiDownloadUtil:MSDKIdownloadUtil = MSDKIdownloadUtil.getInstance();
@@ -73,6 +78,10 @@ package actionScripts.ui.feathersWrapper.help
 				GettingStartedViewEvent.EVENT_DO_NOT_SHOW, onDoNotShowCheckboxChanged,
 				false, 0, true
 			);
+			this.feathersUIControl.addEventListener(
+					GettingStartedView.EVENT_REFRESH_STATUS, onRefreshStatusRequest,
+					false, 0, true
+			);
 
 			// events from the HelperView
 			(this.feathersUIControl as GettingStartedView).helperView.addEventListener(
@@ -86,6 +95,17 @@ package actionScripts.ui.feathersWrapper.help
 			(this.feathersUIControl as GettingStartedView).helperView.addEventListener(
 					HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded,
 					false, 0, true
+			);
+
+			// events from helperViewWrapper
+			this.helperViewWrapper.itemsManager.detectionManager.addEventListener(
+					DetectionManager.EVENT_DETECTION_ENDS, onStatusUpdateEnds, false, 0, true
+			)
+			this.dispatcher.addEventListener(
+					StartupHelperEvent.REFRESH_GETTING_STARTED, onRefreshStatusRequest, false, 0, true
+			);
+			this.msdkiDownloadUtil.addEventListener(
+					MSDKIdownloadUtil.EVENT_NEW_VERSION_DETECTED, onNewVersionDetected, false, 0, true
 			);
 		}
 		
@@ -112,6 +132,7 @@ package actionScripts.ui.feathersWrapper.help
 		{
 			this.feathersUIControl.removeEventListener(GettingStartedViewEvent.EVENT_DO_NOT_SHOW, onDoNotShowCheckboxChanged);
 			this.feathersUIControl.removeEventListener(GettingStartedView.EVENT_DOWNLOAD_3RDPARTY_SOFTWARE, onDownload3rdPartySoftware);
+			this.feathersUIControl.removeEventListener(GettingStartedView.EVENT_REFRESH_STATUS, onRefreshStatusRequest);
 
 			(this.feathersUIControl as GettingStartedView).helperView.removeEventListener(
 					HelperEvent.DOWNLOAD_COMPONENT, onDownload3rdPartySoftware
@@ -121,6 +142,16 @@ package actionScripts.ui.feathersWrapper.help
 			);
 			(this.feathersUIControl as GettingStartedView).helperView.removeEventListener(
 					HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded
+			);
+
+			this.helperViewWrapper.itemsManager.detectionManager.removeEventListener(
+					DetectionManager.EVENT_DETECTION_ENDS, onStatusUpdateEnds
+			)
+			this.dispatcher.removeEventListener(
+					StartupHelperEvent.REFRESH_GETTING_STARTED, onRefreshStatusRequest
+			);
+			this.msdkiDownloadUtil.removeEventListener(
+					MSDKIdownloadUtil.EVENT_NEW_VERSION_DETECTED, onNewVersionDetected
 			);
 		}
 		
@@ -134,6 +165,17 @@ package actionScripts.ui.feathersWrapper.help
 		{
 			ConstantsCoreVO.IS_GETTING_STARTED_DNS = event.data;
 			dispatcher.dispatchEvent(new StartupHelperEvent(StartupHelperEvent.EVENT_DNS_GETTING_STARTED));
+		}
+
+		private function onRefreshStatusRequest(event:Event):void
+		{
+			(this.feathersUIControl as GettingStartedView).isRefreshInProgress = true;
+			helperViewWrapper.checkForUpdate();
+		}
+
+		private function onStatusUpdateEnds(event:Event):void
+		{
+			(this.feathersUIControl as GettingStartedView).isRefreshInProgress = false;
 		}
 		
 		private function onDownload3rdPartySoftware(event:Event):void
@@ -159,14 +201,12 @@ package actionScripts.ui.feathersWrapper.help
 		private function onOpenSettings(event:HelperEvent):void
 		{
 			var component:ComponentVO = event.data as ComponentVO;
-			if ((component.type == ComponentTypes.TYPE_GIT || component.type == ComponentTypes.TYPE_SVN) &&
-					ConstantsCoreVO.IS_MACOS)
+			if ((component.type == ComponentTypes.TYPE_GIT) && ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent())
 			{
 				var gitComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
-				var svnComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
 
 				dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
-				gitComponent.hasWarning = svnComponent.hasWarning = null;
+				gitComponent.hasWarning = null;
 			}
 			else if (component.type == ComponentTypes.TYPE_NOTES && ConstantsCoreVO.IS_MACOS)
 			{
@@ -209,6 +249,12 @@ package actionScripts.ui.feathersWrapper.help
 		{
 			addRemoveInstallerDownloadEvents(false);
 			Alert.show(event.text, "Error!");
+		}
+
+		private function onNewVersionDetected(event:Event):void
+		{
+			(this.feathersUIControl as GettingStartedView).sdkInstallerInstallingMess =
+					"Downloading new version of Moonshine SDK Installer. Please wait.";
 		}
 	}
 }
