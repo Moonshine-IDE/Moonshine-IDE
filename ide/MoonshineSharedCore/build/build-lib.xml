@@ -711,7 +711,6 @@
 			<arg value='unzip ${debug_dir}/groovy-language-server-all/groovy-language-server-all.jar -d ${debug_dir}/groovy-language-server-all'/>
 		</exec>
 		<delete file="${debug_dir}/groovy-language-server-all/groovy-language-server-all.jar"/>
-		<echo>${certSignedDevIDKeychainName}</echo>
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib'/>
@@ -763,26 +762,6 @@
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-9/deasync.node'/>
-		</exec>
-		<echo>Signing checks on Sandbox APP: spctl -vvv --assess --type exec ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib</echo>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='spctl -vvv --assess --type exec ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib'/>
-		</exec>
-		<echo>Signing checks on Sandbox APP: spctl -vvv --assess --type exec elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.10/deasync.node</echo>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='spctl -vvv --assess --type exec elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.10/deasync.node'/>
-		</exec>
-		<echo>Hardened runtime checks on Sandbox APP: codesign --display --verbose ${debug_dir}/groovy-language-server-all.zip/META-INF/native/osx/libjansi.jnilib</echo>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign --display --verbose ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib'/>
-		</exec>
-		<echo>Timestamp check on Sandbox APP: codesign -dvv ${debug_dir}/groovy-language-server-all.zip/META-INF/native/osx/libjansi.jnilib</echo>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -dvv ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib'/>
 		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
