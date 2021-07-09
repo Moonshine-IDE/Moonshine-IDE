@@ -720,6 +720,50 @@
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.10/deasync.node'/>
 		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.11/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.12/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-10/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-11/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-12/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-4/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-5/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-6/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-7/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-8/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-9/deasync.node'/>
+		</exec>
 		<echo>Signing checks on Sandbox APP: spctl -vvv --assess --type exec ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib</echo>
 		<exec executable="bash">
 			<arg value="-c"/>
