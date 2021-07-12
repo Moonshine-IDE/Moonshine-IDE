@@ -20,6 +20,8 @@
 
 package moonshine.theme;
 
+import feathers.skins.TriangleSkin;
+import feathers.controls.PopUpListView;
 import openfl.geom.Matrix;
 import actionScripts.valueObjects.ConstantsCoreVO;
 import moonshine.components.StandardPopupView;
@@ -97,7 +99,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(GridView, null, setGridViewStyles);
 		this.styleProvider.setStyleFunction(GridView, GridView.VARIANT_BORDERLESS, setBorderlessGridViewStyles);
-		this.styleProvider.setStyleFunction(ItemRenderer, GridView.CHILD_VARIANT_HEADER, setGridViewHeaderStyles);
+		this.styleProvider.setStyleFunction(ItemRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewHeaderStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 
@@ -111,6 +113,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(ListView, null, setListViewStyles);
 
 		this.styleProvider.setStyleFunction(Panel, null, setPanelStyles);
+
+		this.styleProvider.setStyleFunction(Button, PopUpListView.CHILD_VARIANT_BUTTON, setPopUpListViewButtonStyles);
 
 		this.styleProvider.setStyleFunction(HScrollBar, null, setHScrollBarStyles);
 		this.styleProvider.setStyleFunction(VScrollBar, null, setVScrollBarStyles);
@@ -129,7 +133,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(Button, TitleWindow.CHILD_VARIANT_CLOSE_BUTTON, setTitleWindowCloseButtonStyles);
 
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_BUSY_LABEL, setBusyLabelStyles);
-		
+
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_PLUGIN_LARGE_TITLE, setPluginLargeTitleStyles);
 
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
@@ -215,7 +219,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		button.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x555555);
 		button.setTextFormatForState(DISABLED, new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x999999));
-		//button.embedFonts = true;
+		// button.embedFonts = true;
 
 		button.paddingTop = 8.0;
 		button.paddingRight = 16.0;
@@ -277,7 +281,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		button.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0xBBBBBB);
 		button.setTextFormatForState(DISABLED, new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x666666));
-		//button.embedFonts = true;
+		// button.embedFonts = true;
 
 		button.paddingTop = 8.0;
 		button.paddingRight = 8.0;
@@ -286,8 +290,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		button.gap = 4.0;
 	}
 
-	private function setLargeButtonStyles(button:Button):Void
-	{
+	private function setLargeButtonStyles(button:Button):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.border = SolidColor(4.0, 0x666666);
 		backgroundSkin.cornerRadius = 7.0;
@@ -320,7 +323,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		button.textFormat = new TextFormat(DEFAULT_FONT_NAME, 15, 0x333333);
 		button.setTextFormatForState(DISABLED, new TextFormat(DEFAULT_FONT_NAME, 15, 0x999999));
-		//button.embedFonts = true;
+		// button.embedFonts = true;
 
 		button.paddingTop = button.paddingBottom = 8.0;
 		button.paddingRight = button.paddingLeft = 20.0;
@@ -388,7 +391,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		headerRenderer.textFormat = getLightOnDarkTextFormat();
 		headerRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		//headerRenderer.embedFonts = true;
+		// headerRenderer.embedFonts = true;
 
 		headerRenderer.horizontalAlign = LEFT;
 		headerRenderer.paddingTop = 4.0;
@@ -498,7 +501,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		radio.textFormat = getDarkOnLightTextFormat();
 		radio.disabledTextFormat = getDarkOnLightDisabledTextFormat();
-		//radio.embedFonts = true;
+		// radio.embedFonts = true;
 
 		radio.horizontalAlign = LEFT;
 		radio.gap = 4.0;
@@ -519,7 +522,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		itemRenderer.textFormat = getLightOnDarkTextFormat();
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		//itemRenderer.embedFonts = true;
+		// itemRenderer.embedFonts = true;
 
 		itemRenderer.horizontalAlign = LEFT;
 		itemRenderer.paddingTop = 4.0;
@@ -554,19 +557,19 @@ class MoonshineTheme extends SDKInstallerTheme {
 	private function setLabelStyles(label:Label):Void {
 		label.textFormat = getDarkOnLightTextFormat();
 		label.disabledTextFormat = getDarkOnLightDisabledTextFormat();
-		//label.embedFonts = true;
+		// label.embedFonts = true;
 	}
 
 	private function setLightLabelStyles(label:Label):Void {
 		label.textFormat = getLightOnDarkTextFormat();
 		label.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		//label.embedFonts = true;
+		// label.embedFonts = true;
 	}
-	
+
 	override public function setItalicLabelStyles(label:Label):Void {
 		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x292929, false, true);
 		label.disabledTextFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x999999, false, true);
-		//label.embedFonts = true;
+		// label.embedFonts = true;
 	}
 
 	private function setToolTipLabelStyles(toolTip:Label):Void {
@@ -577,7 +580,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		toolTip.textFormat = getLightOnDarkTextFormat();
 		toolTip.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		//toolTip.embedFonts = true;
+		// toolTip.embedFonts = true;
 
 		toolTip.paddingTop = 4.0;
 		toolTip.paddingRight = 4.0;
@@ -613,39 +616,58 @@ class MoonshineTheme extends SDKInstallerTheme {
 	}
 
 	/*override public function setBorderlessListViewStyles(listView:ListView):Void 
-	{
-		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0x444444);
-		backgroundSkin.border = null;
-		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
-		backgroundSkin.cornerRadius = 0.0;
-		backgroundSkin.minWidth = 160.0;
-		backgroundSkin.minHeight = 160.0;
-		listView.backgroundSkin = backgroundSkin;
+		{
+			var backgroundSkin = new RectangleSkin();
+			backgroundSkin.fill = SolidColor(0x444444);
+			backgroundSkin.border = null;
+			backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
+			backgroundSkin.cornerRadius = 0.0;
+			backgroundSkin.minWidth = 160.0;
+			backgroundSkin.minHeight = 160.0;
+			listView.backgroundSkin = backgroundSkin;
 
-		var focusRectSkin = new RectangleSkin();
-		focusRectSkin.fill = null;
-		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
-		listView.focusRectSkin = focusRectSkin;
+			var focusRectSkin = new RectangleSkin();
+			focusRectSkin.fill = null;
+			focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+			listView.focusRectSkin = focusRectSkin;
 
-		var layout = new VerticalListLayout();
-		layout.requestedRowCount = 5;
-		listView.layout = layout;
+			var layout = new VerticalListLayout();
+			layout.requestedRowCount = 5;
+			listView.layout = layout;
 
-		listView.paddingTop = 0.0;
-		listView.paddingRight = 0.0;
-		listView.paddingBottom = 0.0;
-		listView.paddingLeft = 0.0;
+			listView.paddingTop = 0.0;
+			listView.paddingRight = 0.0;
+			listView.paddingBottom = 0.0;
+			listView.paddingLeft = 0.0;
 
-		listView.fixedScrollBars = true;
+			listView.fixedScrollBars = true;
 	}*/
-
 	private function setPanelStyles(panel:Panel):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0xA0A0A0);
 		backgroundSkin.border = null;
 		backgroundSkin.cornerRadius = 7.0;
 		panel.backgroundSkin = backgroundSkin;
+	}
+
+	private function setPopUpListViewButtonStyles(button:Button):Void {
+		setLightButtonStyles(button);
+
+		button.horizontalAlign = LEFT;
+		button.gap = 1.0 / 0.0; // Math.POSITIVE_INFINITY bug workaround
+		button.minGap = 6.0;
+
+		if (button.icon == null) {
+			var icon = new TriangleSkin();
+			icon.pointPosition = BOTTOM;
+			icon.fill = SolidColor(0x555555);
+			icon.disabledFill = SolidColor(0x999999);
+			icon.width = 8.0;
+			icon.height = 4.0;
+			button.icon = icon;
+		}
+
+		button.iconPosition = RIGHT;
 	}
 
 	private function setHScrollBarStyles(scrollBar:HScrollBar):Void {
@@ -702,7 +724,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 	private function setSideBarViewHeaderTitleStyles(label:Label):Void {
 		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, 11, 0x292929);
-		//label.embedFonts = true;
+		// label.embedFonts = true;
 		label.layoutData = new HorizontalLayoutData(100.0);
 	}
 
@@ -780,17 +802,17 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 	private function setTitleWindowTitleStyles(label:Label):Void {
 		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x292929, true);
-		//label.embedFonts = true;
+		// label.embedFonts = true;
 	}
-	
+
 	private function setBusyLabelStyles(label:Label):Void {
 		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0xffffff, false);
-		//label.embedFonts = true;
+		// label.embedFonts = true;
 	}
-	
+
 	private function setPluginLargeTitleStyles(label:Label):Void {
 		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, 22, 0xe252d3, false);
-		//label.embedFonts = true;
+		// label.embedFonts = true;
 	}
 
 	private function setTitleWindowControlBarStyles(controlBar:LayoutGroup):Void {
@@ -852,7 +874,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		textInput.textFormat = getLightOnDarkTextFormat();
 		textInput.promptTextFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0xa6a6a6);
 		textInput.setTextFormatForState(DISABLED, getLightOnDarkDisabledTextFormat());
-		//textInput.embedFonts = true;
+		// textInput.embedFonts = true;
 
 		textInput.paddingTop = 5.0;
 		textInput.paddingRight = 5.0;
@@ -929,7 +951,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		itemRenderer.textFormat = getLightOnDarkTextFormat();
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		//itemRenderer.embedFonts = true;
+		// itemRenderer.embedFonts = true;
 
 		itemRenderer.paddingTop = 4.0;
 		itemRenderer.paddingRight = 4.0;
@@ -976,8 +998,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		button.selectedIcon = selectedIcon;
 	}
 
-	private function setImageLargeRefreshStyles(layout:Button):Void 
-	{
+	private function setImageLargeRefreshStyles(layout:Button):Void {
 		var refreshIconBitmap = new RefreshIcon(cast(layout.width, Int), cast(layout.height, Int));
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = Bitmap(refreshIconBitmap, new Matrix(), false);
