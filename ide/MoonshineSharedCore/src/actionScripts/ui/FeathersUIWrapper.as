@@ -18,9 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui
 {
+	import feathers.core.DefaultFocusManager;
 	import feathers.core.DefaultToolTipManager;
 	import feathers.core.FeathersControl;
-	import feathers.core.FocusManager;
 	import feathers.core.IFocusContainer;
 	import feathers.core.IFocusManager;
 	import feathers.core.IFocusObject;
@@ -297,7 +297,7 @@ package actionScripts.ui
 				PopUpManager.forStage(this.stage).root = this._popUpRoot;
 			}
 			
-			this._feathersUIFocusManager = FocusManager.addRoot(this._feathersUIControl);
+			this._feathersUIFocusManager = new DefaultFocusManager(this._feathersUIControl);
 			this._feathersUIFocusManager.enabled = false;
 			this._feathersUIToolTipManager = new DefaultToolTipManager(this._feathersUIControl);
 		}
@@ -311,7 +311,7 @@ package actionScripts.ui
 			}
 			if(this._feathersUIFocusManager)
 			{
-				FocusManager.removeRoot(this._feathersUIControl);
+				this._feathersUIFocusManager.dispose();
 				this._feathersUIFocusManager = null;
 			}
 		}
