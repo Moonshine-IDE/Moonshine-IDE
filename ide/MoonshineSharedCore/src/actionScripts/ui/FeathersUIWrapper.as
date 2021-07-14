@@ -329,7 +329,9 @@ package actionScripts.ui
 			if(this.stage != null && this.stage.focus != null && (this.stage.focus == this || this.contains(this.stage.focus))) {
 				return;
 			}
-			this._feathersUIFocusManager.enabled = false;
+			if(this._feathersUIFocusManager) {
+				this._feathersUIFocusManager.enabled = false;
+			}
 		}
 	}
 }
