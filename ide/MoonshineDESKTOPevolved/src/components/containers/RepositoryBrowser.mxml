@@ -61,7 +61,7 @@
 				if (isNonCompliantItem)
 				{
 					lblError.visible = lblError.includeInLayout = true;
-					lblError.text = tmpArray.join(" &amp; ") +" is unavailable. Unable to Browse the related reposiories";
+					lblError.text = tmpArray.join(" &amp; ") +" are unavailable. Unable to Browse the related repositories.";
 				}
 
 				if (!repositories.sort)
