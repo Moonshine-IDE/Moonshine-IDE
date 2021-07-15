@@ -432,7 +432,6 @@ package actionScripts.impls
                     new MenuItem(resourceManager.getString('resources', 'PRIVACY_POLICY'), null, null, HelpPlugin.EVENT_PRIVACY_POLICY),
 					new MenuItem(null),
 					new MenuItem("Getting Started", null, null, StartupHelperPlugin.EVENT_GETTING_STARTED),
-					new MenuItem("Getting Started(legacy)", null, null, StartupHelperPlugin.EVENT_GETTING_STARTED_AS3),
 					new MenuItem(resourceManager.getString('resources', 'USEFUL_LINKS'), null, null, HelpPlugin.EVENT_AS3DOCS),
 					new MenuItem(resourceManager.getString('resources', 'TOUR_DE_FLEX'), null, null, HelpPlugin.EVENT_TOURDEFLEX),
 					new MenuItem(null),
