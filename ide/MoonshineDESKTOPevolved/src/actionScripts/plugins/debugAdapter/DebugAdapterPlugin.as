@@ -234,6 +234,7 @@ package actionScripts.plugins.debugAdapter
 		protected function dispatcher_startDebugAdapterHandler(event:DebugAdapterEvent):void
 		{
 			var launcher:IDebugAdapterLauncher = null;
+			print("Launching application using adapter: " + event.adapterID);
 			switch(event.adapterID)
 			{
 				case "swf":
@@ -303,7 +304,7 @@ package actionScripts.plugins.debugAdapter
 			_debugAdapter.addEventListener(Event.CHANGE, debugAdapter_changeHandler);
 			_debugAdapter.addEventListener(Event.SUSPEND, debugAdapter_suspendHandler);
 			_debugAdapter.start(event.adapterID, event.request, event.additionalProperties);
-			
+
 			refreshView();
 		}
 

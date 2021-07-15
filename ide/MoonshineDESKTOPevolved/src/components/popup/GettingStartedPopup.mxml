@@ -34,7 +34,6 @@
 			
 			import actionScripts.events.GeneralEvent;
 			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.HelperEvent;
 			import actionScripts.events.StartupHelperEvent;
 			import actionScripts.interfaces.IHelperMoonshineBridge;
 			import actionScripts.locator.IDEModel;
@@ -54,6 +53,8 @@
 			import actionScripts.valueObjects.HelperConstants;
 			
 			import air.update.events.DownloadErrorEvent;
+			
+			import moonshine.events.HelperEvent;
 			
 			private static const LABEL:String = "Getting Started";
 			
@@ -185,7 +186,7 @@
 			
 			private function onOpenSettings(event:HelperEvent):void
 			{
-				var component:ComponentVO = event.value as ComponentVO;
+				var component:ComponentVO = event.data as ComponentVO;
 				if ((component.type == ComponentTypes.TYPE_GIT || component.type == ComponentTypes.TYPE_SVN) && 
 					ConstantsCoreVO.IS_MACOS)
 				{
@@ -208,7 +209,7 @@
 			private function onAnyComponentDownloaded(event:HelperEvent):void
 			{
 				// autoset moonshine internal fields as appropriate
-				var component:ComponentVO = event.value as ComponentVO;
+				var component:ComponentVO = event.data as ComponentVO;
 				PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
 			}
 			

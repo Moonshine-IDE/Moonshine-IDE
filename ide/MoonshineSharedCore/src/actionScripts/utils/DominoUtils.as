@@ -34,14 +34,14 @@ package actionScripts.utils
 				var xml_str:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 				xml_str=xml_str+"<note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.4' replicaid='4825808B00336E81'>";
 				xml_str=xml_str+"<!DOCTYPE note>";
-				xml_str=xml_str+"<noteinfo noteid='2116' unid='27C118EDE31483CB86256C6900644875' sequence='8'>";
-				xml_str=xml_str+"<created><datetime>"+dat+"</datetime></created> ";
-				xml_str=xml_str+"<modified><datetime>"+dat+"</datetime></modified> ";
-				xml_str=xml_str+"<revised dst=\"true\"><datetime>"+dat+"</datetime></revised>";
-				xml_str=xml_str+"<lastaccessed><datetime>"+dat+"</datetime></lastaccessed>";
-				xml_str=xml_str+"<lastaccessed><datetime>"+dat+"</datetime></lastaccessed>";
-				xml_str=xml_str+"<addedtofile><datetime>"+dat+"</datetime></addedtofile>";
-				xml_str=xml_str+"</noteinfo>"
+				// xml_str=xml_str+"<noteinfo noteid='2116' unid='27C118EDE31483CB86256C6900644875' sequence='8'>";
+				// xml_str=xml_str+"<created><datetime>"+dat+"</datetime></created> ";
+				// xml_str=xml_str+"<modified><datetime>"+dat+"</datetime></modified> ";
+				// xml_str=xml_str+"<revised dst=\"true\"><datetime>"+dat+"</datetime></revised>";
+				// xml_str=xml_str+"<lastaccessed><datetime>"+dat+"</datetime></lastaccessed>";
+				// xml_str=xml_str+"<lastaccessed><datetime>"+dat+"</datetime></lastaccessed>";
+				// xml_str=xml_str+"<addedtofile><datetime>"+dat+"</datetime></addedtofile>";
+				// xml_str=xml_str+"</noteinfo>"
 				if(windowsTitle!=null  && windowsTitle!=""){
 					xml_str=xml_str+"<item name='$WindowTitle' sign='true'><formula>"+windowsTitle+"</formula></item>"
 				}
@@ -49,7 +49,7 @@ package actionScripts.utils
 				xml_str=xml_str+"<item name='$Flags'><text/></item>"
 				xml_str=xml_str+"<item name='$TITLE'><text>"+title+"</text></item>"
 				xml_str=xml_str+"<item name='$Fields'><textlist></textlist></item>"
-				xml_str=xml_str+"<item name='$Body' sign='true'></item>"
+				xml_str=xml_str+"<item name='$Body' sign='true'> <richtext style='width:700px;height:700px;' class='flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop' direction='Horizontal' vdirection='Vertical'/></item>"
 				
 				xml_str=xml_str+"</note>";
 			

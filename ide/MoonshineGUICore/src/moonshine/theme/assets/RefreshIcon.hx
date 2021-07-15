@@ -18,9 +18,9 @@
 	Use this software at your own risk.
  */
 
-package actionScripts.valueObjects;
+package moonshine.theme.assets;
 
-extern class ConstantsCoreVO {
-	public static final MOONSHINE_IDE_LABEL:String;
-	public static final IS_MACOS:Bool;
-}
+import openfl.display.BitmapData;
+
+@:bitmap("moonshine/theme/assets/icoRefreshGettingStarted.png")
+class RefreshIcon extends BitmapData {}

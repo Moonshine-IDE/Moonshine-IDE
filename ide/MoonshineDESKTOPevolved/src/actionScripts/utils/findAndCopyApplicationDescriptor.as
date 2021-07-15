@@ -19,14 +19,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+import actionScripts.events.GlobalEventDispatcher;
+import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+import actionScripts.plugin.console.ConsoleOutputEvent;
 
-	import flash.filesystem.File;
+import flash.events.IEventDispatcher;
+
+import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 
 	public function findAndCopyApplicationDescriptor(file:File, project:AS3ProjectVO, destDir:File):String
 	{
+		var dispatcher:IEventDispatcher = GlobalEventDispatcher.getInstance();
+
 		// Guesstimate app-xml name
 		var rootPath:String = File(project.folderLocation.fileBridge.getFile).getRelativePath(file.parent);
 		var descriptorName:String = project.swfOutput.path.fileBridge.name.split(".")[0] +"-app.xml";
@@ -37,8 +43,15 @@ package actionScripts.utils
 		if (descriptorFile.exists)
 		{
 			appXML = rootPath + File.separator + descriptorName;
-			descriptorFile.copyTo(project.folderLocation.resolvePath(appXML).fileBridge.getFile as File, true);
+			var descriptorCopyTo:File = project.folderLocation.resolvePath(appXML).fileBridge.getFile as File;
+
+			var message:String = "Application descriptor file: " + descriptorFile.nativePath + " copy to " + descriptorCopyTo.nativePath;
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT,
+					message, false, false, ConsoleOutputEvent.TYPE_INFO));
+
+			descriptorFile.copyTo(descriptorCopyTo, true);
 			descriptorFile =  project.folderLocation.resolvePath(appXML).fileBridge.getFile as File;
+
 			var stream:FileStream = new FileStream();
 			stream.open(descriptorFile, FileMode.READ);
 			var data:String = stream.readUTFBytes(descriptorFile.size).toString();
@@ -52,7 +65,7 @@ package actionScripts.utils
 			// replace if appropriate
 			data = data.replace(/<content>.*?<\/content>/, "<content>"+ project.swfOutput.path.fileBridge.name +"</content>");
 			data = data.replace(currentAIRNamespaceVersion, "http://ns.adobe.com/air/application/"+ (
-				(project.swfOutput.swfVersionStrict != 0) ? project.swfOutput.swfVersionStrict : project.swfOutput.swfVersion +".0"
+				(project.swfOutput.swfVersionStrict != 0) ? project.swfOutput.swfVersionStrict : project.swfOutput.swfVersion +"."+ project.swfOutput.swfMinorVersion
 			));
 			if (data.indexOf("_") != -1)
 			{

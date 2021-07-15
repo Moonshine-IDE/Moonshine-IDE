@@ -78,6 +78,8 @@ package actionScripts.plugins.as3project
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.TemplateVO;
+
+		import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 	
     public class CreateProject
 	{
@@ -749,7 +751,8 @@ package actionScripts.plugins.as3project
 			// lets load the target flash/air player version
 			// since swf and air player both versioning same now,
 			// we can load anyone's config file
-            var movieVersion:String = SDKUtils.getSdkSwfMajorVersion().toString()+".0";
+            var movieVersion:String = SDKUtils.getSdkSwfFullVersion(_customSdk ? _customSdk : null).toString();
+			if (movieVersion.indexOf(".") == -1) movieVersion += ".0";
 			
 			// Create project root directory
 			if (!isProjectFromExistingSource)
@@ -1072,6 +1075,10 @@ package actionScripts.plugins.as3project
 					if(projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_DOMINO){
 							pvo.jdkType = JavaTypes.JAVA_8;
 							pvo.isDominoVisualEditorProject = true;
+							//setting default maven build setting path
+							if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists) { 
+								pvo.mavenBuildOptions.settingsFilePath = OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath; 
+							}
 					}else{
 							pvo.isDominoVisualEditorProject = false;
 					}				

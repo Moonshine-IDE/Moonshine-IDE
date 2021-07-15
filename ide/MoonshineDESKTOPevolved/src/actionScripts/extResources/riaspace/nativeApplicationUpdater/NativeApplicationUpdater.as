@@ -1,5 +1,7 @@
 package actionScripts.extResources.riaspace.nativeApplicationUpdater
 {
+	import actionScripts.valueObjects.ConstantsCoreVO;
+
 	import flash.desktop.NativeApplication;
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
@@ -156,7 +158,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				}
 				else if (os.indexOf("mac") > -1)
 				{
-					installerType = "pkg";
+					installerType = ConstantsCoreVO.IS_APP_STORE_VERSION ? "appStorePkg" : "pkg";
 				}
 				else if (os.indexOf("linux") > -1)
 				{

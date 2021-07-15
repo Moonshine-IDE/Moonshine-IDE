@@ -3,23 +3,7 @@
 <note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.4'
  replicaid='4825808B00336E81'>
 
-  <noteinfo noteid='2116' unid='27C118EDE31483CB86256C6900644875' sequence='8'>
-    <created>
-      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
-    </created> 
-    <modified>
-      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
-    </modified>
-    <revised dst="true">
-      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
-    </revised>
-    <lastaccessed>
-      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
-    </lastaccessed>
-    <addedtofile>
-      <datetime>Mon Feb 10 23:19:10 GMT+0800 2020</datetime>
-    </addedtofile>
-  </noteinfo>
+
   <item name='$Info' sign='true'>
 <rawitemdata type='1'>
 hhgBAIAAAAAAgAAAAQABAP///wAQAAAA

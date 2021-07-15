@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<application xmlns="http://ns.adobe.com/air/application/28.0">
+<application xmlns="http://ns.adobe.com/air/application/31.0">
 
 <!-- Adobe AIR Application Descriptor File Template.
 
@@ -50,7 +50,7 @@
 	<initialWindow>
 		<!-- The main SWF or HTML file of the application. Required. -->
 		<!-- Note: In Flash Builder, the SWF reference is set automatically. -->
-		<content>[This value will be overwritten by Flash Builder in the output app.xml]</content>
+		<content>MoonshineWorker.swf</content>
 		
 		<!-- The title of the main window. Optional. -->
 		<!-- <title></title> -->

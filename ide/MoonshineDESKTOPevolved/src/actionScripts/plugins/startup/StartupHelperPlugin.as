@@ -28,7 +28,6 @@ package actionScripts.plugins.startup
 	
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.HelperEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SdkEvent;
 	import actionScripts.events.StartupHelperEvent;
@@ -38,8 +37,11 @@ package actionScripts.plugins.startup
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.SettingsView;
+	import actionScripts.plugin.settings.vo.PluginSetting;
 	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.feathersWrapper.help.GettingStartedViewWrapper;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.ui.views.HelperViewWrapper;
 	import actionScripts.utils.EnvironmentUtils;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.HelperUtils;
@@ -56,6 +58,10 @@ package actionScripts.plugins.startup
 	import components.popup.JavaPathSetupPopup;
 	import components.popup.SDKUnzipConfirmPopup;
 	
+	import moonshine.components.HelperView;
+	import moonshine.events.HelperEvent;
+	import moonshine.plugin.help.view.GettingStartedView;
+	
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
 	{
 		override public function get name():String			{ return "Startup Helper Plugin"; }
@@ -63,6 +69,7 @@ package actionScripts.plugins.startup
 		override public function get description():String	{ return "Startup Helper Plugin."; }
 		
 		public static const EVENT_GETTING_STARTED:String = "gettingStarted";
+		public static const EVENT_GETTING_STARTED_AS3:String = "gettingStartedAS3";
 		
 		private var dependencyCheckUtil:IHelperMoonshineBridgeImp = new IHelperMoonshineBridgeImp();
 		private var installerItemsManager:InstallerItemsManager = InstallerItemsManager.getInstance();
@@ -71,6 +78,8 @@ package actionScripts.plugins.startup
 		private var gettingStartedPopup:GettingStartedPopup;
 		private var environmentUtil:EnvironmentUtils;
 		private var isSDKSetupShowing:Boolean;
+		private var gettingStartedViewWrapper:GettingStartedViewWrapper;
+		private var gettingStartedView:GettingStartedView;
 		
 		private var javaSetupPathTimeout:uint;
 		private var startHelpingTimeout:uint;
@@ -97,7 +106,8 @@ package actionScripts.plugins.startup
 			if (!ConstantsCoreVO.IS_AIR) return;
 			
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
-			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedRequest, false, 0, true);
+			dispatcher.addEventListener(EVENT_GETTING_STARTED_AS3, onGettingStartedRequest, false, 0, true);
+			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedHaxeRequest, false, 0, true);
 			dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
 			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
 			
@@ -179,15 +189,14 @@ package actionScripts.plugins.startup
 		private function onComponentNotDownloadedEvent(event:HelperEvent):void
 		{
 			isAllDependenciesPresent = false;
-			var component:ComponentVO = event.value as ComponentVO;
-			PathSetupHelperUtil.updateFieldPath(component.type, null);
-			onPostDetectionEvent(event.value as ComponentVO);
+			PathSetupHelperUtil.updateFieldPath((event.data as ComponentVO).type, null);
+			onPostDetectionEvent(event.data as ComponentVO);
 		}
 		
 		private function onAnyComponentDownloaded(event:HelperEvent):void
 		{
 			// autoset moonshine internal fields as appropriate
-			var component:ComponentVO = event.value as ComponentVO;
+			var component:ComponentVO = event.data as ComponentVO;
 			PathSetupHelperUtil.updateFieldPath(component.type, component.installToPath);
 			onPostDetectionEvent(component);
 		}
@@ -199,10 +208,11 @@ package actionScripts.plugins.startup
 		{
 			toggleListenersInstallerItemsManager(false);
 			checkDefaultSDK();
-			
-			if (!isAllDependenciesPresent && !ConstantsCoreVO.IS_GETTING_STARTED_DNS)
+
+			var isGettingStarted:Boolean = ConstantsCoreVO.IS_GETTING_STARTED_DNS;
+			if (!isAllDependenciesPresent && !isGettingStarted)
 			{
-				openOrFocusGettingStarted();
+				openOrFocusGettingStartedHaxe();
 			}
 		}
 		
@@ -313,7 +323,7 @@ package actionScripts.plugins.startup
 		
 		private function onEnvironmentVariableReadError(event:HelperEvent):void
 		{
-			error("Unable to read environment variable: "+ (event.value as String));
+			error("Unable to read environment variable: "+ (event.data as String));
 			continueOnHelping();
 		}
 		
@@ -334,6 +344,15 @@ package actionScripts.plugins.startup
 		private function onGettingStartedRequest(event:Event):void
 		{
 			openOrFocusGettingStarted();
+			startHelpingTimeout = setTimeout(preInitHelping, 300);
+		}
+		
+		/**
+		 * On getting started menu item
+		 */
+		private function onGettingStartedHaxeRequest(event:Event):void
+		{
+			openOrFocusGettingStartedHaxe();
 			startHelpingTimeout = setTimeout(preInitHelping, 300);
 		}
 		
@@ -362,6 +381,53 @@ package actionScripts.plugins.startup
 		}
 		
 		/**
+		 * Opens or focus Getting Started tab
+		 */
+		private function openOrFocusGettingStartedHaxe():void
+		{
+			if (!gettingStartedView)
+			{
+				var ps:PluginSetting = new PluginSetting(ConstantsCoreVO.MOONSHINE_IDE_LABEL +" is Installed. What's Next?", ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team", "Moonshine includes an extensive set of features by default. Some optional features (shown below) require access to third-party software. If you already have the third-party software installed, press the Configure button, otherwise press Download button.", false);
+				gettingStartedView = new GettingStartedView();
+				gettingStartedView.setting = ps;
+
+				// HelperView initialize get called before
+				// HelperViewWrapper could set the value to const
+				HelperConstants.IS_RUNNING_IN_MOON = true;
+				
+				var tmpHelperViewWrapper:HelperViewWrapper = new HelperViewWrapper(new HelperView());
+				tmpHelperViewWrapper.isRunningInsideMoonshine = HelperConstants.IS_RUNNING_IN_MOON;
+				tmpHelperViewWrapper.dependencyCheckUtil = dependencyCheckUtil;
+				tmpHelperViewWrapper.environmentUtil = environmentUtil;
+				gettingStartedView.helperView = tmpHelperViewWrapper.feathersUIControl;
+				
+				gettingStartedViewWrapper = new GettingStartedViewWrapper(gettingStartedView);
+				gettingStartedViewWrapper.helperViewWrapper = tmpHelperViewWrapper;
+				gettingStartedViewWrapper.percentWidth = 100;
+				gettingStartedViewWrapper.percentHeight = 100;
+				gettingStartedViewWrapper.minWidth = 0;
+				gettingStartedViewWrapper.minHeight = 0;
+
+				gettingStartedViewWrapper.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedHaxeClosed, false, 0, true);
+				
+				// start polling only in case of Windows
+				//togglePolling(true);
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new AddTabEvent(gettingStartedViewWrapper as IContentWindow)
+				);
+				
+				// since we're not attaching the HelperViewWrapper to
+				// the displayObject physically, we need call its 
+				// initialize() manually to start its operation.
+				tmpHelperViewWrapper.initialize();
+			}
+			else
+			{
+				model.activeEditor = gettingStartedViewWrapper;
+			}
+		}
+		
+		/**
 		 * On getting started closed
 		 */
 		private function onGettingStartedClosed(event:Event):void
@@ -371,6 +437,14 @@ package actionScripts.plugins.startup
 			
 			gettingStartedPopup.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedClosed);
 			gettingStartedPopup = null;
+		}
+		
+		private function onGettingStartedHaxeClosed(event:Event):void
+		{
+			gettingStartedViewWrapper.dispose();
+			gettingStartedViewWrapper.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, onGettingStartedHaxeClosed);
+			gettingStartedView = null;
+			gettingStartedViewWrapper = null;
 		}
 		
 		/**
@@ -455,8 +529,8 @@ package actionScripts.plugins.startup
 		 */
 		private function onWarningUpdated(event:HelperEvent):void
 		{
-			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(event.value.type);
-			if (tmpComponent) tmpComponent.hasWarning = event.value.message;
+			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(event.data.type);
+			if (tmpComponent) tmpComponent.hasWarning = event.data.message;
 		}
 		
 		/**

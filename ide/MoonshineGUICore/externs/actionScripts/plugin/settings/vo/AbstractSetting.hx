@@ -18,9 +18,13 @@
 	Use this software at your own risk.
  */
 
-package actionScripts.valueObjects;
+package actionScripts.plugin.settings.vo;
 
-extern class ConstantsCoreVO {
-	public static final MOONSHINE_IDE_LABEL:String;
-	public static final IS_MACOS:Bool;
+extern class AbstractSetting 
+{
+	@:flash.property
+	public var name(default, default):String;
+
+	@:flash.property
+	public var label(default, default):String;
 }

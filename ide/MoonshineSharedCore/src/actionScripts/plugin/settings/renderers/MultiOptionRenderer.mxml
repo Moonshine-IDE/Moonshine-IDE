@@ -37,7 +37,8 @@
     
     <fx:Script>
         <![CDATA[
-			import mx.collections.ArrayCollection;
+
+        import mx.collections.ArrayCollection;
 			
 			import spark.components.RadioButton;
 			
@@ -81,6 +82,7 @@
 			{
 				setting.value = radioButtonGroup.selectedValue;
 				if (setting.isCommitOnChange) setting.commitChanges();
+                dispatchEvent(new Event(MultiOptionSetting.EVENT_MULTIOPTION_CHANGE, setting.value));
 			}
 			
 		]]>

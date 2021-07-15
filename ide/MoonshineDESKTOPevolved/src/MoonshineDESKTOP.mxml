@@ -180,15 +180,10 @@
 						}
 					}
 				}
-				
-				// update check for
-				// windows or osx-non-sandbox
-				if (!ConstantsCoreVO.IS_MACOS || !ConstantsCoreVO.IS_APP_STORE_VERSION)
-				{
-					updaterHelper.updater = updater;
-					updater.updateURL = "https://moonshine-ide.com/downloads/updater.xml";
-					updater.initialize();
-				}
+
+				updaterHelper.updater = updater;
+				updater.updateURL = "https://moonshine-ide.com/downloads/updater.xml";
+				updater.initialize();
 			}
 	
 			public function onHelperAppInstallationCompletes():void

@@ -21,7 +21,6 @@ package actionScripts.utils
 	import flash.filesystem.File;
 	
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.HelperEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
@@ -39,6 +38,8 @@ package actionScripts.utils
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
+	
+	import moonshine.events.HelperEvent;
 
 	public class PathSetupHelperUtil
 	{
@@ -271,43 +272,21 @@ package actionScripts.utils
 		
 		public static function updateSVNPath(path:String, forceUpdate:Boolean=false):void
 		{
-			// update only if ant path not set
-			// or the existing ant path does not exists
-			if (!UtilsCore.isSVNPresent())
-			{
-				if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isSVNPresent())
-				{
-					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_SVN, message: "Feature available. Click on Configure to allow"}));
-				}
-				else
-				{
-					updateMoonshineConfiguration();
-				}
-			}
-			
-			if (forceUpdate)
-			{
-				updateMoonshineConfiguration();
-			}
-			
-			/*
-			 * @local
-			 */
-			function updateMoonshineConfiguration():void
+			if (!UtilsCore.isSVNPresent() || forceUpdate)
 			{
 				if (path && !ConstantsCoreVO.IS_MACOS && path.indexOf("svn.exe") == -1)
 				{
 					path += (File.separator +'bin'+ File.separator +'svn.exe');
 				}
-				
+
 				model.svnPath = path;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
 					new PathSetting({svnBinaryPath: model.svnPath}, 'svnBinaryPath', 'SVN Binary', false)
 				]);
-				
+
 				// save as moonshine settings
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
-					null, SVNPlugin.NAMESPACE, settings));
+						null, SVNPlugin.NAMESPACE, settings));
 			}
 		}
 		

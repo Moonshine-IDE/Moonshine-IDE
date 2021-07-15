@@ -18,9 +18,22 @@
 	Use this software at your own risk.
  */
 
-package actionScripts.valueObjects;
+package moonshine.plugin.help.events;
 
-extern class ConstantsCoreVO {
-	public static final MOONSHINE_IDE_LABEL:String;
-	public static final IS_MACOS:Bool;
+import openfl.events.Event;
+
+class GettingStartedViewEvent extends Event 
+{
+	public static final EVENT_DO_NOT_SHOW = "eventDoNotShow";
+
+	public function new(type:String, data:Any = null) {
+		super(type);
+		this.data = data;
+	}
+
+	public var data:Any;
+
+	override public function clone():Event {
+		return new GettingStartedViewEvent(this.type, this.data);
+	}
 }

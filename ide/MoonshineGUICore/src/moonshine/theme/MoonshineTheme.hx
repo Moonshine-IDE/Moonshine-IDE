@@ -20,6 +20,10 @@
 
 package moonshine.theme;
 
+import feathers.skins.TriangleSkin;
+import feathers.controls.PopUpListView;
+import openfl.geom.Matrix;
+import actionScripts.valueObjects.ConstantsCoreVO;
 import moonshine.components.StandardPopupView;
 import feathers.controls.Button;
 import feathers.controls.Callout;
@@ -58,8 +62,10 @@ import moonshine.ui.TitleWindow;
 import openfl.display.Shape;
 import openfl.filters.GlowFilter;
 import openfl.text.TextFormat;
+import moonshine.theme.SDKInstallerTheme;
+import moonshine.theme.assets.RefreshIcon;
 
-class MoonshineTheme extends ClassVariantTheme {
+class MoonshineTheme extends SDKInstallerTheme {
 	private static var _instance:MoonshineTheme;
 
 	public static function initializeTheme():Void {
@@ -72,28 +78,28 @@ class MoonshineTheme extends ClassVariantTheme {
 
 	public static final THEME_VARIANT_LIGHT_BUTTON:String = "moonshine-button--light";
 	public static final THEME_VARIANT_DARK_BUTTON:String = "moonshine-button--dark";
+	public static final THEME_VARIANT_LARGE_BUTTON:String = "moonshine-button--large";
 	public static final THEME_VARIANT_LIGHT_LABEL:String = "moonshine-label--light";
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
 	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
 	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
+	public static final THEME_VARIANT_PLUGIN_LARGE_TITLE:String = "moonshine-plugin-large-title";
+	public static final IMAGE_VARIANT_LARGE_REFRESH_ICON:String = "image-icon-large-refresh";
 
-	public static final DEFAULT_FONT_NAME:String = "DejaVuSansTF";
-	public static final DEFAULT_FONT_SIZE:Int = 12;
+	public static final DEFAULT_FONT_NAME:String = (ConstantsCoreVO.IS_MACOS) ? "System Font" : "Segoe UI";
+	public static final DEFAULT_FONT_SIZE:Int = 14;
 
-	public function new() {
+	override public function new() {
 		super();
 
 		this.styleProvider.setStyleFunction(Button, null, setLightButtonStyles);
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_LIGHT_BUTTON, setLightButtonStyles);
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_DARK_BUTTON, setDarkButtonStyles);
-
-		this.styleProvider.setStyleFunction(Callout, null, setCalloutStyles);
-
-		this.styleProvider.setStyleFunction(Check, null, setCheckStyles);
+		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_LARGE_BUTTON, setLargeButtonStyles);
 
 		this.styleProvider.setStyleFunction(GridView, null, setGridViewStyles);
 		this.styleProvider.setStyleFunction(GridView, GridView.VARIANT_BORDERLESS, setBorderlessGridViewStyles);
-		this.styleProvider.setStyleFunction(ItemRenderer, GridView.CHILD_VARIANT_HEADER, setGridViewHeaderStyles);
+		this.styleProvider.setStyleFunction(ItemRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewHeaderStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 
@@ -105,9 +111,10 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(LayoutGroup, THEME_VARIANT_WARNING_BAR, setWarningBarLayoutGroupStyles);
 
 		this.styleProvider.setStyleFunction(ListView, null, setListViewStyles);
-		this.styleProvider.setStyleFunction(ListView, ListView.VARIANT_BORDERLESS, setBorderlessListViewStyles);
 
 		this.styleProvider.setStyleFunction(Panel, null, setPanelStyles);
+
+		this.styleProvider.setStyleFunction(Button, PopUpListView.CHILD_VARIANT_BUTTON, setPopUpListViewButtonStyles);
 
 		this.styleProvider.setStyleFunction(HScrollBar, null, setHScrollBarStyles);
 		this.styleProvider.setStyleFunction(VScrollBar, null, setVScrollBarStyles);
@@ -125,15 +132,17 @@ class MoonshineTheme extends ClassVariantTheme {
 		this.styleProvider.setStyleFunction(LayoutGroup, THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR, setTitleWindowControlBarStyles);
 		this.styleProvider.setStyleFunction(Button, TitleWindow.CHILD_VARIANT_CLOSE_BUTTON, setTitleWindowCloseButtonStyles);
 
-		this.styleProvider.setStyleFunction(TextInput, null, setTextInputStyles);
-		
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_BUSY_LABEL, setBusyLabelStyles);
+
+		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_PLUGIN_LARGE_TITLE, setPluginLargeTitleStyles);
 
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeViewItemRenderer, null, setTreeViewItemRendererStyles);
 		this.styleProvider.setStyleFunction(TourDeFlexTreeViewItemRenderer, null, setTourDeFlexTreeViewItemRendererItemRendererStyles);
 		this.styleProvider.setStyleFunction(ToggleButton, TreeViewItemRenderer.CHILD_VARIANT_DISCLOSURE_BUTTON, setTreeViewItemRendererDisclosureButtonStyles);
+
+		this.styleProvider.setStyleFunction(Button, IMAGE_VARIANT_LARGE_REFRESH_ICON, setImageLargeRefreshStyles);
 	}
 
 	private function getDarkOnLightTextFormat():TextFormat {
@@ -210,7 +219,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		button.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x555555);
 		button.setTextFormatForState(DISABLED, new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x999999));
-		button.embedFonts = true;
+		// button.embedFonts = true;
 
 		button.paddingTop = 8.0;
 		button.paddingRight = 16.0;
@@ -272,7 +281,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		button.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0xBBBBBB);
 		button.setTextFormatForState(DISABLED, new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x666666));
-		button.embedFonts = true;
+		// button.embedFonts = true;
 
 		button.paddingTop = 8.0;
 		button.paddingRight = 8.0;
@@ -281,122 +290,44 @@ class MoonshineTheme extends ClassVariantTheme {
 		button.gap = 4.0;
 	}
 
-	private function setCalloutStyles(callout:Callout):Void {
+	private function setLargeButtonStyles(button:Button):Void {
 		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0xA0A0A0);
-		backgroundSkin.border = SolidColor(1.0, 0x292929);
+		backgroundSkin.border = SolidColor(4.0, 0x666666);
 		backgroundSkin.cornerRadius = 7.0;
-		callout.backgroundSkin = backgroundSkin;
-	}
+		backgroundSkin.fill = Gradient(LINEAR, [0xe2e2e2, 0xe2e2e2, 0xd7d5d7, 0xd7d5d7], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		button.backgroundSkin = backgroundSkin;
 
-	private function setCheckStyles(check:Check):Void {
-		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0x000000, 0.0);
-		backgroundSkin.border = null;
-		check.backgroundSkin = backgroundSkin;
+		var hoverSkin = new RectangleSkin();
+		hoverSkin.border = SolidColor(4.0, 0x666666);
+		hoverSkin.cornerRadius = 7.0;
+		hoverSkin.fill = Gradient(LINEAR, [0xe2e2e2, 0xe2e2e2, 0xd4d0d1, 0xd4d0d1], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		button.setSkinForState(HOVER, hoverSkin);
 
-		var icon = new MoonshineButtonSkin();
-		icon.outerBorderFill = SolidColor(0x666666);
-		icon.outerBorderSize = 2.0;
-		icon.outerBorderRadius = 2.0;
-		icon.innerBorderFill = SolidColor(0xFFFFFF);
-		icon.innerBorderSize = 1.0;
-		icon.innerBorderRadius = 1.0;
-		icon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		icon.borderRadius = 1.0;
-		icon.width = 20.0;
-		icon.height = 20.0;
-		check.icon = icon;
+		var downSkin = new RectangleSkin();
+		downSkin.border = SolidColor(4.0, 0x666666);
+		downSkin.cornerRadius = 7.0;
+		downSkin.fill = Gradient(LINEAR, [0xcccccc, 0xcccccc, 0x999999, 0x999999], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		button.setSkinForState(DOWN, downSkin);
 
-		var disabledIcon = new MoonshineButtonSkin();
-		disabledIcon.outerBorderFill = SolidColor(0xCCCCCC);
-		disabledIcon.outerBorderSize = 2.0;
-		disabledIcon.outerBorderRadius = 2.0;
-		disabledIcon.innerBorderFill = SolidColor(0xFFFFFF);
-		disabledIcon.innerBorderSize = 1.0;
-		disabledIcon.innerBorderRadius = 1.0;
-		disabledIcon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		disabledIcon.borderRadius = 1.0;
-		disabledIcon.alpha = 0.5;
-		disabledIcon.width = 20.0;
-		disabledIcon.height = 20.0;
-		check.disabledIcon = disabledIcon;
-
-		var downIcon = new MoonshineButtonSkin();
-		downIcon.outerBorderFill = SolidColor(0x666666);
-		downIcon.outerBorderSize = 2.0;
-		downIcon.outerBorderRadius = 2.0;
-		downIcon.innerBorderFill = SolidColor(0xFFFFFF);
-		downIcon.innerBorderSize = 1.0;
-		downIcon.innerBorderRadius = 1.0;
-		downIcon.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		downIcon.borderRadius = 1.0;
-		downIcon.alpha = 0.5;
-		downIcon.width = 20.0;
-		downIcon.height = 20.0;
-		check.setIconForState(DOWN(false), downIcon);
-
-		var selectedIcon = new MoonshineButtonSkin();
-		selectedIcon.outerBorderFill = SolidColor(0x666666);
-		selectedIcon.outerBorderSize = 2.0;
-		selectedIcon.outerBorderRadius = 2.0;
-		selectedIcon.innerBorderFill = SolidColor(0xFFFFFF);
-		selectedIcon.innerBorderSize = 1.0;
-		selectedIcon.innerBorderRadius = 1.0;
-		selectedIcon.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		selectedIcon.borderRadius = 1.0;
-		selectedIcon.width = 20.0;
-		selectedIcon.height = 20.0;
-		check.selectedIcon = selectedIcon;
-		var checkMark = new Shape();
-		checkMark.graphics.beginFill(0x292929);
-		checkMark.graphics.drawRect(-0.0, -7.0, 3.0, 13.0);
-		checkMark.graphics.drawRect(-5.0, 3.0, 5.0, 3.0);
-		checkMark.graphics.endFill();
-		checkMark.rotation = 45.0;
-		checkMark.x = 10.0;
-		checkMark.y = 9.0;
-		selectedIcon.addChild(checkMark);
-
-		var selectedDownIcon = new MoonshineButtonSkin();
-		selectedDownIcon.outerBorderFill = SolidColor(0x666666);
-		selectedDownIcon.outerBorderSize = 2.0;
-		selectedDownIcon.outerBorderRadius = 2.0;
-		selectedDownIcon.innerBorderFill = SolidColor(0xFFFFFF);
-		selectedDownIcon.innerBorderSize = 1.0;
-		selectedDownIcon.innerBorderRadius = 1.0;
-		selectedDownIcon.fill = Gradient(LINEAR, [0xD6D6D6, 0xD6D6D6, 0xDFDFDF, 0xDFDFDF], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
-		selectedDownIcon.borderRadius = 1.0;
-		selectedDownIcon.alpha = 0.5;
-		selectedDownIcon.width = 20.0;
-		selectedDownIcon.height = 20.0;
-		check.setIconForState(DOWN(true), selectedDownIcon);
-		var downCheckMark = new Shape();
-		downCheckMark.graphics.beginFill(0x292929);
-		downCheckMark.graphics.drawRect(-0.0, -7.0, 3.0, 13.0);
-		downCheckMark.graphics.drawRect(-5.0, 3.0, 5.0, 3.0);
-		downCheckMark.graphics.endFill();
-		downCheckMark.rotation = 45.0;
-		downCheckMark.x = 10.0;
-		downCheckMark.y = 9.0;
-		selectedDownIcon.addChild(downCheckMark);
+		var disabledSkin = new RectangleSkin();
+		disabledSkin.border = SolidColor(4.0, 0x666666);
+		disabledSkin.cornerRadius = 7.0;
+		disabledSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x404040, 0x404040], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		button.setSkinForState(DISABLED, disabledSkin);
 
 		var focusRectSkin = new RectangleSkin();
 		focusRectSkin.fill = null;
 		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
-		focusRectSkin.cornerRadius = 4.0;
-		check.focusRectSkin = focusRectSkin;
-		check.focusPaddingTop = 2.0;
-		check.focusPaddingRight = 2.0;
-		check.focusPaddingBottom = 2.0;
-		check.focusPaddingLeft = 2.0;
+		focusRectSkin.cornerRadius = 6.0;
+		button.focusRectSkin = focusRectSkin;
 
-		check.textFormat = getDarkOnLightTextFormat();
-		check.disabledTextFormat = getDarkOnLightDisabledTextFormat();
-		check.embedFonts = true;
+		button.textFormat = new TextFormat(DEFAULT_FONT_NAME, 15, 0x333333);
+		button.setTextFormatForState(DISABLED, new TextFormat(DEFAULT_FONT_NAME, 15, 0x999999));
+		// button.embedFonts = true;
 
-		check.horizontalAlign = LEFT;
-		check.gap = 4.0;
+		button.paddingTop = button.paddingBottom = 8.0;
+		button.paddingRight = button.paddingLeft = 20.0;
+		button.gap = 4.0;
 	}
 
 	private function setGridViewStyles(gridView:GridView):Void {
@@ -460,7 +391,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		headerRenderer.textFormat = getLightOnDarkTextFormat();
 		headerRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		headerRenderer.embedFonts = true;
+		// headerRenderer.embedFonts = true;
 
 		headerRenderer.horizontalAlign = LEFT;
 		headerRenderer.paddingTop = 4.0;
@@ -570,7 +501,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		radio.textFormat = getDarkOnLightTextFormat();
 		radio.disabledTextFormat = getDarkOnLightDisabledTextFormat();
-		radio.embedFonts = true;
+		// radio.embedFonts = true;
 
 		radio.horizontalAlign = LEFT;
 		radio.gap = 4.0;
@@ -591,7 +522,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		itemRenderer.textFormat = getLightOnDarkTextFormat();
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		itemRenderer.embedFonts = true;
+		// itemRenderer.embedFonts = true;
 
 		itemRenderer.horizontalAlign = LEFT;
 		itemRenderer.paddingTop = 4.0;
@@ -626,13 +557,19 @@ class MoonshineTheme extends ClassVariantTheme {
 	private function setLabelStyles(label:Label):Void {
 		label.textFormat = getDarkOnLightTextFormat();
 		label.disabledTextFormat = getDarkOnLightDisabledTextFormat();
-		label.embedFonts = true;
+		// label.embedFonts = true;
 	}
 
 	private function setLightLabelStyles(label:Label):Void {
 		label.textFormat = getLightOnDarkTextFormat();
 		label.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		label.embedFonts = true;
+		// label.embedFonts = true;
+	}
+
+	override public function setItalicLabelStyles(label:Label):Void {
+		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x292929, false, true);
+		label.disabledTextFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x999999, false, true);
+		// label.embedFonts = true;
 	}
 
 	private function setToolTipLabelStyles(toolTip:Label):Void {
@@ -643,7 +580,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		toolTip.textFormat = getLightOnDarkTextFormat();
 		toolTip.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		toolTip.embedFonts = true;
+		// toolTip.embedFonts = true;
 
 		toolTip.paddingTop = 4.0;
 		toolTip.paddingRight = 4.0;
@@ -678,39 +615,59 @@ class MoonshineTheme extends ClassVariantTheme {
 		listView.fixedScrollBars = true;
 	}
 
-	private function setBorderlessListViewStyles(listView:ListView):Void {
-		var backgroundSkin = new RectangleSkin();
-		backgroundSkin.fill = SolidColor(0x444444);
-		backgroundSkin.border = null;
-		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
-		backgroundSkin.cornerRadius = 0.0;
-		backgroundSkin.minWidth = 160.0;
-		backgroundSkin.minHeight = 160.0;
-		listView.backgroundSkin = backgroundSkin;
+	/*override public function setBorderlessListViewStyles(listView:ListView):Void 
+		{
+			var backgroundSkin = new RectangleSkin();
+			backgroundSkin.fill = SolidColor(0x444444);
+			backgroundSkin.border = null;
+			backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
+			backgroundSkin.cornerRadius = 0.0;
+			backgroundSkin.minWidth = 160.0;
+			backgroundSkin.minHeight = 160.0;
+			listView.backgroundSkin = backgroundSkin;
 
-		var focusRectSkin = new RectangleSkin();
-		focusRectSkin.fill = null;
-		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
-		listView.focusRectSkin = focusRectSkin;
+			var focusRectSkin = new RectangleSkin();
+			focusRectSkin.fill = null;
+			focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+			listView.focusRectSkin = focusRectSkin;
 
-		var layout = new VerticalListLayout();
-		layout.requestedRowCount = 5;
-		listView.layout = layout;
+			var layout = new VerticalListLayout();
+			layout.requestedRowCount = 5;
+			listView.layout = layout;
 
-		listView.paddingTop = 0.0;
-		listView.paddingRight = 0.0;
-		listView.paddingBottom = 0.0;
-		listView.paddingLeft = 0.0;
+			listView.paddingTop = 0.0;
+			listView.paddingRight = 0.0;
+			listView.paddingBottom = 0.0;
+			listView.paddingLeft = 0.0;
 
-		listView.fixedScrollBars = true;
-	}
-
+			listView.fixedScrollBars = true;
+	}*/
 	private function setPanelStyles(panel:Panel):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0xA0A0A0);
 		backgroundSkin.border = null;
 		backgroundSkin.cornerRadius = 7.0;
 		panel.backgroundSkin = backgroundSkin;
+	}
+
+	private function setPopUpListViewButtonStyles(button:Button):Void {
+		setLightButtonStyles(button);
+
+		button.horizontalAlign = LEFT;
+		button.gap = 1.0 / 0.0; // Math.POSITIVE_INFINITY bug workaround
+		button.minGap = 6.0;
+
+		if (button.icon == null) {
+			var icon = new TriangleSkin();
+			icon.pointPosition = BOTTOM;
+			icon.fill = SolidColor(0x555555);
+			icon.disabledFill = SolidColor(0x999999);
+			icon.width = 8.0;
+			icon.height = 4.0;
+			button.icon = icon;
+		}
+
+		button.iconPosition = RIGHT;
 	}
 
 	private function setHScrollBarStyles(scrollBar:HScrollBar):Void {
@@ -767,7 +724,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 	private function setSideBarViewHeaderTitleStyles(label:Label):Void {
 		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, 11, 0x292929);
-		label.embedFonts = true;
+		// label.embedFonts = true;
 		label.layoutData = new HorizontalLayoutData(100.0);
 	}
 
@@ -845,12 +802,17 @@ class MoonshineTheme extends ClassVariantTheme {
 
 	private function setTitleWindowTitleStyles(label:Label):Void {
 		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x292929, true);
-		label.embedFonts = true;
+		// label.embedFonts = true;
 	}
-	
+
 	private function setBusyLabelStyles(label:Label):Void {
 		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0xffffff, false);
-		label.embedFonts = true;
+		// label.embedFonts = true;
+	}
+
+	private function setPluginLargeTitleStyles(label:Label):Void {
+		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, 22, 0xe252d3, false);
+		// label.embedFonts = true;
 	}
 
 	private function setTitleWindowControlBarStyles(controlBar:LayoutGroup):Void {
@@ -901,7 +863,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		group.layout = layout;
 	}
 
-	private function setTextInputStyles(textInput:TextInput):Void {
+	override public function setTextInputStyles(textInput:TextInput):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x464646);
 		backgroundSkin.border = SolidColor(1.0, 0x666666);
@@ -912,7 +874,7 @@ class MoonshineTheme extends ClassVariantTheme {
 		textInput.textFormat = getLightOnDarkTextFormat();
 		textInput.promptTextFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0xa6a6a6);
 		textInput.setTextFormatForState(DISABLED, getLightOnDarkDisabledTextFormat());
-		textInput.embedFonts = true;
+		// textInput.embedFonts = true;
 
 		textInput.paddingTop = 5.0;
 		textInput.paddingRight = 5.0;
@@ -989,7 +951,7 @@ class MoonshineTheme extends ClassVariantTheme {
 
 		itemRenderer.textFormat = getLightOnDarkTextFormat();
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		itemRenderer.embedFonts = true;
+		// itemRenderer.embedFonts = true;
 
 		itemRenderer.paddingTop = 4.0;
 		itemRenderer.paddingRight = 4.0;
@@ -1034,5 +996,15 @@ class MoonshineTheme extends ClassVariantTheme {
 		selectedIcon.graphics.lineTo(2.0, 2.0);
 		selectedIcon.graphics.endFill();
 		button.selectedIcon = selectedIcon;
+	}
+
+	private function setImageLargeRefreshStyles(layout:Button):Void {
+		var refreshIconBitmap = new RefreshIcon(cast(layout.width, Int), cast(layout.height, Int));
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = Bitmap(refreshIconBitmap, new Matrix(), false);
+		backgroundSkin.width = layout.width;
+		backgroundSkin.height = layout.height;
+
+		layout.backgroundSkin = backgroundSkin;
 	}
 }

@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
-    import mx.collections.ArrayCollection;
+	import mx.collections.ArrayCollection;
     import mx.core.IFlexDisplayObject;
     
     import actionScripts.factory.FileLocation;
@@ -86,7 +86,6 @@ package actionScripts.locator
 		public var notesPath:String;
 		public var javaPathForTypeAhead:FileLocation;
 		public var java8Path:FileLocation;
-		public var javaVersionForTypeAhead:String;
 		public var javaVersionInJava8Path:String;
 		public var svnPath:String;
 		public var gitPath:String;
@@ -111,7 +110,19 @@ package actionScripts.locator
 
 		public var version: String = "1.0.0";
 		public var build: String = "";
-		
+
+		private var _javaVersionForTypeAhead:String;
+
+		public function get javaVersionForTypeAhead():String
+		{
+			return _javaVersionForTypeAhead;
+		}
+
+		public function set javaVersionForTypeAhead(value:String):void
+		{
+			_javaVersionForTypeAhead = value;
+		}
+
 		public function removeEditor(editor:Object):Boolean
 		{
 			var index:int = editors.getItemIndex(editor);
