@@ -469,11 +469,11 @@ package actionScripts.impls
 				if (!ConstantsCoreVO.IS_APP_STORE_VERSION)
 				{
 					var debugMenuItems:Vector.<MenuItem> = wmn[4].items;
-					for (var i:int; i < debugMenuItems.length; i++)
+					for (var j:int; j < debugMenuItems.length; j++)
 					{
-						if (debugMenuItems[i].enableTypes)
+						if (debugMenuItems[j].enableTypes)
 						{
-							debugMenuItems[i].enableTypes.push(ProjectMenuTypes.JS_ROYALE);
+							debugMenuItems[j].enableTypes.push(ProjectMenuTypes.JS_ROYALE);
 						}
 					}
 				}
