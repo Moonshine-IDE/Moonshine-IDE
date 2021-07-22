@@ -87,7 +87,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final IMAGE_VARIANT_LARGE_REFRESH_ICON:String = "image-icon-large-refresh";
 
 	public static final DEFAULT_FONT_NAME:String = (ConstantsCoreVO.IS_MACOS) ? "System Font" : "Segoe UI";
-	public static final DEFAULT_FONT_SIZE:Int = 14;
+	public static final DEFAULT_FONT_SIZE:Int = 12;
 
 	override public function new() {
 		super();
