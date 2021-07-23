@@ -165,9 +165,15 @@ package actionScripts.plugins.maven
             {
                 envCustomJava.jdkPath = model.java8Path.fileBridge.nativePath;
             }
-            else
+            else if (model.javaPathForTypeAhead)
             {
                envCustomJava.jdkPath = model.javaPathForTypeAhead.fileBridge.nativePath;
+            }
+            else
+            {
+                error("Invalid path to Java Development Kit.");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+                return;
             }
 
             super.start(args, buildDirectory, envCustomJava);
