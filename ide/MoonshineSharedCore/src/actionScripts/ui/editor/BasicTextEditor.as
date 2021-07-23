@@ -260,7 +260,7 @@ package actionScripts.ui.editor
 			}
 		}
 
-		protected function basicTextEditorCreationCompleteHandler(e:FlexEvent):void
+		protected function basicTextEditorCreationCompleteHandler(event:FlexEvent):void
 		{
 			removeEventListener(FlexEvent.CREATION_COMPLETE, basicTextEditorCreationCompleteHandler);
 			

@@ -824,10 +824,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 					new SettingsWrapper("Maven Build", Vector.<ISetting>([
 						new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
 						setting_new,	
-						new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false),
-						new PathSetting(this.mavenBuildOptions, "dominoNotesProgram", "Notes Programe Path", true, this.mavenBuildOptions.dominoNotesProgram, false),
-						new PathSetting(this.mavenBuildOptions, "dominoNotesPlatform", "Notes Platform Path", true, this.mavenBuildOptions.dominoNotesPlatform, false)
-						//new ProjectDirectoryPathSetting(this.mavenDominoBuildOptions, this.projectFolder.nativePath, "buildPath", "Notes Programe File Path", this.mavenDominoBuildOptions.buildPath),
+						new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
 					]))
 				]);
 		}
