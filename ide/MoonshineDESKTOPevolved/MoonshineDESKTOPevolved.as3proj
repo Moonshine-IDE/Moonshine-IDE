@@ -13,7 +13,7 @@
   </output>
   &lt;!-- Other classes to be compiled into your SWF --&gt;
   <jsOutput>
-    <option path="/Users/prominic2/work/Moonshine-IDE_fresh/ide/MoonshineDESKTOPevolved"/>
+    <option path=""/>
   </jsOutput>
   <classpaths>
     <class path="../MoonshineSharedCore/src"/>
@@ -54,7 +54,7 @@
   <mavenBuild>
     <option dominoNotesProgram=""/>
     <option commandLine=""/>
-    <option mavenBuildPath="/Users/prominic2/work/Moonshine-IDE_fresh/ide/MoonshineDESKTOPevolved"/>
+    <option mavenBuildPath=""/>
     <option dominoNotesPlatform=""/>
     <option settingsFilePath=""/>
     <actions>
