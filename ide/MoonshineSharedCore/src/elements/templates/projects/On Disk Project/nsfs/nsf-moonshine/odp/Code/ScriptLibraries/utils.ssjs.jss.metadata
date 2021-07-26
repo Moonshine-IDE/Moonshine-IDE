@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?><note class="filter" maintenanceversion="1.10" replicaid="052585270065DAC7" version="9.0" xmlns="http://www.lotus.com/dxl">
-<noteinfo noteid="1ba" sequence="2" unid="6115988D06DECEAC00258523004CE817">
-<created><datetime>20200306T140001,51+00</datetime></created>
-<modified><datetime>20200310T133232,93-05</datetime></modified>
-<revised><datetime>20200306T140110,69+00</datetime></revised>
-<lastaccessed><datetime>20200310T133232,92-05</datetime></lastaccessed>
-<addedtofile><datetime>20200310T133232,92-05</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Dmytro Pastovenskyi/O=DmytroDev</name></updatedby>
 <wassignedby><name>CN=Dmytro Pastovenskyi/O=DmytroDev</name></wassignedby>
 <item name="$TITLE" sign="true"><text>utils.ssjs</text></item>

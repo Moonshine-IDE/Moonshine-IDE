@@ -352,14 +352,6 @@ package actionScripts.valueObjects
           	TEMPLATE_VISUAL_EDITOR_DOMINO.fileBridge.data = <root><![CDATA[
 				<?xml version='1.0' encoding='utf-8'?>
 <form name='BGP Network' xmlns='http://www.lotus.com/dxl'  publicaccess='false' designerversion='8.5.3' renderpassthrough='true'>
-<noteinfo noteid='1eda' unid='4D129C5913A7BF5986256E51003F7C01' sequence='17'>
-<created><datetime>20040308T053325,13-06</datetime></created>
-<modified><datetime>20161216T182619,73+08</datetime></modified>
-<revised><datetime dst='true'>20140927T005250,50-05</datetime></revised>
-<lastaccessed><datetime>20161216T182619,72+08</datetime></lastaccessed>
-<addedtofile><datetime>20161216T182619,72+08</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Jeffrey J. Schindler/OU=A55D86/O=PNI</name><name>CN=Justin M. Hill/OU=A55555/O=PNI</name></updatedby>
-<wassignedby><name>CN=Justin M. Hill/OU=A55555/O=PNI</name></wassignedby>
 <code
  event='windowtitle'><formula>Form + ": " + BGPNetwork1122</formula></code>
 <actionbar bgcolor='#ece9d8' bordercolor='black'>

@@ -1,12 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <note class='filter' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.10'
  replicaid='052585270065DAC7'>
-<noteinfo noteid='176' unid='334A581BE1833F428625851C0070002E' sequence='7'>
-<created><datetime dst='true'>20200228T152320,78-05</datetime></created>
-<modified><datetime>20200310T133232,59-05</datetime></modified>
-<revised><datetime dst='true'>20200228T152652,48-05</datetime></revised>
-<lastaccessed><datetime>20200310T133232,58-05</datetime></lastaccessed>
-<addedtofile><datetime>20200310T133232,58-05</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></updatedby>
 <wassignedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></wassignedby>
 <item name='$TITLE' sign='true'><text>ExampleLotusScriptAgent</text></item>

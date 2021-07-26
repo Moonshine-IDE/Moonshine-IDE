@@ -1,11 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <note class='filter' xmlns='http://www.lotus.com/dxl' version='11.0' replicaid='8525846B005C28D2'>
-<noteinfo noteid='1e6' unid='FF5C59FBC8F213F68525846D004F6307' sequence='3'>
-<created><datetime dst='true'>20190906T102706,95-04</datetime></created>
-<modified><datetime dst='true'>20190906T102722,16-04</datetime></modified>
-<revised><datetime dst='true'>20190906T102722,15-04</datetime></revised>
-<lastaccessed><datetime dst='true'>20190906T102722,15-04</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20190906T102706,98-04</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Jesse Gallagher/O=IKSG</name></updatedby>
 <wassignedby><name>CN=Jesse Gallagher/O=IKSG</name></wassignedby>
 <item name='$TITLE' sign='true'><text>Database Script</text></item>
