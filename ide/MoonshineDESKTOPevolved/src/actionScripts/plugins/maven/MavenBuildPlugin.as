@@ -1,5 +1,7 @@
 package actionScripts.plugins.maven
 {
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
@@ -160,8 +162,13 @@ package actionScripts.plugins.maven
             warning("Starting Maven build...");
 			
 			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
-            var javaProject:IJavaProject = (model.activeProject as IJavaProject);
-            if (javaProject && javaProject.jdkType == JavaTypes.JAVA_8)
+            if ((model.activeProject is IJavaProject) &&
+                    (model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8)
+            {
+                envCustomJava.jdkPath = model.java8Path.fileBridge.nativePath;
+            }
+            else if ((model.activeProject is AS3ProjectVO) &&
+                    (model.activeProject as AS3ProjectVO).isDominoVisualEditorProject)
             {
                 envCustomJava.jdkPath = model.java8Path.fileBridge.nativePath;
             }

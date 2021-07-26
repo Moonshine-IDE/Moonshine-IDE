@@ -284,9 +284,6 @@ package actionScripts.ui.menu
         }
         private function getDominoMenuItems():Vector.<MenuItem>
         {
-
-
-            
             if (dominoMenu == null)
             {           
                 var resourceManager:IResourceManager = ResourceManager.getInstance();

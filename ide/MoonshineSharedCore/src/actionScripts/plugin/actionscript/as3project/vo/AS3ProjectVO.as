@@ -816,7 +816,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 					new SettingsWrapper("Java Project", new <ISetting>[
 						new MultiOptionSetting(this, 'jdkType', "JDK",
 								Vector.<NameValuePair>([
-									new NameValuePair("Use Default JDK", JavaTypes.JAVA_DEFAULT),
 									new NameValuePair("Use JDK 8", JavaTypes.JAVA_8)
 								])
 						)
