@@ -5,7 +5,7 @@ display a list this list after checking out the Moonshine-IDE repository, to
 facilitate the initial setup of the project.
 -->
 <root>
-    <!-- 
+    <!--
     The label for the dependency list as it should appear in the Repository Manager Interface.
     -->
     <label>Moonshine-IDE Dependencies</label>
@@ -19,7 +19,7 @@ facilitate the initial setup of the project.
             <!-- The type of the repository.  "git" or "svn" -->
             <repo-type>git</repo-type>
             <!-- The URL of the repository -->
-            <url>https://github.com/prominic/Moonshine-SDK-Installer</url>
+            <url>https://github.com/Moonshine-IDE/Moonshine-SDK-Installer</url>
             <!-- A longer description of the dependency -->
             <description>Required for the shared SDK Installer interface.</description>
         </dependency>
@@ -27,15 +27,14 @@ facilitate the initial setup of the project.
         <dependency>
             <label>Dependency:  MockupVisualEditor</label>
             <repo-type>git</repo-type>
-            <url>https://github.com/prominic/MockupVisualEditor.git</url>
+            <url>https://github.com/Moonshine-IDE/MockupVisualEditor</url>
             <description>This is not strictly required for compilation, but for a full build you will need to build and copy this library.</description>
         </dependency>
         <dependency>
             <label>Dependency:  VisualEditorConverterLib</label>
             <repo-type>git</repo-type>
-            <url>https://github.com/prominic/VisualEditorConverterLib</url>
+            <url>https://github.com/Moonshine-IDE/VisualEditorConverterLib</url>
             <description>This is not strictly required for complication, but for a full build you will need to build and copy this library to both Moonshine-IDE and MockupVisualEditor.</description>
         </dependency>
     </dependencies>
 </root>
-
