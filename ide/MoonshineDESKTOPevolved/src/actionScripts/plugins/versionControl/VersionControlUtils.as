@@ -216,7 +216,7 @@ package actionScripts.plugins.versionControl
 			var tmpCollection:ArrayList = new ArrayList();
 			
 			var tmpRepository:RepositoryItemVO = new RepositoryItemVO();
-			tmpRepository.url = "https://github.com/prominic/Moonshine-IDE";
+			tmpRepository.url = "https://github.com/Moonshine-IDE/Moonshine-IDE";
 			tmpRepository.notes = "Moonshine-IDE Source Code";
 			tmpRepository.type = VersionControlTypes.GIT;
 			tmpRepository.udid = UIDUtil.createUID();
@@ -230,7 +230,7 @@ package actionScripts.plugins.versionControl
 			tmpCollection.addItem(tmpRepository);
 			
 			tmpRepository = new RepositoryItemVO();
-			tmpRepository.url = "https://github.com/prominic/Royale-Examples";
+			tmpRepository.url = "https://github.com/Moonshine-IDE/Royale-Examples";
 			tmpRepository.notes = "Additional Apache Royale Examples";
 			tmpRepository.type = VersionControlTypes.GIT;
 			tmpRepository.udid = UIDUtil.createUID();
