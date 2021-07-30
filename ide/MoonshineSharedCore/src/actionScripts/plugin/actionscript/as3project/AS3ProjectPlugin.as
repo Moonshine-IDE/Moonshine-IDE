@@ -226,7 +226,12 @@ package actionScripts.plugin.actionscript.as3project
 				flashDevelopProjectFile = model.javaCore.testJava(dir);
 				if (flashDevelopProjectFile)
 				{
-					importFDProject(flashDevelopProjectFile, false, model.javaCore.parseJava(new FileLocation(dir.nativePath)));
+					var javaSettingsFile:FileLocation = model.javaCore.getSettingsFile(dir);
+					importFDProject(
+							flashDevelopProjectFile,
+							false,
+							model.javaCore.parseJava(new FileLocation(dir.nativePath), null, javaSettingsFile)
+					);
 					return;
 				}
 				flashDevelopProjectFile = model.groovyCore.testGrails(dir);

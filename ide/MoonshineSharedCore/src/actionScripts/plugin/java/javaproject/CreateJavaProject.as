@@ -294,7 +294,9 @@ package actionScripts.plugin.java.javaproject
 			var projectName:String = pvo.projectName;
 
 			var targetFolder:FileLocation = pvo.folderLocation;
-			
+			var projectSettingsFile:String = projectName + ".javaproj";
+			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
+
 			// Create project root directory
 			CONFIG::OSX
 				{
@@ -320,7 +322,7 @@ package actionScripts.plugin.java.javaproject
 
             th.projectTemplate(templateDir, targetFolder);
 
-			return JavaImporter.parse(targetFolder, projectName);
+			return JavaImporter.parse(targetFolder, projectName, settingsFileLocation);
 		}
 	}
 }

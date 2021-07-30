@@ -565,7 +565,12 @@ package actionScripts.plugin.recentlyOpened
 				projectFileLocation = model.javaCore.testJava(projectFile);
 				if(projectFileLocation)
 				{
-					return model.javaCore.parseJava(recentOpenedProjectObject as FileLocation);
+					var javaSettingsFile:FileLocation = model.javaCore.getSettingsFile(projectFile);
+					return model.javaCore.parseJava(
+							recentOpenedProjectObject as FileLocation,
+							null,
+							javaSettingsFile
+					);
 				}
 				
 				projectFileLocation = model.groovyCore.testGrails(projectFile);

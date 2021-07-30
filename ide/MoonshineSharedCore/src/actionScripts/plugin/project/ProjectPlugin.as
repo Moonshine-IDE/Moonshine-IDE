@@ -449,7 +449,12 @@ package actionScripts.plugin.project
 	                    projectFileLocation = model.javaCore.testJava(projectFile);
 	                    if (projectFileLocation)
 	                    {
-	                        project = model.javaCore.parseJava(projectLocation);
+							var javaSettingsFile:FileLocation = model.javaCore.getSettingsFile(projectFile);
+	                        project = model.javaCore.parseJava(
+									projectLocation,
+									null,
+									javaSettingsFile
+							);
 	                    }
 					}
 					

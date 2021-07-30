@@ -28,7 +28,7 @@ package actionScripts.plugin.java.javaproject.importer
 
 	public class JavaImporter extends FlashDevelopImporterBase
 	{
-		private static const FILE_EXTENSION_JAVAPROJ:String = ".javaproj";
+		private static const FILE_EXTENSION_JAVAPROJ:String = "javaproj";
 		private static const FILE_NAME_POM_XML:String = "pom.xml";
 		private static const FILE_NAME_BUILD_GRADLE:String = "build.gradle";
 
@@ -62,8 +62,7 @@ package actionScripts.plugin.java.javaproject.importer
 				}
 				else
 				{
-					var extensionIndex:int = fileName.lastIndexOf(FILE_EXTENSION_JAVAPROJ);
-					if(extensionIndex != -1 && extensionIndex == (fileName.length - FILE_EXTENSION_JAVAPROJ.length))
+					if (i.extension == FILE_EXTENSION_JAVAPROJ)
 					{
 						projectFile = new FileLocation(i.nativePath);
 					}
@@ -86,17 +85,35 @@ package actionScripts.plugin.java.javaproject.importer
 			return null;
 		}
 
+		public static function getSettingsFile(projectFolder:File):FileLocation
+		{
+			if (!projectFolder.exists) return null;
+
+			var listing:Array = projectFolder.getDirectoryListing();
+			for each (var i:File in listing)
+			{
+				if (i.extension == FILE_EXTENSION_JAVAPROJ) {
+					return (new FileLocation(i.nativePath));
+				}
+			}
+
+			return null;
+		}
+
 		public static function parse(projectFolder:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):JavaProjectVO
 		{
-			if(!projectName)
+			if(!projectName && !settingsFileLocation)
 			{
-				var airFile:Object = projectFolder.fileBridge.getFile;
-				projectName = airFile.name;
+				projectName = projectFolder.name
+			}
+			else if (!projectName && settingsFileLocation)
+			{
+				projectName = settingsFileLocation.fileBridge.name.substring(0, settingsFileLocation.fileBridge.name.lastIndexOf("."));
 			}
 
             if (!settingsFileLocation)
             {
-                settingsFileLocation = projectFolder.fileBridge.resolvePath(projectName + FILE_EXTENSION_JAVAPROJ);
+                settingsFileLocation = projectFolder.fileBridge.resolvePath(projectName +"."+ FILE_EXTENSION_JAVAPROJ);
             }
 
             var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);

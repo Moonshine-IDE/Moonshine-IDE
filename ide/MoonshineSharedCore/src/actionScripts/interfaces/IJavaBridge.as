@@ -24,6 +24,7 @@ package actionScripts.interfaces
     public interface IJavaBridge extends IProject
     {
 		function testJava(file:Object):FileLocation;
-		function parseJava(file:FileLocation):JavaProjectVO;
+		function getSettingsFile(projectFolder:Object):FileLocation;
+		function parseJava(projectFolder:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):JavaProjectVO;
     }
 }
