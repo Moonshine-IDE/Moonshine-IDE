@@ -232,6 +232,7 @@ package actionScripts.impls
 		{
 			return [
 				MultiMenuEventsNotifierPlugin,
+				StartupHelperPlugin,
 				MXMLCPlugin,
 				MXMLCJavaScriptPlugin,
 				MXMLCFlashModulePlugin,
@@ -256,7 +257,6 @@ package actionScripts.impls
 				SymbolsPlugin,
 				ReferencesPlugin,
 				LocationsPlugin,
-				StartupHelperPlugin,
 				RenamePlugin,
 				Away3DPlugin,
 				GitHubPlugin,

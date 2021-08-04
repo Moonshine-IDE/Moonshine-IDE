@@ -174,7 +174,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else
 			{
-				for each (var i:SDKReferenceVO in IDEModel.getInstance().userSavedSDKs)
+				for each (var i:SDKReferenceVO in model.userSavedSDKs)
 				{
 					if (i.path == value)
 					{
@@ -190,7 +190,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// references not found in newer bundled SDKs
 				if (!model.defaultSDK)
 				{
-					for each (i in IDEModel.getInstance().userSavedSDKs)
+					for each (i in model.userSavedSDKs)
 					{
 						if (i.path == value)
 						{
