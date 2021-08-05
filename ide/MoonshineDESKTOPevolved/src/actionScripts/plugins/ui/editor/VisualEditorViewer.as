@@ -49,6 +49,7 @@ import actionScripts.factory.FileLocation;
 	
 	import view.suportClasses.events.PropertyEditorChangeEvent;
 	import flash.filesystem.File;
+	import actionScripts.utils.DominoUtils;
 
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
@@ -405,19 +406,23 @@ import actionScripts.factory.FileLocation;
 		private function getMxmlCode():String
 		{
 			var mxmlCode:XML = null;
+			var mxmlString:String="";
 
 			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){			
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
+				mxmlString=DominoUtils.fixDominButton(mxmlCode);
 			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0){
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
+				mxmlString=DominoUtils.fixDominButton(mxmlCode);
 			} 
 			else{
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toCode();
+				mxmlString= mxmlCode.toXMLString();
 			
 			}
 			var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 			
-			return markAsXml + mxmlCode.toXMLString();
+			return markAsXml +mxmlString;
 		}
 
 		private function getDominoMxmlCode(fileName:String):String
@@ -425,7 +430,8 @@ import actionScripts.factory.FileLocation;
 			var mxmlCode:XML = null;
 			mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(fileName);
 			var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-			return markAsXml + mxmlCode.toXMLString();
+			var mxmlString:String=DominoUtils.fixDominButton(mxmlCode);
+			return markAsXml + mxmlString;
 		}
 		
 		private function createVisualEditorFile():void

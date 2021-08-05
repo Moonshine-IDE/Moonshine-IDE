@@ -20,6 +20,8 @@
 package actionScripts.utils
 {
     import mx.core.UIComponent;
+	import mx.controls.Alert;
+	import com.adobe.utils.StringUtil;
     
     public class DominoUtils
 	{
@@ -62,6 +64,70 @@ package actionScripts.utils
 			
 
 			return xml;
+		}
+
+		public static function fixDominButton(xml:XML):String
+		{
+			var total_xml:String=xml.toXMLString();
+			//>([^<]*)</td>
+			//(?=<button)|(?<=<\/button>)
+			var splits:Array = total_xml.split("</button>");
+			var result:String="";
+			var rex:RegExp = /(\t|\n|\r)/gi;
+
+			for each (var child:String in splits ) {
+				
+				if(child.indexOf("<button")>=0){
+					var buttonChildString:String="";
+					
+					var splits_formula:Array = child.split("</formula>");
+					for each (var formula:String in splits_formula ) {
+						formula=StringUtil.trim(formula);
+						if(formula.indexOf("<formula")>=0){
+							buttonChildString=StringUtil.trim(buttonChildString+formula+"</formula>");
+						}else{
+							buttonChildString=StringUtil.trim(StringUtil.trim(buttonChildString)+ formula.replace(rex,''));
+						}
+					}
+					//Alert.show("buttonChildString:"+buttonChildString);
+					child=buttonChildString+"</button>";
+				}
+				result=result+child;
+			}
+			var result2:String="";
+			if(result.indexOf("<button")>=0){
+				var splits_button:Array = result.split("<button");
+				for each (var child_button:String in splits_button ) {
+					if(child_button.indexOf("</button>")>=0){
+						var buttonChildString2:String="";
+						var splits_formula2:Array = child_button.split("<formula>");
+						for each (var formula2:String in splits_formula2 ) {
+							
+							formula2=StringUtil.trim(formula2);
+							if(formula2.indexOf("</formula>")>=0){
+								buttonChildString2=StringUtil.trim(buttonChildString2+"<formula>"+formula2);
+							}else{
+								if(formula2.indexOf("<font")>=0){
+									var splits_formula3:Array = formula2.split("<font");
+									var splits_formula4:Array=splits_formula3[0].split(">");
+									buttonChildString2=buttonChildString2+splits_formula4[0]+">"+StringUtil.trim(splits_formula4[1])+"<font"+splits_formula3[1]
+									
+										
+								}else{
+									buttonChildString2=StringUtil.trim(StringUtil.trim(buttonChildString2)+ formula2.replace(rex,''));
+								}
+
+							
+								
+							}
+						}
+						child_button="<button "+buttonChildString2;
+					}
+					result2=result2+child_button;
+				}
+				result=result2;
+			}
+			return result;
 		}
 
     }
