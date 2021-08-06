@@ -54,24 +54,18 @@ package actionScripts.utils
 				xml_str=xml_str+"<item name='$Body' sign='true'> <richtext style='width:700px;height:700px;' class='flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop' direction='Horizontal' vdirection='Vertical'/></item>"
 				
 				xml_str=xml_str+"</note>";
-			
-
-
 
 				var xml:XML = new XML(xml_str);
-				
-			
-			
-
-			return xml;
+	
+				return xml;
 		}
 
 		public static function fixDominButton(xml:XML):String
 		{
-			var total_xml:String=xml.toXMLString();
+			var totalXml:String=xml.toXMLString();
 			//>([^<]*)</td>
 			//(?=<button)|(?<=<\/button>)
-			var splits:Array = total_xml.split("</button>");
+			var splits:Array = totalXml.split("</button>");
 			var result:String="";
 			var rex:RegExp = /(\t|\n|\r)/gi;
 
@@ -80,8 +74,8 @@ package actionScripts.utils
 				if(child.indexOf("<button")>=0){
 					var buttonChildString:String="";
 					
-					var splits_formula:Array = child.split("</formula>");
-					for each (var formula:String in splits_formula ) {
+					var splitsFormula:Array = child.split("</formula>");
+					for each (var formula:String in splitsFormula ) {
 						formula=StringUtil.trim(formula);
 						if(formula.indexOf("<formula")>=0){
 							buttonChildString=StringUtil.trim(buttonChildString+formula+"</formula>");
@@ -96,34 +90,33 @@ package actionScripts.utils
 			}
 			var result2:String="";
 			if(result.indexOf("<button")>=0){
-				var splits_button:Array = result.split("<button");
-				for each (var child_button:String in splits_button ) {
-					if(child_button.indexOf("</button>")>=0){
+				var splitsButton:Array = result.split("<button");
+				for each (var childButton:String in splitsButton ) {
+					if(childButton.indexOf("</button>")>=0){
 						var buttonChildString2:String="";
-						var splits_formula2:Array = child_button.split("<formula>");
-						for each (var formula2:String in splits_formula2 ) {
+						var splitsFormula2:Array = childButton.split("<formula>");
+						for each (var formula2:String in splitsFormula2 ) {
 							
 							formula2=StringUtil.trim(formula2);
 							if(formula2.indexOf("</formula>")>=0){
 								buttonChildString2=StringUtil.trim(buttonChildString2+"<formula>"+formula2);
 							}else{
 								if(formula2.indexOf("<font")>=0){
-									var splits_formula3:Array = formula2.split("<font");
-									var splits_formula4:Array=splits_formula3[0].split(">");
-									buttonChildString2=buttonChildString2+splits_formula4[0]+">"+StringUtil.trim(splits_formula4[1])+"<font"+splits_formula3[1]
-									
-										
+									var splitsFormula3:Array = formula2.split("<font");
+									var splitsFormula4:Array=splitsFormula3[0].split(">");
+									buttonChildString2=buttonChildString2+splitsFormula4[0]+">"+StringUtil.trim(splitsFormula4[1])+"<font"+splitsFormula3[1];
+								}else if(formula2.indexOf("<code")>=0){
+									var splitsFormula5:Array = formula2.split("<code");
+									var splitsFormula6:Array=splitsFormula5[0].split(">");
+									buttonChildString2=buttonChildString2+splitsFormula6[0]+">"+StringUtil.trim(splitsFormula6[1])+"<code"+splitsFormula5[1];	
 								}else{
 									buttonChildString2=StringUtil.trim(StringUtil.trim(buttonChildString2)+ formula2.replace(rex,''));
-								}
-
-							
-								
+								}					
 							}
 						}
-						child_button="<button "+buttonChildString2;
+						childButton="<button "+buttonChildString2;
 					}
-					result2=result2+child_button;
+					result2=result2+childButton;
 				}
 				result=result2;
 			}
