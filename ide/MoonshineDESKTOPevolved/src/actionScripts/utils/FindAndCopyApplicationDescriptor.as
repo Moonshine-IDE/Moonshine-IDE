@@ -68,8 +68,8 @@ package actionScripts.utils
 			var airNamespaceValue:Object = versionMapXML[0].xmlns::descriptorNamespace.text()[0];
 
 			// replace if appropriate
-			descriptorContent = descriptorContent.replace(/<content>.*?<\/content>/, "<content>"+ project.swfOutput.path.fileBridge.name +"</content>");
-			descriptorContent = descriptorContent.replace(/<application xmlns=".*?">/, "<application xmlns=\""+ airNamespaceValue.toString() +"\">");
+			descriptorContent = descriptorContent.replace(/<content>.*?<\/content>/g, "<content>"+ project.swfOutput.path.fileBridge.name +"</content>");
+			descriptorContent = descriptorContent.replace(/<application xmlns=".*?">/g, "<application xmlns=\""+ airNamespaceValue.toString() +"\">");
 			if (descriptorContent.indexOf("_") != -1)
 			{
 				// MOON-108
