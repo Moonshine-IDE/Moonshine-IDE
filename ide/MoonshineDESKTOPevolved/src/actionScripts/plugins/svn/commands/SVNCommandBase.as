@@ -122,7 +122,7 @@ package actionScripts.plugins.svn.commands
 			PopUpManager.centerPopUp(authWindow);
 		}
 		
-		protected function onAuthWindowClosed(event:CloseEvent):void
+		protected function onAuthWindowClosed(event:Event):void
 		{
 			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
 			if (!target.userObject) 
@@ -147,6 +147,7 @@ package actionScripts.plugins.svn.commands
 				}
 				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
 			}
+			onAuthWindowClosed(event);
 		}
 		
 		protected function onAuthenticationSuccess(username:String, password:String):void
