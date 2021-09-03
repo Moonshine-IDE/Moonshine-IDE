@@ -62,6 +62,27 @@ package actionScripts.utils
 
 		public static function fixDominButton(xml:XML):String
 		{
+			//remove the first div from table cells
+			
+			var tableCells:XMLList=xml.descendants("tablecell");
+			
+			for each(var cell:XML in tableCells){
+				
+				if(cell.children()[0]!=null){
+					var count:Number = 0;
+					for each(var cellChildren:XML in cell.children()){
+						if(cellChildren.name()=="div"){
+							for each(var cellDivChildren:XML in cellChildren.children()){
+								cell.appendChild(cellDivChildren);
+							}
+							delete cell.children()[count];
+							
+						}
+						count++;
+					}
+				}
+			}
+			
 			var totalXml:String=xml.toXMLString();
 			//>([^<]*)</td>
 			//(?=<button)|(?<=<\/button>)
@@ -120,6 +141,7 @@ package actionScripts.utils
 				}
 				result=result2;
 			}
+			
 			return result;
 		}
 

@@ -420,6 +420,7 @@ import actionScripts.factory.FileLocation;
 				mxmlString= mxmlCode.toXMLString();
 			
 			}
+			//mxmlString=mxmlString.replace(/(?=\s)[^\r\n\t]/g, ' ');
 			var markAsXml:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 			
 			return markAsXml +mxmlString;
