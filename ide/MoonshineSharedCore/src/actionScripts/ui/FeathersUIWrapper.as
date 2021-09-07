@@ -105,6 +105,11 @@ package actionScripts.ui
 			return false;
 		}
 
+		override public function setFocus():void
+		{
+			this.assignFocus("top");
+		}
+
 		public function assignFocus(direction:String):void
 		{
 			if(!this._feathersUIFocusManager)
