@@ -193,6 +193,14 @@ package actionScripts.ui.tabview
 			{
 				tmpCollection = tmpCollection.concat(_model.hamburgerTabs.source);
 			}
+
+			// do not open menu if there's nothing to display
+			if (tmpCollection.length == 0)
+			{
+				stage.removeEventListener(KeyboardEvent.KEY_UP, onKeysUp);
+				multiKeys = null;
+				return;
+			}
 			
 			editorsListMenu = ScrollableMenu.createMenu(this, tmpCollection, false);
 			editorsListMenu.labelField = "label";
