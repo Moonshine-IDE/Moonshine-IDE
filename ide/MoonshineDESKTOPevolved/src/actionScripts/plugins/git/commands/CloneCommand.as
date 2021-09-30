@@ -33,6 +33,8 @@ package actionScripts.plugins.git.commands
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.NativeProcessQueueVO;
 
+	import mx.controls.Alert;
+
 	public class CloneCommand extends GitCommandBase
 	{
 		public static const CLONE_REQUEST:String = "gitCloneRequest";
@@ -73,22 +75,30 @@ package actionScripts.plugins.git.commands
 			{
 				var protocol:String = lastCloneURL.substring(0, lastCloneURL.indexOf("://")+3);
 				calculatedURL = lastCloneURL.replace(protocol, "");
-				calculatedURL = protocol + repositoryUnderCursor.userName +"@"+ calculatedURL;
+				if (!repositoryUnderCursor.userPassword)
+				{
+					calculatedURL = protocol + repositoryUnderCursor.userName +"@"+ calculatedURL;
+				}
+				else
+				{
+					calculatedURL = protocol + repositoryUnderCursor.userName +":"+ repositoryUnderCursor.userPassword +"@"+ calculatedURL;
+				}
 				isRequestWithAuth = true;
 			}
 
 			var gitCommand:String = getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder);
-			if (ConstantsCoreVO.IS_MACOS && repositoryUnderCursor.isRequireAuthentication)
+			addToQueue(new NativeProcessQueueVO(gitCommand, repositoryUnderCursor.userPassword ? false : true, GitHubPlugin.CLONE_REQUEST));
+			/*if (ConstantsCoreVO.IS_MACOS && repositoryUnderCursor.isRequireAuthentication)
 			{
 				// experimental async file creation as Joel experienced
 				// exp file creation issue in his tests
 				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitCommand);
-				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GitHubPlugin.CLONE_REQUEST));
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', repositoryUnderCursor.userPassword ? false : true, GitHubPlugin.CLONE_REQUEST));
 			}
 			else
 			{
-				addToQueue(new NativeProcessQueueVO(gitCommand, false, GitHubPlugin.CLONE_REQUEST));
-			}
+				addToQueue(new NativeProcessQueueVO(gitCommand, repositoryUnderCursor.userPassword ? false : true, GitHubPlugin.CLONE_REQUEST));
+			}*/
 
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);
