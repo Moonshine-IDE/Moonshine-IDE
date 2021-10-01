@@ -77,7 +77,15 @@ package actionScripts.plugins.git.commands
 			}
 			else
 			{
-				if (ConstantsCoreVO.IS_MACOS)
+				addToQueue(
+						new NativeProcessQueueVO(
+								ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" push "+ (calculatedURL ? calculatedURL : '') +" $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&push'+ (calculatedURL ? '&&'+ calculatedURL : '') +'&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch),
+								hasUserPassword ? false : true,
+								GIT_PUSH,
+								model.activeProject.folderLocation.fileBridge.nativePath
+						)
+				);
+				/*if (ConstantsCoreVO.IS_MACOS)
 				{
 					var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" push "+ (calculatedURL ? calculatedURL : '') +' "'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'"');
 					addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
@@ -85,7 +93,7 @@ package actionScripts.plugins.git.commands
 				else
 				{
 					addToQueue(new NativeProcessQueueVO(gitBinaryPathOSX +'&&push'+ (calculatedURL ? '&&'+ calculatedURL : '') +'&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
-				}
+				}*/
 			}
 			
 			isErrorEncountered = false;

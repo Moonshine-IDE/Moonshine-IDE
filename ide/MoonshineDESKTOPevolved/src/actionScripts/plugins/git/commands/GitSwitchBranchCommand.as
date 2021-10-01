@@ -51,11 +51,12 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			var calculatedURL:String;
 			if (tmpModel && tmpModel.sessionUser)
 			{
-				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
 			}
 
 			var gitFetchCommand:String = getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : ''));
-			if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
+			addToQueue(new NativeProcessQueueVO(gitFetchCommand, tmpModel.sessionPassword ? false : true, null));
+			/*if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
 			{
 				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitFetchCommand);
 				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, null));
@@ -63,7 +64,7 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			else
 			{
 				addToQueue(new NativeProcessQueueVO(gitFetchCommand, false, null));
-			}
+			}*/
 
 			switch (listingType) {
 				case BRANCH_TYPE_LOCAL:

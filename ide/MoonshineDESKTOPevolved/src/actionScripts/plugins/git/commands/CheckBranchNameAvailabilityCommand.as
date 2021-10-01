@@ -76,7 +76,7 @@ package actionScripts.plugins.git.commands
 					var calculatedURL:String;
 					if (tmpModel && tmpModel.sessionUser)
 					{
-						calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
+						calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
 					}
 					else
 					{
@@ -89,7 +89,15 @@ package actionScripts.plugins.git.commands
 							// we'll run this for first instance
 							// since we have only one exp file can contain
 							// information of one origin
-							if (ConstantsCoreVO.IS_MACOS && index == 0 && tmpModel.sessionUser)
+							addToQueue(
+									new NativeProcessQueueVO(
+											ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" ls-remote "+ (calculatedURL ? calculatedURL +' ' : '') + origin +" --heads $'"+ UtilsCore.getEncodedForShell(targetBranchName) +"'" : gitBinaryPathOSX +'&&ls-remote&&'+ origin +'&&--heads&&'+ UtilsCore.getEncodedForShell(targetBranchName),
+											tmpModel.sessionPassword ? false : true,
+											GIT_REMOTE_BRANCH_NAME_VALIDATION,
+											origin
+									)
+							);
+							/*if (ConstantsCoreVO.IS_MACOS && index == 0 && tmpModel.sessionUser)
 							{
 								var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" ls-remote "+ (calculatedURL ? calculatedURL +' ' : '') + origin +' --heads "'+ UtilsCore.getEncodedForShell(targetBranchName) +'"');
 								addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GIT_REMOTE_BRANCH_NAME_VALIDATION, origin));
@@ -97,7 +105,7 @@ package actionScripts.plugins.git.commands
 							else
 							{
 								addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" ls-remote "+ (calculatedURL ? calculatedURL +' ' : '') + origin +" --heads $'"+ UtilsCore.getEncodedForShell(targetBranchName) +"'" : gitBinaryPathOSX +'&&ls-remote&&'+ origin +'&&--heads&&'+ UtilsCore.getEncodedForShell(targetBranchName), false, GIT_REMOTE_BRANCH_NAME_VALIDATION, origin));
-							}
+							}*/
 						}
 					});
 					worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);

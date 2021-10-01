@@ -42,7 +42,7 @@ package actionScripts.plugins.git.commands
 			var calculatedURL:String;
 			if (tmpModel && tmpModel.sessionUser)
 			{
-				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
 			}
 			
 			var command:String;
@@ -59,7 +59,8 @@ package actionScripts.plugins.git.commands
 				command += '&&--progress&&-v&&--no-rebase';
 			}
 
-			if (ConstantsCoreVO.IS_MACOS && tmpModel.sessionUser)
+			addToQueue(new NativeProcessQueueVO(command, tmpModel.sessionPassword ? false : true, PULL_REQUEST));
+			/*if (ConstantsCoreVO.IS_MACOS && tmpModel.sessionUser)
 			{
 				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(command);
 				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, PULL_REQUEST));
@@ -67,7 +68,7 @@ package actionScripts.plugins.git.commands
 			else
 			{
 				addToQueue(new NativeProcessQueueVO(command, false, PULL_REQUEST));
-			}
+			}*/
 			
 			warning("Requesting Pull...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Pull ", false));
