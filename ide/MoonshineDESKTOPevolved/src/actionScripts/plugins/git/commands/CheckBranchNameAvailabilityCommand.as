@@ -173,7 +173,7 @@ package actionScripts.plugins.git.commands
 			var tmpValue:Object = value.value;
 
 			// do not print enter password line
-			if (ConstantsCoreVO.IS_MACOS && value.value && ("output" in value.value) &&
+			if (ConstantsCoreVO.IS_MACOS && value.value && (("output" in value.value) && (value.value.output != null)) &&
 					value.value.output.match(/Enter password \(exp\):.*/))
 			{
 				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
