@@ -187,12 +187,12 @@ package actionScripts.plugins.git.commands
 				super.onWorkerValueIncoming(value);
 			}
 
-			if (tmpValue.queue.processType == GIT_LOCAL_BRANCH_NAME_VALIDATION && !localBranchFoundData)
+			if (tmpValue && tmpValue.queue.processType == GIT_LOCAL_BRANCH_NAME_VALIDATION && !localBranchFoundData)
 			{
 				localBranchFoundData = tmpValue.output;
 			}
 
-			if (tmpValue.queue.processType == GIT_REMOTE_BRANCH_NAME_VALIDATION && !remoteBranchFoundData)
+			if (tmpValue && tmpValue.queue.processType == GIT_REMOTE_BRANCH_NAME_VALIDATION && !remoteBranchFoundData)
 			{
 				isRemoteBranchParsed = true;
 				remoteBranchFoundData = tmpValue.output;
