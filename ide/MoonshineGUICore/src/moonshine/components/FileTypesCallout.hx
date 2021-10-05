@@ -62,6 +62,7 @@ class FileTypesCallout extends LayoutGroup
 		extensionListView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
 			var itemRenderer = new ItemRenderer();
 			var check = new Check();
+			check.focusEnabled = false;
 			check.mouseEnabled = false;
 			itemRenderer.icon = check;
 			return itemRenderer;
