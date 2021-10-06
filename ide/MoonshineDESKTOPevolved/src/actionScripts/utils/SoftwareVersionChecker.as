@@ -376,7 +376,7 @@ package actionScripts.utils
 			var lines:Array = value.split(UtilsCore.getLineBreakEncoding());
 			for each (var line:String in lines)
 			{
-				if (line.match(/\d+.\d+.\d+/)) return line;
+				if ((line.match(/\d+.\d+.\d+/)) || line.match(/\d+.\d+/)) return line;
 			}
 			
 			return null;
