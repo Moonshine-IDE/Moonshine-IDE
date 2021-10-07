@@ -28,7 +28,9 @@
 										   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes()" xmlns:mx="library://ns.adobe.com/flex/mx">
 	<fx:Script>
 		<![CDATA[
-			import com.adobe.utils.StringUtil;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+
+		import com.adobe.utils.StringUtil;
 			
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
@@ -226,9 +228,16 @@
 			id="txtLogin" 
 			prompt="User Name"
 			width="100%"
+			enabled="{!ConstantsCoreVO.IS_APP_STORE_VERSION}"
 			styleName="textInput"/>
-		<s:Label text="Password will be prompted when needed by version control software"
-				 color="0x444444"/>
+		<s:Label id="lblAuthMessage"
+				 text="Password will be prompted when needed by version control software"
+				 color="0x444444"
+				 visible="{!ConstantsCoreVO.IS_APP_STORE_VERSION}" includeInLayout="{!ConstantsCoreVO.IS_APP_STORE_VERSION}"/>
+		<s:Label id="lblNoAuthMessage"
+				 text="Accessing private repository is not available in App Store version. You can use a 'Direct' download/version to avail the feature."
+				 color="0xff0000" width="100%"
+				 visible="{ConstantsCoreVO.IS_APP_STORE_VERSION}" includeInLayout="{ConstantsCoreVO.IS_APP_STORE_VERSION}"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

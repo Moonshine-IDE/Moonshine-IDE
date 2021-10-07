@@ -77,15 +77,7 @@ package actionScripts.plugins.git.commands
 			}
 			else
 			{
-				addToQueue(
-						new NativeProcessQueueVO(
-								ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" push "+ (calculatedURL ? calculatedURL : '') +" $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&push'+ (calculatedURL ? '&&'+ calculatedURL : '') +'&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch),
-								hasUserPassword ? false : true,
-								GIT_PUSH,
-								model.activeProject.folderLocation.fileBridge.nativePath
-						)
-				);
-				/*if (ConstantsCoreVO.IS_MACOS)
+				if (ConstantsCoreVO.IS_MACOS)
 				{
 					var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitBinaryPathOSX +" push "+ (calculatedURL ? calculatedURL : '') +' "'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +'"');
 					addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
@@ -93,7 +85,7 @@ package actionScripts.plugins.git.commands
 				else
 				{
 					addToQueue(new NativeProcessQueueVO(gitBinaryPathOSX +'&&push'+ (calculatedURL ? '&&'+ calculatedURL : '') +'&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, GIT_PUSH, model.activeProject.folderLocation.fileBridge.nativePath));
-				}*/
+				}
 			}
 			
 			isErrorEncountered = false;
@@ -164,13 +156,20 @@ package actionScripts.plugins.git.commands
 
 			if (testMessageIfNeedsAuthentication(value.output))
 			{
-				var userName:String = lastUserObject ? lastUserObject.userName : "";
-				var tmpProject:ProjectVO = UtilsCore.getProjectByPath(value.queue.extraArguments[0]);
-				if (!userName && plugin.modelAgainstProject[tmpProject])
+				if (ConstantsCoreVO.IS_APP_STORE_VERSION)
 				{
-					userName = plugin.modelAgainstProject[tmpProject].sessionUser;
+					showPrivateRepositorySandboxError();
 				}
-				openAuthentication(userName);
+				else
+				{
+					var userName:String = lastUserObject ? lastUserObject.userName : "";
+					var tmpProject:ProjectVO = UtilsCore.getProjectByPath(value.queue.extraArguments[0]);
+					if (!userName && plugin.modelAgainstProject[tmpProject])
+					{
+						userName = plugin.modelAgainstProject[tmpProject].sessionUser;
+					}
+					openAuthentication(userName);
+				}
 			}
 		}
 

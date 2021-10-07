@@ -49,6 +49,8 @@ package actionScripts.plugins.git.commands
 	public class GitCommandBase extends ConsoleOutputter implements IWorkerSubscriber
 	{
 		override public function get name():String { return "Git Plugin"; }
+
+		public static const PRIVATE_REPO_SANDBOX_ERROR_MESSAGE:String = "Accessing private repository is not available in App Store version. You can use a 'Direct' download/version to avail the feature.";
 		
 		public var gitBinaryPathOSX:String;
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
@@ -261,6 +263,11 @@ package actionScripts.plugins.git.commands
 			dispatcher.dispatchEvent(tmpEvent);
 			
 			plugin = tmpEvent.value as GitHubPlugin;
+		}
+
+		protected function showPrivateRepositorySandboxError():void
+		{
+			error(PRIVATE_REPO_SANDBOX_ERROR_MESSAGE);
 		}
 	}
 }

@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
@@ -51,12 +52,11 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			var calculatedURL:String;
 			if (tmpModel && tmpModel.sessionUser)
 			{
-				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
 			}
 
 			var gitFetchCommand:String = getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : ''));
-			addToQueue(new NativeProcessQueueVO(gitFetchCommand, tmpModel.sessionPassword ? false : true, null));
-			/*if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
+			if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
 			{
 				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitFetchCommand);
 				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, null));
@@ -64,7 +64,7 @@ public class GitSwitchBranchCommand extends GitCommandBase
 			else
 			{
 				addToQueue(new NativeProcessQueueVO(gitFetchCommand, false, null));
-			}*/
+			}
 
 			switch (listingType) {
 				case BRANCH_TYPE_LOCAL:
@@ -133,7 +133,14 @@ public class GitSwitchBranchCommand extends GitCommandBase
 
 			if (testMessageIfNeedsAuthentication(value.output))
 			{
-				openAuthentication(null);
+				if (ConstantsCoreVO.IS_APP_STORE_VERSION)
+				{
+					showPrivateRepositorySandboxError();
+				}
+				else
+				{
+					openAuthentication(null);
+				}
 			}
 		}
 

@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
@@ -46,12 +47,11 @@ package actionScripts.plugins.git.commands
 			var calculatedURL:String;
 			if (tmpModel && tmpModel.sessionUser)
 			{
-				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser, tmpModel.sessionPassword);
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
 			}
 
 			var gitFetchCommand:String = getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : ''));
-			addToQueue(new NativeProcessQueueVO(gitFetchCommand, tmpModel.sessionPassword ? false : true, null));
-			/*if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
+			if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
 			{
 				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitFetchCommand);
 				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, null));
@@ -59,7 +59,7 @@ package actionScripts.plugins.git.commands
 			else
 			{
 				addToQueue(new NativeProcessQueueVO(gitFetchCommand, false, null));
-			}*/
+			}
 
 			addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch -r'), false, GIT_REMOTE_BRANCH_LIST));
 			pendingProcess.push(new ConstructorDescriptor(GetCurrentBranchCommand)); // next method we need to fire when above done
@@ -117,7 +117,14 @@ package actionScripts.plugins.git.commands
 
 			if (testMessageIfNeedsAuthentication(value.output))
 			{
-				openAuthentication(null);
+				if (ConstantsCoreVO.IS_APP_STORE_VERSION)
+				{
+					showPrivateRepositorySandboxError();
+				}
+				else
+				{
+					openAuthentication(null);
+				}
 			}
 		}
 

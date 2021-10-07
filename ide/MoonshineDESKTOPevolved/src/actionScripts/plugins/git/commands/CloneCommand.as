@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -60,7 +61,7 @@ package actionScripts.plugins.git.commands
 		public function CloneCommand(url:String, target:String, targetFolder:String, repository:RepositoryItemVO)
 		{
 			super();
-			
+
 			queue = new Vector.<Object>();
 			
 			authWindowTriggerCountWindows = 0;
@@ -75,30 +76,22 @@ package actionScripts.plugins.git.commands
 			{
 				var protocol:String = lastCloneURL.substring(0, lastCloneURL.indexOf("://")+3);
 				calculatedURL = lastCloneURL.replace(protocol, "");
-				if (!repositoryUnderCursor.userPassword)
-				{
-					calculatedURL = protocol + repositoryUnderCursor.userName +"@"+ calculatedURL;
-				}
-				else
-				{
-					calculatedURL = protocol + repositoryUnderCursor.userName +":"+ repositoryUnderCursor.userPassword +"@"+ calculatedURL;
-				}
+				calculatedURL = protocol + repositoryUnderCursor.userName +"@"+ calculatedURL;
 				isRequestWithAuth = true;
 			}
 
 			var gitCommand:String = getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder);
-			addToQueue(new NativeProcessQueueVO(gitCommand, repositoryUnderCursor.userPassword ? false : true, GitHubPlugin.CLONE_REQUEST));
-			/*if (ConstantsCoreVO.IS_MACOS && repositoryUnderCursor.isRequireAuthentication)
+			if (ConstantsCoreVO.IS_MACOS && repositoryUnderCursor.isRequireAuthentication && !ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{
 				// experimental async file creation as Joel experienced
 				// exp file creation issue in his tests
 				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitCommand);
-				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', repositoryUnderCursor.userPassword ? false : true, GitHubPlugin.CLONE_REQUEST));
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, GitHubPlugin.CLONE_REQUEST));
 			}
 			else
 			{
-				addToQueue(new NativeProcessQueueVO(gitCommand, repositoryUnderCursor.userPassword ? false : true, GitHubPlugin.CLONE_REQUEST));
-			}*/
+				addToQueue(new NativeProcessQueueVO(gitCommand, false, GitHubPlugin.CLONE_REQUEST));
+			}
 
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Clone ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:target}, subscribeIdToWorker);
@@ -130,7 +123,17 @@ package actionScripts.plugins.git.commands
 					
 					if (testMessageIfNeedsAuthentication(value.output))
 					{
-						openAuthentication(repositoryUnderCursor ? repositoryUnderCursor.userName : null);
+						if (ConstantsCoreVO.IS_APP_STORE_VERSION)
+						{
+							dispatcher.dispatchEvent(
+									new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED,
+									{hasError:true, message:PRIVATE_REPO_SANDBOX_ERROR_MESSAGE})
+							);
+						}
+						else
+						{
+							openAuthentication(repositoryUnderCursor ? repositoryUnderCursor.userName : null);
+						}
 					}
 					else
 					{
