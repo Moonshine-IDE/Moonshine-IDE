@@ -295,6 +295,8 @@ package actionScripts.utils
 			// update only if ant path not set
 			// or the existing ant path does not exists
 			var isGitPresent:Boolean = UtilsCore.isGitPresent();
+			var providedPath:String = path == null ? "" : path;
+
 			if (!isGitPresent)
 			{
 				if (ConstantsCoreVO.IS_MACOS && !isGitPresent)
@@ -317,12 +319,12 @@ package actionScripts.utils
 			 */
 			function updateMoonshineConfiguration():void
 			{
-				if (!ConstantsCoreVO.IS_MACOS && path.indexOf("git.exe") == -1)
+				if (!ConstantsCoreVO.IS_MACOS && (providedPath == null || providedPath.indexOf("git.exe") == -1))
 				{
-					path += (File.separator +'bin'+ File.separator +'git.exe');
+					providedPath += (File.separator +'bin'+ File.separator +'git.exe');
 				}
 				
-				model.gitPath = path;
+				model.gitPath = providedPath;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
 					new PathSetting({gitBinaryPathOSX: model.gitPath}, 'gitBinaryPathOSX', 'Git Path', true)
 				]);

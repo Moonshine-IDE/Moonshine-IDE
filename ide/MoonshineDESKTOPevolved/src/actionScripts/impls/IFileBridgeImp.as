@@ -318,12 +318,18 @@ package actionScripts.impls
 		
 		public function moveTo(newLocation:FileLocation, overwrite:Boolean=false):void
 		{
-			if (checkFileExistenceAndReport()) _file.moveTo(newLocation.fileBridge.getFile as File, overwrite);
+			if (checkFileExistenceAndReport())
+			{
+				_file.moveTo(newLocation.fileBridge.getFile as File, overwrite);
+			}
 		}
 		
 		public function moveToAsync(newLocation:FileLocation, overwrite:Boolean=false):void
 		{
-			if (checkFileExistenceAndReport()) _file.moveToAsync(newLocation.fileBridge.getFile as File, overwrite);
+			if (checkFileExistenceAndReport())
+			{
+				_file.moveToAsync(newLocation.fileBridge.getFile as File, overwrite);
+			}
 		}
 		
 		public function deleteDirectory(deleteDirectoryContents:Boolean=false):void
