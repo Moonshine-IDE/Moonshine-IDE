@@ -60,6 +60,24 @@ package actionScripts.utils
 				return xml;
 		}
 
+		public static function getXslFormatForRun(xml:String):String
+		{
+			xml=xml+"<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n";
+			xml=xml+"<xsl:template match=\"@*|node()\">\n";
+			xml=xml+"<xsl:copy>\n";
+			xml=xml+"<xsl:apply-templates select=\"@*|node()\"/>\n";
+			xml=xml+"</xsl:copy>\n";
+			xml=xml+"</xsl:template>\n";
+			xml=xml+"\n";
+			xml=xml+"<xsl:template match=\"run\">\n";
+			xml=xml+"<xsl:copy>\n";
+			xml=xml+"<xsl:apply-templates select=\"@*|*\"/>\n";
+			xml=xml+"</xsl:copy>\n";
+			xml=xml+"</xsl:template>\n";
+			xml=xml+"</xsl:stylesheet>\n";
+			return xml;
+		}
+
 		public static function fixDominButton(xml:XML):String
 		{
 			//remove the first div from table cells
@@ -141,6 +159,55 @@ package actionScripts.utils
 				}
 				result=result2;
 			}
+
+				
+				if(result.indexOf("<font")>=0){
+					var fontFont:Number = 0;
+					var result3:String="";
+					var splitsFont:Array = result.split("<font");
+					for each (var childFont:String in splitsFont ) {
+						if(childFont.indexOf(">")>=0){
+							var fontString:String="";
+							var splitsFont2:Array = childFont.split(">");
+							var countFont:Number = 0;
+						
+							for each (var childFont2:String in splitsFont2 ) {
+								if(countFont==1){
+									childFont2=childFont2.substring(1);
+									var maxLen:int=22;
+									if(childFont2.length<maxLen){
+										maxLen=childFont2.length;
+									}
+									
+									for (var i:int=0; i<maxLen; i++) {
+									  if(childFont2.substring(0,1)==" "){
+										  childFont2=childFont2.substring(1);
+									  }	
+									}	
+								}
+								childFont2=childFont2+">";
+								
+								
+								fontString=fontString+childFont2;
+								countFont++;
+							}
+							
+							fontString=fontString.substring(0,fontString.length-1);
+							if(fontFont>0){
+								childFont="<font"+fontString;
+							}
+							
+						}
+						fontFont++;
+				
+						result3=result3+childFont;
+					}
+					result=result3;
+
+				}
+			 var tabpattern:RegExp = /&amp;#tab;/g;
+			 result = result.replace(tabpattern,"\t");
+			
 			
 			return result;
 		}
