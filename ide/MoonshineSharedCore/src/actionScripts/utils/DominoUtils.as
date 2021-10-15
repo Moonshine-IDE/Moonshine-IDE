@@ -174,7 +174,7 @@ package actionScripts.utils
 							for each (var childFont2:String in splitsFont2 ) {
 								if(countFont==1){
 									childFont2=childFont2.substring(1);
-									var maxLen:int=22;
+									var maxLen:int=24;
 									if(childFont2.length<maxLen){
 										maxLen=childFont2.length;
 									}
