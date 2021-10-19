@@ -8,6 +8,12 @@ Since the _MoonshineGUICore_ project is written is Haxe, building it works a bit
 
 - [Download Haxe](https://haxe.org/download/)
 - [Install Feathers UI](https://feathersui.com/learn/haxe-openfl/installation/)
+- Use Git to clone the following repositories into the same parent directory as Moonshine-IDE:
+
+  - [moonshine-openfl-language-client](https://github.com/Moonshine-IDE/moonshine-openfl-language-client)
+  - [moonshine-feathersui-text-editor](https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor)
+
+  > These Git repos will eventually get published on Haxelib, which will make it easier to install and use them. Cloning from Git is temporary.
 
 ### Editors and IDEs
 
