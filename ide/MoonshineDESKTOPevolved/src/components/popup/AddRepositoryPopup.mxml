@@ -230,7 +230,6 @@
 			id="txtLogin" 
 			prompt="User Name"
 			width="100%"
-			enabled="{!ConstantsCoreVO.IS_APP_STORE_VERSION}"
 			styleName="textInput"/>
 		<s:Label id="lblAuthMessage"
 				 text="Password will be prompted when needed by version control software"
@@ -241,7 +240,7 @@
 							visible="{ConstantsCoreVO.IS_APP_STORE_VERSION}" includeInLayout="{ConstantsCoreVO.IS_APP_STORE_VERSION}">
 			<s:textFlow>
 				<s:TextFlow>
-					<s:p color="0xFA8072">Git authentication is not supported in the App Store version of Moonshine. Download the full version at
+					<s:p color="0xe32636">Git authentication is not supported in the App Store version of Moonshine. Download the full version at
 						<s:a href="https://moonshine-ide.com">https://moonshine-ide.com</s:a></s:p>
 				</s:TextFlow>
 			</s:textFlow>

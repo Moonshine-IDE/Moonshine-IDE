@@ -143,7 +143,11 @@ package actionScripts.plugins.git.commands
 						if (ConstantsCoreVO.IS_APP_STORE_VERSION)
 						{
 							showPrivateRepositorySandboxError();
-							onCompletion = null;
+							if (onCompletion != null)
+							{
+								onCompletion("Error: Check console for details.", null, false);
+								onCompletion = null;
+							}
 						}
 						else
 						{

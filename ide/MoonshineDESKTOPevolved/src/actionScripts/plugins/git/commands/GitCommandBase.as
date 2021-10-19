@@ -279,7 +279,7 @@ package actionScripts.plugins.git.commands
 			var span1:SpanElement = new SpanElement();
 			var link:LinkElement = new LinkElement();
 
-			p.color = 0xFA8072;
+			p.color = 0xff6666;
 			span1.text = ": Git authentication is not supported in the App Store version of Moonshine. Download the full version at ";
 
 			link.href = "https://moonshine-ide.com";

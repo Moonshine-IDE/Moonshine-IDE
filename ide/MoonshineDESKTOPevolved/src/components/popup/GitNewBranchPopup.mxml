@@ -9,6 +9,7 @@
 		import actionScripts.events.GlobalEventDispatcher;
 		import actionScripts.plugin.console.ConsoleOutputEvent;
 		import actionScripts.plugins.versionControl.event.VersionControlEvent;
+		import actionScripts.valueObjects.ConstantsCoreVO;
 
 		import mx.events.CloseEvent;
 			import mx.validators.Validator;
@@ -45,9 +46,10 @@
 				if (localValue)
 				{
 					localValue = localValue.replace("\n", "");
-					if (localValue.match(/fatal: .*/) || localValue.toLowerCase().match(/was unexpected at this time/))
+					if (localValue.match(/fatal: .*/) || localValue.match(/Error: .*/) || localValue.toLowerCase().match(/was unexpected at this time/))
 					{
-						dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, localValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
+						showError(localValue);
+						//dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, localValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
 					}
 					else
 					{
@@ -58,9 +60,10 @@
 				if (remoteValue)
 				{
 					remoteValue = remoteValue.replace("\n", "");
-					if (remoteValue.match(/fatal: .*/) || remoteValue.toLowerCase().match(/was unexpected at this time/))
+					if (remoteValue.match(/fatal: .*/) || localValue.match(/Error: .*/) || remoteValue.toLowerCase().match(/was unexpected at this time/))
 					{
-						dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, remoteValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
+						showError(remoteValue);
+						//dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, remoteValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
 					}
 					else
 					{
@@ -89,7 +92,7 @@
 				function showError(value:String):void
 				{
 					lblMess.text = value;
-					lblMess.setStyle("color", 0xff0000);
+					lblMess.setStyle("color", 0xe32636);
 					lblMess.includeInLayout = lblMess.visible = true;
 				}
 			}
