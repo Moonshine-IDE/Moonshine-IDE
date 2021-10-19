@@ -18,19 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
 {
-	import actionScripts.events.PreviewPluginEvent;
-import actionScripts.events.TreeMenuItemEvent;
-import actionScripts.factory.FileLocation;
-
-    import flash.events.Event;
+	import flash.events.Event;
+	import flash.filesystem.File;
 
 	import mx.events.CollectionEvent;
-    import mx.events.CollectionEventKind;
-    import mx.events.FlexEvent;
-    
-    import actionScripts.events.AddTabEvent;
-    import actionScripts.events.ChangeEvent;
-    import actionScripts.ui.tabview.CloseTabEvent;
+	import mx.events.CollectionEventKind;
+	import mx.events.FlexEvent;
+
+	import actionScripts.events.AddTabEvent;
+	import actionScripts.events.PreviewPluginEvent;
+	import actionScripts.events.TreeMenuItemEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.impls.IVisualEditorLibraryBridgeImp;
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.interfaces.IVisualEditorViewer;
@@ -40,13 +38,17 @@ import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.help.view.events.VisualEditorEvent;
 	import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
 	import actionScripts.plugins.ui.editor.text.UndoManagerVisualEditor;
+	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.TextEditor;
+	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.MavenPomUtil;
 	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.valueObjects.ProjectVO;
-	
+
+	import moonshine.editor.text.TextEditor;
+	import moonshine.editor.text.events.TextEditorChangeEvent;
+
 	import view.suportClasses.events.PropertyEditorChangeEvent;
 	import flash.filesystem.File;
 	import actionScripts.utils.DominoUtils;
@@ -105,13 +107,13 @@ import actionScripts.factory.FileLocation;
 			
 			undoManager = new UndoManagerVisualEditor(visualEditorView);
 			
-			editor = new TextEditor(true);
-			editor.percentHeight = 100;
-			editor.percentWidth = 100;
-			editor.addEventListener(ChangeEvent.TEXT_CHANGE, handleTextChange);
-			editor.dataProvider = "";
+			editor = new TextEditor("", true);
+			editorWrapper = new FeathersUIWrapper(editor);
+			editorWrapper.percentHeight = 100;
+			editorWrapper.percentWidth = 100;
+			editor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
 			
-			visualEditorView.codeEditor = editor;
+			visualEditorView.codeEditor = editorWrapper;
 			
 			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, addTabHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
@@ -226,7 +228,7 @@ import actionScripts.factory.FileLocation;
 		override public function save():void
 		{
 			visualEditorView.visualEditor.saveEditedFile();
-			editor.dataProvider = getMxmlCode();
+			editor.text = getMxmlCode();
 			hasChangedProperties = false;
 			
 			super.save();
@@ -320,7 +322,7 @@ import actionScripts.factory.FileLocation;
 			}
 			else
 			{
-				_isChanged = editor.hasChanged;
+				_isChanged = editor.edited;
 				if (!_isChanged)
 				{
 					_isChanged = visualEditorView.visualEditor.editingSurface.hasChanged;
@@ -350,7 +352,7 @@ import actionScripts.factory.FileLocation;
 
 		private function onVisualEditorViewCodeChange(event:VisualEditorViewChangeEvent):void
 		{
-			editor.dataProvider = getMxmlCode();
+			editor.text = getMxmlCode();
 
 			updateChangeStatus()
 		}

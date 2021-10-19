@@ -188,19 +188,19 @@ package actionScripts.controllers
 						{
 							var ed:BasicTextEditor = contentWindow as BasicTextEditor;
 
-							ed.getEditorComponent().scrollTo(atLine, openType);
 							if (!openType || openType == OpenFileEvent.OPEN_FILE || openType == OpenFileEvent.JUMP_TO_SEARCH_LINE)
 							{
-								ed.getEditorComponent().selectLine(atLine);
+								atChar = atChar != -1 ? atChar: 0;
+								ed.editor.setSelection(atLine, atChar, atLine, atChar);
+								ed.editor.scrollViewIfNeeded();
 							}
-							else if (openType == OpenFileEvent.TRACE_LINE)
+							else
 							{
-								ed.getEditorComponent().selectTraceLine(atLine);
+								ed.editor.lineScrollY = Math.min(atLine, ed.editor.maxLineScrollY);
 							}
-
-							if (atChar > -1)
+							if (openType == OpenFileEvent.TRACE_LINE)
 							{
-								ed.getEditorComponent().model.caretIndex = atChar;
+								ed.editor.debuggerLineIndex = atLine;
 							}
 						}
 
@@ -323,6 +323,13 @@ package actionScripts.controllers
 		{
 			var editor:BasicTextEditor = null;
 			editor = model.flexCore.getTourDeEditor(tourDeSWFSource);
+
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			GlobalEventDispatcher.getInstance().dispatchEvent(editorEvent);
+
 			editor.open(file, value);
 			
 			ged.dispatchEvent(

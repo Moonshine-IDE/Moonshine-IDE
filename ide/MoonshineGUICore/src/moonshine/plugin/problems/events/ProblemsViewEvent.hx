@@ -18,19 +18,22 @@
 	Use this software at your own risk.
  */
 
-package moonshine.plugin.problems.vo;
+package moonshine.plugin.problems.events;
 
-import actionScripts.valueObjects.ProjectVO;
-import actionScripts.factory.FileLocation;
-import moonshine.lsp.Diagnostic;
+import moonshine.plugin.problems.vo.MoonshineDiagnostic;
+import openfl.events.Event;
 
-class MoonshineDiagnostic extends Diagnostic {
-	public function new(fileLocation:FileLocation, project:ProjectVO) {
-		super();
-		this.fileLocation = fileLocation;
-		this.project = project;
+class ProblemsViewEvent extends Event {
+	public static final OPEN_PROBLEM = "openProblem";
+
+	public function new(type:String, problem:MoonshineDiagnostic) {
+		super(type, false, false);
+		this.problem = problem;
 	}
 
-	public var fileLocation:FileLocation;
-	public var project:ProjectVO;
+	public var problem:MoonshineDiagnostic;
+
+	override public function clone():Event {
+		return new ProblemsViewEvent(this.type, this.problem);
+	}
 }

@@ -102,12 +102,12 @@ package actionScripts.plugin.rename
 			{
 				return;
 			}
-			var lineText:String = lspEditor.editor.model.selectedLine.text;
-			var caretIndex:int = lspEditor.editor.model.caretIndex;
+			var lineText:String = lspEditor.editor.caretLine.text;
+			var caretIndex:int = lspEditor.editor.caretCharIndex;
 			this._startChar = TextUtil.startOfWord(lineText, caretIndex);
 			this._endChar = TextUtil.endOfWord(lineText, caretIndex);
-			this._line = lspEditor.editor.model.selectedLineIndex;
-			renameSymbolView.existingSymbolName = lspEditor.editor.model.selectedLine.text.substr(this._startChar, this._endChar - this._startChar);
+			this._line = lspEditor.editor.caretLineIndex;
+			renameSymbolView.existingSymbolName = lineText.substr(this._startChar, this._endChar - this._startChar);
 			PopUpManager.addPopUp(renameSymbolViewWrapper, DisplayObject(lspEditor.parentApplication), true);
 			PopUpManager.centerPopUp(renameSymbolViewWrapper);
 			renameSymbolViewWrapper.assignFocus("top");
@@ -124,8 +124,8 @@ package actionScripts.plugin.rename
 			
 			if(renameSymbolView.newSymbolName != null)
 			{
-				var startLine:int = lspEditor.editor.model.selectedLineIndex;
-				var startChar:int = lspEditor.editor.model.caretIndex;
+				var startLine:int = lspEditor.editor.caretLineIndex;
+				var startChar:int = lspEditor.editor.caretCharIndex;
 				lspEditor.languageClient.rename({
 					textDocument: {
 						uri: lspEditor.currentFile.fileBridge.url

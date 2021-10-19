@@ -30,7 +30,6 @@
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.factory.FileLocation;
-			import actionScripts.ui.editor.text.NewASFileCompletionManager;
 	
 			import elements.skins.DarkButtonSkin;
 	

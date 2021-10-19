@@ -88,6 +88,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 	public static final DEFAULT_FONT_NAME:String = (ConstantsCoreVO.IS_MACOS) ? "System Font" : "Segoe UI";
 	public static final DEFAULT_FONT_SIZE:Int = 12;
+	public static final SECONDARY_FONT_SIZE:Int = 11;
 
 	override public function new() {
 		super();
@@ -159,6 +160,14 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 	private function getLightOnDarkDisabledTextFormat():TextFormat {
 		return new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x555555);
+	}
+
+	private function getLightOnDarkSecondaryTextFormat():TextFormat {
+		return new TextFormat(DEFAULT_FONT_NAME, SECONDARY_FONT_SIZE, 0xf3f3f3);
+	}
+
+	private function getLightOnDarkSecondaryDisabledTextFormat():TextFormat {
+		return new TextFormat(DEFAULT_FONT_NAME, SECONDARY_FONT_SIZE, 0x555555);
 	}
 
 	private function setLightButtonStyles(button:Button):Void {
@@ -522,6 +531,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		itemRenderer.textFormat = getLightOnDarkTextFormat();
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
+		itemRenderer.textFormat = getLightOnDarkSecondaryTextFormat();
+		itemRenderer.disabledTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
 		// itemRenderer.embedFonts = true;
 
 		itemRenderer.horizontalAlign = LEFT;

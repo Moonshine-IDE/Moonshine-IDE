@@ -29,7 +29,7 @@ import feathers.controls.TextArea;
 import feathers.controls.Label;
 import actionScripts.factory.FileLocation;
 import actionScripts.interfaces.IViewWithTitle;
-import actionScripts.valueObjects.Location;
+import moonshine.lsp.Location;
 import feathers.controls.LayoutGroup;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayCollection;
@@ -38,10 +38,8 @@ import feathers.layout.AnchorLayoutData;
 import moonshine.theme.MoonshineTheme;
 import openfl.events.Event;
 
-class PluginTitleRenderer extends LayoutGroup
-{
-	public function new() 
-	{
+class PluginTitleRenderer extends LayoutGroup {
+	public function new() {
 		MoonshineTheme.initializeTheme();
 		super();
 	}
@@ -68,8 +66,7 @@ class PluginTitleRenderer extends LayoutGroup
 		return this._setting;
 	}
 
-	override private function initialize():Void 
-	{
+	override private function initialize():Void {
 		var viewLayout = new VerticalLayout();
 		viewLayout.horizontalAlign = JUSTIFY;
 		viewLayout.paddingTop = 20.0;
@@ -78,17 +75,17 @@ class PluginTitleRenderer extends LayoutGroup
 		viewLayout.paddingBottom = 10.0;
 		viewLayout.gap = 0;
 		this.layout = viewLayout;
-		
+
 		this.largeTitle = new Label();
 		this.largeTitle.text = this.setting.name;
 		this.largeTitle.variant = MoonshineTheme.THEME_VARIANT_PLUGIN_LARGE_TITLE;
 		this.addChild(this.largeTitle);
-		
+
 		this.authorTitle = new Label();
 		this.authorTitle.text = this.setting.author;
 		this.authorTitle.variant = SDKInstallerTheme.THEME_VARIANT_ITALIC_LABEL;
 		this.addChild(this.authorTitle);
-		
+
 		var descriptionContainer = new LayoutGroup();
 		descriptionContainer.layout = new AnchorLayout();
 		descriptionContainer.layoutData = new VerticalLayoutData(100, null);
@@ -103,12 +100,11 @@ class PluginTitleRenderer extends LayoutGroup
 		super.initialize();
 	}
 
-	override private function update():Void 
-	{
+	override private function update():Void {
 		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
 
 		if (dataInvalid) {
-			//this.resultsListView.dataProvider = this._references;
+			// this.resultsListView.dataProvider = this._references;
 		}
 
 		super.update();

@@ -35,6 +35,7 @@ package actionScripts.plugin.problems
 	import moonshine.plugin.problems.view.ProblemsView;
 	import moonshine.plugin.problems.vo.MoonshineDiagnostic;
 	import flash.utils.Dictionary;
+	import moonshine.plugin.problems.events.ProblemsViewEvent;
 
 	public class ProblemsPlugin extends PluginBase
 	{
@@ -97,14 +98,14 @@ package actionScripts.plugin.problems
 		
 		private function initializeProblemsViewEventHandlers(event:Event):void
 		{
-			problemsView.addEventListener(Event.CHANGE, handleProblemChange);
-			problemsView.addEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStage);
+			problemsView.addEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
+			problemsView.addEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
 		}
 
 		private function cleanupProblemsViewEventHandlers():void
 		{
-			problemsView.removeEventListener(Event.CHANGE, handleProblemChange);
-			problemsView.removeEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStage);
+			problemsView.removeEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
+			problemsView.removeEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
 		}
 
 		private function clearProblemsForProject(project:ProjectVO):void
@@ -130,7 +131,7 @@ package actionScripts.plugin.problems
 			}
 		}
 
-		private function problemsPanel_removedFromStage(event:Event):void
+		private function problemsPanel_removedFromStageHandler(event:Event):void
 		{
             isProblemsViewVisible = false;
 		}
@@ -187,9 +188,9 @@ package actionScripts.plugin.problems
 			}
 		}
 
-		private function handleProblemChange(event:Event):void
+		private function problemsPanel_openProblemHandler(event:ProblemsViewEvent):void
 		{
-			var diagnostic:MoonshineDiagnostic = problemsView.selectedProblem;
+			var diagnostic:MoonshineDiagnostic = event.problem;
 			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
 				[diagnostic.fileLocation], diagnostic.range.start.line);
 			openEvent.atChar = diagnostic.range.start.character;

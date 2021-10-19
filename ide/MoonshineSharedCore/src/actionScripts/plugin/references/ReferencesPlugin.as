@@ -79,8 +79,8 @@ package actionScripts.plugin.references
 				return;
 			}
 
-			var startLine:int = lspEditor.editor.model.selectedLineIndex;
-			var startChar:int = lspEditor.editor.model.caretIndex;
+			var startLine:int = lspEditor.editor.caretLineIndex;
+			var startChar:int = lspEditor.editor.caretCharIndex;
 			lspEditor.languageClient.references({
 				textDocument: {
 					uri: lspEditor.currentFile.fileBridge.url

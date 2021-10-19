@@ -18,61 +18,61 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.syntax
 {
-	import flash.text.engine.ElementFormat;
-	import flash.text.engine.FontDescription;
-	
 	import actionScripts.events.EditorPluginEvent;
 	import actionScripts.plugin.IEditorPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.ui.parser.GroovyLineParser;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
+
+	import haxe.IMap;
+
+	import moonshine.editor.text.syntax.format.GroovySyntaxFormatBuilder;
+	import moonshine.editor.text.syntax.format.SyntaxColorSettings;
+	import moonshine.editor.text.syntax.format.SyntaxFontSettings;
+	import moonshine.editor.text.syntax.parser.GroovyLineParser;
+	import moonshine.editor.text.TextEditor;
+	import moonshine.editor.text.utils.AutoClosingPair;
 	
 	public class GroovySyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
 	{
-		private var formats:Object = {};
-
 		override public function get name():String 			{return "Groovy Syntax Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for Groovy.";}
 		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
-		
+				
 		override public function activate():void
 		{ 
 			super.activate();
-			init();
-		}
-		
-		private function init():void
-		{
-			var fontDescription:FontDescription = Settings.font.defaultFontDescription;
-			var fontSize:Number = Settings.font.defaultFontSize;
-			
-			formats[0] = /* default, parser fault */					new ElementFormat(fontDescription, fontSize, 0xFF0000);
-			formats[GroovyLineParser.GROOVY_CODE] =						new ElementFormat(fontDescription, fontSize, 0x101010);
-			formats[GroovyLineParser.GROOVY_STRING1] = 				
-			formats[GroovyLineParser.GROOVY_STRING2] = 				
-			formats[GroovyLineParser.GROOVY_STRING3] = 					new ElementFormat(fontDescription, fontSize, 0xca2323);
-			formats[GroovyLineParser.GROOVY_COMMENT] =					 
-			formats[GroovyLineParser.GROOVY_MULTILINE_COMMENT] =		new ElementFormat(fontDescription, fontSize, 0x39c02f);
-			formats[GroovyLineParser.GROOVY_KEYWORD] = 					new ElementFormat(fontDescription, fontSize, 0x0082cd);
-			formats[GroovyLineParser.GROOVY_PACKAGE_CLASS_KEYWORDS] = 	new ElementFormat(fontDescription, fontSize, 0xa848da);
-			formats['lineNumber'] =										new ElementFormat(fontDescription, fontSize, 0x888888);
-			formats['breakPointLineNumber'] =							new ElementFormat(fontDescription, fontSize, 0xffffff);
-			formats['breakPointBackground'] =							0xdea5dd;
-			formats['tracingLineColor'] =								0xc6dbae;
-			formats[GroovyLineParser.GROOVY_ANNOTATION] =				new ElementFormat(fontDescription, fontSize, 0x808000);
-
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
+		}
+
+		override public function deactivate():void
+		{ 
+			super.deactivate();
+			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
 		}
 		
 		private function handleEditorOpen(event:EditorPluginEvent):void
 		{
 			if (event.fileExtension == "groovy" || event.fileExtension == "gradle")
 			{
-				event.editor.setParserAndStyles(new GroovyLineParser(), formats);
+				var formatBuilder:GroovySyntaxFormatBuilder = new GroovySyntaxFormatBuilder();
+				formatBuilder.setFontSettings(new SyntaxFontSettings(Settings.font.defaultFontFamily, Settings.font.defaultFontSize));
+				formatBuilder.setColorSettings(new SyntaxColorSettings());
+				var formats:IMap = formatBuilder.build();
+				var textEditor:TextEditor = event.editor;
+				textEditor.brackets = [["{", "}"], ["[", "]"], ["(", ")"]];
+				textEditor.autoClosingPairs = [
+					new AutoClosingPair("{", "}"),
+					new AutoClosingPair("[", "]"),
+					new AutoClosingPair("(", ")"),
+					new AutoClosingPair("'", "'"),
+					new AutoClosingPair("\"", "\"")
+				];
+				textEditor.setParserAndTextStyles(new GroovyLineParser(), formats);
+				textEditor.embedFonts = Settings.font.defaultFontEmbedded;
 			}
 		}
 		

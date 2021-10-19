@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.ui.editor.text
+package components.popup.newFile
 {
     import flash.events.Event;
     import flash.events.EventDispatcher;

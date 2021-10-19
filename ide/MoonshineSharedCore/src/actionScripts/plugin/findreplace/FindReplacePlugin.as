@@ -18,25 +18,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.findreplace
 {
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-
 	import flash.display.DisplayObject;
-    import flash.events.Event;
-    
-    import mx.core.FlexGlobals;
-    import mx.managers.PopUpManager;
-    
-    import actionScripts.events.ApplicationEvent;
-    import actionScripts.events.GeneralEvent;
-    import actionScripts.plugin.PluginBase;
-    import moonshine.plugin.findreplace.view.GoToLineView;
-    import moonshine.plugin.findreplace.view.FindReplaceView;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.editor.text.TextEditor;
-    import actionScripts.ui.editor.text.vo.SearchResult;
-    import actionScripts.utils.TextUtil;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.ui.FeathersUIWrapper;
+	import flash.events.Event;
+
+	import mx.core.FlexGlobals;
+	import mx.managers.PopUpManager;
+
+	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.ui.FeathersUIWrapper;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.utils.TextUtil;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+
+	import moonshine.editor.text.TextEditor;
+	import moonshine.editor.text.TextEditorSearchResult;
+	import moonshine.plugin.findreplace.view.FindReplaceView;
+	import moonshine.plugin.findreplace.view.GoToLineView;
 
 	public class FindReplacePlugin extends PluginBase
 	{
@@ -123,7 +123,7 @@ package actionScripts.plugin.findreplace
 
 				// Set initial selection
 				var editor:BasicTextEditor = BasicTextEditor(model.activeEditor);
-				var str:String = editor.getEditorComponent().getSelection(); 
+				var str:String = editor.editor.selectedText; 
 				if (str.indexOf("\n") == -1) 
 				{
 					findReplaceView.initialFindText = str;
@@ -147,8 +147,14 @@ package actionScripts.plugin.findreplace
 			if (!model.activeEditor || (model.activeEditor as BasicTextEditor) == null) return;
 
 			var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
-			editor.searchAndShowAll(event.value.search);
-			if (event.value.range) editor.selectRangeAtLine(event.value.search, event.value.range);
+			// editor.searchAndShowAll(event.value.search);
+			if(event.value.range) {
+				var startLine:int = event.value.range.startLineIndex;
+				var startChar:int = event.value.range.startCharIndex;
+				var endLine:int = event.value.range.endLineIndex;
+				var endChar:int = event.value.range.endCharIndex;
+				editor.getEditorComponent().setSelection(startLine, startChar, endLine, endChar);
+			}
 		}
 		
 		protected function goToLineRequestHandler(event:Event):void
@@ -163,7 +169,7 @@ package actionScripts.plugin.findreplace
 				gotoLineView = new GoToLineView();
 				gotoLineViewWrapper = new FeathersUIWrapper(gotoLineView);
 				PopUpManager.addPopUp(gotoLineViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
-				gotoLineView.maxLineNumber = editor.getEditorComponent().model.lines.length;
+				gotoLineView.maxLineNumber = editor.editor.lines.length;
 				gotoLineView.addEventListener(Event.CLOSE, onGotoLineClosed);
 				PopUpManager.centerPopUp(gotoLineViewWrapper);
 				gotoLineViewWrapper.assignFocus("top");
@@ -178,10 +184,9 @@ package actionScripts.plugin.findreplace
 				var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
 				var tmpLineIndex:int = gotoLineView.lineNumber - 1;
 				
-				var textEditor:TextEditor = editor.getEditorComponent();
-				textEditor.model.setSelection(tmpLineIndex, 0, tmpLineIndex, 0);
+				var textEditor:TextEditor = editor.editor;
+				textEditor.setSelection(tmpLineIndex, 0, tmpLineIndex, 0);
 				textEditor.scrollViewIfNeeded();
-				textEditor.invalidateLines();
 			}
 			
 			gotoLineViewWrapper.stage.removeEventListener(Event.RESIZE, gotoLineView_stage_resizeHandler);
@@ -234,15 +239,15 @@ package actionScripts.plugin.findreplace
 			{
 				var search:String = args[0];
 				if (search == "" || search == null) return;
-				var res:SearchResult = editor.search(search, false);
+				var res:TextEditorSearchResult = editor.search(search, false);
 				
-				if (res.totalMatches == 0)
+				if (res.results.length == 0)
 				{
 					print("No matches for '%s'", search);
 				}
 				else
 				{
-					print("%s matches for '%s'", res.totalMatches, search);
+					print("%s matches for '%s'", res.results.length, search);
 				}
 			}	
 		}
@@ -273,15 +278,15 @@ package actionScripts.plugin.findreplace
 					if (flags.indexOf('g') == -1) flags += 'g';
 					
 					var re:RegExp = new RegExp(search, flags);
-					var res:SearchResult;
+					var res:TextEditorSearchResult;
 					
 					if (replace)
 					{
 						res = editor.searchReplace(re, replace, hadGlobalFlag);
 						
-						if (res.totalReplaces > 0)
+						if (res.replaced.length > 0)
 						{
-							print("Replaced %s occurances of '%s'", res.totalReplaces, search);
+							print("Replaced %s occurances of '%s'", res.replaced.length, search);
 						}
 						else
 						{
@@ -291,13 +296,13 @@ package actionScripts.plugin.findreplace
 					else
 					{	
 						res = editor.search(re);
-						if (res.totalMatches == 0)
+						if (res.results.length == 0)
 						{
 							print("No matches for '%s'", search);
 						}
 						else
 						{
-							print("%s matches for '%s'", res.totalMatches, search);
+							print("%s matches for '%s'", res.results.length, search);
 						}
 					}
 				}
@@ -312,6 +317,7 @@ package actionScripts.plugin.findreplace
 		protected function dialogSearch(event:Event):void
 		{
 			var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
+			var needsNewSearch:Boolean = false;
 			
 			var searchText:String = findReplaceView.findText;
 			var replaceText:String = findReplaceView.replaceText;
@@ -335,7 +341,7 @@ package actionScripts.plugin.findreplace
 				searchRegExp = new RegExp(searchText, flags);
 			}
 			
-			var result:SearchResult;
+			var result:TextEditorSearchResult;
 			
 			// Perform search of type
 			if (event.type == FindReplaceView.EVENT_FIND_NEXT)
@@ -356,15 +362,15 @@ package actionScripts.plugin.findreplace
 			}
 			
 			// Display # of matches & position if any
-			if (result.totalMatches > 0)
+			if (result.results.length > 0)
 			{
-				findReplaceView.resultCount = result.totalMatches;
+				findReplaceView.resultCount = result.results.length;
 				findReplaceView.resultIndex = (result.selectedIndex + 1);
 			}
 			else
 			{
+				findReplaceView.resultCount = result.results.length;
 				findReplaceView.resultIndex = 0;
-				findReplaceView.resultCount = result.totalMatches;
 			}
 
 			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;

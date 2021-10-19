@@ -37,6 +37,7 @@ package actionScripts.plugin.console
     import actionScripts.plugin.settings.vo.ISetting;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.ui.FeathersUIWrapper;
 	
 	/**
 	 *  @private
@@ -270,7 +271,7 @@ package actionScripts.plugin.console
             if (consoleView.stage.focus != consoleView.commandLine)
             {
                 event.preventDefault();
-                consoleView.commandLine.setFocus();
+                FeathersUIWrapper(consoleView.commandLine.parent).setFocus();
                 consoleCmd = false;
                 consoleCtrl = false;
             }

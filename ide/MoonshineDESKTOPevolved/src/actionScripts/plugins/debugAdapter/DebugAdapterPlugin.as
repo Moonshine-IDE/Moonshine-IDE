@@ -18,10 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.debugAdapter
 {
-    import actionScripts.debugAdapter.DebugAdapter;
+    import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.events.Event;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
+    import flash.utils.IDataInput;
+	
+	import actionScripts.debugAdapter.DebugAdapter;
+    import actionScripts.events.AddTabEvent;
     import actionScripts.events.ApplicationEvent;
     import actionScripts.events.DebugActionEvent;
-    import actionScripts.events.EditorPluginEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
@@ -40,14 +47,7 @@ package actionScripts.plugins.debugAdapter
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
 
-    import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
-    import flash.events.Event;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.ProgressEvent;
-    import flash.utils.IDataInput;
-	
-	public class DebugAdapterPlugin extends PluginBase
+    public class DebugAdapterPlugin extends PluginBase
 	{
 		public static const EVENT_SHOW_HIDE_DEBUG_VIEW:String = "EVENT_SHOW_HIDE_DEBUG_VIEW";
 		private static const MAX_RETRY_COUNT:int = 5;
@@ -78,7 +78,7 @@ package actionScripts.plugins.debugAdapter
 			dispatcher.addEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.addEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
 			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_applicationExitHandler);
-			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
+			dispatcher.addEventListener(AddTabEvent.EVENT_ADD_TAB, dispatcher_addTabHandler);
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
 			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
 			dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, dispatcher_debugStopHandler);
@@ -89,8 +89,6 @@ package actionScripts.plugins.debugAdapter
 			dispatcher.addEventListener(DebugActionEvent.DEBUG_PAUSE, dispatcher_debugPauseHandler);
 			//if you add any new listeners here, before sure that you remove
 			//them in deactivate()
-			
-			DebugHighlightManager.init();
 		}
 		
 		override public function deactivate():void
@@ -100,7 +98,7 @@ package actionScripts.plugins.debugAdapter
 			dispatcher.removeEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.removeEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, dispatcher_applicationExitHandler);
-			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, dispatcher_editorOpenHandler);
+			dispatcher.removeEventListener(AddTabEvent.EVENT_ADD_TAB, dispatcher_addTabHandler);
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, dispatcher_closeTabHandler);
 			dispatcher.removeEventListener(DebugLineEvent.SET_DEBUG_LINE, dispatcher_setDebugLineHandler);
 			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STOP, dispatcher_debugStopHandler);
@@ -390,19 +388,20 @@ package actionScripts.plugins.debugAdapter
 			}
 		}
 		
-		private function dispatcher_editorOpenHandler(event:EditorPluginEvent):void
+		private function dispatcher_addTabHandler(event:AddTabEvent):void
 		{
-			if (event.newFile || !event.file)
+			var editor:BasicTextEditor = event.tab as BasicTextEditor;
+			if (!editor || !editor.currentFile)
 			{
 				return;
 			}
 			
-			var path:String = event.file.fileBridge.nativePath;
+			var path:String = editor.currentFile.fileBridge.nativePath;
 			var breakpoints:Array = this._breakpoints[path] as Array;
 			if(breakpoints)
 			{
 				//restore the breakpoints
-				event.editor.breakpoints = breakpoints;
+				editor.getEditorComponent().breakpoints = breakpoints;
 			}
 		}
 		

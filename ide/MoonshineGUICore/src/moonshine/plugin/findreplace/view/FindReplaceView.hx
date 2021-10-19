@@ -314,7 +314,6 @@ class FindReplaceView extends ResizableTitleWindow {
 			return;
 		}
 		this.dispatchEvent(new Event(EVENT_REPLACE_ONE));
-		findNext();
 	}
 
 	private function replaceAll():Void {

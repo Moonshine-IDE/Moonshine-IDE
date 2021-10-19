@@ -18,33 +18,29 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
-	import actionScripts.events.ChangeEvent;
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.LocationsEvent;
-	import actionScripts.events.MenuEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SaveFileEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.languageServer.LanguageServerProjectVO;
-	import actionScripts.ui.editor.text.TextLineModel;
 	import actionScripts.ui.tabview.TabEvent;
 
 	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.geom.Point;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
 
-	import moonshine.lsp.CompletionList;
-	import moonshine.lsp.Diagnostic;
-	import moonshine.lsp.Hover;
+	import moonshine.editor.text.lsp.LspTextEditor;
+	import moonshine.editor.text.lsp.events.LspTextEditorLanguageRequestEvent;
 	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.Position;
-	import moonshine.lsp.Range;
-	import moonshine.lsp.SignatureHelp;
-	import moonshine.lsp.utils.RangeUtil;
-	import moonshine.lsp.CodeAction;
-	import actionScripts.factory.FileLocation;
+	import moonshine.editor.text.events.TextEditorChangeEvent;
+	import moonshine.lsp.CompletionItem;
+	import moonshine.editor.text.lsp.events.LspTextEditorLanguageActionEvent;
+	import actionScripts.utils.applyWorkspaceEdit;
+	import moonshine.lsp.WorkspaceEdit;
+	import moonshine.lsp.Command;
+	import moonshine.lsp.LocationLink;
+	import actionScripts.events.OpenLocationEvent;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -55,12 +51,18 @@ package actionScripts.ui.editor
 			_languageID = languageID;
 			_project = project;
 
-			editor.addEventListener(ChangeEvent.TEXT_CHANGE, onTextChange);
-			editor.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			editor.addEventListener(MouseEvent.ROLL_OVER, onRollOver);
-			editor.addEventListener(MouseEvent.ROLL_OUT, onRollOut);
-			editor.model.addEventListener(Event.CHANGE, editorModel_onChange);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_COMPLETION, lspEditor_requestCompletionHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_RESOLVE_COMPLETION, lspEditor_requestResolveCompletionHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_SIGNATURE_HELP, lspEditor_requestSignatureHelpHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_HOVER, lspEditor_requestHoverHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_DEFINITION, lspEditor_requestDefinitionHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_CODE_ACTIONS, lspEditor_requestCodeActionsHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageActionEvent.APPLY_WORKSPACE_EDIT, lspEditor_applyWorkspaceEditHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageActionEvent.OPEN_LINK, lspEditor_openLinkHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageActionEvent.RUN_COMMAND, lspEditor_runCommandHandler);
 		}
+
+		protected var lspEditor:LspTextEditor;
 
 		private var _languageID:String;
 
@@ -87,7 +89,6 @@ package actionScripts.ui.editor
 			return _project.languageClient;
 		}
 
-
 		override public function set currentFile(value:FileLocation):void
 		{
 			var changed:Boolean = file != value;
@@ -96,6 +97,14 @@ package actionScripts.ui.editor
 				dispatchDidCloseEvent();
 			}
 			super.currentFile = value;
+			if(value)
+			{
+				lspEditor.textDocument = {uri: value.fileBridge.url};
+			}
+			else
+			{
+				lspEditor.textDocument = null;
+			}
 			if(changed)
 			{
 				dispatchDidOpenEvent();
@@ -103,12 +112,6 @@ package actionScripts.ui.editor
 		}
 
 		private var _savedDiagnostics:Array;
-
-		private var _codeActionTimeoutID:int = -1;
-		private var _completionIncomplete:Boolean = false;
-		private var _hoverTimeoutID:int = -1;
-		private var _definitionTimeoutID:int = -1;
-		private var _previousCharAndLine:Point;
 
 		override protected function addGlobalListeners():void
 		{
@@ -138,70 +141,25 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
 		}
+		
+		override protected function initializeChildrens():void
+		{
+			if(!editor)
+			{
+				lspEditor = new LspTextEditor(null, null, readOnly);
+				editor = lspEditor;
+			}
+			super.initializeChildrens();
+		}
 
 		protected function closeAllPopups():void
 		{
-			editor.showSignatureHelp(null);
-			clearHover();
-			clearDefinitionLink();
-		}
-
-		protected function startOrResetCodeActionTimer():void
-		{
-			if(_codeActionTimeoutID != -1)
-			{
-				//we want to "debounce" this event, so reset the timer
-				clearTimeout(_codeActionTimeoutID);
-				_codeActionTimeoutID = -1;
-			}
-			_codeActionTimeoutID = setTimeout(dispatchCodeActionEvent, 250);
-		}
-
-		protected function startOrResetHoverTimer(line:int, char:int):void
-		{
-			if(_hoverTimeoutID != -1)
-			{
-				//we want to "debounce" this event, so reset the timer
-				clearTimeout(_hoverTimeoutID);
-				_hoverTimeoutID = -1;
-			}
-			_hoverTimeoutID = setTimeout(dispatchHoverEvent, 250, line, char)
-		}
-
-		protected function startOrResetDefinitionLinkTimer(line:int, char:int):void
-		{
-			if(_definitionTimeoutID != -1)
-			{
-				//we want to "debounce" this event, so reset the timer
-				clearTimeout(_definitionTimeoutID);
-				_definitionTimeoutID = -1;
-			}
-			_definitionTimeoutID = setTimeout(dispatchDefinitionLinkEvent, 250, line, char)
-		}
-
-		private function clearDefinitionLink():void
-		{
-			editor.showDefinitionLink(null, null);
-			if(_definitionTimeoutID != -1)
-			{
-				clearTimeout(_definitionTimeoutID);
-				_definitionTimeoutID = -1;
-			}
-		}
-
-		private function clearHover():void
-		{
-			editor.showHover(null);
-			if(_hoverTimeoutID != -1)
-			{
-				clearTimeout(_hoverTimeoutID);
-				_hoverTimeoutID = -1;
-			}
+			lspEditor.clearAll();
 		}
 
 		protected function dispatchDidOpenEvent():void
 		{
-			if(!currentFile || !_project.languageClient)
+			if(!currentFile || !_project.languageClient || loadingFile)
 			{
 				return;
 			}
@@ -211,7 +169,7 @@ package actionScripts.ui.editor
 					uri: currentFile.fileBridge.url,
 					languageId: _languageID,
 					version: 0,
-					text: editor.dataProvider
+					text: editor.text
 				}
 			});
 		}
@@ -243,115 +201,63 @@ package actionScripts.ui.editor
 					version: 0
 				},
 				contentChanges: {
-					text: editor.dataProvider
+					text: editor.text
 				}
 			});
 		}
 
-		protected function dispatchCompletionEvent():void
+		protected function lspEditor_requestCompletionHandler(event:LspTextEditorLanguageRequestEvent):void
 		{
 			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-
-			var self:LanguageServerTextEditor = this;
-			var startLine:int = editor.model.selectedLineIndex;
-			var startChar:int = editor.model.caretIndex;
-
-			_project.languageClient.completion({
-				textDocument: {
-					uri: currentFile.fileBridge.url
-				},
-				position: new Position(startLine, startChar)
-			}, function(completionList:CompletionList):void {
-				if(model.activeEditor != self || !currentFile)
-				{
-					return;
-				}
-				if (!completionList || completionList.items.length == 0)
-				{
-					_completionIncomplete = false;
-					return;
-				}
-
-				_completionIncomplete = completionList.isIncomplete;
-				editor.showCompletionList(completionList.items);
-			});
+			_project.languageClient.completion(event.params, event.callback);
 		}
 
-		protected function dispatchSignatureHelpEvent():void
+		protected function lspEditor_requestResolveCompletionHandler(event:LspTextEditorLanguageRequestEvent):void
 		{
 			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-
-			var self:LanguageServerTextEditor = this;
-			var startLine:int = editor.model.selectedLineIndex;
-			var startChar:int = editor.model.caretIndex;
-
-			_project.languageClient.signatureHelp({
-				textDocument: {
-					uri: currentFile.fileBridge.url
-				},
-				position: new Position(startLine, startChar)
-			}, function(signatureHelp:SignatureHelp):void {
-				if(model.activeEditor != self || !currentFile)
-				{
-					return;
-				}
-				editor.showSignatureHelp(signatureHelp);
-			});
+			_project.languageClient.resolveCompletion(CompletionItem(event.params), event.callback);
 		}
 
-		protected function dispatchHoverEvent(line:int, char:int):void
+		protected function lspEditor_requestSignatureHelpHandler(event:LspTextEditorLanguageRequestEvent):void
 		{
-			_hoverTimeoutID = -1;
 			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-
-			var self:LanguageServerTextEditor = this;
-
-			_project.languageClient.hover({
-				textDocument: {
-					uri: currentFile.fileBridge.url
-				},
-				position: new Position(line, char)
-			}, function(hover:Hover):void {
-				if(model.activeEditor != self || !currentFile)
-				{
-					return;
-				}
-				editor.showHover(hover);
-			});
+			_project.languageClient.signatureHelp(event.params, event.callback);
 		}
 
-		protected function dispatchDefinitionLinkEvent(line:int, char:int):void
+		protected function lspEditor_requestHoverHandler(event:LspTextEditorLanguageRequestEvent):void
 		{
-			_definitionTimeoutID = -1;
 			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
+			_project.languageClient.hover(event.params, event.callback);
+		}
 
-			var self:LanguageServerTextEditor = this;
-			var position:Position = new Position(line, char);
+		protected function lspEditor_requestDefinitionHandler(event:LspTextEditorLanguageRequestEvent):void
+		{
+			if(!currentFile || !_project.languageClient)
+			{
+				return;
+			}
+			_project.languageClient.definition(event.params, event.callback);
+		}
 
-			_project.languageClient.definition({
-				textDocument: {
-					uri: currentFile.fileBridge.url
-				},
-				position: position
-			}, function(locations:Array /* Array<Location> | Array<LocationLink> */):void {
-				if(model.activeEditor != self || !currentFile)
-				{
-					return;
-				}
-				editor.showDefinitionLink(locations, position);
-			});
+		private function lspEditor_requestCodeActionsHandler(event:LspTextEditorLanguageRequestEvent):void
+		{
+			if(!currentFile || !_project.languageClient)
+			{
+				return;
+			}
+			_project.languageClient.codeAction(event.params, event.callback);
 		}
 
 		protected function dispatchGotoDefinitionEvent(line:int, char:int):void
@@ -414,57 +320,6 @@ package actionScripts.ui.editor
 			});
 		}
 
-		private function dispatchCodeActionEvent():void
-		{
-			_codeActionTimeoutID = -1;
-			if(!currentFile || !_project.languageClient)
-			{
-				return;
-			}
-
-			var self:LanguageServerTextEditor = this;
-			var startLine:int = editor.model.getSelectionLineStart();
-			var startChar:int = editor.model.getSelectionCharStart();
-			if(startChar == -1)
-			{
-				startChar = editor.model.caretIndex;
-			}
-			var endLine:int = editor.model.getSelectionLineEnd();
-			var endChar:int = editor.model.getSelectionCharEnd();
-
-			var range:Range = new Range(new Position(startLine, startChar), new Position(endLine, endChar));
-
-			var diagnostics:Array = [];
-			if(_savedDiagnostics)
-			{
-				//we need to filter out diagnostics that don't apply to the
-				//current selection range
-				diagnostics = _savedDiagnostics.filter(function(diagnostic:Diagnostic, index:int, original:Array):Boolean
-				{
-					var diagnosticRange:Range = new Range(
-						new Position(diagnostic.range.start.line, diagnostic.range.start.character),
-						new Position(diagnostic.range.end.line, diagnostic.range.end.character));
-					return RangeUtil.rangesIntersect(range, diagnosticRange);
-				});
-			}
-
-			_project.languageClient.codeAction({
-				textDocument: {
-					uri: currentFile.fileBridge.url
-				},
-				range: range,
-				context: {
-					diagnostics: diagnostics
-				}
-			}, function(result:Array /* Array<CodeAction> */):void {
-				if(model.activeEditor != self || !currentFile)
-				{
-					return;
-				}
-				editor.showCodeActions(Vector.<CodeAction>(result));
-			});
-		}
-
 		override protected function openFileAsStringHandler(data:String):void
 		{
 			super.openFileAsStringHandler(data);
@@ -476,108 +331,10 @@ package actionScripts.ui.editor
 			super.openHandler(event);
 			dispatchDidOpenEvent();
 		}
-
-		private function onRollOver(event:MouseEvent):void
-		{
-			_previousCharAndLine = null;
-		}
-
-		private function onRollOut(event:MouseEvent):void
-		{
-			//don't call showHover(null) here. let the manager handle it.
-			//because the mouse might have moved over the tooltip instead,
-			//and we don't want to clear the hover in that case
-			if(_hoverTimeoutID != -1)
-			{
-				clearTimeout(_hoverTimeoutID);
-				_hoverTimeoutID = -1;
-			}
-			clearDefinitionLink();
-		}
-
-		private function isInsideSameWord(cl1:Point, cl2:Point):Boolean
-		{
-			if(!cl1 || !cl2)
-			{
-				return false;
-			}
-			var line1:Number = cl1.y;
-			var line2:Number = cl2.y;
-			if(line1 != line2)
-			{
-				//can't be the same word on different lines
-				return false;
-			}
-			var char1:Number = cl1.x;
-			var char2:Number = cl2.x;
-			if(char1 == char2)
-			{
-				//must be the same word when the character hasn't changed
-				return true;
-			}
-			var model:TextLineModel = editor.model.lines[line1];
-			var startIndex:int = char1;
-			var endIndex:int = char2;
-			if(startIndex > endIndex)
-			{
-				startIndex = char2;
-				endIndex = char1;
-			}
-			if((endIndex + 1) < model.text.length)
-			{
-				//include the later character when possible
-				endIndex++;
-			}
-			//look for non-word characters between the two
-			var substr:String = model.text.substr(startIndex, endIndex - startIndex);
-			return /^\w+$/g.test(substr);
-		}
 		
-		private function onMouseMove(event:MouseEvent):void
+		override protected function handleTextChange(event:TextEditorChangeEvent):void
 		{
-			var globalXY:Point = new Point(event.stageX, event.stageY);
-			var charAndLine:Point = editor.getCharAndLineForXY(globalXY, true);
-			if(charAndLine !== null)
-			{
-				if(!isInsideSameWord(charAndLine, _previousCharAndLine))
-				{
-					clearHover();
-					clearDefinitionLink();
-				}
-				_previousCharAndLine = charAndLine.clone();
-
-				if(event.ctrlKey)
-				{
-					startOrResetDefinitionLinkTimer(charAndLine.y, charAndLine.x);
-				}
-				else
-				{
-					clearDefinitionLink();
-				}
-				startOrResetHoverTimer(charAndLine.y, charAndLine.x);
-				
-			}
-			else
-			{
-				clearDefinitionLink();
-				clearHover();
-			}
-		}
-
-		private function onTextChange(event:ChangeEvent):void
-		{
-			var completionIncomplete:Boolean = _completionIncomplete && editor.completionActive;
-			_completionIncomplete = false;
 			dispatchDidChangeEvent();
-			if(completionIncomplete)
-			{
-				dispatchCompletionEvent();
-			}
-		}
-
-		private function editorModel_onChange(event:Event):void
-		{
-			startOrResetCodeActionTimer();
 		}
 
 		protected function menuGoToDefinitionHandler(event:Event):void
@@ -586,12 +343,8 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
-			var startLine:int = editor.model.getSelectionLineStart();
-			var startChar:int = editor.model.getSelectionCharStart();
-			if(startChar == -1)
-			{
-				startChar = editor.model.caretIndex;
-			}
+			var startLine:int = editor.caretLineIndex;
+			var startChar:int = editor.caretCharIndex;
 			dispatchGotoDefinitionEvent(startLine, startChar);
 		}
 
@@ -601,12 +354,8 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
-			var startLine:int = editor.model.getSelectionLineStart();
-			var startChar:int = editor.model.getSelectionCharStart();
-			if(startChar == -1)
-			{
-				startChar = editor.model.caretIndex;
-			}
+			var startLine:int = editor.caretLineIndex;
+			var startChar:int = editor.caretCharIndex;
 			dispatchGotoTypeDefinitionEvent(startLine, startChar);
 		}
 
@@ -616,12 +365,8 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
-			var startLine:int = editor.model.getSelectionLineStart();
-			var startChar:int = editor.model.getSelectionCharStart();
-			if(startChar == -1)
-			{
-				startChar = editor.model.caretIndex;
-			}
+			var startLine:int = editor.caretLineIndex;
+			var startChar:int = editor.caretCharIndex;
 			dispatchGotoImplementationEvent(startLine, startChar);
 		}
 
@@ -678,11 +423,6 @@ package actionScripts.ui.editor
 			super.tabSelectHandler(event);
 		}
 
-		override protected function addedToStageHandler(event:Event):void
-		{
-			super.addedToStageHandler(event);
-		}
-
 		override protected function removedFromStageHandler(event:Event):void
 		{
 			super.removedFromStageHandler(event);
@@ -691,14 +431,38 @@ package actionScripts.ui.editor
 
 		private function showDiagnosticsHandler(event:DiagnosticsEvent):void
 		{
-			var uri:String = event.uri;
-			if(uri != currentFile.fileBridge.url)
+			if(!currentFile || event.uri != currentFile.fileBridge.url)
 			{
 				return;
 			}
 
-			_savedDiagnostics = event.diagnostics;
-			editor.showDiagnostics(Vector.<Diagnostic>(_savedDiagnostics));
+			lspEditor.diagnostics = event.diagnostics;
+		}
+
+		private function lspEditor_applyWorkspaceEditHandler(event:LspTextEditorLanguageActionEvent):void
+		{
+			var workspaceEdit:WorkspaceEdit = WorkspaceEdit(event.data);
+			applyWorkspaceEdit(workspaceEdit);
+		}
+
+		private function lspEditor_openLinkHandler(event:LspTextEditorLanguageActionEvent):void
+		{
+			var locationLinks:Array = event.data as Array;
+			if(locationLinks.length == 0)
+			{
+				return;
+			}
+			var locationLink:LocationLink = locationLinks[0];
+			dispatcher.dispatchEvent(new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, locationLink));
+		}
+
+		private function lspEditor_runCommandHandler(event:LspTextEditorLanguageActionEvent):void
+		{
+			var command:Command = Command(event.data);
+			languageClient.executeCommand({
+				command: command.command,
+				arguments: command.arguments
+			}, function(result:* = null):void {});
 		}
 	}
 }

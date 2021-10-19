@@ -20,16 +20,18 @@
 package actionScripts.plugins.ui.editor
 {
 	import flash.events.Event;
-	
+
 	import mx.containers.VDividedBox;
 	import mx.controls.SWFLoader;
 	import mx.events.DividerEvent;
-	
-	import actionScripts.events.ChangeEvent;
+
+	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.TextEditor;
-	
+
 	import components.containers.TourDeHTMLLinkDisplay;
+
+	import moonshine.editor.text.TextEditor;
+	import moonshine.editor.text.events.TextEditorChangeEvent;
 
 	public class TourDeTextEditor extends BasicTextEditor
 	{
@@ -69,13 +71,12 @@ package actionScripts.plugins.ui.editor
 		
 		override protected function initializeChildrens():void
 		{
-			editor = new TextEditor(true);
-			editor.percentHeight = 50;
-			editor.percentWidth = 100;
-			editor.bottom = 0;
-			editor.addEventListener(ChangeEvent.TEXT_CHANGE, handleTextChange);
-			
-			text = "";
+			editor = new TextEditor("", true);
+			editorWrapper = new FeathersUIWrapper(editor);
+			editorWrapper.percentHeight = 50;
+			editorWrapper.percentWidth = 100;
+			editorWrapper.bottom = 0;
+			editor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
 		}
 		
 		override protected function createChildren():void
@@ -117,7 +118,7 @@ package actionScripts.plugins.ui.editor
 				vDivider.addChild(htmlLinkDisplay);
 			}
 			
-			vDivider.addChild(editor);
+			vDivider.addElement(editorWrapper);
 			
 			super.createChildren();
 		}

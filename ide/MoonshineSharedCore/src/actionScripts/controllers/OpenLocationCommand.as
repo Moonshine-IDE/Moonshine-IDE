@@ -28,7 +28,7 @@ package actionScripts.controllers
 	import actionScripts.interfaces.ILanguageServerBridge;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.TextEditor;
+	import moonshine.editor.text.TextEditor;
 	import actionScripts.valueObjects.ProjectVO;
 
 	import moonshine.lsp.Location;
@@ -82,13 +82,11 @@ package actionScripts.controllers
 				var start:Position = range.start;
 				if (start.line > -1)
 				{
-					var editorComponent:TextEditor = editor.getEditorComponent();
-					editorComponent.scrollTo(start.line, OpenFileEvent.OPEN_FILE);
-					editorComponent.selectLine(start.line);
-					if(start.character > -1)
-					{
-						editorComponent.model.caretIndex = start.character;
-					}
+					var editorComponent:TextEditor = editor.editor;
+					var line:int = start.line;
+					var char:int = start.character != -1 ? start.character : 0;
+					editorComponent.setSelection(line, char, line, char);
+					editorComponent.scrollViewIfNeeded();
 				}
 				editor.callLater(function():void
 				{

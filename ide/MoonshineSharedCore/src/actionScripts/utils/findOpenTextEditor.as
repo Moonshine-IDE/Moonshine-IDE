@@ -22,7 +22,7 @@ package actionScripts.utils
 	import actionScripts.locator.IDEModel;
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.TextEditor;
+	import moonshine.editor.text.TextEditor;
 
 	import mx.collections.ArrayCollection;
 

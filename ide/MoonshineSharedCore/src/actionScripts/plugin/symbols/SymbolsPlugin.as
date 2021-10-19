@@ -198,7 +198,7 @@ package actionScripts.plugin.symbols
 			var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
 			PopUpManager.addPopUp(symbolsViewWrapper, DisplayObject(parentApp), true);
 			PopUpManager.centerPopUp(symbolsViewWrapper);
-			symbolsView.stage.focus = symbolsView.searchFieldTextInput;
+			symbolsViewWrapper.assignFocus("top");
 			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
 		
 			//start by listing all symbols, if the language server supports it

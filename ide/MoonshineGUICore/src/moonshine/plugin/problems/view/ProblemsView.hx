@@ -20,6 +20,8 @@
 
 package moonshine.plugin.problems.view;
 
+import moonshine.plugin.problems.events.ProblemsViewEvent;
+import feathers.events.GridViewEvent;
 import moonshine.plugin.problems.vo.MoonshineDiagnostic;
 import actionScripts.factory.FileLocation;
 import actionScripts.interfaces.IViewWithTitle;
@@ -97,7 +99,7 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		});
 		this.gridView.columns = new ArrayCollection([problemColumn, locationColumn]);
 		this.gridView.extendedScrollBarY = true;
-		this.gridView.addEventListener(Event.CHANGE, gridView_changeHandler);
+		this.gridView.addEventListener(GridViewEvent.CELL_TRIGGER, gridView_cellTriggerHandler);
 		this.addChild(this.gridView);
 
 		super.initialize();
@@ -131,7 +133,7 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		return label;
 	}
 
-	private function gridView_changeHandler(event:Event):Void {
-		this.dispatchEvent(new Event(Event.CHANGE));
+	private function gridView_cellTriggerHandler(event:GridViewEvent<GridViewCellState>):Void {
+		this.dispatchEvent(new ProblemsViewEvent(ProblemsViewEvent.OPEN_PROBLEM, cast(event.state.data, MoonshineDiagnostic)));
 	}
 }

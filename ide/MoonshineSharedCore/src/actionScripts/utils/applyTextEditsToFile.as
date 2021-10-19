@@ -19,9 +19,11 @@
 package actionScripts.utils
 {
 	import actionScripts.factory.FileLocation;
-	import actionScripts.ui.editor.text.TextEditor;
-	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.ui.editor.text.change.TextChangeBase;
+
+	import moonshine.editor.text.TextEditor;
+	import moonshine.editor.text.changes.TextEditorChange;
+	import moonshine.editor.text.utils.LspTextEditorUtil;
+	import moonshine.editor.text.utils.TextEditorUtil;
 	import moonshine.lsp.TextEdit;
 
 	public function applyTextEditsToFile(file:FileLocation, textEdits:Array /* Array<TextEdit> */):void
@@ -35,18 +37,17 @@ package actionScripts.utils
 
 		var content:String = file.fileBridge.read() as String;
 		var contentLines:Array = content.split("\n");
-		var textModelLines:Vector.<TextLineModel> = Vector.<TextLineModel>([]);
-		for (var i:int = 0; i < contentLines.length; i++)
-		{
-			var text:String = contentLines[i];
-			var lineModel:TextLineModel = new TextLineModel(text);
-			textModelLines.push(lineModel);
-		}
 		
-		var change:TextChangeBase = getTextChangeFromTextEdits(textEdits);
-		change.apply(textModelLines);
+		var changes:Array = textEdits.map(function(textEdit:TextEdit, index:int, array:Array):TextEditorChange
+		{
+			return LspTextEditorUtil.lspTextEditToTextEditorChange(textEdit);
+		});
+		changes.forEach(function(textEditorChange:TextEditorChange, index:int, array:Array):void
+		{
+			contentLines = TextEditorUtil.applyTextChangeToLines(contentLines, textEditorChange);
+		});
 
-		content = textModelLines.join("\n");
+		content = contentLines.join("\n");
 
 		file.fileBridge.save(content);
 	}

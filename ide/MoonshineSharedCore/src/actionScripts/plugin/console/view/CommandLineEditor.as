@@ -18,25 +18,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.console.view
 {
-import flash.events.Event;
-import flash.events.FocusEvent;
-import flash.events.KeyboardEvent;
-import flash.events.MouseEvent;
-import flash.ui.Keyboard;
+	import actionScripts.plugin.console.ConsoleCommandEvent;
 
-import mx.controls.Alert;
-import mx.core.FlexGlobals;
-import mx.events.SandboxMouseEvent;
-import mx.utils.StringUtil;
+	import flash.events.KeyboardEvent;
+	import flash.ui.Keyboard;
 
-import actionScripts.events.ChangeEvent;
-import actionScripts.plugin.console.ConsoleCommandEvent;
-import actionScripts.ui.editor.text.TextEditor;
-import actionScripts.ui.editor.text.TextLineModel;
-import actionScripts.ui.editor.text.change.TextChangeBase;
-import actionScripts.ui.editor.text.change.TextChangeInsert;
-import actionScripts.ui.editor.text.change.TextChangeMulti;
-import actionScripts.valueObjects.ConstantsCoreVO;
+	import moonshine.editor.text.TextEditor;
+	import moonshine.editor.text.changes.TextEditorChange;
+	import moonshine.editor.text.events.TextEditorChangeEvent;
+	import moonshine.editor.text.lines.TextLineModel;
+
+	import mx.utils.StringUtil;
+	import moonshine.editor.text.lines.TextLineRenderer;
+	import haxe.IMap;
+	import haxe.ds.IntMap;
+	import flash.text.TextFormat;
+	import actionScripts.valueObjects.Settings;
+	import feathers.skins.RectangleSkin;
+	import feathers.graphics.FillStyle;
+	import feathers.controls.ScrollPolicy;
 	
 	public class CommandLineEditor extends TextEditor
 	{
@@ -45,22 +45,44 @@ import actionScripts.valueObjects.ConstantsCoreVO;
 		
 		public function CommandLineEditor()
 		{
-			super(false);
+			super();
+			backgroundSkin = null;
+			showLineNumbers = false;
+			var textStyles:IntMap = new IntMap();
+			textStyles.set(0, new TextFormat(Settings.font.defaultFontFamily, Settings.font.defaultFontSize, 0xdddddd));
+			setParserAndTextStyles(null, textStyles);
+			embedFonts = Settings.font.defaultFontEmbedded;
 
-			this.addEventListener(ChangeEvent.TEXT_CHANGE, handleChange);
+			this.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleChange);
 			this.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown, false, 10);
-			this.addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
-			//this.addEventListener(FocusEvent.MOUSE_FOCUS_CHANGE, handleFocusOut);
-			
-			this.addEventListener(MouseEvent.CLICK, onMouseClicked, false, 0, true);
+		}
+
+		override public function initialize():void {
+			super.initialize();
+			_listView.scrollPolicyX = ScrollPolicy.OFF;
+			_listView.scrollPolicyY = ScrollPolicy.OFF;
+		}
+
+		override public function createTextLineRenderer():TextLineRenderer {
+			var textLineRenderer:TextLineRenderer = super.createTextLineRenderer();
+			textLineRenderer.backgroundSkin = null;
+			textLineRenderer.gutterBackgroundSkin = null;
+			textLineRenderer.focusedBackgroundSkin = null;
+			textLineRenderer.selectedTextBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(0x676767));
+			textLineRenderer.gutterPaddingLeft = 0.0;
+			textLineRenderer.gutterPaddingRight = 0.0;
+			return textLineRenderer;
 		}
 		
-		private function handleChange(event:ChangeEvent):void
+		private function handleChange(event:TextEditorChangeEvent):void
 		{
-			var change:TextChangeBase = event.change;
-			
-			if (change is TextChangeInsert) applyChangeInsert(TextChangeInsert(change));
-			else if (change is TextChangeMulti) applyChangeMulti(TextChangeMulti(change));
+			var changes:Array = event.changes;
+			for(var i:int = 0 ; i < changes.length; i++) {
+				var change:TextEditorChange = changes[i];
+				if(change.newText != null && change.newText.length > 0) {
+					applyChangeInsert(change);
+				}
+			}
 		}
 		
 		private function handleKeyDown(event:KeyboardEvent):void
@@ -74,7 +96,7 @@ import actionScripts.valueObjects.ConstantsCoreVO;
 					{ 
 						// Cap to -1. Next 'up' action will bring it to 0 & the first history item. 
 						historyIndex = -1;
-						dataProvider = "";
+						text = "";
 					}
 					else
 					{
@@ -103,11 +125,11 @@ import actionScripts.valueObjects.ConstantsCoreVO;
 					event.stopImmediatePropagation();
 					
 					// Get the line & exec it
-					var line:String = model.selectedLine.text;
+					var line:String = lines.get(0).text;
 					exec(line);
 					
 					// Reset the console
-					dataProvider = "";
+					text = "";
 					
 					break;
 				}
@@ -117,32 +139,28 @@ import actionScripts.valueObjects.ConstantsCoreVO;
         private function applyHistory():void
 		{
 			if (history.length == 0) return;
-			dataProvider = history[historyIndex];
-			model.caretIndex = model.selectedLine.text.length;
-		}
-		
-		private function applyChangeMulti(change:TextChangeMulti):void
-		{
-			for each (var subchange:TextChangeBase in change.changes)
-			{
-				if (subchange is TextChangeInsert) applyChangeInsert(TextChangeInsert(subchange));
-			}
+			text = history[historyIndex];
+			setSelection(caretLineIndex, caretLine.text.length, caretLineIndex, caretLine.text.length);
 		}
 		
 		// Used for pasting multi-line commands.
-		private function applyChangeInsert(change:TextChangeInsert):void
+		private function applyChangeInsert(change:TextEditorChange):void
 		{
 			// Loop all lines and exec them in order
-			if (model.lines.length > 1)
+			if (lines.length > 1)
 			{
-				for (var i:int = 0; i < model.lines.length-1; i++)
+				//run all but the last command
+				for (var i:int = 0; i < lines.length - 1; i++)
 				{
-					var m:TextLineModel = model.lines[i];
-					
-					exec(m.text);					
+					var m:TextLineModel = TextLineModel(lines.get(i));
+					exec(m.text);
 				}
 				
-				dataProvider = "";
+				//display the last command
+				var lastLineText:String = lines.get(lines.length - 1).text;
+				text = lastLineText;
+				//and set selection at the end
+				setSelection(0, lastLineText.length, 0, lastLineText.length)
 			}
 		}
 		
@@ -161,17 +179,6 @@ import actionScripts.valueObjects.ConstantsCoreVO;
 			var args:Array = split.splice(1);
 			
 			dispatchEvent( new ConsoleCommandEvent(c, args) );
-		}
-
-        private function handleFocusOut(event:FocusEvent):void
-        {
-			trace(event.type);
-            hasFocus = false;
-        }
-		
-		private function onMouseClicked(event:MouseEvent):void
-		{
-			hasFocus = true;
 		}
     }
 }

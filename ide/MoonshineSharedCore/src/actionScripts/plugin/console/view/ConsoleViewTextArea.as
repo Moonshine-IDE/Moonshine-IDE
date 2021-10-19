@@ -24,7 +24,6 @@ package actionScripts.plugin.console.view
     
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.plugin.console.ConsoleTextLineModel;
-    import actionScripts.ui.editor.text.TextEditorModel;
     import actionScripts.ui.editor.text.TextLineModel;
     
     import flashx.textLayout.conversion.TextConverter;
@@ -36,9 +35,7 @@ package actionScripts.plugin.console.view
     import no.doomsday.console.core.events.ConsoleEvent;
 	
 	public class ConsoleViewTextArea extends TextArea
-	{
-		protected var model:TextEditorModel;
-		
+	{	
 		public function ConsoleViewTextArea()
 		{
 			super();
@@ -91,12 +88,8 @@ package actionScripts.plugin.console.view
                     }
 
 					this.textFlow.addChild(p);
-					//model.lines.push( new TextLineModel(lines[i]) );
-					//this.appendText(lines[i] + "\n");
 				}
 				
-				/*model.scrollPosition = Math.max(0, model.lines.length-model.renderersNeeded+1);
-				invalidateLines();*/
 				callLater(setScroll);
 				return this.numLines;
 			} 
@@ -112,19 +105,14 @@ package actionScripts.plugin.console.view
 					}
 
 					tf = TextConverter.importToFlow(String(text[i]) + "\n", TextConverter.PLAIN_TEXT_FORMAT);
-					//tf = TextFlowUtil.importFromString(String("<p>"+text[i])+"</p>");
 					pe = tf.mxmlChildren[0];
 					for each (fe in pe.mxmlChildren)
 					{
 						p.addChild(fe);
 					}
 					this.textFlow.addChild(p);
-					//model.lines.push( text[i] );
-					//this.appendText( String(text[i]) +"\n");
 				}
 				
-				/*model.scrollPosition = Math.max(0, model.lines.length-model.renderersNeeded+1);
-				invalidateLines();*/
 				callLater(setScroll);
 				return this.numLines;
 			}

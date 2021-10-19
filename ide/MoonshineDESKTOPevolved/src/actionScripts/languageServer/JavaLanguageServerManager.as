@@ -531,8 +531,12 @@ package actionScripts.languageServer
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
 			_languageClient.registerCommand(COMMAND_JAVA_CLEAN_WORKSPACE, command_javaCleanWorkspaceHandler);
+			_languageClient.registerCommand(COMMAND_JAVA_APPLY_WORKSPACE_EDIT, command_javaApplyWorkspaceEditHandler);
 			_project.languageClient = _languageClient;
-			_languageClient.start(initOptions);
+
+			var initParams:Object = LanguageClientUtil.getSharedInitializeParams();
+			initParams.initializationOptions = initOptions;
+			_languageClient.initialize(initParams);
 		}
 
 		private function restartLanguageServer():void
@@ -547,7 +551,7 @@ package actionScripts.languageServer
 			if(_languageClient)
 			{
 				_waitingToRestart = true;
-				_languageClient.stop();
+				_languageClient.shutdown();
 			}
 			else if(_languageServerProcess)
 			{
@@ -636,7 +640,7 @@ package actionScripts.languageServer
 			{
 				//this should have already happened, but if the process exits
 				//abnormally, it might not have
-				_languageClient.stop();
+				_languageClient.shutdown();
 				
 				warning("Java language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
@@ -762,8 +766,7 @@ package actionScripts.languageServer
 				case COMMAND_JAVA_APPLY_WORKSPACE_EDIT:
 				{
 					event.preventDefault();
-					var workspaceEdit:WorkspaceEdit = WorkspaceEdit.parse(event.arguments[0]);
-					applyWorkspaceEdit(workspaceEdit);
+					command_javaApplyWorkspaceEditHandler(event.arguments[0]);
 					break;
 				}
 				default:
@@ -993,12 +996,18 @@ package actionScripts.languageServer
 			if(_languageClient)
 			{
 				_waitingToCleanWorkspace = true;
-				_languageClient.stop();
+				_languageClient.shutdown();
 			}
 			else
 			{
 				cleanWorkspace();
 			}
+		}
+
+		private function command_javaApplyWorkspaceEditHandler(json:Object):void
+		{
+			var workspaceEdit:WorkspaceEdit = WorkspaceEdit.parse(json);
+			applyWorkspaceEdit(workspaceEdit);
 		}
 
 		private function removeProjectHandler(event:ProjectEvent):void
@@ -1007,7 +1016,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.stop();
+			_languageClient.shutdown();
 		}
 
 		private function applicationExitHandler(event:ApplicationEvent):void
@@ -1016,7 +1025,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.stop();
+			_languageClient.shutdown();
 		}
 	}
 }

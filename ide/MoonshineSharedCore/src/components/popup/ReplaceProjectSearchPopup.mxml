@@ -131,7 +131,7 @@
 					if (item is BasicTextEditor && BasicTextEditor(item).currentFile.fileBridge.nativePath == value)
 					{
 						var editor:BasicTextEditor = item as BasicTextEditor;
-						var lastScrolledLineIndex:int = editor.editor.model.itemRenderersInUse[0].dataIndex;
+						var lastScrolledLineIndex:int = editor.editor.lineScrollY;
 						editor.reload();
 						editor.callLater(editor.scrollTo, [lastScrolledLineIndex]);
 						break;

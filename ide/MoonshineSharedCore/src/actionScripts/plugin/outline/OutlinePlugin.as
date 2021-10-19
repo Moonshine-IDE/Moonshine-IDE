@@ -22,7 +22,6 @@ package actionScripts.plugin.outline
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 
-	import actionScripts.events.ChangeEvent;
 	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SaveFileEvent;
@@ -40,6 +39,7 @@ package actionScripts.plugin.outline
 	import moonshine.lsp.Range;
 	import moonshine.lsp.SymbolInformation;
 	import moonshine.plugin.outline.view.OutlineView;
+	import moonshine.editor.text.events.TextEditorChangeEvent;
 
 	public class OutlinePlugin extends PluginBase
 	{
@@ -76,12 +76,12 @@ package actionScripts.plugin.outline
 			}
 			if(_activeEditor)
 			{
-				_activeEditor.getEditorComponent().removeEventListener(ChangeEvent.TEXT_CHANGE, handleDidChange);
+				_activeEditor.getEditorComponent().removeEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleDidChange);
 			}
 			_activeEditor = value;
 			if(_activeEditor)
 			{
-				_activeEditor.getEditorComponent().addEventListener(ChangeEvent.TEXT_CHANGE, handleDidChange);
+				_activeEditor.getEditorComponent().addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleDidChange);
 			}
 		}
 
@@ -233,7 +233,7 @@ package actionScripts.plugin.outline
 				//we can ignore this event when the outline isn't visible
 				return;
 			}
-			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			var lspEditor:LanguageServerTextEditor = _activeEditor as LanguageServerTextEditor;
 			if(!lspEditor || !lspEditor.currentFile || !lspEditor.languageClient)
 			{
 				//we can clear the collection if we can't proceed
@@ -256,12 +256,12 @@ package actionScripts.plugin.outline
 
 			setActiveEditor(event.child as LanguageServerTextEditor);
 
-			this.refreshSymbols();
+			refreshSymbols();
 		}
 
 		private function outlineView_changeHandler(event:Event):void
 		{
-			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			var lspEditor:LanguageServerTextEditor = _activeEditor as LanguageServerTextEditor;
 			if(!lspEditor)
 			{
 				return;
@@ -296,7 +296,7 @@ package actionScripts.plugin.outline
 			LayoutModifier.removeFromSidebar(outlineViewWrapper);
 		}
 
-		private function handleDidChange(event:ChangeEvent):void
+		private function handleDidChange(event:TextEditorChangeEvent):void
 		{
 			//the file has been edited. to avoid updating the outline too often,
 			//reset the timer and start over from the beginning.

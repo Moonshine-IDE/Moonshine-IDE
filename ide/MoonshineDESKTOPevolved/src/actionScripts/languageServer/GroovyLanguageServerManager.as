@@ -345,7 +345,9 @@ package actionScripts.languageServer
 			_languageClient.addEventListener(LspNotificationEvent.SHOW_MESSAGE, languageClient_showMessageHandler);
 			_languageClient.addEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			_project.languageClient = _languageClient;
-			_languageClient.start({});
+
+			var initParams:Object = LanguageClientUtil.getSharedInitializeParams();
+			_languageClient.initialize(initParams);
 		}
 
 		private function restartLanguageServer():void
@@ -359,7 +361,7 @@ package actionScripts.languageServer
 			if(_languageClient)
 			{
 				_waitingToRestart = true;
-				_languageClient.stop();
+				_languageClient.shutdown();
 			}
 			else if(_languageServerProcess)
 			{
@@ -387,7 +389,7 @@ package actionScripts.languageServer
 			{
 				//this should have already happened, but if the process exits
 				//abnormally, it might not have
-				_languageClient.stop();
+				_languageClient.shutdown();
 				
 				warning("Groovy language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
@@ -592,7 +594,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.stop();
+			_languageClient.shutdown();
 		}
 
 		private function applicationExitHandler(event:ApplicationEvent):void
@@ -601,7 +603,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.stop();
+			_languageClient.shutdown();
 		}
 	}
 }

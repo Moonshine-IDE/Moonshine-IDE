@@ -8,6 +8,12 @@
 }
 
 @font-face {
+	src: url("/elements/fonts/DejaVuSansMono.ttf");
+	fontFamily: "DejaVuMonoTF";
+	embedAsCFF: false;
+}
+
+@font-face {
 	src: url("/elements/fonts/DejaVuSans.ttf");
 	fontFamily: "DejaVuSans";
 	embedAsCFF: true;

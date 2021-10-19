@@ -46,16 +46,16 @@
 		
 		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-		import actionScripts.ui.editor.text.TextEditor;
 
         import utils.VisualEditorType;
+        import mx.core.IVisualElement;
 
-        private var _codeEditor:TextEditor;
+        private var _codeEditor:IVisualElement;
 
 		[Bindable]
         public var visualEditorProject:ProjectVO;
 
-        public function set codeEditor(value:TextEditor):void
+        public function set codeEditor(value:IVisualElement):void
         {
             _codeEditor = value;
         }
