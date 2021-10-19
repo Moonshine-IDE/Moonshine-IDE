@@ -174,6 +174,9 @@ package actionScripts.controllers
 				if (contentWindow is IFileContentWindow)
 				{
 					var contentWindowFile:FileLocation = (contentWindow as IFileContentWindow).currentFile;
+					if (contentWindowFile == null) {
+						continue;
+					}
 					// on case-insensitive file systems, these may not match
 					// unless we canonicalize, and then we'd get the same file
 					// opened in multiple tabs
