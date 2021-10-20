@@ -107,6 +107,7 @@ package actionScripts.utils
 			var splits:Array = totalXml.split("</button>");
 			var result:String="";
 			var rex:RegExp = /(\t|\n|\r)/gi;
+			var newLinrex:RegExp = /(\n|\r)/gi;
 
 			for each (var child:String in splits ) {
 				
@@ -207,7 +208,32 @@ package actionScripts.utils
 				}
 			 var tabpattern:RegExp = /&amp;#tab;/g;
 			 result = result.replace(tabpattern,"\t");
-			
+
+			// remove all new line from section
+			if(result.indexOf("</sectiontitle>")>=0){
+				var result4:String="";
+				var splitsSection:Array = result.split("</sectiontitle>");
+				for each (var childSection:String in splitsSection ) {
+					if(childSection.indexOf("</section>")>=0){
+						var sectionChildString2:String="";
+						var splitsSection2:Array = childSection.split("</section>");
+						var sectionCount:Number=0;
+						for each (var childSection2:String in splitsSection2 ) {
+							if(sectionCount==0){
+								
+								sectionChildString2=sectionChildString2+StringUtil.trim(childSection2)+"</section>";
+							}else{
+								sectionChildString2=sectionChildString2+childSection2;
+							}
+							sectionCount++;
+						}
+						childSection="</sectiontitle>"+childSection;
+					}
+
+					result4=result4+childSection;
+				}
+				result=result4;
+			}
 			
 			return result;
 		}
