@@ -43,6 +43,8 @@ public class GitSwitchBranchCommand extends GitCommandBase
 		public function GitSwitchBranchCommand(listingType:String=BRANCH_TYPE_LOCAL)
 		{
 			super();
+
+			ConstantsCoreVO.IS_APP_STORE_VERSION = true;
 			
 			if (!model.activeProject) return;
 			
@@ -55,22 +57,21 @@ public class GitSwitchBranchCommand extends GitCommandBase
 				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
 			}
 
-			var gitFetchCommand:String = getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : ''));
-			if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
-			{
-				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitFetchCommand);
-				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, null));
-			}
-			else
-			{
-				addToQueue(new NativeProcessQueueVO(gitFetchCommand, false, null));
-			}
-
 			switch (listingType) {
 				case BRANCH_TYPE_LOCAL:
 					addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch'), false, GIT_REMOTE_BRANCH_LIST));
 					break;
 				case BRANCH_TYPE_REMOTE:
+					var gitFetchCommand:String = getPlatformMessage(' fetch'+ (calculatedURL ? ' '+ calculatedURL : ''));
+					if (ConstantsCoreVO.IS_MACOS && calculatedURL && tmpModel.sessionUser)
+					{
+						var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(gitFetchCommand);
+						addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, null));
+					}
+					else
+					{
+						addToQueue(new NativeProcessQueueVO(gitFetchCommand, false, null));
+					}
 					addToQueue(new NativeProcessQueueVO(getPlatformMessage(' branch -r'), false, GIT_REMOTE_BRANCH_LIST));
 					break;
 				default:
