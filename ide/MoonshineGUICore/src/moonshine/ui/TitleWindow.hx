@@ -122,6 +122,7 @@ class TitleWindow extends Panel {
 		if (this.titleLabel == null) {
 			this.titleLabel = new Label();
 			this.titleLabel.variant = CHILD_VARIANT_TITLE;
+			this.titleLabel.focusEnabled = false;
 			this.titleLabel.layoutData = new HorizontalLayoutData(100.0);
 			cast(this.header, DisplayObjectContainer).addChild(this.titleLabel);
 		}
