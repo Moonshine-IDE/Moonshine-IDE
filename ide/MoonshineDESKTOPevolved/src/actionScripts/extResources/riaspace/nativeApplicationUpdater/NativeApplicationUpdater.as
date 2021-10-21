@@ -158,7 +158,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				}
 				else if (os.indexOf("mac") > -1)
 				{
-					installerType = (!ConstantsCoreVO.IS_DEVELOPMENT_MODE && ConstantsCoreVO.IS_APP_STORE_VERSION) ? "appStorePkg" : "pkg";
+					installerType = ConstantsCoreVO.IS_APP_STORE_VERSION ? "appStorePkg" : "pkg";
 				}
 				else if (os.indexOf("linux") > -1)
 				{
