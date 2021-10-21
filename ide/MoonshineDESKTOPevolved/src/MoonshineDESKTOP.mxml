@@ -182,7 +182,7 @@
 				}
 
 				updaterHelper.updater = updater;
-				updater.updateURL = "https://moonshine-ide.com/downloads/updater.xml";
+				updater.updateURL = ConstantsCoreVO.IS_DEVELOPMENT_MODE ? "https://moonshine-ide.com/downloads/updater-dev.xml" : "https://moonshine-ide.com/downloads/updater.xml";
 				updater.initialize();
 			}
 	
@@ -262,6 +262,6 @@
 
 	<containers:UpdaterView width="100%" height="100%"
 							includeInLayout="{updaterHelper.isUpdater}" visible="{updaterHelper.isUpdater}"
-							updater="{updater}" downlaoding="{updaterHelper.downlaoding}" isAppStoreVersion="{ConstantsCoreVO.IS_APP_STORE_VERSION}"
+							updater="{updater}" downlaoding="{updaterHelper.downlaoding}"
 							UPDATEYES="updaterHelper.btnYes_clickHandler(event)" UPDATENO="updaterHelper.btnNo_clickHandler(event)" UPDATECANCEL="updaterHelper.btnCancel_clickHandler(event)"/>
 </s:WindowedApplication>
