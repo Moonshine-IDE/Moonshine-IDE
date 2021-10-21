@@ -180,7 +180,7 @@ package actionScripts.plugin.java.javaproject.importer
 				javaProject.mainClassName = projectName;
 			}
 			
-			if (settingsData.options.option.hasOwnProperty('@jdkType')) 
+			if (settingsData && settingsData.options.option.hasOwnProperty('@jdkType'))
 				javaProject.jdkType = SerializeUtil.deserializeString(settingsData.options.option.@jdkType);
 
 			return javaProject;
