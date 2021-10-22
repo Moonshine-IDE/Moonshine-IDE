@@ -119,6 +119,8 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		protected var _currentMinor:int = -1;
 		
 		protected var _currentRevision:int = -1;
+
+		protected var _currentBuildNumber:int = -1;
 		
 		protected var updateDescriptorLoader:URLLoader;
 		
@@ -503,11 +505,15 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			
 			// split the value to three
 			var tmpArr:Array = value.split(".");
-			if (tmpArr.length == 3)
+			if (tmpArr.length >= 3)
 			{
 				_currentMajor = parseInt(tmpArr[0]);
 				_currentMinor = parseInt(tmpArr[1]);
 				_currentRevision = parseInt(tmpArr[2]);
+			}
+			if (tmpArr.length > 3)
+			{
+				_currentBuildNumber = parseInt(tmpArr[3]);
 			}
 		}
 		
@@ -566,10 +572,25 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 					var uv1:Number = Number(tmpSplit[0]);
 					var uv2:Number = Number(tmpSplit[1]);
 					var uv3:Number = Number(tmpSplit[2]);
+
+					var uv4:Number = -1;
+					// in case of Development build of Moonshine
+					// where it holds a version figure like 1.1.1.1252
+					// where the last digits are the Bamboo build number
+					if (tmpSplit.length > 3)
+					{
+						uv4 = Number(tmpSplit[3]);
+					}
 					
 					if (uv1 > _currentMajor) return true;
 					else if (uv1 >= _currentMajor && uv2 > _currentMinor) return true;
 					else if (uv1 >= _currentMajor && uv2 >= _currentMinor && uv3 > _currentRevision) return true;
+
+					// only if uv4 exists
+					if (uv4 != -1)
+					{
+						if (uv1 >= _currentMajor && uv2 >= _currentMinor && uv3 >= _currentRevision && uv4 > _currentBuildNumber) return true;
+					}
 					
 					return false;
 				};
