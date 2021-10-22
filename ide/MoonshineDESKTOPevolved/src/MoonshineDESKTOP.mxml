@@ -168,7 +168,7 @@
 				IDEModel.getInstance().refreshIdeBuildVersion();
 				
 				// verify if an App Store version
-				if (ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_DEVELOPMENT_MODE)
+				if (ConstantsCoreVO.IS_MACOS)
 				{
 					var tmpConfiguration:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/InstallConfig.xml");
 					if (tmpConfiguration.fileBridge.exists)
