@@ -182,7 +182,14 @@
 				}
 
 				updaterHelper.updater = updater;
-				updater.updateURL = ConstantsCoreVO.IS_DEVELOPMENT_MODE ? "https://moonshine-ide.com/downloads/updater-dev.xml" : "https://moonshine-ide.com/downloads/updater.xml";
+				if (ConstantsCoreVO.IS_DEVELOPMENT_MODE)
+				{
+					updater.updateURL = ConstantsCoreVO.IS_MACOS ? "https://moonshine-ide.com/downloads/updater-dev-macos.xml" : "https://moonshine-ide.com/downloads/updater-dev-windows.xml";
+				}
+				else
+				{
+					updater.updateURL = "https://moonshine-ide.com/downloads/updater.xml";
+				}
 				updater.initialize();
 			}
 	

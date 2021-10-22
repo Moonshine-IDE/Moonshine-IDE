@@ -332,7 +332,7 @@
 			<arg value="${certSignedWindowsBinaryPassword}"/>
 			<arg value="/tr"/>
 			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
-			<arg value="${deploy_dir}/${installerName}-${BuildVersion}.exe"/>
+			<arg value="${deploy_dir}/${installerName}-installer.exe"/>
 		</exec>
 	 </target>
 	
