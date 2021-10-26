@@ -191,16 +191,9 @@ package actionScripts.controllers
 						{
 							var ed:BasicTextEditor = contentWindow as BasicTextEditor;
 
-							if (!openType || openType == OpenFileEvent.OPEN_FILE || openType == OpenFileEvent.JUMP_TO_SEARCH_LINE)
-							{
-								atChar = atChar != -1 ? atChar: 0;
-								ed.editor.setSelection(atLine, atChar, atLine, atChar);
-								ed.editor.scrollViewIfNeeded();
-							}
-							else
-							{
-								ed.editor.lineScrollY = Math.min(atLine, ed.editor.maxLineScrollY);
-							}
+							atChar = atChar != -1 ? atChar: 0;
+							ed.editor.setSelection(atLine, atChar, atLine, atChar);
+							ed.editor.scrollViewIfNeeded();
 							if (openType == OpenFileEvent.TRACE_LINE)
 							{
 								ed.editor.debuggerLineIndex = atLine;
