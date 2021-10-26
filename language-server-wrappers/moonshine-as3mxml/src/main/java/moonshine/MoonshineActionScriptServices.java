@@ -42,11 +42,7 @@ public class MoonshineActionScriptServices extends ActionScriptServices
 	{
         Gson gson = new Gson();
 		JsonObject config = gson.toJsonTree(rawData).getAsJsonObject();
-		//TODO: change this to a proper API when reflection isn't required
-		Field actionScriptProjectManagerField = ActionScriptServices.class.getDeclaredField("actionScriptProjectManager");
-		actionScriptProjectManagerField.setAccessible(true);
-		ActionScriptProjectManager actionScriptProjectManager = (ActionScriptProjectManager) actionScriptProjectManagerField.get(this);
-		List<ActionScriptProjectData> allProjectData = actionScriptProjectManager.getAllProjectData();
+		List<ActionScriptProjectData> allProjectData = getProjects();
 		if (allProjectData == null || allProjectData.size() == 0)
 		{
 			throw new Exception("No projects available to change configuration.");

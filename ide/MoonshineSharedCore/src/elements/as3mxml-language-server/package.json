@@ -1,8 +1,8 @@
 {
-  "name": "vscode-nextgenas",
+  "name": "vscode-as3mxml",
   "displayName": "ActionScript & MXML",
   "description": "Language support for ActionScript and MXML",
-  "version": "1.6.0",
+  "version": "1.9.0",
   "publisher": "bowlerhatllc",
   "homepage": "https://as3mxml.com/",
   "repository": {
@@ -12,6 +12,7 @@
   "bugs": {
     "url": "https://github.com/BowlerHatLLC/vscode-as3mxml/issues"
   },
+  "qna": "https://github.com/BowlerHatLLC/vscode-as3mxml/discussions",
   "license": "Apache-2.0",
   "private": true,
   "categories": [
@@ -33,25 +34,21 @@
   "engines": {
     "vscode": "^1.37.0"
   },
-  "extensionDependencies": [
-    "bowlerhatllc.vscode-swf-debug"
-  ],
   "devDependencies": {
-    "@rgrove/parse-xml": "^2.0.4",
-    "@types/json5": "0.0.30",
-    "@types/mocha": "^8.0.3",
-    "@types/node": "^10.17.40",
+    "@rgrove/parse-xml": "^3.0.0",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^10.17.60",
     "@types/vscode": "^1.37.0",
-    "glob": "^7.1.6",
+    "glob": "^7.1.7",
     "json5": "2.1.0",
-    "mocha": "^8.1.3",
-    "ts-loader": "^8.0.5",
-    "typescript": "^4.0.3",
-    "vsce": "^1.81.1",
-    "vscode-jsonrpc": "^5.0.1",
-    "vscode-languageclient": "^6.1.3",
-    "webpack": "^5.1.3",
-    "webpack-cli": "^4.0.0"
+    "mocha": "^8.4.0",
+    "ts-loader": "^9.2.3",
+    "typescript": "^4.3.2",
+    "vsce": "^1.93.0",
+    "vscode-jsonrpc": "^6.0.0",
+    "vscode-languageclient": "^7.0.0",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
   },
   "activationEvents": [
     "onLanguage:actionscript",
@@ -432,19 +429,49 @@
           "default": null,
           "description": "(Advanced) Specifies the absolute path of the Adobe Animate executable."
         },
+        "as3mxml.codeGeneration.getterSetter.forcePublicFunctions": {
+          "type": "boolean",
+          "default": false,
+          "description": "When generating getters and setters, force the functions to be in the public namespace, instead of the original namespace of the variable"
+        },
+        "as3mxml.codeGeneration.getterSetter.forcePrivateVariable": {
+          "type": "boolean",
+          "default": true,
+          "description": "When generating getters and setters, force the original variable to be in the private namespace, instead of keeping its original namespace"
+        },
+        "as3mxml.sources.organizeImports.addMissingImports": {
+          "type": "boolean",
+          "default": true,
+          "description": "When organizing imports, determines if missing imports are added automatically (if there is only one matching symbol)"
+        },
+        "as3mxml.sources.organizeImports.removeUnusedImports": {
+          "type": "boolean",
+          "default": true,
+          "description": "When organizing imports, determines if unused imports are removed or kept"
+        },
+        "as3mxml.sources.organizeImports.insertNewLineBetweenTopLevelPackages": {
+          "type": "boolean",
+          "default": true,
+          "description": "When organizing imports, determines if a new line is inserted between top level packages"
+        },
         "nextgenas.sdk.framework": {
+          "description": "Deprecated. Replaced by as3mxml.sdk.framework.",
           "deprecationMessage": "DEPRECATED: Use as3mxml.sdk.framework instead."
         },
         "nextgenas.sdk.searchPaths": {
+          "description": "Deprecated. Replaced by as3mxml.sdk.searchPaths.",
           "deprecationMessage": "DEPRECATED: Use as3mxml.sdk.searchPaths instead."
         },
         "nextgenas.asconfigc.useBundled": {
+          "description": "Deprecated. Replaced by as3mxml.asconfigc.useBundled.",
           "deprecationMessage": "DEPRECATED: Use as3mxml.asconfigc.useBundled instead."
         },
         "nextgenas.java": {
+          "description": "Deprecated. Replaced by as3mxml.java.path.",
           "deprecationMessage": "DEPRECATED: Use as3mxml.java.path instead."
         },
         "nextgenas.sdk.editor": {
+          "description": "Deprecated. Replaced by as3mxml.sdk.editor.",
           "deprecationMessage": "DEPRECATED: Use as3mxml.sdk.editor instead."
         }
       }
@@ -459,5 +486,6 @@
         "path": "./snippets/mxml.json"
       }
     ]
-  }
+  },
+  "dependencies": {}
 }

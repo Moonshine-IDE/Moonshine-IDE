@@ -1,5 +1,58 @@
 # ActionScript & MXML for Visual Studio Code Changelog
 
+## 1.9.0
+
+### Fixed Issues
+
+- General: Fixed issue that prevented the language server from running with a socket instead of standard input.
+- General: The language server automatically exits as soon as the input stream from the parent process closes. This should help prevent zombie processes from staying open after closing Visual Studio Code.
+
+### Other Changes
+
+- Dependencies: Apache Royale compiler updated to v0.9.8.
+
+## 1.8.0
+
+### New Features
+
+- Code Generation: Smarter detection of underscore (`_`) characters at the beginning of the original variable. The undercore is added to the backing variable, if missing. It is removed from the getter and setter, if present.
+- Completion: Can now suggest methods to override after only the `override` keyword (previously, you needed to specify both the `override` and `function` keywords and the namespace to get suggestions). Also, lists getters and setters that may be overridden.
+- Settings: New setting `as3mxml.sources.organizeImports.addMissingImports` determines whether missing imports are added when the organize imports command is run.
+- Settings: New setting `as3mxml.sources.organizeImports.removeUnusedImports` determines whether unused imports are removed when the organize imports command is run.
+- Settings: New setting `as3mxml.sources.organizeImports.insertNewLineBetweenTopLevelPackages` determines of an extra new line is added between top-level packages when the organize imports command is run.
+
+### Fixed Issues
+
+- General: Fixed issue where code intelligence could freeze if the same _asconfig.json_ file appeared in multiple workspace root folders.
+- Hover: Fixed resolution of symbols when they are fully-qualified with the package name.
+- Organize Imports: Fixed issue where imports where sometimes moved to the top of an _.mxml_ file instead of remaining at the top of the `<fx:Script>` section.
+- Quick Compile & Run/Debug: Fixed issue where pressing Enter while Ctrl+F searching could fail after running Quick Compile & Run/Debug because the output channel would not release focus.
+
+### Other Changes
+
+- Rename and Find References: Optimized performance by skipping most files in the project when finding/renaming private symbols.
+- Dependencies: eclipse/lsp4j language server updated to v0.12.0.
+
+## 1.7.1
+
+### Fixed Issues
+
+- Build: Fixed missing Adobe AIR build tasks.
+
+## 1.7.0
+
+### New Features
+
+- Code Actions: Added new `as3mxml.codeGeneration.getterSetter.forcePublicFunctions` and `as3mxml.codeGeneration.getterSetter.forcePrivateVariable` settings to customize how the generate getter and setter quick fixes behave.
+
+### Fixed Issues
+
+- Build: Fixed issue where captive runtime and native installer builds were debug instead of release.
+- Code Actions: Fixed missing "Add import" code actions for classes in _.swc_ libraries.
+- Completion: Fixed wrong namespace in Apache Flex projects when adding the root tag with the MX namespace to an _.mxml_ file.
+- Hover: Fixed missing mouse hover text for custom user namespaces.
+- Syntax: Missing syntax coloring for namespace declarations.
+
 ## 1.6.0
 
 ### New Features
