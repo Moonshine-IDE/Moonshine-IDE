@@ -34,6 +34,7 @@ package actionScripts.ui
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.FocusEvent;
+	import flash.events.MouseEvent;
 
 	import mx.core.IFlexDisplayObject;
 	import mx.core.UIComponent;
@@ -140,6 +141,7 @@ package actionScripts.ui
 			}
 			if(this._feathersUIControl)
 			{
+				this._feathersUIControl.removeEventListener(MouseEvent.MOUSE_DOWN, feathersUIControl_mouseDownCaptureHandler, true);
 				this._feathersUIControl.removeEventListener(Event.RESIZE, feathersUIControl_resizeHandler);
 				this.removeChild(this._feathersUIControl);
 			}
@@ -149,6 +151,7 @@ package actionScripts.ui
 				this._feathersUIControl.initializeNow();
 				this._feathersUIControlMeasurements.save(this._feathersUIControl);
 				this.addChild(this._feathersUIControl);
+				this._feathersUIControl.addEventListener(MouseEvent.MOUSE_DOWN, feathersUIControl_mouseDownCaptureHandler, true);
 				this._feathersUIControl.addEventListener(Event.RESIZE, feathersUIControl_resizeHandler);
 			}
 			this.invalidateSize();
@@ -337,6 +340,13 @@ package actionScripts.ui
 			if(this._feathersUIFocusManager) {
 				this._feathersUIFocusManager.enabled = false;
 			}
+		}
+
+		protected function feathersUIControl_mouseDownCaptureHandler(event:MouseEvent):void {
+			if(!this._feathersUIFocusManager) {
+				return;
+			}
+			this._feathersUIFocusManager.enabled = true;
 		}
 	}
 }
