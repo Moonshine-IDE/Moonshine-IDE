@@ -405,7 +405,10 @@ package actionScripts.languageServer
 			trace("AS3 & MXML language server SDK: " + sdkPath);
 
 			var debugMode:Boolean = false;
-			var initOptions:Object = {config: getProjectConfiguration()};
+			var initOptions:Object = {
+				config: getProjectConfiguration(),
+				supportsSimpleSnippets: true
+			};
 			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT,
 				_languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA,
 				_languageServerProcess.standardInput);
