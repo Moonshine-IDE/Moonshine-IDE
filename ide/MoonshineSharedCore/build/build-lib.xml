@@ -936,6 +936,13 @@
 			<arg value="lime"/>
 			<arg value="--quiet"/>
 		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="markdown-openfl-textfield"/>
+			<arg value="--quiet"/>
+		</exec>
 	</target>
 	
 	<target name="CompileGUICore" depends="InstallHaxeDependencies">
