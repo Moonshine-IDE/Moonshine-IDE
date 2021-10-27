@@ -1,5 +1,6 @@
 package actionScripts.extResources.riaspace.nativeApplicationUpdater
 {
+	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	import flash.desktop.NativeApplication;
@@ -120,8 +121,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		
 		protected var _currentRevision:int = -1;
 
-		protected var _currentBuildNumber:int = -1;
-		
 		protected var updateDescriptorLoader:URLLoader;
 		
 		protected var os:String = Capabilities.os.toLowerCase();
@@ -511,10 +510,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				_currentMinor = parseInt(tmpArr[1]);
 				_currentRevision = parseInt(tmpArr[2]);
 			}
-			if (tmpArr.length > 3)
-			{
-				_currentBuildNumber = parseInt(tmpArr[3]);
-			}
 		}
 		
 		[Bindable]
@@ -581,15 +576,15 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 					{
 						uv4 = Number(tmpSplit[3]);
 					}
-					
+
 					if (uv1 > _currentMajor) return true;
 					else if (uv1 >= _currentMajor && uv2 > _currentMinor) return true;
 					else if (uv1 >= _currentMajor && uv2 >= _currentMinor && uv3 > _currentRevision) return true;
 
 					// only if uv4 exists
-					if (uv4 != -1)
+					if (ConstantsCoreVO.IS_DEVELOPMENT_MODE && (uv4 != -1))
 					{
-						if (uv1 >= _currentMajor && uv2 >= _currentMinor && uv3 >= _currentRevision && uv4 > _currentBuildNumber) return true;
+						if (uv1 >= _currentMajor && uv2 >= _currentMinor && uv3 >= _currentRevision && uv4 > parseInt(IDEModel.getInstance().build)) return true;
 					}
 					
 					return false;
