@@ -130,6 +130,8 @@
 				// check if it's osx and packaged with bundled sdk
 				SDKUtils.checkBundledSDKPresence();
 				if (!ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT) SDKUtils.checkHelperDownloadedSDKPresence();
+
+				IDEModel.getInstance().refreshIdeBuildVersion();
 	
 				// addedToStage
 				addEventListener(Event.ADDED_TO_STAGE, initStage);
@@ -164,8 +166,6 @@
 	                var fcsh:NativeProcess = new NativeProcess();
 	                fcsh.start(shellInfo);
 	            }*/
-
-				IDEModel.getInstance().refreshIdeBuildVersion();
 				
 				// verify if an App Store version
 				if (ConstantsCoreVO.IS_MACOS)
