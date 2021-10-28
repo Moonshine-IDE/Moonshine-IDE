@@ -33,9 +33,9 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.events.FlexEvent;
-			
+
 			import spark.components.Alert;
-			
+
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.LayoutEvent;
 			import actionScripts.factory.FileLocation;
@@ -58,9 +58,9 @@
 			import actionScripts.utils.OSXBookmarkerNotifiers;
 			import actionScripts.utils.SDKUtils;
 			import actionScripts.valueObjects.ConstantsCoreVO;
-			
+
 			import components.MainEntryPoint;
-			
+
 			import no.doomsday.console.ConsoleUtil;
 
 			//--------------------------------------------------------------------------
@@ -68,7 +68,7 @@
 			//  PRIVATE STATIC
 			//
 			//--------------------------------------------------------------------------
-	
+
 			private static const NEEDED_FOR_COMPILATION:IFileBridgeImp = null;
 			private static const NEEDED_FOR_COMPILATION2:IContextMenuBridgeImp = null;
 			private static const NEEDED_FOR_COMPILATION3:IFlexCoreBridgeImp = null;
@@ -82,13 +82,13 @@
 			private static const NEEDED_FOR_COMPILATION11:IOSXBookmarkerBridgeImp = null;
 			private static const NEEDED_FOR_COMPILATION12:IHaxeBridgeImpl = null;
 			private static const NEEDED_FOR_COMPILATION13:IOnDiskBridgeImpl = null;
-			
+
 			//--------------------------------------------------------------------------
 			//
 			//  PUBLIC API
 			//
 			//--------------------------------------------------------------------------
-	
+
 			/**
 			 * Returns MainEntryPoint to caller
 			 */
@@ -96,13 +96,13 @@
 			{
 				return getElementAt(0) as MainEntryPoint;
 			}
-	
+
 			//--------------------------------------------------------------------------
 			//
 			//  PRIVATE API
 			//
 			//--------------------------------------------------------------------------
-	
+
 			/**
 			 * On preinitialilzation
 			 */
@@ -114,7 +114,7 @@
 				IDEModel.getInstance().version = appDescriptor.xmlns::versionNumber;
 				ConstantsCoreVO.IS_DEVELOPMENT_MODE = (appDescriptor.xmlns::id == ConstantsCoreVO.MOONSHINE_PROD_ID) ? false : true;
 			}
-	
+
 			/**
 			 * On initialization
 			 */
@@ -122,21 +122,19 @@
 			{
 				// sets the application runs in which platform
 				ConstantsCoreVO.IS_MACOS = !NativeApplication.supportsSystemTrayIcon;
-	
+
 				// attach main view
 				var mCore:MainEntryPoint = new MainEntryPoint();
 				addElementAt(mCore, 0);
-	
+
 				// check if it's osx and packaged with bundled sdk
 				SDKUtils.checkBundledSDKPresence();
 				if (!ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT) SDKUtils.checkHelperDownloadedSDKPresence();
 
-				IDEModel.getInstance().refreshIdeBuildVersion();
-	
 				// addedToStage
 				addEventListener(Event.ADDED_TO_STAGE, initStage);
 			}
-	
+
 			/**
 			 * On creation completes
 			 */
@@ -151,12 +149,12 @@
 						//Alert.show(OSXBookmarkerNotifiers.availableBookmarkedPaths);
 					}, 1000);
 				}
-	
+
 				/*if (fileFrom.exists)
 	            {
 	                Alert.show(fileFrom.nativePath);
 	                var fileTo:File = new File("/Users/<userName>/Desktop/testSomething");
-	
+
 	                var shellInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 	                var processArgs:Vector.<String> = new Vector.<String>;
 	                processArgs.push("-c");
@@ -166,7 +164,9 @@
 	                var fcsh:NativeProcess = new NativeProcess();
 	                fcsh.start(shellInfo);
 	            }*/
-				
+
+				IDEModel.getInstance().refreshIdeBuildVersion();
+
 				// verify if an App Store version
 				if (ConstantsCoreVO.IS_MACOS)
 				{
@@ -190,20 +190,21 @@
 				{
 					updater.updateURL = "https://moonshine-ide.com/downloads/updater.xml";
 				}
+
 				updater.initialize();
 			}
-	
+
 			public function onHelperAppInstallationCompletes():void
 			{
 				Alert.show("Download completed");
 			}
-	
+
 			//--------------------------------------------------------------------------
 			//
 			//  LISTENERS API
 			//
 			//--------------------------------------------------------------------------
-	
+
 			/**
 			 * On added to stage
 			 */
@@ -215,14 +216,14 @@
 					// subtract the taskbar height
 					stage.nativeWindow.height = Screen.mainScreen.visibleBounds.height;
 				}
-	
+
 				stage.nativeWindow.x = (Screen.mainScreen.visibleBounds.width - stage.nativeWindow.width)/2;
 				stage.nativeWindow.y = (Screen.mainScreen.visibleBounds.height - stage.nativeWindow.height)/2;
 				removeEventListener(Event.ADDED_TO_STAGE, initStage);
 				ConsoleUtil.setKeyStroke([117]);
 				stage.addChild(ConsoleUtil.getInstance());
 			}
-	
+
 			/**
 			 * On maximize/restore etc.
 			 */
@@ -230,7 +231,7 @@
 			{
 				if (event.afterDisplayState == NativeWindowDisplayState.MINIMIZED)
 					LayoutModifier.isMinimized = true;
-				else 
+				else
 					LayoutModifier.isAppMaximized = (event.afterDisplayState == NativeWindowDisplayState.MAXIMIZED);
 
 				// for any respective popup which extends resizableTitleWindow
@@ -243,7 +244,7 @@
 					GlobalEventDispatcher.getInstance().dispatchEvent(new LayoutEvent(LayoutEvent.WINDOW_NORMAL));
 				}
 			}
-	
+
 			protected function onApplicationClosing(event:Event):void
 			{
 				event.stopImmediatePropagation();

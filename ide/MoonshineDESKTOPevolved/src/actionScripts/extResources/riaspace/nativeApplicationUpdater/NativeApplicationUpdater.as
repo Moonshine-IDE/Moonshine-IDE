@@ -29,7 +29,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 	import air.update.events.StatusUpdateErrorEvent;
 	import air.update.events.StatusUpdateEvent;
 	import air.update.events.UpdateEvent;
-	
+
 	[Event(name="initialized", type="air.update.events.UpdateEvent")]
 	[Event(name="checkForUpdate", type="air.update.events.UpdateEvent")]
 	[Event(name="updateStatus",type="air.update.events.StatusUpdateEvent")]

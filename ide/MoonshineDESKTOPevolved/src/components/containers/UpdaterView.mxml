@@ -81,8 +81,7 @@
 								  click="dispatchEvent(new Event('UPDATEYES'))" enabled="{!downlaoding}"
 								  width="60" emphasized="true"/>
 						<s:Button label="{(!downlaoding)?'NO':'CANCEL'}"
-								  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
-								  width="60"/>
+								  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"/>
 					</s:HGroup>
 				</s:VGroup>
 				<s:VGroup width="100%"
