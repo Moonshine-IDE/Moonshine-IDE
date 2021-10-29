@@ -70,8 +70,8 @@
 				<s:Label text="A new version of Moonshine ({updater.updateVersion}) is available."
 						 styleName="textInputLabel" color="0x444444"/>
 				<s:VGroup width="100%"
-						  includeInLayout="{ConstantsCoreVO.IS_DEVELOPMENT_MODE || !ConstantsCoreVO.IS_APP_STORE_VERSION}"
-						  visible="{ConstantsCoreVO.IS_DEVELOPMENT_MODE || !ConstantsCoreVO.IS_APP_STORE_VERSION}"
+						  includeInLayout="{(!ConstantsCoreVO.IS_APP_STORE_VERSION &amp;&amp; ConstantsCoreVO.IS_DEVELOPMENT_MODE) || !ConstantsCoreVO.IS_APP_STORE_VERSION}"
+						  visible="{(!ConstantsCoreVO.IS_APP_STORE_VERSION &amp;&amp; ConstantsCoreVO.IS_DEVELOPMENT_MODE) || !ConstantsCoreVO.IS_APP_STORE_VERSION}"
 						  paddingTop="10">
 					<s:Label text="Do you want to download and install it?"
 							 styleName="textInputLabel" color="0x444444"/>
@@ -91,7 +91,17 @@
 					<s:Label text="You can download this update from the App Store."
 							 styleName="textInputLabel" color="0x444444" paddingBottom="10"/>
 					<s:Button label="OK"
-							  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
+							  click="dispatchEvent(new Event('UPDATENO'))"
+							  width="60"/>
+				</s:VGroup>
+				<s:VGroup width="100%"
+						  includeInLayout="{ConstantsCoreVO.IS_DEVELOPMENT_MODE &amp;&amp; ConstantsCoreVO.IS_APP_STORE_VERSION}"
+						  visible="{ConstantsCoreVO.IS_DEVELOPMENT_MODE &amp;&amp; ConstantsCoreVO.IS_APP_STORE_VERSION}"
+						  paddingTop="10">
+					<s:Label text="You can download this update from -- [Need customized message]"
+							 styleName="textInputLabel" color="0x444444" paddingBottom="10"/>
+					<s:Button label="OK"
+							  click="dispatchEvent(new Event('UPDATENO'))"
 							  width="60"/>
 				</s:VGroup>
 			</s:VGroup>
