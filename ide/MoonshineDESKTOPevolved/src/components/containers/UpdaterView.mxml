@@ -98,8 +98,12 @@
 						  includeInLayout="{ConstantsCoreVO.IS_DEVELOPMENT_MODE &amp;&amp; ConstantsCoreVO.IS_APP_STORE_VERSION}"
 						  visible="{ConstantsCoreVO.IS_DEVELOPMENT_MODE &amp;&amp; ConstantsCoreVO.IS_APP_STORE_VERSION}"
 						  paddingTop="10">
-					<s:Label text="You can download this update from -- [Need customized message]"
-							 styleName="textInputLabel" color="0x444444" paddingBottom="10"/>
+					<s:RichEditableText lineBreak="toFit" width="100%" paddingBottom="10" styleName="textInputLabel" color="0x444444"
+										focusEnabled="false" editable="false">
+						<s:textFlow><s:TextFlow>
+							<s:p>You can download this update from <s:a href="https://moonshine-ide.com/downloads/releases/dev/macos/MoonshineDevelopment.pkg">here</s:a>.</s:p>
+						</s:TextFlow></s:textFlow>
+					</s:RichEditableText>
 					<s:Button label="OK"
 							  click="dispatchEvent(new Event('UPDATENO'))"
 							  width="60"/>
