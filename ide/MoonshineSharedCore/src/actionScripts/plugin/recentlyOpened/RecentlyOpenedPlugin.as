@@ -427,11 +427,15 @@ package actionScripts.plugin.recentlyOpened
 		
 		private function onJavaPathForTypeaheadSave(event:FilePluginEvent):void
 		{
-			if(event.file)
+			if (event.file)
 			{
 				cookie.data["javaPathForTypeahead"] = event.file.fileBridge.nativePath;
-				cookie.flush();
 			}
+			else
+			{
+				delete cookie.data["javaPathForTypeahead"];
+			}
+			cookie.flush();
 		}
 		
 		private function onSaveLayoutChangeEvent(event:GeneralEvent):void
