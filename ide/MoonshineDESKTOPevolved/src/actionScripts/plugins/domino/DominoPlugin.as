@@ -58,7 +58,7 @@ package actionScripts.plugins.domino
 		private static const TEMP_UPDATE_SITE_DOWNLOAD_PATH:File = File.applicationStorageDirectory.resolvePath("dominoUpdateSiteGeneration");
 		
 		override public function get name():String			{ return "Domino"; }
-		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team.<br/>Based on <a href='https://github.com/OpenNTF/org.openntf.nsfodp'>NSF ODP Tooling</a> by Jesse Gallagher and the OpenNTF team."; }
 		override public function get description():String	{ return "HCL® Notes / Domino Integration"; }
 		
 		public var updateSitePath:String;
