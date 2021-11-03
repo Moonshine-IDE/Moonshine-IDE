@@ -52,6 +52,7 @@ package actionScripts.plugins.ui.editor
 	import view.suportClasses.events.PropertyEditorChangeEvent;
 	import flash.filesystem.File;
 	import actionScripts.utils.DominoUtils;
+	import spark.components.Alert;
 
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
@@ -459,11 +460,24 @@ package actionScripts.plugins.ui.editor
 		{
 			if ((visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder)
 			{
-				var filePath:String = file.fileBridge.nativePath
-						.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
+				
+				var filePath:String = file.fileBridge.nativePath;
+				var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
+	
+				if(filePath.indexOf(".page")>=0){
+					fileSoucePath=fileSoucePath.replace("Forms","");
+					filePath=filePath.replace(fileSoucePath,
+								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath+File.separator);
+
+					filePath=filePath.replace(/.mxml$|.xhtml$|.form$|.page$|.dve$/, ".xml");
+					filePath=filePath.replace("Pages","pages");	
+				}else{
+					filePath=filePath.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
 								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath)
-						.replace(/.mxml$|.xhtml$|.form$|.dve$/, ".xml");
-			
+						.replace(/.mxml$|.xhtml$|.form$|.dve$/, ".xml");	
+				}
+				
+							
 				return filePath;
 			}
 
