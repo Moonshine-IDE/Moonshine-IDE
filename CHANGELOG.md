@@ -3,6 +3,63 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
+## Moonshine IDE [3.2.0]
+
+### Summary
+
+Moonshine 3.2.0 includes:
+* An improved text editor based on Haxe
+* Many minor updates and bug fixeds
+
+There were also some updates for installers and updates:
+- Moonshine-IDE can be installed with [Chocolatey](https://community.chocolatey.org/packages/moonshine-ide).
+- Nightly builds were renamed to MoonshineDevelopment, and will now automatically update on restart if new builds are available.
+
+### Added
+
+* [Chocolatey package](https://community.chocolatey.org/packages/moonshine-ide) is now available ([#747](https://github.com/prominic/Moonshine-IDE/issues/747))
+
+### Changed
+
+* Improved text editor based on Haxe ([#904](https://github.com/prominic/Moonshine-IDE/issues/904))
+* Moonshine-IDE repository moved to Moonshine-IDE organization.  Updated default repository paths in Manage Repositories ([#865](https://github.com/prominic/Moonshine-IDE/issues/865))
+* Separated auto-update configuration for Non-Sandbox, App Store, and Windows builds ([#836](https://github.com/prominic/Moonshine-IDE/issues/836))
+- Setup auto-updates for nightly builds ([#899](https://github.com/prominic/Moonshine-IDE/issues/899))
+* Supported creation of untracked files in Git Status window ([#889](https://github.com/prominic/Moonshine-IDE/issues/889))
+* Updated Getting Started behavior for Subversion/SVN ([#849](https://github.com/prominic/Moonshine-IDE/issues/849))
+* Continued development on Domino Visual Editor ([#812](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/812))
+* Removed NoteInfo from NSFODP Templates ([#853](https://github.com/prominic/Moonshine-IDE/issues/853))
+* Removed dependency on global settings.xml for Domino Visual Editor ([#835](https://github.com/prominic/Moonshine-IDE/issues/835))
+* Migrated Getting Started page to haxe ([#782](https://github.com/prominic/Moonshine-IDE/issues/782), [#863](https://github.com/prominic/Moonshine-IDE/issues/863))
+- Produce a single merged SWC for Moonshine Haxe libraries ([#875](https://github.com/prominic/Moonshine-IDE/issues/875))
+- Reorganized Templates interface to separate files and projects ([#852](https://github.com/prominic/Moonshine-IDE/issues/852))
+- Rename `File > Moonshine Helper Application` to `File > Launch Moonshine SDK Installer` ([#859](https://github.com/prominic/Moonshine-IDE/issues/859))
+- Added credits for NSF ODP Tooling in `Settings > Domino` ([#857](https://github.com/prominic/Moonshine-IDE/issues/857))
+- Build Moonshine with Harman AIR 33.1.1.633 to avoid keybinding issues ([#907](https://github.com/prominic/Moonshine-IDE/issues/907))
+
+### Fixed
+* User-selected JDK was reset on Moonshine restart ([#866](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/866))
+* Default Flex SDK reset to default after Moonshine restart ([#884](https://github.com/prominic/Moonshine-IDE/issues/884))
+* Git clone failed in App Store build ([#892](https://github.com/prominic/Moonshine-IDE/issues/892))
+* Error #1009 on About page ([#861](https://github.com/prominic/Moonshine-IDE/issues/861))
+* Invalid Royale project initialization ([#778](https://github.com/prominic/Moonshine-IDE/issues/778))
+* Problems with file extension selection in Project Search ([#891](https://github.com/prominic/Moonshine-IDE/issues/891))
+* Ctrl + Shift + Tab threw error with 0 or 1 open tabs ([#888](https://github.com/prominic/Moonshine-IDE/issues/888))
+* Could not open Java project from .javaproj file if name did not match directory ([#883](https://github.com/prominic/Moonshine-IDE/issues/883))
+* Domino Visual Editor project failed if JDK 11 is missing ([#871](https://github.com/prominic/Moonshine-IDE/issues/871))
+* Application namespace was not updated automaticaly for Flex Desktop projects ([#869](https://github.com/prominic/Moonshine-IDE/issues/869))
+* Open/save problems for multiple open Visual Editor projects ([#833](https://github.com/prominic/Moonshine-IDE/issues/833))
+* Problems for Browse All button in Manage Repositories([#867](https://github.com/prominic/Moonshine-IDE/issues/867))
+* Default generated form fails in On Disk Project ([#872](https://github.com/prominic/Moonshine-IDE/issues/872))
+* Getting Started failed to open automatically ([#844](https://github.com/prominic/Moonshine-IDE/issues/844))
+* Unexpected projects opening on Moonshine restart ([#864](https://github.com/prominic/Moonshine-IDE/issues/864))
+* getStartupInfo Error on Flex Desktop Build & Run ([#841](https://github.com/prominic/Moonshine-IDE/issues/841))
+* File chooser failed for Flex project Settings page ([#839](https://github.com/prominic/Moonshine-IDE/issues/839))
+* Switched File API calls to go through Bookmark extension for App Store support ([#860](https://github.com/prominic/Moonshine-IDE/issues/860))
+* Duplicated "Template Type" during ActionScript project import ([#902](https://github.com/prominic/Moonshine-IDE/issues/902))
+* Imports failed for Java Maven projects ([#900](https://github.com/prominic/Moonshine-IDE/issues/900))
+
+
 ## Moonshine IDE [3.1.1]
 
 ### Summary
