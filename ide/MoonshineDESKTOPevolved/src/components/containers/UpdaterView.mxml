@@ -56,11 +56,11 @@
 	</s:Rect>
 	
 	<s:BorderContainer id="bodyContainer" 
-					   width="80%" height="80%"
 						verticalCenter="0" horizontalCenter="0"
-						borderVisible="false" backgroundColor="#e1e1e1">
+						borderVisible="false" backgroundColor="#e1e1e1"
+						autoLayout="true" cornerRadius="4">
 		<s:layout>
-			<s:VerticalLayout verticalAlign="middle"/>
+			<s:VerticalLayout verticalAlign="middle" padding="30"/>
 		</s:layout>
 		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle" gap="10">
 			<s:Image source="/elements/images/imgInstall.png"/>

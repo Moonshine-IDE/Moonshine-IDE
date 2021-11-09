@@ -268,8 +268,7 @@
 	<fx:Style source="/assets/styles/InstallApacheFlexStyle.css"/>
 	<fx:Style source="/assets/styles/awaybuilder_defaults.css"/>
 
-	<containers:UpdaterView width="100%" height="100%"
-							includeInLayout="{updaterHelper.isUpdater}" visible="{updaterHelper.isUpdater}"
+	<containers:UpdaterView includeInLayout="{updaterHelper.isUpdater}" visible="{updaterHelper.isUpdater}"
 							updater="{updater}" downlaoding="{updaterHelper.downlaoding}"
 							UPDATEYES="updaterHelper.btnYes_clickHandler(event)" UPDATENO="updaterHelper.btnNo_clickHandler(event)" UPDATECANCEL="updaterHelper.btnCancel_clickHandler(event)"/>
 </s:WindowedApplication>
