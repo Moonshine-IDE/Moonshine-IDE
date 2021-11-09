@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.versionControl
 {
+	import actionScripts.utils.FileUtils;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
@@ -242,11 +244,12 @@ package actionScripts.plugins.versionControl
 					if (ConstantsCoreVO.IS_MACOS)
 					{
 						if ((!xcodePath && !isGitPresent) ||
+								(xcodePath && !FileUtils.isPathExists(xcodePath) && !isGitPresent) ||
 								(xcodePath && ConstantsCoreVO.IS_APP_STORE_VERSION && !OSXBookmarkerNotifiers.isPathBookmarked(xcodePath)))
 						{
 							dispatcher.dispatchEvent(new Event(GitHubPlugin.RELAY_SVN_XCODE_REQUEST));
 						}
-						else
+						else if (xcodePath && FileUtils.isPathExists(xcodePath))
 						{
 							// re-update both Git and SVN with common
 							// XCode/Command-line path
