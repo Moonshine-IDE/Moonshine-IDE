@@ -123,8 +123,9 @@ package actionScripts.utils
 							buttonChildString=StringUtil.trim(StringUtil.trim(buttonChildString)+ formula.replace(rex,''));
 						}
 					}
-					//Alert.show("buttonChildString:"+buttonChildString);
+					
 					child=buttonChildString+"</button>";
+					
 				}
 				result=result+child;
 			}
@@ -134,28 +135,33 @@ package actionScripts.utils
 				for each (var childButton:String in splitsButton ) {
 					if(childButton.indexOf("</button>")>=0){
 						var buttonChildString2:String="";
-						var splitsFormula2:Array = childButton.split("<formula>");
-						for each (var formula2:String in splitsFormula2 ) {
-							
-							formula2=StringUtil.trim(formula2);
-							if(formula2.indexOf("</formula>")>=0){
-								buttonChildString2=StringUtil.trim(buttonChildString2+"<formula>"+formula2);
-							}else{
-								if(formula2.indexOf("<font")>=0){
-									var splitsFormula3:Array = formula2.split("<font");
-									var splitsFormula4:Array=splitsFormula3[0].split(">");
-									buttonChildString2=buttonChildString2+splitsFormula4[0]+">"+StringUtil.trim(splitsFormula4[1])+"<font"+splitsFormula3[1];
-								}else if(formula2.indexOf("<code")>=0){
-									var splitsFormula5:Array = formula2.split("<code");
-									var splitsFormula6:Array=splitsFormula5[0].split(">");
-									buttonChildString2=buttonChildString2+splitsFormula6[0]+">"+StringUtil.trim(splitsFormula6[1])+"<code"+splitsFormula5[1];	
+						if(childButton.indexOf("<formula>")>=0){
+							var splitsFormula2:Array = childButton.split("<formula>");
+							for each (var formula2:String in splitsFormula2 ) {
+								
+								formula2=StringUtil.trim(formula2);
+								if(formula2.indexOf("</formula>")>=0){
+									buttonChildString2=StringUtil.trim(buttonChildString2+"<formula>"+formula2);
 								}else{
-									buttonChildString2=StringUtil.trim(StringUtil.trim(buttonChildString2)+ formula2.replace(rex,''));
-								}					
+									if(formula2.indexOf("<font")>=0){
+										var splitsFormula3:Array = formula2.split("<font");
+										var splitsFormula4:Array=splitsFormula3[0].split(">");
+										buttonChildString2=buttonChildString2+splitsFormula4[0]+">"+StringUtil.trim(splitsFormula4[1])+"<font"+splitsFormula3[1];
+									}else if(formula2.indexOf("<code")>=0){
+										var splitsFormula5:Array = formula2.split("<code");
+										var splitsFormula6:Array=splitsFormula5[0].split(">");
+										buttonChildString2=buttonChildString2+splitsFormula6[0]+">"+StringUtil.trim(splitsFormula6[1])+"<code"+splitsFormula5[1];	
+									}else{
+										buttonChildString2=StringUtil.trim(StringUtil.trim(buttonChildString2)+ formula2.replace(rex,''));
+									}					
+								}
 							}
+						}else{
+							buttonChildString2=childButton;
 						}
 						childButton="<button "+buttonChildString2;
 					}
+					
 					result2=result2+childButton;
 				}
 				result=result2;
@@ -167,14 +173,20 @@ package actionScripts.utils
 					var result3:String="";
 					var splitsFont:Array = result.split("<font");
 					for each (var childFont:String in splitsFont ) {
+						
+					
 						if(childFont.indexOf(">")>=0){
 							var fontString:String="";
 							var splitsFont2:Array = childFont.split(">");
 							var countFont:Number = 0;
 						
 							for each (var childFont2:String in splitsFont2 ) {
+								
 								if(countFont==1){
-									childFont2=childFont2.substring(1);
+									if(childFont2.substring(0,1)!="<"){
+										childFont2=childFont2.substring(1);
+									}
+								
 									var maxLen:int=24;
 									if(childFont2.length<maxLen){
 										maxLen=childFont2.length;
@@ -186,6 +198,7 @@ package actionScripts.utils
 									  }	
 									}	
 								}
+								
 								childFont2=childFont2+">";
 								
 								
@@ -198,7 +211,9 @@ package actionScripts.utils
 								childFont="<font"+fontString;
 							}
 							
+							
 						}
+						
 						fontFont++;
 				
 						result3=result3+childFont;
@@ -208,7 +223,7 @@ package actionScripts.utils
 				}
 			 var tabpattern:RegExp = /&amp;#tab;/g;
 			 result = result.replace(tabpattern,"\t");
-
+			
 			// remove all new line from section
 			if(result.indexOf("</sectiontitle>")>=0){
 				var result4:String="";
