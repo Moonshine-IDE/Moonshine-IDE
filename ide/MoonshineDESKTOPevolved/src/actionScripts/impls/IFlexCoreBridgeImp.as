@@ -320,6 +320,7 @@ package actionScripts.impls
 						'w', [Keyboard.COMMAND],
 						'w', [Keyboard.CONTROL]),
 					new MenuItem("Close All", null, null, CloseTabEvent.EVENT_CLOSE_ALL_TABS),
+					new MenuItem("Close Others", null, null, CloseTabEvent.EVENT_CLOSE_ALL_OTHER_TABS),
 					/*new MenuItem("Define Workspace", null, ProjectEvent.SET_WORKSPACE),*/
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','WORKSPACE'),[

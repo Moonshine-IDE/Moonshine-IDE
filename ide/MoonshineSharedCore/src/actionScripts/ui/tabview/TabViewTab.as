@@ -43,6 +43,7 @@ package actionScripts.ui.tabview
 		public static const EVENT_TAB_CLICK:String = "tabClick";
 		public static const EVENT_TAB_CLOSE:String = "tabClose";
 		public static const EVENT_TABP_CLOSE_ALL:String = "tabCloseAll";
+		public static const EVENT_TAB_CLOSE_ALL_OTHERS:String = "tabCloseAllOthers";
 
 		protected var closeButton:CloseTabButton;
 		protected var background:Sprite;
@@ -79,6 +80,10 @@ package actionScripts.ui.tabview
             var copyItem:ContextMenuItem = new ContextMenuItem("Close All");
             copyItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, onMenuItemCloseAll);
             tabContextMenu.customItems.push(copyItem);
+
+			var closeAllOthersItem:ContextMenuItem = new ContextMenuItem("Close Others");
+			closeAllOthersItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, onMenuItemCloseAllOthers);
+			tabContextMenu.customItems.push(closeAllOthersItem);
 
             return tabContextMenu;
         }
@@ -328,6 +333,11 @@ package actionScripts.ui.tabview
         {
 			dispatchEvent(new Event(EVENT_TABP_CLOSE_ALL));
         }
+
+		private function onMenuItemCloseAllOthers(event:ContextMenuEvent):void
+		{
+			dispatchEvent(new Event(EVENT_TAB_CLOSE_ALL_OTHERS));
+		}
 
         private function onMenuItemClose(event:ContextMenuEvent):void
         {

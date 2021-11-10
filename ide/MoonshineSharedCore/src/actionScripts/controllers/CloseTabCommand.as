@@ -56,14 +56,29 @@ package actionScripts.controllers
 
 		public function execute(event:Event):void
 		{
+			var tabView:TabView;
 			if (event.type == CloseTabEvent.EVENT_CLOSE_ALL_TABS)
 			{
-                var tabView:TabView = model.mainView.mainContent;
+                tabView = model.mainView.mainContent;
 				if (tabView)
 				{
 					tabView.removeTabsFromCache();
 				}
 				UtilsCore.closeAllRelativeEditors(null);
+				return;
+			}
+
+			if (event.type == CloseTabEvent.EVENT_CLOSE_ALL_OTHER_TABS)
+			{
+				tabView = model.mainView.mainContent;
+				if (tabView)
+				{
+					tabView.removeTabsFromCache(model.activeEditor);
+				}
+				UtilsCore.closeAllRelativeEditors(
+						null, false, null, true,
+						model.activeEditor
+				);
 				return;
 			}
 			

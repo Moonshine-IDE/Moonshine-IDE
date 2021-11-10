@@ -767,7 +767,8 @@ package actionScripts.utils
 		 * Closes all the opened editors relative to a certain project path
 		 */
 		public static function closeAllRelativeEditors(projectOrWrapper:Object, isSkipSaveConfirmation:Boolean=false,
-													   completionHandler:Function=null, isCloseWhenDone:Boolean=true):void
+													   completionHandler:Function=null, isCloseWhenDone:Boolean=true,
+													   exceptEditor:IContentWindow=null):void
 		{
 			var projectReferencePath:String;
 			var editorsCount:int = model.editors.length;
@@ -792,6 +793,11 @@ package actionScripts.utils
 			
 			for (var i:int = 0; i < editorsCount; i++)
 			{
+				if (model.editors[i] == exceptEditor)
+				{
+					continue;
+				}
+
 				if ((model.editors[i] is IFileContentWindow) && model.editors[i].currentFile &&
 					(!projectReferencePath || (model.editors[i].hasOwnProperty("projectPath") && model.editors[i].projectPath == projectReferencePath)))
 				{
