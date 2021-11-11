@@ -87,6 +87,8 @@ package actionScripts.ui.renderers
 		public static const CLOSE:String = "Close";
 		public static const DELETE_PROJECT:String = "Delete Project";
 		public static const PREVIEW:String = "Preview";
+		public static const EXPAND_ALL:String = "Expand All";
+		public static const COLLAPSE_ALL:String = "Collapse All";
 
 		private var label2:Label;
 		private var editText:TextInput;
@@ -277,6 +279,16 @@ package actionScripts.ui.renderers
                         model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(MARK_AS_HIDDEN, redispatch, Event.SELECT));
                     }
                 }
+
+				// expand/collapse-all to folders
+				if (!fw.isRoot && fw.children != null)
+				{
+					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(EXPAND_ALL, redispatch, Event.SELECT));
+					if ((this.owner as CustomTree).isItemOpen(value))
+					{
+						model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(COLLAPSE_ALL, redispatch, Event.SELECT));
+					}
+				}
 				
 				// menu item for file-paste to be use in different locations based upon fw property
 				// also update this every time it displays
@@ -377,8 +389,11 @@ package actionScripts.ui.renderers
 				}
 
 				// avail the refresh option against folders only
-				if ((fw.isRoot || ConstantsCoreVO.IS_AIR) && fw.children != null) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(REFRESH, redispatch, Event.SELECT));
-				
+				if ((fw.isRoot || ConstantsCoreVO.IS_AIR) && fw.children != null)
+				{
+					model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(REFRESH, redispatch, Event.SELECT));
+				}
+
 				if (fw.isWorking && !loadingIcon) 
 				{
 					loadingIcon = new Image();

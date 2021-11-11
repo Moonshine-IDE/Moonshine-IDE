@@ -607,6 +607,12 @@
 					case FTETreeItemRenderer.PREVIEW:
 						dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, fileWrapper));
 						break;
+					case FTETreeItemRenderer.EXPAND_ALL:
+						this.tree.expandChildrenOf(fileWrapper, true);
+						break;
+					case FTETreeItemRenderer.COLLAPSE_ALL:
+						this.tree.expandChildrenOf(fileWrapper, false);
+						break;
 				}
 	
 				/*
