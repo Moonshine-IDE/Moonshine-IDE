@@ -9,10 +9,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+* Added "Close Others" context-menu option to Tab ([#610](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/610))
+
 ### Changed
+
+* Update notification window size updated ([#909](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/909))
 
 ### Fixed
 
+* `Git > Grant Permission` opens Manage Repositories window instead of the targeted window ([#749](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/749))
 
 ## Moonshine IDE [3.2.0]
 
