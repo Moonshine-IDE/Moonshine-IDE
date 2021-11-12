@@ -160,8 +160,7 @@
 			focusThickness="0"
 			borderVisible="false"
 			contentBackgroundAlpha="0"
-			
-			fontFamily="DejaVuSans"
+
 			fontSize="12"
 			color="0xb6b6b6"
 			

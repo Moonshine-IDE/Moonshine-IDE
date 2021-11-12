@@ -172,7 +172,7 @@ package actionScripts.ui.tabview
 			labelView.mouseEnabled = false;
 			labelView.mouseChildren = false;
 			labelView.setStyle('color', textColor);
-			labelView.setStyle('fontFamily', 'DejaVuSans');
+			//labelView.setStyle('fontFamily', 'DejaVuSans');
 			labelView.setStyle('fontSize', 11);
 			labelView.filters = [new DropShadowFilter(1, 90, 0, 0.1, 0, 0)];
 			if (_label) 

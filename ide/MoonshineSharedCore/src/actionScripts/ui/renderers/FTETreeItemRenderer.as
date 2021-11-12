@@ -132,7 +132,7 @@ package actionScripts.ui.renderers
 			editText.width = width - 34;
 			editText.height = height+4;
 			editText.styleName = 'uiText';
-			editText.setStyle('fontSize', 12);
+			editText.setStyle('fontSize', 13);
 			editText.setStyle('focusAlpha', 0);
 			editText.setStyle('color', 0xe0e0e0);
 			editText.setStyle('paddingTop', 3);
@@ -608,7 +608,7 @@ package actionScripts.ui.renderers
 				label2.mouseEnabled = false;
 				label2.mouseChildren = false;
 				label2.styleName = 'uiText';
-				label2.setStyle('fontSize', 12);
+				label2.setStyle('fontSize', 13);
 				label2.setStyle('color', 0xe0e0e0);
 				label2.maxDisplayedLines = 1;
 				

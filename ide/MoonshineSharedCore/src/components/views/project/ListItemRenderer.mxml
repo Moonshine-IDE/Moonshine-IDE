@@ -26,8 +26,6 @@
 	
 	<ns:Label 
 		paddingLeft="3"
-		
-		fontFamily="DejaVuSans"
 		fontSize="12"
 		color="0xe0e0e0"
 		text="{data.name}"/>
