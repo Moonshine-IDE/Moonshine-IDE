@@ -75,8 +75,8 @@
 				
 				var isCommandLineTools:Boolean = xCodePath.indexOf(".app") == -1;
 				
-				btnCancel.label = "I Don't Want Git or SVN";
-				retUserMessage.textFlow = TextFlowUtil.importFromString("<p>In order to use Git and SVN, you must grant permission for Moonshine to access the XCode command line tools.<br/><br/>Click <span fontWeight='bold'>Allow Access</span> to open the folder show below. Then click \"Open\" to grant access.<br/><br/><span fontWeight='bold'>"+xCodePath+"</span></p>");
+				btnCancel.label = "I Don't Want Git";
+				retUserMessage.textFlow = TextFlowUtil.importFromString("<p>In order to use Git, you must grant permission for Moonshine to access the XCode command line tools.<br/><br/>Click <span fontWeight='bold'>Allow Access</span> to open the folder show below. Then click \"Open\" to grant access.<br/><br/><span fontWeight='bold'>"+xCodePath+"</span></p>");
 			}
 			
 			private function closeButtonClickedRequest(event:MouseEvent):void
