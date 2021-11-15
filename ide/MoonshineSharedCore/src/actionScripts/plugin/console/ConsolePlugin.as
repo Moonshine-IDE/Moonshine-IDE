@@ -227,7 +227,7 @@ package actionScripts.plugin.console
 			var ntc:String = ConstantsCoreVO.MOONSHINE_IDE_LABEL +" "+ model.flexCore.version +"\n";
 			ntc += ConstantsCoreVO.MOONSHINE_IDE_COPYRIGHT_LABEL +"\n";
 			ntc += "Source code is under Apache License, Version 2.0\n";
-			ntc += "https://github.com/prominic/Moonshine-IDE\n";
+			ntc += "https://github.com/Moonshine-IDE/Moonshine-IDE\n";
 			ntc += "Uses as3abc (LGPL), as3swf (MIT), fzip (ZLIB), asblocks (Apache License 2.0), NativeApplicationUpdater (LGPL)\n";
 			
 			if (ConstantsCoreVO.IS_AIR) ntc += "Running on Adobe AIR " + model.flexCore.runtimeVersion;
