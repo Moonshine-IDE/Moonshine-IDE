@@ -463,7 +463,9 @@ package actionScripts.ui.renderers
 			for each (var file:FileLocation in TemplatingPlugin.fileTemplates)
 			{
 				var label:String = TemplatingHelper.getTemplateLabel(file);
+				
 				var eventType:String = "eventNewFileFromTemplate"+label;
+			
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatchNew, Event.SELECT);
 				item.data = eventType;
 				

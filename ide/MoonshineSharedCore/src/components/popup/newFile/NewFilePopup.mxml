@@ -188,9 +188,16 @@
             UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
             UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+            
+           
             if (project && project.isDominoVisualEditorProject)
             {
-                wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms");
+                if( lblExtension.text && lblExtension.text == ".form"){
+                    wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms");
+                }else if(lblExtension.text && lblExtension.text == ".page"){
+                    wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Pages");
+                }
+               
             }
             tree.callLater(function ():void {
                 var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
@@ -232,6 +239,17 @@
                     if (currentPath != dominoFormFolder)
                     {
                         warningMessage = "Domino forms are only supported in the Forms folder.";
+                        hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
+                        tree.selectedItem = wrapperOfFolderLocation;
+                    }
+                }else if (lblExtension.text && lblExtension.text == ".page"){
+                    var dominoPageFolder:String = wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Pages"
+                    var currenPagetPath:String = UtilsCore.getPackageReferenceByProjectPath(
+                            Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+                            tree.selectedItem.nativePath);
+                    if (currentPath != dominoFormFolder)
+                    {
+                        warningMessage = "Domino pages are only supported in the Pages folder.";
                         hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
                         tree.selectedItem = wrapperOfFolderLocation;
                     }
@@ -322,6 +340,13 @@
                         txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
                                 Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
                                 wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms");
+                    }
+
+                    if (lblExtension.text && lblExtension.text == ".page")
+                    {
+                        txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                                Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+                                wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Pages");
                     }
                 }
 
