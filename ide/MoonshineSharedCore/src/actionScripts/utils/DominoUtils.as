@@ -249,6 +249,14 @@ package actionScripts.utils
 				}
 				result=result4;
 			}
+
+			//remove all  _moonshineSelected_
+
+			if(result.indexOf("_moonshineSelected_")>=0){
+				result=result.replace(/_moonshineSelected_/g,'')
+			}
+
+			
 			
 			return result;
 		}
