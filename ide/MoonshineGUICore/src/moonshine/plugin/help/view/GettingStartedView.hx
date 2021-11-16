@@ -164,6 +164,10 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle {
 		}
 		this._isRefreshInProgress = value;
 		this.setInvalid(InvalidationFlag.DATA);
+		if (!this._isRefreshInProgress)
+		{
+			this.helperView.update();
+		}
 		return this._isRefreshInProgress;
 	}
 
