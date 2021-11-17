@@ -94,7 +94,7 @@
 	<!-- Settings list -->
 	<s:BorderContainer width="100%" height="100%" backgroundColor="#FFFFFF">
 		<s:Label text="Project configuration is currently managed by build.gradle only."
-				 fontSize="20" fontFamily="DejaVuSans" horizontalCenter="0" top="20"/>
+				 fontSize="20" fontFamily="_sans" horizontalCenter="0" top="20"/>
 		<s:BorderContainer id="buttonBar"
 						   width="100%" height="41"
 						   bottom="0" backgroundColor="0x444444">

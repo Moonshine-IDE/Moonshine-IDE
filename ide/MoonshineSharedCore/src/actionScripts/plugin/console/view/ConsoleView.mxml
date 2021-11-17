@@ -215,9 +215,7 @@
 						  paddingRight="2"
 						  paddingTop="6"
 						  paddingBottom="3"
-						  fontFamily="DejaVuSansCond"
 						  fontSize="12"
-						  fontLookup="embeddedCFF" 
 						  text=" >"
 						  color="0xdddddd" />
 				<ui:FeathersUIWrapper width="100%" height="100%">

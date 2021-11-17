@@ -25,6 +25,7 @@ package actionScripts.ui.tabview
 	{
 		public static const EVENT_CLOSE_TAB:String       = "closeTabEvent";
 		public static const EVENT_CLOSE_ALL_TABS:String  = "closeAllTabsEvent";
+		public static const EVENT_CLOSE_ALL_OTHER_TABS:String  = "closeAllOtherTabsEvent";
 		public static const EVENT_TAB_CLOSED:String      = "tabClosedEvent";
 		public static const EVENT_ALL_TABS_CLOSED:String = "allTabsClosed";
 		public static const EVENT_DISMISS_INDIVIDUAL_TAB_CLOSE_ALERT:String = "EVENT_DISMISS_INDIVIDUAL_TAB_CLOSE_ALERT";

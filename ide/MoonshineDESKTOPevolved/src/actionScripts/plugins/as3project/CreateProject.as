@@ -345,15 +345,6 @@ package actionScripts.plugins.as3project
 				}
                 newProjectWithExistingSourcePathSetting.editable = project.isProjectFromExistingSource;
             }
-			
-            if (isActionScriptProject)
-			{
-				isActionScriptProject = true;
-				projectTemplateTypeSetting = new DropDownListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ACTIONSCRIPT, "title");
-				projectTemplateTypeSetting.addEventListener(Event.CHANGE, onProjectTemplateTypeChange);
-				
-				settings.getSettingsList().splice(4, 0, projectTemplateTypeSetting);
-			}
 
 			if (isOpenProjectCall)
 			{
@@ -361,6 +352,14 @@ package actionScripts.plugins.as3project
 				projectTemplateTypeSetting.addEventListener(Event.CHANGE, onProjectTemplateTypeChange);
 
 				settings.getSettingsList().splice(3, 0, projectTemplateTypeSetting);
+			}
+			else if (isActionScriptProject)
+			{
+				isActionScriptProject = true;
+				projectTemplateTypeSetting = new DropDownListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ACTIONSCRIPT, "title");
+				projectTemplateTypeSetting.addEventListener(Event.CHANGE, onProjectTemplateTypeChange);
+
+				settings.getSettingsList().splice(4, 0, projectTemplateTypeSetting);
 			}
 			else if (isFlexJSRoyalProject)
 			{

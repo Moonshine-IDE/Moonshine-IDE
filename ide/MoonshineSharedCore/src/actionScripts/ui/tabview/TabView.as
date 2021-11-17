@@ -330,6 +330,7 @@ package actionScripts.ui.tabview
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick);
 			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose);
 			tab.addEventListener(TabViewTab.EVENT_TABP_CLOSE_ALL, onTabCloseAll);
+			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE_ALL_OTHERS, onTabCloseAllOthers);
 
 			invalidateLayoutTabs();
         }
@@ -366,6 +367,16 @@ package actionScripts.ui.tabview
             removeTabsFromCache();
 			UtilsCore.closeAllRelativeEditors(null);
         }
+
+		private function onTabCloseAllOthers(event:Event):void
+		{
+			var child:DisplayObject = TabViewTab(event.target).data as DisplayObject;
+			removeTabsFromCache(child as IContentWindow);
+			UtilsCore.closeAllRelativeEditors(
+					null, false, null, true,
+					child as IContentWindow
+					);
+		}
 
         private function updateTabLabel(event:Event):void
 		{
@@ -449,18 +460,21 @@ package actionScripts.ui.tabview
 			return null;
 		}
 
-		public function removeTabsFromCache():void
+		public function removeTabsFromCache(exceptTab:IContentWindow=null):void
 		{
             var numTabs:int = tabContainer.numChildren;
             for (var i:int = numTabs - 2; i > -1; i--)
 			{
                 var tab:TabViewTab = tabContainer.getChildAt(i) as TabViewTab;
-                removeTabFromCache(tab.data as IFileContentWindow);
+				if (tab.data != exceptTab)
+				{
+					removeTabFromCache(tab.data as IFileContentWindow);
+				}
 			}
 
 			for each (var item:HamburgerMenuTabsVO in model.hamburgerTabs)
 			{
-				if (item.tabData is BasicTextEditor)
+				if ((item.tabData is BasicTextEditor) && (item.tabData != exceptTab))
 				{
                     removeTabFromCache(item.tabData as IFileContentWindow);
 				}

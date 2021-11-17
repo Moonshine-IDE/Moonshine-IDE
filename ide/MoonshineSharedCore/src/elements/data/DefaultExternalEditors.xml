@@ -85,5 +85,29 @@
 			</defaultLocation>
 			<website>https://www.eclipse.org/downloads/</website>
 		</editor>
+		<editor id="coderunner" isWindows="false" isMac="true">
+			<title>CodeRunner</title>
+			<defaultLocation>
+				<windows/>
+				<macos>/Applications/CodeRunner.app</macos>
+			</defaultLocation>
+			<website>https://coderunnerapp.com</website>
+		</editor>
+		<editor id="komodoEdit" isWindows="true" isMac="true">
+			<title>Komodo Edit</title>
+			<defaultLocation>
+				<windows>$programFiles/ActiveState Komodo IDE 12/komodo.exe</windows>
+				<macos>/Applications/Komodo IDE 12.app</macos>
+			</defaultLocation>
+			<website>https://www.activestate.com/products/komodo-edit/</website>
+		</editor>
+		<editor id="atom" isWindows="true" isMac="true">
+			<title>Atom</title>
+			<defaultLocation>
+				<windows>$userDirectory/AppData/Local/atom/atom.exe</windows>
+				<macos>/Applications/Atom.app</macos>
+			</defaultLocation>
+			<website>https://atom.io</website>
+		</editor>
 	</editors>
 </config>

@@ -244,7 +244,7 @@ package actionScripts.utils
 			}
 			else
 			{
-				checkJavaVersionAndUpdateOnlyIfRequires(path, model.javaVersionForTypeAhead, updateJavaPath);
+				//checkJavaVersionAndUpdateOnlyIfRequires(path, model.javaVersionForTypeAhead, updateJavaPath);
 			}
 		}
 		

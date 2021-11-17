@@ -26,7 +26,7 @@
     </containers:Navigator>
     <s:Group percentWidth="100">
         <tabnavigator:TabBarWithScroller id="tabBar" dataProvider="{viewStack}"
-                                         fontSize="11" fontFamily="DejaVuSans" color="0xEEEEEE"
+                                         fontSize="11" fontFamily="_sans" color="0xEEEEEE"
                                          skinClass="components.skins.EditorTabBarSkin"
                                          cornerRadius="1" closeButtonVisible="false"
                                          change="onTabBarChange(event)" left="0"/>

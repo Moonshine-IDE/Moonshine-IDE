@@ -68,7 +68,7 @@ package actionScripts.ui.tabNavigator
 			{
                 tabBar.setStyle("color", "0xEEEEEE");
                 tabBar.setStyle("fontSize", 11);
-                tabBar.setStyle("fontFamily", "DejaVuSans");
+                //tabBar.setStyle("fontFamily", "DejaVuSans");
 				tabBar.addEventListener(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, onTabBarWithScrollerCloseButtonClick);
 			}
         }

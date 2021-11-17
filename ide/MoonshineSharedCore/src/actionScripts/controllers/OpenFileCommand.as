@@ -207,7 +207,7 @@ package actionScripts.controllers
 			}
 			
 			// @note
-			// https://github.com/prominic/Moonshine-IDE/issues/31
+			// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/31
 			// when file is not open and a debug-trace call happens
 			// it never goes through the selectTraceLine(..) command for the
 			// particular file, because its yet to be open. 

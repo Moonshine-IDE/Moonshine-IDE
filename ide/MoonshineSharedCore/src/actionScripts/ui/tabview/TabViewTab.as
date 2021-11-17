@@ -43,6 +43,7 @@ package actionScripts.ui.tabview
 		public static const EVENT_TAB_CLICK:String = "tabClick";
 		public static const EVENT_TAB_CLOSE:String = "tabClose";
 		public static const EVENT_TABP_CLOSE_ALL:String = "tabCloseAll";
+		public static const EVENT_TAB_CLOSE_ALL_OTHERS:String = "tabCloseAllOthers";
 
 		protected var closeButton:CloseTabButton;
 		protected var background:Sprite;
@@ -80,6 +81,10 @@ package actionScripts.ui.tabview
             copyItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, onMenuItemCloseAll);
             tabContextMenu.customItems.push(copyItem);
 
+			var closeAllOthersItem:ContextMenuItem = new ContextMenuItem("Close Others");
+			closeAllOthersItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, onMenuItemCloseAllOthers);
+			tabContextMenu.customItems.push(closeAllOthersItem);
+
             return tabContextMenu;
         }
 
@@ -105,13 +110,13 @@ package actionScripts.ui.tabview
 			if (_data != value)
 			{
 				_data = value;
+				this.contextMenu = createContextMenu();
 				if (value is IFileContentWindow)
 				{
 					var projectPath:String = value.hasOwnProperty("projectPath") ? value["projectPath"] : null;
 					var editor:IFileContentWindow = value as IFileContentWindow;
 					if (editor.currentFile)
                     {
-                        this.contextMenu = createContextMenu();
                         SharedObjectUtil.saveLocationOfOpenedProjectFile(
 								editor.currentFile.name,
                                 editor.currentFile.fileBridge.nativePath,
@@ -167,7 +172,7 @@ package actionScripts.ui.tabview
 			labelView.mouseEnabled = false;
 			labelView.mouseChildren = false;
 			labelView.setStyle('color', textColor);
-			labelView.setStyle('fontFamily', 'DejaVuSans');
+			//labelView.setStyle('fontFamily', 'DejaVuSans');
 			labelView.setStyle('fontSize', 11);
 			labelView.filters = [new DropShadowFilter(1, 90, 0, 0.1, 0, 0)];
 			if (_label) 
@@ -328,6 +333,11 @@ package actionScripts.ui.tabview
         {
 			dispatchEvent(new Event(EVENT_TABP_CLOSE_ALL));
         }
+
+		private function onMenuItemCloseAllOthers(event:ContextMenuEvent):void
+		{
+			dispatchEvent(new Event(EVENT_TAB_CLOSE_ALL_OTHERS));
+		}
 
         private function onMenuItemClose(event:ContextMenuEvent):void
         {
