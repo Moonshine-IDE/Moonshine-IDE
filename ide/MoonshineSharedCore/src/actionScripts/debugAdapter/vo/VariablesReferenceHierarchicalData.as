@@ -49,7 +49,7 @@ package actionScripts.debugAdapter.vo
 			this._scopes.source = scopes;
 		}
 		
-		public function setVariablesForScopeOrVar(variables:Array, parentScopeOrVar:BaseVariablesReference):void
+		public function setVariablesForScopeOrVar(variables:Array, parentScopeOrVar:Object):void
 		{
 			this.populateCollectionsForParentReferences(variables);
 			var collection:ArrayCollection = ArrayCollection(this._variablesReferenceToVariables[parentScopeOrVar]);
@@ -64,9 +64,9 @@ package actionScripts.debugAdapter.vo
 			var count:int = references.length;
 			for(var i:int = 0; i < count; i++)
 			{
-				var scopeOrVar:BaseVariablesReference = BaseVariablesReference(references[i]);
+				var scopeOrVar:Object = references[i];
 				var variablesReference:Number = scopeOrVar.variablesReference;
-				if(variablesReference !== -1)
+				if(variablesReference > 0)
 				{
 					var collection:ArrayCollection = this._variablesReferenceToVariables[scopeOrVar] as ArrayCollection;
 					if(!collection)
@@ -80,7 +80,7 @@ package actionScripts.debugAdapter.vo
 		
 		public function canHaveChildren(node:Object):Boolean
 		{
-			return node is BaseVariablesReference && BaseVariablesReference(node).variablesReference !== -1;
+			return ("variablesReference" in node) && node.variablesReference > 0;
 		}
 		
 		public function hasChildren(node:Object):Boolean
@@ -90,12 +90,11 @@ package actionScripts.debugAdapter.vo
 		
 		public function getChildren(node:Object):Object
 		{
-			var branch:BaseVariablesReference = node as BaseVariablesReference;
-			if(!branch)
+			if(!("variablesReference" in node))
 			{
 				return null;
 			}
-			return this._variablesReferenceToVariables[branch];
+			return this._variablesReferenceToVariables[node];
 		}
 		
 		public function getData(node:Object):Object

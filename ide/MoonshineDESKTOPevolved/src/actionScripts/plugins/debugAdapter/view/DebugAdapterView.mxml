@@ -37,14 +37,9 @@
 		import mx.events.ListEvent;
 		import actionScripts.plugins.debugAdapter.events.LoadVariablesEvent;
 		import actionScripts.plugins.debugAdapter.events.StackFrameEvent;
-		import actionScripts.debugAdapter.vo.BaseVariablesReference;
-		import actionScripts.debugAdapter.vo.StackFrame;
-		import actionScripts.debugAdapter.vo.Variable;
 		import actionScripts.events.DebugActionEvent;
 		import flash.events.MouseEvent;
-		import mx.collections.ICollectionView;
 		import mx.collections.ArrayCollection;
-		import actionScripts.debugAdapter.vo.Thread;
 
 		[Bindable]
 		public var threadsAndStackFrames:IHierarchicalData;
@@ -63,7 +58,7 @@
 			return "Debug";
 		}
 
-		public function isThreadPaused(thread:Thread):Boolean
+		public function isThreadPaused(thread:Object):Boolean
 		{
 			if(!thread)
 			{
@@ -74,21 +69,20 @@
 
 		private function variablesValueLabelFunction(item:Object, column:AdvancedDataGridColumn = null):String
 		{
-			if(item is Variable)
+			if(item && ("value" in item)) // Variable
 			{
-				return Variable(item).value;
+				return item.value;
 			}
 			return "";
 		}
 
 		private function lineLabelFunction(item:Object, column:AdvancedDataGridColumn = null):String
 		{
-			if(item is StackFrame)
+			if(item && ("line" in item)) //StackFrame
 			{
-				var stackFrame:StackFrame = StackFrame(item);
-				if(stackFrame.source)
+				if(item.source)
 				{
-					return stackFrame.line.toString();
+					return item.line.toString();
 				}
 			}
 			return "";
@@ -96,14 +90,13 @@
 
 		private function nameDataTipFunction(item:Object):String
 		{
-			if(item is StackFrame)
+			if(item && ("line" in item)) //StackFrame
 			{
-				var stackFrame:StackFrame = StackFrame(item);
-				var result:String = stackFrame.name;
-				if(stackFrame.source)
+				var result:String = item.name;
+				if(item.source)
 				{
-					result += " (" + stackFrame.line + "," + stackFrame.column + ")";
-					result += "\n" + stackFrame.source.path;
+					result += " (" + item.line + "," + item.column + ")";
+					result += "\n" + item.source.path;
 				}
 				return result;
 			}
@@ -112,7 +105,7 @@
 
 		private function variablesTree_itemOpenHandler(event:AdvancedDataGridEvent):void
 		{
-			var item:BaseVariablesReference = BaseVariablesReference(event.item);
+			var item:Object = event.item;
 			if(this.scopesAndVars.hasChildren(item))
 			{
 				this.dispatchEvent(new LoadVariablesEvent(LoadVariablesEvent.LOAD_VARIABLES, item));
@@ -121,12 +114,12 @@
 
 		private function threadsList_itemClickHandler(event:ListEvent):void
 		{
-			var stackFrame:StackFrame = event.itemRenderer.data as StackFrame;
-			if(!stackFrame)
+			var data:Object = event.itemRenderer.data;
+			if(!data || !("line" in data))
 			{
 				return;
 			}
-			this.dispatchEvent(new StackFrameEvent(StackFrameEvent.GOTO_STACK_FRAME, stackFrame));
+			this.dispatchEvent(new StackFrameEvent(StackFrameEvent.GOTO_STACK_FRAME, data));
 		}
 
 		private function playButton_clickHandler(event:MouseEvent):void
@@ -252,12 +245,9 @@
 						<mx:Component>
 							<local:DebugAdapterThreadRenderer
 								dispatcher="{outerDocument}"
-								playEnabled="{outerDocument.active &amp;&amp; outerDocument.isThreadPaused(this.data as Thread)}"
-								pauseEnabled="{outerDocument.active &amp;&amp; !outerDocument.isThreadPaused(this.data as Thread)}"
-								stepEnabled="{outerDocument.active &amp;&amp; outerDocument.isThreadPaused(this.data as Thread)}">
-								<mx:Script><![CDATA[
-									import actionScripts.debugAdapter.vo.Thread;
-								]]></mx:Script>
+								playEnabled="{outerDocument.active &amp;&amp; outerDocument.isThreadPaused(this.data)}"
+								pauseEnabled="{outerDocument.active &amp;&amp; !outerDocument.isThreadPaused(this.data)}"
+								stepEnabled="{outerDocument.active &amp;&amp; outerDocument.isThreadPaused(this.data)}">
 							</local:DebugAdapterThreadRenderer>
 						</mx:Component>
 					</mx:itemRenderer>

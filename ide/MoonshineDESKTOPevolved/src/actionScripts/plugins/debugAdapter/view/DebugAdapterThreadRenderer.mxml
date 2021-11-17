@@ -28,10 +28,8 @@
 
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.debugAdapter.vo.StackFrame;
 			import mx.controls.listClasses.BaseListData;
 			import actionScripts.events.DebugActionEvent;
-			import actionScripts.debugAdapter.vo.Thread;
 			import flash.events.IEventDispatcher;
 
 			public var dispatcher:IEventDispatcher;
@@ -49,16 +47,16 @@
 			private var stackTraceLabel:String;
 
 			[Bindable]
-			private var stackFrame:StackFrame;
+			private var stackFrame:Object;
 
 			[Bindable]
-			private var thread:Thread;
+			private var thread:Object;
 
 			override public function set data(value:Object):void
 			{
 				super.data = value;
-				this.stackFrame = value as StackFrame;
-				this.thread = value as Thread;
+				this.stackFrame = (value && ("line" in value)) ? value : null;
+				this.thread = (value && !("line" in value)) ? value : null;
 				this.currentState = (this.stackFrame != null) ? "labelOnly" : "threadControls";
 			}
 

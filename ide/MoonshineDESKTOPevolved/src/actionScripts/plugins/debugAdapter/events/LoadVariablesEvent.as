@@ -18,20 +18,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.debugAdapter.events
 {
-	import actionScripts.debugAdapter.vo.BaseVariablesReference;
-
 	import flash.events.Event;
 
 	public class LoadVariablesEvent extends Event
 	{
 		public static const LOAD_VARIABLES:String = "loadVariables";
 
-		public function LoadVariablesEvent(type:String, scopeOrVar:BaseVariablesReference)
+		public function LoadVariablesEvent(type:String, scopeOrVar:Object)
 		{
 			super(type, false, false);
 			this.scopeOrVar = scopeOrVar;
 		}
 		
-		public var scopeOrVar:BaseVariablesReference;
+		public var scopeOrVar:Object;
 	}
 }

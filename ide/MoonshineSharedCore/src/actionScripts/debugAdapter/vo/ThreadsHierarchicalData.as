@@ -49,7 +49,7 @@ package actionScripts.debugAdapter.vo
 			this._threads.source = threads;
 		}
 		
-		public function setStackFramesForThread(stackFrames:Array, thread:Thread):void
+		public function setStackFramesForThread(stackFrames:Array, thread:Object):void
 		{
 			var collection:ArrayCollection = ArrayCollection(this._threadsToStackFrames[thread]);
 			collection.source = stackFrames;
@@ -60,7 +60,7 @@ package actionScripts.debugAdapter.vo
 			var count:int = threads.length;
 			for(var i:int = 0; i < count; i++)
 			{
-				var thread:Thread = Thread(threads[i]);
+				var thread:Object = threads[i];
 				var collection:ArrayCollection = this._threadsToStackFrames[thread] as ArrayCollection;
 				if(!collection)
 				{
@@ -72,12 +72,12 @@ package actionScripts.debugAdapter.vo
 		
 		public function canHaveChildren(node:Object):Boolean
 		{
-			return node is Thread;
+			return !("line" in node);
 		}
 		
 		public function hasChildren(node:Object):Boolean
 		{
-			var thread:Thread = node as Thread;
+			var thread:Object = !("line" in node) ? node : null;
 			if(!thread)
 			{
 				return false;
@@ -87,7 +87,7 @@ package actionScripts.debugAdapter.vo
 		
 		public function getChildren(node:Object):Object
 		{
-			var thread:Thread = node as Thread;
+			var thread:Object = !("line" in node) ? node : null;
 			if(!thread)
 			{
 				return null;

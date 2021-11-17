@@ -18,20 +18,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.debugAdapter.events
 {
-	import actionScripts.debugAdapter.vo.StackFrame;
-
 	import flash.events.Event;
 
 	public class StackFrameEvent extends Event
 	{
 		public static const GOTO_STACK_FRAME:String = "gotoStackFrame";
 
-		public function StackFrameEvent(type:String, stackFrame:StackFrame)
+		public function StackFrameEvent(type:String, stackFrame:Object)
 		{
 			super(type, false, false);
 			this.stackFrame = stackFrame;
 		}
 
-		public var stackFrame:StackFrame;
+		public var stackFrame:Object;
 	}
 }
