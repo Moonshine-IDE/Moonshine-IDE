@@ -23,7 +23,6 @@ package actionScripts.plugins.as3project
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.filesystem.File;
-	import flash.net.SharedObject;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
@@ -83,6 +82,8 @@ package actionScripts.plugins.as3project
 	
     public class CreateProject
 	{
+		public static const EVENT_SAVE_PROJECT_CREATION_FOLDERS:String = "event-save-project-creation-folders";
+
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
 		
 		private var newProjectWithExistingSourcePathSetting:NewProjectSourcePathListSetting;
@@ -94,7 +95,6 @@ package actionScripts.plugins.as3project
 		private var projectTemplateTypeSetting:DropDownListSetting;
 		private var projectWithExistingSourceSetting:BooleanSetting;
 
-		private var cookie:SharedObject;
 		private var templateLookup:Object = {};
 		private var project:Object;
 		private var model:IDEModel = IDEModel.getInstance();
@@ -258,9 +258,6 @@ package actionScripts.plugins.as3project
 					if (OSXBookmarkerNotifiers.availableBookmarkedPaths == "") OSXBookmarkerNotifiers.removeFlashCookies();
 				}
 			
-            cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
-			//Read recent project path from shared object
-
 			if (isOpenProjectCall)
 			{
 				project = new ProjectShellVO(projectFolder ? projectFolder : event.templateDir, null);
@@ -272,18 +269,15 @@ package actionScripts.plugins.as3project
 
 			project.isLibraryProject = isLibraryProject;
 
-			if (cookie.data.hasOwnProperty('recentProjectPath'))
+			if (model.lastSelectedProjectPath)
 			{
-				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
-				if (cookie.data.hasOwnProperty('lastSelectedProjectPath'))
-				{
-					lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
-				}
+				lastSelectedProjectPath = model.lastSelectedProjectPath;
 			}
 			else if (!isOpenProjectCall)
 			{
 				project.folderLocation = new FileLocation(File.documentsDirectory.nativePath);
-				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) 
+				if (model.recentSaveProjectPath &&
+						!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath))
 				{
 					model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
 				}
@@ -399,17 +393,15 @@ package actionScripts.plugins.as3project
 				{
 					if (OSXBookmarkerNotifiers.availableBookmarkedPaths == "") OSXBookmarkerNotifiers.removeFlashCookies();
 				}
-				
-			cookie = SharedObject.getLocal("moonshine-ide-local");
-			
-			if (cookie.data.hasOwnProperty('recentProjectPath'))
+
+			if (model.lastSelectedProjectPath)
 			{
-				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
-				if (cookie.data.hasOwnProperty('lastSelectedProjectPath')) lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+				lastSelectedProjectPath = model.lastSelectedProjectPath;
 			}
-			else
+			else if (model.recentSaveProjectPath &&
+					!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath))
 			{
-				if (!model.recentSaveProjectPath.contains(project.folderLocation.fileBridge.nativePath)) model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
+				model.recentSaveProjectPath.addItem(project.folderLocation.fileBridge.nativePath);
 			}
 			
 			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ? lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
@@ -639,7 +631,6 @@ package actionScripts.plugins.as3project
 			var targetFolder:FileLocation = project.folderLocation;
 
 			//save  project path in shared object
-			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 			var tmpParent:FileLocation;
 			if (isProjectFromExistingSource && !isJavaProject && !isGrailsProject)
 			{
@@ -674,9 +665,7 @@ package actionScripts.plugins.as3project
 			// don't save this if from a open project call
 			if (!isOpenProjectCall && !isProjectFromExistingSource)
 			{
-				cookie.data["lastSelectedProjectPath"] = project.folderLocation.fileBridge.nativePath;
-				cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
-				cookie.flush();
+				dispatcher.dispatchEvent(new Event(EVENT_SAVE_PROJECT_CREATION_FOLDERS));
 			}
 
             project = createFileSystemBeforeSave(project, view.exportProject as AS3ProjectVO);
