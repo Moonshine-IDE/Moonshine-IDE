@@ -18,7 +18,7 @@
 
 	<template path="templates" if="flash"/>
 
-	<haxeflag name="--macro" value="include('moonshine')"/>
-	<haxeflag name="--macro" value="include('feathers')"/>
-	<haxeflag name="--macro" value="include('actuate')"/>
+	<haxeflag name="--macro" value="include('moonshine', true, null, null, true)"/>
+	<haxeflag name="--macro" value="include('feathers', true, null, null, true)"/>
+	<haxeflag name="--macro" value="include('motion', true, null, null, true)"/>
 </project>
