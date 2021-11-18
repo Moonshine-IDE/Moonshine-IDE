@@ -59,6 +59,12 @@ package actionScripts.impls
 		private var _file: File = ConstantsCoreVO.LAST_BROWSED_LOCATION ? 
 			new File(ConstantsCoreVO.LAST_BROWSED_LOCATION) : 
 			File.desktopDirectory;
+
+		private var _isBrowsed:Boolean;
+		public function get isBrowsed():Boolean
+		{
+			return _isBrowsed;
+		}
 		
 		CONFIG::OSX
 		{
@@ -290,7 +296,7 @@ package actionScripts.impls
 		public function browseForSave(selected:Function, canceled:Function=null, title:String=null, startFromLocation:String=null):void
 		{
 			setFileInternalPath(startFromLocation);
-			
+
 			_file.addEventListener(Event.SELECT, onSelectHandler);
 			_file.addEventListener(Event.CANCEL, onCancelHandler);
 			_file.browseForSave(title ? title : "");
@@ -472,7 +478,7 @@ package actionScripts.impls
 		public function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null, startFromLocation:String=null):void
 		{
 			setFileInternalPath(startFromLocation);
-			
+
 			var filters:Array;
 			var filtersForExt:Array = [];
 			if (fileFilters)
@@ -831,14 +837,14 @@ package actionScripts.impls
                 }
 				else
 				{
-					updateCoreFilePathOnBrowse(IDEModel.getInstance().fileCore.nativePath);
+					updateCoreFilePathOnBrowse(IDEModel.getInstance().fileCore.nativePath, false);
 				}
             }
 			catch(e:Error)
 			{}
 		}
 		
-		private function updateCoreFilePathOnBrowse(value:String):void
+		private function updateCoreFilePathOnBrowse(value:String, browsed:Boolean=true):void
 		{
 			if (FileUtils.isPathDirectory(value)) ConstantsCoreVO.LAST_BROWSED_LOCATION = value;
 			else ConstantsCoreVO.LAST_BROWSED_LOCATION = (new File(value)).parent.nativePath;
@@ -847,6 +853,7 @@ package actionScripts.impls
 			
 			IDEModel.getInstance().fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
 			_file.nativePath = value;
+			_isBrowsed = browsed;
 		}
 	}
 }

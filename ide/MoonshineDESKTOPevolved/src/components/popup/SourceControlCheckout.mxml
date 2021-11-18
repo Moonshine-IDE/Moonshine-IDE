@@ -138,7 +138,7 @@
 					if (results != null)
 					{
 						isValidURL = true;
-						txtTarget.text = (isPathMapped) ? mappedPath : (model.lastSelectedProjectPath ? model.lastSelectedProjectPath : "");
+						txtTarget.text = (isPathMapped) ? mappedPath : "";
 						if (!isPathMapped) txtTarget.prompt = "Parent directory";
 						moveCursorToTargetEnd();
 						autoFolderName = results[0].split("/").pop();
@@ -159,7 +159,7 @@
 					if (results != null)
 					{
 						isGitAvailable = isValidURL = true;
-						txtTarget.text = (isPathMapped) ? mappedPath : (model.lastSelectedProjectPath ? model.lastSelectedProjectPath : "");
+						txtTarget.text = (isPathMapped) ? mappedPath : "";
 						if (!isPathMapped) txtTarget.prompt = "Parent directory";
 						moveCursorToTargetEnd();
 						txtFolderName.text = (txtFolderName.text != "") ? txtFolderName.text : txtSource.text.split("/").pop();
@@ -192,6 +192,16 @@
 				if (VersionControlUtils.IS_CHECKOUT_BROWSED_ONCE)
 				{
 					mappedPath = VersionControlUtils.LAST_CHECKOUT_BROWSED_LOCATION;
+					isPathMapped = true;
+				}
+				else if (model.fileCore.isBrowsed)
+				{
+					mappedPath = model.fileCore.getFile.nativePath;
+					isPathMapped = true;
+				}
+				else if (model.lastSelectedProjectPath)
+				{
+					mappedPath = model.lastSelectedProjectPath;
 					isPathMapped = true;
 				}
 				
