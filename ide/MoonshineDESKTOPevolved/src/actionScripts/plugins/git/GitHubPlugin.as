@@ -336,7 +336,7 @@ package actionScripts.plugins.git
 				isGranted = true;
 				
 				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xCodePermissionWindow.xCodePath));
-				Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
+				Alert.show("Permission accepted. You can now use Moonshine Git functionalities.", "Success!");
 				
 				// re-test
 				checkGitAvailability();
