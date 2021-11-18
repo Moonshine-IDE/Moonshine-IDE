@@ -80,7 +80,7 @@ package actionScripts.plugin.recentlyOpened
 			}
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
-			dispatcher.addEventListener(CreateProject.EVENT_SAVE_PROJECT_CREATION_FOLDERS, onNewProjectPathBrowse, false, 0, true);
+			dispatcher.addEventListener(ProjectEvent.EVENT_SAVE_PROJECT_CREATION_FOLDERS, onNewProjectPathBrowse, false, 0, true);
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, handleAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
 			dispatcher.addEventListener(ProjectEvent.WORKSPACE_UPDATED, onWorkspaceUpdated);
