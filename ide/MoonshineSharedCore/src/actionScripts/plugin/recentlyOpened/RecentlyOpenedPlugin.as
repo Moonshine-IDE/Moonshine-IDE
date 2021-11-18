@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
-	import actionScripts.plugins.as3project.CreateProject;
-
 	import flash.events.Event;
     import flash.net.SharedObject;
     import flash.utils.clearTimeout;

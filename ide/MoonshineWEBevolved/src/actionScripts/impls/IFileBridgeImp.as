@@ -40,6 +40,11 @@ package actionScripts.impls
 	{
 		private var _file: FileReference = new FileReference();
 		
+		public function get isBrowsed():Boolean
+		{
+			return false;
+		}
+		
 		CONFIG::OSX
 		{
 			public function getSSBInterface():IScopeBookmarkInterface
