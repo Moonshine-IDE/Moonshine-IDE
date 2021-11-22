@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 * Update notification window size updated ([#909](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/909))
 * Language Server:  Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.10.0.
+* Language Server:  Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to latest version.
 * Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.5.0.
 
 ### Fixed
