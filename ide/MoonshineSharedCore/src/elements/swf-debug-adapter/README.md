@@ -15,7 +15,7 @@ Extension created and maintained by [Josh Tynjala](https://patreon.com/josht). B
 
 ## Requirements
 
-- Visual Studio Code 1.37
+- Visual Studio Code 1.50
 - Java 1.8 Runtime
 - Adobe AIR or Adobe Flash Player
 
@@ -47,7 +47,7 @@ Depending on which language/framework builds the _.swf_ file, the steps to confi
 
 ### ActionScript and MXML
 
-This extension offers tight integration with the [ActionScript & MXML langauge extension](https://marketplace.visualstudio.com/items?itemName=bowlerhatllc.vscode-nextgenas). Many attributes in the workspace's _launch.json_ file can be omitted because they will be populated automatically based on the project's [_asconfig.json_](https://github.com/BowlerHatLLC/vscode-as3mxml/wiki/asconfig.json) file.
+This extension offers tight integration with the [ActionScript & MXML langauge extension](https://marketplace.visualstudio.com/items?itemName=bowlerhatllc.vscode-as3mxml). Many attributes in the workspace's _launch.json_ file can be omitted because they will be populated automatically based on the project's [_asconfig.json_](https://github.com/BowlerHatLLC/vscode-as3mxml/wiki/asconfig.json) file.
 
 ActionScript & MXML projects built using any of the following SDKs or tools may be debugged using the SWF debug extension:
 
@@ -269,7 +269,7 @@ On macOS, use _adl_ as the excutable name. On Windows, use _adl.exe_.
 
 ## Additional Examples
 
-For Adobe AIR mobile projects, a number of additional attributes are available to customize which type of device to simulate. For example, the following launch configuration simulates an iPhone with "Retina" display:
+For [Adobe AIR mobile projects](https://github.com/BowlerHatLLC/vscode-as3mxml/wiki/Debug-an-Adobe-AIR-mobile-application-with-Visual-Studio-Code), a number of additional attributes are available to customize which type of device to simulate. For example, the following launch configuration simulates an iPhone with "Retina" display:
 
 ```json
 {
@@ -387,7 +387,7 @@ If the value of the `request` attribute is set to `attach`, the following attrib
 
 - `platform`
 
-  The debugger will connect to a mobile device running the specified platform. May be combined with `applicationID` and `bundle`.
+  The debugger will connect to a mobile device running the specified platform. Supported values include `"android"`, `"ios"`, and `"ios_simulator"`. This field may be combined with `applicationID` and `bundle`.
 
 ## Support this project
 
@@ -398,4 +398,3 @@ The [SWF debugger extension for Visual Studio Code](https://marketplace.visualst
 Special thanks to the following sponsors for their generous support:
 
 - [Moonshine IDE](http://moonshine-ide.com/)
-- [Dedoose](https://www.dedoose.com/)
