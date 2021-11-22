@@ -39,6 +39,8 @@ package actionScripts.languageServer
 	import actionScripts.events.SdkEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.events.StatusBarEvent;
+	import actionScripts.events.WatchedFileChangeEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
@@ -48,9 +50,11 @@ package actionScripts.languageServer
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.utils.getProjectSDKPath;
+	import actionScripts.utils.isUriInProject;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
@@ -95,6 +99,7 @@ package actionScripts.languageServer
 		private var _previousSDKPath:String = null;
 		private var _javaVersion:String = null;
 		private var _waitingToDispose:Boolean = false;
+		private var _watchedFiles:Object = {};
 
 		public function ActionScriptLanguageServerManager(project:AS3ProjectVO)
 		{
@@ -107,6 +112,9 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler, false, 0, true);
 			_dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler, false, 0, true);
 			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler, false, 0, true);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_CREATED, fileCreatedHandler);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 
@@ -204,6 +212,9 @@ package actionScripts.languageServer
 			_dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
 			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_CREATED, fileCreatedHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 
 			if(_javaVersionProcess)
 			{
@@ -352,7 +363,7 @@ package actionScripts.languageServer
 			if(!cmdFile.exists)
 			{
 				error("Invalid path to Java Development Kit: " + cmdFile.nativePath);
-                _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+				_dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return;
 			}
 
@@ -682,6 +693,15 @@ package actionScripts.languageServer
 			for each(var registration:Registration in registrations)
 			{
 				var method:String = registration.method;
+				switch(method)
+				{
+					case LanguageClient.METHOD_WORKSPACE__DID_CHANGE_WATCHED_FILES:
+						var registerOptions:Object = registration.registerOptions;
+						_watchedFiles[registerOptions.id] = registerOptions.watchers.map(function(watcher:Object, index:int, source:Array):Object {
+							return GlobPatterns.toRegExp(watcher.globPattern);
+						});
+						break;
+				}
 				_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, _project, method));
 			}
 		}
@@ -693,6 +713,13 @@ package actionScripts.languageServer
 			for each(var registration:Registration in registrations)
 			{
 				var method:String = registration.method;
+				switch(method)
+				{
+					case LanguageClient.METHOD_WORKSPACE__DID_CHANGE_WATCHED_FILES:
+						var registerOptions:Object = registration.registerOptions;
+						delete _watchedFiles[registerOptions.id];
+						break;
+				}
 				_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_UNREGISTER_CAPABILITY, _project, method));
 			}
 		}
@@ -834,6 +861,71 @@ package actionScripts.languageServer
 				return;
 			}
 			_languageClient.shutdown();
+		}
+
+		private function isWatchingFile(file:FileLocation):Boolean
+		{
+			var relativePath:String = project.folderLocation.fileBridge.getRelativePath(file);
+			var matchesPattern:Boolean = false;
+			for(var key:String in _watchedFiles)
+			{
+				var watchers:Array = _watchedFiles[key];
+				for each(var pattern:RegExp in watchers)
+				{
+					if(pattern.test(relativePath)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		private function fileCreatedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 1
+					}
+				]
+			});
+		}
+
+		private function fileDeletedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 3
+					}
+				]
+			});
+		}
+
+		private function fileModifiedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 2
+					}
+				]
+			});
 		}
 	}
 }

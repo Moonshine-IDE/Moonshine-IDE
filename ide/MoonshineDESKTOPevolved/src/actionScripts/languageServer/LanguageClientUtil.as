@@ -171,7 +171,7 @@ package actionScripts.languageServer
 							dynamicRegistration: false
 						},
 						didChangeWatchedFiles: {
-							dynamicRegistration: false
+							dynamicRegistration: true
 						},
 						symbol: {
 							dynamicRegistration: true
