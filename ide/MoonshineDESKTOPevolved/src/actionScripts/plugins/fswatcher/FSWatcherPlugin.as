@@ -168,11 +168,11 @@ package actionScripts.plugins.fswatcher
 			switch(incomingData.event)
 			{
 				case "workerReady":
-					trace("worker ready");
+					// trace("worker ready");
 					onWorkerReady();
 					break;
 				case "watchResult":
-					trace("watch result: " + incomingData.path, incomingData.id);
+					// trace("watch result: " + incomingData.path, incomingData.id);
 					onWatchResult(incomingData);
 					break;
 				case "watchFault":
@@ -197,7 +197,7 @@ package actionScripts.plugins.fswatcher
 					dispatcher.dispatchEvent(new WatchedFileChangeEvent(WatchedFileChangeEvent.FILE_MODIFIED, modifiedFile));
 					break;
 				default:
-					trace(JSON.stringify(incomingData));
+					trace("Unknown file system watcher message: " + JSON.stringify(incomingData));
 			}
 		}
 	}
