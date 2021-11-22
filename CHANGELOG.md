@@ -124,7 +124,7 @@ Moonshine 3.1.0 includes:
 * Haxe Migration: Converted **Search** view to Haxe. ([#798](https://github.com/prominic/Moonshine-IDE/issues/798))
 * Haxe Migration: Converted **New Workspace** view to Haxe. ([#779](https://github.com/prominic/Moonshine-IDE/issues/779))
 * Language Server:  Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
-* Language Server:  Updated [Haxe](https://as3mxml.com) engine to latest version.
+* Language Server:  Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to latest version.
 * Language Server:  Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.69.0.
 * Debugging:  Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.12.
 * Debugging:  Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.1.
@@ -174,7 +174,7 @@ Moonshine 3.0.0 includes:
 * Windows: Changed Moonshine to a 64-bit application.  You will be prompted to uninstall your old copy of Moonshine, but your settings will be saved.
 * Updated application to use new icon new icon
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.2.2.
-* Updated [Haxe](https://as3mxml.com) engine to latest version.
+* Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to latest version.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.59.0.
 * Updated [SWF debug](https://as3mxml.com) engine to v1.2.2.
 * Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.10.
