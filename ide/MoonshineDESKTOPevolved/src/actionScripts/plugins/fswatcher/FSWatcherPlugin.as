@@ -89,7 +89,6 @@ package actionScripts.plugins.fswatcher
 
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject, false, 0, true);
-			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, onLanguageServerRegisterCapability, false, 0, true);
 		}
 		
 		override public function deactivate():void
