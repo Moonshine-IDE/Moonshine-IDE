@@ -164,11 +164,12 @@ package actionScripts.ui.editor
 				return;
 			}
 
+			_documentVersion++;
 			_project.languageClient.didOpen({
 				textDocument: {
 					uri: currentFile.fileBridge.url,
 					languageId: _languageID,
-					version: 0,
+					version: _documentVersion,
 					text: editor.text
 				}
 			});
@@ -188,6 +189,8 @@ package actionScripts.ui.editor
 			});
 		}
 
+		private var _documentVersion:int = 0;
+
 		protected function dispatchDidChangeEvent():void
 		{
 			if(!currentFile || !_project.languageClient)
@@ -195,10 +198,11 @@ package actionScripts.ui.editor
 				return;
 			}
 
+			_documentVersion++;
 			_project.languageClient.didChange({
 				textDocument: {
 					uri: currentFile.fileBridge.url,
-					version: 0
+					version: _documentVersion
 				},
 				contentChanges: {
 					text: editor.text
