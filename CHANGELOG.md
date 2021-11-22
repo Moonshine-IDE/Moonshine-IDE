@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Language Server: Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to latest version.
 * Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.5.0.
 * Debug Adapter: Updated [SWF](https://as3mxml.com) engine to v1.4.0.
+* Debug Adapter: Updated [Chrome](https://github.com/microsoft/vscode-chrome-debug) engine to v4.13.0.
 
 ### Fixed
 
