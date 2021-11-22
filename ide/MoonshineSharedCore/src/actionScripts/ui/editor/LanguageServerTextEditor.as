@@ -204,9 +204,11 @@ package actionScripts.ui.editor
 					uri: currentFile.fileBridge.url,
 					version: _documentVersion
 				},
-				contentChanges: {
-					text: editor.text
-				}
+				contentChanges: [
+					{
+						text: editor.text
+					}
+				]
 			});
 		}
 
