@@ -79,6 +79,8 @@ package actionScripts.languageServer
 	import moonshine.lsp.Registration;
 	import moonshine.lsp.RegistrationParams;
 	import moonshine.lsp.ShowMessageParams;
+	import moonshine.lsp.Unregistration;
+	import moonshine.lsp.UnregistrationParams;
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
 	import moonshine.theme.MoonshineTheme;
@@ -842,7 +844,7 @@ package actionScripts.languageServer
 				{
 					case LanguageClient.METHOD_WORKSPACE__DID_CHANGE_WATCHED_FILES:
 						var registerOptions:Object = registration.registerOptions;
-						_watchedFiles[registerOptions.id] = registerOptions.watchers.map(function(watcher:Object, index:int, source:Array):Object {
+						_watchedFiles[registration.id] = registerOptions.watchers.map(function(watcher:Object, index:int, source:Array):Object {
 							return GlobPatterns.toRegExp(watcher.globPattern);
 						});
 						break;
@@ -853,16 +855,15 @@ package actionScripts.languageServer
 
 		private function languageClient_unregisterCapabilityHandler(event:LspNotificationEvent):void
 		{
-			var params:RegistrationParams = RegistrationParams(event.params);
-			var registrations:Array = params.registrations;
-			for each(var registration:Registration in registrations)
+			var params:UnregistrationParams = UnregistrationParams(event.params);
+			var unregistrations:Array = params.unregistrations;
+			for each(var unregistration:Unregistration in unregistrations)
 			{
-				var method:String = registration.method;
+				var method:String = unregistration.method;
 				switch(method)
 				{
 					case LanguageClient.METHOD_WORKSPACE__DID_CHANGE_WATCHED_FILES:
-						var registerOptions:Object = registration.registerOptions;
-						delete _watchedFiles[registerOptions.id];
+						delete _watchedFiles[unregistration.id];
 						break;
 				}
 				_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_UNREGISTER_CAPABILITY, _project, method));
@@ -1058,9 +1059,9 @@ package actionScripts.languageServer
 		{
 			var relativePath:String = project.folderLocation.fileBridge.getRelativePath(file);
 			var matchesPattern:Boolean = false;
-			for(var key:String in _watchedFiles)
+			for(var id:String in _watchedFiles)
 			{
-				var watchers:Array = _watchedFiles[key];
+				var watchers:Array = _watchedFiles[id];
 				for each(var pattern:RegExp in watchers)
 				{
 					if(pattern.test(relativePath)) {
