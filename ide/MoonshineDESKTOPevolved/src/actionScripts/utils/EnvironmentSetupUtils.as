@@ -301,6 +301,15 @@ package actionScripts.utils
 					}
 				}
 			}
+			if (UtilsCore.isNotesDominoAvailable())
+			{
+				setCommand += getSetExportWithoutQuote(
+						"DYLD_LIBRARY_PATH",
+						ConstantsCoreVO.IS_MACOS ? [model.notesPath,"Contents","MacOS"].join(File.separator) : (new File(model.notesPath)).parent.nativePath
+				);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$DYLD_LIBRARY_PATH:" : "%DYLD_LIBRARY_PATH%;");
+				isValidToExecute = true;
+			}
 			
 			// if nothing found in above three don't run
 			if (!isValidToExecute) return null;
