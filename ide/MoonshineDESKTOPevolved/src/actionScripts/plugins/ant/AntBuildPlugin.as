@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ant
 {
+    import actionScripts.valueObjects.ProjectVO;
+
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.display.DisplayObject;
@@ -543,9 +545,15 @@ package actionScripts.plugins.ant
             }
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, buildDir.fileBridge.name, "Building ", false));
-			
+
+            var correspondingProject:ProjectVO = UtilsCore.getProjectByAnyFilePath(buildDirPath);
 			var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
 			envCustomSDK.sdkPath = sdkPath;
+            if (correspondingProject && (correspondingProject is IJavaProject))
+            {
+                envCustomSDK.jdkPath = ((correspondingProject as IJavaProject).jdkType == JavaTypes.JAVA_8) ?
+                        model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+            }
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compileStr]);
 
 			/*

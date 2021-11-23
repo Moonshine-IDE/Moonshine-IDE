@@ -307,6 +307,22 @@ package actionScripts.utils
 		}
 
 		/**
+		 * Returns project if given path match any project's path
+		 */
+		public static function getProjectByAnyFilePath(value:String):ProjectVO
+		{
+			for each (var project:ProjectVO in model.projects)
+			{
+				if (value.toLowerCase().indexOf(project.folderLocation.fileBridge.nativePath.toLowerCase()) != -1)
+				{
+					return project;
+				}
+			}
+
+			return null;
+		}
+
+		/**
 		 * Returns project based on its name
 		 */
 		public static function getProjectByName(projectName:String):ProjectVO
