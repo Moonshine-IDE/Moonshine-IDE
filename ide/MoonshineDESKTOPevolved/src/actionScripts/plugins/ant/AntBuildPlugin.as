@@ -39,8 +39,8 @@ package actionScripts.plugins.ant
     import mx.core.IFlexDisplayObject;
     import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
-    
-    import actionScripts.events.AddTabEvent;
+
+    import actionScripts.events.SettingsEvent;
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.RunANTScriptEvent;
@@ -257,29 +257,12 @@ package actionScripts.plugins.ant
             {
                 currentSDK = model.defaultSDK;
             }
-            //If Flex_HOME or ANT_HOME is missing
-            if (!currentSDK || !UtilsCore.isAntAvailable())
+            //If ANT_HOME is missing
+            if (!UtilsCore.isAntAvailable())
             {
-                for each (var tab:IContentWindow in model.editors)
-                {
-                    if (tab["className"] == "AntBuildScreen")
-                    {
-                        model.activeEditor = tab;
-                        if (currentSDK)
-                            (antBuildScreen as AntBuildScreen).customSDKAvailable = true;
-                        (antBuildScreen as AntBuildScreen).refreshValue();
-                        return;
-                    }
-                }
-                antBuildScreen = model.flexCore.getNewAntBuild();
-                antBuildScreen.addEventListener(AntBuildEvent.ANT_BUILD, antBuildSelected);
-
-                if (currentSDK)
-                {
-                    (antBuildScreen as AntBuildScreen).customSDKAvailable = true;
-                }
-
-                dispatcher.dispatchEvent(new AddTabEvent(antBuildScreen as IContentWindow));
+                error("Ant path must be defined to run Ant script file.");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.ant::AntBuildPlugin"));
+                return;
             }
             else
             {
@@ -458,13 +441,6 @@ package actionScripts.plugins.ant
                 {
                     antHomePath = event.antHome.fileBridge.nativePath;
                 }
-
-                if (antBuildScreen)
-                {
-                    dispatcher.dispatchEvent(
-                            new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, antBuildScreen as DisplayObject)
-                    );
-                }
             }
 
             if (!model.antScriptFile)
@@ -476,11 +452,6 @@ package actionScripts.plugins.ant
             {   //If Ant file is already selected from AntScreen
                 workingDir = new FileLocation(model.antScriptFile.fileBridge.nativePath);
                 startAntProcess(workingDir);
-            }
-
-            if (antBuildScreen)
-            {
-                antBuildScreen.removeEventListener(AntBuildEvent.ANT_BUILD, antBuildSelected);
             }
         }
 
