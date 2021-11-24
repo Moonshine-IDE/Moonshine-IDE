@@ -664,6 +664,7 @@ package actionScripts.plugins.as3project
 			// don't save this if from a open project call
 			if (!isOpenProjectCall && !isProjectFromExistingSource)
 			{
+				model.lastSelectedProjectPath = tmpParent.fileBridge.nativePath;
 				dispatcher.dispatchEvent(new Event(ProjectEvent.EVENT_SAVE_PROJECT_CREATION_FOLDERS));
 			}
 
