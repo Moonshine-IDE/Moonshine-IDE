@@ -43,6 +43,7 @@ import feathers.layout.AnchorLayoutData;
 import moonshine.theme.MoonshineTheme;
 import openfl.events.Event;
 import moonshine.theme.SDKInstallerTheme;
+import moonshine.components.HelperView;
 
 class GettingStartedView extends LayoutGroup implements IViewWithTitle {
 	public static final EVENT_OPEN_SELECTED_REFERENCE = "openSelectedReference";
@@ -256,6 +257,11 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle {
 		}
 
 		super.update();
+	}
+
+	public function onInvokeEvent(componentId:String, path:String=null):Void
+	{
+		//cast(this.helperView, HelperView).refreshFilteredDataProvider();
 	}
 
 	private function resultsListView_changeHandler(event:Event):Void {

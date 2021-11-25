@@ -24,7 +24,7 @@
 		   xmlns:s="library://ns.adobe.com/flex/spark" 
 		   implements="actionScripts.ui.IContentWindow"
 		   xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
-		   backgroundColor="#FFFFFF" fontFamily="DejaVuSans" color="#686868" fontSize="14"
+		   backgroundColor="#FFFFFF" color="#686868" fontSize="14"
 		   creationComplete="onAboutScreenCreationComplete(event)" remove="onTabRemoved(event)" xmlns:popup="components.popup.*">
 	<fx:Script>
 		<![CDATA[

@@ -291,7 +291,7 @@ package actionScripts.ui.editor
 			super.createChildren();
 			
 			// @note
-			// https://github.com/prominic/Moonshine-IDE/issues/31
+			// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/31
 			// to ensure if the file has a pending debug/breakpoint call
 			// call extended from OpenFileCommand/openFile(..)
 			if (currentFile && currentFile.fileBridge.nativePath == DebugHighlightManager.NONOPENED_DEBUG_FILE_PATH)

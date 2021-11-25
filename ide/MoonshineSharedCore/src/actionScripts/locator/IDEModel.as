@@ -96,6 +96,7 @@ package actionScripts.locator
 		public var recentlyOpenedProjects:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjectOpenedOption:ArrayCollection = new ArrayCollection();
 		public var recentSaveProjectPath:ArrayCollection = new ArrayCollection();
+		public var lastSelectedProjectPath:String;
 		public var userSavedSDKs:ArrayCollection = new ArrayCollection();
 		public var userSavedTempSDKPath:String;
 		public var individualTabAlertShowingFilePath:String;

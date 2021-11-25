@@ -55,6 +55,7 @@ package actionScripts.plugin.project
 	import components.popup.RunCommandPopup;
 	import components.views.project.OpenResourceView;
 	import components.views.project.TreeView;
+	import actionScripts.events.WatchedFileChangeEvent;
 
     public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -95,6 +96,9 @@ package actionScripts.plugin.project
 			
 			dispatcher.addEventListener(RefreshTreeEvent.EVENT_REFRESH, handleTreeRefresh);
 			dispatcher.addEventListener(CustomCommandsEvent.OPEN_CUSTOM_COMMANDS_ON_SDK, onCustomCommandInterface);
+
+			dispatcher.addEventListener(WatchedFileChangeEvent.FILE_CREATED, handleWatchedFileCreatedEvent);
+			dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, handleWatchedFileDeletedEvent);
 		}
 
         private function handleScrollFromSource(event:ProjectEvent):void
@@ -354,6 +358,26 @@ package actionScripts.plugin.project
 		private function handleTreeRefresh(event:RefreshTreeEvent):void
 		{
 			treeView.refresh(event.dir, event.shallMarkedForDelete);
+		}
+
+		private function handleWatchedFileCreatedEvent(event:WatchedFileChangeEvent):void
+		{
+			var dir:FileLocation = event.file;
+			if(!dir.fileBridge.isDirectory)
+			{
+				dir = dir.fileBridge.parent;
+			}
+			treeView.refresh(dir);
+		}
+
+		private function handleWatchedFileDeletedEvent(event:WatchedFileChangeEvent):void
+		{
+			var dir:FileLocation = event.file;
+			if(!dir.fileBridge.isDirectory)
+			{
+				dir = dir.fileBridge.parent;
+			}
+			treeView.refresh(dir, true);
 		}
 
         private function handleShowPreviouslyOpenedProjects(event:ProjectEvent):void

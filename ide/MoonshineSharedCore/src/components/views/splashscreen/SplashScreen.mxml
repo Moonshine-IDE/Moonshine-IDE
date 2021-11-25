@@ -405,7 +405,6 @@
 			paddingLeft="3"
 			paddingRight="3"
 			paddingBottom="0"
-			fontFamily="DejaVuSerif"
 			fontStyle="italic"
 			fontSize="18" />
 		<s:DataGroup id="projectOpenList" dataProvider="{ConstantsCoreVO.TEMPLATES_OPEN_PROJECTS}"
@@ -425,7 +424,6 @@
 			paddingLeft="3"
 			paddingRight="3"
 			paddingBottom="0"
-			fontFamily="DejaVuSerif"
 			fontStyle="italic"
 			fontSize="18"
 			/>
@@ -447,7 +445,6 @@
 			paddingLeft="3"
 			paddingRight="3"
 			paddingBottom="0"
-			fontFamily="DejaVuSerif"
 			fontStyle="italic"
 			fontSize="18"
 			/>
@@ -469,7 +466,6 @@
 			paddingTop="2"
 			paddingLeft="3"
 			paddingBottom="0"
-			fontFamily="DejaVuSerif"
 			fontStyle="italic"
 			fontSize="18" 
 			right="20"/>

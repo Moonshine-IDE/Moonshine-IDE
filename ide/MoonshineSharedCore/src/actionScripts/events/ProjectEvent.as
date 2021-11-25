@@ -32,6 +32,7 @@ package actionScripts.events
 		public static const REMOVE_PROJECT:String = "removeProjectEvent";
 		public static const SHOW_PREVIOUSLY_OPENED_PROJECTS:String = "showPreviouslyOpenedProjects";
 		public static const SCROLL_FROM_SOURCE:String = "scrollFromSource";
+		public static const EVENT_SAVE_PROJECT_CREATION_FOLDERS:String = "event-save-project-creation-folders";
 		
 		public static const TREE_DATA_UPDATES: String = "TREE_DATA_UPDATES";
 		public static const PROJECT_FILES_UPDATES: String = "PROJECT_FILES_UPDATES";

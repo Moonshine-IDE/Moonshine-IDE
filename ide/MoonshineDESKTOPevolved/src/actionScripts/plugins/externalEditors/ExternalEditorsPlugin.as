@@ -171,8 +171,8 @@ package actionScripts.plugins.externalEditors
 			}
 			else
 			{
-				var newUpdateDate:Date = new Date(Date.parse(needUpdateSyncDateUTC));
-				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(newUpdateDate))
+				//var newUpdateDate:Date = new Date(Date.parse(needUpdateSyncDateUTC));
+				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(ExternalEditorsImporter.lastUpdateDate))
 				{
 					editors = SharedObjectUpdaterWithNewUpdates.syncWithNewUpdates(editors, ExternalEditorsImporter.getDefaultEditors(), "localID") as ArrayCollection;
 					ExternalEditorsSharedObjectUtil.saveExternalEditorsInSO(editors);
@@ -408,7 +408,7 @@ package actionScripts.plugins.externalEditors
 			if (!ConstantsCoreVO.IS_MACOS && value)
 			{
 				// a bit of interval before closing this
-				// https://github.com/prominic/Moonshine-IDE/issues/707
+				// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/707
 				var timeoutValue:uint = setTimeout(function():void
 				{
 					this.stop();

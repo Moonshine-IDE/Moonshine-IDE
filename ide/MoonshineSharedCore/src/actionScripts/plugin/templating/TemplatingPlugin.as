@@ -1279,9 +1279,10 @@ package actionScripts.plugin.templating
 						newFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
 					}
 				}
+				//Alert.show("wrapperOfFolderLocation:"+ newFilePopup.wrapperOfFolderLocation.nativePath);
 				var eventName:String = event.type.substr(24)
 				if(eventName){
-					if(eventName=="Domino Visual Editor Form"){
+					if(eventName=="Domino Visual Editor Form" ||eventName=="Domino Visual Editor Page"  ){
 						if(newFilePopup.wrapperBelongToProject){
 							(newFilePopup.wrapperBelongToProject as IVisualEditorProjectVO).isDominoVisualEditorProject = true;
 							//Alert.show("Domino Visual set to true");

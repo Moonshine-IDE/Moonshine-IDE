@@ -154,6 +154,11 @@ package actionScripts.ui.feathersWrapper.help
 					MSDKIdownloadUtil.EVENT_NEW_VERSION_DETECTED, onNewVersionDetected
 			);
 		}
+
+		public function onInvokeEvent(componentId:String, path:String=null):void
+		{
+			(this.feathersUIControl as GettingStartedView).onInvokeEvent(componentId, path);
+		}
 		
 		//--------------------------------------------------------------------------
 		//

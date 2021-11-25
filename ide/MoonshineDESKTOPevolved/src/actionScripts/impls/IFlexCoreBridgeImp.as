@@ -142,6 +142,7 @@ package actionScripts.impls
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
+	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -266,7 +267,8 @@ package actionScripts.impls
 				HttpServerPlugin,
 				RoyaleApiReportConfiguratorPlugin,
 				RoyaleApiReportPlugin,
-				ExternalEditorsPlugin
+				ExternalEditorsPlugin,
+				FSWatcherPlugin
 			];
 		}
 		
@@ -275,7 +277,7 @@ package actionScripts.impls
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

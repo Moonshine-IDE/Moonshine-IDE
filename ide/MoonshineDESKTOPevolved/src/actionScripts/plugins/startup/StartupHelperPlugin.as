@@ -504,21 +504,11 @@ package actionScripts.plugins.startup
 					// validate before set
 					if (type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) pathValidation = null;
 					if (!HelperUtils.isValidSDKDirectoryBy(type, path, pathValidation)) continue;
-					
-					if ((type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) && ConstantsCoreVO.IS_MACOS)
+
+					PathSetupHelperUtil.updateFieldPath(type, path);
+					if (gettingStartedViewWrapper)
 					{
-						updateGitAndSVN(path);
-					}
-					else
-					{
-						if (!gettingStartedPopup)
-						{
-							PathSetupHelperUtil.updateFieldPath(type, path);
-						}
-						else
-						{
-							gettingStartedPopup.onInvokeEvent(type, path);
-						}
+						gettingStartedViewWrapper.onInvokeEvent(type, path);
 					}
 				}
 			}

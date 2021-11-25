@@ -676,7 +676,7 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				// @fix
-				// https://github.com/prominic/Moonshine-IDE/issues/26
+				// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/26
 				// We've found js/bin/mxmlc compiletion do not produce
 				// valid swf with prior 0.8 version; we shall need following
 				// executable for version less than 0.8

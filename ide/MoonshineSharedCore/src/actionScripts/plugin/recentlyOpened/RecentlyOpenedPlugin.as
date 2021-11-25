@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
-    import flash.events.Event;
+	import flash.events.Event;
     import flash.net.SharedObject;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
@@ -78,6 +78,7 @@ package actionScripts.plugin.recentlyOpened
 			}
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			dispatcher.addEventListener(ProjectEvent.EVENT_SAVE_PROJECT_CREATION_FOLDERS, onNewProjectPathBrowse, false, 0, true);
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, handleAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
 			dispatcher.addEventListener(ProjectEvent.WORKSPACE_UPDATED, onWorkspaceUpdated);
@@ -220,6 +221,15 @@ package actionScripts.plugin.recentlyOpened
 				else
 				{
 					model.fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
+				}
+			}
+
+			if (cookie.data.hasOwnProperty('recentProjectPath'))
+			{
+				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
+				if (cookie.data.hasOwnProperty('lastSelectedProjectPath'))
+				{
+					model.lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
 				}
 			}
 			
@@ -448,6 +458,13 @@ package actionScripts.plugin.recentlyOpened
 		{
 			cookie.data["devicesAndroid"] = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES.source;
 			cookie.data["devicesIOS"] = ConstantsCoreVO.TEMPLATES_IOS_DEVICES.source;
+			cookie.flush();
+		}
+
+		private function onNewProjectPathBrowse(event:Event):void
+		{
+			cookie.data["lastSelectedProjectPath"] = model.lastSelectedProjectPath;
+			cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
 			cookie.flush();
 		}
 		

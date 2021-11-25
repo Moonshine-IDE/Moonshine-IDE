@@ -110,13 +110,13 @@ package actionScripts.ui.tabview
 			if (_data != value)
 			{
 				_data = value;
+				this.contextMenu = createContextMenu();
 				if (value is IFileContentWindow)
 				{
 					var projectPath:String = value.hasOwnProperty("projectPath") ? value["projectPath"] : null;
 					var editor:IFileContentWindow = value as IFileContentWindow;
 					if (editor.currentFile)
                     {
-                        this.contextMenu = createContextMenu();
                         SharedObjectUtil.saveLocationOfOpenedProjectFile(
 								editor.currentFile.name,
                                 editor.currentFile.fileBridge.nativePath,
@@ -172,7 +172,7 @@ package actionScripts.ui.tabview
 			labelView.mouseEnabled = false;
 			labelView.mouseChildren = false;
 			labelView.setStyle('color', textColor);
-			labelView.setStyle('fontFamily', 'DejaVuSans');
+			//labelView.setStyle('fontFamily', 'DejaVuSans');
 			labelView.setStyle('fontSize', 11);
 			labelView.filters = [new DropShadowFilter(1, 90, 0, 0.1, 0, 0)];
 			if (_label) 

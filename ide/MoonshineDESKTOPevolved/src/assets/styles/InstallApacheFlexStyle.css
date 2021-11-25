@@ -79,7 +79,7 @@ s|Label.linkTextHover {
 
 .uiTextRendererLabel
 {
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 16;
 	kerning: on;
 	cffHinting: none;
@@ -88,7 +88,7 @@ s|Label.linkTextHover {
 
 .uiTextRendererLabelSub
 {
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 14;
 	kerning: on;
 	cffHinting: none;
@@ -97,7 +97,7 @@ s|Label.linkTextHover {
 
 .uiTextRendererDescription
 {
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 12;
 	kerning: on;
 	cffHinting: none;
