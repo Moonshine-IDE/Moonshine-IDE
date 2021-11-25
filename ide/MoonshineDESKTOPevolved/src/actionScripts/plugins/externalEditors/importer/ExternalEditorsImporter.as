@@ -12,6 +12,14 @@ package actionScripts.plugins.externalEditors.importer
 	public class ExternalEditorsImporter
 	{
 		public static const WINDOWS_INSTALL_DIRECTORIES:Array = ["Program files", "Program Files (x86)"];
+
+		public static function get lastUpdateDate():Date
+		{
+			var listFile:File = File.applicationDirectory.resolvePath("elements/data/DefaultExternalEditors.xml");
+			if (!listFile.exists) return null;
+
+			return listFile.modificationDate;
+		}
 		
 		public static function getDefaultEditors():ArrayCollection
 		{

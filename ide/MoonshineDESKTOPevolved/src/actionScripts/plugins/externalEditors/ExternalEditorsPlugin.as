@@ -171,8 +171,8 @@ package actionScripts.plugins.externalEditors
 			}
 			else
 			{
-				var newUpdateDate:Date = new Date(Date.parse(needUpdateSyncDateUTC));
-				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(newUpdateDate))
+				//var newUpdateDate:Date = new Date(Date.parse(needUpdateSyncDateUTC));
+				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(ExternalEditorsImporter.lastUpdateDate))
 				{
 					editors = SharedObjectUpdaterWithNewUpdates.syncWithNewUpdates(editors, ExternalEditorsImporter.getDefaultEditors(), "localID") as ArrayCollection;
 					ExternalEditorsSharedObjectUtil.saveExternalEditorsInSO(editors);
