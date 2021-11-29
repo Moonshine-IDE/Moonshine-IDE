@@ -167,9 +167,11 @@
 				minHeight = height;
 				title = isInterfaceDialog ? "New Interface Class" : "New ActionScript Class";
 	
-				if(folderLocation)
+				if (wrapperBelongToProject)
 				{
-					txtDestination.text = wrapperBelongToProject.projectName;
+					txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+							Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+							wrapperOfFolderLocation.nativePath);
 					txtFileName.setFocus();
 				}
 	

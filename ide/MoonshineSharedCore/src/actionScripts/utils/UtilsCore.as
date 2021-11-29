@@ -394,9 +394,9 @@ package actionScripts.utils
 			//filePath = filePath.replace(projectPath, "");
 			if (appendProjectNameAsPrefix && projectPathSplit)
 			{
-				return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(".");
+				return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(model.fileCore.separator);
 			}
-			return filePath.split(separator).join(".");
+			return filePath.split(separator).join(model.fileCore.separator);
 		}
 		
 		/**
