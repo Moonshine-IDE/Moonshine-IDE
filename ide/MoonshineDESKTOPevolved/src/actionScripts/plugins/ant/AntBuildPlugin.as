@@ -104,7 +104,7 @@ package actionScripts.plugins.ant
         private var currentSDK:FileLocation;
         private var antBuildScreen:IFlexDisplayObject;
         private var isASuccessBuild:Boolean;
-        private var selectedProject:AS3ProjectVO;
+        private var selectedProject:ProjectVO;
 		private var pathSetting:PathSetting;
 
         private var _antHomePath:String;
@@ -238,7 +238,7 @@ package actionScripts.plugins.ant
             if (!model.antScriptFile.fileBridge.checkFileExistenceAndReport()) return;
 
             _buildWithAnt = true;
-            selectedProject = model.activeProject as AS3ProjectVO;
+            selectedProject = model.activeProject;
 
             antBuildHandler();
         }
@@ -277,7 +277,7 @@ package actionScripts.plugins.ant
 
             if (model.mainView.isProjectViewAdded)
             {
-                selectedProject = model.activeProject as AS3ProjectVO;
+                selectedProject = model.activeProject;
                 //If any project from treeview is selected
                 if (selectedProject)
                 {
@@ -300,7 +300,7 @@ package actionScripts.plugins.ant
         {
             this.selectedProject = event.currentTarget.selectedProject;
 
-            checkForAntFile(selectProjectPopup.selectedProject as AS3ProjectVO);
+            checkForAntFile(selectProjectPopup.selectedProject);
             onProjectSelectionCancelled(null);
         }
 
@@ -325,13 +325,14 @@ package actionScripts.plugins.ant
             selectAntPopup = null;
         }
 
-        private function checkForAntFile(selectedAntProject:AS3ProjectVO):void
+        private function checkForAntFile(selectedAntProject:ProjectVO):void
         {
             // Check if Ant file is set for project or not
             var buildFlag:Boolean = false;
             var AntFlag:Boolean = false;
             antFiles = new ArrayCollection();
-            if (!selectedAntProject.antBuildPath)
+            if (!(selectedAntProject is AS3ProjectVO) ||
+                    ((selectedAntProject is AS3ProjectVO) && !(selectedAntProject as AS3ProjectVO).antBuildPath))
             {
                 // Find build folder within the selected folder
                 //find for build.xml file with <project> tag
@@ -356,12 +357,12 @@ package actionScripts.plugins.ant
                     }
                 }
             }
-            else
+            else if (selectedAntProject is AS3ProjectVO)
             {
-                var antFile:FileLocation = selectedAntProject.folderLocation.resolvePath(selectedAntProject.antBuildPath);
+                var antFile:FileLocation = selectedAntProject.folderLocation.resolvePath((selectedAntProject as AS3ProjectVO).antBuildPath);
                 if (antFile.fileBridge.exists)
                 {
-                    model.antScriptFile = selectedAntProject.folderLocation.resolvePath(selectedAntProject.antBuildPath);
+                    model.antScriptFile = selectedAntProject.folderLocation.resolvePath((selectedAntProject as AS3ProjectVO).antBuildPath);
                     antBuildHandler();
                     return;
                 }
@@ -461,9 +462,14 @@ package actionScripts.plugins.ant
             startAntProcess(new FileLocation(fileSelected.nativePath));
         }
 
-        private function getCurrentSDK(pvo:AS3ProjectVO):FileLocation
+        private function getCurrentSDK(pvo:ProjectVO):FileLocation
         {
-            return pvo.buildOptions.customSDK ? new FileLocation(pvo.buildOptions.customSDK.fileBridge.getFile.nativePath) : (model.defaultSDK ? new FileLocation(model.defaultSDK.fileBridge.getFile.nativePath) : null);
+            if ((pvo is AS3ProjectVO) && (pvo as AS3ProjectVO).buildOptions.customSDK)
+            {
+                return (new FileLocation((pvo as AS3ProjectVO).buildOptions.customSDK.fileBridge.getFile.nativePath));
+            }
+
+            return (model.defaultSDK ? new FileLocation(model.defaultSDK.fileBridge.getFile.nativePath) : null);
         }
 
         private function startAntProcess(buildDir:FileLocation):void
