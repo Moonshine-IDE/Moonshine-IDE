@@ -28,6 +28,7 @@ package actionScripts.utils
 	import mx.collections.IList;
 	import mx.collections.Sort;
 	import mx.collections.SortField;
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
 	import mx.events.CloseEvent;
@@ -35,7 +36,6 @@ package actionScripts.utils
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
 	import mx.utils.UIDUtil;
-	import mx.controls.Alert;
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
@@ -369,7 +369,7 @@ package actionScripts.utils
 		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
 		{
 			var path:String = getPathStringByProjectPath(classPaths, filePath, fileWrapper, fileLocation, appendProjectNameAsPrefix);
-			var pattern:RegExp = new RegExp(model.fileCore.separator, "g");
+			var pattern:RegExp = new RegExp(ConstantsCoreVO.IS_MACOS ? model.fileCore.separator : "\\" + model.fileCore.separator, "g");
 			path = path.replace(pattern, ".");
 			return path;
 		}
