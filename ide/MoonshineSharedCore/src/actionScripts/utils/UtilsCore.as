@@ -363,10 +363,22 @@ package actionScripts.utils
 		}
 
 		/**
+		 * Returns path reference separated with
+		 * file separator
+		 */
+		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
+		{
+			var path:String = getPathStringByProjectPath(classPaths, filePath, fileWrapper, fileLocation, appendProjectNameAsPrefix);
+			var pattern:RegExp = new RegExp(model.fileCore.separator, "g");
+			path = path.replace(pattern, ".");
+			return path;
+		}
+
+		/**
 		 * Returns dotted package references
 		 * against a project path
 		 */
-		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
+		public static function getPathStringByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
 		{
 			if (fileWrapper)
 			{
