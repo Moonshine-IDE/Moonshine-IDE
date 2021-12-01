@@ -393,14 +393,17 @@ package actionScripts.ui.renderers
 					removeChild(loadingIcon);
 					loadingIcon = null;
 				}
-				
-				if (fw.isDeleting)
+
+				if (!ConstantsCoreVO.IS_AIR)
 				{
-					label2.setStyle("lineThrough", true);
-				}
-				else
-				{
-					label2.setStyle("lineThrough", false);
+					if (fw.isDeleting)
+					{
+						label2.setStyle("lineThrough", true);
+					}
+					else
+					{
+						label2.setStyle("lineThrough", false);
+					}
 				}
 
 				if (fw.isSourceFolder && !isSourceFolderIcon)
