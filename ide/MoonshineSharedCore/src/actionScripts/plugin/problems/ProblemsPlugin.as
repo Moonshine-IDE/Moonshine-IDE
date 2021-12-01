@@ -49,6 +49,9 @@ package actionScripts.plugin.problems
 			problemsViewWrapper.percentHeight = 100;
 			problemsViewWrapper.minWidth = 0;
 			problemsViewWrapper.minHeight = 0;
+
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, problemsViewWrapper));
+			isProblemsViewVisible = true;
 		}
 
 		override public function get name():String { return "Problems Plugin"; }
