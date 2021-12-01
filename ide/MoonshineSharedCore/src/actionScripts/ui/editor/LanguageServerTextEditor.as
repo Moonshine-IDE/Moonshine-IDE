@@ -340,6 +340,7 @@ package actionScripts.ui.editor
 		
 		override protected function handleTextChange(event:TextEditorChangeEvent):void
 		{
+			super.handleTextChange(event);
 			dispatchDidChangeEvent();
 		}
 
