@@ -653,7 +653,7 @@ package actionScripts.languageServer
 
 		private function fileCreatedHandler(event:WatchedFileChangeEvent):void
 		{
-			if(!isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
 			{
 				return;
 			}
@@ -669,7 +669,7 @@ package actionScripts.languageServer
 
 		private function fileDeletedHandler(event:WatchedFileChangeEvent):void
 		{
-			if(!isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
 			{
 				return;
 			}
@@ -685,7 +685,7 @@ package actionScripts.languageServer
 
 		private function fileModifiedHandler(event:WatchedFileChangeEvent):void
 		{
-			if(!isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
 			{
 				return;
 			}
