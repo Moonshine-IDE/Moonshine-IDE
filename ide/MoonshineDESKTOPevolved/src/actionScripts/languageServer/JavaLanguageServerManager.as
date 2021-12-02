@@ -120,6 +120,11 @@ package actionScripts.languageServer
 		private static const FEATURE_STATUS_DISABLED:int = 0;
 		private static const FEATURE_STATUS_INTERACTIVE:int = 1;
 		private static const FEATURE_STATUS_AUTOMATIC:int = 2;
+
+		private static const MESSAGE_TYPE_ERROR:int = 1;
+		private static const MESSAGE_TYPE_WARNING:int = 2;
+		private static const MESSAGE_TYPE_INFO:int = 3;
+		private static const MESSAGE_TYPE_LOG:int = 4;
 		
 		private static const URI_SCHEME_FILE:String = "file";
 
@@ -994,7 +999,7 @@ package actionScripts.languageServer
 			var message:String = params.message;
 			var commands:Array = params.commands as Array;
 
-			if(severity == 4) //log
+			if(severity == MESSAGE_TYPE_LOG) //log
 			{
 				print(message);
 				trace(message);
