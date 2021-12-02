@@ -127,9 +127,9 @@ class FileSystemWatcherWorker {
 
 	private function unwatchDirectoryRecursive(directory:File, watcher:FileSystemWatcher):Void {
 		watcher.unwatch(directory);
-		for (file in directory.getDirectoryListing()) {
-			if (file.isDirectory) {
-				unwatchDirectoryRecursive(file, watcher);
+		for (file in watcher.getWatched()) {
+			if (StringTools.startsWith(file.nativePath, directory.nativePath + File.separator)) {
+				watcher.unwatch(file);
 			}
 		}
 	}
@@ -179,7 +179,7 @@ class FileSystemWatcherWorker {
 		if (isExcluded(file, watcherData)) {
 			return;
 		}
-		if (file.isDirectory && watcherData.recursive) {
+		if (watcherData.recursive) {
 			unwatchDirectoryRecursive(file, watcher);
 		}
 		workerToMain.send({

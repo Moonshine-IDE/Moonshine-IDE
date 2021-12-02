@@ -40,6 +40,14 @@ class FileSystemWatcher extends EventDispatcher {
 	private var _timer:Timer;
 	private var _pollingMS:Int;
 
+	public function getWatched():Array<File> {
+		var result:Array<File> = [];
+		for (directory in _watchedDirectories.keys()) {
+			result.push(directory);
+		}
+		return result;
+	}
+
 	public function isWatching(directory:File):Bool {
 		for (otherDirectory in _watchedDirectories.keys()) {
 			if (directory.nativePath == otherDirectory.nativePath) {
@@ -122,6 +130,10 @@ class FileSystemWatcher extends EventDispatcher {
 
 	private function fileWatcher_timer_timerHandler(event:TimerEvent):Void {
 		for (rootDirectory in _watchedDirectories.keys()) {
+			if (!rootDirectory.exists) {
+				// the directory has been deleted, but not unwatched yet
+				continue;
+			}
 			var fileInfoForDir = _watchedDirectories.get(rootDirectory);
 			var files = rootDirectory.getDirectoryListing();
 			for (existingNativePath in fileInfoForDir.keys()) {
