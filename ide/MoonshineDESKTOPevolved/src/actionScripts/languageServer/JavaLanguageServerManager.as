@@ -115,6 +115,11 @@ package actionScripts.languageServer
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
 		private static const COMMAND_JAVA_APPLY_WORKSPACE_EDIT:String = "java.apply.workspaceEdit";
 		private static const COMMAND_JAVA_CLEAN_WORKSPACE:String = "java.clean.workspace";
+		private static const COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS:String = "java.projectConfiguration.status";
+
+		private static const FEATURE_STATUS_DISABLED:int = 0;
+		private static const FEATURE_STATUS_INTERACTIVE:int = 1;
+		private static const FEATURE_STATUS_AUTOMATIC:int = 2;
 		
 		private static const URI_SCHEME_FILE:String = "file";
 
@@ -228,6 +233,8 @@ package actionScripts.languageServer
 			}
 			_languageStatusDone = false;
 			_languageClient.unregisterCommand(COMMAND_JAVA_CLEAN_WORKSPACE);
+			_languageClient.unregisterCommand(COMMAND_JAVA_APPLY_WORKSPACE_EDIT);
+			_languageClient.unregisterCommand(COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
@@ -544,6 +551,7 @@ package actionScripts.languageServer
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
 			_languageClient.registerCommand(COMMAND_JAVA_CLEAN_WORKSPACE, command_javaCleanWorkspaceHandler);
 			_languageClient.registerCommand(COMMAND_JAVA_APPLY_WORKSPACE_EDIT, command_javaApplyWorkspaceEditHandler);
+			_languageClient.registerCommand(COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS, command_javaProjectConfigurationStatus);
 			_project.languageClient = _languageClient;
 
 			var initParams:Object = LanguageClientUtil.getSharedInitializeParams();
@@ -630,9 +638,12 @@ package actionScripts.languageServer
 				_dispatcher.dispatchEvent(new ExecuteLanguageServerCommandEvent(
 					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
 					project, command, args ? args : []));
-				if(popup)
+				if(popupWrapper)
 				{
 					PopUpManager.removePopUp(popupWrapper);
+				}
+				if(popup)
+				{
 					popup.data = null;
 				}
 			};
@@ -789,6 +800,7 @@ package actionScripts.languageServer
 						return;
 					}
 
+					// trace("command: " + event.command, JSON.stringify(event.arguments));
 					_languageClient.executeCommand({
 						command: event.command,
 						arguments: event.arguments
@@ -992,6 +1004,7 @@ package actionScripts.languageServer
 			var popup:StandardPopupView = new StandardPopupView();
 			popup.data = this; // Keep the command from getting GC'd
 			popup.text = message;
+			var popupWrapper:FeathersUIWrapper = new FeathersUIWrapper(popup);
 
 			var buttons:Array = [];
 			var commandCount:int = commands.length;
@@ -1011,7 +1024,6 @@ package actionScripts.languageServer
 			
 			popup.controls = buttons;
 			
-			var popupWrapper:FeathersUIWrapper = new FeathersUIWrapper(popup);
 			PopUpManager.addPopUp(popupWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 			popupWrapper.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
 			popupWrapper.x = (FlexGlobals.topLevelApplication.width-popupWrapper.width)/2;
@@ -1035,6 +1047,11 @@ package actionScripts.languageServer
 		{
 			var workspaceEdit:WorkspaceEdit = WorkspaceEdit.parse(json);
 			applyWorkspaceEdit(workspaceEdit);
+		}
+
+		private function command_javaProjectConfigurationStatus(uri:Object, status:int):void
+		{
+			trace("Command not implemented: " + COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS);
 		}
 
 		private function removeProjectHandler(event:ProjectEvent):void
