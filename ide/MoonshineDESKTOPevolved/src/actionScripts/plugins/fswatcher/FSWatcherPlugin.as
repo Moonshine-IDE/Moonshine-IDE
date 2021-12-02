@@ -34,6 +34,7 @@ package actionScripts.plugins.fswatcher
 	import actionScripts.locator.IDEModel;
 	import flash.utils.ByteArray;
 	import flash.system.WorkerDomain;
+	import actionScripts.events.ApplicationEvent;
 
 	public class FSWatcherPlugin extends PluginBase implements IPlugin
 	{
@@ -89,14 +90,31 @@ package actionScripts.plugins.fswatcher
 
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject, false, 0, true);
+			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
 		}
 		
 		override public function deactivate():void
 		{
 			super.deactivate();
 
+			if(worker)
+			{
+				worker.terminate();
+				worker = null;
+			}
+
 			dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT, onAddProject);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject);
+			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
+		}
+
+		private function onApplicationExit(event:ApplicationEvent):void
+		{
+			if(worker)
+			{
+				worker.terminate();
+				worker = null;
+			}
 		}
 
 		private function addProject(project:ProjectVO):void
