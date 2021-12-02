@@ -145,6 +145,7 @@ package actionScripts.languageServer
 		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToDispose:Boolean = false;
 		private var _watchedFiles:Object = {};
+		private var _settingUpdateBuildConfiguration:int = -1;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
 		{
@@ -614,6 +615,17 @@ package actionScripts.languageServer
 				"default":  true
 			});
 			var settings:Object = { java: { configuration: { runtimes: runtimes } } };
+			switch(_settingUpdateBuildConfiguration) {
+				case FEATURE_STATUS_DISABLED:
+					settings.java.configuration.updateBuildConfiguration = "disabled";
+					break;
+				case FEATURE_STATUS_INTERACTIVE:
+					settings.java.configuration.updateBuildConfiguration = "interactive";
+					break;
+				case FEATURE_STATUS_AUTOMATIC:
+					settings.java.configuration.updateBuildConfiguration = "automatic";
+					break;
+			}
 			var params:Object = new Object();
 			params.settings = settings;
 			_languageClient.sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
@@ -1056,7 +1068,8 @@ package actionScripts.languageServer
 
 		private function command_javaProjectConfigurationStatus(uri:Object, status:int):void
 		{
-			trace("Command not implemented: " + COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS);
+			_settingUpdateBuildConfiguration = status;
+			sendWorkspaceSettings();
 		}
 
 		private function removeProjectHandler(event:ProjectEvent):void
