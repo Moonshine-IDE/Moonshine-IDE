@@ -131,7 +131,6 @@ package actionScripts.plugin.project
 			if (!treeView.stage) 
 			{
 				LayoutModifier.attachSidebarSections(treeView);
-                LayoutModifier.attachProjectPanelSections();
 			}
 		}
 		
