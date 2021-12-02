@@ -427,7 +427,9 @@ package actionScripts.utils
 					{
 						return child;
 					}
-					if (child.children && child.children.length > 0) return findFileWrapperAgainstFileLocation(child, target); 	
+					if (child.children) {
+						return findFileWrapperAgainstFileLocation(child, target);
+					}
 				}
 			}
 			return current;

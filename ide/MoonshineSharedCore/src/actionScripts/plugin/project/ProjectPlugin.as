@@ -361,22 +361,13 @@ package actionScripts.plugin.project
 
 		private function handleWatchedFileCreatedEvent(event:WatchedFileChangeEvent):void
 		{
-			var dir:FileLocation = event.file;
-			if(!dir.fileBridge.isDirectory)
-			{
-				dir = dir.fileBridge.parent;
-			}
-			treeView.refresh(dir);
+			treeView.refresh(event.file);
 		}
 
 		private function handleWatchedFileDeletedEvent(event:WatchedFileChangeEvent):void
 		{
-			var dir:FileLocation = event.file;
-			if(!dir.fileBridge.isDirectory)
-			{
-				dir = dir.fileBridge.parent;
-			}
-			treeView.refresh(dir, true);
+			//need to refresh the parent directory listing
+			treeView.refresh(event.file.fileBridge.parent);
 		}
 
         private function handleShowPreviouslyOpenedProjects(event:ProjectEvent):void
