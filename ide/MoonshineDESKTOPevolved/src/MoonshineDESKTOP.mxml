@@ -269,7 +269,7 @@
 	<fx:Style source="/assets/styles/awaybuilder_defaults.css"/>
 
 	<containers:UpdaterView id="updaterView"
-							includeInLayout="{updaterHelper.isUpdater}" visible="{updaterHelper.isUpdater}"
+							isUpdateAvailable="{updaterHelper.isUpdater}"
 							updater="{updater}" downlaoding="{updaterHelper.downlaoding}"
 							UPDATEYES="updaterHelper.btnYes_clickHandler(event)" UPDATENO="updaterHelper.btnNo_clickHandler(event)" UPDATECANCEL="updaterHelper.btnCancel_clickHandler(event)"/>
 </s:WindowedApplication>

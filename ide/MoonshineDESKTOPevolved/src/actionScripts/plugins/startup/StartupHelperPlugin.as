@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.startup
 {
+	import actionScripts.extResources.riaspace.nativeApplicationUpdater.AutoUpdaterHelper;
+
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.filesystem.File;
@@ -70,7 +72,7 @@ package actionScripts.plugins.startup
 		
 		public static const EVENT_GETTING_STARTED:String = "gettingStarted";
 		public static const EVENT_GETTING_STARTED_AS3:String = "gettingStartedAS3";
-		
+
 		private var dependencyCheckUtil:IHelperMoonshineBridgeImp = new IHelperMoonshineBridgeImp();
 		private var installerItemsManager:InstallerItemsManager = InstallerItemsManager.getInstance();
 		private var sdkNotificationView:SDKUnzipConfirmPopup;
@@ -110,6 +112,7 @@ package actionScripts.plugins.startup
 			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedHaxeRequest, false, 0, true);
 			dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
 			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
+			dispatcher.addEventListener(AutoUpdaterHelper.EVENT_UPDATE_CHECK_COMPLETES, onUpdateStageCompletes, false, 0, true);
 			
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
@@ -155,7 +158,23 @@ package actionScripts.plugins.startup
 				continueOnHelping();
 			}
 		}
-		
+
+		/**
+		 * Help to determine when update-check stage completes
+		 * so we can start loading previously opened projects
+		 * and starts LS
+		 */
+		private function onUpdateStageCompletes(event:Event):void
+		{
+			dispatcher.removeEventListener(AutoUpdaterHelper.EVENT_UPDATE_CHECK_COMPLETES, onUpdateStageCompletes);
+
+			if (!didShowPreviouslyOpenedTabs)
+			{
+				didShowPreviouslyOpenedTabs = true;
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
+			}
+		}
+
 		/**
 		 * Starts the checks and starup sequences
 		 * to setup SDK, Java etc.
@@ -171,16 +190,6 @@ package actionScripts.plugins.startup
 			installerItemsManager.dependencyCheckUtil = dependencyCheckUtil;
 			installerItemsManager.environmentUtil = environmentUtil;
 			installerItemsManager.loadItemsAndDetect();
-			
-			if (!didShowPreviouslyOpenedTabs)
-			{
-				didShowPreviouslyOpenedTabs = true;
-				var timeoutValue:uint = setTimeout(function():void
-				{
-					clearTimeout(timeoutValue);
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
-				}, 2000);
-			}
 		}
 		
 		/**

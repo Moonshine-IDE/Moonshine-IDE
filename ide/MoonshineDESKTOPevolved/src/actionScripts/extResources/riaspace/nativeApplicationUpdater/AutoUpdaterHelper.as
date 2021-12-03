@@ -15,8 +15,10 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 	[Event(name="DONE", type="actionScripts.events.GeneralEvent")]
 	public class AutoUpdaterHelper extends EventDispatcher
 	{
+		public static const EVENT_UPDATE_CHECK_COMPLETES:String = "eventUpdateCheckCompletes";
+
 		[Bindable] public var downlaoding:Boolean = false;
-		[Bindable] public var isUpdater:Boolean;
+		[Bindable] public var isUpdater:int = -1;
 		
 		private var _updater:NativeApplicationUpdater;
 		public function get updater():NativeApplicationUpdater
@@ -61,7 +63,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				// install new version of the application.
 				event.preventDefault();
 				//currentState = "Update";
-				isUpdater = true;
+				isUpdater = 1;
 			}
 			else
 			{
@@ -71,13 +73,13 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		
 		public function btnNo_clickHandler(event:Event):void
 		{
-			isUpdater = false;
+			isUpdater = 0;
 		}
 		
 		public function btnCancel_clickHandler(event:Event):void
 		{
 			updater.cancelUpdate();
-			isUpdater = false;
+			isUpdater = 0;
 			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
 		}
 		
