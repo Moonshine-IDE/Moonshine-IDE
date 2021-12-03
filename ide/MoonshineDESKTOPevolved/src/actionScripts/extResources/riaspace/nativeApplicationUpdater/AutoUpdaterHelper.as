@@ -51,7 +51,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			// When NativeApplicationUpdater is initialized you can call checkNow function
 			updater.checkNow();
 		}
-		 
+
 		public function updater_updateStatusHandler(event:StatusUpdateEvent):void
 		{
 			if (event.available)
@@ -86,7 +86,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			// In case user wants to download and install update display download progress bar
 			// and invoke downloadUpdate() function.
 			downlaoding = true;
-			updater.addEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, updater_downloadErrorHandler);
 			updater.addEventListener(UpdateEvent.DOWNLOAD_COMPLETE, updater_downloadCompleteHandler);
 			updater.downloadUpdate();
 		}
@@ -95,12 +94,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		{
 			// When update is downloaded install it.
 			updater.installUpdate();
-		}
-		 
-		private function updater_downloadErrorHandler(event:DownloadErrorEvent):void
-		{
-			Alert.show("Error downloading update file, try again later.");
-			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
 		}
 	}
 }
