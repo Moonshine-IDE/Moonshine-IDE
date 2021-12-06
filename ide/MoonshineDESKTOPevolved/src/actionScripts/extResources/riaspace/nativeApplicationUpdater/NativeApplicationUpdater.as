@@ -390,13 +390,15 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		{
 			fileStream.removeEventListener(Event.CLOSE, fileStream_closeHandler);
 			fileStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
-			fileStream.close();
 			
 			urlStream.removeEventListener(Event.OPEN, urlStream_openHandler);
 			urlStream.removeEventListener(ProgressEvent.PROGRESS, urlStream_progressHandler);
 			urlStream.removeEventListener(Event.COMPLETE, urlStream_completeHandler);
 			urlStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
+
+			fileStream.close();
 			urlStream.close();
+			urlStream.stop();
 
 			if (displayError)
 			{
