@@ -385,8 +385,8 @@ async function parseProfileConfiguration(config: LaunchConfiguration, tmpDirs: s
 	return { profileDir, srcProfileDir };
 }
 
-function findFirefoxProfileDir(profileName: string): Promise<string> {
-	return new Promise<string>((resolve, reject) => {
+function findFirefoxProfileDir(profileName: string): Promise<string | undefined> {
+	return new Promise<string | undefined>((resolve, reject) => {
 
 		let finder = new FirefoxProfile.Finder();
 

@@ -4,8 +4,7 @@ var os   = require('os'),
     fs   = require('fs'),
     path = require('path'),
 
-    ini = require('ini'),
-    _   = require('lodash');
+    ini = require('ini');
 
 
 function locateUserDirectory(platform) {
@@ -55,8 +54,10 @@ ProfileFinder.prototype.readProfiles = function(cb) {
   var self = this;
   fs.readFile(path.join(this.directory, 'profiles.ini'), {encoding: 'utf8'}, function(err, data) {
     if (err) { cb(err); }
-    self.profiles = _.filter(ini.parse(data), function(value, key) {
-      return _.isString(key) && key.match(/^Profile/);
+    Object.entries(ini.parse(data)).forEach(function ([key, value]) {
+      if (typeof key === 'string' && key.match(/^Profile/)) {
+        self.profiles.push(value);
+      }
     });
     self.hasReadProfiles = true;
     cb(null, self.profiles);
@@ -74,7 +75,7 @@ ProfileFinder.prototype.getPath = function(name, cb) {
   var self = this;
   function findInProfiles(name, cb) {
     var pathFound,
-        found = _.find(self.profiles, function(profile) {
+        found = self.profiles.find(function(profile) {
       return profile.Name === name;
     });
     if (found) {

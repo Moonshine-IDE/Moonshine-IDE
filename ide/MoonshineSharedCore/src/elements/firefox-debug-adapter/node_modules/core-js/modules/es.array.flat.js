@@ -2,19 +2,19 @@
 var $ = require('../internals/export');
 var flattenIntoArray = require('../internals/flatten-into-array');
 var toObject = require('../internals/to-object');
-var toLength = require('../internals/to-length');
-var toInteger = require('../internals/to-integer');
+var lengthOfArrayLike = require('../internals/length-of-array-like');
+var toIntegerOrInfinity = require('../internals/to-integer-or-infinity');
 var arraySpeciesCreate = require('../internals/array-species-create');
 
 // `Array.prototype.flat` method
-// https://github.com/tc39/proposal-flatMap
+// https://tc39.es/ecma262/#sec-array.prototype.flat
 $({ target: 'Array', proto: true }, {
   flat: function flat(/* depthArg = 1 */) {
     var depthArg = arguments.length ? arguments[0] : undefined;
     var O = toObject(this);
-    var sourceLen = toLength(O.length);
+    var sourceLen = lengthOfArrayLike(O);
     var A = arraySpeciesCreate(O, 0);
-    A.length = flattenIntoArray(A, O, O, sourceLen, 0, depthArg === undefined ? 1 : toInteger(depthArg));
+    A.length = flattenIntoArray(A, O, O, sourceLen, 0, depthArg === undefined ? 1 : toIntegerOrInfinity(depthArg));
     return A;
   }
 });
