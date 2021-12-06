@@ -259,9 +259,9 @@
 		<nativeApplicationUpdater:NativeApplicationUpdater id="updater"
 														   initialized="updaterHelper.updater_initializedHandler(event)"
 														   updateStatus="updaterHelper.updater_updateStatusHandler(event)"
-														   error="updaterHelper.updater_errorHandler(event);updaterView.restoreState()"
-														   downloadError="updaterHelper.updater_errorHandler(event);updaterView.restoreState()"
-														   updateError="updaterHelper.updater_errorHandler(event);updaterView.restoreState()"/>
+														   error="updaterHelper.updater_errorHandler(event); updaterView.updater_errorHandler(event)"
+														   downloadError="updaterHelper.updater_errorHandler(event); updaterView.updater_errorHandler(event)"
+														   updateError="updaterHelper.updater_errorHandler(event); updaterView.updater_errorHandler(event)"/>
 		<nativeApplicationUpdater:AutoUpdaterHelper id="updaterHelper"/>
 	</fx:Declarations>
 	<fx:Style source="/elements/style/style.css"/>

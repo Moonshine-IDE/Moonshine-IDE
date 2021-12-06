@@ -36,7 +36,10 @@
 		import actionScripts.extResources.riaspace.nativeApplicationUpdater.NativeApplicationUpdater;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 
-			import spark.components.BusyIndicator;
+		import mx.controls.Alert;
+		import mx.events.CloseEvent;
+
+		import spark.components.BusyIndicator;
 
 			//--------------------------------------------------------------------------
 			//
@@ -65,10 +68,20 @@
 
 			private var busyIndicator:BusyIndicator;
 
-			public function restoreState():void
+			public function updater_errorHandler(event:ErrorEvent):void
 			{
-				downlaoding = false;
-				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(AutoUpdaterHelper.EVENT_UPDATE_CHECK_COMPLETES));
+				Alert.show(event.text, "Error!", Alert.OK, null, errorConfirmedHandler);
+				function errorConfirmedHandler(event:CloseEvent):void
+				{
+					if (currentState == "loading")
+					{
+						remove();
+					}
+					else
+					{
+						downlaoding = false;
+					}
+				}
 			}
 
 			private function remove():void
@@ -131,7 +144,7 @@
 								  click="dispatchEvent(new Event('UPDATEYES'))" enabled="{!downlaoding}"
 								  width="60" emphasized="true"/>
 						<s:Button label="{(!downlaoding)?'NO':'CANCEL'}"
-								  click="restoreState();((downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO')))"/>
+								  click="downlaoding=false;((downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO')))"/>
 					</s:HGroup>
 				</s:VGroup>
 				<s:VGroup width="100%"

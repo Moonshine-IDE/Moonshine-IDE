@@ -1,5 +1,7 @@
 package actionScripts.extResources.riaspace.nativeApplicationUpdater
 {
+	import actionScripts.events.GlobalEventDispatcher;
+
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -11,7 +13,9 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 	import air.update.events.DownloadErrorEvent;
 	import air.update.events.StatusUpdateEvent;
 	import air.update.events.UpdateEvent;
-	
+
+	import mx.events.CloseEvent;
+
 	[Event(name="DONE", type="actionScripts.events.GeneralEvent")]
 	public class AutoUpdaterHelper extends EventDispatcher
 	{
@@ -44,7 +48,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		
 		public function updater_errorHandler(event:ErrorEvent):void
 		{
-			Alert.show(event.text);
 			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
 		}
 		
