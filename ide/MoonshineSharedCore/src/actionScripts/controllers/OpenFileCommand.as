@@ -248,8 +248,12 @@ package actionScripts.controllers
 					 if ((project is OnDiskProjectVO) && (extension == "dve"))
 					 {
 						 (project as OnDiskProjectVO).isDominoVisualEditorProject=true;
-					 } 
-
+					 }
+					else if (file && file.fileBridge.nativePath.indexOf("Royale")>0){
+						(project as AS3ProjectVO).isVisualEditorProject=false;
+						//Alert.show("AS3ProjectVO 254"+(project as AS3ProjectVO).isVisualEditorProject);
+					}
+	
 					openTextFile(project, fileData);
 				}
 			}
@@ -351,11 +355,12 @@ package actionScripts.controllers
 			{
 				project = model.activeProject;
 			}
-			
+
+
 			if ((project is AS3ProjectVO &&
 				(project as AS3ProjectVO).isVisualEditorProject &&
 				(extension == "mxml" || extension == "xhtml" || extension == "form"|| extension == "page") && !lastOpenEvent.independentOpenFile) || 
-				(project is OnDiskProjectVO) && (extension == "dve"))
+				(project is OnDiskProjectVO) && (extension == "dve") )
 			{
 				editor = model.visualEditorCore.getVisualEditor(project);
 			}

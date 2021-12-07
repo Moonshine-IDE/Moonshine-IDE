@@ -46,6 +46,8 @@ package actionScripts.plugin.actionscript.as3project
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
+
+	import actionScripts.plugin.templating.TemplatingPlugin;
 	
 	import components.popup.NativeExtensionMessagePopup;
 	import components.popup.OpenFlexProject;
@@ -84,6 +86,8 @@ package actionScripts.plugin.actionscript.as3project
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createAS3Project);
 			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, importProject);
 			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE, importArchiveProject);
+			dispatcher.addEventListener(ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT, generateApacheRoyaleProject);
+			//EVENT_GENERATE_APACHE_ROYALE_PROJECT
 			dispatcher.addEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, importProjectWithoutDialog);
 			dispatcher.addEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
 			dispatcher.addEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
@@ -97,6 +101,7 @@ package actionScripts.plugin.actionscript.as3project
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createAS3Project);
 			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, importProject);
 			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE, importArchiveProject);
+			dispatcher.removeEventListener(ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT, generateApacheRoyaleProject);
 			dispatcher.removeEventListener(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, importProjectWithoutDialog);
 			dispatcher.removeEventListener(TemplateEvent.REQUEST_ADDITIONAL_DATA, handleTemplatingDataRequest);
 			dispatcher.removeEventListener(AS3ProjectVO.NATIVE_EXTENSION_MESSAGE, onNativeExtensionMessage);
@@ -169,6 +174,31 @@ package actionScripts.plugin.actionscript.as3project
 		private function importArchiveProject(event:Event):void
 		{
 			model.flexCore.importArchiveProject();
+		}
+
+		private function generateApacheRoyaleProject(event:Event):void
+		{
+			//1. generate the royale projects
+			//2. import the project to editor
+			var extension:String = null;
+			var settingsFile:FileLocation = null;
+			for each (var projectTemplate:FileLocation in TemplatingPlugin.projectTemplates)
+			{
+				var lbl:String = TemplatingHelper.getTemplateLabel(projectTemplate);
+				if(lbl=="Apache Royale Visual Editor Porject"){
+					settingsFile = TemplatingPlugin.getSettingsTemplateFileLocation(projectTemplate);
+                    //Alert.show("settingsFile:"+settingsFile.fileBridge.nativePath);
+					extension = settingsFile ? TemplatingHelper.getExtension(settingsFile) : null;
+					//Alert.show("extension:"+extension);
+					createRoyalVisualProject( new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT,extension, settingsFile, projectTemplate));
+				}
+				//Alert.show("label:"+TemplatingHelper.getTemplateLabel(projectTemplate));
+			}
+			// nonProjectFolderLocation = new FileLocation(dir.nativePath);
+			// createAS3Project(new NewProjectEvent("", "as3proj", null, nonProjectFolderLocation));
+			//                  new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT,extension, settingsFile, projectTemplate)
+			//new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, "eventName", null, null);
+
 		}
 		
 		private function importProjectWithoutDialog(event:ProjectEvent):void
@@ -372,6 +402,17 @@ package actionScripts.plugin.actionscript.as3project
 			}
 			
 			model.flexCore.createProject(event);
+		}
+
+
+		private function createRoyalVisualProject(event:NewProjectEvent):void
+		{	
+			if(event.settingsFile){
+				model.flexCore.createProject(event);
+			}else{
+				Alert.show("Not have setting files");
+			}
+		
 		}
 		
 		private function onNativeExtensionMessage(event:Event):void
