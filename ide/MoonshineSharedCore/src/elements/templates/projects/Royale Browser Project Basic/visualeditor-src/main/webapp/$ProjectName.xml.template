@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mockup>
+    <MainApplication id="mainApplicationWindow" x="0" y="0" width="700" height="450" title="$ProjectName"/>
+</mockup>

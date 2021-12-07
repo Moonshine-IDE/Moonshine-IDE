@@ -262,6 +262,17 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			_isDominoVisualEditorProject = value;
 		}
+
+
+		private var _isFlexJSRoyalProject:Boolean;
+		public function get isFlexJSRoyalProject():Boolean
+		{
+			return _isFlexJSRoyalProject;
+		}
+		public function set isFlexJSRoyalProject(value:Boolean):void
+		{
+			_isFlexJSRoyalProject = value;
+		}
 		
 		private var _isPreviewRunning:Boolean;
 		public function get isPreviewRunning():Boolean

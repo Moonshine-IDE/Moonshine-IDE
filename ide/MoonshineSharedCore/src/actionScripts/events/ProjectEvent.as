@@ -42,7 +42,7 @@ package actionScripts.events
 		public static const SEARCH_PROJECTS_IN_DIRECTORIES:String = "searchForProjectsInDirectories";
 		
 		public static const EVENT_IMPORT_PROJECT_ARCHIVE:String = "importProjectArchive";
-		
+		public static const EVENT_GENERATE_APACHE_ROYALE_PROJECT:String = "generateApacheRoyaleProject";
 		public static const LAST_OPENED_AS_FB_PROJECT:String = "LAST_OPENED_AS_FB_PROJECT";
 		public static const LAST_OPENED_AS_FD_PROJECT:String = "LAST_OPENED_AS_FD_PROJECT";
 		
