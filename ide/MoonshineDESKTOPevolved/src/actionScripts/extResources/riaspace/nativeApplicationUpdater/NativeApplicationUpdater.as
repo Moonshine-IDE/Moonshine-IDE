@@ -253,9 +253,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		
 		protected function updateDescriptorLoader_completeHandler(event:Event):void
 		{
-			//updateDescriptorLoader_removeListeners();
-			
-			Alert.show("Complete Handler Triggered");
+			updateDescriptorLoader_removeListeners();
 			
 			updateDescriptor = new XML(updateDescriptorLoader.data);
 			
@@ -291,7 +289,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		
 		protected function updateDescriptorLoader_ioErrorHandler(event:IOErrorEvent):void
 		{
-			Alert.show("Error Handler Triggered");
 			updateDescriptorLoader_removeListeners();
 			
 			/*dispatchEvent(new StatusUpdateErrorEvent(StatusUpdateErrorEvent.UPDATE_ERROR, false, false, 
@@ -301,7 +298,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 
 		private function updateDescriptorLoader_httpStatus(event:HTTPStatusEvent):void
 		{
-			Alert.show(event.status.toString());
 			if (event.status == 0)
 			{
 				updateDescriptorLoader_removeListeners();

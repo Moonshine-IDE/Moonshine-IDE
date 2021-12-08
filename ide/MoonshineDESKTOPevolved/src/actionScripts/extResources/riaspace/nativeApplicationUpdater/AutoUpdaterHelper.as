@@ -70,6 +70,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			}
 			else
 			{
+				isUpdater = 0;
 				//Alert.show("Your application is up to date!");
 			}
 		}
