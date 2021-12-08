@@ -31,8 +31,28 @@ package actionScripts.plugins.js
 		override public function get name():String			{ return "JavaScript"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
 		override public function get description():String	{ return "JavaScript Plugin"; }
+
+		public function JavaScriptPlugin()
+		{
+			super();
+
+			if(!ConstantsCoreVO.IS_MACOS || !ConstantsCoreVO.IS_APP_STORE_VERSION)
+			{
+				// because most users install Node.js to a standard installation
+				// directory, we can try to use it as the default, if it exists.
+				// if the user saves a different path (or clears the path) in
+				// the settings, these default values will be safely ignored.
+				var nodeDir:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\Program Files\\nodejs")
+				defaultNodePath = (nodeDir.exists && nodeDir.isDirectory) ? nodeDir.nativePath : null;
+				if(defaultNodePath && model.nodePath == null)
+				{
+					model.nodePath = defaultNodePath;
+				}
+			}
+		}
 		
 		private var nodePathSetting:PathSetting;
+		private var defaultNodePath:String;
 
         public function get nodePath():String
         {
@@ -52,8 +72,6 @@ package actionScripts.plugins.js
         {
 			onSettingsClose();
 
-			var nodeDir:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\Program Files\\nodejs")
-			var defaultNodePath:String = (nodeDir.exists && nodeDir.isDirectory) ? nodeDir.nativePath : null;
 			nodePathSetting = new PathSetting(this, 'nodePath', 'Node.js Home', true, nodePath, false, false, defaultNodePath);
 			
 			return Vector.<ISetting>([
