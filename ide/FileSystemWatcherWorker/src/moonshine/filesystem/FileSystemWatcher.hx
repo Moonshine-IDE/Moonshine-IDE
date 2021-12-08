@@ -24,8 +24,12 @@ import moonshine.events.FileSystemWatcherEvent;
 import openfl.errors.ArgumentError;
 import openfl.events.EventDispatcher;
 import openfl.events.TimerEvent;
-import openfl.filesystem.File;
 import openfl.utils.Timer;
+#if (openfl >= "9.2.0")
+import openfl.filesystem.File;
+#else
+import flash.filesystem.File;
+#end
 
 class FileSystemWatcher extends EventDispatcher {
 	public function new(pollingMilliseconds:Int = 1000) {

@@ -24,7 +24,11 @@ import moonshine.events.FileSystemWatcherEvent;
 import moonshine.filesystem.FileSystemWatcher;
 import moonshine.utils.GlobPatterns;
 import openfl.events.Event;
+#if (openfl >= "9.2.0")
 import openfl.filesystem.File;
+#else
+import flash.filesystem.File;
+#end
 
 class FileSystemWatcherWorker {
 	private var mainToWorker:MessageChannel;
