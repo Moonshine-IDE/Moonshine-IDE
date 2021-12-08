@@ -24,6 +24,7 @@ package actionScripts.plugins.js
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.events.SdkEvent;
+	import flash.filesystem.File;
 	
 	public class JavaScriptPlugin extends PluginBase implements ISettingsProvider
 	{
@@ -51,7 +52,9 @@ package actionScripts.plugins.js
         {
 			onSettingsClose();
 
-			nodePathSetting = new PathSetting(this, 'nodePath', 'Node.js Home', true, nodePath);
+			var nodeDir:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\Program Files\\nodejs")
+			var defaultNodePath:String = (nodeDir.exists && nodeDir.isDirectory) ? nodeDir.nativePath : null;
+			nodePathSetting = new PathSetting(this, 'nodePath', 'Node.js Home', true, nodePath, false, false, defaultNodePath);
 			
 			return Vector.<ISetting>([
                 nodePathSetting
