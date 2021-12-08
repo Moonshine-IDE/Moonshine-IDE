@@ -185,7 +185,7 @@ package actionScripts.plugin.actionscript.as3project
 			for each (var projectTemplate:FileLocation in TemplatingPlugin.projectTemplates)
 			{
 				var lbl:String = TemplatingHelper.getTemplateLabel(projectTemplate);
-				if(lbl=="Apache Royale Visual Editor Porject"){
+				if(lbl=="Apache Royale Project REST"){
 					settingsFile = TemplatingPlugin.getSettingsTemplateFileLocation(projectTemplate);
                     //Alert.show("settingsFile:"+settingsFile.fileBridge.nativePath);
 					extension = settingsFile ? TemplatingHelper.getExtension(settingsFile) : null;
