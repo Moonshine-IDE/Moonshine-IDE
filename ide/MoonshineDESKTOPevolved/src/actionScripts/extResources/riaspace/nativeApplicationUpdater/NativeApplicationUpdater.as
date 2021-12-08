@@ -298,7 +298,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 
 		private function updateDescriptorLoader_httpStatus(event:HTTPStatusEvent):void
 		{
-
+			Alert.show(event.status.toString());
 			if (event.status == 0)
 			{
 				updateDescriptorLoader_removeListeners();
