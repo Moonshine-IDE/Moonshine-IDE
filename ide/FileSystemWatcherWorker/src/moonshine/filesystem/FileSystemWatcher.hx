@@ -40,6 +40,18 @@ class FileSystemWatcher extends EventDispatcher {
 	private var _timer:Timer;
 	private var _pollingMS:Int;
 
+	public function getAllKnownFilePaths():Array<String> {
+		var result:Array<String> = [];
+		for (directory in _watchedDirectories.keys()) {
+			result.push(directory.nativePath);
+			var fileInfoMap = _watchedDirectories.get(directory);
+			for (nativePath in fileInfoMap.keys()) {
+				result.push(nativePath);
+			}
+		}
+		return result;
+	}
+
 	public function getWatched():Array<File> {
 		var result:Array<File> = [];
 		for (directory in _watchedDirectories.keys()) {

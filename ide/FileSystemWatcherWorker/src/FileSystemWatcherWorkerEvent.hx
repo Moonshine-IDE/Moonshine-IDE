@@ -20,6 +20,7 @@
 class FileSystemWatcherWorkerEvent {
 	public static final WATCH_DIRECTORY:String = "watchDirectory";
 	public static final UNWATCH:String = "unwatch";
+	public static final REQUEST_ALL_PATHS:String = "requestAllPaths";
 
 	public static final WORKER_READY:String = "workerReady";
 	public static final WORKER_FAULT:String = "workerFault";
@@ -27,6 +28,8 @@ class FileSystemWatcherWorkerEvent {
 	public static final WATCH_FAULT:String = "watchFault";
 	public static final UNWATCH_RESULT:String = "unwatchResult";
 	public static final UNWATCH_FAULT:String = "unwatchFault";
+	public static final REQUEST_ALL_PATHS_RESULT:String = "requestAllPathsResult";
+	public static final REQUEST_ALL_PATHS_FAULT:String = "requestAllPathsFault";
 
 	public static final FILE_CREATED:String = "fileCreated";
 	public static final FILE_DELETED:String = "fileDeleted";

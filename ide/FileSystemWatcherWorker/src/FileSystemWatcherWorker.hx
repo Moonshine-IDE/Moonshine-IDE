@@ -105,6 +105,26 @@ class FileSystemWatcherWorker {
 				} catch (e:Any) {
 					workerToMain.send({event: FileSystemWatcherWorkerEvent.UNWATCH_FAULT, id: watcherID, reason: "exception: " + e});
 				}
+			case FileSystemWatcherWorkerEvent.REQUEST_ALL_PATHS:
+				var watcherID = (Reflect.field(incomingObject, "id") : Int);
+				var watcherData = watchers.get(watcherID);
+				if (watcherData == null) {
+					workerToMain.send({event: FileSystemWatcherWorkerEvent.REQUEST_ALL_PATHS_FAULT, id: watcherID, reason: "id doesn't exist"});
+					return;
+				}
+				try {
+					var result = watcherData.watcher.getAllKnownFilePaths();
+					result = result.filter(path -> {
+						return !isExcluded(new File(path), watcherData);
+					});
+					workerToMain.send({
+						event: FileSystemWatcherWorkerEvent.REQUEST_ALL_PATHS_RESULT,
+						id: watcherID,
+						paths: result
+					});
+				} catch (e:Any) {
+					workerToMain.send({event: FileSystemWatcherWorkerEvent.REQUEST_ALL_PATHS_FAULT, id: watcherID, reason: "exception: " + e});
+				}
 			default:
 				workerToMain.send({
 					event: FileSystemWatcherWorkerEvent.WORKER_FAULT,
