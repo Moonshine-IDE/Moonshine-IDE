@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates>
     <template displayHome="true">
-        <title>Royale Visual Editor Porject</title>
-        <homeTitle>Apache Royale Visual Editor Porject</homeTitle>
-        <name>Apache Royale Visual Editor Porject</name>
+        <title>Royale Project REST</title>
+        <homeTitle>Apache Royale Project REST</homeTitle>
+        <name>Apache Royale Project REST</name>
         <icon>Royale Browser Project.png</icon>
         <description>Create a Apache® Royale project that will generate an SWF and HTML files, to run on browser.</description>
     </template>

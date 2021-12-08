@@ -95,7 +95,7 @@
     <option projectType="2"/>
     <option targetPlatform="5"/>
     <option launchMethod="Simulator"/>
-    <option urlToLaunch="bin/js-debug/index.html"/>
+    <option urlToLaunch="/bin/js-debug/index.html"/>
     <option deviceConnectType="USB"/>
     <option customUrlToLaunch=""/>
     <deviceSimulator>null</deviceSimulator>
