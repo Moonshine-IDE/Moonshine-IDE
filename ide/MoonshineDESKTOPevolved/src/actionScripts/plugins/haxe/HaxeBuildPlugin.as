@@ -133,8 +133,12 @@ package actionScripts.plugins.haxe
         {
 			onSettingsClose();
 
-			haxePathSetting = new PathSetting(this, 'haxePath', 'Haxe Home', true, haxePath);
-			nekoPathSetting = new PathSetting(this, 'nekoPath', 'Neko Home', true, nekoPath);
+            var haxeDir:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/lib/haxe" : "C:\\HaxeToolkit\\haxe");
+            var nekoDir:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/lib/neko" : "C:\\HaxeToolkit\\neko");
+            var defaultHaxePath:String = (haxeDir.exists && haxeDir.isDirectory) ? haxeDir.nativePath : null;
+            var defaultNekoPath:String = (nekoDir.exists && nekoDir.isDirectory) ? nekoDir.nativePath : null;
+			haxePathSetting = new PathSetting(this, 'haxePath', 'Haxe Home', true, haxePath, false, false, defaultHaxePath);
+			nekoPathSetting = new PathSetting(this, 'nekoPath', 'Neko Home', true, nekoPath, false, false, defaultNekoPath);
 			
 			return Vector.<ISetting>([
 				haxePathSetting,
