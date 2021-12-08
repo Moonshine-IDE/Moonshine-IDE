@@ -278,10 +278,6 @@ export class SourceMappingThreadActorProxy extends EventEmitter implements IThre
 		return this.underlyingActorProxy.interrupt(immediately);
 	}
 
-	public detach(): Promise<void> {
-		return this.underlyingActorProxy.detach();
-	}
-
 	public async findOriginalLocation(
 		generatedUrl: string,
 		line: number,

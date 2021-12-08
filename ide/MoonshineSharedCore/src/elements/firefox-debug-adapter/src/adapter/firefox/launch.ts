@@ -23,6 +23,14 @@ export async function launchFirefox(launch: ParsedLaunchConfiguration): Promise<
 
 	await prepareDebugProfile(launch);
 
+	// workaround for an issue with the snap version of VS Code
+	// (see e.g. https://github.com/microsoft/vscode/issues/85344)
+	const env = { ...process.env };
+	if (env.SNAP) {
+		delete env['GDK_PIXBUF_MODULE_FILE'];
+		delete env['GDK_PIXBUF_MODULEDIR'];
+	}
+
 	let childProc: ChildProcess | undefined = undefined;
 
 	if (launch.detached) {
@@ -38,24 +46,24 @@ export async function launchFirefox(launch: ParsedLaunchConfiguration): Promise<
 
 			case 1:
 				forkArgs = [
-					'spawnDetached', process.execPath, forkedLauncherPath,
+					'forkDetached', forkedLauncherPath,
 					'spawnAndRemove', launch.tmpDirs[0], launch.firefoxExecutable, ...launch.firefoxArgs
 				];
 				break;
 
 			default:
 				forkArgs = [
-					'spawnDetached', process.execPath, forkedLauncherPath,
+					'forkDetached', forkedLauncherPath,
 					'spawnAndRemove2', launch.tmpDirs[0], launch.tmpDirs[1], launch.firefoxExecutable, ...launch.firefoxArgs
 				];
 				break;
 		}
 
-		fork(forkedLauncherPath, forkArgs, { execArgv: [] });
+		fork(forkedLauncherPath, forkArgs, { env, execArgv: [] });
 
 	} else {
 
-		childProc = spawn(launch.firefoxExecutable, launch.firefoxArgs, { detached: true });
+		childProc = spawn(launch.firefoxExecutable, launch.firefoxArgs, { env, detached: true });
 
 		childProc.stdout.on('data', () => undefined);
 		childProc.stderr.on('data', () => undefined);

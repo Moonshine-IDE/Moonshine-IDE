@@ -130,6 +130,8 @@ __Windows__
 
 `"C:\Program Files\Mozilla Firefox\firefox.exe" -start-debugger-server`
 
+(This syntax is for a regular command prompt (cmd.exe), not PowerShell!)
+
 __OS X__
 
 `/Applications/Firefox.app/Contents/MacOS/firefox -start-debugger-server`
@@ -305,7 +307,8 @@ popup auto-hide" (`extension.firefox.enablePopupAutohide` / `disablePopupAutohid
   Since this profile will be permanently modified for debugging, you should only use this option
   with a dedicated debugging profile. You can also override this property in your settings (see below).
 * `port`: Firefox uses port 6000 for the debugger protocol by default. If you want to use a different
-  port, you can set it with this property.
+  port, you can set it with this property. You can also override this property in your settings
+  (see below).
 * `timeout`: The timeout in seconds for the adapter to connect to Firefox after launching it.
 * `firefoxExecutable`: The absolute path to the Firefox executable or the name of a Firefox edition
   (`stable`, `developer` or `nightly`) to look for in its default installation path. If not specified,
@@ -347,6 +350,7 @@ This setting                 | overrides this `launch.json` property
 `firefox.profileDir`         | `profileDir`
 `firefox.profile`            | `profile`
 `firefox.keepProfileChanges` | `keepProfileChanges`
+`firefox.port`               | `port`
 
 ### Diagnostic logging
 The following example for the `log` property will write all log messages to the file `log.txt` in

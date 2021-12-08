@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 
 	import flash.display.DisplayObject;
@@ -87,8 +88,6 @@ package actionScripts.plugins.as3project
 	import actionScripts.plugins.help.view.VisualEditorView;
     public class CreateProject
 	{
-		public static const EVENT_SAVE_PROJECT_CREATION_FOLDERS:String = "event-save-project-creation-folders";
-
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
 		
 		private var newProjectWithExistingSourcePathSetting:NewProjectSourcePathListSetting;
@@ -692,7 +691,8 @@ package actionScripts.plugins.as3project
 			// don't save this if from a open project call
 			if (!isOpenProjectCall && !isProjectFromExistingSource)
 			{
-				dispatcher.dispatchEvent(new Event(EVENT_SAVE_PROJECT_CREATION_FOLDERS));
+				model.lastSelectedProjectPath = tmpParent.fileBridge.nativePath;
+				dispatcher.dispatchEvent(new Event(ProjectEvent.EVENT_SAVE_PROJECT_CREATION_FOLDERS));
 			}
 
             project = createFileSystemBeforeSave(project, view.exportProject as AS3ProjectVO);

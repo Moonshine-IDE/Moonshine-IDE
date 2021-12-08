@@ -126,6 +126,7 @@
 						 paddingLeft="8"/>
 				<s:Label id="version"
 						 paddingLeft="8"/>
+				<s:Label text="Running on: {Capabilities.os}" paddingLeft="8" fontSize="11"/>
 			</s:VGroup>
 			<s:Spacer width="100%"/>
 			<s:BusyIndicator id="busy"/>

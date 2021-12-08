@@ -245,7 +245,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		public function cancelUpdate() : void {
 			
 			if ( currentState == DOWNLOADING ) {
-				urlStream_completeHandler( null );
+				urlStream_ioErrorHandler(null, false);
 			}
 		}
 		
@@ -369,7 +369,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			fileStream.close();
 		}
 		
-		protected function urlStream_ioErrorHandler(event:IOErrorEvent):void
+		protected function urlStream_ioErrorHandler(event:IOErrorEvent, displayError:Boolean=true):void
 		{
 			fileStream.removeEventListener(Event.CLOSE, fileStream_closeHandler);
 			fileStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
@@ -380,9 +380,12 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			urlStream.removeEventListener(Event.COMPLETE, urlStream_completeHandler);
 			urlStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
 			urlStream.close();
-			
-			dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false, 
-				"Error downloading update file: " + event.text, UpdaterErrorCodes.ERROR_9005, event.errorID));
+
+			if (displayError)
+			{
+				dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false,
+						"Error downloading update file: " + event.text, UpdaterErrorCodes.ERROR_9005, event.errorID));
+			}
 		}
 		
 		/**

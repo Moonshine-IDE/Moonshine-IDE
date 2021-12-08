@@ -194,14 +194,14 @@
 					mappedPath = VersionControlUtils.LAST_CHECKOUT_BROWSED_LOCATION;
 					isPathMapped = true;
 				}
-				else if (model.fileCore.isBrowsed)
-				{
-					mappedPath = model.fileCore.getFile.nativePath;
-					isPathMapped = true;
-				}
 				else if (model.lastSelectedProjectPath)
 				{
 					mappedPath = model.lastSelectedProjectPath;
+					isPathMapped = true;
+				}
+				else
+				{
+					mappedPath = model.fileCore.documentsDirectory.nativePath;
 					isPathMapped = true;
 				}
 				

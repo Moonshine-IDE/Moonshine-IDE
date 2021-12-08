@@ -54,11 +54,12 @@ export async function createPathMappingForActiveTextEditor(loadedScriptsProvider
 
 	if (pathMapping) {
 
-		addPathMappingToLaunchConfig(launchConfigReference, pathMapping.url, pathMapping.path);
+		const success = await addPathMappingToLaunchConfig(launchConfigReference, pathMapping.url, pathMapping.path);
 
-		await showLaunchConfig(launchConfigReference.workspaceFolder);
-
-		vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
+		if (success) {
+			await showLaunchConfig(launchConfigReference.workspaceFolder);
+			vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
+		}
 
 	} else {
 		const vscFilename = editor.document.uri.path.split('/').pop()!;
@@ -103,11 +104,12 @@ export async function createPathMappingForPath(
 
 	if (yesOrNo === 'Yes') {
 
-		addPathMappingToLaunchConfig(launchConfigReference, pathMapping.url, pathMapping.path);
+		const success = await addPathMappingToLaunchConfig(launchConfigReference, pathMapping.url, pathMapping.path);
 
-		await showLaunchConfig(launchConfigReference.workspaceFolder);
-
-		vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
+		if (success) {
+			await showLaunchConfig(launchConfigReference.workspaceFolder);
+			vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
+		}
 	}
 }
 
@@ -263,7 +265,7 @@ function vscodePathToUri(path: string): vscode.Uri {
 	}
 }
 
-function vscodeUriToPath(uri: vscode.Uri): string {
+export function vscodeUriToPath(uri: vscode.Uri): string {
 	return (uri.scheme === 'file') ? uri.fsPath : uri.toString();
 }
 

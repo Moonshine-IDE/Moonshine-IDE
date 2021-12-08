@@ -28,6 +28,7 @@ package actionScripts.utils
 	import mx.collections.IList;
 	import mx.collections.Sort;
 	import mx.collections.SortField;
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
 	import mx.events.CloseEvent;
@@ -35,7 +36,6 @@ package actionScripts.utils
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
 	import mx.utils.UIDUtil;
-	import mx.controls.Alert;
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
@@ -307,6 +307,22 @@ package actionScripts.utils
 		}
 
 		/**
+		 * Returns project if given path match any project's path
+		 */
+		public static function getProjectByAnyFilePath(value:String):ProjectVO
+		{
+			for each (var project:ProjectVO in model.projects)
+			{
+				if (value.toLowerCase().indexOf(project.folderLocation.fileBridge.nativePath.toLowerCase()) != -1)
+				{
+					return project;
+				}
+			}
+
+			return null;
+		}
+
+		/**
 		 * Returns project based on its name
 		 */
 		public static function getProjectByName(projectName:String):ProjectVO
@@ -347,10 +363,22 @@ package actionScripts.utils
 		}
 
 		/**
+		 * Returns path reference separated with
+		 * file separator
+		 */
+		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
+		{
+			var path:String = getPathStringByProjectPath(classPaths, filePath, fileWrapper, fileLocation, appendProjectNameAsPrefix);
+			var pattern:RegExp = new RegExp(ConstantsCoreVO.IS_MACOS ? model.fileCore.separator : "\\" + model.fileCore.separator, "g");
+			path = path.replace(pattern, ".");
+			return path;
+		}
+
+		/**
 		 * Returns dotted package references
 		 * against a project path
 		 */
-		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
+		public static function getPathStringByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
 		{
 			if (fileWrapper)
 			{
@@ -378,9 +406,9 @@ package actionScripts.utils
 			//filePath = filePath.replace(projectPath, "");
 			if (appendProjectNameAsPrefix && projectPathSplit)
 			{
-				return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(".");
+				return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(model.fileCore.separator);
 			}
-			return filePath.split(separator).join(".");
+			return filePath.split(separator).join(model.fileCore.separator);
 		}
 		
 		/**
@@ -399,7 +427,9 @@ package actionScripts.utils
 					{
 						return child;
 					}
-					if (child.children && child.children.length > 0) return findFileWrapperAgainstFileLocation(child, target); 	
+					if (child.children) {
+						return findFileWrapperAgainstFileLocation(child, target);
+					}
 				}
 			}
 			return current;

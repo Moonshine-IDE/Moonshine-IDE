@@ -83,12 +83,17 @@ export class ThreadCoordinator extends EventEmitter {
 	constructor(
 		private threadId: number,
 		private threadName: string,
+		isPaused: boolean,
 		private threadActor: IThreadActorProxy,
 		private consoleActor: ConsoleActorProxy,
 		private pauseCoordinator: ThreadPauseCoordinator,
 		private prepareResume: () => Promise<void>
 	) {
 		super();
+
+		const state = isPaused ? 'paused' : 'running';
+		this.threadState = state;
+		this._threadTarget = state;
 
 		threadActor.onPaused((event) => {
 

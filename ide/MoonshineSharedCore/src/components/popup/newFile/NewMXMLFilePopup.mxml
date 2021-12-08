@@ -150,7 +150,7 @@
 	
 	        protected function onTreeItemClicked(event:ListEvent):void
 	        {
-	            txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+	            txtDestination.text = UtilsCore.getPathStringByProjectPath(
 	                    Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
 	                    tree.selectedItem.nativePath);
 	
@@ -167,9 +167,11 @@
 	            refreshTemplatesBasedOnDropDownList();
 	
 	            minHeight = height;
-	            if(folderLocation)
+	            if (wrapperBelongToProject)
 	            {
-	                txtDestination.text = wrapperBelongToProject.projectName;
+					txtDestination.text = UtilsCore.getPathStringByProjectPath(
+							Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+							wrapperOfFolderLocation.nativePath);
 	                txtFileName.setFocus();
 	            }
 	
