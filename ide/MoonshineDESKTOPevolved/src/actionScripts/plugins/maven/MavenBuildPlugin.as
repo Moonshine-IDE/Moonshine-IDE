@@ -1,5 +1,7 @@
 package actionScripts.plugins.maven
 {
+    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+
     import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
@@ -12,7 +14,9 @@ package actionScripts.plugins.maven
     import actionScripts.events.ShowSettingsEvent;
     import actionScripts.events.StatusBarEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.interfaces.IJavaProject;
     import actionScripts.plugin.build.MavenBuildStatus;
+    import actionScripts.plugin.java.javaproject.vo.JavaTypes;
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.AbstractSetting;
     import actionScripts.plugin.settings.vo.ISetting;
@@ -23,6 +27,7 @@ package actionScripts.plugins.maven
     import actionScripts.valueObjects.ComponentTypes;
     import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
 
@@ -116,6 +121,7 @@ package actionScripts.plugins.maven
         {
             super.activate();
 
+           // dispatcher.addEventListener(MavenBuildEvent.INSTALL_MAVEN_BUILD, startConsoleBuildHandlerInstall);
             dispatcher.addEventListener(MavenBuildEvent.START_MAVEN_BUILD, startConsoleBuildHandler);
             dispatcher.addEventListener(MavenBuildEvent.STOP_MAVEN_BUILD, stopConsoleBuildHandler);
         }
@@ -123,7 +129,7 @@ package actionScripts.plugins.maven
         override public function deactivate():void
         {
             super.deactivate();
-
+           // dispatcher.removeEventListener(MavenBuildEvent.INSTALL_MAVEN_BUILD, startConsoleBuildHandlerInstall);
             dispatcher.removeEventListener(MavenBuildEvent.START_MAVEN_BUILD, startConsoleBuildHandler);
             dispatcher.removeEventListener(MavenBuildEvent.STOP_MAVEN_BUILD, stopConsoleBuildHandler);
         }
@@ -137,7 +143,7 @@ package actionScripts.plugins.maven
 			}
 		}
 
-        override public function start(args:Vector.<String>, buildDirectory:*):void
+        override public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
         {
             if (nativeProcess.running && running)
             {
@@ -154,8 +160,30 @@ package actionScripts.plugins.maven
             }
 
             warning("Starting Maven build...");
+			
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+            if ((model.activeProject is IJavaProject) &&
+                    (model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8)
+            {
+                envCustomJava.jdkPath = model.java8Path.fileBridge.nativePath;
+            }
+            else if ((model.activeProject is AS3ProjectVO) &&
+                    (model.activeProject as AS3ProjectVO).isDominoVisualEditorProject)
+            {
+                envCustomJava.jdkPath = model.java8Path.fileBridge.nativePath;
+            }
+            else if (model.javaPathForTypeAhead)
+            {
+               envCustomJava.jdkPath = model.javaPathForTypeAhead.fileBridge.nativePath;
+            }
+            else
+            {
+                error("Invalid path to Java Development Kit.");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+                return;
+            }
 
-            super.start(args, buildDirectory);
+            super.start(args, buildDirectory, envCustomJava);
             status = MavenBuildStatus.STARTED;
 
             print("Maven path: %s", mavenPath);
@@ -201,6 +229,13 @@ package actionScripts.plugins.maven
                 return;
             }
 			
+			if (!ConsoleBuildPluginBase.checkRequireJava())
+			{
+				clearOutput();
+				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
+				return;
+			}
+			
 			checkProjectForInvalidPaths(model.activeProject);
 			if (isProjectHasInvalidPaths)
 			{
@@ -235,6 +270,20 @@ package actionScripts.plugins.maven
 
             prepareStart(this.buildId, preArguments, arguments, buildDirectory);
         }
+
+        // public function startConsoleBuildHandlerInstall (event:Event):void
+        // {
+        //     super.startConsoleBuildHandler(event);
+
+		// 	this.isProjectHasInvalidPaths = false;
+        //     this.status = 0;
+        //     this.buildId = this.getBuildId(event);
+        //     var preArguments:Array =this.getPreCommandLine(event);
+        //     var arguments:Array = ["clean install"];
+        //     var buildDirectory:FileLocation = this.getBuildDirectory(event);
+
+        //     prepareStart(this.buildId, preArguments, arguments, buildDirectory);
+        // }
 
         override protected function stopConsoleBuildHandler(event:Event):void
         {

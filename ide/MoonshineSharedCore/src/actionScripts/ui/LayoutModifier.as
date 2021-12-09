@@ -22,9 +22,9 @@ package actionScripts.ui
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.Dictionary;
-
+	
 	import mx.core.FlexGlobals;
-
+	
 	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.interfaces.IViewWithTitle;
@@ -33,7 +33,7 @@ package actionScripts.ui
 	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-
+	
 	import components.views.project.TreeView;
 
 	public class LayoutModifier
@@ -57,6 +57,7 @@ package actionScripts.ui
 		private static var applicationSize:String;
 		private static var isTourDeOnceOpened: Boolean;
 		private static var isAS3DocOnceOpened: Boolean;
+		private static var isProblemOnceOpened:Boolean;
 		private static var isSidebarCreated:Boolean;
 		private static var isProjectPanelCreated:Boolean;
 		private static var projectPanelViews:Array = [];
@@ -72,16 +73,11 @@ package actionScripts.ui
 			if (value.data.hasOwnProperty(PROJECT_PANEL_CHILDREN)) projectPanelChildren = value.data[PROJECT_PANEL_CHILDREN];
 			
 			if (isAppMaximized) FlexGlobals.topLevelApplication.stage.nativeWindow.maximize();
-			else if (applicationSize)
-			{
-				var tmpStage:Object = FlexGlobals.topLevelApplication.stage;
-				var widthHeight:Array = applicationSize.split(":");
-				if (tmpStage.nativeWindow.width != widthHeight[0] || tmpStage.nativeWindow.height != widthHeight[1])
-				{
-					model.flexCore.reAdjustApplicationSize(Number(widthHeight[0]), Number(widthHeight[1]));
-				}
-			}
+			else if (applicationSize) reAdjustApplicationSize();
+
 			if (sidebarWidth != -1) model.mainView.sidebar.width = (sidebarWidth >= 0) ? sidebarWidth : 0;
+
+			attachProjectPanelSections();
 		}
 		
 		public static function attachSidebarSections(treeView:TreeView):void
@@ -177,7 +173,13 @@ package actionScripts.ui
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:SIDEBAR_CHILDREN, value:ordering}));
 			
 			// saving application window width height
-			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:MAIN_WINDOW_WIDTH_HEIGHT, value:FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height}));
+			// if only its not maximized; else it should be null
+			// to restore to default size if not-maximized
+			applicationSize = isAppMaximized ? null : FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height;
+			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {
+				label:MAIN_WINDOW_WIDTH_HEIGHT,
+				value:applicationSize
+			}));
 		}
 		
 		public static function addToSidebar(section:IPanelWindow, event:Event = null):void
@@ -241,6 +243,22 @@ package actionScripts.ui
 			}
 		}
 
+		private static function reAdjustApplicationSize():void
+		{
+			if (!applicationSize)
+			{
+				model.flexCore.reAdjustApplicationSize();
+				return;
+			}
+
+			var tmpStage:Object = FlexGlobals.topLevelApplication.stage;
+			var widthHeight:Array = applicationSize.split(":");
+			if (tmpStage.nativeWindow.width != widthHeight[0] || tmpStage.nativeWindow.height != widthHeight[1])
+			{
+				model.flexCore.reAdjustApplicationSize(Number(widthHeight[0]), Number(widthHeight[1]));
+			}
+		}
+
         private static function saveLastProjectPanelState():void
         {
 			// saving sidebar last state
@@ -258,6 +276,7 @@ package actionScripts.ui
 					{
 						case "ProblemsView":
 							dispatcher.dispatchEvent(new GeneralEvent(ProblemsPlugin.EVENT_PROBLEMS));
+							isProblemOnceOpened = true;
 							break;
 					}
 				}
@@ -265,13 +284,19 @@ package actionScripts.ui
 				isProjectPanelCreated = true;
 				return;
 			}
+
+			// if starts for the first time
+			if (!isProblemOnceOpened)
+			{
+				dispatcher.dispatchEvent(new GeneralEvent(ProblemsPlugin.EVENT_PROBLEMS));
+				isProblemOnceOpened = true;
+			}
 			
 			projectPanelChildren = null;
 			isProjectPanelCreated = true;
 		}
 		
 		private static var _isProjectPanelCollapsed:Boolean;
-		
 		public static function get isProjectPanelCollapsed():Boolean
 		{
 			return _isProjectPanelCollapsed;
@@ -283,7 +308,6 @@ package actionScripts.ui
 		}
 		
 		private static var _projectPanelHeight:int = 165;
-		
 		public static function get projectPanelHeight():int
 		{
 			return _projectPanelHeight;
@@ -295,7 +319,6 @@ package actionScripts.ui
 		}
 		
 		private static var _sidebarWidth:int = -1;
-		
 		public static function get sidebarWidth():int
 		{
 			return _sidebarWidth;
@@ -307,7 +330,6 @@ package actionScripts.ui
 		}
 		
 		private static var _isAppMaximized:Boolean;
-		
 		public static function get isAppMaximized():Boolean
 		{
 			return _isAppMaximized;
@@ -316,6 +338,21 @@ package actionScripts.ui
 		{
 			_isAppMaximized = value;
 			dispatcher.dispatchEvent(new GeneralEvent(SAVE_LAYOUT_CHANGE_EVENT, {label:IS_MAIN_WINDOW_MAXIMIZED, value:value}));
+			if (!_isAppMaximized) reAdjustApplicationSize();
+		}
+		
+		private static var _isMinimized:Boolean;
+		public static function get isMinimized():Boolean
+		{
+			return _isMinimized;
+		}
+		public static function set isMinimized(value:Boolean):void
+		{
+			_isMinimized = value;
+			if (_isMinimized && !_isAppMaximized)
+			{
+				applicationSize = FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height;
+			}
 		}
 	}
 }

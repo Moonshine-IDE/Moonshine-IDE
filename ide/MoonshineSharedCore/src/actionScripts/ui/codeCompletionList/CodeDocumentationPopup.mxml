@@ -4,7 +4,7 @@
                skinClass="actionScripts.ui.codeCompletionList.CodeDocumentationPopupSkin">
     <s:Label text="{data.documentation}" left="10" right="15" top="15" bottom="10" lineBreak="toFit"/>
     <fx:Script><![CDATA[
-        import actionScripts.valueObjects.CompletionItem;
+        import moonshine.lsp.CompletionItem;
 
         private var _data:CompletionItem;
 

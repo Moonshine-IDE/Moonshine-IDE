@@ -32,6 +32,7 @@ package actionScripts.plugins.versionControl.event
 		public static const CLONE_CHECKOUT_COMPLETED:String = "cloneCheckoutCompleted";
 		public static const RESTORE_DEFAULT_REPOSITORIES:String = "restoreDefaultRepositories";
 		public static const OSX_XCODE_PERMISSION_GIVEN:String = "osxXcodePermissionGiven";
+		public static const REPOSITORY_AUTH_CANCELLED:String = "repositoryAuthenticationProcessCancelled";
 		
 		public var value:Object;
 		

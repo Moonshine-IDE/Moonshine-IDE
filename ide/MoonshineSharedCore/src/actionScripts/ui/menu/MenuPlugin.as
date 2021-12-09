@@ -54,7 +54,7 @@ package actionScripts.ui.menu
 	import actionScripts.valueObjects.KeyboardShortcut;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-
+	import mx.controls.Alert;
 	// This class is a singleton
 	public class MenuPlugin extends PluginBase implements ISettingsProvider
 	{
@@ -215,7 +215,7 @@ package actionScripts.ui.menu
 				dispatcher.addEventListener(CHANGE_MENU_MAC_NO_MENU_STATE, onMacNoMenuStateChange);
 				dispatcher.addEventListener(CHANGE_MENU_MAC_ENABLE_STATE, onMacEnableStateChange);
 				dispatcher.addEventListener(CHANGE_GIT_CLONE_PERMISSION_LABEL, onGitClonePermissionChange);
-				dispatcher.addEventListener(CHANGE_SVN_CHECKOUT_PERMISSION_LABEL, onSVNCheckoutPermissionChange);
+				//dispatcher.addEventListener(CHANGE_SVN_CHECKOUT_PERMISSION_LABEL, onSVNCheckoutPermissionChange);
 			}
 
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
@@ -601,10 +601,16 @@ package actionScripts.ui.menu
 		private function recentFilesListUpdatedHandler(event:Event):void
 		{
 			var menu:Object = getMenuObject();
+			if(menu==null){
+				Alert.show("meau is null");
+			}
 			var subItemsLength:int = -1;
 			if (buildingNativeMenu)
-			{
-				subItemsLength = menu.items[1].submenu.items[5].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+			{	
+				if(menu.items[1]){
+					if(menu.items[1].submenu.items[5])
+					subItemsLength = menu.items[1].submenu.items[5].submenu.items.length; // top-level menus, i.e. Moonshine, File etc.
+				}
 			}
 			else
 			{
@@ -691,6 +697,23 @@ package actionScripts.ui.menu
 			// update menus for VE project
 			disableMenuOptions(lastSelectedProjectBeforeMacDisableStateChange);
 		}
+
+		private function removeMacDefaultFullScreen():void
+		{
+			var menu:Object = getMenuObject();
+			if (!menu) return;
+
+			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
+			var subItemsInItemOfTopMenu:Array = itemsInTopMenu[3].submenu.items as Array;
+			for (var i:int = 0; i < subItemsInItemOfTopMenu.length; i++)
+			{
+				if (subItemsInItemOfTopMenu[i].label == "Enter Full Screen")
+				{
+					subItemsInItemOfTopMenu.splice(i, 1);
+					return;
+				}
+			}
+		}
 		
 		private function onGitClonePermissionChange(event:Event):void
 		{
@@ -702,16 +725,6 @@ package actionScripts.ui.menu
 			subItemsInItemOfTopMenu.label = UtilsCore.isGitPresent() ? "Manage Repositories" : "Grant Permission";
 		}
 		
-		private function onSVNCheckoutPermissionChange(event:Event):void
-		{
-			var menu:Object = getMenuObject();
-			if (!menu) return;
-
-			var itemsInTopMenu:Object = menu.items; // top-level menus, i.e. Moonshine, File etc.
-			var subItemsInItemOfTopMenu:Object = itemsInTopMenu[6].submenu.items[0];
-			subItemsInItemOfTopMenu.label = UtilsCore.isSVNPresent() ? "Manage Repositories" : "Grant Permission";
-		}
-
 		protected function createNewMenu():*
 		{
 			return buildingNativeMenu ? new CustomNativeMenu() : new CustomMenu();

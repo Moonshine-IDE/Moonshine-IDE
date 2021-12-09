@@ -26,6 +26,8 @@ package actionScripts.utils
     
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
+    import actionScripts.ui.IContentWindow;
+    import actionScripts.ui.IFileContentWindow;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectReferenceVO;
@@ -208,6 +210,18 @@ package actionScripts.utils
 
             saveProjectItem({name: fileName, path: filePath}, "name", "path", cookieName);
 		}
+		
+		public static function removeLocationOfEditorFile(editor:IContentWindow):void
+		{
+			if (!(editor is IFileContentWindow) || !(editor as IFileContentWindow).currentFile) return;
+			
+			var projectPath:String = ("projectPath" in editor) ? editor["projectPath"] : null;
+			removeLocationOfClosingProjectFile(
+				(editor as IFileContentWindow).currentFile.name,
+				(editor as IFileContentWindow).currentFile.fileBridge.nativePath,
+				projectPath
+			);
+		}
 
 		public static function removeLocationOfClosingProjectFile(fileName:String, filePath:String, projectPath:String):void
 		{
@@ -284,6 +298,7 @@ package actionScripts.utils
                                                   propertyNameKeyValue:String, cookieName:String):Boolean
 		{
 			var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            var itemsRemoved:Boolean = false;
 
             if (item && item.hasOwnProperty(propertyNameKeyValue) && item.hasOwnProperty(propertyNameKey))
             {
@@ -293,19 +308,20 @@ package actionScripts.utils
                 for (var i:int = 0; i < data[cookieName].length; i++)
                 {
                     var itemForRemove:Object = data[cookieName][i];
-                    var itemForRemoveProperty:String = itemForRemove[item[propertyNameKey]];
-                    var itemValue:String = item[propertyNameKeyValue];
-                    if (itemForRemove.hasOwnProperty(item[propertyNameKey]) &&
-                        itemForRemoveProperty == itemValue)
+                    if (itemForRemove.hasOwnProperty(item[propertyNameKey]))
                     {
                         data[cookieName].removeAt(i);
-                        cookie.flush();
-                        return true;
+                        itemsRemoved = true;
                     }
                 }
             }
 
-            return false;
+            if (itemsRemoved)
+            {
+                cookie.flush();
+            }
+
+            return itemsRemoved;
 		}
 
         private static function removeProjectLefovers(item:Object, propertyNameKeyValue:String):void

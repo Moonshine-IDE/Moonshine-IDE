@@ -20,7 +20,7 @@ package actionScripts.controllers
 {
     import actionScripts.events.RefreshTreeEvent;
 
-    import flash.display.DisplayObject;
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.Dictionary;
 	
@@ -114,15 +114,18 @@ package actionScripts.controllers
 		
 		private function onFileDeletionConfirmed(fw:FileWrapper):void
 		{
+			var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(fw);
 			var veSourceFile:FileLocation = null;
 			var tab:IContentWindow;
 			var ed:BasicTextEditor;
+			
+			project.projectFileDelete(fw);
 			
 			if (fw.file.fileBridge.isDirectory)
 			{
 				if (fw.file.fileBridge.exists) fw.file.fileBridge.deleteDirectory(true);
 				
-				veSourceFile = getVisualEditorSourceFile(fw);
+				veSourceFile = UtilsCore.getVisualEditorSourceFile(fw);
 				if (veSourceFile && veSourceFile.fileBridge.exists)
 				{
 					veSourceFile.fileBridge.deleteDirectory(true);
@@ -132,7 +135,7 @@ package actionScripts.controllers
 			{
 				if (fw.file.fileBridge.exists) fw.file.fileBridge.deleteFile();
 				
-				veSourceFile = getVisualEditorSourceFile(fw);
+				veSourceFile = UtilsCore.getVisualEditorSourceFile(fw);
 				if (veSourceFile && veSourceFile.fileBridge.exists)
 				{
 					veSourceFile.fileBridge.deleteFile();
@@ -288,21 +291,6 @@ package actionScripts.controllers
 			file = null;
 			treeViewHandler = null;
 			wrapper = null;
-		}
-
-		private function getVisualEditorSourceFile(fw:FileWrapper):FileLocation
-		{
-			var as3ProjectVO:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;
-			if (as3ProjectVO && as3ProjectVO.isVisualEditorProject)
-			{
-				var veSourcePathFile:String = fw.file.fileBridge.nativePath
-					.replace(as3ProjectVO.sourceFolder.fileBridge.nativePath,
-						as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath)
-					.replace(/.mxml$|.xhtml$/, ".xml");
-				return new FileLocation(veSourcePathFile);
-			}
-			
-			return null;
 		}
 	}
 }

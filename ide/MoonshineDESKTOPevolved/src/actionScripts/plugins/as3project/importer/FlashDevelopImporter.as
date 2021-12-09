@@ -16,6 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.importer
 {
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugin.project.ProjectTemplateType;
 	import actionScripts.utils.SerializeUtil;
 
@@ -86,6 +87,9 @@ package actionScripts.plugins.as3project.importer
 			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
 			parsePaths(data.moonshineResourcePaths["class"], project.resourcePaths, project, "path");
 			parsePaths(data.moonshineNativeExtensionPaths["class"], project.nativeExtensions, project, "path");
+			
+			project.flashModuleOptions.parse(data.modules);
+			
 			if (!project.buildOptions.additional) project.buildOptions.additional = "";
 			
 			if (project.hiddenPaths.length > 0 && project.projectFolder)
@@ -99,9 +103,17 @@ package actionScripts.plugins.as3project.importer
 			project.isTrustServerCertificateSVN = SerializeUtil.deserializeBoolean(data.trustSVNCertificate);
 
             project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
-            project.isPrimeFacesVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
+            project.isDominoVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isDominoVisualEditor);
+			if (project.isDominoVisualEditorProject)
+			{
+				project.jdkType = JavaTypes.JAVA_8;
+			}
+			
+			project.isPrimeFacesVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
 			project.isExportedToExistingSource = SerializeUtil.deserializeBoolean(data.options.option.@isExportedToExistingSource);
 			project.visualEditorExportPath = SerializeUtil.deserializeString(data.options.option.@visualEditorExportPath);
+			if (data.options.option.hasOwnProperty('@jdkType'))
+				project.jdkType = SerializeUtil.deserializeString(data.options.option.@jdkType);
 
 			if (project.targets.length > 0)
 			{

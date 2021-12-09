@@ -1,15 +1,16 @@
 'use strict';
+var call = require('../internals/function-call');
+var aCallable = require('../internals/a-callable');
 var anObject = require('../internals/an-object');
-var aFunction = require('../internals/a-function');
 
 // https://github.com/tc39/collection-methods
-module.exports = function (/* ...elements */) {
+module.exports = function deleteAll(/* ...elements */) {
   var collection = anObject(this);
-  var remover = aFunction(collection['delete']);
+  var remover = aCallable(collection['delete']);
   var allDeleted = true;
   var wasDeleted;
   for (var k = 0, len = arguments.length; k < len; k++) {
-    wasDeleted = remover.call(collection, arguments[k]);
+    wasDeleted = call(remover, collection, arguments[k]);
     allDeleted = allDeleted && wasDeleted;
   }
   return !!allDeleted;

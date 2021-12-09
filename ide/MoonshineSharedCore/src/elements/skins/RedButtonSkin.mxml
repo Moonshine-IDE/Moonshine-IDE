@@ -120,7 +120,6 @@
     	paddingTop="10" paddingBottom="9"
     	color="0xffffff"
     	useHandCursor="true"
-    	fontFamily="DejaVuSans"
     	text="{hostComponent.label}" /> 
  
 </s:SparkSkin >

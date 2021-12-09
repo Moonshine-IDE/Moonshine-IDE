@@ -18,6 +18,7 @@ A VS Code extension to debug web applications and extensions running in the [Moz
 ### Supported features
 
 * Pause [breakpoints](https://code.visualstudio.com/docs/editor/debugging#_breakpoints), including advanced [conditional](https://code.visualstudio.com/docs/editor/debugging#_conditional-breakpoints) and [inline](https://code.visualstudio.com/docs/editor/debugging#_inline-breakpoints) modes
+* Pause on object property changes with [Data breakpoints](https://code.visualstudio.com/docs/editor/debugging#_data-breakpoints)
 * Inject logging during debugging using [logpoints](https://code.visualstudio.com/docs/editor/debugging#_logpoints)
 * Debugging eval scripts, script tags, and scripts that are added dynamically and/or source mapped
 * *Variables* pane for inspecting and setting values
@@ -26,8 +27,6 @@ A VS Code extension to debug web applications and extensions running in the [Moz
 * Debugging Firefox extensions
 * Debugging Web Workers
 * Compatible with [remote development](https://code.visualstudio.com/docs/remote/remote-overview)
-* **🔥New:** Pause on object property changes with [Data breakpoints](https://code.visualstudio.com/docs/editor/debugging#_data-breakpoints) (🦊 Works with Firefox 70)
-* **🔥New:** Use VS Code's [new UI for column breakpoints](https://code.visualstudio.com/updates/v1_39#_improved-ui-for-column-breakpoints)
 
 ## Getting Started
 
@@ -130,6 +129,8 @@ Then close Firefox and start it from a terminal like this:
 __Windows__
 
 `"C:\Program Files\Mozilla Firefox\firefox.exe" -start-debugger-server`
+
+(This syntax is for a regular command prompt (cmd.exe), not PowerShell!)
 
 __OS X__
 
@@ -288,21 +289,31 @@ popup auto-hide" (`extension.firefox.enablePopupAutohide` / `disablePopupAutohid
   ```json
   "reloadOnChange": "${workspaceFolder}/lib/*.js"
   ```
+* `tabFilter`: Only attach to Firefox tabs with matching URLs. You can specify one or more URLs to
+  include and/or URLs to exclude and the URLs can contain `*` wildcards.
+  By default, a `tabFilter` is constructed from the `url` in your `launch` or `attach` configuration
+  by replacing the last path segment with `*`. For example, if your configuration contains
+  `"url": "http://localhost:3000/app/index.html"`, the default `tabFilter` will be
+  `"http://localhost:3000/app/*"`.
 * `clearConsoleOnReload`: Clear the debug console in VS Code when the page is reloaded in Firefox.
+* `tmpDir`: The path of the directory to use for temporary files
 * `profileDir`, `profile`: You can specify a Firefox profile directory or the name of a profile
   created with the Firefox profile manager. The extension will create a copy of this profile in the
   system's temporary directory and modify the settings in this copy to allow remote debugging.
-  You can also override these properties in your settings (see below).
+  You can also override these properties in your settings (see below). The default profile names
+  used by Firefox are `default`, `dev-edition-default` and `default-nightly` for the stable,
+  developer and nightly editions, respectively.
 * `keepProfileChanges`: Use the specified profile directly instead of creating a temporary copy.
   Since this profile will be permanently modified for debugging, you should only use this option
   with a dedicated debugging profile. You can also override this property in your settings (see below).
 * `port`: Firefox uses port 6000 for the debugger protocol by default. If you want to use a different
-  port, you can set it with this property.
+  port, you can set it with this property. You can also override this property in your settings
+  (see below).
 * `timeout`: The timeout in seconds for the adapter to connect to Firefox after launching it.
-* `firefoxExecutable`: The absolute path to the Firefox executable (`launch` configuration only).
-  If not specified, this extension will use the default Firefox installation path. It will look for
-  both regular and developer editions of Firefox; if both are available, it will use the developer
-  edition. You can also override this property in your settings (see below).
+* `firefoxExecutable`: The absolute path to the Firefox executable or the name of a Firefox edition
+  (`stable`, `developer` or `nightly`) to look for in its default installation path. If not specified,
+  this extension will look for both stable and developer editions of Firefox; if both are available,
+  it will use the developer edition. You can also override this property in your settings (see below).
 * `firefoxArgs`: An array of additional arguments used when launching Firefox (`launch` configuration only).
   You can also override this property in your settings (see below).
 * `host`: If you want to debug with Firefox running on a different machine, you can specify the 
@@ -324,6 +335,8 @@ popup auto-hide" (`extension.firefox.enablePopupAutohide` / `disablePopupAutohid
   breakpoint in an unmapped source during a debug session. You may want to turn this off if some
   of the sources in your project are loaded on-demand (e.g. if you create multiple bundles with
   webpack and some of these bundles are only loaded as needed).
+* `enableCRAWorkaround`: Enable a workaround for facebook/create-react-app#6074: Adding/removing
+  breakpoints doesn't work for sources that were changed after the dev-server was started
 
 ### Overriding configuration properties in your settings
 You can override some of the `launch.json` configuration properties in your user, workspace or
@@ -337,6 +350,7 @@ This setting                 | overrides this `launch.json` property
 `firefox.profileDir`         | `profileDir`
 `firefox.profile`            | `profile`
 `firefox.keepProfileChanges` | `keepProfileChanges`
+`firefox.port`               | `port`
 
 ### Diagnostic logging
 The following example for the `log` property will write all log messages to the file `log.txt` in

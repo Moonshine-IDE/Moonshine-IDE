@@ -28,6 +28,7 @@ package actionScripts.events
 		public var project:ProjectVO;
 		public var command:String;
 		public var arguments:Array;
+		public var result:Object;
 
 		public function ExecuteLanguageServerCommandEvent(type:String, project:ProjectVO, command:String, args:Array = null)
 		{
@@ -36,6 +37,5 @@ package actionScripts.events
 			this.arguments = args;
 			super(type, false, true);
 		}
-
 	}
 }

@@ -1,7 +1,7 @@
 {
   "name": "vscode-firefox-debug",
   "displayName": "Debugger for Firefox",
-  "version": "2.7.0",
+  "version": "2.9.5",
   "author": "Holger Benl <hbenl@evandor.de>",
   "publisher": "firefox-devtools",
   "description": "Debug your web application or browser extension in Firefox",
@@ -28,62 +28,61 @@
     "publish-npm": "npm run rebuild && cd dist && npm publish"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.8.3",
-    "chokidar": "^3.3.1",
-    "core-js": "^3.6.4",
-    "data-uri-to-buffer": "3.0.0",
-    "debounce": "^1.2.0",
-    "escape-string-regexp": "^2.0.0",
+    "@babel/polyfill": "^7.12.1",
+    "chokidar": "^3.5.2",
+    "core-js": "^3.19.1",
+    "data-uri-to-buffer": "3.0.1",
+    "debounce": "^1.2.1",
+    "escape-string-regexp": "^4.0.0",
     "file-uri-to-path": "^2.0.0",
     "file-url": "^3.0.0",
-    "firefox-profile": "^1.3.1",
-    "fs-extra": "^8.1.0",
+    "firefox-profile": "^4.2.2",
+    "fs-extra": "^10.0.0",
     "is-absolute-url": "^3.0.3",
     "minimatch": "^3.0.4",
     "source-map": "^0.7.3",
-    "strip-json-comments": "^3.0.1",
-    "uuid": "^3.4.0",
-    "vscode-debugadapter": "^1.38.0",
-    "vscode-uri": "^2.1.1"
+    "strip-json-comments": "^3.1.1",
+    "uuid": "^8.3.2",
+    "vscode-debugadapter": "^1.50.0",
+    "vscode-uri": "^3.0.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.8.4",
-    "@babel/plugin-proposal-class-properties": "^7.8.3",
-    "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
-    "@babel/preset-env": "^7.8.4",
-    "@babel/preset-typescript": "^7.8.3",
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.0",
+    "@babel/plugin-proposal-class-properties": "^7.16.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.16.0",
+    "@babel/preset-env": "^7.16.0",
+    "@babel/preset-typescript": "^7.16.0",
     "@gulp-sourcemaps/map-sources": "^1.0.0",
-    "@types/debounce": "^1.2.0",
-    "@types/fs-extra": "^8.0.1",
-    "@types/gulp": "^4.0.6",
-    "@types/gulp-concat": "^0.0.32",
-    "@types/gulp-rename": "^0.0.33",
-    "@types/gulp-sourcemaps": "^0.0.32",
-    "@types/gulp-uglify": "^3.0.6",
-    "@types/minimatch": "^3.0.3",
-    "@types/mocha": "^7.0.1",
-    "@types/node": "^10.17.15",
-    "@types/rimraf": "^2.0.3",
-    "@types/uuid": "^3.4.7",
+    "@types/debounce": "^1.2.1",
+    "@types/fs-extra": "^9.0.13",
+    "@types/gulp": "^4.0.9",
+    "@types/gulp-concat": "^0.0.33",
+    "@types/gulp-rename": "^2.0.1",
+    "@types/gulp-sourcemaps": "^0.0.35",
+    "@types/gulp-uglify": "^3.0.7",
+    "@types/minimatch": "^3.0.5",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^10.17.60",
+    "@types/rimraf": "^3.0.2",
+    "@types/uuid": "^8.3.1",
     "@types/vscode": "~1.40.0",
-    "@types/webpack": "^4.41.6",
-    "babel-loader": "^8.0.6",
-    "copy-webpack-plugin": "^5.1.1",
+    "babel-loader": "^8.2.3",
+    "copy-webpack-plugin": "^9.1.0",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-nop": "0.0.3",
     "gulp-rename": "^2.0.0",
-    "gulp-sourcemaps": "^2.6.5",
+    "gulp-sourcemaps": "^3.0.0",
     "gulp-uglify": "^3.0.2",
-    "mocha": "^7.0.1",
-    "nyc": "^15.0.0",
-    "ts-node": "^8.6.2",
-    "typescript": "~3.7.5",
-    "vsce": "^1.73.0",
-    "vscode-debugadapter-testsupport": "^1.40.1",
-    "webpack": "^4.41.6",
-    "webpack-cli": "^3.3.11"
+    "mocha": "^9.1.3",
+    "nyc": "^15.1.0",
+    "ts-node": "^10.4.0",
+    "typescript": "~4.4.4",
+    "vsce": "^2.3.0",
+    "vscode-debugadapter-testsupport": "^1.50.0",
+    "webpack": "^5.64.0",
+    "webpack-cli": "^4.9.1"
   },
   "babel": {
     "presets": [
@@ -271,6 +270,11 @@
           "description": "Use the specified profile directly instead of a temporary copy",
           "type": "boolean",
           "scope": "resource"
+        },
+        "firefox.port": {
+          "description": "The remote debugging port to use",
+          "type": "number",
+          "scope": "resource"
         }
       }
     },
@@ -384,6 +388,10 @@
               "firefoxExecutable": {
                 "type": "string",
                 "description": "Absolute path to the Firefox executable"
+              },
+              "tmpDir": {
+                "type": "string",
+                "description": "The path of the directory to use for temporary files"
               },
               "profileDir": {
                 "type": "string",
@@ -516,6 +524,42 @@
                   ]
                 }
               },
+              "tabFilter": {
+                "description": "Only attach to tabs whose URL matches this",
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "properties": {
+                  "include": {
+                    "description": "URLs to attach to",
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": "*"
+                  },
+                  "exclude": {
+                    "description": "URLs not to attach to",
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": []
+                  }
+                },
+                "default": "*"
+              },
               "showConsoleCallLocation": {
                 "type": "boolean",
                 "description": "Show the location of console API calls",
@@ -539,6 +583,11 @@
               "suggestPathMappingWizard": {
                 "type": "boolean",
                 "description": "Suggest using the Path Mapping Wizard when the user tries to set a breakpoint in an unmapped source during a debug session",
+                "default": true
+              },
+              "enableCRAWorkaround": {
+                "type": "boolean",
+                "description": "Enable a workaround for breakpoints not working in projects created using create-react-app",
                 "default": true
               },
               "log": {
@@ -630,6 +679,14 @@
                 "type": "string",
                 "description": "If the 'url' property is specified, this property specifies the workspace absolute path corresponding to the path of the url",
                 "default": "${workspaceFolder}"
+              },
+              "firefoxExecutable": {
+                "type": "string",
+                "description": "Absolute path to the Firefox executable"
+              },
+              "profileDir": {
+                "type": "string",
+                "description": "The path of the Firefox profile directory to use"
               },
               "port": {
                 "type": "number",
@@ -727,6 +784,42 @@
                   "${workspaceFolder}/node_modules/**/*"
                 ]
               },
+              "tabFilter": {
+                "description": "Only attach to tabs whose URL matches this",
+                "type": [
+                  "string",
+                  "array",
+                  "object"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "properties": {
+                  "include": {
+                    "description": "URLs to attach to",
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": "*"
+                  },
+                  "exclude": {
+                    "description": "URLs not to attach to",
+                    "type": [
+                      "string",
+                      "array"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": []
+                  }
+                },
+                "default": "*"
+              },
               "showConsoleCallLocation": {
                 "type": "boolean",
                 "description": "Show the location of console API calls",
@@ -750,6 +843,11 @@
               "suggestPathMappingWizard": {
                 "type": "boolean",
                 "description": "Suggest using the Path Mapping Wizard when the user tries to set a breakpoint in an unmapped source during a debug session",
+                "default": true
+              },
+              "enableCRAWorkaround": {
+                "type": "boolean",
+                "description": "Enable a workaround for breakpoints not working in projects created using create-react-app",
                 "default": true
               },
               "log": {

@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.groovy.grailsproject
 {
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.utils.UtilsCore;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
@@ -56,6 +59,7 @@ package actionScripts.plugin.groovy.grailsproject
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.Settings;
 	import actionScripts.utils.CommandLineUtil;
 
@@ -277,13 +281,24 @@ package actionScripts.plugin.groovy.grailsproject
 
 		private function grailsCreateApp():void
 		{
+			if (!model.flexCore.checkRequireJava(project))
+			{
+				clearOutput();
+				error("Error: "+ project.name +" configures to build with JDK version is not present.");
+				return;
+			}
+
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomJava.jdkPath = (project.jdkType == JavaTypes.JAVA_8) ?
+					model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+
 			var createAppCommand:Vector.<String> = new <String>[
 				EnvironmentExecPaths.GRAILS_ENVIRON_EXEC_PATH,
 				"create-app",
 				project.name,
 				"--inplace"
 			];
-			model.flexCore.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [CommandLineUtil.joinOptions(createAppCommand)]);
+			model.flexCore.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomJava, [CommandLineUtil.joinOptions(createAppCommand)]);
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.PROJECT_BUILD_STARTED,

@@ -61,6 +61,22 @@
 			<property name="certSignedMacOSKeychainPass" value="${APP_PROPERTIES.certSignedMacOSKeychainPass}" />
 			<property name="bundledFlexSDK" value="${APP_PROPERTIES.bundledFlexSDK}" />
 			<property name="bundledFlexJSSDK" value="${APP_PROPERTIES.bundledFlexJSSDK}" />
+			<condition property="HAXE_LIB_DIRECTORY" value="${APP_PROPERTIES.haxeLibDirectory}">
+				<isset property="APP_PROPERTIES.haxeLibDirectory"/>
+			</condition>
+			<!-- fall back to default Haxe install location, if available -->
+			<condition property="HAXE_LIB_DIRECTORY" value="c:/HaxeToolkit/haxe/haxelib.exe">
+				<and>
+					<os family="windows" />
+					<available file="c:/HaxeToolkit/haxe" />
+				</and>
+			</condition>
+			<condition property="HAXE_LIB_DIRECTORY" value="/usr/local/lib/haxe">
+				<and>
+					<os family="mac" />
+					<available file="/usr/local/lib/haxe/haxelib" />
+				</and>
+			</condition>
 			<property name="svn.revision" value="917"/>
 			<property name="IsDebug" value="false" />
 		</then>
@@ -80,6 +96,7 @@
 			<property name="certSignedMacOSKeychainPass" value="${CERT_OSX_KEYCHAIN_PASS}" />
 			<property name="bundledFlexSDK" value="${BUNDLED_FLEX_SDK}" />
 			<property name="bundledFlexJSSDK" value="${BUNDLED_FLEXJS_SDK}" />
+			<property name="HAXE_LIB_DIRECTORY" value="${HAXE_LIB}"/>
 			<property name="svn.revision" value="${svn.revision}" />
 			<property name="IsDebug" value="false" />
 		</else>
@@ -127,7 +144,12 @@
 	<property environment="env"/>
 	<!-- Check and set if Flex SDK already setup as environment variable -->
 	<propertycopy property="FLEX_HOME" from="env.FLEX_HOME" silent="true" override="${Is.FLEX_HOME.Not.Exists}"/>
+	<propertycopy property="SIGNTOOL_HOME" from="env.SIGNTOOL_HOME" silent="true"/>
+	<propertycopy property="NSIS_HOME" from="env.NSIS_HOME" silent="true"/>
 	<echo>SDK : ${FLEX_HOME}</echo>
+	<echo>SIGNTOOL: ${SIGNTOOL_HOME}</echo>
+	<echo>NSIS: ${NSIS_HOME}</echo>
+	<echo>Haxe: ${HAXE_LIB_DIRECTORY}</echo>
 	
     <!-- Path to your Flex SDK with AIR 3.1 overlaid -->
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
@@ -140,6 +162,7 @@
 	<property name="background_dir" value="../src/backgrounds"/>
     <property name="swfFilename" value="${debug_dir}/Moonshine.swf" />
 	<property name="LibraryMoonshineCore" value="../../MoonshineSharedCore"/>
+	<property name="LibraryGUICore" value="../../MoonshineGUICore"/>
 	<property name="LibraryHelperSharedCore" value="../../../../Moonshine-SDK-Installer/InstallerSharedCore"/>
 	<property name="applicationSourceDirectory" value="../src"/>
 	<property name="desktopMainSource" value="${applicationSourceDirectory}/MoonshineDESKTOP.mxml" />
@@ -187,6 +210,9 @@
 		 replaced with the individual locales -->
 	<property name="locale.path" value="${LibraryMoonshineCore}/src/locale/{locale}" />
 	
+	<tstamp>
+		<format property="timestamp.time" pattern="MM/dd/yyyy hh:mm aa"/>
+	</tstamp>
 	
 	<!--
 	//==========================================================================
@@ -260,18 +286,15 @@
 
 	<!-- Windows packaging/signing Task -->
 	<target name="CompileSWFWindowsSignedPackage" depends="CompileSWFOSX,CompileSWFWindows">
-		<echo>Signed Process Running</echo>
+		<echo># Signed Process Running - Preparing Bundle</echo>
 		<java jar="${adt_path}" fork="true" failonerror="true">
 			<arg line="-package" />
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${debug_dir}/${certSelfSigned}'" />
 	   		<arg line="-storepass '${certSelfSignedPassword}'" />
 			<arg line="-tsa 'http://timestamp.entrust.net/TSS/RFC3161sha2TS'" />
-	   		<arg line="-target native"/>
-	   		<arg line="-storetype pkcs12" />
-	   		<arg line="-keystore '${certSignedWindowsBinary}'" />
-	   		<arg line="-storepass '${certSignedWindowsBinaryPassword}'" />
-	   		<arg line="${desktopBinaryFilename}" />
+	   		<arg line="-target bundle"/>
+	   		<arg line="${windowsBundleFilename}" />
 	   		<arg line="'${desktopApplicationDescriptor}'" />
 	   		<arg line="'${swfFilename}'" />
 			<arg line="elements" />
@@ -281,6 +304,36 @@
 			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</java>
+		<echo># Signed Process Running - Signing Executable</echo>
+		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
+			<arg value="sign"/>
+			<arg value="/f"/>
+			<arg value="${certSignedWindowsBinary}"/>
+			<arg value="/p"/>
+			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="/tr"/>
+			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
+			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
+		</exec>
+		<echo># Signed Process Running - Praparing Installer</echo>
+		<exec executable="${NSIS_HOME}/makensis.exe" failonerror="true">
+			<arg value="/DVERSION=${BuildVersion}"/>
+			<arg value="/DINSTALLERNAME=${installerName}"/>
+			<arg value="/DAPPID=${applicationID}"/>
+			<arg value="/DTIMESTAMP=${timestamp.time}"/>
+			<arg value="nsis-build.nsi"/>
+		</exec>
+		<echo># Signed Process Running - Signing Installer: ${certSignedWindowsBinary}</echo>
+		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
+			<arg value="sign"/>
+			<arg value="/f"/>
+			<arg value="${certSignedWindowsBinary}"/>
+			<arg value="/p"/>
+			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="/tr"/>
+			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
+			<arg value="${deploy_dir}/${installerName}-installer.exe"/>
+		</exec>
 	 </target>
 	
 	<!-- Windows self-signed packaging initiator -->
@@ -361,7 +414,7 @@
 	
 	<!-- Compile .app to next use in .pkg building -->
 	<!--target name="compile app project" depends="compile dmg project"-->
-	<target name="compile app project" depends="CompileSWFOSX,CompileSWFWindows">
+	<target name="compile app project" depends="CompileSWFOSX,CompileSWFWindows,signItemsBeforePackaging">
 		<java jar="${adt_path}" fork="true" failonerror="true">
 			<arg line="-package" />
 			<arg line="-storetype pkcs12" />
@@ -482,6 +535,13 @@
 				<string>Owner</string>]]>
 				</replacevalue>
 			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 5</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 5</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
 		</replace>
 		<!-- Since its found impossible to call an ANT variable inside ![CDATA[ section to replace <cfBundleName> value
 			I need to make a conditional statement -->
@@ -491,25 +551,36 @@
 				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
 							<replacevalue><![CDATA[<string>Icon.icns</string>
+					<key>ITSAppUsesNonExemptEncryption</key><false/>
 					<key>CFBundleName</key>
 					<string>MoonshineDevelopment</string>
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>54.0</string>]]></replacevalue>
+					<string>60.0</string>]]></replacevalue>
 				</replace>
 			</then>
 			<else>
 				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
 							<replacevalue><![CDATA[<string>Icon.icns</string>
+					<key>ITSAppUsesNonExemptEncryption</key><false/>
 					<key>CFBundleName</key>
 					<string>Moonshine</string>
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>54.0</string>]]></replacevalue>
+					<string>60.0</string>]]></replacevalue>
 				</replace>
+			</else>			
+		</if>
+		<if>
+			<equals arg1="${IsDevelopmentBuild}" arg2="true"/>
+			<then>
+				<replaceregexp file="${desktopBinaryFilename}/Contents/Info.plist" match="macapp-identifier" replace="com.moonshine-ide.development" flags="g"/>
+			</then>
+			<else>
+				<replaceregexp file="${desktopBinaryFilename}/Contents/Info.plist" match="macapp-identifier" replace="com.moonshine-ide" flags="g"/>
 			</else>			
 		</if>
 		<exec executable="bash">
@@ -524,10 +595,6 @@
 			<arg value="-c"/>
 			<arg value="chmod -R 777 ${desktopBinaryFilename}"/>
 		</exec>
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/AdobeCP15.plugin/Contents/Info.plist"/>
-		</exec-->
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/Info.plist"/>
@@ -540,115 +607,169 @@
 			<arg value="-c"/>
 			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64"/>
 		</exec>
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/AdobeCP15.plugin/Contents/MacOS/AdobeCP'/>
-		</exec-->
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/AdobeCP15.plugin'/>
-		</exec-->
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin'/>
-		</exec-->
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/Resources/FlashPlayer-10.6.rsrc'/>
-		</exec-->
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/MacOS/FlashPlayer-10.6'/>
-		</exec>
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR_64\ Helper'/>
-		</exec-->
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR_64'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Adobe\ AIR'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Adobe\ AIR.vch'/>
-		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value='rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/A2712Enabler'/>
 		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/Flash\ Player.plugin/Contents/MacOS/FlashPlayer-10.6'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A/SecurityScopeBookmark'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" --deep ${desktopBinaryFilename}'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f --options runtime --timestamp -v -s "${certSignedDevIDKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Signing checks on Sandbox APP: spctl -vvv --assess --type exec ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='spctl -vvv --assess --type exec ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Hardened runtime checks on Sandbox APP: codesign --display --verbose ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign --display --verbose ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Timestamp check on Sandbox APP: codesign -dvv ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -dvv ${desktopBinaryFilename}'/>
+		</exec>
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}.pkg --sign "Developer ID Installer: Prominic.NET, Inc."'/>
+		</exec>
+		<echo>Installer check on Sandbox PKG: pkgutil --check-signature ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='pkgutil --check-signature ${deploy_dir}/${installerName}.pkg'/>
+		</exec>
+		
 
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/ExtendedAppEntryTemplate64'/>
-		</exec-->
-		<!--exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/adobecp.plugin'/>
-		</exec-->
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A/SecurityScopeBookmark'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
-		</exec>
-		<!-- @devsena: Duplicate a copy of the app file to be use in upcoming non-sandbox packaging process with different entitlement -->
-		<exec executable="bash" failonerror="true">
-			<arg value="-c"/>
-			<arg value='cp -rf ${desktopBinaryFilename} ${deploy_dir}/${installerName}_NonSandbox.app'/>
-		</exec>
-		<exec executable="bash">
-			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
-		</exec>
-		<exec executable="bash" failonerror="true">
-			<arg value="-c"/>
-			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}.pkg --sign "${certSignedMacOSKeychainInstallerName}"'/>
-		</exec>
-		<!-- @devsena: Delete the existing sandbox-entitlement app file -->
-		<exec executable="bash" failonerror="true">
-			<arg value="-c"/>
-			<arg value='rm -R ${desktopBinaryFilename}'/>
-		</exec>
-		<!-- @devsena: Rename the non-sandbox app file to regular app file name -->
-		<exec executable="bash" failonerror="true">
-			<arg value="-c"/>
-			<arg value='mv ${deploy_dir}/${installerName}_NonSandbox.app ${desktopBinaryFilename}'/>
-		</exec>
-		<!-- @devsena; We shall going to maintain a flag for non-App-Store version to determine when app starts, by adding certain value to a certain XML file and re-package as a "DONOTUSE" pkg -->
-		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml" token="$isAppStoreVersion" value="false" />
+		<!-- @devsena: Marking something in the app file to determine between App Store or non-App-Store build -->
+		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml">
+			<replacetoken><![CDATA[$isAppStoreVersion]]></replacetoken>
+			<replacevalue><![CDATA[false]]></replacevalue>
+		</replace>
 		<!-- @devsena: Avail non-sandbox entitlement to be use in upcoming process -->
 		<copy file="entitlement-non-sandbox.plist" tofile="${debug_dir}/entitlement.plist" overwrite="true"/>
 		<exec executable="bash">
 			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedMacOSKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
+			<arg value='codesign -f --options runtime --timestamp -v -s "${certSignedDevIDKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Signing checks on Non-Sandbox APP: spctl -vvv --assess --type exec ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='spctl -vvv --assess --type exec ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Hardened runtime checks: codesign --display --verbose ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign --display --verbose ${desktopBinaryFilename}'/>
+		</exec>
+		<echo>Timestamp check: codesign -dvv ${desktopBinaryFilename}</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -dvv ${desktopBinaryFilename}'/>
 		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
-			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}_DONOTUSE.pkg --sign "${certSignedMacOSKeychainInstallerName}"'/>
+			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}_DONOTUSE.pkg --sign "Developer ID Installer: Prominic.NET, Inc."'/>
 		</exec>
-		<!-- @devsena; Following part not suppose to go to source distribution. Referring the certificate as "${certSignedDevIDKeychainName}" always fails by unknown reason but if static name referencing -->
+		<!-- @devsena; Following part not suppose to go to source distribution. Referring the certificate as "${certSignedDevIDKeychainName}" always fails by unknown reason but if static name referencing  !-->
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='productsign --sign "Developer ID Installer: Prominic.NET, Inc." ${deploy_dir}/${installerName}_DONOTUSE.pkg ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg'/>
+		</exec>
+		<echo>Installer check on Non-Sandbox PKG: pkgutil --check-signature ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg</echo>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='pkgutil --check-signature ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg'/>
 		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='rm ${deploy_dir}/${installerName}_DONOTUSE.pkg'/>
 		</exec>
+	</target>
+	
+	<target name="signItemsBeforePackaging">
+		<mkdir dir="${debug_dir}/groovy-language-server-all" />
+		<copy file="elements/groovy-language-server/groovy-language-server-all.jar" todir="${debug_dir}/groovy-language-server-all" overwrite="true"/>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='unzip ${debug_dir}/groovy-language-server-all/groovy-language-server-all.jar -d ${debug_dir}/groovy-language-server-all'/>
+		</exec>
+		<delete file="${debug_dir}/groovy-language-server-all/groovy-language-server-all.jar"/>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${debug_dir}/groovy-language-server-all/META-INF/native/osx/libjansi.jnilib'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.10/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.11/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-0.12/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-10/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-11/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-12/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-4/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-5/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-6/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-7/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-8/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-9/deasync.node'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='cd ${debug_dir}/groovy-language-server-all;zip -r groovy-language-server-all.jar .'/>
+		</exec>
+		<delete file="elements/groovy-language-server/groovy-language-server-all.jar"/>
+		<copy file="${debug_dir}/groovy-language-server-all/groovy-language-server-all.jar" todir="elements/groovy-language-server" overwrite="true"/>
+		<delete dir="${debug_dir}/groovy-language-server-all"/>
 	</target>
 	
 	<!--
@@ -674,8 +795,12 @@
 		<if>
 			<equals arg1="${Is.Bundled.SDK.Available}" arg2="true"/>
 			<then>
-				<copy file="${bundledFlexSDK}" todir="${basedir}/defaultSDKs" overwrite="true"/>
-				<copy file="${bundledFlexJSSDK}" todir="${basedir}/defaultSDKs" overwrite="true"/>
+				<copy todir="${basedir}/defaultSDKs" overwrite="true">
+					<fileset dir="${bundledFlexSDK}"/>
+				</copy>
+				<copy todir="${basedir}/defaultSDKs" overwrite="true">
+					<fileset dir="${bundledFlexJSSDK}"/>
+				</copy>
 			</then>
 		</if>
 		
@@ -705,8 +830,8 @@
 			<fileset dir="${LibraryHelperSharedCore}/src/helperResources"/>
 		</copy>
 		
-		<antcall target="copyElementsFolder"/>
-
+			<antcall target="copyElementsFolder"/>
+		
 		<!-- Check if the self-signed certificate exists -->
 		<available file="${certSelfSigned}" property="certSelfSigned.exists" />
 		<if>
@@ -733,7 +858,6 @@
 				<if>
 					<equals arg1="${Is.Signed.Build}" arg2="true"/>
 					<then>
-						<copy file="${certSignedAIR}" todir="${debug_dir}" overwrite="true"/>
 						<copy file="${certSignedWindowsBinary}" todir="${debug_dir}" overwrite="true"/>
 						 <script language="javascript">
 						  	arr = project.getProperty('certSignedWindowsBinary').split('/');
@@ -747,13 +871,14 @@
 				    <replacevalue><![CDATA[]]></replacevalue>
 				</replace>
 				<property name="desktopBinaryFilename" value="${deploy_dir}/${installerName}.exe" />
+				<property name="windowsBundleFilename" value="${deploy_dir}/${installerName}EXE" />
 			</else>
 		</if>
-		<replaceregexp file="${desktopApplicationDescriptor}" match="filenameToBeReplacedByANT" replace="${executableName}" />
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;id&gt;[^&lt;]*&lt;/id&gt;" replace="&lt;id&gt;${applicationID}&lt;/id&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;filename&gt;[^&lt;]*&lt;/filename&gt;" replace="&lt;filename&gt;${executableName}&lt;/filename&gt;" flags="g"/>
 		<replaceregexp file="${desktopApplicationDescriptor}" match="nameToBeReplacedByANT" replace="${applicationName} ${BuildVersion}" encoding="utf-8" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="idToBeReplacedByANT" replace="${applicationID}" />
-		<replaceregexp file="${desktopApplicationDescriptor}" match="0.0.0" replace="${BuildVersion}" />
-		<replace file="${desktopApplicationDescriptor}" token="[This value will be overwritten by Flash Builder in the output app.xml]" value="${swfFilename}" />
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;versionNumber&gt;[^&lt;]*&lt;/versionNumber&gt;" replace="&lt;versionNumber&gt;${BuildVersion}&lt;/versionNumber&gt;" flags="g"/>
+		<replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content&gt;" flags="g"/>
 		<!-- More robust replacing technique than above one (commented) -->
         <!--replaceregexp file="${desktopApplicationDescriptor}" match="&lt;content&gt;[^&lt;]*&lt;/content&gt;" replace="&lt;content&gt;${swfFilename}&lt;/content>" /-->
 	</target>
@@ -781,12 +906,63 @@
 		</if>
 	</target>
 
+	<target name="InstallHaxeDependencies">
+		<echo>Installing Haxe Libraries</echo>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="feathersui"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="openfl"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="actuate"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="lime"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="markdown-openfl-textfield"/>
+			<arg value="--quiet"/>
+		</exec>
+	</target>
+	
+	<target name="CompileGUICore" depends="InstallHaxeDependencies">
+		<echo>Compiling GUI Core SWC</echo>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="run"/>
+			<arg value="openfl"/>
+			<arg value="build"/>
+			<arg value="flash"/>
+		</exec>
+	</target>
+
 	<!-- Compile SWF to build directory for desktop packaging -->
-	<target name="CompileSWFWindows" depends="createBuildInfoFile" unless="${isOSX}">
+	<target name="CompileSWFWindows" depends="createBuildInfoFile,CompileGUICore" unless="${isOSX}">
 		<echo>Compiling SWF Windows (Debug: ${IsDebug})</echo>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
-			   swf-version="39" 
+			   swf-version="44" 
 			   configname="air" 
 			   locale="${locale.list}" 
 			   fork="true" 
@@ -810,16 +986,19 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
+			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+				<include name="*.swc" />
+			</compiler.library-path>
 		</mxmlc>
 	</target>
-	<target name="CompileSWFOSX" depends="createBuildInfoFile" if="${isOSX}">
+	<target name="CompileSWFOSX" depends="createBuildInfoFile,CompileGUICore" if="${isOSX}">
 		<echo>Compiling SWF OSX (Debug: ${IsDebug})</echo>
 		<copy todir="${basedir}/assets" overwrite="true">
 			<fileset dir="${assets_dir}"/>
 		</copy>
 		<mxmlc file="${desktopMainSource}" 
 			   output="${swfFilename}" 
-			   swf-version="39" 
+			   swf-version="44" 
 			   configname="air" 
 			   locale="${locale.list}" 
 			   fork="true" 
@@ -843,6 +1022,9 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
+			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+				<include name="*.swc" />
+			</compiler.library-path>
 			<compiler.external-library-path dir="${debug_dir}" append="true">
 			   <include name="SSB.ane" />
 			</compiler.external-library-path>
@@ -850,7 +1032,7 @@
 	</target>
 	
 	<!-- Compile web SWF to build directory for desktop packaging -->
-	<target name="CompileWeb" depends="createBuildInfoFile">
+	<target name="CompileWeb" depends="createBuildInfoFile,CompileGUICore">
 		<copy todir="${debug_dir}/elements" overwrite="true">
 			<fileset dir="${LibraryMoonshineCore}/src/elements"/>
 		</copy>
@@ -879,6 +1061,9 @@
 			<compiler.debug>false</compiler.debug>
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
+			</compiler.library-path>
+			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+				<include name="*.swc" />
 			</compiler.library-path>
 		</mxmlc>
 	</target>
@@ -949,6 +1134,7 @@
 		<if>
 			<equals arg1="${keepDebugFiles}" arg2="false"/>
 			<then>
+				<delete dir="${deploy_dir}/MoonshineEXE" />
 				<delete dir="${debug_dir}" />
 				<delete dir="assets" />
 				<delete dir="elements" />

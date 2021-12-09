@@ -3,11 +3,15 @@
 		 xmlns:s="library://ns.adobe.com/flex/spark"
 		 width="500" minWidth="400" minHeight="100" autoLayout="true"
 		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:view="actionScripts.plugin.findreplace.view.*"
-		 creationComplete="txtName.setFocus()">
+		 creationComplete="onCreationCompletes()">
 	<fx:Script>
 		<![CDATA[
-			import mx.controls.Alert;
-			import mx.events.CloseEvent;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
+		import actionScripts.plugins.versionControl.event.VersionControlEvent;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+
+		import mx.events.CloseEvent;
 			import mx.validators.Validator;
 			
 			import actionScripts.events.GeneralEvent;
@@ -15,27 +19,72 @@
 			public static const VALIDATE_NAME:String = "validateName";
 			
 			[Bindable] public var isGitAvailable:Boolean;
-			
 			public var submitObject:Object;
-			
-			public function onNameValidatedByGit(value:String):void
+
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+
+			override protected function closeByCrossSign(event:Event):void
 			{
-				value = value.replace("\n", "");
-				var match:Array = value.match(/fatal: .*/);
-				if (match) 
+				dispatcher.removeEventListener(VersionControlEvent.REPOSITORY_AUTH_CANCELLED, onAuthRequestCancelled);
+				super.closeByCrossSign(event);
+			}
+			
+			public function onNameValidatedByGit(localValue:String, remoteValue:String, isMultipleOrigin:Boolean, originWhereBranchFound:String=null):void
+			{
+				// in case of branch exists value is null
+				if (!localValue && !remoteValue)
 				{
-					showError(value);
+					submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
+					dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 					return;
 				}
-				match = value.toLowerCase().match(/was unexpected at this time/);
-				if (match) 
+
+				btnCommit.enabled = true;
+
+				var isLocalExists:Boolean;
+				var isRemoteExists:Boolean;
+				if (localValue)
 				{
-					showError(value);
-					return;
+					localValue = localValue.replace("\n", "");
+					if (localValue.match(/fatal: .*/) || localValue.match(/Error: .*/) || localValue.toLowerCase().match(/was unexpected at this time/))
+					{
+						showError(localValue);
+						//dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, localValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
+					}
+					else
+					{
+						isLocalExists = true;
+					}
 				}
-				
-				lblMess.includeInLayout = lblMess.visible = false;
-				Alert.show("Branch name validated successfully:\n\""+ value +"\"\nDo you want to continue?", "Validation", Alert.YES|Alert.NO, this, onContinue);
+
+				if (remoteValue)
+				{
+					remoteValue = remoteValue.replace("\n", "");
+					if (remoteValue.match(/fatal: .*/) || localValue.match(/Error: .*/) || remoteValue.toLowerCase().match(/was unexpected at this time/))
+					{
+						showError(remoteValue);
+						//dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, remoteValue, false, false, ConsoleOutputEvent.TYPE_ERROR));
+					}
+					else
+					{
+						isRemoteExists = true;
+					}
+				}
+
+				if (isLocalExists || isRemoteExists)
+				{
+					var errorMessage:String = "";
+					if (isLocalExists)
+					{
+						errorMessage = "Local branch already exists.";
+					}
+					else if (isRemoteExists)
+					{
+						errorMessage = "Branch already exists in remote"+ (isMultipleOrigin ? ": "+ originWhereBranchFound : "") +".";
+					}
+
+					showError(errorMessage);
+				}
 				
 				/*
 				 * @local
@@ -43,21 +92,15 @@
 				function showError(value:String):void
 				{
 					lblMess.text = value;
-					lblMess.setStyle("color", 0xff0000);
+					lblMess.setStyle("color", 0xe32636);
 					lblMess.includeInLayout = lblMess.visible = true;
 				}
-				
-				/*
-				 * @local
-				 */
-				function onContinue(event:CloseEvent):void
-				{
-					if (event.detail == Alert.YES)
-					{
-						submitObject = {name:txtName.text, pushToRemote:cbPush.selected};
-						dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
-					}
-				}
+			}
+
+			private function onCreationCompletes():void
+			{
+				txtName.setFocus();
+				dispatcher.addEventListener(VersionControlEvent.REPOSITORY_AUTH_CANCELLED, onAuthRequestCancelled, false, 0, true);
 			}
 			
 			private function onSubmit():void
@@ -69,11 +112,17 @@
 				if (Validator.validateAll(tmpArr).length == 0)
 				{
 					lblMess.text = "Validating..";
-					lblMess.setStyle("color", 0xFFBF0F);
+					lblMess.setStyle("color", 0xF4F4F4);
 					lblMess.includeInLayout = lblMess.visible = true;
-					
+
+					btnCommit.enabled = false;
 					dispatchEvent(new GeneralEvent(VALIDATE_NAME, txtName.text));
 				}
+			}
+
+			private function onAuthRequestCancelled(event:VersionControlEvent):void
+			{
+				btnCommit.enabled = true;
 			}
 			
 		]]>
@@ -89,7 +138,7 @@
 							  prompt="New Branch Name" enter="onSubmit()"
 							  restrict="a-zA-Z0-9`!@#$%()_+={}';.\-\/\&amp;"/>
 		<s:CheckBox id="cbPush"
-					label="Push newly created branch to remote" selected="true"/>
+					label="Push newly created branch to remote"/>
 		<s:Label text="You need Git installed on your system to continue."
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>

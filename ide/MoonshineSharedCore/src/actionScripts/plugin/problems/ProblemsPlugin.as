@@ -19,18 +19,23 @@
 package actionScripts.plugin.problems
 {
 	import flash.events.Event;
-	
-	import mx.collections.ArrayCollection;
-	import mx.events.ListEvent;
-	
+
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.Diagnostic;
-	import actionScripts.plugin.problems.view.ProblemsView;
+	import actionScripts.valueObjects.ProjectVO;
+
+	import feathers.data.IFlatCollection;
+
+	import moonshine.lsp.Diagnostic;
+	import moonshine.plugin.problems.view.ProblemsView;
+	import moonshine.plugin.problems.vo.MoonshineDiagnostic;
+	import flash.utils.Dictionary;
+	import moonshine.plugin.problems.events.ProblemsViewEvent;
 
 	public class ProblemsPlugin extends PluginBase
 	{
@@ -38,21 +43,31 @@ package actionScripts.plugin.problems
 
 		public function ProblemsPlugin()
 		{
+			problemsView = new ProblemsView();
+			problemsViewWrapper = new ProblemsViewWrapper(problemsView);
+			problemsViewWrapper.percentWidth = 100;
+			problemsViewWrapper.percentHeight = 100;
+			problemsViewWrapper.minWidth = 0;
+			problemsViewWrapper.minHeight = 0;
 		}
 
 		override public function get name():String { return "Problems Plugin"; }
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays problems in source files."; }
 
-		private var problemsPanel:ProblemsView = new ProblemsView();
+		private var problemsViewWrapper:ProblemsViewWrapper;
+		private var problemsView:ProblemsView = new ProblemsView();
 		private var isStartupCall:Boolean = true;
 		private var isProblemsViewVisible:Boolean = false;
+		private var diagnosticsByProject:Dictionary = new Dictionary();
 
 		override public function activate():void
 		{
 			super.activate();
 			dispatcher.addEventListener(EVENT_PROBLEMS, handleProblemsShow);
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, handleLanguageServerClosed);
+			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 
 		override public function deactivate():void
@@ -60,19 +75,21 @@ package actionScripts.plugin.problems
 			super.deactivate();
 			dispatcher.removeEventListener(EVENT_PROBLEMS, handleProblemsShow);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
+			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, handleLanguageServerClosed);
+			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 
 		private function handleProblemsShow(event:Event):void
 		{
 			if (!isProblemsViewVisible)
             {
-                dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, problemsPanel));
+                dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, problemsViewWrapper));
                 initializeProblemsViewEventHandlers(event);
 				isProblemsViewVisible = true;
             }
 			else
 			{
-				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, problemsPanel));
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, problemsViewWrapper));
                 cleanupProblemsViewEventHandlers();
 				isProblemsViewVisible = false;
 			}
@@ -81,56 +98,132 @@ package actionScripts.plugin.problems
 		
 		private function initializeProblemsViewEventHandlers(event:Event):void
 		{
-			problemsPanel.problemsTree.addEventListener(ListEvent.ITEM_CLICK, handleProblemClick);
-			problemsPanel.addEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStage);
+			problemsView.addEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
+			problemsView.addEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
 		}
 
 		private function cleanupProblemsViewEventHandlers():void
 		{
-			problemsPanel.problemsTree.removeEventListener(ListEvent.ITEM_CLICK, handleProblemClick);
-			problemsPanel.removeEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStage);
+			problemsView.removeEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
+			problemsView.removeEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
 		}
 
-		private function problemsPanel_removedFromStage(event:Event):void
+		private function clearProblemsForProject(project:ProjectVO):void
+		{
+			if(!project)
+			{
+				return;
+			}
+			var diagnosticsByUri:Object = diagnosticsByProject[project];
+			delete diagnosticsByProject[project];
+			if(!diagnosticsByUri)
+			{
+				return;
+			}
+			var problems:IFlatCollection = problemsView.problems;
+			for(var uri:String in diagnosticsByUri)
+			{
+				var oldDiagnostics:Array = diagnosticsByUri[uri];
+				for each(var oldDiagnostic:MoonshineDiagnostic in oldDiagnostics)
+				{
+					problems.remove(oldDiagnostic);
+				}
+			}
+		}
+
+		private function problemsPanel_removedFromStageHandler(event:Event):void
 		{
             isProblemsViewVisible = false;
 		}
 
+		private function handleLanguageServerClosed(event:ProjectEvent):void
+		{
+			this.clearProblemsForProject(event.project);
+		}
+
+		private function handleRemoveProject(event:ProjectEvent):void
+		{
+			this.clearProblemsForProject(event.project);
+		}
+
 		private function handleShowDiagnostics(event:DiagnosticsEvent):void
 		{
-			var path:String = event.path;
-			var objectTree:ArrayCollection = problemsPanel.objectTree;
-			var itemCount:int = objectTree.length;
-			for(var i:int = itemCount - 1; i >= 0; i--)
+			var problems:IFlatCollection = problemsView.problems;
+			var project:ProjectVO = event.project;
+			var diagnosticsByUri:Object = diagnosticsByProject[project];
+			if(!diagnosticsByUri)
 			{
-				var item:Diagnostic = Diagnostic(objectTree.getItemAt(i));
-				if(item.path === path)
-				{
-					objectTree.removeItemAt(i);
-				}
+				diagnosticsByUri = {};
+				diagnosticsByProject[project] = diagnosticsByUri;
 			}
-			var diagnostics:Vector.<Diagnostic> = event.diagnostics;
-			itemCount = diagnostics.length;
-			for(i = 0; i < itemCount; i++)
+			var uri:String = event.uri;
+			if(uri in diagnosticsByUri)
 			{
-				item = diagnostics[i];
-				if(item.severity == Diagnostic.SEVERITY_HINT)
+				var oldDiagnostics:Array = diagnosticsByUri[uri];
+				for each(var oldDiagnostic:MoonshineDiagnostic in oldDiagnostics)
+				{
+					problems.remove(oldDiagnostic);
+				}
+				delete diagnosticsByUri[uri];
+			}
+			var newDiagnostics:Array = event.diagnostics;
+			newDiagnostics = newDiagnostics.map(function(diagnostic:Diagnostic, index:int, source:Array):MoonshineDiagnostic
+			{
+				var result:MoonshineDiagnostic = new MoonshineDiagnostic(new FileLocation(uri, true), project);
+				result.code = diagnostic.code;
+				result.message = diagnostic.message;
+				result.range = diagnostic.range;
+				result.severity = diagnostic.severity;
+				return result;
+			});
+			diagnosticsByUri[uri] = newDiagnostics;
+			for each(var newDiagnostic:MoonshineDiagnostic in newDiagnostics)
+			{
+				if(newDiagnostic.severity == 4 /* DiagnosticSeverity.Hint */)
 				{
 					//hints aren't meant to be displayed in the list of problems
 					continue;
 				}
-				objectTree.addItem(item);
+				problems.add(newDiagnostic);
 			}
 		}
 
-		private function handleProblemClick(event:ListEvent):void
+		private function problemsPanel_openProblemHandler(event:ProblemsViewEvent):void
 		{
-			var diagnostic:Diagnostic = Diagnostic(event.itemRenderer.data);
+			var diagnostic:MoonshineDiagnostic = event.problem;
 			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
-				[new FileLocation(diagnostic.path)], diagnostic.range.start.line);
+				[diagnostic.fileLocation], diagnostic.range.start.line);
 			openEvent.atChar = diagnostic.range.start.character;
 			dispatcher.dispatchEvent(openEvent);
 		}
 
+	}
+}
+
+
+import actionScripts.interfaces.IViewWithTitle;
+import actionScripts.ui.FeathersUIWrapper;
+
+import moonshine.plugin.problems.view.ProblemsView;
+
+class ProblemsViewWrapper extends FeathersUIWrapper implements IViewWithTitle {
+	public function ProblemsViewWrapper(feathersUIControl:ProblemsView)
+	{
+		super(feathersUIControl);
+	}
+
+	public function get title():String {
+		return ProblemsView(feathersUIControl).title;
+	}
+
+	override public function get className():String
+	{
+		//className may be used by LayoutModifier
+		return "ProblemsView";
+	}
+
+	override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+	{
+		super.updateDisplayList(unscaledWidth, unscaledHeight);
 	}
 }

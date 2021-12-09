@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>	
+	<meta title="File System Watcher Worker" package="com.moonshine-ide.FileSystemWatcherWorker" version="1.0.0" company="Prominic.NET"/>
+	<app main="FileSystemWatcherWorker" file="FileSystemWatcherWorker"/>
+
+	<source path="src"/>
+	
+	<haxelib name="openfl"/>
+
+	<template path="templates"/>
+</project>

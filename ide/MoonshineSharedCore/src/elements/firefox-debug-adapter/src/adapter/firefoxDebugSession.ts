@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import { Socket } from 'net';
 import { ChildProcess } from 'child_process';
 import * as chokidar from 'chokidar';
@@ -8,7 +9,7 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { InitializedEvent, TerminatedEvent, StoppedEvent, OutputEvent, ThreadEvent, ContinuedEvent, Event } from 'vscode-debugadapter';
 import { Log } from './util/log';
 import { AddonManager } from './adapter/addonManager';
-import { launchFirefox } from './firefox/launch';
+import { launchFirefox, openNewTab } from './firefox/launch';
 import { DebugConnection } from './firefox/connection';
 import { TabActorProxy } from './firefox/actorProxy/tab';
 import { WorkerActorProxy } from './firefox/actorProxy/worker';
@@ -32,10 +33,10 @@ import { ThreadPauseCoordinator } from './coordinator/threadPause';
 import { ParsedConfiguration } from './configuration';
 import { PathMapper } from './util/pathMapper';
 import { isWindowsPlatform as detectWindowsPlatform, delay } from '../common/util';
-import { tryRemoveRepeatedly } from './util/fs';
 import { connect, waitForSocket } from './util/net';
 import { NewSourceEventBody, ThreadStartedEventBody, ThreadExitedEventBody, RemoveSourcesEventBody } from '../common/customEvents';
 import { PreferenceActorProxy } from './firefox/actorProxy/preference';
+import { DeviceActorProxy } from './firefox/actorProxy/device';
 
 let log = Log.create('FirefoxDebugSession');
 let consoleActorLog = Log.create('ConsoleActor');
@@ -45,7 +46,7 @@ export class FirefoxDebugSession {
 	public readonly isWindowsPlatform = detectWindowsPlatform();
 	public readonly pathMapper: PathMapper;
 	public readonly breakpointsManager: BreakpointsManager;
-	public dataBreakpointsManager?: DataBreakpointsManager;
+	public readonly dataBreakpointsManager: DataBreakpointsManager;
 	public readonly skipFilesManager: SkipFilesManager;
 	public readonly addonManager?: AddonManager;
 	private reloadWatcher?: chokidar.FSWatcher;
@@ -57,7 +58,10 @@ export class FirefoxDebugSession {
 	private firefoxDebugSocketClosed = false;
 
 	public preferenceActor!: PreferenceActorProxy;
-	private addonsActor?: AddonsActorProxy;
+	public addonsActor?: AddonsActorProxy;
+	public deviceActor!: DeviceActorProxy;
+
+	private noPauseOnThreadActorAttach = false;
 
 	public readonly tabs = new Registry<TabActorProxy>();
 	public readonly threads = new Registry<ThreadAdapter>();
@@ -68,6 +72,7 @@ export class FirefoxDebugSession {
 	private exceptionBreakpoints: ExceptionBreakpoints = ExceptionBreakpoints.Uncaught;
 
 	private reloadTabs = false;
+	private attachToNextTab = false;
 
 	/**
 	 * The ID of the last thread that the user interacted with. This thread will be used when the
@@ -81,10 +86,12 @@ export class FirefoxDebugSession {
 	) {
 		this.pathMapper = new PathMapper(this.config.pathMappings, this.config.addon);
 		this.breakpointsManager = new BreakpointsManager(
-			this.threads, this.config.suggestPathMappingWizard, this.sendEvent);
+			this.threads, this.config.suggestPathMappingWizard, this.sendEvent
+		);
+		this.dataBreakpointsManager = new DataBreakpointsManager(this.variablesProviders);
 		this.skipFilesManager = new SkipFilesManager(this.config.filesToSkip, this.threads);
 		if (this.config.addon) {
-			this.addonManager = new AddonManager(this);
+			this.addonManager = new AddonManager(config.enableCRAWorkaround, this);
 		}
 	}
 
@@ -103,12 +110,23 @@ export class FirefoxDebugSession {
 				return;
 			}
 
-			this.firefoxDebugConnection = new DebugConnection(this.pathMapper, socket);
+			this.firefoxDebugConnection = new DebugConnection(this.config.enableCRAWorkaround, this.pathMapper, socket);
 			let rootActor = this.firefoxDebugConnection.rootActor;
 
 			// attach to all tabs, register the corresponding threads and inform VSCode about them
 			rootActor.onTabOpened(async ([tabActor, consoleActor]) => {
+
 				log.info(`Tab opened with url ${tabActor.url}`);
+
+				if (!this.attachToNextTab &&
+					(!this.config.tabFilter.include.some(tabFilter => tabFilter.test(tabActor.url)) ||
+					 this.config.tabFilter.exclude.some(tabFilter => tabFilter.test(tabActor.url)))) {
+					log.info('Not attaching to this tab');
+					return;
+				}
+
+				this.attachToNextTab = false;
+
 				let tabId = this.tabs.register(tabActor);
 				let threadAdapter = await this.attachTabOrAddon(tabActor, consoleActor, `Tab ${tabId}`, tabId);
 				if (threadAdapter !== undefined) {
@@ -128,17 +146,13 @@ export class FirefoxDebugSession {
 					return;
 				}
 
-				if (initialResponse.traits.watchpoints) {
-					this.dataBreakpointsManager = new DataBreakpointsManager(this.variablesProviders);
-				}
+				this.noPauseOnThreadActorAttach = !!initialResponse.traits.noPauseOnThreadActorAttach;
 
-				// early beta versions of Firefox 60 sometimes stop working when we fetch the tabs too early
-				await delay(200);
-
-				let actors = await rootActor.fetchTabs();
+				const actors = await rootActor.fetchRoot();
 
 				this.preferenceActor = actors.preference;
 				this.addonsActor = actors.addons;
+				this.deviceActor = actors.device;
 
 				if (this.addonManager) {
 					if (actors.addons) {
@@ -151,7 +165,17 @@ export class FirefoxDebugSession {
 					}
 				}
 
+				await rootActor.fetchTabs();
+
 				this.reloadTabs = false;
+
+				if (this.config.attach && (this.tabs.count === 0)) {
+					this.attachToNextTab = true;
+					if (!await openNewTab(this.config.attach, await this.deviceActor.getDescription())) {
+						reject('None of the tabs opened in Firefox match the given URL. If you specify the path to Firefox by setting "firefoxExecutable" in your attach configuration, a new tab for the given URL will be opened automatically.');
+						return;
+					}
+				}
 
 				resolve();
 			});
@@ -209,15 +233,6 @@ export class FirefoxDebugSession {
 	 * Terminate the debug session
 	 */
 	public async stop(): Promise<void> {
-
-		let detachPromises: Promise<void>[] = [];
-		if (!this.firefoxDebugSocketClosed) {
-			for (let [, threadAdapter] of this.threads) {
-				detachPromises.push(threadAdapter.detach());
-			}
-		}
-		await Promise.all(detachPromises);
-
 		await this.disconnectFirefoxAndCleanup();
 	}
 
@@ -300,6 +315,9 @@ export class FirefoxDebugSession {
 			}
 
 			socket = await waitForSocket(this.config.launch!.port, this.config.launch!.timeout);
+
+			// we ignore the tabFilter for the first tab after launching Firefox
+			this.attachToNextTab = true;
 		}
 
 		return socket;
@@ -312,23 +330,24 @@ export class FirefoxDebugSession {
 			this.reloadWatcher = undefined;
 		}
 
-		if (!this.firefoxClosedPromise) {
-			// Firefox is running detached and should not be terminated
+		if (!this.config.terminate) {
 			await this.firefoxDebugConnection.disconnect();
 			return;
 		}
 
-		if (!this.firefoxDebugSocketClosed && this.addonsActor) {
-			log.debug('Trying to close Firefox using the Terminator WebExtension');
-			const terminatorPath = path.resolve(__dirname, '../terminator');
-			await this.addonsActor.installAddon(terminatorPath);
-			await Promise.race([ this.firefoxClosedPromise, delay(1000) ]);
-		}
+		if (this.firefoxProc) {
 
-		if (!this.firefoxDebugSocketClosed && this.firefoxProc) {
-			log.warn('Trying to kill Firefox using a SIGTERM signal');
+			log.debug('Trying to kill Firefox using a SIGTERM signal');
 			this.firefoxProc.kill('SIGTERM');
 			await Promise.race([ this.firefoxClosedPromise, delay(1000) ]);
+
+		} else if (!this.firefoxDebugSocketClosed && this.addonsActor) {
+
+			log.debug('Trying to close Firefox using the Terminator WebExtension');
+			const terminatorPath = path.join(__dirname, 'terminator');
+			await this.addonsActor.installAddon(terminatorPath);
+			await Promise.race([ this.firefoxClosedPromise, delay(1000) ]);
+
 		}
 
 		if (!this.firefoxDebugSocketClosed) {
@@ -339,14 +358,14 @@ export class FirefoxDebugSession {
 
 		if (this.config.launch && (this.config.launch.tmpDirs.length > 0)) {
 
-			// after closing all connections to this debug adapter Firefox will still be writing
-			// to the temporary profile directory before exiting
-			await delay(2000);
+			// after closing all connections to this debug adapter Firefox will still be using
+			// the temporary profile directory for a short while before exiting
+			await delay(500);
 
 			log.debug("Removing " + this.config.launch.tmpDirs.join(" , "));
 			try {
 				await Promise.all(this.config.launch.tmpDirs.map(
-					(tmpDir) => tryRemoveRepeatedly(tmpDir)));
+					(tmpDir) => fs.remove(tmpDir)));
 			} catch (err) {
 				log.warn(`Failed to remove temporary directory: ${err}`);
 			}
@@ -372,12 +391,16 @@ export class FirefoxDebugSession {
 
 		log.debug(`Attached to tab ${tabActor.name}`);
 
-		let threadAdapter = new ThreadAdapter(threadActor, consoleActor,
-			this.threadPauseCoordinator, threadName, this);
+		let threadAdapter = new ThreadAdapter(threadActor, consoleActor, this.threadPauseCoordinator,
+			threadName, () => tabActor.url, !this.noPauseOnThreadActorAttach, this);
 
 		this.sendThreadStartedEvent(threadAdapter);
 
 		this.attachThread(threadAdapter, threadActor.name);
+
+		tabActor.onDidNavigate(() => {
+			this.sendEvent(new ThreadEvent('started', threadAdapter!.id));
+		});
 
 		tabActor.onFramesDestroyed(() => {
 			this.sendEvent(new Event('removeSources', <RemoveSourcesEventBody>{
@@ -426,7 +449,7 @@ export class FirefoxDebugSession {
 
 		try {
 
-			await threadAdapter.init(this.exceptionBreakpoints);
+			await threadAdapter.init(this.exceptionBreakpoints, !this.noPauseOnThreadActorAttach);
 
 			if (reload) {
 				await tabActor.reload();
@@ -447,14 +470,14 @@ export class FirefoxDebugSession {
 
 		log.debug(`Attached to worker ${workerActor.name}`);
 
-		let threadAdapter = new ThreadAdapter(threadActor, consoleActor,
-			this.threadPauseCoordinator, `Worker ${tabId}/${workerId}`, this);
+		let threadAdapter = new ThreadAdapter(threadActor, consoleActor, this.threadPauseCoordinator,
+			`Worker ${tabId}/${workerId}`, () => workerActor.url, !this.noPauseOnThreadActorAttach, this);
 
 		this.sendThreadStartedEvent(threadAdapter);
 
 		this.attachThread(threadAdapter, threadActor.name);
 
-		await threadAdapter.init(this.exceptionBreakpoints);
+		await threadAdapter.init(this.exceptionBreakpoints, !this.noPauseOnThreadActorAttach);
 
 		workerActor.onClose(() => {
 			this.threads.unregister(threadAdapter.id);
@@ -506,9 +529,9 @@ export class FirefoxDebugSession {
 		if (sourcePath !== undefined) {
 			skipThisSource = this.skipFilesManager.shouldSkip(sourcePath);
 		} else if (source.generatedUrl && (!source.url || !isAbsoluteUrl(source.url))) {
-			skipThisSource = this.skipFilesManager.shouldSkip(source.generatedUrl);
+			skipThisSource = this.skipFilesManager.shouldSkip(this.pathMapper.removeQueryString(source.generatedUrl));
 		} else if (source.url) {
-			skipThisSource = this.skipFilesManager.shouldSkip(source.url);
+			skipThisSource = this.skipFilesManager.shouldSkip(this.pathMapper.removeQueryString(source.url));
 		}
 
 		if (skipThisSource !== undefined) {

@@ -24,6 +24,7 @@ package actionScripts.plugin.ondiskproj.importer
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.utils.SerializeUtil;
 	import actionScripts.utils.UtilsCore;
+	import flash.filesystem.File;
 
 	public class OnDiskImporter extends FlashDevelopImporterBase
 	{
@@ -92,6 +93,8 @@ package actionScripts.plugin.ondiskproj.importer
             project.prebuildCommands = SerializeUtil.deserializeString(data.preBuildCommand);
             project.postbuildCommands = SerializeUtil.deserializeString(data.postBuildCommand);
             project.postbuildAlways = SerializeUtil.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+			if (data.options.option.hasOwnProperty('@jdkType')) 
+				project.jdkType = SerializeUtil.deserializeString(data.options.option.@jdkType); 
 
             project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
 			
@@ -140,6 +143,10 @@ package actionScripts.plugin.ondiskproj.importer
 
             project.buildOptions.parse(data.build);
 			project.mavenBuildOptions.parse(data.mavenBuild);
+
+			project.visualEditorSourceFolder = new FileLocation(
+                        project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src/main/webapp"
+                );
 
 			return project;
 		}

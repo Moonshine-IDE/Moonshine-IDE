@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
-    import mx.collections.ArrayCollection;
+	import mx.collections.ArrayCollection;
     import mx.core.IFlexDisplayObject;
     
     import actionScripts.factory.FileLocation;
@@ -85,6 +85,8 @@ package actionScripts.locator
 		public var nodePath:String;
 		public var notesPath:String;
 		public var javaPathForTypeAhead:FileLocation;
+		public var java8Path:FileLocation;
+		public var javaVersionInJava8Path:String;
 		public var svnPath:String;
 		public var gitPath:String;
 		public var isCodeCompletionJavaPresent:Boolean;
@@ -94,6 +96,7 @@ package actionScripts.locator
 		public var recentlyOpenedProjects:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjectOpenedOption:ArrayCollection = new ArrayCollection();
 		public var recentSaveProjectPath:ArrayCollection = new ArrayCollection();
+		public var lastSelectedProjectPath:String;
 		public var userSavedSDKs:ArrayCollection = new ArrayCollection();
 		public var userSavedTempSDKPath:String;
 		public var individualTabAlertShowingFilePath:String;
@@ -108,7 +111,19 @@ package actionScripts.locator
 
 		public var version: String = "1.0.0";
 		public var build: String = "";
-		
+
+		private var _javaVersionForTypeAhead:String;
+
+		public function get javaVersionForTypeAhead():String
+		{
+			return _javaVersionForTypeAhead;
+		}
+
+		public function set javaVersionForTypeAhead(value:String):void
+		{
+			_javaVersionForTypeAhead = value;
+		}
+
 		public function removeEditor(editor:Object):Boolean
 		{
 			var index:int = editors.getItemIndex(editor);

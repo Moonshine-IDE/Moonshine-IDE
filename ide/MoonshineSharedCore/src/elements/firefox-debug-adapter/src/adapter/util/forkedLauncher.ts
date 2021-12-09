@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn, fork } from 'child_process';
 import * as fs from 'fs-extra';
 
 /**
@@ -15,6 +15,14 @@ if (cmd === 'spawnDetached') {
 	let exe = args.shift();
 
 	let childProc = spawn(exe!, args, { detached: true, stdio: 'ignore' });
+
+	childProc.unref();
+
+} else if (cmd === 'forkDetached') {
+
+	let script = args.shift();
+
+	let childProc = fork(script!, args, { detached: true, stdio: 'ignore' });
 
 	childProc.unref();
 

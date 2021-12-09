@@ -1,6 +1,12 @@
 package actionScripts.plugins.build
 {
-    import flash.desktop.NativeProcess;
+	import actionScripts.interfaces.IJavaProject;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.valueObjects.ProjectVO;
+
+	import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.events.Event;
     import flash.events.IOErrorEvent;
@@ -12,6 +18,7 @@ package actionScripts.plugins.build
     import actionScripts.factory.FileLocation;
     import actionScripts.utils.EnvironmentSetupUtils;
     import actionScripts.utils.UtilsCore;
+    import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.Settings;
 
     public class ConsoleBuildPluginBase extends CompilerPluginBase
@@ -59,7 +66,7 @@ package actionScripts.plugins.build
             nativeProcessStartupInfo = null;
         }
 
-        public function start(args:Vector.<String>, buildDirectory:*):void
+        public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
         {
             if (nativeProcess.running && _running)
             {
@@ -77,7 +84,7 @@ package actionScripts.plugins.build
 			}
 			
 			var newArray:Array = new Array().concat(args);
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, newArray);
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, customSDKs, newArray);
 			
 			/*
 			* @local
@@ -193,5 +200,40 @@ package actionScripts.plugins.build
             nativeProcess.removeEventListener(NativeProcessExitEvent.EXIT, onNativeProcessExit);
 			running = false;
         }
+
+		public static function checkRequireJava(project:ProjectVO=null):Boolean
+		{
+			if (!project)
+            {
+                project = IDEModel.getInstance().activeProject;
+            }
+
+            var javaProject:IJavaProject = project as IJavaProject;
+			if (javaProject)
+			{
+				if ((javaProject.jdkType == JavaTypes.JAVA_DEFAULT) &&
+                    !UtilsCore.isJavaForTypeaheadAvailable())
+				{
+					return false;
+				}
+				if ((javaProject.jdkType == JavaTypes.JAVA_8) &&
+                    !UtilsCore.isJava8Present())
+				{
+					return false;
+				}
+			}
+
+			if ((project is AS3ProjectVO) &&
+					(project as AS3ProjectVO).isDominoVisualEditorProject)
+			{
+				if (((project as AS3ProjectVO).jdkType == JavaTypes.JAVA_8) &&
+						!UtilsCore.isJava8Present())
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
     }
 }

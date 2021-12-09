@@ -21,7 +21,7 @@ package actionScripts.events
 	import flash.events.Event;
 	
 	import actionScripts.factory.FileLocation;
-	import actionScripts.ui.editor.text.TextEditor;
+	import moonshine.editor.text.TextEditor;
 
 	public class EditorPluginEvent extends Event
 	{

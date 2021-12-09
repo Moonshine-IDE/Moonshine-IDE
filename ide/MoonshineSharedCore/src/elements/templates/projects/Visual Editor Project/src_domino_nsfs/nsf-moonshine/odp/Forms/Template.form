@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE note>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.4'
+ replicaid='4825808B00336E81'>
+
+
+  <item name='$Info' sign='true'>
+<rawitemdata type='1'>
+hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
+</rawitemdata></item>
+<item name='$Flags'><text/></item>
+
+<item name='$TITLE'><text>$ProjectName</text></item>
+
+<item name='$Fields'><textlist>
+</textlist></item>
+<item name='$Body' sign='true'><richtext>
+</richtext>
+</item>
+
+
+</note>

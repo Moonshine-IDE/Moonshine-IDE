@@ -24,7 +24,7 @@
 		   xmlns:s="library://ns.adobe.com/flex/spark" 
 		   implements="actionScripts.ui.IContentWindow"
 		   xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
-		   backgroundColor="#FFFFFF" fontFamily="DejaVuSans" color="#686868" fontSize="14"
+		   backgroundColor="#FFFFFF" color="#686868" fontSize="14"
 		   creationComplete="onAboutScreenCreationComplete(event)" remove="onTabRemoved(event)" xmlns:popup="components.popup.*">
 	<fx:Script>
 		<![CDATA[
@@ -70,6 +70,12 @@
 			{
 				version.text = IDEModel.getInstance().getVersionWithBuildNumber();
 				if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) version.text += " (App Store Version)";
+
+				var applicationDescriptor:XML = NativeApplication.nativeApplication.applicationDescriptor;
+				var namespaceArraySplit:Array = (new Namespace(applicationDescriptor.namespace())).uri.split("/");
+				var airVersion:Number = Number(namespaceArraySplit[namespaceArraySplit.length-1]);
+				var isHarman:Boolean = airVersion > 32;
+				version.text += ", Player: "+ airVersion +"("+ (isHarman ? "Harman" : "Adobe") +")";
 			}
 			
 			protected function onInfoBackground(event:MouseEvent):void
@@ -114,12 +120,13 @@
 		<s:HGroup id="hgTitle" 
 				  width="100%"
 				  verticalAlign="middle">
-			<s:Image source="/elements/moonshine_logo/logo_48.png"/>
+			<s:Image source="/elements/moonshine_logo/logo_new_48.png"/>
 			<s:VGroup autoLayout="true">
 				<s:Label text="{ConstantsCoreVO.MOONSHINE_IDE_LABEL}" color="0x8a2a2a"
 						 paddingLeft="8"/>
 				<s:Label id="version"
 						 paddingLeft="8"/>
+				<s:Label text="Running on: {Capabilities.os}" paddingLeft="8" fontSize="11"/>
 			</s:VGroup>
 			<s:Spacer width="100%"/>
 			<s:BusyIndicator id="busy"/>

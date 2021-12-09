@@ -21,9 +21,10 @@ package actionScripts.plugins.git.commands
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.GitProjectVO;
-	import actionScripts.utils.UtilsCore;
+	import actionScripts.plugins.git.utils.GitUtils;
+	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class PullCommand extends GitCommandBase
 	{
@@ -38,10 +39,92 @@ package actionScripts.plugins.git.commands
 			var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
 			queue = new Vector.<Object>();
 			
-			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" pull --progress -v --no-rebase origin $'"+ UtilsCore.getEncodedForShell(tmpModel.currentBranch) +"'" : gitBinaryPathOSX +'&&pull&&--progress&&-v&&--no-rebase&&origin&&'+ UtilsCore.getEncodedForShell(tmpModel.currentBranch), false, PULL_REQUEST));
+			var calculatedURL:String;
+			if (tmpModel && tmpModel.sessionUser)
+			{
+				calculatedURL = GitUtils.getCalculatedRemotePathWithAuth(tmpModel.remoteURL, tmpModel.sessionUser);
+			}
 			
+			var command:String;
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				command = gitBinaryPathOSX +" pull ";
+				if (calculatedURL) command += calculatedURL;
+				command += " --progress -v --no-rebase";
+			}
+			else
+			{
+				command = gitBinaryPathOSX +'&&pull';
+				if (calculatedURL) command += '&&'+ calculatedURL;
+				command += '&&--progress&&-v&&--no-rebase';
+			}
+
+			if (ConstantsCoreVO.IS_MACOS && tmpModel.sessionUser)
+			{
+				var tmpExpFilePath:String = GitUtils.writeExpOnMacAuthentication(command);
+				addToQueue(new NativeProcessQueueVO('expect -f "'+ tmpExpFilePath +'"', true, PULL_REQUEST));
+			}
+			else
+			{
+				addToQueue(new NativeProcessQueueVO(command, false, PULL_REQUEST));
+			}
+			
+			warning("Requesting Pull...");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Requested", "Pull ", false));
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:model.activeProject.folderLocation.fileBridge.nativePath}, subscribeIdToWorker);
+		}
+
+		override protected function shellError(value:Object):void
+		{
+			// call super - it might have some essential
+			// commands to run.
+			super.shellError(value);
+
+			if (testMessageIfNeedsAuthentication(value.output))
+			{
+				if (ConstantsCoreVO.IS_APP_STORE_VERSION)
+				{
+					showPrivateRepositorySandboxError();
+				}
+				else
+				{
+					var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+					openAuthentication(tmpModel ? tmpModel.sessionUser : null);
+				}
+			}
+		}
+
+		override protected function shellData(value:Object):void
+		{
+			super.shellData(value);
+
+			if (!value.output.match(/fatal: .*/) &&
+					value.output.match(/Checking for any authentication...*/))
+			{
+				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+				worker.sendToWorker(WorkerEvent.PROCESS_STDINPUT_WRITEUTF, {value:tmpModel.sessionPassword +"\n"}, subscribeIdToWorker);
+			}
+		}
+
+		override public function onWorkerValueIncoming(value:Object):void
+		{
+			// do not print enter password line
+			if (ConstantsCoreVO.IS_MACOS && value.value && ("output" in value.value) &&
+					value.value.output.match(/Enter password \(exp\):.*/))
+			{
+				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
+			}
+
+			super.onWorkerValueIncoming(value);
+		}
+		
+		override protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				super.onAuthenticationSuccess(username, password);
+				new PullCommand();
+			}
 		}
 		
 		override protected function listOfProcessEnded():void

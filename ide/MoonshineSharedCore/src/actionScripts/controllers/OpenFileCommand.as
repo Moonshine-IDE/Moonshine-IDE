@@ -171,39 +171,43 @@ package actionScripts.controllers
 			// If file is open already, just focus that editor.
 			for each (var contentWindow:IContentWindow in model.editors)
 			{
-				if ((contentWindow is IFileContentWindow) && 
-					(contentWindow as IFileContentWindow).currentFile.fileBridge.nativePath == file.fileBridge.nativePath)
+				if (contentWindow is IFileContentWindow)
 				{
-					isFileOpen = true;
-					model.activeEditor = contentWindow;
-					
-					if ((contentWindow is BasicTextEditor) && (atLine > -1))
-					{
-						var ed:BasicTextEditor = contentWindow as BasicTextEditor;
-
-						ed.getEditorComponent().scrollTo(atLine, openType);
-						if (!openType || openType == OpenFileEvent.OPEN_FILE || openType == OpenFileEvent.JUMP_TO_SEARCH_LINE)
-						{
-							ed.getEditorComponent().selectLine(atLine);
-                        }
-						else if (openType == OpenFileEvent.TRACE_LINE)
-						{
-							ed.getEditorComponent().selectTraceLine(atLine);
-                        }
-
-						if (atChar > -1)
-						{
-							ed.getEditorComponent().model.caretIndex = atChar;
-						}
+					var contentWindowFile:FileLocation = (contentWindow as IFileContentWindow).currentFile;
+					if (contentWindowFile == null) {
+						continue;
 					}
+					// on case-insensitive file systems, these may not match
+					// unless we canonicalize, and then we'd get the same file
+					// opened in multiple tabs
+					contentWindowFile.fileBridge.canonicalize();
+					file.fileBridge.canonicalize();
+					if(contentWindowFile.fileBridge.nativePath == file.fileBridge.nativePath)
+					{
+						isFileOpen = true;
+						model.activeEditor = contentWindow;
+						
+						if ((contentWindow is BasicTextEditor) && (atLine > -1))
+						{
+							var ed:BasicTextEditor = contentWindow as BasicTextEditor;
 
-					contentWindow.setFocus();
-					return;
+							atChar = atChar != -1 ? atChar: 0;
+							ed.editor.setSelection(atLine, atChar, atLine, atChar);
+							ed.editor.scrollViewIfNeeded();
+							if (openType == OpenFileEvent.TRACE_LINE)
+							{
+								ed.editor.debuggerLineIndex = atLine;
+							}
+						}
+
+						contentWindow.setFocus();
+						return;
+					}
 				}
 			}
 			
 			// @note
-			// https://github.com/prominic/Moonshine-IDE/issues/31
+			// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/31
 			// when file is not open and a debug-trace call happens
 			// it never goes through the selectTraceLine(..) command for the
 			// particular file, because its yet to be open. 
@@ -240,6 +244,12 @@ package actionScripts.controllers
 				}
 				else
 				{
+					//try to open dve with domino visual editor.
+					 if ((project is OnDiskProjectVO) && (extension == "dve"))
+					 {
+						 (project as OnDiskProjectVO).isDominoVisualEditorProject=true;
+					 } 
+
 					openTextFile(project, fileData);
 				}
 			}
@@ -309,6 +319,13 @@ package actionScripts.controllers
 		{
 			var editor:BasicTextEditor = null;
 			editor = model.flexCore.getTourDeEditor(tourDeSWFSource);
+
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			GlobalEventDispatcher.getInstance().dispatchEvent(editorEvent);
+
 			editor.open(file, value);
 			
 			ged.dispatchEvent(
@@ -337,7 +354,7 @@ package actionScripts.controllers
 			
 			if ((project is AS3ProjectVO &&
 				(project as AS3ProjectVO).isVisualEditorProject &&
-				(extension == "mxml" || extension == "xhtml") && !lastOpenEvent.independentOpenFile) || 
+				(extension == "mxml" || extension == "xhtml" || extension == "form"|| extension == "page") && !lastOpenEvent.independentOpenFile) || 
 				(project is OnDiskProjectVO) && (extension == "dve"))
 			{
 				editor = model.visualEditorCore.getVisualEditor(project);

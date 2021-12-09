@@ -11,32 +11,17 @@ import { defaultTargetFilter, getTargetFilter } from './utils';
 
 const localize = nls.loadMessageBundle();
 
-const DEBUG_SETTINGS = 'debug.chrome';
-const USE_V3_SETTING = 'useV3';
-
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('extension.chrome-debug.toggleSkippingFile', toggleSkippingFile));
     context.subscriptions.push(vscode.commands.registerCommand('extension.chrome-debug.toggleSmartStep', toggleSmartStep));
 
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('chrome', new ChromeConfigurationProvider()));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('legacy-chrome', new ChromeConfigurationProvider()));
 }
 
 export function deactivate() {
 }
 
-const DEFAULT_CONFIG = {
-    type: 'chrome',
-    request: 'launch',
-    name: localize('chrome.launch.name', 'Launch Chrome against localhost'),
-    url: 'http://localhost:8080',
-    webRoot: '${workspaceFolder}'
-};
-
 export class ChromeConfigurationProvider implements vscode.DebugConfigurationProvider {
-    provideDebugConfigurations(folder: vscode.WorkspaceFolder | undefined, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration[]> {
-        return Promise.resolve([DEFAULT_CONFIG]);
-    }
-
     /**
      * Try to add all missing attributes to the debug configuration being launched.
      */
@@ -71,13 +56,6 @@ export class ChromeConfigurationProvider implements vscode.DebugConfigurationPro
         }
 
         resolveRemoteUris(folder, config);
-
-        const useV3 = !!vscode.workspace.getConfiguration(DEBUG_SETTINGS).get(USE_V3_SETTING);
-        if (useV3 && !vscode.env.remoteName) {
-            config['__workspaceFolder'] = '${workspaceFolder}';
-            config.type = 'pwa-chrome';
-        }
-
         return config;
     }
 }

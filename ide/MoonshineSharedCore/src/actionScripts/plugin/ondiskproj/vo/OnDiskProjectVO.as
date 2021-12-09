@@ -21,18 +21,22 @@ package actionScripts.plugin.ondiskproj.vo
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IJavaProject;
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskExporter;
 	import actionScripts.plugin.settings.vo.BuildActionsListSettings;
 	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO
+	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO, IJavaProject
 	{
 		public static const DOMINO_EXPORT_PATH:String = "nsfs/nsf-moonshine";
 		
@@ -56,6 +60,10 @@ package actionScripts.plugin.ondiskproj.vo
 		private var _isPrimeFacesVisualEditorProject:Boolean;
 		public function get isPrimeFacesVisualEditorProject():Boolean			{	return _isPrimeFacesVisualEditorProject;	}
 		public function set isPrimeFacesVisualEditorProject(value:Boolean):void	{	_isPrimeFacesVisualEditorProject = value;	}
+
+		private var _isDominoVisualEditorProject:Boolean;
+		public function get isDominoVisualEditorProject():Boolean			{	return _isDominoVisualEditorProject;	}
+		public function set isDominoVisualEditorProject(value:Boolean):void	{	_isDominoVisualEditorProject = value;	}
 		
 		private var _isPreviewRunning:Boolean;
 		public function get isPreviewRunning():Boolean							{	return _isPreviewRunning;	}
@@ -68,6 +76,10 @@ package actionScripts.plugin.ondiskproj.vo
 		private var _filesList:ArrayCollection;
 		[Bindable] public function get filesList():ArrayCollection				{	return _filesList;	}
 		public function set filesList(value:ArrayCollection):void				{	_filesList = value;	}
+		
+		private var _jdkType:String = JavaTypes.JAVA_8;
+		public function get jdkType():String									{	return _jdkType;	}
+		public function set jdkType(value:String):void							{	_jdkType = value;	}
 
 		public function OnDiskProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
 		{
@@ -93,9 +105,14 @@ package actionScripts.plugin.ondiskproj.vo
 					new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
 					new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),
 					new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
-					/*new PathSetting(this.mavenBuildOptions, "dominoNotesProgram", "Notes Programe Path", true, this.mavenBuildOptions.dominoNotesProgram, false),
-					new PathSetting(this.mavenBuildOptions, "dominoNotesPlatform", "Notes Platform Path", true, this.mavenBuildOptions.dominoNotesPlatform, false)*/
-				]))
+				])),
+				new SettingsWrapper("Java Project", new <ISetting>[
+					new MultiOptionSetting(this, 'jdkType', "JDK", 
+						Vector.<NameValuePair>([
+							new NameValuePair("Use JDK 8", JavaTypes.JAVA_8)
+						])
+					)
+				])
 			]);
 			
 			settings.sort(order);

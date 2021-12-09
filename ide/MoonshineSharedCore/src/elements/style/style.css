@@ -8,9 +8,28 @@
 }
 
 @font-face {
+	src: url("/elements/fonts/DejaVuSansMono.ttf");
+	fontFamily: "DejaVuMonoTF";
+	embedAsCFF: false;
+}
+
+@font-face {
 	src: url("/elements/fonts/DejaVuSans.ttf");
 	fontFamily: "DejaVuSans";
 	embedAsCFF: true;
+}
+
+@font-face {
+	src: url("/elements/fonts/DejaVuSans.ttf");
+	fontFamily: "DejaVuSansTF";
+	embedAsCFF: false;
+}
+
+@font-face {
+	src: url("/elements/fonts/DejaVuSans-Bold.ttf");
+	fontFamily: "DejaVuSansTF";
+	fontWeight: bold;
+	embedAsCFF: false;
 }
 
 @font-face {
@@ -33,6 +52,11 @@
 	embedAsCFF: true;
 }
 
+s|WindowedApplication
+{
+	font-family			: "_sans";
+}
+
 .toolTip
 {
 	border-skin: ClassReference("actionScripts.ui.TooltipSkin");
@@ -50,7 +74,7 @@
 .toolTipButton
 {
 	skinClass: ClassReference("elements.skins.ToolTipButtonSkin");
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 12;
 }
 
@@ -61,7 +85,7 @@
 
 .bigHeadlineText
 {
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 24;
 	kerning: on;
 	cffHinting: none;
@@ -70,19 +94,19 @@
 
 .uiText
 {
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 }
 
 .uiTextWhite
 {
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	color: #FFFFFF;
 }
 
 .uiTextSettingsLabel
 {
 	paddingTop: 3;
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 14;
 	kerning: on;
 	color: #686868;
@@ -92,7 +116,7 @@
 .uiTextSettingsValue
 {
 	paddingTop: 3;
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 14;
 	kerning: on;
 	color: #252424;
@@ -104,21 +128,21 @@
 	paddingLeft: 20px;
 	paddingRight: 20px;
 	textAlign: 'center';
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 12;
 }
 
 .darkButton
 {
 	skinClass: ClassReference("elements.skins.DarkButtonSkin");
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 12;
 }
 
 .redButton
 {
 	skinClass: ClassReference("elements.skins.RedButtonSkin");
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	paddingLeft: 20px;
 	paddingRight: 20px;
 	fontSize: 12;
@@ -128,7 +152,7 @@
 .greyButton
 {
 	skinClass: ClassReference("elements.skins.GreyButtonSkin");
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	paddingLeft: 20px;
 	paddingRight: 20px;
 	fontSize: 14;
@@ -140,7 +164,7 @@
 	paddingLeft: 0px;
 	paddingRight: 0px;
 	textAlign: 'center';
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 12;
 }
 
@@ -151,7 +175,7 @@
 
 .smallText
 {
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 12;
 	color: #444444;
 }
@@ -159,7 +183,7 @@
 s|CheckBox
 {
 	/*	skinClass: ClassReference("elements.skins.CheckboxSkin");*/
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	fontSize: 12;
 	color: #444444;
 }
@@ -232,7 +256,7 @@ global
 }
 .textInputLabel
 {
-	fontFamily: 'DejaVuSans';
+	fontFamily: '_sans';
 	color: #f3f3f3;
 	fontSize: 13;
 }
@@ -241,7 +265,7 @@ global
 {
 	content-background-alpha : 0;
 	border-visible		: false;
-	font-family			: "Arial";
+	font-family			: "_sans";
 	font-size			: 18;
 	color				: #2b2b2c;
 }
@@ -250,7 +274,7 @@ global
 {
 	content-background-alpha : 0;
 	border-visible		: false;
-	font-family			: "Arial";
+	font-family			: "_sans";
 	font-size			: 14;
 	color				: #2b2b2c;
 }
@@ -312,7 +336,7 @@ s|DataGroup
 
 .completionList
 {
-	fontFamily: "DejaVuMono";
+	fontFamily: "_sans";
 	selectionColor: #f6b5e9;
 	rollOverColor: #fbe1f6;
 }

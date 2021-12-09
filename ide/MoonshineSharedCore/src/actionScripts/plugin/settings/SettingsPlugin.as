@@ -184,6 +184,7 @@ package actionScripts.plugin.settings
 
             var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
             delete cookie.data["javaPathForTypeahead"];
+			delete cookie.data["java8Path"];
             delete cookie.data["userSDKs"];
             delete cookie.data["moonshineWorkspace"];
             delete cookie.data["isWorkspaceAcknowledged"];
@@ -194,6 +195,7 @@ package actionScripts.plugin.settings
 			delete cookie.data["doNotShowRoyaleApiPrompt"];
 
             model.javaPathForTypeAhead = null;
+			model.java8Path = null;
             model.isCodeCompletionJavaPresent = false;
             ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = false;
             ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = false;
@@ -387,7 +389,7 @@ package actionScripts.plugin.settings
 		private function getXMLSettingsForSave(content:Object):XML
 		{
 			var saveData:XML
-			if (content) saveData = retriveXMLSettings(content);
+			if (content) saveData = retrieveXMLSettings(content);
 				
 			if (!saveData)
 			{
@@ -427,7 +429,7 @@ package actionScripts.plugin.settings
 			return saveData;
 		}
 
-		private function retriveXMLSettings(content:Object):XML
+		private function retrieveXMLSettings(content:Object):XML
 		{
 			var settingsFile:FileLocation = generateSettingsPath(content);
 			if (!settingsFile.fileBridge.exists) return null;
@@ -448,7 +450,7 @@ package actionScripts.plugin.settings
 		public function readClassSettings(plug:IPlugin):Boolean
 		{
 			var provider:ISettingsProvider = plug as ISettingsProvider;
-			var saveData:XML =  retriveXMLSettings(plug);
+			var saveData:XML =  retrieveXMLSettings(plug);
 			if (!saveData) // file not found so check plugin to see if we should activate by default
 				return plug.activatedByDefault;
 
@@ -479,7 +481,7 @@ package actionScripts.plugin.settings
 
 			var qualifiedClassName:String = (wrapper as PluginSettingsWrapper).qualifiedClassName;
 			var saveData:XML = mergeSaveDataFromList(settingsList,
-				retriveXMLSettings(qualifiedClassName));
+				retrieveXMLSettings(qualifiedClassName));
 			if (!saveData.length())
 				return true;
 
@@ -496,7 +498,7 @@ package actionScripts.plugin.settings
 			var settingsList:Vector.<ISetting> = event.value as Vector.<ISetting>;
 			
 			var saveData:XML = mergeSaveDataFromList(settingsList,
-				retriveXMLSettings(event.name));
+				retrieveXMLSettings(event.name));
 			if (!saveData.length()) return;
 			
 			var settingsFile:FileLocation = generateSettingsPath(event.name);

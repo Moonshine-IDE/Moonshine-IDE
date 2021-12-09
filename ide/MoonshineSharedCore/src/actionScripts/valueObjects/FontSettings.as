@@ -25,10 +25,11 @@ package actionScripts.valueObjects
 	
 	public class FontSettings
 	{
-		public var defaultFontFamily:String = "DejaVuMono";
+		public var defaultFontFamily:String = "DejaVuMonoTF";
 		public var defaultFontSize:Number = 13;
+		public var defaultFontEmbedded:Boolean = true;
 		public var defaultFontDescription:FontDescription =
-			new FontDescription(defaultFontFamily, FontWeight.NORMAL, FontPosture.NORMAL, FontLookup.EMBEDDED_CFF);
+			new FontDescription("DejaVuMono", FontWeight.NORMAL, FontPosture.NORMAL, FontLookup.EMBEDDED_CFF);
 		public var uiFontDescription:FontDescription =
 			new FontDescription("DejaVuSans", FontWeight.NORMAL, FontPosture.NORMAL, FontLookup.EMBEDDED_CFF);
 			

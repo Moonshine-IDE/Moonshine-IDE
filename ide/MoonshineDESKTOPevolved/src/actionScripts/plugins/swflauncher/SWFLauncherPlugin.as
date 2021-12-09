@@ -37,7 +37,7 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.plugin.settings.event.RequestSettingEvent;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.swflauncher.event.SWFLaunchEvent;
-	import actionScripts.utils.findAndCopyApplicationDescriptor;
+	import actionScripts.utils.FindAndCopyApplicationDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.valueObjects.ProjectVO;
@@ -153,7 +153,7 @@ package actionScripts.plugins.swflauncher
 			}
 			
 			var currentSDK:File = (project.buildOptions.customSDK) ? project.buildOptions.customSDK.fileBridge.getFile as File : sdk;
-			var appXML:String = findAndCopyApplicationDescriptor(file, project, file.parent);
+			var appXML:String = FindAndCopyApplicationDescriptor(file, project, file.parent);
 			
 			// In case of mobile project and device-run, lets divert
 			if (project.isMobile && !project.buildOptions.isMobileRunOnSimulator)

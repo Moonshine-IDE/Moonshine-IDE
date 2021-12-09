@@ -51,7 +51,7 @@ export function urlBasename(url: string): string {
 
 export function urlDirname(url: string): string {
 	let lastSepIndex = url.lastIndexOf('/');
-	if (lastSepIndex < 0) {
+	if (lastSepIndex < 8) {
 		return url;
 	} else {
 		return url.substring(0, lastSepIndex + 1);

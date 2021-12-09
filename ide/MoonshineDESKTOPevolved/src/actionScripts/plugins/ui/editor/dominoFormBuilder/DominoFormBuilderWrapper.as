@@ -39,6 +39,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.FileUtils;
+	import actionScripts.utils.SharedObjectUtil;
 	
 	import avmplus.getQualifiedClassName;
 	
@@ -177,9 +178,9 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 			dispatchEvent(new Event('labelChanged'));
 		}
 		
-		private function closeTabHandler(event:CloseTabEvent):void
+		private function closeTabHandler(event:Event):void
 		{
-			if (event.tab == this)
+			if (model.activeEditor == this)
 			{
 				removeGlobalListeners();
 				dominoTabularForm.dispose();
@@ -187,6 +188,7 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 				dominoTabularForm.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onTabularInterfaceEditorChange);
 				dominoTabularForm.removeEventListener(VisualEditorEvent.SAVE_CODE, onTabularInterfaceEditorSaveRequest);
 				
+				SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
 				formObject = null;
 			}
 		}

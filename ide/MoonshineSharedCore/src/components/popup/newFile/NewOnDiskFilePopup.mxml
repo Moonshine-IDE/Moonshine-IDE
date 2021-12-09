@@ -10,13 +10,17 @@
 		import actionScripts.factory.FileLocation;
 		import actionScripts.utils.SimpleValidator;
 		import actionScripts.valueObjects.ConstantsCoreVO;
+		import mx.controls.Alert;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.events.RefreshTreeEvent;
 		
 		public var fromTemplate:FileLocation;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		override protected function onCreateButton(event:MouseEvent):void
 		{
 			// validation check for Enter key
-			if (!btnCreate.enabled) return;
+			if (!isSubmitButtonEnabled) return;
 			
 			// validation 2
 			var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
@@ -27,10 +31,29 @@
 				tmpEvent.fileName = txtFileName.text;
 				tmpEvent.fileExtension = extensionLabel.text.substr(1, extensionLabel.text.length);
 				dispatchEvent(tmpEvent);
+
+				syncFormFile(tmpEvent.fileName,tmpEvent.fileExtension,wrapperBelongToProject.folderLocation)
 				
 				doBeforeExit();
 				super.closeThis();
 			}
+		}
+
+		//ProjectVO
+
+		private function syncFormFile(fileName:String,fileExtension:String,folderLocation:FileLocation):void
+		{
+
+			var targetFolder:String=folderLocation.fileBridge.nativePath;
+			var original_form:FileLocation =  folderLocation.resolvePath("src"+folderLocation.fileBridge.separator +"main"+folderLocation.fileBridge.separator+"visualeditor"+folderLocation.fileBridge.separator+fileName+".dve");
+			if(original_form.fileBridge.exists){
+				var newFormFile:FileLocation =  folderLocation.resolvePath("nsfs"+folderLocation.fileBridge.separator+"nsf-moonshine"+folderLocation.fileBridge.separator+"odp"+folderLocation.fileBridge.separator+"Forms"+folderLocation.fileBridge.separator+fileName + ".form"); 
+				original_form.fileBridge.copyTo(newFormFile, true); 
+				dispatcher.dispatchEvent(new RefreshTreeEvent(folderLocation));
+			}
+			
+			
+
 		}
 		
 		protected function onWindowCompletes(event:FlexEvent):void
@@ -39,12 +62,12 @@
 			if (fromTemplate == ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE)
 			{
 				title = "New Form Builder DXL File";
-				extensionLabel.text = ".dfb";
+				createdFileExtension = ".dfb";
 			}
 			else if (fromTemplate == ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE)
 			{
 				title = "New Visual Editor DXL File";
-				extensionLabel.text = ".dve";
+				createdFileExtension = ".dve";
 			}
 		}
 		

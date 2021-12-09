@@ -22,7 +22,6 @@ package actionScripts.plugins.git
 	
 	import flash.events.Event;
 	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
 	import flash.utils.Dictionary;
 	
 	import mx.collections.ArrayCollection;
@@ -33,18 +32,16 @@ package actionScripts.plugins.git
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.events.WorkerEvent;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IWorkerSubscriber;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugins.git.model.GitProjectVO;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.VersionControlUtils;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
-	import actionScripts.utils.FileUtils;
+	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
@@ -52,7 +49,7 @@ package actionScripts.plugins.git
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 	
 	public class GitProcessManager extends ConsoleOutputter implements IWorkerSubscriber
 	{

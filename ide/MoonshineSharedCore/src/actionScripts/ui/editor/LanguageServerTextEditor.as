@@ -18,317 +18,345 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.geom.Point;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
-	
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.events.CodeActionsEvent;
-	import actionScripts.events.CompletionItemsEvent;
 	import actionScripts.events.DiagnosticsEvent;
-	import actionScripts.events.GotoDefinitionEvent;
-	import actionScripts.events.HoverEvent;
-	import actionScripts.events.LanguageServerEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
-	import actionScripts.events.MenuEvent;
+	import actionScripts.events.LocationsEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SaveFileEvent;
-	import actionScripts.events.SignatureHelpEvent;
-	import actionScripts.ui.editor.text.TextLineModel;
-	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.languageServer.LanguageServerProjectVO;
 	import actionScripts.ui.tabview.TabEvent;
-	import actionScripts.utils.isUriInProject;
+
+	import flash.events.Event;
+
+	import moonshine.editor.text.lsp.LspTextEditor;
+	import moonshine.editor.text.lsp.events.LspTextEditorLanguageRequestEvent;
+	import moonshine.lsp.LanguageClient;
+	import moonshine.lsp.Position;
+	import moonshine.editor.text.events.TextEditorChangeEvent;
+	import moonshine.lsp.CompletionItem;
+	import moonshine.editor.text.lsp.events.LspTextEditorLanguageActionEvent;
+	import actionScripts.utils.applyWorkspaceEdit;
+	import moonshine.lsp.WorkspaceEdit;
+	import moonshine.lsp.Command;
+	import moonshine.lsp.LocationLink;
+	import actionScripts.events.OpenLocationEvent;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
-		public function LanguageServerTextEditor(languageID:String, readOnly:Boolean = false)
+		public function LanguageServerTextEditor(languageID:String, project:LanguageServerProjectVO, readOnly:Boolean = false)
 		{
 			super(readOnly);
 
-			this._languageID = languageID;
+			_languageID = languageID;
+			_project = project;
 
-			editor.addEventListener(ChangeEvent.TEXT_CHANGE, onTextChange);
-			editor.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-			editor.addEventListener(MouseEvent.ROLL_OVER, onRollOver);
-			editor.addEventListener(MouseEvent.ROLL_OUT, onRollOut);
-			editor.model.addEventListener(Event.CHANGE, editorModel_onChange);
+			populateLspServerCapabilities();
+
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_COMPLETION, lspEditor_requestCompletionHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_RESOLVE_COMPLETION, lspEditor_requestResolveCompletionHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_SIGNATURE_HELP, lspEditor_requestSignatureHelpHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_HOVER, lspEditor_requestHoverHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_DEFINITION, lspEditor_requestDefinitionHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_CODE_ACTIONS, lspEditor_requestCodeActionsHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageActionEvent.APPLY_WORKSPACE_EDIT, lspEditor_applyWorkspaceEditHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageActionEvent.OPEN_LINK, lspEditor_openLinkHandler);
+			lspEditor.addEventListener(LspTextEditorLanguageActionEvent.RUN_COMMAND, lspEditor_runCommandHandler);
 		}
+
+		private function populateLspServerCapabilities():void
+		{
+			if(!languageClient)
+			{
+				return;
+			}
+			var serverCapabilities:Object = languageClient.serverCapabilities;
+			if(!serverCapabilities)
+			{
+				return;
+			}
+			var completionProvider:Object = serverCapabilities.completionProvider;
+			if(completionProvider)
+			{
+				var completionTriggerCharacters:Array = completionProvider.triggerCharacters;
+				if(!completionTriggerCharacters)
+				{
+					completionTriggerCharacters = [];
+				}
+				lspEditor.completionTriggerCharacters = completionTriggerCharacters;
+			}
+			var signatureHelpProvider:Object = serverCapabilities.completionProvider;
+			if(signatureHelpProvider)
+			{
+				var signatureHelpTriggerCharacters:Array = signatureHelpProvider.triggerCharacters;
+				if(!signatureHelpTriggerCharacters)
+				{
+					signatureHelpTriggerCharacters = [];
+				}
+				lspEditor.signatureHelpTriggerCharacters = signatureHelpTriggerCharacters;
+			}
+		}
+
+		protected var lspEditor:LspTextEditor;
 
 		private var _languageID:String;
 
 		public function get languageID():String
 		{
-			return this._languageID;
+			return _languageID;
 		}
 
-		private var _codeActionTimeoutID:int = -1;
-		private var _completionIncomplete:Boolean = false;
-		private var _hoverTimeoutID:int = -1;
-		private var _definitionTimeoutID:int = -1;
-		private var _previousCharAndLine:Point;
+		private var _project:LanguageServerProjectVO;
+
+		public function get project():LanguageServerProjectVO
+		{
+			return _project;
+		}
+
+		public function get languageClient():LanguageClient
+		{
+			if(!_project)
+			{
+				return null;
+			}
+			return _project.languageClient;
+		}
+
+		override public function set currentFile(value:FileLocation):void
+		{
+			var changed:Boolean = file != value;
+			if (changed)
+            {
+				dispatchDidCloseEvent();
+			}
+			super.currentFile = value;
+			if(value)
+			{
+				lspEditor.textDocument = {uri: value.fileBridge.url};
+			}
+			else
+			{
+				lspEditor.textDocument = null;
+			}
+			if(changed)
+			{
+				dispatchDidOpenEvent();
+			}
+		}
+
+		private var _savedDiagnostics:Array;
 
 		override protected function addGlobalListeners():void
 		{
 			super.addGlobalListeners();
 			
-			dispatcher.addEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
-			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
-			dispatcher.addEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
 			dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
-			dispatcher.addEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
-			dispatcher.addEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
 			dispatcher.addEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
-			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler);
+			// a higher priority ensures that the language server knows about
+			// all open files before we potentially makes other queries to the
+			// language server
+			// example: document symbols in the outline view
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler, false, 1);
+			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
 		}
 
 		override protected function removeGlobalListeners():void
 		{
 			super.removeGlobalListeners();
 			
-			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_SHOW_COMPLETION_LIST, showCompletionListHandler);
-			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
-			dispatcher.removeEventListener(CodeActionsEvent.EVENT_SHOW_CODE_ACTIONS, showCodeActionsHandler);
 			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
-			dispatcher.removeEventListener(CompletionItemsEvent.EVENT_UPDATE_RESOLVED_COMPLETION_ITEM, updateResolvedCompletionItemHandler);
-			dispatcher.removeEventListener(SignatureHelpEvent.EVENT_SHOW_SIGNATURE_HELP, showSignatureHelpHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
+			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
 			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler);
+			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
+		}
+		
+		override protected function initializeChildrens():void
+		{
+			if(!editor)
+			{
+				lspEditor = new LspTextEditor(null, null, readOnly);
+				editor = lspEditor;
+			}
+			super.initializeChildrens();
 		}
 
 		protected function closeAllPopups():void
 		{
-			editor.showSignatureHelp(null);
-			clearHover();
-			clearDefinitionLink();
-		}
-
-		protected function startOrResetCodeActionTimer():void
-		{
-			if(_codeActionTimeoutID != -1)
-			{
-				//we want to "debounce" this event, so reset the timer
-				clearTimeout(_codeActionTimeoutID);
-				_codeActionTimeoutID = -1;
-			}
-			_codeActionTimeoutID = setTimeout(dispatchCodeActionEvent, 250);
-		}
-
-		protected function startOrResetHoverTimer(line:int, char:int):void
-		{
-			if(_hoverTimeoutID != -1)
-			{
-				//we want to "debounce" this event, so reset the timer
-				clearTimeout(_hoverTimeoutID);
-				_hoverTimeoutID = -1;
-			}
-			_hoverTimeoutID = setTimeout(dispatchHoverEvent, 250, line, char)
-		}
-
-		protected function startOrResetDefinitionLinkTimer(line:int, char:int):void
-		{
-			if(_definitionTimeoutID != -1)
-			{
-				//we want to "debounce" this event, so reset the timer
-				clearTimeout(_definitionTimeoutID);
-				_definitionTimeoutID = -1;
-			}
-			_definitionTimeoutID = setTimeout(dispatchDefinitionLinkEvent, 250, line, char)
-		}
-
-		private function clearDefinitionLink():void
-		{
-			editor.showDefinitionLink(null, null);
-			if(_definitionTimeoutID != -1)
-			{
-				clearTimeout(_definitionTimeoutID);
-				_definitionTimeoutID = -1;
-			}
-		}
-
-		private function clearHover():void
-		{
-			editor.showHover(null);
-			if(_hoverTimeoutID != -1)
-			{
-				clearTimeout(_hoverTimeoutID);
-				_hoverTimeoutID = -1;
-			}
+			lspEditor.clearAll();
 		}
 
 		protected function dispatchDidOpenEvent():void
 		{
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient || loadingFile)
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
-				currentFile.fileBridge.url,
-				0, 0, 0, 0,
-				editor.dataProvider, 0));
+
+			_documentVersion++;
+			_project.languageClient.didOpen({
+				textDocument: {
+					uri: currentFile.fileBridge.url,
+					languageId: _languageID,
+					version: _documentVersion,
+					text: editor.text
+				}
+			});
 		}
 
 		protected function dispatchDidCloseEvent():void
 		{
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
-				currentFile.fileBridge.url));
+
+			_project.languageClient.didClose({
+				textDocument: {
+					uri: currentFile.fileBridge.url
+				}
+			});
 		}
+
+		private var _documentVersion:int = 0;
 
 		protected function dispatchDidChangeEvent():void
 		{
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_DIDCHANGE,
-				currentFile.fileBridge.url,
-				0, 0, 0, 0,
-				editor.dataProvider, 0));
+
+			_documentVersion++;
+			_project.languageClient.didChange({
+				textDocument: {
+					uri: currentFile.fileBridge.url,
+					version: _documentVersion
+				},
+				contentChanges: [
+					{
+						text: editor.text
+					}
+				]
+			});
 		}
 
-		protected function dispatchCompletionEvent():void
+		protected function lspEditor_requestCompletionHandler(event:LspTextEditorLanguageRequestEvent):void
 		{
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			var len:Number = editor.model.caretIndex - editor.startPos;
-			var startLine:int = editor.model.selectedLineIndex;
-			var startChar:int = editor.startPos;
-			var endLine:int = editor.model.selectedLineIndex;
-			var endChar:int = editor.model.caretIndex;
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_COMPLETION,
-				currentFile.fileBridge.url,
-				startChar, startLine, endChar, endLine));
+			_project.languageClient.completion(event.params, event.callback);
 		}
 
-		protected function dispatchSignatureHelpEvent():void
+		protected function lspEditor_requestResolveCompletionHandler(event:LspTextEditorLanguageRequestEvent):void
 		{
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			var len:Number = editor.model.caretIndex - editor.startPos;
-			var startLine:int = editor.model.selectedLineIndex;
-			var startChar:int = editor.startPos;
-			var endLine:int = editor.model.selectedLineIndex;
-			var endChar:int = editor.model.caretIndex;
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_SIGNATURE_HELP,
-				currentFile.fileBridge.url,
-				startChar, startLine, endChar, endLine));
+			_project.languageClient.resolveCompletion(CompletionItem(event.params), event.callback);
 		}
 
-		protected function dispatchHoverEvent(line:int, char:int):void
+		protected function lspEditor_requestSignatureHelpHandler(event:LspTextEditorLanguageRequestEvent):void
 		{
-			_hoverTimeoutID = -1;
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_HOVER,
-				currentFile.fileBridge.url,
-				char, line, char, line));
+			_project.languageClient.signatureHelp(event.params, event.callback);
 		}
 
-		protected function dispatchDefinitionLinkEvent(line:int, char:int):void
+		protected function lspEditor_requestHoverHandler(event:LspTextEditorLanguageRequestEvent):void
 		{
-			_definitionTimeoutID = -1;
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_DEFINITION_LINK,
-				currentFile.fileBridge.url,
-				char, line, char, line));
+			_project.languageClient.hover(event.params, event.callback);
+		}
+
+		protected function lspEditor_requestDefinitionHandler(event:LspTextEditorLanguageRequestEvent):void
+		{
+			if(!currentFile || !_project.languageClient)
+			{
+				return;
+			}
+			_project.languageClient.definition(event.params, event.callback);
+		}
+
+		private function lspEditor_requestCodeActionsHandler(event:LspTextEditorLanguageRequestEvent):void
+		{
+			if(!currentFile || !_project.languageClient)
+			{
+				return;
+			}
+			_project.languageClient.codeAction(event.params, event.callback);
 		}
 
 		protected function dispatchGotoDefinitionEvent(line:int, char:int):void
 		{
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_GO_TO_DEFINITION,
-				currentFile.fileBridge.url,
-				char, line, char, line));
+
+			var self:LanguageServerTextEditor = this;
+
+			_project.languageClient.definition({
+				textDocument: {
+					uri: currentFile.fileBridge.url
+				},
+				position: new Position(line, char)
+			}, function(locations:Array /* Array<Location> | Array<LocationLink> */):void {
+				dispatcher.dispatchEvent(
+					new LocationsEvent(LocationsEvent.EVENT_SHOW_LOCATIONS, locations));
+			});
 		}
 
 		protected function dispatchGotoTypeDefinitionEvent(line:int, char:int):void
 		{
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_GO_TO_TYPE_DEFINITION,
-				currentFile.fileBridge.url,
-				char, line, char, line));
+
+			var self:LanguageServerTextEditor = this;
+
+			_project.languageClient.typeDefinition({
+				textDocument: {
+					uri: currentFile.fileBridge.url
+				},
+				position: new Position(line, char)
+			}, function(locations:Array /* Array<Location> | Array<LocationLink> */):void {
+				dispatcher.dispatchEvent(
+					new LocationsEvent(LocationsEvent.EVENT_SHOW_LOCATIONS, locations));
+			});
 		}
 
 		protected function dispatchGotoImplementationEvent(line:int, char:int):void
 		{
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_GO_TO_IMPLEMENTATION,
-				currentFile.fileBridge.url,
-				char, line, char, line));
-		}
 
-		private function dispatchCodeActionEvent():void
-		{
-			_codeActionTimeoutID = -1;
-			if(!currentFile)
-			{
-				return;
-			}
-			var startLine:int = editor.model.getSelectionLineStart();
-			var startChar:int = editor.model.getSelectionCharStart();
-			if(startChar == -1)
-			{
-				startChar = editor.model.caretIndex;
-			}
-			var endLine:int = editor.model.getSelectionLineEnd();
-			var endChar:int = editor.model.getSelectionCharEnd();
-			dispatcher.dispatchEvent(new LanguageServerEvent(
-				LanguageServerEvent.EVENT_CODE_ACTION,
-				currentFile.fileBridge.url,
-				startChar, startLine, endChar, endLine));
-		}
+			var self:LanguageServerTextEditor = this;
 
-		protected function getTextDocument():String
-		{
-			var document:String;
-            var lines:Vector.<TextLineModel> = editor.model.lines;
-			var textLinesCount:int = lines.length;
-            if (textLinesCount > 1)
-            {
-				textLinesCount -= 1;
-                for (var i:int = 0; i < textLinesCount; i++)
-                {
-                    var textLine:TextLineModel = lines[i];
-                    document += textLine.text + "\n";
-                }
-            }
-
-			return document;
+			_project.languageClient.implementation({
+				textDocument: {
+					uri: currentFile.fileBridge.url
+				},
+				position: new Position(line, char)
+			}, function(locations:Array /* Array<Location> | Array<LocationLink> */):void {
+				dispatcher.dispatchEvent(
+					new LocationsEvent(LocationsEvent.EVENT_SHOW_LOCATIONS, locations));
+			});
 		}
 
 		override protected function openFileAsStringHandler(data:String):void
@@ -342,249 +370,60 @@ package actionScripts.ui.editor
 			super.openHandler(event);
 			dispatchDidOpenEvent();
 		}
-
-		private function onRollOver(event:MouseEvent):void
-		{
-			_previousCharAndLine = null;
-			dispatcher.addEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
-			dispatcher.addEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
-		}
-
-		private function onRollOut(event:MouseEvent):void
-		{
-			dispatcher.removeEventListener(HoverEvent.EVENT_SHOW_HOVER, showHoverHandler);
-			dispatcher.removeEventListener(GotoDefinitionEvent.EVENT_SHOW_DEFINITION_LINK, showDefinitionLinkHandler);
-			//don't call showHover(null) here. let the manager handle it.
-			//because the mouse might have moved over the tooltip instead,
-			//and we don't want to clear the hover in that case
-			if(_hoverTimeoutID != -1)
-			{
-				clearTimeout(_hoverTimeoutID);
-				_hoverTimeoutID = -1;
-			}
-			clearDefinitionLink();
-		}
-
-		private function isInsideSameWord(cl1:Point, cl2:Point):Boolean
-		{
-			if(!cl1 || !cl2)
-			{
-				return false;
-			}
-			var line1:Number = cl1.y;
-			var line2:Number = cl2.y;
-			if(line1 != line2)
-			{
-				//can't be the same word on different lines
-				return false;
-			}
-			var char1:Number = cl1.x;
-			var char2:Number = cl2.x;
-			if(char1 == char2)
-			{
-				//must be the same word when the character hasn't changed
-				return true;
-			}
-			var model:TextLineModel = editor.model.lines[line1];
-			var startIndex:int = char1;
-			var endIndex:int = char2;
-			if(startIndex > endIndex)
-			{
-				startIndex = char2;
-				endIndex = char1;
-			}
-			if((endIndex + 1) < model.text.length)
-			{
-				//include the later character when possible
-				endIndex++;
-			}
-			//look for non-word characters between the two
-			var substr:String = model.text.substr(startIndex, endIndex - startIndex);
-			return /^\w+$/g.test(substr);
-		}
 		
-		private function onMouseMove(event:MouseEvent):void
+		override protected function handleTextChange(event:TextEditorChangeEvent):void
 		{
-			var globalXY:Point = new Point(event.stageX, event.stageY);
-			var charAndLine:Point = editor.getCharAndLineForXY(globalXY, true);
-			if(charAndLine !== null)
-			{
-				if(!isInsideSameWord(charAndLine, _previousCharAndLine))
-				{
-					clearHover();
-					clearDefinitionLink();
-				}
-				_previousCharAndLine = charAndLine.clone();
-
-				if(event.ctrlKey)
-				{
-					startOrResetDefinitionLinkTimer(charAndLine.y, charAndLine.x);
-				}
-				else
-				{
-					clearDefinitionLink();
-				}
-				startOrResetHoverTimer(charAndLine.y, charAndLine.x);
-				
-			}
-			else
-			{
-				clearDefinitionLink();
-				clearHover();
-			}
-		}
-
-		private function onTextChange(event:ChangeEvent):void
-		{
-			var completionIncomplete:Boolean = _completionIncomplete && editor.completionActive;
-			_completionIncomplete = false;
+			super.handleTextChange(event);
 			dispatchDidChangeEvent();
-			if(completionIncomplete)
-			{
-				dispatchCompletionEvent();
-			}
 		}
 
-		private function editorModel_onChange(event:Event):void
-		{
-			startOrResetCodeActionTimer();
-		}
-
-		protected function menuGoToDefinitionHandler(event:MenuEvent):void
+		protected function menuGoToDefinitionHandler(event:Event):void
 		{
 			if(model.activeEditor != this)
 			{
 				return;
 			}
-			var startLine:int = editor.model.getSelectionLineStart();
-			var startChar:int = editor.model.getSelectionCharStart();
-			if(startChar == -1)
-			{
-				startChar = editor.model.caretIndex;
-			}
+			var startLine:int = editor.caretLineIndex;
+			var startChar:int = editor.caretCharIndex;
 			dispatchGotoDefinitionEvent(startLine, startChar);
 		}
 
-		protected function menuGoToTypeDefinitionHandler(event:MenuEvent):void
+		protected function menuGoToTypeDefinitionHandler(event:Event):void
 		{
 			if(model.activeEditor != this)
 			{
 				return;
 			}
-			var startLine:int = editor.model.getSelectionLineStart();
-			var startChar:int = editor.model.getSelectionCharStart();
-			if(startChar == -1)
-			{
-				startChar = editor.model.caretIndex;
-			}
+			var startLine:int = editor.caretLineIndex;
+			var startChar:int = editor.caretCharIndex;
 			dispatchGotoTypeDefinitionEvent(startLine, startChar);
 		}
 
-		protected function menuGoToImplementationHandler(event:MenuEvent):void
+		protected function menuGoToImplementationHandler(event:Event):void
 		{
 			if(model.activeEditor != this)
 			{
 				return;
 			}
-			var startLine:int = editor.model.getSelectionLineStart();
-			var startChar:int = editor.model.getSelectionCharStart();
-			if(startChar == -1)
-			{
-				startChar = editor.model.caretIndex;
-			}
+			var startLine:int = editor.caretLineIndex;
+			var startChar:int = editor.caretCharIndex;
 			dispatchGotoImplementationEvent(startLine, startChar);
 		}
 
 		protected function languageServerOpenedHandler(event:ProjectEvent):void
 		{
-			if(!currentFile || !isUriInProject(currentFile.fileBridge.url, event.project))
+			if(!currentFile || project != event.project)
 			{
 				return;
 			}
+			populateLspServerCapabilities();
 			dispatchDidOpenEvent();
 		}
 
-		protected function showCompletionListHandler(event:CompletionItemsEvent):void
+		override protected function closeTabHandler(event:Event):void
 		{
-			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
-			{
-				return;
-			}
-			if (event.items.length == 0)
-			{
-				return;
-			}
-			_completionIncomplete = event.incomplete;
-
-			editor.showCompletionList(event.items);
-		}
-
-		protected function updateResolvedCompletionItemHandler(event:CompletionItemsEvent):void
-		{
-			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
-			{
-				return;
-			}
-			if (event.items.length == 0)
-			{
-				return;
-			}
-
-			editor.resolveCompletionItem(event.items[0]);
-		}
-
-		protected function showSignatureHelpHandler(event:SignatureHelpEvent):void
-		{
-			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
-			{
-				return;
-			}
-			editor.showSignatureHelp(event.signatureHelp);
-		}
-
-		protected function showHoverHandler(event:HoverEvent):void
-		{
-			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
-			{
-				return;
-			}
-			editor.showHover(event.contents);
-		}
-
-		protected function showDefinitionLinkHandler(event:GotoDefinitionEvent):void
-		{
-			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
-			{
-				return;
-			}
-			editor.showDefinitionLink(event.locations, event.position);
-		}
-
-		protected function showDiagnosticsHandler(event:DiagnosticsEvent):void
-		{
-			if(!currentFile || event.path !== currentFile.fileBridge.nativePath)
-			{
-				return;
-			}
-			editor.showDiagnostics(event.diagnostics);
-		}
-
-		protected function showCodeActionsHandler(event:CodeActionsEvent):void
-		{
-			if(model.activeEditor != this || !currentFile || event.uri !== currentFile.fileBridge.url)
-			{
-				return;
-			}
-			editor.showCodeActions(event.codeActions);
-		}
-
-		override protected function closeTabHandler(event:CloseTabEvent):void
-		{
-			var closedTab:LanguageServerTextEditor = event.tab as LanguageServerTextEditor;
-			if(!closedTab || closedTab != this)
-			{
-				return;
-			}
+			super.closeTabHandler(event);
+			
 			dispatchDidCloseEvent();
 		}
 
@@ -595,15 +434,24 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
-			if(!currentFile)
+			if(!currentFile || !_project.languageClient)
 			{
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_WILLSAVE,
-				currentFile.fileBridge.url));
+
+			var uri:String = currentFile.fileBridge.url;
+
+			_project.languageClient.willSave({
+				textDocument: {
+					uri: uri
+				}
+			});
 			
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDSAVE,
-				currentFile.fileBridge.url));
+			_project.languageClient.didSave({
+				textDocument: {
+					uri: uri
+				}
+			});
 		}
 
 		override protected function tabSelectHandler(event:TabEvent):void
@@ -616,15 +464,46 @@ package actionScripts.ui.editor
 			super.tabSelectHandler(event);
 		}
 
-		override protected function addedToStageHandler(event:Event):void
-		{
-			super.addedToStageHandler(event);
-		}
-
 		override protected function removedFromStageHandler(event:Event):void
 		{
 			super.removedFromStageHandler(event);
 			this.closeAllPopups();
+		}
+
+		private function showDiagnosticsHandler(event:DiagnosticsEvent):void
+		{
+			if(!currentFile || event.uri != currentFile.fileBridge.url)
+			{
+				return;
+			}
+
+			lspEditor.diagnostics = event.diagnostics;
+		}
+
+		private function lspEditor_applyWorkspaceEditHandler(event:LspTextEditorLanguageActionEvent):void
+		{
+			var workspaceEdit:WorkspaceEdit = WorkspaceEdit(event.data);
+			applyWorkspaceEdit(workspaceEdit);
+		}
+
+		private function lspEditor_openLinkHandler(event:LspTextEditorLanguageActionEvent):void
+		{
+			var locationLinks:Array = event.data as Array;
+			if(locationLinks.length == 0)
+			{
+				return;
+			}
+			var locationLink:LocationLink = locationLinks[0];
+			dispatcher.dispatchEvent(new OpenLocationEvent(OpenLocationEvent.OPEN_LOCATION, locationLink));
+		}
+
+		private function lspEditor_runCommandHandler(event:LspTextEditorLanguageActionEvent):void
+		{
+			var command:Command = Command(event.data);
+			languageClient.executeCommand({
+				command: command.command,
+				arguments: command.arguments
+			}, function(result:* = null):void {});
 		}
 	}
 }

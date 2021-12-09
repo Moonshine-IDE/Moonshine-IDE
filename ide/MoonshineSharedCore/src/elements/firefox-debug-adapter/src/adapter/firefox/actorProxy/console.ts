@@ -121,10 +121,14 @@ export class ConsoleActorProxy extends EventEmitter implements ActorProxy {
 		} else if (response['messages']) {
 
 			log.debug('Received cached messages');
-			for (let message of (<FirefoxDebugProtocol.GetCachedMessagesResponse>response).messages) {
-				if (message._type === 'ConsoleAPI') {
+			for (let message of response.messages) {
+				if ((message as FirefoxDebugProtocol.CachedMessage).type === 'consoleAPICall') {
+					this.emit('consoleAPI', message.message);
+				} else if ((message as FirefoxDebugProtocol.CachedMessage).type === 'pageError') {
+					this.emit('pageError', message.pageError);
+				} else if ((message as FirefoxDebugProtocol.LegacyCachedMessage)._type === 'ConsoleAPI') {
 					this.emit('consoleAPI', message);
-				} else if (message._type === 'PageError') {
+				} else if ((message as FirefoxDebugProtocol.LegacyCachedMessage)._type === 'PageError') {
 					this.emit('pageError', message);
 				}
 			}

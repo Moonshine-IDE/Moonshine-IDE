@@ -2,12 +2,14 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import { spawn, fork, ChildProcess } from 'child_process';
 import FirefoxProfile from 'firefox-profile';
-import { ParsedLaunchConfiguration } from '../configuration';
+import { ParsedLaunchConfiguration, ParsedAttachConfiguration, getExecutableCandidates } from '../configuration';
+import { isExecutable } from '../util/fs';
 
 /**
  * Launches Firefox after preparing the debug profile.
- * If Firefox is launched "detached" (when the `reAttach` flag in the launch configuration is set
- * to `true`), it creates one or even two intermediate child processes for launching Firefox:
+ * If Firefox is launched "detached" (the default unless we are on MacOS and the `reAttach` flag
+ * in the launch configuration is set to `false`), it creates one or even two intermediate
+ * child processes for launching Firefox:
  * * one of them will wait for the Firefox process to exit and then remove any temporary directories
  *   created by this debug adapter
  * * the other one is used to work around a bug in the node version that is distributed with VS Code
@@ -20,6 +22,14 @@ import { ParsedLaunchConfiguration } from '../configuration';
 export async function launchFirefox(launch: ParsedLaunchConfiguration): Promise<ChildProcess | undefined> {
 
 	await prepareDebugProfile(launch);
+
+	// workaround for an issue with the snap version of VS Code
+	// (see e.g. https://github.com/microsoft/vscode/issues/85344)
+	const env = { ...process.env };
+	if (env.SNAP) {
+		delete env['GDK_PIXBUF_MODULE_FILE'];
+		delete env['GDK_PIXBUF_MODULEDIR'];
+	}
 
 	let childProc: ChildProcess | undefined = undefined;
 
@@ -36,24 +46,24 @@ export async function launchFirefox(launch: ParsedLaunchConfiguration): Promise<
 
 			case 1:
 				forkArgs = [
-					'spawnDetached', process.execPath, forkedLauncherPath,
+					'forkDetached', forkedLauncherPath,
 					'spawnAndRemove', launch.tmpDirs[0], launch.firefoxExecutable, ...launch.firefoxArgs
 				];
 				break;
 
 			default:
 				forkArgs = [
-					'spawnDetached', process.execPath, forkedLauncherPath,
+					'forkDetached', forkedLauncherPath,
 					'spawnAndRemove2', launch.tmpDirs[0], launch.tmpDirs[1], launch.firefoxExecutable, ...launch.firefoxArgs
 				];
 				break;
 		}
 
-		fork(forkedLauncherPath, forkArgs, { execArgv: [] });
+		fork(forkedLauncherPath, forkArgs, { env, execArgv: [] });
 
 	} else {
 
-		childProc = spawn(launch.firefoxExecutable, launch.firefoxArgs, { detached: true });
+		childProc = spawn(launch.firefoxExecutable, launch.firefoxArgs, { env, detached: true });
 
 		childProc.stdout.on('data', () => undefined);
 		childProc.stderr.on('data', () => undefined);
@@ -62,6 +72,46 @@ export async function launchFirefox(launch: ParsedLaunchConfiguration): Promise<
 	}
 
 	return childProc;
+}
+
+export async function openNewTab(
+	config: ParsedAttachConfiguration,
+	description: FirefoxDebugProtocol.DeviceDescription
+): Promise<boolean> {
+
+	if (!config.url) return true;
+
+	let firefoxExecutable = config.firefoxExecutable;
+	if (!firefoxExecutable) {
+
+		let firefoxEdition: 'stable' | 'developer' | 'nightly' | undefined;
+		if (description.channel === 'release') {
+			firefoxEdition = 'stable';
+		} else if (description.channel === 'aurora') {
+			firefoxEdition = 'developer';
+		} else if (description.channel === 'nightly') {
+			firefoxEdition = 'nightly';
+		}
+
+		if (firefoxEdition) {
+			const candidates = getExecutableCandidates(firefoxEdition);
+			for (let i = 0; i < candidates.length; i++) {
+				if (await isExecutable(candidates[i])) {
+					firefoxExecutable = candidates[i];
+					break;
+				}
+			}
+		}
+
+		if (!firefoxExecutable) return false;
+	}
+
+	const firefoxArgs = config.profileDir ? [ '--profile', config.profileDir ] : [ '-P', description.profile ];
+	firefoxArgs.push(config.url);
+
+	spawn(firefoxExecutable, firefoxArgs);
+
+	return true;
 }
 
 async function prepareDebugProfile(config: ParsedLaunchConfiguration): Promise<FirefoxProfile> {

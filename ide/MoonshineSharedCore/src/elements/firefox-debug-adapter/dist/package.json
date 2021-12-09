@@ -1,12 +1,13 @@
 {
   "name": "firefox-debugadapter",
-  "version": "2.7.0",
+  "version": "2.9.5",
   "author": "Holger Benl <hbenl@evandor.de>",
   "description": "Debug adapter for Firefox",
   "files": [
     "adapter.bundle.js",
     "launcher.bundle.js",
     "mappings.wasm",
+    "terminator/*",
     "README.md",
     "LICENSE"
   ],

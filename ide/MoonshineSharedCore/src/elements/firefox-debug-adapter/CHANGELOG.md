@@ -1,3 +1,48 @@
+### Version 2.9.5
+* compatibility fix for VS Code 1.62.1
+
+### Version 2.9.4
+* fix for breakpoints not being set in some situations
+* add the URL to a thread's name
+
+### Version 2.9.3
+* fix breakpoints only working after reloading the page
+* fix missing console messages
+* fix debugging WebWorkers
+* fix data breakpoints
+
+### Version 2.9.2
+* fix terminating Firefox at the end of the debug session
+* fix function scopes being with the name `[unknown]`
+* show an error message if the path mapping wizard couldn't update the launch configuration
+* set the webRoot configuration property to its default if necessary
+* support overriding the debugging port in the settings
+* add workaround for the snap version of VS Code
+
+### Version 2.9.1
+* add `enableCRAWorkaround` configuration property
+* fix the conditions for the `keepProfileChanges` configuration property on MacOS
+* fix the sorting of Arrays in the Variables view
+
+### Version 2.9.0
+* add `tabFilter` configuration property
+* open a new Firefox tab if no tab matches the `tabFilter`
+* allow `stable`, `developer` and `nightly` as values for firefoxExecutable
+* only suggest the Path Mapping Wizard if it can create a pathMapping
+* debug protocol fix for Firefox 78
+
+### Version 2.8.0
+* debug protocol fix for Firefox 77
+* add `tmpDir` configuration property
+* fix for skipping external URLs containing a query string
+* fixes for object previews
+
+### Version 2.7.2
+* debug protocol fixes for Firefox 76
+
+### Version 2.7.1
+* debug protocol fix for Firefox 75
+
 ### Version 2.7.0
 * bugfix for breakpoints in Vue.js projects
 * add default pathMappings for Next.js projects

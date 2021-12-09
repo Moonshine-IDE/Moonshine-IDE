@@ -20,46 +20,47 @@ package actionScripts.ui.editor
 {
     import flash.display.DisplayObject;
     import flash.events.Event;
-    
+    import flash.utils.clearInterval;
+    import flash.utils.setTimeout;
+
     import mx.core.FlexGlobals;
     import mx.events.FlexEvent;
     import mx.managers.IFocusManagerComponent;
     import mx.managers.PopUpManager;
     import mx.utils.ObjectUtil;
-    
+
     import spark.components.Group;
-    
+
     import actionScripts.controllers.DataAgent;
-    import actionScripts.events.ChangeEvent;
-    import actionScripts.events.CodeActionsEvent;
-    import actionScripts.events.CompletionItemsEvent;
-    import actionScripts.events.DiagnosticsEvent;
     import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.LanguageServerMenuEvent;
-    import actionScripts.events.ProjectEvent;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.SaveFileEvent;
-    import actionScripts.events.SignatureHelpEvent;
     import actionScripts.events.UpdateTabEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IContentWindowReloadable;
     import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.text.DebugHighlightManager;
-    import actionScripts.ui.editor.text.TextEditor;
-    import actionScripts.ui.editor.text.vo.SearchResult;
+    import actionScripts.ui.editor.text.events.DebugLineEvent;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.ui.tabview.TabEvent;
+    import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
-    
+
     import components.popup.FileSavePopup;
     import components.popup.SelectOpenedProject;
     import components.views.project.TreeView;
+
+    import moonshine.editor.text.TextEditor;
+    import moonshine.editor.text.TextEditorSearchResult;
+    import moonshine.editor.text.events.TextEditorChangeEvent;
+    import moonshine.editor.text.events.TextEditorLineEvent;
 
     public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
@@ -67,7 +68,8 @@ package actionScripts.ui.editor
 		public var projectPath:String;
 		public var editor:TextEditor;
 		public var lastOpenType:String;
-		
+
+		protected var editorWrapper:FeathersUIWrapper;		
 		protected var lastOpenedUpdatedInMoonshine:Date;
 		protected var file:FileLocation;
 		protected var created:Boolean;
@@ -120,30 +122,27 @@ package actionScripts.ui.editor
 
 		public function get text():String
 		{
-			return editor.dataProvider;
+			return editor.text;
 		}
 		public function set text(value:String):void
 		{
-			editor.dataProvider = value;
+			editor.text = value;
 		}
-		
-		// Search may be RegExp or String
-		public function search(search:*, backwards:Boolean=false):SearchResult
+
+		private var _prevSearch:*;
+
+		public function BasicTextEditor(readOnly:Boolean = false)
 		{
-			return editor.search(search, backwards);
-		}
-		
-		// Search all instances and highlight
-		// Preferably used in 'search in project' sequence
-		public function searchAndShowAll(search:*):void
-		{
-			editor.searchAndShowAll(search);
-		}
-		
-		// Search may be RegExp or String
-		public function searchReplace(search:*, replace:String, all:Boolean=false):SearchResult
-		{
-			return editor.searchReplace(search, replace, all);
+			super();
+			_readOnly = readOnly;
+			
+			this.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			this.addEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
+			
+			percentHeight = 100;
+			percentWidth = 100;
+			addEventListener(FlexEvent.CREATION_COMPLETE, basicTextEditorCreationCompleteHandler);
+			initializeChildrens();
 		}
 
 		public function isEmpty():Boolean
@@ -162,19 +161,51 @@ package actionScripts.ui.editor
 		{
 			return editor;
 		}
-
-		public function BasicTextEditor(readOnly:Boolean = false)
+		
+		// Search may be RegExp or String
+		public function search(search:*, backwards:Boolean=false):TextEditorSearchResult
 		{
-			super();
-			_readOnly = readOnly;
-			
-			this.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
-			this.addEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
-			
-			percentHeight = 100;
-			percentWidth = 100;
-			addEventListener(FlexEvent.CREATION_COMPLETE, basicTextEditorCreationCompleteHandler);
-			initializeChildrens();
+			if(checkIfNewSearchMatchesPrevious(search))
+			{
+				return editor.findNext(backwards, true);
+			}
+			return editor.find(search, backwards);
+		}
+		
+		// Search all instances and highlight
+		// Preferably used in 'search in project' sequence
+		public function searchAndShowAll(search:*):void
+		{
+			//editor.searchAndShowAll(search);
+		}
+		
+		// Search may be RegExp or String
+		public function searchReplace(search:*, replace:String, all:Boolean=false):TextEditorSearchResult
+		{
+			if(!checkIfNewSearchMatchesPrevious(search))
+			{
+				editor.find(search);
+			}
+			if(all)
+			{
+				return editor.replaceAll(replace)
+			}
+			return editor.replaceOne(replace);
+		}
+
+		protected function checkIfNewSearchMatchesPrevious(search:*):Boolean
+		{
+			var matches:Boolean = false;
+			if(search is RegExp && _prevSearch is RegExp)
+			{
+				matches = search.toString() == _prevSearch.toString();
+			}
+			else if(search is String && _prevSearch is String)
+			{
+				matches = search == _prevSearch;
+			}
+			_prevSearch = search;
+			return matches;
 		}
 		
 		protected function addedToStageHandler(event:Event):void
@@ -191,16 +222,32 @@ package actionScripts.ui.editor
 		{
 			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_FINISH, setDebugFinishHandler);
 		}
 		
 		protected function removeGlobalListeners():void
 		{
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+			dispatcher.removeEventListener(DebugLineEvent.SET_DEBUG_FINISH, setDebugFinishHandler);
 		}
 		
-		protected function closeTabHandler(event:CloseTabEvent):void
+		protected function closeTabHandler(event:Event):void
 		{
+			if (event is CloseTabEvent)
+			{
+				if ((event as CloseTabEvent).isUserTriggered)
+				{
+					SharedObjectUtil.removeLocationOfEditorFile(
+						(event as CloseTabEvent).tab as IContentWindow
+					);
+				}
+			}
+			// suppose to call only when keyboard shortcuts Event
+			else if (model.activeEditor == this)
+			{
+				SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
+			}
 		}
 		
 		protected function tabSelectHandler(event:TabEvent):void
@@ -214,10 +261,15 @@ package actionScripts.ui.editor
 		
 		protected function initializeChildrens():void
 		{
-			editor = new TextEditor(_readOnly);
-			editor.percentHeight = 100;
-			editor.percentWidth = 100;
-			editor.addEventListener(ChangeEvent.TEXT_CHANGE, handleTextChange);
+			if(!editor)
+			{
+				editor = new TextEditor(null, _readOnly);
+			}
+			editor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
+			editor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
+			editorWrapper = new FeathersUIWrapper(editor);
+			editorWrapper.percentHeight = 100;
+			editorWrapper.percentWidth = 100;
 			text = "";
 		}
 
@@ -225,8 +277,7 @@ package actionScripts.ui.editor
 		{
 			if (editor)
 			{
-				editor.hasFocus = true;
-				editor.setFocus();
+				editorWrapper.setFocus();
 			}
 		}
 
@@ -234,22 +285,22 @@ package actionScripts.ui.editor
 		{
 			if (!isVisualEditor)
             {
-				this.addElement(editor);
+				this.addElement(editorWrapper);
             }
 			
 			super.createChildren();
 			
 			// @note
-			// https://github.com/prominic/Moonshine-IDE/issues/31
+			// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/31
 			// to ensure if the file has a pending debug/breakpoint call
 			// call extended from OpenFileCommand/openFile(..)
 			if (currentFile && currentFile.fileBridge.nativePath == DebugHighlightManager.NONOPENED_DEBUG_FILE_PATH)
 			{
-				editor.isNeedToBeTracedAfterOpening = true;
+				editor.debuggerLineIndex = DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE;
 			}
 		}
 
-		protected function basicTextEditorCreationCompleteHandler(e:FlexEvent):void
+		protected function basicTextEditorCreationCompleteHandler(event:FlexEvent):void
 		{
 			removeEventListener(FlexEvent.CREATION_COMPLETE, basicTextEditorCreationCompleteHandler);
 			
@@ -266,26 +317,21 @@ package actionScripts.ui.editor
 			}
 			else
 			{
-				editor.scrollTo(line, eventType);
-				editor.selectLine(line);
+				editor.setSelection(line, 0, line, 0);
+				editor.scrollViewIfNeeded();
 			}
-		}
-		
-		public function selectRangeAtLine(search:*, range:Object=null):void
-		{
-			editor.selectRangeAtLine(search, range);
 		}
 		
 		public function setContent(content:String):void
 		{
-			editor.dataProvider = content;
+			editor.text = content;
 			updateChangeStatus();
 		}
 		
 		public function open(newFile:FileLocation, fileData:Object=null):void
 		{
 			loadingFile = true;
-			file = newFile;
+			currentFile = newFile;
 			if (fileData) 
 			{
 				openFileAsStringHandler(fileData as String);
@@ -402,7 +448,7 @@ package actionScripts.ui.editor
 		{
 			if (file)
 			{
-				this.file = file;
+				currentFile = file;
 				save();
 				// Update labels
 				dispatchEvent(new Event('labelChanged'));
@@ -421,11 +467,14 @@ package actionScripts.ui.editor
 					if (model.mainView.isProjectViewAdded)
 					{
 						var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-						var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-						if (projectReference)
+						if(tmpTreeView) //might be null if closed by user
 						{
-							saveAsPath(projectReference.folderPath);
-							return;
+							var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
+							if (projectReference)
+							{
+								saveAsPath(projectReference.folderPath);
+								return;
+							}
 						}
 					}
 					selectProjectPopup = new SelectOpenedProject();
@@ -466,26 +515,38 @@ package actionScripts.ui.editor
 		public function onFileSaveSuccess(file:FileLocation=null):void
 		{
 			//saveAs(file);
-			this.file = file;
+			currentFile = file;
 			dispatchEvent(new Event('labelChanged'));
 			editor.save();
-			updateChangeStatus();
 			dispatcher.dispatchEvent(new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this));
+			updateChangeStatus();
 		}
 		
-		protected function handleTextChange(event:ChangeEvent):void
+		protected function handleTextChange(event:TextEditorChangeEvent):void
 		{
-			if (editor.hasChanged != _isChanged)
+			if (editor.edited != _isChanged)
 			{
 				updateChangeStatus();	
 			}
 		}
+
+		protected function handleToggleBreakpoint(event:TextEditorLineEvent):void
+		{
+			var lineIndex:int = event.lineIndex;
+			var enabled:Boolean = editor.breakpoints.indexOf(lineIndex) != -1;
+			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_LINE, lineIndex, enabled));
+		}
 		
 		protected function updateChangeStatus():void
 		{
-			_isChanged = editor.hasChanged;
-			lastOpenedUpdatedInMoonshine = file.fileBridge.modificationDate;
+			_isChanged = editor.edited;
 			dispatchEvent(new Event('labelChanged'));
+			
+			var setLastUpdateTime:uint = setTimeout(function():void
+			{
+				clearInterval(setLastUpdateTime);
+				lastOpenedUpdatedInMoonshine = file.fileBridge.modificationDate;
+			}, 1000);
 		}
 
 		protected function handleSaveAsSelect(fileObj:Object):void
@@ -501,5 +562,10 @@ package actionScripts.ui.editor
                 tempScrollTo = -1;
             }
         }
+
+		private function setDebugFinishHandler(event:DebugLineEvent):void
+		{
+			editor.debuggerLineIndex = -1;
+		}
     }
 }

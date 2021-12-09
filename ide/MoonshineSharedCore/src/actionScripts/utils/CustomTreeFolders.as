@@ -18,11 +18,14 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils {
-	
+
+	import actionScripts.valueObjects.FileWrapper;
+
 	import flash.events.KeyboardEvent;
 	
 	import mx.controls.Tree;
-	
+	import mx.events.TreeEvent;
+
 	public class CustomTreeFolders extends Tree
 	{
 		public var keyNav:Boolean = true;
@@ -35,6 +38,10 @@ package actionScripts.utils {
 		{
 			super();
 			super.dataDescriptor = new DataDescriptorForCustomTree();
+
+			addEventListener(TreeEvent.ITEM_OPENING, onCustomTreeItemEventHandler, false, 0, true);
+			addEventListener(TreeEvent.ITEM_OPEN, onCustomTreeItemEventHandler, false, 0, true);
+			addEventListener(TreeEvent.ITEM_CLOSE, onCustomTreeItemEventHandler, false, 0, true);
 		}
 		
 		/**
@@ -44,6 +51,15 @@ package actionScripts.utils {
 		{
 			if (keyNav) super.keyDownHandler(event);
 		}
-		
+
+		private function onCustomTreeItemEventHandler(event:TreeEvent):void
+		{
+			updateItemChildren(event.item as FileWrapper);
+		}
+
+		private function updateItemChildren(item:FileWrapper):void
+		{
+			if (item.children.length == 0) item.updateChildren();
+		}
 	}
 }

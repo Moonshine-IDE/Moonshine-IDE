@@ -21,12 +21,12 @@ package actionScripts.utils
 	import flash.filesystem.File;
 	
 	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.HelperEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.settings.event.SetSettingsEvent;
+	import actionScripts.plugin.settings.providers.Java8SettingsProvider;
 	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
@@ -38,6 +38,8 @@ package actionScripts.utils
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
+	
+	import moonshine.events.HelperEvent;
 
 	public class PathSetupHelperUtil
 	{
@@ -51,34 +53,36 @@ package actionScripts.utils
 			switch (type)
 			{
 				case SDKTypes.FLEX:
+				case SDKTypes.FLEX_HARMAN:
 				case SDKTypes.ROYALE:
 				case SDKTypes.FLEXJS:
 				case SDKTypes.FEATHERS:
 				case SDKTypes.OPENJAVA:
+				case SDKTypes.OPENJAVA8:
 					pluginClass = "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin";
 					break;
-				case SDKTypes.ANT:
+				case ComponentTypes.TYPE_ANT:
 					pluginClass = "actionScripts.plugins.ant::AntBuildPlugin";
 					break;
-				case SDKTypes.GIT:
+				case ComponentTypes.TYPE_GIT:
 					pluginClass = GitHubPlugin.NAMESPACE;
 					break;
-				case SDKTypes.MAVEN:
+				case ComponentTypes.TYPE_MAVEN:
 					pluginClass = "actionScripts.plugins.maven::MavenBuildPlugin";
 					break;
-				case SDKTypes.GRADLE:
+				case ComponentTypes.TYPE_GRADLE:
 					pluginClass = "actionScripts.plugins.gradle::GradleBuildPlugin";
 					break;
-				case SDKTypes.GRAILS:
+				case ComponentTypes.TYPE_GRAILS:
 					pluginClass = "actionScripts.plugins.grails::GrailsBuildPlugin";
 					break;
-				case SDKTypes.SVN:
+				case ComponentTypes.TYPE_SVN:
 					pluginClass = SVNPlugin.NAMESPACE;
 					break;
-				case SDKTypes.NODEJS:
+				case ComponentTypes.TYPE_NODEJS:
 					pluginClass = "actionScripts.plugins.js::JavaScriptPlugin";
 					break;
-				case SDKTypes.NOTES:
+				case ComponentTypes.TYPE_NOTES:
 					pluginClass = DominoPlugin.NAMESPACE;
 					break;
 			}
@@ -91,36 +95,40 @@ package actionScripts.utils
 			switch (type)
 			{
 				case SDKTypes.FLEX:
+				case SDKTypes.FLEX_HARMAN:
 				case SDKTypes.ROYALE:
 				case SDKTypes.FLEXJS:
 				case SDKTypes.FEATHERS:
-					addProgramingSDK(path);
+					addProgramingSDK(path, type);
 					break;
 				case SDKTypes.OPENJAVA:
-					updateJavaPath(path);
+					updateJavaPath(path, !path ? true : false);
 					break;
-				case SDKTypes.ANT:
+				case SDKTypes.OPENJAVA8:
+					updateJava8Path(path, !path ? true : false);
+					break;
+				case ComponentTypes.TYPE_ANT:
 					updateAntPath(path);
 					break;
-				case SDKTypes.GIT:
+				case ComponentTypes.TYPE_GIT:
 					updateGitPath(path);
 					break;
-				case SDKTypes.MAVEN:
+				case ComponentTypes.TYPE_MAVEN:
 					updateMavenPath(path);
 					break;
-				case SDKTypes.GRADLE:
+				case ComponentTypes.TYPE_GRADLE:
 					updateGradlePath(path);
 					break;
-				case SDKTypes.GRAILS:
+				case ComponentTypes.TYPE_GRAILS:
 					updateGrailsPath(path);
 					break;
-				case SDKTypes.SVN:
+				case ComponentTypes.TYPE_SVN:
 					updateSVNPath(path);
 					break;
-				case SDKTypes.NODEJS:
+				case ComponentTypes.TYPE_NODEJS:
 					updateNodeJsPath(path);
 					break;
-				case SDKTypes.NOTES:
+				case ComponentTypes.TYPE_NOTES:
 					updateNotesPath(path);
 					break;
 			}
@@ -214,17 +222,43 @@ package actionScripts.utils
 			}
 		}
 		
-		public static function updateJavaPath(path:String):void
+		public static function updateJavaPath(path:String, isForceUpdate:Boolean=false):void
 		{
 			// update only if ant path not set
 			// or the existing ant path does not exists
-			if (!UtilsCore.isJavaForTypeaheadAvailable())
+			if (!UtilsCore.isJavaForTypeaheadAvailable() || isForceUpdate)
 			{
 				var javaSettingsProvider:JavaSettingsProvider = new JavaSettingsProvider();
 				javaSettingsProvider.currentJavaPath = path;
 				
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({currentJavaPath: path}, 'currentJavaPath', 'Java Development Kit Path', true, path)
+					new PathSetting({currentJavaPath: path}, 'currentJavaPath', 'Java Development Kit Root Path', true, path)
+				]);
+				
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+					null, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin", settings));
+				
+				// update local env.variable
+				environmentSetupUtils.updateToCurrentEnvironmentVariable();
+			}
+			else
+			{
+				//checkJavaVersionAndUpdateOnlyIfRequires(path, model.javaVersionForTypeAhead, updateJavaPath);
+			}
+		}
+		
+		public static function updateJava8Path(path:String, isForceUpdate:Boolean=false):void
+		{
+			// update only if ant path not set
+			// or the existing ant path does not exists
+			if (!UtilsCore.isJava8Present() || isForceUpdate)
+			{
+				var javaSettingsProvider:Java8SettingsProvider = new Java8SettingsProvider();
+				javaSettingsProvider.currentJava8Path = path;
+				
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({currentJava8Path: path}, 'currentJava8Path', 'Java Development Kit 8 Root Path', true, path)
 				]);
 				
 				// save as moonshine settings
@@ -238,43 +272,21 @@ package actionScripts.utils
 		
 		public static function updateSVNPath(path:String, forceUpdate:Boolean=false):void
 		{
-			// update only if ant path not set
-			// or the existing ant path does not exists
-			if (!UtilsCore.isSVNPresent())
-			{
-				if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isSVNPresent())
-				{
-					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_SVN, message: "Feature available. Click on Configure to allow"}));
-				}
-				else
-				{
-					updateMoonshineConfiguration();
-				}
-			}
-			
-			if (forceUpdate)
-			{
-				updateMoonshineConfiguration();
-			}
-			
-			/*
-			 * @local
-			 */
-			function updateMoonshineConfiguration():void
+			if (!UtilsCore.isSVNPresent() || forceUpdate)
 			{
 				if (path && !ConstantsCoreVO.IS_MACOS && path.indexOf("svn.exe") == -1)
 				{
 					path += (File.separator +'bin'+ File.separator +'svn.exe');
 				}
-				
+
 				model.svnPath = path;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
 					new PathSetting({svnBinaryPath: model.svnPath}, 'svnBinaryPath', 'SVN Binary', false)
 				]);
-				
+
 				// save as moonshine settings
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
-					null, SVNPlugin.NAMESPACE, settings));
+						null, SVNPlugin.NAMESPACE, settings));
 			}
 		}
 		
@@ -283,6 +295,8 @@ package actionScripts.utils
 			// update only if ant path not set
 			// or the existing ant path does not exists
 			var isGitPresent:Boolean = UtilsCore.isGitPresent();
+			var providedPath:String = path == null ? "" : path;
+
 			if (!isGitPresent)
 			{
 				if (ConstantsCoreVO.IS_MACOS && !isGitPresent)
@@ -305,12 +319,12 @@ package actionScripts.utils
 			 */
 			function updateMoonshineConfiguration():void
 			{
-				if (!ConstantsCoreVO.IS_MACOS && path.indexOf("git.exe") == -1)
+				if (!ConstantsCoreVO.IS_MACOS && (providedPath == null || providedPath.indexOf("git.exe") == -1))
 				{
-					path += (File.separator +'bin'+ File.separator +'git.exe');
+					providedPath += (File.separator +'bin'+ File.separator +'git.exe');
 				}
 				
-				model.gitPath = path;
+				model.gitPath = providedPath;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
 					new PathSetting({gitBinaryPathOSX: model.gitPath}, 'gitBinaryPathOSX', 'Git Path', true)
 				]);
@@ -379,13 +393,14 @@ package actionScripts.utils
 				null, "actionScripts.plugins.versionControl::VersionControlPlugin", settings));
 		}
 		
-		public static function addProgramingSDK(path:String):void
+		public static function addProgramingSDK(path:String, type:String=null):void
 		{
 			var sdkPath:FileLocation = new FileLocation(path);
 			if (!sdkPath.fileBridge.exists) return;
 			
-			var tmpSDK:SDKReferenceVO = SDKUtils.getSDKReference(sdkPath);
+			var tmpSDK:SDKReferenceVO = SDKUtils.getSDKReference(sdkPath, type);
 			if (!tmpSDK) return;
+			tmpSDK.status = SDKUtils.BUNDLED;
 			SDKUtils.isSDKAlreadySaved(tmpSDK);
 			
 			// if only not already set
@@ -396,6 +411,23 @@ package actionScripts.utils
 				
 				// update local env.variable
 				environmentSetupUtils.updateToCurrentEnvironmentVariable();
+			}
+		}
+		
+		private static function checkJavaVersionAndUpdateOnlyIfRequires(path:String, currentVersion:String, updateFn:Function):void
+		{
+			if (!FileUtils.isPathExists(path) || !currentVersion) 
+				return;
+			
+			var javaVersionReader:JavaVersionReader = new JavaVersionReader();
+			javaVersionReader.readVersion(path, onJavaVersionReadCompletes);
+			
+			function onJavaVersionReadCompletes(value:String):void
+			{
+				if (HelperUtils.isNewUpdateVersion(currentVersion, value) == 1)
+				{
+					updateFn(path, true);
+				}
 			}
 		}
 	}

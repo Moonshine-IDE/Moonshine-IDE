@@ -29,7 +29,7 @@ package actionScripts.controllers
     import mx.events.ResizeEvent;
     import mx.managers.PopUpManager;
 
-    import spark.components.Button;
+    import feathers.controls.Button;
     
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.locator.IDEModel;
@@ -41,7 +41,9 @@ package actionScripts.controllers
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.HamburgerMenuTabsVO;
     
-    import components.popup.StandardPopup;
+    import moonshine.components.StandardPopupView;
+    import actionScripts.ui.FeathersUIWrapper;
+    import moonshine.theme.MoonshineTheme;
 
 	public class CloseTabCommand implements ICommand
 	{
@@ -49,18 +51,34 @@ package actionScripts.controllers
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
 		private var tabToClose:IContentWindow;
-		private var pop:StandardPopup;
+		private var pop:StandardPopupView;
+		private var popWrapper:FeathersUIWrapper;
 
 		public function execute(event:Event):void
 		{
+			var tabView:TabView;
 			if (event.type == CloseTabEvent.EVENT_CLOSE_ALL_TABS)
 			{
-                var tabView:TabView = model.mainView.mainContent;
+                tabView = model.mainView.mainContent;
 				if (tabView)
 				{
 					tabView.removeTabsFromCache();
 				}
 				UtilsCore.closeAllRelativeEditors(null);
+				return;
+			}
+
+			if (event.type == CloseTabEvent.EVENT_CLOSE_ALL_OTHER_TABS)
+			{
+				tabView = model.mainView.mainContent;
+				if (tabView)
+				{
+					tabView.removeTabsFromCache(model.activeEditor);
+				}
+				UtilsCore.closeAllRelativeEditors(
+						null, false, null, true,
+						model.activeEditor
+				);
 				return;
 			}
 			
@@ -75,7 +93,7 @@ package actionScripts.controllers
 
 			if (!forceClose && tabToClose.isChanged())
 			{	
-				pop = new StandardPopup();
+				pop = new StandardPopupView();
 				pop.data = this; // Keep the command from getting GC'd
 				pop.text = tabToClose.label + " is changed.";
 				
@@ -86,25 +104,27 @@ package actionScripts.controllers
 				}
 				
 				var save:Button = new Button();
-				save.styleName = "lightButton";
-				save.label = "Save file";
+				save.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+				save.text = "Save file";
 				save.addEventListener(MouseEvent.CLICK, saveTab, false, 0, false);
 				
 				var close:Button = new Button();
-				close.styleName = "lightButton";
-				close.label = "Discard";
+				close.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+				close.text = "Discard";
 				close.addEventListener(MouseEvent.CLICK, closeTab, false, 0, false);
 				
 				var cancel:Button = new Button();
-				cancel.styleName = "lightButton";
-				cancel.label = "See file again";
+				cancel.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+				cancel.text = "See file again";
 				cancel.addEventListener(MouseEvent.CLICK, seeFileAgain, false, 0, false);
 				 
-				pop.buttons = [save, close, cancel];
+				pop.controls = [save, close, cancel];
 				
-				PopUpManager.addPopUp(pop, FlexGlobals.topLevelApplication as DisplayObject, true);
-				pop.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
-				pop.x = (FlexGlobals.topLevelApplication.width-pop.width)/2;
+				popWrapper = new FeathersUIWrapper(pop);
+				PopUpManager.addPopUp(popWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+				popWrapper.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
+				popWrapper.x = (FlexGlobals.topLevelApplication.width-popWrapper.width)/2;
+				popWrapper.assignFocus("top");
 				
 				model.isIndividualCloseTabAlertShowing = true;
 				
@@ -128,14 +148,15 @@ package actionScripts.controllers
 		
 		private function cleanUp():void
 		{
-			if (pop)
+			if (popWrapper)
 			{
 				FlexGlobals.topLevelApplication.removeEventListener(ResizeEvent.RESIZE, onApplicationResized);
 				dispatcher.removeEventListener(CloseTabEvent.EVENT_DISMISS_INDIVIDUAL_TAB_CLOSE_ALERT, onForceCloseRequest);
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_ENABLE_STATE));
-				PopUpManager.removePopUp(pop);
+				PopUpManager.removePopUp(popWrapper);
 				pop.data = null;
 				pop = null;
+				popWrapper = null;
 				model.isIndividualCloseTabAlertShowing = false;
 			}
 			
@@ -144,7 +165,7 @@ package actionScripts.controllers
 		
 		private function onApplicationResized(event:ResizeEvent):void
 		{
-			if (pop) pop.x = (FlexGlobals.topLevelApplication.width-pop.width)/2;
+			if (popWrapper) popWrapper.x = (FlexGlobals.topLevelApplication.width-popWrapper.width)/2;
 		}
 		
 		private function onForceCloseRequest(event:Event):void

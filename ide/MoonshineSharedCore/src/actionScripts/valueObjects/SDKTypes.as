@@ -23,6 +23,7 @@ package actionScripts.valueObjects
         public static const FEATHERS:String = "feathers";
         public static const ROYALE:String = "royale";
 		public static const FLEX:String = "flex";
+		public static const FLEX_HARMAN:String = "flexHarman";
         public static const FLEXJS:String = "flexjs";
 		public static const ANT:String = "ant";
 		public static const SVN:String = "svn";
@@ -31,6 +32,7 @@ package actionScripts.valueObjects
 		public static const GRADLE:String = "gradle";
 		public static const GRAILS:String = "grails";
 		public static const OPENJAVA:String = "openjava";
+		public static const OPENJAVA8:String = "openjava8";
 		public static const NODEJS:String = "nodejs";
 		public static const NOTES:String = "notes";
     }

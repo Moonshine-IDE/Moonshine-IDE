@@ -40,7 +40,7 @@ package actionScripts.controllers
 				else if (event.type == ChangeLineEncodingEvent.EVENT_CHANGE_TO_OS9)  delim = "\r";
 				else { throw new Error("Unknown line delimiter event."); }
 				
-				editor.getEditorComponent().lineDelim = delim; 
+				editor.editor.lineDelimiter = delim; 
 			}
 		}
 	}

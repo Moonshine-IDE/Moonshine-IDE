@@ -14,7 +14,7 @@
 	
 			protected function onBtnReportClick(event:MouseEvent):void
 			{
-				var issueGithubRequest:URLRequest = new URLRequest("https://github.com/prominic/Moonshine-IDE/issues/new");
+				var issueGithubRequest:URLRequest = new URLRequest("https://github.com/Moonshine-IDE/Moonshine-IDE/issues/new");
 				var urlVariables:URLVariables = new URLVariables();
 				urlVariables.body = txtProblem.text;
 	
@@ -27,8 +27,8 @@
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				var messageBody:String = "<!-- Requirements: please go through this checklist before opening a new issue -->\n\n"+
-					"- [ ] Review the documentation: https://github.com/prominic/Moonshine-IDE\n"+
-					"- [ ] Search for existing issues: https://github.com/prominic/Moonshine-IDE/issues\n"+
+					"- [ ] Review the documentation: https://github.com/Moonshine-IDE/Moonshine-IDE\n"+
+					"- [ ] Search for existing issues: https://github.com/Moonshine-IDE/Moonshine-IDE/issues\n"+
 					"- [ ] Use the latest stable version at: http://moonshine-ide.com\n"+
 					"- [ ] Let us know how to reproduce the issue. Include a code sample, or share a project that reproduces the issue\n\n"+
 					"## Environment\n"+

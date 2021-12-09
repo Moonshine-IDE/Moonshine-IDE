@@ -27,6 +27,8 @@ package actionScripts.ui.renderers
 	import flash.filters.GlowFilter;
 	import flash.ui.ContextMenuItem;
 	import flash.ui.Keyboard;
+
+	import mx.controls.Alert;
 	
 	import mx.binding.utils.ChangeWatcher;
 	import mx.collections.ArrayCollection;
@@ -130,7 +132,7 @@ package actionScripts.ui.renderers
 			editText.width = width - 34;
 			editText.height = height+4;
 			editText.styleName = 'uiText';
-			editText.setStyle('fontSize', 12);
+			editText.setStyle('fontSize', 13);
 			editText.setStyle('focusAlpha', 0);
 			editText.setStyle('color', 0xe0e0e0);
 			editText.setStyle('paddingTop', 3);
@@ -383,7 +385,7 @@ package actionScripts.ui.renderers
 					loadingIcon.source = new ConstantsCoreVO.loaderIcon;
 					loadingIcon.width = loadingIcon.height = 10;
 					loadingIcon.y = (this.height - loadingIcon.height)/2;
-					loadingIcon.x = this.width - loadingIcon.width - 10;
+					loadingIcon.x = label2.x - loadingIcon.width - 10;
 					addChild(loadingIcon);
 				}
 				else if (!fw.isWorking && loadingIcon)
@@ -391,14 +393,25 @@ package actionScripts.ui.renderers
 					removeChild(loadingIcon);
 					loadingIcon = null;
 				}
-				
-				if (fw.isDeleting)
+
+				if (!ConstantsCoreVO.IS_AIR)
 				{
-					label2.setStyle("lineThrough", true);
+					if (fw.isDeleting)
+					{
+						label2.setStyle("lineThrough", true);
+					}
+					else
+					{
+						label2.setStyle("lineThrough", false);
+					}
 				}
-				else
+
+				if (fw.isSourceFolder && !isSourceFolderIcon)
 				{
-					label2.setStyle("lineThrough", false);
+					isSourceFolderIcon = new Image();
+					isSourceFolderIcon.toolTip = "Source folder";
+					isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon;
+					addChild(isSourceFolderIcon);
 				}
 			}
 			
@@ -453,7 +466,9 @@ package actionScripts.ui.renderers
 			for each (var file:FileLocation in TemplatingPlugin.fileTemplates)
 			{
 				var label:String = TemplatingHelper.getTemplateLabel(file);
+				
 				var eventType:String = "eventNewFileFromTemplate"+label;
+			
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatchNew, Event.SELECT);
 				item.data = eventType;
 				
@@ -598,7 +613,7 @@ package actionScripts.ui.renderers
 				label2.mouseEnabled = false;
 				label2.mouseChildren = false;
 				label2.styleName = 'uiText';
-				label2.setStyle('fontSize', 12);
+				label2.setStyle('fontSize', 13);
 				label2.setStyle('color', 0xe0e0e0);
 				label2.maxDisplayedLines = 1;
 				
@@ -655,17 +670,10 @@ package actionScripts.ui.renderers
 	        	}
 	        	else isOpenIcon.visible = false;
 				
-				if (data.isSourceFolder && !isSourceFolderIcon)
+				if (data.isSourceFolder && isSourceFolderIcon)
 				{
-					isSourceFolderIcon = new Image();
-					isSourceFolderIcon.toolTip = "Source folder";
-					isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon;
 					isSourceFolderIcon.width = isSourceFolderIcon.height = 14;
 					isSourceFolderIcon.x = label2.x - (this.icon ? 44 : 28);
-					addChild(isSourceFolderIcon);
-				}
-				else if (data.isSourceFolder && isSourceFolderIcon)
-				{
 					isSourceFolderIcon.visible = true;
 				}
 				else if (!data.isSourceFolder && isSourceFolderIcon) 

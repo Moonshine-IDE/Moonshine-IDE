@@ -55,6 +55,7 @@ package actionScripts.plugin.project
 	import components.popup.RunCommandPopup;
 	import components.views.project.OpenResourceView;
 	import components.views.project.TreeView;
+	import actionScripts.events.WatchedFileChangeEvent;
 
     public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -95,6 +96,9 @@ package actionScripts.plugin.project
 			
 			dispatcher.addEventListener(RefreshTreeEvent.EVENT_REFRESH, handleTreeRefresh);
 			dispatcher.addEventListener(CustomCommandsEvent.OPEN_CUSTOM_COMMANDS_ON_SDK, onCustomCommandInterface);
+
+			dispatcher.addEventListener(WatchedFileChangeEvent.FILE_CREATED, handleWatchedFileCreatedEvent);
+			dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, handleWatchedFileDeletedEvent);
 		}
 
         private function handleScrollFromSource(event:ProjectEvent):void
@@ -127,7 +131,6 @@ package actionScripts.plugin.project
 			if (!treeView.stage) 
 			{
 				LayoutModifier.attachSidebarSections(treeView);
-                LayoutModifier.attachProjectPanelSections();
 			}
 		}
 		
@@ -223,6 +226,12 @@ package actionScripts.plugin.project
 				new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, settings)
 			);
 			
+			// notify project
+			if (!settings.isSaved && (settings.associatedData is ProjectVO))
+			{
+				(settings.associatedData as ProjectVO).cancelledSettings();
+			}
+			
 			settings.removeEventListener(SettingsView.EVENT_CLOSE, settingsClose);
 			settings.removeEventListener(SettingsView.EVENT_SAVE, settingsSave);
 		}
@@ -257,6 +266,10 @@ package actionScripts.plugin.project
 				{
 					// Save
 					pvo.saveSettings();
+					if (pvo is ProjectVO) 
+					{
+						(pvo as ProjectVO).closedSettings();
+					}
 				}
 				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SAVE_PROJECT_SETTINGS, pvo));
 			}
@@ -346,6 +359,17 @@ package actionScripts.plugin.project
 			treeView.refresh(event.dir, event.shallMarkedForDelete);
 		}
 
+		private function handleWatchedFileCreatedEvent(event:WatchedFileChangeEvent):void
+		{
+			treeView.refresh(event.file);
+		}
+
+		private function handleWatchedFileDeletedEvent(event:WatchedFileChangeEvent):void
+		{
+			//need to refresh the parent directory listing
+			treeView.refresh(event.file.fileBridge.parent);
+		}
+
         private function handleShowPreviouslyOpenedProjects(event:ProjectEvent):void
         {
             openPreviouslyOpenedProject();
@@ -375,6 +399,7 @@ package actionScripts.plugin.project
                                     (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 
                             projectReferenceVO.path = project.folderLocation.fileBridge.nativePath;
+							projectReferenceVO.sourceFolder = project.sourceFolder;
 
                             var fileWrapper:FileWrapper = new FileWrapper(fileLocation, false, projectReferenceVO);
 							dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [fileLocation], -1, [fileWrapper]));
@@ -438,7 +463,12 @@ package actionScripts.plugin.project
 	                    projectFileLocation = model.javaCore.testJava(projectFile);
 	                    if (projectFileLocation)
 	                    {
-	                        project = model.javaCore.parseJava(projectLocation);
+							var javaSettingsFile:FileLocation = model.javaCore.getSettingsFile(projectFile);
+	                        project = model.javaCore.parseJava(
+									projectLocation,
+									null,
+									javaSettingsFile
+							);
 	                    }
 					}
 					

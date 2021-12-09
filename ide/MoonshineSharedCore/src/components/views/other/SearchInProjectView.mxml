@@ -43,9 +43,10 @@
 			import actionScripts.plugin.search.SearchPlugin;
 			import actionScripts.ui.tabview.TabEvent;
 			import actionScripts.utils.TextUtil;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ProjectVO;
 			
 			import components.popup.ReplaceProjectSearchPopup;
-			import actionScripts.valueObjects.ProjectVO;
 			
 			[Embed("/elements/images/icoTreeFolder_open.png")]
 			private var iconFolderOpen:Class;
@@ -125,6 +126,7 @@
 				tmpObj.isRegexp = isRegexp;
 				tmpObj.isEscapeChars = isEscapeChars;
 				tmpObj.isShowReplaceWhenDone = isShowReplaceWhenDone;
+				tmpObj.allRedableExtensions = ConstantsCoreVO.READABLE_FILES;
 				
 				tmpObj.projects = getProjectPaths();
 				
@@ -214,7 +216,7 @@
 			{
 				if (isShowReplaceWhenDone && currentCount != 0)
 				{
-					SearchPlugin.IS_REPLACE_APPLIED = true;
+					SearchPlugin.isReplaceActive = true;
 					
 					var replacePopup:ReplaceProjectSearchPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ReplaceProjectSearchPopup, true) as ReplaceProjectSearchPopup;
 					replacePopup.replaceValue = valueToSearch;
@@ -367,7 +369,7 @@
 					  label="Replace"
 					  styleName="lightButton"
 					  includeInLayout="{isShowReplaceWhenDone &amp;&amp; txtFoundMessage.visible}" visible="{isShowReplaceWhenDone &amp;&amp; txtFoundMessage.visible}"
-					  enabled="{!SearchPlugin.IS_REPLACE_APPLIED}" click="onReplaceRequest()"/>
+					  enabled="{!SearchPlugin.isReplaceActive}" click="onReplaceRequest()"/>
 		</s:HGroup>
 		<mx:Tree
 			id="tree"

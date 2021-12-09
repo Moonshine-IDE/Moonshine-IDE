@@ -18,8 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text
 {
-	import actionScripts.valueObjects.Diagnostic;
-	import actionScripts.valueObjects.CodeAction;
+	import moonshine.lsp.Diagnostic;
+	import moonshine.lsp.CodeAction;
 
 	public class TextLineModel
 	{

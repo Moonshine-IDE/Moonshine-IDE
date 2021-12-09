@@ -18,17 +18,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.events
 {
-	import actionScripts.valueObjects.Location;
-
 	import flash.events.Event;
 
 	public class LocationsEvent extends Event
 	{
 		public static const EVENT_SHOW_LOCATIONS:String = "newShowLocations";
 		
-		public var locations:Vector.<Location>;
+		public var locations:Array /* Array<Location> | Array<LocationLink> */;
 		
-		public function LocationsEvent(type:String, locations:Vector.<Location>)
+		public function LocationsEvent(type:String, locations:Array /* Array<Location> | Array<LocationLink> */)
 		{
 			super(type, false, false);
 			this.locations = locations;

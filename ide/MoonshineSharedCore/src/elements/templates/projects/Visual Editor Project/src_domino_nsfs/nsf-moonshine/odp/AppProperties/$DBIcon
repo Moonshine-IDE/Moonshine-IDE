@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='utf-8'?>
+<note class='form' xmlns='http://www.lotus.com/dxl' version='11.0' replicaid='8525846B005C28D2'>
+<updatedby><name>CN=Jesse Gallagher/O=IKSG</name></updatedby>
+<wassignedby><name>CN=Jesse Gallagher/O=IKSG</name></wassignedby>
+<item name='$TITLE'><text>$DBIcon</text></item>
+<item name='$Flags'><text>34Ci~Q</text></item>
+<item name='$ImagesWide' sign='true'><number>1</number></item>
+<item name='$ImagesHigh' sign='true'><number>1</number></item>
+<item name='$ImagesColorize' sign='true'><number>0</number></item>
+<item name='$FileSize' sign='true'><number>1523</number></item>
+<item name='$ImageData' sign='true'>
+<rawitemdata type='1'>
+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
+</rawitemdata></item>
+<item name='$MimeType' sign='true'><text>image/png</text></item>
+<item name='$FileModDT' sign='true'><datetime>20130116T110512,00-05</datetime></item>
+<item name='$ImageNames' sign='true'><text>H:\Pictures\Tango\accessories-text-editor.png</text></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item></note>
+

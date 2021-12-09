@@ -1,31 +1,37 @@
-/*
-Copyright 2016 Bowler Hat LLC
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
 package moonshine;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.as3mxml.asconfigc.TopLevelFields;
 import com.as3mxml.asconfigc.compiler.CompilerOptions;
 import com.as3mxml.asconfigc.compiler.ProjectType;
+import com.as3mxml.asconfigc.utils.OptionsUtils;
 import com.as3mxml.vscode.project.IProjectConfigStrategy;
 import com.as3mxml.vscode.project.ProjectOptions;
 import com.as3mxml.vscode.utils.LanguageServerCompilerUtils;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import org.eclipse.lsp4j.WorkspaceFolder;
 
@@ -36,15 +42,21 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
 {
     private ProjectOptions options;
     private boolean changed = true;
+    private Path projectPath;
     private WorkspaceFolder workspaceFolder;
 
-    public MoonshineProjectConfigStrategy(WorkspaceFolder workspaceFolder)
+    public MoonshineProjectConfigStrategy(Path projectPath, WorkspaceFolder workspaceFolder)
     {
+        this.projectPath = projectPath;
     	this.workspaceFolder = workspaceFolder;
         options = new ProjectOptions();
         options.type = ProjectType.APP;
         options.config = "flex";
         options.files = new String[0];
+    }
+
+    public Path getProjectPath() {
+        return projectPath;
     }
 
     public WorkspaceFolder getWorkspaceFolder()
@@ -108,10 +120,11 @@ public class MoonshineProjectConfigStrategy implements IProjectConfigStrategy
             }
         }
         
-        String additionalOptions = null;
+        List<String> additionalOptions = null;
         if(params.has(TopLevelFields.ADDITIONAL_OPTIONS))
         {
-            additionalOptions = params.get(TopLevelFields.ADDITIONAL_OPTIONS).getAsString();
+            String additionalOptionsText = params.get(TopLevelFields.ADDITIONAL_OPTIONS).getAsString();
+            additionalOptions = OptionsUtils.parseAdditionalOptions(additionalOptionsText);
         }
         
         options.type = projectType;

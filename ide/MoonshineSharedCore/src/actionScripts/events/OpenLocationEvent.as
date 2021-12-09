@@ -20,15 +20,15 @@ package actionScripts.events
 {
 	import flash.events.Event;
 	
-	import actionScripts.valueObjects.Location;
+	import moonshine.lsp.Location;
 
 	public class OpenLocationEvent extends Event
 	{
 		public static const OPEN_LOCATION:String = "openLocationEvent";
 		
-		public var location:Location;
+		public var location:Object /* Location | LocationLink */;
 		
-		public function OpenLocationEvent(type:String, location:Location)
+		public function OpenLocationEvent(type:String, location:Object /* Location | LocationLink */)
 		{
 			super(type, false, true);
 			this.location = location;

@@ -18,66 +18,61 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.syntax
 {
-	import flash.text.engine.ElementFormat;
-	import flash.text.engine.FontDescription;
-	
 	import actionScripts.events.EditorPluginEvent;
 	import actionScripts.plugin.IEditorPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.ui.parser.AS3LineParser;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
+
+	import haxe.IMap;
+
+	import moonshine.editor.text.syntax.format.AS3SyntaxFormatBuilder;
+	import moonshine.editor.text.syntax.format.SyntaxColorSettings;
+	import moonshine.editor.text.syntax.format.SyntaxFontSettings;
+	import moonshine.editor.text.syntax.parser.AS3LineParser;
+	import moonshine.editor.text.TextEditor;
+	import moonshine.editor.text.utils.AutoClosingPair;
 	
 	public class AS3SyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
 	{
-		private var formats:Object = {};
-
 		override public function get name():String 			{return "AS3 Syntax Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for AS3.";}
 		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
-		
-		
+				
 		override public function activate():void
 		{ 
 			super.activate();
-			init();
-		}
-		
-		private function init():void
-		{
-			var fontDescription:FontDescription = Settings.font.defaultFontDescription;
-			var fontSize:Number = Settings.font.defaultFontSize;
-			
-			formats[0] = /* default, parser fault */			new ElementFormat(fontDescription, fontSize, 0xFF0000);
-			formats[AS3LineParser.AS_CODE] =					new ElementFormat(fontDescription, fontSize, 0x101010);
-			formats[AS3LineParser.AS_STRING1] = 				
-			formats[AS3LineParser.AS_STRING2] = 				new ElementFormat(fontDescription, fontSize, 0xca2323);
-			formats[AS3LineParser.AS_COMMENT] =					 
-			formats[AS3LineParser.AS_MULTILINE_COMMENT] = 		new ElementFormat(fontDescription, fontSize, 0x39c02f);
-			formats[AS3LineParser.AS_REGULAR_EXPRESSION] = 		new ElementFormat(fontDescription, fontSize, 0x9b0000);
-			formats[AS3LineParser.AS_KEYWORD] = 				new ElementFormat(fontDescription, fontSize, 0x0082cd);
-			formats[AS3LineParser.AS_VAR_KEYWORD] =				new ElementFormat(fontDescription, fontSize, 0x6d5a9c);
-			formats[AS3LineParser.AS_FUNCTION_KEYWORD] =		new ElementFormat(fontDescription, fontSize, 0x3382dd);
-			formats[AS3LineParser.AS_PACKAGE_CLASS_KEYWORDS] = 	new ElementFormat(fontDescription, fontSize, 0xa848da);
-			formats['lineNumber'] =								new ElementFormat(fontDescription, fontSize, 0x888888);
-			formats['breakPointLineNumber'] =					new ElementFormat(fontDescription, fontSize, 0xffffff);
-			formats['breakPointBackground'] =					0xdea5dd;
-			formats['tracingLineColor']=						0xc6dbae;
-			formats[AS3LineParser.AS_METADATA] =                new ElementFormat(fontDescription, fontSize, 0x808000);
-			formats[AS3LineParser.AS_FIELD] =                   new ElementFormat(fontDescription, fontSize, 0x660E7A);
-			formats[AS3LineParser.AS_FUNCTIONS] = 				new ElementFormat(fontDescription, fontSize, 0x7A7A43);
-
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
+		}
+
+		override public function deactivate():void
+		{ 
+			super.deactivate();
+			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
 		}
 		
 		private function handleEditorOpen(event:EditorPluginEvent):void
 		{
 			if (event.fileExtension == "as")
 			{
-				event.editor.setParserAndStyles(new AS3LineParser(), formats);
+				var formatBuilder:AS3SyntaxFormatBuilder = new AS3SyntaxFormatBuilder();
+				formatBuilder.setFontSettings(new SyntaxFontSettings(Settings.font.defaultFontFamily, Settings.font.defaultFontSize));
+				formatBuilder.setColorSettings(new SyntaxColorSettings());
+				var formats:IMap = formatBuilder.build();
+				var textEditor:TextEditor = event.editor;
+				textEditor.brackets = [["{", "}"], ["[", "]"], ["(", ")"]];
+				textEditor.autoClosingPairs = [
+					new AutoClosingPair("{", "}"),
+					new AutoClosingPair("[", "]"),
+					new AutoClosingPair("(", ")"),
+					new AutoClosingPair("'", "'"),
+					new AutoClosingPair("\"", "\"")
+				];
+				textEditor.setParserAndTextStyles(new AS3LineParser(), formats);
+				textEditor.embedFonts = Settings.font.defaultFontEmbedded;
 			}
 		}
 		

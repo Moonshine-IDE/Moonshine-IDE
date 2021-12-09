@@ -119,7 +119,10 @@ package actionScripts.plugin.splashscreen
 			var templates:Array = ConstantsCoreVO.TEMPLATES_PROJECTS.source.filter(filterProjectsTemplates);
 			var specialTemplates:Array = ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS.source.filter(filterProjectsTemplates);
 
-			return new ArrayCollection(templates.concat(specialTemplates));
+			var fullCollection:ArrayCollection = new ArrayCollection(templates.concat(specialTemplates));
+			UtilsCore.sortCollection(fullCollection, ["homeTitle"]);
+			
+			return fullCollection;
 		}
 
 		private function filterProjectsTemplates(item:TemplateVO, index:int, arr:Array):Boolean

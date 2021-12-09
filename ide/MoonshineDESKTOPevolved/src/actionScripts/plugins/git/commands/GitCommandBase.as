@@ -18,6 +18,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugins.git.model.GitProjectVO;
+
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+
+	import flashx.textLayout.elements.LinkElement;
+
+	import flashx.textLayout.elements.ParagraphElement;
+	import flashx.textLayout.elements.SpanElement;
+	import flashx.textLayout.formats.TextDecoration;
+
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.GlobalEventDispatcher;
@@ -30,14 +44,21 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.settings.event.RequestSettingByNameEvent;
 	import actionScripts.plugins.git.GitHubPlugin;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.ui.IContentWindowReloadable;
+	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.VersionControlTypes;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	
+	import components.popup.GitAuthenticationPopup;
+
+	import no.doomsday.console.core.events.ConsoleEvent;
+
 	public class GitCommandBase extends ConsoleOutputter implements IWorkerSubscriber
 	{
 		override public function get name():String { return "Git Plugin"; }
+
+		public static const PRIVATE_REPO_SANDBOX_ERROR_MESSAGE:String = "Git authentication is not supported in the App Store version of Moonshine. Download the full version at https://moonshine-ide.com";
 		
 		public var gitBinaryPathOSX:String;
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
@@ -48,7 +69,7 @@ package actionScripts.plugins.git.commands
 		protected var model:IDEModel = IDEModel.getInstance();
 		protected var processType:String;
 		protected var queue:Vector.<Object> = new Vector.<Object>();
-		protected var subscribeIdToWorker:String = UIDUtil.createUID();
+		protected var subscribeIdToWorker:String;
 		protected var worker:IDEWorker = IDEWorker.getInstance();
 		protected var isErrorEncountered:Boolean;
 		
@@ -56,6 +77,7 @@ package actionScripts.plugins.git.commands
 		{
 			getGitPluginReference();
 			gitBinaryPathOSX = plugin.gitBinaryPathOSX;
+			subscribeIdToWorker = UIDUtil.createUID();
 			
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
@@ -67,7 +89,6 @@ package actionScripts.plugins.git.commands
 			worker = null;
 			queue = null;
 			methodStamp = null;
-			plugin = null;
 		}
 		
 		protected function getPlatformMessage(value:String):String
@@ -187,12 +208,92 @@ package actionScripts.plugins.git.commands
 			}
 		}
 		
+		protected function testMessageIfNeedsAuthentication(value:String):Boolean
+		{
+			if (value.toLowerCase().match(/fatal: .*username/) || 
+				value..toLowerCase().match(/fatal: .*could not read password/) ||
+				value.toLowerCase().match(/fatal: .*could not read password/) ||
+					value.toLowerCase().match(/fatal: authentication failed/))
+			{
+				return true;
+			}
+			
+			return false;
+		}
+		
+		protected function openAuthentication(username:String=null):void
+		{
+			var gitAuthWindow:GitAuthenticationPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitAuthenticationPopup, true) as GitAuthenticationPopup;
+			gitAuthWindow.title = "Git Needs Authentication";
+			gitAuthWindow.isGitAvailable = true;
+			gitAuthWindow.type = VersionControlTypes.GIT;
+			gitAuthWindow.userName = username;
+			gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+			gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+			PopUpManager.centerPopUp(gitAuthWindow);
+		}
+		
+		protected function onAuthenticationSuccess(username:String, password:String):void
+		{
+			if (username && password)
+			{
+				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+				if (tmpModel)
+				{
+					tmpModel.sessionUser = username;
+					tmpModel.sessionPassword = password;
+				}
+			}
+		}
+
+		private function onGitAuthWindowClosed(event:Event):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			target.removeEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
+			target.removeEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSubmitted);
+		}
+		
+		private function onAuthSubmitted(event:Event):void
+		{
+			var target:GitAuthenticationPopup = event.target as GitAuthenticationPopup;
+			PopUpManager.removePopUp(target);
+			onGitAuthWindowClosed(event);
+
+			if (target.userObject)
+			{
+				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
+			}
+		}
+		
 		private function getGitPluginReference():void
 		{
 			var tmpEvent:RequestSettingByNameEvent = new RequestSettingByNameEvent(GitHubPlugin.NAMESPACE);
 			dispatcher.dispatchEvent(tmpEvent);
 			
 			plugin = tmpEvent.value as GitHubPlugin;
+		}
+
+		protected function showPrivateRepositorySandboxError():void
+		{
+			var p:ParagraphElement = new ParagraphElement();
+			var span1:SpanElement = new SpanElement();
+			var link:LinkElement = new LinkElement();
+
+			p.color = 0xff6666;
+			span1.text = ": Git authentication is not supported in the App Store version of Moonshine. Download the full version at ";
+
+			link.href = "https://moonshine-ide.com";
+			var inf:Object = {color:0xc165b8, textDecoration:TextDecoration.UNDERLINE};
+			link.linkNormalFormat = inf;
+
+			var linkSpan:SpanElement = new SpanElement();
+			linkSpan.text = "https://moonshine-ide.com";
+			link.addChild(linkSpan);
+
+			p.addChild(span1);
+			p.addChild(link);
+
+			outputMsg(p);
 		}
 	}
 }

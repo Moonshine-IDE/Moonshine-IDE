@@ -27,6 +27,8 @@ package actionScripts.ui.tabview
 		public static const EVENT_TAB_SELECT:String = "tabSelectEvent";
 		public static const EVENT_TAB_INACTIVE:String = "tabInactive";
 		public static const EVENT_TAB_ACTIVE:String = "tabActive";
+		public static const EVENT_TAB_NAVIGATE_NEXT_PREVIOUS_HOTKEYS:String = "tabEventNavigateNextPrevious";
+		public static const EVENT_TAB_NAVIGATE_EDITORS_LIST_HOTKEYS:String = "tabEventNavigateEditorsList";
 		
 		public var child:DisplayObject;
 		

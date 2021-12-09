@@ -1,12 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <note default='true' class='icon' xmlns='http://www.lotus.com/dxl' version='9.0'
  maintenanceversion='1.10' replicaid='052585270065DAC7'>
-<noteinfo noteid='122' unid='22A8222D39A6451A8625851C006E1385' sequence='7'>
-<created><datetime dst='true'>20200228T150219,57-05</datetime></created>
-<modified><datetime>20200310T133232,95-05</datetime></modified>
-<revised><datetime>20200310T133232,94-05</datetime></revised>
-<lastaccessed><datetime>20200310T133232,94-05</datetime></lastaccessed>
-<addedtofile><datetime>20200310T133232,24-05</datetime></addedtofile></noteinfo>
 <updatedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name><name>CN=Dmytro Pastovenskyi/O=DmytroDev</name><name
 >CN=Joel C. Anderson/OU=A55D78/O=PNI</name></updatedby>
 <item name='IconBitmap' summary='true'>

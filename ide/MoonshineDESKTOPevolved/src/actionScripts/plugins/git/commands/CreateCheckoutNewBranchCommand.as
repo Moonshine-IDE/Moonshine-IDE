@@ -18,12 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.plugins.git.model.ConstructorDescriptor;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class CreateCheckoutNewBranchCommand extends GitCommandBase
 	{
@@ -40,10 +41,11 @@ package actionScripts.plugins.git.commands
 			
 			// https://stackoverflow.com/questions/1519006/how-do-you-create-a-remote-git-branch
 			addToQueue(new NativeProcessQueueVO(ConstantsCoreVO.IS_MACOS ? gitBinaryPathOSX +" checkout -b $'"+ UtilsCore.getEncodedForShell(name) +"'" : gitBinaryPathOSX +'&&checkout&&-b&&'+ UtilsCore.getEncodedForShell(name), false, GIT_CHECKOUT_NEW_BRANCH));
+			
 			pendingProcess.push(new ConstructorDescriptor(GetCurrentBranchCommand));
 			if (pushToOrigin)
 			{
-				pendingProcess.push(new ConstructorDescriptor(PushCommand)); // next method we need to fire when above done
+				dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onCurrentBranchNameFetched);
 			}
 			
 			notice("Trying to switch branch...");
@@ -60,6 +62,12 @@ package actionScripts.plugins.git.commands
 					checkCurrentEditorForModification();
 					break;
 			}
+		}
+		
+		private function onCurrentBranchNameFetched(event:GeneralEvent):void
+		{
+			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onCurrentBranchNameFetched);
+			new PushCommand();
 		}
 	}
 }

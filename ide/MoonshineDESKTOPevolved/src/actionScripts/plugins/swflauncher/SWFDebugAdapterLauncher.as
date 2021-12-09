@@ -43,7 +43,9 @@ package actionScripts.plugins.swflauncher
 			var sdkFile:File = null;
 			if(project is AS3ProjectVO)
 			{
-				sdkFile = new File(getProjectSDKPath(project, model));
+				var sdkPathAS3Proj:String = getProjectSDKPath(project, model);
+
+				sdkFile = new File(sdkPathAS3Proj);
 			}
 			else
 			{
@@ -62,10 +64,16 @@ package actionScripts.plugins.swflauncher
 
 			var processArgs:Vector.<String> = new <String>[];
 			var startupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			processArgs.push("-Dflexlib=" + sdkFile.resolvePath("frameworks").nativePath);
-			processArgs.push("-Dworkspace=" + project.folderLocation.fileBridge.nativePath);
+
+			var sdkFramework:String = sdkFile.resolvePath("frameworks").nativePath;
+			processArgs.push("-Dflexlib=" + sdkFramework);
+
+			var projectFolderLocation:String = project.folderLocation.fileBridge.nativePath;
+			processArgs.push("-Dworkspace=" + projectFolderLocation);
 			processArgs.push("-cp");
+
 			var cp:String = File.applicationDirectory.resolvePath(DEBUG_ADAPTER_BIN_PATH).nativePath + File.separator + "*";
+
 			if (Settings.os == "win")
 			{
 				cp += ";"
@@ -75,6 +83,7 @@ package actionScripts.plugins.swflauncher
 				cp += ":";
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_DEBUGGER_PATH).nativePath + File.separator + "*";
+
 			processArgs.push(cp);
 			processArgs.push("com.as3mxml.vscode.SWFDebug");
 			var cwd:File = new File(project.folderLocation.fileBridge.nativePath);
@@ -85,9 +94,26 @@ package actionScripts.plugins.swflauncher
 			}
 			startupInfo.workingDirectory = cwd;
 			startupInfo.arguments = processArgs;
-			var javaFile:File = File(model.javaPathForTypeAhead.fileBridge.getFile);
+
+			var javaFile:File;
+			if (model.javaPathForTypeAhead != null)
+			{
+				javaFile = File(model.javaPathForTypeAhead.fileBridge.getFile);
+			}
+			else if (model.java8Path != null)
+			{
+				javaFile = File(model.java8Path.fileBridge.getFile);
+			}
+			else if (!model.javaPathForTypeAhead && !model.java8Path)
+			{
+				error("Java Development Kit path has not been set. Please set path to JDK.");
+				return null;
+			}
+
 			var javaFileName:String = (Settings.os == "win") ? "java.exe" : "java";
-			startupInfo.executable = javaFile.resolvePath("bin/" + javaFileName);
+			var javaPathFile:File = javaFile.resolvePath("bin/" + javaFileName);
+
+			startupInfo.executable = javaPathFile;
 			return startupInfo;
 		}
 	}

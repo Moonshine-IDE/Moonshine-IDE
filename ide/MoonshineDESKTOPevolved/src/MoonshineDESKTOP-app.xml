@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<application xmlns="http://ns.adobe.com/air/application/30.0">
+<application xmlns="http://ns.adobe.com/air/application/33.1">
 
 <!-- Adobe AIR Application Descriptor File Template.
-
 	Specifies parameters for identifying, installing, and launching AIR applications.
-
 	xmlns - The Adobe AIR namespace: http://ns.adobe.com/air/application/3.5
 			The last segment of the namespace specifies the version 
 			of the AIR runtime required for this application to run.
@@ -37,10 +35,12 @@
 	<!-- <description></description> -->
 
 	<!-- Copyright information. Optional -->
-	<copyright>Copyright 2019 Prominic.NET, Inc. All rights reserved under the Apache License, version 2.0. No warranty of merchantability or fitness of any kind. Use this software at your own risk.</copyright>
+	<copyright>Copyright 2021 Prominic.NET, Inc. All rights reserved under the Apache License, version 2.0. No warranty of merchantability or fitness of any kind. Use this software at your own risk.</copyright>
 
 	<!-- Publisher ID. Used if you're updating an application created prior to 1.5.3 -->
 	<!-- <publisherID></publisherID> -->
+	
+	<architecture>64</architecture>
 
 	<!-- Settings for the application's initial window. Required. -->
 	<initialWindow>
@@ -268,6 +268,12 @@
 			<name>Moonshine.Project.Configuration.File.4</name>
 			<extension>grailsproj</extension>
 			<description>Moonshine Project Configuration File 4</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.File.5</name>
+			<extension>ondiskproj</extension>
+			<description>Moonshine Project Configuration File 5</description>
 			<contentType>text/plain</contentType>
 		</fileType>
 	</fileTypes>

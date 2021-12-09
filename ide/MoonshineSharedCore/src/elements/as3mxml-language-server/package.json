@@ -1,0 +1,491 @@
+{
+  "name": "vscode-as3mxml",
+  "displayName": "ActionScript & MXML",
+  "description": "Language support for ActionScript and MXML",
+  "version": "1.10.0",
+  "publisher": "bowlerhatllc",
+  "homepage": "https://as3mxml.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BowlerHatLLC/vscode-as3mxml.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BowlerHatLLC/vscode-as3mxml/issues"
+  },
+  "qna": "https://github.com/BowlerHatLLC/vscode-as3mxml/discussions",
+  "license": "Apache-2.0",
+  "private": true,
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "Flash",
+    "AIR",
+    "Royale",
+    "Flex",
+    "multi-root ready"
+  ],
+  "main": "extension",
+  "icon": "as3.png",
+  "scripts": {
+    "build": "mvn clean package",
+    "build-debug": "mvn package"
+  },
+  "engines": {
+    "vscode": "^1.37.0"
+  },
+  "devDependencies": {
+    "@rgrove/parse-xml": "^3.0.0",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^10.17.60",
+    "@types/vscode": "^1.37.0",
+    "glob": "^7.1.7",
+    "json5": "2.1.0",
+    "mocha": "^8.4.0",
+    "ts-loader": "^9.2.3",
+    "typescript": "^4.3.2",
+    "vsce": "^1.93.0",
+    "vscode-jsonrpc": "^6.0.0",
+    "vscode-languageclient": "^7.0.0",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
+  },
+  "activationEvents": [
+    "onLanguage:actionscript",
+    "onLanguage:mxml",
+    "workspaceContains:**/asconfig.json",
+    "workspaceContains:**/asconfig.*.json",
+    "workspaceContains:.actionScriptProperties",
+    "workspaceContains:*.as3proj",
+    "onView:actionScriptSourcePaths",
+    "onCommand:as3mxml.organizeImportsInUri",
+    "onCommand:as3mxml.organizeImportsInDirectory",
+    "onCommand:as3mxml.saveSessionPassword",
+    "onCommand:as3mxml.selectWorkspaceSDK",
+    "onCommand:as3mxml.restartServer",
+    "onCommand:as3mxml.importFlashBuilderProject",
+    "onCommand:as3mxml.importFlashDevelopProject",
+    "onCommand:as3mxml.quickCompile",
+    "onCommand:as3mxml.quickCompileAndDebug",
+    "onCommand:as3mxml.quickCompileAndRun",
+    "onCommand:as3mxml.getActiveProjectURIs"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "as3mxml.saveSessionPassword",
+        "title": "Save Session Password",
+        "category": "Adobe AIR"
+      },
+      {
+        "command": "as3mxml.selectWorkspaceSDK",
+        "title": "Select Workspace SDK",
+        "category": "ActionScript"
+      },
+      {
+        "command": "as3mxml.restartServer",
+        "title": "Restart ActionScript/MXML server",
+        "category": "ActionScript"
+      },
+      {
+        "command": "as3mxml.organizeImportsInUri",
+        "title": "Organize Imports"
+      },
+      {
+        "command": "as3mxml.organizeImportsInDirectory",
+        "title": "Organize Imports (Recursive)"
+      },
+      {
+        "command": "as3mxml.quickCompileAndDebug",
+        "title": "Quick Compile & Debug (Experimental)",
+        "category": "ActionScript"
+      },
+      {
+        "command": "as3mxml.quickCompileAndRun",
+        "title": "Quick Compile & Run (Experimental)",
+        "category": "ActionScript"
+      },
+      {
+        "command": "as3mxml.importFlashBuilderProject",
+        "title": "Import Adobe Flash Builder Project",
+        "category": "ActionScript"
+      },
+      {
+        "command": "as3mxml.importFlashDevelopProject",
+        "title": "Import FlashDevelop Project",
+        "category": "ActionScript"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "command": "as3mxml.quickCompileAndRun"
+      },
+      {
+        "key": "ctrl+shift+enter",
+        "mac": "cmd+shift+enter",
+        "command": "as3mxml.quickCompileAndDebug"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "as3mxml.saveSessionPassword",
+          "when": "false"
+        },
+        {
+          "command": "as3mxml.organizeImportsInUri",
+          "when": "false"
+        },
+        {
+          "command": "as3mxml.organizeImportsInDirectory",
+          "when": "false"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "as3mxml.organizeImportsInDirectory",
+          "when": "explorerResourceIsFolder"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "actionScriptSourcePaths",
+          "name": "ActionScript Source Path",
+          "when": "resourceLangId =~ /(actionscript|mxml)/"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "actionscript",
+        "extensions": [
+          ".as"
+        ],
+        "aliases": [
+          "ActionScript",
+          "AS3",
+          "as3",
+          "AS",
+          "as",
+          "nextgenas"
+        ],
+        "configuration": "./actionscript.configuration.json"
+      },
+      {
+        "id": "mxml",
+        "extensions": [
+          ".mxml"
+        ],
+        "aliases": [
+          "MXML",
+          "mxml"
+        ],
+        "configuration": "./mxml.configuration.json"
+      },
+      {
+        "id": "jsonc",
+        "filenames": [
+          "asconfig.json"
+        ],
+        "filenamePatterns": [
+          "asconfig.*.json"
+        ]
+      },
+      {
+        "id": "javascript",
+        "extensions": [
+          ".jsfl"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "actionscript",
+        "scopeName": "source.actionscript.3",
+        "path": "./syntaxes/AS3.tmLanguage"
+      },
+      {
+        "language": "mxml",
+        "scopeName": "text.mxml",
+        "path": "./syntaxes/MXML.tmLanguage",
+        "embeddedLanguages": {
+          "meta.cdata.mxml.script": "actionscript",
+          "entity.name.tag.xml.mxml.style": "css"
+        }
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "asconfig.json",
+        "url": "./schemas/asconfig.schema.json"
+      },
+      {
+        "fileMatch": "asconfig.*.json",
+        "url": "./schemas/asconfig.schema.json"
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "nextgenas_nomatch",
+        "label": "No Problem Matcher (Deprecated: Use empty array instead)",
+        "applyTo": "allDocuments",
+        "pattern": {
+          "regexp": "^$"
+        }
+      },
+      {
+        "name": "royale",
+        "label": "Apache Royale",
+        "owner": "actionscript",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "absolute"
+        ],
+        "pattern": {
+          "regexp": "^(.*)\\((\\d+)\\): col: (\\d+)(.*)",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        }
+      },
+      {
+        "name": "flex",
+        "label": "Classic Flex SDK",
+        "owner": "actionscript",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "absolute"
+        ],
+        "pattern": {
+          "regexp": "^(.*)\\((\\d+)\\):\\s+(Error|Warning): (.*)",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      },
+      {
+        "name": "air",
+        "label": "Adobe AIR SDK & Compiler",
+        "owner": "actionscript",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "absolute"
+        ],
+        "pattern": [
+          {
+            "regexp": "^(.*):(\\d+)$",
+            "file": 1,
+            "line": 2
+          },
+          {
+            "regexp": "^(Syntax )?(Error|error|Warning): (.*)$",
+            "severity": 2,
+            "message": 3
+          }
+        ]
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "actionscript",
+        "properties": {
+          "debug": {
+            "type": "boolean",
+            "description": "Indicates if the output is a debug or release build"
+          },
+          "air": {
+            "type": "string",
+            "description": "Optionally indicates the platform name of the Adobe AIR package"
+          },
+          "asconfig": {
+            "type": "string",
+            "description": "Optional path to asconfig.json or asconfig.*.json file in workspace"
+          },
+          "clean": {
+            "type": "boolean",
+            "description": "Indicates if the output folder should be cleaned"
+          }
+        }
+      },
+      {
+        "type": "animate",
+        "properties": {
+          "debug": {
+            "type": "boolean",
+            "description": "Indicates if the output is a debug or release build"
+          },
+          "publish": {
+            "type": "boolean",
+            "description": "Indicates if the Adobe Animate document should be published or only export the SWF"
+          },
+          "asconfig": {
+            "type": "string",
+            "description": "Optional path to asconfig.json or asconfig.*.json file in workspace"
+          }
+        },
+        "required": [
+          "debug",
+          "publish"
+        ]
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "description": "ActionScript & MXML configuration",
+      "properties": {
+        "as3mxml.sdk.framework": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the folder path of the ActionScript SDK used by the current workspace."
+        },
+        "as3mxml.sdk.searchPaths": {
+          "type": [
+            "string",
+            "array",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies a folder path containing one or more ActionScript SDKs to show in the SDK picker.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "as3mxml.problems.realTime": {
+          "type": [
+            "boolean"
+          ],
+          "default": true,
+          "description": "Specifies whether to check for problems in real-time as you type, or only on save."
+        },
+        "as3mxml.problems.showFileOutsideSourcePath": {
+          "type": [
+            "boolean"
+          ],
+          "default": true,
+          "description": "Specifies whether to display a message if a file is outside of the workspace's source path."
+        },
+        "as3mxml.projectImport.prompt": {
+          "type": [
+            "boolean"
+          ],
+          "default": true,
+          "description": "Specifies whether to automatically display a prompt to import a project folder from Adobe Flash Builder when asconfig.json is not present."
+        },
+        "as3mxml.asconfigc.useBundled": {
+          "type": "boolean",
+          "default": true,
+          "description": "(Advanced) Indicates if the extension will use the bundled version of asconfigc or a different version that is installed on the system path."
+        },
+        "as3mxml.asconfigc.verboseOutput": {
+          "type": "boolean",
+          "default": false,
+          "description": "(Advanced) Specifies whether asconfigc will display verbose output during builds."
+        },
+        "as3mxml.languageServer.jvmargs": {
+          "type": "string",
+          "default": null,
+          "description": "(Advanced) Specifies extra arguments that the extension will pass to the Java virtual machine when launching the language server. Example: \"-Xmx1024m -noverify\" sets the maximum heap size to 1024 MB and bypasses Java class verification."
+        },
+        "as3mxml.languageServer.concurrentRequests": {
+          "type": "boolean",
+          "default": true,
+          "description": "(Advanced) Specifies if requests to the language server will be processed concurrently or in a queue. Disabling concurrency will result in slower code intelligence, but it may be more stable if code intelligence stops working."
+        },
+        "as3mxml.asconfigc.jvmargs": {
+          "type": "string",
+          "default": null,
+          "description": "(Advanced) Specifies extra arguments that asconfigc will pass to the Java virtual machine when running the compiler. Example: \"-Xmx1024m -noverify\" sets the maximum heap size to 1024 MB and bypasses Java class verification."
+        },
+        "as3mxml.java.path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "(Advanced) Specifies the path to the java exectuable (Note: this must be an executable, and not a directory). Use this setting if the extension cannot find Java automatically."
+        },
+        "as3mxml.sdk.editor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "(Advanced) Specifies the folder path of the Apache Royale SDK used internally by the extension for code intelligence. Unless you know what you're doing, you should probably set as3mxml.sdk.framework instead."
+        },
+        "as3mxml.sdk.animate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "(Advanced) Specifies the absolute path of the Adobe Animate executable."
+        },
+        "as3mxml.codeGeneration.getterSetter.forcePublicFunctions": {
+          "type": "boolean",
+          "default": false,
+          "description": "When generating getters and setters, force the functions to be in the public namespace, instead of the original namespace of the variable"
+        },
+        "as3mxml.codeGeneration.getterSetter.forcePrivateVariable": {
+          "type": "boolean",
+          "default": true,
+          "description": "When generating getters and setters, force the original variable to be in the private namespace, instead of keeping its original namespace"
+        },
+        "as3mxml.sources.organizeImports.addMissingImports": {
+          "type": "boolean",
+          "default": true,
+          "description": "When organizing imports, determines if missing imports are added automatically (if there is only one matching symbol)"
+        },
+        "as3mxml.sources.organizeImports.removeUnusedImports": {
+          "type": "boolean",
+          "default": true,
+          "description": "When organizing imports, determines if unused imports are removed or kept"
+        },
+        "as3mxml.sources.organizeImports.insertNewLineBetweenTopLevelPackages": {
+          "type": "boolean",
+          "default": true,
+          "description": "When organizing imports, determines if a new line is inserted between top level packages"
+        },
+        "nextgenas.sdk.framework": {
+          "description": "Deprecated. Replaced by as3mxml.sdk.framework.",
+          "deprecationMessage": "DEPRECATED: Use as3mxml.sdk.framework instead."
+        },
+        "nextgenas.sdk.searchPaths": {
+          "description": "Deprecated. Replaced by as3mxml.sdk.searchPaths.",
+          "deprecationMessage": "DEPRECATED: Use as3mxml.sdk.searchPaths instead."
+        },
+        "nextgenas.asconfigc.useBundled": {
+          "description": "Deprecated. Replaced by as3mxml.asconfigc.useBundled.",
+          "deprecationMessage": "DEPRECATED: Use as3mxml.asconfigc.useBundled instead."
+        },
+        "nextgenas.java": {
+          "description": "Deprecated. Replaced by as3mxml.java.path.",
+          "deprecationMessage": "DEPRECATED: Use as3mxml.java.path instead."
+        },
+        "nextgenas.sdk.editor": {
+          "description": "Deprecated. Replaced by as3mxml.sdk.editor.",
+          "deprecationMessage": "DEPRECATED: Use as3mxml.sdk.editor instead."
+        }
+      }
+    },
+    "snippets": [
+      {
+        "language": "actionscript",
+        "path": "./snippets/actionscript.json"
+      },
+      {
+        "language": "mxml",
+        "path": "./snippets/mxml.json"
+      }
+    ]
+  },
+  "dependencies": {}
+}

@@ -19,43 +19,39 @@
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/commons-compress-1.11.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/commons-io-2.4.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/commons-lang3-3.5.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/commons-lang3-3.7.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/commons-logging-1.1.3.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/compiler-0.9.6.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/compiler-common-0.9.6.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/compiler-externc-0.9.6.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/compiler-0.9.7.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/compiler-common-0.9.7.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/compiler-externc-0.9.7.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/compiler-jburg-types-1.1.0.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/compiler-jx-0.9.6.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/debugger-0.9.6.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/compiler-jx-0.9.7.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/guava-25.1-jre.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/jburg-1.10.3.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/jflex-1.6.0.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/lzma-sdk-4j-9.22.0.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bundled-compiler/swfutils-0.9.6.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/asconfigc.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/ascsh.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/check-java-version.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/check-royale-version.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/commons-cli-1.4.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/commons-io-2.4.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/commons-lang3-3.5.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/commons-lang3-3.7.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/gson-2.7.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/jackson-annotations-2.9.0.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/jackson-core-2.9.5.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/jackson-databind-2.9.5.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/json-schema-validator-0.1.19.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/jackson-annotations-2.10.4.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/jackson-core-2.10.4.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/jackson-databind-2.10.4.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/json-schema-validator-1.0.47.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/language-server.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.lsp4j.generator-0.8.0.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.lsp4j.jsonrpc-0.8.0.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.lsp4j-0.8.0.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.xtend.lib.macro-2.18.0.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.xtend.lib-2.18.0.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.xtext.xbase.lib-2.18.0.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.lsp4j.generator-0.10.0.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.lsp4j.jsonrpc-0.10.0.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.lsp4j-0.10.0.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.xtend.lib.macro-2.19.0.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.xtend.lib-2.19.0.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/org.eclipse.xtext.xbase.lib-2.19.0.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/rcsh.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/slf4j-api-1.7.25.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/slf4j-ext-1.7.25.jar"/>
+	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/slf4j-api-1.7.30.jar"/>
 	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/slf4j-nop-1.7.21.jar"/>
-	<classpathentry kind="lib" path="../../ide/MoonshineSharedCore/src/elements/as3mxml-language-server/bin/swf-debugger.jar"/>
 	<classpathentry kind="src" output="target/classes" path="src/main/java">
 		<attributes>
 			<attribute name="optional" value="true"/>

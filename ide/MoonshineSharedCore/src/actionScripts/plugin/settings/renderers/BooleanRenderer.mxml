@@ -55,9 +55,10 @@
 	
 	<s:Label styleName="uiTextSettingsLabel"
 		text="{setting.label}"
+		width="100%"
 		mouseDown="onTextLabelMouseDown(event)" />
 		
-	<mx:Spacer width="100%"/>
+	<mx:Spacer width="10"/>
 	
 	<s:CheckBox id="uiCheckBox" 
 		selected="{setting.value}"

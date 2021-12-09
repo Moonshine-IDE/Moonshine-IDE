@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.settings.providers
 {
+	import flash.net.SharedObject;
+	
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.factory.FileLocation;
@@ -25,8 +27,6 @@ package actionScripts.plugin.settings.providers
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.utils.SharedObjectConst;
-	
-	import flash.net.SharedObject;
 	
 	public class JavaSettingsProvider implements ISettingsProvider
 	{
@@ -66,6 +66,10 @@ package actionScripts.plugin.settings.providers
 				.getInstance()
 					.dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.javaPathForTypeAhead));
 			}
+			else if (!model.javaVersionForTypeAhead)
+			{
+				updateJavaVersion();
+			}
 		}
 		
 		public function onSettingsClose():void
@@ -82,6 +86,7 @@ package actionScripts.plugin.settings.providers
 			{
 				delete cookie.data["javaPathForTypeahead"];
 				model.javaPathForTypeAhead = null;
+				model.javaVersionForTypeAhead = null;
 				
 				cookie.flush();
 			}
@@ -91,6 +96,18 @@ package actionScripts.plugin.settings.providers
 		{
 			model.javaPathForTypeAhead = new FileLocation(currentJavaPath);
 			model.flexCore.updateToCurrentEnvironmentVariable();
+			updateJavaVersion();
+		}
+		
+		private function updateJavaVersion():void
+		{
+			if (model.javaPathForTypeAhead) 
+				model.flexCore.getJavaVersion(model.javaPathForTypeAhead.fileBridge.nativePath, onJavaVersionReadCompletes);
+		}
+		
+		private function onJavaVersionReadCompletes(value:String):void
+		{
+			model.javaVersionForTypeAhead = value;
 		}
 	}
 }

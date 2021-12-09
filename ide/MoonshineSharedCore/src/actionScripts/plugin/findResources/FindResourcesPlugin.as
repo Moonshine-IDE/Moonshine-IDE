@@ -21,64 +21,163 @@ package actionScripts.plugin.findResources
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
-	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
-	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.ui.FeathersUIWrapper;
+	import actionScripts.utils.FileSystemParser;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
 	
-	import components.popup.FindResourcesPopup;
+	import feathers.data.ArrayCollection;
+	
+	import moonshine.plugin.findResources.view.FindResourcesView;
 
 	public class FindResourcesPlugin extends PluginBase
 	{
+		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
+		override public function get description():String { return "Find Resources"; }
+		override public function get name():String { return "Find Resources"; }
+		
+		[Bindable] public static var previouslySelectedPatterns:ArrayCollection;
 		public static const EVENT_FIND_RESOURCES: String = "findResources";
-		private var resourceSearchView:FindResourcesPopup;
 
-		[Bindable]
-		public static var previouslySelectedPatterns:ArrayCollection;
+		private var findResourcesView:FindResourcesView;
+		private var findResourcesViewWrapper:FeathersUIWrapper;
+		private var projectsPaths:Array = [];
+		private var parsedStrings:String = "";
 
 		public function FindResourcesPlugin()
 		{
 			super();
 		}
 		
-		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
-		override public function get description():String { return "Find Resources"; }
-		override public function get name():String { return "Find Resources"; }
-		
 		override public function activate():void
 		{
 			super.activate();
-
-			dispatcher.addEventListener(EVENT_FIND_RESOURCES, findResourcesHandler);
+			dispatcher.addEventListener(EVENT_FIND_RESOURCES, findResourcesHandler, false, 0, true);
+		}
+		
+		override public function deactivate():void
+		{
+			super.deactivate();
+			dispatcher.removeEventListener(EVENT_FIND_RESOURCES, findResourcesHandler);
 		}
 
 		protected function findResourcesHandler(event:Event):void
 		{
-			if (!resourceSearchView)
+			if (!findResourcesView)
 			{
-				resourceSearchView = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, FindResourcesPopup, true) as FindResourcesPopup;
-				resourceSearchView.addEventListener(CloseEvent.CLOSE, findResourcesViewCloseHandler);
-
-				PopUpManager.centerPopUp(resourceSearchView);
+				findResourcesView = new FindResourcesView();
+				findResourcesView.addEventListener(Event.CLOSE, findResourcesView_closeHandler);
+				findResourcesViewWrapper = new FeathersUIWrapper(findResourcesView);
+				PopUpManager.addPopUp(findResourcesViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+				PopUpManager.centerPopUp(findResourcesViewWrapper);
+				findResourcesViewWrapper.assignFocus("top");
+				findResourcesViewWrapper.stage.addEventListener(Event.RESIZE, findResourcesView_stage_resizeHandler, false, 0, true);
 			}
-		}
 
-		protected function findResourcesViewCloseHandler(event:CloseEvent):void
-		{
-			if (resourceSearchView.filesExtensionFilterView.hasSelectedExtensions())
+			if(!previouslySelectedPatterns)
 			{
-                previouslySelectedPatterns = resourceSearchView.filesExtensionFilterView.patterns;
+				previouslySelectedPatterns = new ArrayCollection();
+                for each (var extension:String in ConstantsCoreVO.READABLE_FILES)
+                {
+                    previouslySelectedPatterns.add({label: extension, isSelected: false});
+                }
+			}
+			
+			findResourcesView.patterns = previouslySelectedPatterns;
+			parsedStrings = "";
+			projectsPaths = [];
+			for each (var project:ProjectVO in model.projects)
+			{
+				projectsPaths.push({path:project.folderLocation.fileBridge.nativePath, name:project.name});
+			}
+			
+			readFilePaths();
+		}
+		
+		private function readFilePaths():void
+		{
+			if (projectsPaths.length == 0 || !findResourcesView) 
+				return;
+			
+			var tmpObj:Object = projectsPaths.shift();
+			var tmpFSP:FileSystemParser = new FileSystemParser();
+			tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onParseCompleted, false, 0, true);
+			tmpFSP.parseFilesPaths(tmpObj.path, tmpObj.name);
+		}
+		
+		protected function onParseCompleted(event:Event):void
+		{
+			event.currentTarget.removeEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onParseCompleted);
+			
+			// don't update anything if the window closed
+			if (!findResourcesView) return;
+			
+			parsedStrings += (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n") + (event.currentTarget as FileSystemParser).resultsStringFormat;
+			updatesFilesInUI(event.currentTarget as FileSystemParser);
+			
+			if (projectsPaths.length == 0)
+			{
+				findResourcesView.isBusyState = false;
 			}
 			else
 			{
-				previouslySelectedPatterns = null;
+				readFilePaths();
+			}
+		}
+		
+		private function updatesFilesInUI(parser:FileSystemParser):void
+		{
+			// don't update anything if the window closed
+			if (!findResourcesView) return;
+			
+			var resources:ArrayCollection = findResourcesView.resources;
+			var parsedFilesList:Array = parser.resultsArrayFormat;
+			var fileCount:int = parsedFilesList.length;
+			var separator:String = model.fileCore.separator;
+			var projectPath:String = parser.projectPath;
+			var projectName:String = parser.fileName;
+			var tmpNameLabel:String;
+			var tmpNameExtension:String;
+			for each (var i:String in parsedFilesList)
+			{
+				//var resource:ResourceVO = ResourceVO(parsedFilesList.getItemAt(i));
+				//resources.add(resource);
+				if (i != "")
+				{
+					tmpNameLabel = i.substr(i.lastIndexOf(separator)+1, i.length);
+					tmpNameExtension = tmpNameLabel.substr(tmpNameLabel.lastIndexOf(".")+1, tmpNameLabel.length);
+					resources.add({name:tmpNameLabel, extension: tmpNameExtension, labelPath:i.replace(projectPath, projectName), 
+						resourcePath: i});
+				}
+			}
+		}
+
+		protected function findResourcesView_closeHandler(event:Event):void
+		{
+			var selectedResource:Object = findResourcesView.selectedResource;
+			if(selectedResource)
+			{
+				dispatcher.dispatchEvent(
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [new FileLocation(selectedResource.resourcePath)]));
 			}
 
-			resourceSearchView.removeEventListener(CloseEvent.CLOSE, findResourcesViewCloseHandler);
-			resourceSearchView = null;
+			previouslySelectedPatterns = findResourcesView.patterns;
+			findResourcesViewWrapper.stage.removeEventListener(Event.RESIZE, findResourcesView_stage_resizeHandler);
+			PopUpManager.removePopUp(findResourcesViewWrapper);
+			findResourcesView.removeEventListener(Event.CLOSE, findResourcesView_closeHandler);
+			findResourcesView = null;
+			findResourcesViewWrapper = null;
+		}
+
+		protected function findResourcesView_stage_resizeHandler(event:Event):void
+		{
+			PopUpManager.centerPopUp(findResourcesViewWrapper);
 		}
 	}
 }

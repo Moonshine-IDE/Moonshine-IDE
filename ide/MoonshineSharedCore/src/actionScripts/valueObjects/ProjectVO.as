@@ -41,10 +41,28 @@ package actionScripts.valueObjects
 		
 		[Bindable] public var folderNamesOnly:Vector.<String> = new Vector.<String>();
 		
-		public var folderLocation: FileLocation;
+		private var _folderLocation: FileLocation;
+		public function get folderLocation():FileLocation
+		{
+			return _folderLocation;
+		}
+		public function set folderLocation(value:FileLocation):void
+		{
+			_folderLocation = value;
+		}
+		
+		private var _sourceFolder:FileLocation;
+		public function get sourceFolder():FileLocation
+		{
+			return _sourceFolder;
+		}
+		public function set sourceFolder(value:FileLocation):void
+		{
+			projectReference.sourceFolder = _sourceFolder = value;
+			projectFolder.updateChildren(); // this will help rendered the 's' icon in already opened tree
+		}
 
 		public var projectFile: FileLocation;
-		public var sourceFolder:FileLocation;
 		public var projectRemotePath:String;
 		public var projectName:String;
 		public var fileNamesOnly:Vector.<String>;
@@ -128,9 +146,21 @@ package actionScripts.valueObjects
 			folderLocation.fileBridge.nativePath = value;
 		}
 		
+		public function projectFileDelete(fw:FileWrapper):void
+		{
+		}
+		
 		public function saveSettings():void	
 		{
 			throw new Error("saveSettings() not implemented yet");
+		}
+		
+		public function cancelledSettings():void
+		{
+		}
+		
+		public function closedSettings():void
+		{
 		}
 		
 		public function getSettings():Vector.<SettingsWrapper>

@@ -36,9 +36,11 @@ package actionScripts.impls
 	import actionScripts.events.NewProjectEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SettingsEvent;
+	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.interfaces.IModulesFinder;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -75,6 +77,7 @@ package actionScripts.impls
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.URLDescriptorVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	
 	import components.popup.Authentication;
 	import components.popup.AuthenticationPopUp;
@@ -139,7 +142,7 @@ package actionScripts.impls
 			
 		}
 		
-		public function reAdjustApplicationSize(width:Number, height:Number):void
+		public function reAdjustApplicationSize(width:Number=NaN, height:Number=NaN):void
 		{
 			
 		}
@@ -434,6 +437,15 @@ package actionScripts.impls
 			return IDEModel.getInstance().version;
 		}
 		
+		public function get defaultInstallationPathSDKs():String
+		{
+			return null;
+		}
+
+		public function setMSDKILocalPathConfig():void
+		{
+		}
+		
 		public function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean
 		{
 			return false;
@@ -444,7 +456,7 @@ package actionScripts.impls
 			
 		}
 		
-		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDK:String=null, withCommands:Array=null):void
+		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
 		{
 			
 		}
@@ -452,6 +464,21 @@ package actionScripts.impls
 		public function generateTabularRoyaleProject():void
 		{
 			
+		}
+		
+		public function getModulesFinder():IModulesFinder
+		{
+			return null;
+		}
+		
+		public function getJavaVersion(javaPath:String=null, onComplete:Function=null):void
+		{
+		
+		}
+		
+		public function checkRequireJava(project:ProjectVO=null):Boolean
+		{
+			return false;
 		}
 		
 		//--------------------------------------------------------------------------

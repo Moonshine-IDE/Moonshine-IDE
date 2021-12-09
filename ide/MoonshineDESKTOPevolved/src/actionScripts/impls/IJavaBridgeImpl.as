@@ -79,9 +79,14 @@ package actionScripts.impls
 			return JavaImporter.test(file as File);
 		}
 
-		public function parseJava(file:FileLocation):JavaProjectVO
+		public function parseJava(projectFolder:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):JavaProjectVO
 		{
-			return JavaImporter.parse(file);
+			return JavaImporter.parse(projectFolder, projectName, settingsFileLocation);
+		}
+
+		public function getSettingsFile(projectFolder:Object):FileLocation
+		{
+			return JavaImporter.getSettingsFile(projectFolder as File);
 		}
     }
 }

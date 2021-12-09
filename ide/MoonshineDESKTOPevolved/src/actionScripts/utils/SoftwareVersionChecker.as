@@ -20,8 +20,9 @@
 package actionScripts.utils
 {
 	import flash.events.Event;
-	
+
 	import mx.collections.ArrayCollection;
+
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.WorkerEvent;
@@ -29,19 +30,19 @@ package actionScripts.utils
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.help.HelpPlugin;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class SoftwareVersionChecker extends ConsoleOutputter implements IWorkerSubscriber
 	{
 		private static const QUERY_FLEX_AIR_VERSION:String = "getFlexAIRversion";
 		private static const QUERY_ROYALE_FJS_VERSION:String = "getRoyaleFlexJSversion";
 		private static const QUERY_JDK_VERSION:String = "getJDKVersion";
+		private static const QUERY_JDK_8_VERSION:String = "getJDK8Version";
 		private static const QUERY_ANT_VERSION:String = "getAntVersion";
 		private static const QUERY_MAVEN_VERSION:String = "getMavenVersion";
 		private static const QUERY_SVN_GIT_VERSION:String = "getSVNGitVersion";
@@ -105,6 +106,7 @@ package actionScripts.utils
 					switch (itemUnderCursor.type)
 					{
 						case ComponentTypes.TYPE_FLEX:
+						case ComponentTypes.TYPE_FLEX_HARMAN:
 						case ComponentTypes.TYPE_FEATHERS:
 						case ComponentTypes.TYPE_FLEXJS:
 							executable = ConstantsCoreVO.IS_MACOS ? "mxmlc" : "mxmlc.bat";
@@ -119,8 +121,10 @@ package actionScripts.utils
 							itemTypeUnderCursor = QUERY_ROYALE_FJS_VERSION;
 							break;
 						case ComponentTypes.TYPE_OPENJAVA:
+						case ComponentTypes.TYPE_OPENJAVA_V8:
 							commands = '"'+ itemUnderCursor.installToPath+'/bin/java" -version';
-							itemTypeUnderCursor = QUERY_JDK_VERSION;
+							itemTypeUnderCursor = (itemUnderCursor.type == ComponentTypes.TYPE_OPENJAVA_V8) ?
+									QUERY_JDK_8_VERSION : QUERY_JDK_VERSION;
 							break;
 						case ComponentTypes.TYPE_ANT:
 							executable = ConstantsCoreVO.IS_MACOS ? "ant" : "ant.bat";
@@ -308,8 +312,8 @@ package actionScripts.utils
 						}
 						break;
 					case QUERY_JDK_VERSION:
+					case QUERY_JDK_8_VERSION:
 					case QUERY_ANT_VERSION:
-					case QUERY_GRAILS_VERSION:
 					case QUERY_SVN_GIT_VERSION:
 					case QUERY_NODEJS_VERSION:
 					{
@@ -317,6 +321,15 @@ package actionScripts.utils
 						{
 							versionNumberString = getVersionNumberedTypeLine(value.output);
 							if (versionNumberString) components[int(tmpQueue.extraArguments[0])].version = versionNumberString;
+						}
+						break;
+					}
+					case QUERY_GRAILS_VERSION:
+					{
+						match = value.output.match(/Version:/);
+						if (match && !components[int(tmpQueue.extraArguments[0])].version)
+						{
+							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
 						}
 						break;
 					}
@@ -363,7 +376,7 @@ package actionScripts.utils
 			var lines:Array = value.split(UtilsCore.getLineBreakEncoding());
 			for each (var line:String in lines)
 			{
-				if (line.match(/\d+.\d+.\d+/)) return line;
+				if ((line.match(/\d+.\d+.\d+/)) || line.match(/\d+.\d+/)) return line;
 			}
 			
 			return null;

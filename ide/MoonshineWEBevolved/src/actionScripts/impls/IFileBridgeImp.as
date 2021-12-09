@@ -40,6 +40,11 @@ package actionScripts.impls
 	{
 		private var _file: FileReference = new FileReference();
 		
+		public function get isBrowsed():Boolean
+		{
+			return false;
+		}
+		
 		CONFIG::OSX
 		{
 			public function getSSBInterface():IScopeBookmarkInterface
@@ -165,6 +170,11 @@ package actionScripts.impls
 			return null;
 		}
 		
+		public function resolveTemporaryDirectoryPath(pathWith:String=null):FileLocation
+		{
+			return null;
+		}
+		
 		public function resolvePath(path:String, toRelativePath:String=null):FileLocation
 		{
 			//TODO: implement function
@@ -179,6 +189,11 @@ package actionScripts.impls
 		public function readAsync(provider:Object, fieldTypeReadObject:*, fieldTypeProvider:*, fieldInProvider:String=null, fieldInReadObject:String=null):void
 		{
 			
+		}
+		
+		public function readAsyncWithListener(onComplete:Function, onError:Function=null, fileToRead:Object=null):void
+		{
+		
 		}
 		
 		public function deleteFile():void

@@ -19,38 +19,57 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.events.SaveFileEvent;
-    import actionScripts.events.SdkEvent;
-    import actionScripts.events.StatusBarEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.languageServer.LanguageClient;
-    import actionScripts.locator.IDEModel;
-    import actionScripts.plugin.console.ConsoleOutputter;
-    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
-    import actionScripts.plugins.haxelib.events.HaxelibEvent;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.editor.HaxeTextEditor;
-    import actionScripts.utils.UtilsCore;
-    import actionScripts.utils.getProjectSDKPath;
-    import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.Settings;
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+	import flash.events.Event;
+	import flash.events.NativeProcessExitEvent;
+	import flash.events.ProgressEvent;
+	import flash.filesystem.File;
+	import flash.utils.IDataInput;
 
-    import flash.desktop.NativeProcess;
-    import flash.desktop.NativeProcessStartupInfo;
-    import flash.events.Event;
-    import flash.events.NativeProcessExitEvent;
-    import flash.events.ProgressEvent;
-    import flash.filesystem.File;
-    import flash.utils.IDataInput;
+	import mx.controls.Alert;
 
-    import actionScripts.utils.EnvironmentSetupUtils;
-    import actionScripts.valueObjects.EnvironmentExecPaths;
-    import actionScripts.events.SettingsEvent;
-    import actionScripts.utils.CommandLineUtil;
-    import com.adobe.utils.StringUtil;
-    import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.DiagnosticsEvent;
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.SaveFileEvent;
+	import actionScripts.events.SdkEvent;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.events.WatchedFileChangeEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.plugin.console.ConsoleOutputter;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+	import actionScripts.plugins.haxelib.events.HaxelibEvent;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.editor.HaxeTextEditor;
+	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.utils.CommandLineUtil;
+	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.utils.GlobPatterns;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.utils.applyWorkspaceEdit;
+	import actionScripts.utils.getProjectSDKPath;
+	import actionScripts.utils.isUriInProject;
+	import actionScripts.valueObjects.EnvironmentExecPaths;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.Settings;
+
+	import com.adobe.utils.StringUtil;
+
+	import moonshine.lsp.LanguageClient;
+	import moonshine.lsp.LogMessageParams;
+	import moonshine.lsp.PublishDiagnosticsParams;
+	import moonshine.lsp.Registration;
+	import moonshine.lsp.RegistrationParams;
+	import moonshine.lsp.ShowMessageParams;
+	import moonshine.lsp.Unregistration;
+	import moonshine.lsp.UnregistrationParams;
+	import moonshine.lsp.WorkspaceEdit;
+	import moonshine.lsp.events.LspNotificationEvent;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -86,6 +105,8 @@ package actionScripts.languageServer
 		private var _displayArguments:String = null;
 		private var _haxeVersion:String = null;
 		private var _languageServerProgressStarted:Boolean = false;
+		private var _activeProgressTokens:Array = [];
+		private var _watchedFiles:Object = {};
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -97,6 +118,12 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
 			_dispatcher.addEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler, false, 0, true);
 			_dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler, false, 0, true);
+			_dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler, false, 0, true);
+			_dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler, false, 0, true);
+			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler, false, 0, true);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_CREATED, fileCreatedHandler);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 
@@ -132,7 +159,7 @@ package actionScripts.languageServer
 			}
 			var scheme:String = uri.substr(0, colonIndex);
 
-			var editor:HaxeTextEditor = new HaxeTextEditor(readOnly);
+			var editor:HaxeTextEditor = new HaxeTextEditor(_project, readOnly);
 			if(scheme == URI_SCHEME_FILE)
 			{
 				//the regular OpenFileEvent should be used to open this one
@@ -156,6 +183,12 @@ package actionScripts.languageServer
 			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_dispatcher.removeEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler);
 			_dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+			_dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
+			_dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
+			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_CREATED, fileCreatedHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 
 			cleanupLanguageClient();
 
@@ -194,6 +227,12 @@ package actionScripts.languageServer
 			_languageClient.removeNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.PUBLISH_DIAGNOSTICS, languageClient_publishDiagnosticsHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.REGISTER_CAPABILITY, languageClient_registerCapabilityHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.UNREGISTER_CAPABILITY, languageClient_unregisterCapabilityHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.LOG_MESSAGE, languageClient_logMessageHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.SHOW_MESSAGE, languageClient_showMessageHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			_languageClient = null;
 		}
 
@@ -264,7 +303,7 @@ package actionScripts.languageServer
 
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
-				project.name, "Haxe: Checking version...", false
+				project.name, "Checking Haxe version...", false
 			));
 
 			this._haxeVersion = "";
@@ -317,7 +356,7 @@ package actionScripts.languageServer
 
 			_dispatcher.dispatchEvent(new StatusBarEvent(
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
-				project.name, "Haxe: Loading project...", false
+				project.name, "Loading Haxe project...", false
 			));
 
 			this._displayArguments = "";
@@ -326,7 +365,8 @@ package actionScripts.languageServer
 				"run",
 				"lime",
 				"display",
-				_project.limeTargetPlatform
+				_project.limeTargetPlatform,
+				"-Ddisable-version-check"
 			];
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
@@ -417,7 +457,7 @@ package actionScripts.languageServer
 			trace("Haxe language server SDK: " + sdkPath);
 
 			var sendMethodResults:Boolean = false;
-			var options:Object = 
+			var initOptions:Object = 
 			{
 				displayArguments: displayArguments,
 				displayServerConfig: {
@@ -434,10 +474,22 @@ package actionScripts.languageServer
 			};
 
 			var debugMode:Boolean = false;
-			_languageClient = new LanguageClient(LANGUAGE_ID_HAXE, _project, debugMode, options,
-				_dispatcher, _languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _languageServerProcess.standardInput);
+			_languageClient = new LanguageClient(LANGUAGE_ID_HAXE,
+				_languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA,
+				_languageServerProcess.standardInput);
+			_languageClient.debugMode = debugMode;
+			_languageClient.addWorkspaceFolder({
+				name: project.name,
+				uri: project.folderLocation.fileBridge.url
+			});
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
+			_languageClient.addEventListener(LspNotificationEvent.PUBLISH_DIAGNOSTICS, languageClient_publishDiagnosticsHandler);
+			_languageClient.addEventListener(LspNotificationEvent.REGISTER_CAPABILITY, languageClient_registerCapabilityHandler);
+			_languageClient.addEventListener(LspNotificationEvent.UNREGISTER_CAPABILITY, languageClient_unregisterCapabilityHandler);
+			_languageClient.addEventListener(LspNotificationEvent.LOG_MESSAGE, languageClient_logMessageHandler);
+			_languageClient.addEventListener(LspNotificationEvent.SHOW_MESSAGE, languageClient_showMessageHandler);
+			_languageClient.addEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			if(sendMethodResults)
 			{
 				_languageClient.addNotificationListener("haxe/didRunHaxeMethod", function(message:Object):void
@@ -448,6 +500,13 @@ package actionScripts.languageServer
 			_languageServerProgressStarted = false;
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
+			_languageClient.addNotificationListener("$/progress", dollar__progress);
+			_languageClient.addNotificationListener("window/workDoneProgress/create", window__workDoneProgress__create);
+			_project.languageClient = _languageClient;
+
+			var initParams:Object = LanguageClientUtil.getSharedInitializeParams();
+			initParams.initializationOptions = initOptions;
+			_languageClient.initialize(initParams);
 		}
 
 		private function restartLanguageServer():void
@@ -461,7 +520,7 @@ package actionScripts.languageServer
 			if(_languageClient)
 			{
 				_waitingToRestart = true;
-				_languageClient.stop();
+				_languageClient.shutdown();
 			}
 			else if(_languageServerProcess)
 			{
@@ -493,7 +552,6 @@ package actionScripts.languageServer
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			error(data);
 			trace(data);
 		}
 
@@ -503,7 +561,7 @@ package actionScripts.languageServer
 			{
 				//this should have already happened, but if the process exits
 				//abnormally, it might not have
-				_languageClient.stop();
+				_languageClient.shutdown();
 				
 				warning("Haxe language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
@@ -533,7 +591,6 @@ package actionScripts.languageServer
 		{
 			var output:IDataInput = _limeDisplayProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			error(data);
 			trace(data);
 		}
 		
@@ -568,7 +625,7 @@ package actionScripts.languageServer
 			}
 			else
 			{
-				error("Failed to load Lime project settings. Haxe code intelligence disabled.");
+				error("Failed to load Lime project settings. Haxe code intelligence disabled for project: " + project.name + ".");
 			}
 		}
 		
@@ -612,14 +669,14 @@ package actionScripts.languageServer
 				trace("Haxe version: " + this._haxeVersion);
 				if(!isHaxeVersionSupported(this._haxeVersion))
 				{
-					error("Haxe version 4.0.0 or newer is required. Version not supported: " + this._haxeVersion + ". Haxe code intelligence disabled.");
+					error("Haxe version 4.0.0 or newer is required. Version not supported: " + this._haxeVersion + ". Haxe code intelligence disabled for project: " + project.name + ".");
 					return;
 				}
 				getProjectSettings();
 			}
 			else
 			{
-				error("Failed to load Haxe version. Haxe code intelligence disabled.");
+				error("Failed to load Haxe version. Haxe code intelligence disabled for project: " + project.name + ".");
 			}
 		}
 
@@ -748,6 +805,104 @@ package actionScripts.languageServer
 			this.dispatchEvent(new Event(Event.CLOSE));
 		}
 
+		private function languageClient_publishDiagnosticsHandler(event:LspNotificationEvent):void
+		{
+			var params:PublishDiagnosticsParams = PublishDiagnosticsParams(event.params);
+			var uri:String = params.uri;
+			var diagnostics:Array = params.diagnostics;
+			_dispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, uri, project, diagnostics));
+		}
+
+		private function languageClient_registerCapabilityHandler(event:LspNotificationEvent):void
+		{
+			var params:RegistrationParams = RegistrationParams(event.params);
+			var registrations:Array = params.registrations;
+			for each(var registration:Registration in registrations)
+			{
+				var method:String = registration.method;
+				switch(method)
+				{
+					case LanguageClient.METHOD_WORKSPACE__DID_CHANGE_WATCHED_FILES:
+						var registerOptions:Object = registration.registerOptions;
+						_watchedFiles[registration.id] = registerOptions.watchers.map(function(watcher:Object, index:int, source:Array):Object {
+							return GlobPatterns.toRegExp(watcher.globPattern);
+						});
+						break;
+				}
+				_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, _project, method));
+			}
+		}
+
+		private function languageClient_unregisterCapabilityHandler(event:LspNotificationEvent):void
+		{
+			var params:UnregistrationParams = UnregistrationParams(event.params);
+			var unregistrations:Array = params.unregistrations;
+			for each(var unregistration:Unregistration in unregistrations)
+			{
+				var method:String = unregistration.method;
+				switch(method)
+				{
+					case LanguageClient.METHOD_WORKSPACE__DID_CHANGE_WATCHED_FILES:
+						delete _watchedFiles[unregistration.id];
+						break;
+				}
+				_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_UNREGISTER_CAPABILITY, _project, method));
+			}
+		}
+
+		private function languageClient_logMessageHandler(event:LspNotificationEvent):void
+		{
+			var params:LogMessageParams = LogMessageParams(event.params);
+			var message:String = params.message;
+			var type:int = params.type;
+			var eventType:String = null;
+			switch(type)
+			{
+				case 1: //error
+				{
+					eventType = ConsoleOutputEvent.TYPE_ERROR;
+					break;
+				}
+				default:
+				{
+					eventType = ConsoleOutputEvent.TYPE_INFO;
+				}
+			}
+			_dispatcher.dispatchEvent(
+				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, message, false, false, eventType)
+			);
+			trace(message);
+		}
+
+		private function languageClient_showMessageHandler(event:LspNotificationEvent):void
+		{
+			var params:ShowMessageParams = ShowMessageParams(event.params);
+			var message:String = params.message;
+			var type:int = params.type;
+			var eventType:String = null;
+			switch(type)
+			{
+				case 1: //error
+				{
+					eventType = ConsoleOutputEvent.TYPE_ERROR;
+					break;
+				}
+				default:
+				{
+					eventType = ConsoleOutputEvent.TYPE_INFO;
+				}
+			}
+			
+			Alert.show(message);
+		}
+
+		private function languageClient_applyEditHandler(event:LspNotificationEvent):void
+		{
+			var params:Object = event.params;
+			var workspaceEdit:WorkspaceEdit = WorkspaceEdit(params.edit);
+			applyWorkspaceEdit(workspaceEdit)
+		}
+
 		private function haxe__progressStart(message:Object):void
 		{
 			_languageServerProgressStarted = true;
@@ -764,6 +919,156 @@ package actionScripts.languageServer
 				StatusBarEvent.LANGUAGE_SERVER_STATUS,
 				project.name
 			));
+		}
+
+		private function window__workDoneProgress__create(message:Object):void
+		{
+			var token:Object = message.params.token;
+			this._activeProgressTokens.push(token);
+		}
+
+		private function dollar__progress(message:Object):void
+		{
+			var token:Object = message.params.token;
+			var value:Object = message.params.value;
+			var tokenIndex:int = this._activeProgressTokens.indexOf(token);
+			if(tokenIndex == -1)
+			{
+				return;
+			}
+
+			switch(value.kind)
+			{
+				case "end":
+				{
+					this._activeProgressTokens.splice(tokenIndex, 1);
+					_dispatcher.dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name
+					));
+					break;
+				}
+				case "begin":
+				{
+					_dispatcher.dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name, value.title, false
+					));
+					break;
+				}
+				default:
+					trace("Unknown progress message: " + JSON.stringify(message));
+				
+			}
+		}
+
+		private function executeLanguageServerCommandHandler(event:ExecuteLanguageServerCommandEvent):void
+		{
+			if(event.project != _project)
+			{
+				//it's for a different project
+				return;
+			}
+			if(event.isDefaultPrevented())
+			{
+				//it's already handled somewhere else
+				return;
+			}
+			if(!_languageClient)
+			{
+				//not ready yet
+				return;
+			}
+
+			_languageClient.executeCommand({
+				command: event.command,
+				arguments: event.arguments
+			}, function(result:Object):void {
+				event.result = result;
+			});
+		}
+
+		private function removeProjectHandler(event:ProjectEvent):void
+		{
+			if(event.project != _project || !_languageClient)
+			{
+				return;
+			}
+			_languageClient.shutdown();
+		}
+
+		private function applicationExitHandler(event:ApplicationEvent):void
+		{
+			if(!_languageClient)
+			{
+				return;
+			}
+			_languageClient.shutdown();
+		}
+
+		private function isWatchingFile(file:FileLocation):Boolean
+		{
+			var relativePath:String = project.folderLocation.fileBridge.getRelativePath(file);
+			var matchesPattern:Boolean = false;
+			for(var id:String in _watchedFiles)
+			{
+				var watchers:Array = _watchedFiles[id];
+				for each(var pattern:RegExp in watchers)
+				{
+					if(pattern.test(relativePath)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		private function fileCreatedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 1
+					}
+				]
+			});
+		}
+
+		private function fileDeletedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 3
+					}
+				]
+			});
+		}
+
+		private function fileModifiedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 2
+					}
+				]
+			});
 		}
 	}
 }

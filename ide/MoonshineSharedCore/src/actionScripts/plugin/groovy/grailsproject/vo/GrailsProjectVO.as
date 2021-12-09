@@ -19,22 +19,31 @@
 package actionScripts.plugin.groovy.grailsproject.vo
 {
 	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IJavaProject;
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.GradleBuildOptions;
 	import actionScripts.plugin.actionscript.as3project.vo.GrailsBuildOptions;
 	import actionScripts.plugin.groovy.grailsproject.exporter.GrailsExporter;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugin.settings.vo.BuildActionsListSettings;
 	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.languageServer.LanguageServerProjectVO;
 
-	public class GrailsProjectVO extends ProjectVO
+	public class GrailsProjectVO extends LanguageServerProjectVO implements IJavaProject
 	{
 		private static const TARGET_BYTECODE_VALUES:Array = ["1.4", "1.5", "1.6", "1.7", "1.8", "9", "10", "11", "12", "13"];
 
 		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var grailsBuildOptions:GrailsBuildOptions;
 		public var gradleBuildOptions:GradleBuildOptions;
+
+		private var _jdkType:String = JavaTypes.JAVA_8;
+		public function get jdkType():String									{	return _jdkType;	}
+		public function set jdkType(value:String):void							{	_jdkType = value;	}
 		
 		public function GrailsProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true) 
 		{
@@ -52,6 +61,14 @@ package actionScripts.plugin.groovy.grailsproject.vo
 					new BuildActionsListSettings(this.grailsBuildOptions, grailsBuildOptions.buildActions, "commandLine", "Grails Build Actions"),
 					new BuildActionsListSettings(this.gradleBuildOptions, gradleBuildOptions.buildActions, "commandLine", "Gradle Build Actions")
 				])),
+				new SettingsWrapper("Java Project", new <ISetting>[
+					new MultiOptionSetting(this, 'jdkType', "JDK",
+						Vector.<NameValuePair>([
+							new NameValuePair("Use Default JDK", JavaTypes.JAVA_DEFAULT),
+							new NameValuePair("Use JDK 8", JavaTypes.JAVA_8)
+						])
+					)
+				]),
 				new SettingsWrapper("Paths",
 						Vector.<ISetting>([
 							new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true)

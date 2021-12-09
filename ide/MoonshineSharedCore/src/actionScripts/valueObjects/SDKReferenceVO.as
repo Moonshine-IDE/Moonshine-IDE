@@ -81,6 +81,15 @@ package actionScripts.valueObjects
 			}
 		}
 		
+		public function get nameUncalculated():String
+		{
+			return _name;
+		}
+		public function set nameUncalculated(value:String):void
+		{
+			_name = value;
+		}
+		
         public function get isJSOnlySdk():Boolean
         {
 			if (outputTargets && outputTargets.length == 1)
@@ -107,6 +116,10 @@ package actionScripts.valueObjects
 		{
 			if (!_type) _type = getType();
 			return _type;
+		}
+		public function set type(value:String):void
+		{
+			_type = value;
 		}
 
 		public function get hasPlayerglobal():Boolean
@@ -199,7 +212,15 @@ package actionScripts.valueObjects
 			if (compilerFile.fileBridge.exists)
 			{
 				if (fileLocation.resolvePath("frameworks/libs/spark.swc").fileBridge.exists || 
-					fileLocation.resolvePath("frameworks/libs/flex.swc").fileBridge.exists) return SDKTypes.FLEX;
+					fileLocation.resolvePath("frameworks/libs/flex.swc").fileBridge.exists)
+				{
+					if (fileLocation.resolvePath("lib/adt.cfg").fileBridge.exists ||
+					fileLocation.resolvePath("lib/adt.lic").fileBridge.exists)
+					{
+						return SDKTypes.FLEX_HARMAN;
+					}
+					return SDKTypes.FLEX;
+				}
 			}
 			
 			// royale
@@ -227,7 +248,7 @@ package actionScripts.valueObjects
 			}
 			
 			// @fix
-			// https://github.com/prominic/Moonshine-IDE/issues/26
+			// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/26
 			// We've found js/bin/mxmlc compiletion do not produce
 			// valid swf with prior 0.8 version; we shall need following
 			// executable for version less than 0.8
@@ -242,5 +263,5 @@ package actionScripts.valueObjects
 			
 			return null;
 		}
-    }
+	}
 }

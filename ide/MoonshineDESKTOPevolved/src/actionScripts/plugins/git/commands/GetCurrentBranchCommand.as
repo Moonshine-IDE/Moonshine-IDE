@@ -24,7 +24,7 @@ package actionScripts.plugins.git.commands
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.vo.NativeProcessQueueVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 
 	public class GetCurrentBranchCommand extends GitCommandBase
 	{
@@ -52,6 +52,7 @@ package actionScripts.plugins.git.commands
 		{
 			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
+			var tmpModel:GitProjectVO;
 			var tmpProject:ProjectVO;
 			
 			switch(tmpQueue.processType)
@@ -59,7 +60,8 @@ package actionScripts.plugins.git.commands
 				case GIT_CURRENT_BRANCH_NAME:
 				{
 					tmpProject = UtilsCore.getProjectByPath(tmpQueue.extraArguments[0]);
-					if (tmpProject) parseCurrentBranch(value.output, tmpProject);
+					tmpModel = plugin.modelAgainstProject[tmpProject];
+					if (tmpModel) parseCurrentBranch(value.output, tmpModel);
 					return;
 				}
 			}
@@ -69,29 +71,25 @@ package actionScripts.plugins.git.commands
 			super.shellData(value);
 		}
 		
-		private function parseCurrentBranch(value:String, project:ProjectVO):void
+		private function parseCurrentBranch(value:String, gitProject:GitProjectVO):void
 		{
 			var starredIndex:int = value.indexOf("* ") + 2;
 			var selectedBranchName:String = value.substring(starredIndex, value.indexOf("\n", starredIndex));
 			
 			// store the project's selected branch to its model
-			if (plugin.modelAgainstProject[project] != undefined)
+			gitProject.currentBranch = selectedBranchName;
+			
+			for each (var i:GenericSelectableObject in gitProject.branchList)
 			{
-				var tmpModel:GitProjectVO = plugin.modelAgainstProject[project];
-				tmpModel.currentBranch = selectedBranchName;
-				
-				for each (var i:GenericSelectableObject in tmpModel.branchList)
+				if (i.data == selectedBranchName)
 				{
-					if (i.data == selectedBranchName)
-					{
-						i.isSelected = true;
-						break;
-					}
+					i.isSelected = true;
+					break;
 				}
-				
-				// let open the selection popup
-				dispatcher.dispatchEvent(new GeneralEvent(GIT_REMOTE_BRANCH_LIST_RECEIVED, tmpModel.branchList));
 			}
+			
+			// let open the selection popup
+			dispatcher.dispatchEvent(new GeneralEvent(GIT_REMOTE_BRANCH_LIST_RECEIVED, gitProject.branchList));
 		}
 	}
 }

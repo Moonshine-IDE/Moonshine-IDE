@@ -37,6 +37,7 @@ package actionScripts.plugins.externalEditors
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.LinkOnlySetting;
@@ -58,8 +59,8 @@ package actionScripts.plugins.externalEditors
 	{
 		public static var NAMESPACE:String = "actionScripts.plugins.externalEditors::ExternalEditorsPlugin";
 		
-		private static const EVENT_ADD_EDITOR:String = "addNewEditor";
-		private static const EVENT_RESET_ALL_EDITORS:String = "resetAllEditors";
+		private static const ADD_EDITOR:String = "Add New";
+		private static const RESET_ALL_EDITORS:String = "Reset to Default";
 		
 		public static var editors:ArrayCollection; 
 		
@@ -117,8 +118,7 @@ package actionScripts.plugins.externalEditors
 			// remove all linkonlysetting listeners
 			if (linkOnlySetting)
 			{
-				linkOnlySetting.removeEventListener(EVENT_ADD_EDITOR, onEditorAdd);
-				linkOnlySetting.removeEventListener(EVENT_RESET_ALL_EDITORS, onResetAll);
+				linkOnlySetting.removeEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked);
 			}
 			
 			editorsUntilSave = null;
@@ -137,11 +137,10 @@ package actionScripts.plugins.externalEditors
 			
 			settings = new Vector.<ISetting>();
 			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
-				new LinkOnlySettingVO("Add New", EVENT_ADD_EDITOR),
-				new LinkOnlySettingVO("Reset to Default", EVENT_RESET_ALL_EDITORS)
+				new LinkOnlySettingVO("Add New"),
+				new LinkOnlySettingVO("Reset to Default")
 			]);
-			linkOnlySetting.addEventListener(EVENT_ADD_EDITOR, onEditorAdd, false, 0, true);
-			linkOnlySetting.addEventListener(EVENT_RESET_ALL_EDITORS, onResetAll, false, 0, true);
+			linkOnlySetting.addEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked, false, 0, true);
 			
 			settings.push(linkOnlySetting);
 			for each (var editor:ExternalEditorVO in editorsUntilSave)
@@ -172,8 +171,8 @@ package actionScripts.plugins.externalEditors
 			}
 			else
 			{
-				var newUpdateDate:Date = new Date(Date.parse(needUpdateSyncDateUTC));
-				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(newUpdateDate))
+				//var newUpdateDate:Date = new Date(Date.parse(needUpdateSyncDateUTC));
+				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(ExternalEditorsImporter.lastUpdateDate))
 				{
 					editors = SharedObjectUpdaterWithNewUpdates.syncWithNewUpdates(editors, ExternalEditorsImporter.getDefaultEditors(), "localID") as ArrayCollection;
 					ExternalEditorsSharedObjectUtil.saveExternalEditorsInSO(editors);
@@ -240,12 +239,19 @@ package actionScripts.plugins.externalEditors
 			openEditorModifyPopup((event.target as ExternalEditorSetting).editor);
 		}
 		
-		private function onEditorAdd(event:Event):void
+		private function onLinkItemClicked(event:LinkOnlySettingsEvent):void
 		{
-			openEditorModifyPopup();
+			if (event.value.label == ADD_EDITOR)
+			{
+				openEditorModifyPopup();
+			}
+			else if (event.value.label == RESET_ALL_EDITORS)
+			{
+				onResetAll();
+			}
 		}
 		
-		private function onResetAll(event:Event):void
+		private function onResetAll():void
 		{
 			var setting:ExternalEditorSetting;
 			for (var i:int; i < settings.length; i++)
@@ -402,7 +408,7 @@ package actionScripts.plugins.externalEditors
 			if (!ConstantsCoreVO.IS_MACOS && value)
 			{
 				// a bit of interval before closing this
-				// https://github.com/prominic/Moonshine-IDE/issues/707
+				// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/707
 				var timeoutValue:uint = setTimeout(function():void
 				{
 					this.stop();

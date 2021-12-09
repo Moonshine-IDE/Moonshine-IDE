@@ -18,11 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.grails
 {
-    import flash.events.Event;
+	import actionScripts.events.DebugActionEvent;
+	import actionScripts.interfaces.IJavaProject;
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+
+	import flash.events.Event;
     import flash.events.IOErrorEvent;
     import flash.events.NativeProcessExitEvent;
     import flash.events.ProgressEvent;
     
+    import actionScripts.events.ApplicationEvent;
     import actionScripts.events.CustomCommandsEvent;
     import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.SettingsEvent;
@@ -47,9 +53,9 @@ package actionScripts.plugins.grails
     import actionScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.EnvironmentExecPaths;
+    import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
-    import actionScripts.events.ApplicationEvent;
 
     public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider, ICustomCommandRunProvider
     {
@@ -57,6 +63,7 @@ package actionScripts.plugins.grails
 		private var isProjectHasInvalidPaths:Boolean;
 		private var runCommandType:String;
 		private var isDebugging:Boolean;
+		private var isStopAppExecuted:Boolean;
 		
         public function GrailsBuildPlugin()
         {
@@ -168,6 +175,11 @@ package actionScripts.plugins.grails
 			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "war"].join(" ")], model.activeProject.folderLocation);
 		}
 
+		private function grailsStopApp():void
+		{
+			this.startDebug(new <String>[[UtilsCore.getGrailsBinPath(), "stop-app"].join(" ")], model.activeProject.folderLocation);
+		}
+
         private function getConstantArguments():Vector.<String>
         {
             var args:Vector.<String> = new Vector.<String>();
@@ -183,7 +195,7 @@ package actionScripts.plugins.grails
             return args;
         }
 
-		override public function start(args:Vector.<String>, buildDirectory:*):void
+		override public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
 		{
             if (nativeProcess.running && running)
             {
@@ -202,7 +214,11 @@ package actionScripts.plugins.grails
 			isDebugging = false;
             warning("Starting Grails build...");
 
-			super.start(args, buildDirectory);
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomJava.jdkPath = ((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) ?
+					model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+
+			super.start(args, buildDirectory, envCustomJava);
 			
             print("Grails build directory: %s", buildDirectory.fileBridge.nativePath);
             print("Command: %s", args.join(" "));
@@ -210,7 +226,7 @@ package actionScripts.plugins.grails
             var project:ProjectVO = model.activeProject;
             if (project)
             {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building "));
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building ", true));
                 dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
 				dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
             }
@@ -231,11 +247,22 @@ package actionScripts.plugins.grails
                 dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.grails::GrailsBuildPlugin"));
                 return;
             }
-			
+
+			if (!ConsoleBuildPluginBase.checkRequireJava())
+			{
+				clearOutput();
+				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
+				return;
+			}
+
 			isDebugging = true;
             warning("Starting Grails build...");
 
-			super.start(args, buildDirectory);
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomJava.jdkPath = ((model.activeProject as IJavaProject).jdkType == JavaTypes.JAVA_8) ?
+					model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+
+			super.start(args, buildDirectory, envCustomJava);
 			
             print("Grails build directory: %s", buildDirectory.fileBridge.nativePath);
             print("Command: %s", args.join(" "));
@@ -243,8 +270,8 @@ package actionScripts.plugins.grails
             var project:ProjectVO = model.activeProject;
             if (project)
             {
-                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running "));
-                dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running ", true));
+                dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, onProjectBuildTerminate);
 				dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
             }
 		}
@@ -340,6 +367,13 @@ package actionScripts.plugins.grails
 				dispatcher.dispatchEvent(new ShowSettingsEvent(model.activeProject, "Grails Build"));
 				return;
 			}
+
+			if (!ConsoleBuildPluginBase.checkRequireJava())
+			{
+				clearOutput();
+				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
+				return;
+			}
 			
 			checkProjectForInvalidPaths(model.activeProject);
 			if (isProjectHasInvalidPaths)
@@ -390,7 +424,7 @@ package actionScripts.plugins.grails
 				success("Grails build has completed successfully.");
 			}
 
-
+			dispatcher.removeEventListener(DebugActionEvent.DEBUG_STOP, onProjectBuildTerminate);
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
             if(isDebugging)
@@ -402,9 +436,19 @@ package actionScripts.plugins.grails
             	dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			}
 			isDebugging = false;
+
+			if (!isStopAppExecuted)
+			{
+				isStopAppExecuted = true;
+				grailsStopApp();
+			}
+			else
+			{
+				isStopAppExecuted = false;
+			}
         }
 
-        private function onProjectBuildTerminate(event:StatusBarEvent):void
+        private function onProjectBuildTerminate(event:Event):void
         {
             stop();
         }

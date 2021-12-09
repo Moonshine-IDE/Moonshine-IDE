@@ -9,7 +9,8 @@ import { isExecutable } from './util/fs';
 import { Minimatch } from 'minimatch';
 import FirefoxProfile from 'firefox-profile';
 import { isWindowsPlatform } from '../common/util';
-import { LaunchConfiguration, AttachConfiguration, CommonConfiguration, ReloadConfiguration, DetailedReloadConfiguration } from '../common/configuration';
+import { LaunchConfiguration, AttachConfiguration, CommonConfiguration, ReloadConfiguration, DetailedReloadConfiguration, TabFilterConfiguration } from '../common/configuration';
+import { urlDirname } from './util/net';
 
 let log = Log.create('ParseConfiguration');
 
@@ -19,6 +20,11 @@ export interface NormalizedReloadConfiguration {
 	debounce: number;
 }
 
+export interface ParsedTabFilterConfiguration {
+	include: RegExp[];
+	exclude: RegExp[];
+}
+
 export interface ParsedConfiguration {
 	attach?: ParsedAttachConfiguration;
 	launch?: ParsedLaunchConfiguration;
@@ -26,15 +32,21 @@ export interface ParsedConfiguration {
 	pathMappings: PathMappings;
 	filesToSkip: RegExp[];
 	reloadOnChange?: NormalizedReloadConfiguration,
+	tabFilter: ParsedTabFilterConfiguration,
 	clearConsoleOnReload: boolean,
 	showConsoleCallLocation: boolean;
 	liftAccessorsFromPrototypes: number;
 	suggestPathMappingWizard: boolean;
+	terminate: boolean;
+	enableCRAWorkaround: boolean;
 }
 
 export interface ParsedAttachConfiguration {
 	host: string;
 	port: number;
+	url?: string;
+	firefoxExecutable?: string;
+	profileDir?: string;
 	reloadTabs: boolean;
 }
 
@@ -77,6 +89,7 @@ export async function parseConfiguration(
 	let port = config.port || 6000;
 	let timeout = 5;
 	let pathMappings: PathMappings = [];
+	let url: string | undefined = undefined;
 
 	if (config.request === 'launch') {
 
@@ -114,9 +127,11 @@ export async function parseConfiguration(
 				fileUrl = 'file://' + fileUrl;
 			}
 			firefoxArgs.push(fileUrl);
+			url = fileUrl;
 
 		} else if (config.url) {
 			firefoxArgs.push(config.url);
+			url = config.url;
 		} else if (config.addonPath) {
 			firefoxArgs.push('about:blank');
 		} else {
@@ -127,7 +142,15 @@ export async function parseConfiguration(
 			timeout = config.timeout;
 		}
 
-		let detached = !!config.reAttach;
+		let detached = true;
+		if (os.platform() === 'darwin') {
+			if (!config.reAttach) {
+				detached = false;
+				if (config.keepProfileChanges) {
+					throw 'On MacOS, "keepProfileChanges" is only allowed with "reAttach" because your profile may get damaged otherwise';
+				}
+			}
+		}
 
 		launch = {
 			firefoxExecutable, firefoxArgs, profileDir, srcProfileDir,
@@ -136,8 +159,11 @@ export async function parseConfiguration(
 
 	} else { // config.request === 'attach'
 
+		const firefoxExecutable = config.firefoxExecutable ? await findFirefoxExecutable(config.firefoxExecutable) : undefined;
+
+		url = config.url;
 		attach = {
-			host: config.host || 'localhost', port,
+			host: config.host || 'localhost', port, url, firefoxExecutable, profileDir: config.profileDir,
 			reloadTabs: !!config.reloadOnAttach
 		};
 	}
@@ -172,6 +198,8 @@ export async function parseConfiguration(
 
 	let reloadOnChange = parseReloadConfiguration(config.reloadOnChange);
 
+	const tabFilter = parseTabFilterConfiguration(config.tabFilter, url);
+
 	const clearConsoleOnReload = !!config.clearConsoleOnReload;
 
 	let showConsoleCallLocation = config.showConsoleCallLocation || false;
@@ -180,11 +208,14 @@ export async function parseConfiguration(
 	if (suggestPathMappingWizard === undefined) {
 		suggestPathMappingWizard = true;
 	}
+	const terminate = (config.request === 'launch') && !config.reAttach;
+	const enableCRAWorkaround = !!config.enableCRAWorkaround;
 
 	return {
-		attach, launch, addon, pathMappings, filesToSkip, reloadOnChange, clearConsoleOnReload,
-		showConsoleCallLocation, liftAccessorsFromPrototypes, suggestPathMappingWizard
-	}
+		attach, launch, addon, pathMappings, filesToSkip, reloadOnChange, tabFilter, clearConsoleOnReload,
+		showConsoleCallLocation, liftAccessorsFromPrototypes, suggestPathMappingWizard, terminate,
+		enableCRAWorkaround
+	};
 }
 
 function harmonizeTrailingSlashes(pathMapping: PathMapping): PathMapping {
@@ -229,44 +260,17 @@ function handleWildcards(pathMapping: PathMapping): PathMapping {
 
 async function findFirefoxExecutable(configuredPath?: string): Promise<string> {
 
+	let candidates: string[];
 	if (configuredPath) {
-		if (await isExecutable(configuredPath)) {
+		if ([ 'stable', 'developer', 'nightly' ].indexOf(configuredPath) >= 0) {
+			candidates = getExecutableCandidates(configuredPath as any);
+		} else if (await isExecutable(configuredPath)) {
 			return configuredPath;
 		} else {
 			throw 'Couldn\'t find the Firefox executable. Please correct the path given in your launch configuration.';
 		}
-	}
-
-	let candidates: string[] = [];
-	switch (os.platform()) {
-
-		case 'linux':
-		case 'freebsd':
-		case 'sunos':
-			const paths = process.env.PATH!.split(':');
-			candidates = [
-				...paths.map(dir => path.join(dir, 'firefox-developer-edition')),
-				...paths.map(dir => path.join(dir, 'firefox-developer')),
-				...paths.map(dir => path.join(dir, 'firefox')),
-			]
-			break;
-
-		case 'darwin':
-			candidates = [
-				'/Applications/Firefox Developer Edition.app/Contents/MacOS/firefox',
-				'/Applications/FirefoxDeveloperEdition.app/Contents/MacOS/firefox',
-				'/Applications/Firefox.app/Contents/MacOS/firefox'
-			]
-			break;
-
-		case 'win32':
-			candidates = [
-				'C:\\Program Files (x86)\\Firefox Developer Edition\\firefox.exe',
-				'C:\\Program Files\\Firefox Developer Edition\\firefox.exe',
-				'C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe',
-				'C:\\Program Files\\Mozilla Firefox\\firefox.exe'
-			]
-			break;
+	} else {
+		candidates = getExecutableCandidates();
 	}
 
 	for (let i = 0; i < candidates.length; i++) {
@@ -276,6 +280,78 @@ async function findFirefoxExecutable(configuredPath?: string): Promise<string> {
 	}
 
 	throw 'Couldn\'t find the Firefox executable. Please specify the path by setting "firefoxExecutable" in your launch configuration.';
+}
+
+export function getExecutableCandidates(edition?: 'stable' | 'developer' | 'nightly'): string[] {
+
+	if (edition === undefined) {
+		return [ ...getExecutableCandidates('developer'), ...getExecutableCandidates('stable') ];
+	}
+
+	const platform = os.platform();
+
+	if ([ 'linux', 'freebsd', 'sunos' ].indexOf(platform) >= 0) {
+		const paths = process.env.PATH!.split(':');
+		switch (edition) {
+
+			case 'stable':
+				return [
+					...paths.map(dir => path.join(dir, 'firefox'))
+				];
+
+			case 'developer':
+				return [
+					...paths.map(dir => path.join(dir, 'firefox-developer-edition')),
+					...paths.map(dir => path.join(dir, 'firefox-developer')),
+				];
+
+			case 'nightly':
+				return [
+					...paths.map(dir => path.join(dir, 'firefox-nightly')),
+				];
+		}
+	}
+
+	switch (edition) {
+
+		case 'stable':
+			if (platform === 'darwin') {
+				return [ '/Applications/Firefox.app/Contents/MacOS/firefox' ];
+			} else if (platform === 'win32') {
+				return [
+					'C:\\Program Files\\Mozilla Firefox\\firefox.exe',
+					'C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe'
+				];
+			}
+			break;
+
+		case 'developer':
+			if (platform === 'darwin') {
+				return [
+					'/Applications/Firefox Developer Edition.app/Contents/MacOS/firefox',
+					'/Applications/FirefoxDeveloperEdition.app/Contents/MacOS/firefox'
+				];
+			} else if (platform === 'win32') {
+				return [
+					'C:\\Program Files\\Firefox Developer Edition\\firefox.exe',
+					'C:\\Program Files (x86)\\Firefox Developer Edition\\firefox.exe'
+				];
+			}
+			break;
+
+		case 'nightly':
+			if (platform === 'darwin') {
+				return [ '/Applications/Firefox Nightly.app/Contents/MacOS/firefox' ]
+			} else if (platform === 'win32') {
+				return [
+					'C:\\Program Files\\Firefox Nightly\\firefox.exe',
+					'C:\\Program Files (x86)\\Firefox Nightly\\firefox.exe'
+				];
+			}
+			break;
+	}
+
+	return [];
 }
 
 async function parseProfileConfiguration(config: LaunchConfiguration, tmpDirs: string[])
@@ -301,15 +377,16 @@ async function parseProfileConfiguration(config: LaunchConfiguration, tmpDirs: s
 			throw 'To enable "keepProfileChanges" you need to set either "profile" or "profileDir"';
 		}
 	} else {
-		profileDir = path.join(os.tmpdir(), `vscode-firefox-debug-profile-${uuid.v4()}`);
+		const tmpDir = config.tmpDir || os.tmpdir();
+		profileDir = path.join(tmpDir, `vscode-firefox-debug-profile-${uuid.v4()}`);
 		tmpDirs.push(profileDir);
 	}
 
 	return { profileDir, srcProfileDir };
 }
 
-function findFirefoxProfileDir(profileName: string): Promise<string> {
-	return new Promise<string>((resolve, reject) => {
+function findFirefoxProfileDir(profileName: string): Promise<string | undefined> {
+	return new Promise<string | undefined>((resolve, reject) => {
 
 		let finder = new FirefoxProfile.Finder();
 
@@ -365,7 +442,7 @@ function parseWebRootConfiguration(config: CommonConfiguration, pathMappings: Pa
 
 	if (config.url) {
 		if (!config.webRoot) {
-			if (!config.pathMappings) {
+			if ((config.request === 'launch') && !config.pathMappings) {
 				throw `If you set "url" you also have to set "webRoot" or "pathMappings" in the ${config.request} configuration`;
 			}
 			return undefined;
@@ -477,6 +554,49 @@ function parseReloadConfiguration(
 		}
 
 		return { watch, ignore, debounce };
+	}
+}
+
+function parseTabFilterConfiguration(
+	tabFilterConfig?: TabFilterConfiguration,
+	url?: string
+): ParsedTabFilterConfiguration {
+
+	if (tabFilterConfig === undefined) {
+
+		if (url) {
+			return { include: [ new RegExp(RegExpEscape(urlDirname(url)) + '.*') ], exclude: [] };
+		} else {
+			return { include: [ /.*/ ], exclude: [] };
+		}
+
+	}
+
+	if ((typeof tabFilterConfig === 'string') || Array.isArray(tabFilterConfig)) {
+
+		return { include: parseTabFilter(tabFilterConfig), exclude: [] }
+
+	} else {
+
+		return {
+			include: (tabFilterConfig.include !== undefined) ? parseTabFilter(tabFilterConfig.include) : [ /.*/ ],
+			exclude: (tabFilterConfig.exclude !== undefined) ? parseTabFilter(tabFilterConfig.exclude) : []
+		}
+	}
+}
+
+function parseTabFilter(tabFilter: string | string[]): RegExp[] {
+
+	if (typeof tabFilter === 'string') {
+
+		const parts = tabFilter.split('*').map(part => RegExpEscape(part));
+		const regExp = new RegExp(`^${parts.join('.*')}$`);
+		return [ regExp ];
+
+	} else {
+
+		return tabFilter.map(f => parseTabFilter(f)[0]);
+
 	}
 }
 

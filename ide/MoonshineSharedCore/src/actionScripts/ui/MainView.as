@@ -142,12 +142,13 @@ package actionScripts.ui
 			event.preventDefault(); 
 			
 			var e:CloseTabEvent = new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, event.child);
+			e.isUserTriggered = true;
 			GlobalEventDispatcher.getInstance().dispatchEvent(e);
 		}
 		
 		public function addPanel(panel:IPanelWindow):void
 		{
-			if(panel.document.className == "TreeView")
+			if(panel.document && panel.document.className == "TreeView")
 				childIndex = 0;
 			else
 				childIndex = mainPanel.numChildren-1;

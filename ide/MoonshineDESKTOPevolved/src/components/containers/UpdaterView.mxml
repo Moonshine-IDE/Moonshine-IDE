@@ -23,7 +23,7 @@
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
 		 xmlns:mx="library://ns.adobe.com/flex/mx"
-		 width="100%" height="100%">
+		 width="100%" height="100%" creationComplete="onCreationCompletes()">
 	<fx:Metadata>
 		[Event( name="UPDATEYES" )]
 		[Event( name="UPDATENO" )]
@@ -31,8 +31,16 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.extResources.riaspace.nativeApplicationUpdater.NativeApplicationUpdater;
-			
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.extResources.riaspace.nativeApplicationUpdater.AutoUpdaterHelper;
+		import actionScripts.extResources.riaspace.nativeApplicationUpdater.NativeApplicationUpdater;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+
+		import mx.controls.Alert;
+		import mx.events.CloseEvent;
+
+		import spark.components.BusyIndicator;
+
 			//--------------------------------------------------------------------------
 			//
 			//  PUBLIC VARIABLES
@@ -41,13 +49,74 @@
 			
 			[Bindable] public var downlaoding			: Boolean;
 			[Bindable] public var updater				: NativeApplicationUpdater;
-			[Bindable] public var isAppStoreVersion		: Boolean;
-			
+
+			private var _isUpdateAvailable				: int;
+			[Bindable]
+			public function set isUpdateAvailable(value:int):void
+			{
+				_isUpdateAvailable = value;
+				if (_isUpdateAvailable == 1)
+				{
+					containerLoading.removeElement(busyIndicator);
+					this.currentState = "loaded";
+				}
+				else if (_isUpdateAvailable == 0)
+				{
+					remove();
+				}
+			}
+
+			private var busyIndicator:BusyIndicator;
+
+			public function updater_errorHandler(event:ErrorEvent):void
+			{
+				Alert.show(event.text, "Error!", Alert.OK, null, errorConfirmedHandler);
+				function errorConfirmedHandler(event:CloseEvent):void
+				{
+					if (currentState == "loading")
+					{
+						remove();
+					}
+					else
+					{
+						downlaoding = false;
+					}
+				}
+			}
+
+			private function remove():void
+			{
+				this.visible = this.includeInLayout = false;
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(AutoUpdaterHelper.EVENT_UPDATE_CHECK_COMPLETES));
+			}
+
+			private function onCreationCompletes():void
+			{
+				busyIndicator = new BusyIndicator();
+				containerLoading.addElementAt(busyIndicator, 0);
+			}
+
+			private function onDownloadCancel():void
+			{
+				if (downlaoding)
+				{
+					dispatchEvent(new Event('UPDATECANCEL'));
+					downlaoding=false;
+				} else
+				{
+					dispatchEvent(new Event('UPDATENO'));
+				}
+			}
+
 		]]>
 	</fx:Script>
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
+	<s:states>
+		<s:State name="loading"/>
+		<s:State name="loaded"/>
+	</s:states>
 	
 	<s:Rect left="0" right="0" top="0" bottom="0">
 		<s:fill>
@@ -56,13 +125,19 @@
 	</s:Rect>
 	
 	<s:BorderContainer id="bodyContainer" 
-					   width="80%" height="80%"
 						verticalCenter="0" horizontalCenter="0"
-						borderVisible="false" backgroundColor="#e1e1e1">
+						borderVisible="false" backgroundColor="#e1e1e1"
+						autoLayout="true" cornerRadius="4">
 		<s:layout>
-			<s:VerticalLayout verticalAlign="middle"/>
+			<s:VerticalLayout verticalAlign="middle" padding="30"/>
 		</s:layout>
-		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle" gap="10">
+		<s:VGroup id="containerLoading"
+				  includeIn="loading"
+				  horizontalAlign="center" verticalAlign="middle" gap="10">
+			<s:Label text="An update check is in progress. Please wait."/>
+		</s:VGroup>
+		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle" gap="10"
+			includeIn="loaded">
 			<s:Image source="/elements/images/imgInstall.png"/>
 			<s:VGroup gap="10">
 				<s:Label text="New Update Available"
@@ -70,7 +145,8 @@
 				<s:Label text="A new version of Moonshine ({updater.updateVersion}) is available."
 						 styleName="textInputLabel" color="0x444444"/>
 				<s:VGroup width="100%"
-						  includeInLayout="{!isAppStoreVersion}" visible="{!isAppStoreVersion}"
+						  includeInLayout="{(!ConstantsCoreVO.IS_APP_STORE_VERSION &amp;&amp; ConstantsCoreVO.IS_DEVELOPMENT_MODE) || !ConstantsCoreVO.IS_APP_STORE_VERSION}"
+						  visible="{(!ConstantsCoreVO.IS_APP_STORE_VERSION &amp;&amp; ConstantsCoreVO.IS_DEVELOPMENT_MODE) || !ConstantsCoreVO.IS_APP_STORE_VERSION}"
 						  paddingTop="10">
 					<s:Label text="Do you want to download and install it?"
 							 styleName="textInputLabel" color="0x444444"/>
@@ -80,17 +156,31 @@
 								  click="dispatchEvent(new Event('UPDATEYES'))" enabled="{!downlaoding}"
 								  width="60" emphasized="true"/>
 						<s:Button label="{(!downlaoding)?'NO':'CANCEL'}"
-								  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
-								  width="60"/>
+								  click="onDownloadCancel()"/>
 					</s:HGroup>
 				</s:VGroup>
 				<s:VGroup width="100%"
-						  includeInLayout="{isAppStoreVersion}" visible="{isAppStoreVersion}"
+						  includeInLayout="{!ConstantsCoreVO.IS_DEVELOPMENT_MODE &amp;&amp; ConstantsCoreVO.IS_APP_STORE_VERSION}"
+						  visible="{!ConstantsCoreVO.IS_DEVELOPMENT_MODE &amp;&amp; ConstantsCoreVO.IS_APP_STORE_VERSION}"
 						  paddingTop="10">
 					<s:Label text="You can download this update from the App Store."
 							 styleName="textInputLabel" color="0x444444" paddingBottom="10"/>
 					<s:Button label="OK"
-							  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"
+							  click="dispatchEvent(new Event('UPDATENO'))"
+							  width="60"/>
+				</s:VGroup>
+				<s:VGroup width="100%"
+						  includeInLayout="{ConstantsCoreVO.IS_DEVELOPMENT_MODE &amp;&amp; ConstantsCoreVO.IS_APP_STORE_VERSION}"
+						  visible="{ConstantsCoreVO.IS_DEVELOPMENT_MODE &amp;&amp; ConstantsCoreVO.IS_APP_STORE_VERSION}"
+						  paddingTop="10">
+					<s:RichEditableText lineBreak="toFit" width="100%" paddingBottom="10" styleName="textInputLabel" color="0x444444"
+										focusEnabled="false" editable="false">
+						<s:textFlow><s:TextFlow>
+							<s:p>You can download this update from <s:a href="https://moonshine-ide.com/downloads/releases/dev/macos/MoonshineDevelopment.pkg">here</s:a>.</s:p>
+						</s:TextFlow></s:textFlow>
+					</s:RichEditableText>
+					<s:Button label="OK"
+							  click="dispatchEvent(new Event('UPDATENO'))"
 							  width="60"/>
 				</s:VGroup>
 			</s:VGroup>

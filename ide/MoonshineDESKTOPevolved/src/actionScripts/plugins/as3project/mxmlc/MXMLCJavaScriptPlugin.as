@@ -64,9 +64,11 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.Settings;
+	import actionScripts.valueObjects.WebBrowserVO;
 	
 	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
@@ -75,7 +77,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
-	import actionScripts.valueObjects.WebBrowserVO;
 
     public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -264,11 +265,14 @@ package actionScripts.plugins.as3project.mxmlc
 				if (model.mainView.isProjectViewAdded)
 				{
 					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-					var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
-					if (projectReference && filteredProjects.indexOf(projectReference) != -1)
+					if(tmpTreeView) //might be null if closed by user
 					{
-						checkForUnsavedEdior(projectReference);
-						return;
+						var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();
+						if (projectReference && filteredProjects.indexOf(projectReference) != -1)
+						{
+							checkForUnsavedEdior(projectReference);
+							return;
+						}
 					}
 				}
 				
@@ -398,7 +402,10 @@ package actionScripts.plugins.as3project.mxmlc
 					as3Pvo.updateConfig();
 
 					compileStr = getBuildArgs(as3Pvo);
-					EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, SDKstr, [compileStr]);
+					
+					var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+					envCustomSDK.sdkPath = SDKstr;
+					EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compileStr]);
 				}
 				else
 				{
@@ -713,6 +720,7 @@ package actionScripts.plugins.as3project.mxmlc
         private function startDebugAdapter(project:AS3ProjectVO, debug:Boolean):void
         {
 			var url:String = getUrlToLaunch(project);
+			notice("Opening to URL: "+ url); 
 
 			var debugAdapterType:String = null;
 			for(var i:int = 0; i < ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.length; i++)
@@ -737,6 +745,13 @@ package actionScripts.plugins.as3project.mxmlc
 			launchArgs["name"] = "Moonshine Royale JS Launch";
 			launchArgs["url"] = url;
 			launchArgs["webRoot"] = getWebRoot(project).fileBridge.nativePath;
+			var sourceRelativePath:String = project.projectFolder.file.fileBridge.getRelativePath(project.sourceFolder);
+			//for some reason, Firefox doesn't like ../ in the source map paths,
+			//at least not on macOS, so this is a workaround that maps the
+			//mangled source path url back to the right path
+			launchArgs["pathMappings"] = [
+				{ url: getHost(project) + "/" + sourceRelativePath + "/", path: project.sourceFolder.fileBridge.nativePath + "/" }
+			];
             dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER,
                 project, debugAdapterType, debugCommand, launchArgs));
         }
@@ -745,7 +760,7 @@ package actionScripts.plugins.as3project.mxmlc
 		{
 			var as3Project:AS3ProjectVO = currentProject as AS3ProjectVO;
 
-			if(!debugAfterBuild && !UtilsCore.isNodeAvailable())
+			if(!debugAfterBuild && (!UtilsCore.isNodeAvailable() || ConstantsCoreVO.IS_APP_STORE_VERSION))
 			{
 				//the HTTP server and the debug adapter both require Node.js.
 				//it's not ideal, but if Node.js is not available and the user
@@ -905,9 +920,14 @@ package actionScripts.plugins.as3project.mxmlc
 			return !(pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0);
 		}
 
+		private function getHost(pvo:AS3ProjectVO):String
+		{
+			return "http://localhost:" + DEBUG_SERVER_PORT;
+		}
+
 		private function getUrlToLaunch(pvo:AS3ProjectVO):String
 		{
-			var url:String = "http://localhost:" + DEBUG_SERVER_PORT;
+			var url:String = getHost(pvo);
 			if(pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
 			{
 				url = pvo.customHTMLPath;

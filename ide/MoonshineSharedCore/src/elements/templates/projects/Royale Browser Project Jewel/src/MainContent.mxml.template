@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<j:ApplicationResponsiveView xmlns:fx="http://ns.adobe.com/mxml/2009"
+<j:ResponsiveView xmlns:fx="http://ns.adobe.com/mxml/2009"
     xmlns:j="library://ns.apache.org/royale/jewel"
     xmlns:js="library://ns.apache.org/royale/basic"
     xmlns:html="library://ns.apache.org/royale/html"
@@ -10,4 +10,4 @@
 			<view:Content />
 	   </j:SectionContent>
     </j:ApplicationMainContent>
-</j:ApplicationResponsiveView>
+</j:ResponsiveView>

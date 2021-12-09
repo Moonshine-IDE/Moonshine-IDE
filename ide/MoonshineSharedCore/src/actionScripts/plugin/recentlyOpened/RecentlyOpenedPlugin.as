@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
-    import flash.events.Event;
+	import flash.events.Event;
     import flash.net.SharedObject;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
@@ -37,6 +37,8 @@ package actionScripts.plugin.recentlyOpened
     import actionScripts.plugin.IMenuPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+    import actionScripts.plugin.settings.providers.Java8SettingsProvider;
+    import actionScripts.plugin.settings.providers.JavaSettingsProvider;
     import actionScripts.ui.LayoutModifier;
     import actionScripts.ui.menu.vo.MenuItem;
     import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -76,6 +78,7 @@ package actionScripts.plugin.recentlyOpened
 			}
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			dispatcher.addEventListener(ProjectEvent.EVENT_SAVE_PROJECT_CREATION_FOLDERS, onNewProjectPathBrowse, false, 0, true);
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, handleAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
 			dispatcher.addEventListener(ProjectEvent.WORKSPACE_UPDATED, onWorkspaceUpdated);
@@ -201,23 +204,60 @@ package actionScripts.plugin.recentlyOpened
 				for each (object in cookie.data.userSDKs)
 				{
 					var tmpSDK:SDKReferenceVO = SDKReferenceVO.getNewReference(object);
-					if (new FileLocation(tmpSDK.path).fileBridge.exists) model.userSavedSDKs.addItem(tmpSDK);
+					if (new FileLocation(tmpSDK.path).fileBridge.exists)
+					{
+						model.userSavedSDKs.addItem(tmpSDK);
+					}
 				}
 			}
 			
 			if (cookie.data.hasOwnProperty('lastBrowsedLocation')) 
 			{
 				ConstantsCoreVO.LAST_BROWSED_LOCATION = cookie.data.lastBrowsedLocation;
-				if (!model.fileCore.isPathExists(ConstantsCoreVO.LAST_BROWSED_LOCATION)) ConstantsCoreVO.LAST_BROWSED_LOCATION = null;
-				else model.fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
+				if (!model.fileCore.isPathExists(ConstantsCoreVO.LAST_BROWSED_LOCATION))
+				{
+					ConstantsCoreVO.LAST_BROWSED_LOCATION = null;
+				}
+				else
+				{
+					model.fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
+				}
+			}
+
+			if (cookie.data.hasOwnProperty('recentProjectPath'))
+			{
+				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
+				if (cookie.data.hasOwnProperty('lastSelectedProjectPath'))
+				{
+					model.lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+				}
 			}
 			
-			if (cookie.data.hasOwnProperty('moonshineWorkspace')) OSXBookmarkerNotifiers.workspaceLocation = new FileLocation(cookie.data.moonshineWorkspace);
-			if (cookie.data.hasOwnProperty('isWorkspaceAcknowledged')) OSXBookmarkerNotifiers.isWorkspaceAcknowledged = (cookie.data["isWorkspaceAcknowledged"] == "true") ? true : false;
-			if (cookie.data.hasOwnProperty('isBundledSDKpromptDNS')) ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = (cookie.data["isBundledSDKpromptDNS"] == "true") ? true : false;
-			if (cookie.data.hasOwnProperty('isSDKhelperPromptDNS')) ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = (cookie.data["isSDKhelperPromptDNS"] == "true") ? true : false;
-			if (cookie.data.hasOwnProperty('isGettingStartedDNS')) ConstantsCoreVO.IS_GETTING_STARTED_DNS = (cookie.data["isGettingStartedDNS"] == "true") ? true : false;
-			if (cookie.data.hasOwnProperty('javaPathForTypeahead')) model.javaPathForTypeAhead = new FileLocation(cookie.data["javaPathForTypeahead"]);
+			if (cookie.data.hasOwnProperty('moonshineWorkspace'))
+			{
+				OSXBookmarkerNotifiers.workspaceLocation = new FileLocation(cookie.data.moonshineWorkspace);
+			}
+
+			if (cookie.data.hasOwnProperty('isWorkspaceAcknowledged'))
+			{
+				OSXBookmarkerNotifiers.isWorkspaceAcknowledged = (cookie.data["isWorkspaceAcknowledged"] == "true") ? true : false;
+			}
+
+			if (cookie.data.hasOwnProperty('isBundledSDKpromptDNS'))
+			{
+				ConstantsCoreVO.IS_BUNDLED_SDK_PROMPT_DNS = (cookie.data["isBundledSDKpromptDNS"] == "true") ? true : false;
+			}
+
+			if (cookie.data.hasOwnProperty('isSDKhelperPromptDNS'))
+			{
+				ConstantsCoreVO.IS_SDK_HELPER_PROMPT_DNS = (cookie.data["isSDKhelperPromptDNS"] == "true") ? true : false;
+			}
+
+			if (cookie.data.hasOwnProperty('isGettingStartedDNS'))
+			{
+				ConstantsCoreVO.IS_GETTING_STARTED_DNS = (cookie.data["isGettingStartedDNS"] == "true") ? true : false;
+			}
+
 			if (cookie.data.hasOwnProperty('devicesAndroid'))
 			{
 				ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES = new ArrayCollection();
@@ -235,6 +275,20 @@ package actionScripts.plugin.recentlyOpened
 			else
 			{
 				ConstantsCoreVO.generateDevices();
+			}
+			if (cookie.data.hasOwnProperty('javaPathForTypeahead')) 
+			{
+				model.javaPathForTypeAhead = new FileLocation(cookie.data["javaPathForTypeahead"]);
+				
+				var javaSettingsProvider:JavaSettingsProvider = new JavaSettingsProvider();
+				javaSettingsProvider.currentJavaPath = model.javaPathForTypeAhead.fileBridge.nativePath;
+			}
+			if (cookie.data.hasOwnProperty('java8Path')) 
+			{
+				model.java8Path = new FileLocation(cookie.data["java8Path"]);
+				
+				var java8SettingsProvider:Java8SettingsProvider = new Java8SettingsProvider();
+				java8SettingsProvider.currentJava8Path = model.java8Path.fileBridge.nativePath;
 			}
 			
 			LayoutModifier.parseCookie(cookie);
@@ -270,6 +324,7 @@ package actionScripts.plugin.recentlyOpened
 			tmpSOReference.name = event.project.name;
 			tmpSOReference.sdk = customSDKPath ? customSDKPath : (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 			tmpSOReference.path = event.project.folderLocation.fileBridge.nativePath;
+			tmpSOReference.sourceFolder = event.project.sourceFolder;
 			//tmpSOReference.projectId = event.project.projectId;
 			//tmpSOReference.isAway3D = (event.type == ProjectEvent.ADD_PROJECT_AWAY3D);
 			
@@ -382,11 +437,15 @@ package actionScripts.plugin.recentlyOpened
 		
 		private function onJavaPathForTypeaheadSave(event:FilePluginEvent):void
 		{
-			if(event.file)
+			if (event.file)
 			{
 				cookie.data["javaPathForTypeahead"] = event.file.fileBridge.nativePath;
-				cookie.flush();
 			}
+			else
+			{
+				delete cookie.data["javaPathForTypeahead"];
+			}
+			cookie.flush();
 		}
 		
 		private function onSaveLayoutChangeEvent(event:GeneralEvent):void
@@ -399,6 +458,13 @@ package actionScripts.plugin.recentlyOpened
 		{
 			cookie.data["devicesAndroid"] = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES.source;
 			cookie.data["devicesIOS"] = ConstantsCoreVO.TEMPLATES_IOS_DEVICES.source;
+			cookie.flush();
+		}
+
+		private function onNewProjectPathBrowse(event:Event):void
+		{
+			cookie.data["lastSelectedProjectPath"] = model.lastSelectedProjectPath;
+			cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
 			cookie.flush();
 		}
 		
@@ -520,7 +586,12 @@ package actionScripts.plugin.recentlyOpened
 				projectFileLocation = model.javaCore.testJava(projectFile);
 				if(projectFileLocation)
 				{
-					return model.javaCore.parseJava(recentOpenedProjectObject as FileLocation);
+					var javaSettingsFile:FileLocation = model.javaCore.getSettingsFile(projectFile);
+					return model.javaCore.parseJava(
+							recentOpenedProjectObject as FileLocation,
+							null,
+							javaSettingsFile
+					);
 				}
 				
 				projectFileLocation = model.groovyCore.testGrails(projectFile);

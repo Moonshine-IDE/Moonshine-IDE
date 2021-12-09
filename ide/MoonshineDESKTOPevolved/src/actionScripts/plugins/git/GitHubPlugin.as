@@ -57,11 +57,11 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.commands.PushCommand;
 	import actionScripts.plugins.git.commands.RevertCommand;
 	import actionScripts.plugins.git.model.GitProjectVO;
-	import actionScripts.plugins.git.model.MethodDescriptor;
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.utils.HelperUtils;
+	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentTypes;
@@ -109,13 +109,17 @@ package actionScripts.plugins.git
 			{
 				model.gitPath = _gitBinaryPathOSX = value;
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
+				if (_gitBinaryPathOSX == "")
+				{
+					PathSetupHelperUtil.updateXCodePath("");
+				}
 			}
 		}
 		
 		public var modelAgainstProject:Dictionary = new Dictionary();
 		public var projectsNotAcceptedByUserToPermitAsGitOnMacOS:Dictionary = new Dictionary();
-		
-		private var isGitAvailable:Boolean;
+		public var isGitAvailable:Boolean;
+
 		private var checkoutWindow:SourceControlCheckout;
 		private var xCodePermissionWindow:GitXCodePermissionPopup;
 		private var gitRepositoryPermissionWindow:GitRepositoryPermissionPopup;
@@ -218,7 +222,7 @@ package actionScripts.plugins.git
 			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
 			if (tmpComponent)
 			{
-				var isValidSDKPath:Boolean = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_GIT, pathSetting.stringValue, tmpComponent.pathValidation);
+				var isValidSDKPath:Boolean = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_GIT, pathSetting.stringValue, tmpComponent.pathValidation[0]);
 				if (!isValidSDKPath)
 				{
 					pathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
@@ -238,12 +242,12 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		public function requestToAuthenticate(onComplete:MethodDescriptor=null):void
+		public function requestToAuthenticate(onComplete:MethodDescriptor=null, repositoryItem:RepositoryItemVO=null):void
 		{
-			if (!modelAgainstProject[model.activeProject].sessionUser)
+			openAuthentication(onComplete, repositoryItem);
+			/*if (!modelAgainstProject[model.activeProject].sessionUser)
 			{
-				openAuthentication(onComplete);
-			}
+			}*/
 		}
 		
 		public function setGitAvailable(value:Boolean):void
@@ -286,7 +290,7 @@ package actionScripts.plugins.git
 		
 		private function checkOSXGitAccess(against:String=ProjectMenuTypes.GIT_PROJECT):Boolean
 		{
-			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
+			if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent())
 			{
 				new GetXCodePathCommand(onXCodePathDetection, against);
 				return false;
@@ -296,9 +300,9 @@ package actionScripts.plugins.git
 				new GetXCodePathCommand(onXCodePathDetection, against);
 				return false;
 			}
-			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
+			else if (ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent() && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
 			{
-				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
+				ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
 			}
 			
 			isStartupTest = false;
@@ -332,7 +336,7 @@ package actionScripts.plugins.git
 				isGranted = true;
 				
 				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xCodePermissionWindow.xCodePath));
-				Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
+				Alert.show("Permission accepted. You can now use Moonshine Git functionalities.", "Success!");
 				
 				// re-test
 				checkGitAvailability();
@@ -354,7 +358,7 @@ package actionScripts.plugins.git
 			
 			if (ConstantsCoreVO.IS_GIT_OSX_AVAILABLE != isGranted)
 			{
-				ConstantsCoreVO.IS_SVN_OSX_AVAILABLE = ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = isGranted;
+				ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = isGranted;
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_GIT_CLONE_PERMISSION_LABEL));
 				dispatcher.dispatchEvent(new Event(MenuPlugin.CHANGE_SVN_CHECKOUT_PERMISSION_LABEL));
 			}
@@ -583,31 +587,22 @@ package actionScripts.plugins.git
 			new CheckBranchNameAvailabilityCommand(event.value as String, onNameValidatedByGit);
 		}
 		
-		private function onNameValidatedByGit(value:String):void
+		private function onNameValidatedByGit(localValue:String, remoteValue:String, isMultipleOrigin:Boolean, originWhereBranchFound:String=null):void
 		{
-			gitNewBranchWindow.onNameValidatedByGit(value);
+			gitNewBranchWindow.onNameValidatedByGit(localValue, remoteValue, isMultipleOrigin, originWhereBranchFound);
 		}
 		
 		private function onChangeBranchRequest(event:Event):void
 		{
-			if (!dispatcher.hasEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED))
-				dispatcher.addEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived, false, 0, true);
-			new GitSwitchBranchCommand();
-		}
-		
-		private function onGitRemoteBranchListReceived(event:GeneralEvent):void
-		{
-			dispatcher.removeEventListener(GetCurrentBranchCommand.GIT_REMOTE_BRANCH_LIST_RECEIVED, onGitRemoteBranchListReceived);
 			if (!gitBranchSelectionWindow)
 			{
 				if (!checkOSXGitAccess()) return;
-				
+
 				checkGitAvailability();
-				
+
 				gitBranchSelectionWindow = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, GitBranchSelectionPopup, false) as GitBranchSelectionPopup;
 				gitBranchSelectionWindow.title = "Select Branch";
 				gitBranchSelectionWindow.isGitAvailable = isGitAvailable;
-				gitBranchSelectionWindow.branchCollection = event.value as ArrayCollection;
 				gitBranchSelectionWindow.addEventListener(CloseEvent.CLOSE, onGitBranchSelectionWindowClosed);
 				PopUpManager.centerPopUp(gitBranchSelectionWindow);
 			}
@@ -684,7 +679,7 @@ package actionScripts.plugins.git
 			}
 		}
 		
-		private function openAuthentication(onComplete:MethodDescriptor=null):void
+		private function openAuthentication(onComplete:MethodDescriptor=null, repositoryItem:RepositoryItemVO=null):void
 		{
 			if (!gitAuthWindow)
 			{
@@ -696,9 +691,8 @@ package actionScripts.plugins.git
 				gitAuthWindow.title = "Git Needs Authentication";
 				gitAuthWindow.isGitAvailable = isGitAvailable;
 				gitAuthWindow.type = VersionControlTypes.GIT;
-				gitAuthWindow.onComplete = onComplete;
 				gitAuthWindow.addEventListener(CloseEvent.CLOSE, onGitAuthWindowClosed);
-				gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToPush);
+				if (onComplete == null) gitAuthWindow.addEventListener(GitAuthenticationPopup.AUTH_SUBMITTED, onAuthSuccessToPush);
 				PopUpManager.centerPopUp(gitAuthWindow);
 			}
 			

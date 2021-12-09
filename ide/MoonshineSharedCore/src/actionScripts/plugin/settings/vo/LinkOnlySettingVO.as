@@ -18,12 +18,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.settings.vo
 {
-	public class LinkOnlySettingVO
+	[Bindable] public class LinkOnlySettingVO
 	{
 		public var label:String;
 		public var event:String;
 		
-		public function LinkOnlySettingVO(label:String, event:String)
+		private var _isBusy:Boolean;
+		public function get isBusy():Boolean
+		{
+			return _isBusy;
+		}
+		public function set isBusy(value:Boolean):void
+		{
+			_isBusy = value;
+		}
+
+		public function LinkOnlySettingVO(label:String, event:String=null)
 		{
 			this.label = label;
 			this.event = event;
