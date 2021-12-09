@@ -138,6 +138,14 @@ package actionScripts.plugins.fswatcher
 			});
 		}
 
+		private function requestAllPaths(project:ProjectVO):void
+		{
+			mainToWorker.send({
+				event: "requestAllPaths",
+				id: projectToWatcher[project]
+			});
+		}
+
 		private function onAddProject(event:ProjectEvent):void
 		{
 			if(!workerReady)
@@ -201,6 +209,13 @@ package actionScripts.plugins.fswatcher
 					break;
 				case "unwatchFault":
 					trace("unwatch fault: " + incomingData.id, incomingData.reason);
+					break;
+				case "requestAllPathsResult":
+					// trace("requestAllPaths: " + incomingData.id, "paths:" + incomingData.paths);
+					// TODO: dispatch an event or something
+					break;
+				case "requestAllPathsFault":
+					trace("requestAllPaths fault: " + incomingData.id, incomingData.reason);
 					break;
 				case "fileCreated":
 					var createdFile:FileLocation = new FileLocation(incomingData.path);

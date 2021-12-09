@@ -2,7 +2,6 @@
 var minimist = require('minimist'),
   util = require('util'),
   fs = require('fs'),
-  _ = require('lodash'),
   FirefoxProfile = require('./firefox_profile');
 
 var argv = minimist(process.argv.slice(2), {
@@ -89,11 +88,11 @@ createProfile(function(err, fp) {
     process.exit(2);
   }
 
-  if (_.isString(extensionPaths)) {
+  if (typeof extensionPaths === 'string') {
     extensionPaths = [extensionPaths];
   }
   // still not an array? it should be ok to call addExtensions with empty array...
-  if (!_.isArray(extensionPaths)) {
+  if (!Array.isArray(extensionPaths)) {
     extensionPaths = [];
   }
   log('adding extensions::', extensionPaths);

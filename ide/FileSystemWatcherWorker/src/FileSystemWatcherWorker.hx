@@ -24,7 +24,11 @@ import moonshine.events.FileSystemWatcherEvent;
 import moonshine.filesystem.FileSystemWatcher;
 import moonshine.utils.GlobPatterns;
 import openfl.events.Event;
+#if (openfl >= "9.2.0")
 import openfl.filesystem.File;
+#else
+import flash.filesystem.File;
+#end
 
 class FileSystemWatcherWorker {
 	private var mainToWorker:MessageChannel;
@@ -104,6 +108,26 @@ class FileSystemWatcherWorker {
 					workerToMain.send({event: FileSystemWatcherWorkerEvent.UNWATCH_RESULT, path: watcherData.root.nativePath, id: watcherID});
 				} catch (e:Any) {
 					workerToMain.send({event: FileSystemWatcherWorkerEvent.UNWATCH_FAULT, id: watcherID, reason: "exception: " + e});
+				}
+			case FileSystemWatcherWorkerEvent.REQUEST_ALL_PATHS:
+				var watcherID = (Reflect.field(incomingObject, "id") : Int);
+				var watcherData = watchers.get(watcherID);
+				if (watcherData == null) {
+					workerToMain.send({event: FileSystemWatcherWorkerEvent.REQUEST_ALL_PATHS_FAULT, id: watcherID, reason: "id doesn't exist"});
+					return;
+				}
+				try {
+					var result = watcherData.watcher.getAllKnownFilePaths();
+					result = result.filter(path -> {
+						return !isExcluded(new File(path), watcherData);
+					});
+					workerToMain.send({
+						event: FileSystemWatcherWorkerEvent.REQUEST_ALL_PATHS_RESULT,
+						id: watcherID,
+						paths: result
+					});
+				} catch (e:Any) {
+					workerToMain.send({event: FileSystemWatcherWorkerEvent.REQUEST_ALL_PATHS_FAULT, id: watcherID, reason: "exception: " + e});
 				}
 			default:
 				workerToMain.send({

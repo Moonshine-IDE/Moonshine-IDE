@@ -65,6 +65,8 @@ package actionScripts.plugins.haxe
 
 		private var haxePathSetting:PathSetting;
 		private var nekoPathSetting:PathSetting;
+        private var defaultHaxePath:String;
+        private var defaultNekoPath:String;
 		private var isProjectHasInvalidPaths:Boolean;
         private var currentProject:HaxeProjectVO;
         private var pendingRunProject:HaxeProjectVO = null;
@@ -75,6 +77,26 @@ package actionScripts.plugins.haxe
         public function HaxeBuildPlugin()
         {
             super();
+
+			if(!ConstantsCoreVO.IS_MACOS || !ConstantsCoreVO.IS_APP_STORE_VERSION)
+			{
+                // because most users install Haxe to a standard installation
+                // directory, we can try to use it as the default, if it exists.
+                // if the user saves a different path (or clears the path) in
+                // the settings, these default values will be safely ignored.
+                var haxeDir:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/lib/haxe" : "C:\\HaxeToolkit\\haxe");
+                var nekoDir:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/lib/neko" : "C:\\HaxeToolkit\\neko");
+                defaultHaxePath = (haxeDir.exists && haxeDir.isDirectory) ? haxeDir.nativePath : null;
+                defaultNekoPath = (nekoDir.exists && nekoDir.isDirectory) ? nekoDir.nativePath : null;
+                if(defaultHaxePath && model.haxePath == null)
+                {
+                    model.haxePath = defaultHaxePath;
+                }
+                if(defaultNekoPath && model.nekoPath == null)
+                {
+                    model.nekoPath = defaultNekoPath;
+                }
+            }
         }
 		
 		override protected function onProjectPathsValidated(paths:Array):void
@@ -133,8 +155,8 @@ package actionScripts.plugins.haxe
         {
 			onSettingsClose();
 
-			haxePathSetting = new PathSetting(this, 'haxePath', 'Haxe Home', true, haxePath);
-			nekoPathSetting = new PathSetting(this, 'nekoPath', 'Neko Home', true, nekoPath);
+			haxePathSetting = new PathSetting(this, 'haxePath', 'Haxe Home', true, haxePath, false, false, defaultHaxePath);
+			nekoPathSetting = new PathSetting(this, 'nekoPath', 'Neko Home', true, nekoPath, false, false, defaultNekoPath);
 			
 			return Vector.<ISetting>([
 				haxePathSetting,
