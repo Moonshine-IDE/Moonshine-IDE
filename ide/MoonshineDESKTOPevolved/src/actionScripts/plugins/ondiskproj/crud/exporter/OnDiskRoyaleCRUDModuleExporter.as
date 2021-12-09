@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter
 {
+	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
+
 	import flash.filesystem.File;
 	
 	import mx.collections.ArrayCollection;
@@ -33,7 +35,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
-	
+
+	import utils.MoonshineBridgeUtils;
+
 	import view.dominoFormBuilder.utils.FormBuilderCodeUtils;
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	
@@ -51,7 +55,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		{
 			this.targetPath = targetPath;
 			this.project = project;
-			
+			if (!MoonshineBridgeUtils.moonshineBridgeFormBuilderInterface)
+			{
+				MoonshineBridgeUtils.moonshineBridgeFormBuilderInterface = new IDominoFormBuilderLibraryBridgeImp();
+			}
+
 			parseModules();
 		}
 		
@@ -61,26 +69,32 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			
 			// get all available dfb files
 			var resources:ArrayCollection = new ArrayCollection();
-			UtilsCore.parseFilesList(resources, null, ["dfb"]);
-			
-			// parse to dfb files to form-object
-			// no matter opened or non-opened
-			formObjects = new Vector.<DominoFormVO>();
-			for each (var resource:ResourceVO in resources)
+			UtilsCore.parseFilesList(resources, null,null, ["dfb"], false, onFilesParseCompletes);
+
+			/*
+			 * @local
+			 */
+			function onFilesParseCompletes():void
 			{
-				tmpFormObject = new DominoFormVO();
-				FormBuilderCodeUtils.loadFromFile(resource.sourceWrapper.file.fileBridge.getFile as File, tmpFormObject);
-				
-				// form with no fields doesn't make sense
-				// to being generate in the royale application
-				if (tmpFormObject.fields && tmpFormObject.fields.length > 0)
+				// parse to dfb files to form-object
+				// no matter opened or non-opened
+				formObjects = new Vector.<DominoFormVO>();
+				for each (var resource:Object in resources)
 				{
-					formObjects.push(tmpFormObject);
+					tmpFormObject = new DominoFormVO();
+					FormBuilderCodeUtils.loadFromFile(new File(resource.resourcePath), tmpFormObject);
+
+					// form with no fields doesn't make sense
+					// to being generate in the royale application
+					if (tmpFormObject.fields && tmpFormObject.fields.length > 0)
+					{
+						formObjects.push(tmpFormObject);
+					}
 				}
+
+				// starts generation
+				copyModuleTemplates();
 			}
-			
-			// starts generation
-			copyModuleTemplates();
 		}
 		
 		protected function copyModuleTemplates():void

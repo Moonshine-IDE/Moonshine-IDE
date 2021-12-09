@@ -28,25 +28,31 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 	{
 		private static var fileName:String;
 		
-		public static function getImportReferenceFor(fileNameWithExtension:String, project:ProjectVO, extensions:Array=null):String
+		public static function getImportReferenceFor(fileNameWithExtension:String, project:ProjectVO, onComplete:Function, extensions:Array=null):void
 		{
 			var files:ArrayCollection = new ArrayCollection();
-			UtilsCore.parseFilesList(files, project, extensions, true);
-			
-			fileName = fileNameWithExtension;
-			files.filterFunction = resourceFilterFunction;
-			files.refresh();
-			
-			if (files.length > 0) 
+			UtilsCore.parseFilesList(files, null, project, extensions, true, onFilesListParseCompletes);
+
+			/*
+			 * @local
+			 */
+			function onFilesListParseCompletes():void
 			{
-				var path:String =  project.sourceFolder.fileBridge.getRelativePath(
-										(files[0] as ResourceVO).sourceWrapper.file, 
-										true
-									);
-				if (path.indexOf("/") != -1) path = path.replace(/\//gi, ".");
-				return path.substr(0, path.length - ((files[0] as ResourceVO).resourceExtension.length + 1));
+				fileName = fileNameWithExtension;
+				files.filterFunction = resourceFilterFunction;
+				files.refresh();
+
+				if (files.length > 0)
+				{
+					var path:String =  project.sourceFolder.fileBridge.getRelativePath(
+							(files[0] as ResourceVO).sourceWrapper.file,
+							true
+					);
+					if (path.indexOf("/") != -1) path = path.replace(/\//gi, ".");
+					onComplete(path.substr(0, path.length - ((files[0] as ResourceVO).resourceExtension.length + 1)));
+				}
+				onComplete(null);
 			}
-			return null;
 		}
 		
 		private static function resourceFilterFunction(item:ResourceVO):Boolean

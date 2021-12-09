@@ -44,15 +44,21 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
 			
-			generateClassReferences();
-			
-			fileContent = fileContent.replace(/%ImportStatements%/ig, "import "+ classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n");
-			fileContent = fileContent.replace(/%ListingComponentName%/ig, form.formName +"Listing");
-			fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"AddEdit");
-			
-			fileContent = fileContent.replace(/%FormItems%/ig, generateFormItems());
-			fileContent = fileContent.replace(/%FormName%/ig, form.viewName);
-			saveFile(fileContent);
+			generateClassReferences(onGenerationCompletes);
+
+			/*
+			 * @local
+			 */
+			function onGenerationCompletes():void
+			{
+				fileContent = fileContent.replace(/%ImportStatements%/ig, "import "+ classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n");
+				fileContent = fileContent.replace(/%ListingComponentName%/ig, form.formName +"Listing");
+				fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"AddEdit");
+
+				fileContent = fileContent.replace(/%FormItems%/ig, generateFormItems());
+				fileContent = fileContent.replace(/%FormName%/ig, form.viewName);
+				saveFile(fileContent);
+			}
 		}
 		
 		private function generateFormItems():String
@@ -66,16 +72,24 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			return tmpContent;
 		}
 		
-		private function generateClassReferences():void
+		private function generateClassReferences(onComplete:Function):void
 		{
 			if (!classReferenceSettings.hasOwnProperty(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT))
 			{
-				var importPath:String = RoyaleCRUDUtils.getImportReferenceFor(form.formName +"Listing.mxml", project, ["mxml"]);
-				classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
-				
-				var splitPath:Array = importPath.split(".");
-				splitPath[splitPath.length - 1] = "*";
-				classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
+				RoyaleCRUDUtils.getImportReferenceFor(form.formName +"Listing.mxml", project, onImportCompletes,["mxml"]);
+
+				/*
+				 * @local
+				 */
+				function onImportCompletes(importPath:String):void
+				{
+					classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
+
+					var splitPath:Array = importPath.split(".");
+					splitPath[splitPath.length - 1] = "*";
+					classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
+					onComplete();
+				}
 			}
 		}
 	}
