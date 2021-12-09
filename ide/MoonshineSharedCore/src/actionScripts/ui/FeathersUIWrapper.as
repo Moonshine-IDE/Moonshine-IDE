@@ -232,6 +232,10 @@ package actionScripts.ui
 				this.measuredMinHeight = this._feathersUIControl.minHeight;
 
 				this._ignoreResize = oldIgnoreResize;
+
+				// because we changed the size of the Feathers UI component to
+				// measure it, we need to set it back in updateDisplayList()
+				this.invalidateDisplayList();
 			}
 			else
 			{
