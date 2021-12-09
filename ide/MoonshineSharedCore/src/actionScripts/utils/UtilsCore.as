@@ -1224,9 +1224,10 @@ package actionScripts.utils
 					return true;
 				else if (model.fileCore.isPathExists(model.nodePath + model.fileCore.separator + "node"))
 					return true;
+				return false;
 			}
 			
-			return false;
+			return true;
 		}
 		
 		public static function isHaxeAvailable():Boolean
