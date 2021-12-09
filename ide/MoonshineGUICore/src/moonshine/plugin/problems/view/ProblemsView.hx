@@ -99,6 +99,7 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		});
 		this.gridView.columns = new ArrayCollection([problemColumn, locationColumn]);
 		this.gridView.extendedScrollBarY = true;
+		this.gridView.resizableColumns = true;
 		this.gridView.addEventListener(GridViewEvent.CELL_TRIGGER, gridView_cellTriggerHandler);
 		this.addChild(this.gridView);
 
