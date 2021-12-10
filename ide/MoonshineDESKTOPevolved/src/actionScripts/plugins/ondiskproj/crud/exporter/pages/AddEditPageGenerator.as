@@ -31,11 +31,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		private var _pageRelativePathString:String;
 		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
 		
-		public function AddEditPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
+		public function AddEditPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
 			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +"AddEdit.mxml";
 			
-			super(project, form, classReferenceSettings);
+			super(project, form, classReferenceSettings, onComplete);
 			generate();
 		}
 		
@@ -58,6 +58,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 				fileContent = fileContent.replace(/%FormItems%/ig, generateFormItems());
 				fileContent = fileContent.replace(/%FormName%/ig, form.viewName);
 				saveFile(fileContent);
+				dispatchCompletion();
 			}
 		}
 		

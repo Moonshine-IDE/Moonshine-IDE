@@ -30,9 +30,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		
 		private var forms:Vector.<DominoFormVO>;
 		
-		public function MainContentPageGenerator(project:ProjectVO, forms:Vector.<DominoFormVO>, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
+		public function MainContentPageGenerator(project:ProjectVO, forms:Vector.<DominoFormVO>, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
-			super(project, null, classReferenceSettings);
+			super(project, null, classReferenceSettings, onComplete);
 			
 			this.forms = forms;
 			generate();
@@ -64,6 +64,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			fileContent = fileContent.replace(/%ScrollableSectionContents%/gi, scrollableContents);
 			
 			saveFile(fileContent);
+			dispatchCompletion();
 		}
 	}
 }

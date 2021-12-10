@@ -24,8 +24,7 @@ package actionScripts.utils
 		
 		private static const PARSE_FILES_ON_PATH:String = "parseFilesOnPath";
 		
-		private static var subscribeIdToWorker:String;
-		
+		private var subscribeIdToWorker:String;
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var readableExtensions:Array;

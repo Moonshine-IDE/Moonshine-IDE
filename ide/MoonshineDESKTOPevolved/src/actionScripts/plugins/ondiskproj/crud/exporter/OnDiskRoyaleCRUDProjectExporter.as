@@ -120,22 +120,26 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		{
 			new OnDiskRoyaleCRUDModuleExporter(
 				(project as ProjectVO).sourceFolder.resolvePath("views/modules"),
-				project as ProjectVO
+				project as ProjectVO,
+					onModulesExported
 			);
-			
+		}
+
+		private function onModulesExported():void
+		{
 			// success message
 			dispatcher.dispatchEvent(
-				new ConsoleOutputEvent(
-					ConsoleOutputEvent.CONSOLE_PRINT, 
-					"Project saved at: "+ targetDirectory.resolvePath((project as ProjectVO).name).nativePath, 
-					false, false, 
-					ConsoleOutputEvent.TYPE_SUCCESS
-				)
+					new ConsoleOutputEvent(
+							ConsoleOutputEvent.CONSOLE_PRINT,
+							"Project saved at: "+ targetDirectory.resolvePath((project as ProjectVO).name).nativePath,
+							false, false,
+							ConsoleOutputEvent.TYPE_SUCCESS
+					)
 			);
 			dispatcher.dispatchEvent(
-				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Opening project in Moonshine..")
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Opening project in Moonshine..")
 			);
-			
+
 			// open project in Moonshine
 			openProjectInMoonshine();
 		}

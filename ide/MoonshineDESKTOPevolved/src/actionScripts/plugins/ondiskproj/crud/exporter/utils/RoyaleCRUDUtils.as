@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.utils
 {
+	import actionScripts.factory.FileLocation;
+
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.utils.UtilsCore;
@@ -45,17 +47,21 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 				if (files.length > 0)
 				{
 					var path:String =  project.sourceFolder.fileBridge.getRelativePath(
-							(files[0] as ResourceVO).sourceWrapper.file,
+							new FileLocation(files[0].resourcePath),
+							/*(files[0] as ResourceVO).sourceWrapper.file,*/
 							true
 					);
 					if (path.indexOf("/") != -1) path = path.replace(/\//gi, ".");
-					onComplete(path.substr(0, path.length - ((files[0] as ResourceVO).resourceExtension.length + 1)));
+					onComplete(path.substr(0, path.length - (files[0].extension.length + 1)));
 				}
-				onComplete(null);
+				else
+				{
+					onComplete(null);
+				}
 			}
 		}
 		
-		private static function resourceFilterFunction(item:ResourceVO):Boolean
+		private static function resourceFilterFunction(item:Object):Boolean
 		{
 			var itemName:String = item.name.toLowerCase();
 			return (itemName == fileName.toLowerCase());

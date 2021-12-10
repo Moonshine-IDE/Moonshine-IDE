@@ -942,8 +942,8 @@ package actionScripts.utils
 			function initiateFilesParsingByPath(value:String):void
 			{
 				var tmpFSP:FileSystemParser = new FileSystemParser();
-				tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onFilesListParseCompleted, false, 0, true);
-				tmpFSP.parseFilesPaths(value, "", readableExtensions);
+				tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onFilesListParseCompleted);
+				tmpFSP.parseFilesPaths(value, UIDUtil.createUID(), readableExtensions);
 			}
 			function onFilesListParseCompleted(event:Event):void
 			{

@@ -19,6 +19,11 @@
 package actionScripts.plugins.ondiskproj.crud.exporter
 {
 	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
+
+	import avmplus.getQualifiedClassName;
+
+	import flash.events.Event;
 
 	import flash.filesystem.File;
 	
@@ -50,11 +55,20 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		protected var targetPath:FileLocation;
 		protected var project:ProjectVO;
 		protected var formObjects:Vector.<DominoFormVO>;
+
+		private var completionCount:int;
+		private var waitingCount:int;
+		private var onCompleteHandler:Function;
 		
-		public function OnDiskRoyaleCRUDModuleExporter(targetPath:FileLocation, project:ProjectVO)
+		public function OnDiskRoyaleCRUDModuleExporter(targetPath:FileLocation, project:ProjectVO, onComplete:Function)
 		{
+			waitingCount = 0;
+			completionCount = 0;
+
 			this.targetPath = targetPath;
 			this.project = project;
+			this.onCompleteHandler = onComplete;
+
 			if (!MoonshineBridgeUtils.moonshineBridgeFormBuilderInterface)
 			{
 				MoonshineBridgeUtils.moonshineBridgeFormBuilderInterface = new IDominoFormBuilderLibraryBridgeImp();
@@ -110,11 +124,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			// creation are complete
 			// run once to save process
 			project.projectFolder.updateChildren();
-			
+
 			// class-files gneration
 			generateModuleClasses();
-			// project specific generation
-			generateProjectClasses();
 		}
 		
 		protected function copyTemplates(form:DominoFormVO):void
@@ -132,15 +144,41 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		{
 			for each (var form:DominoFormVO in formObjects)
 			{
-				new ListingPageGenerator(this.project, form, classReferenceSettings);
-				new AddEditPageGenerator(this.project, form, classReferenceSettings);
+				waitingCount += 2;
+				new ListingPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				new AddEditPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 			}
 		}
 		
 		protected function generateProjectClasses():void
 		{
-			new MainContentPageGenerator(this.project, formObjects, classReferenceSettings);
-			new DashboardPageGenerator(this.project, formObjects, classReferenceSettings);
+			new MainContentPageGenerator(this.project, formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
+			new DashboardPageGenerator(this.project, formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
+		}
+
+		protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void
+		{
+			completionCount++;
+
+			if (waitingCount == completionCount)
+			{
+				waitingCount = 2;
+				completionCount = 0;
+
+				// project specific generation
+				generateProjectClasses();
+			}
+		}
+
+		protected function onProjectFilesGenerationCompletes(origin:RoyalePageGeneratorBase):void
+		{
+			completionCount++;
+
+			if (waitingCount == completionCount)
+			{
+				onCompleteHandler();
+				onCompleteHandler = null;
+			}
 		}
 	}
 }

@@ -22,20 +22,24 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.plugins.ondiskproj.crud.exporter.utils.RoyaleCRUDUtils;
 	import actionScripts.valueObjects.ProjectVO;
-	
+
+	import flash.events.Event;
+
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	
 	public class ListingPageGenerator extends RoyalePageGeneratorBase
 	{
+		public static const EVENT_COMPLETE:String = "event-complete";
+
 		private var _pageRelativePathString:String;
 		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
 		
-		public function ListingPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
+		public function ListingPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
 			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +"Listing.mxml";
 			
-			super(project, form, classReferenceSettings);
+			super(project, form, classReferenceSettings, onComplete);
 			generate();
 		}
 		
@@ -58,6 +62,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 				fileContent = fileContent.replace(/%DataGridColumns%/ig, generateColumns());
 				fileContent = fileContent.replace(/%FormName%/g, form.viewName);
 				saveFile(fileContent);
+				dispatchCompletion();
 			}
 		}
 		

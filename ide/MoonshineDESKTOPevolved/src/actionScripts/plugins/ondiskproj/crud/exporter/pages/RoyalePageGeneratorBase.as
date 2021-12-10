@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
+	import flash.events.EventDispatcher;
 	import flash.filesystem.File;
 	
 	import actionScripts.factory.FileLocation;
@@ -27,20 +28,22 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	
 	import view.dominoFormBuilder.vo.DominoFormVO;
 
-	public class RoyalePageGeneratorBase
+	public class RoyalePageGeneratorBase extends EventDispatcher
 	{
 		protected var pagePath:FileLocation;
 		protected var form:DominoFormVO;
 		protected var project:ProjectVO;
 		protected var classReferenceSettings:RoyaleCRUDClassReferenceSettings;
+		protected var onCompleteHandler:Function;
 		
 		protected function get pageRelativePathString():String		{	return null;	}
 		
-		public function RoyalePageGeneratorBase(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings)
+		public function RoyalePageGeneratorBase(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
 			this.project = project;
 			this.form = form;
 			this.classReferenceSettings = classReferenceSettings;
+			this.onCompleteHandler = onComplete;
 			
 			if (pageRelativePathString) 
 				pagePath = project.sourceFolder.fileBridge.resolvePath(pageRelativePathString);
@@ -75,6 +78,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			function onFailWriting(message:String):void
 			{
 				
+			}
+		}
+
+		protected function dispatchCompletion():void
+		{
+			if (onCompleteHandler != null)
+			{
+				onCompleteHandler(this);
+				onCompleteHandler = null;
 			}
 		}
 	}

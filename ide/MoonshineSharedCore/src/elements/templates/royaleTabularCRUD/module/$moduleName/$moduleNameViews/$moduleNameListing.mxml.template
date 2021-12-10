@@ -67,8 +67,7 @@
 	
 	<j:Label percentWidth="100" text="* Double click to open any row in edit"
 			 className="smallFont italic labelTextAlignRight"/>
-	<j:DataGrid id="dgItems"
-				rowHeight="50">
+	<j:DataGrid id="dgItems">
 		<j:columns>
 			%DataGridColumns%
 			<j:DataGridColumn label="Delete" itemRenderer="views.renderers.DeleteGridItemRenderer" 
