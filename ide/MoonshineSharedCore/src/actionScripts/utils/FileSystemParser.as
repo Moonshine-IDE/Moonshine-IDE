@@ -72,18 +72,20 @@ package actionScripts.utils
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
 		
-		public function parseFilesPaths(fromPath:String, fileName:String, readableExtensions:Array=null):void
+		public function parseFilesPaths(fromPath:String, withName:String, readableExtensions:Array=null):void
 		{
 			var tempDirectory:FileLocation = IDEModel.getInstance().fileCore.resolveTemporaryDirectoryPath("moonshine");
 			if (!tempDirectory.fileBridge.exists)
 			{
 				tempDirectory.fileBridge.createDirectory();
 			}
-			
+
+			withName ||= "FileSystemParser";
+
 			this.readableExtensions = readableExtensions;
 			this._projectPath = fromPath;
-			this._fileName = fileName;
-			this._filePath = tempDirectory.fileBridge.resolvePath(fileName +".txt").fileBridge.nativePath;
+			this._fileName = withName;
+			this._filePath = tempDirectory.fileBridge.resolvePath(this._fileName +".txt").fileBridge.nativePath;
 
 			var tmpExtensions:String = "";
 			if (readableExtensions)
