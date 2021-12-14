@@ -271,5 +271,7 @@
 	<containers:UpdaterView id="updaterView"
 							isUpdateAvailable="{updaterHelper.isUpdater}"
 							updater="{updater}" downlaoding="{updaterHelper.downlaoding}"
-							UPDATEYES="updaterHelper.btnYes_clickHandler(event)" UPDATENO="updaterHelper.btnNo_clickHandler(event)" UPDATECANCEL="updaterHelper.btnCancel_clickHandler(event)"/>
+							UPDATEYES="updaterHelper.btnYes_clickHandler(event)" UPDATENO="updaterHelper.btnNo_clickHandler(event)"
+							UPDATECANCEL="updaterHelper.btnCancel_clickHandler(event)"
+							CHECKCANCEL="updaterHelper.btnCheck_CancelHandler(event)"/>
 </s:WindowedApplication>

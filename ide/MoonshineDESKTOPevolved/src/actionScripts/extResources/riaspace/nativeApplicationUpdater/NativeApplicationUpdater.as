@@ -240,6 +240,14 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				}
 			}
 		}
+
+		public function cancelUpdateCheck():void
+		{
+			if (currentState == CHECKING)
+			{
+				updateDescriptorLoader_removeListeners();
+			}
+		}
 		
 		/**
 		 * Cancel an open updation process

@@ -79,6 +79,12 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		{
 			isUpdater = 0;
 		}
+
+		public function btnCheck_CancelHandler(event:Event):void
+		{
+			updater.cancelUpdateCheck();
+			isUpdater = 0;
+		}
 		
 		public function btnCancel_clickHandler(event:Event):void
 		{

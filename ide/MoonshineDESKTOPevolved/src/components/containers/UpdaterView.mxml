@@ -28,6 +28,7 @@
 		[Event( name="UPDATEYES" )]
 		[Event( name="UPDATENO" )]
 		[Event( name="UPDATECANCEL" )]
+		[Event( name="CHECKCANCEL" )]
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
@@ -108,6 +109,12 @@
 				}
 			}
 
+			private function onUpdateCheckCancel(event:MouseEvent):void
+			{
+				containerLoading.removeElement(busyIndicator);
+				dispatchEvent(new Event('CHECKCANCEL'));
+			}
+
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -123,8 +130,8 @@
 			<s:SolidColor color="#000000" alpha=".3"/>
 		</s:fill>    		
 	</s:Rect>
-	
-	<s:BorderContainer id="bodyContainer" 
+
+	<s:BorderContainer id="bodyContainer"
 						verticalCenter="0" horizontalCenter="0"
 						borderVisible="false" backgroundColor="#e1e1e1"
 						autoLayout="true" cornerRadius="4">
@@ -186,4 +193,9 @@
 			</s:VGroup>
 		</s:HGroup>
 	</s:BorderContainer>
+
+	<s:Image source="{ConstantsCoreVO.SMALL_CROSS_BUTTON}"
+			 x="{bodyContainer.x + bodyContainer.width - 26}"
+			 y="{bodyContainer.y + 6}" includeIn="loading"
+			 click="onUpdateCheckCancel(event)"/>
 </s:Group>
