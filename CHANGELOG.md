@@ -28,6 +28,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
+* Code Editor: Fixed issue where code completion should react on already typed words. ([#6](https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor/issues/6))
+* Code Editor: Fixed issue where cursor jumps to import section when new import is added. ([#5](https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor/issues/5))
+* Code Editor: Fixed exception when clean up import is used by shortcut `Command/Cntrl + Shift + I`. ([#4](https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor/issues/4))
 * Fixed issue where Moonshine closes when user cancel update. ([#951](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/951))
 * Fixed issue where code editor goes blank in some scenarios. ([#942](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/942))
 * Fixed issue where project name in sidebar went strightrough after some file operations. ([#943](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/943))
