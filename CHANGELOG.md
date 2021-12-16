@@ -9,11 +9,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+* About: Added OS name and version information. ([#944](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/944))
 * Added "Close Others" context-menu option to Tab ([#610](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/610))
+* 
 
 ### Changed
 
-* Update notification window size updated ([#909](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/909))
+* New File: Showing path in **Source Folder** area with slashes instead dots. ([#945](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/945))
+* Update notification window size updated. ([#909](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/909))
 * Language Server: Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.10.0.
 * Language Server: Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to latest version.
 * Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.6.0.
@@ -26,7 +29,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Fixed issue where Moonshine closes when user cancel update. ([#951](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/951))
 * Fixed issue where code editor goes blank in some scenarios. ([#942](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/942))
 * Fixed issue where project name in sidebar went strightrough after some file operations. ([#943](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/943))
-* Fixed issue where running Ant script triggers propt to setup Flex home path. ([#938](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/938))
+* Ant: Fixed issue where running Ant script triggers propt to setup Flex home path. ([#938](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/938))
+* Fixed issue where tab of the editor stopped indicate by asterix that file was edited. ([#939](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/939))
+* Gradle: Fixed issue where prompt about file changes in build.gradle file locked Moonshine. ([#936](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/936))
+* Ant: Fixed issue where Ant build did not work with Java 8. ([#933](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/933))
+* Fixed issue where sidebar section like **Tour De Flex** or **Useful Links** can be opened more than once. ([#922](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/922))
 * `Git > Grant Permission` opens Manage Repositories window instead of the targeted window. ([#749](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/749))
 
 ## Moonshine IDE [3.2.0]
