@@ -23,7 +23,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 
-* `Git > Grant Permission` opens Manage Repositories window instead of the targeted window ([#749](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/749))
+* Fixed issue where Moonshine closes when user cancel update. ([#951](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/951))
+* Fixed issue where code editor goes blank in some scenarios. ([#942](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/942))
+* `Git > Grant Permission` opens Manage Repositories window instead of the targeted window. ([#749](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/749))
 
 ## Moonshine IDE [3.2.0]
 
