@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 
 * About Moonshine: Make labels with versions be able to copy to clipboard. ([#954](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/954))
+* Problems View: Make view opened on startup as default. ([#946](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/946))
 * New File: Showing path in **Source Folder** area with slashes instead dots. ([#945](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/945))
 * Console: Update information visible on Moonshine startup. ([#912](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/912))
 * Settings: Rename **Domino** to **Domino and Notes Client** in Moonshine settings. ([#915](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/915))
