@@ -131,6 +131,8 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		protected var fileStream:FileStream;
 		
 		protected var hideAlert : Boolean;
+
+		protected var isUpdateDescriptorLoaderClosed:Boolean;
 		
 		public function NativeApplicationUpdater()
 		{
@@ -223,7 +225,8 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			if (currentState == BEFORE_CHECKING)
 			{
 				currentState = CHECKING;
-				
+
+				isUpdateDescriptorLoaderClosed = false;
 				updateDescriptorLoader =  new URLLoader();
 				updateDescriptorLoader.addEventListener(Event.COMPLETE,  updateDescriptorLoader_completeHandler);
 				updateDescriptorLoader.addEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
@@ -319,7 +322,11 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
 			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
 			updateDescriptorLoader.removeEventListener(HTTPStatusEvent.HTTP_STATUS, updateDescriptorLoader_httpStatus);
-			updateDescriptorLoader.close();
+			if (!isUpdateDescriptorLoaderClosed)
+			{
+				updateDescriptorLoader.close();
+				isUpdateDescriptorLoaderClosed = true;
+			}
 		}
 		
 		/**

@@ -58,7 +58,7 @@
 				_isUpdateAvailable = value;
 				if (_isUpdateAvailable == 1)
 				{
-					containerLoading.removeElement(busyIndicator);
+					removeBusyIndicator();
 					this.currentState = "loaded";
 				}
 				else if (_isUpdateAvailable == 0)
@@ -111,8 +111,16 @@
 
 			private function onUpdateCheckCancel(event:MouseEvent):void
 			{
-				containerLoading.removeElement(busyIndicator);
+				removeBusyIndicator();
 				dispatchEvent(new Event('CHECKCANCEL'));
+			}
+
+			private function removeBusyIndicator():void
+			{
+				try
+				{
+					containerLoading.removeElement(busyIndicator);
+				} catch (e:Error) {}
 			}
 
 		]]>
