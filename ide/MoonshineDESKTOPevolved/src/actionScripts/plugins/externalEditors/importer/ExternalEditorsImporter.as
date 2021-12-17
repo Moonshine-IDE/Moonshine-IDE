@@ -94,7 +94,7 @@ package actionScripts.plugins.externalEditors.importer
 			path = path.replace("$programFiles", "");
 			if (ConstantsCoreVO.is64BitSupport)
 			{
-				for (var i:String in WINDOWS_INSTALL_DIRECTORIES)
+				for each(var i:String in WINDOWS_INSTALL_DIRECTORIES)
 				{
 					tmpPath = "C:/"+ i +"/"+ path;
 					if (FileUtils.isPathExists(tmpPath))
