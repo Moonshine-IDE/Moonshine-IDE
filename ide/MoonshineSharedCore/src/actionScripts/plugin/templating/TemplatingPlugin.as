@@ -425,11 +425,11 @@ package actionScripts.plugin.templating
 						actionScriptProjectTemplates.addItem(template);
 					}
 
-					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1&& templateName.indexOf("Visual") == -1)
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1&& templateName.indexOf("REST") == -1)
 					{
                         royaleProjectTemplates.addItem(template);
 					}
-					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1&& templateName.indexOf("Visual") != -1)
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1&& templateName.indexOf("REST") != -1&& templateName.indexOf("Visual") == -1)
 					{
                         royaleVisualProjectTemplates.addItem(template);
 					}

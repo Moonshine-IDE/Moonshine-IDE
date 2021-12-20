@@ -298,7 +298,8 @@ package actionScripts.plugins.as3project
 					project.projectName = "NewJavaScriptBrowserProject";
 					project.isFlexJSRoyalProject = true;
                 } else if(isFlexJSRoyalVisualProject){
-					project.projectName = "NewRoyalVisualConvertProject";
+					project.projectName = "NewRoyalConvertProject";
+					project.isFlexJSRoyalProject = true;
 				}else
 				{
 					project.projectName = event.exportProject ? event.exportProject.name + "_exported" : "New"+tempName;
@@ -493,13 +494,14 @@ package actionScripts.plugins.as3project
                 ]));
             }
 
-			if (project.isFlexJSRoyalProject && !eventObject.isExport)
+
+			if (project.isFlexJSRoyalProject && !eventObject.isExport &&!isFlexJSRoyalVisualProject)
 			{
 				 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
                     new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
                     newProjectNameSetting, // No space input either plx
                     newProjectPathSetting,
-					new DropDownListSetting(this, "projectTemplateType", "Select Template Type", new ArrayCollection([ProjectTemplateType.ROYALE_VISUAL_PROJECT]))
+					new DropDownListSetting(this, "projectTemplateType", "Select Template Type1", new ArrayCollection([ProjectTemplateType.ROYALE_VISUAL_PROJECT]))
                 ]));
 
 			}
@@ -983,7 +985,16 @@ package actionScripts.plugins.as3project
 								if(edit.visualEditorProject!=null){
 									if((edit.visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject)
 									{
-										Alert.show("Domino project editor");
+										
+										var mxmlCode:XML = edit.visualEditor.editingSurface.toRoyaleCode(pvo.projectName,edit.visualEditor.editingSurface);
+										
+										Alert.show("Domino project editor xml:"+mxmlCode.toString());
+										var newRoyaleFile:FileLocation =  targetFolder.resolvePath("src"+File.separator+"view"+File.separator + "MainContent.mxml");
+										if(newRoyaleFile.fileBridge.exists){
+											newRoyaleFile.fileBridge.deleteFile();
+										}
+										
+										newRoyaleFile.fileBridge.save(mxmlCode.toXMLString());
 
 									}
 									
@@ -1364,11 +1375,11 @@ package actionScripts.plugins.as3project
 			{
 				isAway3DProject = true;
 			}
-			else if ( (templateName.indexOf("Royale") != -1 || templateName.indexOf("FlexJS") != -1) &&  templateName.indexOf("Visual") == -1)
+			else if ( (templateName.indexOf("Royale") != -1 || templateName.indexOf("FlexJS") != -1) &&  templateName.indexOf("REST") == -1)
 			{
 				isFlexJSRoyalProject = true;
 			}
-			else if (templateName.indexOf("Royale") != -1  &&  templateName.indexOf("Visual") == -1)
+			else if (templateName.indexOf("Royale") != -1  &&  templateName.indexOf("REST") != -1)
 			{
 				isFlexJSRoyalVisualProject = true;
 			}
