@@ -599,21 +599,29 @@ package actionScripts.languageServer
 			}
 			var runtimes:Array = [];
 			var java8Path:FileLocation = _model.java8Path;
-			if(java8Path != null) {
+			if(_project.jdkType == JavaTypes.JAVA_8)
+			{
+				if(java8Path != null)
+				{
+					runtimes.push({
+						"name": "JavaSE-1.8",
+						"path": java8Path.fileBridge.nativePath,
+						"default":  true
+					});
+				}
+			}
+			else
+			{
+				var versionParts:Array = _model.javaVersionForTypeAhead.split(".");
+				var sourcesZip:FileLocation = _model.javaPathForTypeAhead.fileBridge.resolvePath("lib/src.zip");
 				runtimes.push({
-					"name": "JavaSE-1.8",
-					"path": java8Path.fileBridge.nativePath
+					"name": "JavaSE-" + versionParts[0],
+					"path": _model.javaPathForTypeAhead.fileBridge.nativePath,
+					"sources": sourcesZip.fileBridge.nativePath,
+					"javadoc": "https://docs.oracle.com/en/java/javase/" + versionParts[0] + "/docs/api",
+					"default":  true
 				});
 			}
-			var versionParts:Array = _model.javaVersionForTypeAhead.split(".");
-			var sourcesZip:FileLocation = _model.javaPathForTypeAhead.fileBridge.resolvePath("lib/src.zip");
-			runtimes.push({
-				"name": "JavaSE-" + versionParts[0],
-				"path": _model.javaPathForTypeAhead.fileBridge.nativePath,
-				"sources": sourcesZip.fileBridge.nativePath,
-				"javadoc": "https://docs.oracle.com/en/java/javase/" + versionParts[0] + "/docs/api",
-				"default":  true
-			});
 			var settings:Object = { java: { configuration: { runtimes: runtimes } } };
 			switch(_settingUpdateBuildConfiguration) {
 				case FEATURE_STATUS_DISABLED:
