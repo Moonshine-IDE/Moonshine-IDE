@@ -20,6 +20,18 @@
 
 package moonshine.theme;
 
+import feathers.controls.ButtonState;
+import feathers.controls.BasicButton;
+import feathers.controls.HDividedBox;
+import feathers.controls.dataRenderers.GridViewHeaderRenderer;
+import flash.display.Bitmap;
+import moonshine.plugin.debugadapter.view.DebugAdapterView;
+import feathers.controls.TreeGridView;
+import feathers.skins.TriangleSkin;
+import feathers.controls.PopUpListView;
+import openfl.geom.Matrix;
+import actionScripts.valueObjects.ConstantsCoreVO;
+import moonshine.components.StandardPopupView;
 import feathers.controls.Button;
 import feathers.controls.GridView;
 import feathers.controls.HScrollBar;
@@ -60,6 +72,14 @@ import openfl.display.Shape;
 import openfl.filters.GlowFilter;
 import openfl.geom.Matrix;
 import openfl.text.TextFormat;
+import moonshine.theme.SDKInstallerTheme;
+import moonshine.theme.assets.RefreshIcon;
+import moonshine.theme.assets.DebugPlayIcon;
+import moonshine.theme.assets.DebugPauseIcon;
+import moonshine.theme.assets.DebugStepOverIcon;
+import moonshine.theme.assets.DebugStepIntoIcon;
+import moonshine.theme.assets.DebugStepOutIcon;
+import moonshine.theme.assets.DebugStopIcon;
 
 class MoonshineTheme extends SDKInstallerTheme {
 	private static var _instance:MoonshineTheme;
@@ -94,9 +114,13 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_DARK_BUTTON, setDarkButtonStyles);
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_LARGE_BUTTON, setLargeButtonStyles);
 
+		this.styleProvider.setStyleFunction(DebugAdapterView, null, setDebugAdapterViewStyles);
+
+		this.styleProvider.setStyleFunction(HDividedBox, null, setHDividedBoxStyles);
+
 		this.styleProvider.setStyleFunction(GridView, null, setGridViewStyles);
 		this.styleProvider.setStyleFunction(GridView, GridView.VARIANT_BORDERLESS, setBorderlessGridViewStyles);
-		this.styleProvider.setStyleFunction(ItemRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewHeaderStyles);
+		this.styleProvider.setStyleFunction(GridViewHeaderRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 
@@ -133,6 +157,10 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_PLUGIN_LARGE_TITLE, setPluginLargeTitleStyles);
 
+		this.styleProvider.setStyleFunction(TreeGridView, null, setTreeGridViewStyles);
+		this.styleProvider.setStyleFunction(TreeGridView, TreeGridView.VARIANT_BORDERLESS, setBorderlessTreeGridViewStyles);
+		this.styleProvider.setStyleFunction(GridViewHeaderRenderer, TreeGridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
+
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
 		this.styleProvider.setStyleFunction(HierarchicalItemRenderer, null, setHierarchicalItemRendererStyles);
@@ -141,6 +169,13 @@ class MoonshineTheme extends SDKInstallerTheme {
 			setHierarchicalItemRendererDisclosureButtonStyles);
 
 		this.styleProvider.setStyleFunction(Button, IMAGE_VARIANT_LARGE_REFRESH_ICON, setImageLargeRefreshStyles);
+
+		this.styleProvider.setStyleFunction(Button, DebugAdapterView.CHILD_VARIANT_PLAY_BUTTON, setDebugPlayButtonStyles);
+		this.styleProvider.setStyleFunction(Button, DebugAdapterView.CHILD_VARIANT_PAUSE_BUTTON, setDebugPauseButtonStyles);
+		this.styleProvider.setStyleFunction(Button, DebugAdapterView.CHILD_VARIANT_STEP_OVER_BUTTON, setDebugStepOverButtonStyles);
+		this.styleProvider.setStyleFunction(Button, DebugAdapterView.CHILD_VARIANT_STEP_INTO_BUTTON, setDebugStepIntoButtonStyles);
+		this.styleProvider.setStyleFunction(Button, DebugAdapterView.CHILD_VARIANT_STEP_OUT_BUTTON, setDebugStepOutButtonStyles);
+		this.styleProvider.setStyleFunction(Button, DebugAdapterView.CHILD_VARIANT_STOP_BUTTON, setDebugStopButtonStyles);
 	}
 
 	private function getDarkOnLightTextFormat():TextFormat {
@@ -390,7 +425,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		gridView.fixedScrollBars = true;
 	}
 
-	private function setGridViewHeaderStyles(headerRenderer:ItemRenderer):Void {
+	private function setGridViewOrTreeGridViewHeaderStyles(headerRenderer:GridViewHeaderRenderer):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x555555);
 		headerRenderer.backgroundSkin = backgroundSkin;
@@ -1016,5 +1051,130 @@ class MoonshineTheme extends SDKInstallerTheme {
 		backgroundSkin.height = layout.height;
 
 		layout.backgroundSkin = backgroundSkin;
+	}
+
+	private function setTreeGridViewStyles(treeGridView:TreeGridView):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x444444);
+		backgroundSkin.border = SolidColor(1.0, 0x666666);
+		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
+		backgroundSkin.cornerRadius = 0.0;
+		backgroundSkin.minWidth = 160.0;
+		backgroundSkin.minHeight = 160.0;
+		treeGridView.backgroundSkin = backgroundSkin;
+
+		var columnResizeSkin = new RectangleSkin(SolidColor(0xC165B8), null);
+		columnResizeSkin.width = 2.0;
+		columnResizeSkin.height = 2.0;
+		treeGridView.columnResizeSkin = columnResizeSkin;
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		treeGridView.focusRectSkin = focusRectSkin;
+
+		var layout = new VerticalListLayout();
+		layout.requestedRowCount = 5;
+		treeGridView.layout = layout;
+
+		treeGridView.fixedScrollBars = true;
+	}
+
+	private function setBorderlessTreeGridViewStyles(treeGridView:TreeGridView):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x444444);
+		backgroundSkin.border = null;
+		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
+		backgroundSkin.cornerRadius = 0.0;
+		backgroundSkin.minWidth = 160.0;
+		backgroundSkin.minHeight = 160.0;
+		treeGridView.backgroundSkin = backgroundSkin;
+
+		var columnResizeSkin = new RectangleSkin(SolidColor(0xC165B8), null);
+		columnResizeSkin.width = 2.0;
+		columnResizeSkin.height = 2.0;
+		treeGridView.columnResizeSkin = columnResizeSkin;
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		treeGridView.focusRectSkin = focusRectSkin;
+
+		var layout = new VerticalListLayout();
+		layout.requestedRowCount = 5;
+		treeGridView.layout = layout;
+
+		treeGridView.fixedScrollBars = true;
+	}
+
+	private function setDebugAdapterViewStyles(view:DebugAdapterView):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x444444);
+		backgroundSkin.border = None;
+		view.backgroundSkin = backgroundSkin;
+	}
+
+	private function setHDividedBoxStyles(dividedBox:HDividedBox):Void {
+		dividedBox.dividerFactory = () -> {
+			var divider = new BasicButton();
+			divider.keepDownStateOnRollOut = true;
+			var backgroundSkin = new RectangleSkin();
+			backgroundSkin.fill = SolidColor(0x292929);
+			backgroundSkin.setFillForState(ButtonState.HOVER, SolidColor(0xf3f3f3));
+			backgroundSkin.setFillForState(ButtonState.DOWN, SolidColor(0xC165B8));
+			backgroundSkin.border = None;
+			backgroundSkin.width = 2.0;
+			backgroundSkin.height = 2.0;
+			divider.backgroundSkin = backgroundSkin;
+			return divider;
+		};
+	}
+
+	private function setDebugPlayButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		button.icon = new Bitmap(new DebugPlayIcon());
+
+		button.setPadding(6.0);
+	}
+
+	private function setDebugPauseButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		button.icon = new Bitmap(new DebugPauseIcon());
+
+		button.setPadding(6.0);
+	}
+
+	private function setDebugStepOverButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		button.icon = new Bitmap(new DebugStepOverIcon());
+
+		button.setPadding(6.0);
+	}
+
+	private function setDebugStepIntoButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		button.icon = new Bitmap(new DebugStepIntoIcon());
+
+		button.setPadding(6.0);
+	}
+
+	private function setDebugStepOutButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		button.icon = new Bitmap(new DebugStepOutIcon());
+
+		button.setPadding(6.0);
+	}
+
+	private function setDebugStopButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		button.icon = new Bitmap(new DebugStopIcon());
+
+		button.setPadding(6.0);
 	}
 }

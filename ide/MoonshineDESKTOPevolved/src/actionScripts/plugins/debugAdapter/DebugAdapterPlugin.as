@@ -35,7 +35,6 @@ package actionScripts.plugins.debugAdapter
     import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
     import actionScripts.plugins.debugAdapter.events.LoadVariablesEvent;
     import actionScripts.plugins.debugAdapter.events.StackFrameEvent;
-    import actionScripts.plugins.debugAdapter.view.DebugAdapterView;
     import actionScripts.plugins.firefoxlauncher.FirefoxDebugAdapterLauncher;
     import actionScripts.plugins.hashlinklauncher.HashLinkDebugAdapterLauncher;
     import actionScripts.plugins.hxcpplauncher.HxCppDebugAdapterLauncher;
@@ -49,9 +48,16 @@ package actionScripts.plugins.debugAdapter
     import actionScripts.debugAdapter.vo.ThreadsHierarchicalData;
     import actionScripts.debugAdapter.vo.VariablesReferenceHierarchicalData;
     import mx.collections.ArrayCollection;
+    import feathers.data.ArrayCollection;
     import flash.utils.Dictionary;
     import actionScripts.events.OpenFileEvent;
     import actionScripts.factory.FileLocation;
+    import actionScripts.ui.FeathersUIWrapper;
+    import moonshine.plugin.debugadapter.view.DebugAdapterView;
+	import moonshine.plugin.debugadapter.data.VariablesReferenceHierarchicalCollection;
+	import moonshine.plugin.debugadapter.events.DebugAdapterViewThreadEvent;
+	import moonshine.plugin.debugadapter.events.DebugAdapterViewLoadVariablesEvent;
+	import moonshine.plugin.debugadapter.events.DebugAdapterViewStackFrameEvent;
 
     public class DebugAdapterPlugin extends PluginBase
 	{
@@ -64,7 +70,8 @@ package actionScripts.plugins.debugAdapter
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String 	{ return "Debugs ActionScript and MXML projects with the Debug Adapter Protocol."; }
 		
-		private var _debugPanel:DebugAdapterView;
+		private var debugView:DebugAdapterView;
+		private var debugViewWrapper:DebugAdapterViewWrapper;
 		private var _nativeProcess:NativeProcess;
 		private var _debugAdapter:DebugAdapterClient;
 		private var _pendingAdapterID:String;
@@ -75,8 +82,8 @@ package actionScripts.plugins.debugAdapter
 		private var _breakpoints:Object = {};
 
 		private var _threadsAndStackFrames:ThreadsHierarchicalData = new ThreadsHierarchicalData();
-		private var _scopesAndVars:VariablesReferenceHierarchicalData = new VariablesReferenceHierarchicalData();
-		private var _pausedThreads:ArrayCollection = new ArrayCollection();
+		private var _scopesAndVars:VariablesReferenceHierarchicalCollection = new VariablesReferenceHierarchicalCollection();
+		private var _pausedThreads:feathers.data.ArrayCollection = new feathers.data.ArrayCollection();
 
 		private var _supportsConfigurationDoneRequest:Boolean = false;
 		private var _receivedInitializeResponse:Boolean = false;
@@ -84,13 +91,17 @@ package actionScripts.plugins.debugAdapter
 		
 		public function DebugAdapterPlugin()
 		{
+			debugView = new DebugAdapterView();
+			debugViewWrapper = new DebugAdapterViewWrapper(debugView);
+			debugViewWrapper.percentWidth = 100;
+			debugViewWrapper.percentHeight = 100;
+			debugViewWrapper.minWidth = 0;
+			debugViewWrapper.minHeight = 0;
 		}
 		
 		override public function activate():void
 		{
 			super.activate();
-			
-			_debugPanel = new DebugAdapterView();
 
 			dispatcher.addEventListener(EVENT_SHOW_HIDE_DEBUG_VIEW, dispatcher_showDebugViewHandler);
 			dispatcher.addEventListener(DebugAdapterEvent.START_DEBUG_ADAPTER, dispatcher_startDebugAdapterHandler);
@@ -128,41 +139,41 @@ package actionScripts.plugins.debugAdapter
 		
 		private function initializeDebugViewEventHandlers(event:Event):void
 		{
-			_debugPanel.addEventListener(DebugActionEvent.DEBUG_PAUSE, debugPanel_debugPauseHandler);
-			_debugPanel.addEventListener(DebugActionEvent.DEBUG_RESUME, debugPanel_debugResumeHandler);
-			_debugPanel.addEventListener(DebugActionEvent.DEBUG_STEP_INTO, debugPanel_debugStepIntoHandler);
-			_debugPanel.addEventListener(DebugActionEvent.DEBUG_STEP_OUT, debugPanel_debugStepOutHandler);
-			_debugPanel.addEventListener(DebugActionEvent.DEBUG_STEP_OVER, debugPanel_debugStepOverHandler);
-			_debugPanel.addEventListener(DebugActionEvent.DEBUG_STOP, debugPanel_debugStopHandler);
-			_debugPanel.addEventListener(LoadVariablesEvent.LOAD_VARIABLES, debugPanel_loadVariablesHandler);
-			_debugPanel.addEventListener(StackFrameEvent.GOTO_STACK_FRAME, debugPanel_gotoStackFrameHandler);
-			_debugPanel.addEventListener(Event.REMOVED_FROM_STAGE, debugPanel_removedFromStageHandler);
+			debugView.addEventListener(DebugAdapterViewThreadEvent.DEBUG_PAUSE, debugView_debugPauseHandler);
+			debugView.addEventListener(DebugAdapterViewThreadEvent.DEBUG_RESUME, debugView_debugResumeHandler);
+			debugView.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_INTO, debugView_debugStepIntoHandler);
+			debugView.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OUT, debugView_debugStepOutHandler);
+			debugView.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OVER, debugView_debugStepOverHandler);
+			debugView.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STOP, debugView_debugStopHandler);
+			debugView.addEventListener(DebugAdapterViewLoadVariablesEvent.LOAD_VARIABLES, debugView_loadVariablesHandler);
+			debugView.addEventListener(DebugAdapterViewStackFrameEvent.GOTO_STACK_FRAME, debugView_gotoStackFrameHandler);
+			debugView.addEventListener(Event.REMOVED_FROM_STAGE, debugView_removedFromStageHandler);
 		}
 
 		private function cleanupDebugViewEventHandlers():void
 		{
-			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_PAUSE, debugPanel_debugPauseHandler);
-			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_RESUME, debugPanel_debugResumeHandler);
-			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_STEP_INTO, debugPanel_debugStepIntoHandler);
-			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_STEP_OUT, debugPanel_debugStepOutHandler);
-			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_STEP_OVER, debugPanel_debugStepOverHandler);
-			_debugPanel.removeEventListener(DebugActionEvent.DEBUG_STOP, debugPanel_debugStopHandler);
-			_debugPanel.removeEventListener(LoadVariablesEvent.LOAD_VARIABLES, debugPanel_loadVariablesHandler);
-			_debugPanel.removeEventListener(StackFrameEvent.GOTO_STACK_FRAME, debugPanel_gotoStackFrameHandler);
-			_debugPanel.removeEventListener(Event.REMOVED_FROM_STAGE, debugPanel_removedFromStageHandler);
+			debugView.removeEventListener(DebugAdapterViewThreadEvent.DEBUG_PAUSE, debugView_debugPauseHandler);
+			debugView.removeEventListener(DebugAdapterViewThreadEvent.DEBUG_RESUME, debugView_debugResumeHandler);
+			debugView.removeEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_INTO, debugView_debugStepIntoHandler);
+			debugView.removeEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OUT, debugView_debugStepOutHandler);
+			debugView.removeEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OVER, debugView_debugStepOverHandler);
+			debugView.removeEventListener(DebugAdapterViewThreadEvent.DEBUG_STOP, debugView_debugStopHandler);
+			debugView.removeEventListener(DebugAdapterViewLoadVariablesEvent.LOAD_VARIABLES, debugView_loadVariablesHandler);
+			debugView.removeEventListener(DebugAdapterViewStackFrameEvent.GOTO_STACK_FRAME, debugView_gotoStackFrameHandler);
+			debugView.removeEventListener(Event.REMOVED_FROM_STAGE, debugView_removedFromStageHandler);
 		}
 
 		private function refreshView():void
 		{
-			if(!_debugPanel.parent)
+			if(!debugViewWrapper.parent)
 			{
 				return;
 			}
 
-			_debugPanel.active = _debugAdapter != null;
-			_debugPanel.pausedThreads = _debugAdapter ? _pausedThreads : null;
-			_debugPanel.threadsAndStackFrames = _debugAdapter ? _threadsAndStackFrames : null;
-			_debugPanel.scopesAndVars = _debugAdapter ? _scopesAndVars : null;
+			debugView.active = _debugAdapter != null;
+			debugView.pausedThreads = _debugAdapter ? _pausedThreads : null;
+			// debugView.threadsAndStackFrames = _debugAdapter ? _threadsAndStackFrames : null;
+			debugView.scopesAndVariables = _debugAdapter ? _scopesAndVars : null;
 		}
 		
 		private function saveEditorBreakpoints(editor:BasicTextEditor):void
@@ -280,13 +291,13 @@ package actionScripts.plugins.debugAdapter
 		{
 			if (!isDebugViewVisible)
             {
-                dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, _debugPanel));
+                dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, debugViewWrapper));
                 initializeDebugViewEventHandlers(event);
 				isDebugViewVisible = true;
             }
 			else
 			{
-				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, _debugPanel));
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, debugViewWrapper));
                 cleanupDebugViewEventHandlers();
 				isDebugViewVisible = false;
 			}
@@ -348,14 +359,14 @@ package actionScripts.plugins.debugAdapter
 
 			if(!event.additionalProperties || !event.additionalProperties.noDebug)
 			{
-				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, _debugPanel));
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, debugViewWrapper));
 				initializeDebugViewEventHandlers(event);
 				isDebugViewVisible = true;
 			}
 			
 			_threadsAndStackFrames = new ThreadsHierarchicalData();
-			_scopesAndVars = new VariablesReferenceHierarchicalData();
-			_pausedThreads = new ArrayCollection();
+			_scopesAndVars = new VariablesReferenceHierarchicalCollection();
+			_pausedThreads = new feathers.data.ArrayCollection();
 			_calledDisconnect = false;
 			_receivedInitializeResponse = false;
 			_receivedInitializedEvent = false;
@@ -364,7 +375,7 @@ package actionScripts.plugins.debugAdapter
 
 			_pendingRequest = event.request;
 			_pendingAdditionalProperties = event.additionalProperties;
-			var debugMode:Boolean = true;
+			var debugMode:Boolean = false;
 			_debugAdapter = new DebugAdapterClient(_nativeProcess.standardOutput, _nativeProcess,
 				ProgressEvent.STANDARD_OUTPUT_DATA, _nativeProcess.standardInput);
 			_debugAdapter.debugMode = debugMode;
@@ -437,7 +448,7 @@ package actionScripts.plugins.debugAdapter
 			{
 				return;
 			}
-			_pausedThreads.removeItem(thread.id);
+			_pausedThreads.remove(thread.id);
 			
 			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
 			
@@ -560,7 +571,7 @@ package actionScripts.plugins.debugAdapter
 
 		private function findThread(threadId:int):Object
 		{
-			var threads:ArrayCollection = _threadsAndStackFrames.getRoot() as ArrayCollection;
+			var threads:mx.collections.ArrayCollection = _threadsAndStackFrames.getRoot() as mx.collections.ArrayCollection;
 			var threadCount:int = threads.length;
 			for(var i:int = 0; i < threadCount; i++)
 			{
@@ -634,7 +645,7 @@ package actionScripts.plugins.debugAdapter
 
 		private function debugAdapter_onSetBreakpointsResponse(body:Object):void
 		{
-			var threads:ArrayCollection = _threadsAndStackFrames.getRoot() as ArrayCollection;
+			var threads:mx.collections.ArrayCollection = _threadsAndStackFrames.getRoot() as mx.collections.ArrayCollection;
 			if(threads.length == 0)
 			{
 				_debugAdapter.threads({}, debugAdapter_onThreadsResponse);
@@ -707,12 +718,12 @@ package actionScripts.plugins.debugAdapter
 			var thread:Object = findThread(threadId);
 			if(thread != null)
 			{
-				_pausedThreads.addItem(thread.id);
+				_pausedThreads.add(thread.id);
 				stackTrace(thread.id);
 			}
 
-			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, _debugPanel));
-			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SELECT_VIEW_IN_PROJECT_PANEL, _debugPanel));
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, debugViewWrapper));
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SELECT_VIEW_IN_PROJECT_PANEL, debugViewWrapper));
 		}
 
 		private function debugAdapter_onContinuedEvent(event:Object):void
@@ -816,12 +827,12 @@ package actionScripts.plugins.debugAdapter
 			dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 		}
 
-        private function debugPanel_removedFromStageHandler(event:Event):void
+        private function debugView_removedFromStageHandler(event:Event):void
         {
             isDebugViewVisible = false;
         }
 		
-		protected function debugPanel_loadVariablesHandler(event:LoadVariablesEvent):void
+		protected function debugView_loadVariablesHandler(event:DebugAdapterViewLoadVariablesEvent):void
 		{
 			if(!_debugAdapter || !_debugAdapter.initialized)
 			{
@@ -830,7 +841,7 @@ package actionScripts.plugins.debugAdapter
 			variables(event.scopeOrVar);
 		}
 		
-		protected function debugPanel_gotoStackFrameHandler(event:StackFrameEvent):void
+		protected function debugView_gotoStackFrameHandler(event:DebugAdapterViewStackFrameEvent):void
 		{
 			if(!_debugAdapter || !_debugAdapter.initialized)
 			{
@@ -839,32 +850,32 @@ package actionScripts.plugins.debugAdapter
 			scopes(event.stackFrame);
 		}
 		
-		protected function debugPanel_debugStopHandler(event:DebugActionEvent):void
+		protected function debugView_debugStopHandler(event:DebugAdapterViewThreadEvent):void
 		{
 			dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP, event.threadId));
 		}
 		
-		protected function debugPanel_debugResumeHandler(event:DebugActionEvent):void
+		protected function debugView_debugResumeHandler(event:DebugAdapterViewThreadEvent):void
 		{
 			resumeDebugAdapter(event.threadId);
 		}
 		
-		protected function debugPanel_debugPauseHandler(event:DebugActionEvent):void
+		protected function debugView_debugPauseHandler(event:DebugAdapterViewThreadEvent):void
 		{
 			pauseDebugAdapter(event.threadId);
 		}
 		
-		protected function debugPanel_debugStepOverHandler(event:DebugActionEvent):void
+		protected function debugView_debugStepOverHandler(event:DebugAdapterViewThreadEvent):void
 		{
 			stepOverDebugAdapter(event.threadId);
 		}
 		
-		protected function debugPanel_debugStepIntoHandler(event:DebugActionEvent):void
+		protected function debugView_debugStepIntoHandler(event:DebugAdapterViewThreadEvent):void
 		{
 			stepIntoDebugAdapter(event.threadId);
 		}
 		
-		protected function debugPanel_debugStepOutHandler(event:DebugActionEvent):void
+		protected function debugView_debugStepOutHandler(event:DebugAdapterViewThreadEvent):void
 		{
 			stepOutDebugAdapter(event.threadId);
 		}
@@ -933,4 +944,31 @@ package actionScripts.plugins.debugAdapter
 			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
 		}
     }
+}
+
+import actionScripts.interfaces.IViewWithTitle;
+import actionScripts.ui.FeathersUIWrapper;
+
+import moonshine.plugin.debugadapter.view.DebugAdapterView;
+
+class DebugAdapterViewWrapper extends FeathersUIWrapper implements IViewWithTitle {
+	public function DebugAdapterViewWrapper(feathersUIControl:DebugAdapterView)
+	{
+		super(feathersUIControl);
+	}
+
+	public function get title():String {
+		return DebugAdapterView(feathersUIControl).title;
+	}
+
+	override public function get className():String
+	{
+		//className may be used by LayoutModifier
+		return "DebugAdapterView";
+	}
+
+	override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+	{
+		super.updateDisplayList(unscaledWidth, unscaledHeight);
+	}
 }
