@@ -581,6 +581,11 @@
 						}
 						break;
 					}
+					case FTETreeItemRenderer.VAGRANT_GROUP:
+					{
+						dispatcher.dispatchEvent(new FilePluginEvent(event.extra, fileWrapper.file));
+						break;
+					}
 					case FTETreeItemRenderer.RUN_ANT_SCRIPT:
 					{
 						model.antScriptFile = new FileLocation(fileWrapper.file.fileBridge.nativePath);

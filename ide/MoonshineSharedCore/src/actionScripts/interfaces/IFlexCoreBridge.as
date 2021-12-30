@@ -97,5 +97,6 @@ package actionScripts.interfaces
 		function get runtimeVersion():String;
 		function get version():String;
 		function get defaultInstallationPathSDKs():String;
+		function get vagrantMenuOptions():Array;
 	}
 }

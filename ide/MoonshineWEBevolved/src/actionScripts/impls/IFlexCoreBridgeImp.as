@@ -441,6 +441,11 @@ package actionScripts.impls
 		{
 			return null;
 		}
+		
+		public function get vagrantMenuOptions():Array
+		{
+			return null;
+		}
 
 		public function setMSDKILocalPathConfig():void
 		{

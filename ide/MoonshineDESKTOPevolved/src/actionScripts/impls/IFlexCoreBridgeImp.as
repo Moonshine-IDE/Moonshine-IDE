@@ -21,6 +21,8 @@ package actionScripts.impls
 {
 	import actionScripts.managers.StartupHelper;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.vagrant.VagrantPlugin;
+	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -268,6 +270,7 @@ package actionScripts.impls
 				RoyaleApiReportConfiguratorPlugin,
 				RoyaleApiReportPlugin,
 				ExternalEditorsPlugin,
+				VagrantPlugin,
 				FSWatcherPlugin
 			];
 		}
@@ -570,6 +573,11 @@ package actionScripts.impls
 		public function get defaultInstallationPathSDKs():String
 		{
 			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
+		}
+
+		public function get vagrantMenuOptions():Array
+		{
+			return VagrantUtil.VAGRANT_MENU_OPTIONS;
 		}
 
 		public function setMSDKILocalPathConfig():void
