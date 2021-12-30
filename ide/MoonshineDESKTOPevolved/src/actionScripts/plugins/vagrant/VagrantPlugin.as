@@ -148,6 +148,7 @@ package actionScripts.plugins.vagrant
 				command = "vagrant up 2>&1 | tee vagrant_up.log";
 			}
 			print("%s", command);
+			print("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_up.log");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Up", "Running ", false));
 			
 			this.start(

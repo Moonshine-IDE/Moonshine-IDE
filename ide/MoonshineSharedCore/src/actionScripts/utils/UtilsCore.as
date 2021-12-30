@@ -1467,23 +1467,32 @@ package actionScripts.utils
 			{
 				return false;
 			}
-			var vagrantExecutable:String = ConstantsCoreVO.IS_MACOS ? "vagrant" : "vagrant.exe";
-			if (model.fileCore.isPathExists([model.vagrantPath, vagrantExecutable].join(model.fileCore.separator)))
-			{
-				return true;
-			}
-			if (model.fileCore.isPathExists([model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator)))
-			{
-				return true;
-			}
 
-			/*var component:Object = model.flexCore.getComponentByType(SDKTypes.GIT);
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.VAGRANT);
 			if (component && component.pathValidation)
 			{
-				return model.flexCore.isValidExecutableBy(SDKTypes.GIT, model.gitPath, component.pathValidation);
-			}*/
+				return model.flexCore.isValidExecutableBy(SDKTypes.VAGRANT, model.vagrantPath, component.pathValidation);
+			}
 
 			return false;
+		}
+
+		public static function getVagrantBinPath():String
+		{
+			if (isVagrantAvailable())
+			{
+				var vagrantExecutable:String = ConstantsCoreVO.IS_MACOS ? "vagrant" : "vagrant.exe";
+				if (model.fileCore.isPathExists([model.vagrantPath, vagrantExecutable].join(model.fileCore.separator)))
+				{
+					return [model.vagrantPath, vagrantExecutable].join(model.fileCore.separator);
+				}
+				if (model.fileCore.isPathExists([model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator)))
+				{
+					return [model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator);
+				}
+			}
+
+			return null;
 		}
 		
 		public static function isNotesDominoAvailable():Boolean

@@ -145,6 +145,10 @@
 						if (model.notesPath && FileUtils.isPathExists(model.notesPath))
 							component.installToPath = model.notesPath;
 						break;
+					case ComponentTypes.TYPE_VAGRANT:
+						if (model.vagrantPath && FileUtils.isPathExists(model.vagrantPath))
+							component.installToPath = model.vagrantPath;
+						break;
 				}
 
 				component.version = null;
