@@ -19,11 +19,12 @@
 package actionScripts.plugins.vagrant
 {
 	import actionScripts.events.FilePluginEvent;
+	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 
-	import com.adobe.utils.StringUtil;
-	
+	import flash.events.NativeProcessExitEvent;
+
 	import flash.filesystem.File;
 
 	import mx.collections.ArrayCollection;
@@ -34,7 +35,6 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugins.externalEditors.importer.ExternalEditorsImporter;
 	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
-	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	public class VagrantPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
@@ -75,7 +75,7 @@ package actionScripts.plugins.vagrant
 				// directory, we can try to use it as the default, if it exists.
 				// if the user saves a different path (or clears the path) in
 				// the settings, these default values will be safely ignored.
-				var vagrantFile:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin/vagrant" : "C:\\HashiCorp\\Vagrant\\bin\\vagrant.exe");
+				var vagrantFile:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\HashiCorp\\Vagrant");
 				defaultVagrantPath = vagrantFile.exists ? vagrantFile.nativePath : null;
 				if (defaultVagrantPath && !model.vagrantPath)
 				{
@@ -106,7 +106,7 @@ package actionScripts.plugins.vagrant
         public function getSettingsList():Vector.<ISetting>
         {
 			onSettingsClose();
-			pathSetting = new PathSetting(this, 'vagrantPath', 'Vagrant Binary', false, vagrantPath, false, false, defaultVagrantPath);
+			pathSetting = new PathSetting(this, 'vagrantPath', 'Vagrant Home', true, vagrantPath, false, false, defaultVagrantPath);
 
 			return Vector.<ISetting>([
 				pathSetting
@@ -126,28 +126,39 @@ package actionScripts.plugins.vagrant
 		private function onVagrantOptionSelect(event:FilePluginEvent):void
 		{
 			var optionSelected:String = event.type.replace("eventVagrant", "");
-			trace(optionSelected);
+			switch (optionSelected)
+			{
+				case VagrantUtil.VAGRANT_UP:
+					vagrantUp(event.file);
+					break;
+				case VagrantUtil.VAGRANT_HALT:
+					break;
+				case VagrantUtil.VAGRANT_RELOAD:
+					break;
+				case VagrantUtil.VAGRANT_SSH:
+					break;
+			}
 		}
 
-		private function runExternalEditor(editor:ExternalEditorVO, onPath:FileLocation):void
+		private function vagrantUp(file:FileLocation):void
 		{
 			var command:String;
-			var extraArguments:String = (editor.extraArguments && StringUtil.trim(editor.extraArguments).length != 0) ? editor.extraArguments : null;
-			if (ConstantsCoreVO.IS_MACOS) 
+			if (ConstantsCoreVO.IS_MACOS)
 			{
-				command = "open -a '"+ editor.installPath.nativePath +"' '"+ onPath.fileBridge.nativePath +"'";
-				if (extraArguments) command += " --args "+ extraArguments;
-			}
-			else
-			{
-				command = '"'+ editor.installPath.nativePath +'" "'+ onPath.fileBridge.nativePath +'"';
-				if (extraArguments) command += " "+ extraArguments;
+				command = "vagrant up 2>&1 | tee vagrant_up.log";
 			}
 			print("%s", command);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Up", "Running ", false));
 			
 			this.start(
-				new <String>[command], null
+				new <String>[command], file.fileBridge.parent
 			);
+		}
+
+		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
+		{
+			super.onNativeProcessExit(event);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 	}
 }

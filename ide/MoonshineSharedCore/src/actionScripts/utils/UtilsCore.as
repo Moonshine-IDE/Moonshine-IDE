@@ -1460,6 +1460,31 @@ package actionScripts.utils
 			
 			return true;
 		}
+
+		public static function isVagrantAvailable():Boolean
+		{
+			if (!model.vagrantPath || !model.fileCore.isPathExists(model.vagrantPath))
+			{
+				return false;
+			}
+			var vagrantExecutable:String = ConstantsCoreVO.IS_MACOS ? "vagrant" : "vagrant.exe";
+			if (model.fileCore.isPathExists([model.vagrantPath, vagrantExecutable].join(model.fileCore.separator)))
+			{
+				return true;
+			}
+			if (model.fileCore.isPathExists([model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator)))
+			{
+				return true;
+			}
+
+			/*var component:Object = model.flexCore.getComponentByType(SDKTypes.GIT);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.GIT, model.gitPath, component.pathValidation);
+			}*/
+
+			return false;
+		}
 		
 		public static function isNotesDominoAvailable():Boolean
 		{
