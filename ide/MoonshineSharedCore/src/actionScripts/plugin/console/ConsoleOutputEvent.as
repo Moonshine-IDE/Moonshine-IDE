@@ -25,7 +25,9 @@ package actionScripts.plugin.console
 		public static const CONSOLE_OUTPUT:String = "consoleOutput";
 		public static const CONSOLE_CLEAR:String = "consoleClear";
 		public static const CONSOLE_PRINT:String = "consolePrint"; // this uses regular commands to print message to console other than how things works by CONSOLE_OUTPUT
-		
+
+		public static const CONSOLE_OUTPUT_VAGRANT:String = "consoleOutputVagrant";
+
 		public static const TYPE_ERROR:String = "typeError";
 		public static const TYPE_INFO:String = "typeInfo";
 		public static const TYPE_SUCCESS:String = "typeSuccess";

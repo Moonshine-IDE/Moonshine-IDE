@@ -45,6 +45,13 @@
 		import actionScripts.plugin.console.ConsoleCommandEvent;
 		import actionScripts.plugin.console.ConsoleStyle;
 
+		[Bindable] public var showCommandLine:Boolean = true;
+
+		public var displayContextMenuAbout:Boolean = true;
+		public var displayContextMenuHide:Boolean = true;
+		public var displayContextMenuHelp:Boolean = true;
+		public var displayContextMenuExit:Boolean = true;
+
 		private var _consolePopOver:Boolean;
 		[Bindable]
 		private var historyContainerHeight:int = 0;
@@ -95,24 +102,31 @@
 			history.contextMenu = cm;
 			(history.textDisplay as RichEditableText).contextMenu = cm;
 
-			var about:ContextMenuItem = new ContextMenuItem('About', false, true, true);
-			about.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, aboutHandler);
-			cm.customItems.push(about);
-
-			var hide:ContextMenuItem = new ContextMenuItem('Hide', false, true, true);
-			hide.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, hideHandler);
-			cm.customItems.push(hide);
-
-			var exit:ContextMenuItem = new ContextMenuItem('Exit', false, true, true);
-			exit.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, exitHandler);
-			cm.customItems.push(exit);
-
-			var help:ContextMenuItem = new ContextMenuItem('Help', false, true, true);
-			help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
-			cm.customItems.push(help);
-
+			if (displayContextMenuAbout)
+			{
+				var about:ContextMenuItem = new ContextMenuItem('About', false, true, true);
+				about.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, aboutHandler);
+				cm.customItems.push(about);
+			}
+			if (displayContextMenuHide)
+			{
+				var hide:ContextMenuItem = new ContextMenuItem('Hide', false, true, true);
+				hide.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, hideHandler);
+				cm.customItems.push(hide);
+			}
+			if (displayContextMenuExit)
+			{
+				var exit:ContextMenuItem = new ContextMenuItem('Exit', false, true, true);
+				exit.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, exitHandler);
+				cm.customItems.push(exit);
+			}
+			if (displayContextMenuHelp)
+			{
+				var help:ContextMenuItem = new ContextMenuItem('Help', false, true, true);
+				help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
+				cm.customItems.push(help);
+			}
 		}
-
 
 		private var cursorID:int = CursorManager.NO_CURSOR;
 
@@ -217,8 +231,8 @@
 						  paddingBottom="3"
 						  fontSize="12"
 						  text=" >"
-						  color="0xdddddd" />
-				<ui:FeathersUIWrapper width="100%" height="100%">
+						  color="0xdddddd" visible="{showCommandLine}" />
+				<ui:FeathersUIWrapper width="100%" height="100%" visible="{showCommandLine}">
 					<view:CommandLineEditor id="commandLine"/>
 				</ui:FeathersUIWrapper>
 			</mx:HBox>

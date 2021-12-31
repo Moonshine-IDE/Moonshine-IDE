@@ -19,6 +19,8 @@
 
 package org.as3commons.asblocks.parser.errors
 {
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.utils.HtmlFormatter;
 	
@@ -50,9 +52,12 @@ public class UnExpectedTokenError extends Error
 		trace("Unexpected token: "
 			+ actual + "(file: " + fileName + "), line: " + fileName + "), line: " 
 			+ position.line + ", column:"  + position.column +"Expecting "+expected);
-		var str:String = "Unexpected token: "+ actual + " (file: " + fileName + ", line: "+position.line +", column:" + position.column+")Expecting '"+expected+"'"; 
-		ConsoleUtil.print(str);
-		ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(str, null), 'weak');
+		var str:String = "Unexpected token: "+ actual + " (file: " + fileName + ", line: "+position.line +", column:" + position.column+")Expecting '"+expected+"'";
+
+		GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+				ConsoleOutputEvent.CONSOLE_PRINT,
+				str, false, false, ConsoleOutputEvent.TYPE_INFO
+				));
 		return;
 	}
 }

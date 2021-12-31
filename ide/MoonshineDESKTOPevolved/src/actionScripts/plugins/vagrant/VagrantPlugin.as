@@ -20,8 +20,11 @@ package actionScripts.plugins.vagrant
 {
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.StatusBarEvent;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
+
+	import flash.events.Event;
 
 	import flash.events.NativeProcessExitEvent;
 
@@ -51,6 +54,7 @@ package actionScripts.plugins.vagrant
 
 		private var pathSetting:PathSetting;
 		private var defaultVagrantPath:String;
+		private var vagrantConsole:VagrantConsolePlugin;
 
 		public function get vagrantPath():String
 		{
@@ -87,6 +91,7 @@ package actionScripts.plugins.vagrant
 		override public function deactivate():void
 		{
 			super.deactivate();
+			onConsoleDeactivated(null);
 		}
 
 		override public function resetSettings():void
@@ -101,6 +106,11 @@ package actionScripts.plugins.vagrant
 			{
 				pathSetting = null;
 			}
+		}
+
+		override protected function outputMsg(msg:*):void
+		{
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT_VAGRANT, msg));
 		}
 		
         public function getSettingsList():Vector.<ISetting>
@@ -125,6 +135,8 @@ package actionScripts.plugins.vagrant
 
 		private function onVagrantOptionSelect(event:FilePluginEvent):void
 		{
+			startVagrantConsole();
+
 			var optionSelected:String = event.type.replace("eventVagrant", "");
 			switch (optionSelected)
 			{
@@ -137,6 +149,28 @@ package actionScripts.plugins.vagrant
 					break;
 				case VagrantUtil.VAGRANT_SSH:
 					break;
+			}
+		}
+
+		private function startVagrantConsole():void
+		{
+			if (!vagrantConsole)
+			{
+				vagrantConsole = new VagrantConsolePlugin();
+				vagrantConsole.addEventListener(VagrantConsolePlugin.EVENT_PLUGIN_DEACTIVATED, onConsoleDeactivated, false, 0, true);
+			}
+			else
+			{
+				vagrantConsole.show();
+			}
+		}
+
+		private function onConsoleDeactivated(event:Event):void
+		{
+			if (vagrantConsole)
+			{
+				vagrantConsole.removeEventListener(VagrantConsolePlugin.EVENT_PLUGIN_DEACTIVATED, onConsoleDeactivated);
+				vagrantConsole = null;
 			}
 		}
 
