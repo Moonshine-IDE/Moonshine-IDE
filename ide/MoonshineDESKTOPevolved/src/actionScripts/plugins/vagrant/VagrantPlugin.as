@@ -23,6 +23,7 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
+	import actionScripts.utils.MethodDescriptor;
 
 	import flash.events.Event;
 
@@ -39,7 +40,9 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugins.externalEditors.importer.ExternalEditorsImporter;
 	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	
+
+	import spark.components.Alert;
+
 	public class VagrantPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
 	{
 		public static var NAMESPACE:String = "actionScripts.plugins.vagrant::VagrantPlugin";
@@ -55,6 +58,7 @@ package actionScripts.plugins.vagrant
 		private var pathSetting:PathSetting;
 		private var defaultVagrantPath:String;
 		private var vagrantConsole:VagrantConsolePlugin;
+		private var queuedMethod:MethodDescriptor;
 
 		public function get vagrantPath():String
 		{
@@ -144,10 +148,13 @@ package actionScripts.plugins.vagrant
 					vagrantUp(event.file);
 					break;
 				case VagrantUtil.VAGRANT_HALT:
+					vagrantHalt(event.file);
 					break;
 				case VagrantUtil.VAGRANT_RELOAD:
+					vagrantReload(event.file);
 					break;
 				case VagrantUtil.VAGRANT_SSH:
+					vagrantSSH(event.file);
 					break;
 			}
 		}
@@ -176,13 +183,19 @@ package actionScripts.plugins.vagrant
 
 		private function vagrantUp(file:FileLocation):void
 		{
+			if (running)
+			{
+				Alert.show("A Vagrant process is already running. Halt the running process before starting new.", "Error!");
+				return;
+			}
+
 			var command:String;
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				command = "vagrant up 2>&1 | tee vagrant_up.log";
+				command = "vagrant plugin install vagrant-vbguest;vagrant up 2>&1 | tee vagrant_up.log";
 			}
-			print("%s", command);
-			print("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_up.log");
+			warning("%s", command);
+			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_up.log");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Up", "Running ", false));
 			
 			this.start(
@@ -190,10 +203,87 @@ package actionScripts.plugins.vagrant
 			);
 		}
 
+		public function vagrantHalt(file:FileLocation):void
+		{
+			if (running)
+			{
+				stop(true);
+				queuedMethod = new MethodDescriptor(this, "vagrantHalt", file);
+				return;
+			}
+
+			var command:String;
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				command = "vagrant halt";
+			}
+			warning("%s", command);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Halt", "Running ", false));
+
+			this.start(
+					new <String>[command], file.fileBridge.parent
+			);
+		}
+
+		public function vagrantReload(file:FileLocation):void
+		{
+			if (running)
+			{
+				stop(true);
+				queuedMethod = new MethodDescriptor(this, "vagrantReload", file);
+				return;
+			}
+
+			var command:String;
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				command = "vagrant reload 2>&1 | tee vagrant_reload.log";
+			}
+			warning("%s", command);
+			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_reload.log");
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Reload", "Running ", false));
+
+			this.start(
+					new <String>[command], file.fileBridge.parent
+			);
+		}
+
+		private function vagrantSSH(file:FileLocation):void
+		{
+			return;
+
+			if (running)
+			{
+				stop(true);
+				queuedMethod = new MethodDescriptor(this, "vagrantReload", file);
+				return;
+			}
+
+			var command:String;
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				command = "vagrant reload 2>&1 | tee vagrant_reload.log";
+			}
+			warning("%s", command);
+			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_reload.log");
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Reload", "Running ", false));
+
+			this.start(
+					new <String>[command], file.fileBridge.parent
+			);
+		}
+
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
 		{
 			super.onNativeProcessExit(event);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+
+			// run any queued process
+			if (queuedMethod)
+			{
+				queuedMethod.callMethod();
+				queuedMethod = null;
+			}
 		}
 	}
 }
