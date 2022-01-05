@@ -19,11 +19,18 @@
 package actionScripts.plugins.vagrant
 {
 	import actionScripts.events.FilePluginEvent;
+	import actionScripts.events.SettingsEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
+	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.utils.MethodDescriptor;
+	import actionScripts.utils.UtilsCore;
+
+	import flash.desktop.NativeProcess;
+
+	import flash.desktop.NativeProcessStartupInfo;
 
 	import flash.events.Event;
 
@@ -95,6 +102,7 @@ package actionScripts.plugins.vagrant
 		override public function deactivate():void
 		{
 			super.deactivate();
+			removeMenuListeners();
 			onConsoleDeactivated(null);
 		}
 
@@ -135,6 +143,25 @@ package actionScripts.plugins.vagrant
 				eventName = "eventVagrant"+ option;
 				dispatcher.addEventListener(eventName, onVagrantOptionSelect, false, 0, true);
 			}
+
+			dispatcher.addEventListener(FTETreeItemRenderer.CONFIGURE_VAGRANT, onConfigureVagrant, false, 0, true);
+		}
+
+		private function removeMenuListeners():void
+		{
+			var eventName:String;
+			for each (var option:String in VagrantUtil.VAGRANT_MENU_OPTIONS)
+			{
+				eventName = "eventVagrant"+ option;
+				dispatcher.removeEventListener(eventName, onVagrantOptionSelect);
+			}
+
+			dispatcher.removeEventListener(FTETreeItemRenderer.CONFIGURE_VAGRANT, onConfigureVagrant);
+		}
+
+		private function onConfigureVagrant(event:Event):void
+		{
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, NAMESPACE));
 		}
 
 		private function onVagrantOptionSelect(event:FilePluginEvent):void
@@ -250,27 +277,7 @@ package actionScripts.plugins.vagrant
 
 		private function vagrantSSH(file:FileLocation):void
 		{
-			return;
-
-			if (running)
-			{
-				stop(true);
-				queuedMethod = new MethodDescriptor(this, "vagrantReload", file);
-				return;
-			}
-
-			var command:String;
-			if (ConstantsCoreVO.IS_MACOS)
-			{
-				command = "vagrant reload 2>&1 | tee vagrant_reload.log";
-			}
-			warning("%s", command);
-			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_reload.log");
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Reload", "Running ", false));
-
-			this.start(
-					new <String>[command], file.fileBridge.parent
-			);
+			launchCommandArg("cd '"+ file.fileBridge.parent.fileBridge.nativePath +"';clear;'"+ UtilsCore.getVagrantBinPath() +"' ssh");
 		}
 
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
@@ -284,6 +291,31 @@ package actionScripts.plugins.vagrant
 				queuedMethod.callMethod();
 				queuedMethod = null;
 			}
+		}
+
+		private function launchCommandArg(command:String):void
+		{
+			// NOTE: we can move this to an utility class
+			// if we see more such usage
+
+			// 1. declare necessary arguments
+			var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+			var commandArgs : Array = command.split( " " );
+			var arg:Vector.<String>;
+
+			// 2. generating arguments
+			npInfo.executable = File.documentsDirectory.resolvePath( "/usr/bin/osascript" );
+			arg = new Vector.<String>();
+
+			// for non-Terminal type
+			arg.push( "-e" );
+			arg.push( 'tell application "Terminal" to activate & do script "'+ command +'"'+'\n' );
+			arg.push( 'end tell' );
+
+			// 3. execution
+			npInfo.arguments = arg;
+			var process:NativeProcess = new NativeProcess();
+			process.start( npInfo );
 		}
 	}
 }

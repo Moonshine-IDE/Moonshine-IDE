@@ -571,7 +571,8 @@
 					}
 					case FTETreeItemRenderer.OPEN_WITH:
 					{
-						if (event.extra == FTETreeItemRenderer.CONFIGURE_EXTERNAL_EDITORS)
+						if (event.extra == FTETreeItemRenderer.CONFIGURE_EXTERNAL_EDITORS ||
+								event.extra == FTETreeItemRenderer.CONFIGURE_VAGRANT)
 						{
 							dispatcher.dispatchEvent(new Event(event.extra));
 						}
