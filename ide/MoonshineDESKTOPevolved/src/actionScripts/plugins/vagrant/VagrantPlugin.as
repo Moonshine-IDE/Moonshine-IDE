@@ -18,37 +18,32 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+	import flash.events.Event;
+	import flash.events.NativeProcessExitEvent;
+	import flash.filesystem.File;
+	
+	import mx.collections.ArrayCollection;
+	
+	import spark.components.Alert;
+	
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.events.StatusBarEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.externalEditors.importer.ExternalEditorsImporter;
+	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.UtilsCore;
-
-	import flash.desktop.NativeProcess;
-
-	import flash.desktop.NativeProcessStartupInfo;
-
-	import flash.events.Event;
-
-	import flash.events.NativeProcessExitEvent;
-
-	import flash.filesystem.File;
-
-	import mx.collections.ArrayCollection;
-
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugins.build.ConsoleBuildPluginBase;
-	import actionScripts.plugins.externalEditors.importer.ExternalEditorsImporter;
-	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-
-	import spark.components.Alert;
 
 	public class VagrantPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
 	{
@@ -221,6 +216,11 @@ package actionScripts.plugins.vagrant
 			{
 				command = "vagrant plugin install vagrant-vbguest;vagrant up 2>&1 | tee vagrant_up.log";
 			}
+			else
+			{
+				command = "vagrant plugin install vagrant-vbguest&&vagrant up 2>&1 | tee vagrant_up.log";
+			}
+			
 			warning("%s", command);
 			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_up.log");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Up", "Running ", false));
@@ -239,11 +239,7 @@ package actionScripts.plugins.vagrant
 				return;
 			}
 
-			var command:String;
-			if (ConstantsCoreVO.IS_MACOS)
-			{
-				command = "vagrant halt";
-			}
+			var command:String = "vagrant halt";
 			warning("%s", command);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Halt", "Running ", false));
 
@@ -261,11 +257,7 @@ package actionScripts.plugins.vagrant
 				return;
 			}
 
-			var command:String;
-			if (ConstantsCoreVO.IS_MACOS)
-			{
-				command = "vagrant reload 2>&1 | tee vagrant_reload.log";
-			}
+			var command:String = "vagrant reload 2>&1 | tee vagrant_reload.log";
 			warning("%s", command);
 			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_reload.log");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Reload", "Running ", false));
@@ -277,7 +269,17 @@ package actionScripts.plugins.vagrant
 
 		private function vagrantSSH(file:FileLocation):void
 		{
-			launchCommandArg("cd '"+ file.fileBridge.parent.fileBridge.nativePath +"';clear;'"+ UtilsCore.getVagrantBinPath() +"' ssh");
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				launchCommandArg("cd '"+ file.fileBridge.parent.fileBridge.nativePath +"';clear;'"+ UtilsCore.getVagrantBinPath() +"' ssh");
+			}
+			else
+			{
+				this.start(
+					new <String>['start cmd /k cd "'+ file.fileBridge.parent.fileBridge.nativePath +'"&&cls&&vagrant ssh'], 
+					file.fileBridge.parent
+				);
+			}
 		}
 
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
@@ -300,17 +302,21 @@ package actionScripts.plugins.vagrant
 
 			// 1. declare necessary arguments
 			var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			var commandArgs : Array = command.split( " " );
-			var arg:Vector.<String>;
+			var arg:Vector.<String> = new Vector.<String>();
 
-			// 2. generating arguments
-			npInfo.executable = File.documentsDirectory.resolvePath( "/usr/bin/osascript" );
-			arg = new Vector.<String>();
-
-			// for non-Terminal type
-			arg.push( "-e" );
-			arg.push( 'tell application "Terminal" to activate & do script "'+ command +'"'+'\n' );
-			arg.push( 'end tell' );
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				npInfo.executable = File.documentsDirectory.resolvePath("/usr/bin/osascript");
+				
+				// for non-Terminal type
+				arg.push( "-e" );
+				arg.push( 'tell application "Terminal" to activate & do script "'+ command +'"'+'\n' );
+				arg.push( 'end tell' );
+			}
+			else
+			{
+				
+			}
 
 			// 3. execution
 			npInfo.arguments = arg;
