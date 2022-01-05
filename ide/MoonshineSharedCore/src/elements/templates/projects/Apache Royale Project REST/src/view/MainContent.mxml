@@ -9,10 +9,31 @@
 			import classes.events.ScreenEvent;
 			
 			import view.edit.AddEditView;
+
+			import classes.events.ScreenEvent 
+			import view.edit.AddEditView;	
+			import org.apache.royale.collections.ArrayList;
+
+			import view.vos.TabBarButtonVO;
 			
 			private function onNavigationChangeRequest(event:ScreenEvent):void
 			{
 				mainContent.selectedContent = event.screenName;
+			}
+
+
+			private var _tabBarData:ArrayList = new ArrayList([
+				%tabBarData%
+			]);
+
+			[Bindable]
+			public function get tabBarData():ArrayList
+			{
+				return _tabBarData;
+			}
+			public function set tabBarData(value:ArrayList):void
+			{
+				_tabBarData = value;
 			}
 			
 		]]>
