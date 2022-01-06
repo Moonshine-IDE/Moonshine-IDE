@@ -292,7 +292,7 @@ package actionScripts.utils
 					vagrantPath = [model.vagrantPath, "bin"].join(model.fileCore.separator);
 				}
 
-				setCommand += getSetExportWithoutQuote("VAGRANT_HOME", vagrantPath);
+				setCommand += getSetExportWithoutQuote("VAGRANT_HOME", File.applicationStorageDirectory.nativePath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$VAGRANT_HOME:" : "%VAGRANT_HOME%;");
 				isValidToExecute = true;
 			}

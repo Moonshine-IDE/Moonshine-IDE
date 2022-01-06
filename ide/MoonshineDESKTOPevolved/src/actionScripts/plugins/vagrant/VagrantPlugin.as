@@ -78,7 +78,7 @@ package actionScripts.plugins.vagrant
 				model.vagrantPath = value;
 			}
 		}
-		
+
 		override public function activate():void
 		{
 			super.activate();
@@ -221,14 +221,15 @@ package actionScripts.plugins.vagrant
 
 			vagrantFileLocation = file;
 
+			var binPath:String = UtilsCore.getVagrantBinPath();
 			var command:String;
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				command = "vagrant plugin install vagrant-vbguest;vagrant up 2>&1 | tee vagrant_up.log";
+				command = '"'+ binPath +'" plugin install vagrant-vbguest&&"'+ binPath +'" up 2>&1 | tee vagrant_up.log';
 			}
 			else
 			{
-				command = "vagrant plugin install vagrant-vbguest&&vagrant up 2>&1 | tee vagrant_up.log";
+				command = '"'+ binPath +'" plugin install vagrant-vbguest&&"'+ binPath +'" up > vagrant_up.log | type vagrant_up.log';
 			}
 			
 			warning("%s", command);
@@ -252,7 +253,7 @@ package actionScripts.plugins.vagrant
 				return;
 			}
 
-			var command:String = "vagrant halt";
+			var command:String = '"'+ UtilsCore.getVagrantBinPath() +'" halt';
 			warning("%s", command);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Halt", "Running ", false));
 
@@ -270,7 +271,17 @@ package actionScripts.plugins.vagrant
 				return;
 			}
 
-			var command:String = "vagrant reload 2>&1 | tee vagrant_reload.log";
+			var binPath:String = UtilsCore.getVagrantBinPath();
+			var command:String;
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				command = '"'+ binPath +'" reload 2>&1 | tee vagrant_reload.log';
+			}
+			else
+			{
+				command = '"'+ binPath +'" reload > vagrant_reload.log | type vagrant_up.log';
+			}
+
 			warning("%s", command);
 			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_reload.log");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Reload", "Running "));
@@ -298,7 +309,7 @@ package actionScripts.plugins.vagrant
 			else
 			{
 				this.start(
-					new <String>['start cmd /k cd "'+ file.fileBridge.parent.fileBridge.nativePath +'"&&cls&&vagrant ssh'], 
+					new <String>['start cmd /k cd "'+ file.fileBridge.parent.fileBridge.nativePath +'"&&cls&&"'+ UtilsCore.getVagrantBinPath() +'" ssh'],
 					file.fileBridge.parent
 				);
 			}
@@ -306,7 +317,7 @@ package actionScripts.plugins.vagrant
 
 		public function vagrantDestroy(file:FileLocation):void
 		{
-			var command:String = "vagrant destroy -f";
+			var command:String = '"'+ UtilsCore.getVagrantBinPath() +'" destroy -f';
 			warning("%s", command);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Destroy", "Running ", false));
 
