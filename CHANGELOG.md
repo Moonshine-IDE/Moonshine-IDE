@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
+## Moonshine IDE [3.3.1]
+
+### Summary
+
+
+### Added
+
+
+### Changed
+
+
+### Fixed
+
+
 ## Moonshine IDE [3.3.0]
 
 ### Summary
