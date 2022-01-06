@@ -284,7 +284,7 @@ package actionScripts.utils
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$NEKO_HOME:" : "%NEKO_HOME%;");
 				isValidToExecute = true;
 			}
-			if (UtilsCore.isVagrantAvailable())
+			/*if (UtilsCore.isVagrantAvailable())
 			{
 				var vagrantPath:String = model.vagrantPath;
 				if (model.fileCore.isPathExists([model.vagrantPath, "bin"].join(model.fileCore.separator)))
@@ -295,7 +295,7 @@ package actionScripts.utils
 				setCommand += getSetExportWithoutQuote("VAGRANT_HOME", File.applicationStorageDirectory.nativePath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$VAGRANT_HOME:" : "%VAGRANT_HOME%;");
 				isValidToExecute = true;
-			}
+			}*/
 			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
 			{
 				// moonshine stores gir path with 'bin\git.exe' format 
