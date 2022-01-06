@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
+	import actionScripts.utils.FileUtils;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -25,7 +27,8 @@ package actionScripts.plugins.vagrant
 	import flash.filesystem.File;
 	
 	import mx.collections.ArrayCollection;
-	
+	import mx.events.CloseEvent;
+
 	import spark.components.Alert;
 	
 	import actionScripts.events.FilePluginEvent;
@@ -60,7 +63,9 @@ package actionScripts.plugins.vagrant
 		private var pathSetting:PathSetting;
 		private var defaultVagrantPath:String;
 		private var vagrantConsole:VagrantConsolePlugin;
-		private var queuedMethod:MethodDescriptor;
+		private var haltMethod:MethodDescriptor;
+		private var destroyMethod:MethodDescriptor;
+		private var vagrantFileLocation:FileLocation;
 
 		public function get vagrantPath():String
 		{
@@ -178,6 +183,9 @@ package actionScripts.plugins.vagrant
 				case VagrantUtil.VAGRANT_SSH:
 					vagrantSSH(event.file);
 					break;
+				case VagrantUtil.VAGRANT_DESTROY:
+					vagrantDestroyConfirm(event.file);
+					break;
 			}
 		}
 
@@ -211,6 +219,8 @@ package actionScripts.plugins.vagrant
 				return;
 			}
 
+			vagrantFileLocation = file;
+
 			var command:String;
 			if (ConstantsCoreVO.IS_MACOS)
 			{
@@ -223,7 +233,8 @@ package actionScripts.plugins.vagrant
 			
 			warning("%s", command);
 			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_up.log");
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Up", "Running ", false));
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Up", "Running "));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunningVagrant);
 			
 			this.start(
 				new <String>[command], file.fileBridge.parent
@@ -234,8 +245,10 @@ package actionScripts.plugins.vagrant
 		{
 			if (running)
 			{
+				dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunningVagrant);
+
 				stop(true);
-				queuedMethod = new MethodDescriptor(this, "vagrantHalt", file);
+				haltMethod = new MethodDescriptor(this, "vagrantHalt", file);
 				return;
 			}
 
@@ -253,25 +266,34 @@ package actionScripts.plugins.vagrant
 			if (running)
 			{
 				stop(true);
-				queuedMethod = new MethodDescriptor(this, "vagrantReload", file);
+				haltMethod = new MethodDescriptor(this, "vagrantReload", file);
 				return;
 			}
 
 			var command:String = "vagrant reload 2>&1 | tee vagrant_reload.log";
 			warning("%s", command);
 			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_reload.log");
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Reload", "Running ", false));
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Reload", "Running "));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunningVagrant);
 
 			this.start(
 					new <String>[command], file.fileBridge.parent
 			);
 		}
 
+		private function onTerminateRunningVagrant(event:StatusBarEvent):void
+		{
+			if (vagrantFileLocation)
+			{
+				vagrantHalt(vagrantFileLocation);
+			}
+		}
+
 		private function vagrantSSH(file:FileLocation):void
 		{
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				launchCommandArg("cd '"+ file.fileBridge.parent.fileBridge.nativePath +"';clear;'"+ UtilsCore.getVagrantBinPath() +"' ssh");
+				VagrantUtil.runVagrantSSHAt(file.fileBridge.parent.fileBridge.nativePath);
 			}
 			else
 			{
@@ -282,46 +304,67 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		public function vagrantDestroy(file:FileLocation):void
+		{
+			var command:String = "vagrant destroy -f";
+			warning("%s", command);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Destroy", "Running ", false));
+
+			this.start(
+					new <String>[command], file.fileBridge.parent
+			);
+		}
+
+		private function vagrantDestroyConfirm(file:FileLocation):void
+		{
+			vagrantFileLocation = file;
+			Alert.show(
+					"Are you sure you want to destroy Vagrant at: \n"+ file.fileBridge.nativePath,
+					"Confirm!",
+					Alert.YES | Alert.CANCEL,
+					null,
+					onDestroyConfirm, null, Alert.CANCEL
+			);
+		}
+		
+		private function onDestroyConfirm(eventObj:CloseEvent):void
+		{
+			// Check to see if the OK button was pressed.
+			if (eventObj.detail == Alert.YES)
+			{
+				if (running)
+				{
+					stop(true);
+					haltMethod = new MethodDescriptor(this, "vagrantHalt", vagrantFileLocation);
+					destroyMethod = new MethodDescriptor(this, "vagrantDestroy", vagrantFileLocation);
+				}
+				else
+				{
+					vagrantHalt(vagrantFileLocation);
+					destroyMethod = new MethodDescriptor(this, "vagrantDestroy", vagrantFileLocation);
+				}
+			}
+		}
+
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
 		{
 			super.onNativeProcessExit(event);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 
 			// run any queued process
-			if (queuedMethod)
+			if (haltMethod)
 			{
-				queuedMethod.callMethod();
-				queuedMethod = null;
+				haltMethod.callMethod();
+				haltMethod = null;
+				return;
 			}
-		}
-
-		private function launchCommandArg(command:String):void
-		{
-			// NOTE: we can move this to an utility class
-			// if we see more such usage
-
-			// 1. declare necessary arguments
-			var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			var arg:Vector.<String> = new Vector.<String>();
-
-			if (ConstantsCoreVO.IS_MACOS)
+			if (destroyMethod)
 			{
-				npInfo.executable = File.documentsDirectory.resolvePath("/usr/bin/osascript");
-				
-				// for non-Terminal type
-				arg.push( "-e" );
-				arg.push( 'tell application "Terminal" to activate & do script "'+ command +'"'+'\n' );
-				arg.push( 'end tell' );
-			}
-			else
-			{
-				
+				destroyMethod.callMethod();
+				destroyMethod = null;
 			}
 
-			// 3. execution
-			npInfo.arguments = arg;
-			var process:NativeProcess = new NativeProcess();
-			process.start( npInfo );
+			vagrantFileLocation = null;
 		}
 	}
 }
