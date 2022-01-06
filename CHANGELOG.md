@@ -33,6 +33,7 @@ The main features of Moonshine 3.3.0 are:
 * Language Server: Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.10.0.
 * Language Server: Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to latest version.
 * Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.6.0.
+* Language Server: [Support](https://github.com/GroovyLanguageServer/groovy-language-server/issues/47) for Groovy 4.0
 * Debug Adapter: Updated [SWF](https://as3mxml.com) engine to v1.4.0.
 * Debug Adapter: Updated [Chrome](https://github.com/microsoft/vscode-chrome-debug) engine to v4.13.0.
 * Debug Adapter: Updated [Firefox](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.5.
