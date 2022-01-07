@@ -219,23 +219,21 @@ package actionScripts.plugins.vagrant
 				return;
 			}
 
-			vagrantFileLocation = file;
-
 			var binPath:String = UtilsCore.getVagrantBinPath();
 			var command:String;
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				command = '"'+ binPath +'" plugin install vagrant-vbguest&&"'+ binPath +'" up 2>&1 | tee vagrant_up.log';
+				command = '"'+ binPath +'" up 2>&1 | tee vagrant_up.log';
 			}
 			else
 			{
-				command = '"'+ binPath +'" plugin install vagrant-vbguest&&"'+ binPath +'" up > vagrant_up.log | type vagrant_up.log';
+				command = '"'+ binPath +'" up > vagrant_up.log | type vagrant_up.log';
 			}
 			
 			warning("%s", command);
 			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_up.log");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Up", "Running "));
-			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunningVagrant);
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunningVagrant, false, 0, true);
 			
 			this.start(
 				new <String>[command], file.fileBridge.parent
@@ -285,7 +283,7 @@ package actionScripts.plugins.vagrant
 			warning("%s", command);
 			success("Log file location: "+ file.fileBridge.parent.fileBridge.nativePath + file.fileBridge.separator +"vagrant_reload.log");
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Reload", "Running "));
-			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunningVagrant);
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunningVagrant, false, 0, true);
 
 			this.start(
 					new <String>[command], file.fileBridge.parent
@@ -294,9 +292,10 @@ package actionScripts.plugins.vagrant
 
 		private function onTerminateRunningVagrant(event:StatusBarEvent):void
 		{
-			if (vagrantFileLocation)
+			if (running)
 			{
-				vagrantHalt(vagrantFileLocation);
+				dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunningVagrant);
+				stop(true);
 			}
 		}
 
@@ -330,7 +329,8 @@ package actionScripts.plugins.vagrant
 		{
 			vagrantFileLocation = file;
 			Alert.show(
-					"Are you sure you want to destroy Vagrant at: \n"+ file.fileBridge.nativePath,
+					"Are you sure you want to destroy the Vagrant instance for "+ file.fileBridge.parent.fileBridge.nativePath +"\n\n" +
+					"The virtual machine will be permanently destroyed, and will need to be recreated for future tests.\n\nThe Vagrant box will *not* be destroyed.",
 					"Confirm!",
 					Alert.YES | Alert.CANCEL,
 					null,
