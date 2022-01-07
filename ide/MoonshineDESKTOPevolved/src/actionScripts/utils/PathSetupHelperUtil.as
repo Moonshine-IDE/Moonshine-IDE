@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import actionScripts.plugins.macports.MacPortsPlugin;
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 
 	import flash.filesystem.File;
@@ -89,6 +90,8 @@ package actionScripts.utils
 					break;
 				case ComponentTypes.TYPE_VAGRANT:
 					pluginClass = VagrantPlugin.NAMESPACE;
+				case ComponentTypes.TYPE_MACPORTS:
+					pluginClass = MacPortsPlugin.NAMESPACE;
 					break;
 			}
 			

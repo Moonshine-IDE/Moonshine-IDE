@@ -51,6 +51,7 @@ package actionScripts.utils
 		private static const QUERY_NODEJS_VERSION:String = "getNodeJSVersion";
 		private static const QUERY_NOTES_VERSION:String = "getHCLNotesVersion";
 		private static const QUERY_VAGRANT_VERSION:String = "getVagrantVersion";
+		private static const QUERY_MACPORTS_VERSION:String = "getMacPortsVersion";
 		
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
 		
@@ -171,6 +172,14 @@ package actionScripts.utils
 								else commands = '"'+ executable +'" --version';
 								itemTypeUnderCursor = QUERY_VAGRANT_VERSION;
 							}
+							break;
+						case ComponentTypes.TYPE_MACPORTS:
+							/*executable = UtilsCore.getMacPortsBinPath();
+							if (executable)
+							{
+								commands = '"'+ executable +'" version';
+								itemTypeUnderCursor = QUERY_MACPORTS_VERSION;
+							}*/
 							break;
 						case ComponentTypes.TYPE_NOTES:
 							if (ConstantsCoreVO.IS_MACOS)
@@ -327,6 +336,8 @@ package actionScripts.utils
 						{
 							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
 						}
+						break;
+					case QUERY_MACPORTS_VERSION:
 						break;
 					case QUERY_JDK_VERSION:
 					case QUERY_JDK_8_VERSION:

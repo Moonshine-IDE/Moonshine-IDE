@@ -21,6 +21,7 @@ package actionScripts.impls
 {
 	import actionScripts.managers.StartupHelper;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.macports.MacPortsPlugin;
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.valueObjects.HelperConstants;
@@ -271,6 +272,7 @@ package actionScripts.impls
 				RoyaleApiReportPlugin,
 				ExternalEditorsPlugin,
 				VagrantPlugin,
+				MacPortsPlugin,
 				FSWatcherPlugin
 			];
 		}

@@ -36,5 +36,6 @@ package actionScripts.valueObjects
 		public static const NODEJS:String = "nodejs";
 		public static const NOTES:String = "notes";
 		public static const VAGRANT:String = "vagrant";
+		public static const MACPORTS:String = "macports";
     }
 }

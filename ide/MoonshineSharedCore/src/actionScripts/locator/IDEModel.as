@@ -90,6 +90,7 @@ package actionScripts.locator
 		public var svnPath:String;
 		public var gitPath:String;
 		public var vagrantPath:String;
+		public var macportsPath:String;
 		public var isCodeCompletionJavaPresent:Boolean;
 		public var payaraServerLocation:FileLocation;
 

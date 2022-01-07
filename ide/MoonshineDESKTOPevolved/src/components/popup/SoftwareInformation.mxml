@@ -29,6 +29,8 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+		import actionScripts.valueObjects.ConstantsCoreVO;
+
 		import feathers.data.ArrayCollection;
 
 		import mx.collections.ArrayCollection;
@@ -148,6 +150,10 @@
 					case ComponentTypes.TYPE_VAGRANT:
 						if (model.vagrantPath && FileUtils.isPathExists(model.vagrantPath))
 							component.installToPath = model.vagrantPath;
+						break;
+					case ComponentTypes.TYPE_MACPORTS:
+						if (ConstantsCoreVO.IS_MACOS && model.macportsPath && FileUtils.isPathExists(model.macportsPath))
+							component.installToPath = model.macportsPath;
 						break;
 				}
 

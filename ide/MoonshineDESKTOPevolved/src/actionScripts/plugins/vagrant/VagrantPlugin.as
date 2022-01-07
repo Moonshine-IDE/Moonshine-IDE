@@ -51,15 +51,11 @@ package actionScripts.plugins.vagrant
 	public class VagrantPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
 	{
 		public static var NAMESPACE:String = "actionScripts.plugins.vagrant::VagrantPlugin";
-		
-		public static var editors:ArrayCollection; 
-		
+
 		override public function get name():String			{ return "Vagrant"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
 		override public function get description():String	{ return "Access to Vagrant support from Moonshine-IDE"; }
 		
-		public var updateSitePath:String;
-
 		private var pathSetting:PathSetting;
 		private var defaultVagrantPath:String;
 		private var vagrantConsole:VagrantConsolePlugin;
@@ -108,8 +104,7 @@ package actionScripts.plugins.vagrant
 
 		override public function resetSettings():void
 		{
-			ExternalEditorsSharedObjectUtil.resetExternalEditorsInSO();
-			editors = ExternalEditorsImporter.getDefaultEditors();
+			vagrantPath = null;
 		}
 		
 		override public function onSettingsClose():void
