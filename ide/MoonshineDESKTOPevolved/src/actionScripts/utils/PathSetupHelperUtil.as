@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import actionScripts.plugins.vagrant.VagrantPlugin;
+
 	import flash.filesystem.File;
 	
 	import actionScripts.events.GlobalEventDispatcher;
@@ -84,6 +86,9 @@ package actionScripts.utils
 					break;
 				case ComponentTypes.TYPE_NOTES:
 					pluginClass = DominoPlugin.NAMESPACE;
+					break;
+				case ComponentTypes.TYPE_VAGRANT:
+					pluginClass = VagrantPlugin.NAMESPACE;
 					break;
 			}
 			
