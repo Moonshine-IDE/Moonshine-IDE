@@ -235,7 +235,7 @@ package actionScripts.impls
 		
 		public function getDefaultPlugins():Array
 		{
-			return [
+			var defaultPlugins:Array = [
 				MultiMenuEventsNotifierPlugin,
 				StartupHelperPlugin,
 				MXMLCPlugin,
@@ -272,9 +272,16 @@ package actionScripts.impls
 				RoyaleApiReportPlugin,
 				ExternalEditorsPlugin,
 				VagrantPlugin,
-				MacPortsPlugin,
 				FSWatcherPlugin
 			];
+
+			// conditional additions
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				defaultPlugins.push(MacPortsPlugin);
+			}
+
+			return defaultPlugins;
 		}
 		
 		public function getPluginsNotToShowInSettings():Array

@@ -56,10 +56,6 @@ package actionScripts.plugins.macports
 
 			if (!ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{
-				// because most users install Vagrant to a standard installation
-				// directory, we can try to use it as the default, if it exists.
-				// if the user saves a different path (or clears the path) in
-				// the settings, these default values will be safely ignored.
 				var macportsPath:File = new File("/opt/local/bin");
 				defaultMacportsPath = macportsPath.exists ? macportsPath.nativePath : null;
 				if (defaultMacportsPath && !model.macportsPath)
