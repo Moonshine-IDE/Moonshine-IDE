@@ -30,8 +30,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -140,6 +142,10 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 		}
 
 		CompilerConfiguration config = new CompilerConfiguration();
+
+		Map<String, Boolean> optimizationOptions = new HashMap<>();
+		optimizationOptions.put(CompilerConfiguration.GROOVYDOC, true);
+		config.setOptimizationOptions(optimizationOptions);
 
 		Path targetDirPath = workspaceStoragePath.resolve("build/libs");
 		if (Files.exists(targetDirPath)) {
