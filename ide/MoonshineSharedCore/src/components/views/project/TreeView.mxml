@@ -283,14 +283,45 @@
 					model.selectedprojectFolders[projectIndex].isWorking = false;
 				}
 			}
+
+			private function updateChildrenAndOpenItems(fw:FileWrapper, openItems:Array, newItems:Array):void
+			{
+				fw.updateChildren();
+				for each(var child:FileWrapper in fw.children)
+				{
+					for(var i:int = 0; i < openItems.length; i++)
+					{
+						var openItem:FileWrapper = openItems[i];
+						if(openItem.nativePath == child.nativePath && openItem != child)
+						{
+							openItems[i] = child;
+							newItems.push(child);
+							break;
+						}
+					}
+				}
+			}
 	
 			private function refreshItem(fw:FileWrapper):void
 			{
 				var lastScrollPosition:Number = tree.verticalScrollPosition;
 				var lastSelectedItem:Object = tree.selectedItem;
 				var lastSelectedIndex:int = tree.selectedIndex;
-				var openItems:Object = tree.openItems;
-				fw.updateChildren();
+				var openItems:Array = tree.openItems as Array;
+				var items:Array = [fw];
+				var newItems:Array = [];
+				do
+				{
+					for each(var item:FileWrapper in items)
+					{
+						updateChildrenAndOpenItems(item, openItems, newItems);
+					}
+					items.length = 0;
+					var temp:Array = items;
+					items = newItems;
+					newItems = temp;
+				}
+				while(items.length > 0);
 				tree.openItems = openItems;
 				tree.invalidateList();
 	
