@@ -208,12 +208,15 @@
 										tree.selectedItem.isDeleting = markAsDeletion;
 								}
 								refreshItem(tmpFW);
+								sortChildren(tmpFW);
 							}
 							return;
 						}
 					} else
 					{
-						refreshItem(UtilsCore.findFileWrapperAgainstFileLocation(fw, dir));
+						tmpFW = UtilsCore.findFileWrapperAgainstFileLocation(fw, dir)
+						refreshItem(tmpFW);
+						sortChildren(tmpFW);
 					}
 				}
 			}
