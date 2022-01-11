@@ -108,6 +108,16 @@ package actionScripts.impls
 			return UtilsCore.isNotesDominoAvailable();
 		}
 
+		public function isVagrantAvailable():Boolean
+		{
+			return UtilsCore.isVagrantAvailable();
+		}
+
+		public function isMacPortsAvailable():Boolean
+		{
+			return UtilsCore.isMacPortsAvailable();
+		}
+
 		public function runOrDownloadSDKInstaller():void
 		{
 			MSDKIdownloadUtil.getInstance().runOrDownloadSDKInstaller();
