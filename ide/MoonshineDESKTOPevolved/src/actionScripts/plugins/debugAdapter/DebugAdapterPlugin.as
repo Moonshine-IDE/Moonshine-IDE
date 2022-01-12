@@ -33,8 +33,6 @@ package actionScripts.plugins.debugAdapter
     import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
     import actionScripts.plugins.chromelauncher.ChromeDebugAdapterLauncher;
     import actionScripts.plugins.debugAdapter.events.DebugAdapterEvent;
-    import actionScripts.plugins.debugAdapter.events.LoadVariablesEvent;
-    import actionScripts.plugins.debugAdapter.events.StackFrameEvent;
     import actionScripts.plugins.firefoxlauncher.FirefoxDebugAdapterLauncher;
     import actionScripts.plugins.hashlinklauncher.HashLinkDebugAdapterLauncher;
     import actionScripts.plugins.hxcpplauncher.HxCppDebugAdapterLauncher;
@@ -45,9 +43,7 @@ package actionScripts.plugins.debugAdapter
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import moonshine.dsp.DebugAdapterClient;
-    import mx.collections.ArrayCollection;
     import feathers.data.ArrayCollection;
-    import flash.utils.Dictionary;
     import actionScripts.events.OpenFileEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.ui.FeathersUIWrapper;
@@ -82,7 +78,7 @@ package actionScripts.plugins.debugAdapter
 
 		private var _threadsAndStackFrames:CallStackHierarchicalCollection = new CallStackHierarchicalCollection();
 		private var _scopesAndVars:VariablesReferenceHierarchicalCollection = new VariablesReferenceHierarchicalCollection();
-		private var _pausedThreads:feathers.data.ArrayCollection = new feathers.data.ArrayCollection();
+		private var _pausedThreads:ArrayCollection = new ArrayCollection();
 
 		private var _supportsConfigurationDoneRequest:Boolean = false;
 		private var _receivedInitializeResponse:Boolean = false;
@@ -365,7 +361,7 @@ package actionScripts.plugins.debugAdapter
 			
 			_threadsAndStackFrames = new CallStackHierarchicalCollection();
 			_scopesAndVars = new VariablesReferenceHierarchicalCollection();
-			_pausedThreads = new feathers.data.ArrayCollection();
+			_pausedThreads = new ArrayCollection();
 			_calledDisconnect = false;
 			_receivedInitializeResponse = false;
 			_receivedInitializedEvent = false;
