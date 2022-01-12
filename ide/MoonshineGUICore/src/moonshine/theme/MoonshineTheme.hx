@@ -1134,6 +1134,9 @@ class MoonshineTheme extends SDKInstallerTheme {
 		setDarkButtonStyles(button);
 
 		button.icon = new Bitmap(new DebugPlayIcon());
+		var disabledIcon = new Bitmap(new DebugPlayIcon());
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
 
 		button.setPadding(6.0);
 	}
@@ -1142,6 +1145,9 @@ class MoonshineTheme extends SDKInstallerTheme {
 		setDarkButtonStyles(button);
 
 		button.icon = new Bitmap(new DebugPauseIcon());
+		var disabledIcon = new Bitmap(new DebugPauseIcon());
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
 
 		button.setPadding(6.0);
 	}
@@ -1150,6 +1156,9 @@ class MoonshineTheme extends SDKInstallerTheme {
 		setDarkButtonStyles(button);
 
 		button.icon = new Bitmap(new DebugStepOverIcon());
+		var disabledIcon = new Bitmap(new DebugStepOverIcon());
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
 
 		button.setPadding(6.0);
 	}
@@ -1158,6 +1167,9 @@ class MoonshineTheme extends SDKInstallerTheme {
 		setDarkButtonStyles(button);
 
 		button.icon = new Bitmap(new DebugStepIntoIcon());
+		var disabledIcon = new Bitmap(new DebugStepIntoIcon());
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
 
 		button.setPadding(6.0);
 	}
@@ -1166,6 +1178,9 @@ class MoonshineTheme extends SDKInstallerTheme {
 		setDarkButtonStyles(button);
 
 		button.icon = new Bitmap(new DebugStepOutIcon());
+		var disabledIcon = new Bitmap(new DebugStepOutIcon());
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
 
 		button.setPadding(6.0);
 	}
@@ -1174,6 +1189,9 @@ class MoonshineTheme extends SDKInstallerTheme {
 		setDarkButtonStyles(button);
 
 		button.icon = new Bitmap(new DebugStopIcon());
+		var disabledIcon = new Bitmap(new DebugStopIcon());
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
 
 		button.setPadding(6.0);
 	}
