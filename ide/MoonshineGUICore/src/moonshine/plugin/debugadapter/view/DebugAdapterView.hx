@@ -21,7 +21,7 @@
 package moonshine.plugin.debugadapter.view;
 
 import haxe.Json;
-import feathers.controls.dataRenderers.TreeGridViewCellRenderer;
+import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import openfl.events.Event;
 import actionScripts.interfaces.IViewWithTitle;
 import feathers.controls.Button;
@@ -206,7 +206,7 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 		this.variablesTree = new TreeGridView();
 		this.variablesTree.variant = TreeGridView.VARIANT_BORDERLESS;
 		var variablesColumn = new TreeGridViewColumn("Variables", getScopeOrVariableNameText);
-		variablesColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(TreeGridViewCellRenderer, (target, state:TreeGridViewCellState) -> {
+		variablesColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(HierarchicalItemRenderer, (target, state:TreeGridViewCellState) -> {
 			target.text = state.text;
 			if (Reflect.hasField(state.data, "value")) {
 				var variable = (state.data : Variable);
@@ -216,7 +216,7 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 			}
 		});
 		var valuesColumn = new TreeGridViewColumn("Values", getScopeOrVariableValueText);
-		valuesColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(TreeGridViewCellRenderer, (target, state:TreeGridViewCellState) -> {
+		valuesColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(HierarchicalItemRenderer, (target, state:TreeGridViewCellState) -> {
 			target.text = state.text;
 			target.toolTip = state.text;
 		});
@@ -230,7 +230,7 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 		this.threadsTree = new TreeGridView();
 		this.threadsTree.variant = TreeGridView.VARIANT_BORDERLESS;
 		var stackColumn = new TreeGridViewColumn("Stack", getThreadOrStackFrameNameText);
-		stackColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(TreeGridViewCellRenderer, (target, state:TreeGridViewCellState) -> {
+		stackColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(HierarchicalItemRenderer, (target, state:TreeGridViewCellState) -> {
 			target.text = state.text;
 			if (Reflect.hasField(state.data, "line")) {
 				var stackFrame = (state.data : StackFrame);
@@ -245,7 +245,7 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 			}
 		});
 		var lineColumn = new TreeGridViewColumn("Line", getThreadOrStackFramePositionText);
-		lineColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(TreeGridViewCellRenderer);
+		lineColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(HierarchicalItemRenderer);
 		this.threadsTree.columns = new ArrayCollection([stackColumn, lineColumn]);
 		this.threadsTree.extendedScrollBarY = true;
 		this.threadsTree.resizableColumns = true;
