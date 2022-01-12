@@ -25,6 +25,12 @@
 		"output": "MoonshineDESKTOP.air",
 		"extdir": [
 			"extensions/SSB.ane"
+		],
+		"files": [
+			{
+				"file": "tourDeFlex",
+				"path": "tourDeFlex"
+			}
 		]
 	},
 	"config": "air"

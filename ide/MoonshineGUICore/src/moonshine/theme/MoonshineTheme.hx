@@ -20,20 +20,14 @@
 
 package moonshine.theme;
 
-import feathers.skins.TriangleSkin;
-import feathers.controls.PopUpListView;
-import openfl.geom.Matrix;
-import actionScripts.valueObjects.ConstantsCoreVO;
-import moonshine.components.StandardPopupView;
 import feathers.controls.Button;
-import feathers.controls.Callout;
-import feathers.controls.Check;
 import feathers.controls.GridView;
 import feathers.controls.HScrollBar;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
 import feathers.controls.ListView;
 import feathers.controls.Panel;
+import feathers.controls.PopUpListView;
 import feathers.controls.Radio;
 import feathers.controls.TextInput;
 import feathers.controls.TextInputState;
@@ -41,29 +35,31 @@ import feathers.controls.ToggleButton;
 import feathers.controls.ToggleButtonState;
 import feathers.controls.TreeView;
 import feathers.controls.VScrollBar;
+import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.controls.dataRenderers.ItemRenderer;
-import feathers.controls.dataRenderers.TreeViewItemRenderer;
 import feathers.core.DefaultToolTipManager;
 import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
 import feathers.layout.VerticalListLayout;
 import feathers.skins.CircleSkin;
 import feathers.skins.RectangleSkin;
+import feathers.skins.TriangleSkin;
 import feathers.style.Theme;
-import feathers.themes.ClassVariantTheme;
-import moonshine.plugin.help.view.TourDeFlexTreeViewItemRenderer;
+import moonshine.components.StandardPopupView;
+import moonshine.plugin.help.view.TourDeFlexHierarchicalItemRenderer;
 import moonshine.style.MoonshineButtonSkin;
 import moonshine.style.MoonshineControlBarSkin;
 import moonshine.style.MoonshineHScrollBarThumbSkin;
 import moonshine.style.MoonshineVScrollBarThumbSkin;
+import moonshine.theme.SDKInstallerTheme;
+import moonshine.theme.assets.RefreshIcon;
 import moonshine.ui.ResizableTitleWindow;
 import moonshine.ui.SideBarViewHeader;
 import moonshine.ui.TitleWindow;
 import openfl.display.Shape;
 import openfl.filters.GlowFilter;
+import openfl.geom.Matrix;
 import openfl.text.TextFormat;
-import moonshine.theme.SDKInstallerTheme;
-import moonshine.theme.assets.RefreshIcon;
 
 class MoonshineTheme extends SDKInstallerTheme {
 	private static var _instance:MoonshineTheme;
@@ -139,9 +135,10 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
-		this.styleProvider.setStyleFunction(TreeViewItemRenderer, null, setTreeViewItemRendererStyles);
-		this.styleProvider.setStyleFunction(TourDeFlexTreeViewItemRenderer, null, setTourDeFlexTreeViewItemRendererItemRendererStyles);
-		this.styleProvider.setStyleFunction(ToggleButton, TreeViewItemRenderer.CHILD_VARIANT_DISCLOSURE_BUTTON, setTreeViewItemRendererDisclosureButtonStyles);
+		this.styleProvider.setStyleFunction(HierarchicalItemRenderer, null, setHierarchicalItemRendererStyles);
+		this.styleProvider.setStyleFunction(TourDeFlexHierarchicalItemRenderer, null, setTourDeFlexHierarchicalItemRendererItemRendererStyles);
+		this.styleProvider.setStyleFunction(ToggleButton, HierarchicalItemRenderer.CHILD_VARIANT_DISCLOSURE_BUTTON,
+			setHierarchicalItemRendererDisclosureButtonStyles);
 
 		this.styleProvider.setStyleFunction(Button, IMAGE_VARIANT_LARGE_REFRESH_ICON, setImageLargeRefreshStyles);
 	}
@@ -947,7 +944,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		treeView.fixedScrollBars = true;
 	}
 
-	private function setTreeViewItemRendererStyles(itemRenderer:TreeViewItemRenderer):Void {
+	private function setHierarchicalItemRendererStyles(itemRenderer:HierarchicalItemRenderer):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.selectedFill = SolidColor(0xC165B8);
@@ -964,15 +961,17 @@ class MoonshineTheme extends SDKInstallerTheme {
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
 		// itemRenderer.embedFonts = true;
 
+		itemRenderer.horizontalAlign = LEFT;
 		itemRenderer.paddingTop = 4.0;
 		itemRenderer.paddingRight = 4.0;
 		itemRenderer.paddingBottom = 4.0;
 		itemRenderer.paddingLeft = 4.0;
+		itemRenderer.gap = 4.0;
 		itemRenderer.indentation = 12.0;
 	}
 
-	private function setTourDeFlexTreeViewItemRendererItemRendererStyles(itemRenderer:TourDeFlexTreeViewItemRenderer):Void {
-		this.setTreeViewItemRendererStyles(itemRenderer);
+	private function setTourDeFlexHierarchicalItemRendererItemRendererStyles(itemRenderer:TourDeFlexHierarchicalItemRenderer):Void {
+		this.setHierarchicalItemRendererStyles(itemRenderer);
 
 		var activeFileIndicator = new Shape();
 		activeFileIndicator.graphics.clear();
@@ -983,7 +982,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		itemRenderer.activeFileIndicator = activeFileIndicator;
 	}
 
-	private function setTreeViewItemRendererDisclosureButtonStyles(button:ToggleButton):Void {
+	private function setHierarchicalItemRendererDisclosureButtonStyles(button:ToggleButton):Void {
 		var icon = new Shape();
 		icon.graphics.beginFill(0xff00ff, 0.0);
 		icon.graphics.drawRect(0.0, 0.0, 12.0, 12.0);
