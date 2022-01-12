@@ -174,12 +174,12 @@ package actionScripts.utils
 							}
 							break;
 						case ComponentTypes.TYPE_MACPORTS:
-							/*executable = UtilsCore.getMacPortsBinPath();
+							executable = UtilsCore.getMacPortsBinPath();
 							if (executable)
 							{
 								commands = '"'+ executable +'" version';
 								itemTypeUnderCursor = QUERY_MACPORTS_VERSION;
-							}*/
+							}
 							break;
 						case ComponentTypes.TYPE_NOTES:
 							if (ConstantsCoreVO.IS_MACOS)
@@ -337,8 +337,6 @@ package actionScripts.utils
 							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
 						}
 						break;
-					case QUERY_MACPORTS_VERSION:
-						break;
 					case QUERY_JDK_VERSION:
 					case QUERY_JDK_8_VERSION:
 					case QUERY_ANT_VERSION:
@@ -353,6 +351,7 @@ package actionScripts.utils
 						break;
 					}
 					case QUERY_GRAILS_VERSION:
+					case QUERY_MACPORTS_VERSION:
 					{
 						match = value.output.match(/Version:/);
 						if (match && !components[int(tmpQueue.extraArguments[0])].version)
