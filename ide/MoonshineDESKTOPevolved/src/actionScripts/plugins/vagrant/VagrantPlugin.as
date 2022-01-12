@@ -313,7 +313,8 @@ package actionScripts.plugins.vagrant
 		{
 			var command:String = '"'+ UtilsCore.getVagrantBinPath() +'" destroy -f';
 			warning("%s", command);
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Destroy", "Running ", false));
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Vagrant Destroy", "Running ", true));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunningVagrant, false, 0, true);
 
 			this.start(
 					new <String>[command], file.fileBridge.parent
