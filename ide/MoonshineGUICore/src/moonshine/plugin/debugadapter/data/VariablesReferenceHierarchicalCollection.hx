@@ -164,9 +164,13 @@ class VariablesReferenceHierarchicalCollection extends EventDispatcher implement
 		throw new IllegalOperationError("Not implemented");
 	}
 
-	public function removeAll():Void {
-		this._variablesReferenceToVariables.clear();
-		this._scopes.removeAll();
+	public function removeAll(?location:Array<Int>):Void {
+		if (location == null || location.length == 0) {
+			this._variablesReferenceToVariables.clear();
+			this._scopes.removeAll();
+			return;
+		}
+		throw new IllegalOperationError("Not implemented");
 	}
 
 	/**
