@@ -45,8 +45,6 @@ package actionScripts.plugins.debugAdapter
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import moonshine.dsp.DebugAdapterClient;
-    import actionScripts.debugAdapter.vo.ThreadsHierarchicalData;
-    import actionScripts.debugAdapter.vo.VariablesReferenceHierarchicalData;
     import mx.collections.ArrayCollection;
     import feathers.data.ArrayCollection;
     import flash.utils.Dictionary;
@@ -54,6 +52,7 @@ package actionScripts.plugins.debugAdapter
     import actionScripts.factory.FileLocation;
     import actionScripts.ui.FeathersUIWrapper;
     import moonshine.plugin.debugadapter.view.DebugAdapterView;
+	import moonshine.plugin.debugadapter.data.CallStackHierarchicalCollection;
 	import moonshine.plugin.debugadapter.data.VariablesReferenceHierarchicalCollection;
 	import moonshine.plugin.debugadapter.events.DebugAdapterViewThreadEvent;
 	import moonshine.plugin.debugadapter.events.DebugAdapterViewLoadVariablesEvent;
@@ -81,7 +80,7 @@ package actionScripts.plugins.debugAdapter
 		private var _calledDisconnect:Boolean = false;
 		private var _breakpoints:Object = {};
 
-		private var _threadsAndStackFrames:ThreadsHierarchicalData = new ThreadsHierarchicalData();
+		private var _threadsAndStackFrames:CallStackHierarchicalCollection = new CallStackHierarchicalCollection();
 		private var _scopesAndVars:VariablesReferenceHierarchicalCollection = new VariablesReferenceHierarchicalCollection();
 		private var _pausedThreads:feathers.data.ArrayCollection = new feathers.data.ArrayCollection();
 
@@ -172,7 +171,7 @@ package actionScripts.plugins.debugAdapter
 
 			debugView.active = _debugAdapter != null;
 			debugView.pausedThreads = _debugAdapter ? _pausedThreads : null;
-			// debugView.threadsAndStackFrames = _debugAdapter ? _threadsAndStackFrames : null;
+			debugView.threadsAndStackFrames = _debugAdapter ? _threadsAndStackFrames : null;
 			debugView.scopesAndVariables = _debugAdapter ? _scopesAndVars : null;
 		}
 		
@@ -364,7 +363,7 @@ package actionScripts.plugins.debugAdapter
 				isDebugViewVisible = true;
 			}
 			
-			_threadsAndStackFrames = new ThreadsHierarchicalData();
+			_threadsAndStackFrames = new CallStackHierarchicalCollection();
 			_scopesAndVars = new VariablesReferenceHierarchicalCollection();
 			_pausedThreads = new feathers.data.ArrayCollection();
 			_calledDisconnect = false;
@@ -571,11 +570,10 @@ package actionScripts.plugins.debugAdapter
 
 		private function findThread(threadId:int):Object
 		{
-			var threads:mx.collections.ArrayCollection = _threadsAndStackFrames.getRoot() as mx.collections.ArrayCollection;
-			var threadCount:int = threads.length;
+			var threadCount:int = _threadsAndStackFrames.getLength();
 			for(var i:int = 0; i < threadCount; i++)
 			{
-				var thread:Object = threads.getItemAt(i);
+				var thread:Object = _threadsAndStackFrames.get([i]);
 				if(threadId == thread.id || threadId == -1)
 				{
 					return thread;
@@ -645,8 +643,8 @@ package actionScripts.plugins.debugAdapter
 
 		private function debugAdapter_onSetBreakpointsResponse(body:Object):void
 		{
-			var threads:mx.collections.ArrayCollection = _threadsAndStackFrames.getRoot() as mx.collections.ArrayCollection;
-			if(threads.length == 0)
+			var threadCount:int = _threadsAndStackFrames.getLength();
+			if(threadCount == 0)
 			{
 				_debugAdapter.threads({}, debugAdapter_onThreadsResponse);
 			}
