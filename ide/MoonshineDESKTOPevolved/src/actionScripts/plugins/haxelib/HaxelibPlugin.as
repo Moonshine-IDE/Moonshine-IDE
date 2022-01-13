@@ -19,6 +19,7 @@
 package actionScripts.plugins.haxelib
 {
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugins.haxelib.events.HaxelibEvent;
@@ -146,7 +147,12 @@ package actionScripts.plugins.haxelib
 				return;
 			}
 
-			ConsoleOutputter.formatOutput("Installing dependency " + currentItem.title + "...", "notice");
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_PRINT,
+					"Installing dependency " + currentItem.title + "...",
+					false, false, ConsoleOutputEvent.TYPE_NOTE
+			));
+
 			var installCommand:Vector.<String> = new <String>[
 				EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH,
 				"install",
@@ -342,7 +348,12 @@ package actionScripts.plugins.haxelib
 			var process:NativeProcess = NativeProcess(event.currentTarget);
 			var output:IDataInput = process.standardOutput;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			ConsoleOutputter.formatOutput(data, "notice");
+
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_PRINT,
+					data,
+					false, false, ConsoleOutputEvent.TYPE_NOTE
+			));
 			trace(data);
 		}
 
@@ -351,7 +362,12 @@ package actionScripts.plugins.haxelib
 			var process:NativeProcess = NativeProcess(event.currentTarget);
 			var output:IDataInput = process.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			ConsoleOutputter.formatOutput(data, "error");
+
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(
+					ConsoleOutputEvent.CONSOLE_PRINT,
+					data,
+					false, false, ConsoleOutputEvent.TYPE_ERROR
+			));
 			trace(data);
 		}
 
@@ -382,7 +398,11 @@ package actionScripts.plugins.haxelib
 
 				currentItem.isDownloaded = false;
 				currentItem.hasError = "Failed to install dependency: " + currentItem.title;
-				ConsoleOutputter.formatOutput(currentItem.hasError, "error");
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(
+						ConsoleOutputEvent.CONSOLE_PRINT,
+						currentItem.hasError,
+						false, false, ConsoleOutputEvent.TYPE_ERROR
+				));
 			}
 
 		}

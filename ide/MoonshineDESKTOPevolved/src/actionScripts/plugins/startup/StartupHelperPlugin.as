@@ -106,6 +106,10 @@ package actionScripts.plugins.startup
 			
 			// we want this to be work in desktop version only
 			if (!ConstantsCoreVO.IS_AIR) return;
+
+			// HelperView initialize get called before
+			// HelperViewWrapper could set the value to const
+			HelperConstants.IS_RUNNING_IN_MOON = true;
 			
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
 			dispatcher.addEventListener(EVENT_GETTING_STARTED_AS3, onGettingStartedRequest, false, 0, true);
@@ -400,10 +404,6 @@ package actionScripts.plugins.startup
 				gettingStartedView = new GettingStartedView();
 				gettingStartedView.setting = ps;
 
-				// HelperView initialize get called before
-				// HelperViewWrapper could set the value to const
-				HelperConstants.IS_RUNNING_IN_MOON = true;
-				
 				var tmpHelperViewWrapper:HelperViewWrapper = new HelperViewWrapper(new HelperView());
 				tmpHelperViewWrapper.isRunningInsideMoonshine = HelperConstants.IS_RUNNING_IN_MOON;
 				tmpHelperViewWrapper.dependencyCheckUtil = dependencyCheckUtil;

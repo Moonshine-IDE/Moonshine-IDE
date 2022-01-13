@@ -233,7 +233,14 @@ package actionScripts.controllers
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper);
-				var extension:String = file.fileBridge.extension.toLowerCase();
+				var extension:String = file.fileBridge.extension;
+
+				// some file may not have an extension
+				if (extension)
+				{
+					extension = extension.toLowerCase()
+				}
+
 				if (openAsTourDe) 
 				{
 					openTourDeFile(fileData);

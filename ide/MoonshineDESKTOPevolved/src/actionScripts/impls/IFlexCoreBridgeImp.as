@@ -21,6 +21,9 @@ package actionScripts.impls
 {
 	import actionScripts.managers.StartupHelper;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.macports.MacPortsPlugin;
+	import actionScripts.plugins.vagrant.VagrantPlugin;
+	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -232,7 +235,7 @@ package actionScripts.impls
 		
 		public function getDefaultPlugins():Array
 		{
-			return [
+			var defaultPlugins:Array = [
 				MultiMenuEventsNotifierPlugin,
 				StartupHelperPlugin,
 				MXMLCPlugin,
@@ -268,8 +271,17 @@ package actionScripts.impls
 				RoyaleApiReportConfiguratorPlugin,
 				RoyaleApiReportPlugin,
 				ExternalEditorsPlugin,
+				VagrantPlugin,
 				FSWatcherPlugin
 			];
+
+			// conditional additions
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				defaultPlugins.push(MacPortsPlugin);
+			}
+
+			return defaultPlugins;
 		}
 		
 		public function getPluginsNotToShowInSettings():Array
@@ -539,7 +551,7 @@ package actionScripts.impls
 			return HelperUtils.getComponentByType(type);
 		}
 		
-		public function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean
+		public function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean
 		{
 			return HelperUtils.isValidExecutableBy(type, originPath, validationPath);
 		}
@@ -572,6 +584,11 @@ package actionScripts.impls
 		public function get defaultInstallationPathSDKs():String
 		{
 			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
+		}
+
+		public function get vagrantMenuOptions():Array
+		{
+			return VagrantUtil.VAGRANT_MENU_OPTIONS;
 		}
 
 		public function setMSDKILocalPathConfig():void

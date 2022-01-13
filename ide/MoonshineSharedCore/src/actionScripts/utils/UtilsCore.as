@@ -1460,6 +1460,78 @@ package actionScripts.utils
 			
 			return true;
 		}
+
+		public static function isVagrantAvailable():Boolean
+		{
+			if (!model.vagrantPath || !model.fileCore.isPathExists(model.vagrantPath))
+			{
+				return false;
+			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.VAGRANT);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.VAGRANT, model.vagrantPath, component.pathValidation);
+			}
+
+			return false;
+		}
+
+		public static function getVagrantBinPath():String
+		{
+			if (!model.vagrantPath || !model.fileCore.isPathExists(model.vagrantPath))
+			{
+				return null;
+			}
+
+			var vagrantExecutable:String = ConstantsCoreVO.IS_MACOS ? "vagrant" : "vagrant.exe";
+			if (model.fileCore.isPathExists([model.vagrantPath, vagrantExecutable].join(model.fileCore.separator)))
+			{
+				return [model.vagrantPath, vagrantExecutable].join(model.fileCore.separator);
+			}
+			if (model.fileCore.isPathExists([model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator)))
+			{
+				return [model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator);
+			}
+
+			return null;
+		}
+
+		public static function isMacPortsAvailable():Boolean
+		{
+			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			{
+				return false;
+			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.MACPORTS);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.MACPORTS, model.macportsPath, component.pathValidation);
+			}
+
+			return false;
+		}
+
+		public static function getMacPortsBinPath():String
+		{
+			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			{
+				return null;
+			}
+
+			var mportsExecutable:String = "port";
+			if (model.fileCore.isPathExists([model.macportsPath, mportsExecutable].join(model.fileCore.separator)))
+			{
+				return [model.macportsPath, mportsExecutable].join(model.fileCore.separator);
+			}
+			if (model.fileCore.isPathExists([model.macportsPath, "bin", mportsExecutable].join(model.fileCore.separator)))
+			{
+				return [model.macportsPath, "bin", mportsExecutable].join(model.fileCore.separator);
+			}
+
+			return null;
+		}
 		
 		public static function isNotesDominoAvailable():Boolean
 		{

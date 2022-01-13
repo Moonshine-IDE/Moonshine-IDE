@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import actionScripts.plugins.macports.MacPortsPlugin;
+	import actionScripts.plugins.vagrant.VagrantPlugin;
+
 	import flash.filesystem.File;
 	
 	import actionScripts.events.GlobalEventDispatcher;
@@ -85,6 +88,12 @@ package actionScripts.utils
 				case ComponentTypes.TYPE_NOTES:
 					pluginClass = DominoPlugin.NAMESPACE;
 					break;
+				case ComponentTypes.TYPE_VAGRANT:
+					pluginClass = VagrantPlugin.NAMESPACE;
+					break;
+				case ComponentTypes.TYPE_MACPORTS:
+					pluginClass = MacPortsPlugin.NAMESPACE;
+					break;
 			}
 			
 			if (pluginClass) GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, pluginClass));
@@ -130,6 +139,12 @@ package actionScripts.utils
 					break;
 				case ComponentTypes.TYPE_NOTES:
 					updateNotesPath(path);
+					break;
+				case ComponentTypes.TYPE_VAGRANT:
+					updateVagrantPath(path);
+					break;
+				case ComponentTypes.TYPE_MACPORTS:
+					updateMacPortsPath(path);
 					break;
 			}
 		}
@@ -379,6 +394,36 @@ package actionScripts.utils
 				
 				// update local env.variable
 				environmentSetupUtils.updateToCurrentEnvironmentVariable();
+			}
+		}
+
+		public static function updateVagrantPath(path:String, forceUpdate:Boolean=false):void
+		{
+			if (!UtilsCore.isVagrantAvailable() || forceUpdate)
+			{
+				model.vagrantPath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({vagrantPath: model.vagrantPath}, 'vagrantPath', 'Vagrant Home', true)
+				]);
+
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, VagrantPlugin.NAMESPACE, settings));
+			}
+		}
+
+		public static function updateMacPortsPath(path:String, forceUpdate:Boolean=false):void
+		{
+			if (!UtilsCore.isMacPortsAvailable() || forceUpdate)
+			{
+				model.macportsPath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({macportsPath: model.macportsPath}, 'macportsPath', 'MacPorts Home', true)
+				]);
+
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, MacPortsPlugin.NAMESPACE, settings));
 			}
 		}
 		

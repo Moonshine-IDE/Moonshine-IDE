@@ -64,6 +64,8 @@ package actionScripts.ui.renderers
 	{
 		public static const OPEN:String = "Open";
 		public static const OPEN_WITH:String = "Open With";
+		public static const VAGRANT_GROUP:String = "Vagrant";
+		public static const CONFIGURE_VAGRANT:String = "Configure Vagrant";
 		public static const CONFIGURE_EXTERNAL_EDITORS:String = "Customize Editors";
 		public static const OPEN_FILE_FOLDER:String = "Open File/Folder";
 		public static const NEW:String = "New";
@@ -248,7 +250,16 @@ package actionScripts.ui.renderers
                 model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 
                 model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? OPEN : OPEN_FILE_FOLDER, redispatch, Event.SELECT));
-				
+
+				if (ConstantsCoreVO.IS_AIR && (fw.file.fileBridge.name.toLowerCase() == "vagrantfile"))
+				{
+					if (!fw.file.fileBridge.isDirectory)
+					{
+						var vagrantMenu:Object = model.contextMenuCore.getContextMenuItem(VAGRANT_GROUP, populateVagrantMenu, "displaying");
+						model.contextMenuCore.addItem(contextMenu, vagrantMenu);
+					}
+				}
+
 				if (ConstantsCoreVO.IS_AIR)
 				{
 					if (!fw.file.fileBridge.isDirectory)
@@ -445,6 +456,37 @@ package actionScripts.ui.renderers
 			var customize:Object = model.contextMenuCore.getContextMenuItem(CONFIGURE_EXTERNAL_EDITORS, redispatchOpenWith, Event.SELECT);
 			customize.data = CONFIGURE_EXTERNAL_EDITORS;
 			model.contextMenuCore.subMenu(event.target, customize);
+		}
+
+		private function populateVagrantMenu(event:Event):void
+		{
+			model.contextMenuCore.removeAll(event.target);
+
+			var isVagrantAvailable:Boolean = UtilsCore.isVagrantAvailable();
+			var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper);
+			if (activeProject)
+			{
+				model.activeProject = activeProject;
+			}
+
+			for each (var option:String in model.flexCore.vagrantMenuOptions)
+			{
+				var eventType:String = "eventVagrant"+ option;
+				var item:Object = model.contextMenuCore.getContextMenuItem(option, redispatchOpenWith, Event.SELECT);
+				item.data = eventType;
+				item.enabled = isVagrantAvailable;
+
+				model.contextMenuCore.subMenu(event.target, item);
+			}
+
+			if (!isVagrantAvailable)
+			{
+				model.contextMenuCore.subMenu(event.target, model.contextMenuCore.getContextMenuItem(null));
+
+				var customize:Object = model.contextMenuCore.getContextMenuItem(CONFIGURE_VAGRANT, redispatchOpenWith, Event.SELECT);
+				customize.data = CONFIGURE_VAGRANT;
+				model.contextMenuCore.subMenu(event.target, customize);
+			}
 		}
 
 		private function populateTemplatingMenu(e:Event):void
