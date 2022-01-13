@@ -221,7 +221,6 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 			target.toolTip = state.text;
 		});
 		this.variablesTree.columns = new ArrayCollection([variablesColumn, valuesColumn]);
-		this.variablesTree.selectable = false;
 		this.variablesTree.extendedScrollBarY = true;
 		this.variablesTree.resizableColumns = true;
 		this.variablesTree.addEventListener(TreeGridViewEvent.BRANCH_OPEN, variablesTree_branchOpenHandler);
