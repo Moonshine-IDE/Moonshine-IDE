@@ -325,9 +325,9 @@ package actionScripts.plugins.vagrant
 		{
 			vagrantFileLocation = file;
 			Alert.show(
-					"Are you sure you want to destroy the Vagrant instance for "+ file.fileBridge.parent.fileBridge.nativePath +"\n\n" +
-					"The virtual machine will be permanently destroyed, and will need to be recreated for future tests.\n\nThe Vagrant box will *not* be destroyed.",
-					"Confirm!",
+					"Are you sure you want to destroy the Vagrant instance for:\n"+ file.fileBridge.parent.fileBridge.nativePath +"\n\n" +
+					"The virtual machine will be permanently destroyed, and will need to be recreated for future tests.\n\nThe Vagrant template will *not* be removed.",
+					"Warning!",
 					Alert.YES | Alert.CANCEL,
 					null,
 					onDestroyConfirm, null, Alert.CANCEL
