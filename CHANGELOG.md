@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
 ### Changed
+* Improved debugger based on Haxe
 * Updated [Groovy language server](https://github.com/prominic/groovy-langugage-server) engine to latest.
 
 
