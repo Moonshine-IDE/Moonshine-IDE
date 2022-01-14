@@ -97,15 +97,15 @@ Moonshine-IDE is licensed under the Apache License 2.0 - see the [LICENSE.md](ht
 ### 1. issue reference
 Royale:
 	https://github.com/Moonshine-IDE/Moonshine-IDE/issues/675
+	
 Domino:
 	https://github.com/Moonshine-IDE/Moonshine-IDE/issues/646
 
 ### 2. branch 
-Royale:
-	https://github.com/Moonshine-IDE/Moonshine-IDE/tree/features/issue_675_royale_generate_domino_visual_editor
+Royale:https://github.com/Moonshine-IDE/Moonshine-IDE/tree/features/issue_675_royale_generate_domino_visual_editor
 
-Domino:
-	https://github.com/Moonshine-IDE/Moonshine-IDE/tree/features/issue_646_ve_notes_domino_support_fresh
+Domino:https://github.com/Moonshine-IDE/Moonshine-IDE/tree/features/issue_646_ve_notes_domino_support_fresh
+
 ### 3. main entery point and how to trigger
 Domino :
 	According to the design structure of moonshine ide
@@ -113,7 +113,7 @@ Domino :
 	So, please check following code:
 	https://github.com/Moonshine-IDE/Moonshine-IDE/blob/c4548fd104d734aa8d672fba4764a7c00a024e78/ide/MoonshineDESKTOPevolved/src/actionScripts/plugins/ui/editor/VisualEditorViewer.as#L423
 
-	"getMxmlCode()" method will identify projects and files, and perform domino conversions based on project and file types.
+	'getMxmlCode()' method will identify projects and files, and perform domino conversions based on project and file types.
 
 
 Royale:  
