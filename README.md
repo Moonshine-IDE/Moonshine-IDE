@@ -108,23 +108,19 @@ Domino:https://github.com/Moonshine-IDE/Moonshine-IDE/tree/features/issue_646_ve
 
 ### 3. main entery point and how to trigger
 Domino :
-According to the design structure of moonshine ide
-When user work with Visual Editors and clciks the "save" action or click the "code' tab from the Visual Editor,it will trigger the Domino convert.
+	According to the design structure of moonshine ide.When user work with Visual Editors and clciks the "save" action or click the "code' tab from the Visual Editor,it will trigger the Domino convert.
 	
-So, please check following code:
-https://github.com/Moonshine-IDE/Moonshine-IDE/blob/c4548fd104d734aa8d672fba4764a7c00a024e78/ide/MoonshineDESKTOPevolved/src/actionScripts/plugins/ui/editor/VisualEditorViewer.as#L423
+- [getMxmlCode()](https://github.com/Moonshine-IDE/Moonshine-IDE/blob/c4548fd104d734aa8d672fba4764a7c00a024e78/ide/MoonshineDESKTOPevolved/src/actionScripts/plugins/ui/editor/VisualEditorViewer.as#L423),
 
-getMxmlCode() method will identify projects and files, and perform domino conversions based on project and file types.
-
-
-Royale:  
-According to the requirements, the Royale project will be generated from the opened Domino Visual project, therefore, the user will click "Project->Generate Apache Royale Project" in the menu to generate a new Royale project.
-	
-So, please check following code:
-https://github.com/Moonshine-IDE/Moonshine-IDE/blob/4363a2a14cfb8623d07937c0d2d12ad3fa7b7ccf/ide/MoonshineDESKTOPevolved/src/actionScripts/plugins/as3project/CreateProject.as#L989
+	getMxmlCode() method will identify projects and files, and perform domino conversions based on project and file types.
 
 
-This line code will convert the current open Domino Visual Editor project to Royale project.
+Royale :
+	According to the requirements, the Royale project will be generated from the opened Domino Visual project, therefore, the user will click "Project->Generate Apache Royale Project" in the menu to generate a new Royale project.
+
+- [edit.visualEditor.editingSurface.toRoyaleCode(pvo.projectName,edit.visualEditor.editingSurface);](https://github.com/Moonshine-IDE/Moonshine-IDE/blob/4363a2a14cfb8623d07937c0d2d12ad3fa7b7ccf/ide/MoonshineDESKTOPevolved/src/actionScripts/plugins/as3project/CreateProject.as#L989)
+
+	This line code will convert the current open Domino Visual Editor project to Royale project.
 
 
 
