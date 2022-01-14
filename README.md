@@ -121,9 +121,6 @@ Royale:
 
 	https://github.com/Moonshine-IDE/Moonshine-IDE/blob/4363a2a14cfb8623d07937c0d2d12ad3fa7b7ccf/ide/MoonshineDESKTOPevolved/src/actionScripts/plugins/as3project/CreateProject.as#L989
 
-	```
-	var mxmlCode:XML = edit.visualEditor.editingSurface.toRoyaleCode(pvo.projectName,edit.visualEditor.editingSurface);
-	```
 
 	This line code will convert the current open Domino Visual Editor project to Royale project.
 
