@@ -118,7 +118,7 @@ Domino :
 
 Royale:  
 	According to the requirements, the Royale project will be generated from the opened Domino Visual project, therefore, the user will click "Project->Generate Apache Royale Project" in the menu to generate a new Royale project.
-
+	So, please check following code:
 	https://github.com/Moonshine-IDE/Moonshine-IDE/blob/4363a2a14cfb8623d07937c0d2d12ad3fa7b7ccf/ide/MoonshineDESKTOPevolved/src/actionScripts/plugins/as3project/CreateProject.as#L989
 
 
