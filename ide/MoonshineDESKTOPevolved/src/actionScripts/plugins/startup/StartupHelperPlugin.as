@@ -187,7 +187,9 @@ package actionScripts.plugins.startup
 		{
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
-			
+
+			installerItemsManager.addEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded, false, 0, true);
+			installerItemsManager.addEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent, false, 0, true);
 			toggleListenersInstallerItemsManager(true);
 			
 			HelperConstants.IS_MACOS = ConstantsCoreVO.IS_MACOS;
@@ -300,14 +302,10 @@ package actionScripts.plugins.startup
 		{
 			if (toggle)
 			{
-				installerItemsManager.addEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded);
-				installerItemsManager.addEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
 				installerItemsManager.addEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
 			}
 			else
 			{
-				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded);
-				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
 				installerItemsManager.removeEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
 			}
 		}
