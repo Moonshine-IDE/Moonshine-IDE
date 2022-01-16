@@ -251,15 +251,6 @@ package actionScripts.ui.renderers
 
                 model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? OPEN : OPEN_FILE_FOLDER, redispatch, Event.SELECT));
 
-				if (ConstantsCoreVO.IS_AIR && (fw.file.fileBridge.name.toLowerCase() == "vagrantfile"))
-				{
-					if (!fw.file.fileBridge.isDirectory)
-					{
-						var vagrantMenu:Object = model.contextMenuCore.getContextMenuItem(VAGRANT_GROUP, populateVagrantMenu, "displaying");
-						model.contextMenuCore.addItem(contextMenu, vagrantMenu);
-					}
-				}
-
 				if (ConstantsCoreVO.IS_AIR)
 				{
 					if (!fw.file.fileBridge.isDirectory)
@@ -332,6 +323,17 @@ package actionScripts.ui.renderers
 	   				//contextMenu.addItem(new ContextMenuItem(null, true));
 	   				
 					if (!fw.isSourceFolder) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? DELETE : DELETE_FILE_FOLDER, redispatch, Event.SELECT));
+
+					if (ConstantsCoreVO.IS_AIR && (fw.file.fileBridge.name.toLowerCase() == "vagrantfile"))
+					{
+						if (!fw.file.fileBridge.isDirectory)
+						{
+							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
+
+							var vagrantMenu:Object = model.contextMenuCore.getContextMenuItem(VAGRANT_GROUP, populateVagrantMenu, "displaying");
+							model.contextMenuCore.addItem(contextMenu, vagrantMenu);
+						}
+					}
 	   				
 	   				//contextMenu.addItem(new ContextMenuItem(null, true));
 					
