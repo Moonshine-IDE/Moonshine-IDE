@@ -13,10 +13,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 * Improved debugger based on Haxe
-* Updated [Groovy language server](https://github.com/prominic/groovy-langugage-server) engine to latest.
+* Updated [Groovy language server](https://github.com/GroovyLanguageServer/groovy-language-server) engine to latest.
 
 
 ### Fixed
+* Groovy Language Server - Fixed bug where core Java classes where not detected for completion ([groovy-language-server#63](https://github.com/GroovyLanguageServer/groovy-language-server/issues/63))
 
 
 ## Moonshine IDE [3.3.0]
