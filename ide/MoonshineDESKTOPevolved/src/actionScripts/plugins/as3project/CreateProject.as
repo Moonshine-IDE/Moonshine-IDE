@@ -18,7 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
-	import actionScripts.events.ProjectEvent;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 
 	import flash.display.DisplayObject;
@@ -39,7 +38,6 @@ package actionScripts.plugins.as3project
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.factory.FileLocation;
-	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.settings.NewLibraryProjectSetting;
 	import actionScripts.plugin.actionscript.as3project.settings.NewProjectSourcePathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -72,7 +70,6 @@ package actionScripts.plugins.as3project
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SDKUtils;
-	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -987,8 +984,7 @@ package actionScripts.plugins.as3project
 									{
 										
 										var mxmlCode:XML = edit.visualEditor.editingSurface.toRoyaleCode(pvo.projectName,edit.visualEditor.editingSurface);
-										
-										Alert.show("Domino project editor xml:"+mxmlCode.toString());
+
 										var newRoyaleFile:FileLocation =  targetFolder.resolvePath("src"+File.separator+"view"+File.separator + "MainContent.mxml");
 										if(newRoyaleFile.fileBridge.exists){
 											newRoyaleFile.fileBridge.deleteFile();
