@@ -250,7 +250,22 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 			}
 		});
 		var lineColumn = new TreeGridViewColumn("Line", getThreadOrStackFramePositionText);
-		lineColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(HierarchicalItemRenderer);
+		lineColumn.cellRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
+			var itemRenderer = new ThreadOrStackFrameItemRenderer();
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_RESUME, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_PAUSE, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OVER, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_INTO, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OUT, threadDebugControls_debugEventHandler);
+			return itemRenderer;
+		}, (target, state:TreeGridViewCellState) -> {
+			if (Reflect.hasField(state.data, "line")) {
+				target.paused = false;
+			} else {
+				var thread = (state.data : Thread);
+				target.paused = _pausedThreads.indexOf(thread.id) != -1;
+			}
+		});
 		this.threadsTree.columns = new ArrayCollection([stackColumn, lineColumn]);
 		this.threadsTree.extendedScrollBarY = true;
 		this.threadsTree.resizableColumns = true;
@@ -337,6 +352,10 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 
 	private function stopButton_triggerHandler(event:TriggerEvent):Void {
 		this.dispatchEvent(new DebugAdapterViewThreadEvent(DebugAdapterViewThreadEvent.DEBUG_STOP));
+	}
+
+	private function threadDebugControls_debugEventHandler(event:DebugAdapterViewThreadEvent):Void {
+		dispatchEvent(event);
 	}
 
 	private function variablesTree_branchOpenHandler(event:TreeGridViewEvent<TreeGridViewCellState>):Void {
