@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2019 Prominic.NET, Inc.
+// Copyright 2022 Prominic.NET, Inc.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -62,6 +62,12 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 
 	private Path storagePath;
 	private GroovyLSCompilationUnit compilationUnit;
+	private CompilerConfiguration config;
+	private GroovyClassLoader classLoader;
+	private Path prevClasspathFilePath;
+	private long prevClasspathFileLastModified;
+	private Path prevProjectFilePath;
+	private long prevProjectFileLastModified;
 
 	public GrailsProjectCompilationUnitFactory() {
 	}
@@ -78,10 +84,17 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 
 	public void invalidateCompilationUnit() {
 		compilationUnit = null;
+		config = null;
+		classLoader = null;
 	}
 
 	public GroovyLSCompilationUnit create(Path workspaceRoot, FileContentsTracker fileContentsTracker) {
 		Path projectFilePath = getGrailsSettingsPath(workspaceRoot);
+		if (projectFilePath == null || !projectFilePath.equals(prevProjectFilePath)) {
+			prevProjectFilePath = projectFilePath;
+			prevProjectFileLastModified = 0L;
+			invalidateCompilationUnit();
+		}
 		if (projectFilePath == null) {
 			System.err.println("Failed to find Groovy settings file.");
 			return null;
@@ -90,8 +103,18 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 		if (projectDocument == null) {
 			return null;
 		}
+		long projectFileLastModified = projectFilePath.toFile().lastModified();
+		if (prevProjectFileLastModified != projectFileLastModified) {
+			prevProjectFileLastModified = projectFileLastModified;
+			invalidateCompilationUnit();
+		}
 
 		Path classpathFilePath = workspaceRoot.resolve(FILE_ECLIPSE_CLASSPATH);
+		if (classpathFilePath == null || !classpathFilePath.equals(prevClasspathFilePath)) {
+			prevClasspathFilePath = classpathFilePath;
+			prevClasspathFileLastModified = 0L;
+			invalidateCompilationUnit();
+		}
 		Document classpathDocument = null;
 		if (Files.exists(classpathFilePath)) {
 			classpathDocument = loadXMLDocument(classpathFilePath);
@@ -99,10 +122,19 @@ public class GrailsProjectCompilationUnitFactory implements ICompilationUnitFact
 		if (classpathDocument == null) {
 			return null;
 		}
+		long classpathFileLastModified = classpathFilePath.toFile().lastModified();
+		if (prevClasspathFileLastModified != classpathFileLastModified) {
+			prevClasspathFileLastModified = classpathFileLastModified;
+			invalidateCompilationUnit();
+		}
 
-		CompilerConfiguration config = createConfig(workspaceRoot, classpathDocument);
-		GroovyClassLoader classLoader = new GroovyClassLoader(ClassLoader.getSystemClassLoader().getParent(), config,
+		if (config == null) {
+			config = createConfig(workspaceRoot, classpathDocument);
+		}
+		if (classLoader == null) {
+			classLoader = new GroovyClassLoader(ClassLoader.getSystemClassLoader().getParent(), config,
 				true);
+		}
 
 		Set<URI> changedUris = fileContentsTracker.getChangedURIs();
 		if (compilationUnit == null) {
