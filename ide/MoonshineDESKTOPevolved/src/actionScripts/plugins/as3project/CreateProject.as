@@ -983,7 +983,7 @@ package actionScripts.plugins.as3project
 									if((edit.visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject)
 									{
 										
-										var mxmlCode:XML = edit.visualEditor.editingSurface.toRoyaleCode(pvo.projectName,edit.visualEditor.editingSurface);
+										var mxmlCode:XML = edit.visualEditor.editingSurface.toRoyaleCode(pvo.projectName);
 
 										var newRoyaleFile:FileLocation =  targetFolder.resolvePath("src"+File.separator+"view"+File.separator + "MainContent.mxml");
 										if(newRoyaleFile.fileBridge.exists){
