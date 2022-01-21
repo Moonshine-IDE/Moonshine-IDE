@@ -171,31 +171,37 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 
 		this.playButton = new Button();
 		this.playButton.variant = CHILD_VARIANT_PLAY_BUTTON;
+		this.playButton.toolTip = "Resume";
 		this.playButton.addEventListener(TriggerEvent.TRIGGER, playButton_triggerHandler);
 		buttonsContainer.addChild(this.playButton);
 
 		this.pauseButton = new Button();
 		this.pauseButton.variant = CHILD_VARIANT_PAUSE_BUTTON;
+		this.pauseButton.toolTip = "Pause";
 		this.pauseButton.addEventListener(TriggerEvent.TRIGGER, pauseButton_triggerHandler);
 		buttonsContainer.addChild(this.pauseButton);
 
 		this.stepOverButton = new Button();
 		this.stepOverButton.variant = CHILD_VARIANT_STEP_OVER_BUTTON;
+		this.stepOverButton.toolTip = "Step Over";
 		this.stepOverButton.addEventListener(TriggerEvent.TRIGGER, stepOverButton_triggerHandler);
 		buttonsContainer.addChild(this.stepOverButton);
 
 		this.stepIntoButton = new Button();
 		this.stepIntoButton.variant = CHILD_VARIANT_STEP_INTO_BUTTON;
+		this.stepIntoButton.toolTip = "Step Into";
 		this.stepIntoButton.addEventListener(TriggerEvent.TRIGGER, stepIntoButton_triggerHandler);
 		buttonsContainer.addChild(this.stepIntoButton);
 
 		this.stepOutButton = new Button();
 		this.stepOutButton.variant = CHILD_VARIANT_STEP_OUT_BUTTON;
+		this.stepOutButton.toolTip = "Step Out";
 		this.stepOutButton.addEventListener(TriggerEvent.TRIGGER, stepOutButton_triggerHandler);
 		buttonsContainer.addChild(this.stepOutButton);
 
 		this.stopButton = new Button();
 		this.stopButton.variant = CHILD_VARIANT_STOP_BUTTON;
+		this.stopButton.toolTip = "Stop";
 		this.stopButton.addEventListener(TriggerEvent.TRIGGER, stopButton_triggerHandler);
 		buttonsContainer.addChild(this.stopButton);
 
@@ -244,7 +250,22 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 			}
 		});
 		var lineColumn = new TreeGridViewColumn("Line", getThreadOrStackFramePositionText);
-		lineColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(HierarchicalItemRenderer);
+		lineColumn.cellRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
+			var itemRenderer = new ThreadOrStackFrameItemRenderer();
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_RESUME, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_PAUSE, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OVER, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_INTO, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OUT, threadDebugControls_debugEventHandler);
+			return itemRenderer;
+		}, (target, state:TreeGridViewCellState) -> {
+			if (Reflect.hasField(state.data, "line")) {
+				target.paused = false;
+			} else {
+				var thread = (state.data : Thread);
+				target.paused = _pausedThreads.indexOf(thread.id) != -1;
+			}
+		});
 		this.threadsTree.columns = new ArrayCollection([stackColumn, lineColumn]);
 		this.threadsTree.extendedScrollBarY = true;
 		this.threadsTree.resizableColumns = true;
@@ -331,6 +352,10 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 
 	private function stopButton_triggerHandler(event:TriggerEvent):Void {
 		this.dispatchEvent(new DebugAdapterViewThreadEvent(DebugAdapterViewThreadEvent.DEBUG_STOP));
+	}
+
+	private function threadDebugControls_debugEventHandler(event:DebugAdapterViewThreadEvent):Void {
+		dispatchEvent(event);
 	}
 
 	private function variablesTree_branchOpenHandler(event:TreeGridViewEvent<TreeGridViewCellState>):Void {
