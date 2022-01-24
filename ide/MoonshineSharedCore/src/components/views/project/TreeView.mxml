@@ -143,7 +143,10 @@
 				}
 				else
 				{
-					(tree.getParentItem(wrapper) as FileWrapper).sortChildren();
+					var parentWrapper:FileWrapper = tree.getParentItem(wrapper) as FileWrapper;
+					if (!parentWrapper) return;
+
+					parentWrapper.sortChildren();
 				}
 			}
 	
