@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
-	import actionScripts.utils.FileUtils;
-
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -28,7 +26,7 @@ package actionScripts.plugins.vagrant
 	
 	import mx.collections.ArrayCollection;
 	import mx.events.CloseEvent;
-
+	
 	import spark.components.Alert;
 	
 	import actionScripts.events.FilePluginEvent;
@@ -44,6 +42,7 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -244,7 +243,16 @@ package actionScripts.plugins.vagrant
 			}
 			else
 			{
-				command = '"'+ binPath +'" up > vagrant_up.log | type vagrant_up.log';
+				var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
+				if (powerShellPath)
+				{
+					command = '"'+ powerShellPath +'" "'+ binPath +' up 2>&1 | tee vagrant_up.log"';	
+				}
+				else
+				{
+					error("Failed to locate PowerShell during execution.");
+					return;
+				}
 			}
 			
 			warning("%s", command);
@@ -294,7 +302,16 @@ package actionScripts.plugins.vagrant
 			}
 			else
 			{
-				command = '"'+ binPath +'" reload > vagrant_reload.log | type vagrant_up.log';
+				var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
+				if (powerShellPath)
+				{
+					command = '"'+ powerShellPath +'" "'+ binPath +' reload 2>&1 | tee vagrant_reload.log"';	
+				}
+				else
+				{
+					error("Failed to locate PowerShell during execution.");
+					return;
+				}
 			}
 
 			warning("%s", command);
