@@ -20,6 +20,7 @@ package actionScripts.utils
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.filesystem.File;
 	import flash.geom.Point;
 	import flash.system.Capabilities;
 	
@@ -1146,6 +1147,36 @@ package actionScripts.utils
 			
 			return null;
 		}
+		
+		/**
+		 * Returns PowerShell path on Windows
+		 */
+		public static function getPowerShellExecutablePath():String
+		{
+			// possible termination
+			if (ConstantsCoreVO.IS_MACOS) return null;
+			
+			var installDirectories:Array = ["C:\\Windows\\SysWOW64\\", "C:\\Windows\\System32\\"];
+			var tmpPath:String;
+			var executable:String = "WindowsPowerShell\\v1.0\\powershell.exe"
+			if (ConstantsCoreVO.is64BitSupport)
+			{
+				for each (var i:String in installDirectories)
+				{
+					tmpPath = i + executable;
+					if (model.fileCore.isPathExists(tmpPath))
+					{
+						return tmpPath;
+					}
+				}
+			}
+			else if (model.fileCore.isPathExists(installDirectories[1] + executable))
+			{
+				return installDirectories[1] + executable;
+			}
+			
+			return null;
+		}
 
 		public static function getConsolePath():String
 		{
@@ -1472,6 +1503,22 @@ package actionScripts.utils
 			if (component && component.pathValidation)
 			{
 				return model.flexCore.isValidExecutableBy(SDKTypes.VAGRANT, model.vagrantPath, component.pathValidation);
+			}
+
+			return false;
+		}
+
+		public static function isVirtualBoxAvailable():Boolean
+		{
+			if (!model.virtualBoxPath || !model.fileCore.isPathExists(model.virtualBoxPath))
+			{
+				return false;
+			}
+
+			var virtualBoxExecutable:String = ConstantsCoreVO.IS_MACOS ? "VBoxManage" : "VirtualBoxVM.exe";
+			if (model.fileCore.isPathExists([model.virtualBoxPath, virtualBoxExecutable].join(model.fileCore.separator)))
+			{
+				return true;
 			}
 
 			return false;

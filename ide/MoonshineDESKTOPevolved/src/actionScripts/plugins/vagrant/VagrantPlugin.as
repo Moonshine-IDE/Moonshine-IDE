@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
-	import actionScripts.utils.FileUtils;
-
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -28,7 +26,7 @@ package actionScripts.plugins.vagrant
 	
 	import mx.collections.ArrayCollection;
 	import mx.events.CloseEvent;
-
+	
 	import spark.components.Alert;
 	
 	import actionScripts.events.FilePluginEvent;
@@ -44,6 +42,7 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -58,6 +57,7 @@ package actionScripts.plugins.vagrant
 		
 		private var pathSetting:PathSetting;
 		private var defaultVagrantPath:String;
+		private var defaultVirtualBoxPath:String;
 		private var vagrantConsole:VagrantConsolePlugin;
 		private var haltMethod:MethodDescriptor;
 		private var destroyMethod:MethodDescriptor;
@@ -75,6 +75,18 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		public function get virtualBoxPath():String
+		{
+			return model ? model.virtualBoxPath : null;
+		}
+		public function set virtualBoxPath(value:String):void
+		{
+			if (model.virtualBoxPath != value)
+			{
+				model.virtualBoxPath = value;
+			}
+		}
+
 		override public function activate():void
 		{
 			super.activate();
@@ -86,11 +98,19 @@ package actionScripts.plugins.vagrant
 				// directory, we can try to use it as the default, if it exists.
 				// if the user saves a different path (or clears the path) in
 				// the settings, these default values will be safely ignored.
-				var vagrantFile:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\HashiCorp\\Vagrant");
-				defaultVagrantPath = vagrantFile.exists ? vagrantFile.nativePath : null;
+				// --vagrant--
+				var defaultLocation:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\HashiCorp\\Vagrant");
+				defaultVagrantPath = defaultLocation.exists ? defaultLocation.nativePath : null;
 				if (defaultVagrantPath && !model.vagrantPath)
 				{
 					model.vagrantPath = defaultVagrantPath;
+				}
+				// --virtualBox--
+				defaultLocation = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : FileUtils.getValidOrPossibleWindowsInstallation("Oracle/VirtualBox"));
+				defaultVirtualBoxPath = defaultLocation.exists ? defaultLocation.nativePath : null;
+				if (defaultVirtualBoxPath && !model.virtualBoxPath)
+				{
+					model.virtualBoxPath = defaultVirtualBoxPath;
 				}
 			}
 		}
@@ -126,7 +146,8 @@ package actionScripts.plugins.vagrant
 			pathSetting = new PathSetting(this, 'vagrantPath', 'Vagrant Home', true, vagrantPath, false, false, defaultVagrantPath);
 
 			return Vector.<ISetting>([
-				pathSetting
+				pathSetting,
+				new PathSetting(this, 'virtualBoxPath', 'VirtualBox Home (Optional)', true, virtualBoxPath, false, false, defaultVirtualBoxPath)
 			]);
         }
 
@@ -222,7 +243,16 @@ package actionScripts.plugins.vagrant
 			}
 			else
 			{
-				command = '"'+ binPath +'" up > vagrant_up.log | type vagrant_up.log';
+				var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
+				if (powerShellPath)
+				{
+					command = '"'+ powerShellPath +'" "'+ binPath +' up 2>&1 | tee vagrant_up.log"';	
+				}
+				else
+				{
+					error("Failed to locate PowerShell during execution.");
+					return;
+				}
 			}
 			
 			warning("%s", command);
@@ -272,7 +302,16 @@ package actionScripts.plugins.vagrant
 			}
 			else
 			{
-				command = '"'+ binPath +'" reload > vagrant_reload.log | type vagrant_up.log';
+				var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
+				if (powerShellPath)
+				{
+					command = '"'+ powerShellPath +'" "'+ binPath +' reload 2>&1 | tee vagrant_reload.log"';	
+				}
+				else
+				{
+					error("Failed to locate PowerShell during execution.");
+					return;
+				}
 			}
 
 			warning("%s", command);
@@ -303,7 +342,7 @@ package actionScripts.plugins.vagrant
 			else
 			{
 				this.start(
-					new <String>['start cmd /k cd "'+ file.fileBridge.parent.fileBridge.nativePath +'"&&cls&&"'+ UtilsCore.getVagrantBinPath() +'" ssh'],
+					new <String>['start cmd /k "cd \"'+ file.fileBridge.parent.fileBridge.nativePath +'\" & cls & \"'+ UtilsCore.getVagrantBinPath() +'\" ssh"'],
 					file.fileBridge.parent
 				);
 			}
