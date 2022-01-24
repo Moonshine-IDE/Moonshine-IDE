@@ -1477,6 +1477,22 @@ package actionScripts.utils
 			return false;
 		}
 
+		public static function isVirtualBoxAvailable():Boolean
+		{
+			if (!model.virtualBoxPath || !model.fileCore.isPathExists(model.virtualBoxPath))
+			{
+				return false;
+			}
+
+			var virtualBoxExecutable:String = ConstantsCoreVO.IS_MACOS ? "VBoxManage" : "VirtualBoxVM.exe";
+			if (model.fileCore.isPathExists([model.virtualBoxPath, virtualBoxExecutable].join(model.fileCore.separator)))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 		public static function getVagrantBinPath():String
 		{
 			if (!model.vagrantPath || !model.fileCore.isPathExists(model.vagrantPath))

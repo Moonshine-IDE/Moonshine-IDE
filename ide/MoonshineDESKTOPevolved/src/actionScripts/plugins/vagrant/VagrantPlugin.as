@@ -58,6 +58,7 @@ package actionScripts.plugins.vagrant
 		
 		private var pathSetting:PathSetting;
 		private var defaultVagrantPath:String;
+		private var defaultVirtualBoxPath:String;
 		private var vagrantConsole:VagrantConsolePlugin;
 		private var haltMethod:MethodDescriptor;
 		private var destroyMethod:MethodDescriptor;
@@ -75,6 +76,18 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		public function get virtualBoxPath():String
+		{
+			return model ? model.virtualBoxPath : null;
+		}
+		public function set virtualBoxPath(value:String):void
+		{
+			if (model.virtualBoxPath != value)
+			{
+				model.virtualBoxPath = value;
+			}
+		}
+
 		override public function activate():void
 		{
 			super.activate();
@@ -86,11 +99,19 @@ package actionScripts.plugins.vagrant
 				// directory, we can try to use it as the default, if it exists.
 				// if the user saves a different path (or clears the path) in
 				// the settings, these default values will be safely ignored.
-				var vagrantFile:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\HashiCorp\\Vagrant");
-				defaultVagrantPath = vagrantFile.exists ? vagrantFile.nativePath : null;
+				// --vagrant--
+				var defaultLocation:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\HashiCorp\\Vagrant");
+				defaultVagrantPath = defaultLocation.exists ? defaultLocation.nativePath : null;
 				if (defaultVagrantPath && !model.vagrantPath)
 				{
 					model.vagrantPath = defaultVagrantPath;
+				}
+				// --virtualBox--
+				defaultLocation = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : FileUtils.getValidOrPossibleWindowsInstallation("Oracle/VirtualBox"));
+				defaultVirtualBoxPath = defaultLocation.exists ? defaultLocation.nativePath : null;
+				if (defaultVirtualBoxPath && !model.virtualBoxPath)
+				{
+					model.virtualBoxPath = defaultVirtualBoxPath;
 				}
 			}
 		}
@@ -126,7 +147,8 @@ package actionScripts.plugins.vagrant
 			pathSetting = new PathSetting(this, 'vagrantPath', 'Vagrant Home', true, vagrantPath, false, false, defaultVagrantPath);
 
 			return Vector.<ISetting>([
-				pathSetting
+				pathSetting,
+				new PathSetting(this, 'virtualBoxPath', 'VirtualBox Home (Optional)', true, virtualBoxPath, false, false, defaultVirtualBoxPath)
 			]);
         }
 
