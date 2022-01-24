@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <actionScriptProperties analytics="false" mainApplicationPath="MoonshineSharedCore.as" projectUUID="47d0ea12-f8ba-4f1e-9019-fbcf5e6721b1" version="11">
-  <compiler additionalCompilerArguments="-locale en_US ja_JP -define+=CONFIG::OSX,false" autoRSLOrdering="true" copyDependentFiles="false" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="true" useDebugRSLSwfs="true" useFlashSDK="false" verifyDigests="true" warn="true">
+  <compiler additionalCompilerArguments="-locale en_US ja_JP -define+=CONFIG::OSX,false" autoRSLOrdering="true" copyDependentFiles="false" flexSDK="Apache Flex 4.16.1 FP33.1 AIR33.1 en_US" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" removeUnusedRSL="true" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="true" useDebugRSLSwfs="true" useFlashSDK="false" verifyDigests="true" warn="true">
     <compilerSourcePath/>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">
@@ -10,7 +10,7 @@
         </excludedEntries>
       </libraryPathEntry>
       <libraryPathEntry kind="1" linkType="1" path="libs"/>
-      <libraryPathEntry kind="3" linkType="2" path="/Users/santanu/Documents/Adobe Flash Builder 4.7/ProminicGITBranch/Moonshine-IDE/ide/MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="2" path="F:/DevareaLocal/Prominic/GIT/Moonshine-IDE/ide/MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>

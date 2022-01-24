@@ -342,7 +342,7 @@ package actionScripts.plugins.vagrant
 			else
 			{
 				this.start(
-					new <String>['start cmd /k cd "'+ file.fileBridge.parent.fileBridge.nativePath +'"&&cls&&"'+ UtilsCore.getVagrantBinPath() +'" ssh'],
+					new <String>['start cmd /k "cd \"'+ file.fileBridge.parent.fileBridge.nativePath +'\" & cls & \"'+ UtilsCore.getVagrantBinPath() +'\" ssh"'],
 					file.fileBridge.parent
 				);
 			}
