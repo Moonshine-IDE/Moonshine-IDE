@@ -20,7 +20,6 @@ package actionScripts.utils
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.filesystem.File;
 	import flash.geom.Point;
 	import flash.system.Capabilities;
 	
