@@ -71,7 +71,7 @@ package actionScripts.utils
             cookie.flush();
         }
 		
-		public static function getRepositoriesFromSO():ArrayCollection
+		public static function getRepositoriesFromSO(withDefaultRepositories:ArrayList):ArrayCollection
 		{
 			var tmpCollection:ArrayCollection = new ArrayCollection();
 			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
@@ -115,8 +115,7 @@ package actionScripts.utils
 
 				// we also need to ensure that any newly added
 				// default repositories are available to the collection
-				var defaultRepositories:ArrayList = VersionControlUtils.getDefaultRepositories();
-				defaultRepositories.source.forEach(function (defaultRepository:RepositoryItemVO, index:int, arr:Array):void
+				withDefaultRepositories.source.forEach(function (defaultRepository:RepositoryItemVO, index:int, arr:Array):void
 				{
 					tmpCollection.source.some(function (cookieRepository:RepositoryItemVO, index:int, arr:Array):Boolean
 					{
@@ -130,7 +129,7 @@ package actionScripts.utils
 				});
 				// now adds-back the default-repositories to ensure
 				// we always have updated list
-				tmpCollection.addAllAt(defaultRepositories, 0);
+				tmpCollection.addAllAt(withDefaultRepositories, 0);
 			}
 			
 			if (cookie.data.hasOwnProperty('defaultRepositoriesPopulated'))
