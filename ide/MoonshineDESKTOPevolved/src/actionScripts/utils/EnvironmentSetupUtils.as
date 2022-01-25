@@ -299,7 +299,7 @@ package actionScripts.utils
 			if (UtilsCore.isVirtualBoxAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("VIRTUALBOX_HOME", model.virtualBoxPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "VIRTUALBOX_HOME:" : "%VIRTUALBOX_HOME%;");
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$VIRTUALBOX_HOME:" : "%VIRTUALBOX_HOME%;");
 				isValidToExecute = true;
 			}
 			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
