@@ -43,7 +43,7 @@ package actionScripts.plugins.versionControl
 		private static var _REPOSITORIES:ArrayCollection;
 		public static function get REPOSITORIES():ArrayCollection
 		{
-			if (!_REPOSITORIES) _REPOSITORIES = SharedObjectUtil.getRepositoriesFromSO();
+			if (!_REPOSITORIES) _REPOSITORIES = SharedObjectUtil.getRepositoriesFromSO(VersionControlUtils.getDefaultRepositories());
 			return _REPOSITORIES;
 		}
 		
