@@ -19,6 +19,7 @@
 package actionScripts.plugin.symbols
 {
 	import actionScripts.events.OpenLocationEvent;
+	import actionScripts.languageServer.LanguageServerProjectVO;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -31,14 +32,15 @@ package actionScripts.plugin.symbols
 	import flash.events.Event;
 
 	import moonshine.lsp.DocumentSymbol;
+	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.Location;
 	import moonshine.lsp.Range;
 	import moonshine.lsp.SymbolInformation;
 	import moonshine.plugin.symbols.view.SymbolsView;
 
-	import mx.core.UIComponent;
+	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
-	import moonshine.lsp.LanguageClient;
 
 	public class SymbolsPlugin extends PluginBase
 	{
@@ -159,9 +161,15 @@ package actionScripts.plugin.symbols
 
 		private function handleOpenDocumentSymbolsView(event:Event):void
 		{
+			var languageClient:LanguageClient = null;
 			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-			if(!lspEditor || !lspEditor.languageClient)
+			if (lspEditor)
 			{
+				languageClient = lspEditor.languageClient;
+			}
+			if (!languageClient)
+			{
+				Alert.show("No document symbols", ConstantsCoreVO.MOONSHINE_IDE_LABEL);
 				return;
 			}
 			isWorkspace = false;
@@ -170,10 +178,9 @@ package actionScripts.plugin.symbols
 			var collection:ArrayCollection = symbolsView.symbols;
 			collection.filterFunction = null;
 			collection.removeAll();
-			var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
-			PopUpManager.addPopUp(symbolsViewWrapper, DisplayObject(parentApp), true);
+			PopUpManager.addPopUp(symbolsViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 			PopUpManager.centerPopUp(symbolsViewWrapper);
-			lspEditor.languageClient.documentSymbols({
+			languageClient.documentSymbols({
 				textDocument: {
 					uri: lspEditor.currentFile.fileBridge.url
 				}
@@ -184,9 +191,23 @@ package actionScripts.plugin.symbols
 
 		private function handleOpenWorkspaceSymbolsView(event:Event):void
 		{
+			var languageClient:LanguageClient = null;
 			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-			if(!lspEditor || !lspEditor.languageClient)
+			if (lspEditor)
 			{
+				languageClient = lspEditor.languageClient;
+			}
+			if (!languageClient)
+			{
+				var project:LanguageServerProjectVO = model.activeProject as LanguageServerProjectVO;
+				if (project)
+				{
+					languageClient = project.languageClient;
+				}
+			}
+			if (!languageClient)
+			{
+				Alert.show("No project symbols", ConstantsCoreVO.MOONSHINE_IDE_LABEL);
 				return;
 			}
 			isWorkspace = true;
@@ -195,14 +216,13 @@ package actionScripts.plugin.symbols
 			var collection:ArrayCollection = symbolsView.symbols;
 			collection.filterFunction = null;
 			collection.removeAll();
-			var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
-			PopUpManager.addPopUp(symbolsViewWrapper, DisplayObject(parentApp), true);
+			PopUpManager.addPopUp(symbolsViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 			PopUpManager.centerPopUp(symbolsViewWrapper);
 			symbolsViewWrapper.assignFocus("top");
 			symbolsViewWrapper.stage.addEventListener(Event.RESIZE, symbolsView_stage_resizeHandler, false, 0, true);
 		
 			//start by listing all symbols, if the language server supports it
-			lspEditor.languageClient.workspaceSymbols({
+			languageClient.workspaceSymbols({
 				query: ""
 			}, handleShowSymbols);
 		}

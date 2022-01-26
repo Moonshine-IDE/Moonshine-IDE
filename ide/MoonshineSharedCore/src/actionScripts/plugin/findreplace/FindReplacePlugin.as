@@ -21,6 +21,7 @@ package actionScripts.plugin.findreplace
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
 
@@ -159,17 +160,19 @@ package actionScripts.plugin.findreplace
 		
 		protected function goToLineRequestHandler(event:Event):void
 		{
-			// probable termination
-			if (!(model.activeEditor is BasicTextEditor)) return;
+			var activeEditor:BasicTextEditor = model.activeEditor as BasicTextEditor;
+			if (!activeEditor)
+			{
+				Alert.show("Cannot go to line. No text document is open.", ConstantsCoreVO.MOONSHINE_IDE_LABEL);
+				return;
+			}
 			
 			if (!gotoLineView)
 			{
-				var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
-				
 				gotoLineView = new GoToLineView();
 				gotoLineViewWrapper = new FeathersUIWrapper(gotoLineView);
 				PopUpManager.addPopUp(gotoLineViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
-				gotoLineView.maxLineNumber = editor.editor.lines.length;
+				gotoLineView.maxLineNumber = activeEditor.editor.lines.length;
 				gotoLineView.addEventListener(Event.CLOSE, onGotoLineClosed);
 				PopUpManager.centerPopUp(gotoLineViewWrapper);
 				gotoLineViewWrapper.assignFocus("top");
