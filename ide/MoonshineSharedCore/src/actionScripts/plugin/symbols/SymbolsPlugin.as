@@ -91,12 +91,25 @@ package actionScripts.plugin.symbols
 			var query:String = this.symbolsView.query;
 			if(this.isWorkspace)
 			{
+				var languageClient:LanguageClient = null;
 				var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-				if(!lspEditor || !lspEditor.languageClient)
+				if (lspEditor)
+				{
+					languageClient = lspEditor.languageClient;
+				}
+				if (!languageClient)
+				{
+					var project:LanguageServerProjectVO = model.activeProject as LanguageServerProjectVO;
+					if (project)
+					{
+						languageClient = project.languageClient;
+					}
+				}
+				if (!languageClient)
 				{
 					return;
 				}
-				lspEditor.languageClient.workspaceSymbols({
+				languageClient.workspaceSymbols({
 					query: query
 				}, handleShowSymbols);
 			}
