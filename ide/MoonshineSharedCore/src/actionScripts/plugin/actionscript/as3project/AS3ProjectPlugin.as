@@ -185,20 +185,15 @@ package actionScripts.plugin.actionscript.as3project
 			for each (var projectTemplate:FileLocation in TemplatingPlugin.projectTemplates)
 			{
 				var lbl:String = TemplatingHelper.getTemplateLabel(projectTemplate);
-				if(lbl=="Apache Royale Project REST"){
+				if(lbl == ProjectTemplateType.ROYALE_VISUAL_PROJECT)
+				{
 					settingsFile = TemplatingPlugin.getSettingsTemplateFileLocation(projectTemplate);
-                    //Alert.show("settingsFile:"+settingsFile.fileBridge.nativePath);
 					extension = settingsFile ? TemplatingHelper.getExtension(settingsFile) : null;
-					//Alert.show("extension:"+extension);
 					createRoyalVisualProject( new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT,extension, settingsFile, projectTemplate));
-				}
-				//Alert.show("label:"+TemplatingHelper.getTemplateLabel(projectTemplate));
-			}
-			// nonProjectFolderLocation = new FileLocation(dir.nativePath);
-			// createAS3Project(new NewProjectEvent("", "as3proj", null, nonProjectFolderLocation));
-			//                  new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT,extension, settingsFile, projectTemplate)
-			//new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT, "eventName", null, null);
 
+					break;
+				}
+			}
 		}
 		
 		private function importProjectWithoutDialog(event:ProjectEvent):void
