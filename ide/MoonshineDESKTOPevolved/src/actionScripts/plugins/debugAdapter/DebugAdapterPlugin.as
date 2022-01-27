@@ -448,7 +448,7 @@ package actionScripts.plugins.debugAdapter
 			dispatcher.dispatchEvent(new DebugLineEvent(DebugLineEvent.SET_DEBUG_FINISH, -1, false));
 			
 			//we're no longer paused, so clear these until we pause again
-			_threadsAndStackFrames.setStackFramesForThread([], thread);
+			_threadsAndStackFrames.setStackFramesForThread(null, thread);
 			_scopesAndVars.removeAll();
 			refreshView();
 		}

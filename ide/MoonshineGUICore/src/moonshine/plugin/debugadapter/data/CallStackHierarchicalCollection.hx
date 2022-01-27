@@ -20,17 +20,15 @@
 
 package moonshine.plugin.debugadapter.data;
 
-import moonshine.dsp.StackFrame;
-import haxe.ds.ObjectMap;
-import haxe.Json;
-import openfl.events.Event;
-import feathers.events.HierarchicalCollectionEvent;
-import openfl.errors.RangeError;
-import openfl.errors.IllegalOperationError;
 import feathers.data.ArrayCollection;
 import feathers.data.IHierarchicalCollection;
-import openfl.events.EventDispatcher;
+import feathers.events.HierarchicalCollectionEvent;
+import moonshine.dsp.StackFrame;
 import moonshine.dsp.Thread;
+import openfl.errors.IllegalOperationError;
+import openfl.errors.RangeError;
+import openfl.events.Event;
+import openfl.events.EventDispatcher;
 
 class CallStackHierarchicalCollection extends EventDispatcher implements IHierarchicalCollection<Any> {
 	public function new() {
@@ -74,6 +72,9 @@ class CallStackHierarchicalCollection extends EventDispatcher implements IHierar
 		}
 		var thread = this._threads.get(location[0]);
 		var collection = this._threadsToStackFrames.get(thread);
+		if (collection == null) {
+			return 0;
+		}
 		return collection.length;
 	}
 
@@ -85,10 +86,10 @@ class CallStackHierarchicalCollection extends EventDispatcher implements IHierar
 		if (location.length == 1) {
 			return thread;
 		}
-		if (location.length > 2) {
+		var collection = this._threadsToStackFrames.get(thread);
+		if (collection == null || location.length > 2) {
 			throw new RangeError('Item not found at location: ${location}');
 		}
-		var collection = this._threadsToStackFrames.get(thread);
 		return collection.get(location[location.length - 1]);
 	}
 
@@ -103,7 +104,11 @@ class CallStackHierarchicalCollection extends EventDispatcher implements IHierar
 		if (item == null) {
 			return false;
 		}
-		return !Reflect.hasField(item, "line");
+		if (Reflect.hasField(item, "line")) {
+			return false;
+		}
+		var thread = (item : Thread);
+		return this._threadsToStackFrames.exists(thread);
 	}
 
 	/**
@@ -116,8 +121,11 @@ class CallStackHierarchicalCollection extends EventDispatcher implements IHierar
 			for (i in 0...this._threads.length) {
 				result[0] = i;
 				var thread = this._threads.get(i);
+				var index = -1;
 				var collection = this._threadsToStackFrames.get(thread);
-				var index = collection.indexOf(stackFrame);
+				if (collection != null) {
+					index = collection.indexOf(stackFrame);
+				}
 				if (index != -1) {
 					result[1] = index;
 					return result;
@@ -165,6 +173,8 @@ class CallStackHierarchicalCollection extends EventDispatcher implements IHierar
 		if (location == null || location.length == 0) {
 			this._threadsToStackFrames.clear();
 			this._threads.removeAll();
+			this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.REMOVE_ALL, null));
+			this.dispatchEvent(new Event(Event.CHANGE));
 			return;
 		}
 		throw new IllegalOperationError("Not implemented");
@@ -193,26 +203,23 @@ class CallStackHierarchicalCollection extends EventDispatcher implements IHierar
 
 	public function setThreads(threads:Array<Thread>):Void {
 		this._threadsToStackFrames.clear();
-		this.populateCollectionsForThreads(threads);
 		this._threads.array = threads.copy();
 		this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.RESET, null));
 		this.dispatchEvent(new Event(Event.CHANGE));
 	}
 
 	public function setStackFramesForThread(stackFrames:Array<StackFrame>, thread:Thread):Void {
-		var collection = this._threadsToStackFrames.get(thread);
-		collection.array = stackFrames.copy();
-		this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.RESET, null));
-		this.dispatchEvent(new Event(Event.CHANGE));
-	}
-
-	private function populateCollectionsForThreads(threads:Array<Thread>):Void {
-		for (thread in threads) {
+		if (stackFrames == null) {
+			this._threadsToStackFrames.remove(thread);
+		} else {
 			var collection = this._threadsToStackFrames.get(thread);
 			if (collection == null) {
-				// everything starts out empty, but will be populated later
-				this._threadsToStackFrames.set(thread, new ArrayCollection());
+				collection = new ArrayCollection();
+				this._threadsToStackFrames.set(thread, collection);
 			}
+			collection.array = stackFrames.copy();
 		}
+		this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.RESET, null));
+		this.dispatchEvent(new Event(Event.CHANGE));
 	}
 }
