@@ -296,6 +296,12 @@ package actionScripts.utils
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$VAGRANT_HOME:" : "%VAGRANT_HOME%;");
 				isValidToExecute = true;
 			}*/
+			if (UtilsCore.isVirtualBoxAvailable())
+			{
+				setCommand += getSetExportWithoutQuote("VIRTUALBOX_HOME", model.virtualBoxPath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$VIRTUALBOX_HOME:" : "%VIRTUALBOX_HOME%;");
+				isValidToExecute = true;
+			}
 			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
 			{
 				// moonshine stores gir path with 'bin\git.exe' format 

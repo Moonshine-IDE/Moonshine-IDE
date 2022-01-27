@@ -23,13 +23,16 @@ package moonshine.plugin.outline.view;
 import actionScripts.interfaces.IViewWithTitle;
 import feathers.controls.Panel;
 import feathers.controls.TreeView;
+import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.core.InvalidationFlag;
-import feathers.data.TreeCollection;
-import feathers.data.TreeNode;
+import feathers.data.ArrayHierarchicalCollection;
+import feathers.data.TreeViewItemState;
 import feathers.layout.AnchorLayout;
 import feathers.layout.AnchorLayoutData;
+import feathers.utils.DisplayObjectRecycler;
 import moonshine.lsp.DocumentSymbol;
 import moonshine.lsp.SymbolInformation;
+import moonshine.plugin.symbols.view.SymbolIcon;
 import moonshine.ui.SideBarViewHeader;
 import openfl.events.Event;
 
@@ -47,16 +50,16 @@ class OutlineView extends Panel implements IViewWithTitle {
 		return "Outline";
 	}
 
-	private var _outline:TreeCollection<Dynamic> = new TreeCollection();
+	private var _outline:ArrayHierarchicalCollection<Dynamic> = new ArrayHierarchicalCollection();
 
 	@:flash.property
-	public var outline(get, set):TreeCollection<Dynamic>;
+	public var outline(get, set):ArrayHierarchicalCollection<Dynamic>;
 
-	private function get_outline():TreeCollection<Dynamic> {
+	private function get_outline():ArrayHierarchicalCollection<Dynamic> {
 		return this._outline;
 	}
 
-	private function set_outline(value:TreeCollection<Dynamic>):TreeCollection<Dynamic> {
+	private function set_outline(value:ArrayHierarchicalCollection<Dynamic>):ArrayHierarchicalCollection<Dynamic> {
 		if (this._outline == value) {
 			return this._outline;
 		}
@@ -72,11 +75,7 @@ class OutlineView extends Panel implements IViewWithTitle {
 		if (this.treeView == null) {
 			return null;
 		}
-		var treeNode = cast(this.treeView.selectedItem, TreeNode<Dynamic>);
-		if (treeNode == null) {
-			return null;
-		}
-		return treeNode.data;
+		return this.treeView.selectedItem;
 	}
 
 	override private function initialize():Void {
@@ -85,15 +84,31 @@ class OutlineView extends Panel implements IViewWithTitle {
 		this.treeView = new TreeView();
 		this.treeView.variant = TreeView.VARIANT_BORDERLESS;
 		this.treeView.layoutData = AnchorLayoutData.fill();
-		this.treeView.itemToText = (item:TreeNode<Dynamic>) -> {
-			var symbol = item.data;
-			if (Std.isOfType(symbol, SymbolInformation)) {
-				return cast(symbol, SymbolInformation).name;
-			} else if (Std.isOfType(symbol, DocumentSymbol)) {
-				return cast(symbol, DocumentSymbol).name;
+		this.treeView.itemToText = (item:Dynamic) -> {
+			if (Std.isOfType(item, SymbolInformation)) {
+				return cast(item, SymbolInformation).name;
+			} else if (Std.isOfType(item, DocumentSymbol)) {
+				return cast(item, DocumentSymbol).name;
 			}
 			return "";
 		};
+		this.treeView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
+			var itemRenderer = new HierarchicalItemRenderer();
+			itemRenderer.icon = new SymbolIcon();
+			return itemRenderer;
+		}, (itemRenderer, state:TreeViewItemState) -> {
+			var item = state.data;
+			var icon = cast(itemRenderer.icon, SymbolIcon);
+			icon.data = item;
+			itemRenderer.text = state.text;
+			if ((item is DocumentSymbol)) {
+				var documentSymbol = cast(item, DocumentSymbol);
+				var detail = documentSymbol.detail;
+				itemRenderer.toolTip = (detail != null && detail.length > 0) ? detail : null;
+			} else {
+				itemRenderer.toolTip = null;
+			}
+		});
 		this.treeView.addEventListener(Event.CHANGE, treeView_changeHandler);
 		this.addChild(this.treeView);
 
@@ -111,12 +126,6 @@ class OutlineView extends Panel implements IViewWithTitle {
 
 		if (dataInvalid) {
 			this.treeView.dataProvider = this._outline;
-		}
-
-		super.update();
-
-		if (dataInvalid) {
-			// TODO: move this back above super.update() after beta.3
 			if (this._outline != null && this._outline.getLength() > 0) {
 				var rootBranch = this._outline.get([0]);
 				if (this._outline.isBranch(rootBranch)) {
@@ -124,6 +133,7 @@ class OutlineView extends Panel implements IViewWithTitle {
 				}
 			}
 		}
+		super.update();
 	}
 
 	private function header_closeHandler(event:Event):Void {

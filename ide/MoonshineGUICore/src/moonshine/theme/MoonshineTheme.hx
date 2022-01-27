@@ -20,20 +20,12 @@
 
 package moonshine.theme;
 
-import feathers.controls.ButtonState;
+import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
 import feathers.controls.BasicButton;
-import feathers.controls.HDividedBox;
-import feathers.controls.dataRenderers.GridViewHeaderRenderer;
-import flash.display.Bitmap;
-import moonshine.plugin.debugadapter.view.DebugAdapterView;
-import feathers.controls.TreeGridView;
-import feathers.skins.TriangleSkin;
-import feathers.controls.PopUpListView;
-import openfl.geom.Matrix;
-import actionScripts.valueObjects.ConstantsCoreVO;
-import moonshine.components.StandardPopupView;
 import feathers.controls.Button;
+import feathers.controls.ButtonState;
 import feathers.controls.GridView;
+import feathers.controls.HDividedBox;
 import feathers.controls.HScrollBar;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
@@ -45,8 +37,10 @@ import feathers.controls.TextInput;
 import feathers.controls.TextInputState;
 import feathers.controls.ToggleButton;
 import feathers.controls.ToggleButtonState;
+import feathers.controls.TreeGridView;
 import feathers.controls.TreeView;
 import feathers.controls.VScrollBar;
+import feathers.controls.dataRenderers.GridViewHeaderRenderer;
 import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.core.DefaultToolTipManager;
@@ -57,13 +51,22 @@ import feathers.skins.CircleSkin;
 import feathers.skins.RectangleSkin;
 import feathers.skins.TriangleSkin;
 import feathers.style.Theme;
+import flash.display.Bitmap;
 import moonshine.components.StandardPopupView;
+import moonshine.plugin.debugadapter.view.DebugAdapterView;
+import moonshine.plugin.debugadapter.view.ThreadOrStackFrameItemRenderer;
 import moonshine.plugin.help.view.TourDeFlexHierarchicalItemRenderer;
 import moonshine.style.MoonshineButtonSkin;
 import moonshine.style.MoonshineControlBarSkin;
 import moonshine.style.MoonshineHScrollBarThumbSkin;
 import moonshine.style.MoonshineVScrollBarThumbSkin;
 import moonshine.theme.SDKInstallerTheme;
+import moonshine.theme.assets.DebugPauseIcon;
+import moonshine.theme.assets.DebugPlayIcon;
+import moonshine.theme.assets.DebugStepIntoIcon;
+import moonshine.theme.assets.DebugStepOutIcon;
+import moonshine.theme.assets.DebugStepOverIcon;
+import moonshine.theme.assets.DebugStopIcon;
 import moonshine.theme.assets.RefreshIcon;
 import moonshine.ui.ResizableTitleWindow;
 import moonshine.ui.SideBarViewHeader;
@@ -72,14 +75,6 @@ import openfl.display.Shape;
 import openfl.filters.GlowFilter;
 import openfl.geom.Matrix;
 import openfl.text.TextFormat;
-import moonshine.theme.SDKInstallerTheme;
-import moonshine.theme.assets.RefreshIcon;
-import moonshine.theme.assets.DebugPlayIcon;
-import moonshine.theme.assets.DebugPauseIcon;
-import moonshine.theme.assets.DebugStepOverIcon;
-import moonshine.theme.assets.DebugStepIntoIcon;
-import moonshine.theme.assets.DebugStepOutIcon;
-import moonshine.theme.assets.DebugStopIcon;
 
 class MoonshineTheme extends SDKInstallerTheme {
 	private static var _instance:MoonshineTheme;
@@ -123,6 +118,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(GridViewHeaderRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
+		this.styleProvider.setStyleFunction(LayoutGroupItemRenderer, null, setLayoutGroupItemRendererStyles);
 
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_LABEL, setLightLabelStyles);
@@ -176,6 +172,12 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(Button, DebugAdapterView.CHILD_VARIANT_STEP_INTO_BUTTON, setDebugStepIntoButtonStyles);
 		this.styleProvider.setStyleFunction(Button, DebugAdapterView.CHILD_VARIANT_STEP_OUT_BUTTON, setDebugStepOutButtonStyles);
 		this.styleProvider.setStyleFunction(Button, DebugAdapterView.CHILD_VARIANT_STOP_BUTTON, setDebugStopButtonStyles);
+
+		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_PLAY_BUTTON, setMiniDebugPlayButtonStyles);
+		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_PAUSE_BUTTON, setMiniDebugPauseButtonStyles);
+		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_OVER_BUTTON, setMiniDebugStepOverButtonStyles);
+		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_INTO_BUTTON, setMiniDebugStepIntoButtonStyles);
+		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_OUT_BUTTON, setMiniDebugStepOutButtonStyles);
 	}
 
 	private function getDarkOnLightTextFormat():TextFormat {
@@ -573,6 +575,21 @@ class MoonshineTheme extends SDKInstallerTheme {
 		itemRenderer.paddingBottom = 4.0;
 		itemRenderer.paddingLeft = 4.0;
 		itemRenderer.gap = 4.0;
+	}
+
+	private function setLayoutGroupItemRendererStyles(itemRenderer:LayoutGroupItemRenderer):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x444444);
+		backgroundSkin.selectedFill = SolidColor(0xC165B8);
+		backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+		itemRenderer.backgroundSkin = backgroundSkin;
+
+		var alternateBackgroundSkin = new RectangleSkin();
+		alternateBackgroundSkin.fill = SolidColor(0x4D4C4C);
+		alternateBackgroundSkin.selectedFill = SolidColor(0xC165B8);
+		alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0x393939));
+		// TODO: enable with feathersui-beta.9
+		// itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
 	}
 
 	private function setTitleWindowCloseButtonStyles(button:Button):Void {
@@ -1190,6 +1207,102 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		button.icon = new Bitmap(new DebugStopIcon());
 		var disabledIcon = new Bitmap(new DebugStopIcon());
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
+
+		button.setPadding(6.0);
+	}
+
+	private function setMiniDebugPlayButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		var icon = new Bitmap(new DebugPlayIcon());
+		icon.width = 8.0;
+		icon.height = 8.0;
+		button.icon = icon;
+		var disabledIcon = new Bitmap(new DebugPlayIcon());
+		disabledIcon.scaleX = 0.5;
+		disabledIcon.scaleY = 0.5;
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
+
+		button.setPadding(6.0);
+	}
+
+	private function setMiniDebugPauseButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		var icon = new Bitmap(new DebugPauseIcon());
+		icon.scaleX = 0.5;
+		icon.scaleY = 0.5;
+		button.icon = icon;
+		var disabledIcon = new Bitmap(new DebugPauseIcon());
+		disabledIcon.scaleX = 0.5;
+		disabledIcon.scaleY = 0.5;
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
+
+		button.setPadding(6.0);
+	}
+
+	private function setMiniDebugStepOverButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		var icon = new Bitmap(new DebugStepOverIcon());
+		icon.scaleX = 0.5;
+		icon.scaleY = 0.5;
+		button.icon = icon;
+		var disabledIcon = new Bitmap(new DebugStepOverIcon());
+		disabledIcon.scaleX = 0.5;
+		disabledIcon.scaleY = 0.5;
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
+
+		button.setPadding(6.0);
+	}
+
+	private function setMiniDebugStepIntoButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		var icon = new Bitmap(new DebugStepIntoIcon());
+		icon.scaleX = 0.5;
+		icon.scaleY = 0.5;
+		button.icon = icon;
+		var disabledIcon = new Bitmap(new DebugStepIntoIcon());
+		disabledIcon.scaleX = 0.5;
+		disabledIcon.scaleY = 0.5;
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
+
+		button.setPadding(6.0);
+	}
+
+	private function setMiniDebugStepOutButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		var icon = new Bitmap(new DebugStepOutIcon());
+		icon.scaleX = 0.5;
+		icon.scaleY = 0.5;
+		button.icon = icon;
+		var disabledIcon = new Bitmap(new DebugStepOutIcon());
+		disabledIcon.scaleX = 0.5;
+		disabledIcon.scaleY = 0.5;
+		disabledIcon.alpha = 0.5;
+		button.setIconForState(DISABLED, disabledIcon);
+
+		button.setPadding(6.0);
+	}
+
+	private function setMiniDebugStopButtonStyles(button:Button):Void {
+		setDarkButtonStyles(button);
+
+		var icon = new Bitmap(new DebugStopIcon());
+		icon.scaleX = 0.5;
+		icon.scaleY = 0.5;
+		button.icon = icon;
+		var disabledIcon = new Bitmap(new DebugStopIcon());
+		disabledIcon.scaleX = 0.5;
+		disabledIcon.scaleY = 0.5;
 		disabledIcon.alpha = 0.5;
 		button.setIconForState(DISABLED, disabledIcon);
 

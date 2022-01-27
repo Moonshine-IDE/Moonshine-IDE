@@ -28,10 +28,12 @@ import feathers.controls.TextInput;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayCollection;
+import feathers.data.ListViewItemState;
 import feathers.events.TriggerEvent;
 import feathers.layout.VerticalLayout;
 import feathers.layout.VerticalLayoutData;
 import feathers.utils.DisplayObjectRecycler;
+import moonshine.lsp.DocumentSymbol;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.Lib;
@@ -150,11 +152,24 @@ class SymbolsView extends ResizableTitleWindow {
 		this.resultsListView.itemToText = (item) -> item.name;
 		this.resultsListView.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
 			var itemRenderer = new ItemRenderer();
+			itemRenderer.icon = new SymbolIcon();
 			itemRenderer.doubleClickEnabled = true;
 			// required for double-click too
 			itemRenderer.mouseChildren = false;
 			itemRenderer.addEventListener(MouseEvent.DOUBLE_CLICK, itemRenderer_doubleClickHandler);
 			return itemRenderer;
+		}, (itemRenderer, state:ListViewItemState) -> {
+			var item = state.data;
+			var icon = cast(itemRenderer.icon, SymbolIcon);
+			icon.data = item;
+			itemRenderer.text = state.text;
+			if ((item is DocumentSymbol)) {
+				var documentSymbol = cast(item, DocumentSymbol);
+				var detail = documentSymbol.detail;
+				itemRenderer.toolTip = (detail != null && detail.length > 0) ? detail : null;
+			} else {
+				itemRenderer.toolTip = null;
+			}
 		});
 		this.resultsListView.layoutData = new VerticalLayoutData(null, 100.0);
 		this.resultsListView.addEventListener(Event.CHANGE, resultsListView_changeHandler);
