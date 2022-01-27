@@ -27,6 +27,7 @@ import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayHierarchicalCollection;
 import feathers.data.TreeViewItemState;
+import feathers.events.HierarchicalCollectionEvent;
 import feathers.layout.AnchorLayout;
 import feathers.layout.AnchorLayoutData;
 import feathers.utils.DisplayObjectRecycler;
@@ -63,7 +64,13 @@ class OutlineView extends Panel implements IViewWithTitle {
 		if (this._outline == value) {
 			return this._outline;
 		}
+		if (this._outline != null) {
+			this._outline.removeEventListener(HierarchicalCollectionEvent.RESET, outline_resetHandler);
+		}
 		this._outline = value;
+		if (this._outline != null) {
+			this._outline.addEventListener(HierarchicalCollectionEvent.RESET, outline_resetHandler);
+		}
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._outline;
 	}
@@ -127,6 +134,7 @@ class OutlineView extends Panel implements IViewWithTitle {
 		if (dataInvalid) {
 			this.treeView.dataProvider = this._outline;
 			if (this._outline != null && this._outline.getLength() > 0) {
+				// open the first branch, if possible
 				var rootBranch = this._outline.get([0]);
 				if (this._outline.isBranch(rootBranch)) {
 					this.treeView.toggleBranch(rootBranch, true);
@@ -142,5 +150,10 @@ class OutlineView extends Panel implements IViewWithTitle {
 
 	private function treeView_changeHandler(event:Event):Void {
 		this.dispatchEvent(new Event(Event.CHANGE));
+	}
+
+	private function outline_resetHandler(event:HierarchicalCollectionEvent):Void {
+		// ensure that update() is run so that the root branches are opened
+		this.setInvalid(InvalidationFlag.DATA);
 	}
 }
