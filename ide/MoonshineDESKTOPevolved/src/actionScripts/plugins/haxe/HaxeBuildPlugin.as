@@ -59,6 +59,8 @@ package actionScripts.plugins.haxe
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
+        public static var NAMESPACE:String = "actionScripts.plugins.haxe::HaxeBuildPlugin";
+
 		private static const HXCPP_DEBUG_SERVER_ROOT_PATH:String = "elements/hxcpp-debug-adapter/hxcpp-debug-server";
         private static const HAXEFLAG_MACRO_INJECT_SERVER:String = "--haxeflag=\"--macro hxcpp.debug.jsonrpc.Macro.injectServer()\"";
         private static const DEBUG_SERVER_PORT:int = 3000;
