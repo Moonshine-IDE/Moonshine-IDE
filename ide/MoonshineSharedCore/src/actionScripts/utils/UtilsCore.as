@@ -1266,10 +1266,30 @@ package actionScripts.utils
 			{
 				return false;
 			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.HAXE);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.HAXE, model.haxePath, component.pathValidation);
+			}
 			
-			//TODO: use path validation with SDKTypes
-			var haxeName:String = ConstantsCoreVO.IS_MACOS ? "haxe" : "haxe.exe";
-			return model.fileCore.isPathExists(model.haxePath + model.fileCore.separator + haxeName);
+			return false;
+		}
+
+		public static function getHaxeBinPath():String
+		{
+			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			{
+				return null;
+			}
+
+			var executable:String = ConstantsCoreVO.IS_MACOS ? "haxelib" : "haxelib.exe";
+			if (model.fileCore.isPathExists([model.haxePath, executable].join(model.fileCore.separator)))
+			{
+				return [model.haxePath, executable].join(model.fileCore.separator);
+			}
+
+			return null;
 		}
 		
 		public static function isNekoAvailable():Boolean
@@ -1279,9 +1299,29 @@ package actionScripts.utils
 				return false;
 			}
 
-			//TODO: use path validation with SDKTypes
-			var nekoName:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
-			return model.fileCore.isPathExists(model.nekoPath + model.fileCore.separator + nekoName);
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.NEKO);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.NEKO, model.nekoPath, component.pathValidation);
+			}
+
+			return false;
+		}
+
+		public static function getNekoBinPath():String
+		{
+			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			{
+				return null;
+			}
+
+			var executable:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
+			if (model.fileCore.isPathExists([model.nekoPath, executable].join(model.fileCore.separator)))
+			{
+				return [model.nekoPath, executable].join(model.fileCore.separator);
+			}
+
+			return null;
 		}
 
         public static function getMavenBinPath():String

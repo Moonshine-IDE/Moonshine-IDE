@@ -20,21 +20,19 @@
 
 package moonshine.plugin.debugadapter.view;
 
-import haxe.Json;
-import feathers.controls.dataRenderers.HierarchicalItemRenderer;
-import openfl.events.Event;
 import actionScripts.interfaces.IViewWithTitle;
 import feathers.controls.Button;
 import feathers.controls.HDividedBox;
 import feathers.controls.LayoutGroup;
 import feathers.controls.TreeGridView;
 import feathers.controls.TreeGridViewColumn;
-import feathers.controls.dataRenderers.ItemRenderer;
+import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayCollection;
 import feathers.data.ArrayHierarchicalCollection;
 import feathers.data.IHierarchicalCollection;
 import feathers.data.TreeGridViewCellState;
+import feathers.events.HierarchicalCollectionEvent;
 import feathers.events.TreeGridViewEvent;
 import feathers.events.TriggerEvent;
 import feathers.layout.HorizontalLayout;
@@ -45,9 +43,10 @@ import moonshine.dsp.Scope;
 import moonshine.dsp.StackFrame;
 import moonshine.dsp.Thread;
 import moonshine.dsp.Variable;
-import moonshine.plugin.debugadapter.events.DebugAdapterViewThreadEvent;
 import moonshine.plugin.debugadapter.events.DebugAdapterViewLoadVariablesEvent;
 import moonshine.plugin.debugadapter.events.DebugAdapterViewStackFrameEvent;
+import moonshine.plugin.debugadapter.events.DebugAdapterViewThreadEvent;
+import openfl.events.Event;
 
 @:styleContext
 class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
@@ -136,7 +135,13 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 		if (this._scopesAndVariables == value) {
 			return this._scopesAndVariables;
 		}
+		if (this._scopesAndVariables != null) {
+			this._scopesAndVariables.removeEventListener(HierarchicalCollectionEvent.RESET, scopesAndVariables_resetHandler);
+		}
 		this._scopesAndVariables = value;
+		if (this._scopesAndVariables != null) {
+			this._scopesAndVariables.addEventListener(HierarchicalCollectionEvent.RESET, scopesAndVariables_resetHandler);
+		}
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._scopesAndVariables;
 	}
@@ -154,7 +159,13 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 		if (this._threadsAndStackFrames == value) {
 			return this._threadsAndStackFrames;
 		}
+		if (this._threadsAndStackFrames != null) {
+			this._threadsAndStackFrames.removeEventListener(HierarchicalCollectionEvent.RESET, threadsAndStackFrames_resetHandler);
+		}
 		this._threadsAndStackFrames = value;
+		if (this._threadsAndStackFrames != null) {
+			this._threadsAndStackFrames.addEventListener(HierarchicalCollectionEvent.RESET, threadsAndStackFrames_resetHandler);
+		}
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._threadsAndStackFrames;
 	}
@@ -281,7 +292,21 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 
 		if (dataInvalid) {
 			this.variablesTree.dataProvider = this._scopesAndVariables;
+			if (this._scopesAndVariables != null && this._scopesAndVariables.getLength() > 0) {
+				// open the first branch, if possible
+				var rootBranch = this._scopesAndVariables.get([0]);
+				if (this._scopesAndVariables.isBranch(rootBranch)) {
+					this.variablesTree.toggleBranch(rootBranch, true);
+				}
+			}
 			this.threadsTree.dataProvider = this._threadsAndStackFrames;
+			if (this._threadsAndStackFrames != null && this._threadsAndStackFrames.getLength() > 0) {
+				// open the first branch, if possible
+				var rootBranch = this._threadsAndStackFrames.get([0]);
+				if (this._threadsAndStackFrames.isBranch(rootBranch)) {
+					this.threadsTree.toggleBranch(rootBranch, true);
+				}
+			}
 		}
 
 		if (stateInvalid) {
@@ -377,5 +402,15 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 
 	private function pausedThreads_changeHandler(event:Event):Void {
 		this.setInvalid(InvalidationFlag.STATE);
+	}
+
+	private function threadsAndStackFrames_resetHandler(event:HierarchicalCollectionEvent):Void {
+		// ensure that update() is run so that the root branches are opened
+		this.setInvalid(InvalidationFlag.DATA);
+	}
+
+	private function scopesAndVariables_resetHandler(event:HierarchicalCollectionEvent):Void {
+		// ensure that update() is run so that the root branches are opened
+		this.setInvalid(InvalidationFlag.DATA);
 	}
 }

@@ -20,17 +20,15 @@
 
 package moonshine.plugin.debugadapter.data;
 
-import haxe.ds.ObjectMap;
-import haxe.Json;
-import openfl.events.Event;
-import feathers.events.HierarchicalCollectionEvent;
-import openfl.errors.RangeError;
-import openfl.errors.IllegalOperationError;
 import feathers.data.ArrayCollection;
 import feathers.data.IHierarchicalCollection;
-import openfl.events.EventDispatcher;
+import feathers.events.HierarchicalCollectionEvent;
 import moonshine.dsp.Scope;
 import moonshine.dsp.Variable;
+import openfl.errors.IllegalOperationError;
+import openfl.errors.RangeError;
+import openfl.events.Event;
+import openfl.events.EventDispatcher;
 
 class VariablesReferenceHierarchicalCollection extends EventDispatcher implements IHierarchicalCollection<Any> {
 	public function new() {
@@ -168,6 +166,8 @@ class VariablesReferenceHierarchicalCollection extends EventDispatcher implement
 		if (location == null || location.length == 0) {
 			this._variablesReferenceToVariables.clear();
 			this._scopes.removeAll();
+			this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.REMOVE_ALL, null));
+			this.dispatchEvent(new Event(Event.CHANGE));
 			return;
 		}
 		throw new IllegalOperationError("Not implemented");
