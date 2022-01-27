@@ -444,7 +444,8 @@ package actionScripts.utils
 			{
 				model.haxePath = path;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
-					new PathSetting({haxePath: model.haxePath}, 'haxePath', 'Haxe Home', true)
+					new PathSetting({haxePath: model.haxePath}, 'haxePath', 'Haxe Home', true),
+					new PathSetting({nekoPath: model.nekoPath}, 'nekoPath', 'Neko Home', true)
 				]);
 
 				// save as moonshine settings
@@ -459,6 +460,7 @@ package actionScripts.utils
 			{
 				model.nekoPath = path;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({haxePath: model.haxePath}, 'haxePath', 'Haxe Home', true),
 					new PathSetting({nekoPath: model.nekoPath}, 'nekoPath', 'Neko Home', true)
 				]);
 
