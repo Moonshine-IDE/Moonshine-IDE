@@ -982,22 +982,16 @@ package actionScripts.plugins.as3project
 								if(edit.visualEditorProject!=null){
 									if((edit.visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject)
 									{
-										
 										var mxmlCode:XML = edit.visualEditor.editingSurface.toRoyaleCode(pvo.projectName);
 
-										var newRoyaleFile:FileLocation =  targetFolder.resolvePath("src"+File.separator+"view"+File.separator + "MainContent.mxml");
-										if(newRoyaleFile.fileBridge.exists){
+										var newRoyaleFile:FileLocation = targetFolder.resolvePath("src" + File.separator + "view" + File.separator + "MainContent.mxml");
+										if (newRoyaleFile.fileBridge.exists)
+										{
 											newRoyaleFile.fileBridge.deleteFile();
 										}
-										
-										newRoyaleFile.fileBridge.save(mxmlCode.toXMLString());
 
+										newRoyaleFile.fileBridge.save(mxmlCode.toXMLString());
 									}
-									
-									
-									//toRoyaleCode
-									//visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
-									
 								}
 							}
 						}
