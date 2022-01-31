@@ -149,7 +149,7 @@ package actionScripts.controllers
 					// Pass binary test for log-extension file:
 					// tmpFL.fileBridge.extension.toLowerCase() != "log"
 					// ===============================
-					if (tmpFL.fileBridge.extension.toLowerCase() != "log" &&
+					if ((tmpFL.fileBridge.extension && tmpFL.fileBridge.extension.toLowerCase() != "log") &&
 							UtilsCore.isBinary(event.target.data.toString()))
 					{
 						binaryFiles.push(tmpFL);
