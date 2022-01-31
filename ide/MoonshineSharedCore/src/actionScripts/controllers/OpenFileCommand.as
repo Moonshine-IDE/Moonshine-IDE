@@ -136,7 +136,21 @@ package actionScripts.controllers
 				if (event)
 				{
 					event.target.removeEventListener(Event.COMPLETE, fileLoadCompletes);
-					if (UtilsCore.isBinary(event.target.data.toString()))
+
+					// IMPORTANT
+					// ===============================
+					// Following is a temporary solution to the problem
+					// to determine between binary and text-file which
+					// discussed here:
+					// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/770#issuecomment-1020669043 .
+					// This solution should removed once we address to:
+					// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/966.
+					//
+					// Pass binary test for log-extension file:
+					// tmpFL.fileBridge.extension.toLowerCase() != "log"
+					// ===============================
+					if (tmpFL.fileBridge.extension.toLowerCase() != "log" &&
+							UtilsCore.isBinary(event.target.data.toString()))
 					{
 						binaryFiles.push(tmpFL);
 					}
