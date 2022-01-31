@@ -98,7 +98,7 @@
 			<property name="bundledFlexJSSDK" value="${BUNDLED_FLEXJS_SDK}" />
 			<property name="HAXE_LIB_DIRECTORY" value="${HAXE_LIB}"/>
 			<property name="svn.revision" value="${svn.revision}" />
-			<property name="IsDebug" value="false" />
+			<property name="IsDebug" value="${SWF_DEBUG_MODE}" />
 		</else>
 	</if>
 	
