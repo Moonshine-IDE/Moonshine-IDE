@@ -209,6 +209,7 @@ package actionScripts.utils
 			var additionalCommandLines:String = "";
 			var defaultSDKtype:String;
 			var defaultSDKreferenceVo:SDKReferenceVO;
+			var valueDYLD_LIBRARY_PATHs:Array = [];
 			
 			// PROJECT SDK
 			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.SDK_FIELD);
@@ -282,6 +283,7 @@ package actionScripts.utils
 			{
 				setCommand += getSetExportWithoutQuote("NEKO_HOME", model.nekoPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$NEKO_HOME:" : "%NEKO_HOME%;");
+				valueDYLD_LIBRARY_PATHs.push(model.nekoPath);
 				isValidToExecute = true;
 			}
 			/*if (UtilsCore.isVagrantAvailable())
@@ -321,14 +323,21 @@ package actionScripts.utils
 			}
 			if (UtilsCore.isNotesDominoAvailable())
 			{
+				valueDYLD_LIBRARY_PATHs.push(
+						ConstantsCoreVO.IS_MACOS ? [model.notesPath,"Contents","MacOS"].join(File.separator) : (new File(model.notesPath)).parent.nativePath
+				)
+			}
+
+			if (valueDYLD_LIBRARY_PATHs.length != 0)
+			{
 				setCommand += getSetExportWithoutQuote(
 						"DYLD_LIBRARY_PATH",
-						ConstantsCoreVO.IS_MACOS ? [model.notesPath,"Contents","MacOS"].join(File.separator) : (new File(model.notesPath)).parent.nativePath
+						ConstantsCoreVO.IS_MACOS ? valueDYLD_LIBRARY_PATHs.join(":") : valueDYLD_LIBRARY_PATHs.join(";")
 				);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$DYLD_LIBRARY_PATH:" : "%DYLD_LIBRARY_PATH%;");
 				isValidToExecute = true;
 			}
-			
+
 			// if nothing found in above three don't run
 			if (!isValidToExecute) return null;
 			
@@ -353,7 +362,7 @@ package actionScripts.utils
 		{
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				return "export "+ field +"='"+ path +"';";
+				return "export "+ field +"=\""+ path +"\";";
 			}
 
 			return "set "+ field +"=\""+ path +"\"\r\n";
