@@ -187,7 +187,7 @@ package actionScripts.utils
 							executable = UtilsCore.getHaxeBinPath();
 							if (executable)
 							{
-								commands = '"'+ executable +'" version';
+								commands = "haxelib version"
 								itemTypeUnderCursor = QUERY_HAXE_VERSION;
 							}
 							break;
@@ -195,7 +195,7 @@ package actionScripts.utils
 							executable = UtilsCore.getNekoBinPath();
 							if (executable)
 							{
-								commands = '"'+ executable +'" -version';
+								commands = "neko -version";
 								itemTypeUnderCursor = QUERY_NEKO_VERSION;
 							}
 							break;
