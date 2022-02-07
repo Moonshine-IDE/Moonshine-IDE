@@ -55,6 +55,7 @@ package actionScripts.utils
 		private var isDelayRunInProcess:Boolean;
 		private var processQueus:Array = [];
 		private var isSingleProcessRunning:Boolean;
+		private var isNekoSymlinkGenerated:Boolean;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
@@ -350,10 +351,11 @@ package actionScripts.utils
 				setCommand += setPathCommand + "$PATH;";
 
 				// adds only if Haxe is available and installed in Moonshine custom location
-				if (isHaxeAvailable &&
+				if (isHaxeAvailable && !isNekoSymlinkGenerated &&
 						model.haxePath.indexOf(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath) != -1)
 				{
 					setCommand += HelperConstants.HAXE_SYMLINK_COMMANDS.join(";") +";";
+					isNekoSymlinkGenerated = true;
 				}
 
 				if (additionalCommandLines != "") setCommand += additionalCommandLines;
