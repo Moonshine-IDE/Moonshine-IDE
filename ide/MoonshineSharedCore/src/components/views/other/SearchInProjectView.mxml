@@ -137,7 +137,7 @@
 				{
 					case SearchPlugin.WORKSPACE:
 					{
-						for each (var i:AS3ProjectVO in model.projects)
+						for each (var i:ProjectVO in model.projects)
 						{
 							tmpArr.push(i.folderLocation.fileBridge.nativePath);
 						}
@@ -290,7 +290,7 @@
 				{
 					case 'remove':
 					{
-						var project:AS3ProjectVO = event.items[0] as AS3ProjectVO;
+						var project:ProjectVO = event.items[0] as ProjectVO;
 						for each (var i:Object in tree.dataProvider)
 						{
 							if (i.file.nativePath == project.folderLocation.fileBridge.nativePath)

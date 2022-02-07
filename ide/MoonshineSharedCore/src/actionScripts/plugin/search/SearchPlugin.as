@@ -236,7 +236,6 @@ package actionScripts.plugin.search
 			var line:int = range ? range.startLineIndex : -1;
 			
 			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.JUMP_TO_SEARCH_LINE, [tmpFL], line);
-			trace("*** opening: " + openEvent.files[0].fileBridge.nativePath);
 			dispatcher.dispatchEvent(openEvent);
 				
 			// this needs some timeout to get the tab open first
