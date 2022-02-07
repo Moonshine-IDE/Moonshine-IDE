@@ -42,6 +42,14 @@ package actionScripts.plugin.search
 
     import components.views.other.SearchInProjectView;
 	import feathers.data.ArrayCollection;
+	import mx.events.DynamicEvent;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.utils.TextUtil;
+	import flash.utils.setTimeout;
+	import flash.utils.clearTimeout;
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.plugin.findreplace.FindReplacePlugin;
 
     public class SearchPlugin extends PluginBase
     {
@@ -179,6 +187,7 @@ package actionScripts.plugin.search
 			if (!searchResultView)
 			{
 				searchResultView = new SearchInProjectView();
+				searchResultView.addEventListener("openResult", onOpenSearchResult);
 				searchResultView.addEventListener(TabEvent.EVENT_TAB_CLOSE, onSearchResultsClosed);
 				updateSearchViewProperties(event, isReplace);
 
@@ -218,6 +227,31 @@ package actionScripts.plugin.search
 		{
 			event.target.removeEventListener(TabEvent.EVENT_TAB_CLOSE, onSearchResultsClosed);
 			searchResultView = null;
+		}
+
+		private function onOpenSearchResult(event:DynamicEvent):void
+		{
+			var tmpFL:FileLocation = event.fileLocation;
+			var range:Object = event.range;
+			var line:int = range ? range.startLineIndex : -1;
+			
+			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.JUMP_TO_SEARCH_LINE, [tmpFL], line);
+			trace("*** opening: " + openEvent.files[0].fileBridge.nativePath);
+			dispatcher.dispatchEvent(openEvent);
+				
+			// this needs some timeout to get the tab open first
+			var timeoutValue:uint = setTimeout(function():void
+			{
+				var searchString:String = searchResultView.isEscapeChars ? TextUtil.escapeRegex(searchResultView.valueToSearch) : searchResultView.valueToSearch;
+				var flags:String = 'g';
+				if (!searchResultView.isMatchCase) flags += 'i';
+				var searchRegExp:RegExp = new RegExp(searchString, flags);
+				
+				dispatcher.dispatchEvent(
+					new GeneralEvent(FindReplacePlugin.EVENT_FIND_SHOW_ALL, {search:searchRegExp, range: range})
+				);
+				clearTimeout(timeoutValue);
+			}, 300);
 		}
     }
 }
