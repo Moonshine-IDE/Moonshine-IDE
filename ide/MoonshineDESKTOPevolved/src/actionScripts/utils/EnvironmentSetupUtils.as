@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import actionScripts.valueObjects.HelperConstants;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.IOErrorEvent;
@@ -210,6 +212,7 @@ package actionScripts.utils
 			var defaultSDKtype:String;
 			var defaultSDKreferenceVo:SDKReferenceVO;
 			var valueDYLD_LIBRARY_PATHs:Array = [];
+			var isHaxeAvailable:Boolean;
 			
 			// PROJECT SDK
 			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.SDK_FIELD);
@@ -278,6 +281,7 @@ package actionScripts.utils
 				setCommand += getSetExportWithoutQuote("HAXE_HOME", model.haxePath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$HAXE_HOME:" : "%HAXE_HOME%;");
 				isValidToExecute = true;
+				isHaxeAvailable = true;
 			}
 			if (UtilsCore.isNekoAvailable())
 			{
@@ -344,6 +348,14 @@ package actionScripts.utils
 			if (ConstantsCoreVO.IS_MACOS)
 			{
 				setCommand += setPathCommand + "$PATH;";
+
+				// adds only if Haxe is available and installed in Moonshine custom location
+				if (isHaxeAvailable &&
+						model.haxePath.indexOf(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath) != -1)
+				{
+					setCommand += HelperConstants.HAXE_SYMLINK_COMMANDS.join(";") +";";
+				}
+
 				if (additionalCommandLines != "") setCommand += additionalCommandLines;
 				if (executeWithCommands) setCommand += executeWithCommands.join(";");
 			}

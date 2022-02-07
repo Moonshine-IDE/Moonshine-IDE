@@ -187,7 +187,7 @@ package actionScripts.utils
 							executable = UtilsCore.getHaxeBinPath();
 							if (executable)
 							{
-								commands = "haxelib version"
+								commands = "haxe -version"
 								itemTypeUnderCursor = QUERY_HAXE_VERSION;
 							}
 							break;
