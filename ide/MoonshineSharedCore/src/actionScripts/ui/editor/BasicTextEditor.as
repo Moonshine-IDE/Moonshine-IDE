@@ -256,6 +256,11 @@ package actionScripts.ui.editor
 			{
 				// check for any externally update
 				checkFileIfChanged();
+				editorWrapper.enabled = true;
+			}
+			else
+			{
+				editorWrapper.enabled = false;
 			}
 		}
 		
