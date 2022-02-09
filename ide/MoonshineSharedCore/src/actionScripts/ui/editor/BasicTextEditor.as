@@ -193,6 +193,12 @@ package actionScripts.ui.editor
 			return editor.replaceOne(replace);
 		}
 
+		public function clearSearch():void
+		{
+			_prevSearch = null;
+			editor.clearFind();
+		}
+
 		protected function checkIfNewSearchMatchesPrevious(search:*):Boolean
 		{
 			var matches:Boolean = false;
