@@ -326,7 +326,7 @@ package actionScripts.plugin.findreplace
 			var replaceText:String = findReplaceView.replaceText;
 			var searchRegExp:RegExp;
 			
-			if (searchText == "") return;
+			if (!editor || searchText == "") return;
 			
 			if (findReplaceView.regExpEnabled)
 			{
