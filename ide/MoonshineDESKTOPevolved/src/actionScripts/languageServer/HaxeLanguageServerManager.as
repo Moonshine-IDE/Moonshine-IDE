@@ -424,22 +424,42 @@ package actionScripts.languageServer
 				_previousTargetPlatform = _project.haxeOutput.platform;
 			}
 
-			var processArgs:Vector.<String> = new <String>[];
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var scriptFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_SCRIPT_PATH);
-			//uncomment to allow devtools debugging of the Node.js script
-			//processArgs.push("--inspect");
-			processArgs.push(scriptFile.nativePath);
-			processInfo.arguments = processArgs;
-			processInfo.executable = new File(nodePath);
-			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
+			var languageServerCommand:Vector.<String> = new <String>[
+				nodePath,
+				// uncomment --inspect to allow devtools debugging of the Node.js script
+				// "--inspect",
+				scriptFile.nativePath
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			_languageServerProcess = new NativeProcess();
-			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
-			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
-			_languageServerProcess.start(processInfo);
-
-			initializeLanguageServer(haxePath, displayArguments);
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_languageServerProcess = new NativeProcess();
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+				_languageServerProcess.start(processInfo);
+				initializeLanguageServer(haxePath, displayArguments);
+			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
 		}
 		
 		private function initializeLanguageServer(sdkPath:String, displayArguments:Array):void
