@@ -83,6 +83,7 @@ package actionScripts.languageServer
 
 		private static const METHOD_HAXE__PROGRESS_START:String = "haxe/progressStart";
 		private static const METHOD_HAXE__PROGRESS_STOP:String = "haxe/progressStop";
+		private static const METHOD_HAXE__CACHE_BUILD_FAILED:String = "haxe/cacheBuildFailed";
 		
 		private static const URI_SCHEME_FILE:String = "file";
 
@@ -225,6 +226,7 @@ package actionScripts.languageServer
 			_languageServerProgressStarted = false;
 			_languageClient.removeNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.removeNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
+			_languageClient.addNotificationListener(METHOD_HAXE__CACHE_BUILD_FAILED, haxe__cacheBuildFailed);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient.removeEventListener(LspNotificationEvent.PUBLISH_DIAGNOSTICS, languageClient_publishDiagnosticsHandler);
@@ -520,6 +522,7 @@ package actionScripts.languageServer
 			_languageServerProgressStarted = false;
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
+			_languageClient.addNotificationListener(METHOD_HAXE__CACHE_BUILD_FAILED, haxe__cacheBuildFailed);
 			_languageClient.addNotificationListener("$/progress", dollar__progress);
 			_languageClient.addNotificationListener("window/workDoneProgress/create", window__workDoneProgress__create);
 			_project.languageClient = _languageClient;
@@ -921,6 +924,11 @@ package actionScripts.languageServer
 			var params:Object = event.params;
 			var workspaceEdit:WorkspaceEdit = WorkspaceEdit(params.edit);
 			applyWorkspaceEdit(workspaceEdit)
+		}
+
+		private function haxe__cacheBuildFailed(message:Object):void
+		{
+			error("Unable to build cache - completion features may be slower than expected. Try fixing the error(s) and restarting the language server.");
 		}
 
 		private function haxe__progressStart(message:Object):void
