@@ -1273,12 +1273,12 @@ package actionScripts.utils
 				return model.flexCore.isValidExecutableBy(SDKTypes.HAXE, model.haxePath, component.pathValidation);
 			}
 			
-			return false;
+			return true;
 		}
 
 		public static function getHaxeBinPath():String
 		{
-			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			if (!model.haxePath || !model.fileCore.isPathExists(model.haxePath))
 			{
 				return null;
 			}
@@ -1305,12 +1305,12 @@ package actionScripts.utils
 				return model.flexCore.isValidExecutableBy(SDKTypes.NEKO, model.nekoPath, component.pathValidation);
 			}
 
-			return false;
+			return true;
 		}
 
 		public static function getNekoBinPath():String
 		{
-			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			if (!model.nekoPath || !model.fileCore.isPathExists(model.nekoPath))
 			{
 				return null;
 			}

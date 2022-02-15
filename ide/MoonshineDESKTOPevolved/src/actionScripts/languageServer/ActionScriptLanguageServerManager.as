@@ -371,8 +371,6 @@ package actionScripts.languageServer
 
 			var frameworksPath:String = (new File(sdkPath)).resolvePath("frameworks").nativePath;
 
-			var processArgs:Vector.<String> = new <String>[];
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var cp:String = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_BIN_PATH).nativePath + File.separator + "*";
 			if (Settings.os == "win")
 			{
@@ -383,26 +381,50 @@ package actionScripts.languageServer
 				cp += ":";
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_COMPILER_PATH).nativePath + File.separator + "*";
-			processArgs.push("-Dfile.encoding=UTF8");
-			processArgs.push("-Droyalelib=" + frameworksPath);
-			processArgs.push("-cp");
-			processArgs.push(cp);
-			processArgs.push("moonshine.Main");
-			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
-			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 
-			_languageServerProcess = new NativeProcess();
-			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
-			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
-			_languageServerProcess.start(processInfo);
+			var languageServerCommand:Vector.<String> = new <String>[
+				cmdFile.nativePath,
+				"-Dfile.encoding=UTF8",
+				"-Droyalelib=" + frameworksPath,
+				"-cp",
+				cp,
+				"moonshine.Main"
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			initializeLanguageServer(sdkPath);
-			
-			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS,
-				project.name, "Starting ActionScript & MXML code intelligence..."
-			));
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_languageServerProcess = new NativeProcess();
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+				_languageServerProcess.start(processInfo);
+
+				initializeLanguageServer(sdkPath);
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS,
+					project.name, "Starting ActionScript & MXML code intelligence..."
+				));
+			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
 		}
 		
 		private function initializeLanguageServer(sdkPath:String):void

@@ -156,11 +156,11 @@
 							component.installToPath = model.macportsPath;
 						break;
 					case ComponentTypes.TYPE_HAXE:
-						if (ConstantsCoreVO.IS_MACOS && model.haxePath && FileUtils.isPathExists(model.haxePath))
+						if (model.haxePath && FileUtils.isPathExists(model.haxePath))
 							component.installToPath = model.haxePath;
 						break;
 					case ComponentTypes.TYPE_NEKO:
-						if (ConstantsCoreVO.IS_MACOS && model.nekoPath && FileUtils.isPathExists(model.nekoPath))
+						if (model.nekoPath && FileUtils.isPathExists(model.nekoPath))
 							component.installToPath = model.nekoPath;
 						break;
 				}

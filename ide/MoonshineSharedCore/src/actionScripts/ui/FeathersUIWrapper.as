@@ -113,7 +113,7 @@ package actionScripts.ui
 
 		public function assignFocus(direction:String):void
 		{
-			if(!this._feathersUIFocusManager)
+			if(!this.enabled || !this._feathersUIFocusManager)
 			{
 				return;
 			}
@@ -156,6 +156,12 @@ package actionScripts.ui
 			}
 			this.invalidateSize();
 			this.invalidateDisplayList();
+		}
+
+		override protected function commitProperties():void
+		{
+			this._feathersUIControl.enabled = this.enabled;
+			super.commitProperties();
 		}
 
 		override protected function measure():void
