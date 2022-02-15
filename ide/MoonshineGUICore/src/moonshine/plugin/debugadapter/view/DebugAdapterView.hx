@@ -20,21 +20,19 @@
 
 package moonshine.plugin.debugadapter.view;
 
-import haxe.Json;
-import feathers.controls.dataRenderers.HierarchicalItemRenderer;
-import openfl.events.Event;
 import actionScripts.interfaces.IViewWithTitle;
 import feathers.controls.Button;
 import feathers.controls.HDividedBox;
 import feathers.controls.LayoutGroup;
 import feathers.controls.TreeGridView;
 import feathers.controls.TreeGridViewColumn;
-import feathers.controls.dataRenderers.ItemRenderer;
+import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayCollection;
 import feathers.data.ArrayHierarchicalCollection;
 import feathers.data.IHierarchicalCollection;
 import feathers.data.TreeGridViewCellState;
+import feathers.events.HierarchicalCollectionEvent;
 import feathers.events.TreeGridViewEvent;
 import feathers.events.TriggerEvent;
 import feathers.layout.HorizontalLayout;
@@ -45,9 +43,10 @@ import moonshine.dsp.Scope;
 import moonshine.dsp.StackFrame;
 import moonshine.dsp.Thread;
 import moonshine.dsp.Variable;
-import moonshine.plugin.debugadapter.events.DebugAdapterViewThreadEvent;
 import moonshine.plugin.debugadapter.events.DebugAdapterViewLoadVariablesEvent;
 import moonshine.plugin.debugadapter.events.DebugAdapterViewStackFrameEvent;
+import moonshine.plugin.debugadapter.events.DebugAdapterViewThreadEvent;
+import openfl.events.Event;
 
 @:styleContext
 class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
@@ -136,7 +135,13 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 		if (this._scopesAndVariables == value) {
 			return this._scopesAndVariables;
 		}
+		if (this._scopesAndVariables != null) {
+			this._scopesAndVariables.removeEventListener(HierarchicalCollectionEvent.RESET, scopesAndVariables_resetHandler);
+		}
 		this._scopesAndVariables = value;
+		if (this._scopesAndVariables != null) {
+			this._scopesAndVariables.addEventListener(HierarchicalCollectionEvent.RESET, scopesAndVariables_resetHandler);
+		}
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._scopesAndVariables;
 	}
@@ -154,7 +159,13 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 		if (this._threadsAndStackFrames == value) {
 			return this._threadsAndStackFrames;
 		}
+		if (this._threadsAndStackFrames != null) {
+			this._threadsAndStackFrames.removeEventListener(HierarchicalCollectionEvent.RESET, threadsAndStackFrames_resetHandler);
+		}
 		this._threadsAndStackFrames = value;
+		if (this._threadsAndStackFrames != null) {
+			this._threadsAndStackFrames.addEventListener(HierarchicalCollectionEvent.RESET, threadsAndStackFrames_resetHandler);
+		}
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._threadsAndStackFrames;
 	}
@@ -171,31 +182,37 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 
 		this.playButton = new Button();
 		this.playButton.variant = CHILD_VARIANT_PLAY_BUTTON;
+		this.playButton.toolTip = "Resume";
 		this.playButton.addEventListener(TriggerEvent.TRIGGER, playButton_triggerHandler);
 		buttonsContainer.addChild(this.playButton);
 
 		this.pauseButton = new Button();
 		this.pauseButton.variant = CHILD_VARIANT_PAUSE_BUTTON;
+		this.pauseButton.toolTip = "Pause";
 		this.pauseButton.addEventListener(TriggerEvent.TRIGGER, pauseButton_triggerHandler);
 		buttonsContainer.addChild(this.pauseButton);
 
 		this.stepOverButton = new Button();
 		this.stepOverButton.variant = CHILD_VARIANT_STEP_OVER_BUTTON;
+		this.stepOverButton.toolTip = "Step Over";
 		this.stepOverButton.addEventListener(TriggerEvent.TRIGGER, stepOverButton_triggerHandler);
 		buttonsContainer.addChild(this.stepOverButton);
 
 		this.stepIntoButton = new Button();
 		this.stepIntoButton.variant = CHILD_VARIANT_STEP_INTO_BUTTON;
+		this.stepIntoButton.toolTip = "Step Into";
 		this.stepIntoButton.addEventListener(TriggerEvent.TRIGGER, stepIntoButton_triggerHandler);
 		buttonsContainer.addChild(this.stepIntoButton);
 
 		this.stepOutButton = new Button();
 		this.stepOutButton.variant = CHILD_VARIANT_STEP_OUT_BUTTON;
+		this.stepOutButton.toolTip = "Step Out";
 		this.stepOutButton.addEventListener(TriggerEvent.TRIGGER, stepOutButton_triggerHandler);
 		buttonsContainer.addChild(this.stepOutButton);
 
 		this.stopButton = new Button();
 		this.stopButton.variant = CHILD_VARIANT_STOP_BUTTON;
+		this.stopButton.toolTip = "Stop";
 		this.stopButton.addEventListener(TriggerEvent.TRIGGER, stopButton_triggerHandler);
 		buttonsContainer.addChild(this.stopButton);
 
@@ -244,7 +261,22 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 			}
 		});
 		var lineColumn = new TreeGridViewColumn("Line", getThreadOrStackFramePositionText);
-		lineColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(HierarchicalItemRenderer);
+		lineColumn.cellRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
+			var itemRenderer = new ThreadOrStackFrameItemRenderer();
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_RESUME, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_PAUSE, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OVER, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_INTO, threadDebugControls_debugEventHandler);
+			itemRenderer.addEventListener(DebugAdapterViewThreadEvent.DEBUG_STEP_OUT, threadDebugControls_debugEventHandler);
+			return itemRenderer;
+		}, (target, state:TreeGridViewCellState) -> {
+			if (Reflect.hasField(state.data, "line")) {
+				target.paused = false;
+			} else {
+				var thread = (state.data : Thread);
+				target.paused = _pausedThreads.indexOf(thread.id) != -1;
+			}
+		});
 		this.threadsTree.columns = new ArrayCollection([stackColumn, lineColumn]);
 		this.threadsTree.extendedScrollBarY = true;
 		this.threadsTree.resizableColumns = true;
@@ -260,7 +292,21 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 
 		if (dataInvalid) {
 			this.variablesTree.dataProvider = this._scopesAndVariables;
+			if (this._scopesAndVariables != null && this._scopesAndVariables.getLength() > 0) {
+				// open the first branch, if possible
+				var rootBranch = this._scopesAndVariables.get([0]);
+				if (this._scopesAndVariables.isBranch(rootBranch)) {
+					this.variablesTree.toggleBranch(rootBranch, true);
+				}
+			}
 			this.threadsTree.dataProvider = this._threadsAndStackFrames;
+			if (this._threadsAndStackFrames != null && this._threadsAndStackFrames.getLength() > 0) {
+				// open the first branch, if possible
+				var rootBranch = this._threadsAndStackFrames.get([0]);
+				if (this._threadsAndStackFrames.isBranch(rootBranch)) {
+					this.threadsTree.toggleBranch(rootBranch, true);
+				}
+			}
 		}
 
 		if (stateInvalid) {
@@ -333,6 +379,10 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 		this.dispatchEvent(new DebugAdapterViewThreadEvent(DebugAdapterViewThreadEvent.DEBUG_STOP));
 	}
 
+	private function threadDebugControls_debugEventHandler(event:DebugAdapterViewThreadEvent):Void {
+		dispatchEvent(event);
+	}
+
 	private function variablesTree_branchOpenHandler(event:TreeGridViewEvent<TreeGridViewCellState>):Void {
 		var item:Any = event.state.data;
 		if (!this._scopesAndVariables.isBranch(item)) {
@@ -352,5 +402,15 @@ class DebugAdapterView extends LayoutGroup implements IViewWithTitle {
 
 	private function pausedThreads_changeHandler(event:Event):Void {
 		this.setInvalid(InvalidationFlag.STATE);
+	}
+
+	private function threadsAndStackFrames_resetHandler(event:HierarchicalCollectionEvent):Void {
+		// ensure that update() is run so that the root branches are opened
+		this.setInvalid(InvalidationFlag.DATA);
+	}
+
+	private function scopesAndVariables_resetHandler(event:HierarchicalCollectionEvent):Void {
+		// ensure that update() is run so that the root branches are opened
+		this.setInvalid(InvalidationFlag.DATA);
 	}
 }

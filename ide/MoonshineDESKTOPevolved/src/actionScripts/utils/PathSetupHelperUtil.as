@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import actionScripts.plugins.haxe.HaxeBuildPlugin;
 	import actionScripts.plugins.macports.MacPortsPlugin;
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 
@@ -94,6 +95,10 @@ package actionScripts.utils
 				case ComponentTypes.TYPE_MACPORTS:
 					pluginClass = MacPortsPlugin.NAMESPACE;
 					break;
+				case ComponentTypes.TYPE_HAXE:
+				case ComponentTypes.TYPE_NEKO:
+					pluginClass = HaxeBuildPlugin.NAMESPACE;
+					break;
 			}
 			
 			if (pluginClass) GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, pluginClass));
@@ -145,6 +150,12 @@ package actionScripts.utils
 					break;
 				case ComponentTypes.TYPE_MACPORTS:
 					updateMacPortsPath(path);
+					break;
+				case ComponentTypes.TYPE_HAXE:
+					updateHaxePath(path);
+					break;
+				case ComponentTypes.TYPE_NEKO:
+					updateNekoPath(path);
 					break;
 			}
 		}
@@ -424,6 +435,38 @@ package actionScripts.utils
 				// save as moonshine settings
 				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
 						null, MacPortsPlugin.NAMESPACE, settings));
+			}
+		}
+
+		public static function updateHaxePath(path:String, forceUpdate:Boolean=false):void
+		{
+			if (!UtilsCore.isHaxeAvailable() || forceUpdate)
+			{
+				model.haxePath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({haxePath: model.haxePath}, 'haxePath', 'Haxe Home', true),
+					new PathSetting({nekoPath: model.nekoPath}, 'nekoPath', 'Neko Home', true)
+				]);
+
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, HaxeBuildPlugin.NAMESPACE, settings));
+			}
+		}
+
+		public static function updateNekoPath(path:String, forceUpdate:Boolean=false):void
+		{
+			if (!UtilsCore.isNekoAvailable() || forceUpdate)
+			{
+				model.nekoPath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({haxePath: model.haxePath}, 'haxePath', 'Haxe Home', true),
+					new PathSetting({nekoPath: model.nekoPath}, 'nekoPath', 'Neko Home', true)
+				]);
+
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, HaxeBuildPlugin.NAMESPACE, settings));
 			}
 		}
 		

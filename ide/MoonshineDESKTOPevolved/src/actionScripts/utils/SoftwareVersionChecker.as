@@ -52,6 +52,8 @@ package actionScripts.utils
 		private static const QUERY_NOTES_VERSION:String = "getHCLNotesVersion";
 		private static const QUERY_VAGRANT_VERSION:String = "getVagrantVersion";
 		private static const QUERY_MACPORTS_VERSION:String = "getMacPortsVersion";
+		private static const QUERY_HAXE_VERSION:String = "getHaxeVersion";
+		private static const QUERY_NEKO_VERSION:String = "getNekoVersion";
 		
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
 		
@@ -179,6 +181,22 @@ package actionScripts.utils
 							{
 								commands = '"'+ executable +'" version';
 								itemTypeUnderCursor = QUERY_MACPORTS_VERSION;
+							}
+							break;
+						case ComponentTypes.TYPE_HAXE:
+							executable = UtilsCore.getHaxeBinPath();
+							if (executable)
+							{
+								commands = "haxe -version"
+								itemTypeUnderCursor = QUERY_HAXE_VERSION;
+							}
+							break;
+						case ComponentTypes.TYPE_NEKO:
+							executable = UtilsCore.getNekoBinPath();
+							if (executable)
+							{
+								commands = "neko -version";
+								itemTypeUnderCursor = QUERY_NEKO_VERSION;
 							}
 							break;
 						case ComponentTypes.TYPE_NOTES:
@@ -342,6 +360,8 @@ package actionScripts.utils
 					case QUERY_ANT_VERSION:
 					case QUERY_SVN_GIT_VERSION:
 					case QUERY_NODEJS_VERSION:
+					case QUERY_HAXE_VERSION:
+					case QUERY_NEKO_VERSION:
 					{
 						if (!components[int(tmpQueue.extraArguments[0])].version)
 						{

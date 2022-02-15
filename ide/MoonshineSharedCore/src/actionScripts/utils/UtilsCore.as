@@ -1146,6 +1146,36 @@ package actionScripts.utils
 			
 			return null;
 		}
+		
+		/**
+		 * Returns PowerShell path on Windows
+		 */
+		public static function getPowerShellExecutablePath():String
+		{
+			// possible termination
+			if (ConstantsCoreVO.IS_MACOS) return null;
+			
+			var installDirectories:Array = ["C:\\Windows\\SysWOW64\\", "C:\\Windows\\System32\\"];
+			var tmpPath:String;
+			var executable:String = "WindowsPowerShell\\v1.0\\powershell.exe"
+			if (ConstantsCoreVO.is64BitSupport)
+			{
+				for each (var i:String in installDirectories)
+				{
+					tmpPath = i + executable;
+					if (model.fileCore.isPathExists(tmpPath))
+					{
+						return tmpPath;
+					}
+				}
+			}
+			else if (model.fileCore.isPathExists(installDirectories[1] + executable))
+			{
+				return installDirectories[1] + executable;
+			}
+			
+			return null;
+		}
 
 		public static function getConsolePath():String
 		{
@@ -1236,10 +1266,30 @@ package actionScripts.utils
 			{
 				return false;
 			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.HAXE);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.HAXE, model.haxePath, component.pathValidation);
+			}
 			
-			//TODO: use path validation with SDKTypes
-			var haxeName:String = ConstantsCoreVO.IS_MACOS ? "haxe" : "haxe.exe";
-			return model.fileCore.isPathExists(model.haxePath + model.fileCore.separator + haxeName);
+			return true;
+		}
+
+		public static function getHaxeBinPath():String
+		{
+			if (!model.haxePath || !model.fileCore.isPathExists(model.haxePath))
+			{
+				return null;
+			}
+
+			var executable:String = ConstantsCoreVO.IS_MACOS ? "haxelib" : "haxelib.exe";
+			if (model.fileCore.isPathExists([model.haxePath, executable].join(model.fileCore.separator)))
+			{
+				return [model.haxePath, executable].join(model.fileCore.separator);
+			}
+
+			return null;
 		}
 		
 		public static function isNekoAvailable():Boolean
@@ -1249,9 +1299,29 @@ package actionScripts.utils
 				return false;
 			}
 
-			//TODO: use path validation with SDKTypes
-			var nekoName:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
-			return model.fileCore.isPathExists(model.nekoPath + model.fileCore.separator + nekoName);
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.NEKO);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.NEKO, model.nekoPath, component.pathValidation);
+			}
+
+			return true;
+		}
+
+		public static function getNekoBinPath():String
+		{
+			if (!model.nekoPath || !model.fileCore.isPathExists(model.nekoPath))
+			{
+				return null;
+			}
+
+			var executable:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
+			if (model.fileCore.isPathExists([model.nekoPath, executable].join(model.fileCore.separator)))
+			{
+				return [model.nekoPath, executable].join(model.fileCore.separator);
+			}
+
+			return null;
 		}
 
         public static function getMavenBinPath():String
@@ -1472,6 +1542,22 @@ package actionScripts.utils
 			if (component && component.pathValidation)
 			{
 				return model.flexCore.isValidExecutableBy(SDKTypes.VAGRANT, model.vagrantPath, component.pathValidation);
+			}
+
+			return false;
+		}
+
+		public static function isVirtualBoxAvailable():Boolean
+		{
+			if (!model.virtualBoxPath || !model.fileCore.isPathExists(model.virtualBoxPath))
+			{
+				return false;
+			}
+
+			var virtualBoxExecutable:String = ConstantsCoreVO.IS_MACOS ? "VBoxManage" : "VirtualBoxVM.exe";
+			if (model.fileCore.isPathExists([model.virtualBoxPath, virtualBoxExecutable].join(model.fileCore.separator)))
+			{
+				return true;
 			}
 
 			return false;

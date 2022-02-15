@@ -30,12 +30,12 @@ class DebugAdapterViewThreadEvent extends Event {
 	public static final DEBUG_STEP_OUT = "debugStepOut";
 	public static final DEBUG_STOP = "debugStop";
 
-	public function new(type:String, threadId:Int = -1) {
+	public function new(type:String, threadId:Float = -1) {
 		super(type, false, false);
 		this.threadId = threadId;
 	}
 
-	public var threadId:Int;
+	public var threadId:Float;
 
 	override public function clone():Event {
 		return new DebugAdapterViewThreadEvent(this.type, this.threadId);

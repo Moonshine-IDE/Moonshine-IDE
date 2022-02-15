@@ -118,6 +118,16 @@ package actionScripts.impls
 			return UtilsCore.isMacPortsAvailable();
 		}
 
+		public function isHaxeAvailable():Boolean
+		{
+			return UtilsCore.isHaxeAvailable();
+		}
+
+		public function isNekoAvailable():Boolean
+		{
+			return UtilsCore.isNekoAvailable();
+		}
+
 		public function runOrDownloadSDKInstaller():void
 		{
 			MSDKIdownloadUtil.getInstance().runOrDownloadSDKInstaller();

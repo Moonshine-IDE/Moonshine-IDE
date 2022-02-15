@@ -83,6 +83,7 @@ package actionScripts.languageServer
 
 		private static const METHOD_HAXE__PROGRESS_START:String = "haxe/progressStart";
 		private static const METHOD_HAXE__PROGRESS_STOP:String = "haxe/progressStop";
+		private static const METHOD_HAXE__CACHE_BUILD_FAILED:String = "haxe/cacheBuildFailed";
 		
 		private static const URI_SCHEME_FILE:String = "file";
 
@@ -225,6 +226,7 @@ package actionScripts.languageServer
 			_languageServerProgressStarted = false;
 			_languageClient.removeNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.removeNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
+			_languageClient.addNotificationListener(METHOD_HAXE__CACHE_BUILD_FAILED, haxe__cacheBuildFailed);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient.removeEventListener(LspNotificationEvent.PUBLISH_DIAGNOSTICS, languageClient_publishDiagnosticsHandler);
@@ -424,22 +426,42 @@ package actionScripts.languageServer
 				_previousTargetPlatform = _project.haxeOutput.platform;
 			}
 
-			var processArgs:Vector.<String> = new <String>[];
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var scriptFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_SCRIPT_PATH);
-			//uncomment to allow devtools debugging of the Node.js script
-			//processArgs.push("--inspect");
-			processArgs.push(scriptFile.nativePath);
-			processInfo.arguments = processArgs;
-			processInfo.executable = new File(nodePath);
-			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
+			var languageServerCommand:Vector.<String> = new <String>[
+				nodePath,
+				// uncomment --inspect to allow devtools debugging of the Node.js script
+				// "--inspect",
+				scriptFile.nativePath
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			_languageServerProcess = new NativeProcess();
-			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
-			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
-			_languageServerProcess.start(processInfo);
-
-			initializeLanguageServer(haxePath, displayArguments);
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_languageServerProcess = new NativeProcess();
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+				_languageServerProcess.start(processInfo);
+				initializeLanguageServer(haxePath, displayArguments);
+			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
 		}
 		
 		private function initializeLanguageServer(sdkPath:String, displayArguments:Array):void
@@ -500,6 +522,7 @@ package actionScripts.languageServer
 			_languageServerProgressStarted = false;
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_START, haxe__progressStart);
 			_languageClient.addNotificationListener(METHOD_HAXE__PROGRESS_STOP, haxe__progressStop);
+			_languageClient.addNotificationListener(METHOD_HAXE__CACHE_BUILD_FAILED, haxe__cacheBuildFailed);
 			_languageClient.addNotificationListener("$/progress", dollar__progress);
 			_languageClient.addNotificationListener("window/workDoneProgress/create", window__workDoneProgress__create);
 			_project.languageClient = _languageClient;
@@ -901,6 +924,11 @@ package actionScripts.languageServer
 			var params:Object = event.params;
 			var workspaceEdit:WorkspaceEdit = WorkspaceEdit(params.edit);
 			applyWorkspaceEdit(workspaceEdit)
+		}
+
+		private function haxe__cacheBuildFailed(message:Object):void
+		{
+			error("Unable to build cache - completion features may be slower than expected. Try fixing the error(s) and restarting the language server.");
 		}
 
 		private function haxe__progressStart(message:Object):void
