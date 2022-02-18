@@ -7,17 +7,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Summary
 
+The main updates for Moonshine-IDE 3.3.1 are:
+* Basic Vagrant support.  Right-click on the Vagrant file to run different Vagrant commands from Moonshine
+* Updated debugging interface
+* Fixed bugs with GitHub integration, especially for macOS.
 
 ### Added
+* Vagrant Support ([#770](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/770))
+* Directory Assistance Repository for Public GitHub Examples ([#958](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/958))
+* MacPorts Reference Entry on Getting Started page.  This is not installed by Moonshine SDK Installer yet ([#921](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/921))
 
 
 ### Changed
-* Improved debugger based on Haxe
+* Improved debugger based on Haxe ([#961](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/961))
 * Updated [Groovy language server](https://github.com/GroovyLanguageServer/groovy-language-server) engine to latest.
+* Define environment for Haxe and Neko from Moonshine ([#967](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/967))
 
 
 ### Fixed
-* Groovy Language Server - Fixed bug where core Java classes where not detected for completion ([groovy-language-server#63](https://github.com/GroovyLanguageServer/groovy-language-server/issues/63))
+* Groovy Language Server - Fixed bug where core Java classes were not detected for completion ([groovy-language-server#63](https://github.com/GroovyLanguageServer/groovy-language-server/issues/63))
+* Git Integration on macOS ([#965](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/965))
+* Git integration on Windows ([#969](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/969))
+* Null pointer exception in TreeView ([#964](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/964))
+* TreeViewItemRenderer Error with feathersui 1.0.0-beta.8 ([#959](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/959))
+* File Ordering Incorrect After FileWatcher Update ([#955](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/955))
 
 
 ## Moonshine IDE [3.3.0]
