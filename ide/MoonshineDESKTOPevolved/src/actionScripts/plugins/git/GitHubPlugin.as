@@ -222,7 +222,7 @@ package actionScripts.plugins.git
 			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_GIT);
 			if (tmpComponent)
 			{
-				var isValidSDKPath:Boolean = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_GIT, pathSetting.stringValue, tmpComponent.pathValidation);
+				var isValidSDKPath:String = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_GIT, pathSetting.stringValue, tmpComponent.pathValidation);
 				if (!isValidSDKPath)
 				{
 					pathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);

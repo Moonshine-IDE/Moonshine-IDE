@@ -549,7 +549,7 @@ package actionScripts.impls
 			return HelperUtils.getComponentByType(type);
 		}
 		
-		public function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean
+		public function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):String
 		{
 			return HelperUtils.isValidExecutableBy(type, originPath, validationPath);
 		}
