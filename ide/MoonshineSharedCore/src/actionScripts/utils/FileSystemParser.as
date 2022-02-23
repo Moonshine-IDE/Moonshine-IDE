@@ -185,6 +185,7 @@ package actionScripts.utils
 		protected function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
 		{
 			unsubscribeFromWorker();
+			dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, value.output, false, false, ConsoleOutputEvent.TYPE_ERROR)
 			);

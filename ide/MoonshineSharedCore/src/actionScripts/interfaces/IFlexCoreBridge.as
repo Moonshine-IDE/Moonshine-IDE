@@ -76,7 +76,7 @@ package actionScripts.interfaces
 		function updateToCurrentEnvironmentVariable():void;
 		function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void;
 		function getComponentByType(type:String):Object;
-		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
+		function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):String;
 		function getExternalEditors():ArrayCollection;
 		function generateTabularRoyaleProject():void;
 		function getModulesFinder():IModulesFinder;
@@ -98,5 +98,6 @@ package actionScripts.interfaces
 		function get runtimeVersion():String;
 		function get version():String;
 		function get defaultInstallationPathSDKs():String;
+		function get vagrantMenuOptions():Array;
 	}
 }

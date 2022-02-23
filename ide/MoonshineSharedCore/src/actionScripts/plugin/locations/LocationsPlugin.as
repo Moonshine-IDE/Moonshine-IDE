@@ -22,7 +22,7 @@ package actionScripts.plugin.locations
 	import flash.events.Event;
 
 	import mx.controls.Alert;
-	import mx.core.UIComponent;
+	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
 
 	import actionScripts.events.LocationsEvent;
@@ -93,8 +93,7 @@ package actionScripts.plugin.locations
 
 			if (!isLocationsViewVisible)
 			{
-				var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
-				PopUpManager.addPopUp(locationsViewWrapper, DisplayObject(parentApp), true);
+				PopUpManager.addPopUp(locationsViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 				PopUpManager.centerPopUp(locationsViewWrapper);
 				locationsViewWrapper.assignFocus("top");
 				locationsViewWrapper.stage.addEventListener(Event.RESIZE, locationsView_stage_resizeHandler, false, 0, true);

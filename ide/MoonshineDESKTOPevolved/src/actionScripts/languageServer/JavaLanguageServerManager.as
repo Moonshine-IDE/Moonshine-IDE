@@ -426,20 +426,6 @@ package actionScripts.languageServer
 			}
 
 			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
-			var processArgs:Vector.<String> = new <String>[];
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			//uncomment to allow connection to debugger
-			//processArgs.push("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044");
-			processArgs.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
-			processArgs.push("-Dosgi.bundles.defaultStartLevel=4");
-			processArgs.push("-Declipse.product=org.eclipse.jdt.ls.core.product");
-			//uncomment for extra debug logging
-			//processArgs.push("-Dlog.level=ALL");
-			processArgs.push("-noverify");
-			processArgs.push("-Xmx1G");
-			processArgs.push("-jar");
-			processArgs.push(this._languageServerLauncherJar.nativePath);
-			processArgs.push("-configuration");
 			var configFile:File = null;
 			if(ConstantsCoreVO.IS_MACOS)
 			{
@@ -449,21 +435,57 @@ package actionScripts.languageServer
 			{
 				configFile = storageFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
 			}
-			processArgs.push(configFile.nativePath);
-			processArgs.push("-data");
-			//this is a file outside of the project folder due to limitations
-			//of the language server, which is based on Eclipse
-			processArgs.push(getWorkspaceNativePath());
-			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
-			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
 
-			_languageServerProcess = new NativeProcess();
-			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
-			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
-			_languageServerProcess.start(processInfo);
+			var languageServerCommand:Vector.<String> = new <String>[
+				cmdFile.nativePath,
+				// uncomment to allow connection to debugger
+				// "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044",
+				"-Declipse.application=org.eclipse.jdt.ls.core.id1",
+				"-Dosgi.bundles.defaultStartLevel=4",
+				"-Declipse.product=org.eclipse.jdt.ls.core.product",
+				// uncomment for extra debug logging
+				// "-Dlog.level=ALL",
+				"-noverify",
+				"-Xmx1G",
+				"-jar",
+				this._languageServerLauncherJar.nativePath,
+				"-configuration",
+				configFile.nativePath,
+				"-data",
+				//this is a file outside of the project folder due to limitations
+				//of the language server, which is based on Eclipse
+				getWorkspaceNativePath()
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			initializeLanguageServer(jdkPath);
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_languageServerProcess = new NativeProcess();
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+				_languageServerProcess.start(processInfo);
+
+				initializeLanguageServer(jdkPath);
+			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
 		}
 
 		private function getWorkspaceNativePath():String
@@ -599,21 +621,29 @@ package actionScripts.languageServer
 			}
 			var runtimes:Array = [];
 			var java8Path:FileLocation = _model.java8Path;
-			if(java8Path != null) {
+			if(_project.jdkType == JavaTypes.JAVA_8)
+			{
+				if(java8Path != null)
+				{
+					runtimes.push({
+						"name": "JavaSE-1.8",
+						"path": java8Path.fileBridge.nativePath,
+						"default":  true
+					});
+				}
+			}
+			else
+			{
+				var versionParts:Array = _model.javaVersionForTypeAhead.split(".");
+				var sourcesZip:FileLocation = _model.javaPathForTypeAhead.fileBridge.resolvePath("lib/src.zip");
 				runtimes.push({
-					"name": "JavaSE-1.8",
-					"path": java8Path.fileBridge.nativePath
+					"name": "JavaSE-" + versionParts[0],
+					"path": _model.javaPathForTypeAhead.fileBridge.nativePath,
+					"sources": sourcesZip.fileBridge.nativePath,
+					"javadoc": "https://docs.oracle.com/en/java/javase/" + versionParts[0] + "/docs/api",
+					"default":  true
 				});
 			}
-			var versionParts:Array = _model.javaVersionForTypeAhead.split(".");
-			var sourcesZip:FileLocation = _model.javaPathForTypeAhead.fileBridge.resolvePath("lib/src.zip");
-			runtimes.push({
-				"name": "JavaSE-" + versionParts[0],
-				"path": _model.javaPathForTypeAhead.fileBridge.nativePath,
-				"sources": sourcesZip.fileBridge.nativePath,
-				"javadoc": "https://docs.oracle.com/en/java/javase/" + versionParts[0] + "/docs/api",
-				"default":  true
-			});
 			var settings:Object = { java: { configuration: { runtimes: runtimes } } };
 			switch(_settingUpdateBuildConfiguration) {
 				case FEATURE_STATUS_DISABLED:

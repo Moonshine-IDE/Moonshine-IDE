@@ -226,22 +226,53 @@ package actionScripts.languageServer
 				return;
 			}
 
-			var processArgs:Vector.<String> = new <String>[];
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			var jarFile:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_CLASS_PATH);
-			processArgs.push("-cp");
-			processArgs.push(jarFile.nativePath + "/*");
-			processArgs.push("moonshine.groovyls.Main");
-			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
-			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
+			var classPath:File = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_CLASS_PATH);
 
-			_languageServerProcess = new NativeProcess();
-			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
-			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
-			_languageServerProcess.start(processInfo);
+			var cp:String = classPath.nativePath + File.separator + "*";
+			if (Settings.os == "win")
+			{
+				cp += ";"
+			}
+			else
+			{
+				cp += ":";
+			}
+			var languageServerCommand:Vector.<String> = new <String>[
+				cmdFile.nativePath,
+				"-cp",
+				cp,
+				"moonshine.groovyls.Main"
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			initializeLanguageServer(jdkPath);
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_languageServerProcess = new NativeProcess();
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+				_languageServerProcess.start(processInfo);
+
+				initializeLanguageServer(jdkPath);
+			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
 		}
 		
 		private function preTaskLanguageServer():void
@@ -271,11 +302,6 @@ package actionScripts.languageServer
 					return true;
 				}
 				
-				var eclipseCommand:Vector.<String> = new <String>[
-					EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH,
-					"eclipse"
-				];
-
 				var envCustomJava:EnvironmentUtilsCusomSDKsVO;
 				if (project is IJavaProject)
 				{
@@ -284,7 +310,39 @@ package actionScripts.languageServer
 							IDEModel.getInstance().java8Path.fileBridge.nativePath : IDEModel.getInstance().javaPathForTypeAhead.fileBridge.nativePath;
 				}
 
-				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomJava, [CommandLineUtil.joinOptions(eclipseCommand)]);
+				var eclipseCommand:Vector.<String> = new <String>[
+					EnvironmentExecPaths.GRADLE_ENVIRON_EXEC_PATH,
+					"eclipse"
+				];
+				EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function onEnvironmentPrepared(value:String):void
+				{
+					var cmdFile:File;
+					var processArgs:Vector.<String> = new <String>[];
+					
+					if (Settings.os == "win")
+					{
+						cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+						processArgs.push("/c");
+						processArgs.push(value);
+					}
+					else
+					{
+						cmdFile = new File("/bin/bash");
+						processArgs.push("-c");
+						processArgs.push(value);
+					}
+					
+					var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+					processInfo.arguments = processArgs;
+					processInfo.executable = cmdFile;
+					processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+					
+					_gradleProcess = new NativeProcess();
+					_gradleProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, gradleProcess_standardOutputDataHandler);
+					_gradleProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, gradleProcess_standardErrorDataHandler);
+					_gradleProcess.addEventListener(NativeProcessExitEvent.EXIT, gradleProcess_exitHandler);
+					_gradleProcess.start(processInfo);
+				}, envCustomJava, [CommandLineUtil.joinOptions(eclipseCommand)]);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,
 					project.name, "Updating Gradle classpath...", false
@@ -293,39 +351,6 @@ package actionScripts.languageServer
 			}
 			
 			return false;
-			
-			/*
-			* @local
-			*/
-			function onEnvironmentPrepared(value:String):void
-			{
-				var cmdFile:File;
-				var processArgs:Vector.<String> = new <String>[];
-				
-				if (Settings.os == "win")
-				{
-					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
-					processArgs.push("/c");
-					processArgs.push(value);
-				}
-				else
-				{
-					cmdFile = new File("/bin/bash");
-					processArgs.push("-c");
-					processArgs.push(value);
-				}
-				
-				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-				processInfo.arguments = processArgs;
-				processInfo.executable = cmdFile;
-				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-				
-				_gradleProcess = new NativeProcess();
-				_gradleProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, gradleProcess_standardOutputDataHandler);
-				_gradleProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, gradleProcess_standardErrorDataHandler);
-				_gradleProcess.addEventListener(NativeProcessExitEvent.EXIT, gradleProcess_exitHandler);
-				_gradleProcess.start(processInfo);
-			}
 		}
 		
 		private function initializeLanguageServer(sdkPath:String):void

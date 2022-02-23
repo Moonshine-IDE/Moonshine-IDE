@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-	
+
 	<meta title="MoonshineGUICore" package="Moonshine" version="1.0.0" company="Prominic.NET" />
 	<app file="MoonshineGUICore" />
-	
+
 	<source path="src" />
 	<source path="externs" />
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/src" />
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/externs" />
 	<source path="../../../moonshine-openfl-language-client/src" />
+	<source path="../../../moonshine-openfl-debug-adapter-client/src" />
 	<source path="../../../moonshine-feathersui-text-editor/src" />
-	
+
 	<haxelib name="openfl" />
 	<haxelib name="actuate" />
 	<haxelib name="feathersui" />
@@ -21,4 +22,11 @@
 	<haxeflag name="--macro" value="include('moonshine', true, null, null, true)"/>
 	<haxeflag name="--macro" value="include('feathers', true, null, null, true)"/>
 	<haxeflag name="--macro" value="include('motion', true, null, null, true)"/>
+
+	<section if="flash">
+		<source path="build_macros/flash"/>
+		<haxeflag name="--macro" value="AddFlashPropertyMeta.find('feathers')"/>
+		<haxeflag name="--macro" value="AddFlashPropertyMeta.find('moonshine')"/>
+		<haxeflag name="--macro" value="AddFlashPropertyMeta.find('motion')"/>
+	</section>
 </project>

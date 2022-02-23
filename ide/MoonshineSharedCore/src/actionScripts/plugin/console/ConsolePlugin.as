@@ -45,11 +45,11 @@ package actionScripts.plugin.console
 	 */
 	public class ConsolePlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
-		private var consoleView:ConsoleView;
-		private var consoleCmd:Boolean;
-		private var consoleCtrl:Boolean;
-		private var mode:String = "";
-		private var consoleTextCache:Array;
+		protected var consoleView:ConsoleView;
+		protected var consoleCmd:Boolean;
+		protected var consoleCtrl:Boolean;
+		protected var mode:String = "";
+		protected var consoleTextCache:Array;
 
         private var _consolePopsOver:Boolean;
 		private var _consoleTriggerKey:String;
@@ -234,12 +234,12 @@ package actionScripts.plugin.console
 			notice(ntc);
 		}
 
-        private function addKeyListener(event:Event=null):void
+		protected function addKeyListener(event:Event=null):void
         {
             consoleView.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
         }
 
-        private function handleKeyDown(event:KeyboardEvent):void
+		protected function handleKeyDown(event:KeyboardEvent):void
         {
             if(event.keyCode == 15 )
                 consoleCmd = true;
@@ -266,7 +266,7 @@ package actionScripts.plugin.console
 
         }
 
-        private function toggleConsole(event:KeyboardEvent):void
+		protected function toggleConsole(event:KeyboardEvent):void
         {
             if (consoleView.stage.focus != consoleView.commandLine)
             {
@@ -277,14 +277,13 @@ package actionScripts.plugin.console
             }
         }
 
-
-        private function changeMode(e:ConsoleModeEvent):void
+		protected function changeMode(e:ConsoleModeEvent):void
         {
             mode = e.mode;
             consoleView.commandPrefix.text = " "+mode+">"
         }
 
-        private function execCommand(event:ConsoleCommandEvent):void
+		protected function execCommand(event:ConsoleCommandEvent):void
         {
             if (mode == "")
             {
@@ -309,12 +308,12 @@ package actionScripts.plugin.console
             }
         }
 
-        private function consoleClearHandler(event:ConsoleOutputEvent):void
+		protected function consoleClearHandler(event:ConsoleOutputEvent):void
         {
             consoleView.history.text = "";
         }
 
-        private function consoleOutputHandler(event:ConsoleOutputEvent):void
+		protected function consoleOutputHandler(event:ConsoleOutputEvent):void
         {
 			if (!consoleView.history.textFlow)
 			{
@@ -326,7 +325,7 @@ package actionScripts.plugin.console
 			}
         }
 
-        private function consolePrintHandler(event:ConsoleOutputEvent):void
+		protected function consolePrintHandler(event:ConsoleOutputEvent):void
         {
             switch(event.messageType)
             {
@@ -345,7 +344,7 @@ package actionScripts.plugin.console
             }
         }
 
-        private function onConsoleViewCreationComplete(event:FlexEvent):void
+		protected function onConsoleViewCreationComplete(event:FlexEvent):void
         {
             consoleView.removeEventListener(FlexEvent.CREATION_COMPLETE, onConsoleViewCreationComplete);
 

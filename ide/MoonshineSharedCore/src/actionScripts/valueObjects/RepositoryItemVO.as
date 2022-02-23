@@ -24,6 +24,7 @@ package actionScripts.valueObjects
 		public var type:String; // VersionControlTypes
 		public var isRoot:Boolean;
 		public var isDownloadable:Boolean;
+		public var isDefault:Boolean;
 		
 		// this will help access to top level object from anywhere deep 
 		// in-tree objects to gain top level properties

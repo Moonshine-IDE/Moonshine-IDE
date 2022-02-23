@@ -19,6 +19,8 @@
 
 package org.as3commons.asblocks.parser.errors
 {
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.utils.HtmlFormatter;
 	
@@ -45,8 +47,11 @@ public class TokenError extends Error
 	public function TokenError(message:*="")
 	{
 		trace(message);
-		ConsoleUtil.print(message);
-		ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(message, null), 'weak');
+		GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+				ConsoleOutputEvent.CONSOLE_PRINT,
+				message,
+				false, false, ConsoleOutputEvent.TYPE_INFO
+		));
 		return;
 	}
 }

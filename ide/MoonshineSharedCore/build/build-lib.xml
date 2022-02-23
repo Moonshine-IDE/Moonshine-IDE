@@ -98,7 +98,7 @@
 			<property name="bundledFlexJSSDK" value="${BUNDLED_FLEXJS_SDK}" />
 			<property name="HAXE_LIB_DIRECTORY" value="${HAXE_LIB}"/>
 			<property name="svn.revision" value="${svn.revision}" />
-			<property name="IsDebug" value="false" />
+			<property name="IsDebug" value="${SWF_DEBUG_MODE}" />
 		</else>
 	</if>
 	
@@ -989,6 +989,7 @@
 			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
+			<compiler.verbose-stacktraces>true</compiler.verbose-stacktraces>
 		</mxmlc>
 	</target>
 	<target name="CompileSWFOSX" depends="createBuildInfoFile,CompileGUICore" if="${isOSX}">
@@ -1028,6 +1029,7 @@
 			<compiler.external-library-path dir="${debug_dir}" append="true">
 			   <include name="SSB.ane" />
 			</compiler.external-library-path>
+			<compiler.verbose-stacktraces>true</compiler.verbose-stacktraces>
 		</mxmlc>
 	</target>
 	

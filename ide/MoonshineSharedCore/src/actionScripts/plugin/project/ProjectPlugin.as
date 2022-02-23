@@ -361,7 +361,8 @@ package actionScripts.plugin.project
 
 		private function handleWatchedFileCreatedEvent(event:WatchedFileChangeEvent):void
 		{
-			treeView.refresh(event.file);
+			//need to refresh the parent directory listing
+			treeView.refresh(event.file.fileBridge.parent);
 		}
 
 		private function handleWatchedFileDeletedEvent(event:WatchedFileChangeEvent):void

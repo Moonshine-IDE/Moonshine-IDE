@@ -106,6 +106,10 @@ package actionScripts.plugins.startup
 			
 			// we want this to be work in desktop version only
 			if (!ConstantsCoreVO.IS_AIR) return;
+
+			// HelperView initialize get called before
+			// HelperViewWrapper could set the value to const
+			HelperConstants.IS_RUNNING_IN_MOON = true;
 			
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
 			dispatcher.addEventListener(EVENT_GETTING_STARTED_AS3, onGettingStartedRequest, false, 0, true);
@@ -183,7 +187,9 @@ package actionScripts.plugins.startup
 		{
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
-			
+
+			installerItemsManager.addEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded, false, 0, true);
+			installerItemsManager.addEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent, false, 0, true);
 			toggleListenersInstallerItemsManager(true);
 			
 			HelperConstants.IS_MACOS = ConstantsCoreVO.IS_MACOS;
@@ -296,14 +302,10 @@ package actionScripts.plugins.startup
 		{
 			if (toggle)
 			{
-				installerItemsManager.addEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded);
-				installerItemsManager.addEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
 				installerItemsManager.addEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
 			}
 			else
 			{
-				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded);
-				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
 				installerItemsManager.removeEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
 			}
 		}
@@ -400,10 +402,6 @@ package actionScripts.plugins.startup
 				gettingStartedView = new GettingStartedView();
 				gettingStartedView.setting = ps;
 
-				// HelperView initialize get called before
-				// HelperViewWrapper could set the value to const
-				HelperConstants.IS_RUNNING_IN_MOON = true;
-				
 				var tmpHelperViewWrapper:HelperViewWrapper = new HelperViewWrapper(new HelperView());
 				tmpHelperViewWrapper.isRunningInsideMoonshine = HelperConstants.IS_RUNNING_IN_MOON;
 				tmpHelperViewWrapper.dependencyCheckUtil = dependencyCheckUtil;
@@ -511,7 +509,7 @@ package actionScripts.plugins.startup
 					pathValidation = String(item.pathValidation).split(",");
 					
 					// validate before set
-					if (type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) pathValidation = null;
+					if (type == ComponentTypes.TYPE_GIT) pathValidation = null;
 					if (!HelperUtils.isValidSDKDirectoryBy(type, path, pathValidation)) continue;
 
 					PathSetupHelperUtil.updateFieldPath(type, path);

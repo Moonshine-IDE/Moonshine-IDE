@@ -19,6 +19,8 @@
 
 package org.as3commons.asblocks.parser.errors
 {
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.utils.HtmlFormatter;
 	
@@ -45,8 +47,11 @@ public class NullTokenError extends TokenError
 	public function NullTokenError(fileName:String)
 	{
 		trace("null token in " + fileName + "." );
-		ConsoleUtil.print("null token in " + fileName + ".");
-		ConsoleOutputter.formatOutput(HtmlFormatter.sprintfa(message, null), 'weak');
+		GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(
+				ConsoleOutputEvent.CONSOLE_PRINT,
+				"null token in " + fileName + ".",
+				false, false, ConsoleOutputEvent.TYPE_INFO
+		));
 		return;
 	}
 }

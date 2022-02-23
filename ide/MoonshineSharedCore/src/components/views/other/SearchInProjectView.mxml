@@ -32,21 +32,18 @@
 			import mx.managers.PopUpManager;
 			
 			import actionScripts.events.GeneralEvent;
-			import actionScripts.events.GlobalEventDispatcher;
-			import actionScripts.events.OpenFileEvent;
 			import actionScripts.events.WorkerEvent;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.locator.IDEWorker;
 			import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-			import actionScripts.plugin.findreplace.FindReplacePlugin;
 			import actionScripts.plugin.search.SearchPlugin;
 			import actionScripts.ui.tabview.TabEvent;
-			import actionScripts.utils.TextUtil;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.ProjectVO;
 			
 			import components.popup.ReplaceProjectSearchPopup;
+			import mx.events.DynamicEvent;
 			
 			[Embed("/elements/images/icoTreeFolder_open.png")]
 			private var iconFolderOpen:Class;
@@ -140,7 +137,7 @@
 				{
 					case SearchPlugin.WORKSPACE:
 					{
-						for each (var i:AS3ProjectVO in model.projects)
+						for each (var i:ProjectVO in model.projects)
 						{
 							tmpArr.push(i.folderLocation.fileBridge.nativePath);
 						}
@@ -271,23 +268,12 @@
 				var tmpSelectedItem:Object = tree.selectedItem;
 				var tmpFL:FileLocation = new FileLocation(tmpSelectedItem.isShowAsLineNumber ? tmpSelectedItem.fileReference : tmpSelectedItem.file.nativePath);
 				if (tmpFL.fileBridge.isDirectory) return;
+
+				var openResultEvent:DynamicEvent = new DynamicEvent("openResult");
+				openResultEvent.fileLocation = tmpFL;
 				
-				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.JUMP_TO_SEARCH_LINE, [tmpFL], tmpSelectedItem.isShowAsLineNumber ? tmpSelectedItem.lineNumbersWithRange[0].startLineIndex : -1);
-				GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
-				
-				// this needs some timeout to get the tab open first
-				var timeoutValue:uint = setTimeout(function():void
-				{
-					var searchString:String = isEscapeChars ? TextUtil.escapeRegex(valueToSearch) : valueToSearch;
-					var flags:String = 'g';
-					if (!isMatchCase) flags += 'i';
-					var searchRegExp:RegExp = new RegExp(searchString, flags);
-					
-					GlobalEventDispatcher.getInstance().dispatchEvent(
-						new GeneralEvent(FindReplacePlugin.EVENT_FIND_SHOW_ALL, {search:searchRegExp, range:tmpSelectedItem.isShowAsLineNumber ? tmpSelectedItem.lineNumbersWithRange[0] : null})
-					);
-					clearTimeout(timeoutValue);
-				}, 300);
+				openResultEvent.range = tmpSelectedItem.isShowAsLineNumber ? tmpSelectedItem.lineNumbersWithRange[0] : null;
+				dispatchEvent(openResultEvent);
 			}
 			
 			private function getCountingLabel(item:Object):String
@@ -304,7 +290,7 @@
 				{
 					case 'remove':
 					{
-						var project:AS3ProjectVO = event.items[0] as AS3ProjectVO;
+						var project:ProjectVO = event.items[0] as ProjectVO;
 						for each (var i:Object in tree.dataProvider)
 						{
 							if (i.file.nativePath == project.folderLocation.fileBridge.nativePath)

@@ -411,7 +411,7 @@ package actionScripts.plugins.externalEditors
 				// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/707
 				var timeoutValue:uint = setTimeout(function():void
 				{
-					this.stop();
+					stop();
 					clearTimeout(timeoutValue);
 				}, 1000);
 			}

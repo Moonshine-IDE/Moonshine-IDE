@@ -75,7 +75,7 @@ class TourDeFlexContentsView extends Panel implements IViewWithTitle {
 	override private function initialize():Void {
 		this.layout = new AnchorLayout();
 
-		var itemRendererRecycler = DisplayObjectRecycler.withClass(TourDeFlexTreeViewItemRenderer, (itemRenderer, state:TreeViewItemState) -> {
+		var itemRendererRecycler = DisplayObjectRecycler.withClass(TourDeFlexHierarchicalItemRenderer, (itemRenderer, state:TreeViewItemState) -> {
 			var treeNode = cast(state.data, TreeNode<Dynamic>);
 			var xml = cast(treeNode.data, Xml);
 			itemRenderer.text = state.text;

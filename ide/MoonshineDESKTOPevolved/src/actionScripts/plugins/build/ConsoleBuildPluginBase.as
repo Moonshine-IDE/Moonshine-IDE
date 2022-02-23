@@ -171,7 +171,7 @@ package actionScripts.plugins.build
 
         protected function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
-            removeNativeProcessEventListeners();
+			removeNativeProcessEventListeners();
         }
 
         protected function getDataFromBytes(data:IDataInput):String

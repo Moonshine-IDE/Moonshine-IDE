@@ -31,7 +31,7 @@ package actionScripts.plugin.outline
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
-	import feathers.data.TreeCollection;
+	import feathers.data.ArrayHierarchicalCollection;
 	import feathers.data.TreeNode;
 
 	import moonshine.lsp.DocumentSymbol;
@@ -112,7 +112,7 @@ package actionScripts.plugin.outline
 		private function handleLanguageServerOpened(event:ProjectEvent):void
 		{
 			//start fresh because it's a new language server instance
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 
 			//we may have tried to refresh the symbols previously, but it would
@@ -129,7 +129,7 @@ package actionScripts.plugin.outline
 			}
 			
 			//start fresh because this capapbility wasn't registered before
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 
 			//we may have tried to refresh the symbols previously, but it would
@@ -140,7 +140,7 @@ package actionScripts.plugin.outline
 
 		private function handleOutlineShow(event:Event):void
 		{
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 			
 			if (!outlineViewWrapper.parent)
@@ -167,7 +167,7 @@ package actionScripts.plugin.outline
 				//we can ignore this event when the outline isn't visible
 				return;
 			}
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 
 			if(!symbols || symbols.length == 0)
@@ -175,8 +175,14 @@ package actionScripts.plugin.outline
 				return;
 			}
 
-			//TODO: remove when addAt() bug is fixed in alpha.3
-			var nodes:Array = [];
+			collection = new ArrayHierarchicalCollection(null, function(item:Object):Array
+			{
+				if (item is DocumentSymbol)
+				{
+					return DocumentSymbol(item).children;
+				}
+				return null;
+			});
 
 			var itemCount:int = symbols.length;
 			for(var i:int = 0; i < itemCount; i++)
@@ -185,38 +191,15 @@ package actionScripts.plugin.outline
 				if(symbol is SymbolInformation)
 				{
 					var symbolInfo:SymbolInformation = symbol as SymbolInformation;
-					//TODO: remove when addAt() bug is fixed in alpha.3
-					//collection.addAt(new TreeNode(symbolInfo), [i]);
-					nodes.push(new TreeNode(symbolInfo));
+					collection.addAt(symbolInfo, [i]);
 				}
 				else if(symbol is DocumentSymbol)
 				{
 					var documentSymbol:DocumentSymbol = symbol as DocumentSymbol;
-					var item:TreeNode = this.getDocumentSymbolItem(documentSymbol);
-					//TODO: remove when addAt() bug is fixed in alpha.3
-					nodes.push(item);
-					//collection.addAt(item, [i]);
+					collection.addAt(documentSymbol, [i]);
 				}
 			}
-			//TODO: remove when addAt() bug is fixed in alpha.3
-			outlineView.outline = new TreeCollection(nodes);
-		}
-
-		private function getDocumentSymbolItem(documentSymbol:DocumentSymbol):TreeNode
-		{
-			var nodeChildren:Array = null;
-			var symbolChildren:Array = documentSymbol.children;
-			if(documentSymbol.children)
-			{
-				nodeChildren = [];
-				var childCount:int = symbolChildren.length;
-				for(var i:int = 0; i < childCount; i++)
-				{
-					var child:DocumentSymbol = symbolChildren[i];
-					nodeChildren[i] = this.getDocumentSymbolItem(child);
-				}
-			}
-			return new TreeNode(documentSymbol, nodeChildren);
+			outlineView.outline = collection;
 		}
 
 		private function refreshSymbols():void
@@ -237,7 +220,7 @@ package actionScripts.plugin.outline
 			if(!lspEditor || !lspEditor.currentFile || !lspEditor.languageClient)
 			{
 				//we can clear the collection if we can't proceed
-				var collection:TreeCollection = outlineView.outline;
+				var collection:ArrayHierarchicalCollection = outlineView.outline;
 				collection.removeAll();
 				return;
 			}
@@ -251,7 +234,7 @@ package actionScripts.plugin.outline
 		private function handleTabSelect(event:TabEvent):void
 		{
 			//we switched to a different file, so remove the old symbols
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 
 			setActiveEditor(event.child as LanguageServerTextEditor);

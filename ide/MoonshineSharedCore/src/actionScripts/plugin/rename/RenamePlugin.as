@@ -23,6 +23,7 @@ package actionScripts.plugin.rename
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
     
+    import mx.controls.Alert;
     import mx.core.FlexGlobals;
     import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
@@ -98,8 +99,9 @@ package actionScripts.plugin.rename
 		private function handleOpenRenameSymbolView(event:Event):void
 		{
 			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-			if(!lspEditor || !lspEditor.languageClient)
+			if (!lspEditor || !lspEditor.languageClient)
 			{
+				Alert.show("Nothing to rename", ConstantsCoreVO.MOONSHINE_IDE_LABEL);
 				return;
 			}
 			var lineText:String = lspEditor.editor.caretLine.text;
@@ -108,7 +110,7 @@ package actionScripts.plugin.rename
 			this._endChar = TextUtil.endOfWord(lineText, caretIndex);
 			this._line = lspEditor.editor.caretLineIndex;
 			renameSymbolView.existingSymbolName = lineText.substr(this._startChar, this._endChar - this._startChar);
-			PopUpManager.addPopUp(renameSymbolViewWrapper, DisplayObject(lspEditor.parentApplication), true);
+			PopUpManager.addPopUp(renameSymbolViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 			PopUpManager.centerPopUp(renameSymbolViewWrapper);
 			renameSymbolViewWrapper.assignFocus("top");
 			renameSymbolViewWrapper.stage.addEventListener(Event.RESIZE, renameSymbolView_stage_resizeHandler, false, 0, true);

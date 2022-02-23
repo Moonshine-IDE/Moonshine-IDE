@@ -155,7 +155,7 @@ package actionScripts.plugins.svn
 			var tmpComponent:ComponentVO = HelperUtils.getComponentByType(ComponentTypes.TYPE_SVN);
 			if (tmpComponent)
 			{
-				var isValidSDKPath:Boolean = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_SVN, pathSetting.stringValue, tmpComponent.pathValidation[0]);
+				var isValidSDKPath:String = HelperUtils.isValidExecutableBy(ComponentTypes.TYPE_SVN, pathSetting.stringValue, tmpComponent.pathValidation);
 				if (!isValidSDKPath)
 				{
 					pathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);

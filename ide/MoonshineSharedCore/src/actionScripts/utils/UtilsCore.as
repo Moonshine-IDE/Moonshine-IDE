@@ -943,7 +943,7 @@ package actionScripts.utils
 			{
 				var tmpFSP:FileSystemParser = new FileSystemParser();
 				tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onFilesListParseCompleted);
-				tmpFSP.parseFilesPaths(value, UIDUtil.createUID(), readableExtensions);
+				tmpFSP.parseFilesPaths(value, "", readableExtensions);
 			}
 			function onFilesListParseCompleted(event:Event):void
 			{
@@ -1152,6 +1152,36 @@ package actionScripts.utils
 			
 			return null;
 		}
+		
+		/**
+		 * Returns PowerShell path on Windows
+		 */
+		public static function getPowerShellExecutablePath():String
+		{
+			// possible termination
+			if (ConstantsCoreVO.IS_MACOS) return null;
+			
+			var installDirectories:Array = ["C:\\Windows\\SysWOW64\\", "C:\\Windows\\System32\\"];
+			var tmpPath:String;
+			var executable:String = "WindowsPowerShell\\v1.0\\powershell.exe"
+			if (ConstantsCoreVO.is64BitSupport)
+			{
+				for each (var i:String in installDirectories)
+				{
+					tmpPath = i + executable;
+					if (model.fileCore.isPathExists(tmpPath))
+					{
+						return tmpPath;
+					}
+				}
+			}
+			else if (model.fileCore.isPathExists(installDirectories[1] + executable))
+			{
+				return installDirectories[1] + executable;
+			}
+			
+			return null;
+		}
 
 		public static function getConsolePath():String
 		{
@@ -1242,10 +1272,30 @@ package actionScripts.utils
 			{
 				return false;
 			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.HAXE);
+			if (component && component.pathValidation)
+			{
+				return (model.flexCore.isValidExecutableBy(SDKTypes.HAXE, model.haxePath, component.pathValidation) != null);
+			}
 			
-			//TODO: use path validation with SDKTypes
-			var haxeName:String = ConstantsCoreVO.IS_MACOS ? "haxe" : "haxe.exe";
-			return model.fileCore.isPathExists(model.haxePath + model.fileCore.separator + haxeName);
+			return true;
+		}
+
+		public static function getHaxeBinPath():String
+		{
+			if (!model.haxePath || !model.fileCore.isPathExists(model.haxePath))
+			{
+				return null;
+			}
+
+			var executable:String = ConstantsCoreVO.IS_MACOS ? "haxelib" : "haxelib.exe";
+			if (model.fileCore.isPathExists([model.haxePath, executable].join(model.fileCore.separator)))
+			{
+				return [model.haxePath, executable].join(model.fileCore.separator);
+			}
+
+			return null;
 		}
 		
 		public static function isNekoAvailable():Boolean
@@ -1255,9 +1305,29 @@ package actionScripts.utils
 				return false;
 			}
 
-			//TODO: use path validation with SDKTypes
-			var nekoName:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
-			return model.fileCore.isPathExists(model.nekoPath + model.fileCore.separator + nekoName);
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.NEKO);
+			if (component && component.pathValidation)
+			{
+				return (model.flexCore.isValidExecutableBy(SDKTypes.NEKO, model.nekoPath, component.pathValidation) != null);
+			}
+
+			return true;
+		}
+
+		public static function getNekoBinPath():String
+		{
+			if (!model.nekoPath || !model.fileCore.isPathExists(model.nekoPath))
+			{
+				return null;
+			}
+
+			var executable:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
+			if (model.fileCore.isPathExists([model.nekoPath, executable].join(model.fileCore.separator)))
+			{
+				return [model.nekoPath, executable].join(model.fileCore.separator);
+			}
+
+			return null;
 		}
 
         public static function getMavenBinPath():String
@@ -1445,7 +1515,7 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.SVN);
 			if (component && component.pathValidation)
 			{
-				return model.flexCore.isValidExecutableBy(SDKTypes.SVN, model.svnPath, component.pathValidation);
+				return (model.flexCore.isValidExecutableBy(SDKTypes.SVN, model.svnPath, component.pathValidation) != null);
 			}
 			
 			return true;
@@ -1461,10 +1531,98 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.GIT);
 			if (component && component.pathValidation)
 			{
-				return model.flexCore.isValidExecutableBy(SDKTypes.GIT, model.gitPath, component.pathValidation);
+				return (model.flexCore.isValidExecutableBy(SDKTypes.GIT, model.gitPath, component.pathValidation) != null);
 			}
 			
 			return true;
+		}
+
+		public static function isVagrantAvailable():Boolean
+		{
+			if (!model.vagrantPath || !model.fileCore.isPathExists(model.vagrantPath))
+			{
+				return false;
+			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.VAGRANT);
+			if (component && component.pathValidation)
+			{
+				return (model.flexCore.isValidExecutableBy(SDKTypes.VAGRANT, model.vagrantPath, component.pathValidation) != null);
+			}
+
+			return false;
+		}
+
+		public static function isVirtualBoxAvailable():Boolean
+		{
+			if (!model.virtualBoxPath || !model.fileCore.isPathExists(model.virtualBoxPath))
+			{
+				return false;
+			}
+
+			var virtualBoxExecutable:String = ConstantsCoreVO.IS_MACOS ? "VBoxManage" : "VirtualBoxVM.exe";
+			if (model.fileCore.isPathExists([model.virtualBoxPath, virtualBoxExecutable].join(model.fileCore.separator)))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		public static function getVagrantBinPath():String
+		{
+			if (!model.vagrantPath || !model.fileCore.isPathExists(model.vagrantPath))
+			{
+				return null;
+			}
+
+			var vagrantExecutable:String = ConstantsCoreVO.IS_MACOS ? "vagrant" : "vagrant.exe";
+			if (model.fileCore.isPathExists([model.vagrantPath, vagrantExecutable].join(model.fileCore.separator)))
+			{
+				return [model.vagrantPath, vagrantExecutable].join(model.fileCore.separator);
+			}
+			if (model.fileCore.isPathExists([model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator)))
+			{
+				return [model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator);
+			}
+
+			return null;
+		}
+
+		public static function isMacPortsAvailable():Boolean
+		{
+			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			{
+				return false;
+			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.MACPORTS);
+			if (component && component.pathValidation)
+			{
+				return (model.flexCore.isValidExecutableBy(SDKTypes.MACPORTS, model.macportsPath, component.pathValidation) != null);
+			}
+
+			return false;
+		}
+
+		public static function getMacPortsBinPath():String
+		{
+			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			{
+				return null;
+			}
+
+			var mportsExecutable:String = "port";
+			if (model.fileCore.isPathExists([model.macportsPath, mportsExecutable].join(model.fileCore.separator)))
+			{
+				return [model.macportsPath, mportsExecutable].join(model.fileCore.separator);
+			}
+			if (model.fileCore.isPathExists([model.macportsPath, "bin", mportsExecutable].join(model.fileCore.separator)))
+			{
+				return [model.macportsPath, "bin", mportsExecutable].join(model.fileCore.separator);
+			}
+
+			return null;
 		}
 		
 		public static function isNotesDominoAvailable():Boolean

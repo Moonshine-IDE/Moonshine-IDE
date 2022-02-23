@@ -319,7 +319,7 @@ package actionScripts.plugin.haxe.hxproject.vo
                 new SettingsWrapper("Paths",
                         new <ISetting>[
                             new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
-                            new StringListSetting(this, "haxelibs", "Haxelibs", "a-zA-Z0-9"),
+                            new StringListSetting(this, "haxelibs", "Libraries", "a-zA-Z0-9\\-"),
                         ]
                 )
             ]);

@@ -35,5 +35,9 @@ package actionScripts.valueObjects
 		public static const OPENJAVA8:String = "openjava8";
 		public static const NODEJS:String = "nodejs";
 		public static const NOTES:String = "notes";
+		public static const HAXE:String = "haxe";
+		public static const NEKO:String = "neko";
+		public static const VAGRANT:String = "vagrant";
+		public static const MACPORTS:String = "macports";
     }
 }

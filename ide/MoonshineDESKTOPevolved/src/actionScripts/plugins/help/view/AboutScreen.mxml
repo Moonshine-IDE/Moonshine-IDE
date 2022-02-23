@@ -39,7 +39,9 @@
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			
 			import components.popup.InfoBackgroundPopup;
-	
+
+			import spark.utils.TextFlowUtil;
+
 			private var infoBackground:InfoBackgroundPopup;
 	
 			public function get longLabel():String
@@ -68,14 +70,18 @@
 	
 			private function onAboutScreenCreationComplete(event:FlexEvent):void
 			{
-				version.text = IDEModel.getInstance().getVersionWithBuildNumber();
-				if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) version.text += " (App Store Version)";
+				var versionString:String = IDEModel.getInstance().getVersionWithBuildNumber();
+				if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) versionString += " (App Store Version)";
 
 				var applicationDescriptor:XML = NativeApplication.nativeApplication.applicationDescriptor;
 				var namespaceArraySplit:Array = (new Namespace(applicationDescriptor.namespace())).uri.split("/");
 				var airVersion:Number = Number(namespaceArraySplit[namespaceArraySplit.length-1]);
 				var isHarman:Boolean = airVersion > 32;
-				version.text += ", Player: "+ airVersion +"("+ (isHarman ? "Harman" : "Adobe") +")";
+				versionString += ", Player: "+ airVersion +"("+ (isHarman ? "Harman" : "Adobe") +")";
+
+				retVersion.textFlow = TextFlowUtil.importFromString(
+						"<p>"+ versionString +"<br/><span fontSize=\"11\">Running On: "+ Capabilities.os +"</span></p>"
+				);
 			}
 			
 			protected function onInfoBackground(event:MouseEvent):void
@@ -124,9 +130,9 @@
 			<s:VGroup autoLayout="true">
 				<s:Label text="{ConstantsCoreVO.MOONSHINE_IDE_LABEL}" color="0x8a2a2a"
 						 paddingLeft="8"/>
-				<s:Label id="version"
-						 paddingLeft="8"/>
-				<s:Label text="Running on: {Capabilities.os}" paddingLeft="8" fontSize="11"/>
+				<s:RichEditableText id="retVersion"
+									width="100%" paddingLeft="8" paddingBottom="2"
+									editable="false" focusEnabled="false"/>
 			</s:VGroup>
 			<s:Spacer width="100%"/>
 			<s:BusyIndicator id="busy"/>
