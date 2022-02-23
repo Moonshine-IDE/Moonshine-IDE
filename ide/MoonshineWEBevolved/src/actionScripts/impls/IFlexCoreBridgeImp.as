@@ -451,9 +451,9 @@ package actionScripts.impls
 		{
 		}
 		
-		public function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean
+		public function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):String
 		{
-			return false;
+			return null;
 		}
 		
 		public function updateToCurrentEnvironmentVariable():void
