@@ -509,7 +509,7 @@ package actionScripts.plugins.startup
 					pathValidation = String(item.pathValidation).split(",");
 					
 					// validate before set
-					if (type == ComponentTypes.TYPE_GIT) pathValidation = null;
+					if (type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) pathValidation = null;
 					if (!HelperUtils.isValidSDKDirectoryBy(type, path, pathValidation)) continue;
 
 					PathSetupHelperUtil.updateFieldPath(type, path);
