@@ -159,6 +159,11 @@ package actionScripts.impls
 		{
 			return FlashDevelopImporter.parse(file, projectName);
 		}
+
+		public function convertFlashDevelopToDomino(file:FileLocation=null):void
+		{
+			 FlashDevelopImporter.convertDomino(file);
+		}
 		
 		public function parseFlashBuilder(file:FileLocation):AS3ProjectVO
 		{

@@ -113,6 +113,9 @@ package actionScripts.plugin.actionscript.as3project
 			
 			// Assume user wants to open project by clicking settings file
 			openProject(projectFile, openWithChoice, openByProject);
+
+			//check if need auto convert to domino dxl 
+			autoConvertXmlToDominoForm(projectFile);
 		}
 		
 		private function importFBProject(openWithChoice:Boolean=false):void
@@ -145,8 +148,13 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			var project:ProjectVO = openByProject ? openByProject : model.flexCore.parseFlashDevelop(null, projectFile);
 			project.projectFile = projectFile;
-			
+
 			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project, (openWithChoice) ? ProjectEvent.LAST_OPENED_AS_FD_PROJECT : null));
+		}
+
+		private function autoConvertXmlToDominoForm(projectFile:FileLocation):void
+		{
+			model.flexCore.convertFlashDevelopToDomino(projectFile);
 		}
 		
 		private function importProject(event:Event):void
@@ -253,6 +261,8 @@ package actionScripts.plugin.actionscript.as3project
 					return;
 				}
 			}
+
+			
 			
 			if (!isFBProject && !isFDProject)
 			{

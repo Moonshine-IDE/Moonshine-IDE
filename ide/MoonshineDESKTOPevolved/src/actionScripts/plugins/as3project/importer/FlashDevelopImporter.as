@@ -33,7 +33,16 @@ package actionScripts.plugins.as3project.importer
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
-	
+	import actionScripts.plugins.ui.editor.VisualEditorViewer;
+		
+	import mx.controls.Alert;
+	import surface.SurfaceMockup;
+
+	import utils.EditingSurfaceReader;
+	import utils.EditingSurfaceWriter;
+
+	import mx.core.IVisualElementContainer;
+
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
 		public static function test(file:File):FileLocation
@@ -271,6 +280,56 @@ package actionScripts.plugins.as3project.importer
 			UtilsCore.setProjectMenuType(project);
 			
 			return project;
+		}
+
+		public static function convertDomino(file:FileLocation):void
+		{
+			var folder:File = (file.fileBridge.getFile as File).parent;
+			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
+			var requireFileLocation:FileLocation;
+			//Alert.show("folder location:"+projectFolderLocation.fileBridge.nativePath);
+			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
+			//1. first check the .xml_conversion_required file
+			if (requireFileLocation.fileBridge.exists){
+				//var visualEditorView:VisualEditorViewer=new VisualEditorViewer();
+				//2.start convert domino 
+				//2.1 load xml from visualeditor-src and convert it to dxl
+				var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
+				if(xmlFileLocation.fileBridge.exists){
+					var directory:Array = xmlFileLocation.fileBridge.getDirectoryListing();
+						for each (var xml:File in directory)
+						{
+							if (xml.extension == "xml" ) {
+								var _fileStreamMoonshine:FileStream = new FileStream();
+								_fileStreamMoonshine.open(xml, FileMode.READ);
+								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
+								var internalxml:XML = new XML(data);
+								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
+								if(surfaceModel!=null){
+									var dominoCode:XML=surfaceModel.toDominoCode();
+									var extensionIndex:int = xml.name.lastIndexOf(xml.extension);
+									var xmlFileName:String=xml.name.substring(0, extensionIndex - 1);
+									var targetFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
+									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
+									var _targetfileStreamMoonshine:FileStream = new FileStream();
+									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
+									_targetfileStreamMoonshine.writeUTFBytes(dominoCode.toXMLString());
+									_targetfileStreamMoonshine.close();
+									//var container:IVisualElementContainer= surfaceModel as IVisualElementContainer;
+									//var dominoCode:XML=EditingSurfaceWriter.aottoDominoCodeCovert(container);
+
+								}
+								_fileStreamMoonshine.close();
+								
+								
+							}
+						}
+				}
+
+				Alert.show("Auto convert done!remove the auto require file!");
+				requireFileLocation.fileBridge.deleteFile();
+			
+			}
 		}
 	}
 }

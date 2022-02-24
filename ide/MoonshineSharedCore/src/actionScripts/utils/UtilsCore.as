@@ -194,7 +194,7 @@ package actionScripts.utils
 			{
 				if (project.buildOptions.additional && project.buildOptions.additional.indexOf("airmobile") != -1) return true;
 			}
-			else if (project.sourceFolder && project.sourceFolder.fileBridge.exists)
+			else if (project.sourceFolder && project.sourceFolder.fileBridge.exists && project.targets && project.targets.length>0)
 			{
 				var appFileName:String = project.targets[0].fileBridge.name.split(".")[0];
 				var descriptor:FileLocation = project.sourceFolder.fileBridge.resolvePath(appFileName +"-app.xml");
