@@ -26,7 +26,7 @@
 				   backgroundColor="0xf5f5f5"
 				   width="400" minWidth="250" minHeight="150" autoLayout="true"
 				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin" creationComplete="onCreationCompletes(event)">
+				   skinClass="components.skins.ResizableTitleWindowSkin">
 	<fx:Script>
 		<![CDATA[
 			import mx.core.FlexGlobals;
@@ -42,6 +42,10 @@
 			import actionScripts.ui.editor.BasicTextEditor;
 			
 			import elements.skins.IDEProgressBarSkin;
+			import moonshine.plugin.search.view.SearchReplacePreviewView;
+			import actionScripts.ui.FeathersUIWrapper;
+			import actionScripts.utils.TextUtil;
+			import feathers.data.ArrayCollection;
 			
 			[Bindable] public var replaceValue:String;
 			[Bindable] public var matchCount:int;
@@ -51,7 +55,6 @@
 			public var isRegexp:Boolean;
 			public var isEscapeChars:Boolean;
 			public var replaceWithValue:String;
-			public var isStartReplaceImmediately:Boolean;
 			
 			[Bindable] private var matchCountProcessed:int;
 			
@@ -59,15 +62,10 @@
 			private var model:IDEModel = IDEModel.getInstance();
 			private var isWorking:Boolean;
 			private var isReplaceApplied:Boolean;
-			
-			protected function onCreationCompletes(event:FlexEvent):void
-			{
-				if (isStartReplaceImmediately && replaceWithValue)
-				{
-					txtReplaceWith.text = replaceWithValue;
-					onChangeButton(null);
-				}
-			}
+			private var storedPathsForProbableReplace:ArrayCollection;
+
+			private var replacePreviewPopup:SearchReplacePreviewView;
+			private var replacePreviewPopupWrapper:FeathersUIWrapper;
 			
 			protected function onChangeButton(event:MouseEvent):void
 			{
@@ -110,6 +108,15 @@
 			{
 				switch (event.value.event)
 				{
+					case WorkerEvent.GET_FILE_LIST:
+						storedPathsForProbableReplace = new ArrayCollection(event.value.value);
+						if (replacePreviewPopup != null) {
+							replacePreviewPopup.files = storedPathsForProbableReplace;
+						}
+						isWorking = false;
+						//hide temporarily while the other window is open
+						visible = false;
+						break;
 					case WorkerEvent.FILE_PROCESSED_COUNT:
 						pbProgress.setProgress(++matchCountProcessed, filesCount);
 						updateOpenEditor(event.value.value);
@@ -142,22 +149,73 @@
 			private function openPreview():void
 			{
 				// validation check for Enter key
-				if (StringUtil.trim(txtReplaceWith.text).length == 0) return;
-				
-				var tmpPopup:SearchInProjectPreviewPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SearchInProjectPreviewPopup, true) as SearchInProjectPreviewPopup;
-				tmpPopup.replaceValue = replaceValue;
-				tmpPopup.replaceWithValue = txtReplaceWith.text;
-				tmpPopup.matchCount = matchCount;
-				tmpPopup.filesCount = filesCount;
-				tmpPopup.isMatchCase = isMatchCase;
-				tmpPopup.isRegexp = isRegexp;
-				tmpPopup.isEscapeChars = isEscapeChars;
-				tmpPopup.width = screen.width * .6;
-				tmpPopup.height = screen.height * .8;
-				PopUpManager.centerPopUp(tmpPopup);
-				closeThis();
+				if (StringUtil.trim(txtReplaceWith.text).length == 0) {
+					return;
+				}
+
+				var searchString:String = isEscapeChars ? TextUtil.escapeRegex(replaceValue) : replaceValue;
+				var flags:String = 'g';
+				if (!isMatchCase) flags += 'i';
+				var searchRegExp:EReg = new EReg(searchString, flags);
+
+				replacePreviewPopup = new SearchReplacePreviewView();
+				replacePreviewPopup.originalValue = replaceValue;
+				replacePreviewPopup.replacementValue = txtReplaceWith.text;
+				replacePreviewPopup.search = searchRegExp;
+				replacePreviewPopup.addEventListener(Event.CLOSE, tmpPopup_closeHandler);
+				replacePreviewPopup.addEventListener(SearchReplacePreviewView.EVENT_REPLACE_SELECTED, tmpPopUp_replaceSelectedHandler);
+				replacePreviewPopupWrapper = new FeathersUIWrapper(replacePreviewPopup);
+				replacePreviewPopup.width = screen.width * .6;
+				replacePreviewPopup.height = screen.height * .8;
+				PopUpManager.addPopUp(replacePreviewPopupWrapper, DisplayObject(FlexGlobals.topLevelApplication), true);
+				PopUpManager.centerPopUp(replacePreviewPopupWrapper);
+
+				replacePreviewPopupWrapper.assignFocus("top");
+				replacePreviewPopupWrapper.stage.addEventListener(Event.RESIZE, searchView_stage_resizeHandler, false, 0, true);
+
+				isWorking = true;
+				worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
+				worker.sendToWorker(WorkerEvent.GET_FILE_LIST, null);
 			}
-			
+
+			private function searchView_stage_resizeHandler(event:Event):void
+			{
+				PopUpManager.centerPopUp(replacePreviewPopupWrapper);
+			}
+
+			private function tmpPopup_closeHandler(event:Event):void
+			{
+				visible = true;
+
+				replacePreviewPopupWrapper.stage.removeEventListener(Event.RESIZE, searchView_stage_resizeHandler);
+				PopUpManager.removePopUp(FeathersUIWrapper(replacePreviewPopupWrapper));
+
+				replacePreviewPopup.removeEventListener(Event.CLOSE, tmpPopup_closeHandler);
+
+				replacePreviewPopup = null;
+				replacePreviewPopupWrapper = null;
+			}
+
+			private function tmpPopUp_replaceSelectedHandler(event:Event):void
+			{
+				var newFilesCount:int = 0;
+				var files:ArrayCollection = replacePreviewPopup.files;
+				for each(var file:Object in files.array)
+				{
+					if (file.isSelected)
+					{
+						newFilesCount++;
+					}
+				}
+				if (newFilesCount == 0) {
+					closeThis();
+					return;
+				}
+
+				filesCount = newFilesCount;
+				worker.sendToWorker(WorkerEvent.SET_FILE_LIST, files.array);
+				onChangeButton(null);
+			}
 			
 		]]>
 	</fx:Script>

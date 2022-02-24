@@ -1276,7 +1276,7 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.HAXE);
 			if (component && component.pathValidation)
 			{
-				return (model.flexCore.isValidExecutableBy(SDKTypes.HAXE, model.haxePath, component.pathValidation) != null);
+				return model.flexCore.isValidExecutableBy(SDKTypes.HAXE, model.haxePath, component.pathValidation);
 			}
 			
 			return true;
@@ -1308,7 +1308,7 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.NEKO);
 			if (component && component.pathValidation)
 			{
-				return (model.flexCore.isValidExecutableBy(SDKTypes.NEKO, model.nekoPath, component.pathValidation) != null);
+				return model.flexCore.isValidExecutableBy(SDKTypes.NEKO, model.nekoPath, component.pathValidation);
 			}
 
 			return true;
@@ -1515,7 +1515,7 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.SVN);
 			if (component && component.pathValidation)
 			{
-				return (model.flexCore.isValidExecutableBy(SDKTypes.SVN, model.svnPath, component.pathValidation) != null);
+				return model.flexCore.isValidExecutableBy(SDKTypes.SVN, model.svnPath, component.pathValidation);
 			}
 			
 			return true;
@@ -1531,7 +1531,7 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.GIT);
 			if (component && component.pathValidation)
 			{
-				return (model.flexCore.isValidExecutableBy(SDKTypes.GIT, model.gitPath, component.pathValidation) != null);
+				return model.flexCore.isValidExecutableBy(SDKTypes.GIT, model.gitPath, component.pathValidation);
 			}
 			
 			return true;
@@ -1547,7 +1547,7 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.VAGRANT);
 			if (component && component.pathValidation)
 			{
-				return (model.flexCore.isValidExecutableBy(SDKTypes.VAGRANT, model.vagrantPath, component.pathValidation) != null);
+				return model.flexCore.isValidExecutableBy(SDKTypes.VAGRANT, model.vagrantPath, component.pathValidation);
 			}
 
 			return false;
@@ -1599,7 +1599,7 @@ package actionScripts.utils
 			var component:Object = model.flexCore.getComponentByType(SDKTypes.MACPORTS);
 			if (component && component.pathValidation)
 			{
-				return (model.flexCore.isValidExecutableBy(SDKTypes.MACPORTS, model.macportsPath, component.pathValidation) != null);
+				return model.flexCore.isValidExecutableBy(SDKTypes.MACPORTS, model.macportsPath, component.pathValidation);
 			}
 
 			return false;

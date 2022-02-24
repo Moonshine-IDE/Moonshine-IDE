@@ -76,7 +76,7 @@ package actionScripts.interfaces
 		function updateToCurrentEnvironmentVariable():void;
 		function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void;
 		function getComponentByType(type:String):Object;
-		function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):String;
+		function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean;
 		function getExternalEditors():ArrayCollection;
 		function generateTabularRoyaleProject():void;
 		function getModulesFinder():IModulesFinder;
