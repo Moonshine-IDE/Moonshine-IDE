@@ -1,7 +1,7 @@
-package elements.templates.royaleTabularCRUD.project.src.classes.beads
+package classes.beads
 {
     import classes.beads.JewelDataGridRendererOwner;
-
+    
     import org.apache.royale.core.IStrand;
     import org.apache.royale.jewel.beads.views.DataGridView;
     import org.apache.royale.jewel.supportClasses.datagrid.IDataGridColumnList;
