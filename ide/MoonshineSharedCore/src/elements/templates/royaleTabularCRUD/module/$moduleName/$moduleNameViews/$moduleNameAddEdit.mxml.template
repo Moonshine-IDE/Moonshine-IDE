@@ -11,7 +11,7 @@
 	<fx:Script>
 		<![CDATA[
 			import classes.events.ScreenEvent;
-
+            import org.apache.royale.jewel.Snackbar;
 			%ImportStatements%
 			
 			public static const NAME:String = "%ViewComponentName%";
@@ -20,6 +20,11 @@
 			{
 				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, %ListingComponentName%.NAME));
 			}
+
+			private function onFormValid(event:Event):void
+            {
+                Snackbar.show("Form submission is currently disabled, and will be added with a future update.", 4000);
+            }
 			
 		]]>
 	</fx:Script>
@@ -32,7 +37,7 @@
 	<js:HRule percentWidth="100"/>
 	<j:Spacer height="20"/>
 	
-	<j:Form>
+	<j:Form valid="onFormValid(event)">
 		<j:beads>
 			<j:FormValidator id="formValidator" trigger="{btnSubmit}" triggerEvent="click" 
 							 requiredFieldError="At least one field has a validation error. Please correct the problem and submit again."/>

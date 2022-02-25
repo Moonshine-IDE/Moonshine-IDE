@@ -29,4 +29,7 @@
 	<j:Spacer height="20"/>
 	
 	%ModuleLinks%
+
+	<j:Spacer height="30"/>
+    <j:Label text="Form submission is currently disabled, and will be added with a future update."/>
 </j:VGroup>

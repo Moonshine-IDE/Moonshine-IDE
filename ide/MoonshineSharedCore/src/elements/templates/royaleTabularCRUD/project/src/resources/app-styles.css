@@ -26,6 +26,10 @@
 	IFormItemContentArea: ClassReference("classes.beads.ContentGroupShrinkForm");
 }
 
+.dataGridOwner {
+	IBeadView: ClassReference("classes.beads.CustomDataGridView");
+}
+
 .jewel.label.formFieldDescription {
 	fontSize: 12px;
 	color: #666666;
