@@ -40,6 +40,7 @@ package actionScripts.plugins.as3project.importer
 
 	import utils.EditingSurfaceReader;
 	import utils.EditingSurfaceWriter;
+	import utils.MainApplicationCodeUtils;
 
 	import mx.core.IVisualElementContainer;
 
@@ -285,12 +286,18 @@ package actionScripts.plugins.as3project.importer
 		public static function convertDomino(file:FileLocation):void
 		{
 			var folder:File = (file.fileBridge.getFile as File).parent;
+			
+			var projectNameextensionIndex:int = file.fileBridge.name.lastIndexOf("veditorproj");
+			var projectName:String=file.fileBridge.name.substring(0, projectNameextensionIndex - 1);
+			Alert.show("projectName:"+projectName);
 			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
 			var requireFileLocation:FileLocation;
 			//Alert.show("folder location:"+projectFolderLocation.fileBridge.nativePath);
 			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
 			//1. first check the .xml_conversion_required file
 			if (requireFileLocation.fileBridge.exists){
+				var dominoXml:XML = MainApplicationCodeUtils.getDominoParentContent(projectName,projectName);
+                var dominoMainContainer:XML = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
 				//var visualEditorView:VisualEditorViewer=new VisualEditorViewer();
 				//2.start convert domino 
 				//2.1 load xml from visualeditor-src and convert it to dxl
@@ -306,8 +313,12 @@ package actionScripts.plugins.as3project.importer
 								var internalxml:XML = new XML(data);
 								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
 								if(surfaceModel!=null){
-									var dominoCode:XML=surfaceModel.toDominoCode();
+									//convert to dxl
+									var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
+									dominoCode=MainApplicationCodeUtils.fixDominField(dominoCode);
+									//fix the dxl format
 									var extensionIndex:int = xml.name.lastIndexOf(xml.extension);
+									//write the dxl to traget form file
 									var xmlFileName:String=xml.name.substring(0, extensionIndex - 1);
 									var targetFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
 									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
