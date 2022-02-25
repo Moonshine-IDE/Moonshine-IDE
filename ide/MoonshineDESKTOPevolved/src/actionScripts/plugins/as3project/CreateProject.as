@@ -110,7 +110,6 @@ package actionScripts.plugins.as3project
 		private var isAway3DProject:Boolean;
 		private var isLibraryProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
-		private var isFlexJSRoyalProject:Boolean;
 		private var isFlexJSRoyalVisualProject:Boolean;
 		private var isJavaProject:Boolean;
 		private var isGrailsProject:Boolean;
