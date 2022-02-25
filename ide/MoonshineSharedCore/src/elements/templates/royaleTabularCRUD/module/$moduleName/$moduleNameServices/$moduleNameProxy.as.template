@@ -1,0 +1,11 @@
+package $packagePath
+{
+	public class $moduleNameProxy  
+	{
+		private var serviceDelegate:$moduleNameServices;
+		
+		public function $moduleNameProxy()
+		{
+		}
+	}
+}

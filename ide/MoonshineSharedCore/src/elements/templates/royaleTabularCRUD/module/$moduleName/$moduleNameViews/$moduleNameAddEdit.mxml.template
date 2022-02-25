@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<j:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:j="library://ns.apache.org/royale/jewel"
+		  xmlns:js="library://ns.apache.org/royale/basic" 
+		  xmlns:html="library://ns.apache.org/royale/html"
+		  xmlns:joditeditor="classes.joditeditor.*" xmlns:components="views.components.*"
+		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" className="bodyPadding">
+	<fx:Metadata>
+		[Event(name="eventNavigateTo", type="classes.events.ScreenEvent")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import classes.events.ScreenEvent;
+            import org.apache.royale.jewel.Snackbar;
+			%ImportStatements%
+			
+			public static const NAME:String = "%ViewComponentName%";
+					
+			private function onBackRequest(event:MouseEvent):void
+			{
+				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, %ListingComponentName%.NAME));
+			}
+
+			private function onFormValid(event:Event):void
+            {
+                Snackbar.show("Form submission is currently disabled, and will be added with a future update.", 4000);
+            }
+			
+		]]>
+	</fx:Script>
+	<j:beads>
+		<js:ContainerDataBinding />
+	</j:beads>
+	
+	<html:H2 text="Add/Edit to %FormName%"/>
+	
+	<js:HRule percentWidth="100"/>
+	<j:Spacer height="20"/>
+	
+	<j:Form valid="onFormValid(event)">
+		<j:beads>
+			<j:FormValidator id="formValidator" trigger="{btnSubmit}" triggerEvent="click" 
+							 requiredFieldError="At least one field has a validation error. Please correct the problem and submit again."/>
+		</j:beads>
+		%FormItems%
+	</j:Form>
+	
+	<j:Spacer height="20"/>
+	
+	<j:HGroup itemsHorizontalAlign="itemsCenter" gap="3" percentWidth="100">
+		<j:IconButton id="btnSubmit" text="Submit">
+			<j:icon>
+				<js:MaterialIcon text="{MaterialIconType.UPDATE}" />
+			</j:icon>
+		</j:IconButton>
+		<j:IconButton text="Cancel"
+			click="onBackRequest(event)">
+			<j:icon>
+				<js:MaterialIcon text="{MaterialIconType.ARROW_BACK}" />
+			</j:icon>
+		</j:IconButton>
+	</j:HGroup>
+</j:VGroup>

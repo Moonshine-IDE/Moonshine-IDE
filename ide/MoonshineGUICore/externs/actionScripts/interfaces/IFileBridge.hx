@@ -50,6 +50,8 @@ extern interface IFileBridge {
 	@:flash.property
 	public var isDirectory(default, default):Bool;
 
+	public function read():Dynamic;
+
 	public function canonicalize():Void;
 
 	public function resolvePath(path:String, toRelativePath:String = null):FileLocation;

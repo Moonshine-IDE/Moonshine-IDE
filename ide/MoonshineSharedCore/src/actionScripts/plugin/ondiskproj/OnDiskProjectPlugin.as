@@ -19,6 +19,7 @@
 package actionScripts.plugin.ondiskproj
 {
     import flash.display.DisplayObject;
+    import flash.events.Event;
     
     import mx.core.FlexGlobals;
     import mx.events.CloseEvent;
@@ -26,6 +27,7 @@ package actionScripts.plugin.ondiskproj
     
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.NewProjectEvent;
+    import actionScripts.events.OnDiskBuildEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.project.ProjectTemplateType;
@@ -51,8 +53,9 @@ package actionScripts.plugin.ondiskproj
 		
 		override public function activate():void
 		{
-			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
-			dispatcher.addEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow);
+			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler, false, 0, true);
+			dispatcher.addEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow, false, 0, true);
+			dispatcher.addEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest, false, 0, true);
 			
 			super.activate();
 		}
@@ -61,6 +64,7 @@ package actionScripts.plugin.ondiskproj
 		{
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
 			dispatcher.removeEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow);
+			dispatcher.removeEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest);
 			
 			super.deactivate();
 		}
@@ -133,6 +137,11 @@ package actionScripts.plugin.ondiskproj
 			tmpNewFileEvent.isOpenAfterCreate = true;
 			tmpNewFileEvent.newFileCreated = targetFile;
 			dispatcher.dispatchEvent(tmpNewFileEvent);
+		}
+		
+		protected function onRoyaleCRUDProjectRequest(event:Event):void
+		{
+			model.flexCore.generateTabularRoyaleProject();
 		}
 	}
 }

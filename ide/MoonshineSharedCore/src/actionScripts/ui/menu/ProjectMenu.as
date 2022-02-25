@@ -26,6 +26,7 @@ package actionScripts.ui.menu
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.MavenBuildEvent;
+    import actionScripts.events.OnDiskBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
     import actionScripts.events.RoyaleApiReportEvent;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -354,6 +355,8 @@ package actionScripts.ui.menu
 			{
 				var resourceManager:IResourceManager = ResourceManager.getInstance();
 				onDiskMenu = Vector.<MenuItem>([
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'GENERATE_CRUD_ROYALE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_CRUD_ROYALE),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.ON_DISK], MavenBuildEvent.START_MAVEN_BUILD),
 					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.ON_DISK], ProjectActionEvent.CLEAN_PROJECT)

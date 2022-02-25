@@ -86,7 +86,13 @@ package actionScripts.plugins.as3project
     public class CreateProject
 	{
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
-		
+
+		protected var model:IDEModel = IDEModel.getInstance();
+		protected var project:Object;
+		protected var templateLookup:Object = {};
+		protected var isFlexJSRoyalProject:Boolean;
+		protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+
 		private var newProjectWithExistingSourcePathSetting:NewProjectSourcePathListSetting;
 		private var newLibrarySetting:NewLibraryProjectSetting;
 		private var newProjectNameSetting:StringSetting;
@@ -95,12 +101,6 @@ package actionScripts.plugins.as3project
 		private var customSdkPathSetting:PathSetting;
 		private var projectTemplateTypeSetting:DropDownListSetting;
 		private var projectWithExistingSourceSetting:BooleanSetting;
-
-		private var templateLookup:Object = {};
-		private var project:Object;
-		private var model:IDEModel = IDEModel.getInstance();
-		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		
 		private var isActionScriptProject:Boolean;
 		private var isMobileProject:Boolean;
 		private var isOpenProjectCall:Boolean;
@@ -130,7 +130,8 @@ package actionScripts.plugins.as3project
 
 		public function CreateProject(event:NewProjectEvent)
 		{
-
+			if (!event) return;
+			
 			// if opened by Open project, event.settingsFile will be false
 			// and event.templateDir will be open folder location
 			isOpenProjectCall = !event.settingsFile;
@@ -642,7 +643,7 @@ package actionScripts.plugins.as3project
 			}
 		}
 
-		private function onCreateProjectSave(event:Event):void
+		protected function onCreateProjectSave(event:Event):void
 		{
 			if (isInvalidToSave) 
 			{
@@ -748,7 +749,7 @@ package actionScripts.plugins.as3project
 			}
 		}
 
-		private function createFileSystemBeforeSave(shell:Object, exportProject:AS3ProjectVO = null):Object
+		protected function createFileSystemBeforeSave(shell:Object, exportProject:AS3ProjectVO = null):Object
 		{
 			// in case of create new project through Open Project option
 			// we'll need to get the template project directory by it's name
@@ -1203,7 +1204,7 @@ package actionScripts.plugins.as3project
             return pvo;
 		}
 
-		private function getProjectWithTemplate(pvo:Object, exportProject:AS3ProjectVO = null):Object
+		protected function getProjectWithTemplate(pvo:Object, exportProject:AS3ProjectVO = null):Object
 		{
 			if (!projectTemplateType)
 			{
@@ -1270,7 +1271,7 @@ package actionScripts.plugins.as3project
 							var tmpIsExistingProjectSource:Boolean = pvo.isProjectFromExistingSource;
 							templateLookup[pvo] = template.file;
 
-							pvo = FlashDevelopImporter.parse(template.file.fileBridge.resolvePath(templateSettingsName), null, null, true, projectTemplateType);
+							pvo = FlashDevelopImporter.parse(template.file.fileBridge.resolvePath(templateSettingsName), null, null, false, projectTemplateType);
 							pvo.folderLocation = tmpLocation;
 							pvo.projectName = tmpName;
 							pvo.projectWithExistingSourcePaths = tmpExistingSource;
@@ -1318,7 +1319,7 @@ package actionScripts.plugins.as3project
 			}
 		}
 
-        private function setProjectType(templateName:String):void
+		protected function setProjectType(templateName:String):void
         {
 			
 			//Alert.show("templateName:"+templateName);
