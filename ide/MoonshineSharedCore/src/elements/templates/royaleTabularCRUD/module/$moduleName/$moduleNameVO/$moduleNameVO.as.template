@@ -1,0 +1,17 @@
+package views.modules.$moduleName.$moduleNameVO
+{
+    [Bindable]
+	public class $moduleNameVO  
+	{
+	    %PropertyStatements%
+
+		public function $moduleNameVO()
+		{
+		}
+		
+		public function toRequestObject():Object
+		{
+			%ToRequestObjectStatements%
+		}
+	}
+}

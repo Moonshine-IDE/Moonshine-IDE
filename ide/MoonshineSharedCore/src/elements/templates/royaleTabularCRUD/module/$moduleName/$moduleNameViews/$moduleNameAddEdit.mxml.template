@@ -4,7 +4,8 @@
 		  xmlns:js="library://ns.apache.org/royale/basic" 
 		  xmlns:html="library://ns.apache.org/royale/html"
 		  xmlns:joditeditor="classes.joditeditor.*" xmlns:components="views.components.*"
-		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" className="bodyPadding">
+		  itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" className="bodyPadding"
+		  initComplete="onInitCompletes()">
 	<fx:Metadata>
 		[Event(name="eventNavigateTo", type="classes.events.ScreenEvent")]
 	</fx:Metadata>
@@ -15,6 +16,18 @@
 			%ImportStatements%
 			
 			public static const NAME:String = "%ViewComponentName%";
+
+			private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
+
+			private function onInitCompletes():void
+            {
+                /*if (proxy.selectedItem != null)
+                {
+                    this.AuthorID_id.text = proxy.selectedItem.AuthorID;
+                    this.NameFirst_id.text = proxy.selectedItem.NameFirst;
+                    this.NameLast_id.text = proxy.selectedItem.NameLast;
+                }*/
+            }
 					
 			private function onBackRequest(event:MouseEvent):void
 			{
@@ -24,6 +37,14 @@
 			private function onFormValid(event:Event):void
             {
                 Snackbar.show("Form submission is currently disabled, and will be added with a future update.", 4000);
+
+                /*var submitObject:$moduleNameVO = proxy.selectedItem ? proxy.selectedItem : new $moduleNameVO();
+                submitObject.AuthorID = this.AuthorID_id.text;
+                submitObject.NameFirst = this.NameFirst_id.text;
+                submitObject.NameLast = this.NameLast_id.text;
+
+                proxy.submitItem(submitObject);
+                onBackRequest(null);*/
             }
 			
 		]]>

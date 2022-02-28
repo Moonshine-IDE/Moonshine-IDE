@@ -79,7 +79,7 @@ package actionScripts.utils
 				tempDirectory.fileBridge.createDirectory();
 			}
 
-			withName ||= "FileSystemParser";
+			withName ||= UIDUtil.createUID();
 
 			this.readableExtensions = readableExtensions;
 			this._projectPath = fromPath;

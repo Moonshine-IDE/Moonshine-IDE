@@ -3,29 +3,57 @@
 		 xmlns:j="library://ns.apache.org/royale/jewel"
 		 xmlns:js="library://ns.apache.org/royale/basic" 
 		 xmlns:html="library://ns.apache.org/royale/html"
-		 itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" className="bodyPadding">
+		 itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" className="bodyPadding"
+		 initComplete="onInitCompletes()">
 	<fx:Metadata>
 		[Event(name="eventNavigateTo", type="classes.events.ScreenEvent")]
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
 			import classes.events.ScreenEvent;
-
+            import org.apache.royale.jewel.Snackbar;
 			import org.apache.royale.events.MouseEvent;
-
+            import classes.events.DeleteItemEvent;
 			%ImportStatements%
 			
-			public static const NAME:String = "%ViewComponentName%";
+			public static const NAME:String = "$moduleNameListing";
+
+			[Bindable]
+            private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
+
+            private function onInitCompletes():void
+            {
+                proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onItemBeingAdded);
+                dgItems.addEventListener(DeleteItemEvent.DELETE_TABLE_ITEM, onItemDeletionRequest)
+            }
 
 			private function onAddNewRequest(event:MouseEvent):void
 			{
-				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, %AddEditComponentName%.NAME));
+			    this.dgItems.selectedItem = null;
+				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, $moduleNameAddEdit.NAME));
 			}
 			
 			private function onBackRequest(event:MouseEvent):void
 			{
 				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, "Dashboard"));
 			}
+			
+			private function onItemDoubleClicked(event:Event):void
+            {
+                proxy.selectedItem = this.dgItems.selectedItem as $moduleNameVO;
+                dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, $moduleNameAddEdit.NAME));
+            }
+            
+            private function onItemDeletionRequest(event:DeleteItemEvent):void
+            {
+                var item:$moduleNameVO = event.item as $moduleNameVO;
+                proxy.removeItem(item);
+            }
+            
+            private function onItemBeingAdded(event:Event):void
+            {
+                Snackbar.show("Request submitted successfully.", 4000, null);
+            }
 			
 		]]>
 	</fx:Script>

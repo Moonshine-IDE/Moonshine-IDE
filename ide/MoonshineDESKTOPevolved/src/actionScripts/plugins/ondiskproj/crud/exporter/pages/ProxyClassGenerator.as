@@ -29,20 +29,19 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	
-	public class ListingPageGenerator extends RoyalePageGeneratorBase
+	public class ProxyClassGenerator extends RoyalePageGeneratorBase
 	{
 		public static const EVENT_COMPLETE:String = "event-complete";
 
 		private var _pageRelativePathString:String;
 		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
 		
-		public function ListingPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
+		public function ProxyClassGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
-			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +"Listing.mxml";
+			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"Services/"+ form.formName +"Proxy.as";
 			pageImportReferences = new <PageImportReferenceVO>[
-					new PageImportReferenceVO(form.formName +"AddEdit", "mxml"),
-					new PageImportReferenceVO(form.formName +"VO", "as"),
-					new PageImportReferenceVO(form.formName +"Proxy", "as")
+				new PageImportReferenceVO(form.formName +"Services", "as"),
+				new PageImportReferenceVO(form.formName +"VO", "as")
 			];
 
 			super(project, form, classReferenceSettings, onComplete);
@@ -64,25 +63,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 				fileContent = fileContent.replace(/%ImportStatements%/ig, importPathStatements.join("\n"));
 				fileContent = fileContent.replace(/$moduleName/ig, form.formName);
 
-				fileContent = fileContent.replace(/%DataGridColumns%/ig, generateColumns());
-				fileContent = fileContent.replace(/%FormName%/g, form.viewName);
 				saveFile(fileContent);
 				dispatchCompletion();
 			}
-		}
-		
-		private function generateColumns():String
-		{
-			var tmpContent:String = "";
-			for each (var field:DominoFormFieldVO in form.fields)
-			{
-				if (field.isIncludeInView)
-				{
-					tmpContent += RoyaleDataGridColumn.toCode(field) +"\n";
-				}
-			}
-			
-			return tmpContent;
 		}
 	}
 }

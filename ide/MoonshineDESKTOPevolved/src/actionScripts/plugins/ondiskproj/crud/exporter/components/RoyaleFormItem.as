@@ -58,6 +58,28 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			
 			return formItem;
 		}
+
+		public static function assignToCode(value:DominoFormFieldVO):String
+		{
+			if (value.isMultiValue)
+			{
+				//formContent = toMultiValueListCode(value);
+			}
+			else
+			{
+				switch (value.type)
+				{
+					case FormBuilderFieldType.TEXT:
+					case FormBuilderFieldType.RICH_TEXT:
+					case FormBuilderFieldType.NUMBER:
+						return value.name +"_id.text = ";
+					case FormBuilderFieldType.DATETIME:
+						return value.name +"_id.selectedDate = ";
+				}
+			}
+
+			return "";
+		}
 		
 		private static function toTextInputCode(field:DominoFormFieldVO):String
 		{

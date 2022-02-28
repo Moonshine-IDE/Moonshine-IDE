@@ -20,6 +20,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
 	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleModuleLinkButton;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
+	import actionScripts.plugins.ondiskproj.crud.exporter.vo.PageImportReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.dominoFormBuilder.vo.DominoFormVO;
@@ -35,6 +36,12 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			super(project, form, classReferenceSettings, onComplete);
 			
 			this.forms = forms;
+			pageImportReferences = new Vector.<PageImportReferenceVO>();
+			for each (var form:DominoFormVO in forms)
+			{
+				pageImportReferences.push(new PageImportReferenceVO(form.formName +"Listing", "mxml"));
+			}
+
 			generate();
 		}
 		
@@ -42,18 +49,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		{
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
-			
-			var importStatements:String = "";
+
 			var moduleLinks:String = "";
 			
 			for each (var form:DominoFormVO in forms)
 			{
-				importStatements += "import "+ classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
-				
 				moduleLinks += RoyaleModuleLinkButton.toCode(form.formName +"Listing", form.viewName) +"\n";
 			}
 			
-			fileContent = fileContent.replace(/%ImportStatements%/gi, importStatements);
+			fileContent = fileContent.replace(/%ImportStatements%/gi, importPathStatements.join("\n"));
 			fileContent = fileContent.replace(/%ModuleLinks%/gi, moduleLinks);
 			
 			saveFile(fileContent);

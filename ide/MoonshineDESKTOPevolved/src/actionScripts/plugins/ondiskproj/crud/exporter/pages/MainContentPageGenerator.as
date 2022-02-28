@@ -20,6 +20,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
 	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleScrollableSectionContent;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
+	import actionScripts.plugins.ondiskproj.crud.exporter.vo.PageImportReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.dominoFormBuilder.vo.DominoFormVO;
@@ -33,8 +34,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		public function MainContentPageGenerator(project:ProjectVO, forms:Vector.<DominoFormVO>, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
 			super(project, null, classReferenceSettings, onComplete);
-			
+
 			this.forms = forms;
+			pageImportReferences = new Vector.<PageImportReferenceVO>();
+			for each (var form:DominoFormVO in forms)
+			{
+				pageImportReferences.push(new PageImportReferenceVO(form.formName +"Listing", "mxml"));
+				pageImportReferences.push(new PageImportReferenceVO(form.formName +"AddEdit", "mxml"));
+			}
+
 			generate();
 		}
 		
@@ -42,25 +50,17 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		{
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
-			
-			var importStatements:String = "";
+
 			var scrollableContents:String = "";
-			var namespaces:String = "";
 			
 			for each (var form:DominoFormVO in forms)
 			{
-				importStatements += "import "+ classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
-				importStatements += "import "+ classReferenceSettings[(form.formName +"AddEdit"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n";
-				
-				namespaces += 'xmlns:'+ form.formName +'AddEdit="'+ classReferenceSettings[(form.formName +"AddEdit"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] +'" \n';
-				namespaces += 'xmlns:'+ form.formName +'Listing="'+ classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] +'" \n';
-				
 				scrollableContents += RoyaleScrollableSectionContent.toCode(form.formName +"Listing") +"\n";
 				scrollableContents += RoyaleScrollableSectionContent.toCode(form.formName +"AddEdit") +"\n";
 			}
 			
-			fileContent = fileContent.replace(/%Namespaces%/gi, namespaces);
-			fileContent = fileContent.replace(/%ImportStatements%/gi, importStatements);
+			fileContent = fileContent.replace(/%Namespaces%/gi, namespacePathStatements.join("\n"));
+			fileContent = fileContent.replace(/%ImportStatements%/gi, importPathStatements.join("\n"));
 			fileContent = fileContent.replace(/%ScrollableSectionContents%/gi, scrollableContents);
 			
 			saveFile(fileContent);

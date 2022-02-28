@@ -24,7 +24,6 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 	
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.valueObjects.ResourceVO;
 
 	public class RoyaleCRUDUtils
 	{
