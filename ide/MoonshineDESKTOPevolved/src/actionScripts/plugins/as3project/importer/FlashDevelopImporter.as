@@ -43,6 +43,7 @@ package actionScripts.plugins.as3project.importer
 	import utils.MainApplicationCodeUtils;
 
 	import mx.core.IVisualElementContainer;
+	import actionScripts.utils.DominoUtils;
 
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
@@ -296,8 +297,9 @@ package actionScripts.plugins.as3project.importer
 			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
 			//1. first check the .xml_conversion_required file
 			if (requireFileLocation.fileBridge.exists){
-				var dominoXml:XML = MainApplicationCodeUtils.getDominoParentContent(projectName,projectName);
-                var dominoMainContainer:XML = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
+				
+				//DominoUtils.getDominoParentContent(projectName,projectName);
+             
 				//var visualEditorView:VisualEditorViewer=new VisualEditorViewer();
 				//2.start convert domino 
 				//2.1 load xml from visualeditor-src and convert it to dxl
@@ -307,15 +309,53 @@ package actionScripts.plugins.as3project.importer
 						for each (var xml:File in directory)
 						{
 							if (xml.extension == "xml" ) {
+								var dominoXml:XML = MainApplicationCodeUtils.getDominoParentContent(projectName,projectName);
 								var _fileStreamMoonshine:FileStream = new FileStream();
 								_fileStreamMoonshine.open(xml, FileMode.READ);
 								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
 								var internalxml:XML = new XML(data);
 								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
 								if(surfaceModel!=null){
+									var dominoMainContainer:XML = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
+									
 									//convert to dxl
 									var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
-									dominoCode=MainApplicationCodeUtils.fixDominField(dominoCode);
+								
+
+									if(dominoCode!=null ){
+										var hasRichText:Boolean=false;	
+										if(dominoCode.children().length() != 0){ 
+											dominoCode=dominoCode.children()[0]
+										}
+										
+										if(dominoCode.name()=="div" || dominoCode.name()=="_moonshineSelected_div"){
+											dominoCode.setName("richtext");
+											hasRichText=true;
+										
+										}
+										if(hasRichText==false){
+											//add new richtext node
+											//Alert.show("add rich:"+code.toXMLString());
+											var richtext:XML = new XML("<richtext style='width:700px;height:700px;' class='flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop' direction='Horizontal' vdirection='Vertical'/>");
+											dominoMainContainer.appendChild(richtext);
+											dominoMainContainer=richtext;
+										}
+									
+										if (dominoMainContainer)
+										{
+											dominoMainContainer.appendChild(dominoCode); 
+											if(dominoCode.name()=="richtext"){
+												dominoMainContainer=dominoCode;
+											}              
+										}
+										else
+										{
+											dominoXml.appendChild(dominoCode);
+										}
+										dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
+									
+									}
+									
 									//fix the dxl format
 									var extensionIndex:int = xml.name.lastIndexOf(xml.extension);
 									//write the dxl to traget form file
@@ -324,7 +364,7 @@ package actionScripts.plugins.as3project.importer
 									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
 									var _targetfileStreamMoonshine:FileStream = new FileStream();
 									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
-									_targetfileStreamMoonshine.writeUTFBytes(dominoCode.toXMLString());
+									_targetfileStreamMoonshine.writeUTFBytes(dominoXml.toXMLString());
 									_targetfileStreamMoonshine.close();
 									//var container:IVisualElementContainer= surfaceModel as IVisualElementContainer;
 									//var dominoCode:XML=EditingSurfaceWriter.aottoDominoCodeCovert(container);
