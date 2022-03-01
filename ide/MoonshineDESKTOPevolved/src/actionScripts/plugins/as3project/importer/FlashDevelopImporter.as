@@ -320,7 +320,17 @@ package actionScripts.plugins.as3project.importer
 									
 									//convert to dxl
 									var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
-								
+									//fix the div node from the domino code 
+									for each(var div:XML in dominoCode..div) //no matter of depth Note here
+									{
+										var divChilren:XMLList = div.children();
+										for each (var divChilrenNode:XML in divChilren)
+										{
+											div.parent().appendChild(divChilrenNode)
+										}
+										delete div.parent().children()[div.childIndex()];
+										
+									}
 
 									if(dominoCode!=null ){
 										var hasRichText:Boolean=false;	
