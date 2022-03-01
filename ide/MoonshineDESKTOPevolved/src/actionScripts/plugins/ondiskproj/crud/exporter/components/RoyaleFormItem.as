@@ -182,7 +182,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 				case FormBuilderFieldType.RICH_TEXT:
 					break;
 				case FormBuilderFieldType.NUMBER:
-					var beadRestrict:String = readTemplate("Bead_Restrict.template");
+					var beadRestrict:String = readTemplate("BeadRestrict.template");
 					beadElements += beadRestrict.replace(/%pattern%/gi, "[^0-9]") +"\n";
 					break;
 			}

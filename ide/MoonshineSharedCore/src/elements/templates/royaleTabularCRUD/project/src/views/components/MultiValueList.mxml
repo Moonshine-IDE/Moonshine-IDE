@@ -144,6 +144,11 @@
 			
 			private function addItemByType():void
 			{
+				if (dataProvider == null)
+				{
+					return;
+				}
+
 				switch (inputType)
 				{
 					case "Datetime":
@@ -189,6 +194,11 @@
 			{
 				dataProvider.removeItem(this.multivalueList.selectedItem);
 				this.multivalueList.selectedIndex = -1;
+			}
+
+			private function reset():void
+			{
+				dataProvider = new ArrayList();
 			}
 			
 		]]>
