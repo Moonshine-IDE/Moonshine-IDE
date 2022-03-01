@@ -323,12 +323,14 @@ package actionScripts.plugins.as3project.importer
 									//fix the div node from the domino code 
 									for each(var div:XML in dominoCode..div) //no matter of depth Note here
 									{
-										var divChilren:XMLList = div.children();
-										for each (var divChilrenNode:XML in divChilren)
-										{
-											div.parent().appendChild(divChilrenNode)
+										if(div.parent().name() == "tablecell"){
+											var divChilren:XMLList = div.children();
+											for each (var divChilrenNode:XML in divChilren)
+											{
+												div.parent().appendChild(divChilrenNode)
+											}
+											delete div.parent().children()[div.childIndex()];
 										}
-										delete div.parent().children()[div.childIndex()];
 										
 									}
 
