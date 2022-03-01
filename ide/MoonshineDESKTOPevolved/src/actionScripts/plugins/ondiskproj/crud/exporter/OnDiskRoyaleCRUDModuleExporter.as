@@ -19,7 +19,9 @@
 package actionScripts.plugins.ondiskproj.crud.exporter
 {
 	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.VOClassGenerator;
 
 	import avmplus.getQualifiedClassName;
 
@@ -144,7 +146,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		{
 			for each (var form:DominoFormVO in formObjects)
 			{
-				waitingCount += 2;
+				waitingCount += 4;
+				new VOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				new ProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 				new ListingPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 				new AddEditPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 			}

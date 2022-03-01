@@ -20,6 +20,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
 	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleDataGridColumn;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
+	import actionScripts.plugins.ondiskproj.crud.exporter.utils.PropertyDeclarationStatement;
 	import actionScripts.plugins.ondiskproj.crud.exporter.utils.RoyaleCRUDUtils;
 	import actionScripts.plugins.ondiskproj.crud.exporter.vo.PageImportReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
@@ -28,22 +29,18 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
-	
-	public class ListingPageGenerator extends RoyalePageGeneratorBase
+	import view.dominoFormBuilder.vo.FormBuilderFieldType;
+
+	public class VOClassGenerator extends RoyalePageGeneratorBase
 	{
 		public static const EVENT_COMPLETE:String = "event-complete";
 
 		private var _pageRelativePathString:String;
 		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
 		
-		public function ListingPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
+		public function VOClassGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
-			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +"Listing.mxml";
-			pageImportReferences = new <PageImportReferenceVO>[
-					new PageImportReferenceVO(form.formName +"AddEdit", "mxml"),
-					new PageImportReferenceVO(form.formName +"VO", "as"),
-					new PageImportReferenceVO(form.formName +"Proxy", "as")
-			];
+			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"VO/"+ form.formName +"VO.as";
 
 			super(project, form, classReferenceSettings, onComplete);
 			generate();
@@ -61,27 +58,45 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			 */
 			function onGenerationCompletes():void
 			{
-				fileContent = fileContent.replace(/%ImportStatements%/ig, importPathStatements.join("\n"));
+				fileContent = fileContent.replace(/%PropertyStatements%/ig, generateProperties());
 				fileContent = fileContent.replace(/$moduleName/ig, form.formName);
+				fileContent = fileContent.replace(/%ToRequestObjectStatements%/g, "return null;"); // <---- TEMPORARY
 
-				fileContent = fileContent.replace(/%DataGridColumns%/ig, generateColumns());
-				fileContent = fileContent.replace(/%FormName%/g, form.viewName);
 				saveFile(fileContent);
 				dispatchCompletion();
 			}
 		}
-		
-		private function generateColumns():String
+
+		private function generateProperties():String
 		{
 			var tmpContent:String = "";
 			for each (var field:DominoFormFieldVO in form.fields)
 			{
 				if (field.isIncludeInView)
 				{
-					tmpContent += RoyaleDataGridColumn.toCode(field) +"\n";
+					if (field.isMultiValue)
+					{
+						tmpContent += PropertyDeclarationStatement.getArrayList(field.name) +"\n\n";
+					}
+					else
+					{
+						switch (field.type)
+						{
+							case FormBuilderFieldType.TEXT:
+							case FormBuilderFieldType.RICH_TEXT:
+								tmpContent += PropertyDeclarationStatement.getString(field.name) +"\n\n";
+								break;
+							case FormBuilderFieldType.NUMBER:
+								tmpContent += PropertyDeclarationStatement.getNumber(field.name) +"\n\n";
+								break;
+							case FormBuilderFieldType.DATETIME:
+								tmpContent += PropertyDeclarationStatement.getDate(field.name) +"\n\n";
+								break;
+						}
+					}
 				}
 			}
-			
+
 			return tmpContent;
 		}
 	}

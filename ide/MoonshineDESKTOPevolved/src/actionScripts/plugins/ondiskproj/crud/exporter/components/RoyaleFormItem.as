@@ -58,6 +58,53 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			
 			return formItem;
 		}
+
+		public static function assignValuesToComponentCode(value:DominoFormFieldVO):String
+		{
+			if (value.isMultiValue)
+			{
+				return value.name +"_id.dataProvider = ";
+			}
+			else
+			{
+				switch (value.type)
+				{
+					case FormBuilderFieldType.TEXT:
+					case FormBuilderFieldType.NUMBER:
+						return value.name +"_id.text = ";
+					case FormBuilderFieldType.RICH_TEXT:
+						return value.name +"_id.data = ";
+					case FormBuilderFieldType.DATETIME:
+						return value.name +"_id.selectedDate = ";
+				}
+			}
+
+			return "";
+		}
+
+		public static function retrieveComponentValuesToCode(value:DominoFormFieldVO):String
+		{
+			if (value.isMultiValue)
+			{
+				return " = "+ value.name +"_id.dataProvider";
+			}
+			else
+			{
+				switch (value.type)
+				{
+					case FormBuilderFieldType.TEXT:
+						return " = "+ value.name +"_id.text";
+					case FormBuilderFieldType.RICH_TEXT:
+						return " = "+ value.name +"_id.data";
+					case FormBuilderFieldType.NUMBER:
+						return " = Number("+ value.name +"_id.text)";
+					case FormBuilderFieldType.DATETIME:
+						return " = "+ value.name +"_id.selectedDate";
+				}
+			}
+
+			return "";
+		}
 		
 		private static function toTextInputCode(field:DominoFormFieldVO):String
 		{
@@ -135,7 +182,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 				case FormBuilderFieldType.RICH_TEXT:
 					break;
 				case FormBuilderFieldType.NUMBER:
-					var beadRestrict:String = readTemplate("Bead_Restrict.template");
+					var beadRestrict:String = readTemplate("BeadRestrict.template");
 					beadElements += beadRestrict.replace(/%pattern%/gi, "[^0-9]") +"\n";
 					break;
 			}

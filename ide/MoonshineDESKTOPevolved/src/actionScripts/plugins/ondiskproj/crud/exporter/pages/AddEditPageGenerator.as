@@ -21,11 +21,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleFormItem;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.plugins.ondiskproj.crud.exporter.utils.RoyaleCRUDUtils;
+	import actionScripts.plugins.ondiskproj.crud.exporter.vo.PageImportReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
-	
+	import view.dominoFormBuilder.vo.FormBuilderFieldType;
+
 	public class AddEditPageGenerator extends RoyalePageGeneratorBase
 	{
 		private var _pageRelativePathString:String;
@@ -34,7 +36,12 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		public function AddEditPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
 			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +"AddEdit.mxml";
-			
+			pageImportReferences = new <PageImportReferenceVO>[
+				new PageImportReferenceVO(form.formName +"Listing", "mxml"),
+				new PageImportReferenceVO(form.formName +"Proxy", "as"),
+				new PageImportReferenceVO(form.formName +"VO", "as")
+			];
+
 			super(project, form, classReferenceSettings, onComplete);
 			generate();
 		}
@@ -43,7 +50,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		{
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
-			
+
 			generateClassReferences(onGenerationCompletes);
 
 			/*
@@ -51,11 +58,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			 */
 			function onGenerationCompletes():void
 			{
-				fileContent = fileContent.replace(/%ImportStatements%/ig, "import "+ classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] +";\n");
+				fileContent = fileContent.replace(/%ImportStatements%/ig, importPathStatements.join("\n"));
+				fileContent = fileContent.replace(/$moduleName/ig, form.formName);
 				fileContent = fileContent.replace(/%ListingComponentName%/ig, form.formName +"Listing");
 				fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"AddEdit");
 
 				fileContent = fileContent.replace(/%FormItems%/ig, generateFormItems());
+				fileContent = fileContent.replace(/%ProxyValuesToComponentCodes%/ig, generateAssignProxyValuesToComponents());
+				fileContent = fileContent.replace(/%ComponentValuesToProxyCodes%/ig, generateAssignComponentsValuesToProxy());
+				fileContent = fileContent.replace(/%FormResetCodes%/ig, generateFormResetCodes());
 				fileContent = fileContent.replace(/%FormName%/ig, form.viewName);
 				saveFile(fileContent);
 				dispatchCompletion();
@@ -72,26 +83,46 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			
 			return tmpContent;
 		}
-		
-		private function generateClassReferences(onComplete:Function):void
+
+		private function generateAssignProxyValuesToComponents():String
 		{
-			if (!classReferenceSettings.hasOwnProperty(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT))
+			var tmpContent:String = "";
+			for each (var field:DominoFormFieldVO in form.fields)
 			{
-				RoyaleCRUDUtils.getImportReferenceFor(form.formName +"Listing.mxml", project, onImportCompletes,["mxml"]);
-
-				/*
-				 * @local
-				 */
-				function onImportCompletes(importPath:String):void
+				switch (field.type)
 				{
-					classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
-
-					var splitPath:Array = importPath.split(".");
-					splitPath[splitPath.length - 1] = "*";
-					classReferenceSettings[(form.formName +"Listing"+ RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
-					onComplete();
+					case FormBuilderFieldType.NUMBER:
+						tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"proxy.selectedItem."+ field.name + ".toString();\n";
+						break;
+					default:
+						tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"proxy.selectedItem."+ field.name + ";\n";
 				}
 			}
+
+			return tmpContent;
+		}
+
+		private function generateAssignComponentsValuesToProxy():String
+		{
+			var tmpContent:String = "var submitObject:"+ form.formName +"VO = proxy.selectedItem ? proxy.selectedItem : new "+ form.formName +"VO();\n";
+			for each (var field:DominoFormFieldVO in form.fields)
+			{
+				tmpContent += "submitObject."+ field.name + RoyaleFormItem.retrieveComponentValuesToCode(field) +";\n";
+			}
+			tmpContent += "proxy.submitItem(submitObject);\n";
+
+			return tmpContent;
+		}
+
+		private function generateFormResetCodes():String
+		{
+			var tmpContent:String = "";
+			for each (var field:DominoFormFieldVO in form.fields)
+			{
+				tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"null;\n";
+			}
+
+			return tmpContent;
 		}
 	}
 }

@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
+	import actionScripts.plugins.ondiskproj.crud.exporter.utils.RoyaleCRUDUtils;
+	import actionScripts.plugins.ondiskproj.crud.exporter.vo.PageImportReferenceVO;
+
 	import flash.events.EventDispatcher;
 	import flash.filesystem.File;
 	
@@ -25,7 +28,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.valueObjects.ProjectVO;
-	
+
+	import flash.net.registerClassAlias;
+
+	import mx.utils.ObjectUtil;
+
 	import view.dominoFormBuilder.vo.DominoFormVO;
 
 	public class RoyalePageGeneratorBase extends EventDispatcher
@@ -35,8 +42,31 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		protected var project:ProjectVO;
 		protected var classReferenceSettings:RoyaleCRUDClassReferenceSettings;
 		protected var onCompleteHandler:Function;
+		protected var pageImportReferences:Vector.<PageImportReferenceVO>;
+
+		private var _queuedImportReferences:Vector.<PageImportReferenceVO>;
 		
 		protected function get pageRelativePathString():String		{	return null;	}
+
+		protected function get importPathStatements():Array
+		{
+			var paths:Array = [];
+			for each (var item:PageImportReferenceVO in pageImportReferences)
+			{
+				paths.push("import "+ classReferenceSettings[(item.name + RoyaleCRUDClassReferenceSettings.IMPORT)] +";");
+			}
+			return paths;
+		}
+
+		protected function get namespacePathStatements():Array
+		{
+			var paths:Array = [];
+			for each (var item:PageImportReferenceVO in pageImportReferences)
+			{
+				paths.push('xmlns:'+ item.name +'="'+ classReferenceSettings[(item.name + RoyaleCRUDClassReferenceSettings.NAMESPACE)] +'" ');
+			}
+			return paths;
+		}
 		
 		public function RoyalePageGeneratorBase(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
@@ -89,5 +119,41 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 				onCompleteHandler = null;
 			}
 		}
+
+		protected function generateClassReferences(onReferenceCollected:Function):void
+		{
+			registerClassAlias("actionScripts.plugins.ondiskproj.crud.exporter.vo.PageImportReferenceVO", PageImportReferenceVO);
+			_queuedImportReferences = ObjectUtil.copy(pageImportReferences) as Vector.<PageImportReferenceVO>;
+			startReferenceCollecting(onReferenceCollected);
+		}
+
+		private function startReferenceCollecting(onReferenceCollected:Function):void
+		{
+			var refObj:PageImportReferenceVO;
+			if (_queuedImportReferences && _queuedImportReferences.length != 0)
+			{
+				refObj = _queuedImportReferences.shift();
+				RoyaleCRUDUtils.getImportReferenceFor(refObj.name +"."+ refObj.extension, project, onImportCompletes, [refObj.extension]);
+			}
+			else
+			{
+				onReferenceCollected();
+			}
+
+			/*
+			 * @local
+			 */
+			function onImportCompletes(importPath:String):void
+			{
+				classReferenceSettings[(refObj.name + RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
+
+				var splitPath:Array = importPath.split(".");
+				splitPath[splitPath.length - 1] = "*";
+				classReferenceSettings[(refObj.name + RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
+				startReferenceCollecting(onReferenceCollected);
+			}
+		}
 	}
+
+
 }

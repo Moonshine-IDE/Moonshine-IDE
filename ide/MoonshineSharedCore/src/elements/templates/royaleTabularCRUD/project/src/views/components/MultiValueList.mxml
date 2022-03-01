@@ -21,15 +21,15 @@
 			
 			public var inputType:String;
 			
-			private var _items:ArrayList = new ArrayList(); 
+			private var _dataProvider:ArrayList = new ArrayList();
 			[Bindable]
-			public function get items():ArrayList
+			public function get dataProvider():ArrayList
 			{
-				return _items;
+				return _dataProvider;
 			}
-			public function set items(value:ArrayList):void
+			public function set dataProvider(value:ArrayList):void
 			{
-				_items = value;
+				_dataProvider = value;
 			}
 			
 			private var _restrictPattern:String;
@@ -105,7 +105,7 @@
 				
 				var cb:ConstantBinding = new ConstantBinding();
 				cb.setDocument(this);
-				cb.sourcePropertyName = "items";
+				cb.sourcePropertyName = "dataProvider";
 				cb.destinationPropertyName = "dataProvider";
 				multivalueList.addBead(cb);
 				
@@ -115,18 +115,18 @@
 			
 			private function updateItemByType():void
 			{
-				var editIndex:int = items.getItemIndex(editingItem);
+				var editIndex:int = dataProvider.getItemIndex(editingItem);
 				switch (inputType)
 				{
 					case "Datetime":
-						items.setItemAt(this.dateField.selectedDate, editIndex);
+						dataProvider.setItemAt(this.dateField.selectedDate, editIndex);
 						break;
 					default:
-						items.setItemAt(this.txtItemTitle.text, editIndex);
+						dataProvider.setItemAt(this.txtItemTitle.text, editIndex);
 						break;
 				}
 				
-				this.multivalueList.selectedItem = items.getItemAt(editIndex);
+				this.multivalueList.selectedItem = dataProvider.getItemAt(editIndex);
 			}
 			
 			private function openUpdateFormByType():void
@@ -144,13 +144,18 @@
 			
 			private function addItemByType():void
 			{
+				if (dataProvider == null)
+				{
+					return;
+				}
+
 				switch (inputType)
 				{
 					case "Datetime":
-						items.addItem(this.dateField.selectedDate);
+						dataProvider.addItem(this.dateField.selectedDate);
 						break;
 					default:
-						items.addItem(this.txtItemTitle.text);
+						dataProvider.addItem(this.txtItemTitle.text);
 						this.txtItemTitle.text = null;
 						break;
 				}
@@ -187,8 +192,13 @@
 			
 			private function onRemoveButtonClicked():void
 			{
-				items.removeItem(this.multivalueList.selectedItem);
+				dataProvider.removeItem(this.multivalueList.selectedItem);
 				this.multivalueList.selectedIndex = -1;
+			}
+
+			private function reset():void
+			{
+				dataProvider = new ArrayList();
 			}
 			
 		]]>
