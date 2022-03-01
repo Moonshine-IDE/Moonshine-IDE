@@ -13,6 +13,7 @@
 		<![CDATA[
 			import classes.events.ScreenEvent;
             import org.apache.royale.jewel.Snackbar;
+            import org.apache.royale.events.Event;
 			%ImportStatements%
 			
 			public static const NAME:String = "%ViewComponentName%";
@@ -21,30 +22,32 @@
 
 			private function onInitCompletes():void
             {
-                /*if (proxy.selectedItem != null)
+                proxy.addEventListener($moduleNameProxy.EVENT_ITEM_SELECTED, onItemBeingSelected);
+            }
+
+            private function onItemBeingSelected(event:Event):void
+            {
+                if (proxy.selectedItem != null)
                 {
-                    this.AuthorID_id.text = proxy.selectedItem.AuthorID;
-                    this.NameFirst_id.text = proxy.selectedItem.NameFirst;
-                    this.NameLast_id.text = proxy.selectedItem.NameLast;
-                }*/
+                    %ProxyValuesToComponentCodes%
+                }
             }
 					
 			private function onBackRequest(event:MouseEvent):void
 			{
+			    reset();
 				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, %ListingComponentName%.NAME));
 			}
 
 			private function onFormValid(event:Event):void
             {
-                Snackbar.show("Form submission is currently disabled, and will be added with a future update.", 4000);
+                %ComponentValuesToProxyCodes%
+                onBackRequest(null);
+            }
 
-                /*var submitObject:$moduleNameVO = proxy.selectedItem ? proxy.selectedItem : new $moduleNameVO();
-                submitObject.AuthorID = this.AuthorID_id.text;
-                submitObject.NameFirst = this.NameFirst_id.text;
-                submitObject.NameLast = this.NameLast_id.text;
-
-                proxy.submitItem(submitObject);
-                onBackRequest(null);*/
+            private function reset():void
+            {
+                %FormResetCodes%
             }
 			
 		]]>

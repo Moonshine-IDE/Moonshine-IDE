@@ -26,7 +26,8 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 	
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
-	
+	import view.dominoFormBuilder.vo.FormBuilderFieldType;
+
 	public class AddEditPageGenerator extends RoyalePageGeneratorBase
 	{
 		private var _pageRelativePathString:String;
@@ -63,6 +64,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 				fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"AddEdit");
 
 				fileContent = fileContent.replace(/%FormItems%/ig, generateFormItems());
+				fileContent = fileContent.replace(/%ProxyValuesToComponentCodes%/ig, generateAssignProxyValuesToComponents());
+				fileContent = fileContent.replace(/%ComponentValuesToProxyCodes%/ig, generateAssignComponentsValuesToProxy());
+				fileContent = fileContent.replace(/%FormResetCodes%/ig, generateFormResetCodes());
 				fileContent = fileContent.replace(/%FormName%/ig, form.viewName);
 				saveFile(fileContent);
 				dispatchCompletion();
@@ -77,6 +81,47 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 				tmpContent += RoyaleFormItem.toCode(field) +"\n";
 			}
 			
+			return tmpContent;
+		}
+
+		private function generateAssignProxyValuesToComponents():String
+		{
+			var tmpContent:String = "";
+			for each (var field:DominoFormFieldVO in form.fields)
+			{
+				switch (field.type)
+				{
+					case FormBuilderFieldType.NUMBER:
+						tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"proxy.selectedItem."+ field.name + ".toString();\n";
+						break;
+					default:
+						tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"proxy.selectedItem."+ field.name + ";\n";
+				}
+			}
+
+			return tmpContent;
+		}
+
+		private function generateAssignComponentsValuesToProxy():String
+		{
+			var tmpContent:String = "var submitObject:"+ form.formName +"VO = proxy.selectedItem ? proxy.selectedItem : new "+ form.formName +"VO();\n";
+			for each (var field:DominoFormFieldVO in form.fields)
+			{
+				tmpContent += "submitObject."+ field.name + RoyaleFormItem.retrieveComponentValuesToCode(field) +";\n";
+			}
+			tmpContent += "proxy.submitItem(submitObject);\n";
+
+			return tmpContent;
+		}
+
+		private function generateFormResetCodes():String
+		{
+			var tmpContent:String = "";
+			for each (var field:DominoFormFieldVO in form.fields)
+			{
+				tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"null;\n";
+			}
+
 			return tmpContent;
 		}
 	}

@@ -47,6 +47,24 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 				"{\n" +
 				"\t_%propertyName% = value;\n" +
 				"}";
+		protected static var dateProperty:String = "private var _%propertyName%:Date;\n" +
+				"public function get %propertyName%():Date\n" +
+				"{\n" +
+				"\treturn _%propertyName%;\n" +
+				"}\n" +
+				"public function set %propertyName%(value:Date):void\n" +
+				"{\n" +
+				"\t_%propertyName% = value;\n" +
+				"}";
+		protected static var arrayListProperty:String = "private var _%propertyName%:ArrayList;\n" +
+				"public function get %propertyName%():ArrayList\n" +
+				"{\n" +
+				"\treturn _%propertyName%;\n" +
+				"}\n" +
+				"public function set %propertyName%(value:ArrayList):void\n" +
+				"{\n" +
+				"\t_%propertyName% = value;\n" +
+				"}";
 
 		public static function getString(field:String):String
 		{
@@ -61,6 +79,16 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 		public static function getNumber(field:String):String
 		{
 			return numberProperty.replace(/%propertyName%/ig, field);
+		}
+
+		public static function getDate(field:String):String
+		{
+			return dateProperty.replace(/%propertyName%/ig, field);
+		}
+
+		public static function getArrayList(field:String):String
+		{
+			return arrayListProperty.replace(/%propertyName%/ig, field);
 		}
 	}
 }

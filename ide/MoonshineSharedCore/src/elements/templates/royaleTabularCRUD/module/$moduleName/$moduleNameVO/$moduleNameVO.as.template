@@ -1,5 +1,7 @@
 package views.modules.$moduleName.$moduleNameVO
 {
+    import org.apache.royale.collections.ArrayList;
+
     [Bindable]
 	public class $moduleNameVO  
 	{

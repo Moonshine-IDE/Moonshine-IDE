@@ -29,7 +29,8 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
-	
+	import view.dominoFormBuilder.vo.FormBuilderFieldType;
+
 	public class VOClassGenerator extends RoyalePageGeneratorBase
 	{
 		public static const EVENT_COMPLETE:String = "event-complete";
@@ -73,8 +74,26 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			{
 				if (field.isIncludeInView)
 				{
-					// for string type of properties - for now
-					tmpContent += PropertyDeclarationStatement.getString(field.name) +"\n\n";
+					if (field.isMultiValue)
+					{
+						tmpContent += PropertyDeclarationStatement.getArrayList(field.name) +"\n\n";
+					}
+					else
+					{
+						switch (field.type)
+						{
+							case FormBuilderFieldType.TEXT:
+							case FormBuilderFieldType.RICH_TEXT:
+								tmpContent += PropertyDeclarationStatement.getString(field.name) +"\n\n";
+								break;
+							case FormBuilderFieldType.NUMBER:
+								tmpContent += PropertyDeclarationStatement.getNumber(field.name) +"\n\n";
+								break;
+							case FormBuilderFieldType.DATETIME:
+								tmpContent += PropertyDeclarationStatement.getDate(field.name) +"\n\n";
+								break;
+						}
+					}
 				}
 			}
 

@@ -4,10 +4,11 @@ package $packagePath
     import org.apache.royale.events.EventDispatcher;
     %ImportStatements%
 
-	public class $moduleNameProxy  
+	public class $moduleNameProxy extends EventDispatcher
 	{
 	    public static const EVENT_ITEM_UPDATED:String = "eventItemUpdated";
         public static const EVENT_ITEM_REMOVED:String = "eventItemRemoved";
+        public static const EVENT_ITEM_SELECTED:String = "eventItemSelected";
 
 		private var serviceDelegate:$moduleNameServices;
 		

@@ -59,22 +59,47 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			return formItem;
 		}
 
-		public static function assignToCode(value:DominoFormFieldVO):String
+		public static function assignValuesToComponentCode(value:DominoFormFieldVO):String
 		{
 			if (value.isMultiValue)
 			{
-				//formContent = toMultiValueListCode(value);
+				return value.name +"_id.dataProvider = ";
 			}
 			else
 			{
 				switch (value.type)
 				{
 					case FormBuilderFieldType.TEXT:
-					case FormBuilderFieldType.RICH_TEXT:
 					case FormBuilderFieldType.NUMBER:
 						return value.name +"_id.text = ";
+					case FormBuilderFieldType.RICH_TEXT:
+						return value.name +"_id.data = ";
 					case FormBuilderFieldType.DATETIME:
 						return value.name +"_id.selectedDate = ";
+				}
+			}
+
+			return "";
+		}
+
+		public static function retrieveComponentValuesToCode(value:DominoFormFieldVO):String
+		{
+			if (value.isMultiValue)
+			{
+				return " = "+ value.name +"_id.dataProvider";
+			}
+			else
+			{
+				switch (value.type)
+				{
+					case FormBuilderFieldType.TEXT:
+						return " = "+ value.name +"_id.text";
+					case FormBuilderFieldType.RICH_TEXT:
+						return " = "+ value.name +"_id.data";
+					case FormBuilderFieldType.NUMBER:
+						return " = Number("+ value.name +"_id.text)";
+					case FormBuilderFieldType.DATETIME:
+						return " = "+ value.name +"_id.selectedDate";
 				}
 			}
 

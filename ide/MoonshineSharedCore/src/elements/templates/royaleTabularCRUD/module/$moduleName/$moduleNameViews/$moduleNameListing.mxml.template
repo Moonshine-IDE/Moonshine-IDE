@@ -14,6 +14,7 @@
             import org.apache.royale.jewel.Snackbar;
 			import org.apache.royale.events.MouseEvent;
             import classes.events.DeleteItemEvent;
+            import org.apache.royale.events.Event;
 			%ImportStatements%
 			
 			public static const NAME:String = "$moduleNameListing";
@@ -42,6 +43,7 @@
             {
                 proxy.selectedItem = this.dgItems.selectedItem as $moduleNameVO;
                 dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, $moduleNameAddEdit.NAME));
+                proxy.dispatchEvent(new Event($moduleNameProxy.EVENT_ITEM_SELECTED));
             }
             
             private function onItemDeletionRequest(event:DeleteItemEvent):void
@@ -96,7 +98,9 @@
 	<j:Label percentWidth="100" text="* Double click to open any row in edit"
 			 className="smallFont italic labelTextAlignRight"/>
 	<j:DataGrid id="dgItems"
-	    className="dataGridOwner">
+	    dataProvider="{this.proxy.items}"
+	    className="dataGridOwner"
+	    doubleClick="onItemDoubleClicked(event)">
 		<j:columns>
 			%DataGridColumns%
 			<j:DataGridColumn label="Delete" itemRenderer="views.renderers.DeleteGridItemRenderer" 
