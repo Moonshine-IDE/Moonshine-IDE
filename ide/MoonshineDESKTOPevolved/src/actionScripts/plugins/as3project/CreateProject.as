@@ -492,16 +492,16 @@ package actionScripts.plugins.as3project
             }
 
 
-			if (project.isFlexJSRoyalProject && !eventObject.isExport &&!isFlexJSRoyalVisualProject)
-			{
-				 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
-                    new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
-                    newProjectNameSetting, // No space input either plx
-                    newProjectPathSetting,
-					new DropDownListSetting(this, "projectTemplateType", "Select Template Type1", new ArrayCollection([ProjectTemplateType.ROYALE_VISUAL_PROJECT]))
-                ]));
+			// if (project.isFlexJSRoyalProject && !eventObject.isExport &&!isFlexJSRoyalVisualProject)
+			// {
+			// 	 return new SettingsWrapper("Name & Location", Vector.<ISetting>([
+            //         new StaticLabelSetting('New ' + eventObject.templateDir.fileBridge.name),
+            //         newProjectNameSetting, // No space input either plx
+            //         newProjectPathSetting,
+			// 		new DropDownListSetting(this, "projectTemplateType", "Select Template Type1", new ArrayCollection([ProjectTemplateType.ROYALE_VISUAL_PROJECT]))
+            //     ]));
 
-			}
+			// }
 
 			customSdkPathSetting = new PathSetting(this,'customSdk', 'Apache Flex®, Apache Royale® or Feathers SDK', true, customSdk, true);
 			customSdkPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onCustomSDKPathChanged, false, 0, true);
