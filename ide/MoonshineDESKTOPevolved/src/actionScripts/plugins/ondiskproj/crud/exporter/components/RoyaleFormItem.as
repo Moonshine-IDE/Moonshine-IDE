@@ -54,7 +54,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			
 			formItem = formItem.replace(/%label%/ig, value.label);
 			formItem = formItem.replace(/%required%/ig, 'false');
-			formItem = formItem.replace(/%visible%/ig, value.isIncludeInView);
+			formItem = formItem.replace(/%visible%/ig, 'true');
 			formItem = formItem.replace(/%FormItemContent%/ig, formContent);
 			
 			return formItem;
