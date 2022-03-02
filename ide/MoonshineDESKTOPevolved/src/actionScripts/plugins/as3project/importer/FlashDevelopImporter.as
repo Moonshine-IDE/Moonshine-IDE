@@ -290,7 +290,7 @@ package actionScripts.plugins.as3project.importer
 			
 			var projectNameextensionIndex:int = file.fileBridge.name.lastIndexOf("veditorproj");
 			var projectName:String=file.fileBridge.name.substring(0, projectNameextensionIndex - 1);
-			Alert.show("projectName:"+projectName);
+			//Alert.show("projectName:"+projectName);
 			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
 			var requireFileLocation:FileLocation;
 			//Alert.show("folder location:"+projectFolderLocation.fileBridge.nativePath);
@@ -309,7 +309,10 @@ package actionScripts.plugins.as3project.importer
 						for each (var xml:File in directory)
 						{
 							if (xml.extension == "xml" ) {
-								var dominoXml:XML = MainApplicationCodeUtils.getDominoParentContent(projectName,projectName);
+								var xmlNameextensionIndex:int = xml.name.lastIndexOf("xml");
+								var xmlName:String=xml.name.substring(0, xmlNameextensionIndex - 1);
+		
+								var dominoXml:XML = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
 								var _fileStreamMoonshine:FileStream = new FileStream();
 								_fileStreamMoonshine.open(xml, FileMode.READ);
 								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
@@ -392,6 +395,12 @@ package actionScripts.plugins.as3project.importer
 				Alert.show("Auto convert done!remove the auto require file!");
 				requireFileLocation.fileBridge.deleteFile();
 			
+			}
+
+			//2. remove not need NewVisualEditorProject file
+			var newFileVisualTemplate:FileLocation= projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"NewVisualEditorProject.form");
+			if(newFileVisualTemplate.fileBridge.exists){
+				newFileVisualTemplate.fileBridge.deleteFile();
 			}
 		}
 	}
