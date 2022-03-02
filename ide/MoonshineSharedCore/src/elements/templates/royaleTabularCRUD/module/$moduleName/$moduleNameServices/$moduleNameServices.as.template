@@ -1,0 +1,9 @@
+package $packagePath
+{
+	public class $moduleNameServices
+	{
+		public function $moduleNameServices()
+		{
+		}
+	}
+}

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<j:Card xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:j="library://ns.apache.org/royale/jewel" xmlns:controls="view.controls.*"
+		xmlns:js="library://ns.apache.org/royale/basic" 
+		xmlns:html="library://ns.apache.org/royale/html"
+		itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" gap="2"
+		initComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+
+			import org.apache.royale.core.ClassFactory;
+			import org.apache.royale.collections.ArrayList;
+			import org.apache.royale.events.Event;
+			import org.apache.royale.events.MouseEvent;
+			import org.apache.royale.jewel.beads.controls.Disabled;
+			import org.apache.royale.jewel.beads.controls.textinput.Restrict;
+			import views.renderers.DateListItemRenderer;
+			import org.apache.royale.jewel.List;
+			import org.apache.royale.binding.ConstantBinding;
+			import org.apache.royale.jewel.beads.itemRenderers.RemoveAllItemRendererForArrayListData;
+			
+			public var inputType:String;
+			
+			private var _dataProvider:ArrayList = new ArrayList();
+			[Bindable]
+			public function get dataProvider():ArrayList
+			{
+				return _dataProvider;
+			}
+			public function set dataProvider(value:ArrayList):void
+			{
+				_dataProvider = value;
+			}
+			
+			private var _restrictPattern:String;
+			[Bindable]
+			public function get restrictPattern():String
+			{
+				return _restrictPattern;
+			}
+			public function set restrictPattern(value:String):void
+			{
+				_restrictPattern = value;
+			}
+			
+			[Bindable]
+			private var multivalueList:List;
+			private var editingItem:Object;
+			
+			private function toggleFormView(show:Boolean):void
+			{
+				if (show)
+				{
+					this.buttonsGroup.visible = false;
+					this.addItemGroup.visible = true;
+				}
+				else
+				{
+					this.buttonsGroup.visible = true;
+					this.addItemGroup.visible = false;
+				}
+			}
+			
+			private function onAddButtonClicked():void
+			{
+				editingItem = null;
+				toggleFormView(true);
+			}
+			
+			private function onAddItemCancelled():void
+			{
+				toggleFormView(false);
+			}
+			
+			private function onCreationCompletes(event:Event):void
+			{
+				this.addItemForm.addEventListener("valid", onAddItemFormValid);
+				toggleInputsByType();
+			}
+			
+			private function toggleInputsByType():void
+			{
+				multivalueList = new List();
+				multivalueList.percentWidth = 100;
+				multivalueList.height = 100;
+				
+				switch (inputType)
+				{
+					case "Datetime":
+						multivalueList.itemRenderer = new ClassFactory(DateListItemRenderer);
+						this.fiDateField.visible = true;
+						this.dateField.selectedDate = new Date();
+						break;
+					default:
+						this.fiTextInput.visible = true;
+						this.txtItemTitle["element"].addEventListener("keypress", onTextKeyDown);
+						if (restrictPattern)
+						{
+							var restrictBead:Restrict = new Restrict();
+							restrictBead.pattern = restrictPattern;
+							this.txtItemTitle.addBead(restrictBead)
+						}
+						break;
+				}
+				
+				var cb:ConstantBinding = new ConstantBinding();
+				cb.setDocument(this);
+				cb.sourcePropertyName = "dataProvider";
+				cb.destinationPropertyName = "dataProvider";
+				multivalueList.addBead(cb);
+				
+				multivalueList.addBead(new RemoveAllItemRendererForArrayListData);
+				this.addElementAt(multivalueList, 0);
+			}
+			
+			private function updateItemByType():void
+			{
+				var editIndex:int = dataProvider.getItemIndex(editingItem);
+				switch (inputType)
+				{
+					case "Datetime":
+						dataProvider.setItemAt(this.dateField.selectedDate, editIndex);
+						break;
+					default:
+						dataProvider.setItemAt(this.txtItemTitle.text, editIndex);
+						break;
+				}
+				
+				this.multivalueList.selectedItem = dataProvider.getItemAt(editIndex);
+			}
+			
+			private function openUpdateFormByType():void
+			{
+				switch (inputType)
+				{
+					case "Datetime":
+						this.dateField.selectedDate = editingItem as Date;
+						break;
+					default:
+						this.txtItemTitle.text = editingItem as String;
+						break;
+				}
+			}
+			
+			private function addItemByType():void
+			{
+				if (dataProvider == null)
+				{
+					return;
+				}
+
+				switch (inputType)
+				{
+					case "Datetime":
+						dataProvider.addItem(this.dateField.selectedDate);
+						break;
+					default:
+						dataProvider.addItem(this.txtItemTitle.text);
+						this.txtItemTitle.text = null;
+						break;
+				}
+			}
+			
+			private function onTextKeyDown(event:Event):void
+			{
+				if (event["keyCode"] == 13)
+				{
+					this.formValidator.validate();
+				}
+			}
+			
+			private function onAddItemFormValid(event:Event):void
+			{
+				if (editingItem) 
+				{
+					updateItemByType();
+				}
+				else
+				{
+					addItemByType();
+				}
+				
+				toggleFormView(false);
+			}
+			
+			private function onModifyButtonClicked():void
+			{
+				editingItem = this.multivalueList.selectedItem;
+				toggleFormView(true);
+				openUpdateFormByType();
+			}
+			
+			private function onRemoveButtonClicked():void
+			{
+				dataProvider.removeItem(this.multivalueList.selectedItem);
+				this.multivalueList.selectedIndex = -1;
+			}
+
+			private function reset():void
+			{
+				dataProvider = new ArrayList();
+			}
+			
+		]]>
+	</fx:Script>
+	<j:beads>
+		<js:ContainerDataBinding />
+	</j:beads>
+	
+	<j:HGroup localId="buttonsGroup" 
+			  percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
+		<j:Button text="Add" click="onAddButtonClicked()"/>
+		<j:Button text="Modify" click="onModifyButtonClicked()">
+			<j:beads>
+				<j:Disabled disabled="{!multivalueList.selectedItem}"/>
+			</j:beads>
+		</j:Button>
+		<j:Button text="Remove" click="onRemoveButtonClicked()">
+			<j:beads>
+				<j:Disabled disabled="{!multivalueList.selectedItem}"/>
+			</j:beads>
+		</j:Button>
+	</j:HGroup>
+	
+	<j:VGroup localId="addItemGroup" 
+			  percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2"
+			  visible="false">
+		<j:Form localId="addItemForm">
+			<j:beads>
+				<j:FormValidator id="formValidator" trigger="{btnSubmit}" triggerEvent="click" 
+								 requiredFieldError="At least one field has a validation error. Please correct the problem and submit again."/>
+			</j:beads>
+			<j:FormItem localId="fiTextInput" 
+						label="Item Title:" required="true"
+						className="horizontalContentShrinkFormItem" visible="false">
+				<j:TextInput localId="txtItemTitle" percentWidth="100">
+					<j:beads>
+						<j:StringValidator required="1"/>
+					</j:beads>
+				</j:TextInput>
+			</j:FormItem>
+			<j:FormItem localId="fiDateField" 
+						label="Date/Time:" required="true"
+						className="horizontalContentShrinkFormItem" visible="false">
+				<j:DateField localId="dateField" dateFormat="MM/DD/YYYY" percentWidth="100"/>
+			</j:FormItem>
+		</j:Form>
+		<j:HGroup itemsHorizontalAlign="itemsRight" gap="2" percentWidth="100">
+			<j:Button id="btnSubmit" text="Update to List"/>
+			<j:Button text="Cancel" click="onAddItemCancelled()"/>
+		</j:HGroup>
+	</j:VGroup>
+</j:Card>

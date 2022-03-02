@@ -1,0 +1,80 @@
+package $packagePath
+{
+    import org.apache.royale.collections.ArrayList;
+    import org.apache.royale.events.EventDispatcher;
+    %ImportStatements%
+
+	public class $moduleNameProxy extends EventDispatcher
+	{
+	    public static const EVENT_ITEM_UPDATED:String = "eventItemUpdated";
+        public static const EVENT_ITEM_REMOVED:String = "eventItemRemoved";
+        public static const EVENT_ITEM_SELECTED:String = "eventItemSelected";
+
+		private var serviceDelegate:$moduleNameServices;
+		
+		private static var _instance:$moduleNameProxy;
+        public static function getInstance():$moduleNameProxy
+        {
+            if (!_instance)
+            {
+                _instance = new $moduleNameProxy();
+            }
+            return _instance;
+        }
+        
+        public function $moduleNameProxy()
+        {
+            if (_instance != null) 
+            {
+                throw new Error("New Instances Not Possible.", "$moduleNameProxy");
+            }			
+            else 
+            {
+                _instance = this;
+            }
+        }
+        
+        private var _items:ArrayList = new ArrayList();
+        [Bindable]
+        public function get items():ArrayList
+        {
+            return _items;
+        }
+        public function set items(value:ArrayList):void
+        {
+            _items = value;
+        }
+        
+        private var _selectedItem:$moduleNameVO;
+        public function get selectedItem():$moduleNameVO
+        {
+            return _selectedItem;
+        }
+        public function set selectedItem(value:$moduleNameVO):void
+        {
+            _selectedItem = value;
+        }
+        
+        public function submitItem(value:$moduleNameVO):void
+        {
+            // simple in-memory add/update for now
+            var itemIndex:int = items.getItemIndex(value);
+            if (itemIndex != -1)
+            {
+                items[itemIndex] = value;
+            }
+            else
+            {
+                items.addItem(value);
+            }
+            
+            this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+        }
+        
+        public function removeItem(value:$moduleNameVO):void
+        {
+            items.removeItem(value);
+            this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+        }
+	}
+}

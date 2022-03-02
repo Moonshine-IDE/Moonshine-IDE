@@ -51,6 +51,7 @@ package actionScripts.impls
 	import actionScripts.events.StartupHelperEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.interfaces.IModulesFinder;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
@@ -65,6 +66,7 @@ package actionScripts.impls
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
 	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugin.locations.LocationsPlugin;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
@@ -110,6 +112,7 @@ package actionScripts.impls
 	import actionScripts.plugins.menu.MultiMenuEventsNotifierPlugin;
 	import actionScripts.plugins.nativeFiles.FileAssociationPlugin;
 	import actionScripts.plugins.nativeFiles.FilesCopyPlugin;
+	import actionScripts.plugins.ondiskproj.crud.exporter.OnDiskRoyaleCRUDProjectExporter;
 	import actionScripts.plugins.royale.RoyaleApiReportConfiguratorPlugin;
 	import actionScripts.plugins.royale.RoyaleApiReportPlugin;
 	import actionScripts.plugins.run.RunJavaProject;
@@ -611,6 +614,16 @@ package actionScripts.impls
 			return ExternalEditorsPlugin.editors;
 		}
 		
+		public function generateTabularRoyaleProject():void
+		{
+			if (IDEModel.getInstance().activeProject &&
+					(IDEModel.getInstance().activeProject is OnDiskProjectVO))
+			{
+				var tmpExporter:OnDiskRoyaleCRUDProjectExporter = new OnDiskRoyaleCRUDProjectExporter(null);
+				tmpExporter.browseToExport();
+			}
+		}
+
 		public function getModulesFinder():IModulesFinder
 		{
 			return (new ModulesFinder());
