@@ -1,1 +1,1 @@
-<j:FormItem label="%label%" required="%required%" className="horizontalContentShrinkFormItem">%FormItemContent%</j:FormItem>
+<j:FormItem label="%label%" required="%required%" className="horizontalContentShrinkFormItem" visible="%visible%">%FormItemContent%</j:FormItem>
