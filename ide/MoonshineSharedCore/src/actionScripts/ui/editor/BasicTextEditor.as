@@ -75,6 +75,11 @@ package actionScripts.ui.editor
 		protected var created:Boolean;
 		protected var loadingFile:Boolean;
 		protected var tempScrollTo:int = -1;
+		protected var tempScrollToCaret:Boolean = false;
+		protected var tempSelectionStartLineIndex:int = -1;
+		protected var tempSelectionStartCharIndex:int = -1;
+		protected var tempSelectionEndLineIndex:int = -1;
+		protected var tempSelectionEndCharIndex:int = -1;
 		protected var loader: DataAgent;
 		protected var model:IDEModel = IDEModel.getInstance();
         protected var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -320,16 +325,44 @@ package actionScripts.ui.editor
 				callLater(open, [file]);
 		}
 
+		public function setSelection(startLine:int, startChar:int, endLine:int, endChar:int):void
+		{
+			if (loadingFile)
+			{
+				tempSelectionStartLineIndex = startLine;
+				tempSelectionStartCharIndex = startChar;
+				tempSelectionEndLineIndex = endLine;
+				tempSelectionEndCharIndex = endChar;
+			}
+			else
+			{
+				editor.setSelection(startLine, startChar, endLine, endChar);
+			}
+		}
+
+		public function scrollToCaret():void
+		{
+			if (loadingFile)
+			{
+				tempScrollTo = -1;
+				tempScrollToCaret = true;
+			}
+			else
+			{
+				editor.scrollToCaret();
+			}
+		}
+
 		public function scrollTo(line:int, eventType:String=null):void
 		{
 			if (loadingFile)
 			{
+				tempScrollToCaret = false;
 				tempScrollTo = line;
 			}
 			else
 			{
-				editor.setSelection(line, 0, line, 0);
-				editor.scrollViewIfNeeded();
+				editor.lineScrollY = line;
 			}
 		}
 		
@@ -384,7 +417,7 @@ package actionScripts.ui.editor
 			loadingFile = false;
 			// Get data from file
 			text = data;
-			scrollToTempValue();
+			commitTempValues();
 		}
 
 		protected function openHandler(event:Event):void
@@ -393,7 +426,7 @@ package actionScripts.ui.editor
 			// Get data from file
 			text = file.fileBridge.data.toString();
 
-			scrollToTempValue();
+			commitTempValues();
 			updateChangeStatus();
 			file.fileBridge.getFile.removeEventListener(Event.COMPLETE, openHandler);
 		}
@@ -565,9 +598,27 @@ package actionScripts.ui.editor
 			saveAs(new FileLocation(fileObj.nativePath));
 		}
 
-        private function scrollToTempValue():void
+        private function commitTempValues():void
         {
-            if (tempScrollTo > 0)
+			if (loadingFile)
+			{
+				//not ready yet
+				return;
+			}
+            if (tempSelectionStartLineIndex != -1)
+            {
+                setSelection(tempSelectionStartLineIndex, tempSelectionStartCharIndex, tempSelectionEndLineIndex, tempSelectionEndCharIndex);
+                tempSelectionStartLineIndex = -1;
+                tempSelectionStartCharIndex = -1;
+                tempSelectionEndLineIndex = -1;
+                tempSelectionEndCharIndex = -1;
+            }
+            if (tempScrollToCaret)
+            {
+                scrollToCaret();
+                tempScrollToCaret = false;
+            }
+            if (tempScrollTo != -1)
             {
                 scrollTo(tempScrollTo, lastOpenType);
                 tempScrollTo = -1;
