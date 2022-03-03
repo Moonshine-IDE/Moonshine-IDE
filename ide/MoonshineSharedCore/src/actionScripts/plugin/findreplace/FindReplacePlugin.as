@@ -208,10 +208,8 @@ package actionScripts.plugin.findreplace
 			{
 				var editor:BasicTextEditor = model.activeEditor as BasicTextEditor;
 				var tmpLineIndex:int = gotoLineView.lineNumber - 1;
-				
-				var textEditor:TextEditor = editor.editor;
-				textEditor.setSelection(tmpLineIndex, 0, tmpLineIndex, 0);
-				textEditor.scrollViewIfNeeded();
+				editor.setSelection(tmpLineIndex, 0, tmpLineIndex, 0);
+				editor.scrollToCaret();
 			}
 			
 			gotoLineViewWrapper.stage.removeEventListener(Event.RESIZE, gotoLineView_stage_resizeHandler);

@@ -109,7 +109,7 @@
 				cb.destinationPropertyName = "dataProvider";
 				multivalueList.addBead(cb);
 				
-				multivalueList.addBead(new RemoveAllItemRendererForArrayListData);
+				multivalueList.addBead(new RemoveAllItemRendererForArrayListData());
 				this.addElementAt(multivalueList, 0);
 			}
 			
@@ -146,7 +146,7 @@
 			{
 				if (dataProvider == null)
 				{
-					return;
+					dataProvider = new ArrayList();
 				}
 
 				switch (inputType)
@@ -194,11 +194,6 @@
 			{
 				dataProvider.removeItem(this.multivalueList.selectedItem);
 				this.multivalueList.selectedIndex = -1;
-			}
-
-			private function reset():void
-			{
-				dataProvider = new ArrayList();
 			}
 			
 		]]>

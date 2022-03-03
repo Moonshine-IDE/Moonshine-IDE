@@ -15,5 +15,13 @@ package classes.utils
 			
 			return value.toLocaleDateString("en-US", options);
 		}
+
+		public static function convertEpochToDate(epoch:Number):Date
+		{
+			var tmpDate:Date = new Date();
+			tmpDate.setTime(epoch);
+
+			return tmpDate;
+		}
 	}
 }

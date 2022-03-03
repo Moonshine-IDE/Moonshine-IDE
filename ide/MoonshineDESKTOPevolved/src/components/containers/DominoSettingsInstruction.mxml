@@ -33,19 +33,42 @@
 				 text="Enable passwordless access" paddingBottom="10"/>
 		<s:RichText lineBreak="toFit" width="100%" paddingLeft="15" paddingBottom="15"
 					styleName="uiTextSettingsValue">
-			<s:p>In order to run HCL Notes operations from Moonshine, you need to enable a Notes setting that will allow local applications to run without your password.</s:p>
-			<s:p/>
-			<s:p fontStyle="italic">Note that your Notes client must still be open, authenticated, and unlocked in order for this setting to work.</s:p>
-			<s:p/>
-			<s:list>
-				<s:li>Open HCL Notes > Security > User Security... (or File > Security > User Security... for older versions)</s:li>
-				<s:li>Enter your Notes Password</s:li>
-				<s:li>In the Security Basics tab, enable the "Don't prompt for password from other Notes-based programes" checkbox setting</s:li>
-			</s:list>
+			<s:content>
+				<s:p>In order to run HCL Notes operations from Moonshine, you need to enable a Notes setting that will allow local applications to run without your password.</s:p>
+				<s:p/>
+				<s:p fontStyle="italic">Note that your Notes client must still be open, authenticated, and unlocked in order for this setting to work.</s:p>
+				<s:p/>
+				<s:list>
+					<s:li>Open HCL Notes > Security > User Security... (or File > Security > User Security... for older versions)</s:li>
+					<s:li>Enter your Notes Password</s:li>
+					<s:li>In the Security Basics tab, enable the "Don't prompt for password from other Notes-based programes" checkbox setting</s:li>
+				</s:list>
+			</s:content>
 		</s:RichText>
-		<s:Image width="100%" source="/elements/images/dominoSettingsInstruction.png"/>
+		<s:Group autoLayout="true">
+			<s:Image source="/elements/images/dominoSettingsInstruction.png" x="15"/>
+		</s:Group>
 		<s:Label width="100%" maxDisplayedLines="5"
 				 text="If you do not wish to enable this setting, then you can still run the Maven or Ant scripts from a Terminal or Command Prompt and enter the password manually."
 				 paddingLeft="15" paddingTop="15" styleName="uiTextSettingsValue"/>
+		<s:Spacer height="20"/>
+		<s:Label text="macOS Security Configuration" styleName="bigHeadlineText" paddingLeft="10" color="0x666666"/>
+		<s:RichText lineBreak="toFit" width="100%" paddingLeft="15" paddingBottom="15"
+					styleName="uiTextSettingsValue">
+			<s:content>
+				<s:p>On macOS Catalina or higher, you will need to grant Moonshine "Full Disk Access" privileges, or you will get errors like this:</s:p>
+				<s:p/>
+				<s:p styleName="consoleFixedWidthTexts">: [INFO] java.lang.Exception: Notes initialization failure - err 258</s:p>
+				<s:p/>
+				<s:list>
+					<s:li>Open System Preferences</s:li>
+					<s:li>Navigate to Security &amp; Privacy > Privacy > Full Disk Access</s:li>
+					<s:li>Click the checkbox next to the Moonshine.app entry. If you use MoonshineDevelopment, it will also need Full Disk Access</s:li>
+				</s:list>
+			</s:content>
+		</s:RichText>
+		<s:Group autoLayout="true">
+			<s:Image source="/elements/images/dominoSettingsInstruction2.png" x="15"/>
+		</s:Group>
 	</s:VGroup>
 </s:VGroup>

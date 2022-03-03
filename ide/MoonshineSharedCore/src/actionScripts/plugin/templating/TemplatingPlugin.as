@@ -1115,23 +1115,52 @@ package actionScripts.plugin.templating
 		
 		protected function openDominoVisualEditorFormTypeChoose(event:Event):void
         {
-            var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
-				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
-				ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_DOMINO_FORM, (event as NewFileEvent).insideLocation
+			var insideLocation:FileWrapper = (event is NewFileEvent) ?
+					(event as NewFileEvent).insideLocation :
+					(model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper);
+			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
+			{
+				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(insideLocation));
+			}
+			if (insideLocation)
+			{
+				var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
+						OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, insideLocation.nativePath,
+						ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_DOMINO_FORM, insideLocation
 				);
-			tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
-			
-			dispatcher.dispatchEvent(tmpOnDiskEvent);
+				tmpOnDiskEvent.ofProject = (event is NewFileEvent) ? (event as NewFileEvent).ofProject : model.activeProject;
+
+				dispatcher.dispatchEvent(tmpOnDiskEvent);
+			}
+			else
+			{
+				error("error: Select location before creating a new file.");
+			}
         }
+
 		protected function openOnDiskFormBuilderTypeChoose(event:Event):void
 		{
-			var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
-				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
-				ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE, (event as NewFileEvent).insideLocation
+			var insideLocation:FileWrapper = (event is NewFileEvent) ?
+					(event as NewFileEvent).insideLocation :
+					(model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper);
+			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
+			{
+				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(insideLocation));
+			}
+			if (insideLocation)
+			{
+				var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
+						OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, insideLocation.nativePath,
+						ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE, insideLocation
 				);
-			tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
-			
-			dispatcher.dispatchEvent(tmpOnDiskEvent);
+				tmpOnDiskEvent.ofProject = (event is NewFileEvent) ? (event as NewFileEvent).ofProject : model.activeProject;
+
+				dispatcher.dispatchEvent(tmpOnDiskEvent);
+			}
+			else
+			{
+				error("error: Select location before creating a new file.");
+			}
 		}
 		
 		protected function openOnDiskVisualEditorTypeChoose(event:Event):void

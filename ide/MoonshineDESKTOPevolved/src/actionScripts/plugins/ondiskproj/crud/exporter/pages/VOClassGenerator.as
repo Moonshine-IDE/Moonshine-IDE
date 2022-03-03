@@ -72,27 +72,24 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var tmpContent:String = "";
 			for each (var field:DominoFormFieldVO in form.fields)
 			{
-				if (field.isIncludeInView)
+				if (field.isMultiValue)
 				{
-					if (field.isMultiValue)
+					tmpContent += PropertyDeclarationStatement.getArrayList(field.name) +"\n\n";
+				}
+				else
+				{
+					switch (field.type)
 					{
-						tmpContent += PropertyDeclarationStatement.getArrayList(field.name) +"\n\n";
-					}
-					else
-					{
-						switch (field.type)
-						{
-							case FormBuilderFieldType.TEXT:
-							case FormBuilderFieldType.RICH_TEXT:
-								tmpContent += PropertyDeclarationStatement.getString(field.name) +"\n\n";
-								break;
-							case FormBuilderFieldType.NUMBER:
-								tmpContent += PropertyDeclarationStatement.getNumber(field.name) +"\n\n";
-								break;
-							case FormBuilderFieldType.DATETIME:
-								tmpContent += PropertyDeclarationStatement.getDate(field.name) +"\n\n";
-								break;
-						}
+						case FormBuilderFieldType.TEXT:
+						case FormBuilderFieldType.RICH_TEXT:
+							tmpContent += PropertyDeclarationStatement.getString(field.name) +"\n\n";
+							break;
+						case FormBuilderFieldType.NUMBER:
+							tmpContent += PropertyDeclarationStatement.getNumber(field.name) +"\n\n";
+							break;
+						case FormBuilderFieldType.DATETIME:
+							tmpContent += PropertyDeclarationStatement.getDate(field.name) +"\n\n";
+							break;
 					}
 				}
 			}

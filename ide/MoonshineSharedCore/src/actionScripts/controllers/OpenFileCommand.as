@@ -206,8 +206,8 @@ package actionScripts.controllers
 							var ed:BasicTextEditor = contentWindow as BasicTextEditor;
 
 							atChar = atChar != -1 ? atChar: 0;
-							ed.editor.setSelection(atLine, atChar, atLine, atChar);
-							ed.editor.scrollViewIfNeeded();
+							ed.setSelection(atLine, atChar, atLine, atChar);
+							ed.scrollToCaret();
 							if (openType == OpenFileEvent.TRACE_LINE)
 							{
 								ed.editor.debuggerLineIndex = atLine;
@@ -420,7 +420,8 @@ package actionScripts.controllers
 			
 			if (atLine > -1)
 			{
-				editor.scrollTo(atLine, lastOpenEvent.type);
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
 			}
 
 			ged.dispatchEvent(
