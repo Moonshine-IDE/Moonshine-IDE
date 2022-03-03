@@ -67,6 +67,7 @@
     <element path="libs/VisualEditor-0.2.0.swc"/>
     <element path="../MoonshineSharedCore/libs/AsWing.swc"/>
     <element path="../MoonshineSharedCore/libs/Global.swc"/>
+    <element path="../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"/>    
   </libraryPaths>
   <externalLibraryPaths></externalLibraryPaths>
   <rslPaths></rslPaths>
