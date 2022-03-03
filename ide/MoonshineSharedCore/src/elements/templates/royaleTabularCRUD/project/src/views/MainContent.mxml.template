@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<j:ResponsiveView xmlns:fx="http://ns.adobe.com/mxml/2009"
+						     xmlns:j="library://ns.apache.org/royale/jewel"
+						     xmlns:js="library://ns.apache.org/royale/basic"
+						     xmlns:html="library://ns.apache.org/royale/html"
+						     xmlns:general="views.general.*" 
+						     %Namespaces%>
+	<fx:Script>
+		<![CDATA[
+			import classes.events.ScreenEvent;
+			
+			%ImportStatements%
+			
+			private function onNavigationChangeRequest(event:ScreenEvent):void
+			{
+				mainContent.selectedContent = event.screenName;
+			}
+			
+		]]>
+	</fx:Script>
+	<j:beads>
+		<js:ContainerDataBinding/>
+	</j:beads>
+    <j:ApplicationMainContent id="mainContent" 
+							  hasTopAppBar="false" hasFooterBar="false" selectedContent="Dashboard">
+		<j:ScrollableSectionContent name="Dashboard" className="sectionCenter">
+			<general:Dashboard eventNavigateTo="onNavigationChangeRequest(event)"
+								  percentWidth="100"/>
+		</j:ScrollableSectionContent>
+		%ScrollableSectionContents%
+	</j:ApplicationMainContent>
+</j:ResponsiveView>

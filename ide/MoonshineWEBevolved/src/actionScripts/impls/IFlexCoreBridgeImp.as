@@ -470,6 +470,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function generateTabularRoyaleProject():void
+		{
+			
+		}
+		
 		public function getModulesFinder():IModulesFinder
 		{
 			return null;

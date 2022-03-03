@@ -79,6 +79,7 @@ package actionScripts.interfaces
 		function getComponentByType(type:String):Object;
 		function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean;
 		function getExternalEditors():ArrayCollection;
+		function generateTabularRoyaleProject():void;
 		function getModulesFinder():IModulesFinder;
 		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
 		function setMSDKILocalPathConfig():void;

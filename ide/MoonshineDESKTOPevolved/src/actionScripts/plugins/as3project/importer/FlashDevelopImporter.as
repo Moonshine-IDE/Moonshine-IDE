@@ -35,7 +35,6 @@ package actionScripts.plugins.as3project.importer
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugins.ui.editor.VisualEditorViewer;
 		
-	import mx.controls.Alert;
 	import surface.SurfaceMockup;
 
 	import utils.EditingSurfaceReader;
@@ -290,10 +289,10 @@ package actionScripts.plugins.as3project.importer
 			
 			var projectNameextensionIndex:int = file.fileBridge.name.lastIndexOf("veditorproj");
 			var projectName:String=file.fileBridge.name.substring(0, projectNameextensionIndex - 1);
-			//Alert.show("projectName:"+projectName);
+			
 			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
 			var requireFileLocation:FileLocation;
-			//Alert.show("folder location:"+projectFolderLocation.fileBridge.nativePath);
+		
 			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
 			//1. first check the .xml_conversion_required file
 			if (requireFileLocation.fileBridge.exists){
@@ -350,7 +349,6 @@ package actionScripts.plugins.as3project.importer
 										}
 										if(hasRichText==false){
 											//add new richtext node
-											//Alert.show("add rich:"+code.toXMLString());
 											var richtext:XML = new XML("<richtext style='width:700px;height:700px;' class='flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop' direction='Horizontal' vdirection='Vertical'/>");
 											dominoMainContainer.appendChild(richtext);
 											dominoMainContainer=richtext;
@@ -392,7 +390,6 @@ package actionScripts.plugins.as3project.importer
 						}
 				}
 
-				Alert.show("Auto convert done!remove the auto require file!");
 				requireFileLocation.fileBridge.deleteFile();
 			
 			}

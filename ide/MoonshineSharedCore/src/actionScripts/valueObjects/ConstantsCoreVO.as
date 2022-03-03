@@ -310,7 +310,7 @@ package actionScripts.valueObjects
 
 			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
 			READABLE_CLASS_FILES.sort();
-			
+
 			TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";
 			TEMPLATE_CSS.fileBridge.isDirectory = false;

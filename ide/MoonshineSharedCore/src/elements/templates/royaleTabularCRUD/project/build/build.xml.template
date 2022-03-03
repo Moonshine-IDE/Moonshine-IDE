@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="Moonshine Build Script" basedir="." default="compileJavascript">
+ 	
+	<tstamp>
+        <format property="timestamp" pattern="yyyy-MM-dd_HH-mm-ss" />
+    </tstamp>
+
+    <!--
+    //==========================================================================
+    //
+    //  PROPERTIES
+    //
+    //==========================================================================
+    -->
+    <!-- ANT REQUISITES -->
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="ant-contrib-0.6.jar"/>
+
+    <!-- READS FALCON_HOME FROM ENVIRONMENT VARIABLE IF EXISTS -->
+    <property environment="env"/>
+    <propertycopy property="ROYALE_HOME" from="env.ROYALE_HOME"/>
+    <echo message="SDK : ${ROYALE_HOME}" />
+
+    <property name="DEPLOY_DIR" value="DEPLOY"/>
+
+    <!-- PROJECT SOURCES -->
+    <property name="SOURCE_PATH" value="${basedir}/../src"/>
+    <property name="RESOURCES_PATH" value="${basedir}/../src/resources"/>
+    <property name="ROYALE_THEME" value="${royalelib}/themes/JewelTheme/src/main/resources/defaults.css"/>
+    <property name="MAIN_FILE_NAME" value="${SOURCE_PATH}/NewJavaScriptBrowserJewelProject.mxml"/>
+
+    <!-- JS COMPILER PATH -->
+    <condition property="MXMLC_PATH" value="${ROYALE_HOME}/js/bin/mxmlc.bat">
+        <os family="windows"/>
+    </condition>
+
+    <condition property="MXMLC_PATH" value="${ROYALE_HOME}/js/bin/mxmlc">
+        <os family="mac"/>
+    </condition>
+    <!--
+    //==========================================================================
+    //
+    //  GLOBAL
+    //
+    //==========================================================================
+    -->
+
+    <!-- DELETE ANY PREVIOUS DIRECTORIES AND CREATES NEW ONES -->
+    <target name="init">
+        <delete dir="${DEPLOY_DIR}"/>
+        <mkdir dir="${DEPLOY_DIR}" />
+    </target>
+
+
+    <!--
+    //==========================================================================
+    //
+    //  GLOBAL BINARIES
+    //
+    //==========================================================================
+    -->
+
+    <!-- Compile web Apache Royale application -->
+    <target name="compileJavascript" depends="init">
+	    <exec executable="${MXMLC_PATH}" failonerror="true">
+		            <arg value="-source-path+=${SOURCE_PATH}" />
+		            <arg value="-external-library-path+=${ROYALE_HOME}/js/libs/js.swc" />
+		            <arg value="-compiler.debug=false" />
+					<arg value="-compiler.targets=JSRoyale" />
+					<arg value="-html-template=${RESOURCES_PATH}/jewel-index-template.html"/>
+					<arg value="-theme=${ROYALE_THEME}"/>
+		            <arg value="-output=${DEPLOY_DIR}" />
+		            <arg value="${MAIN_FILE_NAME}" />
+	        	</exec>
+    </target>
+</project>

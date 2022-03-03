@@ -79,7 +79,7 @@ package actionScripts.utils
 				tempDirectory.fileBridge.createDirectory();
 			}
 
-			withName ||= "FileSystemParser";
+			withName ||= UIDUtil.createUID();
 
 			this.readableExtensions = readableExtensions;
 			this._projectPath = fromPath;
@@ -107,10 +107,10 @@ package actionScripts.utils
 			// windows: dir /a-d /b /s *.mxml *.xml
 			queue = new Vector.<Object>();
 			addToQueue(new NativeProcessQueueVO(
-				ConstantsCoreVO.IS_MACOS ? 
+				ConstantsCoreVO.IS_MACOS ?
 					"find -E $'"+ UtilsCore.getEncodedForShell(fromPath) +"'"+ tmpExtensions +" -type f > '"+ _filePath +"'" :
-					"dir /a-d /b /s "+ tmpExtensions +" > "+ UtilsCore.getEncodedForShell(_filePath), 
-				false, 
+					"dir /a-d /b /s "+ tmpExtensions +" > "+ UtilsCore.getEncodedForShell(_filePath),
+				false,
 				PARSE_FILES_ON_PATH)
 			);
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:fromPath}, subscribeIdToWorker);

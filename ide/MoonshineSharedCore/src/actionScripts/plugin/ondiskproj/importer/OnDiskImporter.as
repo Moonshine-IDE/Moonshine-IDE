@@ -143,8 +143,6 @@ package actionScripts.plugin.ondiskproj.importer
 
             project.buildOptions.parse(data.build);
 			project.mavenBuildOptions.parse(data.mavenBuild);
-			
-			UtilsCore.setProjectMenuType(project);
 
 			project.visualEditorSourceFolder = new FileLocation(
                         project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src/main/webapp"

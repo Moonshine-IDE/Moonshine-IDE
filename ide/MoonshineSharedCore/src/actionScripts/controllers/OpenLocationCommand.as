@@ -82,11 +82,10 @@ package actionScripts.controllers
 				var start:Position = range.start;
 				if (start.line > -1)
 				{
-					var editorComponent:TextEditor = editor.editor;
 					var line:int = start.line;
 					var char:int = start.character != -1 ? start.character : 0;
-					editorComponent.setSelection(line, char, line, char);
-					editorComponent.scrollViewIfNeeded();
+					editor.setSelection(line, char, line, char);
+					editor.scrollToCaret();
 				}
 				editor.callLater(function():void
 				{
