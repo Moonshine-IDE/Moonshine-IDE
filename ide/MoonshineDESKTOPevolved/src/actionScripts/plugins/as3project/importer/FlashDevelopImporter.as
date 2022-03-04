@@ -44,6 +44,8 @@ package actionScripts.plugins.as3project.importer
 	import mx.core.IVisualElementContainer;
 	import actionScripts.utils.DominoUtils;
 
+	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
+
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
 		public static function test(file:File):FileLocation
@@ -388,6 +390,13 @@ package actionScripts.plugins.as3project.importer
 								
 							}
 						}
+
+					//2.2 copy setting.xml from maven setting path to local project in here
+					if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists) { 
+						var settingFile:FileLocation=new FileLocation(OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath); 
+						var newSettingFile:FileLocation =  projectFolderLocation.resolvePath("setting.xml"); 
+						settingFile.fileBridge.copyTo(newSettingFile, true); 
+					}	
 				}
 
 				requireFileLocation.fileBridge.deleteFile();
