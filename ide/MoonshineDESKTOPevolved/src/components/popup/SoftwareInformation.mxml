@@ -90,6 +90,17 @@
 			versionChecker.retrieveAboutInformation(components);
 		}
 
+		public function getAllVersions():String
+		{
+			var versions:String = "";
+			for each (var component:ComponentVO in components)
+			{
+				versions += component.title +": "+ (component.version ? component.version : "Not Installed") +"\n";
+			}
+
+			return versions;
+		}
+
 		private function updateWithMoonshinePaths():void
 		{
 			var sdkReference:SDKReferenceVO;
