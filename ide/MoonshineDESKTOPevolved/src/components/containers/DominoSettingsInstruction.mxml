@@ -52,13 +52,13 @@
 				 text="If you do not wish to enable this setting, then you can still run the Maven or Ant scripts from a Terminal or Command Prompt and enter the password manually."
 				 paddingLeft="15" paddingTop="15" styleName="uiTextSettingsValue"/>
 		<s:Spacer height="20"/>
-		<s:Label text="macOS Security Configuration" styleName="bigHeadlineText" paddingLeft="10" color="0x666666"/>
+		<s:Label text="macOS Security Configuration" styleName="uiTextSettingsLabel" paddingBottom="10"/>
 		<s:RichText lineBreak="toFit" width="100%" paddingLeft="15" paddingBottom="15"
 					styleName="uiTextSettingsValue">
 			<s:content>
 				<s:p>On macOS Catalina or higher, you will need to grant Moonshine "Full Disk Access" privileges, or you will get errors like this:</s:p>
 				<s:p/>
-				<s:p styleName="consoleFixedWidthTexts">: [INFO] java.lang.Exception: Notes initialization failure - err 258</s:p>
+				<s:p fontFamily="Courier, _typewriter">: [INFO] java.lang.Exception: Notes initialization failure - err 258</s:p>
 				<s:p/>
 				<s:list>
 					<s:li>Open System Preferences</s:li>
