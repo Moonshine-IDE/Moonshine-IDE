@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.findreplace
 {
+	import actionScripts.interfaces.IVisualEditorViewer;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 
@@ -117,13 +119,10 @@ package actionScripts.plugin.findreplace
 				findReplaceViewWrapper = new FeathersUIWrapper(findReplaceView);
 				PopUpManager.addPopUp(findReplaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
 
-				var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
-				if (as3Project)
+				// this will not show replace field
+				if (model.activeEditor is IVisualEditorViewer)
 				{
-					if (as3Project.isVisualEditorProject)
-					{
-						findReplaceView.findOnly = true;
-					}
+					findReplaceView.findOnly = true;
 				}
 
 				// Set initial selection
