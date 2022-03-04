@@ -122,7 +122,10 @@
 
 			private function onCopyToClipboard(event:MouseEvent):void
 			{
-				System.setClipboard(softwareInformation.getAllVersions());
+				var aboutInformation:String = ConstantsCoreVO.MOONSHINE_IDE_LABEL +"\n"+ retVersion.text +"\n\n";
+				aboutInformation += "Configured SDKs in Moonshine:\n===========================================\n\n";
+				aboutInformation += softwareInformation.getAllVersions();
+				System.setClipboard(aboutInformation);
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Software versions copied to clipboard.", false, false, ConsoleOutputEvent.TYPE_SUCCESS)
 				);
