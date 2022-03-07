@@ -25,7 +25,7 @@ import feathers.controls.Check;
 import feathers.controls.Label;
 import feathers.controls.dataRenderers.ItemRenderer;
 
-class SearchReplacePreviewItemRenderer extends ItemRenderer {
+class ProjectSearchReplacePreviewItemRenderer extends ItemRenderer {
 	public function new() {
 		super();
 	}

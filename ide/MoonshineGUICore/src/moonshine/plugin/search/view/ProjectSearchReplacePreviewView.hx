@@ -39,7 +39,7 @@ import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.geom.Rectangle;
 
-class SearchReplacePreviewView extends ResizableTitleWindow {
+class ProjectSearchReplacePreviewView extends ResizableTitleWindow {
 	public static final EVENT_REPLACE_SELECTED = "replaceSelected";
 
 	public function new() {
@@ -144,7 +144,7 @@ class SearchReplacePreviewView extends ResizableTitleWindow {
 		if (filesListView == null) {
 			filesListView = new ListView();
 			filesListView.itemToText = item -> item.label;
-			filesListView.itemRendererRecycler = DisplayObjectRecycler.withClass(SearchReplacePreviewItemRenderer);
+			filesListView.itemRendererRecycler = DisplayObjectRecycler.withClass(ProjectSearchReplacePreviewItemRenderer);
 			filesListView.layoutData = new VerticalLayoutData(100.0, 20.0);
 			filesListView.addEventListener(Event.CHANGE, filesListView_changeHandler);
 			addChild(filesListView);
