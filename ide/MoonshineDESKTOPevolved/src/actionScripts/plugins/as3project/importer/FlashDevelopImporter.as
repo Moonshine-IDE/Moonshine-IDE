@@ -391,12 +391,28 @@ package actionScripts.plugins.as3project.importer
 							}
 						}
 
-					//2.2 copy setting.xml from maven setting path to local project in here
-					if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists) { 
-						var settingFile:FileLocation=new FileLocation(OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath); 
-						var newSettingFile:FileLocation =  projectFolderLocation.resolvePath("setting.xml"); 
-						settingFile.fileBridge.copyTo(newSettingFile, true); 
-					}	
+					//2.2 we should seting the settingsFilePath into .veditorproj file
+					//2.2.1 load the .veditorporj file from local Domino project.
+					if(file.fileBridge.exists){
+						var settingFile:File=new File(file.fileBridge.nativePath);
+						//if manven setting.xml file config exist
+						if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists) { 
+							//load project config file to xml 
+							var _settingFileStreamMoonshine:FileStream = new FileStream();
+								_settingFileStreamMoonshine.open(settingFile, FileMode.READ);
+							var settingData:String = _settingFileStreamMoonshine.readUTFBytes(_settingFileStreamMoonshine.bytesAvailable);
+							var settingxml:XML = new XML(settingData);
+							if(settingxml..mavenBuild&&settingxml..mavenBuild[0]!=null){
+								var opetion:XML=new XML("<option/>");
+								opetion.@settingsFilePath=OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath;
+								settingxml..mavenBuild[0].appendChild(opetion);
+								file.fileBridge.save(settingxml);
+							}
+						}
+
+
+
+					}
 				}
 
 				requireFileLocation.fileBridge.deleteFile();
