@@ -127,7 +127,7 @@
 				aboutInformation += softwareInformation.getAllVersions();
 				System.setClipboard(aboutInformation);
 				GlobalEventDispatcher.getInstance().dispatchEvent(
-						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Software versions copied to clipboard.", false, false, ConsoleOutputEvent.TYPE_SUCCESS)
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Copied Moonshine and SDK version information to clipboard.", false, false, ConsoleOutputEvent.TYPE_SUCCESS)
 				);
 			}
 			
@@ -153,7 +153,7 @@
 			<s:BusyIndicator id="busy"/>
 			<s:Button id="btnClipboardCopy"
 					  icon="@Embed('/elements/images/copy_content_icon.png')" width="28"
-					  toolTip="Copy to Clipboard" visible="false" includeInLayout="false"
+					  toolTip="Copy Moonshine and SDK versions" visible="false" includeInLayout="false"
 					  click="onCopyToClipboard(event)"/>
 		</s:HGroup>
 		<mx:HRule width="100%"/>
