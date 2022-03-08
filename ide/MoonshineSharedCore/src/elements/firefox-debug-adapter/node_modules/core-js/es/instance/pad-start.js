@@ -1,9 +1,10 @@
-var padStart = require('../string/virtual/pad-start');
+var isPrototypeOf = require('../../internals/object-is-prototype-of');
+var method = require('../string/virtual/pad-start');
 
 var StringPrototype = String.prototype;
 
 module.exports = function (it) {
   var own = it.padStart;
-  return typeof it === 'string' || it === StringPrototype
-    || (it instanceof String && own === StringPrototype.padStart) ? padStart : own;
+  return typeof it == 'string' || it === StringPrototype
+    || (isPrototypeOf(StringPrototype, it) && own === StringPrototype.padStart) ? method : own;
 };

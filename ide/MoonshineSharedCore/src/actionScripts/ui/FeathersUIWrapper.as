@@ -113,7 +113,7 @@ package actionScripts.ui
 
 		public function assignFocus(direction:String):void
 		{
-			if(!this._feathersUIFocusManager)
+			if(!this.enabled || !this._feathersUIFocusManager)
 			{
 				return;
 			}
@@ -156,6 +156,12 @@ package actionScripts.ui
 			}
 			this.invalidateSize();
 			this.invalidateDisplayList();
+		}
+
+		override protected function commitProperties():void
+		{
+			this._feathersUIControl.enabled = this.enabled;
+			super.commitProperties();
 		}
 
 		override protected function measure():void
@@ -232,6 +238,10 @@ package actionScripts.ui
 				this.measuredMinHeight = this._feathersUIControl.minHeight;
 
 				this._ignoreResize = oldIgnoreResize;
+
+				// because we changed the size of the Feathers UI component to
+				// measure it, we need to set it back in updateDisplayList()
+				this.invalidateDisplayList();
 			}
 			else
 			{

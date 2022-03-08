@@ -9,6 +9,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.events.HTTPStatusEvent;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
@@ -130,6 +131,8 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		protected var fileStream:FileStream;
 		
 		protected var hideAlert : Boolean;
+
+		protected var isUpdateDescriptorLoaderClosed:Boolean;
 		
 		public function NativeApplicationUpdater()
 		{
@@ -222,10 +225,12 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			if (currentState == BEFORE_CHECKING)
 			{
 				currentState = CHECKING;
-				
+
+				isUpdateDescriptorLoaderClosed = false;
 				updateDescriptorLoader =  new URLLoader();
 				updateDescriptorLoader.addEventListener(Event.COMPLETE,  updateDescriptorLoader_completeHandler);
 				updateDescriptorLoader.addEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
+				updateDescriptorLoader.addEventListener(HTTPStatusEvent.HTTP_STATUS, updateDescriptorLoader_httpStatus);
 				try
 				{
 					updateDescriptorLoader.load(new URLRequest(updateURL));
@@ -238,6 +243,14 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				}
 			}
 		}
+
+		public function cancelUpdateCheck():void
+		{
+			if (currentState == CHECKING)
+			{
+				updateDescriptorLoader_removeListeners();
+			}
+		}
 		
 		/**
 		 * Cancel an open updation process
@@ -245,15 +258,13 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		public function cancelUpdate() : void {
 			
 			if ( currentState == DOWNLOADING ) {
-				urlStream_completeHandler( null );
+				urlStream_ioErrorHandler(null, false);
 			}
 		}
 		
 		protected function updateDescriptorLoader_completeHandler(event:Event):void
 		{
-			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
-			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
-			updateDescriptorLoader.close();
+			updateDescriptorLoader_removeListeners();
 			
 			updateDescriptor = new XML(updateDescriptorLoader.data);
 			
@@ -289,13 +300,33 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		
 		protected function updateDescriptorLoader_ioErrorHandler(event:IOErrorEvent):void
 		{
-			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
-			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
-			updateDescriptorLoader.close();
+			updateDescriptorLoader_removeListeners();
 			
 			/*dispatchEvent(new StatusUpdateErrorEvent(StatusUpdateErrorEvent.UPDATE_ERROR, false, false, 
 				"Error downloading updater file, try again later.",
 				UpdaterErrorCodes.ERROR_9003, event.errorID));*/
+		}
+
+		private function updateDescriptorLoader_httpStatus(event:HTTPStatusEvent):void
+		{
+			if (event.status == 0)
+			{
+				updateDescriptorLoader_removeListeners();
+				dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false,
+						"Error downloading update information.", UpdaterErrorCodes.ERROR_9005));
+			}
+		}
+
+		private function updateDescriptorLoader_removeListeners():void
+		{
+			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
+			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
+			updateDescriptorLoader.removeEventListener(HTTPStatusEvent.HTTP_STATUS, updateDescriptorLoader_httpStatus);
+			if (!isUpdateDescriptorLoaderClosed)
+			{
+				updateDescriptorLoader.close();
+				isUpdateDescriptorLoaderClosed = true;
+			}
 		}
 		
 		/**
@@ -369,20 +400,25 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			fileStream.close();
 		}
 		
-		protected function urlStream_ioErrorHandler(event:IOErrorEvent):void
+		protected function urlStream_ioErrorHandler(event:IOErrorEvent, displayError:Boolean=true):void
 		{
 			fileStream.removeEventListener(Event.CLOSE, fileStream_closeHandler);
 			fileStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
-			fileStream.close();
 			
 			urlStream.removeEventListener(Event.OPEN, urlStream_openHandler);
 			urlStream.removeEventListener(ProgressEvent.PROGRESS, urlStream_progressHandler);
 			urlStream.removeEventListener(Event.COMPLETE, urlStream_completeHandler);
 			urlStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
+
+			fileStream.close();
 			urlStream.close();
-			
-			dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false, 
-				"Error downloading update file: " + event.text, UpdaterErrorCodes.ERROR_9005, event.errorID));
+			urlStream.stop();
+
+			if (displayError)
+			{
+				dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false,
+						"Error downloading update file: " + event.text, UpdaterErrorCodes.ERROR_9005, event.errorID));
+			}
 		}
 		
 		/**

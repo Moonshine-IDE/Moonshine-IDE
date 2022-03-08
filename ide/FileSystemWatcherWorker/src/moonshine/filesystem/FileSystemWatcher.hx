@@ -24,8 +24,12 @@ import moonshine.events.FileSystemWatcherEvent;
 import openfl.errors.ArgumentError;
 import openfl.events.EventDispatcher;
 import openfl.events.TimerEvent;
-import openfl.filesystem.File;
 import openfl.utils.Timer;
+#if (openfl >= "9.2.0")
+import openfl.filesystem.File;
+#else
+import flash.filesystem.File;
+#end
 
 class FileSystemWatcher extends EventDispatcher {
 	public function new(pollingMilliseconds:Int = 1000) {
@@ -39,6 +43,26 @@ class FileSystemWatcher extends EventDispatcher {
 	private var _watchedDirectories:Map<File, Map<String, FileInfo>> = [];
 	private var _timer:Timer;
 	private var _pollingMS:Int;
+
+	public function getAllKnownFilePaths():Array<String> {
+		var result:Array<String> = [];
+		for (directory in _watchedDirectories.keys()) {
+			result.push(directory.nativePath);
+			var fileInfoMap = _watchedDirectories.get(directory);
+			for (nativePath in fileInfoMap.keys()) {
+				result.push(nativePath);
+			}
+		}
+		return result;
+	}
+
+	public function getWatched():Array<File> {
+		var result:Array<File> = [];
+		for (directory in _watchedDirectories.keys()) {
+			result.push(directory);
+		}
+		return result;
+	}
 
 	public function isWatching(directory:File):Bool {
 		for (otherDirectory in _watchedDirectories.keys()) {
@@ -122,6 +146,10 @@ class FileSystemWatcher extends EventDispatcher {
 
 	private function fileWatcher_timer_timerHandler(event:TimerEvent):Void {
 		for (rootDirectory in _watchedDirectories.keys()) {
+			if (!rootDirectory.exists) {
+				// the directory has been deleted, but not unwatched yet
+				continue;
+			}
 			var fileInfoForDir = _watchedDirectories.get(rootDirectory);
 			var files = rootDirectory.getDirectoryListing();
 			for (existingNativePath in fileInfoForDir.keys()) {

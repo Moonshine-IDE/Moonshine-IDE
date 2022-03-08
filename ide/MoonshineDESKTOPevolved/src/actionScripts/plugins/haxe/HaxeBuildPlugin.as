@@ -59,6 +59,8 @@ package actionScripts.plugins.haxe
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
+        public static var NAMESPACE:String = "actionScripts.plugins.haxe::HaxeBuildPlugin";
+
 		private static const HXCPP_DEBUG_SERVER_ROOT_PATH:String = "elements/hxcpp-debug-adapter/hxcpp-debug-server";
         private static const HAXEFLAG_MACRO_INJECT_SERVER:String = "--haxeflag=\"--macro hxcpp.debug.jsonrpc.Macro.injectServer()\"";
         private static const DEBUG_SERVER_PORT:int = 3000;
@@ -125,7 +127,7 @@ package actionScripts.plugins.haxe
             if (model.nekoPath != value)
             {
                 model.nekoPath = value;
-			    dispatcher.dispatchEvent(new SdkEvent(SdkEvent.CHANGE_HAXE_SDK));
+			    //dispatcher.dispatchEvent(new SdkEvent(SdkEvent.CHANGE_HAXE_SDK));
             }
         }
 
@@ -133,8 +135,8 @@ package actionScripts.plugins.haxe
         {
 			onSettingsClose();
 
-			haxePathSetting = new PathSetting(this, 'haxePath', 'Haxe Home', true, haxePath);
-			nekoPathSetting = new PathSetting(this, 'nekoPath', 'Neko Home', true, nekoPath);
+			haxePathSetting = new PathSetting(this, 'haxePath', 'Haxe Home', true, haxePath, false, false);
+			nekoPathSetting = new PathSetting(this, 'nekoPath', 'Neko Home', true, nekoPath, false, false);
 			
 			return Vector.<ISetting>([
 				haxePathSetting,

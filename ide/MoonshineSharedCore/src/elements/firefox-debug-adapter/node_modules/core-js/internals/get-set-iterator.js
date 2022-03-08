@@ -1,7 +1,6 @@
-var IS_PURE = require('../internals/is-pure');
-var getIterator = require('../internals/get-iterator');
+var call = require('../internals/function-call');
 
-module.exports = IS_PURE ? getIterator : function (it) {
-  // eslint-disable-next-line no-undef
-  return Set.prototype.values.call(it);
+module.exports = function (it) {
+  // eslint-disable-next-line es/no-set -- safe
+  return call(Set.prototype.values, it);
 };

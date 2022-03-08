@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import actionScripts.valueObjects.HelperConstants;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.IOErrorEvent;
@@ -53,6 +55,7 @@ package actionScripts.utils
 		private var isDelayRunInProcess:Boolean;
 		private var processQueus:Array = [];
 		private var isSingleProcessRunning:Boolean;
+		private var isNekoSymlinkGenerated:Boolean;
 		
 		public static function getInstance():EnvironmentSetupUtils
 		{	
@@ -209,6 +212,8 @@ package actionScripts.utils
 			var additionalCommandLines:String = "";
 			var defaultSDKtype:String;
 			var defaultSDKreferenceVo:SDKReferenceVO;
+			var valueDYLD_LIBRARY_PATHs:Array = [];
+			var isHaxeAvailable:Boolean;
 			
 			// PROJECT SDK
 			defaultOrCustomSDKPath = hasCustomSDKRequest(EnvironmentUtilsCusomSDKsVO.SDK_FIELD);
@@ -277,11 +282,31 @@ package actionScripts.utils
 				setCommand += getSetExportWithoutQuote("HAXE_HOME", model.haxePath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$HAXE_HOME:" : "%HAXE_HOME%;");
 				isValidToExecute = true;
+				isHaxeAvailable = true;
 			}
 			if (UtilsCore.isNekoAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("NEKO_HOME", model.nekoPath);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$NEKO_HOME:" : "%NEKO_HOME%;");
+				valueDYLD_LIBRARY_PATHs.push(model.nekoPath);
+				isValidToExecute = true;
+			}
+			/*if (UtilsCore.isVagrantAvailable())
+			{
+				var vagrantPath:String = model.vagrantPath;
+				if (model.fileCore.isPathExists([model.vagrantPath, "bin"].join(model.fileCore.separator)))
+				{
+					vagrantPath = [model.vagrantPath, "bin"].join(model.fileCore.separator);
+				}
+
+				setCommand += getSetExportWithoutQuote("VAGRANT_HOME", File.applicationStorageDirectory.nativePath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$VAGRANT_HOME:" : "%VAGRANT_HOME%;");
+				isValidToExecute = true;
+			}*/
+			if (UtilsCore.isVirtualBoxAvailable())
+			{
+				setCommand += getSetExportWithoutQuote("VIRTUALBOX_HOME", model.virtualBoxPath);
+				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$VIRTUALBOX_HOME:" : "%VIRTUALBOX_HOME%;");
 				isValidToExecute = true;
 			}
 			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
@@ -303,20 +328,36 @@ package actionScripts.utils
 			}
 			if (UtilsCore.isNotesDominoAvailable())
 			{
+				valueDYLD_LIBRARY_PATHs.push(
+						ConstantsCoreVO.IS_MACOS ? [model.notesPath,"Contents","MacOS"].join(File.separator) : (new File(model.notesPath)).parent.nativePath
+				)
+			}
+
+			if (valueDYLD_LIBRARY_PATHs.length != 0)
+			{
 				setCommand += getSetExportWithoutQuote(
 						"DYLD_LIBRARY_PATH",
-						ConstantsCoreVO.IS_MACOS ? [model.notesPath,"Contents","MacOS"].join(File.separator) : (new File(model.notesPath)).parent.nativePath
+						ConstantsCoreVO.IS_MACOS ? valueDYLD_LIBRARY_PATHs.join(":") : valueDYLD_LIBRARY_PATHs.join(";")
 				);
 				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$DYLD_LIBRARY_PATH:" : "%DYLD_LIBRARY_PATH%;");
 				isValidToExecute = true;
 			}
-			
+
 			// if nothing found in above three don't run
 			if (!isValidToExecute) return null;
 			
 			if (ConstantsCoreVO.IS_MACOS)
 			{
 				setCommand += setPathCommand + "$PATH;";
+
+				// adds only if Haxe is available and installed in Moonshine custom location
+				if (isHaxeAvailable && !isNekoSymlinkGenerated &&
+						model.haxePath.indexOf(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath) != -1)
+				{
+					setCommand += HelperConstants.HAXE_SYMLINK_COMMANDS.join(";") +";";
+					isNekoSymlinkGenerated = true;
+				}
+
 				if (additionalCommandLines != "") setCommand += additionalCommandLines;
 				if (executeWithCommands) setCommand += executeWithCommands.join(";");
 			}
@@ -335,7 +376,7 @@ package actionScripts.utils
 		{
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				return "export "+ field +"='"+ path +"';";
+				return "export "+ field +"=\""+ path +"\";";
 			}
 
 			return "set "+ field +"=\""+ path +"\"\r\n";

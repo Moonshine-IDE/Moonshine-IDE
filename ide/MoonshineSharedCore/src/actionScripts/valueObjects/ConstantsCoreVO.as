@@ -64,6 +64,8 @@ package actionScripts.valueObjects
 		public static var svnLabelIcon: Class;
 		[Embed(source='/elements/images/label_xml.png')]
 		public static var xmlLabelIcon: Class;
+		[Embed(source="/elements/images/icoSmallClose.png")]
+		public static var SMALL_CROSS_BUTTON: Class;
 		public static var FLEX_PROJECTS: ArrayList;
 		
 		[Embed("/elements/images/upArrow_menuScroll.png")]
@@ -308,7 +310,7 @@ package actionScripts.valueObjects
 
 			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
 			READABLE_CLASS_FILES.sort();
-			
+
 			TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";
 			TEMPLATE_CSS.fileBridge.isDirectory = false;

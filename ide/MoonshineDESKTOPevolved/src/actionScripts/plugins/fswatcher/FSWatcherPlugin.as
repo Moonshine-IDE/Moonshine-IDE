@@ -34,6 +34,7 @@ package actionScripts.plugins.fswatcher
 	import actionScripts.locator.IDEModel;
 	import flash.utils.ByteArray;
 	import flash.system.WorkerDomain;
+	import actionScripts.events.ApplicationEvent;
 
 	public class FSWatcherPlugin extends PluginBase implements IPlugin
 	{
@@ -89,14 +90,31 @@ package actionScripts.plugins.fswatcher
 
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject, false, 0, true);
+			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
 		}
 		
 		override public function deactivate():void
 		{
 			super.deactivate();
 
+			if(worker)
+			{
+				worker.terminate();
+				worker = null;
+			}
+
 			dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT, onAddProject);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject);
+			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
+		}
+
+		private function onApplicationExit(event:ApplicationEvent):void
+		{
+			if(worker)
+			{
+				worker.terminate();
+				worker = null;
+			}
 		}
 
 		private function addProject(project:ProjectVO):void
@@ -117,6 +135,14 @@ package actionScripts.plugins.fswatcher
 			mainToWorker.send({
 				event: "unwatch",
 				id: id
+			});
+		}
+
+		private function requestAllPaths(project:ProjectVO):void
+		{
+			mainToWorker.send({
+				event: "requestAllPaths",
+				id: projectToWatcher[project]
 			});
 		}
 
@@ -183,6 +209,13 @@ package actionScripts.plugins.fswatcher
 					break;
 				case "unwatchFault":
 					trace("unwatch fault: " + incomingData.id, incomingData.reason);
+					break;
+				case "requestAllPathsResult":
+					// trace("requestAllPaths: " + incomingData.id, "paths:" + incomingData.paths);
+					// TODO: dispatch an event or something
+					break;
+				case "requestAllPathsFault":
+					trace("requestAllPaths fault: " + incomingData.id, incomingData.reason);
 					break;
 				case "fileCreated":
 					var createdFile:FileLocation = new FileLocation(incomingData.path);

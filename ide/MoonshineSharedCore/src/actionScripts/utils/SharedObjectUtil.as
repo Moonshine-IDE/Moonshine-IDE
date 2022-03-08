@@ -17,10 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-    import flash.net.SharedObject;
+	import flash.net.SharedObject;
     
     import mx.collections.ArrayCollection;
-    import mx.collections.Sort;
+	import mx.collections.ArrayList;
+	import mx.collections.Sort;
     import mx.collections.SortField;
     import mx.utils.ObjectUtil;
     
@@ -68,7 +69,7 @@ package actionScripts.utils
             cookie.flush();
         }
 		
-		public static function getRepositoriesFromSO():ArrayCollection
+		public static function getRepositoriesFromSO(withDefaultRepositories:ArrayList):ArrayCollection
 		{
 			var tmpCollection:ArrayCollection = new ArrayCollection();
 			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.REPOSITORY_HISTORY);
@@ -109,6 +110,24 @@ package actionScripts.utils
 					}
 					tmpCollection.addItem(tmpRepository);
 				}
+
+				// we also need to ensure that any newly added
+				// default repositories are available to the collection
+				withDefaultRepositories.source.forEach(function (defaultRepository:RepositoryItemVO, index:int, arr:Array):void
+				{
+					tmpCollection.source.some(function (cookieRepository:RepositoryItemVO, index:int, arr:Array):Boolean
+					{
+						if (cookieRepository.isDefault || (defaultRepository.url == cookieRepository.url))
+						{
+							tmpCollection.removeItem(cookieRepository);
+							return true;
+						}
+						return false;
+					});
+				});
+				// now adds-back the default-repositories to ensure
+				// we always have updated list
+				tmpCollection.addAllAt(withDefaultRepositories, 0);
 			}
 			
 			if (cookie.data.hasOwnProperty('defaultRepositoriesPopulated'))

@@ -136,7 +136,21 @@ package actionScripts.controllers
 				if (event)
 				{
 					event.target.removeEventListener(Event.COMPLETE, fileLoadCompletes);
-					if (UtilsCore.isBinary(event.target.data.toString()))
+
+					// IMPORTANT
+					// ===============================
+					// Following is a temporary solution to the problem
+					// to determine between binary and text-file which
+					// discussed here:
+					// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/770#issuecomment-1020669043 .
+					// This solution should removed once we address to:
+					// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/966.
+					//
+					// Pass binary test for log-extension file:
+					// tmpFL.fileBridge.extension.toLowerCase() != "log"
+					// ===============================
+					if ((tmpFL.fileBridge.extension && tmpFL.fileBridge.extension.toLowerCase() != "log") &&
+							UtilsCore.isBinary(event.target.data.toString()))
 					{
 						binaryFiles.push(tmpFL);
 					}
@@ -192,8 +206,8 @@ package actionScripts.controllers
 							var ed:BasicTextEditor = contentWindow as BasicTextEditor;
 
 							atChar = atChar != -1 ? atChar: 0;
-							ed.editor.setSelection(atLine, atChar, atLine, atChar);
-							ed.editor.scrollViewIfNeeded();
+							ed.setSelection(atLine, atChar, atLine, atChar);
+							ed.scrollToCaret();
 							if (openType == OpenFileEvent.TRACE_LINE)
 							{
 								ed.editor.debuggerLineIndex = atLine;
@@ -233,7 +247,14 @@ package actionScripts.controllers
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper);
-				var extension:String = file.fileBridge.extension.toLowerCase();
+				var extension:String = file.fileBridge.extension;
+
+				// some file may not have an extension
+				if (extension)
+				{
+					extension = extension.toLowerCase()
+				}
+
 				if (openAsTourDe) 
 				{
 					openTourDeFile(fileData);
@@ -394,7 +415,8 @@ package actionScripts.controllers
 			
 			if (atLine > -1)
 			{
-				editor.scrollTo(atLine, lastOpenEvent.type);
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
 			}
 
 			ged.dispatchEvent(

@@ -745,6 +745,13 @@ package actionScripts.plugins.as3project.mxmlc
 			launchArgs["name"] = "Moonshine Royale JS Launch";
 			launchArgs["url"] = url;
 			launchArgs["webRoot"] = getWebRoot(project).fileBridge.nativePath;
+			var sourceRelativePath:String = project.projectFolder.file.fileBridge.getRelativePath(project.sourceFolder);
+			//for some reason, Firefox doesn't like ../ in the source map paths,
+			//at least not on macOS, so this is a workaround that maps the
+			//mangled source path url back to the right path
+			launchArgs["pathMappings"] = [
+				{ url: getHost(project) + "/" + sourceRelativePath + "/", path: project.sourceFolder.fileBridge.nativePath + "/" }
+			];
             dispatcher.dispatchEvent(new DebugAdapterEvent(DebugAdapterEvent.START_DEBUG_ADAPTER,
                 project, debugAdapterType, debugCommand, launchArgs));
         }
@@ -913,9 +920,14 @@ package actionScripts.plugins.as3project.mxmlc
 			return !(pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0);
 		}
 
+		private function getHost(pvo:AS3ProjectVO):String
+		{
+			return "http://localhost:" + DEBUG_SERVER_PORT;
+		}
+
 		private function getUrlToLaunch(pvo:AS3ProjectVO):String
 		{
-			var url:String = "http://localhost:" + DEBUG_SERVER_PORT;
+			var url:String = getHost(pvo);
 			if(pvo.customHTMLPath && StringUtil.trim(pvo.customHTMLPath).length != 0)
 			{
 				url = pvo.customHTMLPath;

@@ -52,6 +52,7 @@ package actionScripts.plugin.organizeImports
 
 		private function handleOrganizeImports(event:Event):void
 		{
+			// TODO: switch to the standardized organize imports code action
 			var editor:ActionScriptTextEditor = model.activeEditor as ActionScriptTextEditor;
 			if(!editor || !editor.currentFile)
 			{

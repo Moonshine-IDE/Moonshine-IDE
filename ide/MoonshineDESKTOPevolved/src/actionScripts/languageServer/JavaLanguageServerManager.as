@@ -115,6 +115,16 @@ package actionScripts.languageServer
 		private static const COMMAND_JAVA_IGNORE_INCOMPLETE_CLASSPATH:String = "java.ignoreIncompleteClasspath";
 		private static const COMMAND_JAVA_APPLY_WORKSPACE_EDIT:String = "java.apply.workspaceEdit";
 		private static const COMMAND_JAVA_CLEAN_WORKSPACE:String = "java.clean.workspace";
+		private static const COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS:String = "java.projectConfiguration.status";
+
+		private static const FEATURE_STATUS_DISABLED:int = 0;
+		private static const FEATURE_STATUS_INTERACTIVE:int = 1;
+		private static const FEATURE_STATUS_AUTOMATIC:int = 2;
+
+		private static const MESSAGE_TYPE_ERROR:int = 1;
+		private static const MESSAGE_TYPE_WARNING:int = 2;
+		private static const MESSAGE_TYPE_INFO:int = 3;
+		private static const MESSAGE_TYPE_LOG:int = 4;
 		
 		private static const URI_SCHEME_FILE:String = "file";
 
@@ -135,6 +145,7 @@ package actionScripts.languageServer
 		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToDispose:Boolean = false;
 		private var _watchedFiles:Object = {};
+		private var _settingUpdateBuildConfiguration:int = -1;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
 		{
@@ -228,6 +239,8 @@ package actionScripts.languageServer
 			}
 			_languageStatusDone = false;
 			_languageClient.unregisterCommand(COMMAND_JAVA_CLEAN_WORKSPACE);
+			_languageClient.unregisterCommand(COMMAND_JAVA_APPLY_WORKSPACE_EDIT);
+			_languageClient.unregisterCommand(COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
@@ -413,20 +426,6 @@ package actionScripts.languageServer
 			}
 
 			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
-			var processArgs:Vector.<String> = new <String>[];
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			//uncomment to allow connection to debugger
-			//processArgs.push("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044");
-			processArgs.push("-Declipse.application=org.eclipse.jdt.ls.core.id1");
-			processArgs.push("-Dosgi.bundles.defaultStartLevel=4");
-			processArgs.push("-Declipse.product=org.eclipse.jdt.ls.core.product");
-			//uncomment for extra debug logging
-			//processArgs.push("-Dlog.level=ALL");
-			processArgs.push("-noverify");
-			processArgs.push("-Xmx1G");
-			processArgs.push("-jar");
-			processArgs.push(this._languageServerLauncherJar.nativePath);
-			processArgs.push("-configuration");
 			var configFile:File = null;
 			if(ConstantsCoreVO.IS_MACOS)
 			{
@@ -436,21 +435,57 @@ package actionScripts.languageServer
 			{
 				configFile = storageFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
 			}
-			processArgs.push(configFile.nativePath);
-			processArgs.push("-data");
-			//this is a file outside of the project folder due to limitations
-			//of the language server, which is based on Eclipse
-			processArgs.push(getWorkspaceNativePath());
-			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
-			processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
 
-			_languageServerProcess = new NativeProcess();
-			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
-			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
-			_languageServerProcess.start(processInfo);
+			var languageServerCommand:Vector.<String> = new <String>[
+				cmdFile.nativePath,
+				// uncomment to allow connection to debugger
+				// "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044",
+				"-Declipse.application=org.eclipse.jdt.ls.core.id1",
+				"-Dosgi.bundles.defaultStartLevel=4",
+				"-Declipse.product=org.eclipse.jdt.ls.core.product",
+				// uncomment for extra debug logging
+				// "-Dlog.level=ALL",
+				"-noverify",
+				"-Xmx1G",
+				"-jar",
+				this._languageServerLauncherJar.nativePath,
+				"-configuration",
+				configFile.nativePath,
+				"-data",
+				//this is a file outside of the project folder due to limitations
+				//of the language server, which is based on Eclipse
+				getWorkspaceNativePath()
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			initializeLanguageServer(jdkPath);
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_languageServerProcess = new NativeProcess();
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+				_languageServerProcess.start(processInfo);
+
+				initializeLanguageServer(jdkPath);
+			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
 		}
 
 		private function getWorkspaceNativePath():String
@@ -544,6 +579,7 @@ package actionScripts.languageServer
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
 			_languageClient.registerCommand(COMMAND_JAVA_CLEAN_WORKSPACE, command_javaCleanWorkspaceHandler);
 			_languageClient.registerCommand(COMMAND_JAVA_APPLY_WORKSPACE_EDIT, command_javaApplyWorkspaceEditHandler);
+			_languageClient.registerCommand(COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS, command_javaProjectConfigurationStatus);
 			_project.languageClient = _languageClient;
 
 			var initParams:Object = LanguageClientUtil.getSharedInitializeParams();
@@ -585,22 +621,41 @@ package actionScripts.languageServer
 			}
 			var runtimes:Array = [];
 			var java8Path:FileLocation = _model.java8Path;
-			if(java8Path != null) {
+			if(_project.jdkType == JavaTypes.JAVA_8)
+			{
+				if(java8Path != null)
+				{
+					runtimes.push({
+						"name": "JavaSE-1.8",
+						"path": java8Path.fileBridge.nativePath,
+						"default":  true
+					});
+				}
+			}
+			else
+			{
+				var versionParts:Array = _model.javaVersionForTypeAhead.split(".");
+				var sourcesZip:FileLocation = _model.javaPathForTypeAhead.fileBridge.resolvePath("lib/src.zip");
 				runtimes.push({
-					"name": "JavaSE-1.8",
-					"path": java8Path.fileBridge.nativePath
+					"name": "JavaSE-" + versionParts[0],
+					"path": _model.javaPathForTypeAhead.fileBridge.nativePath,
+					"sources": sourcesZip.fileBridge.nativePath,
+					"javadoc": "https://docs.oracle.com/en/java/javase/" + versionParts[0] + "/docs/api",
+					"default":  true
 				});
 			}
-			var versionParts:Array = _model.javaVersionForTypeAhead.split(".");
-			var sourcesZip:FileLocation = _model.javaPathForTypeAhead.fileBridge.resolvePath("lib/src.zip");
-			runtimes.push({
-				"name": "JavaSE-" + versionParts[0],
-				"path": _model.javaPathForTypeAhead.fileBridge.nativePath,
-				"sources": sourcesZip.fileBridge.nativePath,
-				"javadoc": "https://docs.oracle.com/en/java/javase/" + versionParts[0] + "/docs/api",
-				"default":  true
-			});
 			var settings:Object = { java: { configuration: { runtimes: runtimes } } };
+			switch(_settingUpdateBuildConfiguration) {
+				case FEATURE_STATUS_DISABLED:
+					settings.java.configuration.updateBuildConfiguration = "disabled";
+					break;
+				case FEATURE_STATUS_INTERACTIVE:
+					settings.java.configuration.updateBuildConfiguration = "interactive";
+					break;
+				case FEATURE_STATUS_AUTOMATIC:
+					settings.java.configuration.updateBuildConfiguration = "automatic";
+					break;
+			}
 			var params:Object = new Object();
 			params.settings = settings;
 			_languageClient.sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
@@ -630,9 +685,12 @@ package actionScripts.languageServer
 				_dispatcher.dispatchEvent(new ExecuteLanguageServerCommandEvent(
 					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
 					project, command, args ? args : []));
-				if(popup)
+				if(popupWrapper)
 				{
 					PopUpManager.removePopUp(popupWrapper);
+				}
+				if(popup)
+				{
 					popup.data = null;
 				}
 			};
@@ -642,7 +700,6 @@ package actionScripts.languageServer
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			error(data);
 			trace(data);
 		}
 
@@ -789,6 +846,7 @@ package actionScripts.languageServer
 						return;
 					}
 
+					// trace("command: " + event.command, JSON.stringify(event.arguments));
 					_languageClient.executeCommand({
 						command: event.command,
 						arguments: event.arguments
@@ -982,7 +1040,7 @@ package actionScripts.languageServer
 			var message:String = params.message;
 			var commands:Array = params.commands as Array;
 
-			if(severity == 4) //log
+			if(severity == MESSAGE_TYPE_LOG) //log
 			{
 				print(message);
 				trace(message);
@@ -992,6 +1050,7 @@ package actionScripts.languageServer
 			var popup:StandardPopupView = new StandardPopupView();
 			popup.data = this; // Keep the command from getting GC'd
 			popup.text = message;
+			var popupWrapper:FeathersUIWrapper = new FeathersUIWrapper(popup);
 
 			var buttons:Array = [];
 			var commandCount:int = commands.length;
@@ -1011,7 +1070,6 @@ package actionScripts.languageServer
 			
 			popup.controls = buttons;
 			
-			var popupWrapper:FeathersUIWrapper = new FeathersUIWrapper(popup);
 			PopUpManager.addPopUp(popupWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 			popupWrapper.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
 			popupWrapper.x = (FlexGlobals.topLevelApplication.width-popupWrapper.width)/2;
@@ -1035,6 +1093,12 @@ package actionScripts.languageServer
 		{
 			var workspaceEdit:WorkspaceEdit = WorkspaceEdit.parse(json);
 			applyWorkspaceEdit(workspaceEdit);
+		}
+
+		private function command_javaProjectConfigurationStatus(uri:Object, status:int):void
+		{
+			_settingUpdateBuildConfiguration = status;
+			sendWorkspaceSettings();
 		}
 
 		private function removeProjectHandler(event:ProjectEvent):void
@@ -1074,7 +1138,7 @@ package actionScripts.languageServer
 
 		private function fileCreatedHandler(event:WatchedFileChangeEvent):void
 		{
-			if(!isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
 			{
 				return;
 			}
@@ -1090,7 +1154,7 @@ package actionScripts.languageServer
 
 		private function fileDeletedHandler(event:WatchedFileChangeEvent):void
 		{
-			if(!isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
 			{
 				return;
 			}
@@ -1106,7 +1170,7 @@ package actionScripts.languageServer
 
 		private function fileModifiedHandler(event:WatchedFileChangeEvent):void
 		{
-			if(!isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
 			{
 				return;
 			}

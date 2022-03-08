@@ -441,12 +441,17 @@ package actionScripts.impls
 		{
 			return null;
 		}
+		
+		public function get vagrantMenuOptions():Array
+		{
+			return null;
+		}
 
 		public function setMSDKILocalPathConfig():void
 		{
 		}
 		
-		public function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean
+		public function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean
 		{
 			return false;
 		}
@@ -457,6 +462,11 @@ package actionScripts.impls
 		}
 		
 		public function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void
+		{
+			
+		}
+		
+		public function generateTabularRoyaleProject():void
 		{
 			
 		}

@@ -24,8 +24,7 @@ package actionScripts.utils
 		
 		private static const PARSE_FILES_ON_PATH:String = "parseFilesOnPath";
 		
-		private static var subscribeIdToWorker:String;
-		
+		private var subscribeIdToWorker:String;
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var readableExtensions:Array;
@@ -72,18 +71,20 @@ package actionScripts.utils
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
 		
-		public function parseFilesPaths(fromPath:String, fileName:String, readableExtensions:Array=null):void
+		public function parseFilesPaths(fromPath:String, withName:String, readableExtensions:Array=null):void
 		{
 			var tempDirectory:FileLocation = IDEModel.getInstance().fileCore.resolveTemporaryDirectoryPath("moonshine");
 			if (!tempDirectory.fileBridge.exists)
 			{
 				tempDirectory.fileBridge.createDirectory();
 			}
-			
+
+			withName ||= UIDUtil.createUID();
+
 			this.readableExtensions = readableExtensions;
 			this._projectPath = fromPath;
-			this._fileName = fileName;
-			this._filePath = tempDirectory.fileBridge.resolvePath(fileName +".txt").fileBridge.nativePath;
+			this._fileName = withName;
+			this._filePath = tempDirectory.fileBridge.resolvePath(this._fileName +".txt").fileBridge.nativePath;
 
 			var tmpExtensions:String = "";
 			if (readableExtensions)
@@ -106,10 +107,10 @@ package actionScripts.utils
 			// windows: dir /a-d /b /s *.mxml *.xml
 			queue = new Vector.<Object>();
 			addToQueue(new NativeProcessQueueVO(
-				ConstantsCoreVO.IS_MACOS ? 
+				ConstantsCoreVO.IS_MACOS ?
 					"find -E $'"+ UtilsCore.getEncodedForShell(fromPath) +"'"+ tmpExtensions +" -type f > '"+ _filePath +"'" :
-					"dir /a-d /b /s "+ tmpExtensions +" > "+ UtilsCore.getEncodedForShell(_filePath), 
-				false, 
+					"dir /a-d /b /s "+ tmpExtensions +" > "+ UtilsCore.getEncodedForShell(_filePath),
+				false,
 				PARSE_FILES_ON_PATH)
 			);
 			worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:fromPath}, subscribeIdToWorker);
@@ -184,6 +185,7 @@ package actionScripts.utils
 		protected function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
 		{
 			unsubscribeFromWorker();
+			dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, value.output, false, false, ConsoleOutputEvent.TYPE_ERROR)
 			);

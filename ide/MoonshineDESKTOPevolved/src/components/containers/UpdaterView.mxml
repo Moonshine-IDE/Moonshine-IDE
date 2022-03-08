@@ -23,16 +23,24 @@
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
 		 xmlns:mx="library://ns.adobe.com/flex/mx"
-		 width="100%" height="100%">
+		 width="100%" height="100%" creationComplete="onCreationCompletes()">
 	<fx:Metadata>
 		[Event( name="UPDATEYES" )]
 		[Event( name="UPDATENO" )]
 		[Event( name="UPDATECANCEL" )]
+		[Event( name="CHECKCANCEL" )]
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.extResources.riaspace.nativeApplicationUpdater.NativeApplicationUpdater;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.extResources.riaspace.nativeApplicationUpdater.AutoUpdaterHelper;
+		import actionScripts.extResources.riaspace.nativeApplicationUpdater.NativeApplicationUpdater;
 			import actionScripts.valueObjects.ConstantsCoreVO;
+
+		import mx.controls.Alert;
+		import mx.events.CloseEvent;
+
+		import spark.components.BusyIndicator;
 
 			//--------------------------------------------------------------------------
 			//
@@ -43,26 +51,108 @@
 			[Bindable] public var downlaoding			: Boolean;
 			[Bindable] public var updater				: NativeApplicationUpdater;
 
+			private var _isUpdateAvailable				: int;
+			[Bindable]
+			public function set isUpdateAvailable(value:int):void
+			{
+				_isUpdateAvailable = value;
+				if (_isUpdateAvailable == 1)
+				{
+					removeBusyIndicator();
+					this.currentState = "loaded";
+				}
+				else if (_isUpdateAvailable == 0)
+				{
+					remove();
+				}
+			}
+
+			private var busyIndicator:BusyIndicator;
+
+			public function updater_errorHandler(event:ErrorEvent):void
+			{
+				Alert.show(event.text, "Error!", Alert.OK, null, errorConfirmedHandler);
+				function errorConfirmedHandler(event:CloseEvent):void
+				{
+					if (currentState == "loading")
+					{
+						remove();
+					}
+					else
+					{
+						downlaoding = false;
+					}
+				}
+			}
+
+			private function remove():void
+			{
+				this.visible = this.includeInLayout = false;
+				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(AutoUpdaterHelper.EVENT_UPDATE_CHECK_COMPLETES));
+			}
+
+			private function onCreationCompletes():void
+			{
+				busyIndicator = new BusyIndicator();
+				containerLoading.addElementAt(busyIndicator, 0);
+			}
+
+			private function onDownloadCancel():void
+			{
+				if (downlaoding)
+				{
+					dispatchEvent(new Event('UPDATECANCEL'));
+					downlaoding=false;
+				} else
+				{
+					dispatchEvent(new Event('UPDATENO'));
+				}
+			}
+
+			private function onUpdateCheckCancel(event:MouseEvent):void
+			{
+				removeBusyIndicator();
+				dispatchEvent(new Event('CHECKCANCEL'));
+			}
+
+			private function removeBusyIndicator():void
+			{
+				try
+				{
+					containerLoading.removeElement(busyIndicator);
+				} catch (e:Error) {}
+			}
+
 		]]>
 	</fx:Script>
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
+	<s:states>
+		<s:State name="loading"/>
+		<s:State name="loaded"/>
+	</s:states>
 	
 	<s:Rect left="0" right="0" top="0" bottom="0">
 		<s:fill>
 			<s:SolidColor color="#000000" alpha=".3"/>
 		</s:fill>    		
 	</s:Rect>
-	
-	<s:BorderContainer id="bodyContainer" 
+
+	<s:BorderContainer id="bodyContainer"
 						verticalCenter="0" horizontalCenter="0"
 						borderVisible="false" backgroundColor="#e1e1e1"
 						autoLayout="true" cornerRadius="4">
 		<s:layout>
 			<s:VerticalLayout verticalAlign="middle" padding="30"/>
 		</s:layout>
-		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle" gap="10">
+		<s:VGroup id="containerLoading"
+				  includeIn="loading"
+				  horizontalAlign="center" verticalAlign="middle" gap="10">
+			<s:Label text="An update check is in progress. Please wait."/>
+		</s:VGroup>
+		<s:HGroup width="100%" horizontalAlign="center" verticalAlign="middle" gap="10"
+			includeIn="loaded">
 			<s:Image source="/elements/images/imgInstall.png"/>
 			<s:VGroup gap="10">
 				<s:Label text="New Update Available"
@@ -81,7 +171,7 @@
 								  click="dispatchEvent(new Event('UPDATEYES'))" enabled="{!downlaoding}"
 								  width="60" emphasized="true"/>
 						<s:Button label="{(!downlaoding)?'NO':'CANCEL'}"
-								  click="(downlaoding)?dispatchEvent(new Event('UPDATECANCEL')):dispatchEvent(new Event('UPDATENO'))"/>
+								  click="onDownloadCancel()"/>
 					</s:HGroup>
 				</s:VGroup>
 				<s:VGroup width="100%"
@@ -111,4 +201,9 @@
 			</s:VGroup>
 		</s:HGroup>
 	</s:BorderContainer>
+
+	<s:Image source="{ConstantsCoreVO.SMALL_CROSS_BUTTON}"
+			 x="{bodyContainer.x + bodyContainer.width - 26}"
+			 y="{bodyContainer.y + 6}" includeIn="loading"
+			 click="onUpdateCheckCancel(event)"/>
 </s:Group>

@@ -21,6 +21,9 @@ package actionScripts.impls
 {
 	import actionScripts.managers.StartupHelper;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.macports.MacPortsPlugin;
+	import actionScripts.plugins.vagrant.VagrantPlugin;
+	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -48,6 +51,7 @@ package actionScripts.impls
 	import actionScripts.events.StartupHelperEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.interfaces.IModulesFinder;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
@@ -62,6 +66,7 @@ package actionScripts.impls
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
 	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugin.locations.LocationsPlugin;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
@@ -107,6 +112,7 @@ package actionScripts.impls
 	import actionScripts.plugins.menu.MultiMenuEventsNotifierPlugin;
 	import actionScripts.plugins.nativeFiles.FileAssociationPlugin;
 	import actionScripts.plugins.nativeFiles.FilesCopyPlugin;
+	import actionScripts.plugins.ondiskproj.crud.exporter.OnDiskRoyaleCRUDProjectExporter;
 	import actionScripts.plugins.royale.RoyaleApiReportConfiguratorPlugin;
 	import actionScripts.plugins.royale.RoyaleApiReportPlugin;
 	import actionScripts.plugins.run.RunJavaProject;
@@ -208,10 +214,11 @@ package actionScripts.impls
 				ProjectPanelPlugin,
 				TemplatingPlugin,
 				HelpPlugin,
+				ConsolePlugin,
+				ProblemsPlugin,
 				FindReplacePlugin,
 				FindResourcesPlugin,
 				RecentlyOpenedPlugin,
-				ConsolePlugin,
 				FullscreenPlugin,
 				AntBuildPlugin,
 				MavenBuildPlugin,
@@ -231,7 +238,7 @@ package actionScripts.impls
 		
 		public function getDefaultPlugins():Array
 		{
-			return [
+			var defaultPlugins:Array = [
 				MultiMenuEventsNotifierPlugin,
 				StartupHelperPlugin,
 				MXMLCPlugin,
@@ -254,7 +261,6 @@ package actionScripts.impls
 				DebugAdapterPlugin,
 				SaveFilesPlugin,
 				OutlinePlugin,
-				ProblemsPlugin,
 				SymbolsPlugin,
 				ReferencesPlugin,
 				LocationsPlugin,
@@ -268,8 +274,17 @@ package actionScripts.impls
 				RoyaleApiReportConfiguratorPlugin,
 				RoyaleApiReportPlugin,
 				ExternalEditorsPlugin,
+				VagrantPlugin,
 				FSWatcherPlugin
 			];
+
+			// conditional additions
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				defaultPlugins.push(MacPortsPlugin);
+			}
+
+			return defaultPlugins;
 		}
 		
 		public function getPluginsNotToShowInSettings():Array
@@ -339,7 +354,7 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources','EDIT'), [
 					new MenuItem(resourceManager.getString('resources','FIND'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,
-								ProjectMenuTypes.JAVA, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], FindReplacePlugin.EVENT_FIND_NEXT,
+								ProjectMenuTypes.JAVA, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE, ProjectMenuTypes.ON_DISK], FindReplacePlugin.EVENT_FIND_NEXT,
 						'f', [Keyboard.COMMAND],
 						'f', [Keyboard.CONTROL]),
 					/*new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, null, FindReplacePlugin.EVENT_FIND_PREV,
@@ -537,7 +552,7 @@ package actionScripts.impls
 			return HelperUtils.getComponentByType(type);
 		}
 		
-		public function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean
+		public function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean
 		{
 			return HelperUtils.isValidExecutableBy(type, originPath, validationPath);
 		}
@@ -572,6 +587,11 @@ package actionScripts.impls
 			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
 		}
 
+		public function get vagrantMenuOptions():Array
+		{
+			return VagrantUtil.VAGRANT_MENU_OPTIONS;
+		}
+
 		public function setMSDKILocalPathConfig():void
 		{
 			StartupHelper.setLocalPathConfig();
@@ -592,6 +612,16 @@ package actionScripts.impls
 			return ExternalEditorsPlugin.editors;
 		}
 		
+		public function generateTabularRoyaleProject():void
+		{
+			if (IDEModel.getInstance().activeProject &&
+					(IDEModel.getInstance().activeProject is OnDiskProjectVO))
+			{
+				var tmpExporter:OnDiskRoyaleCRUDProjectExporter = new OnDiskRoyaleCRUDProjectExporter(null);
+				tmpExporter.browseToExport();
+			}
+		}
+
 		public function getModulesFinder():IModulesFinder
 		{
 			return (new ModulesFinder());

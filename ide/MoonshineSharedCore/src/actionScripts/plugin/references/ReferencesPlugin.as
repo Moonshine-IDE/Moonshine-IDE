@@ -76,6 +76,7 @@ package actionScripts.plugin.references
 			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
 			if(!lspEditor || !lspEditor.languageClient)
 			{
+				Alert.show("No references found", ConstantsCoreVO.MOONSHINE_IDE_LABEL);
 				return;
 			}
 

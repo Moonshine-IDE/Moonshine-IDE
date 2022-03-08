@@ -89,6 +89,9 @@ package actionScripts.locator
 		public var javaVersionInJava8Path:String;
 		public var svnPath:String;
 		public var gitPath:String;
+		public var vagrantPath:String;
+		public var virtualBoxPath:String;
+		public var macportsPath:String;
 		public var isCodeCompletionJavaPresent:Boolean;
 		public var payaraServerLocation:FileLocation;
 

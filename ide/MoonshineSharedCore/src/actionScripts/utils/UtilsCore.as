@@ -28,6 +28,7 @@ package actionScripts.utils
 	import mx.collections.IList;
 	import mx.collections.Sort;
 	import mx.collections.SortField;
+	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
 	import mx.events.CloseEvent;
@@ -35,7 +36,6 @@ package actionScripts.utils
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
 	import mx.utils.UIDUtil;
-	import mx.controls.Alert;
 	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
@@ -363,10 +363,22 @@ package actionScripts.utils
 		}
 
 		/**
+		 * Returns path reference separated with
+		 * file separator
+		 */
+		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
+		{
+			var path:String = getPathStringByProjectPath(classPaths, filePath, fileWrapper, fileLocation, appendProjectNameAsPrefix);
+			var pattern:RegExp = new RegExp(ConstantsCoreVO.IS_MACOS ? model.fileCore.separator : "\\" + model.fileCore.separator, "g");
+			path = path.replace(pattern, ".");
+			return path;
+		}
+
+		/**
 		 * Returns dotted package references
 		 * against a project path
 		 */
-		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
+		public static function getPathStringByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
 		{
 			if (fileWrapper)
 			{
@@ -394,9 +406,9 @@ package actionScripts.utils
 			//filePath = filePath.replace(projectPath, "");
 			if (appendProjectNameAsPrefix && projectPathSplit)
 			{
-				return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(".");
+				return projectPathSplit[projectPathSplit.length-1] + filePath.split(separator).join(model.fileCore.separator);
 			}
-			return filePath.split(separator).join(".");
+			return filePath.split(separator).join(model.fileCore.separator);
 		}
 		
 		/**
@@ -415,7 +427,9 @@ package actionScripts.utils
 					{
 						return child;
 					}
-					if (child.children && child.children.length > 0) return findFileWrapperAgainstFileLocation(child, target); 	
+					if (child.children) {
+						return findFileWrapperAgainstFileLocation(child, target);
+					}
 				}
 			}
 			return current;
@@ -895,15 +909,16 @@ package actionScripts.utils
 											  feathersCollection:feathers.data.ArrayCollection=null, 
 											  project:ProjectVO=null, 
 											  readableExtensions:Array=null, 
-											  isSourceFolderOnly:Boolean=false):void
+											  isSourceFolderOnly:Boolean=false,
+											  onComplete:Function=null):void
 		{
 			if (project)
 			{
-				if (isSourceFolderOnly && (project as AS3ProjectVO).sourceFolder) 
+				if (isSourceFolderOnly && project.sourceFolder) 
 				{
 					// lets search for the probable existing fileWrapper object
 					// instead of creating a new one - that could be expensive
-					var sourceWrapper:FileWrapper = findFileWrapperAgainstFileLocation(project.projectFolder, (project as AS3ProjectVO).sourceFolder);
+					var sourceWrapper:FileWrapper = findFileWrapperAgainstFileLocation(project.projectFolder, project.sourceFolder);
 					if (sourceWrapper) 
 					{
 						initiateFilesParsingByPath(sourceWrapper.file.fileBridge.nativePath);
@@ -927,7 +942,7 @@ package actionScripts.utils
 			function initiateFilesParsingByPath(value:String):void
 			{
 				var tmpFSP:FileSystemParser = new FileSystemParser();
-				tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onFilesListParseCompleted, false, 0, true);
+				tmpFSP.addEventListener(FileSystemParser.EVENT_PARSE_COMPLETED, onFilesListParseCompleted);
 				tmpFSP.parseFilesPaths(value, "", readableExtensions);
 			}
 			function onFilesListParseCompleted(event:Event):void
@@ -955,6 +970,11 @@ package actionScripts.utils
 								feathersCollection.add({name:tmpNameLabel, extension: tmpNameExtension, resourcePath: i});
 						}
 					}
+				}
+
+				if (onComplete != null)
+				{
+					onComplete();
 				}
 			}
 		}
@@ -1132,6 +1152,36 @@ package actionScripts.utils
 			
 			return null;
 		}
+		
+		/**
+		 * Returns PowerShell path on Windows
+		 */
+		public static function getPowerShellExecutablePath():String
+		{
+			// possible termination
+			if (ConstantsCoreVO.IS_MACOS) return null;
+			
+			var installDirectories:Array = ["C:\\Windows\\SysWOW64\\", "C:\\Windows\\System32\\"];
+			var tmpPath:String;
+			var executable:String = "WindowsPowerShell\\v1.0\\powershell.exe"
+			if (ConstantsCoreVO.is64BitSupport)
+			{
+				for each (var i:String in installDirectories)
+				{
+					tmpPath = i + executable;
+					if (model.fileCore.isPathExists(tmpPath))
+					{
+						return tmpPath;
+					}
+				}
+			}
+			else if (model.fileCore.isPathExists(installDirectories[1] + executable))
+			{
+				return installDirectories[1] + executable;
+			}
+			
+			return null;
+		}
 
 		public static function getConsolePath():String
 		{
@@ -1210,9 +1260,10 @@ package actionScripts.utils
 					return true;
 				else if (model.fileCore.isPathExists(model.nodePath + model.fileCore.separator + "node"))
 					return true;
+				return false;
 			}
 			
-			return false;
+			return true;
 		}
 		
 		public static function isHaxeAvailable():Boolean
@@ -1221,10 +1272,30 @@ package actionScripts.utils
 			{
 				return false;
 			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.HAXE);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.HAXE, model.haxePath, component.pathValidation);
+			}
 			
-			//TODO: use path validation with SDKTypes
-			var haxeName:String = ConstantsCoreVO.IS_MACOS ? "haxe" : "haxe.exe";
-			return model.fileCore.isPathExists(model.haxePath + model.fileCore.separator + haxeName);
+			return true;
+		}
+
+		public static function getHaxeBinPath():String
+		{
+			if (!model.haxePath || !model.fileCore.isPathExists(model.haxePath))
+			{
+				return null;
+			}
+
+			var executable:String = ConstantsCoreVO.IS_MACOS ? "haxelib" : "haxelib.exe";
+			if (model.fileCore.isPathExists([model.haxePath, executable].join(model.fileCore.separator)))
+			{
+				return [model.haxePath, executable].join(model.fileCore.separator);
+			}
+
+			return null;
 		}
 		
 		public static function isNekoAvailable():Boolean
@@ -1234,9 +1305,29 @@ package actionScripts.utils
 				return false;
 			}
 
-			//TODO: use path validation with SDKTypes
-			var nekoName:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
-			return model.fileCore.isPathExists(model.nekoPath + model.fileCore.separator + nekoName);
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.NEKO);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.NEKO, model.nekoPath, component.pathValidation);
+			}
+
+			return true;
+		}
+
+		public static function getNekoBinPath():String
+		{
+			if (!model.nekoPath || !model.fileCore.isPathExists(model.nekoPath))
+			{
+				return null;
+			}
+
+			var executable:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
+			if (model.fileCore.isPathExists([model.nekoPath, executable].join(model.fileCore.separator)))
+			{
+				return [model.nekoPath, executable].join(model.fileCore.separator);
+			}
+
+			return null;
 		}
 
         public static function getMavenBinPath():String
@@ -1445,6 +1536,94 @@ package actionScripts.utils
 			
 			return true;
 		}
+
+		public static function isVagrantAvailable():Boolean
+		{
+			if (!model.vagrantPath || !model.fileCore.isPathExists(model.vagrantPath))
+			{
+				return false;
+			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.VAGRANT);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.VAGRANT, model.vagrantPath, component.pathValidation);
+			}
+
+			return false;
+		}
+
+		public static function isVirtualBoxAvailable():Boolean
+		{
+			if (!model.virtualBoxPath || !model.fileCore.isPathExists(model.virtualBoxPath))
+			{
+				return false;
+			}
+
+			var virtualBoxExecutable:String = ConstantsCoreVO.IS_MACOS ? "VBoxManage" : "VirtualBoxVM.exe";
+			if (model.fileCore.isPathExists([model.virtualBoxPath, virtualBoxExecutable].join(model.fileCore.separator)))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		public static function getVagrantBinPath():String
+		{
+			if (!model.vagrantPath || !model.fileCore.isPathExists(model.vagrantPath))
+			{
+				return null;
+			}
+
+			var vagrantExecutable:String = ConstantsCoreVO.IS_MACOS ? "vagrant" : "vagrant.exe";
+			if (model.fileCore.isPathExists([model.vagrantPath, vagrantExecutable].join(model.fileCore.separator)))
+			{
+				return [model.vagrantPath, vagrantExecutable].join(model.fileCore.separator);
+			}
+			if (model.fileCore.isPathExists([model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator)))
+			{
+				return [model.vagrantPath, "bin", vagrantExecutable].join(model.fileCore.separator);
+			}
+
+			return null;
+		}
+
+		public static function isMacPortsAvailable():Boolean
+		{
+			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			{
+				return false;
+			}
+
+			var component:Object = model.flexCore.getComponentByType(SDKTypes.MACPORTS);
+			if (component && component.pathValidation)
+			{
+				return model.flexCore.isValidExecutableBy(SDKTypes.MACPORTS, model.macportsPath, component.pathValidation);
+			}
+
+			return false;
+		}
+
+		public static function getMacPortsBinPath():String
+		{
+			if (!model.macportsPath || !model.fileCore.isPathExists(model.macportsPath))
+			{
+				return null;
+			}
+
+			var mportsExecutable:String = "port";
+			if (model.fileCore.isPathExists([model.macportsPath, mportsExecutable].join(model.fileCore.separator)))
+			{
+				return [model.macportsPath, mportsExecutable].join(model.fileCore.separator);
+			}
+			if (model.fileCore.isPathExists([model.macportsPath, "bin", mportsExecutable].join(model.fileCore.separator)))
+			{
+				return [model.macportsPath, "bin", mportsExecutable].join(model.fileCore.separator);
+			}
+
+			return null;
+		}
 		
 		public static function isNotesDominoAvailable():Boolean
 		{
@@ -1488,7 +1667,7 @@ package actionScripts.utils
             if (!value) return;
 
             var extension:String = value.file.fileBridge.extension;
-            if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension))
+            if (!value.file.fileBridge.isDirectory && (extension != null) && isAcceptableResource(extension, readableExtensions))
             {
                 collection.addItem(new ResourceVO(value.file.fileBridge.name, value));
                 return;

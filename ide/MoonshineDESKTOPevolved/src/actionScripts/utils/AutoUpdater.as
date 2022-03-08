@@ -27,7 +27,7 @@ import air.update.events.StatusUpdateEvent;
 import air.update.events.UpdateEvent;
 
 [Bindable] protected var downlaoding:Boolean = false;
-[Bindable] protected var isUpdater:Boolean;
+[Bindable] protected var isUpdater:int = -1;
 
 protected function isNewerFunction(currentVersion:String, updateVersion:String):Boolean
 {
@@ -57,7 +57,7 @@ protected function updater_updateStatusHandler(event:StatusUpdateEvent):void
 		// install new version of the application.
 		event.preventDefault();
 		//currentState = "Update";
-		isUpdater = true;
+		isUpdater = 1;
 	}
 	else
 	{
@@ -67,13 +67,13 @@ protected function updater_updateStatusHandler(event:StatusUpdateEvent):void
 
 protected function btnNo_clickHandler(event:Event):void
 {
-	isUpdater = false;
+	isUpdater = 0;
 }
 
 protected function btnCancel_clickHandler(event:Event):void
 {
 	updater.cancelUpdate();
-	isUpdater = false;
+	isUpdater = 0;
 }
 
 protected function btnYes_clickHandler(event:Event):void

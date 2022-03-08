@@ -76,14 +76,16 @@ export class ThreadAdapter extends EventEmitter {
 		private readonly consoleActor: ConsoleActorProxy,
 		private readonly pauseCoordinator: ThreadPauseCoordinator,
 		public readonly name: string,
+		public readonly getUrl: () => string,
+		isPaused: boolean,
 		public readonly debugSession: FirefoxDebugSession
 	) {
 		super();
 
 		this.id = debugSession.threads.register(this);
 
-		this.coordinator = new ThreadCoordinator(this.id, this.name, this.actor, this.consoleActor,
-			this.pauseCoordinator, () => this.disposePauseLifetimeAdapters());
+		this.coordinator = new ThreadCoordinator(this.id, this.name, isPaused, this.actor,
+			this.consoleActor, this.pauseCoordinator, () => this.disposePauseLifetimeAdapters());
 
 		this.coordinator.onPaused(async (event) => {
 
@@ -126,7 +128,7 @@ export class ThreadAdapter extends EventEmitter {
 					}
 				}
 			} catch(err) {
-				log.warn(err);
+				log.warn(String(err));
 			}
 
 			if (event.why.type === 'exception') {
@@ -146,7 +148,7 @@ export class ThreadAdapter extends EventEmitter {
 	
 						}
 					} catch(err) {
-						log.warn(err);
+						log.warn(String(err));
 					}
 				}
 			}
@@ -160,7 +162,7 @@ export class ThreadAdapter extends EventEmitter {
 	/**
 	 * Attach to the thread, fetch sources and resume.
 	 */
-	public async init(exceptionBreakpoints: ExceptionBreakpoints): Promise<void> {
+	public async init(exceptionBreakpoints: ExceptionBreakpoints, isPaused: boolean): Promise<void> {
 
 		const attachOptions: AttachOptions = {
 			ignoreFrameEnvironment: true,
@@ -168,10 +170,14 @@ export class ThreadAdapter extends EventEmitter {
 			ignoreCaughtExceptions: (exceptionBreakpoints !== ExceptionBreakpoints.All)
 		};
 
-		await this.pauseCoordinator.requestInterrupt(this.id, this.name, 'auto');
+		if (isPaused) {
+			await this.pauseCoordinator.requestInterrupt(this.id, this.name, 'auto');
+		}
 		try {
 			await this.actor.attach(attachOptions);
-			this.pauseCoordinator.notifyInterrupted(this.id, this.name, 'auto');
+			if (isPaused) {
+				this.pauseCoordinator.notifyInterrupted(this.id, this.name, 'auto');
+			}
 		} catch(e) {
 			this.pauseCoordinator.notifyInterruptFailed(this.id, this.name);
 			throw e;
@@ -179,7 +185,9 @@ export class ThreadAdapter extends EventEmitter {
 
 		await this.actor.fetchSources();
 
-		await this.coordinator.resume();
+		if (isPaused) {
+			await this.coordinator.resume();
+		}
 	}
 
 	public createSourceAdapter(actor: ISourceActorProxy, path: string | undefined): SourceAdapter {
@@ -217,7 +225,7 @@ export class ThreadAdapter extends EventEmitter {
 						}
 
 					} catch(err) {
-						log.warn(err);
+						log.warn(String(err));
 					}
 				})();
 			}
@@ -445,10 +453,6 @@ export class ThreadAdapter extends EventEmitter {
 
 	public async autoComplete(text: string, column: number, frameActorName?: string): Promise<string[]> {
 		return await this.consoleActor.autoComplete(text, column, frameActorName);
-	}
-
-	public detach(): Promise<void> {
-		return this.actor.detach();
 	}
 
 	private variableFromGrip(grip: FirefoxDebugProtocol.Grip | undefined, threadLifetime: boolean): VariableAdapter {

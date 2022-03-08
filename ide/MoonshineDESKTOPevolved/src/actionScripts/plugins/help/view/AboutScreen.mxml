@@ -28,7 +28,10 @@
 		   creationComplete="onAboutScreenCreationComplete(event)" remove="onTabRemoved(event)" xmlns:popup="components.popup.*">
 	<fx:Script>
 		<![CDATA[
-			import mx.core.FlexGlobals;
+		import actionScripts.events.GlobalEventDispatcher;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
+
+		import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
@@ -39,7 +42,9 @@
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			
 			import components.popup.InfoBackgroundPopup;
-	
+
+			import spark.utils.TextFlowUtil;
+
 			private var infoBackground:InfoBackgroundPopup;
 	
 			public function get longLabel():String
@@ -68,14 +73,18 @@
 	
 			private function onAboutScreenCreationComplete(event:FlexEvent):void
 			{
-				version.text = IDEModel.getInstance().getVersionWithBuildNumber();
-				if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) version.text += " (App Store Version)";
+				var versionString:String = IDEModel.getInstance().getVersionWithBuildNumber();
+				if (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_APP_STORE_VERSION) versionString += " (App Store Version)";
 
 				var applicationDescriptor:XML = NativeApplication.nativeApplication.applicationDescriptor;
 				var namespaceArraySplit:Array = (new Namespace(applicationDescriptor.namespace())).uri.split("/");
 				var airVersion:Number = Number(namespaceArraySplit[namespaceArraySplit.length-1]);
 				var isHarman:Boolean = airVersion > 32;
-				version.text += ", Player: "+ airVersion +"("+ (isHarman ? "Harman" : "Adobe") +")";
+				versionString += ", Player: "+ airVersion +"("+ (isHarman ? "Harman" : "Adobe") +")";
+
+				retVersion.textFlow = TextFlowUtil.importFromString(
+						"<p>"+ versionString +"<br/><span fontSize=\"11\">Running On: "+ Capabilities.os +"</span></p>"
+				);
 			}
 			
 			protected function onInfoBackground(event:MouseEvent):void
@@ -103,11 +112,23 @@
 			protected function onSoftwareInformationRetreived(event:Event):void
 			{
 				hgTitle.removeElement(busy);
+				btnClipboardCopy.includeInLayout = btnClipboardCopy.visible = true;
 			}
 			
 			protected function onTabRemoved(event:Event):void
 			{
 				IDEWorker.getInstance().unSubscribeComponent(HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER);
+			}
+
+			private function onCopyToClipboard(event:MouseEvent):void
+			{
+				var aboutInformation:String = ConstantsCoreVO.MOONSHINE_IDE_LABEL +"\n"+ retVersion.text +"\n\n";
+				aboutInformation += "Configured SDKs in Moonshine:\n===========================================\n\n";
+				aboutInformation += softwareInformation.getAllVersions();
+				System.setClipboard(aboutInformation);
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Copied Moonshine and SDK version information to clipboard.", false, false, ConsoleOutputEvent.TYPE_SUCCESS)
+				);
 			}
 			
 		]]>
@@ -124,14 +145,20 @@
 			<s:VGroup autoLayout="true">
 				<s:Label text="{ConstantsCoreVO.MOONSHINE_IDE_LABEL}" color="0x8a2a2a"
 						 paddingLeft="8"/>
-				<s:Label id="version"
-						 paddingLeft="8"/>
+				<s:RichEditableText id="retVersion"
+									width="100%" paddingLeft="8" paddingBottom="2"
+									editable="false" focusEnabled="false"/>
 			</s:VGroup>
 			<s:Spacer width="100%"/>
 			<s:BusyIndicator id="busy"/>
+			<s:Button id="btnClipboardCopy"
+					  icon="@Embed('/elements/images/copy_content_icon.png')" width="28"
+					  toolTip="Copy Moonshine and SDK versions" visible="false" includeInLayout="false"
+					  click="onCopyToClipboard(event)"/>
 		</s:HGroup>
 		<mx:HRule width="100%"/>
-		<popup:SoftwareInformation width="100%" height="100%" 
+		<popup:SoftwareInformation id="softwareInformation"
+								   width="100%" height="100%"
 								   paddingTop="10"
 								   complete="onSoftwareInformationRetreived(event)"/>
 	</s:VGroup>

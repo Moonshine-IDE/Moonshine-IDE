@@ -249,18 +249,6 @@ class FindReplaceView extends ResizableTitleWindow {
 		var footer = new LayoutGroup();
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
 
-		var spacer = new LayoutGroup();
-		spacer.layoutData = new HorizontalLayoutData(100.0);
-		footer.addChild(spacer);
-
-		// TODO: move back to TextInput when Feathers UI supports rightView
-		footer.addChild(this.findResultCountLabel);
-		this.findButton = new Button();
-		this.findButton.variant = MoonshineTheme.THEME_VARIANT_DARK_BUTTON;
-		this.findButton.enabled = false;
-		this.findButton.text = "Find";
-		this.findButton.addEventListener(TriggerEvent.TRIGGER, findButton_triggerHandler);
-		footer.addChild(this.findButton);
 		this.replaceOneButton = new Button();
 		this.replaceOneButton.variant = MoonshineTheme.THEME_VARIANT_DARK_BUTTON;
 		this.replaceOneButton.text = "Replace/Find";
@@ -273,6 +261,19 @@ class FindReplaceView extends ResizableTitleWindow {
 		this.replaceAllButton.enabled = false;
 		this.replaceAllButton.addEventListener(TriggerEvent.TRIGGER, replaceAllButton_triggerHandler);
 		footer.addChild(this.replaceAllButton);
+
+		var spacer = new LayoutGroup();
+		spacer.layoutData = new HorizontalLayoutData(100.0);
+		footer.addChild(spacer);
+
+		// TODO: move back to TextInput when Feathers UI supports rightView
+		footer.addChild(this.findResultCountLabel);
+		this.findButton = new Button();
+		this.findButton.variant = MoonshineTheme.THEME_VARIANT_DARK_BUTTON;
+		this.findButton.enabled = false;
+		this.findButton.text = "Find";
+		this.findButton.addEventListener(TriggerEvent.TRIGGER, findButton_triggerHandler);
+		footer.addChild(this.findButton);
 		
 		this.footer = footer;
 

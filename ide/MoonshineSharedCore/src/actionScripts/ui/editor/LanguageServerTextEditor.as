@@ -51,6 +51,8 @@ package actionScripts.ui.editor
 			_languageID = languageID;
 			_project = project;
 
+			populateLspServerCapabilities();
+
 			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_COMPLETION, lspEditor_requestCompletionHandler);
 			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_RESOLVE_COMPLETION, lspEditor_requestResolveCompletionHandler);
 			lspEditor.addEventListener(LspTextEditorLanguageRequestEvent.REQUEST_SIGNATURE_HELP, lspEditor_requestSignatureHelpHandler);
@@ -60,6 +62,39 @@ package actionScripts.ui.editor
 			lspEditor.addEventListener(LspTextEditorLanguageActionEvent.APPLY_WORKSPACE_EDIT, lspEditor_applyWorkspaceEditHandler);
 			lspEditor.addEventListener(LspTextEditorLanguageActionEvent.OPEN_LINK, lspEditor_openLinkHandler);
 			lspEditor.addEventListener(LspTextEditorLanguageActionEvent.RUN_COMMAND, lspEditor_runCommandHandler);
+		}
+
+		private function populateLspServerCapabilities():void
+		{
+			if(!languageClient)
+			{
+				return;
+			}
+			var serverCapabilities:Object = languageClient.serverCapabilities;
+			if(!serverCapabilities)
+			{
+				return;
+			}
+			var completionProvider:Object = serverCapabilities.completionProvider;
+			if(completionProvider)
+			{
+				var completionTriggerCharacters:Array = completionProvider.triggerCharacters;
+				if(!completionTriggerCharacters)
+				{
+					completionTriggerCharacters = [];
+				}
+				lspEditor.completionTriggerCharacters = completionTriggerCharacters;
+			}
+			var signatureHelpProvider:Object = serverCapabilities.completionProvider;
+			if(signatureHelpProvider)
+			{
+				var signatureHelpTriggerCharacters:Array = signatureHelpProvider.triggerCharacters;
+				if(!signatureHelpTriggerCharacters)
+				{
+					signatureHelpTriggerCharacters = [];
+				}
+				lspEditor.signatureHelpTriggerCharacters = signatureHelpTriggerCharacters;
+			}
 		}
 
 		protected var lspEditor:LspTextEditor;
@@ -77,8 +112,6 @@ package actionScripts.ui.editor
 		{
 			return _project;
 		}
-
-		private var _languageClient:LanguageClient;
 
 		public function get languageClient():LanguageClient
 		{
@@ -136,7 +169,6 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION, menuGoToDefinitionHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION, menuGoToTypeDefinitionHandler);
-			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
 			dispatcher.removeEventListener(LanguageServerMenuEvent.EVENT_MENU_GO_TO_IMPLEMENTATION, menuGoToImplementationHandler);
 			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
@@ -340,6 +372,7 @@ package actionScripts.ui.editor
 		
 		override protected function handleTextChange(event:TextEditorChangeEvent):void
 		{
+			super.handleTextChange(event);
 			dispatchDidChangeEvent();
 		}
 
@@ -382,6 +415,7 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
+			populateLspServerCapabilities();
 			dispatchDidOpenEvent();
 		}
 

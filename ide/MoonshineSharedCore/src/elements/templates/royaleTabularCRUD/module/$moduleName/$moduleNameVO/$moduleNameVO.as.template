@@ -1,0 +1,19 @@
+package views.modules.$moduleName.$moduleNameVO
+{
+    import org.apache.royale.collections.ArrayList;
+
+    [Bindable]
+	public class $moduleNameVO  
+	{
+	    %PropertyStatements%
+
+		public function $moduleNameVO()
+		{
+		}
+		
+		public function toRequestObject():Object
+		{
+			%ToRequestObjectStatements%
+		}
+	}
+}

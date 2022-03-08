@@ -22,7 +22,11 @@ package moonshine.events;
 
 import openfl.events.Event;
 import openfl.events.EventType;
+#if (openfl >= "9.2.0")
 import openfl.filesystem.File;
+#else
+import flash.filesystem.File;
+#end
 
 class FileSystemWatcherEvent extends Event {
 	public static final FILE_CREATED:EventType<FileSystemWatcherEvent> = "fileCreated";

@@ -33,11 +33,13 @@ export async function addPathMapping(treeNode: TreeNode): Promise<void> {
 	if (treeNode.treeItem.contextValue === 'directory') {
 		path += '/';
 	}
-	addPathMappingToLaunchConfig(launchConfigReference, treeNode.getFullPath(), path);
 
-	await showLaunchConfig(launchConfigReference.workspaceFolder);
+	const success = await addPathMappingToLaunchConfig(launchConfigReference, treeNode.getFullPath(), path);
 
-	vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
+	if (success) {
+		await showLaunchConfig(launchConfigReference.workspaceFolder);
+		vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
+	}
 }
 
 export async function addNullPathMapping(treeNode: TreeNode): Promise<void> {
@@ -45,11 +47,12 @@ export async function addNullPathMapping(treeNode: TreeNode): Promise<void> {
 	const launchConfigReference = _findLaunchConfig();
 	if (!launchConfigReference) return;
 
-	addPathMappingToLaunchConfig(launchConfigReference, treeNode.getFullPath(), null);
+	const success = await addPathMappingToLaunchConfig(launchConfigReference, treeNode.getFullPath(), null);
 
-	await showLaunchConfig(launchConfigReference.workspaceFolder);
-
-	vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
+	if (success) {
+		await showLaunchConfig(launchConfigReference.workspaceFolder);
+		vscode.window.showWarningMessage('Configuration was modified - please restart your debug session for the changes to take effect');
+	}
 }
 
 function _findLaunchConfig(): LaunchConfigReference | undefined {
@@ -96,11 +99,11 @@ export function findLaunchConfig(
 	return undefined;
 }
 
-export function addPathMappingToLaunchConfig(
+export async function addPathMappingToLaunchConfig(
 	launchConfigReference: LaunchConfigReference,
 	url: string,
 	path: string | null
-): void {
+): Promise<boolean> {
 
 	const configurations = <any[]>launchConfigReference.launchConfigFile.get('configurations');
 	const configuration = configurations[launchConfigReference.index];
@@ -117,7 +120,13 @@ export function addPathMappingToLaunchConfig(
 	const pathMappings: any[] = configuration.pathMappings;
 	pathMappings.unshift({ url, path });
 
-	launchConfigReference.launchConfigFile.update('configurations', configurations, vscode.ConfigurationTarget.WorkspaceFolder);
+	try {
+		await launchConfigReference.launchConfigFile.update('configurations', configurations, vscode.ConfigurationTarget.WorkspaceFolder);
+		return true;
+	} catch(e: any) {
+		vscode.window.showErrorMessage(e.message);
+		return false;
+	}
 }
 
 export async function showLaunchConfig(workspaceFolder: vscode.WorkspaceFolder): Promise<void> {

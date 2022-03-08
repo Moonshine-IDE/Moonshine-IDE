@@ -41,6 +41,8 @@ package actionScripts.plugins.ui.editor.dominoFormBuilder
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.SharedObjectUtil;
 	
+	import avmplus.getQualifiedClassName;
+	
 	import view.dominoFormBuilder.DominoTabularForm;
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	import view.suportClasses.events.PropertyEditorChangeEvent;

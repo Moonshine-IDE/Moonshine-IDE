@@ -1,5 +1,7 @@
 package actionScripts.extResources.riaspace.nativeApplicationUpdater
 {
+	import actionScripts.events.GlobalEventDispatcher;
+
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -11,12 +13,16 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 	import air.update.events.DownloadErrorEvent;
 	import air.update.events.StatusUpdateEvent;
 	import air.update.events.UpdateEvent;
-	
+
+	import mx.events.CloseEvent;
+
 	[Event(name="DONE", type="actionScripts.events.GeneralEvent")]
 	public class AutoUpdaterHelper extends EventDispatcher
 	{
+		public static const EVENT_UPDATE_CHECK_COMPLETES:String = "eventUpdateCheckCompletes";
+
 		[Bindable] public var downlaoding:Boolean = false;
-		[Bindable] public var isUpdater:Boolean;
+		[Bindable] public var isUpdater:int = -1;
 		
 		private var _updater:NativeApplicationUpdater;
 		public function get updater():NativeApplicationUpdater
@@ -42,7 +48,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		
 		public function updater_errorHandler(event:ErrorEvent):void
 		{
-			Alert.show(event.text);
 			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
 		}
 		
@@ -51,7 +56,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			// When NativeApplicationUpdater is initialized you can call checkNow function
 			updater.checkNow();
 		}
-		 
+
 		public function updater_updateStatusHandler(event:StatusUpdateEvent):void
 		{
 			if (event.available)
@@ -61,23 +66,30 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				// install new version of the application.
 				event.preventDefault();
 				//currentState = "Update";
-				isUpdater = true;
+				isUpdater = 1;
 			}
 			else
 			{
+				isUpdater = 0;
 				//Alert.show("Your application is up to date!");
 			}
 		}
 		
 		public function btnNo_clickHandler(event:Event):void
 		{
-			isUpdater = false;
+			isUpdater = 0;
+		}
+
+		public function btnCheck_CancelHandler(event:Event):void
+		{
+			updater.cancelUpdateCheck();
+			isUpdater = 0;
 		}
 		
 		public function btnCancel_clickHandler(event:Event):void
 		{
 			updater.cancelUpdate();
-			isUpdater = false;
+			isUpdater = 0;
 			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
 		}
 		
@@ -86,7 +98,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			// In case user wants to download and install update display download progress bar
 			// and invoke downloadUpdate() function.
 			downlaoding = true;
-			updater.addEventListener(DownloadErrorEvent.DOWNLOAD_ERROR, updater_downloadErrorHandler);
 			updater.addEventListener(UpdateEvent.DOWNLOAD_COMPLETE, updater_downloadCompleteHandler);
 			updater.downloadUpdate();
 		}
@@ -95,12 +106,6 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		{
 			// When update is downloaded install it.
 			updater.installUpdate();
-		}
-		 
-		private function updater_downloadErrorHandler(event:DownloadErrorEvent):void
-		{
-			Alert.show("Error downloading update file, try again later.");
-			dispatchEvent(new GeneralEvent(GeneralEvent.DONE));
 		}
 	}
 }

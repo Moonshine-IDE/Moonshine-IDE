@@ -29,6 +29,8 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+		import actionScripts.valueObjects.ConstantsCoreVO;
+
 		import feathers.data.ArrayCollection;
 
 		import mx.collections.ArrayCollection;
@@ -88,6 +90,17 @@
 			versionChecker.retrieveAboutInformation(components);
 		}
 
+		public function getAllVersions():String
+		{
+			var versions:String = "";
+			for each (var component:ComponentVO in components)
+			{
+				versions += component.title +": "+ (component.version ? component.version : "Not Installed") +"\n";
+			}
+
+			return versions;
+		}
+
 		private function updateWithMoonshinePaths():void
 		{
 			var sdkReference:SDKReferenceVO;
@@ -144,6 +157,22 @@
 					case ComponentTypes.TYPE_NOTES:
 						if (model.notesPath && FileUtils.isPathExists(model.notesPath))
 							component.installToPath = model.notesPath;
+						break;
+					case ComponentTypes.TYPE_VAGRANT:
+						if (model.vagrantPath && FileUtils.isPathExists(model.vagrantPath))
+							component.installToPath = model.vagrantPath;
+						break;
+					case ComponentTypes.TYPE_MACPORTS:
+						if (ConstantsCoreVO.IS_MACOS && model.macportsPath && FileUtils.isPathExists(model.macportsPath))
+							component.installToPath = model.macportsPath;
+						break;
+					case ComponentTypes.TYPE_HAXE:
+						if (model.haxePath && FileUtils.isPathExists(model.haxePath))
+							component.installToPath = model.haxePath;
+						break;
+					case ComponentTypes.TYPE_NEKO:
+						if (model.nekoPath && FileUtils.isPathExists(model.nekoPath))
+							component.installToPath = model.nekoPath;
 						break;
 				}
 

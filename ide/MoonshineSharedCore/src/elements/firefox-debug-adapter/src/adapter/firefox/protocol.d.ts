@@ -10,6 +10,10 @@ declare namespace FirefoxDebugProtocol {
 		from: string;
 	}
 
+	interface Event extends Response {
+		type: string;
+	}
+
 	interface TypedResponse extends Response {
 		type: string;
 	}
@@ -19,13 +23,18 @@ declare namespace FirefoxDebugProtocol {
 		message: string;
 	}
 
+	interface RequestTypesResponse extends Response {
+		requestTypes: string[];
+	}
+
 	interface InitialResponse extends Response {
 		applicationType: string;
 		traits: {
 			breakpointWhileRunning?: boolean,
 			nativeLogpoints?: boolean,
 			watchpoints?: boolean,
-			webExtensionAddonConnect?: boolean
+			webExtensionAddonConnect?: boolean,
+			noPauseOnThreadActorAttach?: boolean
 		};
 	}
 
@@ -334,7 +343,9 @@ declare namespace FirefoxDebugProtocol {
 	}
 
 	interface FunctionEnvironment extends Environment {
-		function: Grip;
+		function: {
+			displayName: string;
+		};
 		bindings: FunctionBindings;
 	}
 

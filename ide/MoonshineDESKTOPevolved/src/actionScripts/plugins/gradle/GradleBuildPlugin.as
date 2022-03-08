@@ -334,6 +334,7 @@ package actionScripts.plugins.gradle
             {
                 dispatcher.dispatchEvent(new GradleBuildEvent(GradleBuildEvent.GRADLE_BUILD_COMPLETE, this.buildId, MavenBuildStatus.COMPLETE));
                 this.status = 0;
+                GradleBuildUtil.IS_GRADLE_STARTED = true;
             }
 			else if (status == int.MAX_VALUE)
 			{
