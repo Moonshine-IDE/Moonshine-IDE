@@ -111,11 +111,13 @@ package actionScripts.plugin.actionscript.as3project
 			// Is file in an already opened project?
 			if (checkIfProjectIsAlreadyOpened(projectFile.fileBridge.parent.fileBridge.nativePath)) return;
 			
+			//check if need auto convert to domino dxl 
+			autoConvertXmlToDominoForm(projectFile);
+
 			// Assume user wants to open project by clicking settings file
 			openProject(projectFile, openWithChoice, openByProject);
 
-			//check if need auto convert to domino dxl 
-			autoConvertXmlToDominoForm(projectFile);
+			
 		}
 		
 		private function importFBProject(openWithChoice:Boolean=false):void
