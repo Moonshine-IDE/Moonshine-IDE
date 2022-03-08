@@ -505,20 +505,30 @@ package actionScripts.plugins.as3project
 
 			customSdkPathSetting = new PathSetting(this,'customSdk', 'Apache Flex®, Apache Royale® or Feathers SDK', true, customSdk, true);
 			customSdkPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onCustomSDKPathChanged, false, 0, true);
-			projectWithExistingSourceSetting = new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true);
-
-			var settingsProject:Vector.<ISetting> = Vector.<ISetting>([
-				new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
-				newProjectNameSetting, // No space input either plx
-				newProjectPathSetting,
-				customSdkPathSetting,
-				projectWithExistingSourceSetting
-			]);
-
-			newProjectWithExistingSourcePathSetting = new NewProjectSourcePathListSetting(project,
+			var settingsProject:Vector.<ISetting>;
+			//Project -> Generate Apache Royale Project-don't need Project with existing source 
+			//https://github.com/Moonshine-IDE/Moonshine-IDE/issues/675#issuecomment-1060880515
+			if(!isFlexJSRoyalVisualProject){
+				projectWithExistingSourceSetting = new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true);
+				settingsProject= Vector.<ISetting>([
+					new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
+					newProjectNameSetting, // No space input either plx
+					newProjectPathSetting,
+					customSdkPathSetting,
+					projectWithExistingSourceSetting
+				]);
+				newProjectWithExistingSourcePathSetting = new NewProjectSourcePathListSetting(project,
 					"projectWithExistingSourcePaths", "Main source folder");
-			settingsProject.push(newProjectWithExistingSourcePathSetting);
-
+				settingsProject.push(newProjectWithExistingSourcePathSetting);
+			}else{
+				settingsProject= Vector.<ISetting>([
+					new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
+					newProjectNameSetting, // No space input either plx
+					newProjectPathSetting,
+					customSdkPathSetting
+				]);
+			}
+			
 			return new SettingsWrapper("Name & Location", settingsProject);
 		}
 		
