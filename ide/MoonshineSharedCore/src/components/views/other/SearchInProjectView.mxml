@@ -42,8 +42,14 @@
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.ProjectVO;
 			
-			import components.popup.ReplaceProjectSearchPopup;
 			import mx.events.DynamicEvent;
+			import actionScripts.ui.FeathersUIWrapper;
+			import moonshine.plugin.search.view.ProjectSearchReplaceView;
+			import moonshine.plugin.search.view.ProjectSearchReplacePreviewView;
+			import moonshine.plugin.search.view.ProjectSearchReplaceProgressView;
+			import actionScripts.utils.TextUtil;
+			import feathers.data.ArrayCollection;
+			import actionScripts.ui.editor.BasicTextEditor;
 			
 			[Embed("/elements/images/icoTreeFolder_open.png")]
 			private var iconFolderOpen:Class;
@@ -54,6 +60,8 @@
 			
 			[Bindable] public var valueToSearch:String;
 			[Bindable] public var isShowReplaceWhenDone:Boolean;
+
+			private var newReplaceValue:String;
 			
 			public var selectedProjectToSearch:ProjectVO;
 			public var patterns:String;
@@ -62,12 +70,23 @@
 			public var isMatchCase:Boolean;
 			public var isRegexp:Boolean;
 			public var isEscapeChars:Boolean;
+			private var storedPathsForProbableReplace:feathers.data.ArrayCollection;
 			
 			private var worker:IDEWorker = IDEWorker.getInstance();
 			private var model:IDEModel = IDEModel.getInstance();
 			private var foundCountsDict:Dictionary = new Dictionary();
 			private var currentCount:int;
 			private var filesFoundInCount:int;
+			private var isWorkerReplacing:Boolean = false;
+
+			private var replacePopup:ProjectSearchReplaceView;
+			private var replacePopupWrapper:FeathersUIWrapper;
+
+			private var replacePreviewPopup:ProjectSearchReplacePreviewView;
+			private var replacePreviewPopupWrapper:FeathersUIWrapper;
+
+			private var replaceProgressPopup:ProjectSearchReplaceProgressView;
+			private var replaceProgressPopupWrapper:FeathersUIWrapper;
 			
 			/**
 			 * IContentWindow Inteface Methods
@@ -175,7 +194,15 @@
 						pbFiles.setProgress(0, event.value.value);
 						break;
 					case WorkerEvent.FILE_PROCESSED_COUNT:
-						pbFiles.setProgress(event.value.value, pbFiles.maximum);
+						if (replaceProgressPopup)
+						{
+							replaceProgressPopup.matchCountProcessed++;
+							updateOpenEditor(event.value.value);
+						}
+						else
+						{
+							pbFiles.setProgress(event.value.value, pbFiles.maximum);
+						}
 						break;
 					case WorkerEvent.FILTERED_FILE_COLLECTION:
 						var tmpObj:Object = event.value.value;
@@ -186,11 +213,43 @@
 						foundCountsDict[tmpArr[0]] = tmpArr[1];
 						break;
 					case WorkerEvent.PROCESS_ENDS:
-						filesFoundInCount = event.value.value;
-						worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
-						updateLabel();
-						onReplaceRequest();
+						if (replaceProgressPopup)
+						{
+							isWorkerReplacing = false;
+							SearchPlugin.isReplaceActive = false;
+						}
+						else
+						{
+							filesFoundInCount = event.value.value;
+							worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
+							updateLabel();
+							onReplaceRequest();
+						}
 						break;
+					case WorkerEvent.GET_FILE_LIST:
+						storedPathsForProbableReplace = new feathers.data.ArrayCollection(event.value.value);
+						if (replacePreviewPopup != null) {
+							replacePreviewPopup.files = storedPathsForProbableReplace;
+							//hide temporarily while the other window is open
+							replacePopup.visible = false;
+						}
+						worker.removeEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming);
+						break;
+				}
+			}
+			
+			private function updateOpenEditor(value:String):void
+			{
+				for each (var item:Object in model.editors)
+				{
+					if (item is BasicTextEditor && BasicTextEditor(item).currentFile.fileBridge.nativePath == value)
+					{
+						var editor:BasicTextEditor = item as BasicTextEditor;
+						var lastScrolledLineIndex:int = editor.editor.lineScrollY;
+						editor.reload();
+						editor.callLater(editor.scrollTo, [lastScrolledLineIndex]);
+						break;
+					}
 				}
 			}
 			
@@ -214,24 +273,170 @@
 				if (isShowReplaceWhenDone && currentCount != 0)
 				{
 					SearchPlugin.isReplaceActive = true;
-					
-					var replacePopup:ReplaceProjectSearchPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ReplaceProjectSearchPopup, true) as ReplaceProjectSearchPopup;
-					replacePopup.replaceValue = valueToSearch;
+
+					replacePopup = new ProjectSearchReplaceView();
+					replacePopup.textToReplace = valueToSearch;
 					replacePopup.matchCount = currentCount;
 					replacePopup.filesCount = filesFoundInCount;
-					replacePopup.isMatchCase = isMatchCase;
-					replacePopup.isRegexp = isRegexp;
-					replacePopup.isEscapeChars = isEscapeChars;
-					replacePopup.addEventListener(CloseEvent.CLOSE, onReplacePopupClosed, false, 0, true);
-					
-					PopUpManager.centerPopUp(replacePopup);
-					replacePopup.y = 91;
+					replacePopup.addEventListener(ProjectSearchReplaceView.EVENT_PREVIEW, replacePopup_previewHandler);
+					replacePopup.addEventListener(ProjectSearchReplaceView.EVENT_REPLACE, replacePopup_replaceHandler);
+					replacePopup.addEventListener(Event.CLOSE, replacePopup_closeHandler);
+					replacePopupWrapper = new FeathersUIWrapper(replacePopup);
+					PopUpManager.addPopUp(replacePopupWrapper, DisplayObject(FlexGlobals.topLevelApplication), true);
+					PopUpManager.centerPopUp(replacePopupWrapper);
+					replacePopupWrapper.y = 91;
+
+					replacePopupWrapper.assignFocus("top");
 				}
 			}
 			
-			private function onReplacePopupClosed(event:CloseEvent):void
+			private function openPreview():void
 			{
-				event.target.removeEventListener(CloseEvent.CLOSE, onReplacePopupClosed);
+				var searchString:String = isEscapeChars ? TextUtil.escapeRegex(valueToSearch) : valueToSearch;
+				var flags:String = 'g';
+				if (!isMatchCase) flags += 'i';
+				var searchRegExp:EReg = new EReg(searchString, flags);
+
+				replacePreviewPopup = new ProjectSearchReplacePreviewView();
+				replacePreviewPopup.originalValue = valueToSearch;
+				replacePreviewPopup.replacementValue = newReplaceValue;
+				replacePreviewPopup.search = searchRegExp;
+				replacePreviewPopup.addEventListener(Event.CLOSE, replacePreviewPopup_closeHandler);
+				replacePreviewPopup.addEventListener(ProjectSearchReplacePreviewView.EVENT_REPLACE_SELECTED, replacePreviewPopup_replaceSelectedHandler);
+				replacePreviewPopupWrapper = new FeathersUIWrapper(replacePreviewPopup);
+				replacePreviewPopup.width = screen.width * .6;
+				replacePreviewPopup.height = screen.height * .8;
+				PopUpManager.addPopUp(replacePreviewPopupWrapper, DisplayObject(FlexGlobals.topLevelApplication), true);
+				PopUpManager.centerPopUp(replacePreviewPopupWrapper);
+
+				replacePreviewPopupWrapper.assignFocus("top");
+				replacePreviewPopupWrapper.stage.addEventListener(Event.RESIZE, replacePreviewPopup_stage_resizeHandler, false, 0, true);
+
+				worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
+				worker.sendToWorker(WorkerEvent.GET_FILE_LIST, null);
+			}
+
+			private function replacePopup_previewHandler(event:Event):void
+			{
+				newReplaceValue = replacePopup.newText;
+				openPreview();
+			}
+			
+			private function getReplaceObject():Object
+			{
+				return {
+					valueToSearch: valueToSearch,
+					valueToReplace: newReplaceValue,
+					isMatchCase: isMatchCase,
+					isRegexp: isRegexp,
+					isEscapeChars: isEscapeChars
+				};
+			}
+
+			private function replace():void
+			{
+				replaceProgressPopup = new ProjectSearchReplaceProgressView();
+				replaceProgressPopup.matchCountProcessed = 0;
+				replaceProgressPopup.filesCount = filesFoundInCount;
+				replaceProgressPopup.addEventListener(Event.CLOSE, replaceProgressPopup_closeHandler);
+				replaceProgressPopupWrapper = new FeathersUIWrapper(replaceProgressPopup);
+				PopUpManager.addPopUp(replaceProgressPopupWrapper, DisplayObject(FlexGlobals.topLevelApplication), true);
+				PopUpManager.centerPopUp(replaceProgressPopupWrapper);
+				replaceProgressPopupWrapper.y = 91;
+
+				replaceProgressPopupWrapper.assignFocus("top");
+				
+				isWorkerReplacing = true;
+				worker.addEventListener(IDEWorker.WORKER_VALUE_INCOMING, onWorkerValueIncoming, false, 0, true);
+				worker.sendToWorker(WorkerEvent.REPLACE_FILE_WITH_VALUE, getReplaceObject());
+			}
+
+			private function closeReplacePopup():void
+			{
+				PopUpManager.removePopUp(replacePopupWrapper);
+				replacePopup.removeEventListener(ProjectSearchReplaceView.EVENT_PREVIEW, replacePopup_previewHandler);
+				replacePopup.removeEventListener(ProjectSearchReplaceView.EVENT_REPLACE, replacePopup_replaceHandler);
+				replacePopup.removeEventListener(Event.CLOSE, replacePopup_closeHandler);
+
+				replacePopup = null;
+				replacePopupWrapper = null;
+			}
+
+			private function closeReplaceProgressPopup():void
+			{
+				if (isWorkerReplacing)
+				{
+					//wait until finished
+					return;
+				}
+
+				PopUpManager.removePopUp(replaceProgressPopupWrapper);
+				replaceProgressPopup.removeEventListener(Event.CLOSE, replacePopup_closeHandler);
+
+				replaceProgressPopup = null;
+				replaceProgressPopupWrapper = null;
+			}
+
+			private function replacePopup_replaceHandler(event:Event):void
+			{
+				newReplaceValue = replacePopup.newText;
+				closeReplacePopup();
+				replace();
+			}
+
+			private function replacePopup_closeHandler(event:Event):void
+			{
+				closeReplacePopup();
+			}
+
+			private function replacePreviewPopup_replaceSelectedHandler(event:Event):void
+			{
+				var newFilesCount:int = 0;
+				var files:feathers.data.ArrayCollection = replacePreviewPopup.files;
+				for each(var file:Object in files.array)
+				{
+					if (file.isSelected)
+					{
+						newFilesCount++;
+					}
+				}
+				closeReplacePopup();
+				if (newFilesCount == 0) {
+					return;
+				}
+
+				filesFoundInCount = newFilesCount;
+
+				worker.sendToWorker(WorkerEvent.SET_FILE_LIST, files.array);
+
+				replace();
+			}
+
+			private function replaceProgressPopup_closeHandler(event:Event):void
+			{
+				closeReplaceProgressPopup();
+			}
+
+			private function replacePreviewPopup_closeHandler(event:Event):void
+			{
+				if (replacePopup)
+				{
+					//stop hiding the replace popup, if it hasn't been closed
+					replacePopup.visible = true;
+				}
+
+				replacePreviewPopupWrapper.stage.removeEventListener(Event.RESIZE, replacePreviewPopup_stage_resizeHandler);
+				PopUpManager.removePopUp(FeathersUIWrapper(replacePreviewPopupWrapper));
+
+				replacePreviewPopup.removeEventListener(Event.CLOSE, replacePreviewPopup_closeHandler);
+
+				replacePreviewPopup = null;
+				replacePreviewPopupWrapper = null;
+			}
+
+			private function replacePreviewPopup_stage_resizeHandler(event:Event):void
+			{
+				PopUpManager.centerPopUp(replacePreviewPopupWrapper);
 			}
 			
 			private function generateSearchTree(value:Object):void
@@ -243,7 +448,7 @@
 					return;
 				}
 				
-				if (!tree.dataProvider || ArrayCollection(tree.dataProvider).length == 0) 
+				if (!tree.dataProvider || mx.collections.ArrayCollection(tree.dataProvider).length == 0) 
 				{
 					tree.dataProvider = value;
 					// lets expand this for the first time only
@@ -251,7 +456,7 @@
 				}
 				else
 				{
-					ArrayCollection(tree.dataProvider).addItem(value);
+					mx.collections.ArrayCollection(tree.dataProvider).addItem(value);
 				}
 			}
 			
@@ -295,7 +500,7 @@
 						{
 							if (i.file.nativePath == project.folderLocation.fileBridge.nativePath)
 							{
-								ArrayCollection(tree.dataProvider).removeItem(i);
+								mx.collections.ArrayCollection(tree.dataProvider).removeItem(i);
 								delete foundCountsDict[i.file.nativePath];
 								updateLabel();
 								i = null;

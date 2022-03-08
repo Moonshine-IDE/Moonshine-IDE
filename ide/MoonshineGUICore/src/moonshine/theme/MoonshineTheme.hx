@@ -20,12 +20,12 @@
 
 package moonshine.theme;
 
-import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
 import feathers.controls.BasicButton;
 import feathers.controls.Button;
 import feathers.controls.ButtonState;
 import feathers.controls.GridView;
 import feathers.controls.HDividedBox;
+import feathers.controls.HProgressBar;
 import feathers.controls.HScrollBar;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
@@ -39,10 +39,12 @@ import feathers.controls.ToggleButton;
 import feathers.controls.ToggleButtonState;
 import feathers.controls.TreeGridView;
 import feathers.controls.TreeView;
+import feathers.controls.VProgressBar;
 import feathers.controls.VScrollBar;
 import feathers.controls.dataRenderers.GridViewHeaderRenderer;
 import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.controls.dataRenderers.ItemRenderer;
+import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
 import feathers.core.DefaultToolTipManager;
 import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
@@ -178,6 +180,9 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_OVER_BUTTON, setMiniDebugStepOverButtonStyles);
 		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_INTO_BUTTON, setMiniDebugStepIntoButtonStyles);
 		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_OUT_BUTTON, setMiniDebugStepOutButtonStyles);
+
+		this.styleProvider.setStyleFunction(HProgressBar, null, setHProgressBarStyles);
+		this.styleProvider.setStyleFunction(VProgressBar, null, setVProgressBarStyles);
 	}
 
 	private function getDarkOnLightTextFormat():TextFormat {
@@ -1307,5 +1312,49 @@ class MoonshineTheme extends SDKInstallerTheme {
 		button.setIconForState(DISABLED, disabledIcon);
 
 		button.setPadding(6.0);
+	}
+
+	private function setHProgressBarStyles(progressBar:HProgressBar):Void {
+		if (progressBar.fillSkin == null) {
+			var fillSkin = new RectangleSkin();
+			fillSkin.fill = SolidColor(0xC165B8);
+			fillSkin.border = SolidColor(1.0, 0x464646);
+			fillSkin.cornerRadius = 8.0;
+			fillSkin.width = 8.0;
+			fillSkin.height = 8.0;
+			progressBar.fillSkin = fillSkin;
+		}
+
+		if (progressBar.backgroundSkin == null) {
+			var backgroundSkin = new RectangleSkin();
+			backgroundSkin.fill = SolidColor(0x666666);
+			backgroundSkin.border = SolidColor(1.0, 0x464646);
+			backgroundSkin.cornerRadius = 8.0;
+			backgroundSkin.width = 200.0;
+			backgroundSkin.height = 8.0;
+			progressBar.backgroundSkin = backgroundSkin;
+		}
+	}
+
+	private function setVProgressBarStyles(progressBar:VProgressBar):Void {
+		if (progressBar.fillSkin == null) {
+			var fillSkin = new RectangleSkin();
+			fillSkin.fill = SolidColor(0xC165B8);
+			fillSkin.border = SolidColor(1.0, 0x464646);
+			fillSkin.cornerRadius = 8.0;
+			fillSkin.width = 8.0;
+			fillSkin.height = 8.0;
+			progressBar.fillSkin = fillSkin;
+		}
+
+		if (progressBar.backgroundSkin == null) {
+			var backgroundSkin = new RectangleSkin();
+			backgroundSkin.fill = SolidColor(0x666666);
+			backgroundSkin.border = SolidColor(1.0, 0x464646);
+			backgroundSkin.cornerRadius = 8.0;
+			backgroundSkin.width = 8.0;
+			backgroundSkin.height = 200.0;
+			progressBar.backgroundSkin = backgroundSkin;
+		}
 	}
 }

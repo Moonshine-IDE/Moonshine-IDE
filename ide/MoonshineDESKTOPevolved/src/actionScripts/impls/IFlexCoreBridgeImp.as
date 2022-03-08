@@ -359,7 +359,7 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources','EDIT'), [
 					new MenuItem(resourceManager.getString('resources','FIND'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,
-								ProjectMenuTypes.JAVA, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], FindReplacePlugin.EVENT_FIND_NEXT,
+								ProjectMenuTypes.JAVA, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE, ProjectMenuTypes.ON_DISK], FindReplacePlugin.EVENT_FIND_NEXT,
 						'f', [Keyboard.COMMAND],
 						'f', [Keyboard.CONTROL]),
 					/*new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, null, FindReplacePlugin.EVENT_FIND_PREV,

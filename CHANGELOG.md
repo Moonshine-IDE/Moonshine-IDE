@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+* Language Server: Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.11.1.
+* Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.9.0.
+* Debug Adapter: Updated [SWF](https://as3mxml.com) engine to v1.5.0.
 
 ### Fixed
 

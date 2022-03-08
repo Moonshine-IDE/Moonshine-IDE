@@ -2,7 +2,7 @@
   "name": "vscode-swf-debug",
   "displayName": "Debugger for SWF",
   "description": "Debug your SWF files in Adobe AIR or Flash Player",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "publisher": "bowlerhatllc",
   "homepage": "https://as3mxml.com/",
   "repository": {
@@ -181,6 +181,14 @@
                   "null"
                 ],
                 "description": "(Advanced) Specifies the root directory of the application to run. If not specified, the directory containing the application descriptor file is used.",
+                "default": null
+              },
+              "asconfigPath": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "(Advanced) A custom path to the asconfig.json file used for automatically populating the other fields.",
                 "default": null
               }
             }
