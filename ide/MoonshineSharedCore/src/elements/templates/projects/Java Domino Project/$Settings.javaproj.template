@@ -1,0 +1,22 @@
+<project>
+  <gradleBuild>
+    <option commandLine="clean runApp"/>
+    <actions>
+      <action action="clean" actionName="Clean"/>
+      <action action="publishToMavenLocal" actionName="Publish to Maven Local"/>
+      <action action="clean run" actionName="Clean and Run"/>
+      <action action="clean build" actionName="Clean and Build"/>
+      <action action="clean runApp" actionName="runApp"/>
+    </actions>
+  </gradleBuild>
+  <classpaths>
+    <class path="src/main/java"/>
+  </classpaths>
+  <build>
+    <option mainclass="$ProjectName"/>
+    <option mainClassPath=""/>
+  </build>
+  <options>
+    <option jdkType="jdk-8"/>
+  </options>
+</project>

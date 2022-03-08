@@ -1,0 +1,59 @@
+/*
+Example project to build and run a Notes application on your local machine.
+*/
+plugins {
+    id 'java'
+    id 'application'  // allows 'run' task.
+    id 'eclipse'      // allows dependencies to be exported to .classpath
+}
+mainClassName = '$ProjectName'
+String notesInstallation = '/Applications/HCL Notes.app/Contents/MacOS/'
+String notesJarPath = "$notesInstallation/jvm/lib/ext/Notes.jar"
+
+repositories {
+    mavenCentral()
+}
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+    }
+}
+
+// Required for Java 8 Language server support
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    // Local JAR dependency
+    implementation files(notesJarPath)
+}
+
+/*
+OPTIONAL:  Configuration to let this build and run in Moonshine
+Use "clean runApp" for the Gradle command
+*/
+task runApp(type: JavaExec) {
+	classpath = sourceSets.main.runtimeClasspath
+	main = mainClassName  // deprecated in later versions of Gradle - use mainClass
+	environment('DYLD_LIBRARY_PATH', notesInstallation)
+	
+	// args 'appArg1'
+}
+
+/* 
+OPTIONAL:  Configuration to let the application run as an executable jar.  Commands:
+	gradle clean build
+	export DYLD_LIBRARY_PATH=%NotesInstallationPath%
+	export JAVA_HOME=%Path-to-JDK-8%
+	$JAVA_HOME/bin/java -jar build/libs/$ProjectName.jar
+*/
+jar {
+	manifest {
+		attributes 'Main-Class': "$mainClassName",
+				   // URL-encode any spaces in the classpath, and make sure that it starts with a / on Windows
+		           'Class-Path': "./* ${notesJarPath.replaceAll(' ', '%20').replaceAll('^\\w+:', '/$0')}"  
+		           
+	}
+}
