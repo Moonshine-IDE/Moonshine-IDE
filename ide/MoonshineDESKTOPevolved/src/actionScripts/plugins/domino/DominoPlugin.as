@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.domino
 {
+	import actionScripts.plugins.domino.events.DominoEvent;
+
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
@@ -86,6 +88,7 @@ package actionScripts.plugins.domino
 			
 			dispatcher.addEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest, false, 0, true);
 			dispatcher.addEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved, false, 0, true);
+			dispatcher.addEventListener(DominoEvent.NDS_KILL, onNDSKillRequest, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS)
 			{
@@ -108,6 +111,7 @@ package actionScripts.plugins.domino
 			
 			dispatcher.removeEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest);
 			dispatcher.removeEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved);
+			dispatcher.removeEventListener(DominoEvent.NDS_KILL, onNDSKillRequest);
 		}
 
 		override public function resetSettings():void
@@ -321,6 +325,25 @@ package actionScripts.plugins.domino
 			{
 				OnDiskMavenSettingsExporter.exportOnDiskMavenSettings(updateSitePath);
 			}
+		}
+
+		private function onNDSKillRequest(event:Event):void
+		{
+			if (!UtilsCore.isNotesDominoAvailable())
+			{
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, NAMESPACE));
+				error("Error: HCL Notes is not available.");
+				return;
+			}
+
+			var command:String = "\""+ model.notesPath +"/Contents/MacOS/Support/nsd.sh\" -heap -kill";
+			print("%s", command);
+
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Trying to kill NSD..", null, false));
+			this.start(
+					new <String>[command],
+					null
+			);
 		}
 	}
 }
