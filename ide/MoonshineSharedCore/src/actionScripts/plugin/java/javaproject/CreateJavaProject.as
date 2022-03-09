@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject
 {
+	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.utils.UtilsCore;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
@@ -315,6 +318,17 @@ package actionScripts.plugin.java.javaproject
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.isProjectFromExistingSource = false;
 			th.templatingData["$ProjectName"] = projectName;
+			if (UtilsCore.isNotesDominoAvailable())
+			{
+				th.templatingData["$NotesExecutablePath"] = model.notesPath;
+			}
+
+			// at this point I don't have a good way to determine
+			// project's jdk-type, unless JavaImporter.parse(..) triggers,
+			// but that is suppose to be trigger in later step
+			th.templatingData["$JavaHomePath"] =
+					(templateDir.name.indexOf("Domino") != -1) ?
+							model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
 			
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");

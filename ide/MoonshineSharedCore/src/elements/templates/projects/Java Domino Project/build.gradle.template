@@ -7,7 +7,7 @@ plugins {
     id 'eclipse'      // allows dependencies to be exported to .classpath
 }
 mainClassName = '$ProjectName'
-String notesInstallation = '/Applications/HCL Notes.app/Contents/MacOS/'
+String notesInstallation = '$NotesExecutablePath/Contents/MacOS'
 String notesJarPath = "$notesInstallation/jvm/lib/ext/Notes.jar"
 
 repositories {
