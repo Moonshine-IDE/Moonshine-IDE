@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject
 {
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectTypes;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.utils.UtilsCore;
 
@@ -313,6 +314,21 @@ package actionScripts.plugin.java.javaproject
 			
 			targetFolder = targetFolder.resolvePath(projectName);
 			targetFolder.fileBridge.createDirectory();
+
+			// set the possible java-project type
+			// based on using template location
+			if (templateDir.name.indexOf("Gradle") != -1)
+			{
+				pvo.projectType = JavaProjectTypes.JAVA_GRADLE;
+			}
+			else if (templateDir.name.indexOf("Maven") != -1)
+			{
+				pvo.projectType = JavaProjectTypes.JAVA_MAVEN;
+			}
+			else if (templateDir.name.indexOf("Domino") != -1)
+			{
+				pvo.projectType = JavaProjectTypes.JAVA_DOMINO;
+			}
 			
 			// Time to do the templating thing!
 			var th:TemplatingHelper = new TemplatingHelper();
@@ -320,15 +336,18 @@ package actionScripts.plugin.java.javaproject
 			th.templatingData["$ProjectName"] = projectName;
 			if (UtilsCore.isNotesDominoAvailable())
 			{
-				th.templatingData["$NotesExecutablePath"] = model.notesPath;
+				th.templatingData["$NotesExecutablePath"] =
+						ConstantsCoreVO.IS_MACOS ?
+								model.notesPath + "/Contents/MacOS" : model.notesPath.replace(/\\/g, "/");
 			}
 
 			// at this point I don't have a good way to determine
 			// project's jdk-type, unless JavaImporter.parse(..) triggers,
 			// but that is suppose to be trigger in later step
-			th.templatingData["$JavaHomePath"] =
-					(templateDir.name.indexOf("Domino") != -1) ?
-							model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+			var targetJavaPath:String = (pvo.projectType == JavaProjectTypes.JAVA_DOMINO) ?
+					model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+			if (targetJavaPath && !ConstantsCoreVO.IS_MACOS) targetJavaPath = targetJavaPath.replace(/\\/g, "/");
+			th.templatingData["$JavaHomePath"] = targetJavaPath;
 			
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
