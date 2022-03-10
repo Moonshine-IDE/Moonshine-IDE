@@ -1,0 +1,27 @@
+@namespace "http://www.w3.org/1999/xhtml";
+@namespace j "library://ns.apache.org/royale/jewel";
+
+.jewel.application {
+	overflow: hidden !important;
+	color: #333333;
+}
+
+.jewel.label.smallFont {
+	fontSize: 12px !important;
+}
+
+.jewel.label.italic {
+	fontStyle: italic !important;
+}
+
+.jewel.label.labelTextAlignRight {
+	textAlign: right !important;
+}
+
+.jewel.section.sectionCenter {
+   alignItems: center;
+}
+
+.horizontalContentShrinkFormItem {
+	IFormItemContentArea: ClassReference("classes.beads.ContentGroupShrinkForm");
+}

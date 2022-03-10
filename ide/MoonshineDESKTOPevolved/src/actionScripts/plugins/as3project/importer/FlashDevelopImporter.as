@@ -33,15 +33,12 @@ package actionScripts.plugins.as3project.importer
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
-	import actionScripts.plugins.ui.editor.VisualEditorViewer;
-		
+
 	import surface.SurfaceMockup;
 
 	import utils.EditingSurfaceReader;
-	import utils.EditingSurfaceWriter;
 	import utils.MainApplicationCodeUtils;
-
-	import mx.core.IVisualElementContainer;
+	
 	import actionScripts.utils.DominoUtils;
 
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
@@ -69,7 +66,8 @@ package actionScripts.plugins.as3project.importer
 			
 			var project:AS3ProjectVO = new AS3ProjectVO(new FileLocation(folder.nativePath), projectName, shallUpdateChildren);
 			project.isVisualEditorProject = file.fileBridge.name.indexOf("veditorproj") > -1;
-
+			project.isFlexJSRoyalProject= file.fileBridge.name.indexOf("royaleveditorproj") > -1;
+			//royaleveditorpro
 			project.projectFile = file;
 			
 			project.projectName = file.fileBridge.name.substring(0, file.fileBridge.name.lastIndexOf("."));
@@ -77,6 +75,7 @@ package actionScripts.plugins.as3project.importer
 			project.projectFolder.name = project.projectName;
 			
 			var stream:FileStream = new FileStream();
+			//Alert.show("file.fileBridge 69:"+file.fileBridge.nativePath);
 			stream.open(file.fileBridge.getFile as File, FileMode.READ);
 			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
 			stream.close();
@@ -170,7 +169,7 @@ package actionScripts.plugins.as3project.importer
 				}
 			}
 
-			if (project.isVisualEditorProject)
+			if (project.isVisualEditorProject||project.isFlexJSRoyalProject)
 			{
 				project.visualEditorSourceFolder = new FileLocation(
                         project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src/main/webapp"
@@ -212,6 +211,8 @@ package actionScripts.plugins.as3project.importer
 			}
 			
 			var platform:int = int(data.moonshineRunCustomization.option.@targetPlatform);
+			
+			//Alert.show("platform:"+platform);
 			switch(platform)
 			{
 				case AS3ProjectPlugin.AS3PROJ_AS_ANDROID:

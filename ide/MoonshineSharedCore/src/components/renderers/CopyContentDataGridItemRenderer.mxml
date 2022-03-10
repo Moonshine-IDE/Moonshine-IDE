@@ -12,8 +12,6 @@
     <fx:Script><![CDATA[
         import actionScripts.factory.FileLocation;
         import actionScripts.locator.IDEModel;
-        import actionScripts.valueObjects.Range;
-        import actionScripts.valueObjects.Position;
         import mx.controls.DataGrid;
         import mx.controls.dataGridClasses.DataGridColumn;
 

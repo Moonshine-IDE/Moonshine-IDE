@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<j:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:j="library://ns.apache.org/royale/jewel"
+			   xmlns:js="library://ns.apache.org/royale/basic" xmlns:view="view.*"
+			   applicationComplete="onAppComplete(event)">
+
+	<fx:Style source="resources/app-styles.css"/>
+	
+	<j:beads>
+		<js:ApplicationDataBinding />
+	</j:beads>
+	<j:valuesImpl>
+		<js:SimpleCSSValuesImpl />
+	</j:valuesImpl>
+	<fx:Script>
+	<![CDATA[
+		import org.apache.royale.collections.ArrayList;
+		import org.apache.royale.events.MouseEvent;
+
+		private function onAppComplete(event:Event):void
+		{
+			this.navigation.dataProvider = new ArrayList([
+					{label: "Content", content: "content"},
+			]);
+		}
+		
+		private function onOpenDrawer(event:MouseEvent):void
+		{
+			this.drawer.isOpen ? this.drawer.close() : this.drawer.open();
+		}
+		
+		private function onNavigationChange(event:Event):void
+		{
+			this.mainContent.selectedContent = navigation.selectedItem["content"];
+		}
+	]]>
+</fx:Script>
+	<j:initialView>
+		<j:ResponsiveView>
+			<j:Drawer id="drawer">
+				<j:beads>
+					<j:ResponsiveDrawer localId="drawerResponsive" auto="false"/>
+				</j:beads>
+				<j:DrawerHeader height="66">
+					<j:Label text="Sections"/>
+				</j:DrawerHeader>
+				<j:DrawerContent>
+					<j:Navigation id="navigation" labelField="label" change="onNavigationChange(event)">
+						<j:beads>
+							<j:NavigationActionNotifier/>
+						</j:beads>
+					</j:Navigation>				
+				</j:DrawerContent>
+			</j:Drawer>
+			<j:TopAppBar hasDrawer="{drawer.isOpen}">
+		        <j:BarRow>
+					<j:BarSection itemsHorizontalAlign="itemsLeft">
+						<j:IconButton id="btnDrawer" click="onOpenDrawer(event)">
+							<j:icon>
+								<js:MaterialIcon text="{MaterialIconType.VIEW_HEADLINE}"/>
+							</j:icon>
+						</j:IconButton>
+		            </j:BarSection>
+		        </j:BarRow>
+		    </j:TopAppBar>
+			<j:ApplicationMainContent id="mainContent" hasTopAppBar="true" hasFooterBar="false" selectedContent="content">
+		       <j:ScrollableSectionContent name="content">
+					<view:Content />
+			   </j:ScrollableSectionContent>
+		    </j:ApplicationMainContent>
+		</j:ResponsiveView>
+	</j:initialView>
+</j:Application>
