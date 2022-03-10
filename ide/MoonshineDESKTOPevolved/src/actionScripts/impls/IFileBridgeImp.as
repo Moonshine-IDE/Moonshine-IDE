@@ -112,12 +112,15 @@ package actionScripts.impls
 				{
 					if (_file && exists) relativePathToOpen = "file://"+ _file.nativePath;
 				} catch (e:Error)
-				{}
+				{
+					Alert.show(e.message+":"+e.errorID)
+				}
+
 				CONFIG::OSX
 				{
 					selectedPathValue = _ssb.addNewPath(relativePathToOpen, true);
 				}
-
+				
 				if (selectedPathValue) 
 				{
 					if (selectedPathValue == "null") 

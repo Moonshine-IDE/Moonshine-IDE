@@ -28,7 +28,6 @@ package actionScripts.plugin.templating
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.FileWrapper;
-	import mx.controls.Alert;
 
 	public class TemplatingHelper
 	{

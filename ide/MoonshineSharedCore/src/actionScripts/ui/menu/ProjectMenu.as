@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
+    import actionScripts.plugins.domino.events.DominoEvent;
+
     import flash.ui.Keyboard;
     
     import mx.resources.IResourceManager;
@@ -79,9 +81,13 @@ package actionScripts.ui.menu
                     if (as3Project.isPrimeFacesVisualEditorProject)
                     {
                         return getVisualEditorMenuPrimeFacesItems();
-                    } else if(as3Project.isDominoVisualEditorProject){
+                    }
+                    else if(as3Project.isDominoVisualEditorProject)
+                    {
                         return getDominoMenuItems();
-                    }else {
+                    }
+                    else
+                    {
                     }
 
                     return getVisualEditorMenuFlexItems();
@@ -292,7 +298,9 @@ package actionScripts.ui.menu
                 dominoMenu = Vector.<MenuItem>([
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], MavenBuildEvent.START_MAVEN_BUILD),
-                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], ProjectActionEvent.CLEAN_PROJECT)
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], ProjectActionEvent.CLEAN_PROJECT),
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'NSD_KILL'), null, [ProjectMenuTypes.VISUAL_EDITOR_DOMINO], DominoEvent.NDS_KILL)
                 ]);
                 dominoMenu.forEach(makeDynamic);
             }
@@ -359,7 +367,9 @@ package actionScripts.ui.menu
 					new MenuItem(resourceManager.getString('resources', 'GENERATE_CRUD_ROYALE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_CRUD_ROYALE),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.ON_DISK], MavenBuildEvent.START_MAVEN_BUILD),
-					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.ON_DISK], ProjectActionEvent.CLEAN_PROJECT)
+					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.ON_DISK], ProjectActionEvent.CLEAN_PROJECT),
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'NSD_KILL'), null, [ProjectMenuTypes.ON_DISK], DominoEvent.NDS_KILL)
 				]);
 				
 				onDiskMenu.forEach(makeDynamic);

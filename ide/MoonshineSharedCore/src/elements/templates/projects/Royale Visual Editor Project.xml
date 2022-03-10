@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template displayHome="true">
+        <title>Apache Royale Project REST</title>
+        <homeTitle>Apache Royale Project REST</homeTitle>
+        <name>Apache Royale Project REST</name>
+        <icon>Royale Browser Project.png</icon>
+        <description>Create a Apache® Royale project that will generate an SWF and HTML files, to run on browser.</description>
+    </template>
+</templates>

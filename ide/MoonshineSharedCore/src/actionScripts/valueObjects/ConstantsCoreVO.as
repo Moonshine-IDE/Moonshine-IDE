@@ -94,6 +94,8 @@ package actionScripts.valueObjects
 		
 		public static var TEMPLATES_PROJECTS_SPECIALS:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_ROYALE:ArrayCollection;
+		public static var TEMPLATES_PROJECTS_ROYALE_VISUAL:ArrayCollection;
+		public static var TEMPLATES_PROJECTS_ROYALE_DOMINO_EXPORT:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_JAVA:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_GRAILS:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_HAXE:ArrayCollection;

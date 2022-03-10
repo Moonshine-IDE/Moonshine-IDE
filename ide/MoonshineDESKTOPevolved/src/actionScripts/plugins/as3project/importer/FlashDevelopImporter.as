@@ -33,7 +33,16 @@ package actionScripts.plugins.as3project.importer
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.MobileDeviceVO;
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
+
+	import surface.SurfaceMockup;
+
+	import utils.EditingSurfaceReader;
+	import utils.MainApplicationCodeUtils;
 	
+	import actionScripts.utils.DominoUtils;
+
+	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
+
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
 		public static function test(file:File):FileLocation
@@ -57,7 +66,8 @@ package actionScripts.plugins.as3project.importer
 			
 			var project:AS3ProjectVO = new AS3ProjectVO(new FileLocation(folder.nativePath), projectName, shallUpdateChildren);
 			project.isVisualEditorProject = file.fileBridge.name.indexOf("veditorproj") > -1;
-
+			project.isFlexJSRoyalProject= file.fileBridge.name.indexOf("royaleveditorproj") > -1;
+			//royaleveditorpro
 			project.projectFile = file;
 			
 			project.projectName = file.fileBridge.name.substring(0, file.fileBridge.name.lastIndexOf("."));
@@ -65,6 +75,7 @@ package actionScripts.plugins.as3project.importer
 			project.projectFolder.name = project.projectName;
 			
 			var stream:FileStream = new FileStream();
+			//Alert.show("file.fileBridge 69:"+file.fileBridge.nativePath);
 			stream.open(file.fileBridge.getFile as File, FileMode.READ);
 			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
 			stream.close();
@@ -158,7 +169,7 @@ package actionScripts.plugins.as3project.importer
 				}
 			}
 
-			if (project.isVisualEditorProject)
+			if (project.isVisualEditorProject||project.isFlexJSRoyalProject)
 			{
 				project.visualEditorSourceFolder = new FileLocation(
                         project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src/main/webapp"
@@ -200,6 +211,8 @@ package actionScripts.plugins.as3project.importer
 			}
 			
 			var platform:int = int(data.moonshineRunCustomization.option.@targetPlatform);
+			
+			//Alert.show("platform:"+platform);
 			switch(platform)
 			{
 				case AS3ProjectPlugin.AS3PROJ_AS_ANDROID:
@@ -271,6 +284,147 @@ package actionScripts.plugins.as3project.importer
 			UtilsCore.setProjectMenuType(project);
 			
 			return project;
+		}
+
+		public static function convertDomino(file:FileLocation):void
+		{
+			var folder:File = (file.fileBridge.getFile as File).parent;
+			
+			var projectNameextensionIndex:int = file.fileBridge.name.lastIndexOf("veditorproj");
+			var projectName:String=file.fileBridge.name.substring(0, projectNameextensionIndex - 1);
+			
+			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
+			var requireFileLocation:FileLocation;
+		
+			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
+			//1. first check the .xml_conversion_required file
+			if (requireFileLocation.fileBridge.exists){
+				
+				//DominoUtils.getDominoParentContent(projectName,projectName);
+             
+				//var visualEditorView:VisualEditorViewer=new VisualEditorViewer();
+				//2.start convert domino 
+				//2.1 load xml from visualeditor-src and convert it to dxl
+				var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
+				if(xmlFileLocation.fileBridge.exists){
+					var directory:Array = xmlFileLocation.fileBridge.getDirectoryListing();
+						for each (var xml:File in directory)
+						{
+							if (xml.extension == "xml" ) {
+								var xmlNameextensionIndex:int = xml.name.lastIndexOf("xml");
+								var xmlName:String=xml.name.substring(0, xmlNameextensionIndex - 1);
+		
+								var dominoXml:XML = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
+								var _fileStreamMoonshine:FileStream = new FileStream();
+								_fileStreamMoonshine.open(xml, FileMode.READ);
+								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
+								var internalxml:XML = new XML(data);
+								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
+								if(surfaceModel!=null){
+									var dominoMainContainer:XML = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
+									
+									//convert to dxl
+									var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
+									//fix the div node from the domino code 
+									for each(var div:XML in dominoCode..div) //no matter of depth Note here
+									{
+										if(div.parent().name() == "tablecell"){
+											var divChilren:XMLList = div.children();
+											for each (var divChilrenNode:XML in divChilren)
+											{
+												div.parent().appendChild(divChilrenNode)
+											}
+											delete div.parent().children()[div.childIndex()];
+										}
+										
+									}
+
+									if(dominoCode!=null ){
+										var hasRichText:Boolean=false;	
+										if(dominoCode.children().length() != 0){ 
+											dominoCode=dominoCode.children()[0]
+										}
+										
+										if(dominoCode.name()=="div" || dominoCode.name()=="_moonshineSelected_div"){
+											dominoCode.setName("richtext");
+											hasRichText=true;
+										
+										}
+										if(hasRichText==false){
+											//add new richtext node
+											var richtext:XML = new XML("<richtext style='width:700px;height:700px;' class='flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop' direction='Horizontal' vdirection='Vertical'/>");
+											dominoMainContainer.appendChild(richtext);
+											dominoMainContainer=richtext;
+										}
+									
+										if (dominoMainContainer)
+										{
+											dominoMainContainer.appendChild(dominoCode); 
+											if(dominoCode.name()=="richtext"){
+												dominoMainContainer=dominoCode;
+											}              
+										}
+										else
+										{
+											dominoXml.appendChild(dominoCode);
+										}
+										dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
+									
+									}
+									
+									//fix the dxl format
+									var extensionIndex:int = xml.name.lastIndexOf(xml.extension);
+									//write the dxl to traget form file
+									var xmlFileName:String=xml.name.substring(0, extensionIndex - 1);
+									var targetFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
+									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
+									var _targetfileStreamMoonshine:FileStream = new FileStream();
+									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
+									_targetfileStreamMoonshine.writeUTFBytes(dominoXml.toXMLString());
+									_targetfileStreamMoonshine.close();
+									//var container:IVisualElementContainer= surfaceModel as IVisualElementContainer;
+									//var dominoCode:XML=EditingSurfaceWriter.aottoDominoCodeCovert(container);
+
+								}
+								_fileStreamMoonshine.close();
+								
+								
+							}
+						}
+
+					//2.2 we should seting the settingsFilePath into .veditorproj file
+					//2.2.1 load the .veditorporj file from local Domino project.
+					if(file.fileBridge.exists){
+						var settingFile:File=new File(file.fileBridge.nativePath);
+						//if manven setting.xml file config exist
+						if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists) { 
+							//load project config file to xml 
+							var _settingFileStreamMoonshine:FileStream = new FileStream();
+								_settingFileStreamMoonshine.open(settingFile, FileMode.READ);
+							var settingData:String = _settingFileStreamMoonshine.readUTFBytes(_settingFileStreamMoonshine.bytesAvailable);
+							var settingxml:XML = new XML(settingData);
+							if(settingxml..mavenBuild&&settingxml..mavenBuild[0]!=null){
+								var opetion:XML=new XML("<option/>");
+								opetion.@settingsFilePath=OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath;
+								settingxml..mavenBuild[0].appendChild(opetion);
+								file.fileBridge.save(settingxml);
+							}
+						}
+
+
+
+					}
+				}
+
+				requireFileLocation.fileBridge.deleteFile();
+			
+			}
+
+			//2. remove not need NewVisualEditorProject file
+			var newFileVisualTemplate:FileLocation= projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"NewVisualEditorProject.form");
+			if(newFileVisualTemplate.fileBridge.exists){
+				newFileVisualTemplate.fileBridge.deleteFile();
+			}
 		}
 	}
 }
