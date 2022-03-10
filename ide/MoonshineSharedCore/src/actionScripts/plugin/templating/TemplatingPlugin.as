@@ -53,7 +53,6 @@ package actionScripts.plugin.templating
 	import actionScripts.plugin.IMenuPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.StaticLabelSetting;
@@ -385,6 +384,7 @@ package actionScripts.plugin.templating
             var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
 			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
 			var royaleVisualProjectTemplates:ArrayCollection = new ArrayCollection();
+			var royaleDominoExportTemplates:ArrayCollection = new ArrayCollection();
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
 			var grailsProjectTemplates:ArrayCollection = new ArrayCollection();
 			var haxeProjectTemplates:ArrayCollection = new ArrayCollection();
@@ -425,16 +425,24 @@ package actionScripts.plugin.templating
 						actionScriptProjectTemplates.addItem(template);
 					}
 
-					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1&& templateName.indexOf("REST") == -1)
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1
+							&& templateName.indexOf("REST") == -1 && templateName.indexOf("Domino Export") == -1)
 					{
                         royaleProjectTemplates.addItem(template);
 					}
-					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1&& templateName.indexOf("REST") != -1&& templateName.indexOf("Visual") == -1)
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1
+							&& templateName.indexOf("REST") != -1
+							&& templateName.indexOf("Visual") == -1)
 					{
                         royaleVisualProjectTemplates.addItem(template);
 					}
 
-					//royaleVisualProjectTemplates
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1
+							&& templateName.indexOf("Domino Export") != -1
+							&& templateName.indexOf("Visual") == -1)
+					{
+						royaleDominoExportTemplates.addItem(template);
+					}
 
 					if (templateName.indexOf("Java") != -1)
 					{
@@ -461,6 +469,7 @@ package actionScripts.plugin.templating
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE = royaleProjectTemplates;
 			royaleVisualProjectTemplates.source=royaleVisualProjectTemplates.source.reverse();
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE_VISUAL=royaleVisualProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE_DOMINO_EXPORT = royaleDominoExportTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA = javaProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_GRAILS = grailsProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_HAXE = haxeProjectTemplates;

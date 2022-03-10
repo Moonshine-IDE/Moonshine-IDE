@@ -182,7 +182,9 @@ package actionScripts.plugin.actionscript.as3project
 			//2. import the project to editor
 			var extension:String = null;
 			var settingsFile:FileLocation = null;
-			for each (var projectTemplate:FileLocation in TemplatingPlugin.projectTemplates)
+			var projectTemplates:Array = TemplatingPlugin.projectTemplates;
+
+			for each (var projectTemplate:FileLocation in projectTemplates)
 			{
 				var lbl:String = TemplatingHelper.getTemplateLabel(projectTemplate);
 				if(lbl == ProjectTemplateType.ROYALE_VISUAL_PROJECT)

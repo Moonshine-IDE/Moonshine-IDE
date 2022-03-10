@@ -327,13 +327,6 @@ package actionScripts.plugins.as3project
 			settingsView.addCategory("");
 			// Remove spaces from project name
 			project.projectName = project.projectName.replace(/ /g, "");
-			
-			var nvps:Vector.<NameValuePair> = Vector.<NameValuePair>([
-				new NameValuePair("AIR", ProjectType.AS3PROJ_AS_AIR),
-				new NameValuePair("AIR Mobile", ProjectType.AS3PROJ_AS_AIR),
-				new NameValuePair("Web", ProjectType.AS3PROJ_AS_WEB),
-			    new NameValuePair("Visual Editor", ProjectType.VISUAL_EDITOR)
-			]);
 
 			var settings:SettingsWrapper = getProjectSettings(project, event);
 
