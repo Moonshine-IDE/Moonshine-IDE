@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-    import actionScripts.plugins.domino.events.DominoEvent;
+    import actionScripts.events.DominoEvent;
 
     import flash.ui.Keyboard;
     
