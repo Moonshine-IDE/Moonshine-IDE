@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.domino
 {
-	import actionScripts.plugins.domino.events.DominoEvent;
+	import actionScripts.events.DominoEvent;
 
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
