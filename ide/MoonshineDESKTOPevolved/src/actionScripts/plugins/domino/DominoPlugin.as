@@ -381,7 +381,7 @@ package actionScripts.plugins.domino
 				return;
 			}
 
-			var command:String = "\""+ macNDSDefaultLookupPath +"\" -kill";
+			var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
 			print("%s", command);
 
 			lastExecutionType = NSD_KILL;
