@@ -20,6 +20,9 @@ package actionScripts.plugins.domino
 {
 	import actionScripts.events.DominoEvent;
 
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
@@ -381,15 +384,41 @@ package actionScripts.plugins.domino
 				return;
 			}
 
-			var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
-			print("%s", command);
-
 			lastExecutionType = NSD_KILL;
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Trying to kill NSD..", null, false));
-			this.start(
-					new <String>[command],
-					null
-			);
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				print("%s", "Executing NSD kill process on Terminal window.");
+				startOSAScript();
+			}
+			else
+			{
+				var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
+				print("%s", command);
+				this.start(
+						new <String>[command],
+						null
+				);
+			}
+		}
+
+		private function startOSAScript():void
+		{
+			if (nativeProcess.running && running)
+			{
+				warning("Build is running. Wait for finish...");
+				return;
+			}
+
+			nativeProcess = new NativeProcess();
+			nativeProcessStartupInfo = new NativeProcessStartupInfo();
+			nativeProcessStartupInfo.executable = File.documentsDirectory.resolvePath("/usr/bin/osascript");
+
+			var command:String = "tell application \"Terminal\" to activate do script \"\\\""+ macNDSDefaultLookupPath +"\\\" -kill\"";
+			nativeProcessStartupInfo.arguments = Vector.<String>(["-e", command]);
+			addNativeProcessEventListeners();
+			nativeProcess.start(nativeProcessStartupInfo);
+			running = true;
 		}
 	}
 }
