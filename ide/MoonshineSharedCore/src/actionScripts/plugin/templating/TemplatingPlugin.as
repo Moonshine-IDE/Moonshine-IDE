@@ -1296,7 +1296,7 @@ package actionScripts.plugin.templating
 				}
 				//only for fixed folder for domino form file
 			
-				Alert.show("new domino:"+newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath);
+			
 				var dominoFormFolderStr:String=newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath + File.separator + File.separator +"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms";
 				var dominoFormFolder:FileLocation=new FileLocation(dominoFormFolderStr);
 				if(dominoFormFolder.fileBridge.exists){
