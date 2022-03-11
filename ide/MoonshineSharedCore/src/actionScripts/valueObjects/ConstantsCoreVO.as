@@ -76,6 +76,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_AS3CLASS: FileLocation;
 		public static var TEMPLATE_AS3INTERFACE: FileLocation;
 		public static var TEMPLATE_CSS: FileLocation;
+		public static var TEMPLATE_DOMINO_FORM: FileLocation;
 		public static var TEMPLATE_TEXT: FileLocation;
 		public static var TEMPLATE_XML: FileLocation;
 		public static var TEMPLATE_MXML: FileLocation;
@@ -318,6 +319,12 @@ package actionScripts.valueObjects
 			TEMPLATE_CSS.fileBridge.isDirectory = false;
 			TEMPLATE_CSS.fileBridge.extension = "css";
 			TEMPLATE_CSS.fileBridge.data = "";
+
+			TEMPLATE_DOMINO_FORM = new FileLocation("TEMPLATE");
+			TEMPLATE_DOMINO_FORM.fileBridge.name = "Domino Visual Editor Form.form";
+			TEMPLATE_DOMINO_FORM.fileBridge.isDirectory = false;
+			TEMPLATE_DOMINO_FORM.fileBridge.extension = "form";
+			TEMPLATE_DOMINO_FORM.fileBridge.data = "";
 			
 			TEMPLATE_TEXT = new FileLocation("TEMPLATE");
 			TEMPLATE_TEXT.fileBridge.name = "Text File.txt";
