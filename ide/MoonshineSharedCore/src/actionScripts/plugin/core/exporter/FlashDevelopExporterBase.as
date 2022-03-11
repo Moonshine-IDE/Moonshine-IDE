@@ -18,11 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.core.exporter
 {
-	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
-	
 	import actionScripts.factory.FileLocation;
-	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	public class FlashDevelopExporterBase

@@ -26,6 +26,7 @@ package actionScripts.ui.menu.vo
 		public static const FLEX_AS:String = "flexASproject";
 		public static const PURE_AS:String = "pureASProject";
 		public static const JS_ROYALE:String = "flexJSroyale";
+		public static const JS_ROYALE_VISUAL:String = "flexJSVisualroyale";
 		public static const VISUAL_EDITOR_FLEX:String = "visualEditorFlex";
 		public static const VISUAL_EDITOR_PRIMEFACES:String = "visualEditorPrimefaces";
 		public static const VISUAL_EDITOR_DOMINO:String = "visualEditorDomino";
