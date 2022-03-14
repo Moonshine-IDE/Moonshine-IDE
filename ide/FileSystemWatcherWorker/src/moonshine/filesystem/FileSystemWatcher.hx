@@ -111,7 +111,7 @@ class FileSystemWatcher extends EventDispatcher {
 			var nativePath = file.nativePath;
 			if (!fileInfoForDir.exists(nativePath)) {
 				var fileInfo = new FileInfo(nativePath);
-				fileInfo.modificationDate = file.modificationDate;
+				fileInfo.modificationDate = file.modificationDate.getTime();
 				fileInfoForDir.set(nativePath, fileInfo);
 			}
 		}
@@ -162,19 +162,24 @@ class FileSystemWatcher extends EventDispatcher {
 			var files = rootDirectory.getDirectoryListing();
 			for (existingNativePath in fileInfoForDir.keys()) {
 				var found = false;
-				for (file in files) {
+				var i = files.length - 1;
+				while (i >= 0) {
+					var file = files[i];
 					if (file.nativePath == existingNativePath) {
 						found = true;
+						files.splice(i, 1);
 						if (file.isDirectory) {
 							break;
 						}
 						var fileInfo = fileInfoForDir.get(existingNativePath);
-						if (file.modificationDate.getTime() != fileInfo.modificationDate.getTime()) {
-							fileInfo.modificationDate = file.modificationDate;
+						var modificationDate = file.modificationDate.getTime();
+						if (modificationDate != fileInfo.modificationDate) {
+							fileInfo.modificationDate = modificationDate;
 							dispatchEvent(new FileSystemWatcherEvent(FileSystemWatcherEvent.FILE_MODIFIED, file));
 						}
 						break;
 					}
+					i--;
 				}
 				if (!found) {
 					fileInfoForDir.remove(existingNativePath);
@@ -183,12 +188,10 @@ class FileSystemWatcher extends EventDispatcher {
 			}
 			for (file in files) {
 				var nativePath = file.nativePath;
-				if (!fileInfoForDir.exists(nativePath)) {
-					var fileInfo = new FileInfo(nativePath);
-					fileInfo.modificationDate = file.modificationDate;
-					fileInfoForDir.set(nativePath, fileInfo);
-					dispatchEvent(new FileSystemWatcherEvent(FileSystemWatcherEvent.FILE_CREATED, file));
-				}
+				var fileInfo = new FileInfo(nativePath);
+				fileInfo.modificationDate = file.modificationDate.getTime();
+				fileInfoForDir.set(nativePath, fileInfo);
+				dispatchEvent(new FileSystemWatcherEvent(FileSystemWatcherEvent.FILE_CREATED, file));
 			}
 		}
 	}
@@ -219,5 +222,5 @@ private class FileInfo {
 	}
 
 	public var nativePath:String;
-	public var modificationDate:Date;
+	public var modificationDate:Float;
 }
