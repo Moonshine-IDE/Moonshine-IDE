@@ -70,6 +70,8 @@ package actionScripts.languageServer
 	import moonshine.lsp.UnregistrationParams;
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -90,6 +92,8 @@ package actionScripts.languageServer
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["hx"];
 
+		private static const LANGUAGE_SERVER_SHUTDOWN_TIMEOUT:Number = 8000;
+
 		private var _project:HaxeProjectVO;
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
@@ -108,6 +112,7 @@ package actionScripts.languageServer
 		private var _languageServerProgressStarted:Boolean = false;
 		private var _activeProgressTokens:Array = [];
 		private var _watchedFiles:Object = {};
+		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -543,7 +548,7 @@ package actionScripts.languageServer
 			if(_languageClient)
 			{
 				_waitingToRestart = true;
-				_languageClient.shutdown();
+				shutdown();
 			}
 			else if(_languageServerProcess)
 			{
@@ -571,6 +576,29 @@ package actionScripts.languageServer
 			}
 		}
 
+		private function shutdown():void
+		{
+			if(!_languageClient)
+			{
+				return;
+			}
+			_shutdownTimeoutID = setTimeout(shutdownTimeout, LANGUAGE_SERVER_SHUTDOWN_TIMEOUT);
+			_languageClient.shutdown();
+		}
+
+		private function shutdownTimeout():void
+		{
+			_shutdownTimeoutID = uint.MAX_VALUE;
+			if (!_languageServerProcess) {
+				return;
+			}
+			var message:String = "Timed out while shutting down Haxe language server for project " + _project.name + ". Forcing process to exit.";
+			warning(message);
+			trace(message);
+			_languageClient = null;
+			_languageServerProcess.exit(true);
+		}
+
 		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
@@ -580,6 +608,10 @@ package actionScripts.languageServer
 
 		private function languageServerProcess_exitHandler(e:NativeProcessExitEvent):void
 		{
+			if (_shutdownTimeoutID != uint.MAX_VALUE) {
+				clearTimeout(_shutdownTimeoutID);
+				_shutdownTimeoutID = uint.MAX_VALUE;
+			}
 			if(_languageClient)
 			{
 				//this should have already happened, but if the process exits
@@ -1022,7 +1054,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.shutdown();
+			shutdown();
 		}
 
 		private function applicationExitHandler(event:ApplicationEvent):void
@@ -1031,7 +1063,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.shutdown();
+			shutdown();
 		}
 
 		private function isWatchingFile(file:FileLocation):Boolean
