@@ -45,12 +45,20 @@ class FileSystemWatcher extends EventDispatcher {
 	private var _pollingMS:Int;
 
 	public function getAllKnownFilePaths():Array<String> {
+		var roots:Array<String> = [];
+		for (directory in _watchedDirectories.keys()) {
+			roots.push(directory.nativePath);
+		}
 		var result:Array<String> = [];
 		for (directory in _watchedDirectories.keys()) {
 			result.push(directory.nativePath);
 			var fileInfoMap = _watchedDirectories.get(directory);
 			for (nativePath in fileInfoMap.keys()) {
-				result.push(nativePath);
+				// some of the root directories may exist as files inside
+				// other root directories, so skip duplicates
+				if (roots.indexOf(nativePath) == -1) {
+					result.push(nativePath);
+				}
 			}
 		}
 		return result;
