@@ -9,6 +9,8 @@ ide/MoonshineDESKTOPevolved/obj/MoonshineDESKTOPevolvedConfig.xml
 ide/MoonshineSharedCore/obj/MoonshineSharedCoreConfig.xml
 ide/MoonshineWEBevolved/obj/
 ide/MoonshineWEBevolved/bin-debug/
+ide/MoonshineWEBevolved/build/bin-debug/
+ide/MoonshineWEBevolved/build/elements/
 ide/MoonshineWorker/obj/
 ide/MoonshineWorker/bin/
 ide/FileSystemWatcherWorker/bin/
