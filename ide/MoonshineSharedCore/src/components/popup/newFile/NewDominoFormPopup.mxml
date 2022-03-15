@@ -108,7 +108,7 @@
 				// 2. select the fileWrapper object
 				// 3. scroll to the fileWrapper object
 				UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
-				UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
+				//UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
 				
                 wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms");
                 

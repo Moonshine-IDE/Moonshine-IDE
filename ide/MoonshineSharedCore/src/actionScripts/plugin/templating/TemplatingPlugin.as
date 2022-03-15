@@ -1297,13 +1297,33 @@ package actionScripts.plugin.templating
 				//only for fixed folder for domino form file
 			
 			
-				var dominoFormFolderStr:String=newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath + File.separator + File.separator +"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms";
+				var dominoFormFolderStr:String=newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  File.separator +"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms";
 				var dominoFormFolder:FileLocation=new FileLocation(dominoFormFolderStr);
 				if(dominoFormFolder.fileBridge.exists){
 					//set the tree selct to domino form folder
-					var DominoFormFolderWrapper:FileWrapper = new FileWrapper(dominoFormFolder, false, null, false);
-					model.mainView.getTreeViewPanel().tree.selectedItem = DominoFormFolderWrapper;
-					newDominoFormComponentPopup.wrapperOfFolderLocation =UtilsCore.findDominoFileWrapperInDepth(newDominoFormComponentPopup.wrapperBelongToProject.projectFolder, dominoFormFolderStr);
+					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+					var dominoFormFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoFormComponentPopup.wrapperBelongToProject.projectFolder, dominoFormFolderStr);
+					model.mainView.getTreeViewPanel().tree.callLater(function ():void
+					{
+						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+					
+						for (var j:int = 0; j < (wrappers.length - 1); j++)
+						{
+							model.mainView.getTreeViewPanel().tree.expandItem(wrappers[j], true);
+						}
+		
+						// selection
+						model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
+						// scroll-to
+						model.mainView.getTreeViewPanel().tree.callLater(function ():void
+						{
+							model.mainView.getTreeViewPanel().tree.scrollToIndex(model.mainView.getTreeViewPanel().tree.getItemIndex(dominoFormFolderWrapper));
+						});
+					});
+					
+					
+					//model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
+					newDominoFormComponentPopup.wrapperOfFolderLocation = dominoFormFolderWrapper;
 					newDominoFormComponentPopup.folderLocation =dominoFormFolder;
 					PopUpManager.centerPopUp(newDominoFormComponentPopup);
 				}else{
