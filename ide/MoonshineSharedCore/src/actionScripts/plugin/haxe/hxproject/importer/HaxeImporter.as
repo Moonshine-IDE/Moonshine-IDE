@@ -71,23 +71,23 @@ package actionScripts.plugin.haxe.hxproject.importer
 
 			project.projectFile = settingsFileLocation;
 			
-			var data:XML;
+			var settingsData:XML = null;
 			if (settingsFileLocation.fileBridge.exists)
 			{
-				var stream:FileStream = new FileStream();
-				stream.open(settingsFileLocation.fileBridge.getFile as File, FileMode.READ);
-				data = XML(stream.readUTFBytes(settingsFileLocation.fileBridge.getFile.size));
-				stream.close();
+				settingsData = new XML(settingsFileLocation.fileBridge.read());
 			}
 			
 			// Parse XML file
             project.classpaths.length = 0;
             project.targets.length = 0;
 			
-            parsePaths(data.compileTargets.compile, project.targets, project, "path");
-            parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path");		
-			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
-			parsePathString(data.haxelib["library"], project.haxelibs, project, "name");
+			if (settingsData)
+			{
+				parsePaths(settingsData.compileTargets.compile, project.targets, project, "path");
+				parsePaths(settingsData.hiddenPaths.hidden, project.hiddenPaths, project, "path");		
+				parsePaths(settingsData.classpaths["class"], project.classpaths, project, "path");
+				parsePathString(settingsData.haxelib["library"], project.haxelibs, project, "name");
+			}
 	
 			if (!project.buildOptions.additional) project.buildOptions.additional = "";
 			
@@ -96,11 +96,17 @@ package actionScripts.plugin.haxe.hxproject.importer
 				project.projectFolder.updateChildren();
 			}
 
-            project.prebuildCommands = SerializeUtil.deserializeString(data.preBuildCommand);
-            project.postbuildCommands = SerializeUtil.deserializeString(data.postBuildCommand);
-            project.postbuildAlways = SerializeUtil.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+			if (settingsData)
+			{
+				project.prebuildCommands = SerializeUtil.deserializeString(settingsData.preBuildCommand);
+				project.postbuildCommands = SerializeUtil.deserializeString(settingsData.postBuildCommand);
+				project.postbuildAlways = SerializeUtil.deserializeBoolean(settingsData.postBuildCommand.@alwaysRun);
+			}
 
-            project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
+			if (settingsData)
+			{
+            	project.showHiddenPaths = SerializeUtil.deserializeBoolean(settingsData.options.option.@showHiddenPaths);
+			}
 
 			if (project.targets.length > 0)
 			{
@@ -145,17 +151,34 @@ package actionScripts.plugin.haxe.hxproject.importer
 				}
 			}
 
-            project.testMovie = data.options.option.@testMovie;
+			if (settingsData)
+			{
+            	project.testMovie = settingsData.options.option.@testMovie;
+			}
 
-            project.buildOptions.parse(data.build);
+			if (settingsData)
+			{
+            	project.buildOptions.parse(settingsData.build);
+			}
 
-            project.haxeOutput.parse(data.output, project);
+			if (settingsData)
+			{
+            	project.haxeOutput.parse(settingsData.output, project);
+			}
+			else
+			{
+				var limeProjectFile:FileLocation = projectFolder.resolvePath("project.xml");
+				if (limeProjectFile.fileBridge.exists)
+				{
+					project.haxeOutput.platform = HaxeOutputVO.PLATFORM_LIME;
+				}
+			}
 
 			project.isLime = UtilsCore.isLime(project);
 
 			if(project.isLime)
 			{
-				var limeTargetPlatform:String = data.moonshineRunCustomization.option.@targetPlatform.toString();
+				var limeTargetPlatform:String = settingsData ? settingsData.moonshineRunCustomization.option.@targetPlatform.toString() : "";
 				if(limeTargetPlatform.length == 0)
 				{
 					//when Haxe projects were first introduced, they didn't have
@@ -174,12 +197,15 @@ package actionScripts.plugin.haxe.hxproject.importer
 				project.limeTargetPlatform = null;
 			}
 			
-			if (project.testMovie == HaxeProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == HaxeProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
+			if (settingsData && (project.testMovie == HaxeProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == HaxeProjectVO.TEST_MOVIE_OPEN_DOCUMENT))
 			{
-                project.testMovieCommand = data.options.option.@testMovieCommand;
+                project.testMovieCommand = settingsData.options.option.@testMovieCommand;
 			}
 			
-			project.runWebBrowser = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@webBrowser);
+			if (settingsData)
+			{
+				project.runWebBrowser = SerializeUtil.deserializeString(settingsData.moonshineRunCustomization.option.@webBrowser);
+			}
 			
 			UtilsCore.setProjectMenuType(project);
 
