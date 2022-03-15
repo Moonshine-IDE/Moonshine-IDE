@@ -132,6 +132,7 @@ package actionScripts.valueObjects
         public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
 		public static var READABLE_FILES:Array;
+		public static var KNOWN_BINARY_FILES:Array;
 		public static var READABLE_CLASS_FILES:Array;
 		public static var NON_CLOSEABLE_TABS:Array;
 		public static var STARTUP_PROJECT_OPEN_QUEUE_LEFT:int;
@@ -309,6 +310,8 @@ package actionScripts.valueObjects
 								"java", "groovy", "gradle", "yml", "gsp", "properties", "javaproj", "sh", "ini", "jar", "hx", "hxproj", "grailsproj",
 								"json", "md"];
 			READABLE_FILES.sort();
+
+			KNOWN_BINARY_FILES = ["nsf", "jpg", "jpeg", "png"];
 
 			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
 			READABLE_CLASS_FILES.sort();

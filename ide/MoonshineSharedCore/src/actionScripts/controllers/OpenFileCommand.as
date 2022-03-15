@@ -310,32 +310,60 @@ package actionScripts.controllers
 		{
 			if ((binaryFiles.length != 0) && (binaryFiles.length > 1))
 			{
-				Alert.buttonWidth = 90;
-				Alert.yesLabel = "Open All";
-				Alert.cancelLabel = "Cancel All";
-				Alert.show("Unable to open the selected binary files.\nDo you want to open the files with the default system applications?", "Confirm!", Alert.YES|Alert.CANCEL, null, function (event:CloseEvent):void
+				var isUnknownBinaryAvailable:Boolean = files.some(function(element:FileLocation, index:int, arr:Array):Boolean
 				{
-					Alert.buttonWidth = 65;
-					Alert.yesLabel = "Yes";
-					Alert.cancelLabel = "Cancel";
-					
-					if (event.detail == Alert.YES)
-					{
-						for each (var fl:FileLocation in files)
-						{
-							fl.fileBridge.openWithDefaultApplication();
-						}
-					}
+					return (ConstantsCoreVO.KNOWN_BINARY_FILES.indexOf(element.fileBridge.extension) == -1);
 				});
+
+				if (isUnknownBinaryAvailable)
+				{
+					Alert.buttonWidth = 90;
+					Alert.yesLabel = "Open All";
+					Alert.cancelLabel = "Cancel All";
+					Alert.show("One or more binary files unknown to Moonshine-IDE.\nDo you want to open the files with the default system applications?", "Confirm!", Alert.YES|Alert.CANCEL, null, function (event:CloseEvent):void
+					{
+						Alert.buttonWidth = 65;
+						Alert.yesLabel = "Yes";
+						Alert.cancelLabel = "Cancel";
+
+						if (event.detail == Alert.YES)
+						{
+							runAllBinaryFiles();
+						}
+					});
+				}
+				else
+				{
+					runAllBinaryFiles();
+				}
 			}
 			else if ((binaryFiles.length != 0) && (binaryFiles.length == 1))
 			{
-				Alert.show("Unable to open binary file "+ files[0].name +".\nDo you want to open the file with the default system application?", "Confirm!", Alert.YES|Alert.NO, null, function (event:CloseEvent):void
+				var binaryFile:FileLocation = files[0];
+				if (ConstantsCoreVO.KNOWN_BINARY_FILES.indexOf(binaryFile.fileBridge.extension) == -1)
 				{
-					if (event.detail == Alert.YES)
+					Alert.show("Unable to open binary file "+ binaryFile.name +".\nDo you want to open the file with the default system application?", "Confirm!", Alert.YES|Alert.NO, null, function (event:CloseEvent):void
 					{
-						files[0].fileBridge.openWithDefaultApplication();
-					}
+						if (event.detail == Alert.YES)
+						{
+							binaryFile.fileBridge.openWithDefaultApplication();
+						}
+					});
+				}
+				else
+				{
+					binaryFile.fileBridge.openWithDefaultApplication();
+				}
+			}
+
+			/*
+			 * @local
+			 */
+			function runAllBinaryFiles():void
+			{
+				files.forEach(function (element:FileLocation, index:int, arr:Array):void
+				{
+					element.fileBridge.openWithDefaultApplication();
 				});
 			}
 		}
