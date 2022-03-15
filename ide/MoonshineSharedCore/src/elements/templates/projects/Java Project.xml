@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates>
+	<template displayHome="true">
+        <title>Java Domino Project</title>
+        <homeTitle>Java Domino Project</homeTitle>
+        <name>Java Domino Project</name>
+        <icon>Java Gradle Project.png</icon>
+        <description>Create a Java project built with Domino.</description>
+    </template>
     <template displayHome="true">
         <title>Java Maven Project</title>
         <homeTitle>Java Maven Project</homeTitle>

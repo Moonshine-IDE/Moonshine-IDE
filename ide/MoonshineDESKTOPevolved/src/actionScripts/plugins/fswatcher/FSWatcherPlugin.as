@@ -182,6 +182,7 @@ package actionScripts.plugins.fswatcher
 				if(resultPath == project.folderLocation.fileBridge.nativePath)
 				{
 					projectToWatcher[project] = result.id;
+					requestAllPaths(project);
 					break;
 				}
 			}
@@ -211,8 +212,16 @@ package actionScripts.plugins.fswatcher
 					trace("unwatch fault: " + incomingData.id, incomingData.reason);
 					break;
 				case "requestAllPathsResult":
+					var project:ProjectVO = getProjectByKey(incomingData.id);
+					var paths:Array = incomingData.paths;
+					var fileListUpdateEvent:WatchedFileChangeEvent = new WatchedFileChangeEvent(WatchedFileChangeEvent.PROJECT_FILES_LIST_UPDATED, null);
+					fileListUpdateEvent.project = project;
+					fileListUpdateEvent.paths = paths;
+					dispatcher.dispatchEvent(fileListUpdateEvent);
+
 					// trace("requestAllPaths: " + incomingData.id, "paths:" + incomingData.paths);
 					// TODO: dispatch an event or something
+					// ^/Users/devsena/[^/]+$
 					break;
 				case "requestAllPathsFault":
 					trace("requestAllPaths fault: " + incomingData.id, incomingData.reason);
@@ -232,6 +241,19 @@ package actionScripts.plugins.fswatcher
 				default:
 					trace("Unknown file system watcher message: " + JSON.stringify(incomingData));
 			}
+		}
+
+		private function getProjectByKey(value:int):ProjectVO
+		{
+			for(var key:Object in projectToWatcher)
+			{
+				if (projectToWatcher[key] == value)
+				{
+					return (key as ProjectVO);
+				}
+			}
+
+			return null;
 		}
 	}
 }

@@ -49,6 +49,10 @@ package actionScripts.plugin.java.javaproject.vo
 		public function get jdkType():String									{	return _jdkType;	}
 		public function set jdkType(value:String):void							{	_jdkType = value;	}
 
+		private var _projectType:String;
+		public function get projectType():String									{	return _projectType;	}
+		public function set projectType(value:String):void							{	_projectType = value;	}
+
 		private var _mainClassName:String;
 		private var _mainClassPath:String;
 

@@ -20,6 +20,7 @@
 package actionScripts.events
 {
 	import actionScripts.factory.FileLocation;
+	import actionScripts.valueObjects.ProjectVO;
 
 	import flash.events.Event;
 	
@@ -28,8 +29,11 @@ package actionScripts.events
 		public static const FILE_CREATED:String = "fileCreated";
 		public static const FILE_DELETED:String = "fileDeleted";
 		public static const FILE_MODIFIED:String = "fileModified";
+		public static const PROJECT_FILES_LIST_UPDATED:String = "filesListUpdated";
 
 		public var file:FileLocation;
+		public var project:ProjectVO;
+		public var paths:Array;
 		
 		public function WatchedFileChangeEvent(type:String, file:FileLocation)
 		{

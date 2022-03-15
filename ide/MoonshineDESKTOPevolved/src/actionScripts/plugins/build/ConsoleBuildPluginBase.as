@@ -24,7 +24,7 @@ package actionScripts.plugins.build
     public class ConsoleBuildPluginBase extends CompilerPluginBase
     {
         protected var nativeProcess:NativeProcess;
-        private var nativeProcessStartupInfo:NativeProcessStartupInfo;
+		protected var nativeProcessStartupInfo:NativeProcessStartupInfo;
 
         public function ConsoleBuildPluginBase()
         {

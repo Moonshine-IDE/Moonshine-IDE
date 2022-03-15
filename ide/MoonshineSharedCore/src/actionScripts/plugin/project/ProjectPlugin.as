@@ -99,6 +99,7 @@ package actionScripts.plugin.project
 
 			dispatcher.addEventListener(WatchedFileChangeEvent.FILE_CREATED, handleWatchedFileCreatedEvent);
 			dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, handleWatchedFileDeletedEvent);
+			dispatcher.addEventListener(WatchedFileChangeEvent.PROJECT_FILES_LIST_UPDATED, handleWatchedProjectFileListUpdatedEvent);
 		}
 
         private function handleScrollFromSource(event:ProjectEvent):void
@@ -369,6 +370,14 @@ package actionScripts.plugin.project
 		{
 			//need to refresh the parent directory listing
 			treeView.refresh(event.file.fileBridge.parent);
+		}
+
+		private function handleWatchedProjectFileListUpdatedEvent(event:WatchedFileChangeEvent):void
+		{
+			if (event.project && event.paths)
+			{
+				event.project.allPaths = event.paths.join("\n");
+			}
 		}
 
         private function handleShowPreviouslyOpenedProjects(event:ProjectEvent):void

@@ -20,8 +20,9 @@ package actionScripts.valueObjects
 {
 	import actionScripts.factory.FileLocation;
     import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
+	import actionScripts.utils.UtilsCore;
 
-    [Bindable]
+	[Bindable]
     public dynamic class FileWrapper
 	{
 		public var projectReference: ProjectReferenceVO;
@@ -208,8 +209,10 @@ package actionScripts.valueObjects
                 return;
             }
 
+			var project:ProjectVO;
             if (projectReference)
             {
+				project = UtilsCore.getProjectByPath(projectReference.path);
                 if (projectReference.showHiddenPaths)
                 {
                     _isHidden = projectReference.hiddenPaths.some(function (item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
@@ -228,7 +231,17 @@ package actionScripts.valueObjects
                 return;
             }
 
-            var directoryListing:Array = file.fileBridge.getDirectoryListing();
+            var directoryListing:Array;
+			if (project && project.allPaths)
+			{
+				var pathsRegexp:RegExp = new RegExp("^"+ file.fileBridge.nativePath +"/[^/]+$", "gmi");
+				directoryListing = project.allPaths.match(pathsRegexp);
+			}
+			else
+			{
+				directoryListing = file.fileBridge.getDirectoryListing();
+			}
+
             if (directoryListing.length == 0 && !file.fileBridge.isDirectory)
             {
                 _children = null;
@@ -244,16 +257,17 @@ package actionScripts.valueObjects
 
             for (var i:int = 0; i < directoryListingCount; i++)
             {
-                var currentDirectory:Object = directoryListing[i];
+				var currentDirectoryFL:FileLocation = (directoryListing[i] is String) ? (new FileLocation(directoryListing[i])) : (new FileLocation(directoryListing[i].nativePath));
+                //var currentDirectory:Object = directoryListing[i];
 
-				if (currentDirectory.isHidden)
+				if (currentDirectoryFL.fileBridge.isHidden)
 				{
 					continue;
                 }
 
 				if (projectReference.showHiddenPaths)
 				{
-					fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, false);
+					fw = new FileWrapper(currentDirectoryFL, false, projectReference, false);
 					fw.children = [];
 					fw.sourceController = _sourceController;
 					_children.push(fw);
@@ -262,12 +276,12 @@ package actionScripts.valueObjects
                 {
                     var currentIsHidden:Boolean = projectReference && projectReference.hiddenPaths.some(function (item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
                     {
-                        return currentDirectory.nativePath == item.fileBridge.nativePath;
+                        return currentDirectoryFL.fileBridge.nativePath == item.fileBridge.nativePath;
                     });
 
 					if (!currentIsHidden)
                     {
-                        fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, false);
+                        fw = new FileWrapper(currentDirectoryFL, false, projectReference, false);
 						fw.children = [];
                         fw.sourceController = _sourceController;
 						if (fw.file.fileBridge.isDirectory)
