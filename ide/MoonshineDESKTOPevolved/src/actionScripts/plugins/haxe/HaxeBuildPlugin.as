@@ -833,7 +833,7 @@ package actionScripts.plugins.haxe
             else
             {
                 success("Haxe build has completed successfully.");
-                if(project != null)
+                if(project != null && project.haxeOutput.path)
                 {
                     dispatcher.dispatchEvent(new RefreshTreeEvent(project.haxeOutput.path.fileBridge.parent));
                 }
