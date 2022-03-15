@@ -85,15 +85,19 @@ package actionScripts.plugin.haxe.hxproject.vo
 		{
 			var output:XML = <output/>;
 			
-			var pathStr:String = path.fileBridge.nativePath;
-			if (folder) {
-				pathStr = folder.fileBridge.getRelativePath(path);
+			var pathStr:String = "";
+			if (path)
+			{
+				pathStr = path.fileBridge.nativePath;
+				if (folder) {
+					pathStr = folder.fileBridge.getRelativePath(path);
+				}
+				
+				// in case parsing relative path returns null
+				// particularly in scenario when "path" is outside folder
+				// of "folder"
+				if (!pathStr) pathStr = path.fileBridge.nativePath;
 			}
-			
-			// in case parsing relative path returns null
-			// particularly in scenario when "path" is outside folder
-			// of "folder"
-			if (!pathStr) pathStr = path.fileBridge.nativePath;
 			
 			var outputPairs:Object = {
 				'disabled'	: 	SerializeUtil.serializeBoolean(disabled),
