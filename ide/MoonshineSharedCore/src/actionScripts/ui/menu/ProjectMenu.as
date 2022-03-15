@@ -261,7 +261,10 @@ package actionScripts.ui.menu
 							'b', [Keyboard.CONTROL]),
 						new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
 					]);
-                    addNSDKillOption(javaMenuGradle);
+                    if ((currentProject as JavaProjectVO).projectType == JavaProjectTypes.JAVA_DOMINO)
+                    {
+                        addNSDKillOption(javaMenuGradle);
+                    }
 				}
 
 				javaMenuGradle.forEach(makeDynamic);
@@ -280,7 +283,10 @@ package actionScripts.ui.menu
                 new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
             ]);
 
-            addNSDKillOption(javaMenu);
+            if ((currentProject as JavaProjectVO).projectType == JavaProjectTypes.JAVA_DOMINO)
+            {
+                addNSDKillOption(javaMenuGradle);
+            }
             javaMenu.forEach(makeDynamic);
             return javaMenu;
         }
@@ -374,11 +380,8 @@ package actionScripts.ui.menu
 
         private function addNSDKillOption(menu:Vector.<MenuItem>):void
         {
-            if ((currentProject as JavaProjectVO).projectType == JavaProjectTypes.JAVA_DOMINO)
-            {
-                menu.push(new MenuItem(null));
-                menu.push(new MenuItem(resourceManager.getString('resources', 'NSD_KILL'), null, [ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.JAVA], DominoEvent.NDS_KILL))
-            }
+            menu.push(new MenuItem(null));
+            menu.push(new MenuItem(resourceManager.getString('resources', 'NSD_KILL'), null, [ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.JAVA], DominoEvent.NDS_KILL))
         }
     }
 }
