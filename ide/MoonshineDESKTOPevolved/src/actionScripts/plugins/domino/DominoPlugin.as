@@ -384,21 +384,40 @@ package actionScripts.plugins.domino
 				return;
 			}
 
-			lastExecutionType = NSD_KILL;
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Trying to kill NSD..", null, false));
-			if (ConstantsCoreVO.IS_MACOS)
+			var originalAlertYesSize:Number = Alert.buttonWidth;
+			Alert.buttonWidth = originalAlertYesSize * 3;
+			Alert.YES_LABEL = "Proceed to run NSD Kill";
+			Alert.show(
+					"This will attempt to immediately terminate your HCL Notes Client and all related processes and shared memory segments. You should first close any remaining tabs and windows that are open if you still have access to the GUI. Do you wish to proceed with this action?",
+					"Confirm!", Alert.YES|Alert.CANCEL, null, onNSDKillConfirmed);
+
+			/*
+			 * @local
+			 */
+			function onNSDKillConfirmed(event:CloseEvent):void
 			{
-				print("%s", "Executing NSD kill process on Terminal window.");
-				startOSAScript();
-			}
-			else
-			{
-				var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
-				print("%s", command);
-				this.start(
-						new <String>[command],
-						null
-				);
+				if (event.detail == Alert.YES)
+				{
+					lastExecutionType = NSD_KILL;
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Trying to kill NSD..", null, false));
+					if (ConstantsCoreVO.IS_MACOS)
+					{
+						print("%s", "Executing NSD kill process on Terminal window.");
+						startOSAScript();
+					}
+					else
+					{
+						var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
+						print("%s", command);
+						this.start(
+								new <String>[command],
+								null
+						);
+					}
+				}
+
+				Alert.buttonWidth = originalAlertYesSize;
+				Alert.YES_LABEL = "YES";
 			}
 		}
 
