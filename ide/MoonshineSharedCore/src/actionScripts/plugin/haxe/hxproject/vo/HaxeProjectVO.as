@@ -223,6 +223,12 @@ package actionScripts.plugin.haxe.hxproject.vo
             projectReference.hiddenPaths = this.hiddenPaths;
 			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
 		}
+
+		public function hasLimeProject():Boolean
+		{
+			var projectFile:FileLocation = folderLocation.resolvePath("project.xml");
+			return projectFile.fileBridge.exists;
+		}
 		
 		override public function getSettings():Vector.<SettingsWrapper>
 		{
