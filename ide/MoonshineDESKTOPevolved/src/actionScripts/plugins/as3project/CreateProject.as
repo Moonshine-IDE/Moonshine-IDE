@@ -634,7 +634,8 @@ package actionScripts.plugins.as3project
 			projectTemplateTypeSetting.commitChanges();
 			
 			var isSourceSettingsAvailable:Boolean = ((projectTemplateType.indexOf(ProjectTemplateType.JAVA) == -1) && 
-														(projectTemplateType.indexOf(ProjectTemplateType.GRAILS) == -1));
+														(projectTemplateType.indexOf(ProjectTemplateType.GRAILS) == -1) && 
+														(projectTemplateType.indexOf(ProjectTemplateType.HAXE) == -1));
 			if (projectWithExistingSourceSetting)
 			{
 				customSdkPathSetting.editable = projectWithExistingSourceSetting.editable = isSourceSettingsAvailable;
@@ -660,7 +661,7 @@ package actionScripts.plugins.as3project
 
 			//save  project path in shared object
 			var tmpParent:FileLocation;
-			if (isProjectFromExistingSource && !isJavaProject && !isGrailsProject)
+			if (isProjectFromExistingSource && !isJavaProject && !isGrailsProject && !isHaxeProject)
 			{
 				// validate if all requirement supplied
 				if (newProjectWithExistingSourcePathSetting.stringValue == "")
@@ -715,7 +716,7 @@ package actionScripts.plugins.as3project
 				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
 			);
 			
-			if (!isCustomTemplateProject && !isLibraryProject && !isJavaProject && !isGrailsProject)
+			if (!isCustomTemplateProject && !isLibraryProject && !isJavaProject && !isGrailsProject && !isHaxeProject)
 			{
 				dispatcher.dispatchEvent( 
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [project.targets[0]], -1, [project.projectFolder])
@@ -866,6 +867,14 @@ package actionScripts.plugins.as3project
 				if (pvo.hasGradleBuild())
 				{
 					excludeFiles.push("build.gradle");
+				}
+			}
+			if (isHaxeProject)
+			{
+				excludeFiles = [];
+				if (HaxeProjectVO(pvo).hasLimeProject())
+				{
+					excludeFiles.push("project.xml");
 				}
 			}
 
@@ -1129,7 +1138,7 @@ package actionScripts.plugins.as3project
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
 			// Alert.show("projectSettingsFile:"+projectSettingsFile);
-			if (!isJavaProject && !isGrailsProject)
+			if (!isJavaProject && !isGrailsProject && !isHaxeProject)
 			{
 				//Alert.show("Line 1032");
 				// Set some stuff to get the paths right
@@ -1247,7 +1256,7 @@ package actionScripts.plugins.as3project
 				{
 					if(template.title == projectTemplateType)
 					{
-						if (isJavaProject || isGrailsProject)
+						if (isJavaProject || isGrailsProject || isHaxeProject)
 						{
 							templateLookup[pvo] = template.file;
 							break;
