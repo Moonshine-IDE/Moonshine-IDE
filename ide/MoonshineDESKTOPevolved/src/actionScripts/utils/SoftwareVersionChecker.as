@@ -54,6 +54,7 @@ package actionScripts.utils
 		private static const QUERY_MACPORTS_VERSION:String = "getMacPortsVersion";
 		private static const QUERY_HAXE_VERSION:String = "getHaxeVersion";
 		private static const QUERY_NEKO_VERSION:String = "getNekoVersion";
+		private static const QUERY_VIRTUALBOX_VERSION:String = "getVirtualBoxVersion";
 		
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
 		
@@ -197,6 +198,13 @@ package actionScripts.utils
 							{
 								commands = "neko -version";
 								itemTypeUnderCursor = QUERY_NEKO_VERSION;
+							}
+							break;
+						case ComponentTypes.TYPE_VIRTUALBOX:
+							if (UtilsCore.isVirtualBoxAvailable())
+							{
+								commands = '"'+ itemUnderCursor.installToPath +"/"+ (ConstantsCoreVO.IS_MACOS ? 'VBoxManage' : 'VirtualBoxVM.exe') +'" -v';
+								itemTypeUnderCursor = QUERY_VIRTUALBOX_VERSION;
 							}
 							break;
 						case ComponentTypes.TYPE_NOTES:
@@ -362,6 +370,7 @@ package actionScripts.utils
 					case QUERY_NODEJS_VERSION:
 					case QUERY_HAXE_VERSION:
 					case QUERY_NEKO_VERSION:
+					case QUERY_VIRTUALBOX_VERSION:
 					{
 						if (!components[int(tmpQueue.extraArguments[0])].version)
 						{

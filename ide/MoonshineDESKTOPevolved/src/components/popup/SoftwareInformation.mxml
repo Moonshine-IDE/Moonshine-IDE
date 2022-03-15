@@ -86,6 +86,15 @@
 			}
 			components.addItemAt(tmpAddition, 0);
 
+			tmpAddition = new ComponentVO();
+			tmpAddition.title = "VirtualBox";
+			if (model.virtualBoxPath && FileUtils.isPathExists(model.virtualBoxPath))
+			{
+				tmpAddition.type = ComponentTypes.TYPE_VIRTUALBOX;
+				tmpAddition.installToPath = model.virtualBoxPath;
+			}
+			components.addItem(tmpAddition);
+
 			versionChecker.addEventListener(Event.COMPLETE, onRetrievalComplete, false, 0, true);
 			versionChecker.retrieveAboutInformation(components);
 		}
