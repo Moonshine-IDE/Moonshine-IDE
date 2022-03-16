@@ -603,7 +603,7 @@ package actionScripts.plugin.recentlyOpened
 				projectFileLocation = model.haxeCore.testHaxe(projectFile);
 				if (projectFileLocation)
 				{
-					return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation);
+					return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation, null, projectFileLocation);
 				}
 				
 				projectFileLocation = model.ondiskCore.testOnDisk(projectFile);

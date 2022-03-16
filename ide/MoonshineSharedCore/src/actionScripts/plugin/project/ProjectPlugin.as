@@ -487,7 +487,7 @@ package actionScripts.plugin.project
 	                    projectFileLocation = model.haxeCore.testHaxe(projectFile);
 	                    if (projectFileLocation)
 	                    {
-	                        project = model.haxeCore.parseHaxe(projectLocation);
+	                        project = model.haxeCore.parseHaxe(projectLocation, null, projectFileLocation);
 	                    }
 					}
 					

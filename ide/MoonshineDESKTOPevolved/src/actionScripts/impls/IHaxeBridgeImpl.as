@@ -86,9 +86,9 @@ package actionScripts.impls
 			return HaxeImporter.test(file as File);
 		}
 
-		public function parseHaxe(file:FileLocation):HaxeProjectVO
+		public function parseHaxe(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):HaxeProjectVO
 		{
-			return HaxeImporter.parse(file);
+			return HaxeImporter.parse(file, projectName, settingsFileLocation);
 		}
     }
 }

@@ -67,7 +67,11 @@ package actionScripts.plugin.haxe.hxproject.vo
 		{
 			var params:XMLList = output.movie;
 			disabled = SerializeUtil.deserializeBoolean(params.@disabled);
-			path = project.folderLocation.resolvePath(UtilsCore.fixSlashes(params.@path));
+			var pathParam:String = params.@path;
+			if (pathParam)
+			{
+				path = project.folderLocation.resolvePath(UtilsCore.fixSlashes(pathParam));
+			}
 			frameRate = Number(params.@fps);
 			width = int(params.@width);
 			height = int(params.@height);

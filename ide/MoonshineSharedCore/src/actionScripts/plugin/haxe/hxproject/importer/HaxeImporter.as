@@ -56,10 +56,13 @@ package actionScripts.plugin.haxe.hxproject.importer
 
 		public static function parse(projectFolder:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):HaxeProjectVO
 		{
-			if(!projectName)
+			if(!projectName && !settingsFileLocation)
 			{
-				var airFile:Object = projectFolder.fileBridge.getFile;
-				projectName = airFile.name;
+				projectName = projectFolder.name
+			}
+			else if (!projectName && settingsFileLocation)
+			{
+				projectName = settingsFileLocation.fileBridge.name.substring(0, settingsFileLocation.fileBridge.name.lastIndexOf("."));
 			}
 
             if (!settingsFileLocation)
