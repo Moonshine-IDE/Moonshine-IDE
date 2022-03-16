@@ -91,7 +91,6 @@ package actionScripts.plugin.templating
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
 
-	import flash.filesystem.File;
     /*
     Templating plugin
 
@@ -1297,7 +1296,7 @@ package actionScripts.plugin.templating
 				//only for fixed folder for domino form file
 			
 			
-				var dominoFormFolderStr:String=newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  File.separator +"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms";
+				var dominoFormFolderStr:String=newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
 				var dominoFormFolder:FileLocation=new FileLocation(dominoFormFolderStr);
 				if(dominoFormFolder.fileBridge.exists){
 					//set the tree selct to domino form folder

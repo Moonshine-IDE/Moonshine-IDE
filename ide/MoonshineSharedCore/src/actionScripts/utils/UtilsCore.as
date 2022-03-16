@@ -492,7 +492,7 @@ package actionScripts.utils
 
 		public static  function findDominoFileWrapperInDepth(wrapper:FileWrapper, searchPath:String):FileWrapper
 		{
-			//Alert.show("searchPath:"+searchPath);
+	
 
 
 			for each (var child:FileWrapper in wrapper.children)
@@ -506,10 +506,12 @@ package actionScripts.utils
 					{
 						return child;
 					}
-					if (child.children && child.children.length > 0) return findFileWrapperInDepth(child, searchPath);
+					child.updateChildren();
+				
+					if (child.children && child.children.length > 0) return findDominoFileWrapperInDepth(child, searchPath);
 				}
 
-				
+
 				if(child.children && child.children.length > 0){
 					
 					if(endsWith(child.nativePath,"nsfs")|| endsWith(child.nativePath,"nsf-moonshine")||endsWith(child.nativePath,"odp")){
@@ -524,6 +526,42 @@ package actionScripts.utils
 			}
 			
 			return wrapper;
+		}
+
+		public static function buildFolderForDominoForm(rootFoder:FileWrapper ):FileWrapper
+		{
+
+			var newRootPath:String=rootFoder.nativePath;
+			var newRootLocation:FileLocation=new FileLocation(newRootPath);
+			var newRoot:FileWrapper =new FileWrapper(newRootLocation, false, null, false);
+
+			var nsfsFolderStr:String=rootFoder.nativePath +  model.fileCore.separator +"nsfs";
+			//+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
+			var nsfsFolder:FileLocation=new FileLocation(nsfsFolderStr);
+			var nsf:FileWrapper =new FileWrapper(nsfsFolder, false, null, false);
+			
+			var nsfmoonshine:String=nsfsFolderStr+model.fileCore.separator+"nsf-moonshine";
+			var nsfmoonshineFolder:FileLocation=new FileLocation(nsfmoonshine);
+			var nsfmoonshineFile:FileWrapper=new FileWrapper(nsfmoonshineFolder, false, null, false);
+			
+			var odpstr:String=nsfmoonshine+model.fileCore.separator+"odp";
+			var odpFolder:FileLocation=new FileLocation(odpstr);
+			var odpFile:FileWrapper=new FileWrapper(odpFolder, false, null, false);
+
+			var formstr:String=odpstr+model.fileCore.separator+"Forms";
+			var formsolder:FileLocation=new FileLocation(formstr);
+			var formFile:FileWrapper=new FileWrapper(formsolder, false, null, false);
+			
+			odpFile.children=[];
+			odpFile.children.push(formFile);
+			nsfmoonshineFile.children=[];
+			nsfmoonshineFile.children.push(odpFile);
+			nsf.children=[];
+			nsf.children.push(nsfmoonshineFile);
+			newRoot.children=[];
+			newRoot.children.push(nsf);
+			return newRoot;
+
 		}
 
 		public static  function endsWith(str:String, ending:String):Boolean {
