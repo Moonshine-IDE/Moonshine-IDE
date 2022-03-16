@@ -308,52 +308,44 @@ package actionScripts.controllers
 		
 		private function openBinaryFiles(files:Array):void
 		{
-			if ((binaryFiles.length != 0) && (binaryFiles.length > 1))
-			{
-				var isUnknownBinaryAvailable:Boolean = files.some(function(element:FileLocation, index:int, arr:Array):Boolean
-				{
-					return (ConstantsCoreVO.KNOWN_BINARY_FILES.indexOf(element.fileBridge.extension) == -1);
-				});
+			if (files.length == 0)
+				return;
 
-				if (isUnknownBinaryAvailable)
+			var isUnknownBinaryAvailable:Boolean = files.some(function(element:FileLocation, index:int, arr:Array):Boolean
+			{
+				return (ConstantsCoreVO.KNOWN_BINARY_FILES.indexOf(element.fileBridge.extension) == -1);
+			});
+
+			if (isUnknownBinaryAvailable)
+			{
+				var alertMessage:String;
+				if (files.length > 1)
 				{
 					Alert.buttonWidth = 90;
 					Alert.yesLabel = "Open All";
 					Alert.cancelLabel = "Cancel All";
-					Alert.show("One or more binary files unknown to Moonshine-IDE.\nDo you want to open the files with the default system applications?", "Confirm!", Alert.YES|Alert.CANCEL, null, function (event:CloseEvent):void
-					{
-						Alert.buttonWidth = 65;
-						Alert.yesLabel = "Yes";
-						Alert.cancelLabel = "Cancel";
+					alertMessage = "One or more binary files unknown to Moonshine-IDE.\nDo you want to open the files with the default system applications?";
+				}
+				else
+				{
+					alertMessage = "Unable to open binary file "+ files[0].name +".\nDo you want to open the file with the default system application?"
+				}
 
-						if (event.detail == Alert.YES)
-						{
-							runAllBinaryFiles();
-						}
-					});
-				}
-				else
+				Alert.show(alertMessage, "Confirm!", Alert.YES|Alert.CANCEL, null, function (event:CloseEvent):void
 				{
-					runAllBinaryFiles();
-				}
-			}
-			else if ((binaryFiles.length != 0) && (binaryFiles.length == 1))
-			{
-				var binaryFile:FileLocation = files[0];
-				if (ConstantsCoreVO.KNOWN_BINARY_FILES.indexOf(binaryFile.fileBridge.extension) == -1)
-				{
-					Alert.show("Unable to open binary file "+ binaryFile.name +".\nDo you want to open the file with the default system application?", "Confirm!", Alert.YES|Alert.NO, null, function (event:CloseEvent):void
+					Alert.buttonWidth = 65;
+					Alert.yesLabel = "Yes";
+					Alert.cancelLabel = "Cancel";
+
+					if (event.detail == Alert.YES)
 					{
-						if (event.detail == Alert.YES)
-						{
-							binaryFile.fileBridge.openWithDefaultApplication();
-						}
-					});
-				}
-				else
-				{
-					binaryFile.fileBridge.openWithDefaultApplication();
-				}
+						runAllBinaryFiles();
+					}
+				});
+			}
+			else
+			{
+				runAllBinaryFiles();
 			}
 
 			/*
