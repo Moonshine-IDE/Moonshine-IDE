@@ -244,9 +244,24 @@ package actionScripts.plugins.clean
 			}
 		}
 
-		private function cleanHaxeProject(haxeProject:HaxeProjectVO):void
+		private function cleanHaxeProject(project:HaxeProjectVO):void
 		{
-			//TODO: clean haxe project
+			if (UtilsCore.isHaxeAvailable())
+			{
+				if (project.isLime)
+				{
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
+					start(Vector.<String>([EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " run openfl clean " + project.limeTargetPlatform]), project.folderLocation);
+				}
+				else
+				{
+					dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project clean not available for this type of Haxe project", false, false, ConsoleOutputEvent.TYPE_ERROR));
+				}
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project clean failed: Missing Haxe configuration in Moonshine settings.", false, false, ConsoleOutputEvent.TYPE_ERROR));
+			}
 		}
 		
 		private function cleanOnDiskProject(ondiskProject:OnDiskProjectVO):void

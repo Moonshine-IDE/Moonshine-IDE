@@ -347,6 +347,7 @@ package actionScripts.ui.menu
 						"\r\n", [Keyboard.COMMAND],
 						"\n", [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, HaxeBuildEvent.BUILD_RELEASE),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
                 ]);
                 haxeMenu.forEach(makeDynamic);
             }
