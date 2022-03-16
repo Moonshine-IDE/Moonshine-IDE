@@ -156,7 +156,7 @@
 			{
 				
                 //get the domino project form folder value:
-                var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"
+                var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms"
                 var currentPath:String = UtilsCore.getPathStringByProjectPath(
                         Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
                         tree.selectedItem.nativePath);
