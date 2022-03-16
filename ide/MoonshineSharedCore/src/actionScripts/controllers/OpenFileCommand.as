@@ -266,14 +266,14 @@ package actionScripts.controllers
 				else
 				{
 					//try to open dve with domino visual editor.
-					 if ((project is OnDiskProjectVO) && (extension == "dve"))
+					 /*if ((project is OnDiskProjectVO) && (extension == "dve"))
 					 {
 						 (project as OnDiskProjectVO).isDominoVisualEditorProject=true;
-					 }
-					else if (file && file.fileBridge.nativePath.indexOf("Royale")>0){
+					 }*/
+					/*else if (file && file.fileBridge.nativePath.indexOf("Royale")>0){
 						(project as AS3ProjectVO).isVisualEditorProject=false;
 						//Alert.show("AS3ProjectVO 254"+(project as AS3ProjectVO).isVisualEditorProject);
-					}
+					}*/
 	
 					openTextFile(project, fileData);
 				}
