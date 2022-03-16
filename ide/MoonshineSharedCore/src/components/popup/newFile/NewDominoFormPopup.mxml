@@ -47,7 +47,7 @@
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
 
-			import flash.filesystem.File;
+
 			import mx.controls.Alert;
 
 			private var isDominoValid:Boolean=false;
