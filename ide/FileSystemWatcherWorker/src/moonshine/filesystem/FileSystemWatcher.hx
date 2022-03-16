@@ -172,7 +172,16 @@ class FileSystemWatcher extends EventDispatcher {
 							break;
 						}
 						var fileInfo = fileInfoForDir.get(existingNativePath);
-						var modificationDate = file.modificationDate.getTime();
+						var modificationDate = fileInfo.modificationDate;
+						try {
+							modificationDate = file.modificationDate.getTime();
+						} catch(e:Dynamic) {
+							// may have been deleted since calling getDirectoryListing()
+							// in that case, we won't send a FILE_MODIFIED event, and we'll
+							// switch to FILE_DELETED instead
+							found = false;
+							break;
+						}
 						if (modificationDate != fileInfo.modificationDate) {
 							fileInfo.modificationDate = modificationDate;
 							dispatchEvent(new FileSystemWatcherEvent(FileSystemWatcherEvent.FILE_MODIFIED, file));
@@ -187,9 +196,17 @@ class FileSystemWatcher extends EventDispatcher {
 				}
 			}
 			for (file in files) {
+				var modificationDate = 0.0;
+				try {
+					modificationDate = file.modificationDate.getTime();
+				} catch(e:Dynamic) {
+					// the file may have been deleted since calling getDirectoryListing()
+					// in that case, just skip it
+					continue;
+				}
 				var nativePath = file.nativePath;
 				var fileInfo = new FileInfo(nativePath);
-				fileInfo.modificationDate = file.modificationDate.getTime();
+				fileInfo.modificationDate = modificationDate;
 				fileInfoForDir.set(nativePath, fileInfo);
 				dispatchEvent(new FileSystemWatcherEvent(FileSystemWatcherEvent.FILE_CREATED, file));
 			}
