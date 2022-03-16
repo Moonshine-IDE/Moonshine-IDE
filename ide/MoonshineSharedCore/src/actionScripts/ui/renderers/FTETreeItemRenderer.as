@@ -517,10 +517,17 @@ package actionScripts.ui.renderers
 				item.data = eventType;
 				
 				enableTypes = TemplatingHelper.getTemplateMenuType(label);
-				item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+				if (enableTypes.length == 0)
 				{
-					return activeProject.menuType.indexOf(item) != -1;
-				});
+					item.enabled = true;
+				}
+				else
+				{
+					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+					{
+						return activeProject.menuType.indexOf(item) != -1;
+					});
+				}
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}

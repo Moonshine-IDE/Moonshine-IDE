@@ -196,16 +196,9 @@ package actionScripts.plugin.templating
 				case "AS3 Interface":
 					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.TEMPLATE];
 				case "CSS File":
-					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, 
-						ProjectMenuTypes.TEMPLATE];
 				case "XML File":
-					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, 
-						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE];
 				case "File":
-					return [ProjectMenuTypes.JAVA, ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, 
-						ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,
-						ProjectMenuTypes.VISUAL_EDITOR_DOMINO,  
-						ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE];
+					return [];
 				case "Visual Editor Flex File":
 					return [ProjectMenuTypes.VISUAL_EDITOR_FLEX];
 				case "Visual Editor PrimeFaces File":
@@ -215,11 +208,10 @@ package actionScripts.plugin.templating
 				case "Domino Visual Editor Form":
 					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];
 				case "Domino Visual Editor Page":
-					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];			
-				case "Java Class":
-					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE];
+					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];
 				case "Groovy Class":
-					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.TEMPLATE];
+				case "Java Class":
+					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.VISUAL_EDITOR_DOMINO];
 				case "Haxe Class":
 				case "Haxe Interface":
 					return [ProjectMenuTypes.HAXE, ProjectMenuTypes.TEMPLATE];
