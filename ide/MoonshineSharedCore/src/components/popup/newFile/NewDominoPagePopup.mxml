@@ -55,7 +55,7 @@
 			
 			protected function onPreinitialize(event:FlexEvent):void
 			{
-				createdFileExtension = ".form";
+				createdFileExtension = ".page";
 				warningMessage = "";
 				isDestinationValid=true;
 			
@@ -98,7 +98,7 @@
 				var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
 				if(SimpleValidator.validate(validateArr))
 				{
-					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_DOMINO_FORM, wrapperOfFolderLocation);
+					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_DOMINO_PAGE, wrapperOfFolderLocation);
 					tmpEvent.fileName = txtFileName.text;
 					dispatchEvent(tmpEvent);
 	
@@ -156,7 +156,7 @@
 			{
 				
                 //get the domino project form folder value:
-                var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms"
+                var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Pages"
                 var currentPath:String = UtilsCore.getPathStringByProjectPath(
                         Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
                         tree.selectedItem.nativePath);
@@ -168,7 +168,7 @@
                 if (!UtilsCore.endsWith(dominoFormFolder,currentPath))
                 {
 					isDominoValid=true;
-                    warningMessage = "Domino forms are only supported in the Forms folder.";
+                    warningMessage = "Domino page file are only supported in the Pages folder.";
                     hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
 
 				   	isSubmitButtonEnabled=false; 
@@ -197,7 +197,7 @@
 				
 					if(wrappers.length<4){
 						UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
-						wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator+"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"Forms");
+						wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator+"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"Pages");
 					}
 					
                
@@ -249,7 +249,7 @@
 			<view:PromptTextInput id="txtFileName"
 								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_\-/"
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
-			<s:Label text=".form" styleName="textInputLabel" textAlign="right"
+			<s:Label text=".page" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
