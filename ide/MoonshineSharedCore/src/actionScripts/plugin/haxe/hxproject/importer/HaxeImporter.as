@@ -91,8 +91,37 @@ package actionScripts.plugin.haxe.hxproject.importer
 				parsePaths(settingsData.classpaths["class"], project.classpaths, project, "path");
 				parsePathString(settingsData.haxelib["library"], project.haxelibs, project, "name");
 			}
-	
-			if (!project.buildOptions.additional) project.buildOptions.additional = "";
+
+			if (settingsData)
+			{
+            	project.haxeOutput.parse(settingsData.output, project);
+			}
+			else
+			{
+				var limeProjectFile:FileLocation = projectFolder.resolvePath("project.xml");
+				if (limeProjectFile.fileBridge.exists)
+				{
+					project.haxeOutput.platform = HaxeOutputVO.PLATFORM_LIME;
+				}
+			}
+
+			project.isLime = UtilsCore.isLime(project);
+
+			if (settingsData)
+			{
+            	project.buildOptions.parse(settingsData.build);
+			}
+			else
+			{
+				if (project.isLime)
+				{
+					project.buildOptions.additional = "--macro openfl._internal.macros.ExtraParams.include()&#xA;--macro lime._internal.macros.DefineMacro.run()&#xA;--remap flash:openfl&#xA;--no-output ";
+				}
+				else
+				{
+					project.buildOptions.additional = "";
+				}
+			}
 			
 			if (project.hiddenPaths.length > 0 && project.projectFolder)
 			{
@@ -105,10 +134,15 @@ package actionScripts.plugin.haxe.hxproject.importer
 				project.postbuildCommands = SerializeUtil.deserializeString(settingsData.postBuildCommand);
 				project.postbuildAlways = SerializeUtil.deserializeBoolean(settingsData.postBuildCommand.@alwaysRun);
 			}
+			else if (project.isLime)
+			{
+				project.prebuildCommands = '"$(CompilerPath)/haxelib" run lime build "$(OutputFile)" $(TargetBuild) -$(BuildConfig) -Dfdb';
+			}
 
 			if (settingsData)
 			{
-            	project.showHiddenPaths = SerializeUtil.deserializeBoolean(settingsData.options.option.@showHiddenPaths);
+				var showHiddenPathsValue:String = settingsData.elements("options").elements("option").attribute("showHiddenPaths").toString();
+            	project.showHiddenPaths = SerializeUtil.deserializeBoolean(showHiddenPathsValue);
 			}
 
 			if (project.targets.length > 0)
@@ -156,33 +190,13 @@ package actionScripts.plugin.haxe.hxproject.importer
 
 			if (settingsData)
 			{
-            	project.testMovie = settingsData.options.option.@testMovie;
+            	project.testMovie = settingsData.elements("options").elements("option").attribute("testMovie").toString();
 			}
-
-			if (settingsData)
-			{
-            	project.buildOptions.parse(settingsData.build);
-			}
-
-			if (settingsData)
-			{
-            	project.haxeOutput.parse(settingsData.output, project);
-			}
-			else
-			{
-				var limeProjectFile:FileLocation = projectFolder.resolvePath("project.xml");
-				if (limeProjectFile.fileBridge.exists)
-				{
-					project.haxeOutput.platform = HaxeOutputVO.PLATFORM_LIME;
-				}
-			}
-
-			project.isLime = UtilsCore.isLime(project);
 
 			if(project.isLime)
 			{
-				var limeTargetPlatform:String = settingsData ? settingsData.moonshineRunCustomization.option.@targetPlatform.toString() : "";
-				if(limeTargetPlatform.length == 0)
+				var limeTargetPlatform:String = settingsData ? settingsData.elements("moonshineRunCustomization").elements("option").attribute("targetPlatform").toString() : "";
+				if (limeTargetPlatform.length == 0)
 				{
 					//when Haxe projects were first introduced, they didn't have
 					//the moonshineRunCustomization section, so we should
@@ -202,12 +216,13 @@ package actionScripts.plugin.haxe.hxproject.importer
 			
 			if (settingsData && (project.testMovie == HaxeProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == HaxeProjectVO.TEST_MOVIE_OPEN_DOCUMENT))
 			{
-                project.testMovieCommand = settingsData.options.option.@testMovieCommand;
+                project.testMovieCommand = settingsData.elements("options").elements("option").attribute("testMovieCommand").toString();
 			}
 			
 			if (settingsData)
 			{
-				project.runWebBrowser = SerializeUtil.deserializeString(settingsData.moonshineRunCustomization.option.@webBrowser);
+				var webBrowserValue:String = settingsData.elements("moonshineRunCustomization").elements("option").attribute("webBrowser").toString();
+				project.runWebBrowser = SerializeUtil.deserializeString(webBrowserValue);
 			}
 			
 			UtilsCore.setProjectMenuType(project);

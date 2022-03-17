@@ -83,8 +83,8 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean = false;
 
-		public var prebuildCommands:String;
-		public var postbuildCommands:String;
+		public var prebuildCommands:String = "";
+		public var postbuildCommands:String = "";
 		public var postbuildAlways:Boolean;
 		public var isLime:Boolean;
 

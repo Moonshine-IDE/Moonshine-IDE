@@ -31,7 +31,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public var noInlineOnDebug:Boolean = false;
 		public var mainClass:String;
 		public var enabledebug:Boolean = false;
-		public var additional:String;
+		public var additional:String = "";
 		
 		/**
 		 * @return haxe arguments with defaults removed
@@ -67,14 +67,14 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 		public function parse(build:XMLList):void 
 		{
-			var options:XMLList = build.option;
+			var options:XMLList = build.elements("option");
 			
-			mainClass							= SerializeUtil.deserializeString(options.@mainClass);
-			enabledebug							= SerializeUtil.deserializeBoolean(options.@enabledebug);
-			noInlineOnDebug						= SerializeUtil.deserializeBoolean(options.@noInlineOnDebug);
-			flashStrict							= SerializeUtil.deserializeBoolean(options.@flashStrict);
-			directives							= SerializeUtil.deserializeDelimitedString(options.@directives);
-			additional							= SerializeUtil.deserializeString(options.@additional);
+			mainClass							= SerializeUtil.deserializeString(options.attribute("mainClass").toString());
+			enabledebug							= SerializeUtil.deserializeBoolean(options.attribute("enabledebug").toString());
+			noInlineOnDebug						= SerializeUtil.deserializeBoolean(options.attribute("noInlineOnDebug").toString());
+			flashStrict							= SerializeUtil.deserializeBoolean(options.attribute("flashStrict").toString());
+			directives							= SerializeUtil.deserializeDelimitedString(options.attribute("directives").toString());
+			additional							= SerializeUtil.deserializeString(options.attribute("additional").toString());
 		}
 		
 		public function toXML():XML
