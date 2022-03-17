@@ -52,7 +52,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public var input:String = "";
 		
 		/** Background color */
-		public var background:uint;
+		public var background:uint = 0xFFFFFF;
 		
 		
 		public function toString():String {

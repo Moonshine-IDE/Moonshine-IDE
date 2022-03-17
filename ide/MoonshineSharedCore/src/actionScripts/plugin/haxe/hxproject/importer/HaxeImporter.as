@@ -83,18 +83,10 @@ package actionScripts.plugin.haxe.hxproject.importer
 			// Parse XML file
             project.classpaths.length = 0;
             project.targets.length = 0;
-			
-			if (settingsData)
-			{
-				parsePaths(settingsData.compileTargets.compile, project.targets, project, "path");
-				parsePaths(settingsData.hiddenPaths.hidden, project.hiddenPaths, project, "path");		
-				parsePaths(settingsData.classpaths["class"], project.classpaths, project, "path");
-				parsePathString(settingsData.haxelib["library"], project.haxelibs, project, "name");
-			}
 
 			if (settingsData)
 			{
-            	project.haxeOutput.parse(settingsData.output, project);
+            	project.haxeOutput.parse(settingsData.elements("output"), project);
 			}
 			else
 			{
@@ -102,10 +94,19 @@ package actionScripts.plugin.haxe.hxproject.importer
 				if (limeProjectFile.fileBridge.exists)
 				{
 					project.haxeOutput.platform = HaxeOutputVO.PLATFORM_LIME;
+					project.haxeOutput.path = limeProjectFile;
 				}
 			}
 
 			project.isLime = UtilsCore.isLime(project);
+			
+			if (settingsData)
+			{
+				parsePaths(settingsData.elements("compileTargets").elements("compile"), project.targets, project, "path");
+				parsePaths(settingsData.elements("hiddenPaths").elements("hidden"), project.hiddenPaths, project, "path");		
+				parsePaths(settingsData.elements("classpaths").elements("class"), project.classpaths, project, "path");
+				parsePathString(settingsData.elements("haxelib").elements("library"), project.haxelibs, project, "name");
+			}
 
 			if (settingsData)
 			{
@@ -130,9 +131,17 @@ package actionScripts.plugin.haxe.hxproject.importer
 
 			if (settingsData)
 			{
-				project.prebuildCommands = SerializeUtil.deserializeString(settingsData.preBuildCommand);
-				project.postbuildCommands = SerializeUtil.deserializeString(settingsData.postBuildCommand);
-				project.postbuildAlways = SerializeUtil.deserializeBoolean(settingsData.postBuildCommand.@alwaysRun);
+				var prebuildCommandValue:String = SerializeUtil.deserializeString(settingsData.elements("preBuildCommand").text());
+				if (prebuildCommandValue != "null")
+				{
+					project.prebuildCommands = prebuildCommandValue;
+				}
+				var postbuildCommandValue:String = SerializeUtil.deserializeString(settingsData.elements("postBuildCommand").text());;
+				if (postbuildCommandValue != "null")
+				{
+					project.postbuildCommands = postbuildCommandValue;
+				}
+				project.postbuildAlways = SerializeUtil.deserializeBoolean(settingsData.elements("postBuildCommand").attribute("alwaysRun").toString());
 			}
 			else if (project.isLime)
 			{
