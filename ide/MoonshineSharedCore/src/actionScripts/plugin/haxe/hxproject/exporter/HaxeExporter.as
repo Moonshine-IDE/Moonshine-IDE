@@ -63,11 +63,17 @@ package actionScripts.plugin.haxe.hxproject.exporter
 			projectXML.appendChild(exportPaths(project.hiddenPaths, <hiddenPaths />, <hidden />, project));
 			
 			tmpXML = <preBuildCommand />;
-			tmpXML.appendChild(project.prebuildCommands);
+			if (project.prebuildCommands != null)
+			{
+				tmpXML.appendChild(project.prebuildCommands);
+			}
 			projectXML.appendChild(tmpXML);
 			
 			tmpXML = <postBuildCommand />;
-			tmpXML.appendChild(project.postbuildCommands);
+			if (project.postbuildCommands != null)
+			{
+				tmpXML.appendChild(project.postbuildCommands);
+			}
 			tmpXML.@alwaysRun = SerializeUtil.serializeBoolean(project.postbuildAlways);
 			projectXML.appendChild(tmpXML);
 			
