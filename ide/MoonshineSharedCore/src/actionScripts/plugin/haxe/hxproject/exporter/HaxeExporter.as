@@ -94,8 +94,8 @@ package actionScripts.plugin.haxe.hxproject.exporter
 			if(project.isLime)
 			{
 				optionPairs = {
-					targetPlatform:	project.limeTargetPlatform,
-					webBrowser:   project.runWebBrowser
+					targetPlatform:	project.limeTargetPlatform || HaxeProjectVO.LIME_PLATFORM_HTML5,
+					webBrowser:   project.runWebBrowser || ""
 				};
 			}
 			else
