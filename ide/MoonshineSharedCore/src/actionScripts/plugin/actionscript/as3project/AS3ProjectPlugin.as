@@ -280,7 +280,7 @@ package actionScripts.plugin.actionscript.as3project
 				flashDevelopProjectFile = model.haxeCore.testHaxe(dir);
 				if (flashDevelopProjectFile)
 				{
-					importFDProject(flashDevelopProjectFile, false, model.haxeCore.parseHaxe(new FileLocation(dir.nativePath)));
+					importFDProject(flashDevelopProjectFile, false, model.haxeCore.parseHaxe(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
 					return;
 				}
 				flashDevelopProjectFile = model.ondiskCore.testOnDisk(dir);

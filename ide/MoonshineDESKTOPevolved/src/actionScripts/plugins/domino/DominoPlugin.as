@@ -20,6 +20,9 @@ package actionScripts.plugins.domino
 {
 	import actionScripts.events.DominoEvent;
 
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
@@ -381,15 +384,60 @@ package actionScripts.plugins.domino
 				return;
 			}
 
-			var command:String = "\""+ macNDSDefaultLookupPath +"\" -kill";
-			print("%s", command);
+			var originalAlertYesSize:Number = Alert.buttonWidth;
+			Alert.buttonWidth = originalAlertYesSize * 3;
+			Alert.YES_LABEL = "Proceed to run NSD Kill";
+			Alert.show(
+					"This will attempt to immediately terminate your HCL Notes Client and all related processes and shared memory segments. You should first close any remaining tabs and windows that are open if you still have access to the GUI. Do you wish to proceed with this action?",
+					"Confirm!", Alert.YES|Alert.CANCEL, null, onNSDKillConfirmed);
 
-			lastExecutionType = NSD_KILL;
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Trying to kill NSD..", null, false));
-			this.start(
-					new <String>[command],
-					null
-			);
+			/*
+			 * @local
+			 */
+			function onNSDKillConfirmed(event:CloseEvent):void
+			{
+				if (event.detail == Alert.YES)
+				{
+					lastExecutionType = NSD_KILL;
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Trying to kill NSD..", null, false));
+					if (ConstantsCoreVO.IS_MACOS)
+					{
+						print("%s", "Executing NSD kill process on Terminal window.");
+						startOSAScript();
+					}
+					else
+					{
+						var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
+						print("%s", command);
+						this.start(
+								new <String>[command],
+								null
+						);
+					}
+				}
+
+				Alert.buttonWidth = originalAlertYesSize;
+				Alert.YES_LABEL = "YES";
+			}
+		}
+
+		private function startOSAScript():void
+		{
+			if (nativeProcess.running && running)
+			{
+				warning("Build is running. Wait for finish...");
+				return;
+			}
+
+			nativeProcess = new NativeProcess();
+			nativeProcessStartupInfo = new NativeProcessStartupInfo();
+			nativeProcessStartupInfo.executable = File.documentsDirectory.resolvePath("/usr/bin/osascript");
+
+			var command:String = "tell application \"Terminal\" to activate do script \"\\\""+ macNDSDefaultLookupPath +"\\\" -kill\"";
+			nativeProcessStartupInfo.arguments = Vector.<String>(["-e", command]);
+			addNativeProcessEventListeners();
+			nativeProcess.start(nativeProcessStartupInfo);
+			running = true;
 		}
 	}
 }

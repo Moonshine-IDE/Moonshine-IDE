@@ -56,10 +56,13 @@ package actionScripts.plugin.haxe.hxproject.importer
 
 		public static function parse(projectFolder:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):HaxeProjectVO
 		{
-			if(!projectName)
+			if(!projectName && !settingsFileLocation)
 			{
-				var airFile:Object = projectFolder.fileBridge.getFile;
-				projectName = airFile.name;
+				projectName = projectFolder.name
+			}
+			else if (!projectName && settingsFileLocation)
+			{
+				projectName = settingsFileLocation.fileBridge.name.substring(0, settingsFileLocation.fileBridge.name.lastIndexOf("."));
 			}
 
             if (!settingsFileLocation)
@@ -71,36 +74,85 @@ package actionScripts.plugin.haxe.hxproject.importer
 
 			project.projectFile = settingsFileLocation;
 			
-			var data:XML;
+			var settingsData:XML = null;
 			if (settingsFileLocation.fileBridge.exists)
 			{
-				var stream:FileStream = new FileStream();
-				stream.open(settingsFileLocation.fileBridge.getFile as File, FileMode.READ);
-				data = XML(stream.readUTFBytes(settingsFileLocation.fileBridge.getFile.size));
-				stream.close();
+				settingsData = new XML(settingsFileLocation.fileBridge.read());
 			}
 			
 			// Parse XML file
             project.classpaths.length = 0;
             project.targets.length = 0;
+
+			if (settingsData)
+			{
+            	project.haxeOutput.parse(settingsData.elements("output"), project);
+			}
+			else
+			{
+				var limeProjectFile:FileLocation = projectFolder.resolvePath("project.xml");
+				if (limeProjectFile.fileBridge.exists)
+				{
+					project.haxeOutput.platform = HaxeOutputVO.PLATFORM_LIME;
+					project.haxeOutput.path = limeProjectFile;
+				}
+			}
+
+			project.isLime = UtilsCore.isLime(project);
 			
-            parsePaths(data.compileTargets.compile, project.targets, project, "path");
-            parsePaths(data.hiddenPaths.hidden, project.hiddenPaths, project, "path");		
-			parsePaths(data.classpaths["class"], project.classpaths, project, "path");
-			parsePathString(data.haxelib["library"], project.haxelibs, project, "name");
-	
-			if (!project.buildOptions.additional) project.buildOptions.additional = "";
+			if (settingsData)
+			{
+				parsePaths(settingsData.elements("compileTargets").elements("compile"), project.targets, project, "path");
+				parsePaths(settingsData.elements("hiddenPaths").elements("hidden"), project.hiddenPaths, project, "path");		
+				parsePaths(settingsData.elements("classpaths").elements("class"), project.classpaths, project, "path");
+				parsePathString(settingsData.elements("haxelib").elements("library"), project.haxelibs, project, "name");
+			}
+
+			if (settingsData)
+			{
+            	project.buildOptions.parse(settingsData.build);
+			}
+			else
+			{
+				if (project.isLime)
+				{
+					project.buildOptions.additional = "--macro openfl._internal.macros.ExtraParams.include()&#xA;--macro lime._internal.macros.DefineMacro.run()&#xA;--remap flash:openfl&#xA;--no-output ";
+				}
+				else
+				{
+					project.buildOptions.additional = "";
+				}
+			}
 			
 			if (project.hiddenPaths.length > 0 && project.projectFolder)
 			{
 				project.projectFolder.updateChildren();
 			}
 
-            project.prebuildCommands = SerializeUtil.deserializeString(data.preBuildCommand);
-            project.postbuildCommands = SerializeUtil.deserializeString(data.postBuildCommand);
-            project.postbuildAlways = SerializeUtil.deserializeBoolean(data.postBuildCommand.@alwaysRun);
+			if (settingsData)
+			{
+				var prebuildCommandValue:String = SerializeUtil.deserializeString(settingsData.elements("preBuildCommand").text());
+				if (prebuildCommandValue != "null")
+				{
+					project.prebuildCommands = prebuildCommandValue;
+				}
+				var postbuildCommandValue:String = SerializeUtil.deserializeString(settingsData.elements("postBuildCommand").text());;
+				if (postbuildCommandValue != "null")
+				{
+					project.postbuildCommands = postbuildCommandValue;
+				}
+				project.postbuildAlways = SerializeUtil.deserializeBoolean(settingsData.elements("postBuildCommand").attribute("alwaysRun").toString());
+			}
+			else if (project.isLime)
+			{
+				project.prebuildCommands = '"$(CompilerPath)/haxelib" run lime build "$(OutputFile)" $(TargetBuild) -$(BuildConfig) -Dfdb';
+			}
 
-            project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
+			if (settingsData)
+			{
+				var showHiddenPathsValue:String = settingsData.elements("options").elements("option").attribute("showHiddenPaths").toString();
+            	project.showHiddenPaths = SerializeUtil.deserializeBoolean(showHiddenPathsValue);
+			}
 
 			if (project.targets.length > 0)
 			{
@@ -145,18 +197,15 @@ package actionScripts.plugin.haxe.hxproject.importer
 				}
 			}
 
-            project.testMovie = data.options.option.@testMovie;
-
-            project.buildOptions.parse(data.build);
-
-            project.haxeOutput.parse(data.output, project);
-
-			project.isLime = UtilsCore.isLime(project);
+			if (settingsData)
+			{
+            	project.testMovie = settingsData.elements("options").elements("option").attribute("testMovie").toString();
+			}
 
 			if(project.isLime)
 			{
-				var limeTargetPlatform:String = data.moonshineRunCustomization.option.@targetPlatform.toString();
-				if(limeTargetPlatform.length == 0)
+				var limeTargetPlatform:String = settingsData ? settingsData.elements("moonshineRunCustomization").elements("option").attribute("targetPlatform").toString() : "";
+				if (limeTargetPlatform.length == 0)
 				{
 					//when Haxe projects were first introduced, they didn't have
 					//the moonshineRunCustomization section, so we should
@@ -174,12 +223,16 @@ package actionScripts.plugin.haxe.hxproject.importer
 				project.limeTargetPlatform = null;
 			}
 			
-			if (project.testMovie == HaxeProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == HaxeProjectVO.TEST_MOVIE_OPEN_DOCUMENT)
+			if (settingsData && (project.testMovie == HaxeProjectVO.TEST_MOVIE_CUSTOM || project.testMovie == HaxeProjectVO.TEST_MOVIE_OPEN_DOCUMENT))
 			{
-                project.testMovieCommand = data.options.option.@testMovieCommand;
+                project.testMovieCommand = settingsData.elements("options").elements("option").attribute("testMovieCommand").toString();
 			}
 			
-			project.runWebBrowser = SerializeUtil.deserializeString(data.moonshineRunCustomization.option.@webBrowser);
+			if (settingsData)
+			{
+				var webBrowserValue:String = settingsData.elements("moonshineRunCustomization").elements("option").attribute("webBrowser").toString();
+				project.runWebBrowser = SerializeUtil.deserializeString(webBrowserValue);
+			}
 			
 			UtilsCore.setProjectMenuType(project);
 

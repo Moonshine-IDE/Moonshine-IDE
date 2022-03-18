@@ -409,7 +409,8 @@ package actionScripts.impls
 						'o', [Keyboard.COMMAND],
 						'o', [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE),
-					new MenuItem(resourceManager.getString('resources','GENERATE_APACHE_ROYALE_PROJECT'), null, null, ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT)
+				/*	TODO Piotr: Temporary remove from menu till implementation will be enough ready to show it.
+					new MenuItem(resourceManager.getString('resources','GENERATE_APACHE_ROYALE_PROJECT'), null, null, ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT)*/
 				]),
 				//GENERATE_APACHE_ROYALE_PROJECT
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[

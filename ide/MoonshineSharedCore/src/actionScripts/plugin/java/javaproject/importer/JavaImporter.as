@@ -182,6 +182,11 @@ package actionScripts.plugin.java.javaproject.importer
 			
 			if (settingsData && settingsData.options.option.hasOwnProperty('@jdkType'))
 				javaProject.jdkType = SerializeUtil.deserializeString(settingsData.options.option.@jdkType);
+			if (settingsData && settingsData.options.option.hasOwnProperty('@projectType'))
+			{
+				javaProject.projectType = SerializeUtil.deserializeString(settingsData.options.option.@projectType);
+			}
+
 
 			return javaProject;
 		}

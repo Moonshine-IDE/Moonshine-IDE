@@ -23,7 +23,7 @@ package actionScripts.interfaces
 
     public interface IHaxeBridge extends IProject
     {
-		function testHaxe(file:Object):FileLocation;
-		function parseHaxe(file:FileLocation):HaxeProjectVO;
+        function testHaxe(file:Object):FileLocation;
+        function parseHaxe(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):HaxeProjectVO;
     }
 }

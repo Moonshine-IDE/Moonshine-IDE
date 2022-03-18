@@ -45,12 +45,20 @@ class FileSystemWatcher extends EventDispatcher {
 	private var _pollingMS:Int;
 
 	public function getAllKnownFilePaths():Array<String> {
+		var roots:Array<String> = [];
+		for (directory in _watchedDirectories.keys()) {
+			roots.push(directory.nativePath);
+		}
 		var result:Array<String> = [];
 		for (directory in _watchedDirectories.keys()) {
 			result.push(directory.nativePath);
 			var fileInfoMap = _watchedDirectories.get(directory);
 			for (nativePath in fileInfoMap.keys()) {
-				result.push(nativePath);
+				// some of the root directories may exist as files inside
+				// other root directories, so skip duplicates
+				if (roots.indexOf(nativePath) == -1) {
+					result.push(nativePath);
+				}
 			}
 		}
 		return result;
@@ -103,7 +111,7 @@ class FileSystemWatcher extends EventDispatcher {
 			var nativePath = file.nativePath;
 			if (!fileInfoForDir.exists(nativePath)) {
 				var fileInfo = new FileInfo(nativePath);
-				fileInfo.modificationDate = file.modificationDate;
+				fileInfo.modificationDate = file.modificationDate.getTime();
 				fileInfoForDir.set(nativePath, fileInfo);
 			}
 		}
@@ -154,19 +162,33 @@ class FileSystemWatcher extends EventDispatcher {
 			var files = rootDirectory.getDirectoryListing();
 			for (existingNativePath in fileInfoForDir.keys()) {
 				var found = false;
-				for (file in files) {
+				var i = files.length - 1;
+				while (i >= 0) {
+					var file = files[i];
 					if (file.nativePath == existingNativePath) {
 						found = true;
+						files.splice(i, 1);
 						if (file.isDirectory) {
 							break;
 						}
 						var fileInfo = fileInfoForDir.get(existingNativePath);
-						if (file.modificationDate.getTime() != fileInfo.modificationDate.getTime()) {
-							fileInfo.modificationDate = file.modificationDate;
+						var modificationDate = fileInfo.modificationDate;
+						try {
+							modificationDate = file.modificationDate.getTime();
+						} catch(e:Dynamic) {
+							// may have been deleted since calling getDirectoryListing()
+							// in that case, we won't send a FILE_MODIFIED event, and we'll
+							// switch to FILE_DELETED instead
+							found = false;
+							break;
+						}
+						if (modificationDate != fileInfo.modificationDate) {
+							fileInfo.modificationDate = modificationDate;
 							dispatchEvent(new FileSystemWatcherEvent(FileSystemWatcherEvent.FILE_MODIFIED, file));
 						}
 						break;
 					}
+					i--;
 				}
 				if (!found) {
 					fileInfoForDir.remove(existingNativePath);
@@ -174,13 +196,19 @@ class FileSystemWatcher extends EventDispatcher {
 				}
 			}
 			for (file in files) {
-				var nativePath = file.nativePath;
-				if (!fileInfoForDir.exists(nativePath)) {
-					var fileInfo = new FileInfo(nativePath);
-					fileInfo.modificationDate = file.modificationDate;
-					fileInfoForDir.set(nativePath, fileInfo);
-					dispatchEvent(new FileSystemWatcherEvent(FileSystemWatcherEvent.FILE_CREATED, file));
+				var modificationDate = 0.0;
+				try {
+					modificationDate = file.modificationDate.getTime();
+				} catch(e:Dynamic) {
+					// the file may have been deleted since calling getDirectoryListing()
+					// in that case, just skip it
+					continue;
 				}
+				var nativePath = file.nativePath;
+				var fileInfo = new FileInfo(nativePath);
+				fileInfo.modificationDate = modificationDate;
+				fileInfoForDir.set(nativePath, fileInfo);
+				dispatchEvent(new FileSystemWatcherEvent(FileSystemWatcherEvent.FILE_CREATED, file));
 			}
 		}
 	}
@@ -211,5 +239,5 @@ private class FileInfo {
 	}
 
 	public var nativePath:String;
-	public var modificationDate:Date;
+	public var modificationDate:Float;
 }

@@ -58,7 +58,8 @@ package actionScripts.plugin.java.javaproject.exporter
 			
 			var options:XML = <options />;
 			var optionPairs:Object = {
-				jdkType		:	SerializeUtil.serializeString(project.jdkType)
+				jdkType		:	SerializeUtil.serializeString(project.jdkType),
+				projectType	:	SerializeUtil.serializeString(project.projectType)
 			}
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			projectXML.appendChild(options);

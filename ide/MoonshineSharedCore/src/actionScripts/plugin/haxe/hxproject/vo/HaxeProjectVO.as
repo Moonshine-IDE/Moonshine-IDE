@@ -83,8 +83,8 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean = false;
 
-		public var prebuildCommands:String;
-		public var postbuildCommands:String;
+		public var prebuildCommands:String = "";
+		public var postbuildCommands:String = "";
 		public var postbuildAlways:Boolean;
 		public var isLime:Boolean;
 
@@ -222,6 +222,12 @@ package actionScripts.plugin.haxe.hxproject.vo
 
             projectReference.hiddenPaths = this.hiddenPaths;
 			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
+		}
+
+		public function hasLimeProject():Boolean
+		{
+			var projectFile:FileLocation = folderLocation.resolvePath("project.xml");
+			return projectFile.fileBridge.exists;
 		}
 		
 		override public function getSettings():Vector.<SettingsWrapper>

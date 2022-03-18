@@ -544,13 +544,36 @@ package actionScripts.plugins.haxe
             }
             if(project.isLime)
             {
+                //these are Lime's defaults if custom values aren't specified
+                var outputPath:String = "bin";
+                var outputFileNameWithoutExtension:String = "MyApplication";
+                var projectFile:FileLocation = project.folderLocation.resolvePath("project.xml");
+                if (projectFile.fileBridge.exists)
+                {
+                    try
+                    {
+                        var projectXML:XML = new XML(projectFile.fileBridge.read());
+                        var xmlOutputPath:String = projectXML.elements("app").attribute("path").toString();
+                        if (xmlOutputPath)
+                        {
+                            outputPath = xmlOutputPath;
+                        }
+                        var xmlFileName:String = projectXML.elements("app").@file.toString();
+                        if (xmlFileName)
+                        {
+                            outputFileNameWithoutExtension = xmlFileName;
+                        }
+                        trace(xmlOutputPath, xmlFileName);
+                    }
+                    catch (e:Error) {}
+                }
                 switch(project.limeTargetPlatform)
                 {
                     case HaxeProjectVO.LIME_PLATFORM_HTML5:
                     {
                         launchArgs["name"] = "Moonshine Lime HTML5 Launch";
                         launchArgs["url"] = "http://localhost:" + DEBUG_SERVER_PORT;
-			            launchArgs["webRoot"] = getLimeWebRoot(project).fileBridge.nativePath;
+			            launchArgs["webRoot"] = getLimeWebRoot(project, outputPath).fileBridge.nativePath;
                         //enable for debug logging to a file
                         //launchArgs["trace"] = true;
                         for(var i:int = 0; i < ConstantsCoreVO.TEMPLATES_WEB_BROWSERS.length; i++)
@@ -571,13 +594,13 @@ package actionScripts.plugins.haxe
                     case HaxeProjectVO.LIME_PLATFORM_MAC:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     {
-                        var cppExecutableName:String = project.name;
+                        var cppExecutableName:String = outputFileNameWithoutExtension;
                         if(Settings.os == "win")
                         {
                             cppExecutableName += ".exe";
                         }
                         var cppExeFile:File = project.folderLocation.fileBridge
-                            .resolvePath("bin" + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableName).fileBridge.getFile as File;
+                            .resolvePath(outputPath + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableName).fileBridge.getFile as File;
                         launchArgs["name"] = "Moonshine Lime HXCPP Launch";
                         launchArgs["program"] = cppExeFile.nativePath;
                         debugAdapterType = "hxcpp";
@@ -586,7 +609,7 @@ package actionScripts.plugins.haxe
                     case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
                     {
                         var hlbootDatFile:File = project.folderLocation.fileBridge
-                            .resolvePath("bin" + File.separator + "hl" + File.separator + "bin" + File.separator + "hlboot.dat").fileBridge.getFile as File;
+                            .resolvePath(outputPath + File.separator + "hl" + File.separator + "bin" + File.separator + "hlboot.dat").fileBridge.getFile as File;
                         launchArgs["name"] = "Moonshine Lime HashLink Launch";
                         launchArgs["program"] = hlbootDatFile.nativePath;
                         launchArgs["cwd"] = hlbootDatFile.parent.nativePath;
@@ -642,7 +665,7 @@ package actionScripts.plugins.haxe
                     {
                         //switch to the Adobe AIR application descriptor XML file
                         var swfFile:File = project.folderLocation.fileBridge
-                            .resolvePath("bin" + File.separator + "air" + File.separator + "bin" + File.separator + project.name + ".swf").fileBridge.getFile as File;
+                            .resolvePath(outputPath + File.separator + "air" + File.separator + "bin" + File.separator + outputFileNameWithoutExtension + ".swf").fileBridge.getFile as File;
                         var appDescriptorFile:File = swfFile.parent.parent.resolvePath("application.xml");
 
                         launchArgs["name"] = "Moonshine Lime Adobe AIR Launch";
@@ -654,7 +677,7 @@ package actionScripts.plugins.haxe
                     case HaxeProjectVO.LIME_PLATFORM_FLASH:
                     {
                         swfFile = project.folderLocation.fileBridge
-                            .resolvePath("bin" + File.separator + "flash" + File.separator + "bin" + File.separator + project.name + ".swf").fileBridge.getFile as File;
+                            .resolvePath(outputPath + File.separator + "flash" + File.separator + "bin" + File.separator + outputFileNameWithoutExtension + ".swf").fileBridge.getFile as File;
                         launchArgs["name"] = "Moonshine Lime Flash Player Launch";
                         launchArgs["program"] = swfFile.nativePath;
                         debugAdapterType = "swf";
@@ -689,10 +712,10 @@ package actionScripts.plugins.haxe
                 project, debugAdapterType, debugCommand, launchArgs));
         }
 
-        private function getLimeWebRoot(project:HaxeProjectVO):FileLocation
+        private function getLimeWebRoot(project:HaxeProjectVO, outputPath:String):FileLocation
         {
             return project.folderLocation.fileBridge
-                            .resolvePath("bin" + File.separator + "html5" + File.separator + "bin");
+                            .resolvePath(outputPath + File.separator + "html5" + File.separator + "bin");
         }
 
         private function runAfterBuild(project:HaxeProjectVO, runCommand:String, runFolder:String, debug:Boolean):void
@@ -743,7 +766,24 @@ package actionScripts.plugins.haxe
                 {
                     case HaxeProjectVO.LIME_PLATFORM_HTML5:
                     {
-                        var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, getLimeWebRoot(project), DEBUG_SERVER_PORT);
+                        //this is Lime's default if a custom value isn't specified
+                        var outputPath:String = "bin"; 
+                        var projectFile:FileLocation = project.folderLocation.resolvePath("project.xml");
+                        if (projectFile.fileBridge.exists)
+                        {
+                            try
+                            {
+                                var projectXML:XML = new XML(projectFile.fileBridge.read());
+                                var xmlOutputPath:String = projectXML.elements("app").attribute("path").toString();
+                                if (xmlOutputPath)
+                                {
+                                    outputPath = xmlOutputPath;
+                                }
+                            }
+                            catch (e:Error) {}
+                        }
+                        var webRoot:FileLocation = getLimeWebRoot(project, outputPath);
+                        var httpServerEvent:HttpServerEvent = new HttpServerEvent(HttpServerEvent.START_HTTP_SERVER, webRoot, DEBUG_SERVER_PORT);
                         dispatcher.dispatchEvent(httpServerEvent);
                         if(!httpServerEvent.isDefaultPrevented())
                         {
@@ -833,7 +873,7 @@ package actionScripts.plugins.haxe
             else
             {
                 success("Haxe build has completed successfully.");
-                if(project != null)
+                if(project != null && project.haxeOutput.path)
                 {
                     dispatcher.dispatchEvent(new RefreshTreeEvent(project.haxeOutput.path.fileBridge.parent));
                 }

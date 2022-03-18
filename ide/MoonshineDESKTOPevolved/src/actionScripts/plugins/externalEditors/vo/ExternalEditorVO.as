@@ -71,6 +71,10 @@ package actionScripts.plugins.externalEditors.vo
 		private var _extraArguments:String;
 		public function get extraArguments():String						{	return _extraArguments;	}
 		public function set extraArguments(value:String):void			{	_extraArguments = value;	}
+
+		private var _version:String;
+		public function get version():String							{	return _version;	}
+		public function set version(value:String):void					{	_version = value;	}
 		
 		public function ExternalEditorVO(uid:String=null)
 		{
