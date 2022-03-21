@@ -30,12 +30,17 @@
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.ui.tabNavigator.TabNavigatorWithOrientation;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 
 			import mx.events.FlexEvent;
 
 			import spark.components.NavigatorContent;
 
 			private var tabNavigator:TabNavigatorWithOrientation;
+			private var sdks:SoftwareInformationSDKs;
+			private var editors:SoftwareInformationEditors;
+			private var versionSectionsCount:int;
+			private var versionRetrievedSections:int;
 
 			/**
 			 * On creation completes
@@ -49,17 +54,25 @@
 
 				var navContent:NavigatorContent = new NavigatorContent();
 				navContent.label = "Configured SDKs";
-				var sdks:SoftwareInformationSDKs = new SoftwareInformationSDKs();
+				sdks = new SoftwareInformationSDKs();
+				sdks.addEventListener(Event.COMPLETE, onAllVersionRetrieved, false, 0, true);
 				sdks.percentWidth = sdks.percentHeight = 100;
 				navContent.addElement(sdks);
 				tabNavigator.addElement(navContent);
+				versionSectionsCount++;
 
-				navContent = new NavigatorContent();
-				navContent.label = "External Editors";
-				var editors:SoftwareInformationEditors = new SoftwareInformationEditors();
-				editors.percentWidth = editors.percentHeight = 100;
-				navContent.addElement(editors);
-				tabNavigator.addElement(navContent);
+				if (ConstantsCoreVO.IS_MACOS)
+				{
+					navContent = new NavigatorContent();
+					navContent.label = "External Editors";
+					editors = new SoftwareInformationEditors();
+					editors.addEventListener(Event.COMPLETE, onAllVersionRetrieved, false, 0, true);
+					editors.percentWidth = editors.percentHeight = 100;
+					editors.startCheck();
+					navContent.addElement(editors);
+					tabNavigator.addElement(navContent);
+					versionSectionsCount++;
+				}
 
 				tabNavigator.selectedIndex = 0;
 				tabNavigator.tabBar.setStyle("closeButtonVisible", false);
@@ -67,7 +80,30 @@
 
 			public function getAllVersions():String
 			{
-				return "";
+				var details:String = sdks.getAllVersions();
+				if (editors)
+				{
+					details += "\n\n"+ editors.getAllVersions();
+				}
+				return details;
+			}
+
+			public function dispose():void
+			{
+				sdks.dispose();
+				if (editors)
+					editors.dispose();
+				sdks = null;
+				editors = null;
+			}
+
+			private function onAllVersionRetrieved(event:Event):void
+			{
+				versionRetrievedSections++;
+				if (versionRetrievedSections == versionSectionsCount)
+				{
+					dispatchEvent(event);
+				}
 			}
 
 		]]>
