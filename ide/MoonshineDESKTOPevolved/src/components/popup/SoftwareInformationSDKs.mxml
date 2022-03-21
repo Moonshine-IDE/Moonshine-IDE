@@ -96,18 +96,24 @@
 				components.addItem(tmpAddition);
 
 				versionChecker.addEventListener(Event.COMPLETE, onRetrievalComplete, false, 0, true);
-				versionChecker.retrieveAboutInformation(components);
+				versionChecker.versionCheckType = SoftwareVersionChecker.VERSION_CHECK_TYPE_SDK;
+				versionChecker.retrieveSDKsInformation(components);
 			}
 
 			public function getAllVersions():String
 			{
-				var versions:String = "";
+				var versions:String = "Configured SDKs in Moonshine:\n===========================================\n\n";
 				for each (var component:ComponentVO in components)
 				{
 					versions += component.title +": "+ (component.version ? component.version : "Not Installed") +"\n";
 				}
 
 				return versions;
+			}
+
+			public function dispose():void
+			{
+				versionChecker.dispose();
 			}
 
 			private function updateWithMoonshinePaths():void

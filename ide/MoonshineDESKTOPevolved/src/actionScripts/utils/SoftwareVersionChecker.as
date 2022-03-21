@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
+
 	import flash.events.Event;
 
 	import mx.collections.ArrayCollection;
@@ -39,6 +41,9 @@ package actionScripts.utils
 
 	public class SoftwareVersionChecker extends ConsoleOutputter implements IWorkerSubscriber
 	{
+		public static const VERSION_CHECK_TYPE_SDK:String = "versionCheckTypeSDKs";
+		public static const VERSION_CHECK_TYPE_EDITOR:String = "versionCheckTypeEditors";
+
 		private static const QUERY_FLEX_AIR_VERSION:String = "getFlexAIRversion";
 		private static const QUERY_ROYALE_FJS_VERSION:String = "getRoyaleFlexJSversion";
 		private static const QUERY_JDK_VERSION:String = "getJDKVersion";
@@ -55,8 +60,10 @@ package actionScripts.utils
 		private static const QUERY_HAXE_VERSION:String = "getHaxeVersion";
 		private static const QUERY_NEKO_VERSION:String = "getNekoVersion";
 		private static const QUERY_VIRTUALBOX_VERSION:String = "getVirtualBoxVersion";
+		private static const QUERY_EXTERNAL_EDITOR_VERSION:String = "getExternalEditorVersion";
 		
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
+		public var versionCheckType:String;
 		
 		protected var processType:String;
 		
@@ -73,15 +80,7 @@ package actionScripts.utils
 		 */
 		public function SoftwareVersionChecker()
 		{
-			if (HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER)
-			{
-				subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER;
-			}
-			else
-			{
-				subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER = UIDUtil.createUID();
-			}
-			
+			subscribeIdToWorker = UIDUtil.createUID();
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
@@ -90,13 +89,30 @@ package actionScripts.utils
 		 * Checks some required/optional software installation
 		 * and their version if available
 		 */
-		public function retrieveAboutInformation(items:ArrayCollection):void
+		public function retrieveSDKsInformation(items:ArrayCollection):void
 		{
 			components = items;
-			startRequestProcess();
+			startSDKVersionRequestProcess();
+		}
+
+		/**
+		 * Checks for external editors version information
+		 */
+		public function retrieveEditorsInformation(items:ArrayCollection):void
+		{
+			components = items;
+			startEditorsVersionRequestProcess();
+		}
+
+		/**
+		 * Remove footprints
+		 */
+		public function dispose():void
+		{
+			worker.unSubscribeComponent(subscribeIdToWorker);
 		}
 		
-		private function startRequestProcess():void
+		private function startSDKVersionRequestProcess():void
 		{
 			var itemTypeUnderCursor:String;
 			if (itemUnderCursorIndex <= (components.length - 1))
@@ -225,7 +241,7 @@ package actionScripts.utils
 				else
 				{
 					itemUnderCursorIndex++;
-					startRequestProcess();
+					startSDKVersionRequestProcess();
 				}
 			}
 			else
@@ -238,6 +254,35 @@ package actionScripts.utils
 				addToQueue(new NativeProcessQueueVO(value, false, itemTypeUnderCursor, itemUnderCursorIndex));
 				worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 				itemUnderCursorIndex++;
+			}
+		}
+
+		private function startEditorsVersionRequestProcess():void
+		{
+			if (itemUnderCursorIndex <= (components.length - 1))
+			{
+				var executable:String;
+				var itemUnderCursor:ExternalEditorVO = components.getItemAt(itemUnderCursorIndex) as ExternalEditorVO;
+				var executableFullPath:String;
+				if (itemUnderCursor.installPath != null)
+				{
+					var commands:String = 'defaults read "'+ itemUnderCursor.installPath.nativePath +'/Contents/Info.plist" CFBundleShortVersionString';
+					var itemTypeUnderCursor:String = QUERY_EXTERNAL_EDITOR_VERSION;
+					queue = new Vector.<Object>();
+
+					addToQueue(new NativeProcessQueueVO(commands, false, itemTypeUnderCursor, itemUnderCursorIndex));
+					worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+					itemUnderCursorIndex++;
+				}
+				else
+				{
+					itemUnderCursorIndex++;
+					startEditorsVersionRequestProcess();
+				}
+			}
+			else
+			{
+				dispatchEvent(new Event(Event.COMPLETE));
 			}
 		}
 		
@@ -284,8 +329,15 @@ package actionScripts.utils
 					//success("...Flex Process completed");
 					break;
 			}
-			
-			startRequestProcess();
+
+			if (versionCheckType == VERSION_CHECK_TYPE_SDK)
+			{
+				startSDKVersionRequestProcess();
+			}
+			else if (versionCheckType == VERSION_CHECK_TYPE_EDITOR)
+			{
+				startEditorsVersionRequestProcess();
+			}
 		}
 		
 		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
@@ -412,6 +464,9 @@ package actionScripts.utils
 						// from it
 						if (!lastOutput) lastOutput = value.output;
 						else lastOutput += value.output;
+						break;
+					case QUERY_EXTERNAL_EDITOR_VERSION:
+						components[int(tmpQueue.extraArguments[0])].version = value.output.replace("\n", "");
 						break;
 				}
 			}

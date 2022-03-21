@@ -197,7 +197,7 @@ package actionScripts.plugin.actionscript.as3project
 			for each (var projectTemplate:FileLocation in projectTemplates)
 			{
 				var lbl:String = TemplatingHelper.getTemplateLabel(projectTemplate);
-				if(lbl == ProjectTemplateType.ROYALE_VISUAL_PROJECT)
+				if(lbl == ProjectTemplateType.ROYALE_DOMINO_EXPORT_PROJECT)
 				{
 					settingsFile = TemplatingPlugin.getSettingsTemplateFileLocation(projectTemplate);
 					extension = settingsFile ? TemplatingHelper.getExtension(settingsFile) : null;

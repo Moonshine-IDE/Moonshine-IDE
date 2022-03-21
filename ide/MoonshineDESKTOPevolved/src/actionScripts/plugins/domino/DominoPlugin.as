@@ -409,7 +409,7 @@ package actionScripts.plugins.domino
 					{
 						var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
 						print("%s", command);
-						this.start(
+						start(
 								new <String>[command],
 								null
 						);

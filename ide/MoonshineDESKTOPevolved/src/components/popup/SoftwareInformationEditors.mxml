@@ -23,7 +23,7 @@
 <s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		  xmlns:s="library://ns.adobe.com/flex/spark"
 		  autoLayout="true"
-		  creationComplete="onSoftwareInfoCreationComplete(event)">
+		  creationComplete="startCheck()">
 	<fx:Metadata>
 		[Event(name="complete", type="flash.events.Event")]
 	</fx:Metadata>
@@ -55,65 +55,41 @@
 			[Bindable]
 			private var components:ArrayCollection;
 
-			private var versionChecker:SoftwareVersionChecker;
+			private var versionChecker:SoftwareVersionChecker = new SoftwareVersionChecker();
 
 			/**
 			 * On creation completes
 			 */
-			private function onSoftwareInfoCreationComplete(event:FlexEvent):void
+			public function startCheck():void
 			{
+				if (components)
+					return;
+
 				var configuredItems:Array = ExternalEditorsPlugin.editors.source.filter(function (item:ExternalEditorVO, index:int, array:Array):Boolean
 				{
 					return (item.isValid);
 				});
 				components = new ArrayCollection(configuredItems);
 
-				// we need to parse this to Flex ArrayCollection to have it use
-				// with datagrid
-				/*components = new mx.collections.ArrayCollection();
-				for each (var component:ComponentVO in HelperModel.getInstance().components.array)
-				{
-					var clonedComponent:ComponentVO;
-					registerClassAlias("actionScripts.valueObjects.ComponentVO", ComponentVO);
-					registerClassAlias("feathers.data.ArrayCollection", feathers.data.ArrayCollection);
-					clonedComponent = ObjectUtil.copy(component) as ComponentVO;
-					components.addItem(clonedComponent);
-				}
-
-				updateWithMoonshinePaths();
-
-				var tmpAddition:ComponentVO = new ComponentVO();
-				tmpAddition.title = "Default SDK";
-				if (model.defaultSDK && model.defaultSDK.fileBridge.exists)
-				{
-					var sdkReference:SDKReferenceVO = SDKUtils.getSDKFromSavedList(model.defaultSDK.fileBridge.nativePath);
-					tmpAddition.type = sdkReference.type;
-					tmpAddition.installToPath = sdkReference.path;
-				}
-				components.addItemAt(tmpAddition, 0);
-
-				tmpAddition = new ComponentVO();
-				tmpAddition.title = "VirtualBox";
-				if (model.virtualBoxPath && FileUtils.isPathExists(model.virtualBoxPath))
-				{
-					tmpAddition.type = ComponentTypes.TYPE_VIRTUALBOX;
-					tmpAddition.installToPath = model.virtualBoxPath;
-				}
-				components.addItem(tmpAddition);*/
-
-				//versionChecker.addEventListener(Event.COMPLETE, onRetrievalComplete, false, 0, true);
-				//versionChecker.retrieveAboutInformation(components);
+				versionChecker.addEventListener(Event.COMPLETE, onRetrievalComplete, false, 0, true);
+				versionChecker.versionCheckType = SoftwareVersionChecker.VERSION_CHECK_TYPE_EDITOR;
+				versionChecker.retrieveEditorsInformation(components);
 			}
 
 			public function getAllVersions():String
 			{
-				var versions:String = "";
-				for each (var component:ComponentVO in components)
+				var versions:String = "Configured External Editors in Moonshine:\n===========================================\n\n";
+				for each (var component:ExternalEditorVO in components)
 				{
-					versions += component.title +": "+ (component.version ? component.version : "Not Installed") +"\n";
+					versions += component.title +": "+ (component.version ? component.version : "Not Installed") +" ["+ (component.isEnabled ? "Enabled" : "Disabled") +"]\n";
 				}
 
 				return versions;
+			}
+
+			public function dispose():void
+			{
+				versionChecker.dispose();
 			}
 
 			private function onRetrievalComplete(event:Event):void
@@ -163,7 +139,7 @@
 										 visible="{!data.isEnabled}" includeInLayout="{!data.isEnabled}"/>
 								<s:Label id="lblVersion"
 										 width="100%"
-										 text="data.version"/>
+										 text="{data.version}"/>
 							</s:GridItemRenderer>
 						</fx:Component>
 					</s:itemRenderer>

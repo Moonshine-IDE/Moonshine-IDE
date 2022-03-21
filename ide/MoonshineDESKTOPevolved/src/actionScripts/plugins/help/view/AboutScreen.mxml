@@ -117,17 +117,16 @@
 			
 			protected function onTabRemoved(event:Event):void
 			{
-				IDEWorker.getInstance().unSubscribeComponent(HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER);
+				softwareInformation.dispose();
 			}
 
 			private function onCopyToClipboard(event:MouseEvent):void
 			{
 				var aboutInformation:String = ConstantsCoreVO.MOONSHINE_IDE_LABEL +"\n"+ retVersion.text +"\n\n";
-				aboutInformation += "Configured SDKs in Moonshine:\n===========================================\n\n";
 				aboutInformation += softwareInformation.getAllVersions();
 				System.setClipboard(aboutInformation);
 				GlobalEventDispatcher.getInstance().dispatchEvent(
-						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Copied Moonshine and SDK version information to clipboard.", false, false, ConsoleOutputEvent.TYPE_SUCCESS)
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Copied Moonshine About information to clipboard.", false, false, ConsoleOutputEvent.TYPE_SUCCESS)
 				);
 			}
 			
@@ -156,7 +155,7 @@
 			<s:BusyIndicator id="busy"/>
 			<s:Button id="btnClipboardCopy"
 					  icon="@Embed('/elements/images/copy_content_icon.png')" width="28"
-					  toolTip="Copy Moonshine and SDK versions" visible="false" includeInLayout="false"
+					  toolTip="Copy Moonshine About information" visible="false" includeInLayout="false"
 					  click="onCopyToClipboard(event)"/>
 		</s:HGroup>
 		<mx:HRule width="100%"/>
@@ -168,7 +167,7 @@
 	
 	<s:VGroup width="100%" autoLayout="true"
 			  verticalAlign="bottom" horizontalAlign="center" 
-			  paddingBottom="10" paddingTop="10">
+			  paddingBottom="10" paddingTop="6">
 		<s:Label text="About the background image"
 				 buttonMode="true"
 				 textDecoration="underline" fontSize="12"

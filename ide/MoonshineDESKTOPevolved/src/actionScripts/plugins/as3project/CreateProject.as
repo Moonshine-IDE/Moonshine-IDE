@@ -97,7 +97,6 @@ package actionScripts.plugins.as3project
 		private var newLibrarySetting:NewLibraryProjectSetting;
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
-		private var newProjectTypeSetting:MultiOptionSetting;
 		private var customSdkPathSetting:PathSetting;
 		private var projectTemplateTypeSetting:DropDownListSetting;
 		private var projectWithExistingSourceSetting:BooleanSetting;
@@ -111,6 +110,7 @@ package actionScripts.plugins.as3project
 		private var isLibraryProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
 		private var isFlexJSRoyalVisualProject:Boolean;
+		private var isRoyaleDominoExportProject:Boolean;
 		private var isJavaProject:Boolean;
 		private var isGrailsProject:Boolean;
 		private var isHaxeProject:Boolean;
@@ -294,10 +294,13 @@ package actionScripts.plugins.as3project
 				{
 					project.projectName = "NewJavaScriptBrowserProject";
 					project.isFlexJSRoyalProject = true;
-                } else if(isFlexJSRoyalVisualProject){
+                }
+				else if(isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
+				{
 					project.projectName = "NewRoyalConvertProject";
 					project.isFlexJSRoyalProject = true;
-				}else
+				}
+				else
 				{
 					project.projectName = event.exportProject ? event.exportProject.name + "_exported" : "New"+tempName;
                 }
@@ -364,6 +367,13 @@ package actionScripts.plugins.as3project
 			else if(isFlexJSRoyalVisualProject)
 			{
 				projectTemplateTypeSetting = new DropDownListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE_VISUAL, "title");
+				projectTemplateTypeSetting.addEventListener(Event.CHANGE, onProjectTemplateTypeChange);
+
+				settings.getSettingsList().splice(3, 0, projectTemplateTypeSetting);
+			}
+			else if(isRoyaleDominoExportProject)
+			{
+				projectTemplateTypeSetting = new DropDownListSetting(this, "projectTemplateType", "Select Template Type", ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE_DOMINO_EXPORT, "title");
 				projectTemplateTypeSetting.addEventListener(Event.CHANGE, onProjectTemplateTypeChange);
 
 				settings.getSettingsList().splice(3, 0, projectTemplateTypeSetting);
@@ -501,7 +511,8 @@ package actionScripts.plugins.as3project
 			var settingsProject:Vector.<ISetting>;
 			//Project -> Generate Apache Royale Project-don't need Project with existing source 
 			//https://github.com/Moonshine-IDE/Moonshine-IDE/issues/675#issuecomment-1060880515
-			if(!isFlexJSRoyalVisualProject){
+			if(!isFlexJSRoyalVisualProject && !isRoyaleDominoExportProject)
+			{
 				projectWithExistingSourceSetting = new BooleanSetting(this, "isProjectFromExistingSource", "Project with existing source", true);
 				settingsProject= Vector.<ISetting>([
 					new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
@@ -513,7 +524,9 @@ package actionScripts.plugins.as3project
 				newProjectWithExistingSourcePathSetting = new NewProjectSourcePathListSetting(project,
 					"projectWithExistingSourcePaths", "Main source folder");
 				settingsProject.push(newProjectWithExistingSourcePathSetting);
-			}else{
+			}
+			else
+			{
 				settingsProject= Vector.<ISetting>([
 					new StaticLabelSetting('New '+ eventObject.templateDir.fileBridge.name),
 					newProjectNameSetting, // No space input either plx
@@ -972,18 +985,41 @@ package actionScripts.plugins.as3project
 					}
 				}
 				var original_royaleTemplate:FileLocation =  templateDir.resolvePath("RoyaleTabularCRUDTemplate.as3proj");
-				if(original_royaleTemplate.fileBridge.exists){
+				if(original_royaleTemplate.fileBridge.exists)
+				{
 						var newRoyaleTemplate:FileLocation =  targetFolder.resolvePath(pvo.projectName + ".as3proj"); 
 						original_royaleTemplate.fileBridge.copyTo(newRoyaleTemplate, true); 
 				}
+			}
+			if (projectTemplateType == ProjectTemplateType.ROYALE_DOMINO_EXPORT_PROJECT)
+			{
+				isRoyaleDominoExportProject = true;
+				th.projectTemplate(templateDir.resolvePath("obj"), targetFolder.resolvePath("obj"));
+				th.projectTemplate(templateDir.resolvePath("src"), targetFolder.resolvePath("src"));
+				th.projectTemplate(templateDir.resolvePath("visualeditor-src"), targetFolder.resolvePath("visualeditor-src"));
+				var royaleMxml:FileLocation =  templateDir.resolvePath("src"+File.separator+"$ProjectName.mxml.template");
+				if(royaleMxml.fileBridge.exists)
+				{
+					var newRoyaleMxml:FileLocation =  targetFolder.resolvePath("src"+File.separator+pvo.projectName + ".mxml");
 
-				//remove file 
-				// var old_royaleFile:FileLocation = targetFolder.resolvePath(pvo.projectName + ".veditorproj");
-				// if (old_royaleFile.fileBridge.exists)old_royaleFile.fileBridge.deleteFile();
+					royaleMxml.fileBridge.copyTo(newRoyaleMxml, true);
+					var duplicateRoyaleMxml:FileLocation =  targetFolder.resolvePath("src"+File.separator + "$ProjectName.mxml.template");
+					if(duplicateRoyaleMxml.fileBridge.exists)
+					{
+						duplicateRoyaleMxml.fileBridge.deleteFile();
+					}
+				}
+				var royaleTempalte:FileLocation =  templateDir.resolvePath("$Settings.as3proj.template");
+				if(royaleTempalte.fileBridge.exists)
+				{
+					var newRoyaleTemplate:FileLocation =  targetFolder.resolvePath(pvo.projectName + ".as3proj");
+					royaleTempalte.fileBridge.copyTo(newRoyaleTemplate, true);
+				}
 
 				//start convert from Domino Visual Editor .
 
-				if(model){
+				if(model)
+				{
 					for (var i:int = 0; i < model.editors.length; i++)
 					{
 						var editor:VisualEditorViewer = model.editors[i] as VisualEditorViewer;
@@ -996,7 +1032,7 @@ package actionScripts.plugins.as3project
 									{
 										var mxmlCode:XML = edit.visualEditor.editingSurface.toRoyaleCode(pvo.projectName);
 
-										var newRoyaleFile:FileLocation = targetFolder.resolvePath("src" + File.separator + "view" + File.separator + "MainContent.mxml");
+										var newRoyaleFile:FileLocation = targetFolder.resolvePath("src" + File.separator + "view" + File.separator + "Content.mxml");
 										if (newRoyaleFile.fileBridge.exists)
 										{
 											newRoyaleFile.fileBridge.deleteFile();
@@ -1008,14 +1044,13 @@ package actionScripts.plugins.as3project
 							}
 						}
 					}
-					
-					//Alert.show("973:"+model.editors.length);
-					
-				}else{
+				}
+				else
+				{
 					Alert.show(" Not Found model");
 				}
-				
-			}else if (isVisualEditorProject)
+			}
+			else if (isVisualEditorProject)
 			{
 				if (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_FLEX)
 				{
@@ -1240,7 +1275,7 @@ package actionScripts.plugins.as3project
 				}
 			}
 	
-            if (isOpenProjectCall || isFlexJSRoyalProject || isFlexJSRoyalVisualProject)
+            if (isOpenProjectCall || isFlexJSRoyalProject || isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
             {
 				setProjectType(projectTemplateType);
 
@@ -1248,8 +1283,13 @@ package actionScripts.plugins.as3project
 						ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE :
 						allProjectTemplates;
 
-				if(isFlexJSRoyalVisualProject){
-					projectsTemplates=ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE_VISUAL;
+				if (isRoyaleDominoExportProject)
+				{
+					projectsTemplates = ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE_DOMINO_EXPORT;
+				}
+				else if(isFlexJSRoyalVisualProject)
+				{
+					projectsTemplates = ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE_VISUAL;
 				}		
 
 				for each (template in projectsTemplates)
@@ -1305,7 +1345,7 @@ package actionScripts.plugins.as3project
 			{
 				sdkReference = SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_FEATHERS);
 			}
-			else if (isFlexJSRoyalProject || isFlexJSRoyalVisualProject)
+			else if (isFlexJSRoyalProject || isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
 			{
 				sdkReference = SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_ROYALE);
 			}
@@ -1342,7 +1382,8 @@ package actionScripts.plugins.as3project
             isMobileProject = false;
             isAway3DProject = false;
             isFlexJSRoyalProject = false;
-			isFlexJSRoyalVisualProject = false
+			isFlexJSRoyalVisualProject = false;
+			isRoyaleDominoExportProject = false;
             isGrailsProject = false;
             isHaxeProject = false;
 
@@ -1377,6 +1418,10 @@ package actionScripts.plugins.as3project
 			{
 				isAway3DProject = true;
 			}
+			else if (templateName.indexOf("Royale") != -1  &&  templateName.indexOf(ProjectTemplateType.ROYALE_DOMINO_EXPORT_PROJECT) != -1)
+			{
+				isRoyaleDominoExportProject = true;
+			}
 			else if ( (templateName.indexOf("Royale") != -1 || templateName.indexOf("FlexJS") != -1) &&  templateName.indexOf("REST") == -1)
 			{
 				isFlexJSRoyalProject = true;
@@ -1401,12 +1446,6 @@ package actionScripts.plugins.as3project
             {
                 isActionScriptProject = false;
             }
-
-			// Alert.show("isFlexJSRoyalProject:"+isFlexJSRoyalProject);
-			// Alert.show("isFlexJSRoyalVisualProject:"+isFlexJSRoyalVisualProject);
-			
-
-		
         }
 		
 		private function getProjectMenuType(pvo:Object):String
@@ -1435,7 +1474,7 @@ package actionScripts.plugins.as3project
 			{
 				return ProjectMenuTypes.JS_ROYALE;
 			}
-			if (isFlexJSRoyalVisualProject)
+			if (isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
 			{
 				return ProjectMenuTypes.JS_ROYALE_VISUAL;
 			}
