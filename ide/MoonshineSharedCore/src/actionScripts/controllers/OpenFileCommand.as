@@ -313,7 +313,7 @@ package actionScripts.controllers
 
 			var isUnknownBinaryAvailable:Boolean = files.some(function(element:FileLocation, index:int, arr:Array):Boolean
 			{
-				return (ConstantsCoreVO.KNOWN_BINARY_FILES.indexOf(element.fileBridge.extension) == -1);
+				return (ConstantsCoreVO.KNOWN_BINARY_FILES.indexOf(element.fileBridge.extension.toLowerCase()) == -1);
 			});
 
 			if (isUnknownBinaryAvailable)

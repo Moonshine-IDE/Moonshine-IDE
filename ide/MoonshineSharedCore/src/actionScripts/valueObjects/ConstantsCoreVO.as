@@ -311,7 +311,7 @@ package actionScripts.valueObjects
 								"json", "md"];
 			READABLE_FILES.sort();
 
-			KNOWN_BINARY_FILES = ["nsf", "jpg", "jpeg", "png"];
+			KNOWN_BINARY_FILES = ["nsf", "jpg", "jpeg", "png"]; // store in lower-case
 
 			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
 			READABLE_CLASS_FILES.sort();
