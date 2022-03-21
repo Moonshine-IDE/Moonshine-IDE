@@ -372,8 +372,7 @@ package actionScripts.plugin.templating
 					projectTemplates.push(new FileLocation(file.nativePath));
 				}
 			}
-			
-			var tmpABCD:Object = projectTemplates;
+
 			generateTemplateProjects();
 		}
 

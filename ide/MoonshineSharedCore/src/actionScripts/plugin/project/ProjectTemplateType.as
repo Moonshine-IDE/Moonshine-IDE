@@ -33,7 +33,7 @@ package actionScripts.plugin.project
         public static const GRAILS:String = "Grails";
         public static const ROYALE_PROJECT:String = "Royale Browser Project";
         public static const ROYALE_VISUAL_PROJECT:String = "Apache Royale Project REST";
-		public static const ROYALE_VISUAL_PROJECT_DOMINO_EXPORT:String = "Apache Royale Project Domino Export";
+		public static const ROYALE_DOMINO_EXPORT_PROJECT:String = "Apache Royale Domino Export Project";
         public static const HAXE:String = "Haxe";
 		public static const ONDISK:String = "On Disk Project";
     }
