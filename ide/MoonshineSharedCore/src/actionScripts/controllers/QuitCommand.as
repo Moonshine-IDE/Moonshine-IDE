@@ -192,18 +192,21 @@ package actionScripts.controllers
 			}
 
 			LayoutModifier.saveLastSidebarState();
-			
+
 			// we also needs to close any scope bookmarked opened
 			CONFIG::OSX
 			{
-				var tmpText:String = model.fileCore.getSSBInterface().closeAllPaths();
-				if (tmpText == "Closed Scoped Paths.")
+				if (ConstantsCoreVO.IS_APP_STORE_VERSION)
 				{
-                    model.fileCore.getSSBInterface().dispose();
-					FlexGlobals.topLevelApplication.stage.nativeWindow.close();
+					var tmpText:String = model.fileCore.getSSBInterface().closeAllPaths();
+					if (tmpText == "Closed Scoped Paths.")
+					{
+						model.fileCore.getSSBInterface().dispose();
+						FlexGlobals.topLevelApplication.stage.nativeWindow.close();
+					}
+
+					return;
 				}
-				
-				return;
 			}
 			
 			// deletes the files generated during
