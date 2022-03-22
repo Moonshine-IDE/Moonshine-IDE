@@ -128,23 +128,7 @@
 				var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
 
 
-                tree.callLater(function ():void
-				{
-				
-					
-					for (var j:int = 0; j < (wrappers.length - 1); j++)
-					{
-						tree.expandItem(wrappers[j], true);
-					}
-	
-					// selection
-					tree.selectedItem = wrapperOfFolderLocation;
-					// scroll-to
-					tree.callLater(function ():void
-					{
-						tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
-					});
-				});
+                treeScrollToCorrectPostion();
 			}
 	
 			override protected function onNameChanged(event:TextOperationEvent):void
@@ -171,12 +155,15 @@
                     warningMessage = "Domino forms are only supported in the Forms folder.";
                     hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
 
-				   	isSubmitButtonEnabled=false; 
+				   	isSubmitButtonEnabled=false;
+					btnCreate.enabled = false; 
                 }else{
                    hgExistingWarning.visible = hgExistingWarning.includeInLayout = false;
 					isDominoValid=false;
 					warningMessage=""; 
-					isSubmitButtonEnabled=true; 
+					isSubmitButtonEnabled=true;
+					btnCreate.enabled = true; 
+					treeScrollToCorrectPostion();
                 }
 				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
 				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
@@ -213,6 +200,31 @@
 	
 				tree.callLater(parseFolders);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
+			}
+
+
+			private function treeScrollToCorrectPostion():void 
+			{
+				var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+
+
+					tree.callLater(function ():void
+					{
+					
+						
+						for (var j:int = 0; j < (wrappers.length - 1); j++)
+						{
+							tree.expandItem(wrappers[j], true);
+						}
+		
+						// selection
+						tree.selectedItem = wrapperOfFolderLocation;
+						// scroll-to
+						tree.callLater(function ():void
+						{
+							tree.scrollToIndex(tree.getItemIndex(wrapperOfFolderLocation));
+						});
+					});
 			}
 		]]>
 	</fx:Script>
@@ -264,6 +276,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onCreateButton(event)"
-				  enabled="{isSubmitButtonEnabled &amp;&amp; !isDominoValid}"/>
+				  enabled="{isSubmitButtonEnabled &amp;&amp; (!isDominoValid)}"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>
