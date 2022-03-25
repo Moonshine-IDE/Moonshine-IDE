@@ -29,27 +29,14 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+		import mx.collections.ArrayCollection;
+		import mx.events.FlexEvent;
+		
+		import actionScripts.locator.IDEModel;
 		import actionScripts.plugins.externalEditors.ExternalEditorsPlugin;
 		import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
-		import actionScripts.valueObjects.ConstantsCoreVO;
+		import actionScripts.utils.SoftwareVersionChecker;
 
-			import mx.collections.ArrayCollection;
-			import mx.events.FlexEvent;
-			import mx.utils.ObjectUtil;
-
-			import actionScripts.locator.HelperModel;
-			import actionScripts.locator.IDEModel;
-			import actionScripts.utils.FileUtils;
-			import actionScripts.utils.SDKUtils;
-			import actionScripts.utils.SoftwareVersionChecker;
-			import actionScripts.valueObjects.ComponentTypes;
-			import actionScripts.valueObjects.ComponentVO;
-			import actionScripts.valueObjects.SDKReferenceVO;
-
-			[Bindable]
-			private var flexSDKPath:String = "- Not Installed -";
-			[Bindable]
-			private var AntPath:String = "- Not Installed -";
 			[Bindable]
 			private var model:IDEModel = IDEModel.getInstance();
 			[Bindable]
@@ -62,24 +49,15 @@
 			 */
 			public function startCheck():void
 			{
-				if (components)
-					return;
-
-				var configuredItems:Array = ExternalEditorsPlugin.editors.source.filter(function (item:ExternalEditorVO, index:int, array:Array):Boolean
-				{
-					return (item.isValid);
-				});
-				components = new ArrayCollection(configuredItems);
-
 				versionChecker.addEventListener(Event.COMPLETE, onRetrievalComplete, false, 0, true);
 				versionChecker.versionCheckType = SoftwareVersionChecker.VERSION_CHECK_TYPE_EDITOR;
-				versionChecker.retrieveEditorsInformation(components);
+				versionChecker.retrieveEditorsInformation(ExternalEditorsPlugin.editors);
 			}
 
 			public function getAllVersions():String
 			{
 				var versions:String = "Configured External Editors in Moonshine:\n===========================================\n\n";
-				for each (var component:ExternalEditorVO in components)
+				for each (var component:ExternalEditorVO in ExternalEditorsPlugin.editors)
 				{
 					versions += component.title +": "+ (component.version ? component.version : "Not Installed") +" ["+ (component.isEnabled ? "Enabled" : "Disabled") +"]\n";
 				}
@@ -103,7 +81,7 @@
 	<s:DataGrid id="dgEditors"
 				width="100%" height="100%"
 				sortableColumns="false" variableRowHeight="true"
-				dataProvider="{components}" borderVisible="false"
+				dataProvider="{ExternalEditorsPlugin.editors}" borderVisible="false"
 				creationComplete="dgEditors.columnHeaderGroup.visible =
 				dgEditors.columnHeaderGroup.includeInLayout = false">
 		<s:columns>
@@ -115,14 +93,21 @@
 							<s:GridItemRenderer width="100%">
 								<fx:Script>
 									<![CDATA[
-										import actionScripts.plugins.startup.StartupHelperPlugin;
+										import actionScripts.events.SettingsEvent;
 										import actionScripts.events.GlobalEventDispatcher;
+										import actionScripts.plugins.externalEditors.ExternalEditorsPlugin;
+
 										override public function set data(value:Object):void
 										{
 											if (value)
 											{
 												super.data = value;
 											}
+										}
+										
+										protected function onFixRequest(event:MouseEvent):void
+										{
+											GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, ExternalEditorsPlugin.NAMESPACE));
 										}
 										
 									]]>
@@ -135,11 +120,22 @@
 										 toolTip="Enabled"
 										 visible="{data.isEnabled}" includeInLayout="{data.isEnabled}"/>
 								<s:Image source="@Embed('/elements/images/cross_circle_frame.png')"
-										 toolTip="Not Enabled"
+										 toolTip="Disabled"
 										 visible="{!data.isEnabled}" includeInLayout="{!data.isEnabled}"/>
 								<s:Label id="lblVersion"
-										 width="100%"
-										 text="{data.version}"/>
+										 text="{data.version}" 
+										 visible="{data.version}" includeInLayout="{data.version}"/>
+								<s:Label id="lblNI" 
+										 text="Not Installed." 
+										 visible="{!data.version}" includeInLayout="{!data.version}"/>
+								<s:Label id="lblNE" 
+										 text="(Disabled)" 
+										 visible="{!data.isEnabled &amp;&amp; data.isValid}" includeInLayout="{!data.isEnabled &amp;&amp; data.isValid}"/>
+								<s:Label id="lblFix" 
+										 text="Fix this" color="0x8a2a2a"
+										 textDecoration="underline" buttonMode="true"
+										 click="onFixRequest(event)"
+										 visible="{!data.isValid}" includeInLayout="{!data.isValid}"/>
 							</s:GridItemRenderer>
 						</fx:Component>
 					</s:itemRenderer>

@@ -62,6 +62,7 @@ package actionScripts.plugins.externalEditors
 		private static const ADD_EDITOR:String = "Add New";
 		private static const RESET_ALL_EDITORS:String = "Reset to Default";
 		
+		[Bindable]
 		public static var editors:ArrayCollection; 
 		
 		override public function get name():String			{ return "External Editors"; }

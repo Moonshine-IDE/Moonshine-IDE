@@ -19,12 +19,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
-
+	import com.adobe.utils.StringUtil;
+	
 	import flash.events.Event;
-
+	import flash.events.NativeProcessExitEvent;
+	import flash.events.ProgressEvent;
+	
 	import mx.collections.ArrayCollection;
-
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.WorkerEvent;
@@ -32,14 +33,16 @@ package actionScripts.utils
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.help.HelpPlugin;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
-	import actionScripts.valueObjects.NativeProcessQueueVO;
 
-	public class SoftwareVersionChecker extends ConsoleOutputter implements IWorkerSubscriber
+	public class SoftwareVersionChecker extends ConsoleBuildPluginBase implements IWorkerSubscriber
 	{
 		public static const VERSION_CHECK_TYPE_SDK:String = "versionCheckTypeSDKs";
 		public static const VERSION_CHECK_TYPE_EDITOR:String = "versionCheckTypeEditors";
@@ -80,6 +83,9 @@ package actionScripts.utils
 		 */
 		public function SoftwareVersionChecker()
 		{
+			super();
+			activate();
+			
 			subscribeIdToWorker = UIDUtil.createUID();
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
@@ -219,7 +225,7 @@ package actionScripts.utils
 						case ComponentTypes.TYPE_VIRTUALBOX:
 							if (UtilsCore.isVirtualBoxAvailable())
 							{
-								commands = '"'+ itemUnderCursor.installToPath +"/"+ (ConstantsCoreVO.IS_MACOS ? 'VBoxManage' : 'VirtualBoxVM.exe') +'" -v';
+								commands = '"'+ itemUnderCursor.installToPath +"/"+ (ConstantsCoreVO.IS_MACOS ? 'VBoxManage' : 'VBoxManage.exe') +'" -v';
 								itemTypeUnderCursor = QUERY_VIRTUALBOX_VERSION;
 							}
 							break;
@@ -264,15 +270,37 @@ package actionScripts.utils
 				var executable:String;
 				var itemUnderCursor:ExternalEditorVO = components.getItemAt(itemUnderCursorIndex) as ExternalEditorVO;
 				var executableFullPath:String;
-				if (itemUnderCursor.installPath != null)
+				if (itemUnderCursor.isValid)
 				{
-					var commands:String = 'defaults read "'+ itemUnderCursor.installPath.nativePath +'/Contents/Info.plist" CFBundleShortVersionString';
-					var itemTypeUnderCursor:String = QUERY_EXTERNAL_EDITOR_VERSION;
-					queue = new Vector.<Object>();
-
-					addToQueue(new NativeProcessQueueVO(commands, false, itemTypeUnderCursor, itemUnderCursorIndex));
-					worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
-					itemUnderCursorIndex++;
+					var commands:String;
+					if (ConstantsCoreVO.IS_MACOS)
+					{
+						commands = 'defaults read "'+ itemUnderCursor.installPath.nativePath +'/Contents/Info.plist" CFBundleShortVersionString';
+						
+						queue = new Vector.<Object>();
+						
+						addToQueue(new NativeProcessQueueVO(commands, false, QUERY_EXTERNAL_EDITOR_VERSION, itemUnderCursorIndex));
+						worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+						itemUnderCursorIndex++;
+					}
+					else
+					{
+						var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
+						if (powerShellPath)
+						{
+							powerShellPath = powerShellPath.replace(/\\/g, "/");
+							commands = '"'+ powerShellPath +'" -NoLogo -NoProfile \"(Get-Item -Path \''+ itemUnderCursor.installPath.nativePath +'\').VersionInfo | Select-Object ProductVersion | Format-List -Force\"';
+							
+							this.start(
+								new <String>[commands], null
+							);
+						}
+						else
+						{
+							error("Failed to locate PowerShell during external editor version check.");
+							return;
+						}
+					}
 				}
 				else
 				{
@@ -284,6 +312,23 @@ package actionScripts.utils
 			{
 				dispatchEvent(new Event(Event.COMPLETE));
 			}
+		}
+		
+		override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
+		{
+			var stdOutput:String = getDataFromBytes(nativeProcess.standardOutput);
+			if (stdOutput.search(/ProductVersion :/) != -1)
+			{
+				stdOutput = StringUtil.trim(stdOutput);
+				components[itemUnderCursorIndex].version = stdOutput.split(" : ")[1];
+			}
+		}
+		
+		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
+		{
+			super.onNativeProcessExit(event);
+			itemUnderCursorIndex++;
+			startEditorsVersionRequestProcess();
 		}
 		
 		public function onWorkerValueIncoming(value:Object):void
