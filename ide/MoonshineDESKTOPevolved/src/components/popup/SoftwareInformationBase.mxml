@@ -29,7 +29,8 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.ui.tabNavigator.TabNavigatorWithOrientation;
+		import actionScripts.interfaces.ISoftwareInformationView;
+		import actionScripts.ui.tabNavigator.TabNavigatorWithOrientation;
 
 			import mx.events.FlexEvent;
 
@@ -65,13 +66,19 @@
 				editors = new SoftwareInformationEditors();
 				editors.addEventListener(Event.COMPLETE, onAllVersionRetrieved, false, 0, true);
 				editors.percentWidth = editors.percentHeight = 100;
-				editors.startCheck();
 				navContent.addElement(editors);
 				tabNavigator.addElement(navContent);
 				versionSectionsCount++;
 
 				tabNavigator.selectedIndex = 0;
 				tabNavigator.tabBar.setStyle("closeButtonVisible", false);
+
+				// initiate the check task in all tabs
+				for (var i:int; i < versionSectionsCount; i++)
+				{
+					var softwareTab:ISoftwareInformationView = (tabNavigator.getElementAt(i) as NavigatorContent).contentGroup.getElementAt(0) as ISoftwareInformationView;
+					if (softwareTab) softwareTab.startCheck();
+				}
 			}
 
 			public function getAllVersions():String
