@@ -28,7 +28,6 @@
 			<plugin>
 				<groupId>org.openntf.maven</groupId>
 				<artifactId>nsfodp-maven-plugin</artifactId>
-				<version>3.4.0</version>
 				<configuration>
 					<binaryDxl>true</binaryDxl>
 				</configuration>
