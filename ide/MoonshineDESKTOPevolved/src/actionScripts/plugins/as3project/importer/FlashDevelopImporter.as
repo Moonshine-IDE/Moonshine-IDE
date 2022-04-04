@@ -298,7 +298,8 @@ package actionScripts.plugins.as3project.importer
 		
 			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
 			//1. first check the .xml_conversion_required file
-			if (requireFileLocation.fileBridge.exists){
+			if (requireFileLocation.fileBridge.exists)
+			{
 				
 				//DominoUtils.getDominoParentContent(projectName,projectName);
              
@@ -382,13 +383,9 @@ package actionScripts.plugins.as3project.importer
 									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
 									_targetfileStreamMoonshine.writeUTFBytes(dominoXml.toXMLString());
 									_targetfileStreamMoonshine.close();
-									//var container:IVisualElementContainer= surfaceModel as IVisualElementContainer;
-									//var dominoCode:XML=EditingSurfaceWriter.aottoDominoCodeCovert(container);
 
 								}
 								_fileStreamMoonshine.close();
-								
-								
 							}
 						}
 
@@ -410,14 +407,10 @@ package actionScripts.plugins.as3project.importer
 								file.fileBridge.save(settingxml);
 							}
 						}
-
-
-
 					}
 				}
 
 				requireFileLocation.fileBridge.deleteFile();
-			
 			}
 
 			//2. remove not need NewVisualEditorProject file

@@ -147,6 +147,7 @@ package actionScripts.impls
 	
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
+	import visualEditor.plugin.ExportDominoToRoyalePlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
 
@@ -234,6 +235,7 @@ package actionScripts.impls
 				MouseManagerPlugin,
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
+				ExportDominoToRoyalePlugin,
                 VisualEditorRefreshFilesPlugin,
 				FileAssociationPlugin,
 				FilesCopyPlugin,
@@ -295,7 +297,8 @@ package actionScripts.impls
 		public function getPluginsNotToShowInSettings():Array
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
-					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
+					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
+					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
 					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin];
 		}
