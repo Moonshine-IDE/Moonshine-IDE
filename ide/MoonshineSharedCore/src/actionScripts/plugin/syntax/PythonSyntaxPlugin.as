@@ -69,6 +69,8 @@ package actionScripts.plugin.syntax
 					new AutoClosingPair("\"", "\""),
 					new AutoClosingPair("`", "`"),
 				];
+				textEditor.lineComment = "#";
+				textEditor.blockComment = ["\"\"\"", "\"\"\""];
 				textEditor.setParserAndTextStyles(new PythonLineParser(), formats);
 				textEditor.embedFonts = Settings.font.defaultFontEmbedded;
 			}

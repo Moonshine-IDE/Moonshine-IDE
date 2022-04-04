@@ -71,6 +71,7 @@ package actionScripts.plugin.syntax
 					new AutoClosingPair("'", "'"),
 					new AutoClosingPair("\"", "\"")
 				];
+				textEditor.blockComment = ["/*", "*/"];
 				textEditor.setParserAndTextStyles(new CSSLineParser(), formats);
 				textEditor.embedFonts = Settings.font.defaultFontEmbedded;
 			}
