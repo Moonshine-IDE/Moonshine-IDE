@@ -88,9 +88,15 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		this.gridView.variant = TreeView.VARIANT_BORDERLESS;
 		this.gridView.layoutData = AnchorLayoutData.fill();
 		var problemColumn = new GridViewColumn("Problem", getMessageLabel);
-		problemColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
-			target.text = state.text;
-			target.toolTip = state.text;
+		problemColumn.cellRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
+			var itemRenderer = new ItemRenderer();
+			itemRenderer.icon = new DiagnosticSeverityIcon();
+			return itemRenderer;
+		}, (itemRenderer, state:GridViewCellState) -> {
+			var icon = cast(itemRenderer.icon, DiagnosticSeverityIcon);
+			icon.severity = cast(state.data, MoonshineDiagnostic).severity;
+			itemRenderer.text = state.text;
+			itemRenderer.toolTip = state.text;
 		});
 		var locationColumn = new GridViewColumn("Location", getLocationLabel);
 		locationColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
