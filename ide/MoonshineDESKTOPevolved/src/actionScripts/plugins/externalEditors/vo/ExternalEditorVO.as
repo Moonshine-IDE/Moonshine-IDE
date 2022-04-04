@@ -75,6 +75,10 @@ package actionScripts.plugins.externalEditors.vo
 		private var _version:String;
 		public function get version():String							{	return _version;	}
 		public function set version(value:String):void					{	_version = value;	}
+
+		private var _fileTypes:Array;
+		public function get fileTypes():Array							{	return _fileTypes;	}
+		public function set fileTypes(value:Array):void					{	_fileTypes = value;	}
 		
 		public function ExternalEditorVO(uid:String=null)
 		{
@@ -93,6 +97,7 @@ package actionScripts.plugins.externalEditors.vo
 			if ("defaultInstallPath" in value) tmpVO.defaultInstallPath = value.defaultInstallPath;
 			if ("extraArguments" in value) tmpVO.extraArguments = value.extraArguments;
 			if (("installPath" in value) && (value.installPath is File)) tmpVO.installPath = value.installPath;
+			if ("fileTypes" in value) tmpVO.fileTypes = value.fileTypes;
 			else if (("installPath" in value) && value.installPath && ("nativePath" in value.installPath))
 			{
 				try

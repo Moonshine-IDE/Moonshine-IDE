@@ -48,6 +48,7 @@ package actionScripts.plugins.externalEditors.importer
 				tmpEditor = new ExternalEditorVO(String(editor.@id));
 				tmpEditor.title = String(editor.title);
 				tmpEditor.website = String(editor.website);
+				tmpEditor.fileTypes = (String(editor.fileTypes) != "") ? String(editor.fileTypes).split(",") : [];
 				
 				var installPath:String = checkPath(
 					String(editor.defaultLocation[ConstantsCoreVO.IS_MACOS ? "macos" : "windows"].valueOf())

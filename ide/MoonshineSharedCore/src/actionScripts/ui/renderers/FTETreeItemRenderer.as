@@ -445,10 +445,16 @@ package actionScripts.ui.renderers
 			var editors:ArrayCollection = model.flexCore.getExternalEditors();
 			for each (var editor:IExternalEditorVO in editors)
 			{
+				var isFileTypeAccessible:Boolean = (editor.fileTypes.length == 0);
+				if (!isFileTypeAccessible)
+				{
+					isFileTypeAccessible = (editor.fileTypes.indexOf((data as FileWrapper).file.fileBridge.extension) != -1);
+				}
+
 				var eventType:String = "eventOpenWithExternalEditor"+ editor.localID;
 				var item:Object = model.contextMenuCore.getContextMenuItem(editor.title, redispatchOpenWith, Event.SELECT);
 				item.data = eventType;
-				item.enabled = editor.isValid && editor.isEnabled;
+				item.enabled = editor.isValid && editor.isEnabled && isFileTypeAccessible;
 				
 				model.contextMenuCore.subMenu(event.target, item);
 			}
