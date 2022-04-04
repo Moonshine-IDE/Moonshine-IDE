@@ -37,6 +37,7 @@ package actionScripts.ui.tabview
     import actionScripts.ui.tabNavigator.CloseTabButton;
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.factory.FileLocation;
 
 	public class TabViewTab extends UIComponent
 	{	
@@ -178,7 +179,26 @@ package actionScripts.ui.tabview
 			if (_label) 
 			{
 				labelView.text = _label;
-				if (_label.split(".").length > 1) toolTip = _label;
+			}
+			if (_data is IFileContentWindow)
+			{
+				var file:FileLocation = IFileContentWindow(_data).currentFile;
+				if (file)
+				{
+					toolTip = file.fileBridge.nativePath;
+				}
+				else
+				{
+					toolTip = null;
+				}
+			}
+			else if (_label && (_label.split(".").length > 1))
+			{
+				toolTip = _label;
+			}
+			else
+			{
+				toolTip = null;
 			}
 			addChild(labelView);
 			
