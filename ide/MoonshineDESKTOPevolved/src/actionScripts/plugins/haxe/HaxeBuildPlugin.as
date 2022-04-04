@@ -56,6 +56,7 @@ package actionScripts.plugins.haxe
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
     import actionScripts.valueObjects.WebBrowserVO;
+    import actionScripts.plugin.console.ConsoleEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -458,6 +459,7 @@ package actionScripts.plugins.haxe
 
 		override public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
 		{
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
             if (running)
             {
                 warning("Build is running. Wait for finish...");

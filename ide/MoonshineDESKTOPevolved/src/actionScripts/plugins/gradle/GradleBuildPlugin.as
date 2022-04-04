@@ -48,6 +48,7 @@ package actionScripts.plugins.gradle
     import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
+    import actionScripts.plugin.console.ConsoleEvent;
 
     public class GradleBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -223,6 +224,8 @@ package actionScripts.plugins.gradle
 
         protected function prepareStart(buildId:String, preArguments:Array, arguments:Array, buildDirectory:FileLocation):void
         {
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+
             if (!buildDirectory || !buildDirectory.fileBridge.exists)
             {
                 warning("Gradle build directory has not been specified or is invalid.");

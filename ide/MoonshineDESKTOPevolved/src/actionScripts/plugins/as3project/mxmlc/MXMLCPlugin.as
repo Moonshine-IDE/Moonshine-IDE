@@ -92,6 +92,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
+	import actionScripts.plugin.console.ConsoleEvent;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -543,6 +544,9 @@ package actionScripts.plugins.as3project.mxmlc
 			if (!activeProject || !(activeProject is AS3ProjectVO)) return;
 			
 			reset();
+
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+
 			warning("Compiling "+activeProject.projectName);
 			
 			var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;

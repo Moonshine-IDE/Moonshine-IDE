@@ -77,6 +77,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
+	import actionScripts.plugin.console.ConsoleEvent;
 
     public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -330,6 +331,8 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			
 			reset();
+
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
 			
 			CONFIG::OSX
 			{

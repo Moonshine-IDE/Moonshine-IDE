@@ -56,6 +56,7 @@ package actionScripts.plugins.grails
     import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
+    import actionScripts.plugin.console.ConsoleEvent;
 
     public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider, ICustomCommandRunProvider
     {
@@ -354,6 +355,8 @@ package actionScripts.plugins.grails
 		
 		protected function prepareStart(arguments:Array, buildDirectory:FileLocation, commandType:String=BuildActionType.BUILD_TYPE_GRAILS):void
 		{
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+
 			if (!buildDirectory || !buildDirectory.fileBridge.exists)
 			{
 				warning("Grails build directory has not been specified or is invalid.");
