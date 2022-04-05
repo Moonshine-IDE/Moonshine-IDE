@@ -146,6 +146,19 @@
 	<propertycopy property="FLEX_HOME" from="env.FLEX_HOME" silent="true" override="${Is.FLEX_HOME.Not.Exists}"/>
 	<propertycopy property="SIGNTOOL_HOME" from="env.SIGNTOOL_HOME" silent="true"/>
 	<propertycopy property="NSIS_HOME" from="env.NSIS_HOME" silent="true"/>
+	<!-- try to fall back to HAXE_STD_PATH, if available -->
+	<condition property="HAXE_LIB_DIRECTORY" value="${env.HAXE_STD_PATH}/..">
+		<and>
+			<os family="windows" />
+			<available file="${env.HAXE_STD_PATH}/../haxelib.exe" />
+		</and>
+	</condition>
+	<condition property="HAXE_LIB_DIRECTORY" value="${env.HAXE_STD_PATH}/..">
+		<and>
+			<os family="mac" />
+			<available file="${env.HAXE_STD_PATH}/../haxelib" />
+		</and>
+	</condition>
 	<echo>SDK : ${FLEX_HOME}</echo>
 	<echo>SIGNTOOL: ${SIGNTOOL_HOME}</echo>
 	<echo>NSIS: ${NSIS_HOME}</echo>
