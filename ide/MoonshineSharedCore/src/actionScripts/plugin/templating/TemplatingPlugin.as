@@ -53,7 +53,6 @@ package actionScripts.plugin.templating
 	import actionScripts.plugin.IMenuPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.StaticLabelSetting;
@@ -79,6 +78,8 @@ package actionScripts.plugin.templating
 	
 	import components.popup.newFile.NewASFilePopup;
 	import components.popup.newFile.NewCSSFilePopup;
+	import components.popup.newFile.NewDominoFormPopup;
+	import components.popup.newFile.NewDominoPagePopup;
 	import components.popup.newFile.NewFilePopup;
 	import components.popup.newFile.NewGroovyFilePopup;
 	import components.popup.newFile.NewHaxeFilePopup;
@@ -90,6 +91,7 @@ package actionScripts.plugin.templating
 
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
+
     /*
     Templating plugin
 
@@ -125,10 +127,13 @@ package actionScripts.plugin.templating
 		protected var newGroovyComponentPopup:NewGroovyFilePopup;
 		protected var newHaxeComponentPopup:NewHaxeFilePopup;
 		protected var newCSSComponentPopup:NewCSSFilePopup;
+		protected var newDominoFormComponentPopup:NewDominoFormPopup;
+		protected var newDominoPageComponentPopup:NewDominoPagePopup;
 		protected var newMXMLModuleComponentPopup:NewMXMLGenericFilePopup;
 		protected var newVisualEditorFilePopup:NewVisualEditorFilePopup;
 		protected var newOnDiskFilePopup:NewOnDiskFilePopup;
 		protected var newFilePopup:NewFilePopup;
+		
 		
 		private var resetIndex:int = -1;
 
@@ -289,6 +294,14 @@ package actionScripts.plugin.templating
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_HAXEINTERFACE = files;
 			
+			files = templatesDir.resolvePath("files/Domino Visual Editor Form.form.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_DOMINO_FORM = files;
+
+			files = templatesDir.resolvePath("files/Domino Visual Editor Page.page.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_DOMINO_PAGE = files;
+
 			// Just to generate a divider in relevant UI
 			//ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem("NOTHING");
 			
@@ -328,6 +341,7 @@ package actionScripts.plugin.templating
 			{
 				if (!file.isHidden)
 				{
+					//Alert.show("template:"+file.nativePath);
 					var projectTemplateConfigLocation:FileLocation = new FileLocation(file.nativePath);
 					var projectTemplateConfig:XML = new XML(projectTemplateConfigLocation.fileBridge.read());
 					var projectTemplateConfigs:XMLList = projectTemplateConfig.template;
@@ -372,8 +386,7 @@ package actionScripts.plugin.templating
 					projectTemplates.push(new FileLocation(file.nativePath));
 				}
 			}
-			
-			var tmpABCD:Object = projectTemplates;
+
 			generateTemplateProjects();
 		}
 
@@ -383,6 +396,8 @@ package actionScripts.plugin.templating
 			var actionScriptProjectTemplates:ArrayCollection = new ArrayCollection();
             var feathersProjectTemplates:ArrayCollection = new ArrayCollection();
 			var royaleProjectTemplates:ArrayCollection = new ArrayCollection();
+			var royaleVisualProjectTemplates:ArrayCollection = new ArrayCollection();
+			var royaleDominoExportTemplates:ArrayCollection = new ArrayCollection();
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
 			var grailsProjectTemplates:ArrayCollection = new ArrayCollection();
 			var haxeProjectTemplates:ArrayCollection = new ArrayCollection();
@@ -423,9 +438,23 @@ package actionScripts.plugin.templating
 						actionScriptProjectTemplates.addItem(template);
 					}
 
-					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1)
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1
+							&& templateName.indexOf("REST") == -1 && templateName.indexOf("Domino Export") == -1)
 					{
                         royaleProjectTemplates.addItem(template);
+					}
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1
+							&& templateName.indexOf("REST") != -1
+							&& templateName.indexOf("Visual") == -1)
+					{
+                        royaleVisualProjectTemplates.addItem(template);
+					}
+
+					if (templateName.indexOf("Royale") != -1 && templateName.indexOf("FlexJS") == -1
+							&& templateName.indexOf("Domino Export") != -1
+							&& templateName.indexOf("Visual") == -1)
+					{
+						royaleDominoExportTemplates.addItem(template);
 					}
 
 					if (templateName.indexOf("Java") != -1)
@@ -451,6 +480,9 @@ package actionScripts.plugin.templating
             ConstantsCoreVO.TEMPLATES_PROJECTS_SPECIALS = feathersProjectTemplates;
 			royaleProjectTemplates.source = royaleProjectTemplates.source.reverse();
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE = royaleProjectTemplates;
+			royaleVisualProjectTemplates.source=royaleVisualProjectTemplates.source.reverse();
+			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE_VISUAL=royaleVisualProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_PROJECTS_ROYALE_DOMINO_EXPORT = royaleDominoExportTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_JAVA = javaProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_GRAILS = grailsProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_HAXE = haxeProjectTemplates;
@@ -943,9 +975,12 @@ package actionScripts.plugin.templating
 					case "Visual Editor PrimeFaces File":
 						openVisualEditorComponentTypeChoose(event);
 						break;
-					// case "Domino Visual Editor Form":
-					// 	openDominoVisualEditorFormTypeChoose(event);
-					// 	break;	
+					case "Domino Visual Editor Form":
+						openDominoFormComponentTypeChoose(event);
+						break;
+					case "Domino Visual Editor Page":
+						openDominoPageComponentTypeChoose(event);
+						break;
 					case "Visual Editor Domino File":
 						openVisualEditorComponentTypeChoose(event);
 						break;
@@ -1105,23 +1140,52 @@ package actionScripts.plugin.templating
 		
 		protected function openDominoVisualEditorFormTypeChoose(event:Event):void
         {
-            var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
-				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
-				ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_DOMINO_FORM, (event as NewFileEvent).insideLocation
+			var insideLocation:FileWrapper = (event is NewFileEvent) ?
+					(event as NewFileEvent).insideLocation :
+					(model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper);
+			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
+			{
+				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(insideLocation));
+			}
+			if (insideLocation)
+			{
+				var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
+						OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, insideLocation.nativePath,
+						ConstantsCoreVO.TEMPLATES_VISUALEDITOR_FILES_DOMINO_FORM, insideLocation
 				);
-			tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
-			
-			dispatcher.dispatchEvent(tmpOnDiskEvent);
+				tmpOnDiskEvent.ofProject = (event is NewFileEvent) ? (event as NewFileEvent).ofProject : model.activeProject;
+
+				dispatcher.dispatchEvent(tmpOnDiskEvent);
+			}
+			else
+			{
+				error("error: Select location before creating a new file.");
+			}
         }
+
 		protected function openOnDiskFormBuilderTypeChoose(event:Event):void
 		{
-			var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
-				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
-				ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE, (event as NewFileEvent).insideLocation
+			var insideLocation:FileWrapper = (event is NewFileEvent) ?
+					(event as NewFileEvent).insideLocation :
+					(model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper);
+			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
+			{
+				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(insideLocation));
+			}
+			if (insideLocation)
+			{
+				var tmpOnDiskEvent:NewFileEvent = new NewFileEvent(
+						OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, insideLocation.nativePath,
+						ConstantsCoreVO.TEMPLATE_ODP_FORMBUILDER_FILE, insideLocation
 				);
-			tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
-			
-			dispatcher.dispatchEvent(tmpOnDiskEvent);
+				tmpOnDiskEvent.ofProject = (event is NewFileEvent) ? (event as NewFileEvent).ofProject : model.activeProject;
+
+				dispatcher.dispatchEvent(tmpOnDiskEvent);
+			}
+			else
+			{
+				error("error: Select location before creating a new file.");
+			}
 		}
 		
 		protected function openOnDiskVisualEditorTypeChoose(event:Event):void
@@ -1213,6 +1277,139 @@ package actionScripts.plugin.templating
 				PopUpManager.centerPopUp(newCSSComponentPopup);
 			}
 		}
+
+		protected function openDominoFormComponentTypeChoose(event:Event):void
+		{
+			if (!newDominoFormComponentPopup)
+			{
+				newDominoFormComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoFormPopup, true) as NewDominoFormPopup;
+				newDominoFormComponentPopup.addEventListener(CloseEvent.CLOSE, handleDominoFormPopupClose);
+				newDominoFormComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoFormFileCreateRequest);
+                //setting default folder or selected folder for new file
+			    if (event is NewFileEvent) 
+				{
+					newDominoFormComponentPopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+					newDominoFormComponentPopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+					newDominoFormComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+				}
+				else
+				{
+					// try to check if there is any selection in 
+					// TreeView item
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+					if (treeSelectedItem)
+					{
+						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+						newDominoFormComponentPopup.folderLocation = creatingItemIn.file;
+						newDominoFormComponentPopup.wrapperOfFolderLocation = creatingItemIn;
+						newDominoFormComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+					}
+				}
+				//only for fixed folder for domino form file
+			
+			
+				var dominoFormFolderStr:String=newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
+				var dominoFormFolder:FileLocation=new FileLocation(dominoFormFolderStr);
+				if(dominoFormFolder.fileBridge.exists){
+					//set the tree selct to domino form folder
+					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+					var dominoFormFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoFormComponentPopup.wrapperBelongToProject.projectFolder, dominoFormFolderStr);
+					model.mainView.getTreeViewPanel().tree.callLater(function ():void
+					{
+						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+					
+						for (var j:int = 0; j < (wrappers.length - 1); j++)
+						{
+							model.mainView.getTreeViewPanel().tree.expandItem(wrappers[j], true);
+						}
+		
+						// selection
+						model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
+						// scroll-to
+						model.mainView.getTreeViewPanel().tree.callLater(function ():void
+						{
+							model.mainView.getTreeViewPanel().tree.scrollToIndex(model.mainView.getTreeViewPanel().tree.getItemIndex(dominoFormFolderWrapper));
+						});
+					});
+					
+					
+					//model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
+					newDominoFormComponentPopup.wrapperOfFolderLocation = dominoFormFolderWrapper;
+					newDominoFormComponentPopup.folderLocation =dominoFormFolder;
+					PopUpManager.centerPopUp(newDominoFormComponentPopup);
+				}else{
+					Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
+				}
+				
+			}
+		}
+
+
+		protected function openDominoPageComponentTypeChoose(event:Event):void
+		{
+			if (!newDominoPageComponentPopup)
+			{
+				newDominoPageComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoPagePopup, true) as NewDominoPagePopup;
+				newDominoPageComponentPopup.addEventListener(CloseEvent.CLOSE, handleDominoPagePopupClose);
+				newDominoPageComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoPageFileCreateRequest);
+                //setting default folder or selected folder for new file
+			    if (event is NewFileEvent) 
+				{
+					newDominoPageComponentPopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+					newDominoPageComponentPopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+					newDominoPageComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+				}
+				else
+				{
+					// try to check if there is any selection in 
+					// TreeView item
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+					if (treeSelectedItem)
+					{
+						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+						newDominoPageComponentPopup.folderLocation = creatingItemIn.file;
+						newDominoPageComponentPopup.wrapperOfFolderLocation = creatingItemIn;
+						newDominoPageComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+					}
+				}
+				//only for fixed folder for domino form file
+			
+			
+				var dominoPageFolderStr:String=newDominoPageComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Pages";
+				var dominoPageFolder:FileLocation=new FileLocation(dominoPageFolderStr);
+				if(dominoPageFolder.fileBridge.exists){
+					//set the tree selct to domino form folder
+					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+					var dominoPageFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoPageComponentPopup.wrapperBelongToProject.projectFolder, dominoPageFolderStr);
+					model.mainView.getTreeViewPanel().tree.callLater(function ():void
+					{
+						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+					
+						for (var j:int = 0; j < (wrappers.length - 1); j++)
+						{
+							model.mainView.getTreeViewPanel().tree.expandItem(wrappers[j], true);
+						}
+		
+						// selection
+						model.mainView.getTreeViewPanel().tree.selectedItem = dominoPageFolderWrapper;
+						// scroll-to
+						model.mainView.getTreeViewPanel().tree.callLater(function ():void
+						{
+							model.mainView.getTreeViewPanel().tree.scrollToIndex(model.mainView.getTreeViewPanel().tree.getItemIndex(dominoPageFolderWrapper));
+						});
+					});
+					
+					
+					//model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
+					newDominoPageComponentPopup.wrapperOfFolderLocation = dominoPageFolderWrapper;
+					newDominoPageComponentPopup.folderLocation =dominoPageFolder;
+					PopUpManager.centerPopUp(newDominoPageComponentPopup);
+				}else{
+					Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
+				}
+				
+			}
+		}
 		
 		protected function openMXMLModuleTypeChoose(event:Event):void
 		{
@@ -1279,9 +1476,10 @@ package actionScripts.plugin.templating
 						newFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
 					}
 				}
+				//Alert.show("wrapperOfFolderLocation:"+ newFilePopup.wrapperOfFolderLocation.nativePath);
 				var eventName:String = event.type.substr(24)
 				if(eventName){
-					if(eventName=="Domino Visual Editor Form"){
+					if(eventName=="Domino Visual Editor Form" ||eventName=="Domino Visual Editor Page"  ){
 						if(newFilePopup.wrapperBelongToProject){
 							(newFilePopup.wrapperBelongToProject as IVisualEditorProjectVO).isDominoVisualEditorProject = true;
 							//Alert.show("Domino Visual set to true");
@@ -1307,6 +1505,23 @@ package actionScripts.plugin.templating
 			newCSSComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onCSSFileCreateRequest);
 			newCSSComponentPopup = null;
 		}
+
+		protected function handleDominoFormPopupClose(event:CloseEvent):void
+		{
+			newDominoFormComponentPopup.removeEventListener(CloseEvent.CLOSE, handleDominoFormPopupClose);
+			newDominoFormComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoFormFileCreateRequest);
+			newDominoFormComponentPopup = null;
+		}
+
+		protected function handleDominoPagePopupClose(event:CloseEvent):void
+		{
+			newDominoPageComponentPopup.removeEventListener(CloseEvent.CLOSE, handleDominoPagePopupClose);
+			newDominoPageComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoPageFileCreateRequest);
+			newDominoPageComponentPopup = null;
+		}
+
+
+		
 		
 		protected function handleMXMLModulePopupClose(event:CloseEvent):void
 		{
@@ -1699,6 +1914,32 @@ package actionScripts.plugin.templating
 			}
 		}
 
+		protected function onDominoFormFileCreateRequest(event:NewFileEvent):void
+		{
+			checkAndUpdateIfTemplateModified(event);
+			if (event.fromTemplate.fileBridge.exists)
+			{
+				var content:String = String(event.fromTemplate.fileBridge.read());
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".form");
+				fileToSave.fileBridge.save(content);
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
+			}
+		}
+
+		protected function onDominoPageFileCreateRequest(event:NewFileEvent):void
+		{
+			checkAndUpdateIfTemplateModified(event);
+			if (event.fromTemplate.fileBridge.exists)
+			{
+				var content:String = String(event.fromTemplate.fileBridge.read());
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".page");
+				fileToSave.fileBridge.save(content);
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
+			}
+		}
+
 		protected function handleNewProjectFile(event:Event):void
 		{
             newProjectFromTemplate(event.type);
@@ -1749,7 +1990,7 @@ package actionScripts.plugin.templating
             }
         }
 
-        protected function getSettingsTemplateFileLocation(projectDir:FileLocation):FileLocation
+        public static function getSettingsTemplateFileLocation(projectDir:FileLocation):FileLocation
         {
             // TODO: If none is found, prompt user for location to save project & template it over
             var files:Array = projectDir.fileBridge.getDirectoryListing();

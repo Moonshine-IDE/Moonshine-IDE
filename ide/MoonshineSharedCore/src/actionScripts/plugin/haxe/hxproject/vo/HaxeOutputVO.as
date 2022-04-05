@@ -52,7 +52,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public var input:String = "";
 		
 		/** Background color */
-		public var background:uint;
+		public var background:uint = 0xFFFFFF;
 		
 		
 		public function toString():String {
@@ -67,7 +67,11 @@ package actionScripts.plugin.haxe.hxproject.vo
 		{
 			var params:XMLList = output.movie;
 			disabled = SerializeUtil.deserializeBoolean(params.@disabled);
-			path = project.folderLocation.resolvePath(UtilsCore.fixSlashes(params.@path));
+			var pathParam:String = params.@path;
+			if (pathParam)
+			{
+				path = project.folderLocation.resolvePath(UtilsCore.fixSlashes(pathParam));
+			}
 			frameRate = Number(params.@fps);
 			width = int(params.@width);
 			height = int(params.@height);
@@ -85,15 +89,19 @@ package actionScripts.plugin.haxe.hxproject.vo
 		{
 			var output:XML = <output/>;
 			
-			var pathStr:String = path.fileBridge.nativePath;
-			if (folder) {
-				pathStr = folder.fileBridge.getRelativePath(path);
+			var pathStr:String = "";
+			if (path)
+			{
+				pathStr = path.fileBridge.nativePath;
+				if (folder) {
+					pathStr = folder.fileBridge.getRelativePath(path);
+				}
+				
+				// in case parsing relative path returns null
+				// particularly in scenario when "path" is outside folder
+				// of "folder"
+				if (!pathStr) pathStr = path.fileBridge.nativePath;
 			}
-			
-			// in case parsing relative path returns null
-			// particularly in scenario when "path" is outside folder
-			// of "folder"
-			if (!pathStr) pathStr = path.fileBridge.nativePath;
 			
 			var outputPairs:Object = {
 				'disabled'	: 	SerializeUtil.serializeBoolean(disabled),

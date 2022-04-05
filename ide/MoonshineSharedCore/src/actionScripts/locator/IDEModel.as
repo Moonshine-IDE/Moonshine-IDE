@@ -89,6 +89,9 @@ package actionScripts.locator
 		public var javaVersionInJava8Path:String;
 		public var svnPath:String;
 		public var gitPath:String;
+		public var vagrantPath:String;
+		public var virtualBoxPath:String;
+		public var macportsPath:String;
 		public var isCodeCompletionJavaPresent:Boolean;
 		public var payaraServerLocation:FileLocation;
 
@@ -96,6 +99,7 @@ package actionScripts.locator
 		public var recentlyOpenedProjects:ArrayCollection = new ArrayCollection();
 		public var recentlyOpenedProjectOpenedOption:ArrayCollection = new ArrayCollection();
 		public var recentSaveProjectPath:ArrayCollection = new ArrayCollection();
+		public var lastSelectedProjectPath:String;
 		public var userSavedSDKs:ArrayCollection = new ArrayCollection();
 		public var userSavedTempSDKPath:String;
 		public var individualTabAlertShowingFilePath:String;

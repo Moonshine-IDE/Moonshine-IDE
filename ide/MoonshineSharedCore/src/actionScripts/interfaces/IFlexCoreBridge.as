@@ -53,6 +53,7 @@ package actionScripts.interfaces
 		//--------------------------------------------------------------------------
 		
 		function parseFlashDevelop(project:AS3ProjectVO=null, file:FileLocation=null, projectName:String=null):AS3ProjectVO;
+		function convertFlashDevelopToDomino(file:FileLocation=null):void;
 		function parseFlashBuilder(file:FileLocation):AS3ProjectVO;
 		function exportFlashDevelop(project:AS3ProjectVO, file:FileLocation):void;
 		function exportFlashBuilder(project:AS3ProjectVO, file:FileLocation):void;
@@ -76,8 +77,9 @@ package actionScripts.interfaces
 		function updateToCurrentEnvironmentVariable():void;
 		function initCommandGenerationToSetLocalEnvironment(completion:Function, customSDKs:EnvironmentUtilsCusomSDKsVO=null, withCommands:Array=null):void;
 		function getComponentByType(type:String):Object;
-		function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean;
+		function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean;
 		function getExternalEditors():ArrayCollection;
+		function generateTabularRoyaleProject():void;
 		function getModulesFinder():IModulesFinder;
 		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
 		function setMSDKILocalPathConfig():void;
@@ -97,5 +99,6 @@ package actionScripts.interfaces
 		function get runtimeVersion():String;
 		function get version():String;
 		function get defaultInstallationPathSDKs():String;
+		function get vagrantMenuOptions():Array;
 	}
 }

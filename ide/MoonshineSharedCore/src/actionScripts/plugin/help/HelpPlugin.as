@@ -53,13 +53,12 @@ package actionScripts.plugin.help
 		public static const EVENT_PRIVACY_POLICY:String = "EVENT_PRIVACY_POLICY";
 		private static const THIRD_PARTY_WARNING_TEXT:String = "<!--\n\nThis example or component has been developed by a 3rd party and is hosted outside of the Tour De Flex site and may contain links to non ASF sites.\nIt's code may not be Open Source or may be under a license other than the Apache license so please check carefully before using it.\nNeither the ASF or the Apache Flex PMC can endorse or recommend using this example but you may still find it useful.\n\n-->";
 		
-		public static var ABOUT_SUBSCRIBE_ID_TO_WORKER:String;
-		
 		override public function get name():String			{ return "Help Plugin"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Help Plugin."; }
 
 		private var tourDeFlexView:TourDeFlexContentsView;
+		private var docsView:AS3DocsView;
 
 		override public function activate():void
 		{
@@ -89,14 +88,21 @@ package actionScripts.plugin.help
 
 		protected function handleTourDeFlexConfigure(event:Event):void
 		{
-			tourDeFlexView = new TourDeFlexContentsView();
-			tourDeFlexView.addEventListener(HelpViewEvent.OPEN_FILE, tourDeFlexView_openFileHandler);
-			tourDeFlexView.addEventListener(HelpViewEvent.OPEN_LINK, tourDeFlexView_openLinkHandler);
-			tourDeFlexView.addEventListener(Event.CLOSE, tourDeFlexView_closeHandler);
-			var tourDeFlexViewWrapper:TourDeFlexContentsViewWrapper = new TourDeFlexContentsViewWrapper(tourDeFlexView);
-			tourDeFlexViewWrapper.percentWidth = 100.0;
-			tourDeFlexViewWrapper.percentHeight = 100.0;
-			LayoutModifier.addToSidebar(tourDeFlexViewWrapper, event);
+			if (!tourDeFlexView)
+			{
+				tourDeFlexView = new TourDeFlexContentsView();
+				tourDeFlexView.addEventListener(HelpViewEvent.OPEN_FILE, tourDeFlexView_openFileHandler);
+				tourDeFlexView.addEventListener(HelpViewEvent.OPEN_LINK, tourDeFlexView_openLinkHandler);
+				tourDeFlexView.addEventListener(Event.CLOSE, tourDeFlexView_closeHandler);
+				var tourDeFlexViewWrapper:TourDeFlexContentsViewWrapper = new TourDeFlexContentsViewWrapper(tourDeFlexView);
+				tourDeFlexViewWrapper.percentWidth = 100.0;
+				tourDeFlexViewWrapper.percentHeight = 100.0;
+				LayoutModifier.addToSidebar(tourDeFlexViewWrapper, event);
+			}
+			else
+			{
+				tourDeFlexView_closeHandler(event);
+			}
 		}
 		
 		private function tabSelectHandler(event:Event):void
@@ -116,13 +122,20 @@ package actionScripts.plugin.help
 		
 		protected function as3DocHandler(event:Event):void
 		{
-			var docsView:AS3DocsView = new AS3DocsView();
-			docsView.addEventListener(HelpViewEvent.OPEN_LINK, as3DocsView_openLinkHandler);
-			docsView.addEventListener(Event.CLOSE, as3DocsView_closeHandler);
-			var docsViewWrapper:AS3DocsViewWrapper = new AS3DocsViewWrapper(docsView);
-			docsViewWrapper.percentWidth = 100.0;
-			docsViewWrapper.percentHeight = 100.0;
-			LayoutModifier.addToSidebar(docsViewWrapper, event);
+			if (!docsView)
+			{
+				docsView = new AS3DocsView();
+				docsView.addEventListener(HelpViewEvent.OPEN_LINK, as3DocsView_openLinkHandler);
+				docsView.addEventListener(Event.CLOSE, as3DocsView_closeHandler);
+				var docsViewWrapper:AS3DocsViewWrapper = new AS3DocsViewWrapper(docsView);
+				docsViewWrapper.percentWidth = 100.0;
+				docsViewWrapper.percentHeight = 100.0;
+				LayoutModifier.addToSidebar(docsViewWrapper, event);
+			}
+			else
+			{
+				as3DocsView_closeHandler(event);
+			}
 		}
 
 		private function tourDeFlexView_openFileHandler(event:HelpViewEvent):void
@@ -169,6 +182,8 @@ package actionScripts.plugin.help
 			tourDeFlexView.removeEventListener(Event.CLOSE, tourDeFlexView_closeHandler);
 			var tourDeFlexViewWrapper:IPanelWindow = IPanelWindow(tourDeFlexView.parent);
 			LayoutModifier.removeFromSidebar(tourDeFlexViewWrapper);
+
+			tourDeFlexView = null;
 		}
 
 		private function as3DocsView_openLinkHandler(event:HelpViewEvent):void
@@ -178,11 +193,12 @@ package actionScripts.plugin.help
 
 		protected function as3DocsView_closeHandler(event:Event):void
 		{
-			var docsView:AS3DocsView = AS3DocsView(event.currentTarget);
 			docsView.removeEventListener(HelpViewEvent.OPEN_LINK, as3DocsView_openLinkHandler);
 			docsView.removeEventListener(Event.CLOSE, as3DocsView_closeHandler);
 			var docsViewWrapper:IPanelWindow = IPanelWindow(docsView.parent);
 			LayoutModifier.removeFromSidebar(docsViewWrapper);
+
+			docsView = null;
 		}
 		
 		protected function abouthShowHandler(event:Event):void

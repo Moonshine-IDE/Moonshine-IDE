@@ -1,5 +1,6 @@
 package actionScripts.extResources.riaspace.nativeApplicationUpdater
 {
+	import actionScripts.locator.IDEModel;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	import flash.desktop.NativeApplication;
@@ -8,6 +9,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.events.HTTPStatusEvent;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
@@ -28,7 +30,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 	import air.update.events.StatusUpdateErrorEvent;
 	import air.update.events.StatusUpdateEvent;
 	import air.update.events.UpdateEvent;
-	
+
 	[Event(name="initialized", type="air.update.events.UpdateEvent")]
 	[Event(name="checkForUpdate", type="air.update.events.UpdateEvent")]
 	[Event(name="updateStatus",type="air.update.events.StatusUpdateEvent")]
@@ -119,7 +121,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		protected var _currentMinor:int = -1;
 		
 		protected var _currentRevision:int = -1;
-		
+
 		protected var updateDescriptorLoader:URLLoader;
 		
 		protected var os:String = Capabilities.os.toLowerCase();
@@ -129,6 +131,8 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		protected var fileStream:FileStream;
 		
 		protected var hideAlert : Boolean;
+
+		protected var isUpdateDescriptorLoaderClosed:Boolean;
 		
 		public function NativeApplicationUpdater()
 		{
@@ -221,10 +225,12 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			if (currentState == BEFORE_CHECKING)
 			{
 				currentState = CHECKING;
-				
+
+				isUpdateDescriptorLoaderClosed = false;
 				updateDescriptorLoader =  new URLLoader();
 				updateDescriptorLoader.addEventListener(Event.COMPLETE,  updateDescriptorLoader_completeHandler);
 				updateDescriptorLoader.addEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
+				updateDescriptorLoader.addEventListener(HTTPStatusEvent.HTTP_STATUS, updateDescriptorLoader_httpStatus);
 				try
 				{
 					updateDescriptorLoader.load(new URLRequest(updateURL));
@@ -237,6 +243,14 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 				}
 			}
 		}
+
+		public function cancelUpdateCheck():void
+		{
+			if (currentState == CHECKING)
+			{
+				updateDescriptorLoader_removeListeners();
+			}
+		}
 		
 		/**
 		 * Cancel an open updation process
@@ -244,15 +258,13 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		public function cancelUpdate() : void {
 			
 			if ( currentState == DOWNLOADING ) {
-				urlStream_completeHandler( null );
+				urlStream_ioErrorHandler(null, false);
 			}
 		}
 		
 		protected function updateDescriptorLoader_completeHandler(event:Event):void
 		{
-			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
-			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
-			updateDescriptorLoader.close();
+			updateDescriptorLoader_removeListeners();
 			
 			updateDescriptor = new XML(updateDescriptorLoader.data);
 			
@@ -288,13 +300,33 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 		
 		protected function updateDescriptorLoader_ioErrorHandler(event:IOErrorEvent):void
 		{
-			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
-			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
-			updateDescriptorLoader.close();
+			updateDescriptorLoader_removeListeners();
 			
 			/*dispatchEvent(new StatusUpdateErrorEvent(StatusUpdateErrorEvent.UPDATE_ERROR, false, false, 
 				"Error downloading updater file, try again later.",
 				UpdaterErrorCodes.ERROR_9003, event.errorID));*/
+		}
+
+		private function updateDescriptorLoader_httpStatus(event:HTTPStatusEvent):void
+		{
+			if (event.status == 0)
+			{
+				updateDescriptorLoader_removeListeners();
+				dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false,
+						"Error downloading update information.", UpdaterErrorCodes.ERROR_9005));
+			}
+		}
+
+		private function updateDescriptorLoader_removeListeners():void
+		{
+			updateDescriptorLoader.removeEventListener(Event.COMPLETE, updateDescriptorLoader_completeHandler);
+			updateDescriptorLoader.removeEventListener(IOErrorEvent.IO_ERROR, updateDescriptorLoader_ioErrorHandler);
+			updateDescriptorLoader.removeEventListener(HTTPStatusEvent.HTTP_STATUS, updateDescriptorLoader_httpStatus);
+			if (!isUpdateDescriptorLoaderClosed)
+			{
+				updateDescriptorLoader.close();
+				isUpdateDescriptorLoaderClosed = true;
+			}
 		}
 		
 		/**
@@ -368,20 +400,25 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			fileStream.close();
 		}
 		
-		protected function urlStream_ioErrorHandler(event:IOErrorEvent):void
+		protected function urlStream_ioErrorHandler(event:IOErrorEvent, displayError:Boolean=true):void
 		{
 			fileStream.removeEventListener(Event.CLOSE, fileStream_closeHandler);
 			fileStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
-			fileStream.close();
 			
 			urlStream.removeEventListener(Event.OPEN, urlStream_openHandler);
 			urlStream.removeEventListener(ProgressEvent.PROGRESS, urlStream_progressHandler);
 			urlStream.removeEventListener(Event.COMPLETE, urlStream_completeHandler);
 			urlStream.removeEventListener(IOErrorEvent.IO_ERROR, urlStream_ioErrorHandler);
+
+			fileStream.close();
 			urlStream.close();
-			
-			dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false, 
-				"Error downloading update file: " + event.text, UpdaterErrorCodes.ERROR_9005, event.errorID));
+			urlStream.stop();
+
+			if (displayError)
+			{
+				dispatchEvent(new DownloadErrorEvent(DownloadErrorEvent.DOWNLOAD_ERROR, false, false,
+						"Error downloading update file: " + event.text, UpdaterErrorCodes.ERROR_9005, event.errorID));
+			}
 		}
 		
 		/**
@@ -503,7 +540,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			
 			// split the value to three
 			var tmpArr:Array = value.split(".");
-			if (tmpArr.length == 3)
+			if (tmpArr.length >= 3)
 			{
 				_currentMajor = parseInt(tmpArr[0]);
 				_currentMinor = parseInt(tmpArr[1]);
@@ -566,10 +603,25 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 					var uv1:Number = Number(tmpSplit[0]);
 					var uv2:Number = Number(tmpSplit[1]);
 					var uv3:Number = Number(tmpSplit[2]);
-					
+
+					var uv4:Number = -1;
+					// in case of Development build of Moonshine
+					// where it holds a version figure like 1.1.1.1252
+					// where the last digits are the Bamboo build number
+					if (tmpSplit.length > 3)
+					{
+						uv4 = Number(tmpSplit[3]);
+					}
+
 					if (uv1 > _currentMajor) return true;
 					else if (uv1 >= _currentMajor && uv2 > _currentMinor) return true;
 					else if (uv1 >= _currentMajor && uv2 >= _currentMinor && uv3 > _currentRevision) return true;
+
+					// only if uv4 exists
+					if (ConstantsCoreVO.IS_DEVELOPMENT_MODE && (uv4 != -1))
+					{
+						if (uv1 >= _currentMajor && uv2 >= _currentMinor && uv3 >= _currentRevision && uv4 > parseInt(IDEModel.getInstance().build)) return true;
+					}
 					
 					return false;
 				};

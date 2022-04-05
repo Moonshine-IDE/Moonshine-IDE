@@ -10,5 +10,6 @@
     <option mainclass="$ProjectName"/>
   </build>
   <options>
+    <option projectType="java-maven"/>
   </options>
 </project>

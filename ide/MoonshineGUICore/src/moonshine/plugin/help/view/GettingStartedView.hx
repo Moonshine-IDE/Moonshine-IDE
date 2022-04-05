@@ -33,7 +33,7 @@ import feathers.layout.VerticalLayoutData;
 import moonshine.ui.PluginTitleRenderer;
 import actionScripts.factory.FileLocation;
 import actionScripts.interfaces.IViewWithTitle;
-import actionScripts.valueObjects.Location;
+import moonshine.lsp.Location;
 import feathers.controls.LayoutGroup;
 import feathers.controls.ListView;
 import feathers.core.InvalidationFlag;
@@ -43,15 +43,14 @@ import feathers.layout.AnchorLayoutData;
 import moonshine.theme.MoonshineTheme;
 import openfl.events.Event;
 import moonshine.theme.SDKInstallerTheme;
+import moonshine.components.HelperView;
 
-class GettingStartedView extends LayoutGroup implements IViewWithTitle 
-{
+class GettingStartedView extends LayoutGroup implements IViewWithTitle {
 	public static final EVENT_OPEN_SELECTED_REFERENCE = "openSelectedReference";
 	public static final EVENT_DOWNLOAD_3RDPARTY_SOFTWARE = "eventDownload3rdPartySoftware";
 	public static final EVENT_REFRESH_STATUS = "eventRefreshStatus";
 
-	public function new() 
-	{
+	public function new() {
 		MoonshineTheme.initializeTheme();
 		super();
 	}
@@ -67,11 +66,10 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 	@:flash.property
 	public var title(get, never):String;
 
-	public function get_title():String 
-	{
+	public function get_title():String {
 		return "Getting Started";
 	}
-	
+
 	private var _setting:PluginSetting;
 
 	@:flash.property
@@ -89,7 +87,7 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._setting;
 	}
-	
+
 	private var _sdkInstallerInstallingMess:String;
 
 	@:flash.property
@@ -113,13 +111,11 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 	@:flash.property
 	public var references(get, set):ArrayCollection<Location>;
 
-	private function get_references():ArrayCollection<Location> 
-	{
+	private function get_references():ArrayCollection<Location> {
 		return this._references;
 	}
 
-	private function set_references(value:ArrayCollection<Location>):ArrayCollection<Location> 
-	{
+	private function set_references(value:ArrayCollection<Location>):ArrayCollection<Location> {
 		if (this._references == value) {
 			return this._references;
 		}
@@ -131,26 +127,23 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 	@:flash.property
 	public var selectedReference(get, never):Location;
 
-	public function get_selectedReference():Location 
-	{
+	public function get_selectedReference():Location {
 		if (this.resultsListView == null) {
 			return null;
 		}
 		return cast(this.resultsListView.selectedItem, Location);
 	}
-	
+
 	private var _helperView:FeathersControl;
-	
+
 	@:flash.property
 	public var helperView(get, set):FeathersControl;
-	
-	private function get_helperView():FeathersControl
-	{
+
+	private function get_helperView():FeathersControl {
 		return this._helperView;
 	}
 
-	private function set_helperView(value:FeathersControl):FeathersControl
-	{
+	private function set_helperView(value:FeathersControl):FeathersControl {
 		if (this._helperView == null) {
 			this._helperView = value;
 		}
@@ -158,11 +151,14 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 	}
 
 	private var _isRefreshInProgress:Bool;
+
 	@:flash.property
 	public var isRefreshInProgress(get, set):Bool;
+
 	private function get_isRefreshInProgress():Bool {
 		return this._isRefreshInProgress;
 	}
+
 	private function set_isRefreshInProgress(value:Bool):Bool {
 		if (this._isRefreshInProgress == value) {
 			return this._isRefreshInProgress;
@@ -172,11 +168,10 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		return this._isRefreshInProgress;
 	}
 
-	override private function initialize():Void 
-	{
+	override private function initialize():Void {
 		this.variant = SDKInstallerTheme.THEME_VARIANT_BODY_WITH_GREY_BACKGROUND;
 		this.layout = new AnchorLayout();
-		
+
 		// root container layout
 		var viewLayout = new VerticalLayout();
 		viewLayout.horizontalAlign = CENTER;
@@ -191,31 +186,31 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		viewContainer.layoutData = AnchorLayoutData.fill();
 		viewContainer.layout = viewLayout;
 		this.addChild(viewContainer);
-		
+
 		// title area
 		this.titleRenderer = new PluginTitleRenderer();
 		this.titleRenderer.setting = this.setting;
 		this.titleRenderer.layoutData = new VerticalLayoutData(100, null);
 		this.titleRenderer.layout = new AnchorLayout();
 		viewContainer.addChild(this.titleRenderer);
-		
+
 		// 3rd-party button
 		this.downloadThirdPartyButton = new Button();
 		this.downloadThirdPartyButton.text = "Download Third-Party Software";
 		this.downloadThirdPartyButton.variant = MoonshineTheme.THEME_VARIANT_LARGE_BUTTON;
 		this.downloadThirdPartyButton.addEventListener(TriggerEvent.TRIGGER, onDownload3rdPatySoftware);
 		viewContainer.addChild(this.downloadThirdPartyButton);
-		
+
 		// 3rd-party software-installation message
 		this.sdkInstallerInstallationMessageLabel = new Label();
 		this.sdkInstallerInstallationMessageLabel.text = this.sdkInstallerInstallingMess;
 		this.sdkInstallerInstallationMessageLabel.visible = this.sdkInstallerInstallationMessageLabel.includeInLayout = false;
 		viewContainer.addChild(this.sdkInstallerInstallationMessageLabel);
-		
+
 		// helper view
 		this.helperView.layoutData = new VerticalLayoutData(100, 96);
 		viewContainer.addChild(this.helperView);
-		
+
 		// do not show
 		this.doNotShowCheckbox = new Check();
 		this.doNotShowCheckbox.text = "Do not show this tab on startup";
@@ -243,21 +238,17 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		super.initialize();
 	}
 
-	override private function update():Void 
-	{
+	override private function update():Void {
 		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
 
 		if (dataInvalid) {
-			//this.resultsListView.dataProvider = this._references;
+			// this.resultsListView.dataProvider = this._references;
 			this.titleRenderer.setting = this.setting;
-			
-			if (this.sdkInstallerInstallingMess != null)
-			{
+
+			if (this.sdkInstallerInstallingMess != null) {
 				this.sdkInstallerInstallationMessageLabel.visible = this.sdkInstallerInstallationMessageLabel.includeInLayout = true;
 				this.sdkInstallerInstallationMessageLabel.text = this.sdkInstallerInstallingMess;
-			}
-			else
-			{
+			} else {
 				this.sdkInstallerInstallationMessageLabel.visible = this.sdkInstallerInstallationMessageLabel.includeInLayout = false;
 			}
 
@@ -268,33 +259,28 @@ class GettingStartedView extends LayoutGroup implements IViewWithTitle
 		super.update();
 	}
 
-	private function resultsListView_changeHandler(event:Event):Void 
+	public function onInvokeEvent(componentId:String, path:String=null):Void
 	{
+		//cast(this.helperView, HelperView).refreshFilteredDataProvider();
+	}
+
+	private function resultsListView_changeHandler(event:Event):Void {
 		/*if (this.resultsListView.selectedItem == null) {
 			return;
 		}*/
 		this.dispatchEvent(new Event(EVENT_OPEN_SELECTED_REFERENCE));
 	}
-	
-	private function onDoNotShowCheckChangeHandler(event:Event):Void 
-	{
-    	this.dispatchEvent(
-    		new GettingStartedViewEvent(
-    			GettingStartedViewEvent.EVENT_DO_NOT_SHOW,
-    			this.doNotShowCheckbox.selected
-    		)
-    	);
+
+	private function onDoNotShowCheckChangeHandler(event:Event):Void {
+		this.dispatchEvent(new GettingStartedViewEvent(GettingStartedViewEvent.EVENT_DO_NOT_SHOW, this.doNotShowCheckbox.selected));
 	}
-	
-	private function onDownload3rdPatySoftware(event:TriggerEvent):Void
-	{
+
+	private function onDownload3rdPatySoftware(event:TriggerEvent):Void {
 		this.dispatchEvent(new Event(EVENT_DOWNLOAD_3RDPARTY_SOFTWARE));
 	}
 
-	private function onRefreshRequest(event:TriggerEvent):Void
-	{
-		if (!this.isRefreshInProgress)
-		{
+	private function onRefreshRequest(event:TriggerEvent):Void {
+		if (!this.isRefreshInProgress) {
 			this.dispatchEvent(new Event(EVENT_REFRESH_STATUS));
 		}
 	}

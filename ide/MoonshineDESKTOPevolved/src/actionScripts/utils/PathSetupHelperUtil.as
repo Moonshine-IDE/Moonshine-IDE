@@ -18,6 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import actionScripts.plugins.haxe.HaxeBuildPlugin;
+	import actionScripts.plugins.macports.MacPortsPlugin;
+	import actionScripts.plugins.vagrant.VagrantPlugin;
+
 	import flash.filesystem.File;
 	
 	import actionScripts.events.GlobalEventDispatcher;
@@ -85,6 +89,16 @@ package actionScripts.utils
 				case ComponentTypes.TYPE_NOTES:
 					pluginClass = DominoPlugin.NAMESPACE;
 					break;
+				case ComponentTypes.TYPE_VAGRANT:
+					pluginClass = VagrantPlugin.NAMESPACE;
+					break;
+				case ComponentTypes.TYPE_MACPORTS:
+					pluginClass = MacPortsPlugin.NAMESPACE;
+					break;
+				case ComponentTypes.TYPE_HAXE:
+				case ComponentTypes.TYPE_NEKO:
+					pluginClass = HaxeBuildPlugin.NAMESPACE;
+					break;
 			}
 			
 			if (pluginClass) GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, pluginClass));
@@ -130,6 +144,18 @@ package actionScripts.utils
 					break;
 				case ComponentTypes.TYPE_NOTES:
 					updateNotesPath(path);
+					break;
+				case ComponentTypes.TYPE_VAGRANT:
+					updateVagrantPath(path);
+					break;
+				case ComponentTypes.TYPE_MACPORTS:
+					updateMacPortsPath(path);
+					break;
+				case ComponentTypes.TYPE_HAXE:
+					updateHaxePath(path);
+					break;
+				case ComponentTypes.TYPE_NEKO:
+					updateNekoPath(path);
 					break;
 			}
 		}
@@ -244,7 +270,7 @@ package actionScripts.utils
 			}
 			else
 			{
-				checkJavaVersionAndUpdateOnlyIfRequires(path, model.javaVersionForTypeAhead, updateJavaPath);
+				//checkJavaVersionAndUpdateOnlyIfRequires(path, model.javaVersionForTypeAhead, updateJavaPath);
 			}
 		}
 		
@@ -295,6 +321,8 @@ package actionScripts.utils
 			// update only if ant path not set
 			// or the existing ant path does not exists
 			var isGitPresent:Boolean = UtilsCore.isGitPresent();
+			var providedPath:String = path == null ? "" : path;
+
 			if (!isGitPresent)
 			{
 				if (ConstantsCoreVO.IS_MACOS && !isGitPresent)
@@ -317,12 +345,12 @@ package actionScripts.utils
 			 */
 			function updateMoonshineConfiguration():void
 			{
-				if (!ConstantsCoreVO.IS_MACOS && path.indexOf("git.exe") == -1)
+				if (!ConstantsCoreVO.IS_MACOS && (providedPath == null || providedPath.indexOf("git.exe") == -1))
 				{
-					path += (File.separator +'bin'+ File.separator +'git.exe');
+					providedPath += (File.separator +'bin'+ File.separator +'git.exe');
 				}
 				
-				model.gitPath = path;
+				model.gitPath = providedPath;
 				var settings:Vector.<ISetting> = Vector.<ISetting>([
 					new PathSetting({gitBinaryPathOSX: model.gitPath}, 'gitBinaryPathOSX', 'Git Path', true)
 				]);
@@ -377,6 +405,68 @@ package actionScripts.utils
 				
 				// update local env.variable
 				environmentSetupUtils.updateToCurrentEnvironmentVariable();
+			}
+		}
+
+		public static function updateVagrantPath(path:String, forceUpdate:Boolean=false):void
+		{
+			if (!UtilsCore.isVagrantAvailable() || forceUpdate)
+			{
+				model.vagrantPath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({vagrantPath: model.vagrantPath}, 'vagrantPath', 'Vagrant Home', true)
+				]);
+
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, VagrantPlugin.NAMESPACE, settings));
+			}
+		}
+
+		public static function updateMacPortsPath(path:String, forceUpdate:Boolean=false):void
+		{
+			if (!UtilsCore.isMacPortsAvailable() || forceUpdate)
+			{
+				model.macportsPath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({macportsPath: model.macportsPath}, 'macportsPath', 'MacPorts Home', true)
+				]);
+
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, MacPortsPlugin.NAMESPACE, settings));
+			}
+		}
+
+		public static function updateHaxePath(path:String, forceUpdate:Boolean=false):void
+		{
+			if (!UtilsCore.isHaxeAvailable() || forceUpdate)
+			{
+				model.haxePath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({haxePath: model.haxePath}, 'haxePath', 'Haxe Home', true),
+					new PathSetting({nekoPath: model.nekoPath}, 'nekoPath', 'Neko Home', true)
+				]);
+
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, HaxeBuildPlugin.NAMESPACE, settings));
+			}
+		}
+
+		public static function updateNekoPath(path:String, forceUpdate:Boolean=false):void
+		{
+			if (!UtilsCore.isNekoAvailable() || forceUpdate)
+			{
+				model.nekoPath = path;
+				var settings:Vector.<ISetting> = Vector.<ISetting>([
+					new PathSetting({haxePath: model.haxePath}, 'haxePath', 'Haxe Home', true),
+					new PathSetting({nekoPath: model.nekoPath}, 'nekoPath', 'Neko Home', true)
+				]);
+
+				// save as moonshine settings
+				dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING,
+						null, HaxeBuildPlugin.NAMESPACE, settings));
 			}
 		}
 		

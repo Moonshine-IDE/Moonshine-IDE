@@ -34,6 +34,7 @@ package actionScripts.ui
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.FocusEvent;
+	import flash.events.MouseEvent;
 
 	import mx.core.IFlexDisplayObject;
 	import mx.core.UIComponent;
@@ -105,9 +106,14 @@ package actionScripts.ui
 			return false;
 		}
 
+		override public function setFocus():void
+		{
+			this.assignFocus("top");
+		}
+
 		public function assignFocus(direction:String):void
 		{
-			if(!this._feathersUIFocusManager)
+			if(!this.enabled || !this._feathersUIFocusManager)
 			{
 				return;
 			}
@@ -135,6 +141,7 @@ package actionScripts.ui
 			}
 			if(this._feathersUIControl)
 			{
+				this._feathersUIControl.removeEventListener(MouseEvent.MOUSE_DOWN, feathersUIControl_mouseDownCaptureHandler, true);
 				this._feathersUIControl.removeEventListener(Event.RESIZE, feathersUIControl_resizeHandler);
 				this.removeChild(this._feathersUIControl);
 			}
@@ -144,10 +151,17 @@ package actionScripts.ui
 				this._feathersUIControl.initializeNow();
 				this._feathersUIControlMeasurements.save(this._feathersUIControl);
 				this.addChild(this._feathersUIControl);
+				this._feathersUIControl.addEventListener(MouseEvent.MOUSE_DOWN, feathersUIControl_mouseDownCaptureHandler, true);
 				this._feathersUIControl.addEventListener(Event.RESIZE, feathersUIControl_resizeHandler);
 			}
 			this.invalidateSize();
 			this.invalidateDisplayList();
+		}
+
+		override protected function commitProperties():void
+		{
+			this._feathersUIControl.enabled = this.enabled;
+			super.commitProperties();
 		}
 
 		override protected function measure():void
@@ -224,6 +238,10 @@ package actionScripts.ui
 				this.measuredMinHeight = this._feathersUIControl.minHeight;
 
 				this._ignoreResize = oldIgnoreResize;
+
+				// because we changed the size of the Feathers UI component to
+				// measure it, we need to set it back in updateDisplayList()
+				this.invalidateDisplayList();
 			}
 			else
 			{
@@ -332,6 +350,13 @@ package actionScripts.ui
 			if(this._feathersUIFocusManager) {
 				this._feathersUIFocusManager.enabled = false;
 			}
+		}
+
+		protected function feathersUIControl_mouseDownCaptureHandler(event:MouseEvent):void {
+			if(!this._feathersUIFocusManager) {
+				return;
+			}
+			this._feathersUIFocusManager.enabled = true;
 		}
 	}
 }

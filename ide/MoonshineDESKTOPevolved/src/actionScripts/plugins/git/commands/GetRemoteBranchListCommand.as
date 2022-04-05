@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
@@ -116,7 +117,14 @@ package actionScripts.plugins.git.commands
 
 			if (testMessageIfNeedsAuthentication(value.output))
 			{
-				openAuthentication(null);
+				if (ConstantsCoreVO.IS_APP_STORE_VERSION)
+				{
+					showPrivateRepositorySandboxError();
+				}
+				else
+				{
+					openAuthentication(null);
+				}
 			}
 		}
 

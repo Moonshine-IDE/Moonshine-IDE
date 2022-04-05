@@ -27,28 +27,53 @@ package actionScripts.languageServer
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
 
+	import mx.controls.Alert;
+
+	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.EditorPluginEvent;
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SdkEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.events.StatusBarEvent;
+	import actionScripts.events.WatchedFileChangeEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.UtilsCore;
+	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.utils.getProjectSDKPath;
+	import actionScripts.utils.isUriInProject;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
 
 	import com.adobe.utils.StringUtil;
+
+	import moonshine.lsp.ApplyWorkspaceEditParams;
+	import moonshine.lsp.LanguageClient;
+	import moonshine.lsp.LogMessageParams;
+	import moonshine.lsp.PublishDiagnosticsParams;
+	import moonshine.lsp.Registration;
+	import moonshine.lsp.RegistrationParams;
+	import moonshine.lsp.ShowMessageParams;
+	import moonshine.lsp.Unregistration;
+	import moonshine.lsp.UnregistrationParams;
+	import moonshine.lsp.WorkspaceEdit;
+	import moonshine.lsp.events.LspNotificationEvent;
+	import flash.utils.setTimeout;
+	import flash.utils.clearTimeout;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -66,6 +91,8 @@ package actionScripts.languageServer
 		private static const URI_SCHEMES:Vector.<String> = new <String>[URI_SCHEME_SWC];
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["as", "mxml"];
 
+		private static const LANGUAGE_SERVER_SHUTDOWN_TIMEOUT:Number = 8000;
+
 		private var _project:AS3ProjectVO;
 		private var _port:int;
 		private var _languageClient:LanguageClient;
@@ -78,6 +105,8 @@ package actionScripts.languageServer
 		private var _previousSDKPath:String = null;
 		private var _javaVersion:String = null;
 		private var _waitingToDispose:Boolean = false;
+		private var _watchedFiles:Object = {};
+		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
 
 		public function ActionScriptLanguageServerManager(project:AS3ProjectVO)
 		{
@@ -87,6 +116,12 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
 			_dispatcher.addEventListener(SdkEvent.CHANGE_SDK, changeMenuSDKStateHandler, false, 0, true);
 			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, javaPathSaveHandler, false, 0, true);
+			_dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler, false, 0, true);
+			_dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler, false, 0, true);
+			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler, false, 0, true);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_CREATED, fileCreatedHandler);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 
@@ -122,7 +157,7 @@ package actionScripts.languageServer
 			}
 			var scheme:String = uri.substr(0, colonIndex);
 
-			var editor:ActionScriptTextEditor = new ActionScriptTextEditor(readOnly);
+			var editor:ActionScriptTextEditor = new ActionScriptTextEditor(_project, readOnly);
 			if(scheme == URI_SCHEME_FILE)
 			{
 				//the regular OpenFileEvent should be used to open this one
@@ -181,6 +216,12 @@ package actionScripts.languageServer
 			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
 			_dispatcher.removeEventListener(SdkEvent.CHANGE_SDK, changeMenuSDKStateHandler);
 			_dispatcher.removeEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, javaPathSaveHandler);
+			_dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
+			_dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
+			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_CREATED, fileCreatedHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 
 			if(_javaVersionProcess)
 			{
@@ -197,6 +238,12 @@ package actionScripts.languageServer
 			}
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.PUBLISH_DIAGNOSTICS, languageClient_publishDiagnosticsHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.REGISTER_CAPABILITY, languageClient_registerCapabilityHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.UNREGISTER_CAPABILITY, languageClient_unregisterCapabilityHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.LOG_MESSAGE, languageClient_logMessageHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.SHOW_MESSAGE, languageClient_showMessageHandler);
+			_languageClient.removeEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			_languageClient = null;
 		}
 
@@ -323,14 +370,12 @@ package actionScripts.languageServer
 			if(!cmdFile.exists)
 			{
 				error("Invalid path to Java Development Kit: " + cmdFile.nativePath);
-                _dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
+				_dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return;
 			}
 
 			var frameworksPath:String = (new File(sdkPath)).resolvePath("frameworks").nativePath;
 
-			var processArgs:Vector.<String> = new <String>[];
-			var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var cp:String = File.applicationDirectory.resolvePath(LANGUAGE_SERVER_BIN_PATH).nativePath + File.separator + "*";
 			if (Settings.os == "win")
 			{
@@ -341,26 +386,50 @@ package actionScripts.languageServer
 				cp += ":";
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_COMPILER_PATH).nativePath + File.separator + "*";
-			processArgs.push("-Dfile.encoding=UTF8");
-			processArgs.push("-Droyalelib=" + frameworksPath);
-			processArgs.push("-cp");
-			processArgs.push(cp);
-			processArgs.push("moonshine.Main");
-			processInfo.arguments = processArgs;
-			processInfo.executable = cmdFile;
-			processInfo.workingDirectory = new File(_project.folderLocation.fileBridge.nativePath);
 
-			_languageServerProcess = new NativeProcess();
-			_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
-			_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
-			_languageServerProcess.start(processInfo);
+			var languageServerCommand:Vector.<String> = new <String>[
+				cmdFile.nativePath,
+				"-Dfile.encoding=UTF8",
+				"-Droyalelib=" + frameworksPath,
+				"-cp",
+				cp,
+				"moonshine.Main"
+			];
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
+			{
+				var cmdFile:File = null;
+				var processArgs:Vector.<String> = new <String>[];
+				
+				if (Settings.os == "win")
+				{
+					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
+					processArgs.push("/c");
+					processArgs.push(value);
+				}
+				else
+				{
+					cmdFile = new File("/bin/bash");
+					processArgs.push("-c");
+					processArgs.push(value);
+				}
 
-			initializeLanguageServer(sdkPath);
-			
-			GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
-				StatusBarEvent.LANGUAGE_SERVER_STATUS,
-				project.name, "Starting ActionScript & MXML code intelligence..."
-			));
+				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				processInfo.arguments = processArgs;
+				processInfo.executable = cmdFile;
+				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
+				
+				_languageServerProcess = new NativeProcess();
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+				_languageServerProcess.start(processInfo);
+
+				initializeLanguageServer(sdkPath);
+				
+				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+					StatusBarEvent.LANGUAGE_SERVER_STATUS,
+					project.name, "Starting ActionScript & MXML code intelligence..."
+				));
+			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
 		}
 		
 		private function initializeLanguageServer(sdkPath:String):void
@@ -376,12 +445,32 @@ package actionScripts.languageServer
 			trace("AS3 & MXML language server SDK: " + sdkPath);
 
 			var debugMode:Boolean = false;
-			var initOptions:Object = {config: getProjectConfiguration()};
-			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT, _project, debugMode, initOptions,
-				_dispatcher, _languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA, _languageServerProcess.standardInput);
-			_languageClient.registerScheme("swc");
+			var initOptions:Object = {
+				config: getProjectConfiguration(),
+				supportsSimpleSnippets: true
+			};
+			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT,
+				_languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA,
+				_languageServerProcess.standardInput);
+			_languageClient.debugMode = debugMode;
+			_languageClient.registerUriScheme("swc");
+			_languageClient.addWorkspaceFolder({
+				name: project.name,
+				uri: project.folderLocation.fileBridge.url
+			});
 			_languageClient.addEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.addEventListener(Event.CLOSE, languageClient_closeHandler);
+			_languageClient.addEventListener(LspNotificationEvent.PUBLISH_DIAGNOSTICS, languageClient_publishDiagnosticsHandler);
+			_languageClient.addEventListener(LspNotificationEvent.REGISTER_CAPABILITY, languageClient_registerCapabilityHandler);
+			_languageClient.addEventListener(LspNotificationEvent.UNREGISTER_CAPABILITY, languageClient_unregisterCapabilityHandler);
+			_languageClient.addEventListener(LspNotificationEvent.LOG_MESSAGE, languageClient_logMessageHandler);
+			_languageClient.addEventListener(LspNotificationEvent.SHOW_MESSAGE, languageClient_showMessageHandler);
+			_languageClient.addEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
+			_project.languageClient = _languageClient;
+
+			var initParams:Object = LanguageClientUtil.getSharedInitializeParams();
+			initParams.initializationOptions = initOptions;
+			_languageClient.initialize(initParams);
 		}
 
 		private function restartLanguageServer():void
@@ -395,7 +484,7 @@ package actionScripts.languageServer
 			if(_languageClient)
 			{
 				_waitingToRestart = true;
-				_languageClient.stop();
+				shutdown();
 			}
 			else if(_languageServerProcess)
 			{
@@ -512,21 +601,47 @@ package actionScripts.languageServer
 			_languageClient.sendNotification(METHOD_MOONSHINE__DID_CHANGE_PROJECT_CONFIGURATION, params);
 		}
 
+		private function shutdown():void
+		{
+			if(!_languageClient)
+			{
+				return;
+			}
+			_shutdownTimeoutID = setTimeout(shutdownTimeout, LANGUAGE_SERVER_SHUTDOWN_TIMEOUT);
+			_languageClient.shutdown();
+		}
+
+		private function shutdownTimeout():void
+		{
+			_shutdownTimeoutID = uint.MAX_VALUE;
+			if (!_languageServerProcess) {
+				return;
+			}
+			var message:String = "Timed out while shutting down ActionScript & MXML language server for project " + _project.name + ". Forcing process to exit.";
+			warning(message);
+			trace(message);
+			_languageClient = null;
+			_languageServerProcess.exit(true);
+		}
+
 		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
-			error(data);
 			trace(data);
 		}
 
 		private function languageServerProcess_exitHandler(e:NativeProcessExitEvent):void
 		{
+			if (_shutdownTimeoutID != uint.MAX_VALUE) {
+				clearTimeout(_shutdownTimeoutID);
+				_shutdownTimeoutID = uint.MAX_VALUE;
+			}
 			if(_languageClient)
 			{
 				//this should have already happened, but if the process exits
 				//abnormally, it might not have
-				_languageClient.stop();
+				_languageClient.shutdown();
 				
 				warning("ActionScript & MXML language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
@@ -618,6 +733,104 @@ package actionScripts.languageServer
 			this.dispatchEvent(new Event(Event.CLOSE));
 		}
 
+		private function languageClient_publishDiagnosticsHandler(event:LspNotificationEvent):void
+		{
+			var params:PublishDiagnosticsParams = PublishDiagnosticsParams(event.params);
+			var uri:String = params.uri;
+			var diagnostics:Array = params.diagnostics;
+			_dispatcher.dispatchEvent(new DiagnosticsEvent(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, uri, project, diagnostics));
+		}
+
+		private function languageClient_registerCapabilityHandler(event:LspNotificationEvent):void
+		{
+			var params:RegistrationParams = RegistrationParams(event.params);
+			var registrations:Array = params.registrations;
+			for each(var registration:Registration in registrations)
+			{
+				var method:String = registration.method;
+				switch(method)
+				{
+					case LanguageClient.METHOD_WORKSPACE__DID_CHANGE_WATCHED_FILES:
+						var registerOptions:Object = registration.registerOptions;
+						_watchedFiles[registration.id] = registerOptions.watchers.map(function(watcher:Object, index:int, source:Array):Object {
+							return GlobPatterns.toRegExp(watcher.globPattern);
+						});
+						break;
+				}
+				_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, _project, method));
+			}
+		}
+
+		private function languageClient_unregisterCapabilityHandler(event:LspNotificationEvent):void
+		{
+			var params:UnregistrationParams = UnregistrationParams(event.params);
+			var unregistrations:Array = params.unregistrations;
+			for each(var unregistration:Unregistration in unregistrations)
+			{
+				var method:String = unregistration.method;
+				switch(method)
+				{
+					case LanguageClient.METHOD_WORKSPACE__DID_CHANGE_WATCHED_FILES:
+						delete _watchedFiles[unregistration.id];
+						break;
+				}
+				_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_UNREGISTER_CAPABILITY, _project, method));
+			}
+		}
+
+		private function languageClient_logMessageHandler(event:LspNotificationEvent):void
+		{
+			var params:LogMessageParams = LogMessageParams(event.params);
+			var message:String = params.message;
+			var type:int = params.type;
+			var eventType:String = null;
+			switch(type)
+			{
+				case 1: //error
+				{
+					eventType = ConsoleOutputEvent.TYPE_ERROR;
+					break;
+				}
+				default:
+				{
+					eventType = ConsoleOutputEvent.TYPE_INFO;
+				}
+			}
+			_dispatcher.dispatchEvent(
+				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, message, false, false, eventType)
+			);
+			trace(message);
+		}
+
+		private function languageClient_showMessageHandler(event:LspNotificationEvent):void
+		{
+			var params:ShowMessageParams = ShowMessageParams(event.params);
+			var message:String = params.message;
+			var type:int = params.type;
+			var eventType:String = null;
+			switch(type)
+			{
+				case 1: //error
+				{
+					eventType = ConsoleOutputEvent.TYPE_ERROR;
+					break;
+				}
+				default:
+				{
+					eventType = ConsoleOutputEvent.TYPE_INFO;
+				}
+			}
+			
+			Alert.show(message);
+		}
+
+		private function languageClient_applyEditHandler(event:LspNotificationEvent):void
+		{
+			var params:ApplyWorkspaceEditParams = ApplyWorkspaceEditParams(event.params);
+			var workspaceEdit:WorkspaceEdit = params.edit;
+			applyWorkspaceEdit(workspaceEdit);
+		}
+
 		private function projectChangeCustomSDKHandler(event:Event):void
 		{
 			//restart only when the path has changed
@@ -658,6 +871,115 @@ package actionScripts.languageServer
 				return;
 			}
 			sendProjectConfiguration();
+		}
+
+		private function executeLanguageServerCommandHandler(event:ExecuteLanguageServerCommandEvent):void
+		{
+			if(event.project != _project)
+			{
+				//it's for a different project
+				return;
+			}
+			if(event.isDefaultPrevented())
+			{
+				//it's already handled somewhere else
+				return;
+			}
+			if(!_languageClient)
+			{
+				//not ready yet
+				return;
+			}
+
+			_languageClient.executeCommand({
+				command: event.command,
+				arguments: event.arguments
+			}, function(result:Object):void {
+				event.result = result;
+			});
+		}
+
+		private function removeProjectHandler(event:ProjectEvent):void
+		{
+			if(event.project != _project || !_languageClient)
+			{
+				return;
+			}
+			shutdown();
+		}
+
+		private function applicationExitHandler(event:ApplicationEvent):void
+		{
+			if(!_languageClient)
+			{
+				return;
+			}
+			shutdown();
+		}
+
+		private function isWatchingFile(file:FileLocation):Boolean
+		{
+			var relativePath:String = project.folderLocation.fileBridge.getRelativePath(file);
+			var matchesPattern:Boolean = false;
+			for(var id:String in _watchedFiles)
+			{
+				var watchers:Array = _watchedFiles[id];
+				for each(var pattern:RegExp in watchers)
+				{
+					if(pattern.test(relativePath)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		private function fileCreatedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 1
+					}
+				]
+			});
+		}
+
+		private function fileDeletedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 3
+					}
+				]
+			});
+		}
+
+		private function fileModifiedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 2
+					}
+				]
+			});
 		}
 	}
 }

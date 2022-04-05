@@ -82,8 +82,15 @@ package actionScripts.plugins.git.commands
 
 			if (testMessageIfNeedsAuthentication(value.output))
 			{
-				var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
-				openAuthentication(tmpModel ? tmpModel.sessionUser : null);
+				if (ConstantsCoreVO.IS_APP_STORE_VERSION)
+				{
+					showPrivateRepositorySandboxError();
+				}
+				else
+				{
+					var tmpModel:GitProjectVO = plugin.modelAgainstProject[model.activeProject];
+					openAuthentication(tmpModel ? tmpModel.sessionUser : null);
+				}
 			}
 		}
 

@@ -75,7 +75,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.utils.findAndCopyApplicationDescriptor;
+	import actionScripts.utils.FindAndCopyApplicationDescriptor;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -92,6 +92,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
+	import actionScripts.plugin.console.ConsoleEvent;
 	
 	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -174,7 +175,7 @@ package actionScripts.plugins.as3project.mxmlc
 			}
 			else
 			{
-				for each (var i:SDKReferenceVO in IDEModel.getInstance().userSavedSDKs)
+				for each (var i:SDKReferenceVO in model.userSavedSDKs)
 				{
 					if (i.path == value)
 					{
@@ -190,7 +191,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// references not found in newer bundled SDKs
 				if (!model.defaultSDK)
 				{
-					for each (i in IDEModel.getInstance().userSavedSDKs)
+					for each (i in model.userSavedSDKs)
 					{
 						if (i.path == value)
 						{
@@ -543,6 +544,9 @@ package actionScripts.plugins.as3project.mxmlc
 			if (!activeProject || !(activeProject is AS3ProjectVO)) return;
 			
 			reset();
+
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+
 			warning("Compiling "+activeProject.projectName);
 			
 			var as3Pvo:AS3ProjectVO = activeProject as AS3ProjectVO;
@@ -676,7 +680,7 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 				
 				// @fix
-				// https://github.com/prominic/Moonshine-IDE/issues/26
+				// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/26
 				// We've found js/bin/mxmlc compiletion do not produce
 				// valid swf with prior 0.8 version; we shall need following
 				// executable for version less than 0.8
@@ -1308,7 +1312,7 @@ package actionScripts.plugins.as3project.mxmlc
 				if(as3Project.testMovie === AS3ProjectVO.TEST_MOVIE_AIR)
 				{
 					//switch to the Adobe AIR application descriptor XML file
-					launchArgs["program"] = findAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
+					launchArgs["program"] = FindAndCopyApplicationDescriptor(swfFile, as3Project, swfFile.parent);
 					if(as3Project.isMobile)
 					{
 						var mobileDevice:MobileDeviceVO = null;
@@ -1386,7 +1390,7 @@ package actionScripts.plugins.as3project.mxmlc
 			var descriptorPath:String = project.targets[0].fileBridge.parent.fileBridge.nativePath + File.separator + descriptorName;
 			
 			// copy the descriptor file to build directory
-			findAndCopyApplicationDescriptor(swfFile, project, swfFile.parent);
+			FindAndCopyApplicationDescriptor(swfFile, project, swfFile.parent);
 			
 			// We need the application ID; without pre-guessing any
 			// lets read and find it

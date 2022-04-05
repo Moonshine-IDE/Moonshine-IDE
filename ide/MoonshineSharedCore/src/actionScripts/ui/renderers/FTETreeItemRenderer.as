@@ -64,6 +64,8 @@ package actionScripts.ui.renderers
 	{
 		public static const OPEN:String = "Open";
 		public static const OPEN_WITH:String = "Open With";
+		public static const VAGRANT_GROUP:String = "Vagrant";
+		public static const CONFIGURE_VAGRANT:String = "Configure Vagrant";
 		public static const CONFIGURE_EXTERNAL_EDITORS:String = "Customize Editors";
 		public static const OPEN_FILE_FOLDER:String = "Open File/Folder";
 		public static const NEW:String = "New";
@@ -132,7 +134,7 @@ package actionScripts.ui.renderers
 			editText.width = width - 34;
 			editText.height = height+4;
 			editText.styleName = 'uiText';
-			editText.setStyle('fontSize', 12);
+			editText.setStyle('fontSize', 13);
 			editText.setStyle('focusAlpha', 0);
 			editText.setStyle('color', 0xe0e0e0);
 			editText.setStyle('paddingTop', 3);
@@ -248,7 +250,7 @@ package actionScripts.ui.renderers
                 model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
 
                 model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? OPEN : OPEN_FILE_FOLDER, redispatch, Event.SELECT));
-				
+
 				if (ConstantsCoreVO.IS_AIR)
 				{
 					if (!fw.file.fileBridge.isDirectory)
@@ -321,6 +323,17 @@ package actionScripts.ui.renderers
 	   				//contextMenu.addItem(new ContextMenuItem(null, true));
 	   				
 					if (!fw.isSourceFolder) model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(ConstantsCoreVO.IS_AIR ? DELETE : DELETE_FILE_FOLDER, redispatch, Event.SELECT));
+
+					if (ConstantsCoreVO.IS_AIR && (fw.file.fileBridge.name.toLowerCase() == "vagrantfile"))
+					{
+						if (!fw.file.fileBridge.isDirectory)
+						{
+							model.contextMenuCore.addItem(contextMenu, model.contextMenuCore.getContextMenuItem(null));
+
+							var vagrantMenu:Object = model.contextMenuCore.getContextMenuItem(VAGRANT_GROUP, populateVagrantMenu, "displaying");
+							model.contextMenuCore.addItem(contextMenu, vagrantMenu);
+						}
+					}
 	   				
 	   				//contextMenu.addItem(new ContextMenuItem(null, true));
 					
@@ -393,14 +406,17 @@ package actionScripts.ui.renderers
 					removeChild(loadingIcon);
 					loadingIcon = null;
 				}
-				
-				if (fw.isDeleting)
+
+				if (!ConstantsCoreVO.IS_AIR)
 				{
-					label2.setStyle("lineThrough", true);
-				}
-				else
-				{
-					label2.setStyle("lineThrough", false);
+					if (fw.isDeleting)
+					{
+						label2.setStyle("lineThrough", true);
+					}
+					else
+					{
+						label2.setStyle("lineThrough", false);
+					}
 				}
 
 				if (fw.isSourceFolder && !isSourceFolderIcon)
@@ -429,10 +445,16 @@ package actionScripts.ui.renderers
 			var editors:ArrayCollection = model.flexCore.getExternalEditors();
 			for each (var editor:IExternalEditorVO in editors)
 			{
+				var isFileTypeAccessible:Boolean = (editor.fileTypes.length == 0);
+				if (!isFileTypeAccessible)
+				{
+					isFileTypeAccessible = (editor.fileTypes.indexOf((data as FileWrapper).file.fileBridge.extension) != -1);
+				}
+
 				var eventType:String = "eventOpenWithExternalEditor"+ editor.localID;
 				var item:Object = model.contextMenuCore.getContextMenuItem(editor.title, redispatchOpenWith, Event.SELECT);
 				item.data = eventType;
-				item.enabled = editor.isValid && editor.isEnabled;
+				item.enabled = editor.isValid && editor.isEnabled && isFileTypeAccessible;
 				
 				model.contextMenuCore.subMenu(event.target, item);
 			}
@@ -442,6 +464,37 @@ package actionScripts.ui.renderers
 			var customize:Object = model.contextMenuCore.getContextMenuItem(CONFIGURE_EXTERNAL_EDITORS, redispatchOpenWith, Event.SELECT);
 			customize.data = CONFIGURE_EXTERNAL_EDITORS;
 			model.contextMenuCore.subMenu(event.target, customize);
+		}
+
+		private function populateVagrantMenu(event:Event):void
+		{
+			model.contextMenuCore.removeAll(event.target);
+
+			var isVagrantAvailable:Boolean = UtilsCore.isVagrantAvailable();
+			var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(data as FileWrapper);
+			if (activeProject)
+			{
+				model.activeProject = activeProject;
+			}
+
+			for each (var option:String in model.flexCore.vagrantMenuOptions)
+			{
+				var eventType:String = "eventVagrant"+ option;
+				var item:Object = model.contextMenuCore.getContextMenuItem(option, redispatchOpenWith, Event.SELECT);
+				item.data = eventType;
+				item.enabled = isVagrantAvailable;
+
+				model.contextMenuCore.subMenu(event.target, item);
+			}
+
+			if (!isVagrantAvailable)
+			{
+				model.contextMenuCore.subMenu(event.target, model.contextMenuCore.getContextMenuItem(null));
+
+				var customize:Object = model.contextMenuCore.getContextMenuItem(CONFIGURE_VAGRANT, redispatchOpenWith, Event.SELECT);
+				customize.data = CONFIGURE_VAGRANT;
+				model.contextMenuCore.subMenu(event.target, customize);
+			}
 		}
 
 		private function populateTemplatingMenu(e:Event):void
@@ -463,15 +516,24 @@ package actionScripts.ui.renderers
 			for each (var file:FileLocation in TemplatingPlugin.fileTemplates)
 			{
 				var label:String = TemplatingHelper.getTemplateLabel(file);
+				
 				var eventType:String = "eventNewFileFromTemplate"+label;
+			
 				var item:Object = model.contextMenuCore.getContextMenuItem(label, redispatchNew, Event.SELECT);
 				item.data = eventType;
 				
 				enableTypes = TemplatingHelper.getTemplateMenuType(label);
-				item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+				if (enableTypes.length == 0)
 				{
-					return activeProject.menuType.indexOf(item) != -1;
-				});
+					item.enabled = true;
+				}
+				else
+				{
+					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+					{
+						return activeProject.menuType.indexOf(item) != -1;
+					});
+				}
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}
@@ -608,7 +670,7 @@ package actionScripts.ui.renderers
 				label2.mouseEnabled = false;
 				label2.mouseChildren = false;
 				label2.styleName = 'uiText';
-				label2.setStyle('fontSize', 12);
+				label2.setStyle('fontSize', 13);
 				label2.setStyle('color', 0xe0e0e0);
 				label2.maxDisplayedLines = 1;
 				

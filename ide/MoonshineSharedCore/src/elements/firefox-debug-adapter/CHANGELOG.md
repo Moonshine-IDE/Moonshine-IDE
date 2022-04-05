@@ -1,3 +1,24 @@
+### Version 2.9.5
+* compatibility fix for VS Code 1.62.1
+
+### Version 2.9.4
+* fix for breakpoints not being set in some situations
+* add the URL to a thread's name
+
+### Version 2.9.3
+* fix breakpoints only working after reloading the page
+* fix missing console messages
+* fix debugging WebWorkers
+* fix data breakpoints
+
+### Version 2.9.2
+* fix terminating Firefox at the end of the debug session
+* fix function scopes being with the name `[unknown]`
+* show an error message if the path mapping wizard couldn't update the launch configuration
+* set the webRoot configuration property to its default if necessary
+* support overriding the debugging port in the settings
+* add workaround for the snap version of VS Code
+
 ### Version 2.9.1
 * add `enableCRAWorkaround` configuration property
 * fix the conditions for the `keepProfileChanges` configuration property on MacOS

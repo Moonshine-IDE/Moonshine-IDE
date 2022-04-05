@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.startup
 {
+	import actionScripts.extResources.riaspace.nativeApplicationUpdater.AutoUpdaterHelper;
+
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.filesystem.File;
@@ -70,7 +72,7 @@ package actionScripts.plugins.startup
 		
 		public static const EVENT_GETTING_STARTED:String = "gettingStarted";
 		public static const EVENT_GETTING_STARTED_AS3:String = "gettingStartedAS3";
-		
+
 		private var dependencyCheckUtil:IHelperMoonshineBridgeImp = new IHelperMoonshineBridgeImp();
 		private var installerItemsManager:InstallerItemsManager = InstallerItemsManager.getInstance();
 		private var sdkNotificationView:SDKUnzipConfirmPopup;
@@ -104,12 +106,17 @@ package actionScripts.plugins.startup
 			
 			// we want this to be work in desktop version only
 			if (!ConstantsCoreVO.IS_AIR) return;
+
+			// HelperView initialize get called before
+			// HelperViewWrapper could set the value to const
+			HelperConstants.IS_RUNNING_IN_MOON = true;
 			
 			dispatcher.addEventListener(StartupHelperEvent.EVENT_RESTART_HELPING, onRestartRequest, false, 0, true);
 			dispatcher.addEventListener(EVENT_GETTING_STARTED_AS3, onGettingStartedRequest, false, 0, true);
 			dispatcher.addEventListener(EVENT_GETTING_STARTED, onGettingStartedHaxeRequest, false, 0, true);
 			dispatcher.addEventListener(HelperConstants.WARNING, onWarningUpdated, false, 0, true);
 			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEventFired, false, 0, true);
+			dispatcher.addEventListener(AutoUpdaterHelper.EVENT_UPDATE_CHECK_COMPLETES, onUpdateStageCompletes, false, 0, true);
 			
 			// event listner to open up #sdk-extended from File in OSX
 			CONFIG::OSX
@@ -155,7 +162,23 @@ package actionScripts.plugins.startup
 				continueOnHelping();
 			}
 		}
-		
+
+		/**
+		 * Help to determine when update-check stage completes
+		 * so we can start loading previously opened projects
+		 * and starts LS
+		 */
+		private function onUpdateStageCompletes(event:Event):void
+		{
+			dispatcher.removeEventListener(AutoUpdaterHelper.EVENT_UPDATE_CHECK_COMPLETES, onUpdateStageCompletes);
+
+			if (!didShowPreviouslyOpenedTabs)
+			{
+				didShowPreviouslyOpenedTabs = true;
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
+			}
+		}
+
 		/**
 		 * Starts the checks and starup sequences
 		 * to setup SDK, Java etc.
@@ -164,23 +187,15 @@ package actionScripts.plugins.startup
 		{
 			clearTimeout(startHelpingTimeout);
 			startHelpingTimeout = 0;
-			
+
+			installerItemsManager.addEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded, false, 0, true);
+			installerItemsManager.addEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent, false, 0, true);
 			toggleListenersInstallerItemsManager(true);
 			
 			HelperConstants.IS_MACOS = ConstantsCoreVO.IS_MACOS;
 			installerItemsManager.dependencyCheckUtil = dependencyCheckUtil;
 			installerItemsManager.environmentUtil = environmentUtil;
 			installerItemsManager.loadItemsAndDetect();
-			
-			if (!didShowPreviouslyOpenedTabs)
-			{
-				didShowPreviouslyOpenedTabs = true;
-				var timeoutValue:uint = setTimeout(function():void
-				{
-					clearTimeout(timeoutValue);
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS));
-				}, 2000);
-			}
 		}
 		
 		/**
@@ -287,14 +302,10 @@ package actionScripts.plugins.startup
 		{
 			if (toggle)
 			{
-				installerItemsManager.addEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded);
-				installerItemsManager.addEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
 				installerItemsManager.addEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
 			}
 			else
 			{
-				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_DOWNLOADED, onAnyComponentDownloaded);
-				installerItemsManager.removeEventListener(HelperEvent.COMPONENT_NOT_DOWNLOADED, onComponentNotDownloadedEvent);
 				installerItemsManager.removeEventListener(HelperEvent.ALL_COMPONENTS_TESTED, onAllComponentTestedEvent);
 			}
 		}
@@ -391,10 +402,6 @@ package actionScripts.plugins.startup
 				gettingStartedView = new GettingStartedView();
 				gettingStartedView.setting = ps;
 
-				// HelperView initialize get called before
-				// HelperViewWrapper could set the value to const
-				HelperConstants.IS_RUNNING_IN_MOON = true;
-				
 				var tmpHelperViewWrapper:HelperViewWrapper = new HelperViewWrapper(new HelperView());
 				tmpHelperViewWrapper.isRunningInsideMoonshine = HelperConstants.IS_RUNNING_IN_MOON;
 				tmpHelperViewWrapper.dependencyCheckUtil = dependencyCheckUtil;
@@ -493,32 +500,22 @@ package actionScripts.plugins.startup
 			{
 				var type:String;
 				var path:String;
-				var pathValidation:String;
+				var pathValidation:Array;
 				var notifierValue:XML = new XML(FileUtils.readFromFile(updateNotifierFile) as String);
 				for each (var item:XML in notifierValue.items.item)
 				{
 					type = String(item.@type);
 					path = String(item.path);
-					pathValidation = String(item.pathValidation);
+					pathValidation = String(item.pathValidation).split(",");
 					
 					// validate before set
 					if (type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) pathValidation = null;
 					if (!HelperUtils.isValidSDKDirectoryBy(type, path, pathValidation)) continue;
-					
-					if ((type == ComponentTypes.TYPE_GIT || type == ComponentTypes.TYPE_SVN) && ConstantsCoreVO.IS_MACOS)
+
+					PathSetupHelperUtil.updateFieldPath(type, path);
+					if (gettingStartedViewWrapper)
 					{
-						updateGitAndSVN(path);
-					}
-					else
-					{
-						if (!gettingStartedPopup)
-						{
-							PathSetupHelperUtil.updateFieldPath(type, path);
-						}
-						else
-						{
-							gettingStartedPopup.onInvokeEvent(type, path);
-						}
+						gettingStartedViewWrapper.onInvokeEvent(type, path);
 					}
 				}
 			}

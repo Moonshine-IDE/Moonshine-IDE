@@ -20,6 +20,7 @@
 
 package moonshine.components;
 
+import moonshine.haxeScripts.utils.StringSorter;
 import openfl.events.MouseEvent;
 import actionScripts.valueObjects.SDKReferenceVO;
 import actionScripts.utils.SDKUtils;
@@ -77,6 +78,8 @@ class SDKSelectorView extends ResizableTitleWindow {
 			return this._sdks;
 		}
 		this._sdks = value;
+		this._sdks.sortCompareFunction = (new StringSorter("name")).sortCompareFunction;
+		this._sdks.refresh();
 		this.setInvalid(DATA);
 		return this._sdks;
 	}

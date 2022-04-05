@@ -18,6 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.domino
 {
+	import actionScripts.events.DominoEvent;
+
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
@@ -57,16 +62,38 @@ package actionScripts.plugins.domino
 		
 		private static const TEMP_UPDATE_SITE_DOWNLOAD_PATH:File = File.applicationStorageDirectory.resolvePath("dominoUpdateSiteGeneration");
 		
-		override public function get name():String			{ return "Domino"; }
-		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
+		override public function get name():String			{ return "Domino and Notes Client"; }
+		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team.<br/>Based on <a href='https://github.com/OpenNTF/org.openntf.nsfodp'>NSF ODP Tooling</a> by Jesse Gallagher and the OpenNTF team."; }
 		override public function get description():String	{ return "HCL® Notes / Domino Integration"; }
-		
-		public var updateSitePath:String;
+
+		private static const UPDATE_SITE_GENERATION:String = "update-site-generation";
+		private static const NSD_KILL:String = "nsd-kill";
 		
 		private var pathSetting:PathSetting;
 		private var updateSitePathSetting:UpdateSitePathSetting;
 		private var notesMacPermissionPop:NotesMacPermissionPopup;
 		private var targetUpdateSitePath:File;
+		private var lastExecutionType:String;
+
+		private var _macNDSDefaultLookupPath:String;
+		public function get macNDSDefaultLookupPath():String
+		{
+			return _macNDSDefaultLookupPath;
+		}
+		public function set macNDSDefaultLookupPath(value:String):void
+		{
+			_macNDSDefaultLookupPath = value;
+		}
+
+		private var _updateSitePath:String;
+		public function get updateSitePath():String
+		{
+			return _updateSitePath;
+		}
+		public function set updateSitePath(value:String):void
+		{
+			_updateSitePath = value;
+		}
 
         public function get notesPath():String
         {
@@ -86,6 +113,7 @@ package actionScripts.plugins.domino
 			
 			dispatcher.addEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest, false, 0, true);
 			dispatcher.addEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved, false, 0, true);
+			dispatcher.addEventListener(DominoEvent.NDS_KILL, onNDSKillRequest, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS)
 			{
@@ -98,6 +126,24 @@ package actionScripts.plugins.domino
 					tmpRootDirectories[0].resolvePath(HelperConstants.DEFAULT_SDK_FOLDER_NAME +"/Domino/UpdateSite") : 
 					File.userDirectory.resolvePath(HelperConstants.DEFAULT_SDK_FOLDER_NAME +"/Domino/UpdateSite");
 			}
+
+			// default lookup path for nsd between mac versions
+			if (UtilsCore.isNotesDominoAvailable())
+			{
+				var lookupPaths:Array = [
+					"/Contents/MacOS/Support/nsd.sh",
+					"/Contents/Resources/Support/nsd.sh",
+					File.separator + "nsd.exe"
+				];
+				for each (var nsdPath:String in lookupPaths)
+				{
+					if (FileUtils.isPathExists(model.notesPath + nsdPath))
+					{
+						macNDSDefaultLookupPath = model.notesPath + nsdPath;
+						break;
+					}
+				}
+			}
 			
 			OnDiskMavenSettingsExporter.mavenSettingsPath = new FileLocation(targetUpdateSitePath.parent.resolvePath("settings.xml").nativePath);
 		}
@@ -108,6 +154,7 @@ package actionScripts.plugins.domino
 			
 			dispatcher.removeEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest);
 			dispatcher.removeEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved);
+			dispatcher.removeEventListener(DominoEvent.NDS_KILL, onNDSKillRequest);
 		}
 
 		override public function resetSettings():void
@@ -156,6 +203,7 @@ package actionScripts.plugins.domino
 			return Vector.<ISetting>([
                 pathSetting,
 				updateSitePathSetting,
+				new PathSetting(this, 'macNDSDefaultLookupPath', 'NSD Executable', false, macNDSDefaultLookupPath),
 				instructions
 			]);
         }
@@ -288,7 +336,8 @@ package actionScripts.plugins.domino
 			
 			var fullCommand:String = [commandA, commandB, commandC, commandD, commandE, commandF].join(" && ");
 			print("%s", fullCommand);
-			
+
+			lastExecutionType = UPDATE_SITE_GENERATION;
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Generating Update Site..", null, false));
 			this.start(
 				new <String>[fullCommand], 
@@ -300,12 +349,15 @@ package actionScripts.plugins.domino
 		{
 			super.onNativeProcessExit(event);
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-			updateSitePathSetting.editable = true;
+			if (updateSitePathSetting)
+				updateSitePathSetting.editable = true;
 			
 			// set as default Update site
-			if (targetUpdateSitePath.exists)
+			if ((lastExecutionType == UPDATE_SITE_GENERATION) &&
+					targetUpdateSitePath.exists)
 			{
-				updateSitePathSetting.path = updateSitePath = targetUpdateSitePath.nativePath;
+				updateSitePath = targetUpdateSitePath.nativePath;
+				if (updateSitePathSetting) updateSitePathSetting.path = updateSitePath;
 				generateDominoMavenSettingsFile();
 			}
 		}
@@ -321,6 +373,71 @@ package actionScripts.plugins.domino
 			{
 				OnDiskMavenSettingsExporter.exportOnDiskMavenSettings(updateSitePath);
 			}
+		}
+
+		private function onNDSKillRequest(event:Event):void
+		{
+			if (!UtilsCore.isNotesDominoAvailable() || !macNDSDefaultLookupPath)
+			{
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, NAMESPACE));
+				error("Error: Could not find 'nsd' executable in HCL Notes Installation. This can be configured in Moonshine > Settings > Domino and Notes Client.");
+				return;
+			}
+
+			var originalAlertYesSize:Number = Alert.buttonWidth;
+			Alert.buttonWidth = originalAlertYesSize * 3;
+			Alert.YES_LABEL = "Proceed to run NSD Kill";
+			Alert.show(
+					"This will attempt to immediately terminate your HCL Notes Client and all related processes and shared memory segments. You should first close any remaining tabs and windows that are open if you still have access to the GUI. Do you wish to proceed with this action?",
+					"Confirm!", Alert.YES|Alert.CANCEL, null, onNSDKillConfirmed);
+
+			/*
+			 * @local
+			 */
+			function onNSDKillConfirmed(event:CloseEvent):void
+			{
+				if (event.detail == Alert.YES)
+				{
+					lastExecutionType = NSD_KILL;
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Trying to kill NSD..", null, false));
+					if (ConstantsCoreVO.IS_MACOS)
+					{
+						print("%s", "Executing NSD kill process on Terminal window.");
+						startOSAScript();
+					}
+					else
+					{
+						var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
+						print("%s", command);
+						start(
+								new <String>[command],
+								null
+						);
+					}
+				}
+
+				Alert.buttonWidth = originalAlertYesSize;
+				Alert.YES_LABEL = "YES";
+			}
+		}
+
+		private function startOSAScript():void
+		{
+			if (nativeProcess.running && running)
+			{
+				warning("Build is running. Wait for finish...");
+				return;
+			}
+
+			nativeProcess = new NativeProcess();
+			nativeProcessStartupInfo = new NativeProcessStartupInfo();
+			nativeProcessStartupInfo.executable = File.documentsDirectory.resolvePath("/usr/bin/osascript");
+
+			var command:String = "tell application \"Terminal\" to activate do script \"\\\""+ macNDSDefaultLookupPath +"\\\" -kill\"";
+			nativeProcessStartupInfo.arguments = Vector.<String>(["-e", command]);
+			addNativeProcessEventListeners();
+			nativeProcess.start(nativeProcessStartupInfo);
+			running = true;
 		}
 	}
 }

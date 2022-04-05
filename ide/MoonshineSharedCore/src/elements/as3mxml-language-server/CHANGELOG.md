@@ -1,5 +1,104 @@
 # ActionScript & MXML for Visual Studio Code Changelog
 
+## 1.11.1
+
+### Fixed Issues
+
+Build: Fixed issue where multiple Quick Compile & Debug/Run commands could be run simultaneously. Now, you must wait for one to complete before starting a new one.
+Build: Fixed issue where Adobe AIR packaging tasks were incorrectly provided for _.swc_ library projects.
+Documentation: Fixed failure to remove uppercase HTML tags from rendered text.
+Documentation: Fixed line breaks missing between some block-level elements.
+Documentation: Fixed missing formatting for list items.
+Documentation: Fixed display of HTML entities in code blocks.
+General: Fixed wrong Apache Royale version number in error message about invalid `as3mxml.sdk.editor` values.
+General: The thread to watch source paths is a daemon to avoid it blocking the language server from exiting.
+
+## 1.11.0
+
+### New Features
+
+Build: Added a number of new compiler options for Apache Royale to the `compilerOptions` section of _asconfig.json_, meaning that many advanced options no longer need to be added to `additionalOptions`.
+Hover: Documentation is now detected in SDKs that store it in resource bundle _.swc_ files separately from the _.swc_ files containing compiled code. More documentation from the Adobe and Apache Flex SDKs should now be shown in hover, completion, and signature help.
+
+### Fixed Issues
+
+Build: Fixed issue where module and worker _.swf_ files were not automatically included in Adobe AIR bundles.
+Build: Fixed issue where cleaning the project sometimes would not clean module _.swf_ files.
+General: Fixed an issue with detection of changes to _.swc_ library files that caused the workspace to continue using stale APIs.
+Settings: Fixed validation of relative framework SDK paths on Windows.
+Settings: Fixed issue where changing certain settings sometimes failed to restart the language server.
+Hover: Fixed missing asdoc documentation for members of interfaces.
+Hover: Fixed missing asdoc documentation for APIs in the public-like `AS3` namespace.
+Hover: Fixed missing asdoc documentation for `[Style]` and `[Event]` metadata in _.swc_ libraries.
+Hover: Fixed missing asdoc documentation for accessors when the asdoc comment was added to the setter instead of the getter.
+Imports: Fixed issue where a class outside of the package block had an import for the class inside the package block, and it was incorrectly removed when organizing imports.
+Views: Fixed exception in ActionScript Source Paths view when the project has no source paths yet.
+
+## 1.10.0
+
+### New Features
+
+- General: SDK path is no longer required to be absolute. It may be specified relative to the workspace root folder, or relative to the _.code-workspace_ file, for multi-root workspaces.
+- Imports: When completing an override of a function, types of parameters and return are now automatically imported, if possible.
+
+### Fixed Issues
+
+- Completion: Fixed intermittent string range exception when completing imports.
+- General: Fixed watching of individual _.swc_ files in `library-path` or `external-library-path`, and not only directories of _.swc_ files.
+
+## 1.9.0
+
+### Fixed Issues
+
+- General: Fixed issue that prevented the language server from running with a socket instead of standard input.
+- General: The language server automatically exits as soon as the input stream from the parent process closes. This should help prevent zombie processes from staying open after closing Visual Studio Code.
+
+### Other Changes
+
+- Dependencies: Apache Royale compiler updated to v0.9.8.
+
+## 1.8.0
+
+### New Features
+
+- Code Generation: Smarter detection of underscore (`_`) characters at the beginning of the original variable. The undercore is added to the backing variable, if missing. It is removed from the getter and setter, if present.
+- Completion: Can now suggest methods to override after only the `override` keyword (previously, you needed to specify both the `override` and `function` keywords and the namespace to get suggestions). Also, lists getters and setters that may be overridden.
+- Settings: New setting `as3mxml.sources.organizeImports.addMissingImports` determines whether missing imports are added when the organize imports command is run.
+- Settings: New setting `as3mxml.sources.organizeImports.removeUnusedImports` determines whether unused imports are removed when the organize imports command is run.
+- Settings: New setting `as3mxml.sources.organizeImports.insertNewLineBetweenTopLevelPackages` determines of an extra new line is added between top-level packages when the organize imports command is run.
+
+### Fixed Issues
+
+- General: Fixed issue where code intelligence could freeze if the same _asconfig.json_ file appeared in multiple workspace root folders.
+- Hover: Fixed resolution of symbols when they are fully-qualified with the package name.
+- Organize Imports: Fixed issue where imports where sometimes moved to the top of an _.mxml_ file instead of remaining at the top of the `<fx:Script>` section.
+- Quick Compile & Run/Debug: Fixed issue where pressing Enter while Ctrl+F searching could fail after running Quick Compile & Run/Debug because the output channel would not release focus.
+
+### Other Changes
+
+- Rename and Find References: Optimized performance by skipping most files in the project when finding/renaming private symbols.
+- Dependencies: eclipse/lsp4j language server updated to v0.12.0.
+
+## 1.7.1
+
+### Fixed Issues
+
+- Build: Fixed missing Adobe AIR build tasks.
+
+## 1.7.0
+
+### New Features
+
+- Code Actions: Added new `as3mxml.codeGeneration.getterSetter.forcePublicFunctions` and `as3mxml.codeGeneration.getterSetter.forcePrivateVariable` settings to customize how the generate getter and setter quick fixes behave.
+
+### Fixed Issues
+
+- Build: Fixed issue where captive runtime and native installer builds were debug instead of release.
+- Code Actions: Fixed missing "Add import" code actions for classes in _.swc_ libraries.
+- Completion: Fixed wrong namespace in Apache Flex projects when adding the root tag with the MX namespace to an _.mxml_ file.
+- Hover: Fixed missing mouse hover text for custom user namespaces.
+- Syntax: Missing syntax coloring for namespace declarations.
+
 ## 1.6.0
 
 ### New Features

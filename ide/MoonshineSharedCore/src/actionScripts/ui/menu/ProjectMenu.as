@@ -18,6 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
+    import actionScripts.events.DominoEvent;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectTypes;
+
     import flash.ui.Keyboard;
     
     import mx.resources.IResourceManager;
@@ -26,6 +30,7 @@ package actionScripts.ui.menu
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.events.GradleBuildEvent;
     import actionScripts.events.MavenBuildEvent;
+    import actionScripts.events.OnDiskBuildEvent;
     import actionScripts.events.PreviewPluginEvent;
     import actionScripts.events.RoyaleApiReportEvent;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -57,14 +62,15 @@ package actionScripts.ui.menu
 		private var onDiskMenu:Vector.<MenuItem>;
 
         private var currentProject:ProjectVO;
+        private var resourceManager:IResourceManager = ResourceManager.getInstance();
 
         public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
         {
             currentProject = project;
 
-            var as3Project:AS3ProjectVO = project as AS3ProjectVO;
-            if (as3Project)
+            if (project is AS3ProjectVO)
             {
+                var as3Project:AS3ProjectVO = currentProject as AS3ProjectVO;
                 if (as3Project.isLibraryProject)
                 {
                     return getASLibraryMenuItems();
@@ -78,9 +84,10 @@ package actionScripts.ui.menu
                     if (as3Project.isPrimeFacesVisualEditorProject)
                     {
                         return getVisualEditorMenuPrimeFacesItems();
-                    } else if(as3Project.isDominoVisualEditorProject){
+                    }
+                    else if(as3Project.isDominoVisualEditorProject)
+                    {
                         return getDominoMenuItems();
-                    }else {
                     }
 
                     return getVisualEditorMenuFlexItems();
@@ -91,20 +98,17 @@ package actionScripts.ui.menu
                 }
             }
 
-            var javaProject:JavaProjectVO = project as JavaProjectVO;
-            if (javaProject)
+            if (project is JavaProjectVO)
             {
                 return getJavaMenuItems();
             }
 
-            var grailsProject:GrailsProjectVO = project as GrailsProjectVO;
-            if (grailsProject)
+            if (project is GrailsProjectVO)
             {
                 return getGrailsMenuItems();
             }
 
-            var haxeProject:HaxeProjectVO = project as HaxeProjectVO;
-            if (haxeProject)
+            if (project is HaxeProjectVO)
             {
                 return getHaxeMenuItems();
             }
@@ -121,7 +125,6 @@ package actionScripts.ui.menu
         {
             if (actionScriptMenu == null)
             {
-                var resourceManager:IResourceManager = ResourceManager.getInstance();
                 actionScriptMenu = Vector.<MenuItem>([
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JS_ROYALE], ProjectActionEvent.BUILD,
@@ -146,7 +149,6 @@ package actionScripts.ui.menu
         {
             if (libraryMenu == null)
             {
-                var resourceManager:IResourceManager = ResourceManager.getInstance();
                 libraryMenu = Vector.<MenuItem>([
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JS_ROYALE], ActionScriptBuildEvent.BUILD,
@@ -167,7 +169,6 @@ package actionScripts.ui.menu
         {
             if (royaleMenu == null)
             {
-                var resourceManager:IResourceManager = ResourceManager.getInstance();
                 royaleMenu = Vector.<MenuItem>([
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, [ProjectMenuTypes.JS_ROYALE], ProjectActionEvent.BUILD,
@@ -191,7 +192,6 @@ package actionScripts.ui.menu
         {
             if (veFlex == null)
             {
-                var resourceManager:IResourceManager = ResourceManager.getInstance();
                 veFlex = Vector.<MenuItem>([
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), [
@@ -212,7 +212,6 @@ package actionScripts.ui.menu
         {
             if (vePrimeFaces == null)
             {
-                var resourceManager:IResourceManager = ResourceManager.getInstance();
                 vePrimeFaces = Vector.<MenuItem>([
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), [
@@ -247,8 +246,7 @@ package actionScripts.ui.menu
         private function getJavaMenuItems():Vector.<MenuItem>
         {
             var enabledTypes:Array = [ProjectMenuTypes.JAVA];
-            var resourceManager:IResourceManager = ResourceManager.getInstance();
-			
+
 			// for gradle project type
 			if ((currentProject as JavaProjectVO).hasGradleBuild())
 			{
@@ -261,8 +259,12 @@ package actionScripts.ui.menu
 							'b', [Keyboard.CONTROL]),
 						new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
 					]);
+                    if ((currentProject as JavaProjectVO).projectType == JavaProjectTypes.JAVA_DOMINO)
+                    {
+                        addNSDKillOption(javaMenuGradle);
+                    }
 				}
-				
+
 				javaMenuGradle.forEach(makeDynamic);
 				return javaMenuGradle;
 			}
@@ -278,24 +280,27 @@ package actionScripts.ui.menu
                         "\n", [Keyboard.CONTROL]),
                 new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
             ]);
-			
+
+            if ((currentProject as JavaProjectVO).projectType == JavaProjectTypes.JAVA_DOMINO)
+            {
+                addNSDKillOption(javaMenuGradle);
+            }
             javaMenu.forEach(makeDynamic);
             return javaMenu;
         }
+
         private function getDominoMenuItems():Vector.<MenuItem>
         {
-
-
-            
             if (dominoMenu == null)
             {           
-                var resourceManager:IResourceManager = ResourceManager.getInstance();
-
                 dominoMenu = Vector.<MenuItem>([
+                     // Piotr: Temporary disable conversion to Royale in menu
+                    //new MenuItem(resourceManager.getString('resources','GENERATE_APACHE_ROYALE_PROJECT'), null, null, ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT),
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], MavenBuildEvent.START_MAVEN_BUILD),
                     new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], ProjectActionEvent.CLEAN_PROJECT)
                 ]);
+                addNSDKillOption(dominoMenu);
                 dominoMenu.forEach(makeDynamic);
             }
 
@@ -306,7 +311,6 @@ package actionScripts.ui.menu
             if (grailsMenu == null)
             {
                 var enabledTypes:Array = [ProjectMenuTypes.GRAILS];
-                var resourceManager:IResourceManager = ResourceManager.getInstance();
 
                 grailsMenu = Vector.<MenuItem>([
                     new MenuItem(null),
@@ -333,7 +337,6 @@ package actionScripts.ui.menu
             if (haxeMenu == null)
             {
                 var enabledTypes:Array = [ProjectMenuTypes.HAXE];
-                var resourceManager:IResourceManager = ResourceManager.getInstance();
 
                 haxeMenu = Vector.<MenuItem>([
                     new MenuItem(null),
@@ -344,6 +347,7 @@ package actionScripts.ui.menu
 						"\r\n", [Keyboard.COMMAND],
 						"\n", [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, HaxeBuildEvent.BUILD_RELEASE),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
                 ]);
                 haxeMenu.forEach(makeDynamic);
             }
@@ -355,13 +359,15 @@ package actionScripts.ui.menu
 		{
 			if (onDiskMenu == null)
 			{
-				var resourceManager:IResourceManager = ResourceManager.getInstance();
 				onDiskMenu = Vector.<MenuItem>([
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'GENERATE_CRUD_ROYALE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_CRUD_ROYALE),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.ON_DISK], MavenBuildEvent.START_MAVEN_BUILD),
 					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.ON_DISK], ProjectActionEvent.CLEAN_PROJECT)
 				]);
-				
+
+				addNSDKillOption(onDiskMenu);
 				onDiskMenu.forEach(makeDynamic);
 			}
 			
@@ -371,6 +377,12 @@ package actionScripts.ui.menu
         private function makeDynamic(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
         {
             item.dynamicItem = true;
+        }
+
+        private function addNSDKillOption(menu:Vector.<MenuItem>):void
+        {
+            menu.push(new MenuItem(null));
+            menu.push(new MenuItem(resourceManager.getString('resources', 'NSD_KILL'), null, [ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.JAVA], DominoEvent.NDS_KILL))
         }
     }
 }

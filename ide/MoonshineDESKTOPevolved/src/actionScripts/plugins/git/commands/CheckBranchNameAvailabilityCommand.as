@@ -19,6 +19,7 @@
 package actionScripts.plugins.git.commands
 {
 	import actionScripts.events.WorkerEvent;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.git.model.GitProjectVO;
 	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.utils.UtilsCore;
@@ -139,7 +140,19 @@ package actionScripts.plugins.git.commands
 				{
 					if (testMessageIfNeedsAuthentication(value.output))
 					{
-						openAuthentication(null);
+						if (ConstantsCoreVO.IS_APP_STORE_VERSION)
+						{
+							showPrivateRepositorySandboxError();
+							if (onCompletion != null)
+							{
+								onCompletion("Error: Check console for details.", null, false);
+								onCompletion = null;
+							}
+						}
+						else
+						{
+							openAuthentication(null);
+						}
 					}
 					else
 					{
@@ -165,7 +178,7 @@ package actionScripts.plugins.git.commands
 			var tmpValue:Object = value.value;
 
 			// do not print enter password line
-			if (ConstantsCoreVO.IS_MACOS && value.value && ("output" in value.value) &&
+			if (ConstantsCoreVO.IS_MACOS && value.value && (("output" in value.value) && (value.value.output != null)) &&
 					value.value.output.match(/Enter password \(exp\):.*/))
 			{
 				value.value.output = value.value.output.replace(/Enter password \(exp\):.*/, "Checking for any authentication..");
@@ -179,12 +192,12 @@ package actionScripts.plugins.git.commands
 				super.onWorkerValueIncoming(value);
 			}
 
-			if (tmpValue.queue.processType == GIT_LOCAL_BRANCH_NAME_VALIDATION && !localBranchFoundData)
+			if (tmpValue && tmpValue.queue.processType == GIT_LOCAL_BRANCH_NAME_VALIDATION && !localBranchFoundData)
 			{
 				localBranchFoundData = tmpValue.output;
 			}
 
-			if (tmpValue.queue.processType == GIT_REMOTE_BRANCH_NAME_VALIDATION && !remoteBranchFoundData)
+			if (tmpValue && tmpValue.queue.processType == GIT_REMOTE_BRANCH_NAME_VALIDATION && !remoteBranchFoundData)
 			{
 				isRemoteBranchParsed = true;
 				remoteBranchFoundData = tmpValue.output;

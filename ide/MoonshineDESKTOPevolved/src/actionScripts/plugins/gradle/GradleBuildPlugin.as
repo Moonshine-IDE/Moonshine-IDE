@@ -48,6 +48,8 @@ package actionScripts.plugins.gradle
     import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
+    import actionScripts.plugin.console.ConsoleEvent;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
     public class GradleBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -223,6 +225,8 @@ package actionScripts.plugins.gradle
 
         protected function prepareStart(buildId:String, preArguments:Array, arguments:Array, buildDirectory:FileLocation):void
         {
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+
             if (!buildDirectory || !buildDirectory.fileBridge.exists)
             {
                 warning("Gradle build directory has not been specified or is invalid.");
@@ -240,7 +244,10 @@ package actionScripts.plugins.gradle
 			if (!ConsoleBuildPluginBase.checkRequireJava())
 			{
 				clearOutput();
-				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
+                var project:ProjectVO = model.activeProject;
+                var jdkName:String = (project is JavaProjectVO && JavaProjectVO(project).jdkType == JavaTypes.JAVA_8) ? "JDK 8" : "JDK";
+                error("A valid " + jdkName + " path must be defined to build project \"" + project.name + "\".");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return;
 			}
 			
@@ -334,6 +341,7 @@ package actionScripts.plugins.gradle
             {
                 dispatcher.dispatchEvent(new GradleBuildEvent(GradleBuildEvent.GRADLE_BUILD_COMPLETE, this.buildId, MavenBuildStatus.COMPLETE));
                 this.status = 0;
+                GradleBuildUtil.IS_GRADLE_STARTED = true;
             }
 			else if (status == int.MAX_VALUE)
 			{

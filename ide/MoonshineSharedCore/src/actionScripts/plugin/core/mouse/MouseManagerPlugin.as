@@ -27,8 +27,10 @@ package actionScripts.plugin.core.mouse
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.IContentWindowReloadable;
-	import actionScripts.ui.editor.text.TextEditor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+
+	import moonshine.editor.text.TextEditor;
+	import actionScripts.ui.FeathersUIWrapper;
 
 	public class MouseManagerPlugin extends PluginBase implements IPlugin
 	{
@@ -108,10 +110,9 @@ package actionScripts.plugin.core.mouse
 		
 		private function setFocusToTextEditor(editor:TextEditor, value:Boolean):void
 		{
-			if (value) editor.setFocus();
-			
-			editor.hasFocus = value;
-			editor.updateSelection();
+			if (value) {
+				FeathersUIWrapper(editor.parent).setFocus();
+			}
 		}
 	}
 }

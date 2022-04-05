@@ -188,9 +188,16 @@
             UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
             UtilsCore.findFileWrapperInDepth(wrapperOfFolderLocation, wrapperOfFolderLocation.nativePath, wrapperBelongToProject);
             var project:IVisualEditorProjectVO = wrapperBelongToProject as IVisualEditorProjectVO;
+            
+           
             if (project && project.isDominoVisualEditorProject)
             {
-                wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms");
+                if( lblExtension.text && lblExtension.text == ".form"){
+                    wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms");
+                }else if(lblExtension.text && lblExtension.text == ".page"){
+                    wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Pages");
+                }
+               
             }
             tree.callLater(function ():void {
                 var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
@@ -225,7 +232,7 @@
                 {
                     //get the domino project form folder value:
                     var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms"
-                    var currentPath:String = UtilsCore.getPackageReferenceByProjectPath(
+                    var currentPath:String = UtilsCore.getPathStringByProjectPath(
                             Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
                             tree.selectedItem.nativePath);
                     //btnCreate.enabled = false;
@@ -235,11 +242,22 @@
                         hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
                         tree.selectedItem = wrapperOfFolderLocation;
                     }
+                }else if (lblExtension.text && lblExtension.text == ".page"){
+                    var dominoPageFolder:String = wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Pages"
+                    var currenPagetPath:String = UtilsCore.getPathStringByProjectPath(
+                            Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
+                            tree.selectedItem.nativePath);
+                    if (currentPath != dominoFormFolder)
+                    {
+                        warningMessage = "Domino pages are only supported in the Pages folder.";
+                        hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
+                        tree.selectedItem = wrapperOfFolderLocation;
+                    }
                 }
             }
 			else
             {
-                txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                txtDestination.text = UtilsCore.getPathStringByProjectPath(
                         Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
                         tree.selectedItem.nativePath);
 
@@ -310,7 +328,7 @@
 
             if (wrapperBelongToProject)
             {
-                txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                txtDestination.text = UtilsCore.getPathStringByProjectPath(
                         Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
                         wrapperOfFolderLocation.nativePath);
 
@@ -319,9 +337,16 @@
                 {
                     if (lblExtension.text && lblExtension.text == ".form")
                     {
-                        txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+                        txtDestination.text = UtilsCore.getPathStringByProjectPath(
                                 Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
                                 wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms");
+                    }
+
+                    if (lblExtension.text && lblExtension.text == ".page")
+                    {
+                        txtDestination.text = UtilsCore.getPathStringByProjectPath(
+                                Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+                                wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Pages");
                     }
                 }
 

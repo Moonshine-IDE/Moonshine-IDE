@@ -29,7 +29,7 @@ package actionScripts.plugin.console
 	public class ConsoleOutputter extends EventDispatcher
 	{
 		public static var DEBUG:Boolean = true;
-		
+
 		protected static var _name:String = "";
 		public function get name():String
 		{
@@ -71,7 +71,7 @@ package actionScripts.plugin.console
 			}
 		}
 		
-		public static function formatOutput(str:String, style:String, showWhenDone:Boolean=true):Vector.<TextLineModel>
+		public function formatOutput(str:String, style:String, showWhenDone:Boolean=true):Vector.<TextLineModel>
 		{
 			var textLines:Array =  str.split("\n");
 			var lines:Vector.<TextLineModel> = Vector.<TextLineModel>([]);
@@ -92,7 +92,7 @@ package actionScripts.plugin.console
 			return lines;
 		}
 		
-		protected static function outputMsg(msg:*):void
+		protected function outputMsg(msg:*):void
 		{
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, msg));
 		}
@@ -101,6 +101,5 @@ package actionScripts.plugin.console
 		{
 			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_CLEAR, null, true));
 		}
-
 	}
 }

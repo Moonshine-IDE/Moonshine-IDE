@@ -21,7 +21,6 @@
 package moonshine.plugin.locations.view;
 
 import actionScripts.factory.FileLocation;
-import actionScripts.valueObjects.Location;
 import feathers.controls.Button;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
@@ -33,6 +32,7 @@ import feathers.events.TriggerEvent;
 import feathers.layout.VerticalLayout;
 import feathers.layout.VerticalLayoutData;
 import feathers.utils.DisplayObjectRecycler;
+import moonshine.lsp.Location;
 import moonshine.theme.MoonshineTheme;
 import moonshine.ui.ResizableTitleWindow;
 import openfl.events.Event;

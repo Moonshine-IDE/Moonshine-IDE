@@ -136,7 +136,21 @@ package actionScripts.controllers
 				if (event)
 				{
 					event.target.removeEventListener(Event.COMPLETE, fileLoadCompletes);
-					if (UtilsCore.isBinary(event.target.data.toString()))
+
+					// IMPORTANT
+					// ===============================
+					// Following is a temporary solution to the problem
+					// to determine between binary and text-file which
+					// discussed here:
+					// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/770#issuecomment-1020669043 .
+					// This solution should removed once we address to:
+					// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/966.
+					//
+					// Pass binary test for log-extension file:
+					// tmpFL.fileBridge.extension.toLowerCase() != "log"
+					// ===============================
+					if ((tmpFL.fileBridge.extension && tmpFL.fileBridge.extension.toLowerCase() != "log") &&
+							UtilsCore.isBinary(event.target.data.toString()))
 					{
 						binaryFiles.push(tmpFL);
 					}
@@ -174,6 +188,9 @@ package actionScripts.controllers
 				if (contentWindow is IFileContentWindow)
 				{
 					var contentWindowFile:FileLocation = (contentWindow as IFileContentWindow).currentFile;
+					if (contentWindowFile == null) {
+						continue;
+					}
 					// on case-insensitive file systems, these may not match
 					// unless we canonicalize, and then we'd get the same file
 					// opened in multiple tabs
@@ -188,19 +205,12 @@ package actionScripts.controllers
 						{
 							var ed:BasicTextEditor = contentWindow as BasicTextEditor;
 
-							ed.getEditorComponent().scrollTo(atLine, openType);
-							if (!openType || openType == OpenFileEvent.OPEN_FILE || openType == OpenFileEvent.JUMP_TO_SEARCH_LINE)
+							atChar = atChar != -1 ? atChar: 0;
+							ed.setSelection(atLine, atChar, atLine, atChar);
+							ed.scrollToCaret();
+							if (openType == OpenFileEvent.TRACE_LINE)
 							{
-								ed.getEditorComponent().selectLine(atLine);
-							}
-							else if (openType == OpenFileEvent.TRACE_LINE)
-							{
-								ed.getEditorComponent().selectTraceLine(atLine);
-							}
-
-							if (atChar > -1)
-							{
-								ed.getEditorComponent().model.caretIndex = atChar;
+								ed.editor.debuggerLineIndex = atLine;
 							}
 						}
 
@@ -211,7 +221,7 @@ package actionScripts.controllers
 			}
 			
 			// @note
-			// https://github.com/prominic/Moonshine-IDE/issues/31
+			// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/31
 			// when file is not open and a debug-trace call happens
 			// it never goes through the selectTraceLine(..) command for the
 			// particular file, because its yet to be open. 
@@ -237,7 +247,14 @@ package actionScripts.controllers
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				var project:ProjectVO = UtilsCore.getProjectFromProjectFolder(wrapper);
-				var extension:String = file.fileBridge.extension.toLowerCase();
+				var extension:String = file.fileBridge.extension;
+
+				// some file may not have an extension
+				if (extension)
+				{
+					extension = extension.toLowerCase()
+				}
+
 				if (openAsTourDe) 
 				{
 					openTourDeFile(fileData);
@@ -249,11 +266,15 @@ package actionScripts.controllers
 				else
 				{
 					//try to open dve with domino visual editor.
-					 if ((project is OnDiskProjectVO) && (extension == "dve"))
+					 /*if ((project is OnDiskProjectVO) && (extension == "dve"))
 					 {
 						 (project as OnDiskProjectVO).isDominoVisualEditorProject=true;
-					 } 
-
+					 }*/
+					/*else if (file && file.fileBridge.nativePath.indexOf("Royale")>0){
+						(project as AS3ProjectVO).isVisualEditorProject=false;
+						//Alert.show("AS3ProjectVO 254"+(project as AS3ProjectVO).isVisualEditorProject);
+					}*/
+	
 					openTextFile(project, fileData);
 				}
 			}
@@ -287,34 +308,54 @@ package actionScripts.controllers
 		
 		private function openBinaryFiles(files:Array):void
 		{
-			if ((binaryFiles.length != 0) && (binaryFiles.length > 1))
+			if (files.length == 0)
+				return;
+
+			var isUnknownBinaryAvailable:Boolean = files.some(function(element:FileLocation, index:int, arr:Array):Boolean
 			{
-				Alert.buttonWidth = 90;
-				Alert.yesLabel = "Open All";
-				Alert.cancelLabel = "Cancel All";
-				Alert.show("Unable to open the selected binary files.\nDo you want to open the files with the default system applications?", "Confirm!", Alert.YES|Alert.CANCEL, null, function (event:CloseEvent):void
+				return (ConstantsCoreVO.KNOWN_BINARY_FILES.indexOf(element.fileBridge.extension.toLowerCase()) == -1);
+			});
+
+			if (isUnknownBinaryAvailable)
+			{
+				var alertMessage:String;
+				if (files.length > 1)
+				{
+					Alert.buttonWidth = 90;
+					Alert.yesLabel = "Open All";
+					Alert.cancelLabel = "Cancel All";
+					alertMessage = "One or more binary files unknown to Moonshine-IDE.\nDo you want to open the files with the default system applications?";
+				}
+				else
+				{
+					alertMessage = "Unable to open binary file "+ files[0].name +".\nDo you want to open the file with the default system application?"
+				}
+
+				Alert.show(alertMessage, "Confirm!", Alert.YES|Alert.CANCEL, null, function (event:CloseEvent):void
 				{
 					Alert.buttonWidth = 65;
 					Alert.yesLabel = "Yes";
 					Alert.cancelLabel = "Cancel";
-					
+
 					if (event.detail == Alert.YES)
 					{
-						for each (var fl:FileLocation in files)
-						{
-							fl.fileBridge.openWithDefaultApplication();
-						}
+						runAllBinaryFiles();
 					}
 				});
 			}
-			else if ((binaryFiles.length != 0) && (binaryFiles.length == 1))
+			else
 			{
-				Alert.show("Unable to open binary file "+ files[0].name +".\nDo you want to open the file with the default system application?", "Confirm!", Alert.YES|Alert.NO, null, function (event:CloseEvent):void
+				runAllBinaryFiles();
+			}
+
+			/*
+			 * @local
+			 */
+			function runAllBinaryFiles():void
+			{
+				files.forEach(function (element:FileLocation, index:int, arr:Array):void
 				{
-					if (event.detail == Alert.YES)
-					{
-						files[0].fileBridge.openWithDefaultApplication();
-					}
+					element.fileBridge.openWithDefaultApplication();
 				});
 			}
 		}
@@ -323,6 +364,13 @@ package actionScripts.controllers
 		{
 			var editor:BasicTextEditor = null;
 			editor = model.flexCore.getTourDeEditor(tourDeSWFSource);
+
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			GlobalEventDispatcher.getInstance().dispatchEvent(editorEvent);
+
 			editor.open(file, value);
 			
 			ged.dispatchEvent(
@@ -348,11 +396,12 @@ package actionScripts.controllers
 			{
 				project = model.activeProject;
 			}
-			
+
+
 			if ((project is AS3ProjectVO &&
 				(project as AS3ProjectVO).isVisualEditorProject &&
-				(extension == "mxml" || extension == "xhtml" || extension == "form") && !lastOpenEvent.independentOpenFile) || 
-				(project is OnDiskProjectVO) && (extension == "dve"))
+				(extension == "mxml" || extension == "xhtml" || extension == "form"|| extension == "page") && !lastOpenEvent.independentOpenFile) || 
+				(project is OnDiskProjectVO) && (extension == "dve") )
 			{
 				editor = model.visualEditorCore.getVisualEditor(project);
 			}
@@ -391,7 +440,8 @@ package actionScripts.controllers
 			
 			if (atLine > -1)
 			{
-				editor.scrollTo(atLine, lastOpenEvent.type);
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
 			}
 
 			ged.dispatchEvent(

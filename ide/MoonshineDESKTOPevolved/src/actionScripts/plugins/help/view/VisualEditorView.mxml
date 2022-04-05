@@ -14,7 +14,8 @@
             <view:VisualEditor id="visualEditor" percentWidth="100" percentHeight="100" right="0" left="0"
                                visualEditorType.flexVisualEditor="{VisualEditorType.FLEX}"
                                visualEditorType.primeFaces="{VisualEditorType.PRIME_FACES}"
-                            visualEditorType.domino="{VisualEditorType.DOMINO}"/>
+                            visualEditorType.domino="{VisualEditorType.DOMINO}"
+                             />
         </s:NavigatorContent>
         <s:NavigatorContent label="Code">
             <s:Scroller width="100%" height="100%">
@@ -26,7 +27,7 @@
     </containers:Navigator>
     <s:Group percentWidth="100">
         <tabnavigator:TabBarWithScroller id="tabBar" dataProvider="{viewStack}"
-                                         fontSize="11" fontFamily="DejaVuSans" color="0xEEEEEE"
+                                         fontSize="11" fontFamily="_sans" color="0xEEEEEE"
                                          skinClass="components.skins.EditorTabBarSkin"
                                          cornerRadius="1" closeButtonVisible="false"
                                          change="onTabBarChange(event)" left="0"/>
@@ -46,16 +47,16 @@
 		
 		import actionScripts.valueObjects.ProjectVO;
 		import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-		import actionScripts.ui.editor.text.TextEditor;
 
         import utils.VisualEditorType;
+        import mx.core.IVisualElement;
 
-        private var _codeEditor:TextEditor;
+        private var _codeEditor:IVisualElement;
 
 		[Bindable]
         public var visualEditorProject:ProjectVO;
 
-        public function set codeEditor(value:TextEditor):void
+        public function set codeEditor(value:IVisualElement):void
         {
             _codeEditor = value;
         }

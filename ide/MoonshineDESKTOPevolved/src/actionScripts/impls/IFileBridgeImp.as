@@ -59,6 +59,12 @@ package actionScripts.impls
 		private var _file: File = ConstantsCoreVO.LAST_BROWSED_LOCATION ? 
 			new File(ConstantsCoreVO.LAST_BROWSED_LOCATION) : 
 			File.desktopDirectory;
+
+		private var _isBrowsed:Boolean;
+		public function get isBrowsed():Boolean
+		{
+			return _isBrowsed;
+		}
 		
 		CONFIG::OSX
 		{
@@ -106,12 +112,15 @@ package actionScripts.impls
 				{
 					if (_file && exists) relativePathToOpen = "file://"+ _file.nativePath;
 				} catch (e:Error)
-				{}
+				{
+					Alert.show(e.message+":"+e.errorID)
+				}
+
 				CONFIG::OSX
 				{
 					selectedPathValue = _ssb.addNewPath(relativePathToOpen, true);
 				}
-
+				
 				if (selectedPathValue) 
 				{
 					if (selectedPathValue == "null") 
@@ -158,7 +167,7 @@ package actionScripts.impls
 			 */
 			function onSelectHandler(event:Event):void
 			{
-				onCancelHandler(event);
+				removeHandlers(event);
 				
 				// to overcome a macOS bug where previously selected
 				// file can return to directory browsing
@@ -171,6 +180,14 @@ package actionScripts.impls
 				updateCoreFilePathOnBrowse((event.target as File).nativePath);
 			}
 			function onCancelHandler(event:Event):void
+			{
+				removeHandlers(event);
+				if (cancelListener != null) 
+				{
+					cancelListener();
+				}
+			}
+			function removeHandlers(event:Event):void
 			{
 				event.target.removeEventListener(Event.SELECT, onSelectHandler);
 				event.target.removeEventListener(Event.CANCEL, onCancelHandler);
@@ -290,7 +307,7 @@ package actionScripts.impls
 		public function browseForSave(selected:Function, canceled:Function=null, title:String=null, startFromLocation:String=null):void
 		{
 			setFileInternalPath(startFromLocation);
-			
+
 			_file.addEventListener(Event.SELECT, onSelectHandler);
 			_file.addEventListener(Event.CANCEL, onCancelHandler);
 			_file.browseForSave(title ? title : "");
@@ -318,12 +335,18 @@ package actionScripts.impls
 		
 		public function moveTo(newLocation:FileLocation, overwrite:Boolean=false):void
 		{
-			if (checkFileExistenceAndReport()) _file.moveTo(newLocation.fileBridge.getFile as File, overwrite);
+			if (checkFileExistenceAndReport())
+			{
+				_file.moveTo(newLocation.fileBridge.getFile as File, overwrite);
+			}
 		}
 		
 		public function moveToAsync(newLocation:FileLocation, overwrite:Boolean=false):void
 		{
-			if (checkFileExistenceAndReport()) _file.moveToAsync(newLocation.fileBridge.getFile as File, overwrite);
+			if (checkFileExistenceAndReport())
+			{
+				_file.moveToAsync(newLocation.fileBridge.getFile as File, overwrite);
+			}
 		}
 		
 		public function deleteDirectory(deleteDirectoryContents:Boolean=false):void
@@ -466,7 +489,7 @@ package actionScripts.impls
 		public function browseForOpen(title:String, selectListner:Function, cancelListener:Function=null, fileFilters:Array=null, startFromLocation:String=null):void
 		{
 			setFileInternalPath(startFromLocation);
-			
+
 			var filters:Array;
 			var filtersForExt:Array = [];
 			if (fileFilters)
@@ -533,11 +556,19 @@ package actionScripts.impls
 			*/
 			function onSelectHandler(event:Event):void
 			{
-				onCancelHandler(event);
+				removeHandlers(event);
 				selectListner(event.target as File);
 				updateCoreFilePathOnBrowse((event.target as File).nativePath);
 			}
 			function onCancelHandler(event:Event):void
+			{
+				removeHandlers(event);
+				if (cancelListener != null) 
+				{
+					cancelListener();
+				}
+			}
+			function removeHandlers(event:Event):void
 			{
 				event.target.removeEventListener(Event.SELECT, onSelectHandler);
 				event.target.removeEventListener(Event.CANCEL, onCancelHandler);
@@ -825,14 +856,14 @@ package actionScripts.impls
                 }
 				else
 				{
-					updateCoreFilePathOnBrowse(IDEModel.getInstance().fileCore.nativePath);
+					updateCoreFilePathOnBrowse(IDEModel.getInstance().fileCore.nativePath, false);
 				}
             }
 			catch(e:Error)
 			{}
 		}
 		
-		private function updateCoreFilePathOnBrowse(value:String):void
+		private function updateCoreFilePathOnBrowse(value:String, browsed:Boolean=true):void
 		{
 			if (FileUtils.isPathDirectory(value)) ConstantsCoreVO.LAST_BROWSED_LOCATION = value;
 			else ConstantsCoreVO.LAST_BROWSED_LOCATION = (new File(value)).parent.nativePath;
@@ -841,6 +872,7 @@ package actionScripts.impls
 			
 			IDEModel.getInstance().fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
 			_file.nativePath = value;
+			_isBrowsed = browsed;
 		}
 	}
 }

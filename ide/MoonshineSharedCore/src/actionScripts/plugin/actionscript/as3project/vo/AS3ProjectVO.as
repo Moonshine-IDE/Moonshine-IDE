@@ -27,8 +27,6 @@ package actionScripts.plugin.actionscript.as3project.vo
     import mx.collections.ArrayCollection;
     import mx.controls.LinkButton;
     
-    import __AS3__.vec.Vector;
-    
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.factory.FileLocation;
     import actionScripts.interfaces.ICloneable;
@@ -53,9 +51,9 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.MobileDeviceVO;
-    import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.languageServer.LanguageServerProjectVO;
 	
-	public class AS3ProjectVO extends ProjectVO implements ICloneable, IVisualEditorProjectVO
+	public class AS3ProjectVO extends LanguageServerProjectVO implements ICloneable, IVisualEditorProjectVO
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 		public static const NATIVE_EXTENSION_MESSAGE:String = "NATIVE_EXTENSION_MESSAGE";
@@ -263,6 +261,17 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public function set isDominoVisualEditorProject(value:Boolean):void
 		{
 			_isDominoVisualEditorProject = value;
+		}
+
+
+		private var _isFlexJSRoyalProject:Boolean;
+		public function get isFlexJSRoyalProject():Boolean
+		{
+			return _isFlexJSRoyalProject;
+		}
+		public function set isFlexJSRoyalProject(value:Boolean):void
+		{
+			_isFlexJSRoyalProject = value;
 		}
 		
 		private var _isPreviewRunning:Boolean;
@@ -816,7 +825,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 					new SettingsWrapper("Java Project", new <ISetting>[
 						new MultiOptionSetting(this, 'jdkType', "JDK",
 								Vector.<NameValuePair>([
-									new NameValuePair("Use Default JDK", JavaTypes.JAVA_DEFAULT),
 									new NameValuePair("Use JDK 8", JavaTypes.JAVA_8)
 								])
 						)
@@ -824,10 +832,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 					new SettingsWrapper("Maven Build", Vector.<ISetting>([
 						new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
 						setting_new,	
-						new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false),
-						new PathSetting(this.mavenBuildOptions, "dominoNotesProgram", "Notes Programe Path", true, this.mavenBuildOptions.dominoNotesProgram, false),
-						new PathSetting(this.mavenBuildOptions, "dominoNotesPlatform", "Notes Platform Path", true, this.mavenBuildOptions.dominoNotesPlatform, false)
-						//new ProjectDirectoryPathSetting(this.mavenDominoBuildOptions, this.projectFolder.nativePath, "buildPath", "Notes Programe File Path", this.mavenDominoBuildOptions.buildPath),
+						new PathSetting(this.mavenBuildOptions, "settingsFilePath", "Maven Settings File", false, this.mavenBuildOptions.settingsFilePath, false)
 					]))
 				]);
 		}

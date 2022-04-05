@@ -41,8 +41,9 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 	import mx.collections.ArrayCollection;
 	import mx.utils.StringUtil;
+	import actionScripts.languageServer.LanguageServerProjectVO;
 
-	public class HaxeProjectVO extends ProjectVO
+	public class HaxeProjectVO extends LanguageServerProjectVO
 	{
 		public static const TEST_MOVIE_WEBSERVER:String = "Webserver";
 		public static const TEST_MOVIE_CUSTOM:String = "Custom";
@@ -82,8 +83,8 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean = false;
 
-		public var prebuildCommands:String;
-		public var postbuildCommands:String;
+		public var prebuildCommands:String = "";
+		public var postbuildCommands:String = "";
 		public var postbuildAlways:Boolean;
 		public var isLime:Boolean;
 
@@ -222,6 +223,12 @@ package actionScripts.plugin.haxe.hxproject.vo
             projectReference.hiddenPaths = this.hiddenPaths;
 			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
 		}
+
+		public function hasLimeProject():Boolean
+		{
+			var projectFile:FileLocation = folderLocation.resolvePath("project.xml");
+			return projectFile.fileBridge.exists;
+		}
 		
 		override public function getSettings():Vector.<SettingsWrapper>
 		{
@@ -318,7 +325,7 @@ package actionScripts.plugin.haxe.hxproject.vo
                 new SettingsWrapper("Paths",
                         new <ISetting>[
                             new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
-                            new StringListSetting(this, "haxelibs", "Haxelibs", "a-zA-Z0-9"),
+                            new StringListSetting(this, "haxelibs", "Libraries", "a-zA-Z0-9\\-_."),
                         ]
                 )
             ]);

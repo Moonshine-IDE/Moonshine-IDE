@@ -1,0 +1,97 @@
+/*
+Example project to build and run a Notes application on your local machine.
+*/
+plugins {
+    id 'java'
+    id 'application'  // allows 'run' task.
+    id 'eclipse'      // allows dependencies to be exported to .classpath
+}
+mainClassName = '$ProjectName'
+
+String notesInstallation = '$NotesExecutablePath'
+if (!notesInstallation) {
+	throw new GradleException("Missing configured path for Notes installation.  Set notesInstallation in build.gradle.")
+}
+else if (!(new File(notesInstallation).exists())) {
+	throw new GradleException("Invalid configured path for Notes installation ($notesInstallation).  Check notesInstallation in build.gradle.")
+}
+
+String notesJarPath = "$notesInstallation/jvm/lib/ext/Notes.jar"
+String envPath = System.getenv('PATH')
+if (!envPath) {
+	logger.warn "Missing PATH environment variable."
+	envPath = ''  // default to empty string to avoid null errors later
+}
+
+// change envPath as needed
+if (notesInstallation.toLowerCase().startsWith('/applications/')) { // treat as macOS
+	if (!(new File(notesJarPath).exists())) {
+		// alternative location for macOS:  /Applications/HCL Notes.app/Contents/Resources/jvm/lib/ext/Notes.jar 
+		logger.info "Notes.jar not found at $notesJarPath"
+		notesJarPath = "$notesInstallation/../Resources/jvm/lib/ext/Notes.jar"
+	}
+	if (!(new File(notesJarPath).exists())) {
+		logger.info "Notes.jar not found at $notesJarPath"
+		throw new GradleException("ERROR: Could not find Notes.jar")
+	}
+	println("Notes JAR path:  $notesJarPath")
+}
+else { // treat as Windows
+	// update PATH
+	envPath = "$envPath;$notesInstallation"
+	println "Updated PATH: $envPath"
+}
+
+logger.debug "Environment"
+System.env.each {
+    logger.debug "${it.key}:${it.value}"
+}
+
+repositories {
+    mavenCentral()
+}
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+    }
+}
+
+// Required for Java 8 Language server support
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    // Local JAR dependency
+    implementation files(notesJarPath)
+}
+
+/*
+OPTIONAL:  Configuration to let this build and run in Moonshine
+Use "clean runApp" for the Gradle command
+*/
+task runApp(type: JavaExec) {
+	classpath = sourceSets.main.runtimeClasspath
+	main = mainClassName  // deprecated in later versions of Gradle - use mainClass
+	environment('DYLD_LIBRARY_PATH', notesInstallation)
+	environment('PATH', envPath)
+	
+	// args 'appArg1'
+}
+
+/* 
+OPTIONAL:  Configuration to let the application run as an executable jar.  Commands:
+	gradle clean build
+	export DYLD_LIBRARY_PATH=%NotesInstallationPath%
+	export JAVA_HOME=%Path-to-JDK-8%
+	$JAVA_HOME/bin/java -jar build/libs/$ProjectName.jar
+*/
+jar {
+	manifest {
+		attributes 'Main-Class': "$mainClassName",
+				   // URL-encode any spaces in the classpath, and make sure that it starts with a / on Windows
+		           'Class-Path': "./* ${notesJarPath.replaceAll(' ', '%20').replaceAll('^\\w+:', '/$0')}"  
+		           
+	}
+}

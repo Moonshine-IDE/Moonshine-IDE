@@ -3,27 +3,28 @@
 const fs = require('../fs')
 const path = require('path')
 const util = require('util')
-const atLeastNode = require('at-least-node')
 
-const nodeSupportsBigInt = atLeastNode('10.5.0')
-const stat = (file) => nodeSupportsBigInt ? fs.stat(file, { bigint: true }) : fs.stat(file)
-const statSync = (file) => nodeSupportsBigInt ? fs.statSync(file, { bigint: true }) : fs.statSync(file)
-
-function getStats (src, dest) {
+function getStats (src, dest, opts) {
+  const statFunc = opts.dereference
+    ? (file) => fs.stat(file, { bigint: true })
+    : (file) => fs.lstat(file, { bigint: true })
   return Promise.all([
-    stat(src),
-    stat(dest).catch(err => {
+    statFunc(src),
+    statFunc(dest).catch(err => {
       if (err.code === 'ENOENT') return null
       throw err
     })
   ]).then(([srcStat, destStat]) => ({ srcStat, destStat }))
 }
 
-function getStatsSync (src, dest) {
+function getStatsSync (src, dest, opts) {
   let destStat
-  const srcStat = statSync(src)
+  const statFunc = opts.dereference
+    ? (file) => fs.statSync(file, { bigint: true })
+    : (file) => fs.lstatSync(file, { bigint: true })
+  const srcStat = statFunc(src)
   try {
-    destStat = statSync(dest)
+    destStat = statFunc(dest)
   } catch (err) {
     if (err.code === 'ENOENT') return { srcStat, destStat: null }
     throw err
@@ -31,13 +32,30 @@ function getStatsSync (src, dest) {
   return { srcStat, destStat }
 }
 
-function checkPaths (src, dest, funcName, cb) {
-  util.callbackify(getStats)(src, dest, (err, stats) => {
+function checkPaths (src, dest, funcName, opts, cb) {
+  util.callbackify(getStats)(src, dest, opts, (err, stats) => {
     if (err) return cb(err)
     const { srcStat, destStat } = stats
-    if (destStat && areIdentical(srcStat, destStat)) {
-      return cb(new Error('Source and destination must not be the same.'))
+
+    if (destStat) {
+      if (areIdentical(srcStat, destStat)) {
+        const srcBaseName = path.basename(src)
+        const destBaseName = path.basename(dest)
+        if (funcName === 'move' &&
+          srcBaseName !== destBaseName &&
+          srcBaseName.toLowerCase() === destBaseName.toLowerCase()) {
+          return cb(null, { srcStat, destStat, isChangingCase: true })
+        }
+        return cb(new Error('Source and destination must not be the same.'))
+      }
+      if (srcStat.isDirectory() && !destStat.isDirectory()) {
+        return cb(new Error(`Cannot overwrite non-directory '${dest}' with directory '${src}'.`))
+      }
+      if (!srcStat.isDirectory() && destStat.isDirectory()) {
+        return cb(new Error(`Cannot overwrite directory '${dest}' with non-directory '${src}'.`))
+      }
     }
+
     if (srcStat.isDirectory() && isSrcSubdir(src, dest)) {
       return cb(new Error(errMsg(src, dest, funcName)))
     }
@@ -45,11 +63,28 @@ function checkPaths (src, dest, funcName, cb) {
   })
 }
 
-function checkPathsSync (src, dest, funcName) {
-  const { srcStat, destStat } = getStatsSync(src, dest)
-  if (destStat && areIdentical(srcStat, destStat)) {
-    throw new Error('Source and destination must not be the same.')
+function checkPathsSync (src, dest, funcName, opts) {
+  const { srcStat, destStat } = getStatsSync(src, dest, opts)
+
+  if (destStat) {
+    if (areIdentical(srcStat, destStat)) {
+      const srcBaseName = path.basename(src)
+      const destBaseName = path.basename(dest)
+      if (funcName === 'move' &&
+        srcBaseName !== destBaseName &&
+        srcBaseName.toLowerCase() === destBaseName.toLowerCase()) {
+        return { srcStat, destStat, isChangingCase: true }
+      }
+      throw new Error('Source and destination must not be the same.')
+    }
+    if (srcStat.isDirectory() && !destStat.isDirectory()) {
+      throw new Error(`Cannot overwrite non-directory '${dest}' with directory '${src}'.`)
+    }
+    if (!srcStat.isDirectory() && destStat.isDirectory()) {
+      throw new Error(`Cannot overwrite directory '${dest}' with non-directory '${src}'.`)
+    }
   }
+
   if (srcStat.isDirectory() && isSrcSubdir(src, dest)) {
     throw new Error(errMsg(src, dest, funcName))
   }
@@ -64,7 +99,7 @@ function checkParentPaths (src, srcStat, dest, funcName, cb) {
   const srcParent = path.resolve(path.dirname(src))
   const destParent = path.resolve(path.dirname(dest))
   if (destParent === srcParent || destParent === path.parse(destParent).root) return cb()
-  const callback = (err, destStat) => {
+  fs.stat(destParent, { bigint: true }, (err, destStat) => {
     if (err) {
       if (err.code === 'ENOENT') return cb()
       return cb(err)
@@ -73,9 +108,7 @@ function checkParentPaths (src, srcStat, dest, funcName, cb) {
       return cb(new Error(errMsg(src, dest, funcName)))
     }
     return checkParentPaths(src, srcStat, destParent, funcName, cb)
-  }
-  if (nodeSupportsBigInt) fs.stat(destParent, { bigint: true }, callback)
-  else fs.stat(destParent, callback)
+  })
 }
 
 function checkParentPathsSync (src, srcStat, dest, funcName) {
@@ -84,7 +117,7 @@ function checkParentPathsSync (src, srcStat, dest, funcName) {
   if (destParent === srcParent || destParent === path.parse(destParent).root) return
   let destStat
   try {
-    destStat = statSync(destParent)
+    destStat = fs.statSync(destParent, { bigint: true })
   } catch (err) {
     if (err.code === 'ENOENT') return
     throw err
@@ -96,26 +129,7 @@ function checkParentPathsSync (src, srcStat, dest, funcName) {
 }
 
 function areIdentical (srcStat, destStat) {
-  if (destStat.ino && destStat.dev && destStat.ino === srcStat.ino && destStat.dev === srcStat.dev) {
-    if (nodeSupportsBigInt || destStat.ino < Number.MAX_SAFE_INTEGER) {
-      // definitive answer
-      return true
-    }
-    // Use additional heuristics if we can't use 'bigint'.
-    // Different 'ino' could be represented the same if they are >= Number.MAX_SAFE_INTEGER
-    // See issue 657
-    if (destStat.size === srcStat.size &&
-        destStat.mode === srcStat.mode &&
-        destStat.nlink === srcStat.nlink &&
-        destStat.atimeMs === srcStat.atimeMs &&
-        destStat.mtimeMs === srcStat.mtimeMs &&
-        destStat.ctimeMs === srcStat.ctimeMs &&
-        destStat.birthtimeMs === srcStat.birthtimeMs) {
-      // heuristic answer
-      return true
-    }
-  }
-  return false
+  return destStat.ino && destStat.dev && destStat.ino === srcStat.ino && destStat.dev === srcStat.dev
 }
 
 // return true if dest is a subdir of src, otherwise false.
@@ -135,5 +149,6 @@ module.exports = {
   checkPathsSync,
   checkParentPaths,
   checkParentPathsSync,
-  isSrcSubdir
+  isSrcSubdir,
+  areIdentical
 }

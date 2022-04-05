@@ -1,5 +1,37 @@
 # SWF Debugger for Visual Studio Code Changelog
 
+## v1.5.0
+
+### New Features
+
+- Variables: Array members are now displayed as indexed, in the correct order.
+- Launch: Added new `asconfigPath` field to the _launch.json_ configuration options to allow the use of a custom file path instead of the default _asconfig.json_ .
+
+### Fixed Issues
+
+- Workers: Fix exception when attempting to resume a newly created worker because sometimes they are not started in a suspended state.
+
+## v1.4.0
+
+### Fixed Issues
+
+- Launch: Fixed exceptions when trying to run launch configurations defined in _.code-workspace_ file instead of _launch.json_.
+
+### Other Changes
+
+- General: Switched references from vscode-nextgenas to vscode-as3mxml following extension ID change.
+
+## v1.3.0
+
+### New Features
+
+- Launch: Install and launch an Adobe AIR app on the iOS Simulator in Xcode. Set the `platform` field in _launch.json_ to `"ios_simulator"`.
+- Launch: Automatically provides debug configurations based on the contents your project's _asconfig.json_ file. Debugging is now possible without a _launch.json_ file.
+
+### Fixed Issues
+
+- Breakpoints: Fixed intermittent null reference exception when setting breakpoints.
+
 ## v1.2.2
 
 ### Fixed Issues

@@ -55,6 +55,9 @@ package actionScripts.plugin.project
 	import components.popup.RunCommandPopup;
 	import components.views.project.OpenResourceView;
 	import components.views.project.TreeView;
+	import actionScripts.events.WatchedFileChangeEvent;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 
     public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -69,6 +72,9 @@ package actionScripts.plugin.project
 		private var openResourceView:OpenResourceView;
 		private var lastActiveProjectMenuType:String;
 		private var customCommandPopup:RunCommandPopup;
+
+		private var _refreshDebounceTimeoutID:uint = uint.MAX_VALUE;
+		private var _refreshQueue:Array = [];
 
 		public function ProjectPlugin()
 		{
@@ -95,6 +101,9 @@ package actionScripts.plugin.project
 			
 			dispatcher.addEventListener(RefreshTreeEvent.EVENT_REFRESH, handleTreeRefresh);
 			dispatcher.addEventListener(CustomCommandsEvent.OPEN_CUSTOM_COMMANDS_ON_SDK, onCustomCommandInterface);
+
+			dispatcher.addEventListener(WatchedFileChangeEvent.FILE_CREATED, handleWatchedFileCreatedEvent);
+			dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, handleWatchedFileDeletedEvent);
 		}
 
         private function handleScrollFromSource(event:ProjectEvent):void
@@ -127,7 +136,6 @@ package actionScripts.plugin.project
 			if (!treeView.stage) 
 			{
 				LayoutModifier.attachSidebarSections(treeView);
-                LayoutModifier.attachProjectPanelSections();
 			}
 		}
 		
@@ -356,6 +364,52 @@ package actionScripts.plugin.project
 			treeView.refresh(event.dir, event.shallMarkedForDelete);
 		}
 
+		private function queueRefresh(directoryToRefresh:String):void
+		{
+			// when a file system watcher event is received, we need to refresh
+			// the treeview, but we queue them up because calling
+			// treeView.refresh() to often brutally hurts performance.
+			// this queue helps in two ways:
+			// 1) we skip updating duplicate paths, meaning fewer refreshes
+			// 2) the short pause allows rendering to happen, keeping the app responsive
+			if (_refreshQueue.indexOf(directoryToRefresh) != -1) {
+				// this directory is already queued for refresh
+				// no need to refresh it multiple times
+				return;
+			}
+			_refreshQueue.push(directoryToRefresh);
+			if (_refreshDebounceTimeoutID != uint.MAX_VALUE) {
+				clearTimeout(_refreshDebounceTimeoutID);
+				_refreshDebounceTimeoutID = uint.MAX_VALUE;
+			}
+			_refreshDebounceTimeoutID = setTimeout(handleQueuedRefreshes, 250);
+		}
+
+		private function handleQueuedRefreshes():void
+		{
+			_refreshDebounceTimeoutID = uint.MAX_VALUE;
+			for each(var directoryToRefresh:String in _refreshQueue) {
+				treeView.refresh(new FileLocation(directoryToRefresh));
+			}
+			_refreshQueue.length = 0;
+		}
+
+		private function handleWatchedFileCreatedEvent(event:WatchedFileChangeEvent):void
+		{
+			//need to refresh the parent directory listing
+			var directoryToRefresh:String = event.file.fileBridge.parent.fileBridge.nativePath;
+			queueRefresh(directoryToRefresh);
+		}
+
+		private function handleWatchedFileDeletedEvent(event:WatchedFileChangeEvent):void
+		{
+			//need to refresh the parent directory listing
+			var directoryToRefresh:String = event.file.fileBridge.parent.fileBridge.nativePath;
+			//refreshes are queued because calling treeView.refresh() too often
+			//is brutal for performance
+			queueRefresh(directoryToRefresh);
+		}
+
         private function handleShowPreviouslyOpenedProjects(event:ProjectEvent):void
         {
             openPreviouslyOpenedProject();
@@ -449,7 +503,12 @@ package actionScripts.plugin.project
 	                    projectFileLocation = model.javaCore.testJava(projectFile);
 	                    if (projectFileLocation)
 	                    {
-	                        project = model.javaCore.parseJava(projectLocation);
+							var javaSettingsFile:FileLocation = model.javaCore.getSettingsFile(projectFile);
+	                        project = model.javaCore.parseJava(
+									projectLocation,
+									null,
+									javaSettingsFile
+							);
 	                    }
 					}
 					
@@ -467,7 +526,7 @@ package actionScripts.plugin.project
 	                    projectFileLocation = model.haxeCore.testHaxe(projectFile);
 	                    if (projectFileLocation)
 	                    {
-	                        project = model.haxeCore.parseHaxe(projectLocation);
+	                        project = model.haxeCore.parseHaxe(projectLocation, null, projectFileLocation);
 	                    }
 					}
 					

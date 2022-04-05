@@ -137,14 +137,6 @@ package actionScripts.plugins.svn.commands
 			{
 				PopUpManager.bringToFront(svnCommitWindow);
 			}
-			
-			/*var editor:CommitMessageEditor = new CommitMessageEditor();
-			//editor.files = affectedFiles;
-			dispatcher.dispatchEvent(
-				new AddTabEvent(editor)
-			);*/
-			
-			//editor.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, handleCommitEditorClose);
 		}
 		
 		private function onSVNCommitWindowClosed(event:CloseEvent):void

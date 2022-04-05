@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
-    import flash.events.Event;
+	import flash.events.Event;
     import flash.net.SharedObject;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
@@ -78,6 +78,7 @@ package actionScripts.plugin.recentlyOpened
 			}
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			dispatcher.addEventListener(ProjectEvent.EVENT_SAVE_PROJECT_CREATION_FOLDERS, onNewProjectPathBrowse, false, 0, true);
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, handleAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
 			dispatcher.addEventListener(ProjectEvent.WORKSPACE_UPDATED, onWorkspaceUpdated);
@@ -222,6 +223,15 @@ package actionScripts.plugin.recentlyOpened
 					model.fileCore.nativePath = ConstantsCoreVO.LAST_BROWSED_LOCATION;
 				}
 			}
+
+			if (cookie.data.hasOwnProperty('recentProjectPath'))
+			{
+				model.recentSaveProjectPath.source = cookie.data.recentProjectPath;
+				if (cookie.data.hasOwnProperty('lastSelectedProjectPath'))
+				{
+					model.lastSelectedProjectPath = cookie.data.lastSelectedProjectPath;
+				}
+			}
 			
 			if (cookie.data.hasOwnProperty('moonshineWorkspace'))
 			{
@@ -362,7 +372,7 @@ package actionScripts.plugin.recentlyOpened
 			if (toRemove != -1) model.recentlyOpenedFiles.removeItemAt(toRemove);
 			
 			var tmpSOReference: ProjectReferenceVO = new ProjectReferenceVO();
-			tmpSOReference.name = (f.fileBridge.name.indexOf(".") == -1) ? f.fileBridge.name +"."+ f.fileBridge.extension : f.fileBridge.name;
+			tmpSOReference.name = (f.fileBridge.extension) ? f.fileBridge.name +"."+ f.fileBridge.extension : f.fileBridge.name;
 			tmpSOReference.path = f.fileBridge.nativePath;
 			model.recentlyOpenedFiles.addItemAt(tmpSOReference, 0);
 			//model.selectedprojectFolders
@@ -427,11 +437,15 @@ package actionScripts.plugin.recentlyOpened
 		
 		private function onJavaPathForTypeaheadSave(event:FilePluginEvent):void
 		{
-			if(event.file)
+			if (event.file)
 			{
 				cookie.data["javaPathForTypeahead"] = event.file.fileBridge.nativePath;
-				cookie.flush();
 			}
+			else
+			{
+				delete cookie.data["javaPathForTypeahead"];
+			}
+			cookie.flush();
 		}
 		
 		private function onSaveLayoutChangeEvent(event:GeneralEvent):void
@@ -444,6 +458,13 @@ package actionScripts.plugin.recentlyOpened
 		{
 			cookie.data["devicesAndroid"] = ConstantsCoreVO.TEMPLATES_ANDROID_DEVICES.source;
 			cookie.data["devicesIOS"] = ConstantsCoreVO.TEMPLATES_IOS_DEVICES.source;
+			cookie.flush();
+		}
+
+		private function onNewProjectPathBrowse(event:Event):void
+		{
+			cookie.data["lastSelectedProjectPath"] = model.lastSelectedProjectPath;
+			cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
 			cookie.flush();
 		}
 		
@@ -565,7 +586,12 @@ package actionScripts.plugin.recentlyOpened
 				projectFileLocation = model.javaCore.testJava(projectFile);
 				if(projectFileLocation)
 				{
-					return model.javaCore.parseJava(recentOpenedProjectObject as FileLocation);
+					var javaSettingsFile:FileLocation = model.javaCore.getSettingsFile(projectFile);
+					return model.javaCore.parseJava(
+							recentOpenedProjectObject as FileLocation,
+							null,
+							javaSettingsFile
+					);
 				}
 				
 				projectFileLocation = model.groovyCore.testGrails(projectFile);
@@ -577,7 +603,7 @@ package actionScripts.plugin.recentlyOpened
 				projectFileLocation = model.haxeCore.testHaxe(projectFile);
 				if (projectFileLocation)
 				{
-					return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation);
+					return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation, null, projectFileLocation);
 				}
 				
 				projectFileLocation = model.ondiskCore.testOnDisk(projectFile);

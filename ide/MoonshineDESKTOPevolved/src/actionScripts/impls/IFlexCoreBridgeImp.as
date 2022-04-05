@@ -21,6 +21,9 @@ package actionScripts.impls
 {
 	import actionScripts.managers.StartupHelper;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.macports.MacPortsPlugin;
+	import actionScripts.plugins.vagrant.VagrantPlugin;
+	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -48,6 +51,7 @@ package actionScripts.impls
 	import actionScripts.events.StartupHelperEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFlexCoreBridge;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.interfaces.IModulesFinder;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
@@ -62,6 +66,7 @@ package actionScripts.impls
 	import actionScripts.plugin.fullscreen.FullscreenPlugin;
 	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugin.locations.LocationsPlugin;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.organizeImports.OrganizeImportsPlugin;
 	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
@@ -107,6 +112,7 @@ package actionScripts.impls
 	import actionScripts.plugins.menu.MultiMenuEventsNotifierPlugin;
 	import actionScripts.plugins.nativeFiles.FileAssociationPlugin;
 	import actionScripts.plugins.nativeFiles.FilesCopyPlugin;
+	import actionScripts.plugins.ondiskproj.crud.exporter.OnDiskRoyaleCRUDProjectExporter;
 	import actionScripts.plugins.royale.RoyaleApiReportConfiguratorPlugin;
 	import actionScripts.plugins.royale.RoyaleApiReportPlugin;
 	import actionScripts.plugins.run.RunJavaProject;
@@ -141,7 +147,9 @@ package actionScripts.impls
 	
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
+	import visualEditor.plugin.ExportDominoToRoyalePlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
+	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -154,6 +162,11 @@ package actionScripts.impls
 		public function parseFlashDevelop(project:AS3ProjectVO=null, file:FileLocation=null, projectName:String=null):AS3ProjectVO
 		{
 			return FlashDevelopImporter.parse(file, projectName);
+		}
+
+		public function convertFlashDevelopToDomino(file:FileLocation=null):void
+		{
+			 FlashDevelopImporter.convertDomino(file);
 		}
 		
 		public function parseFlashBuilder(file:FileLocation):AS3ProjectVO
@@ -207,10 +220,11 @@ package actionScripts.impls
 				ProjectPanelPlugin,
 				TemplatingPlugin,
 				HelpPlugin,
+				ConsolePlugin,
+				ProblemsPlugin,
 				FindReplacePlugin,
 				FindResourcesPlugin,
 				RecentlyOpenedPlugin,
-				ConsolePlugin,
 				FullscreenPlugin,
 				AntBuildPlugin,
 				MavenBuildPlugin,
@@ -221,6 +235,7 @@ package actionScripts.impls
 				MouseManagerPlugin,
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
+				ExportDominoToRoyalePlugin,
                 VisualEditorRefreshFilesPlugin,
 				FileAssociationPlugin,
 				FilesCopyPlugin,
@@ -230,8 +245,9 @@ package actionScripts.impls
 		
 		public function getDefaultPlugins():Array
 		{
-			return [
+			var defaultPlugins:Array = [
 				MultiMenuEventsNotifierPlugin,
+				StartupHelperPlugin,
 				MXMLCPlugin,
 				MXMLCJavaScriptPlugin,
 				MXMLCFlashModulePlugin,
@@ -252,11 +268,9 @@ package actionScripts.impls
 				DebugAdapterPlugin,
 				SaveFilesPlugin,
 				OutlinePlugin,
-				ProblemsPlugin,
 				SymbolsPlugin,
 				ReferencesPlugin,
 				LocationsPlugin,
-				StartupHelperPlugin,
 				RenamePlugin,
 				Away3DPlugin,
 				GitHubPlugin,
@@ -266,16 +280,27 @@ package actionScripts.impls
 				HttpServerPlugin,
 				RoyaleApiReportConfiguratorPlugin,
 				RoyaleApiReportPlugin,
-				ExternalEditorsPlugin
+				ExternalEditorsPlugin,
+				VagrantPlugin,
+				FSWatcherPlugin
 			];
+
+			// conditional additions
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				defaultPlugins.push(MacPortsPlugin);
+			}
+
+			return defaultPlugins;
 		}
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
 			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
-					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin, ExportToFlexPlugin, ExportToPrimeFacesPlugin,
+					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
+					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -320,6 +345,7 @@ package actionScripts.impls
 						'w', [Keyboard.COMMAND],
 						'w', [Keyboard.CONTROL]),
 					new MenuItem("Close All", null, null, CloseTabEvent.EVENT_CLOSE_ALL_TABS),
+					new MenuItem("Close Others", null, null, CloseTabEvent.EVENT_CLOSE_ALL_OTHER_TABS),
 					/*new MenuItem("Define Workspace", null, ProjectEvent.SET_WORKSPACE),*/
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','WORKSPACE'),[
@@ -336,7 +362,7 @@ package actionScripts.impls
 				]),
 				new MenuItem(resourceManager.getString('resources','EDIT'), [
 					new MenuItem(resourceManager.getString('resources','FIND'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,
-								ProjectMenuTypes.JAVA, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], FindReplacePlugin.EVENT_FIND_NEXT,
+								ProjectMenuTypes.JAVA, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE, ProjectMenuTypes.ON_DISK], FindReplacePlugin.EVENT_FIND_NEXT,
 						'f', [Keyboard.COMMAND],
 						'f', [Keyboard.CONTROL]),
 					/*new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, null, FindReplacePlugin.EVENT_FIND_PREV,
@@ -387,6 +413,7 @@ package actionScripts.impls
 						'o', [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE)
 				]),
+				//GENERATE_APACHE_ROYALE_PROJECT
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.HAXE], ProjectActionEvent.BUILD_AND_DEBUG,
 						"d", [Keyboard.COMMAND],
@@ -469,11 +496,11 @@ package actionScripts.impls
 				if (!ConstantsCoreVO.IS_APP_STORE_VERSION)
 				{
 					var debugMenuItems:Vector.<MenuItem> = wmn[4].items;
-					for (var i:int; i < debugMenuItems.length; i++)
+					for (var j:int; j < debugMenuItems.length; j++)
 					{
-						if (debugMenuItems[i].enableTypes)
+						if (debugMenuItems[j].enableTypes)
 						{
-							debugMenuItems[i].enableTypes.push(ProjectMenuTypes.JS_ROYALE);
+							debugMenuItems[j].enableTypes.push(ProjectMenuTypes.JS_ROYALE);
 						}
 					}
 				}
@@ -534,7 +561,7 @@ package actionScripts.impls
 			return HelperUtils.getComponentByType(type);
 		}
 		
-		public function isValidExecutableBy(type:String, originPath:String, validationPath:String=null):Boolean
+		public function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean
 		{
 			return HelperUtils.isValidExecutableBy(type, originPath, validationPath);
 		}
@@ -569,6 +596,11 @@ package actionScripts.impls
 			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
 		}
 
+		public function get vagrantMenuOptions():Array
+		{
+			return VagrantUtil.VAGRANT_MENU_OPTIONS;
+		}
+
 		public function setMSDKILocalPathConfig():void
 		{
 			StartupHelper.setLocalPathConfig();
@@ -589,6 +621,16 @@ package actionScripts.impls
 			return ExternalEditorsPlugin.editors;
 		}
 		
+		public function generateTabularRoyaleProject():void
+		{
+			if (IDEModel.getInstance().activeProject &&
+					(IDEModel.getInstance().activeProject is OnDiskProjectVO))
+			{
+				var tmpExporter:OnDiskRoyaleCRUDProjectExporter = new OnDiskRoyaleCRUDProjectExporter(null);
+				tmpExporter.browseToExport();
+			}
+		}
+
 		public function getModulesFinder():IModulesFinder
 		{
 			return (new ModulesFinder());

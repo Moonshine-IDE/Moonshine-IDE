@@ -120,7 +120,6 @@
     	paddingLeft="20" paddingRight="20"
     	paddingTop="10" paddingBottom="9"
     	color="0xBBBBBB"
-    	useHandCursor="true"
-    	fontFamily="DejaVuSans" /> 
+    	useHandCursor="true" />
  
 </s:SparkButtonSkin>

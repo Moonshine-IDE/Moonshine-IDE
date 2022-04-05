@@ -18,21 +18,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.locations
 {
-	import actionScripts.events.LocationsEvent;
-	import actionScripts.plugin.PluginBase;
-	import moonshine.plugin.locations.view.LocationsView;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.Location;
-
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 
-	import mx.core.UIComponent;
-	import flash.display.DisplayObject;
-	import mx.managers.PopUpManager;
-	import actionScripts.events.OpenLocationEvent;
-	import feathers.data.ArrayCollection;
-	import actionScripts.ui.FeathersUIWrapper;
 	import mx.controls.Alert;
+	import mx.core.FlexGlobals;
+	import mx.managers.PopUpManager;
+
+	import actionScripts.events.LocationsEvent;
+	import actionScripts.events.OpenLocationEvent;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.ui.FeathersUIWrapper;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+
+	import feathers.data.ArrayCollection;
+
+	import moonshine.plugin.locations.view.LocationsView;
 
 	public class LocationsPlugin extends PluginBase
 	{
@@ -67,7 +68,7 @@ package actionScripts.plugin.locations
 		{
 			var collection:ArrayCollection = locationsView.locations;
 			collection.removeAll();
-			var locations:Vector.<Location> = event.locations;
+			var locations:Array = event.locations;
 			var itemCount:int = locations.length;
 
 			if(itemCount == 0)
@@ -84,7 +85,7 @@ package actionScripts.plugin.locations
 
 			for(var i:int = 0; i < itemCount; i++)
 			{
-				var location:Location = locations[i];
+				var location:Object = locations[i];
 				collection.add(location);
 			}
 			collection.filterFunction = null;
@@ -92,8 +93,7 @@ package actionScripts.plugin.locations
 
 			if (!isLocationsViewVisible)
 			{
-				var parentApp:Object = UIComponent(model.activeEditor).parentApplication;
-				PopUpManager.addPopUp(locationsViewWrapper, DisplayObject(parentApp), true);
+				PopUpManager.addPopUp(locationsViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 				PopUpManager.centerPopUp(locationsViewWrapper);
 				locationsViewWrapper.assignFocus("top");
 				locationsViewWrapper.stage.addEventListener(Event.RESIZE, locationsView_stage_resizeHandler, false, 0, true);
@@ -113,7 +113,7 @@ package actionScripts.plugin.locations
 
 		private function locationsView_closeHandler(event:Event):void
 		{
-			var selectedLocation:Location = this.locationsView.selectedLocation;
+			var selectedLocation:Object = this.locationsView.selectedLocation;
 			if(selectedLocation)
 			{
 				dispatcher.dispatchEvent(

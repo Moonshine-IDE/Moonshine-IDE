@@ -1,6 +1,4 @@
 require('../../modules/es.date.to-string');
-var dateToString = Date.prototype.toString;
+var uncurryThis = require('../../internals/function-uncurry-this');
 
-module.exports = function toString(it) {
-  return dateToString.call(it);
-};
+module.exports = uncurryThis(Date.prototype.toString);

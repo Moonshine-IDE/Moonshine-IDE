@@ -30,15 +30,17 @@
 	paddingRight="10"
 	paddingBottom="20"
 	
-	resize="onWindowResize(event)">
+	resize="onWindowResize(event)" creationComplete="onCreationCompletes()">
 	
 	<fx:Script>
 		<![CDATA[
 			import mx.events.ResizeEvent;
 			
 			import actionScripts.plugin.settings.vo.PluginSetting;
-		
-			
+
+			import spark.utils.TextFlowUtil;
+
+
 			[Bindable]
 			public var setting:PluginSetting;
 			
@@ -49,6 +51,14 @@
 				{
 					txtTextMess.height = txtTextMess.scroller.viewport.contentHeight + 2;
 				});
+			}
+
+			private function onCreationCompletes():void
+			{
+				if (setting.author != "")
+				{
+					retAuthor.textFlow = TextFlowUtil.importFromString("by "+ setting.author);
+				}
 			}
 			
 		]]>
@@ -74,15 +84,21 @@
 				fontSize="24"
 				kerning="on"
 				color="0xe252d3" />
+
+			<s:RichEditableText id="retAuthor"
+								width="100%"
+								editable="false" focusEnabled="false"
+								styleName="uiText" fontSize="12" fontStyle="italic" color="0x363636" kerning="on"
+								paddingLeft="2" includeInLayout="{setting.author != ''}" visible="{setting.author != ''}"/>
 				
-			<s:Label text="{'by ' + setting.author}"
+			<!--s:Label text="{'by ' + setting.author}"
 				styleName="uiText"
 				fontSize="12"
 				fontStyle="italic"
 				kerning="on"
 				color="0x363636"
 				paddingLeft="2"
-				includeInLayout="{setting.author != ''}" visible="{setting.author != ''}"/>
+				includeInLayout="{setting.author != ''}" visible="{setting.author != ''}"/-->
 					
 		</s:VGroup>
 		

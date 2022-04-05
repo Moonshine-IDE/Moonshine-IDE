@@ -30,7 +30,6 @@ package actionScripts.plugin.rename
     
     import actionScripts.events.DuplicateEvent;
     import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.LanguageServerEvent;
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.RenameEvent;
     import actionScripts.events.TreeMenuItemEvent;
@@ -53,6 +52,9 @@ package actionScripts.plugin.rename
     import components.popup.newFile.NewFilePopup;
     import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.menu.MenuPlugin;
+    import moonshine.lsp.WorkspaceEdit;
+    import moonshine.lsp.Position;
+    import actionScripts.utils.applyWorkspaceEdit;
 
 	public class RenamePlugin extends PluginBase
 	{
@@ -96,18 +98,19 @@ package actionScripts.plugin.rename
 
 		private function handleOpenRenameSymbolView(event:Event):void
 		{
-			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-			if(!editor)
+			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			if (!lspEditor || !lspEditor.languageClient)
 			{
+				Alert.show("Nothing to rename", ConstantsCoreVO.MOONSHINE_IDE_LABEL);
 				return;
 			}
-			var lineText:String = editor.editor.model.selectedLine.text;
-			var caretIndex:int = editor.editor.model.caretIndex;
+			var lineText:String = lspEditor.editor.caretLine.text;
+			var caretIndex:int = lspEditor.editor.caretCharIndex;
 			this._startChar = TextUtil.startOfWord(lineText, caretIndex);
 			this._endChar = TextUtil.endOfWord(lineText, caretIndex);
-			this._line = editor.editor.model.selectedLineIndex;
-			renameSymbolView.existingSymbolName = editor.editor.model.selectedLine.text.substr(this._startChar, this._endChar - this._startChar);
-			PopUpManager.addPopUp(renameSymbolViewWrapper, DisplayObject(editor.parentApplication), true);
+			this._line = lspEditor.editor.caretLineIndex;
+			renameSymbolView.existingSymbolName = lineText.substr(this._startChar, this._endChar - this._startChar);
+			PopUpManager.addPopUp(renameSymbolViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 			PopUpManager.centerPopUp(renameSymbolViewWrapper);
 			renameSymbolViewWrapper.assignFocus("top");
 			renameSymbolViewWrapper.stage.addEventListener(Event.RESIZE, renameSymbolView_stage_resizeHandler, false, 0, true);
@@ -115,14 +118,30 @@ package actionScripts.plugin.rename
 		
 		private function renameSymbolView_closeHandler(event:Event):void
 		{
-			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			var lspEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			if(!lspEditor || !lspEditor.languageClient)
+			{
+				return;
+			}
 			
 			if(renameSymbolView.newSymbolName != null)
 			{
-				dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_RENAME,
-					editor.currentFile.fileBridge.url,
-					this._startChar, this._line, this._endChar, this._line,
-					renameSymbolView.newSymbolName));
+				var startLine:int = lspEditor.editor.caretLineIndex;
+				var startChar:int = lspEditor.editor.caretCharIndex;
+				lspEditor.languageClient.rename({
+					textDocument: {
+						uri: lspEditor.currentFile.fileBridge.url
+					},
+					position: new Position(startLine, startChar),
+					newName: renameSymbolView.newSymbolName
+				}, function(edit:WorkspaceEdit):void
+				{
+					if(!edit)
+					{
+						return;
+					}
+					applyWorkspaceEdit(edit);
+				});
 			}
 			
 			renameSymbolViewWrapper.stage.removeEventListener(Event.RESIZE, renameSymbolView_stage_resizeHandler);

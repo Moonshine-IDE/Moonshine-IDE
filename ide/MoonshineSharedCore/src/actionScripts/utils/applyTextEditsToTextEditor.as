@@ -18,44 +18,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.events.ChangeEvent;
-	import actionScripts.ui.editor.text.TextEditor;
-	import actionScripts.ui.editor.text.change.TextChangeBase;
-	import actionScripts.valueObjects.Position;
-	import actionScripts.valueObjects.Range;
-	import actionScripts.valueObjects.TextEdit;
+	import moonshine.editor.text.TextEditor;
+	import moonshine.editor.text.changes.TextEditorChange;
+	import moonshine.editor.text.events.TextEditorChangeEvent;
+	import moonshine.editor.text.utils.LspTextEditorUtil;
+	import moonshine.lsp.TextEdit;
 
-	public function applyTextEditsToTextEditor(textEditor:TextEditor, textEdits:Vector.<TextEdit>):void
+	public function applyTextEditsToTextEditor(textEditor:TextEditor, textEdits:Array /* Array<TextEdit> */):void
 	{
-		var change:TextChangeBase = getTextChangeFromTextEdits(textEdits);
-
-		var line:int = textEditor.model.selectedLineIndex;
-		var char:int = textEditor.model.caretIndex;
-		var scrollPosition:int = textEditor.model.scrollPosition;
-		var textEditsCount:int = textEdits.length;
-		for(var i:int = 0; i < textEditsCount; i++)
+		var changes:Array = textEdits.map(function(textEdit:TextEdit, index:int, array:Array):TextEditorChange
 		{
-			var textEdit:TextEdit = textEdits[i];
-			var range:Range = textEdit.range;
-			var start:Position = range.start;
-			var end:Position = range.end;
-			if(start.line !== end.line || start.character !== end.character)
-			{
-				if(end.line > start.line)
-				{
-					line -= (end.line - start.line);
-				}
-			}
-			if(start.line <= line)
-			{
-				var newLines:Array = textEdit.newText.split("\n");
-				line += (newLines.length - 1);
-			}
-		}
+			return LspTextEditorUtil.lspTextEditToTextEditorChange(textEdit);
+		});
 
-		textEditor.dispatchEvent(new ChangeEvent(ChangeEvent.TEXT_CHANGE, change));
-		textEditor.model.selectedLineIndex = line;
-		textEditor.model.caretIndex = char;
-		textEditor.scrollTo(scrollPosition);
+		textEditor.dispatchEvent(new TextEditorChangeEvent(TextEditorChangeEvent.TEXT_CHANGE, changes));
 	}
 }

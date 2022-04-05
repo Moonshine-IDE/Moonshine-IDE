@@ -22,7 +22,13 @@ package actionScripts.plugins.git.commands
 
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	
+
+	import flashx.textLayout.elements.LinkElement;
+
+	import flashx.textLayout.elements.ParagraphElement;
+	import flashx.textLayout.elements.SpanElement;
+	import flashx.textLayout.formats.TextDecoration;
+
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
@@ -45,10 +51,14 @@ package actionScripts.plugins.git.commands
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
 	
 	import components.popup.GitAuthenticationPopup;
-	
+
+	import no.doomsday.console.core.events.ConsoleEvent;
+
 	public class GitCommandBase extends ConsoleOutputter implements IWorkerSubscriber
 	{
 		override public function get name():String { return "Git Plugin"; }
+
+		public static const PRIVATE_REPO_SANDBOX_ERROR_MESSAGE:String = "Git authentication is not supported in the App Store version of Moonshine. Download the full version at https://moonshine-ide.com";
 		
 		public var gitBinaryPathOSX:String;
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
@@ -261,6 +271,29 @@ package actionScripts.plugins.git.commands
 			dispatcher.dispatchEvent(tmpEvent);
 			
 			plugin = tmpEvent.value as GitHubPlugin;
+		}
+
+		protected function showPrivateRepositorySandboxError():void
+		{
+			var p:ParagraphElement = new ParagraphElement();
+			var span1:SpanElement = new SpanElement();
+			var link:LinkElement = new LinkElement();
+
+			p.color = 0xff6666;
+			span1.text = ": Git authentication is not supported in the App Store version of Moonshine. Download the full version at ";
+
+			link.href = "https://moonshine-ide.com";
+			var inf:Object = {color:0xc165b8, textDecoration:TextDecoration.UNDERLINE};
+			link.linkNormalFormat = inf;
+
+			var linkSpan:SpanElement = new SpanElement();
+			linkSpan.text = "https://moonshine-ide.com";
+			link.addChild(linkSpan);
+
+			p.addChild(span1);
+			p.addChild(link);
+
+			outputMsg(p);
 		}
 	}
 }

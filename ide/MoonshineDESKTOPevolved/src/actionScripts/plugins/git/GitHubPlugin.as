@@ -290,7 +290,7 @@ package actionScripts.plugins.git
 		
 		private function checkOSXGitAccess(against:String=ProjectMenuTypes.GIT_PROJECT):Boolean
 		{
-			if (ConstantsCoreVO.IS_MACOS && !gitBinaryPathOSX) 
+			if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent())
 			{
 				new GetXCodePathCommand(onXCodePathDetection, against);
 				return false;
@@ -300,7 +300,7 @@ package actionScripts.plugins.git
 				new GetXCodePathCommand(onXCodePathDetection, against);
 				return false;
 			}
-			else if (ConstantsCoreVO.IS_MACOS && gitBinaryPathOSX && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
+			else if (ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent() && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
 			{
 				ConstantsCoreVO.IS_GIT_OSX_AVAILABLE = true;
 			}
@@ -336,7 +336,7 @@ package actionScripts.plugins.git
 				isGranted = true;
 				
 				dispatcher.dispatchEvent(new VersionControlEvent(VersionControlEvent.OSX_XCODE_PERMISSION_GIVEN, xCodePermissionWindow.xCodePath));
-				Alert.show("Permission accepted. You can now use Moonshine Git and SVN functionalities.", "Success!");
+				Alert.show("Permission accepted. You can now use Moonshine Git functionalities.", "Success!");
 				
 				// re-test
 				checkGitAvailability();

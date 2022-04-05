@@ -30,7 +30,6 @@
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.factory.FileLocation;
-			import actionScripts.ui.editor.text.NewASFileCompletionManager;
 	
 			import elements.skins.DarkButtonSkin;
 	
@@ -151,7 +150,7 @@
 	
 			protected function onTreeItemClicked(event:ListEvent):void
 			{
-				txtDestination.text = UtilsCore.getPackageReferenceByProjectPath(
+				txtDestination.text = UtilsCore.getPathStringByProjectPath(
 						Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
 						tree.selectedItem.nativePath);
 	
@@ -168,9 +167,11 @@
 				minHeight = height;
 				title = isInterfaceDialog ? "New Interface Class" : "New ActionScript Class";
 	
-				if(folderLocation)
+				if (wrapperBelongToProject)
 				{
-					txtDestination.text = wrapperBelongToProject.projectName;
+					txtDestination.text = UtilsCore.getPathStringByProjectPath(
+							Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+							wrapperOfFolderLocation.nativePath);
 					txtFileName.setFocus();
 				}
 	

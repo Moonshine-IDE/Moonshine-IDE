@@ -9,8 +9,11 @@ ide/MoonshineDESKTOPevolved/obj/MoonshineDESKTOPevolvedConfig.xml
 ide/MoonshineSharedCore/obj/MoonshineSharedCoreConfig.xml
 ide/MoonshineWEBevolved/obj/
 ide/MoonshineWEBevolved/bin-debug/
+ide/MoonshineWEBevolved/build/bin-debug/
+ide/MoonshineWEBevolved/build/elements/
 ide/MoonshineWorker/obj/
 ide/MoonshineWorker/bin/
+ide/FileSystemWatcherWorker/bin/
 library/ApacheFlexSDKInstallerLib/obj/
 .idea/
 language-server-wrappers/moonshine-as3mxml/moonshine-as3mxml.iml

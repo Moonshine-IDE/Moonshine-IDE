@@ -1,0 +1,37 @@
+import lotus.domino.NotesException;
+import lotus.domino.NotesFactory;
+import lotus.domino.NotesThread;
+import lotus.domino.Session;
+ 
+ 
+public class $ProjectName {
+ 
+ 
+    public static void main(String[] args) {
+        Session session = null;
+        try {
+            NotesThread.sinitThread();
+             
+            session = NotesFactory.createSession();
+            System.out.println("Running as user:  '" + session.getUserName() + "'.");
+             
+            // ** your code here **
+ 
+             
+        }
+        catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        finally {
+            try {
+                if (null != session) {
+                    session.recycle();
+                }
+            }
+            catch(NotesException ex) {
+                ex.printStackTrace();
+            }
+            NotesThread.stermThread();
+        }
+    }
+}

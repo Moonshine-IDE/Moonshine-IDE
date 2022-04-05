@@ -35,8 +35,9 @@ package actionScripts.plugin.java.javaproject.vo
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.languageServer.LanguageServerProjectVO;
 
-	public class JavaProjectVO extends ProjectVO implements IJavaProject
+	public class JavaProjectVO extends LanguageServerProjectVO implements IJavaProject
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 
@@ -47,6 +48,10 @@ package actionScripts.plugin.java.javaproject.vo
 		private var _jdkType:String = JavaTypes.JAVA_DEFAULT;
 		public function get jdkType():String									{	return _jdkType;	}
 		public function set jdkType(value:String):void							{	_jdkType = value;	}
+
+		private var _projectType:String;
+		public function get projectType():String									{	return _projectType;	}
+		public function set projectType(value:String):void							{	_projectType = value;	}
 
 		private var _mainClassName:String;
 		private var _mainClassPath:String;

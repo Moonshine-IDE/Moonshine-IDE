@@ -43,7 +43,7 @@ package actionScripts.plugins.versionControl
 		private static var _REPOSITORIES:ArrayCollection;
 		public static function get REPOSITORIES():ArrayCollection
 		{
-			if (!_REPOSITORIES) _REPOSITORIES = SharedObjectUtil.getRepositoriesFromSO();
+			if (!_REPOSITORIES) _REPOSITORIES = SharedObjectUtil.getRepositoriesFromSO(VersionControlUtils.getDefaultRepositories());
 			return _REPOSITORIES;
 		}
 		
@@ -216,10 +216,19 @@ package actionScripts.plugins.versionControl
 			var tmpCollection:ArrayList = new ArrayList();
 			
 			var tmpRepository:RepositoryItemVO = new RepositoryItemVO();
-			tmpRepository.url = "https://github.com/prominic/Moonshine-IDE";
+			tmpRepository.url = "https://github.com/Moonshine-IDE/Moonshine-IDE";
 			tmpRepository.notes = "Moonshine-IDE Source Code";
 			tmpRepository.type = VersionControlTypes.GIT;
 			tmpRepository.udid = UIDUtil.createUID();
+			tmpRepository.isDefault = true;
+			tmpCollection.addItem(tmpRepository);
+
+			tmpRepository = new RepositoryItemVO();
+			tmpRepository.url = "https://github.com/Moonshine-IDE/Moonshine-IDE-Examples-Directory-Assistance";
+			tmpRepository.notes = "Moonshine-IDE example projects";
+			tmpRepository.type = VersionControlTypes.GIT;
+			tmpRepository.udid = UIDUtil.createUID();
+			tmpRepository.isDefault = true;
 			tmpCollection.addItem(tmpRepository);
 			
 			tmpRepository = new RepositoryItemVO();
@@ -227,13 +236,15 @@ package actionScripts.plugins.versionControl
 			tmpRepository.notes = "Apache Royale Source and Examples";
 			tmpRepository.type = VersionControlTypes.GIT;
 			tmpRepository.udid = UIDUtil.createUID();
+			tmpRepository.isDefault = true;
 			tmpCollection.addItem(tmpRepository);
 			
 			tmpRepository = new RepositoryItemVO();
-			tmpRepository.url = "https://github.com/prominic/Royale-Examples";
+			tmpRepository.url = "https://github.com/Moonshine-IDE/Royale-Examples";
 			tmpRepository.notes = "Additional Apache Royale Examples";
 			tmpRepository.type = VersionControlTypes.GIT;
 			tmpRepository.udid = UIDUtil.createUID();
+			tmpRepository.isDefault = true;
 			tmpCollection.addItem(tmpRepository);
 			
 			return tmpCollection;

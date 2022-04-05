@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template displayHome="false">
+        <title>Apache Royale Domino Export Project</title>
+        <homeTitle>Apache Royale Domino Export Project</homeTitle>
+        <name>Apache Royale Domino Export Project</name>
+        <icon>Royale Browser Project.png</icon>
+        <description>Create a Apache® Royale project that will generate an SWF and HTML files, to run on browser.</description>
+    </template>
+</templates>

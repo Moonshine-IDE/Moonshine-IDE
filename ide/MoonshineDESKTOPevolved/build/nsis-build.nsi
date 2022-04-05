@@ -15,7 +15,7 @@
 
 	;Name and file
 	Name "${INSTALLERNAME}-IDE"
-	OutFile "DEPLOY\${INSTALLERNAME}-${VERSION}.exe"
+	OutFile "DEPLOY\${INSTALLERNAME}-installer.exe"
 
 	;Default installation folder
 	InstallDir "$PROGRAMFILES64\${INSTALLERNAME}"

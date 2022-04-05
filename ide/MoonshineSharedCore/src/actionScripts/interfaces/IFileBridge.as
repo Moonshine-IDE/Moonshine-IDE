@@ -100,7 +100,7 @@ package actionScripts.interfaces
 		function get userDirectory():Object;
 		function get desktopDirectory():Object;
 		function get documentsDirectory():Object;
-
+		function get isBrowsed():Boolean;
 		function get nameWithoutExtension():String;
 	}
 }

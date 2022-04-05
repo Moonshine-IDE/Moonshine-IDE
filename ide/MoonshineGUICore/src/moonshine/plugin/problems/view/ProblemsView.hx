@@ -1,5 +1,5 @@
 /*
-	Copyright 2020 Prominic.NET, Inc.
+	Copyright 2021 Prominic.NET, Inc.
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -20,22 +20,23 @@
 
 package moonshine.plugin.problems.view;
 
-import feathers.data.GridViewCellState;
-import feathers.controls.dataRenderers.ItemRenderer;
-import feathers.utils.DisplayObjectRecycler;
+import moonshine.plugin.problems.events.ProblemsViewEvent;
+import feathers.events.GridViewEvent;
+import moonshine.plugin.problems.vo.MoonshineDiagnostic;
 import actionScripts.factory.FileLocation;
 import actionScripts.interfaces.IViewWithTitle;
-import actionScripts.valueObjects.Diagnostic;
 import feathers.controls.GridView;
 import feathers.controls.GridViewColumn;
 import feathers.controls.LayoutGroup;
 import feathers.controls.TreeView;
+import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayCollection;
+import feathers.data.GridViewCellState;
 import feathers.data.IFlatCollection;
 import feathers.layout.AnchorLayout;
 import feathers.layout.AnchorLayoutData;
-import moonshine.theme.MoonshineTheme;
+import feathers.utils.DisplayObjectRecycler;
 import openfl.events.Event;
 
 class ProblemsView extends LayoutGroup implements IViewWithTitle {
@@ -52,16 +53,16 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		return "Problems";
 	}
 
-	private var _problems:IFlatCollection<Diagnostic> = new ArrayCollection<Diagnostic>();
+	private var _problems:IFlatCollection<MoonshineDiagnostic> = new ArrayCollection<MoonshineDiagnostic>();
 
 	@:flash.property
-	public var problems(get, set):IFlatCollection<Diagnostic>;
+	public var problems(get, set):IFlatCollection<MoonshineDiagnostic>;
 
-	private function get_problems():IFlatCollection<Diagnostic> {
+	private function get_problems():IFlatCollection<MoonshineDiagnostic> {
 		return this._problems;
 	}
 
-	private function set_problems(value:IFlatCollection<Diagnostic>):IFlatCollection<Diagnostic> {
+	private function set_problems(value:IFlatCollection<MoonshineDiagnostic>):IFlatCollection<MoonshineDiagnostic> {
 		if (this._problems == value) {
 			return this._problems;
 		}
@@ -71,13 +72,13 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 	}
 
 	@:flash.property
-	public var selectedProblem(get, never):Diagnostic;
+	public var selectedProblem(get, never):MoonshineDiagnostic;
 
-	public function get_selectedProblem():Dynamic {
+	public function get_selectedProblem():MoonshineDiagnostic {
 		if (this.gridView == null) {
 			return null;
 		}
-		return cast(this.gridView.selectedItem, Diagnostic);
+		return cast(this.gridView.selectedItem, MoonshineDiagnostic);
 	}
 
 	override private function initialize():Void {
@@ -87,18 +88,25 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		this.gridView.variant = TreeView.VARIANT_BORDERLESS;
 		this.gridView.layoutData = AnchorLayoutData.fill();
 		var problemColumn = new GridViewColumn("Problem", getMessageLabel);
-		problemColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
-			target.text = state.text;
-			target.toolTip = state.text;
+		problemColumn.cellRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
+			var itemRenderer = new ItemRenderer();
+			itemRenderer.icon = new DiagnosticSeverityIcon();
+			return itemRenderer;
+		}, (itemRenderer, state:GridViewCellState) -> {
+			var icon = cast(itemRenderer.icon, DiagnosticSeverityIcon);
+			icon.severity = cast(state.data, MoonshineDiagnostic).severity;
+			itemRenderer.text = state.text;
+			itemRenderer.toolTip = state.text;
 		});
 		var locationColumn = new GridViewColumn("Location", getLocationLabel);
 		locationColumn.cellRendererRecycler = DisplayObjectRecycler.withClass(ItemRenderer, (target, state:GridViewCellState) -> {
 			target.text = state.text;
-			target.toolTip = cast(state.data, Diagnostic).path;
+			target.toolTip = cast(state.data, MoonshineDiagnostic).fileLocation.fileBridge.nativePath;
 		});
 		this.gridView.columns = new ArrayCollection([problemColumn, locationColumn]);
 		this.gridView.extendedScrollBarY = true;
-		this.gridView.addEventListener(Event.CHANGE, gridView_changeHandler);
+		this.gridView.resizableColumns = true;
+		this.gridView.addEventListener(GridViewEvent.CELL_TRIGGER, gridView_cellTriggerHandler);
 		this.addChild(this.gridView);
 
 		super.initialize();
@@ -114,7 +122,7 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		super.update();
 	}
 
-	private function getMessageLabel(diagnostic:Diagnostic):String {
+	private function getMessageLabel(diagnostic:MoonshineDiagnostic):String {
 		var label = diagnostic.message;
 		if (diagnostic.code != null && diagnostic.code.length > 0) {
 			label += " (" + diagnostic.code + ")";
@@ -122,8 +130,8 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		return label;
 	}
 
-	private function getLocationLabel(diagnostic:Diagnostic):String {
-		var label = new FileLocation(diagnostic.path).name;
+	private function getLocationLabel(diagnostic:MoonshineDiagnostic):String {
+		var label = diagnostic.fileLocation.name;
 		var range = diagnostic.range;
 		var start = range.start;
 		if (start != null) {
@@ -132,7 +140,7 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		return label;
 	}
 
-	private function gridView_changeHandler(event:Event):Void {
-		this.dispatchEvent(new Event(Event.CHANGE));
+	private function gridView_cellTriggerHandler(event:GridViewEvent<GridViewCellState>):Void {
+		this.dispatchEvent(new ProblemsViewEvent(ProblemsViewEvent.OPEN_PROBLEM, cast(event.state.data, MoonshineDiagnostic)));
 	}
 }

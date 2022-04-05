@@ -51,7 +51,6 @@
 	paddingLeft="3"
 	paddingRight="3"
 	paddingBottom="0"
-	fontFamily="DejaVuSans"
 	fontSize="15"
 	maxDisplayedLines="1"
 	textAlign="right"

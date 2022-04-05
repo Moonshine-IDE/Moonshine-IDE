@@ -65,10 +65,10 @@
 				<isset property="APP_PROPERTIES.haxeLibDirectory"/>
 			</condition>
 			<!-- fall back to default Haxe install location, if available -->
-			<condition property="HAXE_LIB_DIRECTORY" value="c:/HaxeToolkit/haxe/haxelib.exe">
+			<condition property="HAXE_LIB_DIRECTORY" value="c:/HaxeToolkit/haxe">
 				<and>
 					<os family="windows" />
-					<available file="c:/HaxeToolkit/haxe" />
+					<available file="c:/HaxeToolkit/haxe/haxelib.exe" />
 				</and>
 			</condition>
 			<condition property="HAXE_LIB_DIRECTORY" value="/usr/local/lib/haxe">
@@ -98,7 +98,7 @@
 			<property name="bundledFlexJSSDK" value="${BUNDLED_FLEXJS_SDK}" />
 			<property name="HAXE_LIB_DIRECTORY" value="${HAXE_LIB}"/>
 			<property name="svn.revision" value="${svn.revision}" />
-			<property name="IsDebug" value="false" />
+			<property name="IsDebug" value="${SWF_DEBUG_MODE}" />
 		</else>
 	</if>
 	
@@ -146,6 +146,19 @@
 	<propertycopy property="FLEX_HOME" from="env.FLEX_HOME" silent="true" override="${Is.FLEX_HOME.Not.Exists}"/>
 	<propertycopy property="SIGNTOOL_HOME" from="env.SIGNTOOL_HOME" silent="true"/>
 	<propertycopy property="NSIS_HOME" from="env.NSIS_HOME" silent="true"/>
+	<!-- try to fall back to HAXE_STD_PATH, if available -->
+	<condition property="HAXE_LIB_DIRECTORY" value="${env.HAXE_STD_PATH}/..">
+		<and>
+			<os family="windows" />
+			<available file="${env.HAXE_STD_PATH}/../haxelib.exe" />
+		</and>
+	</condition>
+	<condition property="HAXE_LIB_DIRECTORY" value="${env.HAXE_STD_PATH}/..">
+		<and>
+			<os family="mac" />
+			<available file="${env.HAXE_STD_PATH}/../haxelib" />
+		</and>
+	</condition>
 	<echo>SDK : ${FLEX_HOME}</echo>
 	<echo>SIGNTOOL: ${SIGNTOOL_HOME}</echo>
 	<echo>NSIS: ${NSIS_HOME}</echo>
@@ -292,7 +305,7 @@
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${debug_dir}/${certSelfSigned}'" />
 	   		<arg line="-storepass '${certSelfSignedPassword}'" />
-			<arg line="-tsa 'http://timestamp.entrust.net/TSS/RFC3161sha2TS'" />
+			<arg line="-tsa 'http://timestamp.digicert.com'" />
 	   		<arg line="-target bundle"/>
 	   		<arg line="${windowsBundleFilename}" />
 	   		<arg line="'${desktopApplicationDescriptor}'" />
@@ -312,7 +325,7 @@
 			<arg value="/p"/>
 			<arg value="${certSignedWindowsBinaryPassword}"/>
 			<arg value="/tr"/>
-			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
+			<arg value="http://timestamp.digicert.com"/>
 			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
 		</exec>
 		<echo># Signed Process Running - Praparing Installer</echo>
@@ -331,8 +344,8 @@
 			<arg value="/p"/>
 			<arg value="${certSignedWindowsBinaryPassword}"/>
 			<arg value="/tr"/>
-			<arg value="http://timestamp.entrust.net/TSS/RFC3161sha2TS"/>
-			<arg value="${deploy_dir}/${installerName}-${BuildVersion}.exe"/>
+			<arg value="http://timestamp.digicert.com"/>
+			<arg value="${deploy_dir}/${installerName}-installer.exe"/>
 		</exec>
 	 </target>
 	
@@ -349,7 +362,7 @@
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${debug_dir}/${certSelfSigned}'" />
 	   		<arg line="-storepass '${certSelfSignedPassword}'" />
-			<arg line=" -tsa 'http://timestamp.entrust.net/TSS/RFC3161sha2TS'" />
+			<arg line=" -tsa 'http://timestamp.digicert.com'" />
 	   		<arg line="-target native"/>
 	   		<arg line="${desktopBinaryFilename}" />
 	   		<arg line="'${desktopApplicationDescriptor}'" />
@@ -398,7 +411,7 @@
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${debug_dir}/${certSelfSigned}' " />
 			<arg line="-storepass '${certSelfSignedPassword}'" />
-			<arg line=" -tsa 'http://timestamp.entrust.net/TSS/RFC3161sha2TS'" />
+			<arg line=" -tsa 'http://timestamp.digicert.com'" />
 			<arg line="-target native"/>
 			<arg line="${deploy_dir}/${installerName}.dmg" />
 			<arg line="${desktopApplicationDescriptor}" />
@@ -420,7 +433,7 @@
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${debug_dir}/${certSelfSigned}'" />
 			<arg line="-storepass '${certSelfSignedPassword}'" />
-			<arg line=" -tsa 'http://timestamp.entrust.net/TSS/RFC3161sha2TS'" />
+			<arg line=" -tsa 'http://timestamp.digicert.com'" />
 			<arg line="-target bundle"/>
 			<arg line="'${desktopBinaryFilename}'" />
 			<arg line="'${desktopApplicationDescriptor}'" />
@@ -908,11 +921,65 @@
 
 	<target name="InstallHaxeDependencies">
 		<echo>Installing Haxe Libraries</echo>
-		
-		<haxelibInstall library="feathersui" />
-		<haxelibInstall library="openfl" />
-		<haxelibInstall library="actuate" />
-		<haxelibInstall library="lime" />
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="feathersui"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="openfl"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="actuate"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="lime"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="markdown-openfl-textfield"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-openfl-language-client"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-openfl-language-client.git"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-openfl-debug-adapter-client"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-openfl-debug-adapter-client.git"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+			dir="${LibraryGUICore}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-feathersui-text-editor"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor.git"/>
+			<arg value="--quiet"/>
+		</exec>
 	</target>
 	
 	<target name="CompileGUICore" depends="InstallHaxeDependencies">
@@ -959,6 +1026,7 @@
 			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
+			<compiler.verbose-stacktraces>true</compiler.verbose-stacktraces>
 		</mxmlc>
 	</target>
 	<target name="CompileSWFOSX" depends="createBuildInfoFile,CompileGUICore" if="${isOSX}">
@@ -998,6 +1066,7 @@
 			<compiler.external-library-path dir="${debug_dir}" append="true">
 			   <include name="SSB.ane" />
 			</compiler.external-library-path>
+			<compiler.verbose-stacktraces>true</compiler.verbose-stacktraces>
 		</mxmlc>
 	</target>
 	

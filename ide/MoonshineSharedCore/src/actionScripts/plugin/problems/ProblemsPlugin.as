@@ -19,17 +19,23 @@
 package actionScripts.plugin.problems
 {
 	import flash.events.Event;
-	
+
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.Diagnostic;
-	
-	import moonshine.plugin.problems.view.ProblemsView;
+	import actionScripts.valueObjects.ProjectVO;
+
 	import feathers.data.IFlatCollection;
+
+	import moonshine.lsp.Diagnostic;
+	import moonshine.plugin.problems.view.ProblemsView;
+	import moonshine.plugin.problems.vo.MoonshineDiagnostic;
+	import flash.utils.Dictionary;
+	import moonshine.plugin.problems.events.ProblemsViewEvent;
 
 	public class ProblemsPlugin extends PluginBase
 	{
@@ -53,12 +59,15 @@ package actionScripts.plugin.problems
 		private var problemsView:ProblemsView = new ProblemsView();
 		private var isStartupCall:Boolean = true;
 		private var isProblemsViewVisible:Boolean = false;
+		private var diagnosticsByProject:Dictionary = new Dictionary();
 
 		override public function activate():void
 		{
 			super.activate();
 			dispatcher.addEventListener(EVENT_PROBLEMS, handleProblemsShow);
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, handleLanguageServerClosed);
+			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 
 		override public function deactivate():void
@@ -66,6 +75,8 @@ package actionScripts.plugin.problems
 			super.deactivate();
 			dispatcher.removeEventListener(EVENT_PROBLEMS, handleProblemsShow);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
+			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, handleLanguageServerClosed);
+			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 
 		private function handleProblemsShow(event:Event):void
@@ -87,53 +98,101 @@ package actionScripts.plugin.problems
 		
 		private function initializeProblemsViewEventHandlers(event:Event):void
 		{
-			problemsView.addEventListener(Event.CHANGE, handleProblemChange);
-			problemsView.addEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStage);
+			problemsView.addEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
+			problemsView.addEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
 		}
 
 		private function cleanupProblemsViewEventHandlers():void
 		{
-			problemsView.removeEventListener(Event.CHANGE, handleProblemChange);
-			problemsView.removeEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStage);
+			problemsView.removeEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
+			problemsView.removeEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
 		}
 
-		private function problemsPanel_removedFromStage(event:Event):void
+		private function clearProblemsForProject(project:ProjectVO):void
+		{
+			if(!project)
+			{
+				return;
+			}
+			var diagnosticsByUri:Object = diagnosticsByProject[project];
+			delete diagnosticsByProject[project];
+			if(!diagnosticsByUri)
+			{
+				return;
+			}
+			var problems:IFlatCollection = problemsView.problems;
+			for(var uri:String in diagnosticsByUri)
+			{
+				var oldDiagnostics:Array = diagnosticsByUri[uri];
+				for each(var oldDiagnostic:MoonshineDiagnostic in oldDiagnostics)
+				{
+					problems.remove(oldDiagnostic);
+				}
+			}
+		}
+
+		private function problemsPanel_removedFromStageHandler(event:Event):void
 		{
             isProblemsViewVisible = false;
 		}
 
+		private function handleLanguageServerClosed(event:ProjectEvent):void
+		{
+			this.clearProblemsForProject(event.project);
+		}
+
+		private function handleRemoveProject(event:ProjectEvent):void
+		{
+			this.clearProblemsForProject(event.project);
+		}
+
 		private function handleShowDiagnostics(event:DiagnosticsEvent):void
 		{
-			var path:String = event.path;
 			var problems:IFlatCollection = problemsView.problems;
-			var itemCount:int = problems.length;
-			for(var i:int = itemCount - 1; i >= 0; i--)
+			var project:ProjectVO = event.project;
+			var diagnosticsByUri:Object = diagnosticsByProject[project];
+			if(!diagnosticsByUri)
 			{
-				var item:Diagnostic = Diagnostic(problems.get(i));
-				if(item.path === path)
-				{
-					problems.removeAt(i);
-				}
+				diagnosticsByUri = {};
+				diagnosticsByProject[project] = diagnosticsByUri;
 			}
-			var diagnostics:Vector.<Diagnostic> = event.diagnostics;
-			itemCount = diagnostics.length;
-			for(i = 0; i < itemCount; i++)
+			var uri:String = event.uri;
+			if(uri in diagnosticsByUri)
 			{
-				item = diagnostics[i];
-				if(item.severity == Diagnostic.SEVERITY_HINT)
+				var oldDiagnostics:Array = diagnosticsByUri[uri];
+				for each(var oldDiagnostic:MoonshineDiagnostic in oldDiagnostics)
+				{
+					problems.remove(oldDiagnostic);
+				}
+				delete diagnosticsByUri[uri];
+			}
+			var newDiagnostics:Array = event.diagnostics;
+			newDiagnostics = newDiagnostics.map(function(diagnostic:Diagnostic, index:int, source:Array):MoonshineDiagnostic
+			{
+				var result:MoonshineDiagnostic = new MoonshineDiagnostic(new FileLocation(uri, true), project);
+				result.code = diagnostic.code;
+				result.message = diagnostic.message;
+				result.range = diagnostic.range;
+				result.severity = diagnostic.severity;
+				return result;
+			});
+			diagnosticsByUri[uri] = newDiagnostics;
+			for each(var newDiagnostic:MoonshineDiagnostic in newDiagnostics)
+			{
+				if(newDiagnostic.severity == 4 /* DiagnosticSeverity.Hint */)
 				{
 					//hints aren't meant to be displayed in the list of problems
 					continue;
 				}
-				problems.add(item);
+				problems.add(newDiagnostic);
 			}
 		}
 
-		private function handleProblemChange(event:Event):void
+		private function problemsPanel_openProblemHandler(event:ProblemsViewEvent):void
 		{
-			var diagnostic:Diagnostic = problemsView.selectedProblem;
+			var diagnostic:MoonshineDiagnostic = event.problem;
 			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
-				[new FileLocation(diagnostic.path)], diagnostic.range.start.line);
+				[diagnostic.fileLocation], diagnostic.range.start.line);
 			openEvent.atChar = diagnostic.range.start.character;
 			dispatcher.dispatchEvent(openEvent);
 		}
@@ -144,6 +203,7 @@ package actionScripts.plugin.problems
 
 import actionScripts.interfaces.IViewWithTitle;
 import actionScripts.ui.FeathersUIWrapper;
+
 import moonshine.plugin.problems.view.ProblemsView;
 
 class ProblemsViewWrapper extends FeathersUIWrapper implements IViewWithTitle {

@@ -28,7 +28,19 @@ To build Moonshine IDE you also need Moonshine SDK Installer source code. You ca
 
 You should place SDK Installer repository on the same level as Moonshine IDE. So if you have Moonshine IDE in `C:\Repos\Moonshine-IDE` you should have SDK Installer in `C:\Repos\Moonshine-SDK-Installer`.
 
-### 4. Change configuration files for local build
+### 4. Additional Required Projects
+
+These projects are also required, but do not require separate compilation:
+- Visual Editor ([documentation](https://github.com/Moonshine-IDE/Moonshine-IDE/wiki/Visual-Editor-Architecture))
+    - [VisualEditorConverterLib](https://github.com/Moonshine-IDE/VisualEditorConverterLib)
+    - [MockupVisualEditor](https://github.com/Moonshine-IDE/MockupVisualEditor)
+- Text Editor:
+    - [moonshine-feathersui-text-editor](https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor)
+    - Language server integration:  [moonshine-openfl-language-client](https://github.com/Moonshine-IDE/moonshine-openfl-language-client) 
+- Debugger:  [moonshine-openfl-debug-adapter-client](https://github.com/Moonshine-IDE/moonshine-openfl-debug-adapter-client)
+
+
+### 5. Change configuration files for local build
 
 In `Moonshine-IDE\ide\MoonshineDESKTOPevolved\build\ApplicationProperties.xml` change:
 - Build version to something newer than already installed eg.
@@ -61,7 +73,7 @@ In `Moonshine-IDE\ide\MoonshineDESKTOPevolved\src\MoonshineDESKTOP-app.xml`
 	<application xmlns="http://ns.adobe.com/air/application/32.0">
 	```
 
-### 5a. Build Desktop Version
+### 6a. Build Desktop Version
 
 If you need to recompile language server, build and deploy codecompletion.jar. If not, you can skip this step.
 
@@ -76,7 +88,7 @@ To build the application itself, use these commands:
 
 Find the generated artifacts in `ide/MoonshineDESKTOPevolved/build/DEPLOY`
 
-### 5b. Build Web Version
+### 6b. Build Web Version
 
 To compile the SWF for the web version of Moonshine-IDE, run:
 
@@ -91,4 +103,7 @@ NOTE:  this part of the project is out of date.  The server-side logic needs to 
 ## License
 
 Moonshine-IDE is licensed under the Apache License 2.0 - see the [LICENSE.md](https://github.com/prominic/Moonshine-IDE/blob/master/LICENSE.MD) file for details
+
+
+
 

@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
+	import flash.events.Event;
+
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.OpenFileEvent;
@@ -26,20 +28,34 @@ package actionScripts.controllers
 	import actionScripts.interfaces.ILanguageServerBridge;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.text.TextEditor;
-	import actionScripts.ui.editor.text.TextEditorModel;
-	import actionScripts.valueObjects.Location;
-	import actionScripts.valueObjects.Position;
+	import moonshine.editor.text.TextEditor;
 	import actionScripts.valueObjects.ProjectVO;
 
-	import flash.events.Event;
+	import moonshine.lsp.Location;
+	import moonshine.lsp.LocationLink;
+	import moonshine.lsp.Position;
+	import moonshine.lsp.Range;
 
 	public class OpenLocationCommand implements ICommand
 	{
 		public function execute(event:Event):void
 		{
-			var location:Location = OpenLocationEvent(event).location;
-			var uri:String = location.uri;
+			var openLocationEvent:OpenLocationEvent = OpenLocationEvent(event);
+			var uri:String = null;
+			var range:Range = null;
+			if(openLocationEvent.location is Location)
+			{
+				var location:Location = Location(openLocationEvent.location);
+				uri = location.uri;
+				range = location.range;
+			}
+			else if(openLocationEvent.location is LocationLink)
+			{
+				var locationLink:LocationLink = LocationLink(openLocationEvent.location);
+				uri = locationLink.targetUri;
+				range = locationLink.targetRange;
+			}
+			
 			var lsc:ILanguageServerBridge = IDEModel.getInstance().languageServerCore;
 			var project:ProjectVO = IDEModel.getInstance().activeProject;
 			if(!lsc.hasCustomTextEditorForUri(uri, project))
@@ -53,8 +69,8 @@ package actionScripts.controllers
 			if(scheme == "file")
 			{
 				var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE,
-					[new FileLocation(location.uri, true)], location.range.start.line);
-				openEvent.atChar = location.range.start.character;
+					[new FileLocation(uri, true)], range.start.line);
+				openEvent.atChar = range.start.character;
 				GlobalEventDispatcher.getInstance().dispatchEvent(openEvent);
 			}
 			else
@@ -63,16 +79,13 @@ package actionScripts.controllers
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new AddTabEvent(editor)
 				);
-				var start:Position = location.range.start;
+				var start:Position = range.start;
 				if (start.line > -1)
 				{
-					var editorComponent:TextEditor = editor.getEditorComponent();
-					editorComponent.scrollTo(start.line, OpenFileEvent.OPEN_FILE);
-					editorComponent.selectLine(start.line);
-					if(start.character > -1)
-					{
-						editorComponent.model.caretIndex = start.character;
-					}
+					var line:int = start.line;
+					var char:int = start.character != -1 ? start.character : 0;
+					editor.setSelection(line, char, line, char);
+					editor.scrollToCaret();
 				}
 				editor.callLater(function():void
 				{

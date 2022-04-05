@@ -1,0 +1,20 @@
+<?xml version='1.0'?>
+<!DOCTYPE page>
+<page name='$Domino_Visual_Editor_Page' xmlns='http://www.lotus.com/dxl'
+ version='9.0' maintenanceversion='1.0' replicaid='85257C8A00383F9C' publicaccess='false'
+ designerversion='8.5.3' renderpassthrough='true'>
+
+
+<body><richtext>
+<pardef id='1'/>
+<par def='1'/>
+<par def='1'>NOTE: This is a template for domino page.  DO NOT MODIFY THIS BY HAND.</par>
+<par def='1'/>
+<par def='1'/>
+<par def='1'>Domino Visual Editor page:</par>
+<par def='1'/>
+<par def='1'/>
+</richtext></body>
+<item name='$$ScriptName' summary='false' sign='true'><text>$Domino_Visual_Editor_Page</text></item>
+
+</page>

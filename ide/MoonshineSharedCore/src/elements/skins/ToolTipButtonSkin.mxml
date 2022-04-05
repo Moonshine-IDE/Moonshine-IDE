@@ -43,7 +43,6 @@
     	width="100%" height="100%"
     	paddingLeft="4" paddingRight="4"
     	paddingTop="2" paddingBottom="2"
-    	color="#ffffff"
-    	fontFamily="DejaVuSans" /> 
+    	color="#ffffff" />
  
 </s:SparkButtonSkin>

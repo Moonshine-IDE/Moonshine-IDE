@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git.commands
 {
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.git.utils.GitUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -32,6 +33,8 @@ package actionScripts.plugins.git.commands
 	import actionScripts.plugins.versionControl.event.VersionControlEvent;
 	import actionScripts.valueObjects.RepositoryItemVO;
 	import actionScripts.valueObjects.NativeProcessQueueVO;
+
+	import mx.controls.Alert;
 
 	public class CloneCommand extends GitCommandBase
 	{
@@ -58,7 +61,7 @@ package actionScripts.plugins.git.commands
 		public function CloneCommand(url:String, target:String, targetFolder:String, repository:RepositoryItemVO)
 		{
 			super();
-			
+
 			queue = new Vector.<Object>();
 			
 			authWindowTriggerCountWindows = 0;
@@ -78,7 +81,7 @@ package actionScripts.plugins.git.commands
 			}
 
 			var gitCommand:String = getPlatformMessage(' clone --progress -v '+ calculatedURL +' '+ targetFolder);
-			if (ConstantsCoreVO.IS_MACOS && repositoryUnderCursor.isRequireAuthentication)
+			if (ConstantsCoreVO.IS_MACOS && repositoryUnderCursor.isRequireAuthentication && !ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{
 				// experimental async file creation as Joel experienced
 				// exp file creation issue in his tests
@@ -120,7 +123,17 @@ package actionScripts.plugins.git.commands
 					
 					if (testMessageIfNeedsAuthentication(value.output))
 					{
-						openAuthentication(repositoryUnderCursor ? repositoryUnderCursor.userName : null);
+						if (ConstantsCoreVO.IS_APP_STORE_VERSION)
+						{
+							dispatcher.dispatchEvent(
+									new VersionControlEvent(VersionControlEvent.CLONE_CHECKOUT_COMPLETED,
+									{hasError:true, message:PRIVATE_REPO_SANDBOX_ERROR_MESSAGE})
+							);
+						}
+						else
+						{
+							openAuthentication(repositoryUnderCursor ? repositoryUnderCursor.userName : null);
+						}
 					}
 					else
 					{

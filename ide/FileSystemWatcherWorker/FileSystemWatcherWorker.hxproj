@@ -1,0 +1,37 @@
+<project>
+  <output>
+    <movie disabled="False"/>
+    <movie background="#000000"/>
+    <movie path=""/>
+    <movie input=""/>
+    <movie height="0"/>
+    <movie version="0"/>
+    <movie platform="Lime"/>
+    <movie fps="0"/>
+    <movie width="0"/>
+  </output>
+  <classpaths></classpaths>
+  <build>
+    <option flashStrict="False"/>
+    <option enabledebug="False"/>
+    <option directives=""/>
+    <option additional=""/>
+    <option mainClass=""/>
+    <option noInlineOnDebug="False"/>
+  </build>
+  <haxelib/>
+  <compileTargets></compileTargets>
+  <hiddenPaths></hiddenPaths>
+  <preBuildCommand>null</preBuildCommand>
+  <postBuildCommand alwaysRun="False">null</postBuildCommand>
+  <options>
+    <option testMovie="Webserver"/>
+    <option showHiddenPaths="True"/>
+    <option testMovieCommand=""/>
+  </options>
+  <moonshineRunCustomization>
+    <option targetPlatform="air"/>
+    <option webBrowser="null"/>
+  </moonshineRunCustomization>
+  <storage/>
+</project>

@@ -57,6 +57,7 @@ package actionScripts.ui
 		private static var applicationSize:String;
 		private static var isTourDeOnceOpened: Boolean;
 		private static var isAS3DocOnceOpened: Boolean;
+		private static var isProblemOnceOpened:Boolean;
 		private static var isSidebarCreated:Boolean;
 		private static var isProjectPanelCreated:Boolean;
 		private static var projectPanelViews:Array = [];
@@ -75,6 +76,8 @@ package actionScripts.ui
 			else if (applicationSize) reAdjustApplicationSize();
 
 			if (sidebarWidth != -1) model.mainView.sidebar.width = (sidebarWidth >= 0) ? sidebarWidth : 0;
+
+			attachProjectPanelSections();
 		}
 		
 		public static function attachSidebarSections(treeView:TreeView):void
@@ -273,12 +276,20 @@ package actionScripts.ui
 					{
 						case "ProblemsView":
 							dispatcher.dispatchEvent(new GeneralEvent(ProblemsPlugin.EVENT_PROBLEMS));
+							isProblemOnceOpened = true;
 							break;
 					}
 				}
 				
 				isProjectPanelCreated = true;
 				return;
+			}
+
+			// if starts for the first time
+			if (!isProblemOnceOpened)
+			{
+				dispatcher.dispatchEvent(new GeneralEvent(ProblemsPlugin.EVENT_PROBLEMS));
+				isProblemOnceOpened = true;
 			}
 			
 			projectPanelChildren = null;

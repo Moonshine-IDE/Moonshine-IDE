@@ -1,0 +1,1 @@
+<%Namespace%:%ViewComponentName% eventNavigateTo="onNavigationChangeRequest(event)"/>

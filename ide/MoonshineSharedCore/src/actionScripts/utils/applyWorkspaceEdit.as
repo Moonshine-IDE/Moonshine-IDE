@@ -18,21 +18,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.valueObjects.TextDocumentEdit;
-	import actionScripts.valueObjects.TextEdit;
-	import actionScripts.valueObjects.WorkspaceEdit;
-	import actionScripts.valueObjects.RenameFile;
-	import actionScripts.valueObjects.CreateFile;
-	import actionScripts.valueObjects.DeleteFile;
+	import moonshine.lsp.TextDocumentEdit;
+	import moonshine.lsp.WorkspaceEdit;
+	import moonshine.lsp.RenameFile;
+	import moonshine.lsp.CreateFile;
+	import moonshine.lsp.DeleteFile;
+	import haxe.IMap;
+	import haxe.lang.Iterator;
 
 	public function applyWorkspaceEdit(edit:WorkspaceEdit):void
 	{
-		var changes:Object = edit.changes;
+		var changes:IMap = edit.changes;
 		if(changes)
 		{
-			for(var uri:String in changes)
+			var iterator:Object = changes.keys();
+			while(iterator.hasNext())
 			{
-				var textEdits:Vector.<TextEdit> = changes[uri] as Vector.<TextEdit>;
+				var uri:String = iterator.next();
+				var textEdits:Array = changes.get(uri) as Array;
 				applyTextEditsToURI(uri, textEdits);
 			}
 		}
@@ -90,19 +93,17 @@ package actionScripts.utils
 import mx.collections.ArrayCollection;
 
 import actionScripts.events.GlobalEventDispatcher;
-import actionScripts.events.LanguageServerEvent;
 import actionScripts.factory.FileLocation;
 import actionScripts.locator.IDEModel;
 import actionScripts.ui.editor.LanguageServerTextEditor;
 import actionScripts.utils.applyTextEditsToFile;
-import actionScripts.valueObjects.CreateFile;
-import actionScripts.valueObjects.DeleteFile;
-import actionScripts.valueObjects.RenameFile;
-import actionScripts.valueObjects.TextEdit;
-import flash.errors.IOError;
+import moonshine.lsp.CreateFile;
+import moonshine.lsp.DeleteFile;
+import moonshine.lsp.RenameFile;
+import moonshine.lsp.TextEdit;
 import actionScripts.events.RefreshTreeEvent;
 
-function applyTextEditsToURI(uri:String, textEdits:Vector.<TextEdit>):void
+function applyTextEditsToURI(uri:String, textEdits:Array /* Array<TextEdit> */):void
 {
 	var file:FileLocation = new FileLocation(uri, true);
 	applyTextEditsToFile(file, textEdits);
@@ -126,24 +127,17 @@ function handleRenameFile(renameFile:RenameFile):void
 	var editorCount:int = editors.length;
 	for(var i:int = 0; i < editorCount; i++)
 	{
-		var editor:LanguageServerTextEditor = editors.getItemAt(i) as LanguageServerTextEditor;
-		if(!editor)
+		var lspEditor:LanguageServerTextEditor = editors.getItemAt(i) as LanguageServerTextEditor;
+		if(!lspEditor)
 		{
 			continue;
 		}
-		var editorFile:FileLocation = editor.currentFile;
+		var editorFile:FileLocation = lspEditor.currentFile;
 		if(!editorFile || editorFile.fileBridge.nativePath !== renameOldLocation.fileBridge.nativePath)
 		{
 			continue;
 		}
-		editor.currentFile = renameNewLocation;
-		GlobalEventDispatcher.getInstance().dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDCLOSE,
-			renameOldLocation.fileBridge.url,
-			0, 0, 0, 0));
-		GlobalEventDispatcher.getInstance().dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DIDOPEN,
-			renameNewLocation.fileBridge.url,
-			0, 0, 0, 0,
-			editor.getEditorComponent().dataProvider, 0));
+		lspEditor.currentFile = renameNewLocation;
 	}
 }
 

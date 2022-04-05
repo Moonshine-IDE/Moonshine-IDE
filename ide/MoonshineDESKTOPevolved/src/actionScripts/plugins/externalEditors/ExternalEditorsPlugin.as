@@ -62,6 +62,7 @@ package actionScripts.plugins.externalEditors
 		private static const ADD_EDITOR:String = "Add New";
 		private static const RESET_ALL_EDITORS:String = "Reset to Default";
 		
+		[Bindable]
 		public static var editors:ArrayCollection; 
 		
 		override public function get name():String			{ return "External Editors"; }
@@ -171,8 +172,8 @@ package actionScripts.plugins.externalEditors
 			}
 			else
 			{
-				var newUpdateDate:Date = new Date(Date.parse(needUpdateSyncDateUTC));
-				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(newUpdateDate))
+				//var newUpdateDate:Date = new Date(Date.parse(needUpdateSyncDateUTC));
+				if (SharedObjectUpdaterWithNewUpdates.isValidForNewUpdate(ExternalEditorsImporter.lastUpdateDate))
 				{
 					editors = SharedObjectUpdaterWithNewUpdates.syncWithNewUpdates(editors, ExternalEditorsImporter.getDefaultEditors(), "localID") as ArrayCollection;
 					ExternalEditorsSharedObjectUtil.saveExternalEditorsInSO(editors);
@@ -408,10 +409,10 @@ package actionScripts.plugins.externalEditors
 			if (!ConstantsCoreVO.IS_MACOS && value)
 			{
 				// a bit of interval before closing this
-				// https://github.com/prominic/Moonshine-IDE/issues/707
+				// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/707
 				var timeoutValue:uint = setTimeout(function():void
 				{
-					this.stop();
+					stop();
 					clearTimeout(timeoutValue);
 				}, 1000);
 			}

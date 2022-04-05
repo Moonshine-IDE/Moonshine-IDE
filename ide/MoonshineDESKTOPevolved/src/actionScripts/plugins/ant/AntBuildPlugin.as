@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ant
 {
+    import actionScripts.valueObjects.ProjectVO;
+
     import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.display.DisplayObject;
@@ -37,8 +39,8 @@ package actionScripts.plugins.ant
     import mx.core.IFlexDisplayObject;
     import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
-    
-    import actionScripts.events.AddTabEvent;
+
+    import actionScripts.events.SettingsEvent;
     import actionScripts.events.NewFileEvent;
     import actionScripts.events.RefreshTreeEvent;
     import actionScripts.events.RunANTScriptEvent;
@@ -102,7 +104,7 @@ package actionScripts.plugins.ant
         private var currentSDK:FileLocation;
         private var antBuildScreen:IFlexDisplayObject;
         private var isASuccessBuild:Boolean;
-        private var selectedProject:AS3ProjectVO;
+        private var selectedProject:ProjectVO;
 		private var pathSetting:PathSetting;
 
         private var _antHomePath:String;
@@ -236,7 +238,7 @@ package actionScripts.plugins.ant
             if (!model.antScriptFile.fileBridge.checkFileExistenceAndReport()) return;
 
             _buildWithAnt = true;
-            selectedProject = model.activeProject as AS3ProjectVO;
+            selectedProject = model.activeProject;
 
             antBuildHandler();
         }
@@ -255,29 +257,12 @@ package actionScripts.plugins.ant
             {
                 currentSDK = model.defaultSDK;
             }
-            //If Flex_HOME or ANT_HOME is missing
-            if (!currentSDK || !UtilsCore.isAntAvailable())
+            //If ANT_HOME is missing
+            if (!UtilsCore.isAntAvailable())
             {
-                for each (var tab:IContentWindow in model.editors)
-                {
-                    if (tab["className"] == "AntBuildScreen")
-                    {
-                        model.activeEditor = tab;
-                        if (currentSDK)
-                            (antBuildScreen as AntBuildScreen).customSDKAvailable = true;
-                        (antBuildScreen as AntBuildScreen).refreshValue();
-                        return;
-                    }
-                }
-                antBuildScreen = model.flexCore.getNewAntBuild();
-                antBuildScreen.addEventListener(AntBuildEvent.ANT_BUILD, antBuildSelected);
-
-                if (currentSDK)
-                {
-                    (antBuildScreen as AntBuildScreen).customSDKAvailable = true;
-                }
-
-                dispatcher.dispatchEvent(new AddTabEvent(antBuildScreen as IContentWindow));
+                error("Ant path must be defined to run Ant script file.");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.ant::AntBuildPlugin"));
+                return;
             }
             else
             {
@@ -292,7 +277,7 @@ package actionScripts.plugins.ant
 
             if (model.mainView.isProjectViewAdded)
             {
-                selectedProject = model.activeProject as AS3ProjectVO;
+                selectedProject = model.activeProject;
                 //If any project from treeview is selected
                 if (selectedProject)
                 {
@@ -315,7 +300,7 @@ package actionScripts.plugins.ant
         {
             this.selectedProject = event.currentTarget.selectedProject;
 
-            checkForAntFile(selectProjectPopup.selectedProject as AS3ProjectVO);
+            checkForAntFile(selectProjectPopup.selectedProject);
             onProjectSelectionCancelled(null);
         }
 
@@ -340,13 +325,14 @@ package actionScripts.plugins.ant
             selectAntPopup = null;
         }
 
-        private function checkForAntFile(selectedAntProject:AS3ProjectVO):void
+        private function checkForAntFile(selectedAntProject:ProjectVO):void
         {
             // Check if Ant file is set for project or not
             var buildFlag:Boolean = false;
             var AntFlag:Boolean = false;
             antFiles = new ArrayCollection();
-            if (!selectedAntProject.antBuildPath)
+            if (!(selectedAntProject is AS3ProjectVO) ||
+                    ((selectedAntProject is AS3ProjectVO) && !(selectedAntProject as AS3ProjectVO).antBuildPath))
             {
                 // Find build folder within the selected folder
                 //find for build.xml file with <project> tag
@@ -371,12 +357,12 @@ package actionScripts.plugins.ant
                     }
                 }
             }
-            else
+            else if (selectedAntProject is AS3ProjectVO)
             {
-                var antFile:FileLocation = selectedAntProject.folderLocation.resolvePath(selectedAntProject.antBuildPath);
+                var antFile:FileLocation = selectedAntProject.folderLocation.resolvePath((selectedAntProject as AS3ProjectVO).antBuildPath);
                 if (antFile.fileBridge.exists)
                 {
-                    model.antScriptFile = selectedAntProject.folderLocation.resolvePath(selectedAntProject.antBuildPath);
+                    model.antScriptFile = selectedAntProject.folderLocation.resolvePath((selectedAntProject as AS3ProjectVO).antBuildPath);
                     antBuildHandler();
                     return;
                 }
@@ -456,13 +442,6 @@ package actionScripts.plugins.ant
                 {
                     antHomePath = event.antHome.fileBridge.nativePath;
                 }
-
-                if (antBuildScreen)
-                {
-                    dispatcher.dispatchEvent(
-                            new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, antBuildScreen as DisplayObject)
-                    );
-                }
             }
 
             if (!model.antScriptFile)
@@ -475,11 +454,6 @@ package actionScripts.plugins.ant
                 workingDir = new FileLocation(model.antScriptFile.fileBridge.nativePath);
                 startAntProcess(workingDir);
             }
-
-            if (antBuildScreen)
-            {
-                antBuildScreen.removeEventListener(AntBuildEvent.ANT_BUILD, antBuildSelected);
-            }
         }
 
         protected function selectBuildFile(fileSelected:Object):void
@@ -488,9 +462,14 @@ package actionScripts.plugins.ant
             startAntProcess(new FileLocation(fileSelected.nativePath));
         }
 
-        private function getCurrentSDK(pvo:AS3ProjectVO):FileLocation
+        private function getCurrentSDK(pvo:ProjectVO):FileLocation
         {
-            return pvo.buildOptions.customSDK ? new FileLocation(pvo.buildOptions.customSDK.fileBridge.getFile.nativePath) : (model.defaultSDK ? new FileLocation(model.defaultSDK.fileBridge.getFile.nativePath) : null);
+            if ((pvo is AS3ProjectVO) && (pvo as AS3ProjectVO).buildOptions.customSDK)
+            {
+                return (new FileLocation((pvo as AS3ProjectVO).buildOptions.customSDK.fileBridge.getFile.nativePath));
+            }
+
+            return (model.defaultSDK ? new FileLocation(model.defaultSDK.fileBridge.getFile.nativePath) : null);
         }
 
         private function startAntProcess(buildDir:FileLocation):void
@@ -543,9 +522,15 @@ package actionScripts.plugins.ant
             }
 			
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, buildDir.fileBridge.name, "Building ", false));
-			
+
+            var correspondingProject:ProjectVO = UtilsCore.getProjectByAnyFilePath(buildDirPath);
 			var envCustomSDK:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
 			envCustomSDK.sdkPath = sdkPath;
+            if (correspondingProject && (correspondingProject is IJavaProject))
+            {
+                envCustomSDK.jdkPath = ((correspondingProject as IJavaProject).jdkType == JavaTypes.JAVA_8) ?
+                        model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
+            }
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, envCustomSDK, [compileStr]);
 
 			/*
@@ -683,7 +668,6 @@ package actionScripts.plugins.ant
 
             var syntaxMatch:Array;
             var generalMatch:Array;
-            var javaOptionsMatch:Array;
 
             syntaxMatch = data.match(/(.*?)\((\d*)\): col: (\d*) Error: (.*).*/);
             if (syntaxMatch)
@@ -705,16 +689,8 @@ package actionScripts.plugins.ant
 
                 errors += HtmlFormatter.sprintf("%s: %s", pathStr, errorStr);
             }
-            else
-            {
-                javaOptionsMatch = data.match(/.*JAVA_TOOL_OPTIONS:*/);
-            }
 
             print(data);
-            if (!javaOptionsMatch)
-            {
-                reset();
-            }
         }
 
         private function shellExit(e:NativeProcessExitEvent):void

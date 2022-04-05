@@ -42,7 +42,6 @@
 			verticalCenter="0"
 			color="0xBBBBBB"
 			useHandCursor="true"
-			fontFamily="DejaVuSans"
 			text="{hostComponent.label}" />
 		<s:BitmapImage id="iconDisplay"
 			horizontalCenter="0"

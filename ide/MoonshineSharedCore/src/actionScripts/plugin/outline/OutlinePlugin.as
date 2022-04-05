@@ -18,28 +18,28 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.outline
 {
-	import moonshine.plugin.outline.view.OutlineView;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.valueObjects.ConstantsCoreVO;
 	import flash.events.Event;
-	import actionScripts.ui.LayoutModifier;
-	import actionScripts.events.SymbolsEvent;
-	import actionScripts.valueObjects.DocumentSymbol;
-	import mx.collections.ArrayCollection;
-	import actionScripts.valueObjects.SymbolInformation;
-	import actionScripts.ui.tabview.TabEvent;
-	import actionScripts.events.LanguageServerEvent;
-	import actionScripts.ui.editor.LanguageServerTextEditor;
-	import actionScripts.events.OpenFileEvent;
-	import actionScripts.valueObjects.Location;
-	import actionScripts.events.OpenLocationEvent;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.valueObjects.Range;
-	import actionScripts.events.ProjectEvent;
-	import flash.utils.Timer;
 	import flash.events.TimerEvent;
+	import flash.utils.Timer;
+
+	import actionScripts.events.OpenLocationEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.SaveFileEvent;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.ui.LayoutModifier;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
+	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+
+	import feathers.data.ArrayHierarchicalCollection;
 	import feathers.data.TreeNode;
-	import feathers.data.TreeCollection;
+
+	import moonshine.lsp.DocumentSymbol;
+	import moonshine.lsp.Location;
+	import moonshine.lsp.Range;
+	import moonshine.lsp.SymbolInformation;
+	import moonshine.plugin.outline.view.OutlineView;
+	import moonshine.editor.text.events.TextEditorChangeEvent;
 
 	public class OutlinePlugin extends PluginBase
 	{
@@ -66,6 +66,25 @@ package actionScripts.plugin.outline
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays an outline of the symbols in a source file."; }
 		
+		private var _activeEditor:LanguageServerTextEditor;
+
+		private function setActiveEditor(value:LanguageServerTextEditor):void {
+
+			if(_activeEditor == value)
+			{
+				return;
+			}
+			if(_activeEditor)
+			{
+				_activeEditor.getEditorComponent().removeEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleDidChange);
+			}
+			_activeEditor = value;
+			if(_activeEditor)
+			{
+				_activeEditor.getEditorComponent().addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleDidChange);
+			}
+		}
+
 		private var outlineViewWrapper:OutlineViewWrapper;
 		private var outlineView:OutlineView;
 		private var isStartupCall:Boolean = true;
@@ -75,29 +94,25 @@ package actionScripts.plugin.outline
 		{
 			super.activate();
 			dispatcher.addEventListener(EVENT_OUTLINE, handleOutlineShow);
-			dispatcher.addEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowDocumentSymbols);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, handleTabSelect);
 			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, handleLanguageServerOpened);
 			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, handleLanguageServerRegisterCapability);
-			dispatcher.addEventListener(LanguageServerEvent.EVENT_DIDCHANGE, handleDidChange);
-			dispatcher.addEventListener(LanguageServerEvent.EVENT_DIDSAVE, handleDidSave);
+			dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, handleDidSave);
 		}
 
 		override public function deactivate():void
 		{
 			super.deactivate();
 			dispatcher.removeEventListener(EVENT_OUTLINE, handleOutlineShow);
-			dispatcher.removeEventListener(SymbolsEvent.EVENT_SHOW_DOCUMENT_SYMBOLS, handleShowDocumentSymbols);
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, handleTabSelect);
 			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, handleLanguageServerOpened);
-			dispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDCHANGE, handleDidChange);
-			dispatcher.removeEventListener(LanguageServerEvent.EVENT_DIDSAVE, handleDidSave);
+			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, handleDidSave);
 		}
 
 		private function handleLanguageServerOpened(event:ProjectEvent):void
 		{
 			//start fresh because it's a new language server instance
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 
 			//we may have tried to refresh the symbols previously, but it would
@@ -114,7 +129,7 @@ package actionScripts.plugin.outline
 			}
 			
 			//start fresh because this capapbility wasn't registered before
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 
 			//we may have tried to refresh the symbols previously, but it would
@@ -125,7 +140,7 @@ package actionScripts.plugin.outline
 
 		private function handleOutlineShow(event:Event):void
 		{
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 			
 			if (!outlineViewWrapper.parent)
@@ -145,20 +160,30 @@ package actionScripts.plugin.outline
 			isStartupCall = false;
 		}
 
-		private function handleShowDocumentSymbols(event:SymbolsEvent):void
+		private function handleShowDocumentSymbols(symbols:Array):void
 		{
 			if(!outlineViewWrapper.parent)
 			{
 				//we can ignore this event when the outline isn't visible
 				return;
 			}
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 
-			//TODO: remove when addAt() bug is fixed in alpha.3
-			var nodes:Array = [];
+			if(!symbols || symbols.length == 0)
+			{
+				return;
+			}
 
-			var symbols:Array = event.symbols;
+			collection = new ArrayHierarchicalCollection(null, function(item:Object):Array
+			{
+				if (item is DocumentSymbol)
+				{
+					return DocumentSymbol(item).children;
+				}
+				return null;
+			});
+
 			var itemCount:int = symbols.length;
 			for(var i:int = 0; i < itemCount; i++)
 			{
@@ -166,38 +191,15 @@ package actionScripts.plugin.outline
 				if(symbol is SymbolInformation)
 				{
 					var symbolInfo:SymbolInformation = symbol as SymbolInformation;
-					//TODO: remove when addAt() bug is fixed in alpha.3
-					//collection.addAt(new TreeNode(symbolInfo), [i]);
-					nodes.push(new TreeNode(symbolInfo));
+					collection.addAt(symbolInfo, [i]);
 				}
 				else if(symbol is DocumentSymbol)
 				{
 					var documentSymbol:DocumentSymbol = symbol as DocumentSymbol;
-					var item:TreeNode = this.getDocumentSymbolItem(documentSymbol);
-					//TODO: remove when addAt() bug is fixed in alpha.3
-					nodes.push(item);
-					//collection.addAt(item, [i]);
+					collection.addAt(documentSymbol, [i]);
 				}
 			}
-			//TODO: remove when addAt() bug is fixed in alpha.3
-			outlineView.outline = new TreeCollection(nodes);
-		}
-
-		private function getDocumentSymbolItem(documentSymbol:DocumentSymbol):TreeNode
-		{
-			var nodeChildren:Array = null;
-			var symbolChildren:Vector.<DocumentSymbol> = documentSymbol.children;
-			if(documentSymbol.children)
-			{
-				nodeChildren = [];
-				var childCount:int = symbolChildren.length;
-				for(var i:int = 0; i < childCount; i++)
-				{
-					var child:DocumentSymbol = symbolChildren[i];
-					nodeChildren[i] = this.getDocumentSymbolItem(child);
-				}
-			}
-			return new TreeNode(documentSymbol, nodeChildren);
+			outlineView.outline = collection;
 		}
 
 		private function refreshSymbols():void
@@ -214,30 +216,36 @@ package actionScripts.plugin.outline
 				//we can ignore this event when the outline isn't visible
 				return;
 			}
-			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-			if(!editor)
+			var lspEditor:LanguageServerTextEditor = _activeEditor as LanguageServerTextEditor;
+			if(!lspEditor || !lspEditor.currentFile || !lspEditor.languageClient)
 			{
-				//this is not a language server editor, so there's nothing
-				//to display
+				//we can clear the collection if we can't proceed
+				var collection:ArrayHierarchicalCollection = outlineView.outline;
+				collection.removeAll();
 				return;
 			}
-			dispatcher.dispatchEvent(new LanguageServerEvent(LanguageServerEvent.EVENT_DOCUMENT_SYMBOLS,
-				editor.currentFile.fileBridge.url));
+			lspEditor.languageClient.documentSymbols({
+				textDocument: {
+					uri: lspEditor.currentFile.fileBridge.url
+				}
+			}, handleShowDocumentSymbols);
 		}
 
 		private function handleTabSelect(event:TabEvent):void
 		{
 			//we switched to a different file, so remove the old symbols
-			var collection:TreeCollection = outlineView.outline;
+			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
 
-			this.refreshSymbols();
+			setActiveEditor(event.child as LanguageServerTextEditor);
+
+			refreshSymbols();
 		}
 
 		private function outlineView_changeHandler(event:Event):void
 		{
-			var activeEditor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
-			if(!activeEditor)
+			var lspEditor:LanguageServerTextEditor = _activeEditor as LanguageServerTextEditor;
+			if(!lspEditor)
 			{
 				return;
 			}
@@ -255,7 +263,7 @@ package actionScripts.plugin.outline
 			else if(selectedSymbol is DocumentSymbol)
 			{
 				var documentSymbol:DocumentSymbol = DocumentSymbol(selectedSymbol);
-				var uri:String = activeEditor.currentFile.fileBridge.url;
+				var uri:String = lspEditor.currentFile.fileBridge.url;
 				var range:Range = documentSymbol.range;
 				location = new Location(uri, range);
 			}
@@ -271,7 +279,7 @@ package actionScripts.plugin.outline
 			LayoutModifier.removeFromSidebar(outlineViewWrapper);
 		}
 
-		private function handleDidChange(event:LanguageServerEvent):void
+		private function handleDidChange(event:TextEditorChangeEvent):void
 		{
 			//the file has been edited. to avoid updating the outline too often,
 			//reset the timer and start over from the beginning.
@@ -285,7 +293,7 @@ package actionScripts.plugin.outline
 			changeTimer.start();
 		}
 
-		private function handleDidSave(event:LanguageServerEvent):void
+		private function handleDidSave(event:SaveFileEvent):void
 		{
 			//we can update immediately on save
 			this.refreshSymbols();
@@ -300,9 +308,10 @@ package actionScripts.plugin.outline
 	}
 }
 
+import actionScripts.interfaces.IViewWithTitle;
 import actionScripts.ui.FeathersUIWrapper;
 import actionScripts.ui.IPanelWindow;
-import actionScripts.interfaces.IViewWithTitle;
+
 import moonshine.plugin.outline.view.OutlineView;
 
 //IPanelWindow used by LayoutModifier.addToSidebar() and removeFromSidebar()

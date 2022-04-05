@@ -32,6 +32,7 @@ package actionScripts.events
 		public static const REMOVE_PROJECT:String = "removeProjectEvent";
 		public static const SHOW_PREVIOUSLY_OPENED_PROJECTS:String = "showPreviouslyOpenedProjects";
 		public static const SCROLL_FROM_SOURCE:String = "scrollFromSource";
+		public static const EVENT_SAVE_PROJECT_CREATION_FOLDERS:String = "event-save-project-creation-folders";
 		
 		public static const TREE_DATA_UPDATES: String = "TREE_DATA_UPDATES";
 		public static const PROJECT_FILES_UPDATES: String = "PROJECT_FILES_UPDATES";
@@ -42,7 +43,7 @@ package actionScripts.events
 		public static const SEARCH_PROJECTS_IN_DIRECTORIES:String = "searchForProjectsInDirectories";
 		
 		public static const EVENT_IMPORT_PROJECT_ARCHIVE:String = "importProjectArchive";
-		
+		public static const EVENT_GENERATE_APACHE_ROYALE_PROJECT:String = "generateApacheRoyaleProject";
 		public static const LAST_OPENED_AS_FB_PROJECT:String = "LAST_OPENED_AS_FB_PROJECT";
 		public static const LAST_OPENED_AS_FD_PROJECT:String = "LAST_OPENED_AS_FD_PROJECT";
 		

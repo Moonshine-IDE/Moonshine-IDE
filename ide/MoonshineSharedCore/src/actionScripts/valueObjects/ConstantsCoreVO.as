@@ -49,7 +49,7 @@ package actionScripts.valueObjects
 		public static const EVENT_PROBLEMS:String = "EVENT_PROBLEMS";
 		public static const EVENT_SHOW_DEBUG_VIEW:String = "EVENT_SHOW_DEBUG_VIEW";
 		public static const MOONSHINE_IDE_LABEL:String = "Moonshine IDE™";
-		public static const MOONSHINE_IDE_COPYRIGHT_LABEL:String = "Copyright © Prominic.NET, Inc. All rights reserved.";
+		public static const MOONSHINE_IDE_COPYRIGHT_LABEL:String = "Copyright © STARTcloud, Inc. 2015-"+ (new Date().fullYear) +". All rights reserved.";
 		public static const MAX_DEPTH_COUNT_IN_PROJECT_SEARCH:int = 3;
 		
 		[Embed(source='/elements/swf/loading.swf')]
@@ -64,6 +64,8 @@ package actionScripts.valueObjects
 		public static var svnLabelIcon: Class;
 		[Embed(source='/elements/images/label_xml.png')]
 		public static var xmlLabelIcon: Class;
+		[Embed(source="/elements/images/icoSmallClose.png")]
+		public static var SMALL_CROSS_BUTTON: Class;
 		public static var FLEX_PROJECTS: ArrayList;
 		
 		[Embed("/elements/images/upArrow_menuScroll.png")]
@@ -74,6 +76,8 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_AS3CLASS: FileLocation;
 		public static var TEMPLATE_AS3INTERFACE: FileLocation;
 		public static var TEMPLATE_CSS: FileLocation;
+		public static var TEMPLATE_DOMINO_FORM: FileLocation;
+		public static var TEMPLATE_DOMINO_PAGE: FileLocation;
 		public static var TEMPLATE_TEXT: FileLocation;
 		public static var TEMPLATE_XML: FileLocation;
 		public static var TEMPLATE_MXML: FileLocation;
@@ -92,6 +96,8 @@ package actionScripts.valueObjects
 		
 		public static var TEMPLATES_PROJECTS_SPECIALS:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_ROYALE:ArrayCollection;
+		public static var TEMPLATES_PROJECTS_ROYALE_VISUAL:ArrayCollection;
+		public static var TEMPLATES_PROJECTS_ROYALE_DOMINO_EXPORT:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_JAVA:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_GRAILS:ArrayCollection;
 		public static var TEMPLATES_PROJECTS_HAXE:ArrayCollection;
@@ -128,6 +134,7 @@ package actionScripts.valueObjects
         public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
 		public static var READABLE_FILES:Array;
+		public static var KNOWN_BINARY_FILES:Array;
 		public static var READABLE_CLASS_FILES:Array;
 		public static var NON_CLOSEABLE_TABS:Array;
 		public static var STARTUP_PROJECT_OPEN_QUEUE_LEFT:int;
@@ -304,14 +311,31 @@ package actionScripts.valueObjects
 			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj", "xhtml",
 								"java", "groovy", "gradle", "yml", "gsp", "properties", "javaproj", "sh", "ini", "jar", "hx", "hxproj", "grailsproj",
 								"json", "md"];
+			READABLE_FILES.sort();
+
+			KNOWN_BINARY_FILES = ["nsf", "jpg", "jpeg", "png"]; // store in lower-case
 
 			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
-			
+			READABLE_CLASS_FILES.sort();
+
 			TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";
 			TEMPLATE_CSS.fileBridge.isDirectory = false;
 			TEMPLATE_CSS.fileBridge.extension = "css";
 			TEMPLATE_CSS.fileBridge.data = "";
+
+			TEMPLATE_DOMINO_FORM = new FileLocation("TEMPLATE");
+			TEMPLATE_DOMINO_FORM.fileBridge.name = "Domino Visual Editor Form.form";
+			TEMPLATE_DOMINO_FORM.fileBridge.isDirectory = false;
+			TEMPLATE_DOMINO_FORM.fileBridge.extension = "form";
+			TEMPLATE_DOMINO_FORM.fileBridge.data = "";
+
+
+			TEMPLATE_DOMINO_PAGE = new FileLocation("TEMPLATE");
+			TEMPLATE_DOMINO_PAGE.fileBridge.name = "Domino Visual Editor Page.page";
+			TEMPLATE_DOMINO_PAGE.fileBridge.isDirectory = false;
+			TEMPLATE_DOMINO_PAGE.fileBridge.extension = "page";
+			TEMPLATE_DOMINO_PAGE.fileBridge.data = "";
 			
 			TEMPLATE_TEXT = new FileLocation("TEMPLATE");
 			TEMPLATE_TEXT.fileBridge.name = "Text File.txt";
@@ -352,14 +376,6 @@ package actionScripts.valueObjects
           	TEMPLATE_VISUAL_EDITOR_DOMINO.fileBridge.data = <root><![CDATA[
 				<?xml version='1.0' encoding='utf-8'?>
 <form name='BGP Network' xmlns='http://www.lotus.com/dxl'  publicaccess='false' designerversion='8.5.3' renderpassthrough='true'>
-<noteinfo noteid='1eda' unid='4D129C5913A7BF5986256E51003F7C01' sequence='17'>
-<created><datetime>20040308T053325,13-06</datetime></created>
-<modified><datetime>20161216T182619,73+08</datetime></modified>
-<revised><datetime dst='true'>20140927T005250,50-05</datetime></revised>
-<lastaccessed><datetime>20161216T182619,72+08</datetime></lastaccessed>
-<addedtofile><datetime>20161216T182619,72+08</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Jeffrey J. Schindler/OU=A55D86/O=PNI</name><name>CN=Justin M. Hill/OU=A55555/O=PNI</name></updatedby>
-<wassignedby><name>CN=Justin M. Hill/OU=A55555/O=PNI</name></wassignedby>
 <code
  event='windowtitle'><formula>Form + ": " + BGPNetwork1122</formula></code>
 <actionbar bgcolor='#ece9d8' bordercolor='black'>

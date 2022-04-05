@@ -6,7 +6,6 @@
 		<![CDATA[
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.StatusBarEvent;
-			import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 			import actionScripts.events.DebugActionEvent;
 			
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();

@@ -74,8 +74,6 @@
     	left="17"
     	top="2"
     	right="2"
-    	
-    	fontFamily="DejaVuSans"
     	text="{hostComponent.label}" /> 
  
 </s:SparkSkin >

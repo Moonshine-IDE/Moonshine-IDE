@@ -2,6 +2,7 @@ package actionScripts.plugins.build
 {
 	import actionScripts.interfaces.IJavaProject;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -23,7 +24,7 @@ package actionScripts.plugins.build
     public class ConsoleBuildPluginBase extends CompilerPluginBase
     {
         protected var nativeProcess:NativeProcess;
-        private var nativeProcessStartupInfo:NativeProcessStartupInfo;
+		protected var nativeProcessStartupInfo:NativeProcessStartupInfo;
 
         public function ConsoleBuildPluginBase()
         {
@@ -170,7 +171,7 @@ package actionScripts.plugins.build
 
         protected function onNativeProcessExit(event:NativeProcessExitEvent):void
         {
-            removeNativeProcessEventListeners();
+			removeNativeProcessEventListeners();
         }
 
         protected function getDataFromBytes(data:IDataInput):String
@@ -217,6 +218,16 @@ package actionScripts.plugins.build
 				}
 				if ((javaProject.jdkType == JavaTypes.JAVA_8) &&
                     !UtilsCore.isJava8Present())
+				{
+					return false;
+				}
+			}
+
+			if ((project is AS3ProjectVO) &&
+					(project as AS3ProjectVO).isDominoVisualEditorProject)
+			{
+				if (((project as AS3ProjectVO).jdkType == JavaTypes.JAVA_8) &&
+						!UtilsCore.isJava8Present())
 				{
 					return false;
 				}

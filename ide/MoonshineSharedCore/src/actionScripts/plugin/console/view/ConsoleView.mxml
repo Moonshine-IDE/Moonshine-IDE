@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
-	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:s="library://ns.adobe.com/flex/spark" xmlns:ui="actionScripts.ui.*"
 	width="100%" 
 	height="25"
 	minHeight="25"
@@ -44,6 +44,13 @@
 		import actionScripts.locator.IDEModel;
 		import actionScripts.plugin.console.ConsoleCommandEvent;
 		import actionScripts.plugin.console.ConsoleStyle;
+
+		[Bindable] public var showCommandLine:Boolean = true;
+
+		public var displayContextMenuAbout:Boolean = true;
+		public var displayContextMenuHide:Boolean = true;
+		public var displayContextMenuHelp:Boolean = true;
+		public var displayContextMenuExit:Boolean = true;
 
 		private var _consolePopOver:Boolean;
 		[Bindable]
@@ -86,23 +93,6 @@
 
 		private function init():void
 		{
-			var fontDescription:FontDescription = new FontDescription('DejaVuSansCond',
-					'normal',
-					'normal',
-					FontLookup.EMBEDDED_CFF);
-			var formats:Object = {};
-			var fontSize:int = 12;
-			formats[0] = new ElementFormat(fontDescription, fontSize, 0xdddddd);
-			formats[1] = new ElementFormat(fontDescription, fontSize, 0xdddddd);
-			formats['selectionColor'] = 0x676767;
-
-			formats[ConsoleStyle.WEAK] = new ElementFormat(fontDescription, fontSize, 0x8c8c8c);
-			formats[ConsoleStyle.NOTICE] = new ElementFormat(fontDescription, fontSize, 0x4C9BE0);
-			formats[ConsoleStyle.WARNING] = new ElementFormat(fontDescription, fontSize, 0xffea00);
-			formats[ConsoleStyle.ERROR] = new ElementFormat(fontDescription, fontSize, 0xff4848);
-
-			commandLine.setParserAndStyles(null, formats);
-			//history.setParserAndStyles(null, formats);
 			consolePopOver = _consolePopOver;
 			cm = new ContextMenu();
 			var clear:ContextMenuItem = new ContextMenuItem('Clear', false, true, true);
@@ -112,24 +102,31 @@
 			history.contextMenu = cm;
 			(history.textDisplay as RichEditableText).contextMenu = cm;
 
-			var about:ContextMenuItem = new ContextMenuItem('About', false, true, true);
-			about.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, aboutHandler);
-			cm.customItems.push(about);
-
-			var hide:ContextMenuItem = new ContextMenuItem('Hide', false, true, true);
-			hide.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, hideHandler);
-			cm.customItems.push(hide);
-
-			var exit:ContextMenuItem = new ContextMenuItem('Exit', false, true, true);
-			exit.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, exitHandler);
-			cm.customItems.push(exit);
-
-			var help:ContextMenuItem = new ContextMenuItem('Help', false, true, true);
-			help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
-			cm.customItems.push(help);
-
+			if (displayContextMenuAbout)
+			{
+				var about:ContextMenuItem = new ContextMenuItem('About', false, true, true);
+				about.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, aboutHandler);
+				cm.customItems.push(about);
+			}
+			if (displayContextMenuHide)
+			{
+				var hide:ContextMenuItem = new ContextMenuItem('Hide', false, true, true);
+				hide.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, hideHandler);
+				cm.customItems.push(hide);
+			}
+			if (displayContextMenuExit)
+			{
+				var exit:ContextMenuItem = new ContextMenuItem('Exit', false, true, true);
+				exit.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, exitHandler);
+				cm.customItems.push(exit);
+			}
+			if (displayContextMenuHelp)
+			{
+				var help:ContextMenuItem = new ContextMenuItem('Help', false, true, true);
+				help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
+				cm.customItems.push(help);
+			}
 		}
-
 
 		private var cursorID:int = CursorManager.NO_CURSOR;
 
@@ -201,8 +198,8 @@
 			 backgroundColor="0x373737">
 		<view:ConsoleViewTextArea id="history"
 								  editable="false" selectable="true" horizontalScrollPolicy="auto" verticalScrollPolicy="auto"
-								  height="80%" width="100%" lineBreak="toFit" color="0xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/>
-		<mx:Canvas width="100%" height="20%" >
+								  height="100%" width="100%" lineBreak="toFit" color="0xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/>
+		<mx:Canvas width="100%">
 			<mx:HRule 
 				width="100%" 
 				height="1"
@@ -229,22 +226,15 @@
 					<mx:GlowFilter color="0xFFFFFF" alpha="0.05" blurX="24" blurY="24" inner="true" />
 				</mx:filters>
 				<s:Label id="commandPrefix"
-						  paddingTop="3"
 						  paddingRight="2"
-						  fontFamily="DejaVuSansCond"
+						  paddingTop="6"
+						  paddingBottom="3"
 						  fontSize="12"
-						  fontLookup="embeddedCFF" 
 						  text=" >"
-						  color="0xdddddd" />
-				<view:CommandLineEditor id="commandLine"
-										width="100%"
-										height="100%"
-										backgroundColor="0x373737"
-										selectedLineColor="0x373737"
-										backgroundAlpha="0"
-										showLineNumbers="false"
-										showScrollBars="false"
-										dataProvider=""/>
+						  color="0xdddddd" visible="{showCommandLine}" />
+				<ui:FeathersUIWrapper width="100%" height="100%" visible="{showCommandLine}">
+					<view:CommandLineEditor id="commandLine"/>
+				</ui:FeathersUIWrapper>
 			</mx:HBox>
 		</mx:Canvas>
    </mx:VBox>

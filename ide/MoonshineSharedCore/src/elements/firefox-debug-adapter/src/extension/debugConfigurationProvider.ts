@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { LaunchConfiguration, AttachConfiguration } from '../common/configuration';
+import { vscodeUriToPath } from './pathMappingWizard';
 
 const folderVar = '${workspaceFolder}';
 
@@ -9,6 +10,8 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 	 * this method is called by VS Code before a debug session is started and makes modifications
 	 * to the debug configuration:
 	 * - some values can be overridden by corresponding VS Code settings
+	 * - if the configuration contains `url` but neither `webRoot` nor `pathMappings`,
+	 *   `webRoot` is set to the workspace folder
 	 * - when running in a remote workspace, we resolve `${workspaceFolder}` ourselves because
 	 *   VS Code resolves it to a local path in the remote workspace but we need the remote URI instead
 	 * - when running in a remote workspace, we check that configuration values that need to point
@@ -22,6 +25,10 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 		debugConfiguration = { ...debugConfiguration };
 
 		this.overrideFromSettings(folder, debugConfiguration);
+
+		if (debugConfiguration.url && !debugConfiguration.webRoot && !debugConfiguration.pathMappings && folder) {
+			debugConfiguration.webRoot = vscodeUriToPath(folder.uri);
+		}
 
 		if (folder && (folder.uri.scheme === 'vscode-remote')) {
 
@@ -64,6 +71,11 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
 		const keepProfileChanges = this.getSetting<boolean>(settings, 'keepProfileChanges');
 		if (keepProfileChanges !== undefined) {
 			debugConfiguration.keepProfileChanges = keepProfileChanges;
+		}
+
+		const port = this.getSetting<number>(settings, 'port');
+		if (port !== undefined) {
+			debugConfiguration.port = port;
 		}
 	}
 

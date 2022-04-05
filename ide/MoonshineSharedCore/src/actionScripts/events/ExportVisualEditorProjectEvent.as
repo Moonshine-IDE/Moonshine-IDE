@@ -27,6 +27,7 @@ package actionScripts.events
         public static const EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX:String = "initExportVisualEditorToFlex";
         public static const EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX:String = "exportVisualEditorProjectToFlex";
         public static const EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES:String = "exportVisualEditorProjectToPrimeFaces";
+        public static const EVENT_EXPORT_DOMINO_VISUALEDITOR_PROJECT_TO_ROYALE:String = "exportDominoVisualEditorProjectToRoyale";
 
         private var _exportedProject:AS3ProjectVO;
 

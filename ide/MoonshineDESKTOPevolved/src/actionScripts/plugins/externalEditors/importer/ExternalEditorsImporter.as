@@ -12,6 +12,14 @@ package actionScripts.plugins.externalEditors.importer
 	public class ExternalEditorsImporter
 	{
 		public static const WINDOWS_INSTALL_DIRECTORIES:Array = ["Program files", "Program Files (x86)"];
+
+		public static function get lastUpdateDate():Date
+		{
+			var listFile:File = File.applicationDirectory.resolvePath("elements/data/DefaultExternalEditors.xml");
+			if (!listFile.exists) return null;
+
+			return listFile.modificationDate;
+		}
 		
 		public static function getDefaultEditors():ArrayCollection
 		{
@@ -40,14 +48,11 @@ package actionScripts.plugins.externalEditors.importer
 				tmpEditor = new ExternalEditorVO(String(editor.@id));
 				tmpEditor.title = String(editor.title);
 				tmpEditor.website = String(editor.website);
+				tmpEditor.fileTypes = (String(editor.fileTypes) != "") ? String(editor.fileTypes).split(",") : [];
 				
 				var installPath:String = checkPath(
 					String(editor.defaultLocation[ConstantsCoreVO.IS_MACOS ? "macos" : "windows"].valueOf())
 				);
-				if (!ConstantsCoreVO.IS_MACOS)
-				{
-					installPath = validateWindowsInstallation(installPath);
-				}
 				if (editor.hasOwnProperty("defaultArguments"))
 				{
 					tmpEditor.extraArguments = String(editor.defaultArguments[ConstantsCoreVO.IS_MACOS ? "macos" : "windows"].valueOf());
@@ -76,6 +81,11 @@ package actionScripts.plugins.externalEditors.importer
 				return (path.replace("$userDirectory", File.userDirectory.nativePath));
 			}
 			
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				return validateWindowsInstallation(path);
+			}
+			
 			return path;
 		}
 		
@@ -85,7 +95,7 @@ package actionScripts.plugins.externalEditors.importer
 			path = path.replace("$programFiles", "");
 			if (ConstantsCoreVO.is64BitSupport)
 			{
-				for (var i:String in WINDOWS_INSTALL_DIRECTORIES)
+				for each(var i:String in WINDOWS_INSTALL_DIRECTORIES)
 				{
 					tmpPath = "C:/"+ i +"/"+ path;
 					if (FileUtils.isPathExists(tmpPath))

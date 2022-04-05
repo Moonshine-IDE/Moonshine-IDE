@@ -3,6 +3,209 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
+
+## Moonshine IDE [3.3.3]
+
+### Summary
+
+
+### Added
+
+
+### Changed
+
+
+### Fixed
+
+
+## Moonshine IDE [3.3.2]
+
+### Summary
+
+This release is mainly focused on adding more support for Domino applications. 
+
+Key Updates:
+* Added simple Java Domino project template
+* Generate a basic Royale application with Domino On Disk Project.  More updates are planned for this.
+* Create pages in Domino Visual Editor
+* Miscellanous bug fixes and improvements
+
+### Added
+
+* Domino simple Java Domino project template ([#903](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/903))
+* Domino On Disk Project: Generate a basic Royale application ([#704](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/704))
+* Visual Editor: Page Mockup Editor ([#905](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/905))
+* NSD Kill for Domino Projects ([#989](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/989))
+* Add a "Copy to Clipboard" Button On About Dialog ([#981](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/981))
+
+### Changed
+
+* Language Server: Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.11.1.
+* Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.9.0.
+* Debug Adapter: Updated [SWF](https://as3mxml.com) engine to v1.5.0.
+* Updated timestamp server for installer ([#1000](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1000))
+* Editor:  Opening a File Throws TypeError ([#997](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/997))
+* Open "Known" Binary Files Without Prompt ([#996](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/996))
+* Enabled CSS, XML and File in New File Options for all projects ([#995](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/995))
+* Enabled Java and Groovy in New File Options for NSFODP projects ([#995](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/995))
+* Added more information to About page ([#991](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/991))
+* Added Warning for NSFODP "Compiling ODP" Hang ([#987](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/987))
+* Update nsfodp-maven-plugin to 3.8.1 to handle updated macOS application structure ([#985](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/985))
+* On Disk Project:  Added instructions for macOS Security ([#980](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/980))
+* Added more suported character for Haxe library paths ([#975](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/975))
+* Visual Editor:  Enabled Find/Replace ([#972](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/972))
+* Visual Editor:  Automate conversion of intermediate XML files ([#968](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/968))
+* Visual Editor:  Fixed default location for new Forms or Pages ([#926](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/926))
+
+### Fixed
+
+* Error #3500 on Moonshine close for macOS Monterey ([#998](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/998))
+* Error when creating DXL files in Domino On Disk Project ([#982](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/982))
+
+
+
+## Moonshine IDE [3.3.1]
+
+### Summary
+
+The main updates for Moonshine-IDE 3.3.1 are:
+* Basic Vagrant support.  Right-click on the Vagrant file to run different Vagrant commands from Moonshine
+* Updated debugging interface
+* Fixed bugs with GitHub integration, especially for macOS.
+
+### Added
+* Vagrant Support ([#770](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/770))
+* Directory Assistance Repository for Public GitHub Examples ([#958](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/958))
+* MacPorts Reference Entry on Getting Started page.  This is not installed by Moonshine SDK Installer yet ([#921](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/921))
+
+
+### Changed
+* Improved debugger based on Haxe ([#961](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/961))
+* Updated [Groovy language server](https://github.com/GroovyLanguageServer/groovy-language-server) engine to latest.
+* Define environment for Haxe and Neko from Moonshine ([#967](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/967))
+
+
+### Fixed
+* Groovy Language Server - Fixed bug where core Java classes were not detected for completion ([groovy-language-server#63](https://github.com/GroovyLanguageServer/groovy-language-server/issues/63))
+* Git Integration on macOS ([#965](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/965))
+* Git integration on Windows ([#969](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/969))
+* Null pointer exception in TreeView ([#964](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/964))
+* TreeViewItemRenderer Error with feathersui 1.0.0-beta.8 ([#959](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/959))
+* File Ordering Incorrect After FileWatcher Update ([#955](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/955))
+
+
+## Moonshine IDE [3.3.0]
+
+### Summary
+
+The main features of Moonshine 3.3.0 are:
+* Project sidebar will be updated automatically to match filesystem changes
+* If there is a Moonshine update, Moonshine will not open projects and start language servers unless the user cancels the update prompt.  This resolved performance issues and some cases with hanging Java language servers.
+* Fixes for new Code Editor
+* Updates to language servers and debug adapters
+* Miscellanous bug fixes and improvments.
+
+### Added
+
+* Project trees will now be updated automatically when the filesystem is updated.  ([#948](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/948))
+* Added External Editor support for [Atom](https://atom.io/), [CodeRunner](https://coderunnerapp.com/), and [Komodo Edit](https://www.activestate.com/products/komodo-edit/).  ([#919](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/919))
+* About: Added OS name and version information. ([#944](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/944))
+* Added "Close Others" context-menu action in tabs ([#610](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/610))
+
+### Changed
+
+* Will not open projects and start language servers while prompting the user for an update ([#923](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/923))
+* Update notification window size updated. ([#909](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/909))
+* Version information on About page is now selectable for easy copying ([#954](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/954))
+* Problems tab will open on startup by default. ([#946](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/946))
+* Updated initial text on console. ([#912](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/912))
+* Rename **Domino** tab to **Domino and Notes Client** in application settings. ([#915](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/915))
+* Finished updating Moonshine to use system default font. ([#873](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/873))
+* Language Server: Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.10.0.
+* Language Server: Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to latest version.
+* Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.6.0.
+* Language Server: [Support](https://github.com/GroovyLanguageServer/groovy-language-server/issues/47) for Groovy 4.0
+* Debug Adapter: Updated [SWF](https://as3mxml.com) engine to v1.4.0.
+* Debug Adapter: Updated [Chrome](https://github.com/microsoft/vscode-chrome-debug) engine to v4.13.0.
+* Debug Adapter: Updated [Firefox](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.5.
+
+### Fixed
+
+* Code Editor: Fixed issue where code completion did not filter properly for text already typed. ([#6](https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor/issues/6))
+* Code Editor: Fixed issue where cursor jumps to import section when new import is added. ([#5](https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor/issues/5))
+* Code Editor: Fixed exception when Clean Up Import is used by shortcut `Command/Control + Shift + I`. ([#4](https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor/issues/4))
+* Populated default Parent Directory for Git Clone and SVN Checkout prompts. ([#920](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/920))
+* Fixed issue where Moonshine closes when user cancels an update. ([#951](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/951))
+* Fixed issue where code editor goes blank after closing other tabs. ([#942](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/942))
+* Fixed issue where sidebar showed strikethrough for some project names. ([#943](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/943))
+* : Fixed issue where running Ant script triggers prompt to setup Flex Home path. ([#938](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/938))
+* Fixed issue where tab did not show as edited after find/replace or typing. ([#939](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/939))
+* Fixed issue where prompt about file changes in `build.gradle` or `pom.xml` file locked Moonshine. ([#936](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/936))
+* Gradle: Fixed dependencies to allow work with Gradle 7. ([#935](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/937))
+* Fixed issue where Ant build did not work with Java 8. ([#933](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/933))
+* Fixed issue where sidebar section like **Tour De Flex** or **Useful Links** can be opened more than once.  Trying to open a section again will close the section ([#922](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/922))
+* Fixed bug where `Git > Grant Permission` opened Manage Repositories window instead of permission prompt ([#749](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/749))
+* Path in New File dialog will now use '/' separators instead of '.' ([#945](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/945))
+* Fixed bug where Ant script terminated early and cut off output. ([#932](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/932))
+* Fixed default path for Emacs External editor. ([#917](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/917))
+
+## Moonshine IDE [3.2.0]
+
+### Summary
+
+Moonshine 3.2.0 includes:
+* An improved text editor based on Haxe
+* Many minor updates and bug fixeds
+
+There were also some updates for installers and updates:
+- Moonshine-IDE can be installed with [Chocolatey](https://community.chocolatey.org/packages/moonshine-ide).
+- Nightly builds were renamed to MoonshineDevelopment, and will now automatically update on restart if new builds are available.
+
+### Added
+
+* [Chocolatey package](https://community.chocolatey.org/packages/moonshine-ide) is now available ([#747](https://github.com/prominic/Moonshine-IDE/issues/747))
+
+### Changed
+
+* Improved text editor based on Haxe ([#904](https://github.com/prominic/Moonshine-IDE/issues/904))
+* Moonshine-IDE repository moved to Moonshine-IDE organization.  Updated default repository paths in Manage Repositories ([#865](https://github.com/prominic/Moonshine-IDE/issues/865))
+* Separated auto-update configuration for Non-Sandbox, App Store, and Windows builds ([#836](https://github.com/prominic/Moonshine-IDE/issues/836))
+- Setup auto-updates for nightly builds ([#899](https://github.com/prominic/Moonshine-IDE/issues/899))
+* Supported creation of untracked files in Git Status window ([#889](https://github.com/prominic/Moonshine-IDE/issues/889))
+* Updated Getting Started behavior for Subversion/SVN ([#849](https://github.com/prominic/Moonshine-IDE/issues/849))
+* Continued development on Domino Visual Editor ([#812](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/812))
+* Removed NoteInfo from NSFODP Templates ([#853](https://github.com/prominic/Moonshine-IDE/issues/853))
+* Removed dependency on global settings.xml for Domino Visual Editor ([#835](https://github.com/prominic/Moonshine-IDE/issues/835))
+* Migrated Getting Started page to haxe ([#782](https://github.com/prominic/Moonshine-IDE/issues/782), [#863](https://github.com/prominic/Moonshine-IDE/issues/863))
+- Produce a single merged SWC for Moonshine Haxe libraries ([#875](https://github.com/prominic/Moonshine-IDE/issues/875))
+- Reorganized Templates interface to separate files and projects ([#852](https://github.com/prominic/Moonshine-IDE/issues/852))
+- Rename `File > Moonshine Helper Application` to `File > Launch Moonshine SDK Installer` ([#859](https://github.com/prominic/Moonshine-IDE/issues/859))
+- Added credits for NSF ODP Tooling in `Settings > Domino` ([#857](https://github.com/prominic/Moonshine-IDE/issues/857))
+- Build Moonshine with Harman AIR 33.1.1.633 to avoid keybinding issues ([#907](https://github.com/prominic/Moonshine-IDE/issues/907))
+
+### Fixed
+* User-selected JDK was reset on Moonshine restart ([#866](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/866))
+* Default Flex SDK reset to default after Moonshine restart ([#884](https://github.com/prominic/Moonshine-IDE/issues/884))
+* Git clone failed in App Store build ([#892](https://github.com/prominic/Moonshine-IDE/issues/892))
+* Error #1009 on About page ([#861](https://github.com/prominic/Moonshine-IDE/issues/861))
+* Invalid Royale project initialization ([#778](https://github.com/prominic/Moonshine-IDE/issues/778))
+* Problems with file extension selection in Project Search ([#891](https://github.com/prominic/Moonshine-IDE/issues/891))
+* Ctrl + Shift + Tab threw error with 0 or 1 open tabs ([#888](https://github.com/prominic/Moonshine-IDE/issues/888))
+* Could not open Java project from .javaproj file if name did not match directory ([#883](https://github.com/prominic/Moonshine-IDE/issues/883))
+* Domino Visual Editor project failed if JDK 11 is missing ([#871](https://github.com/prominic/Moonshine-IDE/issues/871))
+* Application namespace was not updated automaticaly for Flex Desktop projects ([#869](https://github.com/prominic/Moonshine-IDE/issues/869))
+* Open/save problems for multiple open Visual Editor projects ([#833](https://github.com/prominic/Moonshine-IDE/issues/833))
+* Problems for Browse All button in Manage Repositories([#867](https://github.com/prominic/Moonshine-IDE/issues/867))
+* Default generated form fails in On Disk Project ([#872](https://github.com/prominic/Moonshine-IDE/issues/872))
+* Getting Started failed to open automatically ([#844](https://github.com/prominic/Moonshine-IDE/issues/844))
+* Unexpected projects opening on Moonshine restart ([#864](https://github.com/prominic/Moonshine-IDE/issues/864))
+* getStartupInfo Error on Flex Desktop Build & Run ([#841](https://github.com/prominic/Moonshine-IDE/issues/841))
+* File chooser failed for Flex project Settings page ([#839](https://github.com/prominic/Moonshine-IDE/issues/839))
+* Switched File API calls to go through Bookmark extension for App Store support ([#860](https://github.com/prominic/Moonshine-IDE/issues/860))
+* Duplicated "Template Type" during ActionScript project import ([#902](https://github.com/prominic/Moonshine-IDE/issues/902))
+* Imports failed for Java Maven projects ([#900](https://github.com/prominic/Moonshine-IDE/issues/900))
+
+
 ## Moonshine IDE [3.1.1]
 
 ### Summary
@@ -51,7 +254,7 @@ Moonshine 3.1.0 includes:
 * Haxe Migration: Converted **Search** view to Haxe. ([#798](https://github.com/prominic/Moonshine-IDE/issues/798))
 * Haxe Migration: Converted **New Workspace** view to Haxe. ([#779](https://github.com/prominic/Moonshine-IDE/issues/779))
 * Language Server:  Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.6.0.
-* Language Server:  Updated [Haxe](https://as3mxml.com) engine to latest version.
+* Language Server:  Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to latest version.
 * Language Server:  Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.69.0.
 * Debugging:  Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.12.
 * Debugging:  Updated [Firefox debug](https://github.com/firefox-devtools/vscode-firefox-debug) engine to v2.9.1.
@@ -101,7 +304,7 @@ Moonshine 3.0.0 includes:
 * Windows: Changed Moonshine to a 64-bit application.  You will be prompted to uninstall your old copy of Moonshine, but your settings will be saved.
 * Updated application to use new icon new icon
 * Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.2.2.
-* Updated [Haxe](https://as3mxml.com) engine to latest version.
+* Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to latest version.
 * Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v0.59.0.
 * Updated [SWF debug](https://as3mxml.com) engine to v1.2.2.
 * Updated [Chrome debug](https://github.com/microsoft/vscode-chrome-debug) engine to v4.12.10.
