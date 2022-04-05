@@ -15,6 +15,18 @@ jobs:
       with:
         repository: Moonshine-IDE/Moonshine-SDK-Installer
         path: Moonshine-SDK-Installer
+    - uses: actions/checkout@v2
+      with:
+        repository: Moonshine-IDE/moonshine-openfl-language-client
+        path: moonshine-openfl-language-client
+    - uses: actions/checkout@v2
+      with:
+        repository: Moonshine-IDE/moonshine-openfl-debug-adapter-client
+        path: moonshine-openfl-debug-adapter-client
+    - uses: actions/checkout@v2
+      with:
+        repository: Moonshine-IDE/moonshine-feathersui-text-editor
+        path: moonshine-feathersui-text-editor
     - uses: actions/setup-java@v1
       with:
         java-version: 11
@@ -24,5 +36,9 @@ jobs:
     - uses: joshtynjala/setup-apache-flex-action@v1
       with:
         flex-version: "4.16.1"
+    - run: |
+        haxelib dev moonshine-openfl-language-client moonshine-openfl-language-client
+        haxelib dev moonshine-openfl-debug-adapter-client moonshine-openfl-debug-adapter-client
+        haxelib dev moonshine-feathersui-text-editor moonshine-feathersui-text-editor
     - name: Build with Ant
       run: ant -noinput -buildfile 'ide\MoonshineDESKTOPevolved\build\build.xml' CompileSWFWindows -DLibraryHelperSharedCore=../../../Moonshine-SDK-Installer/InstallerSharedCore
