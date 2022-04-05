@@ -31,6 +31,7 @@ package actionScripts.plugins.maven
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
     import actionScripts.plugin.console.ConsoleEvent;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
     public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -235,7 +236,10 @@ package actionScripts.plugins.maven
 			if (!ConsoleBuildPluginBase.checkRequireJava())
 			{
 				clearOutput();
-				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
+                var project:ProjectVO = model.activeProject;
+                var jdkName:String = (project is JavaProjectVO && JavaProjectVO(project).jdkType == JavaTypes.JAVA_8) ? "JDK 8" : "JDK";
+                error("A valid " + jdkName + " path must be defined to build project \"" + project.name + "\".");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return;
 			}
 			
