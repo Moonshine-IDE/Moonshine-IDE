@@ -21,4 +21,4 @@ jobs:
       with:
         flex-version: "4.16.1"
     - name: Build with Ant
-      run: ant -noinput -buildfile 'MoonshineDESKTOPevolved\build\build.xml' CompileSWFWindows
+      run: ant -noinput -buildfile 'ide\MoonshineDESKTOPevolved\build\build.xml' CompileSWFWindows
