@@ -144,7 +144,7 @@
 			<title>Balsamiq Wireframes</title>
 			<defaultLocation>
 				<windows>$userDirectory/AppData/Local/Programs/Balsamiq/Balsamiq Wireframes/BalsamiqWireframes.exe</windows>
-				<macos>/Applications/Balsamiq Mockups.app</macos>
+				<macos>/Applications/Balsamiq Mockups 3.app</macos>
 			</defaultLocation>
 			<fileTypes>bmpr</fileTypes>
 			<website>https://balsamiq.com</website>
@@ -197,8 +197,8 @@
 		<editor id="netbeans" isWindows="true" isMac="true">
 			<title>Apache NetBeans</title>
 			<defaultLocation>
-				<windows>$programFiles/JavaDecompiler/jd-gui.exe</windows>
-				<macos>/Applications/NetBeans/Apache NetBeans.app</macos>
+				<windows>$programFiles/NetBeans-13/netbeans/bin/netbeans64.exe</windows>
+				<macos>/Applications/NetBeans/Apache NetBeans 13.app</macos>
 			</defaultLocation>
 			<fileTypes></fileTypes>
 			<website>https://netbeans.apache.org</website>
