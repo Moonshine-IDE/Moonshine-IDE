@@ -926,30 +926,6 @@
                 <haxelibInstall library="actuate" version="1.8.9" />
                 <haxelibInstall library="lime" version="7.9.0" />
                 <haxelibInstall library="markdown-openfl-textfield" version="1.0.2" />
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="git"/>
-			<arg value="moonshine-openfl-language-client"/>
-			<arg value="https://github.com/Moonshine-IDE/moonshine-openfl-language-client.git"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="git"/>
-			<arg value="moonshine-openfl-debug-adapter-client"/>
-			<arg value="https://github.com/Moonshine-IDE/moonshine-openfl-debug-adapter-client.git"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="git"/>
-			<arg value="moonshine-feathersui-text-editor"/>
-			<arg value="https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor.git"/>
-			<arg value="--quiet"/>
-		</exec>
 	</target>
 	
 	<target name="CompileGUICore" depends="InstallHaxeDependencies">
