@@ -921,41 +921,11 @@
 
 	<target name="InstallHaxeDependencies">
 		<echo>Installing Haxe Libraries</echo>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="feathersui"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="openfl"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="actuate"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="lime"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="markdown-openfl-textfield"/>
-			<arg value="--quiet"/>
-		</exec>
+                <haxelibInstall library="feathersui" version="1.0.0-beta.9" />
+                <haxelibInstall library="openfl" version="9.1.0" />
+                <haxelibInstall library="actuate" version="1.8.9" />
+                <haxelibInstall library="lime" version="7.9.0" />
+                <haxelibInstall library="markdown-openfl-textfield" version="1.0.2" />
 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
@@ -1213,7 +1183,7 @@
 
 	<macrodef name="haxelibInstall" description="Install a haxe library">
 		<attribute name="library" />
-		<!--<attribute name="version" />-->
+		<attribute name="version" />
 
 		<sequential>
 			<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
@@ -1221,7 +1191,7 @@
 				failonerror="true">
 				<arg value="install"/>
 				<arg value="@{library}"/>
-				<!--<arg value="@{version}"/>-->
+				<arg value="@{version}"/>
 				<arg value="--always"/> <!-- accept prompt to switch to versions that are already installed -->
 				<arg value="--quiet"/>
 			</exec>
