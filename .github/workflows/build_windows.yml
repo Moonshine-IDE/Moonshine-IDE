@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         repository: Moonshine-IDE/Moonshine-SDK-Installer
-        path: ../Moonshine-SDK-Installer
+        path: Moonshine-SDK-Installer
     - uses: actions/setup-java@v1
       with:
         java-version: 11
@@ -25,4 +25,4 @@ jobs:
       with:
         flex-version: "4.16.1"
     - name: Build with Ant
-      run: ant -noinput -buildfile 'ide\MoonshineDESKTOPevolved\build\build.xml' CompileSWFWindows
+      run: ant -noinput -buildfile 'ide\MoonshineDESKTOPevolved\build\build.xml' CompileSWFWindows -DLibraryHelperSharedCore=../../../Moonshine-SDK-Installer/InstallerSharedCore
