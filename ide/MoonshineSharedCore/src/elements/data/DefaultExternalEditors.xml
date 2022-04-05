@@ -191,7 +191,7 @@
 				<windows>$programFiles/JavaDecompiler/jd-gui.exe</windows>
 				<macos>/Applications/JD-GUI.app</macos>
 			</defaultLocation>
-			<fileTypes>jar</fileTypes>
+			<fileTypes>jar,class</fileTypes>
 			<website>https://java-decompiler.github.io/</website>
 		</editor>
 		<editor id="netbeans" isWindows="true" isMac="true">
