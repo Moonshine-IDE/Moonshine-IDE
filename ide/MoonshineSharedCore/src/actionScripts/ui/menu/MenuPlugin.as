@@ -18,6 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
+	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+
 	import flash.display.NativeMenu;
 	import flash.display.NativeMenuItem;
 	import flash.events.Event;
@@ -56,7 +60,7 @@ package actionScripts.ui.menu
 	import actionScripts.valueObjects.Settings;
 	import mx.controls.Alert;
 	// This class is a singleton
-	public class MenuPlugin extends PluginBase implements ISettingsProvider
+	public class MenuPlugin extends PluginBase implements ISettingsProvider, IProjectStarter
 	{
 		// If you add menus, make sure to add a constant for the event + a binding for a command in IDEController
 		public static const MENU_QUIT_EVENT:String = "menuQuitEvent";
@@ -81,16 +85,27 @@ package actionScripts.ui.menu
 		private var noCodeCompletionOptionsToMenuMapping:Dictionary = new Dictionary();
 		private var isFileNewMenuIsEnabled:Boolean;
 		private var moonshineMenu:NativeMenuItem;
-
+		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
 		private var projectMenu:ProjectMenu;
 
         override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
-		override public function get description():String { return "Adds Menu"; }		
+		override public function get description():String { return "Adds Menu"; }
+
+		private var _projectStarterDelegate:IProjectStarterDelegate;
+		public function get projectStarterDelegate():IProjectStarterDelegate
+		{
+			return _projectStarterDelegate;
+		}
+		public function set projectStarterDelegate(value:IProjectStarterDelegate):void
+		{
+			_projectStarterDelegate = value;
+		}
 
 		public function MenuPlugin():void
 		{
 			projectMenu = new ProjectMenu();
+			projectStarter.subscribe(this);
 		}
 
 		public function getSettingsList():Vector.<ISetting>
@@ -218,7 +233,7 @@ package actionScripts.ui.menu
 				//dispatcher.addEventListener(CHANGE_SVN_CHECKOUT_PERMISSION_LABEL, onSVNCheckoutPermissionChange);
 			}
 
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
+			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
 			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProjectChangedHandler);
 			
 			// disable File-New menu as default
@@ -234,10 +249,11 @@ package actionScripts.ui.menu
 			refreshMenuItems();
 		}
 
-        private function addProjectHandler(event:ProjectEvent):void
+        public function addProjectHandler():void
         {
             disableNewFileMenuOptions();
 			disableMenuOptions();
+			projectStarter.continueDelegation();
         }
 
 		private function activeProjectChangedHandler(event:ProjectEvent):void

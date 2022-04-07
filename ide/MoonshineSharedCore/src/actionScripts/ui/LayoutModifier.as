@@ -20,6 +20,7 @@ package actionScripts.ui
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.net.SharedObject;
 	import flash.utils.Dictionary;
 	
@@ -36,7 +37,7 @@ package actionScripts.ui
 	
 	import components.views.project.TreeView;
 
-	public class LayoutModifier
+	public class LayoutModifier extends EventDispatcher
 	{
 		public static const SAVE_LAYOUT_CHANGE_EVENT:String = "SAVE_LAYOUT_CHANGE_EVENT";
 		public static const PROJECT_PANEL_COLLAPSED_FIELD:String = "isProjectPanelCollapsed";
@@ -52,13 +53,13 @@ package actionScripts.ui
 		
 		public static var sidebarChildren:Array;
 		public static var projectPanelChildren:Array;
+		public static var isSidebarCreated:Boolean;
 		
 		private static var sectionStatesDict:Dictionary = new Dictionary();
 		private static var applicationSize:String;
 		private static var isTourDeOnceOpened: Boolean;
 		private static var isAS3DocOnceOpened: Boolean;
 		private static var isProblemOnceOpened:Boolean;
-		private static var isSidebarCreated:Boolean;
 		private static var isProjectPanelCreated:Boolean;
 		private static var projectPanelViews:Array = [];
 		

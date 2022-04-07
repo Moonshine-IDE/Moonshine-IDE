@@ -21,6 +21,9 @@ package actionScripts.plugins.fswatcher
 {
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.events.GlobalEventDispatcher;
 	import flash.system.MessageChannel;
@@ -36,11 +39,10 @@ package actionScripts.plugins.fswatcher
 	import flash.system.WorkerDomain;
 	import actionScripts.events.ApplicationEvent;
 
-	public class FSWatcherPlugin extends PluginBase implements IPlugin
+	public class FSWatcherPlugin extends PluginBase implements IPlugin, IProjectStarter
 	{
 		[Embed(source="/../../MoonshineSharedCore/src/elements/swf/FileSystemWatcherWorker.swf", mimeType="application/octet-stream")]
 		private static const WORKER_SWF:Class;
-
 		private static const DEFAULT_EXCLUSIONS:Array = [
 			"**/.git",
 			"**/.svn",
@@ -49,6 +51,16 @@ package actionScripts.plugins.fswatcher
 			"**/.DS_Store",
 			"**/Thumbs.db"
 		];
+
+		private var _projectStarterDelegate:IProjectStarterDelegate;
+		public function get projectStarterDelegate():IProjectStarterDelegate
+		{
+			return _projectStarterDelegate;
+		}
+		public function set projectStarterDelegate(value:IProjectStarterDelegate):void
+		{
+			_projectStarterDelegate = value;
+		}
 
 		override public function get name():String
 		{
@@ -70,6 +82,13 @@ package actionScripts.plugins.fswatcher
 		private var workerToMain:MessageChannel;
 		private var worker:Worker;
 		private var projectToWatcher:Dictionary = new Dictionary();
+		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
+
+		public function FSWatcherPlugin()
+		{
+			super();
+			projectStarter.subscribe(this);
+		}
 		
 		override public function activate():void
 		{
@@ -88,7 +107,7 @@ package actionScripts.plugins.fswatcher
 			worker.setSharedProperty("workerToMain", workerToMain);
 			worker.start();
 
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onAddProject, false, 0, true);
+			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject, false, 0, true);
 			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
 		}
@@ -146,13 +165,14 @@ package actionScripts.plugins.fswatcher
 			});
 		}
 
-		private function onAddProject(event:ProjectEvent):void
+		public function onAddProject(event:ProjectEvent):void
 		{
 			if(!workerReady)
 			{
 				return;
 			}
 			addProject(event.project);
+			projectStarter.continueDelegation();
 		}
 
 		private function onRemoveProject(event:ProjectEvent):void

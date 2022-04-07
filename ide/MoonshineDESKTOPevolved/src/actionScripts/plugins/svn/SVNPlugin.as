@@ -19,6 +19,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn
 {
+	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.filesystem.File;
@@ -56,7 +60,7 @@ package actionScripts.plugins.svn
 	
 	import components.popup.SourceControlCheckout;
 
-	public class SVNPlugin extends PluginBase implements ISettingsProvider
+	public class SVNPlugin extends PluginBase implements ISettingsProvider, IProjectStarter
 	{
 		public static const CHECKOUT_REQUEST:String = "checkoutRequestEvent";
 		public static const COMMIT_REQUEST:String = "svnCommitRequest";
@@ -64,7 +68,7 @@ package actionScripts.plugins.svn
 		public static const SVN_TEST_COMPLETED:String = "svnTestCompleted";
 		
 		public static const NAMESPACE:String = "actionScripts.plugins.svn::SVNPlugin";
-		
+
 		override public function get name():String			{ return "Subversion"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return ResourceManager.getInstance().getString('resources','plugin.desc.subversion'); }
@@ -91,16 +95,33 @@ package actionScripts.plugins.svn
 				}
 			}
 		}
+
+		private var _projectStarterDelegate:IProjectStarterDelegate;
+		public function get projectStarterDelegate():IProjectStarterDelegate
+		{
+			return _projectStarterDelegate;
+		}
+		public function set projectStarterDelegate(value:IProjectStarterDelegate):void
+		{
+			_projectStarterDelegate = value;
+		}
 		
 		private var checkoutWindow:SourceControlCheckout;
 		private var failedMethodObjectBeforeAuth:Array;
 		private var pathSetting:PathSetting;
+		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
+
+		public function SVNPlugin()
+		{
+			super();
+			projectStarter.subscribe(this);
+		}
 		
 		override public function activate():void
 		{
 			super.activate();
 			
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleProjectOpen);
+			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleProjectOpen);
 			dispatcher.addEventListener(CHECKOUT_REQUEST, handleCheckoutRequest);
 			dispatcher.addEventListener(COMMIT_REQUEST, handleCommitRequest);
 			dispatcher.addEventListener(UPDATE_REQUEST, handleUpdateRequest);
@@ -197,9 +218,10 @@ package actionScripts.plugins.svn
 			}
 		}
 		
-		protected function handleProjectOpen(event:ProjectEvent):void
+		public function handleProjectOpen(event:ProjectEvent):void
 		{
 			handleCheckSVNRepository(event);
+			projectStarter.continueDelegation();
 		}
 		
 		protected function handleCheckSVNRepository(event:ProjectEvent):void

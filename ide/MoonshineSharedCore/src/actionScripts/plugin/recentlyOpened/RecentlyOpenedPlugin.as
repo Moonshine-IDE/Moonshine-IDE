@@ -18,6 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
+	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+
 	import flash.events.Event;
     import flash.net.SharedObject;
     import flash.utils.clearTimeout;
@@ -54,7 +58,7 @@ package actionScripts.plugin.recentlyOpened
     
     import components.views.project.TreeView;
 
-	public class RecentlyOpenedPlugin extends PluginBase implements IMenuPlugin
+	public class RecentlyOpenedPlugin extends PluginBase implements IMenuPlugin, IProjectStarter
 	{
 		public static const RECENT_PROJECT_LIST_UPDATED:String = "RECENT_PROJECT_LIST_UPDATED";
 		public static const RECENT_FILES_LIST_UPDATED:String = "RECENT_FILES_LIST_UPDATED";
@@ -65,6 +69,23 @@ package actionScripts.plugin.recentlyOpened
 		
 		private var cookie:SharedObject;
 		private var recentOpenedProjectObject:FileLocation;
+		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
+
+		private var _projectStarterDelegate:IProjectStarterDelegate;
+		public function get projectStarterDelegate():IProjectStarterDelegate
+		{
+			return _projectStarterDelegate;
+		}
+		public function set projectStarterDelegate(value:IProjectStarterDelegate):void
+		{
+			_projectStarterDelegate = value;
+		}
+
+		public function RecentlyOpenedPlugin()
+		{
+			super();
+			projectStarter.subscribe(this);
+		}
 		
 		override public function activate():void
 		{
@@ -77,7 +98,7 @@ package actionScripts.plugin.recentlyOpened
 				restoreFromCookie();
 			}
 			
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
 			dispatcher.addEventListener(ProjectEvent.EVENT_SAVE_PROJECT_CREATION_FOLDERS, onNewProjectPathBrowse, false, 0, true);
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, handleAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
@@ -294,7 +315,7 @@ package actionScripts.plugin.recentlyOpened
 			LayoutModifier.parseCookie(cookie);
 		}
 
-		private function handleAddProject(event:ProjectEvent):void
+		public function handleAddProject(event:ProjectEvent):void
 		{
 			// Find & remove project if already present
 			//var f:File = (event.project.projectFile) ? event.project.projectFile : event.project.folder;
@@ -302,7 +323,7 @@ package actionScripts.plugin.recentlyOpened
 			var toRemove:int = -1;
 			for each (var projectReference:Object in model.recentlyOpenedProjects)
 			{
-				if ((projectReference.name == event.project.name) && 
+				if ((projectReference.name == event.project.name) &&
 					(projectReference.path == f.fileBridge.nativePath))
 				{
 					toRemove = model.recentlyOpenedProjects.getItemIndex(projectReference);
@@ -349,6 +370,8 @@ package actionScripts.plugin.recentlyOpened
 				dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
 				clearTimeout(timeoutRecentProjectListValue);
 			}, 300);
+
+			projectStarter.continueDelegation();
 		}
 		
 		private function handleOpenFile(event:FilePluginEvent):void

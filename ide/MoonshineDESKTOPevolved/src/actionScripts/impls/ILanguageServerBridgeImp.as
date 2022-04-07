@@ -25,7 +25,7 @@ package actionScripts.impls
 
 		public function ILanguageServerBridgeImp()
 		{
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
+			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 		}
 

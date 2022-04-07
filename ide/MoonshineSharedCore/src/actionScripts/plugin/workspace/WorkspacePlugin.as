@@ -19,6 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.workspace
 {
+	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.valueObjects.WorkspaceVO;
 
@@ -48,7 +51,7 @@ package actionScripts.plugin.workspace
 
 	import moonshine.plugin.workspace.view.LoadWorkspaceView;
 
-	public class WorkspacePlugin extends PluginBase
+	public class WorkspacePlugin extends PluginBase implements IProjectStarter
 	{
 		public static const EVENT_SAVE_AS:String = "saveAsNewWorkspaceEvent";
 		public static const EVENT_NEW:String = "newWorkspaceEvent";
@@ -72,6 +75,7 @@ package actionScripts.plugin.workspace
 
 		private var newWorkspaceView:NewWorkspaceView;
 		private var newWorkspaceViewWrapper:FeathersUIWrapper;
+		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
 
 		private var _currentWorkspaceLabel:String;
 		private function get currentWorkspaceLabel():String
@@ -81,6 +85,16 @@ package actionScripts.plugin.workspace
 		private function set currentWorkspaceLabel(value:String):void
 		{
 			ConstantsCoreVO.CURRENT_WORKSPACE =	_currentWorkspaceLabel = value;
+		}
+
+		private var _projectStarterDelegate:IProjectStarterDelegate;
+		public function get projectStarterDelegate():IProjectStarterDelegate
+		{
+			return _projectStarterDelegate;
+		}
+		public function set projectStarterDelegate(value:IProjectStarterDelegate):void
+		{
+			_projectStarterDelegate = value;
 		}
 		
 		private function get workspaceLabels():Array
@@ -98,6 +112,7 @@ package actionScripts.plugin.workspace
 		public function WorkspacePlugin()
 		{
 			super();
+			projectStarter.subscribe(this);
 		}
 		
 		override public function activate():void
@@ -109,17 +124,18 @@ package actionScripts.plugin.workspace
 			dispatcher.addEventListener(EVENT_NEW, onNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(EVENT_LOAD, onLoadWorkspaceEvent, false, 0, true);
 			
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 		
-		private function handleAddProject(event:ProjectEvent):void
+		public function handleAddProject(project:ProjectVO):void
 		{
-			if (getPathIndex(event.project.folderLocation.fileBridge.nativePath) == -1)
+			if (getPathIndex(project.folderLocation.fileBridge.nativePath) == -1)
 			{
-				currentWorkspacePaths.push(event.project.folderLocation.fileBridge.nativePath);
+				currentWorkspacePaths.push(project.folderLocation.fileBridge.nativePath);
 				saveToCookie();
 			}
+			projectStarter.continueDelegation();
 		}
 		
 		private function handleRemoveProject(event:ProjectEvent):void

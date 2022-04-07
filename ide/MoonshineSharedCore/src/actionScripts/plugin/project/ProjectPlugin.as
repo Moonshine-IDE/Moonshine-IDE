@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.project
 {
+	import actionScripts.plugin.project.interfaces.IProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
@@ -59,8 +62,9 @@ package actionScripts.plugin.project
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
-    public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
+    public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider, IProjectStarter
 	{
+		public static const NAMESPACE:String = "actionScripts.plugin.project::ProjectPlugin";
 		public static const EVENT_PROJECT_SETTINGS:String = "projectSettingsEvent";
 		public static const EVENT_SHOW_OPEN_RESOURCE:String = "showOpenResource";
 		
@@ -72,14 +76,26 @@ package actionScripts.plugin.project
 		private var openResourceView:OpenResourceView;
 		private var lastActiveProjectMenuType:String;
 		private var customCommandPopup:RunCommandPopup;
+		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
 
 		private var _refreshDebounceTimeoutID:uint = uint.MAX_VALUE;
 		private var _refreshQueue:Array = [];
+
+		private var _projectStarterDelegate:IProjectStarterDelegate;
+		public function get projectStarterDelegate():IProjectStarterDelegate
+		{
+			return _projectStarterDelegate;
+		}
+		public function set projectStarterDelegate(value:IProjectStarterDelegate):void
+		{
+			_projectStarterDelegate = value;
+		}
 
 		public function ProjectPlugin()
 		{
 			treeView = new TreeView();
 			treeView.projects = model.projects;
+			projectStarter.subscribe(this);
 		}
 
 		override public function activate():void
@@ -131,12 +147,16 @@ package actionScripts.plugin.project
 			return new Vector.<ISetting>();
 		}
 		
-		private function showProjectPanel():void
+		public function showProjectPanel():void
 		{
 			if (!treeView.stage) 
 			{
 				LayoutModifier.attachSidebarSections(treeView);
 			}
+			treeView.callLater(function():void
+			{
+				projectStarterDelegate.continueDelegation();
+			});
 		}
 		
 		private function onCustomCommandInterface(event:CustomCommandsEvent):void
@@ -280,31 +300,38 @@ package actionScripts.plugin.project
 			}
 		}
 
-		private function handleAddProject(event:ProjectEvent):void
+		public function refreshProjectMenu(project:ProjectVO):void
 		{
-			showProjectPanel();
-			// Is file in an already opened project?
-			for each (var p:ProjectVO in model.projects)	
+			for each (var p:ProjectVO in model.projects)
 			{
-				if (event.project.folderLocation.fileBridge.nativePath == p.folderLocation.fileBridge.nativePath)
+				if (project.folderLocation.fileBridge.nativePath == p.folderLocation.fileBridge.nativePath)
 				{
 					return;
 				}
 			}
-			
-			if (model.projects.getItemIndex(event.project) == -1)
-			{
-				model.projects.addItemAt(event.project, 0);
 
-				if (event.project is AS3ProjectVO && lastActiveProjectMenuType != event.project.menuType)
+			if (model.projects.getItemIndex(project) == -1)
+			{
+				model.projects.addItemAt(project, 0);
+
+				if (project is AS3ProjectVO && lastActiveProjectMenuType != project.menuType)
 				{
 					dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
-					lastActiveProjectMenuType = event.project.menuType;
+					lastActiveProjectMenuType = project.menuType;
 				}
 			}
 
-            openRecentlyUsedFiles(event.project);
-			SharedObjectUtil.saveProjectForOpen(event.project.folderLocation.fileBridge.nativePath, event.project.projectName);
+			openRecentlyUsedFiles(project);
+			SharedObjectUtil.saveProjectForOpen(project.folderLocation.fileBridge.nativePath, project.projectName);
+			projectStarterDelegate.continueDelegation();
+		}
+
+		private function handleAddProject(event:ProjectEvent):void
+		{
+			projectStarter.startProject(event);
+			//showProjectPanel();
+			// Is file in an already opened project?
+
 		}
 		
 		private function handleRemoveProject(event:ProjectEvent):void

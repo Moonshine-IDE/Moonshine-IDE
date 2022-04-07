@@ -27,7 +27,7 @@ package actionScripts.utils
 		public function MethodDescriptor(origin:*, method:String, ...param)
 		{
 			super();
-			
+
 			this.origin = origin;
 			this.method = method;
 			this.parameters = param;
