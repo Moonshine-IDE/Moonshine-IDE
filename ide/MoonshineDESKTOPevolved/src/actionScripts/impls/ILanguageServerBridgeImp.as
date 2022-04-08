@@ -34,12 +34,12 @@ package actionScripts.impls
 		{
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
-			projectStarter.subscribe(
+			/*projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
 							new <String>["onProjectAdded"]
 					)
-			);
+			);*/
 		}
 
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
