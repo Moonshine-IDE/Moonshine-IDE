@@ -21,6 +21,7 @@ package actionScripts.ui.menu
 	import actionScripts.plugin.project.ProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
 
 	import flash.display.NativeMenu;
 	import flash.display.NativeMenuItem;
@@ -105,7 +106,12 @@ package actionScripts.ui.menu
 		public function MenuPlugin():void
 		{
 			projectMenu = new ProjectMenu();
-			projectStarter.subscribe(this);
+			projectStarter.subscribe(
+					new ProjectStarterSubscribing(
+							this,
+							new <String>["onProjectAdded"]
+					)
+			);
 		}
 
 		public function getSettingsList():Vector.<ISetting>
@@ -233,7 +239,7 @@ package actionScripts.ui.menu
 				//dispatcher.addEventListener(CHANGE_SVN_CHECKOUT_PERMISSION_LABEL, onSVNCheckoutPermissionChange);
 			}
 
-			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
+			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onProjectAdded);
 			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProjectChangedHandler);
 			
 			// disable File-New menu as default
@@ -249,7 +255,7 @@ package actionScripts.ui.menu
 			refreshMenuItems();
 		}
 
-        public function addProjectHandler():void
+        public function onProjectAdded(event:ProjectEvent):void
         {
             disableNewFileMenuOptions();
 			disableMenuOptions();

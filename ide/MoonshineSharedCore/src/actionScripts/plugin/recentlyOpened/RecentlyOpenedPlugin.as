@@ -21,6 +21,7 @@ package actionScripts.plugin.recentlyOpened
 	import actionScripts.plugin.project.ProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
 
 	import flash.events.Event;
     import flash.net.SharedObject;
@@ -84,7 +85,12 @@ package actionScripts.plugin.recentlyOpened
 		public function RecentlyOpenedPlugin()
 		{
 			super();
-			projectStarter.subscribe(this);
+			projectStarter.subscribe(
+					new ProjectStarterSubscribing(
+							this,
+							new <String>["onProjectAdded"]
+					)
+			);
 		}
 		
 		override public function activate():void
@@ -315,7 +321,7 @@ package actionScripts.plugin.recentlyOpened
 			LayoutModifier.parseCookie(cookie);
 		}
 
-		public function handleAddProject(event:ProjectEvent):void
+		public function onProjectAdded(event:ProjectEvent):void
 		{
 			// Find & remove project if already present
 			//var f:File = (event.project.projectFile) ? event.project.projectFile : event.project.folder;

@@ -22,6 +22,7 @@ package actionScripts.plugin.workspace
 	import actionScripts.plugin.project.ProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.valueObjects.WorkspaceVO;
 
@@ -112,7 +113,12 @@ package actionScripts.plugin.workspace
 		public function WorkspacePlugin()
 		{
 			super();
-			projectStarter.subscribe(this);
+			projectStarter.subscribe(
+					new ProjectStarterSubscribing(
+							this,
+							new <String>["onProjectAdded"]
+					)
+			);
 		}
 		
 		override public function activate():void
@@ -128,11 +134,11 @@ package actionScripts.plugin.workspace
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 		
-		public function handleAddProject(project:ProjectVO):void
+		public function onProjectAdded(event:ProjectEvent):void
 		{
-			if (getPathIndex(project.folderLocation.fileBridge.nativePath) == -1)
+			if (getPathIndex(event.project.folderLocation.fileBridge.nativePath) == -1)
 			{
-				currentWorkspacePaths.push(project.folderLocation.fileBridge.nativePath);
+				currentWorkspacePaths.push(event.project.folderLocation.fileBridge.nativePath);
 				saveToCookie();
 			}
 			projectStarter.continueDelegation();

@@ -1,5 +1,10 @@
 package actionScripts.impls
 {
+	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarter;
+	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
+
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	
@@ -19,7 +24,9 @@ package actionScripts.impls
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class ILanguageServerBridgeImp implements ILanguageServerBridge
+	import flash.events.EventDispatcher;
+
+	public class ILanguageServerBridgeImp extends EventDispatcher implements ILanguageServerBridge, IProjectStarter
 	{
 		private static const URI_SCHEME_FILE:String = "file";
 
@@ -27,15 +34,32 @@ package actionScripts.impls
 		{
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
+			projectStarter.subscribe(
+					new ProjectStarterSubscribing(
+							this,
+							new <String>["onProjectAdded"]
+					)
+			);
 		}
 
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var managers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
 		private var connectedManagers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
+		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
 
 		public function get connectedProjectCount():int
 		{
 			return connectedManagers.length;
+		}
+
+		private var _projectStarterDelegate:IProjectStarterDelegate;
+		public function get projectStarterDelegate():IProjectStarterDelegate
+		{
+			return _projectStarterDelegate;
+		}
+		public function set projectStarterDelegate(value:IProjectStarterDelegate):void
+		{
+			_projectStarterDelegate = value;
 		}
 		
 		public function hasLanguageServerForProject(project:ProjectVO):Boolean
@@ -167,17 +191,19 @@ package actionScripts.impls
 			}
 		}
 		
-		private function addProjectHandler(event:ProjectEvent):void
+		public function onProjectAdded(event:ProjectEvent):void
 		{
 			var project:ProjectVO = event.project;
 			if(!project || project.projectFolder.projectReference.isTemplate)
 			{
+				projectStarter.continueDelegation();
 				return;
 			}
 			if(hasLanguageServerForProject(project))
 			{
 				//Moonshine sometimes dispatches ProjectEvent.ADD_PROJECT for
 				//projects that have already been added
+				projectStarter.continueDelegation();
 				return;
 			}
 			var manager:ILanguageServerManager = null;
@@ -187,6 +213,7 @@ package actionScripts.impls
 				if(as3Project.isVisualEditorProject)
 				{
 					//visual editor projects don't have a language server
+					projectStarter.continueDelegation();
 					return;
 				}
 				var as3Manager:ActionScriptLanguageServerManager = new ActionScriptLanguageServerManager(as3Project);
@@ -212,6 +239,7 @@ package actionScripts.impls
 			}
 			if (project is OnDiskProjectVO)
 			{
+				projectStarter.continueDelegation();
 				return;
 			}
 			managers.push(manager);
@@ -240,6 +268,7 @@ package actionScripts.impls
 			var manager:ILanguageServerManager = ILanguageServerManager(event.currentTarget);
 			connectedManagers.push(manager);
 			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_OPENED, manager.project));
+			projectStarter.continueDelegation();
 		}
 
 		private function manager_closeHandler(event:Event):void

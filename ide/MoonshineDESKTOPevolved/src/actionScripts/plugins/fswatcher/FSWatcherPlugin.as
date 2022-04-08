@@ -24,6 +24,7 @@ package actionScripts.plugins.fswatcher
 	import actionScripts.plugin.project.ProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.events.GlobalEventDispatcher;
 	import flash.system.MessageChannel;
@@ -87,7 +88,12 @@ package actionScripts.plugins.fswatcher
 		public function FSWatcherPlugin()
 		{
 			super();
-			projectStarter.subscribe(this);
+			projectStarter.subscribe(
+					new ProjectStarterSubscribing(
+							this,
+							new <String>["onProjectAdded"]
+					)
+			);
 		}
 		
 		override public function activate():void
@@ -122,7 +128,7 @@ package actionScripts.plugins.fswatcher
 				worker = null;
 			}
 
-			dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT, onAddProject);
+			//dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT, onAddProject);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
 		}
@@ -165,7 +171,7 @@ package actionScripts.plugins.fswatcher
 			});
 		}
 
-		public function onAddProject(event:ProjectEvent):void
+		public function onProjectAdded(event:ProjectEvent):void
 		{
 			if(!workerReady)
 			{

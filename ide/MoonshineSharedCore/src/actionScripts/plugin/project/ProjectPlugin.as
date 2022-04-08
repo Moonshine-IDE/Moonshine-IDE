@@ -20,6 +20,7 @@ package actionScripts.plugin.project
 {
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
 
 	import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -95,7 +96,12 @@ package actionScripts.plugin.project
 		{
 			treeView = new TreeView();
 			treeView.projects = model.projects;
-			projectStarter.subscribe(this);
+			projectStarter.subscribe(
+					new ProjectStarterSubscribing(
+							this,
+							new <String>["showProjectPanel", "refreshProjectMenu"]
+					)
+			);
 		}
 
 		override public function activate():void
@@ -103,7 +109,7 @@ package actionScripts.plugin.project
 			super.activate(); 
 			_activated = true;
 			
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onProjectAdded);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 
 			dispatcher.addEventListener(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS, handleShowPreviouslyOpenedProjects);
@@ -147,7 +153,7 @@ package actionScripts.plugin.project
 			return new Vector.<ISetting>();
 		}
 		
-		public function showProjectPanel():void
+		public function showProjectPanel(event:ProjectEvent=null):void
 		{
 			if (!treeView.stage) 
 			{
@@ -300,33 +306,33 @@ package actionScripts.plugin.project
 			}
 		}
 
-		public function refreshProjectMenu(project:ProjectVO):void
+		public function refreshProjectMenu(event:ProjectEvent):void
 		{
 			for each (var p:ProjectVO in model.projects)
 			{
-				if (project.folderLocation.fileBridge.nativePath == p.folderLocation.fileBridge.nativePath)
+				if (event.project.folderLocation.fileBridge.nativePath == p.folderLocation.fileBridge.nativePath)
 				{
 					return;
 				}
 			}
 
-			if (model.projects.getItemIndex(project) == -1)
+			if (model.projects.getItemIndex(event.project) == -1)
 			{
-				model.projects.addItemAt(project, 0);
+				model.projects.addItemAt(event.project, 0);
 
-				if (project is AS3ProjectVO && lastActiveProjectMenuType != project.menuType)
+				if (event.project is AS3ProjectVO && lastActiveProjectMenuType != event.project.menuType)
 				{
 					dispatcher.dispatchEvent(new Event(MenuPlugin.REFRESH_MENU_STATE));
-					lastActiveProjectMenuType = project.menuType;
+					lastActiveProjectMenuType = event.project.menuType;
 				}
 			}
 
-			openRecentlyUsedFiles(project);
-			SharedObjectUtil.saveProjectForOpen(project.folderLocation.fileBridge.nativePath, project.projectName);
+			openRecentlyUsedFiles(event.project);
+			SharedObjectUtil.saveProjectForOpen(event.project.folderLocation.fileBridge.nativePath, event.project.projectName);
 			projectStarterDelegate.continueDelegation();
 		}
 
-		private function handleAddProject(event:ProjectEvent):void
+		public function onProjectAdded(event:ProjectEvent):void
 		{
 			projectStarter.startProject(event);
 			//showProjectPanel();

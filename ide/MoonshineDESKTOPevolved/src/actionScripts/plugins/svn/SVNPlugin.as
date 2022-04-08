@@ -22,6 +22,7 @@ package actionScripts.plugins.svn
 	import actionScripts.plugin.project.ProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
+	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
 
 	import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -114,7 +115,12 @@ package actionScripts.plugins.svn
 		public function SVNPlugin()
 		{
 			super();
-			projectStarter.subscribe(this);
+			projectStarter.subscribe(
+					new ProjectStarterSubscribing(
+							this,
+							new <String>["onProjectAdded"]
+					)
+			);
 		}
 		
 		override public function activate():void
@@ -133,7 +139,7 @@ package actionScripts.plugins.svn
 		{
 			super.deactivate();
 			
-			dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT, handleProjectOpen);
+			//dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT, handleProjectOpen);
 			dispatcher.removeEventListener(CHECKOUT_REQUEST, handleCheckoutRequest);
 			dispatcher.removeEventListener(COMMIT_REQUEST, handleCommitRequest);
 			dispatcher.removeEventListener(UPDATE_REQUEST, handleUpdateRequest);
@@ -218,7 +224,7 @@ package actionScripts.plugins.svn
 			}
 		}
 		
-		public function handleProjectOpen(event:ProjectEvent):void
+		public function onProjectAdded(event:ProjectEvent):void
 		{
 			handleCheckSVNRepository(event);
 			projectStarter.continueDelegation();
