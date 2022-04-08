@@ -54,6 +54,7 @@ package actionScripts.plugins.clean
 	
 	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
+	import actionScripts.events.SettingsEvent;
 
 	public class CleanProject extends ConsoleBuildPluginBase implements IPlugin
 	{
@@ -198,7 +199,9 @@ package actionScripts.plugins.clean
 					}
 					else
 					{
-						error("Error: "+ project.name +" configures to build with JDK version is not present.");
+						var jdkName:String = (project.jdkType == JavaTypes.JAVA_8) ? "JDK 8" : "JDK";
+						error("A valid " + jdkName + " path must be defined to build project \"" + project.name + "\".");
+						dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 					}
 				}
 				else
@@ -235,7 +238,9 @@ package actionScripts.plugins.clean
 				}
 				else
 				{
-					error("Error: "+ project.name +" configures to build with JDK version is not present.");
+					var jdkName:String = (project.jdkType == JavaTypes.JAVA_8) ? "JDK 8" : "JDK";
+					error("A valid " + jdkName + " path must be defined to build project \"" + project.name + "\".");
+					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				}
 			}
 			else

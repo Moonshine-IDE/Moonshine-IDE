@@ -32,8 +32,11 @@ package visualEditor.plugin
 
     public class ExportDominoToRoyalePlugin extends PluginBase
     {
-        private var _currentProject:AS3ProjectVO;
-        private var _exportedProject:AS3ProjectVO;
+        private var currentProject:AS3ProjectVO;
+        private var exportedProject:AS3ProjectVO;
+
+        private var dominoConverter:DominoConverter;
+        private var conversionCounter:int;
 
         public function ExportDominoToRoyalePlugin()
         {
@@ -64,28 +67,46 @@ package visualEditor.plugin
 
         private function generateApacheRoyaleProjectHandler(event:Event):void
         {
-            _currentProject = model.activeProject as AS3ProjectVO;
-            if (_currentProject == null || !_currentProject.isDominoVisualEditorProject)
+            currentProject = model.activeProject as AS3ProjectVO;
+            if (currentProject == null || !currentProject.isDominoVisualEditorProject)
             {
                 error("This is not Visual Editor PrimeFaces project");
                 return;
             }
 
-            _exportedProject = _currentProject.clone() as AS3ProjectVO;
+            exportedProject = currentProject.clone() as AS3ProjectVO;
 
-            var visualEditorFiles:Array = getVisualEditorFiles(_currentProject.projectFolder);
+            var visualEditorFiles:Array = getVisualEditorFiles(currentProject.projectFolder);
+            conversionCounter = visualEditorFiles.length;
 
-            convertToRoyale(visualEditorFiles);
+            dominoConverter = new DominoConverter();
+            var convertedFiles:Array = [];
+
+            convertToRoyale(visualEditorFiles, convertedFiles, conversionFinishedCallback);
         }
 
-        private function convertToRoyale(visualEditorFiles:Array):void
+        private function convertToRoyale(visualEditorFiles:Array, convertedFiles:Array, finishCallback:Function):void
         {
-            var dominoConverter:DominoConverter = new DominoConverter();
             for (var i:int = 0; i < visualEditorFiles.length; i++)
             {
                 var veFile:FileLocation = new FileLocation(visualEditorFiles[i].nativePath);
-                var dominoXML:XML = this.getXmlConversion(veFile);
-                var surfaceMockup:SurfaceMockup = dominoConverter.fromXMLAutoConvert(dominoXML);
+                if (!veFile.fileBridge.isDirectory)
+                {
+                    var dominoXML:XML = this.getXmlConversion(veFile);
+                    var surfaceMockup:SurfaceMockup = dominoConverter.fromXMLOnly(dominoXML);
+                    convertedFiles.push({surface: surfaceMockup, file: veFile});
+
+                    finishCallback(convertedFiles);
+                }
+                else
+                {
+                    var veFiles:Array = veFile.fileBridge.getDirectoryListing();
+                    if (veFiles.length > 0)
+                    {
+                        conversionCounter += veFiles.length - 1;
+                        convertToRoyale(veFiles, convertedFiles, finishCallback);
+                    }
+                }
             }
         }
 
@@ -106,6 +127,15 @@ package visualEditor.plugin
             var xmlConversion:XML = new XML(data);
 
             return xmlConversion;
+        }
+
+        private function conversionFinishedCallback(convertedFiles:Array):void
+        {
+            conversionCounter--;
+            if (conversionCounter == 0)
+            {
+
+            }
         }
     }
 }

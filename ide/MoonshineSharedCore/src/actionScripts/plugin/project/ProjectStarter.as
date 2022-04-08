@@ -25,6 +25,7 @@ package actionScripts.plugin.project
 		private var isCycleRunning:Boolean;
 		private var totalQueueCount:int;
 		private var workingQueueCount:int;
+		private var recordTime:Date;
 
 		public static function getInstance():ProjectStarter
 		{
@@ -57,6 +58,7 @@ package actionScripts.plugin.project
 				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,
 						projectUnderCursor.project.name,
 						"Opening ("+ workingQueueCount +"/"+ totalQueueCount +"): ", false));
+
 				initStarterOrder();
 				continueDelegation();
 			}

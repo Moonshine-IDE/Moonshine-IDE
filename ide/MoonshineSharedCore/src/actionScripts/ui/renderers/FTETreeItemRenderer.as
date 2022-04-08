@@ -440,8 +440,7 @@ package actionScripts.ui.renderers
 			{
 				model.activeProject = activeProject;
 			}
-			
-			var enableTypes:Array;
+
 			var editors:ArrayCollection = model.flexCore.getExternalEditors();
 			for each (var editor:IExternalEditorVO in editors)
 			{
