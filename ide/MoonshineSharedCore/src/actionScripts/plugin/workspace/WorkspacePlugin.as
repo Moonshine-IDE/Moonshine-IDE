@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.workspace
 {
-	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.ProjectStarterDelegates;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
 	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
@@ -29,6 +29,7 @@ package actionScripts.plugin.workspace
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
+	import flash.utils.Dictionary;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
@@ -76,7 +77,8 @@ package actionScripts.plugin.workspace
 
 		private var newWorkspaceView:NewWorkspaceView;
 		private var newWorkspaceViewWrapper:FeathersUIWrapper;
-		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
+		private var projectStarter:ProjectStarterDelegates = ProjectStarterDelegates.getInstance();
+		private var projectsUpdatedToWorkspaceList:Dictionary = new Dictionary();
 
 		private var _currentWorkspaceLabel:String;
 		private function get currentWorkspaceLabel():String
@@ -113,12 +115,12 @@ package actionScripts.plugin.workspace
 		public function WorkspacePlugin()
 		{
 			super();
-			projectStarter.subscribe(
+			/*projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
 							new <String>["onProjectAdded"]
 					)
-			);
+			);*/
 		}
 		
 		override public function activate():void
@@ -130,22 +132,25 @@ package actionScripts.plugin.workspace
 			dispatcher.addEventListener(EVENT_NEW, onNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(EVENT_LOAD, onLoadWorkspaceEvent, false, 0, true);
 			
-			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 		
 		public function onProjectAdded(event:ProjectEvent):void
 		{
-			if (getPathIndex(event.project.folderLocation.fileBridge.nativePath) == -1)
+			if ((projectsUpdatedToWorkspaceList[event.project.projectFolder.nativePath] == undefined) &&
+					getPathIndex(event.project.folderLocation.fileBridge.nativePath) == -1)
 			{
 				currentWorkspacePaths.push(event.project.folderLocation.fileBridge.nativePath);
+				projectsUpdatedToWorkspaceList[event.project.projectFolder.nativePath] = true;
 				saveToCookie();
 			}
-			projectStarter.continueDelegation();
+			//projectStarter.continueDelegation();
 		}
 		
 		private function handleRemoveProject(event:ProjectEvent):void
-		{	
+		{
+			delete projectsUpdatedToWorkspaceList[event.project.projectFolder.nativePath];
 			handleRemoveProjectByPath(event.project.folderLocation.fileBridge.nativePath);
 		}
 		

@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.menu
 {
-	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.ProjectStarterDelegates;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
 	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
@@ -86,7 +86,7 @@ package actionScripts.ui.menu
 		private var noCodeCompletionOptionsToMenuMapping:Dictionary = new Dictionary();
 		private var isFileNewMenuIsEnabled:Boolean;
 		private var moonshineMenu:NativeMenuItem;
-		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
+		private var projectStarter:ProjectStarterDelegates = ProjectStarterDelegates.getInstance();
 		private var projectMenu:ProjectMenu;
 
         override public function get name():String { return "Application Menu Plugin"; }
@@ -106,12 +106,12 @@ package actionScripts.ui.menu
 		public function MenuPlugin():void
 		{
 			projectMenu = new ProjectMenu();
-			projectStarter.subscribe(
+			/*projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
 							new <String>["onProjectAdded"]
 					)
-			);
+			);*/
 		}
 
 		public function getSettingsList():Vector.<ISetting>
@@ -259,7 +259,7 @@ package actionScripts.ui.menu
         {
             disableNewFileMenuOptions();
 			disableMenuOptions();
-			projectStarter.continueDelegation();
+			//projectStarter.continueDelegation();
         }
 
 		private function activeProjectChangedHandler(event:ProjectEvent):void

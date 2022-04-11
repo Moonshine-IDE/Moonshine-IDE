@@ -21,7 +21,7 @@ package actionScripts.plugins.fswatcher
 {
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.ProjectStarterDelegates;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
 	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
@@ -83,17 +83,18 @@ package actionScripts.plugins.fswatcher
 		private var workerToMain:MessageChannel;
 		private var worker:Worker;
 		private var projectToWatcher:Dictionary = new Dictionary();
-		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
+		private var projectStarter:ProjectStarterDelegates = ProjectStarterDelegates.getInstance();
+		private var projectsAddedToWatchlist:Dictionary = new Dictionary();
 
 		public function FSWatcherPlugin()
 		{
 			super();
-			projectStarter.subscribe(
+			/*projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
 							new <String>["onProjectAdded"]
 					)
-			);
+			);*/
 		}
 		
 		override public function activate():void
@@ -113,7 +114,7 @@ package actionScripts.plugins.fswatcher
 			worker.setSharedProperty("workerToMain", workerToMain);
 			worker.start();
 
-			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onAddProject, false, 0, true);
+			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject, false, 0, true);
 			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
 		}
@@ -128,7 +129,7 @@ package actionScripts.plugins.fswatcher
 				worker = null;
 			}
 
-			//dispatcher.removeEventListener(ProjectEvent.ADD_PROJECT, onAddProject);
+			dispatcher.removeEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject);
 			dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit);
 		}
@@ -173,12 +174,13 @@ package actionScripts.plugins.fswatcher
 
 		public function onProjectAdded(event:ProjectEvent):void
 		{
-			if(!workerReady)
+			if(!workerReady || (projectsAddedToWatchlist[event.project.projectFolder.nativePath] != undefined))
 			{
 				return;
 			}
+			projectsAddedToWatchlist[event.project.projectFolder.nativePath] = true;
 			addProject(event.project);
-			projectStarter.continueDelegation();
+			//projectStarter.continueDelegation();
 		}
 
 		private function onRemoveProject(event:ProjectEvent):void
@@ -187,6 +189,7 @@ package actionScripts.plugins.fswatcher
 			{
 				return;
 			}
+			delete projectsAddedToWatchlist[event.project.projectFolder.nativePath];
 			removeProject(event.project);
 		}
 

@@ -18,14 +18,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.recentlyOpened
 {
-	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.ProjectStarterDelegates;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
 	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
 
 	import flash.events.Event;
     import flash.net.SharedObject;
-    import flash.utils.clearTimeout;
+	import flash.utils.Dictionary;
+	import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
     
     import mx.collections.ArrayCollection;
@@ -70,7 +71,8 @@ package actionScripts.plugin.recentlyOpened
 		
 		private var cookie:SharedObject;
 		private var recentOpenedProjectObject:FileLocation;
-		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
+		private var projectStarter:ProjectStarterDelegates = ProjectStarterDelegates.getInstance();
+		private var projectsAddedToRecentList:Dictionary = new Dictionary();
 
 		private var _projectStarterDelegate:IProjectStarterDelegate;
 		public function get projectStarterDelegate():IProjectStarterDelegate
@@ -85,12 +87,12 @@ package actionScripts.plugin.recentlyOpened
 		public function RecentlyOpenedPlugin()
 		{
 			super();
-			projectStarter.subscribe(
+			/*projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
 							new <String>["onProjectAdded"]
 					)
-			);
+			);*/
 		}
 		
 		override public function activate():void
@@ -104,7 +106,8 @@ package actionScripts.plugin.recentlyOpened
 				restoreFromCookie();
 			}
 			
-			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
+			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded);
+			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onProjectRemoved);
 			dispatcher.addEventListener(ProjectEvent.EVENT_SAVE_PROJECT_CREATION_FOLDERS, onNewProjectPathBrowse, false, 0, true);
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, handleAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
@@ -323,6 +326,11 @@ package actionScripts.plugin.recentlyOpened
 
 		public function onProjectAdded(event:ProjectEvent):void
 		{
+			if (projectsAddedToRecentList[event.project.projectFolder.nativePath] != undefined)
+			{
+				return;
+			}
+
 			// Find & remove project if already present
 			//var f:File = (event.project.projectFile) ? event.project.projectFile : event.project.folder;
 			var f:FileLocation = event.project.folderLocation;
@@ -357,27 +365,30 @@ package actionScripts.plugin.recentlyOpened
 			
 			model.recentlyOpenedProjects.addItemAt(tmpSOReference, 0);
 			model.recentlyOpenedProjectOpenedOption.addItemAt({path:f.fileBridge.nativePath, option:(event.extras ? event.extras[0] : "")}, 0);
+
+			projectsAddedToRecentList[event.project.projectFolder.nativePath] = true;
 			
 			//Moon-166 fix: This will set selected project in the tree view
 			/*var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 			tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;*/
 			
-			var timeoutValue:uint = setTimeout(function():void{
+			/*var timeoutValue:uint = setTimeout(function():void{
 				var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 				if (model.activeProject)
 				{
 					tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;
                 }
 				clearTimeout(timeoutValue);
-			}, 200);
-			
-            var timeoutRecentProjectListValue:uint = setTimeout(function():void
-			{
-				dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
-				clearTimeout(timeoutRecentProjectListValue);
-			}, 300);
+			}, 200);*/
 
-			projectStarter.continueDelegation();
+			dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
+
+			//projectStarter.continueDelegation();
+		}
+
+		private function onProjectRemoved(event:ProjectEvent):void
+		{
+			delete projectsAddedToRecentList[event.project.projectFolder.nativePath];
 		}
 		
 		private function handleOpenFile(event:FilePluginEvent):void

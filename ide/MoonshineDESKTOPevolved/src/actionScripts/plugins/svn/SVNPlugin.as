@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn
 {
-	import actionScripts.plugin.project.ProjectStarter;
+	import actionScripts.plugin.project.ProjectStarterDelegates;
 	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
 	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
@@ -110,17 +110,17 @@ package actionScripts.plugins.svn
 		private var checkoutWindow:SourceControlCheckout;
 		private var failedMethodObjectBeforeAuth:Array;
 		private var pathSetting:PathSetting;
-		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
+		private var projectStarter:ProjectStarterDelegates = ProjectStarterDelegates.getInstance();
 
 		public function SVNPlugin()
 		{
 			super();
-			projectStarter.subscribe(
+			/*projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
 							new <String>["onProjectAdded"]
 					)
-			);
+			);*/
 		}
 		
 		override public function activate():void

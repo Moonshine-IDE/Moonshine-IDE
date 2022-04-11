@@ -420,17 +420,19 @@
 							refreshFileFolder(project.projectFolder, project);
 						}
 						
-						timeoutValue = setTimeout(function ():void
-						{
-							tree.selectedItem = project.projectFolder;
-							clearTimeout(timeoutValue);
-							refreshActiveProject(tree.selectedItem as FileWrapper);
-							if(ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT > 0) ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT--;
-						}, 1000);
+
 
 						break;
 					}
 				}
+			}
+
+			public function selectProject(value:ProjectVO):void
+			{
+				tree.selectedItem = value.projectFolder;
+				refreshActiveProject(tree.selectedItem as FileWrapper);
+				if (ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT > 0)
+					ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT--;
 			}
 	
 			private function onProjectTreeUpdates(event:ProjectEvent):void

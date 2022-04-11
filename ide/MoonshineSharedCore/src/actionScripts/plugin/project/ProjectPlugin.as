@@ -72,12 +72,12 @@ package actionScripts.plugin.project
 		override public function get name():String 	{return "Project Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides project settings.";}
-		
+
 		private var treeView:TreeView;
 		private var openResourceView:OpenResourceView;
 		private var lastActiveProjectMenuType:String;
 		private var customCommandPopup:RunCommandPopup;
-		private var projectStarter:ProjectStarter = ProjectStarter.getInstance();
+		private var projectStarter:ProjectStarterDelegates = ProjectStarterDelegates.getInstance();
 
 		private var _refreshDebounceTimeoutID:uint = uint.MAX_VALUE;
 		private var _refreshQueue:Array = [];
@@ -99,7 +99,7 @@ package actionScripts.plugin.project
 			projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
-							new <String>["showProjectPanel", "refreshProjectMenu"]
+							new <String>["refreshProjectMenu"]
 					)
 			);
 		}
@@ -159,10 +159,6 @@ package actionScripts.plugin.project
 			{
 				LayoutModifier.attachSidebarSections(treeView);
 			}
-			treeView.callLater(function():void
-			{
-				projectStarterDelegate.continueDelegation();
-			});
 		}
 		
 		private function onCustomCommandInterface(event:CustomCommandsEvent):void
@@ -327,7 +323,7 @@ package actionScripts.plugin.project
 				}
 			}
 
-			openRecentlyUsedFiles(event.project);
+			//openRecentlyUsedFiles(event.project);
 			SharedObjectUtil.saveProjectForOpen(event.project.folderLocation.fileBridge.nativePath, event.project.projectName);
 			projectStarterDelegate.continueDelegation();
 		}
