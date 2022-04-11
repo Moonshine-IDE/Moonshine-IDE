@@ -94,7 +94,9 @@ package actionScripts.plugin.project
 					totalQueueCount = 0;
 					workingQueueCount = 0;
 					model.mainView.getTreeViewPanel().selectProject(
-							model.mainView.getTreeViewPanel().projects.getItemAt(0) as ProjectVO
+							model.mainView.getTreeViewPanel().projects.getItemAt(
+									model.mainView.getTreeViewPanel().projects.length - 1
+							) as ProjectVO
 					);
 					projectUnderCursor = null;
 					projectAtZeroIndex = null;
