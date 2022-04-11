@@ -89,7 +89,8 @@ package visualEditor.plugin
             for (var i:int = 0; i < visualEditorFiles.length; i++)
             {
                 var veFile:FileLocation = new FileLocation(visualEditorFiles[i].nativePath);
-                if (!veFile.fileBridge.isDirectory)
+                if (!veFile.fileBridge.isDirectory &&
+                    veFile.fileBridge.extension == "xml")
                 {
                     var dominoXML:XML = this.getXmlConversion(veFile);
                     var surfaceMockup:SurfaceMockup = new SurfaceMockup();
