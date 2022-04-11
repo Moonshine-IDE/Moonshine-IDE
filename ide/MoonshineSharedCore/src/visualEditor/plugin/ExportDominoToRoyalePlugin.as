@@ -29,13 +29,13 @@ package visualEditor.plugin
     import actionScripts.valueObjects.ConstantsCoreVO;
     import converter.DominoConverter;
     import surface.SurfaceMockup;
+    import lookup.Lookup;
 
     public class ExportDominoToRoyalePlugin extends PluginBase
     {
         private var currentProject:AS3ProjectVO;
         private var exportedProject:AS3ProjectVO;
 
-        private var dominoConverter:DominoConverter;
         private var conversionCounter:int;
 
         public function ExportDominoToRoyalePlugin()
@@ -79,7 +79,6 @@ package visualEditor.plugin
             var visualEditorFiles:Array = getVisualEditorFiles(currentProject.projectFolder);
             conversionCounter = visualEditorFiles.length;
 
-            dominoConverter = new DominoConverter();
             var convertedFiles:Array = [];
 
             convertToRoyale(visualEditorFiles, convertedFiles, conversionFinishedCallback);
@@ -93,7 +92,10 @@ package visualEditor.plugin
                 if (!veFile.fileBridge.isDirectory)
                 {
                     var dominoXML:XML = this.getXmlConversion(veFile);
-                    var surfaceMockup:SurfaceMockup = dominoConverter.fromXMLOnly(dominoXML);
+                    var surfaceMockup:SurfaceMockup = new SurfaceMockup();
+
+                    DominoConverter.fromXML(surfaceMockup, Lookup.DominoNonUILookup,  dominoXML);
+
                     convertedFiles.push({surface: surfaceMockup, file: veFile});
 
                     finishCallback(convertedFiles);
