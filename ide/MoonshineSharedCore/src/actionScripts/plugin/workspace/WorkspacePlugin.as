@@ -313,6 +313,7 @@ package actionScripts.plugin.workspace
 			currentWorkspacePaths = [];
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
+			workspacesForViews.push(new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]));
 			saveToCookie();
 			outputToConsole();
 		}
@@ -322,6 +323,7 @@ package actionScripts.plugin.workspace
 			currentWorkspacePaths = ObjectUtil.clone(currentWorkspacePaths) as Array;
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
+			workspacesForViews.push(new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]));
 			saveToCookie();
 			outputToConsole();
 		}

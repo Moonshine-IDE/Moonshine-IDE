@@ -72,6 +72,7 @@ package actionScripts.plugin.syntax
 					new AutoClosingPair("\"", "\""),
 					new AutoClosingPair("<!--", "-->")
 				];
+				textEditor.blockComment = ["<!--", "-->"];
 				textEditor.setParserAndTextStyles(new HTMLLineParser(), formats);
 				textEditor.embedFonts = Settings.font.defaultFontEmbedded;
 			}

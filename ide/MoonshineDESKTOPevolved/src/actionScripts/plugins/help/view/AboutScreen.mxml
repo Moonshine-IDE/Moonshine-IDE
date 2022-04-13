@@ -117,26 +117,28 @@
 			
 			protected function onTabRemoved(event:Event):void
 			{
-				IDEWorker.getInstance().unSubscribeComponent(HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER);
+				softwareInformation.dispose();
 			}
 
 			private function onCopyToClipboard(event:MouseEvent):void
 			{
 				var aboutInformation:String = ConstantsCoreVO.MOONSHINE_IDE_LABEL +"\n"+ retVersion.text +"\n\n";
-				aboutInformation += "Configured SDKs in Moonshine:\n===========================================\n\n";
 				aboutInformation += softwareInformation.getAllVersions();
 				System.setClipboard(aboutInformation);
 				GlobalEventDispatcher.getInstance().dispatchEvent(
-						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Copied Moonshine and SDK version information to clipboard.", false, false, ConsoleOutputEvent.TYPE_SUCCESS)
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Copied Moonshine About information to clipboard.", false, false, ConsoleOutputEvent.TYPE_SUCCESS)
 				);
 			}
 			
 		]]>
 	</fx:Script>
+	<s:layout>
+		<s:VerticalLayout gap="0" horizontalAlign="center"/>
+	</s:layout>
 	
 	<s:VGroup id="vgBody" 
-			  width="80%" height="80%"
-			  paddingLeft="12" paddingTop="9" paddingRight="13" paddingBottom="3"
+			  width="80%" height="100%"
+			  paddingLeft="12" paddingTop="50" paddingRight="13" paddingBottom="3"
 			  horizontalCenter="0" verticalCenter="-12">
 		<s:HGroup id="hgTitle" 
 				  width="100%"
@@ -153,19 +155,19 @@
 			<s:BusyIndicator id="busy"/>
 			<s:Button id="btnClipboardCopy"
 					  icon="@Embed('/elements/images/copy_content_icon.png')" width="28"
-					  toolTip="Copy Moonshine and SDK versions" visible="false" includeInLayout="false"
+					  toolTip="Copy Moonshine About information" visible="false" includeInLayout="false"
 					  click="onCopyToClipboard(event)"/>
 		</s:HGroup>
 		<mx:HRule width="100%"/>
-		<popup:SoftwareInformation id="softwareInformation"
-								   width="100%" height="100%"
-								   paddingTop="10"
-								   complete="onSoftwareInformationRetreived(event)"/>
+		<popup:SoftwareInformationBase id="softwareInformation"
+                                       width="100%" height="100%"
+                                       paddingTop="10"
+                                       complete="onSoftwareInformationRetreived(event)"/>
 	</s:VGroup>
 	
-	<s:VGroup width="100%" height="20%"
+	<s:VGroup width="100%" autoLayout="true"
 			  verticalAlign="bottom" horizontalAlign="center" 
-			  bottom="0" paddingBottom="10">
+			  paddingBottom="10" paddingTop="6">
 		<s:Label text="About the background image"
 				 buttonMode="true"
 				 textDecoration="underline" fontSize="12"

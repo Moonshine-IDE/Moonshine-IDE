@@ -284,7 +284,9 @@ package actionScripts.plugin.groovy.grailsproject
 			if (!model.flexCore.checkRequireJava(project))
 			{
 				clearOutput();
-				error("Error: "+ project.name +" configures to build with JDK version is not present.");
+                var jdkName:String = (project.jdkType == JavaTypes.JAVA_8) ? "JDK 8" : "JDK";
+                error("A valid " + jdkName + " path must be defined to build project \"" + project.name + "\".");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return;
 			}
 

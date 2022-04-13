@@ -19,10 +19,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
+	import com.adobe.utils.StringUtil;
+	
 	import flash.events.Event;
-
+	import flash.events.NativeProcessExitEvent;
+	import flash.events.ProgressEvent;
+	
 	import mx.collections.ArrayCollection;
-
 	import mx.utils.UIDUtil;
 	
 	import actionScripts.events.WorkerEvent;
@@ -30,15 +33,20 @@ package actionScripts.utils
 	import actionScripts.locator.IDEWorker;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.help.HelpPlugin;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.NativeProcessQueueVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.WorkerNativeProcessResult;
-	import actionScripts.valueObjects.NativeProcessQueueVO;
 
-	public class SoftwareVersionChecker extends ConsoleOutputter implements IWorkerSubscriber
+	public class SoftwareVersionChecker extends ConsoleBuildPluginBase implements IWorkerSubscriber
 	{
+		public static const VERSION_CHECK_TYPE_SDK:String = "versionCheckTypeSDKs";
+		public static const VERSION_CHECK_TYPE_EDITOR:String = "versionCheckTypeEditors";
+
 		private static const QUERY_FLEX_AIR_VERSION:String = "getFlexAIRversion";
 		private static const QUERY_ROYALE_FJS_VERSION:String = "getRoyaleFlexJSversion";
 		private static const QUERY_JDK_VERSION:String = "getJDKVersion";
@@ -54,8 +62,11 @@ package actionScripts.utils
 		private static const QUERY_MACPORTS_VERSION:String = "getMacPortsVersion";
 		private static const QUERY_HAXE_VERSION:String = "getHaxeVersion";
 		private static const QUERY_NEKO_VERSION:String = "getNekoVersion";
+		private static const QUERY_VIRTUALBOX_VERSION:String = "getVirtualBoxVersion";
+		private static const QUERY_EXTERNAL_EDITOR_VERSION:String = "getExternalEditorVersion";
 		
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
+		public var versionCheckType:String;
 		
 		protected var processType:String;
 		
@@ -72,15 +83,10 @@ package actionScripts.utils
 		 */
 		public function SoftwareVersionChecker()
 		{
-			if (HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER)
-			{
-				subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER;
-			}
-			else
-			{
-				subscribeIdToWorker = HelpPlugin.ABOUT_SUBSCRIBE_ID_TO_WORKER = UIDUtil.createUID();
-			}
+			super();
+			activate();
 			
+			subscribeIdToWorker = UIDUtil.createUID();
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
@@ -89,13 +95,30 @@ package actionScripts.utils
 		 * Checks some required/optional software installation
 		 * and their version if available
 		 */
-		public function retrieveAboutInformation(items:ArrayCollection):void
+		public function retrieveSDKsInformation(items:ArrayCollection):void
 		{
 			components = items;
-			startRequestProcess();
+			startSDKVersionRequestProcess();
+		}
+
+		/**
+		 * Checks for external editors version information
+		 */
+		public function retrieveEditorsInformation(items:ArrayCollection):void
+		{
+			components = items;
+			startEditorsVersionRequestProcess();
+		}
+
+		/**
+		 * Remove footprints
+		 */
+		public function dispose():void
+		{
+			worker.unSubscribeComponent(subscribeIdToWorker);
 		}
 		
-		private function startRequestProcess():void
+		private function startSDKVersionRequestProcess():void
 		{
 			var itemTypeUnderCursor:String;
 			if (itemUnderCursorIndex <= (components.length - 1))
@@ -199,6 +222,13 @@ package actionScripts.utils
 								itemTypeUnderCursor = QUERY_NEKO_VERSION;
 							}
 							break;
+						case ComponentTypes.TYPE_VIRTUALBOX:
+							if (UtilsCore.isVirtualBoxAvailable())
+							{
+								commands = '"'+ itemUnderCursor.installToPath +"/"+ (ConstantsCoreVO.IS_MACOS ? 'VBoxManage' : 'VBoxManage.exe') +'" -v';
+								itemTypeUnderCursor = QUERY_VIRTUALBOX_VERSION;
+							}
+							break;
 						case ComponentTypes.TYPE_NOTES:
 							if (ConstantsCoreVO.IS_MACOS)
 							{
@@ -217,7 +247,7 @@ package actionScripts.utils
 				else
 				{
 					itemUnderCursorIndex++;
-					startRequestProcess();
+					startSDKVersionRequestProcess();
 				}
 			}
 			else
@@ -231,6 +261,74 @@ package actionScripts.utils
 				worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 				itemUnderCursorIndex++;
 			}
+		}
+
+		private function startEditorsVersionRequestProcess():void
+		{
+			if (itemUnderCursorIndex <= (components.length - 1))
+			{
+				var executable:String;
+				var itemUnderCursor:ExternalEditorVO = components.getItemAt(itemUnderCursorIndex) as ExternalEditorVO;
+				var executableFullPath:String;
+				if (itemUnderCursor.isValid)
+				{
+					var commands:String;
+					if (ConstantsCoreVO.IS_MACOS)
+					{
+						commands = 'defaults read "'+ itemUnderCursor.installPath.nativePath +'/Contents/Info.plist" CFBundleShortVersionString';
+						
+						queue = new Vector.<Object>();
+						
+						addToQueue(new NativeProcessQueueVO(commands, false, QUERY_EXTERNAL_EDITOR_VERSION, itemUnderCursorIndex));
+						worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
+						itemUnderCursorIndex++;
+					}
+					else
+					{
+						var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
+						if (powerShellPath)
+						{
+							powerShellPath = powerShellPath.replace(/\\/g, "/");
+							commands = '"'+ powerShellPath +'" -NoLogo -NoProfile \"(Get-Item -Path \''+ itemUnderCursor.installPath.nativePath +'\').VersionInfo | Select-Object ProductVersion | Format-List -Force\"';
+							
+							this.start(
+								new <String>[commands], null
+							);
+						}
+						else
+						{
+							error("Failed to locate PowerShell during external editor version check.");
+							return;
+						}
+					}
+				}
+				else
+				{
+					itemUnderCursorIndex++;
+					startEditorsVersionRequestProcess();
+				}
+			}
+			else
+			{
+				dispatchEvent(new Event(Event.COMPLETE));
+			}
+		}
+		
+		override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
+		{
+			var stdOutput:String = getDataFromBytes(nativeProcess.standardOutput);
+			if (stdOutput.search(/ProductVersion :/) != -1)
+			{
+				stdOutput = StringUtil.trim(stdOutput);
+				components[itemUnderCursorIndex].version = stdOutput.split(" : ")[1];
+			}
+		}
+		
+		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
+		{
+			super.onNativeProcessExit(event);
+			itemUnderCursorIndex++;
+			startEditorsVersionRequestProcess();
 		}
 		
 		public function onWorkerValueIncoming(value:Object):void
@@ -276,8 +374,15 @@ package actionScripts.utils
 					//success("...Flex Process completed");
 					break;
 			}
-			
-			startRequestProcess();
+
+			if (versionCheckType == VERSION_CHECK_TYPE_SDK)
+			{
+				startSDKVersionRequestProcess();
+			}
+			else if (versionCheckType == VERSION_CHECK_TYPE_EDITOR)
+			{
+				startEditorsVersionRequestProcess();
+			}
 		}
 		
 		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
@@ -362,6 +467,7 @@ package actionScripts.utils
 					case QUERY_NODEJS_VERSION:
 					case QUERY_HAXE_VERSION:
 					case QUERY_NEKO_VERSION:
+					case QUERY_VIRTUALBOX_VERSION:
 					{
 						if (!components[int(tmpQueue.extraArguments[0])].version)
 						{
@@ -403,6 +509,9 @@ package actionScripts.utils
 						// from it
 						if (!lastOutput) lastOutput = value.output;
 						else lastOutput += value.output;
+						break;
+					case QUERY_EXTERNAL_EDITOR_VERSION:
+						components[int(tmpQueue.extraArguments[0])].version = value.output.replace("\n", "");
 						break;
 				}
 			}

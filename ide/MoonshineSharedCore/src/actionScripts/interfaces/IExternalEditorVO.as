@@ -24,5 +24,6 @@ package actionScripts.interfaces
 		function get isEnabled():Boolean;
 		function get title():String;
 		function get localID():String;
+		function get fileTypes():Array;
 	}
 }

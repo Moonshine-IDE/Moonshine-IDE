@@ -15,9 +15,7 @@
   
     </textlist>
   </item>
-  <item name="$Body" sign="true">
-    <richtext style="width:700px;height:700px;" class="flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop" direction="Horizontal" vdirection="Vertical">
-     
-    </richtext>
-  </item>
+ <item name='$Body' sign='true'><richtext>
+</richtext>
+</item>
 </note>

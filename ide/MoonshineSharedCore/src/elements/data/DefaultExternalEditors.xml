@@ -7,6 +7,7 @@
 				<windows>$programFiles/Vim/vim82/gvim.exe</windows>
 				<macos>/Applications/MacVim.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 <!-- 			<defaultArguments> -->
 <!-- 				<windows>-R</windows> -->
 <!-- 				<macos/> -->
@@ -19,6 +20,7 @@
 				<windows/>
 				<macos>/Applications/Sublime Text.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://www.sublimetext.com/3</website>
 		</editor>
 		<editor id="textmate" isWindows="false" isMac="true">
@@ -27,6 +29,7 @@
 				<windows/>
 				<macos>/Applications/TextMate.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://macromates.com</website>
 		</editor>
 		<editor id="vscode" isWindows="true" isMac="true">
@@ -35,6 +38,7 @@
 				<windows>$userDirectory/AppData/Local/Programs/Microsoft VS Code/Code.exe</windows>
 				<macos>/Applications/Visual Studio Code.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://code.visualstudio.com</website>
 		</editor>
 		<editor id="iawriter" isWindows="false" isMac="true">
@@ -43,6 +47,7 @@
 				<windows/>
 				<macos>/Applications/iA Writer.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://ia.net/downloads</website>
 		</editor>
 		<editor id="emacs" isWindows="false" isMac="true">
@@ -51,6 +56,7 @@
 				<windows/>
 				<macos>/Applications/MacPorts/Emacs.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://www.gnu.org/software/emacs</website>
 		</editor>
 		<editor id="bbedit" isWindows="false" isMac="true">
@@ -59,6 +65,7 @@
 				<windows/>
 				<macos>/Applications/BBEdit.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://www.barebones.com/products/textwrangler/download.html</website>
 		</editor>
 		<editor id="notepad++" isWindows="true" isMac="false">
@@ -67,6 +74,7 @@
 				<windows>$programFiles/Notepad++/notepad++.exe</windows>
 				<macos/>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://notepad-plus-plus.org/downloads/</website>
 		</editor>
 		<editor id="ultraedit" isWindows="true" isMac="false">
@@ -75,6 +83,7 @@
 				<windows>$programFiles/IDM Computer Solutions/UltraEdit/uedit64.exe</windows>
 				<macos/>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://www.ultraedit.com/</website>
 		</editor>
 		<editor id="eclipse" isWindows="true" isMac="true">
@@ -83,6 +92,7 @@
 				<windows>$userDirectory/eclipse/java-2020-03/eclipse/eclipse.exe</windows>
 				<macos>$userDirectory/Documents/eclipse/java-2020-03/Eclipse.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://www.eclipse.org/downloads/</website>
 		</editor>
 		<editor id="coderunner" isWindows="false" isMac="true">
@@ -91,6 +101,7 @@
 				<windows/>
 				<macos>/Applications/CodeRunner.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://coderunnerapp.com</website>
 		</editor>
 		<editor id="komodoEdit" isWindows="true" isMac="true">
@@ -99,6 +110,7 @@
 				<windows>$programFiles/ActiveState Komodo IDE 12/komodo.exe</windows>
 				<macos>/Applications/Komodo IDE 12.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://www.activestate.com/products/komodo-edit/</website>
 		</editor>
 		<editor id="atom" isWindows="true" isMac="true">
@@ -107,7 +119,98 @@
 				<windows>$userDirectory/AppData/Local/atom/atom.exe</windows>
 				<macos>/Applications/Atom.app</macos>
 			</defaultLocation>
+			<fileTypes></fileTypes>
 			<website>https://atom.io</website>
+		</editor>
+		<editor id="idea" isWindows="true" isMac="true">
+			<title>IntelliJ IDEA</title>
+			<defaultLocation>
+				<windows>$programFiles/JetBrains/IntelliJ IDEA/bin/idea64.exe</windows>
+				<macos>/Applications/IntelliJ IDEA.app</macos>
+			</defaultLocation>
+			<fileTypes></fileTypes>
+			<website>https://www.jetbrains.com/idea/</website>
+		</editor>
+		<editor id="myeclipse" isWindows="true" isMac="true">
+			<title>MyEclipse</title>
+			<defaultLocation>
+				<windows>$userDirectory/AppData/Local/MyEclipse/myeclipse.exe</windows>
+				<macos>/Applications/MyEclipse/MyEclipse.app</macos>
+			</defaultLocation>
+			<fileTypes></fileTypes>
+			<website>https://www.genuitec.com/products/myeclipse/</website>
+		</editor>
+		<editor id="balsamiq" isWindows="true" isMac="true">
+			<title>Balsamiq Wireframes</title>
+			<defaultLocation>
+				<windows>$userDirectory/AppData/Local/Programs/Balsamiq/Balsamiq Wireframes/BalsamiqWireframes.exe</windows>
+				<macos>/Applications/Balsamiq Mockups 3.app</macos>
+			</defaultLocation>
+			<fileTypes>bmpr</fileTypes>
+			<website>https://balsamiq.com</website>
+		</editor>
+		<editor id="bluej" isWindows="true" isMac="true">
+			<title>BlueJ</title>
+			<defaultLocation>
+				<windows>$programFiles/BlueJ/BlueJ.exe</windows>
+				<macos>/Applications/BlueJ.app</macos>
+			</defaultLocation>
+			<fileTypes>bluej</fileTypes>
+			<website>https://balsamiq.com</website>
+		</editor>
+		<editor id="jgrasp" isWindows="true" isMac="true">
+			<title>jGRASP</title>
+			<defaultLocation>
+				<windows>$programFiles/jGRASP/bin/jgrasp.exe</windows>
+				<macos>/Applications/jGRASP.app</macos>
+			</defaultLocation>
+			<fileTypes></fileTypes>
+			<website>https://www.jgrasp.org</website>
+		</editor>
+		<editor id="jarzilla" isWindows="false" isMac="true">
+			<title>Jarzilla</title>
+			<defaultLocation>
+				<windows></windows>
+				<macos>/Applications/Jarzilla.app</macos>
+			</defaultLocation>
+			<fileTypes>jar</fileTypes>
+			<website>https://github.com/depsypher/jarzilla</website>
+		</editor>
+		<editor id="brackets" isWindows="true" isMac="true">
+			<title>Brackets</title>
+			<defaultLocation>
+				<windows>$programFiles/Brackets/Brackets.exe</windows>
+				<macos>/Applications/Brackets.app</macos>
+			</defaultLocation>
+			<fileTypes></fileTypes>
+			<website>https://brackets.io</website>
+		</editor>
+		<editor id="jdgui" isWindows="true" isMac="true">
+			<title>Java Decompiler</title>
+			<defaultLocation>
+				<windows>$programFiles/JavaDecompiler/jd-gui.exe</windows>
+				<macos>/Applications/JD-GUI.app</macos>
+			</defaultLocation>
+			<fileTypes>jar,class</fileTypes>
+			<website>https://java-decompiler.github.io/</website>
+		</editor>
+		<editor id="netbeans" isWindows="true" isMac="true">
+			<title>Apache NetBeans</title>
+			<defaultLocation>
+				<windows>$programFiles/NetBeans-13/netbeans/bin/netbeans64.exe</windows>
+				<macos>/Applications/NetBeans/Apache NetBeans 13.app</macos>
+			</defaultLocation>
+			<fileTypes></fileTypes>
+			<website>https://netbeans.apache.org</website>
+		</editor>
+		<editor id="multimarkdowncomposer" isWindows="false" isMac="true">
+			<title>MultiMarkdown Composer</title>
+			<defaultLocation>
+				<windows></windows>
+				<macos>/Applications/MultiMarkdown Composer.app</macos>
+			</defaultLocation>
+			<fileTypes></fileTypes>
+			<website>https://multimarkdown.com/composer4/</website>
 		</editor>
 	</editors>
 </config>

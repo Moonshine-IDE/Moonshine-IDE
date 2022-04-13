@@ -76,6 +76,8 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_AS3CLASS: FileLocation;
 		public static var TEMPLATE_AS3INTERFACE: FileLocation;
 		public static var TEMPLATE_CSS: FileLocation;
+		public static var TEMPLATE_DOMINO_FORM: FileLocation;
+		public static var TEMPLATE_DOMINO_PAGE: FileLocation;
 		public static var TEMPLATE_TEXT: FileLocation;
 		public static var TEMPLATE_XML: FileLocation;
 		public static var TEMPLATE_MXML: FileLocation;
@@ -132,6 +134,7 @@ package actionScripts.valueObjects
         public static var ROYALE_PROJECT:FileLocation;
 		public static var MENU_TOOLTIP: ArrayCollection;
 		public static var READABLE_FILES:Array;
+		public static var KNOWN_BINARY_FILES:Array;
 		public static var READABLE_CLASS_FILES:Array;
 		public static var NON_CLOSEABLE_TABS:Array;
 		public static var STARTUP_PROJECT_OPEN_QUEUE_LEFT:int;
@@ -310,6 +313,8 @@ package actionScripts.valueObjects
 								"json", "md"];
 			READABLE_FILES.sort();
 
+			KNOWN_BINARY_FILES = ["nsf", "jpg", "jpeg", "png"]; // store in lower-case
+
 			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
 			READABLE_CLASS_FILES.sort();
 
@@ -318,6 +323,19 @@ package actionScripts.valueObjects
 			TEMPLATE_CSS.fileBridge.isDirectory = false;
 			TEMPLATE_CSS.fileBridge.extension = "css";
 			TEMPLATE_CSS.fileBridge.data = "";
+
+			TEMPLATE_DOMINO_FORM = new FileLocation("TEMPLATE");
+			TEMPLATE_DOMINO_FORM.fileBridge.name = "Domino Visual Editor Form.form";
+			TEMPLATE_DOMINO_FORM.fileBridge.isDirectory = false;
+			TEMPLATE_DOMINO_FORM.fileBridge.extension = "form";
+			TEMPLATE_DOMINO_FORM.fileBridge.data = "";
+
+
+			TEMPLATE_DOMINO_PAGE = new FileLocation("TEMPLATE");
+			TEMPLATE_DOMINO_PAGE.fileBridge.name = "Domino Visual Editor Page.page";
+			TEMPLATE_DOMINO_PAGE.fileBridge.isDirectory = false;
+			TEMPLATE_DOMINO_PAGE.fileBridge.extension = "page";
+			TEMPLATE_DOMINO_PAGE.fileBridge.data = "";
 			
 			TEMPLATE_TEXT = new FileLocation("TEMPLATE");
 			TEMPLATE_TEXT.fileBridge.name = "Text File.txt";

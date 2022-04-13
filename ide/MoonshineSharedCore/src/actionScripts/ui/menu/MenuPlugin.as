@@ -397,10 +397,17 @@ package actionScripts.ui.menu
 					else if (currentProject && menuItem.enableTypes) 
 					{
 						menuItem.enabled = false;
-						enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+						if (menuItem.enableTypes.length == 0)
 						{
-							return currentProject.menuType.indexOf(item) != -1;
-						});
+							enable = true;
+						}
+						else
+						{
+							enable = menuItem.enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+							{
+								return currentProject.menuType.indexOf(item) != -1;
+							});
+						}
 						
 						menuItem.enabled = enable;
 					}

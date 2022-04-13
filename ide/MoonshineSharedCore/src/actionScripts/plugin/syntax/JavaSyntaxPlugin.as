@@ -31,7 +31,7 @@ package actionScripts.plugin.syntax
 	import moonshine.editor.text.syntax.format.JavaSyntaxFormatBuilder;
 	import moonshine.editor.text.syntax.format.SyntaxColorSettings;
 	import moonshine.editor.text.syntax.format.SyntaxFontSettings;
-	import moonshine.editor.text.syntax.parser.HaxeLineParser;
+	import moonshine.editor.text.syntax.parser.JavaLineParser;
 	import moonshine.editor.text.TextEditor;
 	import moonshine.editor.text.utils.AutoClosingPair;
 	
@@ -71,7 +71,9 @@ package actionScripts.plugin.syntax
 					new AutoClosingPair("'", "'"),
 					new AutoClosingPair("\"", "\"")
 				];
-				textEditor.setParserAndTextStyles(new HaxeLineParser(), formats);
+				textEditor.lineComment = "//";
+				textEditor.blockComment = ["/*", "*/"];
+				textEditor.setParserAndTextStyles(new JavaLineParser(), formats);
 				textEditor.embedFonts = Settings.font.defaultFontEmbedded;
 			}
 		}

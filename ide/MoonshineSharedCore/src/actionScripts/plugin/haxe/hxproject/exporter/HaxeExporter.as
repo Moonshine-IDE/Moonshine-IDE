@@ -63,11 +63,17 @@ package actionScripts.plugin.haxe.hxproject.exporter
 			projectXML.appendChild(exportPaths(project.hiddenPaths, <hiddenPaths />, <hidden />, project));
 			
 			tmpXML = <preBuildCommand />;
-			tmpXML.appendChild(project.prebuildCommands);
+			if (project.prebuildCommands != null)
+			{
+				tmpXML.appendChild(project.prebuildCommands);
+			}
 			projectXML.appendChild(tmpXML);
 			
 			tmpXML = <postBuildCommand />;
-			tmpXML.appendChild(project.postbuildCommands);
+			if (project.postbuildCommands != null)
+			{
+				tmpXML.appendChild(project.postbuildCommands);
+			}
 			tmpXML.@alwaysRun = SerializeUtil.serializeBoolean(project.postbuildAlways);
 			projectXML.appendChild(tmpXML);
 			
@@ -88,8 +94,8 @@ package actionScripts.plugin.haxe.hxproject.exporter
 			if(project.isLime)
 			{
 				optionPairs = {
-					targetPlatform:	project.limeTargetPlatform,
-					webBrowser:   project.runWebBrowser
+					targetPlatform:	project.limeTargetPlatform || HaxeProjectVO.LIME_PLATFORM_HTML5,
+					webBrowser:   project.runWebBrowser || ""
 				};
 			}
 			else

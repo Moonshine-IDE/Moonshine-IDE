@@ -56,6 +56,8 @@ package actionScripts.plugins.grails
     import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.Settings;
+    import actionScripts.plugin.console.ConsoleEvent;
+    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 
     public class GrailsBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider, ICustomCommandRunProvider
     {
@@ -251,7 +253,10 @@ package actionScripts.plugins.grails
 			if (!ConsoleBuildPluginBase.checkRequireJava())
 			{
 				clearOutput();
-				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
+                var project:ProjectVO = model.activeProject;
+                var jdkName:String = (project is JavaProjectVO && JavaProjectVO(project).jdkType == JavaTypes.JAVA_8) ? "JDK 8" : "JDK";
+                error("A valid " + jdkName + " path must be defined to build project \"" + project.name + "\".");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return;
 			}
 
@@ -267,7 +272,7 @@ package actionScripts.plugins.grails
             print("Grails build directory: %s", buildDirectory.fileBridge.nativePath);
             print("Command: %s", args.join(" "));
 
-            var project:ProjectVO = model.activeProject;
+            project = model.activeProject;
             if (project)
             {
                 dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_DEBUG_STARTED, project.projectName, "Running ", true));
@@ -354,6 +359,8 @@ package actionScripts.plugins.grails
 		
 		protected function prepareStart(arguments:Array, buildDirectory:FileLocation, commandType:String=BuildActionType.BUILD_TYPE_GRAILS):void
 		{
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+
 			if (!buildDirectory || !buildDirectory.fileBridge.exists)
 			{
 				warning("Grails build directory has not been specified or is invalid.");
@@ -371,7 +378,10 @@ package actionScripts.plugins.grails
 			if (!ConsoleBuildPluginBase.checkRequireJava())
 			{
 				clearOutput();
-				error("Error: "+ model.activeProject.name +" configures to build with JDK version is not present.");
+                var project:ProjectVO = model.activeProject;
+                var jdkName:String = (project is JavaProjectVO && JavaProjectVO(project).jdkType == JavaTypes.JAVA_8) ? "JDK 8" : "JDK";
+                error("A valid " + jdkName + " path must be defined to build project \"" + project.name + "\".");
+                dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				return;
 			}
 			

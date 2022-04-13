@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
-## Moonshine IDE [3.3.2]
+
+## Moonshine IDE [3.3.3]
 
 ### Summary
 
@@ -13,11 +14,53 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+
+### Fixed
+
+
+## Moonshine IDE [3.3.2]
+
+### Summary
+
+This release is mainly focused on adding more support for Domino applications. 
+
+Key Updates:
+* Added simple Java Domino project template
+* Generate a basic Royale application with Domino On Disk Project.  More updates are planned for this.
+* Create pages in Domino Visual Editor
+* Miscellanous bug fixes and improvements
+
+### Added
+
+* Domino simple Java Domino project template ([#903](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/903))
+* Domino On Disk Project: Generate a basic Royale application ([#704](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/704))
+* Visual Editor: Page Mockup Editor ([#905](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/905))
+* NSD Kill for Domino Projects ([#989](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/989))
+* Add a "Copy to Clipboard" Button On About Dialog ([#981](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/981))
+
+### Changed
+
 * Language Server: Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.11.1.
 * Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.9.0.
 * Debug Adapter: Updated [SWF](https://as3mxml.com) engine to v1.5.0.
+* Updated timestamp server for installer ([#1000](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1000))
+* Editor:  Opening a File Throws TypeError ([#997](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/997))
+* Open "Known" Binary Files Without Prompt ([#996](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/996))
+* Enabled CSS, XML and File in New File Options for all projects ([#995](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/995))
+* Enabled Java and Groovy in New File Options for NSFODP projects ([#995](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/995))
+* Added more information to About page ([#991](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/991))
+* Added Warning for NSFODP "Compiling ODP" Hang ([#987](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/987))
+* Update nsfodp-maven-plugin to 3.8.1 to handle updated macOS application structure ([#985](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/985))
+* On Disk Project:  Added instructions for macOS Security ([#980](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/980))
+* Added more suported character for Haxe library paths ([#975](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/975))
+* Visual Editor:  Enabled Find/Replace ([#972](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/972))
+* Visual Editor:  Automate conversion of intermediate XML files ([#968](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/968))
+* Visual Editor:  Fixed default location for new Forms or Pages ([#926](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/926))
 
 ### Fixed
+
+* Error #3500 on Moonshine close for macOS Monterey ([#998](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/998))
+* Error when creating DXL files in Domino On Disk Project ([#982](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/982))
 
 
 

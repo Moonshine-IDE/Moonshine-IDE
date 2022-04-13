@@ -7,33 +7,35 @@
 		initComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
-
-			import org.apache.royale.core.ClassFactory;
 			import org.apache.royale.collections.ArrayList;
-			import org.apache.royale.events.Event;
-			import org.apache.royale.events.MouseEvent;
-			import org.apache.royale.jewel.beads.controls.Disabled;
-			import org.apache.royale.jewel.beads.controls.textinput.Restrict;
-			import views.renderers.DateListItemRenderer;
 			import org.apache.royale.jewel.List;
+			import views.renderers.DateListItemRenderer;
+			import org.apache.royale.jewel.beads.controls.textinput.Restrict;
 			import org.apache.royale.binding.ConstantBinding;
 			import org.apache.royale.jewel.beads.itemRenderers.RemoveAllItemRendererForArrayListData;
-			
+
+
 			public var inputType:String;
 			
 			private var _dataProvider:ArrayList = new ArrayList();
-			[Bindable]
+
 			public function get dataProvider():ArrayList
 			{
 				return _dataProvider;
 			}
+			
 			public function set dataProvider(value:ArrayList):void
 			{
 				_dataProvider = value;
+				
+				if (this.multivalueList)
+				{
+					this.multivalueList.dataProvider = value;
+				}
 			}
 			
 			private var _restrictPattern:String;
-			[Bindable]
+	
 			public function get restrictPattern():String
 			{
 				return _restrictPattern;
@@ -45,6 +47,7 @@
 			
 			[Bindable]
 			private var multivalueList:List;
+			
 			private var editingItem:Object;
 			
 			private function toggleFormView(show:Boolean):void
@@ -83,6 +86,7 @@
 				multivalueList = new List();
 				multivalueList.percentWidth = 100;
 				multivalueList.height = 100;
+				multivalueList.labelField = "value";
 				
 				switch (inputType)
 				{
@@ -119,10 +123,10 @@
 				switch (inputType)
 				{
 					case "Datetime":
-						dataProvider.setItemAt(this.dateField.selectedDate, editIndex);
+						dataProvider.setItemAt({value: this.dateField.selectedDate}, editIndex);
 						break;
 					default:
-						dataProvider.setItemAt(this.txtItemTitle.text, editIndex);
+						dataProvider.setItemAt({value: this.txtItemTitle.text}, editIndex);
 						break;
 				}
 				
@@ -152,10 +156,10 @@
 				switch (inputType)
 				{
 					case "Datetime":
-						dataProvider.addItem(this.dateField.selectedDate);
+						dataProvider.addItem({value: this.dateField.selectedDate});
 						break;
 					default:
-						dataProvider.addItem(this.txtItemTitle.text);
+						dataProvider.addItem({value: this.txtItemTitle.text});
 						this.txtItemTitle.text = null;
 						break;
 				}

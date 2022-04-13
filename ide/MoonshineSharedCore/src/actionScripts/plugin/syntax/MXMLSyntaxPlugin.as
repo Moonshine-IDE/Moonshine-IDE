@@ -73,6 +73,7 @@ package actionScripts.plugin.syntax
 					new AutoClosingPair("<!--", "-->"),
 					new AutoClosingPair("<![CDATA[", "]]>")
 				];
+				textEditor.blockComment = ["<!--", "-->"];
 				textEditor.setParserAndTextStyles(new MXMLLineParser(), formats);
 				textEditor.embedFonts = Settings.font.defaultFontEmbedded;
 			}

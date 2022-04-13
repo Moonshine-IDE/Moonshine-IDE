@@ -22,6 +22,7 @@ package actionScripts.plugins.externalEditors
 	
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.net.registerClassAlias;
 	import flash.utils.clearTimeout;
@@ -62,6 +63,7 @@ package actionScripts.plugins.externalEditors
 		private static const ADD_EDITOR:String = "Add New";
 		private static const RESET_ALL_EDITORS:String = "Reset to Default";
 		
+		[Bindable]
 		public static var editors:ArrayCollection; 
 		
 		override public function get name():String			{ return "External Editors"; }
@@ -376,7 +378,15 @@ package actionScripts.plugins.externalEditors
 			var extraArguments:String = (editor.extraArguments && StringUtil.trim(editor.extraArguments).length != 0) ? editor.extraArguments : null;
 			if (ConstantsCoreVO.IS_MACOS) 
 			{
-				command = "open -a '"+ editor.installPath.nativePath +"' '"+ onPath.fileBridge.nativePath +"'";
+				if (editor.localID == "netbeans")
+				{
+					var executables:Array = editor.installPath.resolvePath("Contents/MacOS").getDirectoryListing();
+					command = "'"+ executables[0].nativePath +"' '"+ onPath.fileBridge.nativePath +"'";
+				}
+				else
+				{
+					command = "open -a '"+ editor.installPath.nativePath +"' '"+ onPath.fileBridge.nativePath +"'";
+				}
 				if (extraArguments) command += " --args "+ extraArguments;
 			}
 			else
@@ -415,6 +425,11 @@ package actionScripts.plugins.externalEditors
 					clearTimeout(timeoutValue);
 				}, 1000);
 			}
+		}
+
+		override protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
+		{
+			stop();
 		}
 	}
 }

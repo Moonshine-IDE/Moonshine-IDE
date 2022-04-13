@@ -97,6 +97,7 @@ package actionScripts.plugin.console
             dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_OUTPUT, consoleOutputHandler);
 			dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_PRINT, consolePrintHandler);
             dispatcher.addEventListener(ConsoleOutputEvent.CONSOLE_CLEAR, consoleClearHandler);
+			dispatcher.addEventListener(ConsoleEvent.SHOW_CONSOLE, showConsoleHandler);
 
             dispatcher.addEventListener(ConsoleModeEvent.CHANGE, changeMode);
 
@@ -147,6 +148,7 @@ package actionScripts.plugin.console
 			dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_OUTPUT, consoleOutputHandler);
 			dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_PRINT, consolePrintHandler);
             dispatcher.removeEventListener(ConsoleOutputEvent.CONSOLE_CLEAR, consoleClearHandler);
+			dispatcher.removeEventListener(ConsoleEvent.SHOW_CONSOLE, showConsoleHandler);
 
 			dispatcher.removeEventListener(ConsoleModeEvent.CHANGE, changeMode);
 		}
@@ -356,5 +358,10 @@ package actionScripts.plugin.console
 			consoleTextCache = null;
             consoleView.stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
         }
+
+		protected function showConsoleHandler(event:ConsoleEvent):void
+		{
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SELECT_VIEW_IN_PROJECT_PANEL, consoleView));
+		}
 	}
 }

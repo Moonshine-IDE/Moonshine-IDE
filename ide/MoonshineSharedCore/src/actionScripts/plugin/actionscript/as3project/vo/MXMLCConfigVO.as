@@ -340,9 +340,26 @@ package actionScripts.plugin.actionscript.as3project.vo
 				data.compiler.appendChild(
 					<theme><filename>{sdkPath}/frameworks/themes/Mobile/mobile.swc</filename></theme>
 					);
+				var externalLibraryPaths:Array = [
+					"/frameworks/libs/air/airglobal.swc",
+					"/frameworks/libs/core.swc",
+					"/frameworks/libs/osmf.swc",
+					"/frameworks/libs/textLayout.swc",
+					"frameworks/libs/authoringsupport.swc",
+					"/frameworks/libs/air/servicemonitor.swc",
+				];
+				var externalLibraryPath:XML = <external-library-path/>;
+				for each(var currentPath:String in externalLibraryPaths)
+				{
+					var file:FileLocation = new FileLocation(sdkPath + currentPath);
+					if (file.fileBridge.exists)
+					{
+						externalLibraryPath.appendChild(<path-element>{sdkPath}{currentPath}</path-element>);
+					}
+				}
 				data.compiler.appendChild(
-					<external-library-path><path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/core.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element></external-library-path>
-					);
+					externalLibraryPath
+				);
 				data.compiler.appendChild(
 					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
 					);
@@ -364,9 +381,35 @@ package actionScripts.plugin.actionscript.as3project.vo
 				data.compiler.appendChild(
 					<theme><filename>{sdkPath}/frameworks/themes/Mobile/mobile.swc</filename></theme>
 					);
+				externalLibraryPaths = [
+					"/frameworks/libs/air/airglobal.swc",
+					"/frameworks/libs/rpc.swc",
+					"/frameworks/libs/osmf.swc",
+					"/frameworks/libs/spark.swc",
+					"/frameworks/libs/apache.swc",
+					"/frameworks/libs/charts.swc",
+					"/frameworks/libs/flatspark.swc",
+					"/frameworks/libs/framework.swc",
+					"/frameworks/libs/textLayout.swc",
+					"/frameworks/libs/experimental.swc",
+					"/frameworks/libs/authoringsupport.swc",
+					"/frameworks/libs/flash-integration.swc",
+					"/frameworks/libs/experimental_mobile.swc",
+					"/frameworks/libs/air/servicemonitor.swc",
+					"/frameworks/libs/mobile/mobilecomponents.swc",
+				];
+				externalLibraryPath = <external-library-path/>;
+				for each(currentPath in externalLibraryPaths)
+				{
+					file = new FileLocation(sdkPath + currentPath);
+					if (file.fileBridge.exists)
+					{
+						externalLibraryPath.appendChild(<path-element>{sdkPath}{currentPath}</path-element>);
+					}
+				}
 				data.compiler.appendChild(
-					<external-library-path><path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/rpc.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark.swc</path-element><path-element>{sdkPath}/frameworks/libs/apache.swc</path-element><path-element>{sdkPath}/frameworks/libs/charts.swc</path-element><path-element>{sdkPath}/frameworks/libs/flatspark.swc</path-element><path-element>{sdkPath}/frameworks/libs/framework.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/experimental.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/flash-integration.swc</path-element><path-element>{sdkPath}/frameworks/libs/experimental_mobile.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element><path-element>{sdkPath}/frameworks/libs/mobile/mobilecomponents.swc</path-element></external-library-path>
-					);
+					externalLibraryPath
+				);
 				data.compiler.appendChild(
 					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element><path-element>{sdkPath}/frameworks/themes/Mobile/mobile.swc</path-element></library-path>
 					);
@@ -376,8 +419,30 @@ package actionScripts.plugin.actionscript.as3project.vo
 				data.compiler.appendChild(
 					<accessible>true</accessible>
 				);
+				externalLibraryPaths = [
+					"/frameworks/libs/air/airglobal.swc",
+					"/frameworks/libs/core.swc",
+					"/frameworks/libs/osmf.swc",
+					"/frameworks/libs/textLayout.swc",
+					"/frameworks/libs/authoringsupport.swc",
+					"/frameworks/libs/air/aircore.swc",
+					"/frameworks/libs/air/gamepad.swc",
+					"/frameworks/libs/air/crosspromotion.swc",
+					"/frameworks/libs/air/servicemonitor.swc",
+					"/frameworks/libs/air/applicationupdater.swc",
+					"/frameworks/libs/air/applicationupdater_ui.swc",
+				];
+				externalLibraryPath = <external-library-path/>;
+				for each(currentPath in externalLibraryPaths)
+				{
+					file = new FileLocation(sdkPath + currentPath);
+					if (file.fileBridge.exists)
+					{
+						externalLibraryPath.appendChild(<path-element>{sdkPath}{currentPath}</path-element>);
+					}
+				}
 				data.compiler.appendChild(
-					<external-library-path><path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/core.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/aircore.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/gamepad.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/crosspromotion.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/applicationupdater.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/applicationupdater_ui.swc</path-element></external-library-path>
+					externalLibraryPath
 				);
 				data.compiler.appendChild(
 					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
@@ -391,8 +456,43 @@ package actionScripts.plugin.actionscript.as3project.vo
 				data.compiler.appendChild(
 					<namespaces><namespace><uri>http://ns.adobe.com/mxml/2009</uri><manifest>{sdkPath}/frameworks/mxml-2009-manifest.xml</manifest></namespace><namespace><uri>library://ns.adobe.com/flex/spark</uri><manifest>{sdkPath}/frameworks/spark-manifest.xml</manifest></namespace><namespace><uri>library://ns.adobe.com/flex/mx</uri><manifest>{sdkPath}/frameworks/mx-manifest.xml</manifest></namespace><namespace><uri>http://www.adobe.com/2006/mxml</uri><manifest>{sdkPath}/frameworks/mxml-manifest.xml</manifest></namespace></namespaces>
 				);
+				externalLibraryPaths = [
+					"/frameworks/libs/air/airglobal.swc",
+					"/frameworks/libs/rpc.swc",
+					"/frameworks/libs/osmf.swc",
+					"/frameworks/libs/spark.swc",
+					"/frameworks/libs/apache.swc",
+					"/frameworks/libs/charts.swc",
+					"/frameworks/libs/flatspark.swc",
+					"/frameworks/libs/framework.swc",
+					"/frameworks/libs/spark_dmv.swc",
+					"/frameworks/libs/sparkskins.swc",
+					"/frameworks/libs/textLayout.swc",
+					"/frameworks/libs/experimental.swc",
+					"/frameworks/libs/advancedgrids.swc",
+					"/frameworks/libs/authoringsupport.swc",
+					"/frameworks/libs/flash-integration.swc",
+					"/frameworks/libs/mx/mx.swc",
+					"/frameworks/libs/air/aircore.swc",
+					"/frameworks/libs/air/gamepad.swc",
+					"/frameworks/libs/air/airspark.swc",
+					"/frameworks/libs/air/airframework.swc",
+					"/frameworks/libs/air/crosspromotion.swc",
+					"/frameworks/libs/air/servicemonitor.swc",
+					"/frameworks/libs/air/applicationupdater.swc",
+					"/frameworks/libs/air/applicationupdater_ui.swc"
+				];
+				externalLibraryPath = <external-library-path/>;
+				for each(currentPath in externalLibraryPaths)
+				{
+					file = new FileLocation(sdkPath + currentPath);
+					if (file.fileBridge.exists)
+					{
+						externalLibraryPath.appendChild(<path-element>{sdkPath}{currentPath}</path-element>);
+					}
+				}
 				data.compiler.appendChild(
-					<external-library-path><path-element>{sdkPath}/frameworks/libs/air/airglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/rpc.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark.swc</path-element><path-element>{sdkPath}/frameworks/libs/apache.swc</path-element><path-element>{sdkPath}/frameworks/libs/charts.swc</path-element><path-element>{sdkPath}/frameworks/libs/flatspark.swc</path-element><path-element>{sdkPath}/frameworks/libs/framework.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark_dmv.swc</path-element><path-element>{sdkPath}/frameworks/libs/sparkskins.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/experimental.swc</path-element><path-element>{sdkPath}/frameworks/libs/advancedgrids.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/flash-integration.swc</path-element><path-element>{sdkPath}/frameworks/libs/mx/mx.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/aircore.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/gamepad.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/airspark.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/airframework.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/crosspromotion.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/servicemonitor.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/applicationupdater.swc</path-element><path-element>{sdkPath}/frameworks/libs/air/applicationupdater_ui.swc</path-element></external-library-path>
+					externalLibraryPath
 				);
 				data.compiler.appendChild(
 					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
@@ -403,9 +503,25 @@ package actionScripts.plugin.actionscript.as3project.vo
 				data.compiler.appendChild(
 					<accessible>true</accessible>
 				);
+				externalLibraryPaths = [
+					"/frameworks/libs/player/" + targetPlayer + ".0/playerglobal.swc",
+					"/frameworks/libs/core.swc",
+					"/frameworks/libs/osmf.swc",
+					"/frameworks/libs/textLayout.swc",
+					"/frameworks/libs/authoringsupport.swc",
+				];
+				externalLibraryPath = <external-library-path/>;
+				for each(currentPath in externalLibraryPaths)
+				{
+					file = new FileLocation(sdkPath + currentPath);
+					if (file.fileBridge.exists)
+					{
+						externalLibraryPath.appendChild(<path-element>{sdkPath}{currentPath}</path-element>);
+					}
+				}
 				data.compiler.appendChild(
-					<external-library-path><path-element>{sdkPath}/frameworks/libs/player/{targetPlayer}.0/playerglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/core.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element></external-library-path>
-					);
+					externalLibraryPath
+				);
 				data.compiler.appendChild(
 					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
 					);
@@ -421,9 +537,36 @@ package actionScripts.plugin.actionscript.as3project.vo
 				data.compiler.appendChild(
 					<theme><filename>{sdkPath}/frameworks/themes/Spark/spark.css</filename></theme>
 					);
+				externalLibraryPaths = [
+					"/frameworks/libs/player/" + targetPlayer + ".0/playerglobal.swc",
+					"/frameworks/libs/rpc.swc",
+					"/frameworks/libs/osmf.swc",
+					"/frameworks/libs/spark.swc",
+					"/frameworks/libs/apache.swc",
+					"/frameworks/libs/charts.swc",
+					"/frameworks/libs/flatspark.swc",
+					"/frameworks/libs/framework.swc",
+					"/frameworks/libs/spark_dmv.swc",
+					"/frameworks/libs/sparkskins.swc",
+					"/frameworks/libs/textLayout.swc",
+					"/frameworks/libs/experimental.swc",
+					"/frameworks/libs/advancedgrids.swc",
+					"/frameworks/libs/authoringsupport.swc",
+					"/frameworks/libs/flash-integration.swc",
+					"/frameworks/libs/mx/mx.swc",
+				];
+				externalLibraryPath = <external-library-path/>;
+				for each(currentPath in externalLibraryPaths)
+				{
+					file = new FileLocation(sdkPath + currentPath);
+					if (file.fileBridge.exists)
+					{
+						externalLibraryPath.appendChild(<path-element>{sdkPath}{currentPath}</path-element>);
+					}
+				}
 				data.compiler.appendChild(
-					<external-library-path><path-element>{sdkPath}/frameworks/libs/player/{targetPlayer}.0/playerglobal.swc</path-element><path-element>{sdkPath}/frameworks/libs/rpc.swc</path-element><path-element>{sdkPath}/frameworks/libs/osmf.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark.swc</path-element><path-element>{sdkPath}/frameworks/libs/apache.swc</path-element><path-element>{sdkPath}/frameworks/libs/charts.swc</path-element><path-element>{sdkPath}/frameworks/libs/flatspark.swc</path-element><path-element>{sdkPath}/frameworks/libs/framework.swc</path-element><path-element>{sdkPath}/frameworks/libs/spark_dmv.swc</path-element><path-element>{sdkPath}/frameworks/libs/sparkskins.swc</path-element><path-element>{sdkPath}/frameworks/libs/textLayout.swc</path-element><path-element>{sdkPath}/frameworks/libs/experimental.swc</path-element><path-element>{sdkPath}/frameworks/libs/advancedgrids.swc</path-element><path-element>{sdkPath}/frameworks/libs/authoringsupport.swc</path-element><path-element>{sdkPath}/frameworks/libs/flash-integration.swc</path-element><path-element>{sdkPath}/frameworks/libs/mx/mx.swc</path-element></external-library-path>
-					);
+					externalLibraryPath
+				);
 				data.compiler.appendChild(
 					<library-path><path-element>{sdkPath}/frameworks/locale/&#123;locale&#125;</path-element></library-path>
 					);

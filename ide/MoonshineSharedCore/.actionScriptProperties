@@ -10,7 +10,7 @@
         </excludedEntries>
       </libraryPathEntry>
       <libraryPathEntry kind="1" linkType="1" path="libs"/>
-      <libraryPathEntry kind="3" linkType="2" path="F:/DevareaLocal/Prominic/GIT/Moonshine-IDE/ide/MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="2" path="${DOCUMENTS}/MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>

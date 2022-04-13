@@ -72,6 +72,10 @@ package actionScripts.plugin.syntax
 					new AutoClosingPair("\"", "\""),
 					new AutoClosingPair("`", "`"),
 				];
+				if (event.fileExtension != "json") {
+					textEditor.lineComment = "//";
+					textEditor.blockComment = ["/*", "*/"];
+				}
 				textEditor.setParserAndTextStyles(new JSLineParser(), formats);
 				textEditor.embedFonts = Settings.font.defaultFontEmbedded;
 			}

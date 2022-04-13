@@ -53,8 +53,6 @@ package actionScripts.plugin.help
 		public static const EVENT_PRIVACY_POLICY:String = "EVENT_PRIVACY_POLICY";
 		private static const THIRD_PARTY_WARNING_TEXT:String = "<!--\n\nThis example or component has been developed by a 3rd party and is hosted outside of the Tour De Flex site and may contain links to non ASF sites.\nIt's code may not be Open Source or may be under a license other than the Apache license so please check carefully before using it.\nNeither the ASF or the Apache Flex PMC can endorse or recommend using this example but you may still find it useful.\n\n-->";
 		
-		public static var ABOUT_SUBSCRIBE_ID_TO_WORKER:String;
-		
 		override public function get name():String			{ return "Help Plugin"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Help Plugin."; }

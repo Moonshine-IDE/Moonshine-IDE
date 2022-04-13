@@ -84,6 +84,8 @@ package actionScripts.languageServer
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
 	import moonshine.theme.MoonshineTheme;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -131,6 +133,8 @@ package actionScripts.languageServer
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["java"];
 
+		private static const LANGUAGE_SERVER_SHUTDOWN_TIMEOUT:Number = 8000;
+
 		private var _project:JavaProjectVO;
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
@@ -146,6 +150,7 @@ package actionScripts.languageServer
 		private var _waitingToDispose:Boolean = false;
 		private var _watchedFiles:Object = {};
 		private var _settingUpdateBuildConfiguration:int = -1;
+		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
 		{
@@ -599,7 +604,7 @@ package actionScripts.languageServer
 			if(_languageClient)
 			{
 				_waitingToRestart = true;
-				_languageClient.shutdown();
+				shutdown();
 			}
 			else if(_languageServerProcess)
 			{
@@ -696,6 +701,29 @@ package actionScripts.languageServer
 			};
 		}
 
+		private function shutdown():void
+		{
+			if(!_languageClient)
+			{
+				return;
+			}
+			_shutdownTimeoutID = setTimeout(shutdownTimeout, LANGUAGE_SERVER_SHUTDOWN_TIMEOUT);
+			_languageClient.shutdown();
+		}
+
+		private function shutdownTimeout():void
+		{
+			_shutdownTimeoutID = uint.MAX_VALUE;
+			if (!_languageServerProcess) {
+				return;
+			}
+			var message:String = "Timed out while shutting down Java language server for project " + _project.name + ". Forcing process to exit.";
+			warning(message);
+			trace(message);
+			_languageClient = null;
+			_languageServerProcess.exit(true);
+		}
+
 		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
@@ -705,6 +733,10 @@ package actionScripts.languageServer
 
 		private function languageServerProcess_exitHandler(e:NativeProcessExitEvent):void
 		{
+			if (_shutdownTimeoutID != uint.MAX_VALUE) {
+				clearTimeout(_shutdownTimeoutID);
+				_shutdownTimeoutID = uint.MAX_VALUE;
+			}
 			if(_languageClient)
 			{
 				//this should have already happened, but if the process exits
@@ -1081,7 +1113,7 @@ package actionScripts.languageServer
 			if(_languageClient)
 			{
 				_waitingToCleanWorkspace = true;
-				_languageClient.shutdown();
+				shutdown();
 			}
 			else
 			{
@@ -1107,7 +1139,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.shutdown();
+			shutdown();
 		}
 
 		private function applicationExitHandler(event:ApplicationEvent):void
@@ -1116,7 +1148,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.shutdown();
+			shutdown();
 		}
 
 		private function isWatchingFile(file:FileLocation):Boolean

@@ -54,6 +54,7 @@ package actionScripts.plugins.clean
 	
 	import components.popup.SelectOpenedProject;
 	import components.views.project.TreeView;
+	import actionScripts.events.SettingsEvent;
 
 	public class CleanProject extends ConsoleBuildPluginBase implements IPlugin
 	{
@@ -198,7 +199,9 @@ package actionScripts.plugins.clean
 					}
 					else
 					{
-						error("Error: "+ project.name +" configures to build with JDK version is not present.");
+						var jdkName:String = (project.jdkType == JavaTypes.JAVA_8) ? "JDK 8" : "JDK";
+						error("A valid " + jdkName + " path must be defined to build project \"" + project.name + "\".");
+						dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 					}
 				}
 				else
@@ -235,7 +238,9 @@ package actionScripts.plugins.clean
 				}
 				else
 				{
-					error("Error: "+ project.name +" configures to build with JDK version is not present.");
+					var jdkName:String = (project.jdkType == JavaTypes.JAVA_8) ? "JDK 8" : "JDK";
+					error("A valid " + jdkName + " path must be defined to build project \"" + project.name + "\".");
+					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.as3project.mxmlc::MXMLCPlugin"));
 				}
 			}
 			else
@@ -244,9 +249,24 @@ package actionScripts.plugins.clean
 			}
 		}
 
-		private function cleanHaxeProject(haxeProject:HaxeProjectVO):void
+		private function cleanHaxeProject(project:HaxeProjectVO):void
 		{
-			//TODO: clean haxe project
+			if (UtilsCore.isHaxeAvailable())
+			{
+				if (project.isLime)
+				{
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
+					start(Vector.<String>([EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH + " run openfl clean " + project.limeTargetPlatform]), project.folderLocation);
+				}
+				else
+				{
+					dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project clean not available for this type of Haxe project", false, false, ConsoleOutputEvent.TYPE_ERROR));
+				}
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project clean failed: Missing Haxe configuration in Moonshine settings.", false, false, ConsoleOutputEvent.TYPE_ERROR));
+			}
 		}
 		
 		private function cleanOnDiskProject(ondiskProject:OnDiskProjectVO):void

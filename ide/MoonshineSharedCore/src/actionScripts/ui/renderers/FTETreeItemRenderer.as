@@ -455,15 +455,20 @@ package actionScripts.ui.renderers
 			{
 				model.activeProject = activeProject;
 			}
-			
-			var enableTypes:Array;
+
 			var editors:ArrayCollection = model.flexCore.getExternalEditors();
 			for each (var editor:IExternalEditorVO in editors)
 			{
+				var isFileTypeAccessible:Boolean = (editor.fileTypes.length == 0);
+				if (!isFileTypeAccessible)
+				{
+					isFileTypeAccessible = (editor.fileTypes.indexOf((data as FileWrapper).file.fileBridge.extension) != -1);
+				}
+
 				var eventType:String = "eventOpenWithExternalEditor"+ editor.localID;
 				var item:Object = model.contextMenuCore.getContextMenuItem(editor.title, redispatchOpenWith, Event.SELECT);
 				item.data = eventType;
-				item.enabled = editor.isValid && editor.isEnabled;
+				item.enabled = editor.isValid && editor.isEnabled && isFileTypeAccessible;
 				
 				model.contextMenuCore.subMenu(event.target, item);
 			}
@@ -532,10 +537,17 @@ package actionScripts.ui.renderers
 				item.data = eventType;
 				
 				enableTypes = TemplatingHelper.getTemplateMenuType(label);
-				item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+				if (enableTypes.length == 0)
 				{
-					return activeProject.menuType.indexOf(item) != -1;
-				});
+					item.enabled = true;
+				}
+				else
+				{
+					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
+					{
+						return activeProject.menuType.indexOf(item) != -1;
+					});
+				}
 				
 				model.contextMenuCore.subMenu(e.target, item);
 			}
