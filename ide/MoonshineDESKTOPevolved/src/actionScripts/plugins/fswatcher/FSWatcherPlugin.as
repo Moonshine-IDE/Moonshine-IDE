@@ -84,17 +84,17 @@ package actionScripts.plugins.fswatcher
 		private var worker:Worker;
 		private var projectToWatcher:Dictionary = new Dictionary();
 		private var projectStarter:ProjectStarterDelegates = ProjectStarterDelegates.getInstance();
-		private var projectsAddedToWatchlist:Dictionary = new Dictionary();
 
 		public function FSWatcherPlugin()
 		{
 			super();
-			/*projectStarter.subscribe(
+			projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
-							new <String>["onProjectAdded"]
+							new <String>["onProjectAdded"],
+							false
 					)
-			);*/
+			);
 		}
 		
 		override public function activate():void
@@ -114,7 +114,7 @@ package actionScripts.plugins.fswatcher
 			worker.setSharedProperty("workerToMain", workerToMain);
 			worker.start();
 
-			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded, false, 0, true);
+			//dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onRemoveProject, false, 0, true);
 			dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
 		}
@@ -174,13 +174,13 @@ package actionScripts.plugins.fswatcher
 
 		public function onProjectAdded(event:ProjectEvent):void
 		{
-			if(!workerReady || (projectsAddedToWatchlist[event.project.projectFolder.nativePath] != undefined))
+			if(!workerReady)
 			{
+				projectStarter.continueDelegation();
 				return;
 			}
-			projectsAddedToWatchlist[event.project.projectFolder.nativePath] = true;
 			addProject(event.project);
-			//projectStarter.continueDelegation();
+			projectStarter.continueDelegation();
 		}
 
 		private function onRemoveProject(event:ProjectEvent):void
@@ -189,7 +189,6 @@ package actionScripts.plugins.fswatcher
 			{
 				return;
 			}
-			delete projectsAddedToWatchlist[event.project.projectFolder.nativePath];
 			removeProject(event.project);
 		}
 

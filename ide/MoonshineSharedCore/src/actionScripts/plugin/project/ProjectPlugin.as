@@ -99,7 +99,8 @@ package actionScripts.plugin.project
 			projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
-							new <String>["refreshProjectMenu"]
+							new <String>["refreshProjectMenu"],
+							false
 					)
 			);
 		}
@@ -109,7 +110,7 @@ package actionScripts.plugin.project
 			super.activate(); 
 			_activated = true;
 			
-			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onProjectAdded);
+			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onProjectAddRequest);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 
 			dispatcher.addEventListener(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS, handleShowPreviouslyOpenedProjects);
@@ -279,7 +280,7 @@ package actionScripts.plugin.project
 					
 					if (lastActiveProjectMenuType != pvo.menuType)
 					{
-	                    dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
+	                    //dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
 						lastActiveProjectMenuType = pvo.menuType;
 					}
 
@@ -302,7 +303,7 @@ package actionScripts.plugin.project
 			}
 		}
 
-		public function refreshProjectMenu(event:ProjectEvent):void
+		public function onProjectAdded(event:ProjectEvent):void
 		{
 			for each (var p:ProjectVO in model.projects)
 			{
@@ -328,7 +329,7 @@ package actionScripts.plugin.project
 			projectStarterDelegate.continueDelegation();
 		}
 
-		public function onProjectAdded(event:ProjectEvent):void
+		public function onProjectAddRequest(event:ProjectEvent):void
 		{
 			projectStarter.startProject(event);
 			//showProjectPanel();
@@ -353,7 +354,7 @@ package actionScripts.plugin.project
 				
 				if (!model.activeProject || (model.activeProject is AS3ProjectVO && lastActiveProjectMenuType != AS3ProjectVO(model.activeProject).menuType))
 				{
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
+					//dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, model.activeProject));
 					if(model.activeProject is AS3ProjectVO)
 					{
 						lastActiveProjectMenuType = model.activeProject ? model.activeProject.menuType : null;

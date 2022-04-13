@@ -227,7 +227,6 @@ package actionScripts.plugins.svn
 		public function onProjectAdded(event:ProjectEvent):void
 		{
 			handleCheckSVNRepository(event);
-			projectStarter.continueDelegation();
 		}
 		
 		protected function handleCheckSVNRepository(event:ProjectEvent):void

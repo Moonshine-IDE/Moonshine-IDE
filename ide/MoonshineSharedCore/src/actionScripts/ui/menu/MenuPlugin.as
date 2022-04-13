@@ -106,12 +106,14 @@ package actionScripts.ui.menu
 		public function MenuPlugin():void
 		{
 			projectMenu = new ProjectMenu();
-			/*projectStarter.subscribe(
+			projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
-							new <String>["onProjectAdded"]
+							new <String>["onProjectAdded"],
+							true,
+							ProjectStarterSubscribing.OCCURRENCE_EVERYTIME_ON_PROJECT_SELECTION
 					)
-			);*/
+			);
 		}
 
 		public function getSettingsList():Vector.<ISetting>
@@ -240,7 +242,7 @@ package actionScripts.ui.menu
 			}
 
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, onProjectAdded);
-			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProjectChangedHandler);
+			//dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProjectChangedHandler);
 			
 			// disable File-New menu as default
 			isFileNewMenuIsEnabled = false;
@@ -255,14 +257,13 @@ package actionScripts.ui.menu
 			refreshMenuItems();
 		}
 
-        public function onProjectAdded(event:ProjectEvent):void
+        private function onProjectAddedOld(event:ProjectEvent):void
         {
             disableNewFileMenuOptions();
 			disableMenuOptions();
-			//projectStarter.continueDelegation();
         }
 
-		private function activeProjectChangedHandler(event:ProjectEvent):void
+		public function onProjectAdded(event:ProjectEvent):void
 		{
 			disableNewFileMenuOptions();
 			updateMenuOptionsInMenuProject(event.project);

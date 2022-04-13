@@ -4,8 +4,12 @@ package actionScripts.plugin.project
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.console.ConsoleOutputter;
+	import actionScripts.plugin.project.interfaces.IProjectStarter;
 	import actionScripts.plugin.project.interfaces.IProjectStarterDelegate;
 	import actionScripts.plugin.project.vo.ProjectStarterSubscribing;
+	import actionScripts.plugin.recentlyOpened.RecentlyOpenedPlugin;
+	import actionScripts.plugin.workspace.WorkspacePlugin;
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.valueObjects.ProjectVO;
@@ -14,24 +18,29 @@ package actionScripts.plugin.project
 
 	import feathers.data.ArrayCollection;
 
+	import flash.events.Event;
+
+	import flash.utils.Dictionary;
+
 	import flash.utils.clearTimeout;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
 
-	public class ProjectStarterDelegates implements IProjectStarterDelegate
+	public class ProjectStarterDelegates extends ConsoleOutputter implements IProjectStarterDelegate
 	{
 		private static var instance:ProjectStarterDelegates;
 		private static var starters:Vector.<ProjectStarterSubscribing> = new <ProjectStarterSubscribing>[];
-		private var starter_order:Array;
+		private var starter_order_beginning:Array;
+		private var starter_order_after_addition:Array;
+		private var starter_order_after_selection:Array;
 
         private var projects:ArrayCollection = new ArrayCollection();
 		private var projectsWaitingForSubProcessesToStart:ArrayCollection = new ArrayCollection();
 		private var projectUnderCursor:ProjectEvent;
-		private var projectAtZeroIndex:ProjectVO;
 		private var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var orderIndex:int = -1;
+		private var orderIndex:int = 0;
 		private var isCycleRunning:Boolean;
 		private var totalQueueCount:int;
 		private var workingQueueCount:int;
@@ -41,6 +50,14 @@ package actionScripts.plugin.project
 		{
 			if (!instance) instance = new ProjectStarterDelegates();
 			return instance;
+		}
+
+		public function ProjectStarterDelegates()
+		{
+			super();
+			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectSelectionChangedInSidebar, false, 0, true);
+			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onProjectRemove, false, 0, true);
+			dispatcher.addEventListener(WorkspacePlugin.EVENT_WORKSPACE_CHANGED, onWorkspaceChanged, false, 0, true);
 		}
 
 		public function subscribe(starter:ProjectStarterSubscribing):void
@@ -62,28 +79,140 @@ package actionScripts.plugin.project
 		{
 			if (!isCycleRunning)
 			{
-				showProjectPanel();
 				isCycleRunning = true;
-				workingQueueCount ++;
-				projectUnderCursor = this.projects.removeAt(0) as ProjectEvent;
-				projectsWaitingForSubProcessesToStart.add(projectUnderCursor);
-				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,
-						projectUnderCursor.project.name,
-						"Opening ("+ workingQueueCount +"/"+ totalQueueCount +"): ", false));
-				if (!projectAtZeroIndex)
+				showProjectPanel();
+				if (!starter_order_beginning)
 				{
-					projectAtZeroIndex = projectUnderCursor.project;
+					initStarterOrder();
 				}
 
-				initStarterOrder();
-				continueDelegation();
+				start2();
+			}
+		}
+
+		private var starterOrderIndex:int = 1;
+		private var startersByOrder:Array;
+		protected function start2():void
+		{
+			switch (starterOrderIndex)
+			{
+				case 1:
+					startersByOrder = starter_order_beginning;
+					continueDelegation();
+					break;
+				case 2:
+					startersByOrder = starter_order_after_addition;
+					workingQueueCount = 0;
+					continueDelegation();
+					break;
+				default:
+					totalQueueCount = 0;
+					workingQueueCount = 0;
+					starterOrderIndex = 1;
+					projectUnderCursor = null;
+					projects = new ArrayCollection();
+					projectsWaitingForSubProcessesToStart = new ArrayCollection();
+					isCycleRunning = false;
+					dispatcher.dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED));
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+					success("Project(s) addition completed.");
+					break;
 			}
 		}
 
 		public function continueDelegation():void
 		{
+			switch (starterOrderIndex)
+			{
+				case 1:
+					if (projects.length != 0)
+					{
+						workingQueueCount ++;
+						projectUnderCursor = this.projects.removeAt(0) as ProjectEvent;
+						projectsWaitingForSubProcessesToStart.add(projectUnderCursor);
+						dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,
+								projectUnderCursor.project.name,
+								"Opening ("+ workingQueueCount +"/"+ totalQueueCount +"): ", false));
+
+						success("Opening ("+ workingQueueCount +"/"+ totalQueueCount +"): " + projectUnderCursor.project.name);
+						runAddProjectMethodInStarterSubscriber(0);
+					}
+					else
+					{
+						projects = projectsWaitingForSubProcessesToStart;
+						projectsWaitingForSubProcessesToStart = new ArrayCollection();
+						starterOrderIndex ++;
+						start2();
+					}
+					break;
+				case 2:
+					if ((projects.length != 0) &&
+							((orderIndex == 0) || (orderIndex >= startersByOrder.length)))
+					{
+						orderIndex = 0;
+						workingQueueCount ++;
+						projectUnderCursor = this.projects.removeAt(0) as ProjectEvent;
+						projectsWaitingForSubProcessesToStart.add(projectUnderCursor);
+						dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,
+								projectUnderCursor.project.name,
+								"Sync in process ("+ workingQueueCount +"/"+ totalQueueCount +"): ", false));
+
+						success("Sync in process ("+ workingQueueCount +"/"+ totalQueueCount +"): " + projectUnderCursor.project.name);
+						runAddProjectMethodInStarterSubscriber(orderIndex);
+						orderIndex ++;
+					}
+					else if ((projects.length == 0) &&
+							((orderIndex == 0) || (orderIndex >= startersByOrder.length)))
+					{
+						orderIndex = 0;
+						projects = projectsWaitingForSubProcessesToStart;
+						projectsWaitingForSubProcessesToStart = new ArrayCollection();
+						starterOrderIndex ++;
+						start2();
+					}
+					else if (orderIndex < startersByOrder.length)
+					{
+						runAddProjectMethodInStarterSubscriber(orderIndex);
+						orderIndex ++;
+					}
+					break;
+				default:
+					starterOrderIndex ++;
+					start2();
+					break;
+			}
+		}
+
+		protected function runStarterMethodssAfterProjectsAdded():void
+		{
+			if (orderIndex < startersByOrder.length)
+			{
+				runAddProjectMethodInStarterSubscriber(orderIndex);
+				orderIndex ++;
+			}
+		}
+
+		protected function runAddProjectMethodInStarterSubscriber(localOrderIndex:int):void
+		{
+			// it's impossible to ensure all granular processes
+			// to have completed from IProjectStarter component
+			// before executing next steps, because there is no
+			// Async operation available in AS3. Haxe does, though.
+			// to execute next step in safe intervals with possibility
+			// to complete IProjectStarter processes, we executes
+			// with a short setTimeout(50)
+			var interval:uint = setTimeout(function(localOrderIndex:int):void
+			{
+				clearTimeout(interval);
+				(startersByOrder[localOrderIndex] as ProjectStarterSubscribing).subscriber.onProjectAdded(projectUnderCursor);
+				//(starter_order[orderIndex] as MethodDescriptor).callMethod();
+			}, 100, localOrderIndex);
+		}
+
+		public function continueDelegationOld():void
+		{
 			orderIndex++;
-			if (orderIndex >= starter_order.length)
+			if (orderIndex >= startersByOrder.length)
 			{
 				orderIndex = -1;
 				isCycleRunning = false;
@@ -91,15 +220,20 @@ package actionScripts.plugin.project
 				if (projects.length > 0) start();
 				else
 				{
+					trace("+++++++++++++++++++++++++++++");
 					totalQueueCount = 0;
 					workingQueueCount = 0;
-					model.mainView.getTreeViewPanel().selectProject(
-							model.mainView.getTreeViewPanel().projects.getItemAt(
-									model.mainView.getTreeViewPanel().projects.length - 1
-							) as ProjectVO
-					);
-					projectUnderCursor = null;
-					projectAtZeroIndex = null;
+					if (starterOrderIndex == 1)
+					{
+						model.mainView.getTreeViewPanel().selectProject(
+								model.mainView.getTreeViewPanel().projects.getItemAt(
+										model.mainView.getTreeViewPanel().projects.length - 1
+								) as ProjectVO
+						);
+					}
+
+					starterOrderIndex++;
+					start2();
 				}
 			}
 			else
@@ -122,11 +256,12 @@ package actionScripts.plugin.project
 				// to execute next step in safe intervals with possibility
 				// to complete IProjectStarter processes, we executes
 				// with a short setTimeout(50)
-				var interval:uint = setTimeout(function():void
+				var interval:uint = setTimeout(function(localOrderIndex:int):void
 				{
 					clearTimeout(interval);
-					(starter_order[orderIndex] as MethodDescriptor).callMethod();
-				}, 50);
+					(startersByOrder[localOrderIndex] as ProjectStarterSubscribing).subscriber.onProjectAdded(projectUnderCursor);
+					//(starter_order[orderIndex] as MethodDescriptor).callMethod();
+				}, 100, orderIndex);
 			}
 		}
 
@@ -135,10 +270,13 @@ package actionScripts.plugin.project
 			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PROJECT_VIEW));
 		}
 
+
+
 		private function initStarterOrder():void
 		{
-			starter_order = [];
-			var tmpProjectPlugin:ProjectStarterSubscribing;
+			starter_order_beginning = [];
+			starter_order_after_selection = [];
+			starter_order_after_addition = [];
 
 			for each (var starter:ProjectStarterSubscribing in starters)
 			{
@@ -147,36 +285,60 @@ package actionScripts.plugin.project
 				// we need to have sidebar to be displayed first
 				if (getQualifiedClassName(starter.subscriber) == "actionScripts.plugin.project::ProjectPlugin")
 				{
-					tmpProjectPlugin = starter;
+					starter_order_beginning.push(starter);
+				}
+				else if (starter.isRunsOnlyWithProjectSelection)
+				{
+					starter_order_after_selection.push(starter);
 				}
 				else
 				{
-					for each (var starterFn:String in starter.subscriberMethods)
+					starter_order_after_addition.push(starter);
+				}
+			}
+		}
+
+		private var executeDictionary:Dictionary = new Dictionary();
+
+		private function onProjectSelectionChangedInSidebar(event:ProjectEvent):void
+		{
+			for each (var starter:ProjectStarterSubscribing in starter_order_after_selection)
+			{
+				if (starter.isRunsOnlyWithProjectSelection)
+				{
+					if (starter.occurrenceType == ProjectStarterSubscribing.OCCURRENCE_EVERYTIME_ON_PROJECT_SELECTION)
 					{
-						starter_order.push(
-								new MethodDescriptor(
-										starter.subscriber,
-										starterFn,
-										projectUnderCursor
-								)
-						);
+						starter.subscriber.onProjectAdded(event);
+					}
+					else
+					{
+						var tmpExecuteCheck:String = getQualifiedClassName(starter.subscriber) +"-"+ event.project.projectFolder.nativePath;
+						if (executeDictionary[tmpExecuteCheck] == undefined)
+						{
+							starter.subscriber.onProjectAdded(event);
+							executeDictionary[tmpExecuteCheck] = true;
+						}
 					}
 				}
 			}
+		}
 
-			// add projectPluginSubscribing as first items in its
-			// process order
-			for (var i:int=0; i < tmpProjectPlugin.subscriberMethods.length; i++)
+		private function onProjectRemove(event:ProjectEvent):void
+		{
+			for each (var starter:ProjectStarterSubscribing in starters)
 			{
-				starter_order.insertAt(
-						i,
-						new MethodDescriptor(
-								tmpProjectPlugin.subscriber,
-								tmpProjectPlugin.subscriberMethods[i],
-								projectUnderCursor
-						)
-				);
+				if (starter.isRunsOnlyWithProjectSelection &&
+					(starter.occurrenceType == ProjectStarterSubscribing.OCCURRENCE_ONCE_ON_PROJECT_SELECTION))
+				{
+					var tmpExecuteCheck:String = getQualifiedClassName(starter.subscriber) +"-"+ event.project.projectFolder.nativePath;
+					delete executeDictionary[tmpExecuteCheck];
+				}
 			}
+		}
+
+		private function onWorkspaceChanged(event:Event):void
+		{
+			executeDictionary = new Dictionary();
 		}
 	}
 }

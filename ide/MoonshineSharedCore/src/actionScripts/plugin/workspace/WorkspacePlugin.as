@@ -58,6 +58,7 @@ package actionScripts.plugin.workspace
 		public static const EVENT_SAVE_AS:String = "saveAsNewWorkspaceEvent";
 		public static const EVENT_NEW:String = "newWorkspaceEvent";
 		public static const EVENT_LOAD:String = "loadWorkspaceEvent";
+		public static const EVENT_WORKSPACE_CHANGED:String = "eventWorkspaceChanged";
 		
 		private static const LABEL_DEFAULT_WORKSPACE:String = "IDE-Default";
 		
@@ -78,7 +79,6 @@ package actionScripts.plugin.workspace
 		private var newWorkspaceView:NewWorkspaceView;
 		private var newWorkspaceViewWrapper:FeathersUIWrapper;
 		private var projectStarter:ProjectStarterDelegates = ProjectStarterDelegates.getInstance();
-		private var projectsUpdatedToWorkspaceList:Dictionary = new Dictionary();
 
 		private var _currentWorkspaceLabel:String;
 		private function get currentWorkspaceLabel():String
@@ -115,12 +115,13 @@ package actionScripts.plugin.workspace
 		public function WorkspacePlugin()
 		{
 			super();
-			/*projectStarter.subscribe(
+			projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
-							new <String>["onProjectAdded"]
+							new <String>["onProjectAdded"],
+							false
 					)
-			);*/
+			);
 		}
 		
 		override public function activate():void
@@ -132,25 +133,22 @@ package actionScripts.plugin.workspace
 			dispatcher.addEventListener(EVENT_NEW, onNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(EVENT_LOAD, onLoadWorkspaceEvent, false, 0, true);
 			
-			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded);
+			//dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 		
 		public function onProjectAdded(event:ProjectEvent):void
 		{
-			if ((projectsUpdatedToWorkspaceList[event.project.projectFolder.nativePath] == undefined) &&
-					getPathIndex(event.project.folderLocation.fileBridge.nativePath) == -1)
+			if (getPathIndex(event.project.folderLocation.fileBridge.nativePath) == -1)
 			{
 				currentWorkspacePaths.push(event.project.folderLocation.fileBridge.nativePath);
-				projectsUpdatedToWorkspaceList[event.project.projectFolder.nativePath] = true;
 				saveToCookie();
 			}
-			//projectStarter.continueDelegation();
+			projectStarter.continueDelegation();
 		}
 		
 		private function handleRemoveProject(event:ProjectEvent):void
 		{
-			delete projectsUpdatedToWorkspaceList[event.project.projectFolder.nativePath];
 			handleRemoveProjectByPath(event.project.folderLocation.fileBridge.nativePath);
 		}
 		
@@ -269,7 +267,7 @@ package actionScripts.plugin.workspace
 			{
 				methodToCallAfterClosingAllProjects = 
 					new MethodDescriptor(this, 'changeToWorkspace', requestedWorkspace);
-				
+
 				closeAllProjectItems = ObjectUtil.copy(currentWorkspacePaths) as Array;
 				closeAllEditorAsync();
 			}
@@ -318,6 +316,7 @@ package actionScripts.plugin.workspace
 		{
 			currentWorkspaceLabel = label;
 			currentWorkspacePaths = workspaces[currentWorkspaceLabel];
+			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
 			saveToCookie();
 			
 			// codes to re-open each projects
@@ -341,6 +340,7 @@ package actionScripts.plugin.workspace
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 			workspacesForViews.push(new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]));
+			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
 			saveToCookie();
 			outputToConsole();
 		}

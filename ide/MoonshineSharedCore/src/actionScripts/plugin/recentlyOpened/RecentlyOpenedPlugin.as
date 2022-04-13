@@ -72,7 +72,6 @@ package actionScripts.plugin.recentlyOpened
 		private var cookie:SharedObject;
 		private var recentOpenedProjectObject:FileLocation;
 		private var projectStarter:ProjectStarterDelegates = ProjectStarterDelegates.getInstance();
-		private var projectsAddedToRecentList:Dictionary = new Dictionary();
 
 		private var _projectStarterDelegate:IProjectStarterDelegate;
 		public function get projectStarterDelegate():IProjectStarterDelegate
@@ -87,12 +86,13 @@ package actionScripts.plugin.recentlyOpened
 		public function RecentlyOpenedPlugin()
 		{
 			super();
-			/*projectStarter.subscribe(
+			projectStarter.subscribe(
 					new ProjectStarterSubscribing(
 							this,
-							new <String>["onProjectAdded"]
+							new <String>["onProjectAdded"],
+							false
 					)
-			);*/
+			);
 		}
 		
 		override public function activate():void
@@ -106,8 +106,7 @@ package actionScripts.plugin.recentlyOpened
 				restoreFromCookie();
 			}
 			
-			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded);
-			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onProjectRemoved);
+			//dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded);
 			dispatcher.addEventListener(ProjectEvent.EVENT_SAVE_PROJECT_CREATION_FOLDERS, onNewProjectPathBrowse, false, 0, true);
 			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT_AWAY3D, handleAddProject, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED, onFlexSDKUpdated);
@@ -326,11 +325,6 @@ package actionScripts.plugin.recentlyOpened
 
 		public function onProjectAdded(event:ProjectEvent):void
 		{
-			if (projectsAddedToRecentList[event.project.projectFolder.nativePath] != undefined)
-			{
-				return;
-			}
-
 			// Find & remove project if already present
 			//var f:File = (event.project.projectFile) ? event.project.projectFile : event.project.folder;
 			var f:FileLocation = event.project.folderLocation;
@@ -366,8 +360,6 @@ package actionScripts.plugin.recentlyOpened
 			model.recentlyOpenedProjects.addItemAt(tmpSOReference, 0);
 			model.recentlyOpenedProjectOpenedOption.addItemAt({path:f.fileBridge.nativePath, option:(event.extras ? event.extras[0] : "")}, 0);
 
-			projectsAddedToRecentList[event.project.projectFolder.nativePath] = true;
-			
 			//Moon-166 fix: This will set selected project in the tree view
 			/*var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
 			tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;*/
@@ -381,14 +373,9 @@ package actionScripts.plugin.recentlyOpened
 				clearTimeout(timeoutValue);
 			}, 200);*/
 
-			dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
+			//dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
 
-			//projectStarter.continueDelegation();
-		}
-
-		private function onProjectRemoved(event:ProjectEvent):void
-		{
-			delete projectsAddedToRecentList[event.project.projectFolder.nativePath];
+			projectStarter.continueDelegation();
 		}
 		
 		private function handleOpenFile(event:FilePluginEvent):void
