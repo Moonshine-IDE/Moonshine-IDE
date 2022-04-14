@@ -8,14 +8,14 @@
 	<source path="externs" />
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/src" />
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/externs" />
-	<source path="../../../moonshine-openfl-language-client/src" />
-	<source path="../../../moonshine-openfl-debug-adapter-client/src" />
-	<source path="../../../moonshine-feathersui-text-editor/src" />
 
 	<haxelib name="openfl" />
 	<haxelib name="actuate" />
 	<haxelib name="feathersui" />
 	<haxelib name="markdown-openfl-textfield" />
+	<haxelib name="moonshine-openfl-language-client" />
+	<haxelib name="moonshine-openfl-debug-adapter-client" />
+	<haxelib name="moonshine-feathersui-text-editor" />
 
 	<template path="templates" if="flash"/>
 
