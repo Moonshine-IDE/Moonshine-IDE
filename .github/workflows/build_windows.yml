@@ -20,5 +20,9 @@ jobs:
     - uses: joshtynjala/setup-apache-flex-action@v1
       with:
         flex-version: "4.16.1"
+    - name: Prepare dependencies
+      working-directory: ..
+      run: |
+        git clone https://github.com/Moonshine-IDE/Moonshine-SDK-Installer.git
     - name: Build with Ant
       run: ant -noinput -buildfile 'ide\MoonshineDESKTOPevolved\build\build.xml' CompileSWFWindows
