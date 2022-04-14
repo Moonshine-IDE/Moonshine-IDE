@@ -20,15 +20,5 @@ jobs:
     - uses: joshtynjala/setup-apache-flex-action@v1
       with:
         flex-version: "4.16.1"
-    - name: Haxe development libraries
-      working-directory: ..
-      run: |
-        git clone https://github.com/Moonshine-IDE/Moonshine-SDK-Installer.git
-        git clone https://github.com/Moonshine-IDE/moonshine-openfl-language-client.git
-        haxelib dev moonshine-openfl-language-client moonshine-openfl-language-client
-        git clone https://github.com/Moonshine-IDE/moonshine-openfl-debug-adapter-client.git
-        haxelib dev moonshine-openfl-debug-adapter-client moonshine-openfl-debug-adapter-client
-        git clone https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor.git
-        haxelib dev moonshine-feathersui-text-editor moonshine-feathersui-text-editor
     - name: Build with Ant
       run: ant -noinput -buildfile 'ide\MoonshineDESKTOPevolved\build\build.xml' CompileSWFWindows
