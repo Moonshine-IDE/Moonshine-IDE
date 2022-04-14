@@ -43,9 +43,9 @@ package actionScripts.utils {
 		{
 			super();
 
-            addEventListener(TreeEvent.ITEM_OPENING, onCustomTreeItemEventHandler);
+            //addEventListener(TreeEvent.ITEM_OPENING, onCustomTreeItemEventHandler);
             addEventListener(TreeEvent.ITEM_OPEN, onCustomTreeItemEventHandler);
-            addEventListener(TreeEvent.ITEM_CLOSE, onCustomTreeItemEventHandler);
+            //addEventListener(TreeEvent.ITEM_CLOSE, onCustomTreeItemEventHandler);
 		}
 
 		public function saveItemForOpen(item:Object):void

@@ -144,7 +144,10 @@ package actionScripts.valueObjects
 		
 		public function get children():Array
 		{
-			if (ConstantsCoreVO.IS_AIR && !_children && _shallUpdateChildren) updateChildren();
+			if (ConstantsCoreVO.IS_AIR && !_children && _shallUpdateChildren)
+			{
+				updateChildren();
+			}
 			if (ConstantsCoreVO.IS_AIR && !file.fileBridge.isDirectory) _children = null;
 				
 			return _children;
