@@ -42,6 +42,8 @@ package actionScripts.ui.editor
 	import moonshine.lsp.LocationLink;
 	import actionScripts.events.OpenLocationEvent;
 
+	import spark.components.Label;
+
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
 		public function LanguageServerTextEditor(languageID:String, project:LanguageServerProjectVO, readOnly:Boolean = false)
@@ -78,6 +80,8 @@ package actionScripts.ui.editor
 			var completionProvider:Object = serverCapabilities.completionProvider;
 			if(completionProvider)
 			{
+				isLSPstarted = true;
+
 				var completionTriggerCharacters:Array = completionProvider.triggerCharacters;
 				if(!completionTriggerCharacters)
 				{
@@ -98,6 +102,20 @@ package actionScripts.ui.editor
 		}
 
 		protected var lspEditor:LspTextEditor;
+
+		private var _isLSPstarted:Boolean;
+		protected function get isLSPstarted():Boolean
+		{
+			return _isLSPstarted;
+		}
+		protected function set isLSPstarted(value:Boolean):void
+		{
+			_isLSPstarted = value;
+			if (_isLSPstarted && testLabel)
+			{
+				removeServerStartingMessage();
+			}
+		}
 
 		private var _languageID:String;
 
@@ -173,6 +191,15 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, languageServerOpenedHandler);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, showDiagnosticsHandler);
 		}
+
+		override protected function createChildren():void
+		{
+			super.createChildren();
+			if (!isLSPstarted)
+			{
+				attachServerStartingMessage();
+			}
+		}
 		
 		override protected function initializeChildrens():void
 		{
@@ -182,6 +209,23 @@ package actionScripts.ui.editor
 				editor = lspEditor;
 			}
 			super.initializeChildrens();
+		}
+
+		private var testLabel:Label;
+
+		private function attachServerStartingMessage():void
+		{
+			testLabel = new Label();
+			testLabel.text = "Waiting for language server..";
+			testLabel.x = 200;
+			testLabel.y = 20;
+			this.addElement(testLabel);
+		}
+
+		private function removeServerStartingMessage():void
+		{
+			this.removeElement(testLabel);
+			testLabel = null;
 		}
 
 		protected function closeAllPopups():void

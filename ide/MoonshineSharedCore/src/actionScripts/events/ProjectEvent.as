@@ -53,13 +53,17 @@ package actionScripts.events
 		public static const WORKSPACE_UPDATED: String = "WORKSPACE_UPDATED";
 		public static const ACCESS_MANAGER: String = "ACCESS_MANAGER";
 		public static const ACTIVE_PROJECT_CHANGED:String = "ACTIVE_PROJECT_CHANGED";
+		public static const OPEN_PROJECT_LAST_OPENED_FILES:String = "eventOpenProjectsLastOpenedFiles";
+		public static const DEFAULT_SDK_UPDATED:String = "eventMoonshineDefaultSDKupdated";
 		
 		public static const CHECK_GIT_PROJECT:String = "checkGitRepository";
 		public static const CHECK_SVN_PROJECT:String = "checkSVNRepository";
 		public static const LANGUAGE_SERVER_OPENED:String = "languageServerOpenedAgainstProject";
+		public static const LANGUAGE_SERVER_INIT_COMPLETED_HAXE:String = "languageServerInitCompletedAgainstHaxeProject";
 		public static const LANGUAGE_SERVER_CLOSED:String = "languageServerClosedAgainstProject";
 		public static const LANGUAGE_SERVER_REGISTER_CAPABILITY:String = "languageServerRegisterCapabilityAgainstProject";
 		public static const LANGUAGE_SERVER_UNREGISTER_CAPABILITY:String = "languageServerRegisterCapabilityAgainstProject";
+		public static const LANGUAGE_SERVER_OPEN_REQUEST:String = "languageServerRequestAgainstProject";
 		
 		public static const OPEN_CUSTOM_COMMANDS_ON_SDK:String = "openCustomCommandsInterfaceForSDKtype";
 		

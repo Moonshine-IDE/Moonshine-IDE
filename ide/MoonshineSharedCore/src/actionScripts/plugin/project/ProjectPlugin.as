@@ -118,6 +118,7 @@ package actionScripts.plugin.project
 			dispatcher.addEventListener(ProjectEvent.SHOW_PROJECT_VIEW, handleShowProjectView);
 			
 			dispatcher.addEventListener(EVENT_SHOW_OPEN_RESOURCE, handleShowOpenResource);
+			dispatcher.addEventListener(ProjectEvent.OPEN_PROJECT_LAST_OPENED_FILES, openRecentlyUsedFiles, false, 0, true);
 			
 			dispatcher.addEventListener(ShowSettingsEvent.EVENT_SHOW_SETTINGS, handleShowSettings);		
 			dispatcher.addEventListener(EVENT_PROJECT_SETTINGS, handleMenuShowSettings);
@@ -445,12 +446,12 @@ package actionScripts.plugin.project
             openPreviouslyOpenedProject();
         }
 
-        private function openRecentlyUsedFiles(project:ProjectVO):void
+        private function openRecentlyUsedFiles(event:ProjectEvent):void
 		{
             var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projectFiles");
 			if (!cookie) return;
 
-            var projectFilesForOpen:Array = cookie.data["projectFiles" + project.name];
+            var projectFilesForOpen:Array = cookie.data["projectFiles" + event.project.name];
             if (projectFilesForOpen)
             {
                 for (var i:int = 0; i < projectFilesForOpen.length; i++)
@@ -461,15 +462,15 @@ package actionScripts.plugin.project
                         var fileLocation:FileLocation = new FileLocation(itemForOpen[item]);
                         if (fileLocation.fileBridge.exists)
                         {
-                            var as3Project:AS3ProjectVO = (project as AS3ProjectVO);
+                            var as3Project:AS3ProjectVO = (event.project as AS3ProjectVO);
                             var customSDKPath:String = as3Project ? as3Project.buildOptions.customSDKPath : "";
                             var projectReferenceVO: ProjectReferenceVO = new ProjectReferenceVO();
-                            projectReferenceVO.name = project.name;
+                            projectReferenceVO.name = event.project.name;
                             projectReferenceVO.sdk = customSDKPath ? customSDKPath :
                                     (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 
-                            projectReferenceVO.path = project.folderLocation.fileBridge.nativePath;
-							projectReferenceVO.sourceFolder = project.sourceFolder;
+                            projectReferenceVO.path = event.project.folderLocation.fileBridge.nativePath;
+							projectReferenceVO.sourceFolder = event.project.sourceFolder;
 
                             var fileWrapper:FileWrapper = new FileWrapper(fileLocation, false, projectReferenceVO);
 							dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [fileLocation], -1, [fileWrapper]));
@@ -479,7 +480,7 @@ package actionScripts.plugin.project
 							SharedObjectUtil.removeLocationOfClosingProjectFile(
 									fileLocation.name,
 									fileLocation.fileBridge.nativePath,
-									project.projectFolder.nativePath);
+									event.project.projectFolder.nativePath);
 						}
                     }
                 }

@@ -62,14 +62,16 @@ package actionScripts.ui.editor
     import moonshine.editor.text.events.TextEditorChangeEvent;
     import moonshine.editor.text.events.TextEditorLineEvent;
 
-    public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
+	import spark.components.Label;
+
+	public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
 		public var defaultLabel:String = "New";
 		public var projectPath:String;
 		public var editor:TextEditor;
 		public var lastOpenType:String;
 
-		protected var editorWrapper:FeathersUIWrapper;		
+		protected var editorWrapper:FeathersUIWrapper;
 		protected var lastOpenedUpdatedInMoonshine:Date;
 		protected var file:FileLocation;
 		protected var created:Boolean;
@@ -303,7 +305,7 @@ package actionScripts.ui.editor
             {
 				this.addElement(editorWrapper);
             }
-			
+
 			super.createChildren();
 			
 			// @note

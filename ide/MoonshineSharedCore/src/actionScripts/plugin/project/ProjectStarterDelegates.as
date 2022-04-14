@@ -12,7 +12,10 @@ package actionScripts.plugin.project
 	import actionScripts.plugin.workspace.WorkspacePlugin;
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.utils.MethodDescriptor;
+	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.utils.SharedObjectUtil;
 	import actionScripts.valueObjects.ProjectVO;
+	import flash.net.SharedObject;
 
 	import components.views.project.TreeView;
 
@@ -40,6 +43,7 @@ package actionScripts.plugin.project
 		private var projectUnderCursor:ProjectEvent;
 		private var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var projectCookie:SharedObject;
 		private var orderIndex:int = 0;
 		private var isCycleRunning:Boolean;
 		private var totalQueueCount:int;
@@ -58,6 +62,8 @@ package actionScripts.plugin.project
 			dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectSelectionChangedInSidebar, false, 0, true);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onProjectRemove, false, 0, true);
 			dispatcher.addEventListener(WorkspacePlugin.EVENT_WORKSPACE_CHANGED, onWorkspaceChanged, false, 0, true);
+
+			projectCookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
 		}
 
 		public function subscribe(starter:ProjectStarterSubscribing):void
@@ -110,14 +116,42 @@ package actionScripts.plugin.project
 					workingQueueCount = 0;
 					starterOrderIndex = 1;
 					projectUnderCursor = null;
-					projects = new ArrayCollection();
+
+						/*for each (var projectEvent:ProjectEvent in projects.array)
+						{
+							dispatcher.dispatchEvent(
+									new ProjectEvent(ProjectEvent.OPEN_PROJECT_LAST_OPENED_FILES, projectEvent.project)
+							);
+
+						}*/
+
+
 					projectsWaitingForSubProcessesToStart = new ArrayCollection();
-					isCycleRunning = false;
 					dispatcher.dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED));
 					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 					success("Project(s) addition completed.");
+					startLSPagainstProjectWithOpenedEditors();
 					break;
 			}
+		}
+
+		protected function startLSPagainstProjectWithOpenedEditors():void
+		{
+			var tmpExecuteCheck:String;
+			for each (var projectEvent:ProjectEvent in projects.array)
+			{
+				tmpExecuteCheck = "actionScripts.impls::ILanguageServerBridgeImp-"+projectEvent.project.projectFolder.nativePath;
+				if ((executeDictionary[tmpExecuteCheck] == undefined) &&
+						(projectCookie.data["projectFiles" + projectEvent.project.name] != undefined) &&
+						((projectCookie.data["projectFiles" + projectEvent.project.name] as Array).length != 0))
+				{
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_OPEN_REQUEST, projectEvent.project));
+					executeDictionary[tmpExecuteCheck] = true;
+				}
+			}
+
+			projects = new ArrayCollection();
+			isCycleRunning = false;
 		}
 
 		public function continueDelegation():void
@@ -155,9 +189,9 @@ package actionScripts.plugin.project
 						projectsWaitingForSubProcessesToStart.add(projectUnderCursor);
 						dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,
 								projectUnderCursor.project.name,
-								"Sync in process ("+ workingQueueCount +"/"+ totalQueueCount +"): ", false));
+								"Initializing ("+ workingQueueCount +"/"+ totalQueueCount +"): ", false));
 
-						success("Sync in process ("+ workingQueueCount +"/"+ totalQueueCount +"): " + projectUnderCursor.project.name);
+						success("Initializing ("+ workingQueueCount +"/"+ totalQueueCount +"): " + projectUnderCursor.project.name);
 						runAddProjectMethodInStarterSubscriber(orderIndex);
 						orderIndex ++;
 					}

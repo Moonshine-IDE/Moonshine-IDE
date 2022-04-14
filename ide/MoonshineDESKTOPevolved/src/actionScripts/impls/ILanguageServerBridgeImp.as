@@ -33,7 +33,8 @@ package actionScripts.impls
 
 		public function ILanguageServerBridgeImp()
 		{
-			//dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, addProjectHandler);
+			dispatcher.addEventListener(ProjectEvent.DEFAULT_SDK_UPDATED, onProjectAdded, false, 0, true);
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPEN_REQUEST, onProjectAdded, false, 0, true);
 			//dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectAdded);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			projectStarter.subscribe(

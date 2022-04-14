@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 
 	import flash.events.KeyboardEvent;
@@ -30,6 +31,12 @@ package actionScripts.ui.editor
 		{
 			super(LANGUAGE_ID_HAXE, project, readOnly);
 			editor.allowToggleBreakpoints = true;
+			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_INIT_COMPLETED_HAXE, onHaxeLanguageServerReadyToUse, false, 0, true);
+		}
+
+		protected function onHaxeLanguageServerReadyToUse(event:ProjectEvent):void
+		{
+			isLSPstarted = true;
 		}
 	}
 }

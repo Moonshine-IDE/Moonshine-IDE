@@ -205,7 +205,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// update project-to-sdk references once again
 				for each (var project:ProjectVO in model.projects)
 				{
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));
+					//dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.DEFAULT_SDK_UPDATED, project));
 				}
 			}
 			

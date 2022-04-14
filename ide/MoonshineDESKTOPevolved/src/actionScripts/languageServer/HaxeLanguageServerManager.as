@@ -926,6 +926,15 @@ package actionScripts.languageServer
 			_dispatcher.dispatchEvent(
 				new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, message, false, false, eventType)
 			);
+
+			// haxe server takes some time to complete
+			// its completion and we want to track its exact
+			// time when the server is ready for use
+			if (message.match(/Done./))
+			{
+				_dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_INIT_COMPLETED_HAXE));
+			}
+
 			trace(message);
 		}
 
