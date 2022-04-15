@@ -40,6 +40,8 @@ package actionScripts.plugins.as3project.importer
 	import utils.MainApplicationCodeUtils;
 	
 	import actionScripts.utils.DominoUtils;
+	import mx.utils.Base64Encoder;
+	import utils.StringHelper;
 
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 
@@ -75,7 +77,7 @@ package actionScripts.plugins.as3project.importer
 			project.projectFolder.name = project.projectName;
 			
 			var stream:FileStream = new FileStream();
-			//Alert.show("file.fileBridge 69:"+file.fileBridge.nativePath);
+			
 			stream.open(file.fileBridge.getFile as File, FileMode.READ);
 			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
 			stream.close();
@@ -212,7 +214,7 @@ package actionScripts.plugins.as3project.importer
 			
 			var platform:int = int(data.moonshineRunCustomization.option.@targetPlatform);
 			
-			//Alert.show("platform:"+platform);
+	
 			switch(platform)
 			{
 				case AS3ProjectPlugin.AS3PROJ_AS_ANDROID:
@@ -320,12 +322,14 @@ package actionScripts.plugins.as3project.importer
 								_fileStreamMoonshine.open(xml, FileMode.READ);
 								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
 								var internalxml:XML = new XML(data);
+								
 								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
 								if(surfaceModel!=null){
 									var dominoMainContainer:XML = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
 									
 									//convert to dxl
 									var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
+									
 									//fix the div node from the domino code 
 									for each(var div:XML in dominoCode..div) //no matter of depth Note here
 									{
@@ -339,6 +343,8 @@ package actionScripts.plugins.as3project.importer
 										}
 										
 									}
+
+									
 
 									if(dominoCode!=null ){
 										var hasRichText:Boolean=false;	
@@ -368,6 +374,30 @@ package actionScripts.plugins.as3project.importer
 										else
 										{
 											dominoXml.appendChild(dominoCode);
+										}
+
+										for each(var body:XML in dominoXml..body) //no matter of depth Note here
+										{
+											if(body.parent().name() == "richtext"){
+												var bodyChilren:XMLList = body.children();
+												for each (var bodyChilrenNode:XML in bodyChilren)
+												{
+													body.parent().appendChild(bodyChilrenNode)
+												}
+												delete body.parent().children()[body.childIndex()];
+											}
+											
+										}
+
+										//fix the formula base64 code to normal UTF-8 code 
+										for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
+										{
+											if(formula.text()){
+												var encodeBase64: String =  StringHelper.base64Decode(formula.text());
+												var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
+												formula.parent().appendChild(newFormulaNode);
+												delete formula.parent().children()[formula.childIndex()];
+											}
 										}
 										dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
 									
