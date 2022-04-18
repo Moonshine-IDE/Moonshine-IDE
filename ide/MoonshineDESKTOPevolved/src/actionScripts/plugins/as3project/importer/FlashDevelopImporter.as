@@ -343,6 +343,26 @@ package actionScripts.plugins.as3project.importer
 										}
 										
 									}
+									//fix null pardef
+									for each(var pardef:XML in dominoCode..pardef)
+									{
+										var hideStr:String =pardef.@hide;
+										if(pardef && pardef.@id && hideStr==""){
+											var id:String = pardef.@id;
+											for each(var par:XML in dominoCode..par)
+											{
+												if(par.@def==id){
+													if(par && par.@hide){
+														pardef.@hide=par.@hide;
+														continue;
+													}
+												}
+
+											}
+										
+											
+										}
+									}
 
 									
 
