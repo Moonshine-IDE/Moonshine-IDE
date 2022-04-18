@@ -96,14 +96,18 @@ package actionScripts.plugin.project
 			}
 		}
 
-		private var starterOrderIndex:int = 1;
+		private var starterOrderIndex:int = 0;
 		private var startersByOrder:Array;
 		protected function start2():void
 		{
 			switch (starterOrderIndex)
 			{
+				case 0:
+					continueDelegation();
+					break;
 				case 1:
 					startersByOrder = starter_order_beginning;
+					workingQueueCount = 0;
 					continueDelegation();
 					break;
 				case 2:
@@ -114,17 +118,8 @@ package actionScripts.plugin.project
 				default:
 					totalQueueCount = 0;
 					workingQueueCount = 0;
-					starterOrderIndex = 1;
+					starterOrderIndex = 0;
 					projectUnderCursor = null;
-
-						/*for each (var projectEvent:ProjectEvent in projects.array)
-						{
-							dispatcher.dispatchEvent(
-									new ProjectEvent(ProjectEvent.OPEN_PROJECT_LAST_OPENED_FILES, projectEvent.project)
-							);
-
-						}*/
-
 
 					projectsWaitingForSubProcessesToStart = new ArrayCollection();
 					dispatcher.dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_PROJECT_LIST_UPDATED));
@@ -158,6 +153,28 @@ package actionScripts.plugin.project
 		{
 			switch (starterOrderIndex)
 			{
+				case 0:
+					if (projects.length != 0)
+					{
+						workingQueueCount ++;
+						projectUnderCursor = this.projects.removeAt(0) as ProjectEvent;
+						projectsWaitingForSubProcessesToStart.add(projectUnderCursor);
+						var interval:uint = setTimeout(function():void
+						{
+							clearTimeout(interval);
+							dispatcher.dispatchEvent(
+									new ProjectEvent(ProjectEvent.OPEN_PROJECT_LAST_OPENED_FILES, projectUnderCursor.project)
+							);
+						}, 100);
+					}
+					else
+					{
+						projects = projectsWaitingForSubProcessesToStart;
+						projectsWaitingForSubProcessesToStart = new ArrayCollection();
+						starterOrderIndex ++;
+						start2();
+					}
+					break;
 				case 1:
 					if (projects.length != 0)
 					{
@@ -303,8 +320,6 @@ package actionScripts.plugin.project
 		{
 			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SHOW_PROJECT_VIEW));
 		}
-
-
 
 		private function initStarterOrder():void
 		{
