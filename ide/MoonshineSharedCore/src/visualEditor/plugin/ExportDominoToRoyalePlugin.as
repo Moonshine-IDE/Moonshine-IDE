@@ -140,7 +140,10 @@ package visualEditor.plugin
         private function createConvertedFiles(convertedFiles:Array):void
         {
             var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("src" + exportedProject.sourceFolder.fileBridge.separator + "view");
-            if (!viewFolder.fileBridge.exists) return;
+            if (!viewFolder.fileBridge.exists)
+            {
+                viewFolder.fileBridge.createDirectory();
+            }
 
             for each (var item:Object in convertedFiles)
             {
