@@ -43,6 +43,9 @@ package actionScripts.plugins.as3project.importer
 	import mx.utils.Base64Encoder;
 	import utils.StringHelper;
 
+	import mx.controls.Alert;
+
+
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
@@ -419,8 +422,42 @@ package actionScripts.plugins.as3project.importer
 												delete formula.parent().children()[formula.childIndex()];
 											}
 										}
+										for each(var par:XML in dominoXml..par) //no matter of depth Note here
+										{
+											if(par.@hidewhen !=null && par.@hidewhen!="" && par.@def){
+												
+												var pardefId:String=par.@def;
+												if(pardefId!=null){
+													for each(var pardef:XML in dominoXml..pardef)
+													{
+														var id:String = pardef.@id;
+														if(pardefId==id){
+														
+															if(pardef.code!=null){
+																if(pardef.code.@event!=null && pardef.code.@event!=""){
+																	if(pardef.code.@event=="hidewhen"){
+																		var formulaXmlList:XMLList=pardef.code.formula;
+																		var formulaXml=formulaXmlList[0];
+																		if(formulaXml){
+																		
+																			if(formulaXml.text()!=par.@hidewhen){
+																			
+																				var newFormulaNodeFix:XML = new XML("<formula>"+par.@hidewhen+"</formula>");
+																				formulaXml.parent().appendChild(newFormulaNodeFix);
+																				delete formulaXml.parent().children()[formulaXml.childIndex()];
+																			}
+																		}
+																	}
+																}
+															}
+															continue;
+														}
+													}
+												}
+											}
+										}
 										dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
-									
+								
 									}
 									
 									//fix the dxl format
@@ -431,7 +468,7 @@ package actionScripts.plugins.as3project.importer
 									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
 									var _targetfileStreamMoonshine:FileStream = new FileStream();
 									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
-									_targetfileStreamMoonshine.writeUTFBytes(dominoXml.toXMLString());
+									_targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml));
 									_targetfileStreamMoonshine.close();
 
 								}
