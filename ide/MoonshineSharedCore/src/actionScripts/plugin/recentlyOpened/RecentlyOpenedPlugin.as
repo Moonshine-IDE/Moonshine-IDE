@@ -483,6 +483,11 @@ package actionScripts.plugin.recentlyOpened
 				{
 					toSave.push(f.fileBridge.nativePath);
 				}
+				else if (f is ProjectReferenceVO)
+				{
+					var projectRef:ProjectReferenceVO = ProjectReferenceVO(f);
+					toSave.push(ProjectReferenceVO.serializeForSharedObject(projectRef));
+				}
 				else
 				{
 					toSave.push(f);
