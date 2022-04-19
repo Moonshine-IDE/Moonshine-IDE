@@ -485,8 +485,6 @@ package actionScripts.plugin.project
                     }
                 }
             }
-
-			projectStarter.continueDelegation();
 		}
 
         private function openPreviouslyOpenedProject():void

@@ -96,7 +96,7 @@ package actionScripts.plugin.project
 			}
 		}
 
-		private var starterOrderIndex:int = 0;
+		private var starterOrderIndex:int = 1;
 		private var startersByOrder:Array;
 		protected function start2():void
 		{
@@ -118,7 +118,7 @@ package actionScripts.plugin.project
 				default:
 					totalQueueCount = 0;
 					workingQueueCount = 0;
-					starterOrderIndex = 0;
+					starterOrderIndex = 1;
 					projectUnderCursor = null;
 
 					projectsWaitingForSubProcessesToStart = new ArrayCollection();
@@ -126,6 +126,7 @@ package actionScripts.plugin.project
 					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 					success("Project(s) addition completed.");
 					startLSPagainstProjectWithOpenedEditors();
+					openPreviouslyOpenedFiles();
 					break;
 			}
 		}
@@ -140,9 +141,21 @@ package actionScripts.plugin.project
 						(projectCookie.data["projectFiles" + projectEvent.project.name] != undefined) &&
 						((projectCookie.data["projectFiles" + projectEvent.project.name] as Array).length != 0))
 				{
+					success("Starting language server: "+ projectEvent.project.name);
 					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_OPEN_REQUEST, projectEvent.project));
 					executeDictionary[tmpExecuteCheck] = true;
 				}
+			}
+		}
+
+		protected function openPreviouslyOpenedFiles():void
+		{
+			warning("Opening files. This may take longer..");
+			for each (var projectEvent:ProjectEvent in projects.array)
+			{
+				dispatcher.dispatchEvent(
+						new ProjectEvent(ProjectEvent.OPEN_PROJECT_LAST_OPENED_FILES, projectEvent.project)
+				);
 			}
 
 			projects = new ArrayCollection();
