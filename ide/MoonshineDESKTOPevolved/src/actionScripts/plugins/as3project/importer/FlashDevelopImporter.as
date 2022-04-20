@@ -44,6 +44,7 @@ package actionScripts.plugins.as3project.importer
 	import utils.StringHelper;
 
 	import mx.controls.Alert;
+	import global.domino.DominoGlobals;
 
 
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
@@ -422,6 +423,9 @@ package actionScripts.plugins.as3project.importer
 												delete formula.parent().children()[formula.childIndex()];
 											}
 										}
+										//fix hidewhen
+										var richtextNodeList:XMLList=dominoXml..richtext;
+										var richtextNode=richtextNodeList[0];
 										for each(var par:XML in dominoXml..par) //no matter of depth Note here
 										{
 											if(par.@hidewhen !=null && par.@hidewhen!="" && par.@def){
@@ -450,12 +454,36 @@ package actionScripts.plugins.as3project.importer
 																	}
 																}
 															}
+
+															//fix the hide in here
+															if(pardef.@hide){
+																	if(par.@hide){
+																		if(pardef.@hide!=par.@hide){
+																			if(par.@hide!=""){
+																				DominoGlobals.PardefDivId++;
+																				var pardefXml:XML = new XML("<pardef id=\""+DominoGlobals.PardefDivId+"\" "+" dominotype=\"fixedhide\" />" );
+																				pardefXml.@hide=par.@hide;
+
+																				par.@def=DominoGlobals.PardefDivId;
+																				//var parParentNode:XML = par.parent();
+																			    //delete par.parent().children()[par.childIndex()];
+																				if(richtextNode!=null)
+																				richtextNode.appendChild(pardefXml);
+																				//parParentNode.appendChild(par);
+																				
+																			}
+																		}
+																	}
+															} 
 															continue;
 														}
 													}
 												}
 											}
 										}
+
+										//fix hide 
+
 										dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
 								
 									}
