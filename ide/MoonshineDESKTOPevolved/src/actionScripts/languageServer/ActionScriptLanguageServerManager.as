@@ -481,15 +481,10 @@ package actionScripts.languageServer
 				return;
 			}
 			_waitingToRestart = false;
-			if(_languageClient)
+			if(_languageClient || _languageServerProcess)
 			{
 				_waitingToRestart = true;
 				shutdown();
-			}
-			else if(_languageServerProcess)
-			{
-				_waitingToRestart = true;
-				_languageServerProcess.exit();
 			}
 
 			if(!_waitingToRestart)
@@ -603,8 +598,16 @@ package actionScripts.languageServer
 
 		private function shutdown():void
 		{
-			if(!_languageClient)
+			if(!_languageClient || !_languageClient.initialized)
 			{
+				if (_languageClient)
+				{
+					cleanupLanguageClient();
+				}
+				if (_languageServerProcess)
+				{
+					_languageServerProcess.exit(true);
+				}
 				return;
 			}
 			_shutdownTimeoutID = setTimeout(shutdownTimeout, LANGUAGE_SERVER_SHUTDOWN_TIMEOUT);
@@ -901,7 +904,7 @@ package actionScripts.languageServer
 
 		private function removeProjectHandler(event:ProjectEvent):void
 		{
-			if(event.project != _project || !_languageClient)
+			if(event.project != _project)
 			{
 				return;
 			}
@@ -910,10 +913,6 @@ package actionScripts.languageServer
 
 		private function applicationExitHandler(event:ApplicationEvent):void
 		{
-			if(!_languageClient)
-			{
-				return;
-			}
 			shutdown();
 		}
 
