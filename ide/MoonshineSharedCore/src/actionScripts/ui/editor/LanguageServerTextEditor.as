@@ -42,6 +42,8 @@ package actionScripts.ui.editor
 	import moonshine.lsp.LocationLink;
 	import actionScripts.events.OpenLocationEvent;
 
+	import spark.components.Group;
+
 	import spark.components.Label;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
@@ -77,11 +79,10 @@ package actionScripts.ui.editor
 			{
 				return;
 			}
+			isLSPstarted = true;
 			var completionProvider:Object = serverCapabilities.completionProvider;
 			if(completionProvider)
 			{
-				isLSPstarted = true;
-
 				var completionTriggerCharacters:Array = completionProvider.triggerCharacters;
 				if(!completionTriggerCharacters)
 				{
@@ -110,10 +111,13 @@ package actionScripts.ui.editor
 		}
 		protected function set isLSPstarted(value:Boolean):void
 		{
-			_isLSPstarted = value;
-			if (_isLSPstarted && testLabel)
+			if (value != _isLSPstarted)
 			{
-				removeServerStartingMessage();
+				_isLSPstarted = value;
+				if (_isLSPstarted && lsWaitingNotification)
+				{
+					removeServerStartingMessage();
+				}
 			}
 		}
 
@@ -211,21 +215,30 @@ package actionScripts.ui.editor
 			super.initializeChildrens();
 		}
 
-		private var testLabel:Label;
+		private var lsWaitingNotification:Group;
 
 		private function attachServerStartingMessage():void
 		{
-			testLabel = new Label();
-			testLabel.text = "Waiting for language server..";
-			testLabel.x = 200;
-			testLabel.y = 20;
-			this.addElement(testLabel);
+			lsWaitingNotification = new Group();
+			lsWaitingNotification.graphics.beginFill(0xffffff, 0.6);
+			lsWaitingNotification.graphics.lineStyle(1, 0xff0000);
+			lsWaitingNotification.graphics.drawRect(0, 0, 180,20);
+			lsWaitingNotification.graphics.endFill();
+
+			var tmpLabel:Label = new Label();
+			tmpLabel.text = "Waiting for language server..";
+			tmpLabel.setStyle("color", 0x333333);
+			tmpLabel.x = 10;
+			tmpLabel.y = 5;
+			lsWaitingNotification.addElement(tmpLabel);
+
+			this.addElement(lsWaitingNotification);
 		}
 
 		private function removeServerStartingMessage():void
 		{
-			this.removeElement(testLabel);
-			testLabel = null;
+			this.removeElement(lsWaitingNotification);
+			lsWaitingNotification = null;
 		}
 
 		protected function closeAllPopups():void
@@ -547,6 +560,16 @@ package actionScripts.ui.editor
 				command: command.command,
 				arguments: command.arguments
 			}, function(result:* = null):void {});
+		}
+
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+		{
+			super.updateDisplayList(unscaledWidth, unscaledHeight);
+			if (lsWaitingNotification)
+			{
+				lsWaitingNotification.x = unscaledWidth - 220;
+				lsWaitingNotification.y = 20;
+			}
 		}
 	}
 }

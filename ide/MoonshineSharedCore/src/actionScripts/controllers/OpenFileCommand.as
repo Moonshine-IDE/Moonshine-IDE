@@ -232,17 +232,7 @@ package actionScripts.controllers
 				DebugHighlightManager.NONOPENED_DEBUG_FILE_PATH = file.fileBridge.nativePath;
 				DebugHighlightManager.NONOPENED_DEBUG_FILE_LINE = atLine;
 			}
-			
-			// Let plugins know that we're opening a file & abort it if they want to render it themselves
-			// as this will add a link to RECENT items, add only for non 'Tour de Flex' items
-			if (!openAsTourDe)
-			{
-				var plugEvent:FilePluginEvent = new FilePluginEvent(FilePluginEvent.EVENT_FILE_OPEN, file);
-				ged.dispatchEvent(plugEvent);
-				if (plugEvent.isDefaultPrevented())
-					return;
-			}
-			
+
 			// Load and see if it's a binary file
 			if (ConstantsCoreVO.IS_AIR)
 			{
@@ -283,6 +273,14 @@ package actionScripts.controllers
 				if (wrapper) wrapper.isWorking = true;
 				file = fileDir as FileLocation;
 				loader = new DataAgent(URLDescriptorVO.FILE_OPEN, fileLoadedFromServer, fileFault, {path:fileDir.fileBridge.nativePath});
+			}
+
+			// Let plugins know that we're opening a file & abort it if they want to render it themselves
+			// as this will add a link to RECENT items, add only for non 'Tour de Flex' items
+			if (!openAsTourDe)
+			{
+				var plugEvent:FilePluginEvent = new FilePluginEvent(FilePluginEvent.EVENT_FILE_OPEN, file);
+				ged.dispatchEvent(plugEvent);
 			}
 		}
 		

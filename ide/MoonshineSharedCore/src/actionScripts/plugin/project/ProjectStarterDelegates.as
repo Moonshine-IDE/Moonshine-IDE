@@ -131,35 +131,56 @@ package actionScripts.plugin.project
 			}
 		}
 
+		private var lsStartTimeoutID:uint = uint.MAX_VALUE;
 		protected function startLSPagainstProjectWithOpenedEditors():void
 		{
-			var tmpExecuteCheck:String;
-			for each (var projectEvent:ProjectEvent in projects.array)
+			if (lsStartTimeoutID != uint.MAX_VALUE)
 			{
-				tmpExecuteCheck = "actionScripts.impls::ILanguageServerBridgeImp-"+projectEvent.project.projectFolder.nativePath;
-				if ((executeDictionary[tmpExecuteCheck] == undefined) &&
-						(projectCookie.data["projectFiles" + projectEvent.project.name] != undefined) &&
-						((projectCookie.data["projectFiles" + projectEvent.project.name] as Array).length != 0))
-				{
-					success("Starting language server: "+ projectEvent.project.name);
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_OPEN_REQUEST, projectEvent.project));
-					executeDictionary[tmpExecuteCheck] = true;
-				}
+				clearTimeout(lsStartTimeoutID);
+				lsStartTimeoutID = uint.MAX_VALUE;
 			}
+			lsStartTimeoutID = setTimeout(function():void
+			{
+				lsStartTimeoutID = uint.MAX_VALUE;
+				var tmpExecuteCheck:String;
+				for each (var projectEvent:ProjectEvent in projects.array)
+				{
+					tmpExecuteCheck = "actionScripts.impls::ILanguageServerBridgeImp-"+projectEvent.project.projectFolder.nativePath;
+					if ((executeDictionary[tmpExecuteCheck] == undefined) &&
+							(projectCookie.data["projectFiles" + projectEvent.project.name] != undefined) &&
+							((projectCookie.data["projectFiles" + projectEvent.project.name] as Array).length != 0))
+					{
+						success("Starting language server: "+ projectEvent.project.name);
+						dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.LANGUAGE_SERVER_OPEN_REQUEST, projectEvent.project));
+						executeDictionary[tmpExecuteCheck] = true;
+					}
+				}
+			}, 300);
 		}
 
+		private var editorOpenTimeoutID:uint = uint.MAX_VALUE;
 		protected function openPreviouslyOpenedFiles():void
 		{
-			warning("Opening files. This may take longer..");
-			for each (var projectEvent:ProjectEvent in projects.array)
+			if (editorOpenTimeoutID != uint.MAX_VALUE)
 			{
-				dispatcher.dispatchEvent(
-						new ProjectEvent(ProjectEvent.OPEN_PROJECT_LAST_OPENED_FILES, projectEvent.project)
-				);
+				clearTimeout(editorOpenTimeoutID);
+				editorOpenTimeoutID = uint.MAX_VALUE;
 			}
+			editorOpenTimeoutID = setTimeout(function():void
+			{
+				editorOpenTimeoutID = uint.MAX_VALUE;
+				warning("Opening any previously opened file(s). This may take longer..");
+				for each (var projectEvent:ProjectEvent in projects.array)
+				{
+					dispatcher.dispatchEvent(
+							new ProjectEvent(ProjectEvent.OPEN_PROJECT_LAST_OPENED_FILES, projectEvent.project)
+					);
+				}
 
-			projects = new ArrayCollection();
-			isCycleRunning = false;
+				projects = new ArrayCollection();
+				isCycleRunning = false;
+			}, 300);
+
 		}
 
 		public function continueDelegation():void
@@ -256,6 +277,7 @@ package actionScripts.plugin.project
 			}
 		}
 
+		private var subscriberAddCallTimeoutID:uint = uint.MAX_VALUE;
 		protected function runAddProjectMethodInStarterSubscriber(localOrderIndex:int):void
 		{
 			// it's impossible to ensure all granular processes
@@ -265,9 +287,14 @@ package actionScripts.plugin.project
 			// to execute next step in safe intervals with possibility
 			// to complete IProjectStarter processes, we executes
 			// with a short setTimeout(50)
-			var interval:uint = setTimeout(function(localOrderIndex:int):void
+			if (subscriberAddCallTimeoutID != uint.MAX_VALUE)
 			{
-				clearTimeout(interval);
+				clearTimeout(subscriberAddCallTimeoutID);
+				subscriberAddCallTimeoutID = uint.MAX_VALUE;
+			}
+			subscriberAddCallTimeoutID = setTimeout(function(localOrderIndex:int):void
+			{
+				subscriberAddCallTimeoutID = uint.MAX_VALUE;
 				(startersByOrder[localOrderIndex] as ProjectStarterSubscribing).subscriber.onProjectAdded(projectUnderCursor);
 				//(starter_order[orderIndex] as MethodDescriptor).callMethod();
 			}, 100, localOrderIndex);

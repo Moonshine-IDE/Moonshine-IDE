@@ -31,12 +31,6 @@ package actionScripts.ui.editor
 		{
 			super(LANGUAGE_ID_HAXE, project, readOnly);
 			editor.allowToggleBreakpoints = true;
-			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_INIT_COMPLETED_HAXE, onHaxeLanguageServerReadyToUse, false, 0, true);
-		}
-
-		protected function onHaxeLanguageServerReadyToUse(event:ProjectEvent):void
-		{
-			isLSPstarted = true;
 		}
 	}
 }

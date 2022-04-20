@@ -95,6 +95,9 @@ package actionScripts.plugin.recentlyOpened
 			);
 		}
 		
+		private var recentFilesListUpdatedTimeoutID:uint = uint.MAX_VALUE;
+		private var recentProjectListUpdatedTimeoutID:uint = uint.MAX_VALUE;
+
 		override public function activate():void
 		{
 			super.activate();
@@ -376,6 +379,22 @@ package actionScripts.plugin.recentlyOpened
 			//dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
 
 			projectStarter.continueDelegation();
+
+			// when the recently opened projects collection is updated, we need
+			// to dispatch RECENT_PROJECT_LIST_UPDATED. the listener(s) for this
+			// event are somewhat expensive, so we should wait to see if any
+			// more projects have been opened before dispatching it, so that we
+			// trigger the expensive code as little as possible.
+			/*if (recentProjectListUpdatedTimeoutID != uint.MAX_VALUE)
+			{
+				clearTimeout(recentProjectListUpdatedTimeoutID);
+				recentProjectListUpdatedTimeoutID = uint.MAX_VALUE;
+			}
+			recentProjectListUpdatedTimeoutID = setTimeout(function():void
+			{
+				recentProjectListUpdatedTimeoutID = uint.MAX_VALUE;
+				dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
+			}, 300);*/
 		}
 		
 		private function handleOpenFile(event:FilePluginEvent):void
@@ -404,8 +423,19 @@ package actionScripts.plugin.recentlyOpened
 			model.recentlyOpenedFiles.addItemAt(tmpSOReference, 0);
 			//model.selectedprojectFolders
 			
-			setTimeout(function():void
+			// when the recently opened files collection is updated, we need
+			// to dispatch RECENT_FILES_LIST_UPDATED. the listener(s) for this
+			// event are somewhat expensive, so we should wait to see if any
+			// more projects have been opened before dispatching it, so that we
+			// trigger the expensive code as little as possible.
+			if (recentFilesListUpdatedTimeoutID != uint.MAX_VALUE)
 			{
+				clearTimeout(recentFilesListUpdatedTimeoutID);
+				recentFilesListUpdatedTimeoutID = uint.MAX_VALUE;
+			}
+			recentFilesListUpdatedTimeoutID = setTimeout(function():void
+			{
+				recentFilesListUpdatedTimeoutID = uint.MAX_VALUE;
 				dispatcher.dispatchEvent(new Event(RECENT_FILES_LIST_UPDATED));
 			}, 300);
 		}
@@ -509,6 +539,11 @@ package actionScripts.plugin.recentlyOpened
 				if (f is FileLocation)
 				{
 					toSave.push(f.fileBridge.nativePath);
+				}
+				else if (f is ProjectReferenceVO)
+				{
+					var projectRef:ProjectReferenceVO = ProjectReferenceVO(f);
+					toSave.push(ProjectReferenceVO.serializeForSharedObject(projectRef));
 				}
 				else
 				{
