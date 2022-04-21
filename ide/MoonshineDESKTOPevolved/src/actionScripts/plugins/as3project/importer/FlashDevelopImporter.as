@@ -459,7 +459,9 @@ package actionScripts.plugins.as3project.importer
 															if(pardef.@hide){
 																	if(par.@hide){
 																		if(pardef.@hide!=par.@hide){
-																			if(par.@hide!=""){
+																			var parHideString:String=par.@hide;
+																			if(parHideString!=null && parHideString!=""){
+																				Alert.show("par len:"+parHideString+"-"+parHideString.length);
 																				DominoGlobals.PardefDivId++;
 																				var pardefXml:XML = new XML("<pardef id=\""+DominoGlobals.PardefDivId+"\" "+" dominotype=\"fixedhide\" />" );
 																				pardefXml.@hide=par.@hide;
@@ -468,7 +470,7 @@ package actionScripts.plugins.as3project.importer
 																				//var parParentNode:XML = par.parent();
 																			    //delete par.parent().children()[par.childIndex()];
 																				if(richtextNode!=null)
-																				richtextNode.appendChild(pardefXml);
+																				richtextNode.insertChildAfter(richtextNode.children()[0],pardefXml);
 																				//parParentNode.appendChild(par);
 																				
 																			}
