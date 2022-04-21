@@ -43,7 +43,6 @@ package actionScripts.plugins.as3project.importer
 	import mx.utils.Base64Encoder;
 	import utils.StringHelper;
 
-	import mx.controls.Alert;
 	import global.domino.DominoGlobals;
 
 
@@ -461,7 +460,7 @@ package actionScripts.plugins.as3project.importer
 																		if(pardef.@hide!=par.@hide){
 																			var parHideString:String=par.@hide;
 																			if(parHideString!=null && parHideString!=""){
-																				Alert.show("par len:"+parHideString+"-"+parHideString.length);
+																			
 																				DominoGlobals.PardefDivId++;
 																				var pardefXml:XML = new XML("<pardef id=\""+DominoGlobals.PardefDivId+"\" "+" dominotype=\"fixedhide\" />" );
 																				pardefXml.@hide=par.@hide;
