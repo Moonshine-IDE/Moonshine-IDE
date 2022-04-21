@@ -21,8 +21,6 @@ package visualEditor.plugin
     import actionScripts.factory.FileLocation;
     import actionScripts.valueObjects.FileWrapper;
 
-    import flash.events.Event;
-
     import actionScripts.events.ExportVisualEditorProjectEvent;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -53,7 +51,6 @@ package visualEditor.plugin
 
             dispatcher.addEventListener(ExportVisualEditorProjectEvent.EVENT_EXPORT_DOMINO_VISUALEDITOR_PROJECT_TO_ROYALE,
                     generateApacheRoyaleProjectHandler);
-         //   dispatcher.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, exportTabClosedHandler);
         }
 
         override public function deactivate():void
@@ -62,19 +59,18 @@ package visualEditor.plugin
 
             dispatcher.removeEventListener(ExportVisualEditorProjectEvent.EVENT_EXPORT_DOMINO_VISUALEDITOR_PROJECT_TO_ROYALE,
                     generateApacheRoyaleProjectHandler);
-            //dispatcher.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, exportTabClosedHandler);
         }
 
-        private function generateApacheRoyaleProjectHandler(event:Event):void
+        private function generateApacheRoyaleProjectHandler(event:ExportVisualEditorProjectEvent):void
         {
             currentProject = model.activeProject as AS3ProjectVO;
             if (currentProject == null || !currentProject.isDominoVisualEditorProject)
             {
-                error("This is not Visual Editor PrimeFaces project");
+                error("This is not Visual Editor Domino project");
                 return;
             }
 
-            exportedProject = currentProject.clone() as AS3ProjectVO;
+            exportedProject = event.exportedProject;
 
             var visualEditorFiles:Array = getVisualEditorFiles(currentProject.projectFolder);
             conversionCounter = visualEditorFiles.length;
@@ -137,7 +133,27 @@ package visualEditor.plugin
             conversionCounter--;
             if (conversionCounter == 0)
             {
+                createConvertedFiles(convertedFiles);
+            }
+        }
 
+        private function createConvertedFiles(convertedFiles:Array):void
+        {
+            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("src" + exportedProject.sourceFolder.fileBridge.separator + "view");
+            if (!viewFolder.fileBridge.exists)
+            {
+                viewFolder.fileBridge.createDirectory();
+            }
+
+            for each (var item:Object in convertedFiles)
+            {
+                var convertedFile:FileLocation = item.file;
+                var destinationFilePath:String = convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator, "");
+
+                convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
+                var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
+
+                convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString())
             }
         }
     }

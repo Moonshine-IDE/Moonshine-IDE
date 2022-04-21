@@ -19,22 +19,22 @@
 
 package actionScripts.plugins.fswatcher
 {
+	import flash.events.Event;
+	import flash.system.MessageChannel;
+	import flash.system.Worker;
+	import flash.system.WorkerDomain;
+	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
+
+	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.WatchedFileChangeEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.events.GlobalEventDispatcher;
-	import flash.system.MessageChannel;
-	import flash.system.Worker;
-	import flash.utils.Dictionary;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.events.WatchedFileChangeEvent;
-	import flash.events.Event;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.locator.IDEModel;
-	import flash.utils.ByteArray;
-	import flash.system.WorkerDomain;
-	import actionScripts.events.ApplicationEvent;
 
 	public class FSWatcherPlugin extends PluginBase implements IPlugin
 	{
@@ -97,9 +97,19 @@ package actionScripts.plugins.fswatcher
 		{
 			super.deactivate();
 
+			if(workerToMain)
+			{
+				workerToMain.close();
+				workerToMain = null;
+			}
+			if(mainToWorker)
+			{
+				mainToWorker.close();
+				mainToWorker = null;
+			}
 			if(worker)
 			{
-				worker.terminate();
+				//worker.terminate();
 				worker = null;
 			}
 
@@ -110,9 +120,21 @@ package actionScripts.plugins.fswatcher
 
 		private function onApplicationExit(event:ApplicationEvent):void
 		{
+			if(workerToMain)
+			{
+				workerToMain.close();
+				workerToMain = null;
+			}
+			if(mainToWorker)
+			{
+				mainToWorker.close();
+				mainToWorker = null;
+			}
 			if(worker)
 			{
-				worker.terminate();
+				//for some reason, terminating causes the AIR app to crash
+				//before it can complete some other things
+				//worker.terminate();
 				worker = null;
 			}
 		}
