@@ -1214,13 +1214,13 @@
 	
 			protected function onFileSingleClickedInTree(event:ListEvent):void
 			{
-				refreshActiveProject(tree.selectedItem as FileWrapper);
+				//refreshActiveProject(tree.selectedItem as FileWrapper);
 			}
 	
 			private function onTreeItemOpen(event:TreeEvent):void
 			{
-				sortChildren(event.item as FileWrapper);
-				tree.saveItemForOpen(event.item);
+				//sortChildren(event.item as FileWrapper);
+				//tree.saveItemForOpen(event.item);
 			}
 	
 			private function onTreeItemClose(event:TreeEvent):void

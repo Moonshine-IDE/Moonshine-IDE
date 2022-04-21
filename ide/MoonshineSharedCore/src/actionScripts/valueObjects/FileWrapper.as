@@ -275,22 +275,14 @@ package actionScripts.valueObjects
 					fw.sourceController = _sourceController;
 					_children.push(fw);
 				}
-                else
+                else if (!_isHidden)
                 {
-                    var currentIsHidden:Boolean = projectReference && projectReference.hiddenPaths.some(function (item:FileLocation, index:int, arr:Vector.<FileLocation>):Boolean
-                    {
-                        return currentDirectoryFL.fileBridge.nativePath == item.fileBridge.nativePath;
-                    });
-
-					if (!currentIsHidden)
-                    {
-                        fw = new FileWrapper(currentDirectoryFL, false, projectReference, false);
-						fw.children = [];
-                        fw.sourceController = _sourceController;
-						if (fw.file.fileBridge.isDirectory)
-							fw.isSourceFolder = testIfSourceFolder(fw);
-                        _children.push(fw)
-                    }
+					fw = new FileWrapper(currentDirectoryFL, false, projectReference, false);
+					fw.children = [];
+					fw.sourceController = _sourceController;
+					if (fw.file.fileBridge.isDirectory)
+						fw.isSourceFolder = testIfSourceFolder(fw);
+					_children.push(fw)
                 }
             }
         }

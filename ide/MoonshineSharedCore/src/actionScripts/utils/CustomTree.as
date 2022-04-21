@@ -20,8 +20,10 @@ package actionScripts.utils {
     import flash.events.Event;
     import flash.events.KeyboardEvent;
     import flash.net.SharedObject;
-    
-    import mx.collections.ICollectionView;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+
+	import mx.collections.ICollectionView;
     import mx.collections.IViewCursor;
     import mx.controls.Tree;
     import mx.core.mx_internal;
@@ -44,7 +46,7 @@ package actionScripts.utils {
 			super();
 
             //addEventListener(TreeEvent.ITEM_OPENING, onCustomTreeItemEventHandler);
-            addEventListener(TreeEvent.ITEM_OPEN, onCustomTreeItemEventHandler);
+            //addEventListener(TreeEvent.ITEM_OPEN, onCustomTreeItemEventHandler);
             //addEventListener(TreeEvent.ITEM_CLOSE, onCustomTreeItemEventHandler);
 		}
 
@@ -143,10 +145,19 @@ package actionScripts.utils {
 
         override protected function collectionChangeHandler(event:Event):void
         {
-            super.collectionChangeHandler(event);
-
-            reopenPreviouslyClosedItems(event["kind"], event["items"]);
+			super.collectionChangeHandler(event);
+            //reopenPreviouslyClosedItems(event["kind"], event["items"]);
         }
+
+		private var recentProjectListUpdatedTimeoutID:uint = uint.MAX_VALUE;
+		override public function expandItem(item:Object, open:Boolean, animate:Boolean = false, dispatchEvent:Boolean = false, cause:Event = null):void
+		{
+			super.expandItem(item, open, animate, dispatchEvent, cause);
+			if (open)
+			{
+				updateItemChildren(item as FileWrapper);
+			}
+		}
 
         private function onCustomTreeItemEventHandler(event:TreeEvent):void
         {
