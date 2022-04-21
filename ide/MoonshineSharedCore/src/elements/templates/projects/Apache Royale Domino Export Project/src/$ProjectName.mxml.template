@@ -65,7 +65,7 @@
 		    </j:TopAppBar>
 			<j:ApplicationMainContent id="mainContent" hasTopAppBar="true" hasFooterBar="false" selectedContent="content">
 		       <j:ScrollableSectionContent name="content">
-					<view:Content />
+
 			   </j:ScrollableSectionContent>
 		    </j:ApplicationMainContent>
 		</j:ResponsiveView>
