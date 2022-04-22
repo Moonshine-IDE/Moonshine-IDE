@@ -459,17 +459,26 @@ package actionScripts.plugins.as3project.importer
 																	if(par.@hide){
 																		if(pardef.@hide!=par.@hide){
 																			var parHideString:String=par.@hide;
-																			if(parHideString!=null && parHideString!=""){
-																			
-																				DominoGlobals.PardefDivId++;
-																				var pardefXml:XML = new XML("<pardef id=\""+DominoGlobals.PardefDivId+"\" "+" dominotype=\"fixedhide\" />" );
-																				pardefXml.@hide=par.@hide;
+																			var parHideWhenString:String=par.@hidewhen;
+																			if(parHideString!=null){
+																				if(parHideWhenString!=null&& parHideWhenString.length>0){
+																					//it par have the hidewhen property, so we need merge the hide option on the hidewhen 
+																					if(parHideString.length>0){
+																						pardef.@hide=parHideString;
+																					}
+																					
+																				}else{
+																					DominoGlobals.PardefDivId++;
+																					var pardefXml:XML = new XML("<pardef id=\""+DominoGlobals.PardefDivId+"\" "+" dominotype=\"fixedhide\" />" );
+																					pardefXml.@hide=par.@hide;
 
-																				par.@def=DominoGlobals.PardefDivId;
-																				//var parParentNode:XML = par.parent();
-																			    //delete par.parent().children()[par.childIndex()];
-																				if(richtextNode!=null)
-																				richtextNode.insertChildAfter(richtextNode.children()[0],pardefXml);
+																					par.@def=DominoGlobals.PardefDivId;
+																					//var parParentNode:XML = par.parent();
+																					//delete par.parent().children()[par.childIndex()];
+																					if(richtextNode!=null)
+																					richtextNode.insertChildAfter(richtextNode.children()[0],pardefXml);
+																				}
+																				
 																				//parParentNode.appendChild(par);
 																				
 																			}
