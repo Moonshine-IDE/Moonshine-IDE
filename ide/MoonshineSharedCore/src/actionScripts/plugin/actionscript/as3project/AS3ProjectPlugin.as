@@ -405,6 +405,7 @@ package actionScripts.plugin.actionscript.as3project
 		// Create new AS3 Project
 		private function createAS3Project(event:NewProjectEvent):void
 		{
+			trace(canCreateProject(event));
 			if (!canCreateProject(event) && event.settingsFile)
 			{
 				return;
@@ -451,7 +452,8 @@ package actionScripts.plugin.actionscript.as3project
 				projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.GRAILS) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.HAXE) == -1 && 
-				projectTemplateName.indexOf(ProjectTemplateType.ONDISK) == -1;
+				projectTemplateName.indexOf(ProjectTemplateType.ONDISK) == -1 &&
+				projectTemplateName.indexOf(ProjectTemplateType.GENERIC) == -1;
 		}
 		
 		protected function handleEventSearchForProjectsInDirectories(event:ProjectEvent):void
