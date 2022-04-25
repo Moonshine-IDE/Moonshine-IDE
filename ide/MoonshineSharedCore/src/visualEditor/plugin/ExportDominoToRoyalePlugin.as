@@ -133,28 +133,62 @@ package visualEditor.plugin
             conversionCounter--;
             if (conversionCounter == 0)
             {
-                createConvertedFiles(convertedFiles);
+                var views:Array = createConvertedFiles(convertedFiles);
+                var mainContent:String = getMainContentOfApp(views);
             }
         }
 
-        private function createConvertedFiles(convertedFiles:Array):void
+        /**
+         * Save converted files to new project
+         * Create an array to display converted files in main view of app
+         *
+         * @param convertedFiles
+         * @return Array
+         */
+        private function createConvertedFiles(convertedFiles:Array):Array
         {
+            var views:Array = [];
             var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("src" + exportedProject.sourceFolder.fileBridge.separator + "view");
             if (!viewFolder.fileBridge.exists)
             {
                 viewFolder.fileBridge.createDirectory();
             }
 
-            for each (var item:Object in convertedFiles)
+            for (var i:int = 0; i < convertedFiles.length; i++)
             {
+                var item:Object = convertedFiles[i];
+                var fileName:String = item.file.fileBridge.name;
+                var contentName:String = i == 0 ? "first" : fileName;
+                views.push({label: fileName, content: contentName});
+
                 var convertedFile:FileLocation = item.file;
                 var destinationFilePath:String = convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator, "");
+
+                var extensionIndex:int = destinationFilePath.lastIndexOf(convertedFile.fileBridge.extension);
+                if (extensionIndex > -1)
+                {
+                    destinationFilePath = destinationFilePath.replace(".xml", ".mxml");
+                }
 
                 convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
 
-                convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString())
+                convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString());
             }
+
+            return views;
+        }
+
+        private function getMainContentOfApp(views:Array):String
+        {
+            var mainContent:XML = <node />;
+
+            for (var i:int = 0; i < views.length; i++)
+            {
+
+            }
+
+            return "";
         }
     }
 }
