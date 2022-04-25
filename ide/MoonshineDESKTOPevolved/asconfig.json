@@ -9,10 +9,10 @@
 			"../../../Moonshine-SDK-Installer/InstallerSharedCore/src"
 		],
 		"library-path": [
+			"../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc",
 			"libs",
 			"libs/ApacheFlexSDKInstallerLib.swc",
-			"../MoonshineSharedCore/libs",
-			"../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"
+			"../MoonshineSharedCore/libs"
 		]
 	},
 	"files": [

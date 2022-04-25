@@ -1,0 +1,150 @@
+package actionScripts.utils;
+
+import flash.geom.Point;
+import flash.xml.XML;
+import flash.xml.XMLNode;
+import flash.xml.XMLNodeType;
+import flash.xml.XMLDocument;
+
+class TextUtil {
+
+    private static final NON_WORD_CHARACTERS:Array<String> = [" ", "\t", ".", ":", ";", ",", "?", "+", "-", "*", "/", "%", "=", "!", "&", "|", "(", ")", "[", "]", "{", "}", "<", ">"];
+
+    public function new() {
+
+
+        
+    }
+
+    public static function startOfWord(line:String, charIndex:Int):Int
+    {
+        var startChar:Int = 0;
+        var i:Int = charIndex - 1;
+        while ( i >= 0 )
+        {
+            var char:String = line.charAt(i);
+            if(NON_WORD_CHARACTERS.indexOf(char) != -1)
+            {
+                //include the next character, but not this
+                //one, because it's not part of the word
+                startChar = i + 1;
+                break;
+            }
+            i--;
+        }
+        return startChar;
+    }
+
+    public static function endOfWord(line:String, charIndex:Int):Int
+    {
+        var endChar:Int = line.length;
+        //for(var i:int = charIndex + 1; i < endChar; i++)
+        var i:Int = charIndex + 1;
+        while( i < endChar )
+        {
+            var char:String = line.charAt(i);
+            if(NON_WORD_CHARACTERS.indexOf(char) != -1)
+            {
+                endChar = i;
+                break;
+            }
+            i++;
+        }
+        return endChar;
+        
+    }
+
+    // Find word boundary from the beginning of the line
+    public static function wordBoundaryForward(line:String):Int
+    {
+        var r = ~/^(?:\s+|[^\s,(){}\[\]\-+*%\/="'~!&|<>?:;.]+\s*|[,(){}\[\]\-+*%\/="'~!&|<>?:;.]+\s*)/;
+        return line.length - r.replace( line, "" ).length; 
+    }
+    
+    // Find word boundary from the end of the line
+    public static function wordBoundaryBackward(line:String):Int
+    {
+        var r = ~/(?:\s+|[^\s,(){}\[\]\-+*%\/="'~!&|<>?:;.]+\s*|[,(){}\[\]\-+*%\/="'~!&|<>?:;.]+\s*)$/;
+        return line.length - r.replace( line, "" ).length; 
+    }
+
+    // Get amount of indentation on line
+    public static function indentAmount(line:String):Int
+    {
+        var r = ~/^\t+/;
+        var indent:Int = line.length - r.replace( line,"" ).length;
+        if (indent > 0)
+        {
+            return indent;
+        }
+        
+        return 0;
+    }
+
+    // Get amount of indention combining space and tabs on line
+    public static function indentAmountBySpaceAndTab(line:String):Dynamic
+    {
+        var r = ~/^(\s+).*$/;
+        var tmpLine:String = r.replace(line, "$1");
+        r = ~/[ ]/g;
+        var num_spaces:Int = tmpLine.length - r.replace(tmpLine, "").length;
+        r = ~/\t/g;
+        var num_tabs:Int = tmpLine.length - r.replace(tmpLine, "").length;
+        
+        return {space: num_spaces, tab: num_tabs};
+    }
+
+    // Count digits in decimal number
+    public static function digitCount(num:Int):Int
+    {
+        return Math.floor(Math.log(num)/Math.log(10))+1;
+    }
+    
+    // Escape a string so it can be fed into a new RegExp
+    public static function escapeRegex(str:String):String {
+        var r = ~/[\$\(\)\*\+\.\[\]\?\\\^\{\}\|]/g;
+        return r.replace(str,"\\$&");
+    }
+
+    // Repeats a string N times
+    public static function repeatStr(str:String, count:Int):String {
+        var a:Array<String> = [ for ( i in 0...count + 1 ) "" ];
+        return a.join(str);
+    }
+    
+    // Pad a string to 'len' length with 'char' characters
+    public static function padLeft(str:String, len:Int, char:String = "0"):String {
+        return repeatStr(char, len - str.length) + str;
+    }
+
+    // Return lineIdx/charIdx from charIdx
+    public static function charIdx2LineCharIdx(str:String, charIdx:Int, lineDelim:String):Point
+    {
+        var line:Int = str.substr(0,charIdx).split(lineDelim).length - 1;
+        var chr:Int = line > 0 ? charIdx - str.lastIndexOf(lineDelim, charIdx - 1) - lineDelim.length : charIdx;
+        return new Point(line, chr);
+    }
+
+    // Return charIdx from lineIdx/charIdx
+    public static function lineCharIdx2charIdx(str:String, lineIdx:Int, charIdx:Int, lineDelim:String):Int
+    {
+        return (
+            str.split(lineDelim).slice(0,lineIdx).join("").length	// Predecing lines' lengths
+            + lineIdx * lineDelim.length							// Preceding delimiters' lengths
+            + charIdx												// Current line's length
+        );
+    }
+
+    public static function htmlUnescape(str:String):String
+    {
+        // Using legacy XMLDocument
+        return new XMLDocument(str).firstChild.nodeValue;
+    }
+    
+    public static function htmlEscape(str:String):String
+    {
+        // Using legacy XMLNode
+        return new XMLNode( XMLNodeType.TEXT_NODE, str ).toString();
+    }
+
+}

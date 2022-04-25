@@ -37,7 +37,7 @@ package actionScripts.plugin.console.view
 	import feathers.skins.RectangleSkin;
 	import feathers.graphics.FillStyle;
 	import feathers.controls.ScrollPolicy;
-	
+
 	public class CommandLineEditor extends TextEditor
 	{
 		private var history:Array = [];
@@ -49,6 +49,7 @@ package actionScripts.plugin.console.view
 			backgroundSkin = null;
 			showLineNumbers = false;
 			var textStyles:IntMap = new IntMap();
+			Settings.doSomething();
 			textStyles.set(0, new TextFormat(Settings.font.defaultFontFamily, Settings.font.defaultFontSize, 0xdddddd));
 			setParserAndTextStyles(null, textStyles);
 			embedFonts = Settings.font.defaultFontEmbedded;

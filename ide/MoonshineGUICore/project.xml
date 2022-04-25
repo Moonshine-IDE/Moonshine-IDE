@@ -22,11 +22,23 @@
 	<haxeflag name="--macro" value="include('moonshine', true, null, null, true)"/>
 	<haxeflag name="--macro" value="include('feathers', true, null, null, true)"/>
 	<haxeflag name="--macro" value="include('motion', true, null, null, true)"/>
+	<haxeflag name="--macro" value="include('actionScripts', true, null, null, true)"/>
+	<haxeflag name="--swf-version" value="44"/>
+
+	<haxedef name="no-deprecation-warnings" />
+	<haxedef name="air" />
+	<define name="air" />
+	<define name="desktop" />
+
+	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/airglobal.swc"/>
+	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/aircore.swc"/>
+	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/airframework.swc"/>
 
 	<section if="flash">
 		<source path="build_macros/flash"/>
 		<haxeflag name="--macro" value="AddFlashPropertyMeta.find('feathers')"/>
 		<haxeflag name="--macro" value="AddFlashPropertyMeta.find('moonshine')"/>
 		<haxeflag name="--macro" value="AddFlashPropertyMeta.find('motion')"/>
+		<haxeflag name="--macro" value="AddFlashPropertyMeta.find('actionScripts')"/>
 	</section>
 </project>

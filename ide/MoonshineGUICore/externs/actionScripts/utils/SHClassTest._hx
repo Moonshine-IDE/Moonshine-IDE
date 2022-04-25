@@ -1,0 +1,151 @@
+package actionScripts.utils;
+
+import flash.Vector;
+import flash.desktop.NativeProcess;
+import flash.desktop.NativeProcessStartupInfo;
+import flash.events.Event;
+import flash.events.IOErrorEvent;
+import flash.events.NativeProcessExitEvent;
+import flash.events.ProgressEvent;
+import flash.filesystem.File;
+
+class SHClassTest {
+
+    var process: NativeProcess;
+
+    public function new() {
+        
+    }
+
+    /**
+        * Initialize CyberDuck FTP for MacOS
+    */
+    public function removeExAttributesTo(appPath:String):Void
+    {
+        // 1. declare necessary arguments
+        var npInfo : NativeProcessStartupInfo = new NativeProcessStartupInfo();
+        var arg:Vector<String> = new Vector<String>();
+        var exeCommand : String;
+        var shPath : String = initCHMOD( npInfo, arg );
+        
+        /*
+        * @local
+        * on NativeProcess ends
+        */
+        
+        function onProcessEnd(event:NativeProcessExitEvent):Void
+        {
+            // removals
+            event.target.removeEventListener(NativeProcessExitEvent.EXIT, onProcessEnd);
+            releaseListenersToProcess(event);
+            
+            // 2. triggering the application
+            arg = new Vector<String>();
+            arg.push( "-c" ); 
+            exeCommand = shPath+" '"+ appPath +"'";
+            arg.push( exeCommand );
+            
+            npInfo.arguments = arg;
+            process = new NativeProcess();
+            process.start( npInfo );
+            attachListenersToProcess(process);
+        }
+
+        // need to asynchronise the NativeProcess event completion
+        // in initCHMOD to start the next process
+        process.addEventListener( NativeProcessExitEvent.EXIT, onProcessEnd );
+        
+    }
+
+    function initCHMOD( npInfo:NativeProcessStartupInfo, arg:Vector<String>, withARGS:Bool=true ) : String {
+			
+        // 2. generating arguments
+        npInfo.executable = File.documentsDirectory.resolvePath( "/bin/bash" );
+        arg = new Vector<String>();
+        
+        // for MacOS platform
+        var shFile : File = File.applicationDirectory.resolvePath("macOScripts/openwithapplication.sh");
+        
+        // making proper case-sensitive to work in case-sensitive system like Linux
+        //shFile.canonicalize();
+        //var pattern : RegExp = new RegExp( ~/( )/g );
+        var pattern = ~/( )/g;
+        var shPath : String = shFile.nativePath;
+        shPath = pattern.replace( shPath, "\\ " );
+        
+        // @call 1
+        arg.push( "-c" );
+        arg.push( "chmod +x "+shPath );
+        npInfo.arguments = arg;
+        process = new NativeProcess();
+        process.start( npInfo );
+        attachListenersToProcess(process);
+        
+        // @return
+        return shPath;
+    }
+
+    /**
+    * Attach listeners to NativeProcess
+    */
+    function attachListenersToProcess(target:NativeProcess):Void
+    {
+        var e = new NativeProcessExitEvent( NativeProcessExitEvent.EXIT );
+        target.addEventListener(NativeProcessExitEvent.EXIT, onExit);
+        target.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+        target.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+        target.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, onIOError);
+        target.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOError);
+    }
+    
+    /**
+        * Release all the listeners from NativeProcess
+        */
+    function releaseListenersToProcess(event:Event):Void
+    {
+        event.target.removeEventListener(NativeProcessExitEvent.EXIT, onExit);
+        event.target.removeEventListener("asdasd", onOutputData);
+        event.target.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+        event.target.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+        event.target.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, onIOError);
+        event.target.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, onIOError);
+        process.closeInput();
+    }
+
+    /**
+    * NativeProcess outputData handler
+    */
+    private function onOutputData(event:ProgressEvent):Void
+    {
+        releaseListenersToProcess(event);
+        //superTrace.setConnectionLog("NativeProcess OutputData: " +process.standardOutput.readUTFBytes(process.standardOutput.bytesAvailable));
+    }
+    
+    /**
+        * NativeProcess errorData handler
+        */
+    private function onErrorData(event:ProgressEvent):Void
+    {
+        releaseListenersToProcess(event);
+        //superTrace.setConnectionLog("NativeProcess ERROR: " +process.standardError.readUTFBytes(process.standardError.bytesAvailable)); 
+    }
+    
+    /**
+        * NativeProcess exit handler
+        */
+    private function onExit(event:NativeProcessExitEvent):Void
+    {
+        releaseListenersToProcess(event);
+        //superTrace.setConnectionLog("NativeProcess Exit: " +event.exitCode);
+    }
+    
+    /**
+        * NativeProcess ioError handler
+        */
+    private function onIOError(event:IOErrorEvent):Void
+    {
+        releaseListenersToProcess(event);
+        //superTrace.setConnectionLog("NativeProcess IOERROR: " +event.toString());
+    }
+
+}

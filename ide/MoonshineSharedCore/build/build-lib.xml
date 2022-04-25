@@ -919,7 +919,7 @@
 		</if>
 	</target>
 
-	<target name="InstallHaxeDependencies">
+	<target name="InstallHaxeDependencies" unless="nohaxelib">
 		<echo>Installing Haxe Libraries</echo>
 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
@@ -991,6 +991,8 @@
 			<arg value="openfl"/>
 			<arg value="build"/>
 			<arg value="flash"/>
+			<arg value="-debug"/>
+			<arg value="-Dflexhome='${FLEX_HOME}'"/>
 		</exec>
 	</target>
 
