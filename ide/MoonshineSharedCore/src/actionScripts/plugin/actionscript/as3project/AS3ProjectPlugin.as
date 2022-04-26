@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project
 {
+	import actionScripts.plugin.genericproj.events.GenericProjectEvent;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.setTimeout;
@@ -296,7 +298,9 @@ package actionScripts.plugin.actionscript.as3project
 			if (!isFBProject && !isFDProject)
 			{
 				nonProjectFolderLocation = new FileLocation(dir.nativePath);
-				Alert.show("This directory is missing the Moonshine project configuration files. Do you want to generate a new project by locating existing source?", "Error!", Alert.YES|Alert.NO, null, onExistingSourceProjectConfirm);
+				Alert.yesLabel = "Create project with source";
+				Alert.noLabel = "Open as generic project";
+				Alert.show("This directory is missing the Moonshine project configuration files. Do you want to generate a new project by locating existing source?", "Error!", Alert.YES|Alert.NO|Alert.CANCEL, null, onExistingSourceProjectConfirm);
 			}
 			else if (isFBProject && isFDProject)
 			{
@@ -327,9 +331,15 @@ package actionScripts.plugin.actionscript.as3project
 		
 		private function onExistingSourceProjectConfirm(event:CloseEvent):void
 		{
+			Alert.yesLabel = "Yes";
+			Alert.noLabel = "No";
 			if (event.detail == Alert.YES)
 			{
 				createAS3Project(new NewProjectEvent("", "as3proj", null, nonProjectFolderLocation));
+			}
+			else if (event.detail == Alert.NO)
+			{
+				dispatcher.dispatchEvent(new GenericProjectEvent(GenericProjectEvent.EVENT_OPEN_PROJECT, nonProjectFolderLocation));
 			}
 			
 			nonProjectFolderLocation = null;

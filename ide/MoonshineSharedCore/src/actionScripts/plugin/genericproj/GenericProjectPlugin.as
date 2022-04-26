@@ -18,7 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.genericproj
 {
-    import flash.display.DisplayObject;
+	import actionScripts.plugin.genericproj.events.GenericProjectEvent;
+	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
+
+	import flash.display.DisplayObject;
     import flash.events.Event;
     
     import mx.core.FlexGlobals;
@@ -41,8 +44,6 @@ package actionScripts.plugin.genericproj
 	
 	public class GenericProjectPlugin extends PluginBase
 	{
-		public static const EVENT_NEW_FILE_WINDOW:String = "onOnDiskNewFileWindowRequest";
-		
 		public var activeType:uint = ProjectType.ONDISK;
 		
 		override public function get name():String 			{ return "Generic Project Plugin"; }
@@ -54,18 +55,16 @@ package actionScripts.plugin.genericproj
 		override public function activate():void
 		{
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler, false, 0, true);
-			dispatcher.addEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow, false, 0, true);
-			dispatcher.addEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest, false, 0, true);
-			
+			dispatcher.addEventListener(GenericProjectEvent.EVENT_OPEN_PROJECT, onGenericProjectImport, false, 0, true);
+
 			super.activate();
 		}
 		
 		override public function deactivate():void
 		{
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
-			dispatcher.removeEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow);
-			dispatcher.removeEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest);
-			
+			dispatcher.removeEventListener(GenericProjectEvent.EVENT_OPEN_PROJECT, onGenericProjectImport);
+
 			super.deactivate();
 		}
 		
@@ -77,6 +76,13 @@ package actionScripts.plugin.genericproj
 			}
 			
 			new CreateGenericProject(event);
+		}
+
+		private function onGenericProjectImport(event:GenericProjectEvent):void
+		{
+			new CreateGenericProject(
+				new NewProjectEvent(NewProjectEvent.IMPORT_AS_NEW_PROJECT, null, null, event.value as FileLocation)
+			);
 		}
 
         private function canCreateProject(event:NewProjectEvent):Boolean

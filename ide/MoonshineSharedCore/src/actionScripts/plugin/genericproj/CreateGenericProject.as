@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.genericproj
 {
+	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
 	import actionScripts.plugin.ondiskproj.*;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.valueObjects.ProjectVO;
 
 	import flash.display.DisplayObject;
@@ -40,7 +42,6 @@ package actionScripts.plugin.genericproj
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskExporter;
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 	import actionScripts.plugin.ondiskproj.importer.OnDiskImporter;
-	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -61,10 +62,10 @@ package actionScripts.plugin.genericproj
 	{
 		public function CreateGenericProject(event:NewProjectEvent)
 		{
-			createGrailsProject(event);
+			createGenericProject(event);
 		}
 		
-		private var project:ProjectVO;
+		private var project:GenericProjectVO;
 		private var newProjectNameSetting:StringSetting;
 		private var newProjectPathSetting:PathSetting;
 		private var isInvalidToSave:Boolean;
@@ -76,7 +77,7 @@ package actionScripts.plugin.genericproj
 		
 		private var _currentCauseToBeInvalid:String;
 		
-		private function createGrailsProject(event:NewProjectEvent):void
+		private function createGenericProject(event:NewProjectEvent):void
 		{
 			var lastSelectedProjectPath:String;
 			
@@ -99,12 +100,21 @@ package actionScripts.plugin.genericproj
 					model.recentSaveProjectPath.addItem(lastSelectedProjectPath);
 				}
 			}
-			
-			// Remove spaces from project name
-			var projectName:String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
-			projectName = "New" + projectName.replace(/ /g, "");
-			
-			project = new ProjectVO(event.templateDir, projectName);
+
+			// in case of new project
+			if (event.type != NewProjectEvent.IMPORT_AS_NEW_PROJECT)
+			{
+				// Remove spaces from project name
+				var projectName:String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
+				projectName = "New" + projectName.replace(/ /g, "");
+
+				project = new GenericProjectVO(event.templateDir, projectName);
+			}
+			else
+			{
+				project = new GenericProjectVO(event.templateDir.fileBridge.parent, event.templateDir.name);
+			}
+
 			//project.isDominoVisualEditorProject=true;
 			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ?
 				lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
@@ -132,7 +142,7 @@ package actionScripts.plugin.genericproj
 			templateLookup[project] = event.templateDir;
 		}
 		
-		private function getProjectSettings(project:ProjectVO, eventObject:NewProjectEvent):SettingsWrapper
+		private function getProjectSettings(project:GenericProjectVO, eventObject:NewProjectEvent):SettingsWrapper
 		{
 			var historyPaths:ArrayCollection = ObjectUtil.copy(model.recentSaveProjectPath) as ArrayCollection;
 			if (historyPaths.length == 0)
@@ -222,7 +232,7 @@ package actionScripts.plugin.genericproj
 			}
 			
 			var view:SettingsView = event.target as SettingsView;
-			var project:OnDiskProjectVO = view.associatedData as OnDiskProjectVO;
+			var project:GenericProjectVO = view.associatedData as GenericProjectVO;
 			//project.isDominoVisualEditorProject=true;
 			//save project path in shared object
 			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
@@ -237,7 +247,7 @@ package actionScripts.plugin.genericproj
 			cookie.data["recentProjectPath"] = model.recentSaveProjectPath.source;
 			cookie.flush();
 			
-			project = createFileSystemBeforeSave(project, view.exportProject as OnDiskProjectVO);
+			project = createFileSystemBeforeSave(project);
 			if (!project)
 			{
 				return;
@@ -259,7 +269,7 @@ package actionScripts.plugin.genericproj
 			Alert.show(_currentCauseToBeInvalid +" Project creation terminated.", "Error!");
 		}
 		
-		private function createFileSystemBeforeSave(pvo:OnDiskProjectVO, exportProject:OnDiskProjectVO = null):OnDiskProjectVO
+		private function createFileSystemBeforeSave(pvo:GenericProjectVO):GenericProjectVO
 		{	
 			var templateDir:FileLocation = templateLookup[pvo];
 			//Alert.show("templateDir:"+templateDir.fileBridge.nativePath);
@@ -282,69 +292,13 @@ package actionScripts.plugin.genericproj
 					}
 				}
 				
-				targetFolder = targetFolder.resolvePath(projectName);
+			targetFolder = targetFolder.resolvePath(projectName);
 			targetFolder.fileBridge.createDirectory();
-			
-			// Time to do the templating thing!
-			var th:TemplatingHelper = new TemplatingHelper();
-			th.isProjectFromExistingSource = false;
-			th.templatingData["$ProjectName"] = projectName;
-			
-			var pattern:RegExp = new RegExp(/(_)/g);
-			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
-			th.templatingData["$Settings"] = projectName;
-			th.templatingData["$SourcePath"] = sourcePath;
-			th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + model.fileCore.separator +"visualeditor"+ model.fileCore.separator + sourceFileWithExtension) : "";
-			
-			var tmpDate:Date = new Date();	
-			
-			th.templatingData["$createdOn"] = tmpDate.toString();
-			th.templatingData["$revisedOn"] = tmpDate.toString();
-			th.templatingData["$lastAccessedOn"] = tmpDate.toString();
-			th.templatingData["$addedOn"] = tmpDate.toString();
-			
-			th.projectTemplate(templateDir, targetFolder);
-			//this line will remove old .dve file and generate new dxl file template follow domino visual format.
-			fixVisualDveFileToDominoVisualTemplate(targetFolder.resolvePath(th.templatingData["$SourceFile"]),pvo.projectName,sourceDominoVisualFormPath,targetFolder)
-			
-			var projectSettingsFileName:String = projectName + ".ondiskproj";
-			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
-			pvo = OnDiskImporter.parse(targetFolder, projectName, settingsFile);
-			
-			if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists)
-			{
-				pvo.mavenBuildOptions.settingsFilePath = OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath; 
-			}
-			
-			OnDiskExporter.export(pvo);
 
-			//pvo.isDominoVisualEditorProject=true;
-			//Alert.show(":"+pvo.isDominoVisualEditorProject)
-			
+			pvo = new GenericProjectVO(targetFolder, projectName);
+			pvo.menuType = ProjectMenuTypes.GENERIC;
+
 			return pvo;
-		}
-
-
-		private function fixVisualDveFileToDominoVisualTemplate(dveFile:FileLocation,title:String,sourceDominoVisualFormPath:String,targetFolder:FileLocation):void{
-			//var dveFile:FileLocation = TemplatingHelper.getCustomFileFor(filePath);
-			var dveFilePath:String=dveFile.fileBridge.nativePath;
-			//Alert.show("dveFilePath:"+dveFilePath);
-			if (dveFile.fileBridge.exists)
-			{
-				dveFile.fileBridge.deleteFile();
-			}
-			var fileTo:File = new File(dveFilePath);
-			//create a new dve file from new template
-			var xml:XML=DominoUtils.getDominoParentContent(title,title);
-			var fs:FileStream = new FileStream();
-			fs.open(fileTo, FileMode.WRITE);
-			fs.writeUTFBytes(xml.toXMLString());
-			fs.close();
-
-			if(dveFile.fileBridge.exists){
-				var newFormFile:FileLocation =  targetFolder.resolvePath(sourceDominoVisualFormPath); 
-				dveFile.fileBridge.copyTo(newFormFile, true); 
-			}
 		}
 	}
 }
