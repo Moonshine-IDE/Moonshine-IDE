@@ -51,7 +51,7 @@
 
 
 
-
+			[Bindable]
 			private var isDominoValid:Boolean=false;
 			private var dominoFolderList:FileWrapper=null;
 			
