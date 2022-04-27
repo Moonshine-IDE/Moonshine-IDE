@@ -20,7 +20,7 @@ public class BasicLanguageServer implements LanguageServer, LanguageClientAware 
     private int errorCode = 1;
 
     public BasicLanguageServer() {
-        this.textDocumentService = new BasicTextDocumentService();
+        this.textDocumentService = new BasicTextDocumentService(this);
         this.workspaceService = new BasicWorkspaceService();
     }
 
@@ -66,4 +66,10 @@ public class BasicLanguageServer implements LanguageServer, LanguageClientAware 
         // Get the client which started this LS.
         this.client = languageClient;
     }
+
+	public LanguageClient getClient() {
+		return client;
+	}
+    
+    
 }
