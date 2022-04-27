@@ -235,7 +235,7 @@ package visualEditor.plugin
 
             var content:XML = <ApplicationMainContent/>;
                 content.@id="mainContent";
-                content.@hasTopAppBar="false";
+                content.@hasTopAppBar="true";
                 content.@hasFooterBar="true";
 
                 content.setNamespace(jNamespace);
