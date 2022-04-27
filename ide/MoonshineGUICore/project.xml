@@ -27,6 +27,7 @@
 	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/airglobal.swc"/>
 	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/aircore.swc"/>
 	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/airframework.swc"/>
+	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/framework.swc"/>
 
 	<haxedef name="no-deprecation-warnings" />
 	<haxedef name="air" />
