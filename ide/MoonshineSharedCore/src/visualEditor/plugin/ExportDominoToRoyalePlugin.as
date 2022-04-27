@@ -19,6 +19,7 @@
 package visualEditor.plugin
 {
     import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.templating.TemplatingHelper;
     import actionScripts.valueObjects.FileWrapper;
 
     import actionScripts.events.ExportVisualEditorProjectEvent;
@@ -134,8 +135,23 @@ package visualEditor.plugin
             if (conversionCounter == 0)
             {
                 var views:Array = createConvertedFiles(convertedFiles);
-                var mainContent:String = getMainContentOfApp(views);
+
+                saveMainFileWithViews(views);
             }
+        }
+
+        private function saveMainFileWithViews(views:Array):void
+        {
+            var mainFile:FileLocation = exportedProject.targets[0];
+            var content:String = String(mainFile.fileBridge.read());
+
+            var contentData:Object = {};
+                contentData["$NavigationContent"] = getNavigationDp(views);
+                contentData["$ApplicationMainContent"] = getMainContent(views);
+
+            content = TemplatingHelper.replace(content, contentData);
+
+            mainFile.fileBridge.save(content);
         }
 
         /**
@@ -157,16 +173,20 @@ package visualEditor.plugin
             for (var i:int = 0; i < convertedFiles.length; i++)
             {
                 var item:Object = convertedFiles[i];
-                var fileName:String = item.file.fileBridge.name;
-                var contentName:String = i == 0 ? "first" : fileName;
-                views.push({label: fileName, content: contentName});
+                var viewObj:Object = {};
 
                 var convertedFile:FileLocation = item.file;
-                var destinationFilePath:String = convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator, "");
+                var destinationFilePath:String = convertedFile.fileBridge.parent.name == "pages" ?
+                        convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator +
+                                "pages" + exportedProject.sourceFolder.fileBridge.separator, "") :
+                        convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator, "");
 
                 var extensionIndex:int = destinationFilePath.lastIndexOf(convertedFile.fileBridge.extension);
                 if (extensionIndex > -1)
                 {
+                    var nameWithoutExt:String = destinationFilePath.substring(0, extensionIndex - 1);
+                    viewObj.label = nameWithoutExt;
+                    viewObj.content = nameWithoutExt;
                     destinationFilePath = destinationFilePath.replace(".xml", ".mxml");
                 }
 
@@ -174,21 +194,71 @@ package visualEditor.plugin
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
 
                 convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString());
+
+                views.push(viewObj);
             }
 
             return views;
         }
 
-        private function getMainContentOfApp(views:Array):String
+        private function getNavigationDp(views:Array):String
         {
-            var mainContent:XML = <node />;
+            var jNamespace:Namespace = new Namespace("j", "library://ns.apache.org/royale/jewel");
+            var jsNamespace:Namespace = new Namespace("js", "library://ns.apache.org/royale/basic");
+            var fxNamespace:Namespace = new Namespace("fx", "http://ns.adobe.com/mxml/2009");
+
+            var dp:XML = <dataProvider/>;
+                dp.setNamespace(jNamespace);
+
+            var dpContent:XML = <ArrayList/>;
+                dpContent.setNamespace(jsNamespace);
 
             for (var i:int = 0; i < views.length; i++)
             {
+                var item:Object = views[i];
+                var obj:XML = <Object />;
+                    obj.setNamespace(fxNamespace);
+                    obj.@label = item.label;
+                    obj.@content = item.content;
 
+                dpContent.appendChild(obj);
             }
 
-            return "";
+            dp.appendChild(dpContent);
+            return dp.toXMLString();
+        }
+
+        private function getMainContent(views:Array):String
+        {
+            var jNamespace:Namespace = new Namespace("j", "library://ns.apache.org/royale/jewel");
+            var viewNamespace:Namespace = new Namespace("view", "src.view.*");
+
+            var content:XML = <ApplicationMainContent/>;
+                content.@id="mainContent";
+                content.@hasTopAppBar="false";
+                content.@hasFooterBar="true";
+
+                content.setNamespace(jNamespace);
+
+            for (var i:int = 0; i < views.length; i++)
+            {
+                var item:Object = views[i];
+                if (i == 0)
+                {
+                    content.@selectedContent = item.content;
+                }
+
+                var sectionContent:XML = <SectionContent />;
+                    sectionContent.setNamespace(jNamespace);
+                    sectionContent.@name = item.content;
+                var view:XML = new XML('<' + item.label + '/>');
+                    view.setNamespace(viewNamespace);
+
+                sectionContent.appendChild(view);
+                content.appendChild(sectionContent);
+            }
+
+            return content.toXMLString();
         }
     }
 }
