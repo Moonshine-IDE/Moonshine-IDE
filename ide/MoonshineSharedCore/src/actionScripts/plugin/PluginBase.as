@@ -25,6 +25,7 @@ package actionScripts.plugin
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.console.view.ConsoleModeEvent;
+	import mx.effects.effectClasses.ZoomInstance;
 	
 	public class PluginBase extends ConsoleOutputter implements IPlugin 
 	{
@@ -95,6 +96,12 @@ package actionScripts.plugin
 			dispatcher.dispatchEvent(new ConsoleModeEvent(ConsoleModeEvent.CHANGE, ""));
 		}
 		
+		// TODO: Interface fixes
+		public function get_name():String { return ""; }
+		public function get_author():String { return ""; }
+		public function get_description():String { return ""; }
+		public function get_activated():Boolean { return false; }
+		public function get_activatedByDefault():Boolean { return false; }
 		
 	}
 }
