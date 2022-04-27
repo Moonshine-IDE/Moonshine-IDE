@@ -415,8 +415,7 @@ package actionScripts.plugin.actionscript.as3project
 		// Create new AS3 Project
 		private function createAS3Project(event:NewProjectEvent):void
 		{
-			trace(canCreateProject(event));
-			if (!canCreateProject(event) && event.settingsFile)
+			if (!canCreateProject(event))
 			{
 				return;
 			}

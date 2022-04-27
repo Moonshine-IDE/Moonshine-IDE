@@ -71,6 +71,7 @@ package actionScripts.plugin.genericproj
 		private var isInvalidToSave:Boolean;
 		private var cookie:SharedObject;
 		private var templateLookup:Object = {};
+		private var isImportProjectCall:Boolean;
 		
 		private var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -112,6 +113,7 @@ package actionScripts.plugin.genericproj
 			}
 			else
 			{
+				isImportProjectCall = true;
 				project = new GenericProjectVO(event.templateDir.fileBridge.parent, event.templateDir.name);
 			}
 
@@ -165,13 +167,7 @@ package actionScripts.plugin.genericproj
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = OnDiskImporter.test(value.fileBridge.getFile);
-			if (!tmpFile && value.fileBridge.exists)
-			{
-				tmpFile = value;
-			}
-			
-			if (tmpFile) 
+			if (value.fileBridge.exists && !isImportProjectCall)
 			{
 				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
@@ -187,7 +183,7 @@ package actionScripts.plugin.genericproj
 			}
 			else
 			{
-				isInvalidToSave = tmpFile ? true : false;
+				isInvalidToSave = (value.fileBridge.exists && !isImportProjectCall);
 			}
 		}
 		
@@ -293,7 +289,8 @@ package actionScripts.plugin.genericproj
 				}
 				
 			targetFolder = targetFolder.resolvePath(projectName);
-			targetFolder.fileBridge.createDirectory();
+			if (!targetFolder.fileBridge.exists)
+				targetFolder.fileBridge.createDirectory();
 
 			pvo = new GenericProjectVO(targetFolder, projectName);
 			pvo.menuType = ProjectMenuTypes.GENERIC;
