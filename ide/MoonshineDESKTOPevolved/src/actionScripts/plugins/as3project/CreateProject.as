@@ -1009,7 +1009,7 @@ package actionScripts.plugins.as3project
 				var royaleMxml:FileLocation =  templateDir.resolvePath("src"+File.separator+"$ProjectName.mxml.template");
 				if(royaleMxml.fileBridge.exists)
 				{
-					var newRoyaleMxml:FileLocation =  targetFolder.resolvePath("src"+File.separator+pvo.projectName + ".mxml");
+					newRoyaleMxml =  targetFolder.resolvePath("src"+File.separator+pvo.projectName + ".mxml");
 
 					royaleMxml.fileBridge.copyTo(newRoyaleMxml, true);
 					var duplicateRoyaleMxml:FileLocation =  targetFolder.resolvePath("src"+File.separator + "$ProjectName.mxml.template");
@@ -1021,7 +1021,7 @@ package actionScripts.plugins.as3project
 				var royaleTempalte:FileLocation =  templateDir.resolvePath("$Settings.as3proj.template");
 				if(royaleTempalte.fileBridge.exists)
 				{
-					var newRoyaleTemplate:FileLocation =  targetFolder.resolvePath(pvo.projectName + ".as3proj");
+					newRoyaleTemplate =  targetFolder.resolvePath(pvo.projectName + ".as3proj");
 					royaleTempalte.fileBridge.copyTo(newRoyaleTemplate, true);
 				}
 
