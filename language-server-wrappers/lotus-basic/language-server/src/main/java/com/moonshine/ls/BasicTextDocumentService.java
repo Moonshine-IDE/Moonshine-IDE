@@ -1,4 +1,4 @@
-package com.moonshine.basic;
+package com.moonshine.ls;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -172,7 +172,7 @@ public class BasicTextDocumentService implements TextDocumentService {
 	@Override
 	public void didClose(DidCloseTextDocumentParams didCloseTextDocumentParams) {
 	}
-
+  
 	@Override
 	public void didSave(DidSaveTextDocumentParams didSaveTextDocumentParams) {
 		CompletableFuture.runAsync(() -> lanugageServer.getClient().publishDiagnostics(new PublishDiagnosticsParams(

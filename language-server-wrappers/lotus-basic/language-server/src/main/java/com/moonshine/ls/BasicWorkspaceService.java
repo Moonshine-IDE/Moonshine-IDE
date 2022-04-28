@@ -1,4 +1,4 @@
-package com.moonshine.basic;
+package com.moonshine.ls;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
