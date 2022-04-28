@@ -23,6 +23,7 @@
 				<configuration>
 					<listener>true</listener>
 					<visitor>true</visitor>
+					<outputDirectory>src/main/java/</outputDirectory>
 <!-- 					<packageName>com.moonshine.parsers</packageName> -->
 <!-- 					<grammarFiles>src/main/grammars</grammarFiles> -->
 				</configuration>
