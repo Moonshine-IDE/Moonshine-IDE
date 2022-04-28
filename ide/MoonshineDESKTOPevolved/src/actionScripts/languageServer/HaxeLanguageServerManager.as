@@ -774,7 +774,7 @@ package actionScripts.languageServer
 		private function tabSelectHandler(event:TabEvent):void
 		{
 			var textEditor:BasicTextEditor = event.child as BasicTextEditor;
-			if(!textEditor)
+			if(!textEditor || !textEditor.currentFile)
 			{
 				return;
 			}
