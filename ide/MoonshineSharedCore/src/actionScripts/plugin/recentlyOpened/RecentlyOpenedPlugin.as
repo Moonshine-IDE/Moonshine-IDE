@@ -19,40 +19,42 @@
 package actionScripts.plugin.recentlyOpened
 {
 	import flash.events.Event;
-    import flash.net.SharedObject;
-    import flash.utils.clearTimeout;
-    import flash.utils.setTimeout;
-    
-    import mx.collections.ArrayCollection;
-    import mx.controls.Alert;
-    
-    import actionScripts.events.FilePluginEvent;
-    import actionScripts.events.GeneralEvent;
-    import actionScripts.events.GlobalEventDispatcher;
-    import actionScripts.events.MenuEvent;
-    import actionScripts.events.OpenFileEvent;
-    import actionScripts.events.ProjectEvent;
-    import actionScripts.events.StartupHelperEvent;
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.IMenuPlugin;
-    import actionScripts.plugin.PluginBase;
-    import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-    import actionScripts.plugin.settings.providers.Java8SettingsProvider;
-    import actionScripts.plugin.settings.providers.JavaSettingsProvider;
-    import actionScripts.ui.LayoutModifier;
-    import actionScripts.ui.menu.vo.MenuItem;
-    import actionScripts.utils.OSXBookmarkerNotifiers;
-    import actionScripts.utils.ObjectTranslator;
-    import actionScripts.utils.SDKUtils;
-    import actionScripts.utils.SharedObjectConst;
-    import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.valueObjects.MobileDeviceVO;
-    import actionScripts.valueObjects.ProjectReferenceVO;
-    import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.SDKReferenceVO;
-    
-    import components.views.project.TreeView;
+	import flash.net.SharedObject;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+	
+	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
+	
+	import actionScripts.events.FilePluginEvent;
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.MenuEvent;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.StartupHelperEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.IMenuPlugin;
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
+	import actionScripts.plugin.settings.providers.Java8SettingsProvider;
+	import actionScripts.plugin.settings.providers.JavaSettingsProvider;
+	import actionScripts.ui.LayoutModifier;
+	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.utils.ObjectTranslator;
+	import actionScripts.utils.SDKUtils;
+	import actionScripts.utils.SharedObjectConst;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.MobileDeviceVO;
+	import actionScripts.valueObjects.ProjectReferenceVO;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.SDKReferenceVO;
+	
+	import components.views.project.TreeView;
 
 	public class RecentlyOpenedPlugin extends PluginBase implements IMenuPlugin
 	{
@@ -640,6 +642,14 @@ package actionScripts.plugin.recentlyOpened
 				{
 					return model.ondiskCore.parseOnDisk(recentOpenedProjectObject as FileLocation);
 				}
+				
+				// if still no project type matched
+				if (!projectFileLocation)
+				{
+					var genericProject:GenericProjectVO = new GenericProjectVO(recentOpenedProjectObject as FileLocation);
+					genericProject.menuType = ProjectMenuTypes.GENERIC;
+					return genericProject;	
+				}				
 			}
 			
 			return null;
