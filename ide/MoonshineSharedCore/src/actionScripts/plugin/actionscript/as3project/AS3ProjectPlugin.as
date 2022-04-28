@@ -293,13 +293,12 @@ package actionScripts.plugin.actionscript.as3project
 				}
 			}
 
-			
-			
 			if (!isFBProject && !isFDProject)
 			{
 				nonProjectFolderLocation = new FileLocation(dir.nativePath);
 				Alert.yesLabel = "Create project with source";
 				Alert.noLabel = "Open as generic project";
+				Alert.buttonWidth = 170;
 				Alert.show("This directory is missing the Moonshine project configuration files. Do you want to generate a new project by locating existing source?", "Error!", Alert.YES|Alert.NO|Alert.CANCEL, null, onExistingSourceProjectConfirm);
 			}
 			else if (isFBProject && isFDProject)
@@ -333,6 +332,7 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			Alert.yesLabel = "Yes";
 			Alert.noLabel = "No";
+			Alert.buttonWidth = 65;
 			if (event.detail == Alert.YES)
 			{
 				createAS3Project(new NewProjectEvent("", "as3proj", null, nonProjectFolderLocation));
