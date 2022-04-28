@@ -2,7 +2,7 @@ import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
-import com.moonshine.basic.BasicLanguageServer;
+import com.moonshine.ls.BasicLanguageServer;
 
 import java.io.InputStream;
 import java.io.OutputStream;
