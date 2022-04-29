@@ -18,6 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.genericproj
 {
+	import actionScripts.events.GradleBuildEvent;
+	import actionScripts.events.MavenBuildEvent;
+	import actionScripts.plugin.core.compiler.JavaBuildEvent;
 	import actionScripts.plugin.genericproj.events.GenericProjectEvent;
 	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
 
