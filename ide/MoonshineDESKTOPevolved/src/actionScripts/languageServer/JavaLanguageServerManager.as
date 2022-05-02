@@ -149,7 +149,7 @@ package actionScripts.languageServer
 		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToDispose:Boolean = false;
 		private var _watchedFiles:Object = {};
-		private var _settingUpdateBuildConfiguration:int = -1;
+		private var _settingUpdateBuildConfiguration:int = FEATURE_STATUS_AUTOMATIC;
 		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
@@ -540,13 +540,7 @@ package actionScripts.languageServer
 			{
 				bundles: [],
 				workspaceFolders: [_project.projectFolder.file.fileBridge.url],
-				settings: {
-					java: {
-						autobuild: {
-							enabled: false
-						}
-					}
-				},
+				settings: getWorkspaceSettings(),
 				extendedClientCapabilities:
 				{
 					progressReportProvider: false,//getJavaConfiguration().get('progressReports.enabled'),
@@ -613,16 +607,14 @@ package actionScripts.languageServer
 			}
 		}
 
-		private function sendWorkspaceSettings():void
+		private function getWorkspaceSettings():Object
 		{
-			if(!_languageClient || !_languageClient.initialized)
-			{
-				return;
-			}
 			var runtimes:Array = [];
+			var javaHome:FileLocation = null;
 			var java8Path:FileLocation = _model.java8Path;
 			if(_project.jdkType == JavaTypes.JAVA_8)
 			{
+				javaHome = java8Path;
 				if(java8Path != null)
 				{
 					runtimes.push({
@@ -634,6 +626,7 @@ package actionScripts.languageServer
 			}
 			else
 			{
+				javaHome = _model.javaPathForTypeAhead;
 				var versionParts:Array = _model.javaVersionForTypeAhead.split(".");
 				var sourcesZip:FileLocation = _model.javaPathForTypeAhead.fileBridge.resolvePath("lib/src.zip");
 				runtimes.push({
@@ -644,7 +637,17 @@ package actionScripts.languageServer
 					"default":  true
 				});
 			}
-			var settings:Object = { java: { configuration: { runtimes: runtimes } } };
+			var settings:Object = {
+				java: {
+					autobuild: {
+						enabled: false
+					},
+					configuration: {
+						runtimes: runtimes
+					},
+					home: javaHome.fileBridge.nativePath
+				}
+			};
 			switch(_settingUpdateBuildConfiguration) {
 				case FEATURE_STATUS_DISABLED:
 					settings.java.configuration.updateBuildConfiguration = "disabled";
@@ -656,8 +659,18 @@ package actionScripts.languageServer
 					settings.java.configuration.updateBuildConfiguration = "automatic";
 					break;
 			}
+			return settings;
+		}
+
+		private function sendWorkspaceSettings():void
+		{
+			if(!_languageClient || !_languageClient.initialized)
+			{
+				return;
+			}
+			
 			var params:Object = new Object();
-			params.settings = settings;
+			params.settings = getWorkspaceSettings();
 			_languageClient.sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
 		}
 
