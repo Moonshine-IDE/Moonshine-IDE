@@ -110,38 +110,46 @@ package actionScripts.plugin.genericproj
 				projectName = "New" + projectName.replace(/ /g, "");
 
 				project = new GenericProjectVO(event.templateDir, projectName);
+
+				//project.isDominoVisualEditorProject=true;
+				var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ?
+					lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
+				project.folderLocation = new FileLocation(tmpProjectSourcePath);
+
+				var settingsView:SettingsView = new SettingsView();
+				settingsView.exportProject = event.exportProject;
+				settingsView.Width = 150;
+				settingsView.defaultSaveLabel = event.isExport ? "Export" : "Create";
+				settingsView.isNewProjectSettings = true;
+
+				settingsView.addCategory("");
+
+				var settings:SettingsWrapper = getProjectSettings(project, event);
+
+				settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
+				settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
+				settingsView.addSetting(settings, "");
+
+				settingsView.label = "New Project";
+				settingsView.associatedData = project;
+
+				dispatcher.dispatchEvent(new AddTabEvent(settingsView));
+
+				templateLookup[project] = event.templateDir;
 			}
 			else
 			{
 				isImportProjectCall = true;
-				project = new GenericProjectVO(event.templateDir.fileBridge.parent, event.templateDir.name);
-			}
+				project = new GenericProjectVO(event.templateDir, event.templateDir.name);
+				project.menuType = ProjectMenuTypes.GENERIC;
 
-			//project.isDominoVisualEditorProject=true;
-			var tmpProjectSourcePath:String = (lastSelectedProjectPath && model.recentSaveProjectPath.getItemIndex(lastSelectedProjectPath) != -1) ?
-				lastSelectedProjectPath : model.recentSaveProjectPath.source[model.recentSaveProjectPath.length - 1];
-			project.folderLocation = new FileLocation(tmpProjectSourcePath);
-			
-			var settingsView:SettingsView = new SettingsView();
-			settingsView.exportProject = event.exportProject;
-			settingsView.Width = 150;
-			settingsView.defaultSaveLabel = event.isExport ? "Export" : "Create";
-			settingsView.isNewProjectSettings = true;
-			
-			settingsView.addCategory("");
-			
-			var settings:SettingsWrapper = getProjectSettings(project, event);
-			
-			settingsView.addEventListener(SettingsView.EVENT_SAVE, createSave);
-			settingsView.addEventListener(SettingsView.EVENT_CLOSE, createClose);
-			settingsView.addSetting(settings, "");
-			
-			settingsView.label = "New Project";
-			settingsView.associatedData = project;
-			
-			dispatcher.dispatchEvent(new AddTabEvent(settingsView));
-			
-			templateLookup[project] = event.templateDir;
+				// Open main file for editing
+				dispatcher.dispatchEvent(
+						new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
+				);
+
+				dispatcher.dispatchEvent(new RefreshTreeEvent(project.folderLocation));
+			}
 		}
 		
 		private function getProjectSettings(project:GenericProjectVO, eventObject:NewProjectEvent):SettingsWrapper
