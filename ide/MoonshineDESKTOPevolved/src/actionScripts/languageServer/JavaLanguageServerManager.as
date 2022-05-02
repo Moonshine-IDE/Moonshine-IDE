@@ -655,7 +655,7 @@ package actionScripts.languageServer
 			else
 			{
 				javaHome = _model.javaPathForTypeAhead;
-				var versionParts:Array = _model.javaVersionForTypeAhead.split(".");
+				var versionParts:Array = _javaVersion.split(".");
 				var sourcesZip:FileLocation = _model.javaPathForTypeAhead.fileBridge.resolvePath("lib/src.zip");
 				runtimes.push({
 					"name": "JavaSE-" + versionParts[0],
