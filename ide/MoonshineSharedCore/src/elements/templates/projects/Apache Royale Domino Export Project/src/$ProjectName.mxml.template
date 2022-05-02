@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <j:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
 			   xmlns:j="library://ns.apache.org/royale/jewel"
-			   xmlns:js="library://ns.apache.org/royale/basic" xmlns:view="view.*"
-			   applicationComplete="onAppComplete(event)">
+			   xmlns:js="library://ns.apache.org/royale/basic" xmlns:view="view.*">
 
 	<fx:Style source="resources/app-styles.css"/>
 	
@@ -17,13 +16,6 @@
 		import org.apache.royale.collections.ArrayList;
 		import org.apache.royale.events.MouseEvent;
 
-		private function onAppComplete(event:Event):void
-		{
-			this.navigation.dataProvider = new ArrayList([
-					{label: "Content", content: "content"},
-			]);
-		}
-		
 		private function onOpenDrawer(event:MouseEvent):void
 		{
 			this.drawer.isOpen ? this.drawer.close() : this.drawer.open();
@@ -49,6 +41,7 @@
 						<j:beads>
 							<j:NavigationActionNotifier/>
 						</j:beads>
+						$NavigationContent
 					</j:Navigation>				
 				</j:DrawerContent>
 			</j:Drawer>
@@ -63,11 +56,7 @@
 		            </j:BarSection>
 		        </j:BarRow>
 		    </j:TopAppBar>
-			<j:ApplicationMainContent id="mainContent" hasTopAppBar="true" hasFooterBar="false" selectedContent="content">
-		       <j:ScrollableSectionContent name="content">
-					<view:Content />
-			   </j:ScrollableSectionContent>
-		    </j:ApplicationMainContent>
+			$ApplicationMainContent
 		</j:ResponsiveView>
 	</j:initialView>
 </j:Application>
