@@ -360,6 +360,10 @@ package actionScripts.languageServer
 			{
 				return;
 			}
+			if (_project.jdkType == JavaTypes.JAVA_8 && !UtilsCore.isJava8Present())
+			{
+				return;
+			}
 			checkJavaVersion();
 		}
 		
@@ -413,13 +417,18 @@ package actionScripts.languageServer
 				return;
 			}
 			var jdkPath:String = getProjectSDKPath(_project, _model);
-			_previousJDKPath = jdkPath;
-			_previousJDK8Path = (_model.java8Path != null) ? _model.java8Path.fileBridge.nativePath : null;
-			_previousJDKType = _project.jdkType;
-			if(!jdkPath)
+			var jdk8Path:String = (_model.java8Path != null) ? _model.java8Path.fileBridge.nativePath : null;
+			if(!jdkPath || (_project.jdkType == JavaTypes.JAVA_8 && !jdk8Path))
 			{
+				//we'll need to try again later if the settings change
+				_previousJDKPath = null;
+				_previousJDK8Path = null;
+				_previousJDKType = null;
 				return;
 			}
+			_previousJDKPath = jdkPath;
+			_previousJDK8Path = jdk8Path
+			_previousJDKType = _project.jdkType;
 
 			var jdkFolder:File = new File(jdkPath);
 
