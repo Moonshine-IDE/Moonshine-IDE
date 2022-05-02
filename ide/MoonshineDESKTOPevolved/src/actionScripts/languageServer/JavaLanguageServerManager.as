@@ -1094,6 +1094,16 @@ package actionScripts.languageServer
 			}
 			switch(message.params.type)
 			{
+				case "ServiceReady":
+				{
+					//hide the status message
+					_languageStatusDone = true;
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name
+					));
+					break;
+				}
 				case "Starting":
 				{
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
@@ -1108,17 +1118,14 @@ package actionScripts.languageServer
 						StatusBarEvent.LANGUAGE_SERVER_STATUS,
 						project.name, message.params.message, false
 					));
+					break;
 				}
 				case "Started":
 				{
-					_languageStatusDone = true;
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS,
-						project.name
+						project.name, message.params.message, false
 					));
-			
-					var configFile:FileLocation = getProjectBuildConfigFile();
-					_languageClient.sendNotification(METHOD_JAVA__PROJECT_CONFIG_UPDATE, {uri: configFile.fileBridge.url});
 					break;
 				}
 				case "Error":
