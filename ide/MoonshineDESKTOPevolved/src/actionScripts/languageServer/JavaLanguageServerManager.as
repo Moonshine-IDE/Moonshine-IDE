@@ -110,6 +110,7 @@ package actionScripts.languageServer
 
 		private static const METHOD_LANGUAGE__STATUS:String = "language/status";
 		private static const METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION:String = "language/actionableNotification";
+		private static const METHOD_LANGUAGE__EVENT_NOTIFICATION:String = "language/eventNotification";
 		private static const METHOD_JAVA__PROJECT_CONFIG_UPDATE:String = "java/projectConfigurationUpdate";
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 
@@ -252,6 +253,7 @@ package actionScripts.languageServer
 			_languageClient.unregisterCommand(COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
+			_languageClient.removeNotificationListener(METHOD_LANGUAGE__EVENT_NOTIFICATION, language__eventNotification);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient.removeEventListener(LspNotificationEvent.PUBLISH_DIAGNOSTICS, languageClient_publishDiagnosticsHandler);
@@ -591,6 +593,7 @@ package actionScripts.languageServer
 			_languageClient.addEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.addNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
+			_languageClient.addNotificationListener(METHOD_LANGUAGE__EVENT_NOTIFICATION, language__eventNotification);
 			_languageClient.registerCommand(COMMAND_JAVA_CLEAN_WORKSPACE, command_javaCleanWorkspaceHandler);
 			_languageClient.registerCommand(COMMAND_JAVA_APPLY_WORKSPACE_EDIT, command_javaApplyWorkspaceEditHandler);
 			_languageClient.registerCommand(COMMAND_JAVA_PROJECT_CONFIGURATION_STATUS, command_javaProjectConfigurationStatus);
@@ -1123,6 +1126,11 @@ package actionScripts.languageServer
 					break;
 				}
 			}
+		}
+
+		private function language__eventNotification(notification:Object):void
+		{
+			// we can ignore this for now
 		}
 
 		private function language__actionableNotification(notification:Object):void
