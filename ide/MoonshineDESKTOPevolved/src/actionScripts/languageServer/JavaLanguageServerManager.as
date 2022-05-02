@@ -144,6 +144,7 @@ package actionScripts.languageServer
 		private var _waitingToRestart:Boolean = false;
 		private var _waitingToCleanWorkspace:Boolean = false;
 		private var _previousJDKPath:String = null;
+		private var _previousJDK8Path:String = null;
 		private var _previousJDKType:String = null;
 		private var _languageServerLauncherJar:File;
 		private var _javaVersion:String = null;
@@ -159,6 +160,7 @@ package actionScripts.languageServer
 
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
 			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler, false, 0, true);
+			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA8_PATH_SAVE, jdk8PathSaveHandler, false, 0, true);
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler, false, 0, true);
 			_dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler, false, 0, true);
 			_dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler, false, 0, true);
@@ -412,6 +414,7 @@ package actionScripts.languageServer
 			}
 			var jdkPath:String = getProjectSDKPath(_project, _model);
 			_previousJDKPath = jdkPath;
+			_previousJDK8Path = (_model.java8Path != null) ? _model.java8Path.fileBridge.nativePath : null;
 			_previousJDKType = _project.jdkType;
 			if(!jdkPath)
 			{
@@ -647,10 +650,13 @@ package actionScripts.languageServer
 					},
 					configuration: {
 						runtimes: runtimes
-					},
-					home: javaHome.fileBridge.nativePath
+					}
 				}
 			};
+			if (javaHome)
+			{
+				settings.java.home = javaHome.fileBridge.nativePath;
+			}
 			switch(_settingUpdateBuildConfiguration) {
 				case FEATURE_STATUS_DISABLED:
 					settings.java.configuration.updateBuildConfiguration = "disabled";
@@ -844,6 +850,20 @@ package actionScripts.languageServer
 		{
 			//restart only when the path has changed
 			if(getProjectSDKPath(_project, _model) != _previousJDKPath)
+			{
+				restartLanguageServer();
+			}
+		}
+
+		private function jdk8PathSaveHandler(event:FilePluginEvent):void
+		{
+			if (_project.jdkType != JavaTypes.JAVA_8)
+			{
+				return;
+			}
+			var jdk8Path:String = (_model.java8Path != null) ? _model.java8Path.fileBridge.nativePath : null;
+			//restart only when the path has changed
+			if (jdk8Path != _previousJDK8Path)
 			{
 				restartLanguageServer();
 			}
