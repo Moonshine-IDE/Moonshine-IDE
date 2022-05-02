@@ -561,15 +561,25 @@ package actionScripts.languageServer
 				extendedClientCapabilities:
 				{
 					progressReportProvider: false,//getJavaConfiguration().get('progressReports.enabled'),
-					classFileContentsSupport: true,
-					overrideMethodsPromptSupport: true,
-					hashCodeEqualsPromptSupport: true,
-					advancedOrganizeImportsSupport: true,
-					generateToStringPromptSupport: true,
-					advancedGenerateAccessorsSupport: true,
-					generateConstructorsPromptSupport: true,
-					generateDelegateMethodsPromptSupport: true,
-					advancedExtractRefactoringSupport: true
+					classFileContentsSupport: false,
+					overrideMethodsPromptSupport: false,
+					hashCodeEqualsPromptSupport: false,
+					advancedOrganizeImportsSupport: false,
+					generateToStringPromptSupport: false,
+					advancedGenerateAccessorsSupport: false,
+					generateConstructorsPromptSupport: false,
+					generateDelegateMethodsPromptSupport: false,
+					advancedExtractRefactoringSupport: false,
+					// inferSelectionSupport: ["extractMethod", "extractVariable", "extractField"],
+					moveRefactoringSupport: false,
+					clientHoverProvider: false,
+					clientDocumentSymbolProvider: false,
+					gradleChecksumWrapperPromptSupport: false,
+					resolveAdditionalTextEditsSupport: false,
+					advancedIntroduceParameterRefactoringSupport: false,
+					actionableRuntimeNotificationSupport: false,
+					shouldLanguageServerExitOnShutdown: true
+					// onCompletionItemSelectedCommand: "editor.action.triggerParameterHints"
 				}
 			};
 
