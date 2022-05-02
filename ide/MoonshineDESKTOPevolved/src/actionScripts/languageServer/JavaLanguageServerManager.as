@@ -144,6 +144,7 @@ package actionScripts.languageServer
 		private var _waitingToRestart:Boolean = false;
 		private var _waitingToCleanWorkspace:Boolean = false;
 		private var _previousJDKPath:String = null;
+		private var _previousJDKType:String = null;
 		private var _languageServerLauncherJar:File;
 		private var _javaVersion:String = null;
 		private var _javaVersionProcess:NativeProcess;
@@ -156,6 +157,7 @@ package actionScripts.languageServer
 		{
 			_project = project;
 
+			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
 			_dispatcher.addEventListener(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, jdkPathSaveHandler, false, 0, true);
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler, false, 0, true);
 			_dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler, false, 0, true);
@@ -410,6 +412,7 @@ package actionScripts.languageServer
 			}
 			var jdkPath:String = getProjectSDKPath(_project, _model);
 			_previousJDKPath = jdkPath;
+			_previousJDKType = _project.jdkType;
 			if(!jdkPath)
 			{
 				return;
@@ -822,6 +825,18 @@ package actionScripts.languageServer
 			else
 			{
 				error("Failed to load Java version. Java code intelligence disabled for project: " + project.name + ".");
+			}
+		}
+
+		private function saveProjectSettingsHandler(event:ProjectEvent):void
+		{
+			if(event.project != _project)
+			{
+				return;
+			}
+			if (_project.jdkType != _previousJDKType)
+			{
+				restartLanguageServer();
 			}
 		}
 
