@@ -642,14 +642,12 @@ package actionScripts.plugin.recentlyOpened
 				{
 					return model.ondiskCore.parseOnDisk(recentOpenedProjectObject as FileLocation);
 				}
-				
-				// if still no project type matched
-				if (!projectFileLocation)
+
+				projectFileLocation = model.genericCore.testGenericProject(projectFile);
+				if (projectFileLocation)
 				{
-					var genericProject:GenericProjectVO = new GenericProjectVO(recentOpenedProjectObject as FileLocation);
-					genericProject.menuType = ProjectMenuTypes.GENERIC;
-					return genericProject;	
-				}				
+					return model.genericCore.parseGenericProject(recentOpenedProjectObject as FileLocation);
+				}
 			}
 			
 			return null;

@@ -18,11 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import actionScripts.plugin.genericproj.CreateGenericProject;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.genericproj.CreateGenericProject;
 	import actionScripts.plugin.genericproj.GenericProjectPlugin;
-	import actionScripts.plugin.genericproj.interfaces.IGenericProjectBridge;
+    import actionScripts.plugin.genericproj.importer.GenericProjectImporter;
+    import actionScripts.plugin.genericproj.interfaces.IGenericProjectBridge;
 
     import actionScripts.events.NewProjectEvent;
+    import actionScripts.plugin.genericproj.vo.GenericProjectVO;
     import actionScripts.plugins.core.ProjectBridgeImplBase;
 
     public class IGenericBridgeImpl extends ProjectBridgeImplBase implements IGenericProjectBridge
@@ -60,6 +63,16 @@ package actionScripts.impls
         public function get version():String
         {
             return "";
+        }
+
+        public function testGenericProject(file:Object):FileLocation
+        {
+            return GenericProjectImporter.test(file);
+        }
+
+        public function parseGenericProject(file:FileLocation):GenericProjectVO
+        {
+            return GenericProjectImporter.parse(file);
         }
 		
 		override public function createProject(event:NewProjectEvent):void

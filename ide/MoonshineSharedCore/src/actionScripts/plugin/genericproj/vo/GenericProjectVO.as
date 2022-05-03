@@ -4,6 +4,7 @@ package actionScripts.plugin.genericproj.vo
 	import actionScripts.plugin.actionscript.as3project.settings.PathListSetting;
 	import actionScripts.plugin.actionscript.as3project.vo.GradleBuildOptions;
 	import actionScripts.plugin.actionscript.as3project.vo.MavenBuildOptions;
+	import actionScripts.plugin.genericproj.exporter.GenericProjectExporter;
 	import actionScripts.plugin.settings.vo.BuildActionsListSettings;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
@@ -60,7 +61,7 @@ package actionScripts.plugin.genericproj.vo
 
 		override public function saveSettings():void
 		{
-
+			GenericProjectExporter.export(this);
 		}
 
 		public function hasPom():Boolean

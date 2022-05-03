@@ -23,11 +23,14 @@ package actionScripts.plugin.genericproj
 	import actionScripts.plugin.core.compiler.JavaBuildEvent;
 	import actionScripts.plugin.genericproj.events.GenericProjectEvent;
 	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
+	import actionScripts.valueObjects.TemplateVO;
 
 	import flash.display.DisplayObject;
     import flash.events.Event;
-    
-    import mx.core.FlexGlobals;
+
+	import mx.collections.ArrayCollection;
+
+	import mx.core.FlexGlobals;
     import mx.events.CloseEvent;
     import mx.managers.PopUpManager;
     
@@ -83,8 +86,20 @@ package actionScripts.plugin.genericproj
 
 		private function onGenericProjectImport(event:GenericProjectEvent):void
 		{
+			var genericTemplateDirectory:FileLocation;
+			ConstantsCoreVO.TEMPLATES_PROJECTS.source.some(function(element:TemplateVO, index:int, arr:Array):Boolean
+			{
+				if (element.title.toLowerCase().indexOf("generic project") != -1)
+				{
+					genericTemplateDirectory = element.file;
+					return true;
+				}
+				return false;
+			});
+
 			new CreateGenericProject(
-				new NewProjectEvent(NewProjectEvent.IMPORT_AS_NEW_PROJECT, null, null, event.value as FileLocation)
+				new NewProjectEvent(NewProjectEvent.IMPORT_AS_NEW_PROJECT, null, null, genericTemplateDirectory),
+				event.value as FileLocation
 			);
 		}
 

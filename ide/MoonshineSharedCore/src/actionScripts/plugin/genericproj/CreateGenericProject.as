@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.genericproj
 {
+	import actionScripts.plugin.genericproj.exporter.GenericProjectExporter;
+	import actionScripts.plugin.genericproj.importer.GenericProjectImporter;
 	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
 	import actionScripts.plugin.ondiskproj.*;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
@@ -60,9 +62,9 @@ package actionScripts.plugin.genericproj
 	
 	public class CreateGenericProject extends ConsoleOutputter
 	{
-		public function CreateGenericProject(event:NewProjectEvent)
+		public function CreateGenericProject(event:NewProjectEvent, importProjectLocation:FileLocation=null)
 		{
-			createGenericProject(event);
+			createGenericProject(event, importProjectLocation);
 		}
 		
 		private var project:GenericProjectVO;
@@ -78,7 +80,7 @@ package actionScripts.plugin.genericproj
 		
 		private var _currentCauseToBeInvalid:String;
 		
-		private function createGenericProject(event:NewProjectEvent):void
+		private function createGenericProject(event:NewProjectEvent, importProjectLocation:FileLocation=null):void
 		{
 			var lastSelectedProjectPath:String;
 			
@@ -119,7 +121,7 @@ package actionScripts.plugin.genericproj
 				var settingsView:SettingsView = new SettingsView();
 				settingsView.exportProject = event.exportProject;
 				settingsView.Width = 150;
-				settingsView.defaultSaveLabel = event.isExport ? "Export" : "Create";
+				settingsView.defaultSaveLabel = "Create";
 				settingsView.isNewProjectSettings = true;
 
 				settingsView.addCategory("");
@@ -134,14 +136,15 @@ package actionScripts.plugin.genericproj
 				settingsView.associatedData = project;
 
 				dispatcher.dispatchEvent(new AddTabEvent(settingsView));
-
 				templateLookup[project] = event.templateDir;
 			}
 			else
 			{
 				isImportProjectCall = true;
-				project = new GenericProjectVO(event.templateDir, event.templateDir.name);
-				project.menuType = ProjectMenuTypes.GENERIC;
+				project = new GenericProjectVO(importProjectLocation.fileBridge.parent, importProjectLocation.fileBridge.name);
+				templateLookup[project] = event.templateDir;
+
+				project = createFileSystemBeforeSave(project);
 
 				// Open main file for editing
 				dispatcher.dispatchEvent(
@@ -160,7 +163,7 @@ package actionScripts.plugin.genericproj
 				historyPaths.addItem(project.folderPath);
 			}
 			
-			newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\-+=[{]}\\\\|:;\'",<.>/?');
+			newProjectNameSetting = new StringSetting(project, 'projectName', 'Project name', '^ ~`!@#$%\\^&*()\\+=[{]}\\\\|:;\'",<.>/?');
 			newProjectPathSetting = new PathSetting(project, 'folderPath', 'Parent directory', true, null, false, true);
 			newProjectPathSetting.dropdownListItems = historyPaths;
 			newProjectPathSetting.addEventListener(AbstractSetting.PATH_SELECTED, onProjectPathChanged);
@@ -175,7 +178,8 @@ package actionScripts.plugin.genericproj
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			if (value.fileBridge.exists && !isImportProjectCall)
+			var tmpFile:FileLocation = GenericProjectImporter.test(value.fileBridge.getFile);
+			if (value.fileBridge.exists && tmpFile)
 			{
 				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
@@ -191,7 +195,7 @@ package actionScripts.plugin.genericproj
 			}
 			else
 			{
-				isInvalidToSave = (value.fileBridge.exists && !isImportProjectCall);
+				isInvalidToSave = (value.fileBridge.exists && tmpFile);
 			}
 		}
 		
@@ -276,13 +280,7 @@ package actionScripts.plugin.genericproj
 		private function createFileSystemBeforeSave(pvo:GenericProjectVO):GenericProjectVO
 		{	
 			var templateDir:FileLocation = templateLookup[pvo];
-			//Alert.show("templateDir:"+templateDir.fileBridge.nativePath);
 			var projectName:String = pvo.projectName;
-			var sourceFileWithExtension:String = pvo.projectName + ".dve";
-			var sourcePath:String = "src" + model.fileCore.separator + "main";
-			var sourceDominoVisualFormPath:String="nsfs"+ model.fileCore.separator + "nsf-moonshine"+ model.fileCore.separator +"odp"+model.fileCore.separator +"Forms"+model.fileCore.separator +pvo.projectName + ".form";
-			
-
 			var targetFolder:FileLocation = pvo.folderLocation;
 			
 			// Create project root directory
@@ -300,8 +298,34 @@ package actionScripts.plugin.genericproj
 			if (!targetFolder.fileBridge.exists)
 				targetFolder.fileBridge.createDirectory();
 
-			pvo = new GenericProjectVO(targetFolder, projectName);
-			pvo.menuType = ProjectMenuTypes.GENERIC;
+			var th:TemplatingHelper = new TemplatingHelper();
+			th.isProjectFromExistingSource = false;
+			th.templatingData["$ProjectName"] = projectName;
+
+			var pattern:RegExp = new RegExp(/(_)/g);
+			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
+			th.templatingData["$Settings"] = projectName;
+			th.templatingData["$SourcePath"] = project.folderLocation.fileBridge.nativePath;
+
+			var tmpDate:Date = new Date();
+
+			th.templatingData["$createdOn"] = tmpDate.toString();
+			th.templatingData["$revisedOn"] = tmpDate.toString();
+			th.templatingData["$lastAccessedOn"] = tmpDate.toString();
+			th.templatingData["$addedOn"] = tmpDate.toString();
+
+			th.projectTemplate(templateDir, targetFolder);
+
+			var projectSettingsFileName:String = projectName + ".genericproj";
+			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
+			pvo = GenericProjectImporter.parse(targetFolder, projectName, settingsFile);
+
+			/*if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists)
+			{
+				pvo.mavenBuildOptions.settingsFilePath = OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath;
+			}*/
+
+			GenericProjectExporter.export(pvo);
 
 			return pvo;
 		}

@@ -291,6 +291,12 @@ package actionScripts.plugin.actionscript.as3project
 					importFDProject(flashDevelopProjectFile, false, model.ondiskCore.parseOnDisk(new FileLocation(dir.nativePath)));
 					return;
 				}
+				flashDevelopProjectFile = model.genericCore.testGenericProject(dir);
+				if (flashDevelopProjectFile)
+				{
+					importFDProject(flashDevelopProjectFile, false, model.genericCore.parseGenericProject(new FileLocation(dir.nativePath)));
+					return;
+				}
 			}
 
 			if (!isFBProject && !isFDProject)

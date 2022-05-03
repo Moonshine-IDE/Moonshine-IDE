@@ -30,7 +30,9 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
+		import actionScripts.plugin.genericproj.vo.GenericProjectVO;
+
+		import mx.collections.ArrayCollection;
 			import mx.core.IVisualElement;
 			import mx.events.FlexEvent;
 			import mx.graphics.SolidColorStroke;
@@ -159,6 +161,10 @@
 				else if(associatedData is OnDiskProjectVO)
 				{
 					projectPath += ".ondiskproj";
+				}
+				else if(associatedData is GenericProjectVO)
+				{
+					projectPath += ".genericproj";
 				}
 				else
 				{
