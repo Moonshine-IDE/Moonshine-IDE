@@ -3,9 +3,15 @@ package com.moonshine.languageprocessing;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.tree.ParseTree;
+
+import com.moonshine.basicgrammar.TibboBasicLexer;
+import com.moonshine.basicgrammar.TibboBasicParser;
 
 public class LotusBasicErrorListener extends BaseErrorListener {
 
@@ -18,20 +24,23 @@ public class LotusBasicErrorListener extends BaseErrorListener {
 
 	}
 
-	/**
-	 * Checks syntax error
-	 *
-	 * @param {object} recognizer The parsing support code essentially. Most of it
-	 *                 is error recovery stuff
-	 * @param {object} symbol Offending symbol
-	 * @param {number} line Line of offending symbol
-	 * @param {number} column Position in line of offending symbol
-	 * @param {string} message Error message
-	 * @param {string} payload Stack trace
-	 */
-//		syntaxError(recognizer: object, symbol: CommonToken, line: number, column: number, message: string, payload: string) {
-//			// throw new Error(JSON.stringify({ line, column, message }));
-//			this.errors.push({ symbol: symbol, line, column, message });
-//		}
+	public List<LotusSyntaxError> getErrors() {
+		return errors;
+	}
+
+	public static List<LotusSyntaxError> getFileParsingErrors(String changesText) {
+		TibboBasicLexer lexer = new TibboBasicLexer(new ANTLRInputStream(changesText));
+		lexer.removeErrorListeners();
+		TibboBasicParser parser = new TibboBasicParser(new CommonTokenStream(lexer));
+		parser.removeErrorListeners();
+
+		LotusBasicErrorListener listener = new LotusBasicErrorListener();
+		lexer.addErrorListener(listener);
+		parser.addErrorListener(listener);
+		
+		ParseTree tree = parser.startRule();
+		return listener.getErrors();
+	}
+
 
 }

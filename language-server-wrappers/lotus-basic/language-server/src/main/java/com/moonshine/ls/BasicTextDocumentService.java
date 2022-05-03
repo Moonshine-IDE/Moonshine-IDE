@@ -3,7 +3,11 @@ package com.moonshine.ls;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
@@ -13,6 +17,7 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
@@ -36,6 +41,11 @@ import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
+
+import com.moonshine.basicgrammar.TibboBasicLexer;
+import com.moonshine.basicgrammar.TibboBasicParser;
+import com.moonshine.languageprocessing.LotusBasicErrorListener;
+import com.moonshine.languageprocessing.LotusSyntaxError;
 
 public class BasicTextDocumentService implements TextDocumentService {
 	BasicLanguageServer lanugageServer;
@@ -172,7 +182,7 @@ public class BasicTextDocumentService implements TextDocumentService {
 	@Override
 	public void didClose(DidCloseTextDocumentParams didCloseTextDocumentParams) {
 	}
-  
+
 	@Override
 	public void didSave(DidSaveTextDocumentParams didSaveTextDocumentParams) {
 		CompletableFuture.runAsync(() -> lanugageServer.getClient().publishDiagnostics(new PublishDiagnosticsParams(
@@ -180,30 +190,18 @@ public class BasicTextDocumentService implements TextDocumentService {
 	}
 
 	private List<Diagnostic> validate(String changesText) {
-		List<Diagnostic> res = new ArrayList<>();
-		res.add(new Diagnostic(new Range(new Position(0, 0), new Position(1, 0)), "Test error message:" + changesText));
-//		Route previousRoute = null;
-//		for (Route route : model.getResolvedRoutes()) {
-//			if (!EclipseConMap.INSTANCE.all.contains(route.name)) {
-//				Diagnostic diagnostic = new Diagnostic();
-//				diagnostic.setSeverity(DiagnosticSeverity.Error);
-//				diagnostic.setMessage("This is not a Session");
-//				diagnostic.setRange(new Range(
-//						new Position(route.line, route.charOffset),
-//						new Position(route.line, route.charOffset + route.text.length())));
-//				res.add(diagnostic);
-//			} else if (previousRoute != null && !EclipseConMap.INSTANCE.startsFrom(route.name, previousRoute.name)) {
-//				Diagnostic diagnostic = new Diagnostic();
-//				diagnostic.setSeverity(DiagnosticSeverity.Warning);
-//				diagnostic.setMessage("'" + route.name + "' does not follow '" + previousRoute.name + "'");
-//				diagnostic.setRange(new Range(
-//						new Position(route.line, route.charOffset),
-//						new Position(route.line, route.charOffset + route.text.length())));
-//				res.add(diagnostic);
-//			}
-//			previousRoute = route;
-//		}
-		return res;
+		List<LotusSyntaxError> errors = LotusBasicErrorListener.getFileParsingErrors(changesText);
+
+		return errors.stream().map(anError -> {
+			Diagnostic diagnostic = new Diagnostic();
+			diagnostic.setSeverity(DiagnosticSeverity.Error);
+			diagnostic.setMessage(anError.getMsg());
+			diagnostic.setRange(new Range(new Position(anError.getLine(), anError.getCharPositionInLine()),
+					new Position(anError.getLine(), anError.getCharPositionInLine() + 1)));
+			return diagnostic;
+
+		}).collect(Collectors.toList());
+
 	}
 
 }
