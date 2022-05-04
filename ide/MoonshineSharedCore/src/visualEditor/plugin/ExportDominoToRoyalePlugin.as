@@ -106,6 +106,10 @@ package visualEditor.plugin
                         conversionCounter += veFiles.length - 1;
                         convertToRoyale(veFiles, convertedFiles, finishCallback);
                     }
+                    else
+                    {
+                        finishCallback(convertedFiles);
+                    }
                 }
             }
         }
