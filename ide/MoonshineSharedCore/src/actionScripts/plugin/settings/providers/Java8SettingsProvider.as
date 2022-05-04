@@ -65,9 +65,9 @@ package actionScripts.plugin.settings.providers
 					setNewJavaPath();
 				}
 				
-				/*GlobalEventDispatcher.getInstance().dispatchEvent(
-						new FilePluginEvent(FilePluginEvent.EVENT_JAVA_TYPEAHEAD_PATH_SAVE, model.java8Path)
-				);*/
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+					new FilePluginEvent(FilePluginEvent.EVENT_JAVA8_PATH_SAVE, model.java8Path)
+				);
 			}
 			else if (!model.javaVersionInJava8Path)
 			{

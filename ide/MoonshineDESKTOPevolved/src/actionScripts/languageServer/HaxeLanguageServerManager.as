@@ -113,6 +113,7 @@ package actionScripts.languageServer
 		private var _activeProgressTokens:Array = [];
 		private var _watchedFiles:Object = {};
 		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
+		private var _pid:int = -1;
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -154,6 +155,11 @@ package actionScripts.languageServer
 		public function get active():Boolean
 		{
 			return _languageClient && _languageClient.initialized;
+		}
+
+		public function get pid():int
+		{
+			return _pid;
 		}
 
 		public function createTextEditorForUri(uri:String, readOnly:Boolean = false):BasicTextEditor
