@@ -136,6 +136,8 @@ package actionScripts.languageServer
 
 		private static const LANGUAGE_SERVER_SHUTDOWN_TIMEOUT:Number = 8000;
 
+		private static const LANGUAGE_SERVER_PROCESS_FORMATTED_PID:RegExp = new RegExp( /(%%%[0-9]+%%%)/ );
+
 		private var _project:JavaProjectVO;
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
@@ -154,6 +156,7 @@ package actionScripts.languageServer
 		private var _watchedFiles:Object = {};
 		private var _settingUpdateBuildConfiguration:int = FEATURE_STATUS_AUTOMATIC;
 		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
+		private var _pid:int = -1;
 
 		public function JavaLanguageServerManager(project:JavaProjectVO)
 		{
@@ -194,6 +197,11 @@ package actionScripts.languageServer
 		public function get active():Boolean
 		{
 			return _languageClient && _languageClient.initialized;
+		}
+
+		public function get pid():int
+		{
+			return _pid;
 		}
 
 		public function createTextEditorForUri(uri:String, readOnly:Boolean = false):BasicTextEditor
@@ -503,6 +511,7 @@ package actionScripts.languageServer
 				
 				_languageServerProcess = new NativeProcess();
 				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
 				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 				_languageServerProcess.start(processInfo);
 
@@ -771,6 +780,22 @@ package actionScripts.languageServer
 			_languageServerProcess.exit(true);
 		}
 
+		private function languageServerProcess_standardOutputDataHandler(e:ProgressEvent):void
+		{
+			var output:IDataInput = _languageServerProcess.standardOutput;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			if ( data.search(LANGUAGE_SERVER_PROCESS_FORMATTED_PID) > -1 ) {
+				// Formatted PID found
+				var a:Array = data.match(LANGUAGE_SERVER_PROCESS_FORMATTED_PID);
+				var spid:String = a[ 0 ].split("%%%")[ 1 ];
+				_pid = parseInt(spid);
+				if ( _pid > 0 ) {
+					// PID is set, we don't need the stdout handler anymore
+					_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
+				}
+			}
+		}
+
 		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
@@ -793,6 +818,7 @@ package actionScripts.languageServer
 				warning("Java language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardOutputDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 			_languageServerProcess.exit();
 			_languageServerProcess = null;
