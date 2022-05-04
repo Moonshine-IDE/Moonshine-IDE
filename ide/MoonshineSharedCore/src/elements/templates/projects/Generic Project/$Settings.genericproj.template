@@ -6,7 +6,4 @@
     <mavenBuild>
       <option commandLine="clean package"/>
     </mavenBuild>
-    <classpaths>
-        <class path="$SourcePath" />
-    </classpaths>
 </project>

@@ -178,8 +178,13 @@ package actionScripts.plugin.genericproj
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = GenericProjectImporter.test(value.fileBridge.getFile);
-			if (value.fileBridge.exists && tmpFile)
+			var tmpFile:FileLocation = OnDiskImporter.test(value.fileBridge.getFile);
+			if (!tmpFile && value.fileBridge.exists)
+			{
+				tmpFile = value;
+			}
+
+			if (tmpFile)
 			{
 				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
@@ -187,15 +192,15 @@ package actionScripts.plugin.genericproj
 			{
 				newProjectPathSetting.setMessage(value.fileBridge.nativePath);
 			}
-			
-			if (newProjectPathSetting.stringValue == "") 
+
+			if (newProjectPathSetting.stringValue == "")
 			{
 				isInvalidToSave = true;
 				_currentCauseToBeInvalid = 'Unable to access Project Directory:\n'+ value.fileBridge.nativePath +'\nPlease try to create the project again and use the "Change" link to open the target directory again.';
 			}
 			else
 			{
-				isInvalidToSave = (value.fileBridge.exists && tmpFile);
+				isInvalidToSave = tmpFile ? true : false;
 			}
 		}
 		

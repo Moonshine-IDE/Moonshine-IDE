@@ -60,8 +60,6 @@ package actionScripts.plugin.genericproj.exporter
 				);
 			}
 
-			projectXML.appendChild(exportPaths(new <FileLocation>[project.folderLocation], <classpaths />, <class />, project));
-
 			return projectXML;
 		}
 	}
