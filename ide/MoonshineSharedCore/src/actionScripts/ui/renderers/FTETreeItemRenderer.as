@@ -444,7 +444,7 @@ package actionScripts.ui.renderers
 			var editors:ArrayCollection = model.flexCore.getExternalEditors();
 			for each (var editor:IExternalEditorVO in editors)
 			{
-				var isFileTypeAccessible:Boolean = (editor.fileTypes.length == 0);
+				var isFileTypeAccessible:Boolean = (editor.fileTypes == null || editor.fileTypes.length == 0);
 				if (!isFileTypeAccessible)
 				{
 					isFileTypeAccessible = (editor.fileTypes.indexOf((data as FileWrapper).file.fileBridge.extension) != -1);

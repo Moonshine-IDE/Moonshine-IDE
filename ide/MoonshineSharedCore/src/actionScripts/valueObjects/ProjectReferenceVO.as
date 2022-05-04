@@ -66,5 +66,19 @@ package actionScripts.valueObjects
 			// finally
 			return tmpVO;
 		}
+
+		public static function serializeForSharedObject(value:ProjectReferenceVO):Object
+		{
+			return {
+				name: value.name,
+				path: value.path,
+				startIn: value.startIn,
+				status: value.status,
+				loading: value.loading,
+				sdk: value.sdk,
+				isAway3D: value.isAway3D,
+				isTemplate: value.isTemplate
+			};
+		}
 	}
 }

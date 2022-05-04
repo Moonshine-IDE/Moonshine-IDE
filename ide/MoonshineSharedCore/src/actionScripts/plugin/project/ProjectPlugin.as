@@ -368,7 +368,7 @@ package actionScripts.plugin.project
 		{
 			// when a file system watcher event is received, we need to refresh
 			// the treeview, but we queue them up because calling
-			// treeView.refresh() to often brutally hurts performance.
+			// treeView.refresh() too often brutally hurts performance.
 			// this queue helps in two ways:
 			// 1) we skip updating duplicate paths, meaning fewer refreshes
 			// 2) the short pause allows rendering to happen, keeping the app responsive

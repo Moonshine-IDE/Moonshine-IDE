@@ -28,6 +28,7 @@ package actionScripts.events
 		public static const EVENT_FILE_SAVE:String = "fileSaveEvent";
 		public static const EVENT_FILE_OPEN_WITH:String = "fileOpenWithEvent";
 		public static const EVENT_JAVA_TYPEAHEAD_PATH_SAVE:String = "EVENT_JAVA_TYPEAHEAD_PATH_SAVE";
+		public static const EVENT_JAVA8_PATH_SAVE:String = "EVENT_JAVA8_PATH_SAVE";
 		
 		public var file:FileLocation;
 		

@@ -545,15 +545,10 @@ package actionScripts.languageServer
 				return;
 			}
 			_waitingToRestart = false;
-			if(_languageClient)
+			if(_languageClient || _languageServerProcess)
 			{
 				_waitingToRestart = true;
 				shutdown();
-			}
-			else if(_languageServerProcess)
-			{
-				_waitingToRestart = true;
-				_languageServerProcess.exit();
 			}
 			else if(_haxeVersionProcess)
 			{
@@ -578,8 +573,16 @@ package actionScripts.languageServer
 
 		private function shutdown():void
 		{
-			if(!_languageClient)
+			if(!_languageClient || !_languageClient.initialized)
 			{
+				if (_languageClient)
+				{
+					cleanupLanguageClient();
+				}
+				if (_languageServerProcess)
+				{
+					_languageServerProcess.exit(true);
+				}
 				return;
 			}
 			_shutdownTimeoutID = setTimeout(shutdownTimeout, LANGUAGE_SERVER_SHUTDOWN_TIMEOUT);
@@ -771,7 +774,7 @@ package actionScripts.languageServer
 		private function tabSelectHandler(event:TabEvent):void
 		{
 			var textEditor:BasicTextEditor = event.child as BasicTextEditor;
-			if(!textEditor)
+			if(!textEditor || !textEditor.currentFile)
 			{
 				return;
 			}
@@ -1050,7 +1053,7 @@ package actionScripts.languageServer
 
 		private function removeProjectHandler(event:ProjectEvent):void
 		{
-			if(event.project != _project || !_languageClient)
+			if(event.project != _project)
 			{
 				return;
 			}
@@ -1059,10 +1062,6 @@ package actionScripts.languageServer
 
 		private function applicationExitHandler(event:ApplicationEvent):void
 		{
-			if(!_languageClient)
-			{
-				return;
-			}
 			shutdown();
 		}
 
