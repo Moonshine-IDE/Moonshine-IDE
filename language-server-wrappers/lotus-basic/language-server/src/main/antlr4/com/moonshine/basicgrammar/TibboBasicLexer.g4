@@ -264,7 +264,7 @@ GT2: '>' -> type(GT);
 LEQ2: '<=' -> type(LEQ);
 LPAREN2: '(' -> type(LPAREN);
 LT2: '<' -> type(LT);
-MINUS2: '-' -> type(MINUS);v
+MINUS2: '-' -> type(MINUS);
 MULT2: '*' -> type(MULT);
 NEQ2: '<>' -> type(NEQ);
 PLUS2: '+' -> type(PLUS);
