@@ -18,7 +18,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
-    import com.adobe.utils.StringUtil;
+	import actionScripts.extResources.deng.fzip.fzip.FZip;
+	import actionScripts.extResources.deng.fzip.fzip.FZipFile;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+
+	import com.adobe.utils.StringUtil;
     
     import flash.events.Event;
     import flash.filesystem.File;
@@ -133,7 +137,8 @@ package actionScripts.plugins.as3project
 			isProjectResidesInSubFolder = null;
 			originalNameByConfiguration = null;
 			originalExtensionConfiguration = null;
-			unzip = new Unzip(new File(archivePath));
+			var archivePathFile:File = new File(archivePath);
+			unzip = new Unzip(archivePathFile);
 			unzip.addEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
 			unzip.addEventListener(Unzip.FILE_LOAD_ERROR, onFileLoadError);
 			
@@ -156,12 +161,11 @@ package actionScripts.plugins.as3project
 						// we don't provide by easy extension property by the api
 						if (!file.isDirectory)
 						{
-							originalExtensionConfiguration = isAllowedTemplateFile(file.extension);
-							if (originalExtensionConfiguration)
+							if (isAllowedTemplateFile(file.extension))
 							{
 								// conventionally the configuration file is suppose to reside
 								// to the root of the project folder; thus, following
-								// check ensure that if the project resides in some 
+								// check ensure that if the project resides in some
 								// sub-folder inside the zip; So next Moonshine loads the
 								// project by that sub-folder only
 								if (file.filename.indexOf("/") != -1)
@@ -170,7 +174,7 @@ package actionScripts.plugins.as3project
 									fileNameOnly = tmpSplit.pop();
 									isProjectResidesInSubFolder = tmpSplit.join("/");
 								}
-								
+
 								// try to generate the name as extracted from the
 								// project configuration file
 								if (!tmpSplit)
@@ -184,14 +188,21 @@ package actionScripts.plugins.as3project
 									projectName = newProjectNameSetting.stringValue = originalNameByConfiguration;
 									onProjectNameChanged(null, false);
 								}
-								
+
 								return;
 							}
 						}
 					}
+
+					tmpSplit = archivePathFile.name.split(".");
+					tmpSplit.pop();
+					projectName = newProjectNameSetting.stringValue = tmpSplit.join(".");
+					var abcd:FZipFile = unzip.getFileAt(0);
+					if ((tmpFiles[0] as FZipFile).isDirectory) isProjectResidesInSubFolder = projectName;
+					onProjectNameChanged(null, false);
 					
 					// if came through here, it's not a valid project archive
-					Alert.show("No valid Moonshine project found to the archive. Please check.", "Error!");
+					//Alert.show("No valid Moonshine project found to the archive. Please check.", "Error!");
 				}
 			}
 			function onFileLoadError(ev:Event):void
@@ -254,12 +265,19 @@ package actionScripts.plugins.as3project
 			);
 		}
 
-        private function isAllowedTemplateFile(projectFileExtension:String):String
+        private function isAllowedTemplateFile(projectFileExtension:String):Boolean
         {
-            if (projectFileExtension == "as3proj") return "as3proj";
-			if (projectFileExtension == "veditorproj") return "veditorproj";
-            if (projectFileExtension == "grailsproj") return "grailsproj";
-			return null;
+			var isFound:Boolean = ConstantsCoreVO.READABLE_PROJECT_FILES.some(function(element:String, index:int, arr:Array):Boolean
+			{
+				if (element.toLowerCase() == projectFileExtension.toLowerCase())
+				{
+					originalExtensionConfiguration = element;
+					return true;
+				}
+				return false;
+			});
+
+			return isFound;
         }
 
 		private function getProjectSettings():SettingsWrapper
@@ -291,7 +309,7 @@ package actionScripts.plugins.as3project
 			
 			if (tmpFile) 
 			{
-				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.nativePath), AbstractSetting.MESSAGE_CRITICAL);
+				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project directory already exists:\n"+ value.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
 			else newProjectPathSetting.setMessage(value.nativePath);
 			
@@ -309,7 +327,7 @@ package actionScripts.plugins.as3project
 		
 		private function onProjectPathChanged(event:Event, makeNull:Boolean=true):void
 		{
-			checkIfProjectDirectory((new File(folderPath)).resolvePath(newProjectNameSetting.stringValue));
+			//checkIfProjectDirectory((new File(folderPath)).resolvePath(newProjectNameSetting.stringValue));
 		}
 		
 		private function onArchivePathChanged(event:Event, makeNull:Boolean=true):void
@@ -348,7 +366,7 @@ package actionScripts.plugins.as3project
 		
 		private function throwError():void
 		{
-			Alert.show(_currentCauseToBeInvalid +" Project creation terminated.", "Error!");
+			Alert.show(_currentCauseToBeInvalid +"\nProject creation terminated.", "Error!");
 		}
 		
 		private function createSavePreparation(event:Event):void
@@ -377,19 +395,22 @@ package actionScripts.plugins.as3project
 			if (originalNameByConfiguration != projectName)
 			{
 				var fromFile:File = projectActualFolder.resolvePath(originalNameByConfiguration +"."+ originalExtensionConfiguration);
-				var toFile:File = projectActualFolder.resolvePath(projectName +"."+ originalExtensionConfiguration);
-				fromFile.moveTo(toFile, true);
-				
-				// updating name property
-				var tmpObject:Object = new Object();
-				tmpObject["$ProjectName"] = projectName;
-				
-				// pom file content update
-				var pomFile:File = projectActualFolder.resolvePath("pom.xml");
-				if (pomFile.exists)
+				if (fromFile.exists)
 				{
-					var tmpFL:FileLocation = new FileLocation(pomFile.nativePath);
-					tmpFL.fileBridge.copyFileTemplate(tmpFL, tmpObject);
+					var toFile:File = projectActualFolder.resolvePath(projectName +"."+ originalExtensionConfiguration);
+					fromFile.moveTo(toFile, true);
+
+					// updating name property
+					var tmpObject:Object = new Object();
+					tmpObject["$ProjectName"] = projectName;
+
+					// pom file content update
+					var pomFile:File = projectActualFolder.resolvePath("pom.xml");
+					if (pomFile.exists)
+					{
+						var tmpFL:FileLocation = new FileLocation(pomFile.nativePath);
+						tmpFL.fileBridge.copyFileTemplate(tmpFL, tmpObject);
+					}
 				}
 			}
 			
