@@ -234,6 +234,10 @@ package actionScripts.plugin.search
 			var tmpFL:FileLocation = event.fileLocation;
 			var range:Object = event.range;
 			var line:int = range ? range.startLineIndex : -1;
+			var searchResultView:SearchInProjectView = SearchInProjectView(event.currentTarget);
+			var isEscapeChars:Boolean = searchResultView.isEscapeChars;
+			var isMatchCase:Boolean = searchResultView.isMatchCase;
+			var valueToSearch:String = searchResultView.valueToSearch;
 			
 			var openEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.JUMP_TO_SEARCH_LINE, [tmpFL], line);
 			dispatcher.dispatchEvent(openEvent);
@@ -241,9 +245,9 @@ package actionScripts.plugin.search
 			// this needs some timeout to get the tab open first
 			var timeoutValue:uint = setTimeout(function():void
 			{
-				var searchString:String = searchResultView.isEscapeChars ? TextUtil.escapeRegex(searchResultView.valueToSearch) : searchResultView.valueToSearch;
+				var searchString:String = isEscapeChars ? TextUtil.escapeRegex(valueToSearch) : valueToSearch;
 				var flags:String = 'g';
-				if (!searchResultView.isMatchCase) flags += 'i';
+				if (!isMatchCase) flags += 'i';
 				var searchRegExp:RegExp = new RegExp(searchString, flags);
 				
 				dispatcher.dispatchEvent(
