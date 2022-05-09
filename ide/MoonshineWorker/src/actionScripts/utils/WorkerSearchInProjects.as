@@ -258,7 +258,10 @@ package actionScripts.utils
 				
 				if (res.startLineIndex != lastLineIndex)
 				{
-					lines = content.split(/\r?\n|\r/);
+					if (!lines)
+					{
+						lines = content.split(/\r?\n|\r/);
+					}
 					tmpFW = new WorkerFileWrapper(null);
 					tmpFW.isShowAsLineNumber = true;
 					tmpFW.lineNumbersWithRange = [];
@@ -308,7 +311,17 @@ package actionScripts.utils
 		
 		private function charIdx2LineCharIdx(str:String, charIdx:int, lineDelim:String):Point
 		{
-			var line:int = str.substr(0,charIdx).split(lineDelim).length - 1;
+			var line:int = 0;
+			var current:int = charIdx;
+			while(true)
+			{
+				current = str.lastIndexOf(lineDelim, current - 1);
+				if (current == -1)
+				{
+					break;
+				}
+				line++;
+			}
 			var chr:int = line > 0 ? charIdx - str.lastIndexOf(lineDelim, charIdx - 1) - lineDelim.length : charIdx;
 			return new Point(line, chr);
 		}
