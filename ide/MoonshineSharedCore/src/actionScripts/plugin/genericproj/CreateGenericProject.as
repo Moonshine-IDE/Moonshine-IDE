@@ -41,8 +41,6 @@ package actionScripts.plugin.genericproj
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugin.ondiskproj.exporter.OnDiskExporter;
-	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 	import actionScripts.plugin.ondiskproj.importer.OnDiskImporter;
 	import actionScripts.plugin.settings.SettingsView;
 	import actionScripts.plugin.settings.vo.AbstractSetting;
@@ -186,7 +184,7 @@ package actionScripts.plugin.genericproj
 
 			if (tmpFile)
 			{
-				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project can not be created to an existing project directory:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
+				newProjectPathSetting.setMessage((_currentCauseToBeInvalid = "Project directory already exists:\n"+ value.fileBridge.nativePath), AbstractSetting.MESSAGE_CRITICAL);
 			}
 			else
 			{
@@ -279,7 +277,7 @@ package actionScripts.plugin.genericproj
 		
 		private function throwError():void
 		{
-			Alert.show(_currentCauseToBeInvalid +" Project creation terminated.", "Error!");
+			Alert.show(_currentCauseToBeInvalid +"\nProject creation terminated.", "Error!");
 		}
 		
 		private function createFileSystemBeforeSave(pvo:GenericProjectVO):GenericProjectVO
@@ -324,11 +322,6 @@ package actionScripts.plugin.genericproj
 			var projectSettingsFileName:String = projectName + ".genericproj";
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFileName);
 			pvo = GenericProjectImporter.parse(targetFolder, projectName, settingsFile);
-
-			/*if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists)
-			{
-				pvo.mavenBuildOptions.settingsFilePath = OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath;
-			}*/
 
 			GenericProjectExporter.export(pvo);
 

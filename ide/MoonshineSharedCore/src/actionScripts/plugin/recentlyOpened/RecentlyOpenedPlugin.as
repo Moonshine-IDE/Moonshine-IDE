@@ -387,7 +387,7 @@ package actionScripts.plugin.recentlyOpened
 			if (toRemove != -1) model.recentlyOpenedFiles.removeItemAt(toRemove);
 			
 			var tmpSOReference: ProjectReferenceVO = new ProjectReferenceVO();
-			tmpSOReference.name = (f.fileBridge.extension) ? f.fileBridge.name +"."+ f.fileBridge.extension : f.fileBridge.name;
+			tmpSOReference.name = f.fileBridge.name;
 			tmpSOReference.path = f.fileBridge.nativePath;
 			model.recentlyOpenedFiles.addItemAt(tmpSOReference, 0);
 			//model.selectedprojectFolders
