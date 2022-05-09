@@ -366,8 +366,10 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterBlockIfThenElse(BlockIfThenElseContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterBlockIfThenElse(ctx);
+
+		TBScope scope = new TBScope(ctx.start.getTokenSource().getSourceName(), ctx.start, ctx.stop);
+		this.parser.getScopes().add(scope);
+		this.scopeStack.push(scope);
 	}
 
 	@Override
