@@ -220,12 +220,24 @@ package actionScripts.utils
 			//content = content.replace(/^[ \t]+(?=\S)/gm, "");
 			content = StringUtil.trim(content);
 			
-			var searchString:String = projectSearchObject.value.isEscapeChars ? escapeRegex(projectSearchObject.value.valueToSearch) : projectSearchObject.value.valueToSearch;
-			var flags:String = 'g';
-			if (!projectSearchObject.value.isMatchCase) flags += 'i';
+			var flags:String = projectSearchObject.value.isMatchCase ? "g" : "gi";
+			var searchString:String;
+			if (projectSearchObject.value.isRegexp)
+			{
+				if (projectSearchObject.value.isEscapeChars)
+				{
+					searchString = escapeRegex(projectSearchObject.value.valueToSearch);
+				}
+				else
+				{
+					searchString = projectSearchObject.value.valueToSearch;
+				}
+			}
+			else
+			{
+				searchString = escapeRegex(projectSearchObject.value.valueToSearch);
+			}
 			var searchRegExp:RegExp = new RegExp(searchString, flags);
-			
-			//var foundMatches:Array = content.match(searchRegExp);
 			
 			var foundMatches:Array = [];
 			var results:Array = searchRegExp.exec(content);
