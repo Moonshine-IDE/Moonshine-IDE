@@ -201,8 +201,10 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterDeclareSubStmt(DeclareSubStmtContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterDeclareSubStmt(ctx);
+		String name = ctx.children.get(2).getText();
+		TBFunction function = new TBFunction(name);
+		function.setDeclaration(new TBRange(ctx.start, ctx.start));
+		this.addFunction(function);
 	}
 
 	@Override
@@ -213,8 +215,10 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterDeclareFuncStmt(DeclareFuncStmtContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterDeclareFuncStmt(ctx);
+		String name = ctx.children.get(2).getText();
+		TBFunction function = new TBFunction(name);
+		function.setDeclaration(new TBRange(ctx.start, ctx.start));
+		this.addFunction(function);
 	}
 
 	@Override
@@ -354,14 +358,15 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterInlineIfThenElse(InlineIfThenElseContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterInlineIfThenElse(ctx);
+		TBScope scope = new TBScope(ctx.start.getTokenSource().getSourceName(), ctx.start, ctx.stop);
+		scope.setParentScope(this.scopeStack.peek());
+		this.parser.getScopes().add(scope);
+		this.scopeStack.push(scope);
 	}
 
 	@Override
 	public void exitInlineIfThenElse(InlineIfThenElseContext ctx) {
-		// TODO Auto-generated method stub
-		super.exitInlineIfThenElse(ctx);
+		this.scopeStack.peek();
 	}
 
 	@Override
@@ -374,8 +379,7 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void exitBlockIfThenElse(BlockIfThenElseContext ctx) {
-		// TODO Auto-generated method stub
-		super.exitBlockIfThenElse(ctx);
+		this.scopeStack.pop();
 	}
 
 	@Override
@@ -613,6 +617,18 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 			}
 		}
+		/*
+		 * for (const key in func) { this.parser.functions[name][key] = func[key]; }
+		 */
+	}
+
+	private void addFunction(TBFunction function) {
+
+		if (this.parser.getFunctions().keySet().contains(function.getName())) {
+			this.parser.getFunctions().put(function.getName(), function);
+
+		}
+
 		/*
 		 * for (const key in func) { this.parser.functions[name][key] = func[key]; }
 		 */
