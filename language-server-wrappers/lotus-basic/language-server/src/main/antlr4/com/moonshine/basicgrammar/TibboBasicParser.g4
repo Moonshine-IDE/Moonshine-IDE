@@ -244,7 +244,7 @@ variableStmt : visibility? DIM variableListStmt;
 
 variableListStmt : variableListItem (COMMA variableListItem?)* variableType=asTypeClause (EQ (expression | arrayLiteral))?;
 
-variableListItem: IDENTIFIER (LPAREN literal RPAREN)? ;
+variableListItem: name=IDENTIFIER (LPAREN literal RPAREN)? ;
 
 //variableSubStmt : ambiguousIdentifier (LPAREN ambiguousIdentifier RPAREN)? (asTypeClause)? (WS? EQ WS? expression)?;
 
@@ -272,7 +272,7 @@ paramList
     : LPAREN (param (COMMA param)*)? RPAREN
     ;
 
-param : (BYVAL | BYREF)? name=IDENTIFIER (LPAREN INTEGERLITERAL RPAREN)? valueType=asTypeClause? ;
+param : (byval=BYVAL | byref=BYREF)? name=IDENTIFIER (LPAREN INTEGERLITERAL RPAREN)? valueType=asTypeClause? ;
 
 // atomic rules ----------------------------------
 asTypeClause : AS ENUM? valueType=type (fieldLength)?;

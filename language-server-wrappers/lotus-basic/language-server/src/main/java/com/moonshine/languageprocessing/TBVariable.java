@@ -15,8 +15,15 @@ public class TBVariable {
 	TBScope parentScope;
 	List<TBRange> references;
 
-	public TBVariable(String name, String value, String dataType, String length, TBRange location, TBRange declaration,
-			List<Token> comments, TBScope parentScope, List<TBRange> references) {
+	public TBVariable(String name, 
+			String value, 
+			String dataType, 
+			String length, 
+			TBRange location, 
+			TBRange declaration,
+			List<Token> comments, 
+			TBScope parentScope, 
+			List<TBRange> references) {
 		super();
 		this.name = name;
 		this.value = value;
@@ -26,6 +33,38 @@ public class TBVariable {
 		this.declaration = declaration;
 		this.comments = comments;
 		this.parentScope = parentScope;
+		this.references = references;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	public void setLength(String length) {
+		this.length = length;
+	}
+
+	public void setLocation(TBRange location) {
+		this.location = location;
+	}
+
+	public void setDeclaration(TBRange declaration) {
+		this.declaration = declaration;
+	}
+
+	public void setComments(List<Token> comments) {
+		this.comments = comments;
+	}
+
+	public void setReferences(List<TBRange> references) {
 		this.references = references;
 	}
 

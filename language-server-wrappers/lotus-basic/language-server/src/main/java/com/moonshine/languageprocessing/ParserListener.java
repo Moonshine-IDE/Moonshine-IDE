@@ -2,9 +2,11 @@ package com.moonshine.languageprocessing;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -78,6 +80,7 @@ public class ParserListener extends TibboBasicParserBaseListener {
 	String currentObject;
 	String currentProperty;
 	Stack<TBScope> scopeStack;
+	Map<String, TBConst> consts;
 
 	TibboBasicProjectParser parser;
 
@@ -172,8 +175,10 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterConstSubStmt(ConstSubStmtContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterConstSubStmt(ctx);
+
+		this.parser.getConsts().put(ctx.name.getText(), new TBConst(ctx.name.getText(), ctx.value.getText(),
+				new TBRange(ctx.start, ctx.stop), new ArrayList<>()));
+
 	}
 
 	@Override
@@ -287,52 +292,33 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterFunctionStmt(FunctionStmtContext ctx) {
-//        if (ctx.name!=null) {
-//            String name = ctx.name.getText();
-//            String length = "";
-//            TBRange location = new TBRange(ctx.start,
-//                ctx.start
-//            );
-//            for (int i = 0; i < ctx.children.size(); i++) {
-//                if (((ParserRuleContext)ctx.children.get(i)).getRuleIndex() == TibboBasicParser.RULE_asTypeClause) {
-//                    String valueType = ctx.children.get(i).getText();
-//                    if (((ParserRuleContext)ctx.children.get(i)).children.size() >= 4) {
-//                        length = ((ParserRuleContext)ctx.children.get(i)).children.get(2).getText();
-//                    }
-//                    TBRange location = new TBRange(ctx.start,
-//                    		((ParserRuleContext)ctx.children.get(i)).stop
-//                    );
-//                    TBVariable variable = new TBVariable(
-//                        name,
-//                        value,
-//                        length,
-//                        valueType,
-//                        new TBRange(
-//                            ctx.name,
-//                            ctx.name
-//                        ),
-//                        new ArrayList<>(),
-//                        new ArrayList<>()
-//                    );
-//                    variable.setParentScope(this.scopeStack.get(this.scopeStack.size() - 1));
-//
-//                    this.parser.addVariable(variable);
-//                }
-//            }
-//            this.addFunction(name, new TBFunction(name, null, null, null)
-//                dataType: ctx.returnType.children[1].getText(),
-//                location: location,
-//            })
-//            const scope: TBScope = {
-//                file: ctx.start.source[1].name,
-//                start: ctx.start,
-//                end: ctx.stop
-//            };
-//            this.parser.scopes.push(scope);
-//            this.scopeStack.push(scope);
-//        }// TODO Auto-generated method stub
-	
-	
+		if (ctx.name != null) {
+			String name = ctx.name.getText();
+			String length = "";
+			TBRange location = new TBRange(ctx.start, ctx.start);
+			for (int i = 0; i < ctx.children.size(); i++) {
+				if (((ParserRuleContext) ctx.children.get(i)).getRuleIndex() == TibboBasicParser.RULE_asTypeClause) {
+					String valueType = ctx.children.get(i).getText();
+					if (((ParserRuleContext) ctx.children.get(i)).children.size() >= 4) {
+						length = ((ParserRuleContext) ctx.children.get(i)).children.get(2).getText();
+					}
+					TBRange l1 = new TBRange(ctx.start, ((ParserRuleContext) ctx.children.get(i)).stop);
+					TBVariable variable = new TBVariable(name, "", valueType, length, new TBRange(ctx.name, ctx.name),
+							null, new ArrayList<>(), null, new ArrayList<>());
+					variable.setParentScope(this.scopeStack.get(this.scopeStack.size() - 1));
+
+					this.parser.addVariable(variable);
+				}
+			}
+			TBFunction function = new TBFunction(name);
+			function.setName(name);
+			function.setDataType(length);
+			function.setDataType(ctx.returnType.children.get(1).getText());
+
+			TBScope scope = new TBScope(ctx.start.getTokenSource().getSourceName(), ctx.start, ctx.stop);
+			this.parser.getScopes().add(scope);
+			this.scopeStack.push(scope);
+		}
 
 	}
 
@@ -602,31 +588,26 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterSubStmt(SubStmtContext ctx) {
-		if (ctx.name!=null) {
-            String name = ctx.name.getText();
-            this.addFunction(name);
+		if (ctx.name != null) {
+			String name = ctx.name.getText();
+			this.addFunction(name);
 //                location: {
 //                    startToken: ctx.start,
 //                    stopToken: ctx.name
 //                },
-            //});
+			// });
 
-            TBScope  scope= new TBScope(
-                 ctx.start.getTokenSource().getSourceName(),
-                ctx.start,
-               ctx.stop
-            );
-            this.parser.getScopes().add(scope);
-            this.scopeStack.push(scope);
-        }
+			TBScope scope = new TBScope(ctx.start.getTokenSource().getSourceName(), ctx.start, ctx.stop);
+			this.parser.getScopes().add(scope);
+			this.scopeStack.push(scope);
+		}
 
 	}
 
 	private void addFunction(String name) {
 		if (name != null) {
 			if (this.parser.getFunctions().keySet().contains(name)) {
-				this.parser.getFunctions().put(name,
-						new TBFunction(name, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
+				this.parser.getFunctions().put(name, new TBFunction(name));
 
 			}
 		}
@@ -637,7 +618,7 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void exitSubStmt(SubStmtContext ctx) {
-		 this.scopeStack.pop();
+		this.scopeStack.pop();
 	}
 
 	@Override
@@ -762,8 +743,17 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterVariableListItem(VariableListItemContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterVariableListItem(ctx);
+		String variableType = ((VariableListStmtContext) ctx.parent).variableType.valueType.getText();
+		String length = "";
+		if (ctx.children.size() >= 4) {
+			length = ctx.children.get(2).getText();
+		}
+		String name = ctx.name.getText();
+		TBVariable variable = new TBVariable(name, "", length, variableType, new TBRange(ctx.start, ctx.start), null,
+				new ArrayList<>(), null, new ArrayList<>());
+		variable.setParentScope(this.scopeStack.peek());
+		this.parser.addVariable(variable);
+
 	}
 
 	@Override
@@ -823,21 +813,56 @@ public class ParserListener extends TibboBasicParserBaseListener {
 	}
 
 	@Override
-	public void enterParamList(ParamListContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterParamList(ctx);
+	public void enterParam(ParamContext ctx) {
+		if (ctx.getParent().getParent().getRuleIndex() == TibboBasicParser.RULE_declareSubStmt
+				|| ctx.getParent().getParent().getRuleIndex() == TibboBasicParser.RULE_declareFuncStmt) {
+			return;
+		}
+		String valueType = ctx.valueType != null ? ctx.valueType.getText() : "void";
+
+		String length = "";
+
+		TBVariable variable = new TBVariable(ctx.name.getText(), "", length, valueType, new TBRange(ctx.name, ctx.name),
+				null, new ArrayList<>(), null, new ArrayList<>());
+
+		TBParameter param = new TBParameter(
+
+				ctx.name.getText(), ctx.byref != null, valueType);
+
+		this.parser.addVariable(variable);
+
+		if (ctx.getParent().getParent().getRuleIndex() == TibboBasicParser.RULE_subStmt) {
+			this.parser.getFunctions().get(((SubStmtContext) ctx.getParent().getParent()).name.getText())
+					.getParameters().add(param);
+		}
+
+		if (ctx.getParent().getParent().getRuleIndex() == TibboBasicParser.RULE_functionStmt) {
+			this.parser.getFunctions().get(((FunctionStmtContext) ctx.getParent().getParent()).name.getText())
+					.getParameters().add(param);
+		}
+		if (ctx.getParent().getParent().getRuleIndex() == TibboBasicParser.RULE_syscallDeclarationInner) {
+			SyscallDeclarationInnerContext context = (SyscallDeclarationInnerContext) ctx.getParent().getParent();
+			Token objName = context.object;
+			if (objName != null) {
+				TBObject obj = this.parser.getObjects().get(context.children.get(0).getText());
+				String prop = context.property.getText();
+				for (int i = 0; i < obj.functions.size(); i++) {
+					if (obj.getFunctions().get(i).getName().equals(prop)) {
+						obj.getFunctions().get(i).getParameters().add(param);
+						break;
+					}
+				}
+			} else {
+				this.parser.getSyscalls().get(context.children.get(0).getText()).getParameters().add(param);
+			}
+		}
+
 	}
 
 	@Override
 	public void exitParamList(ParamListContext ctx) {
 		// TODO Auto-generated method stub
 		super.exitParamList(ctx);
-	}
-
-	@Override
-	public void enterParam(ParamContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterParam(ctx);
 	}
 
 	@Override
