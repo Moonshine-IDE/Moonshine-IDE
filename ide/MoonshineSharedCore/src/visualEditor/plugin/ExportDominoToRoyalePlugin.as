@@ -255,7 +255,8 @@ package visualEditor.plugin
                 var sectionContent:XML = <SectionContent />;
                     sectionContent.setNamespace(jNamespace);
                     sectionContent.@name = item.content;
-                var view:XML = new XML('<' + item.label + '/>');
+                var viewName:String = String(item.label).split(" ").join("");
+                var view:XML = new XML('<' + viewName + '/>');
                     view.setNamespace(viewNamespace);
 
                 sectionContent.appendChild(view);
