@@ -220,12 +220,24 @@ package actionScripts.utils
 			//content = content.replace(/^[ \t]+(?=\S)/gm, "");
 			content = StringUtil.trim(content);
 			
-			var searchString:String = projectSearchObject.value.isEscapeChars ? escapeRegex(projectSearchObject.value.valueToSearch) : projectSearchObject.value.valueToSearch;
-			var flags:String = 'g';
-			if (!projectSearchObject.value.isMatchCase) flags += 'i';
+			var flags:String = projectSearchObject.value.isMatchCase ? "g" : "gi";
+			var searchString:String;
+			if (projectSearchObject.value.isRegexp)
+			{
+				if (projectSearchObject.value.isEscapeChars)
+				{
+					searchString = escapeRegex(projectSearchObject.value.valueToSearch);
+				}
+				else
+				{
+					searchString = projectSearchObject.value.valueToSearch;
+				}
+			}
+			else
+			{
+				searchString = escapeRegex(projectSearchObject.value.valueToSearch);
+			}
 			var searchRegExp:RegExp = new RegExp(searchString, flags);
-			
-			//var foundMatches:Array = content.match(searchRegExp);
 			
 			var foundMatches:Array = [];
 			var results:Array = searchRegExp.exec(content);
@@ -246,7 +258,10 @@ package actionScripts.utils
 				
 				if (res.startLineIndex != lastLineIndex)
 				{
-					lines = content.split(/\r?\n|\r/);
+					if (!lines)
+					{
+						lines = content.split(/\r?\n|\r/);
+					}
 					tmpFW = new WorkerFileWrapper(null);
 					tmpFW.isShowAsLineNumber = true;
 					tmpFW.lineNumbersWithRange = [];
@@ -296,7 +311,17 @@ package actionScripts.utils
 		
 		private function charIdx2LineCharIdx(str:String, charIdx:int, lineDelim:String):Point
 		{
-			var line:int = str.substr(0,charIdx).split(lineDelim).length - 1;
+			var line:int = 0;
+			var current:int = charIdx;
+			while(true)
+			{
+				current = str.lastIndexOf(lineDelim, current - 1);
+				if (current == -1)
+				{
+					break;
+				}
+				line++;
+			}
 			var chr:int = line > 0 ? charIdx - str.lastIndexOf(lineDelim, charIdx - 1) - lineDelim.length : charIdx;
 			return new Point(line, chr);
 		}

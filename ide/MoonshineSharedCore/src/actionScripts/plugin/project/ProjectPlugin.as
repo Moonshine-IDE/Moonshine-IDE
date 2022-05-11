@@ -539,6 +539,15 @@ package actionScripts.plugin.project
 						}
 					}
 
+					if (!project)
+					{
+						projectFileLocation = model.genericCore.testGenericProject(projectFile);
+						if (projectFileLocation)
+						{
+							project = model.genericCore.parseGenericProject(projectLocation);
+						}
+					}
+
                     if (project)
                     {
                         dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project));

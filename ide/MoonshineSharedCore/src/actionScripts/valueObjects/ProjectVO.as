@@ -92,6 +92,7 @@ package actionScripts.valueObjects
 			classFilesInProject = new ArrayCollection();
 
 			folderLocation = folder;
+			projectFolder = null;
 			
 			// we need to keep a reference of owner project to every
 			// filewrapper reference for later use, i.e. to determine

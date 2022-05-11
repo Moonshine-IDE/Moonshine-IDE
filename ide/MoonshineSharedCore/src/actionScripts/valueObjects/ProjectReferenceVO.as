@@ -20,8 +20,9 @@
 package actionScripts.valueObjects
 {
     import actionScripts.factory.FileLocation;
+	import actionScripts.locator.IDEModel;
 
-    public class ProjectReferenceVO
+	public class ProjectReferenceVO
 	{
 		public var name: String;
 		public var path: String = "";
@@ -54,8 +55,20 @@ package actionScripts.valueObjects
 			var tmpVO : ProjectReferenceVO = new ProjectReferenceVO();
 			
 			// value submission
-			if ( value.hasOwnProperty("name") ) tmpVO.name = value.name;
 			if ( value.hasOwnProperty("path") ) tmpVO.path = value.path;
+			if ( value.hasOwnProperty("name") )
+			{
+				// since https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1027 problem
+				// parse by path to overcome problem during reading from already saved data
+				if (tmpVO.path)
+				{
+					tmpVO.name = tmpVO.path.split(IDEModel.getInstance().fileCore.separator).pop() as String;
+				}
+				else
+				{
+					tmpVO.name = value.name;
+				}
+			}
 			if ( value.hasOwnProperty("startIn") ) tmpVO.startIn = value.startIn;
 			if ( value.hasOwnProperty("status") ) tmpVO.status = value.status;
 			if ( value.hasOwnProperty("loading") ) tmpVO.loading = value.loading;

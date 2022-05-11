@@ -136,6 +136,7 @@ package actionScripts.valueObjects
 		public static var READABLE_FILES:Array;
 		public static var KNOWN_BINARY_FILES:Array;
 		public static var READABLE_CLASS_FILES:Array;
+		public static var READABLE_PROJECT_FILES:Array;
 		public static var NON_CLOSEABLE_TABS:Array;
 		public static var STARTUP_PROJECT_OPEN_QUEUE_LEFT:int;
 		public static var LAST_BROWSED_LOCATION:String;
@@ -318,7 +319,9 @@ package actionScripts.valueObjects
 			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
 			READABLE_CLASS_FILES.sort();
 
-			TEMPLATE_CSS = new FileLocation("TEMPLATE");
+			READABLE_PROJECT_FILES = ["actionScriptProperties", "as3proj", "veditorproj", "javaproj", "grailsproj", "ondiskproj", "genericproj"];
+
+					TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";
 			TEMPLATE_CSS.fileBridge.isDirectory = false;
 			TEMPLATE_CSS.fileBridge.extension = "css";
