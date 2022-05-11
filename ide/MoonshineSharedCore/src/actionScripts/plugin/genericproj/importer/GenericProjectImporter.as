@@ -80,20 +80,14 @@ package actionScripts.plugin.genericproj.importer
 			}
 			
 			// Parse XML file
-			if (project.hasPom())
+			if (project.hasPom() && settingsData)
 			{
-				if (settingsData)
-				{
-					project.mavenBuildOptions.parse(settingsData.mavenBuild);
-				}
+				project.mavenBuildOptions.parse(settingsData.mavenBuild);
 			}
 
-			if (project.hasGradleBuild())
+			if (project.hasGradleBuild() && settingsData)
 			{
-				if (project.hasGradleBuild() && settingsData)
-				{
-					project.gradleBuildOptions.parse(settingsData.gradleBuild);
-				}
+				project.gradleBuildOptions.parse(settingsData.gradleBuild);
 			}
 
 			project.menuType = ProjectMenuTypes.GENERIC;

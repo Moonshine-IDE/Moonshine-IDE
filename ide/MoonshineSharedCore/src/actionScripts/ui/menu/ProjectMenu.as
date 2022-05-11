@@ -400,6 +400,12 @@ package actionScripts.ui.menu
                         'b', [Keyboard.CONTROL])
                 );
             }
+            if ((currentProject as GenericProjectVO).hasAnt())
+            {
+                genericMenu.push(
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.GENERIC], "selectedProjectAntBuild")
+                );
+            }
 
             if (genericMenu.length > 0)
             {

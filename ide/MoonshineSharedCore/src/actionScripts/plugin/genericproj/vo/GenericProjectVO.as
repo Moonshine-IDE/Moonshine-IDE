@@ -75,5 +75,15 @@ package actionScripts.plugin.genericproj.vo
 			var gradleFile:FileLocation = projectFolder.file.fileBridge.resolvePath("build.gradle");
 			return gradleFile.fileBridge.exists;
 		}
+
+		public function hasAnt():Boolean
+		{
+			var antFile:FileLocation = projectFolder.file.fileBridge.resolvePath("build.xml");
+			if (!antFile.fileBridge.exists)
+			{
+				antFile = projectFolder.file.fileBridge.resolvePath("build/build.xml");
+			}
+			return antFile.fileBridge.exists;
+		}
 	}
 }

@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ant
 {
+    import actionScripts.utils.FileUtils;
+    import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
 
     import flash.desktop.NativeProcess;
@@ -334,23 +336,33 @@ package actionScripts.plugins.ant
             if (!(selectedAntProject is AS3ProjectVO) ||
                     ((selectedAntProject is AS3ProjectVO) && !(selectedAntProject as AS3ProjectVO).antBuildPath))
             {
-                // Find build folder within the selected folder
-                //find for build.xml file with <project> tag
-                for (var i:int = 0; i < selectedAntProject.projectFolder.children.length; i++)
+                if (selectedAntProject.folderLocation.fileBridge.resolvePath("build.xml").fileBridge.exists)
                 {
-                    if (selectedAntProject.projectFolder.children[i].name == "build")
+                    buildFlag = true;
+                    AntFlag = true;
+                    antFiles.addItem(selectedAntProject.folderLocation.fileBridge.resolvePath("build.xml"));
+                }
+                else
+                {
+                    // Find build folder within the selected folder
+                    //find for build.xml file with <project> tag
+                    for (var i:int = 0; i < selectedAntProject.projectFolder.children.length; i++)
                     {
-                        buildFlag = true;
-                        for (var j:int = 0; j < selectedAntProject.projectFolder.children[i].children.length; j++)
+                        if (selectedAntProject.projectFolder.children[i].name == "build")
                         {
-                            if (selectedAntProject.projectFolder.children[i].children[j].file.fileBridge.extension == "xml")
+                            buildFlag = true;
+                            var buildChildren:Array = (selectedAntProject.projectFolder.children[i] as FileWrapper).file.fileBridge.getDirectoryListing();
+                            for (var j:int = 0; j < buildChildren.length; j++)
                             {
-                                var str:String = selectedAntProject.projectFolder.children[i].children[j].file.fileBridge.read().toString();
-                                if ((str.search("<project ") != -1) || (str.search("<project>") != -1))
+                                if (buildChildren[j].extension == "xml")
                                 {
-                                    // Add xml files in AC.
-                                    AntFlag = true;
-                                    antFiles.addItem(selectedAntProject.projectFolder.children[i].children[j].file);
+                                    var str:String = FileUtils.readFromFile(buildChildren[j] as File) as String;
+                                    if ((str.search("<project ") != -1) || (str.search("<project>") != -1))
+                                    {
+                                        // Add xml files in AC.
+                                        AntFlag = true;
+                                        antFiles.addItem(new FileLocation(buildChildren[j].nativePath));
+                                    }
                                 }
                             }
                         }
