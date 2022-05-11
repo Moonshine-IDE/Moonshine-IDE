@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project
 {
+	import actionScripts.plugin.genericproj.events.GenericProjectEvent;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.setTimeout;
@@ -289,14 +291,21 @@ package actionScripts.plugin.actionscript.as3project
 					importFDProject(flashDevelopProjectFile, false, model.ondiskCore.parseOnDisk(new FileLocation(dir.nativePath)));
 					return;
 				}
+				flashDevelopProjectFile = model.genericCore.testGenericProject(dir);
+				if (flashDevelopProjectFile)
+				{
+					importFDProject(flashDevelopProjectFile, false, model.genericCore.parseGenericProject(new FileLocation(dir.nativePath)));
+					return;
+				}
 			}
 
-			
-			
 			if (!isFBProject && !isFDProject)
 			{
 				nonProjectFolderLocation = new FileLocation(dir.nativePath);
-				Alert.show("This directory is missing the Moonshine project configuration files. Do you want to generate a new project by locating existing source?", "Error!", Alert.YES|Alert.NO, null, onExistingSourceProjectConfirm);
+				Alert.yesLabel = "Create project with source";
+				Alert.noLabel = "Open as generic project";
+				Alert.buttonWidth = 170;
+				Alert.show("This directory is missing the Moonshine project configuration files. Do you want to generate a new project by locating existing source?", "Error!", Alert.YES|Alert.NO|Alert.CANCEL, null, onExistingSourceProjectConfirm);
 			}
 			else if (isFBProject && isFDProject)
 			{
@@ -327,9 +336,16 @@ package actionScripts.plugin.actionscript.as3project
 		
 		private function onExistingSourceProjectConfirm(event:CloseEvent):void
 		{
+			Alert.yesLabel = "Yes";
+			Alert.noLabel = "No";
+			Alert.buttonWidth = 65;
 			if (event.detail == Alert.YES)
 			{
 				createAS3Project(new NewProjectEvent("", "as3proj", null, nonProjectFolderLocation));
+			}
+			else if (event.detail == Alert.NO)
+			{
+				dispatcher.dispatchEvent(new GenericProjectEvent(GenericProjectEvent.EVENT_OPEN_PROJECT, nonProjectFolderLocation));
 			}
 			
 			nonProjectFolderLocation = null;
@@ -405,7 +421,7 @@ package actionScripts.plugin.actionscript.as3project
 		// Create new AS3 Project
 		private function createAS3Project(event:NewProjectEvent):void
 		{
-			if (!canCreateProject(event) && event.settingsFile)
+			if (!canCreateProject(event))
 			{
 				return;
 			}
@@ -451,7 +467,8 @@ package actionScripts.plugin.actionscript.as3project
 				projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.GRAILS) == -1 &&
 				projectTemplateName.indexOf(ProjectTemplateType.HAXE) == -1 && 
-				projectTemplateName.indexOf(ProjectTemplateType.ONDISK) == -1;
+				projectTemplateName.indexOf(ProjectTemplateType.ONDISK) == -1 &&
+				projectTemplateName.indexOf(ProjectTemplateType.GENERIC) == -1;
 		}
 		
 		protected function handleEventSearchForProjectsInDirectories(event:ProjectEvent):void

@@ -19,6 +19,7 @@
 package actionScripts.plugins.as3project
 {
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.valueObjects.ProjectVO;
 
 	import flash.display.DisplayObject;
 	import flash.events.Event;

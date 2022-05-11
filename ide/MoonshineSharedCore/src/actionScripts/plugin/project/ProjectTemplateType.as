@@ -36,5 +36,6 @@ package actionScripts.plugin.project
 		public static const ROYALE_DOMINO_EXPORT_PROJECT:String = "Apache Royale Domino Export Project";
         public static const HAXE:String = "Haxe";
 		public static const ONDISK:String = "On Disk Project";
+		public static const GENERIC:String = "Generic Project";
     }
 }

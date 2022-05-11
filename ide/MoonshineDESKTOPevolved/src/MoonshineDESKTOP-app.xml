@@ -276,6 +276,12 @@
 			<description>Moonshine Project Configuration File 5</description>
 			<contentType>text/plain</contentType>
 		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.File.6</name>
+			<extension>genericproj</extension>
+			<description>Moonshine Project Configuration File 6</description>
+			<contentType>text/plain</contentType>
+		</fileType>
 	</fileTypes>
 
     <!-- iOS specific capabilities -->

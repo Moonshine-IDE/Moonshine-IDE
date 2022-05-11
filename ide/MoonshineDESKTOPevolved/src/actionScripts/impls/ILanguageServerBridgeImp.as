@@ -1,5 +1,7 @@
 package actionScripts.impls
 {
+	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
+
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	
@@ -210,7 +212,7 @@ package actionScripts.impls
 				var haxeManager:HaxeLanguageServerManager = new HaxeLanguageServerManager(haxeProject);
 				manager = haxeManager;
 			}
-			if (project is OnDiskProjectVO)
+			if ((project is OnDiskProjectVO) || (project is GenericProjectVO))
 			{
 				return;
 			}
