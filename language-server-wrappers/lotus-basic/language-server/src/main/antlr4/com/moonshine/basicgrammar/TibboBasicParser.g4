@@ -186,7 +186,7 @@ typeStmt: visibility? TYPE name=IDENTIFIER
 	END_TYPE;
 
 typeStmtElement:
-	IDENTIFIER (LPAREN literal RPAREN)? valueType=asTypeClause ;
+	name=IDENTIFIER (LPAREN literal RPAREN)? valueType=asTypeClause ;
 
 // operator precedence is represented by rule order
 

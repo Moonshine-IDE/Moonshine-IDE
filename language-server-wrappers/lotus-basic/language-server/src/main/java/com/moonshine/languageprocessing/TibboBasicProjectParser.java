@@ -1,5 +1,6 @@
 package com.moonshine.languageprocessing;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,12 +8,14 @@ import java.util.Map;
 public class TibboBasicProjectParser {
 
 	private Map<String, TBObject> objects = new HashMap<>();
-	private Map<String, TBEnum> enums;
-	private Map<String, TBSyscall> syscalls;
-	private Map<String, TBFunction> functions;
-	private List<TBVariable> variables;
-	private List<TBScope> scopes;
+	private Map<String, TBEnum> enums=new HashMap<>();
+	private Map<String, TBSyscall> syscalls=new HashMap<>();
+	private Map<String, TBFunction> functions=new HashMap<>();
+	private List<TBVariable> variables=new ArrayList<>();
+	private List<TBScope> scopes=new ArrayList<>();
+	private Map<String,TBType> types=new HashMap<>();
 	private Map<String,TBConst> consts=new HashMap<>();
+	private Map<String,TBEvent> events;
 
 	public Map<String, TBConst> getConsts() {
 		return consts;
@@ -67,4 +70,21 @@ public class TibboBasicProjectParser {
 
 	}
 
+	public Map<String, TBType> getTypes() {
+		return types;
+	}
+
+	public void setTypes(Map<String, TBType> types) {
+		this.types = types;
+	}
+
+	public Map<String, TBEvent> getEvents() {
+		return events;
+	}
+
+	public void setEvents(Map<String, TBEvent> events) {
+		this.events = events;
+	}
+
+	
 }

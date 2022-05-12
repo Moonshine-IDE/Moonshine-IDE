@@ -3326,6 +3326,7 @@ public class TibboBasicParser extends Parser {
 	}
 
 	public static class TypeStmtElementContext extends ParserRuleContext {
+		public Token name;
 		public AsTypeClauseContext valueType;
 		public TerminalNode IDENTIFIER() { return getToken(TibboBasicParser.IDENTIFIER, 0); }
 		public AsTypeClauseContext asTypeClause() {
@@ -3363,7 +3364,7 @@ public class TibboBasicParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(527);
-			match(IDENTIFIER);
+			((TypeStmtElementContext)_localctx).name = match(IDENTIFIER);
 			setState(532);
 			_errHandler.sync(this);
 			_la = _input.LA(1);

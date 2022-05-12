@@ -2,12 +2,14 @@ package com.moonshine.languageprocessing;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.moonshine.basicgrammar.TibboBasicParser;
@@ -453,8 +455,12 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterEventDeclaration(EventDeclarationContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterEventDeclaration(ctx);
+		String name = ctx.name.getText();
+		
+
+		this.parser.getEvents().put(name, new TBEvent(name, Integer.parseInt(ctx.number.getText()), new ArrayList<>(),
+				new TBRange(ctx.start, ctx.start), new ArrayList<>()));
+
 	}
 
 	@Override
@@ -641,8 +647,31 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterTypeStmt(TypeStmtContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterTypeStmt(ctx);
+		String name = ctx.name.getText();
+		List<TBVariable> members = new ArrayList<TBVariable>();
+		for (int i = 0; i < ctx.children.size(); i++) {
+			if (((ParserRuleContext) ctx.children.get(i)).getRuleIndex() == TibboBasicParser.RULE_typeStmtElement) {
+				TypeStmtElementContext item = (TypeStmtElementContext) ctx.children.get(i);
+				String varName = item.name.getText();
+				String dataType = "";
+				String length = "";
+				ParseTree asType = item.children.get(1);
+				for (int j = 0; j < item.children.size(); j++) {
+					if (item.children.get(j) instanceof ParserRuleContext && ((ParserRuleContext) item.children.get(j))
+							.getRuleIndex() == TibboBasicParser.RULE_asTypeClause) {
+						asType = item.children.get(j);
+						break;
+					}
+				}
+				dataType = asType.getChild(1).getText();
+				TBVariable variable = new TBVariable(varName, "", length, dataType, new TBRange(item.start, item.start),
+						null, new ArrayList<>(), null, new ArrayList<>());
+				members.add(variable);
+			}
+		}
+		this.parser.getTypes().put(name, new TBType(name, members, new TBRange(ctx.start, ctx.start), new ArrayList<>()
+
+		));
 	}
 
 	@Override
@@ -725,8 +754,21 @@ public class ParserListener extends TibboBasicParserBaseListener {
 
 	@Override
 	public void enterPrimaryExpression(PrimaryExpressionContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterPrimaryExpression(ctx);
+		//for (int i = 0; i < ctx.children.size(); i++) {
+		//	ParseTree item = ctx.children.get(i);
+        //    if (((ParserRuleContext)item).getRuleIndex() == TibboBasicParser.RULE_literal && ((ParserRuleContext)item).start.getType() == TibboBasicParser.IDENTIFIER) {
+        //        let location: TBRange = {
+//                    startToken: ctx.start,
+//                    stopToken: ctx.start
+//                };
+//                let symbolName = item.start.text;
+
+                // this.addSymbolReference(symbolName, location);
+                // this.addFunction(symbolName, {});
+                // this.parser.functions[symbolName].references.push(location);
+//            }
+//        }
+
 	}
 
 	@Override
