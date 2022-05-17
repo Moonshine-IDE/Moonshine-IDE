@@ -30,6 +30,10 @@
 			{
 				"file": "tourDeFlex",
 				"path": "tourDeFlex"
+			},
+			{
+				"file": "../MoonshineSharedCore/src/elements",
+				"path": "elements"
 			}
 		]
 	},
