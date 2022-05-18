@@ -1001,7 +1001,7 @@
 				<arg value="-haxeflag=-swf-lib-extern=${FLEX_HOME}/frameworks/libs/air/airframework.swc"/>
 				<arg value="-haxeflag=-swf-lib-extern=${FLEX_HOME}/frameworks/libs/mx/mx.swc"/>
 			-->
-			<arg value="--haxeflag=--swf-lib-extern=${LibraryHelperSharedCore}/bin/MoonshineSharedCore.swc"/>
+			<arg value="--haxeflag=--swf-lib-extern=${LibraryMoonshineCore}/bin/MoonshineSharedCore.swc"/>
 		</exec>
 	</target>
 
