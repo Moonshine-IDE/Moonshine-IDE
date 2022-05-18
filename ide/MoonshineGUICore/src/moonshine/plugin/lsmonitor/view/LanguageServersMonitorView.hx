@@ -95,9 +95,9 @@ class LanguageServersMonitorView extends LayoutGroup implements IViewWithTitle
 		this.gridView.layoutData = AnchorLayoutData.fill();
 		this.gridView.columns = new ArrayCollection([
 			new GridViewColumn("Project", (data:LanguageServerInstanceVO) -> data.projectName),
-			new GridViewColumn("PID", (data:LanguageServerInstanceVO) -> data.processID, 150),
+			new GridViewColumn("Process ID", (data:LanguageServerInstanceVO) -> data.processID, 200)/*,
 			new GridViewColumn("Memory", (data:LanguageServerInstanceVO) -> data.memory, 150),
-			new GridViewColumn("CPU", (data:LanguageServerInstanceVO) -> data.cpu, 150)
+			new GridViewColumn("CPU", (data:LanguageServerInstanceVO) -> data.cpu, 150)*/
 		]);
 		this.gridView.extendedScrollBarY = true;
 		this.gridView.resizableColumns = true;

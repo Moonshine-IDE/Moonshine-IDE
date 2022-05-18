@@ -14,6 +14,9 @@ package actionScripts.plugins.lsmonitor
 	import moonshine.plugin.lsmonitor.view.LanguageServersMonitorView;
 	import moonshine.plugin.lsmonitor.vo.LanguageServerInstanceVO;
 
+	import actionScripts.languageServer.LanguageServerGlobals;
+	import actionScripts.languageServer.ILanguageServerManager;
+
 	public class LanguageServersMonitor extends ConsoleBuildPluginBase
 	{
 		public static const EVENT_SHOW_LS_MONITOR_VIEW:String = "showLanguageServersMonitorView";
@@ -47,11 +50,12 @@ package actionScripts.plugins.lsmonitor
 		override public function activate():void
 		{
 			super.activate();
-			nativeProcessStartupInfo.executable = File.documentsDirectory.resolvePath( "/bin/bash" );
+			//nativeProcessStartupInfo.executable = File.documentsDirectory.resolvePath( "/bin/bash" );
 
 			dispatcher.addEventListener(EVENT_SHOW_LS_MONITOR_VIEW, onShowLSMonitorView, false, 0, true);
 		}
 
+		/*
 		override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
 		{
 			var outputLines:Array = getDataFromBytes(nativeProcess.standardOutput).split("\n");
@@ -76,6 +80,7 @@ package actionScripts.plugins.lsmonitor
 
 			lsMonitorView.languageServerInstances = instances;
 		}
+		*/
 
 		private function onShowLSMonitorView(event:Event):void
 		{
@@ -84,15 +89,26 @@ package actionScripts.plugins.lsmonitor
 				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, lsMonitorViewWrapper));
 				initializeMonitorViewEventHandlers();
 				isMonitorViewVisible = true;
-
+				LanguageServerGlobals.getEventDispatcher().addEventListener( Event.ADDED, langaugeServerAdded );
+				LanguageServerGlobals.getEventDispatcher().addEventListener( Event.REMOVED, langaugeServerRemoved );
 				getServerInstances();
 			}
 			else
 			{
+				LanguageServerGlobals.getEventDispatcher().removeEventListener( Event.ADDED, langaugeServerAdded );
+				LanguageServerGlobals.getEventDispatcher().removeEventListener( Event.REMOVED, langaugeServerRemoved );
 				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, lsMonitorViewWrapper));
 				cleanupMonitorViewEventHandlers();
 				monitorPanel_removedFromStageHandler(event);
 			}
+		}
+
+		private function langaugeServerAdded(e:Event):void {
+			getServerInstances();
+		}
+
+		private function langaugeServerRemoved(e:Event):void {
+			getServerInstances();
 		}
 
 		private function initializeMonitorViewEventHandlers():void
@@ -114,6 +130,23 @@ package actionScripts.plugins.lsmonitor
 
 		private function getServerInstances():void
 		{
+
+			var globalInstances:Array = LanguageServerGlobals.getLanguageServerInstances();
+			var instances:ArrayCollection = new ArrayCollection();
+
+			for (var i:int=0; i < globalInstances.length; i++)
+			{
+				var instance:ILanguageServerManager = globalInstances[ i ];
+				var lsInstance:LanguageServerInstanceVO = new LanguageServerInstanceVO();
+				lsInstance.projectName = instance.project.name;
+				lsInstance.processID = String( instance.pid );
+				if ( instance.pid > -1 ) instances.add(lsInstance);
+
+			}
+
+			lsMonitorView.languageServerInstances = instances;
+
+			/*
 			// for MacOS platform
 			var shFile : File = File.applicationDirectory.resolvePath("macOScripts/LanguageServerStats.sh");
 
@@ -126,6 +159,7 @@ package actionScripts.plugins.lsmonitor
 			this.start(
 					new <String>[shPath], null
 			);
+			*/
 		}
 	}
 }
