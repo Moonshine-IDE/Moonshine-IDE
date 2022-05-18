@@ -128,6 +128,8 @@ package actionScripts.languageServer
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 
+			LanguageServerGlobals.addLanguageServerManager( this );
+
 			bootstrapThenStartNativeProcess();
 		}
 
@@ -253,6 +255,10 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(LspNotificationEvent.SHOW_MESSAGE, languageClient_showMessageHandler);
 			_languageClient.removeEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			_languageClient = null;
+			
+			LanguageServerGlobals.removeLanguageServerManager( this );
+			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
+
 		}
 
 		private function extractVersionStringFromStandardErrorOutput(versionOutput:String):String
@@ -648,6 +654,7 @@ package actionScripts.languageServer
 				if ( _pid > 0 ) {
 					// PID is set, we don't need the stdout handler anymore
 					_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
+					LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.ADDED ) );
 				}
 			}
 		}
@@ -673,6 +680,7 @@ package actionScripts.languageServer
 				
 				warning("ActionScript & MXML language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
+			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardOutputDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);

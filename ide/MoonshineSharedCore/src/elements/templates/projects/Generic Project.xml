@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template displayHome="true">
+        <title>Generic Project</title>
+        <homeTitle>Generic Project</homeTitle>
+        <name>Generic Project</name>
+        <icon>Generic Project.png</icon>
+        <description>Create a new generic project.</description>
+    </template>
+</templates>

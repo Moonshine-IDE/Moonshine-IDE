@@ -211,7 +211,7 @@ package actionScripts.plugin.templating
 					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];
 				case "Groovy Class":
 				case "Java Class":
-					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.VISUAL_EDITOR_DOMINO];
+					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.GENERIC];
 				case "Haxe Class":
 				case "Haxe Interface":
 					return [ProjectMenuTypes.HAXE, ProjectMenuTypes.TEMPLATE];
