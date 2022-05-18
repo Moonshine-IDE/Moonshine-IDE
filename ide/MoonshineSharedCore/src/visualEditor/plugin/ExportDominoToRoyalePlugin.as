@@ -252,7 +252,7 @@ package visualEditor.plugin
                     content.@selectedContent = item.content;
                 }
 
-                var sectionContent:XML = <SectionContent />;
+                var sectionContent:XML = <ScrollableSectionContent />;
                     sectionContent.setNamespace(jNamespace);
                     sectionContent.@name = item.content;
                 var viewName:String = String(item.label).split(" ").join("");
