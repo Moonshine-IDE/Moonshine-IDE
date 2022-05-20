@@ -646,5 +646,10 @@ package actionScripts.impls
 		{
 			return ConsoleBuildPluginBase.checkRequireJava(project);
 		}
+
+		public function searchAntFile(insideProject:ProjectVO):ArrayCollection
+		{
+			return AntBuildPlugin.searchAntFile(insideProject);
+		}
 	}
 }

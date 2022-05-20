@@ -60,6 +60,13 @@ package actionScripts.plugin.genericproj.exporter
 				);
 			}
 
+			if (project.buildOptions.antBuildPath)
+			{
+				projectXML.appendChild(
+						project.buildOptions.toXML()
+				);
+			}
+
 			return projectXML;
 		}
 	}

@@ -13,15 +13,29 @@ package actionScripts.plugin.genericproj.vo
 	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.valueObjects.ProjectVO;
 
+	import mx.collections.ArrayCollection;
+
 	public class GenericProjectVO extends ProjectVO
 	{
 		public var mavenBuildOptions:MavenBuildOptions;
 		public var gradleBuildOptions:GradleBuildOptions;
+		public var isAntFileAvailable:Boolean;
+		public var buildOptions:GenericProjectBuildOptions;
+
+		public function get antBuildPath():String
+		{
+			return buildOptions.antBuildPath;
+		}
+		public function set antBuildPath(value:String):void
+		{
+			buildOptions.antBuildPath = value;
+		}
 
 		public function GenericProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
 		{
 			super(folder, projectName, updateToTreeView);
 
+			buildOptions = new GenericProjectBuildOptions();
 			mavenBuildOptions = new MavenBuildOptions(projectFolder.nativePath);
 			gradleBuildOptions = new GradleBuildOptions(projectFolder.nativePath);
 			gradleBuildOptions.commandLine = "clean run";
@@ -40,6 +54,15 @@ package actionScripts.plugin.genericproj.vo
 							Vector.<ISetting>([pathSetting])
 					)
 			);
+
+			if (buildOptions.antBuildPath || isAntFileAvailable)
+			{
+				settings.push(
+					new SettingsWrapper("Ant Build", Vector.<ISetting>([
+						new PathSetting(this, "antBuildPath", "Ant Build File", false, antBuildPath, false)
+					]))
+				);
+			}
 
 			if (hasPom())
 			{
@@ -78,12 +101,15 @@ package actionScripts.plugin.genericproj.vo
 
 		public function hasAnt():Boolean
 		{
-			var antFile:FileLocation = projectFolder.file.fileBridge.resolvePath("build.xml");
-			if (!antFile.fileBridge.exists)
+			if (buildOptions.antBuildPath)
+					return model.fileCore.isPathExists(buildOptions.antBuildPath);
+
+			var antFiles:ArrayCollection = model.flexCore.searchAntFile(this);
+			if (antFiles.length > 0)
 			{
-				antFile = projectFolder.file.fileBridge.resolvePath("build/build.xml");
+				buildOptions.antBuildPath = (antFiles[0] as FileLocation).fileBridge.nativePath;
 			}
-			return antFile.fileBridge.exists;
+			return ((antFiles.length > 0) ? true : false);
 		}
 	}
 }
