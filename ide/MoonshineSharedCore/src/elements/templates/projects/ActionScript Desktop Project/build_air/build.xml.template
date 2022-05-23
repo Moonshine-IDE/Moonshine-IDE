@@ -164,7 +164,7 @@
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${DESKTOP_SELFSIGNED_CERTIFICATE}' " />
 			<arg line="-storepass '${DESKTOP_SELFSIGNED_CERTIFICATE_PASS}'" />
-			<arg line=" -tsa 'http://timestamp.comodoca.com/rfc3161'" />
+			<arg line=" -tsa 'http://timestamp.digicert.com'" />
 			<arg line="${DEPLOY_DIR}/${DESKTOP_PACKAGE_NAME}.air" />
 			<arg line="${DESKTOP_DESCRIPTOR}" />
 			<arg line="${SWF_FILE_PATH}" />
@@ -188,7 +188,7 @@
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${DESKTOP_SELFSIGNED_CERTIFICATE}'" />
 	   		<arg line="-storepass '${DESKTOP_SELFSIGNED_CERTIFICATE_PASS}'" />
-	   		<arg line="-tsa 'http://timestamp.comodoca.com/rfc3161'" />
+	   		<arg line="-tsa 'http://timestamp.digicert.com'" />
 	   		<arg line="-target native"/>
 	   		<arg line="${DESKTOP_PACKAGE_PATH}" />
 	   		<arg line="'${DESKTOP_DESCRIPTOR}'" />
@@ -213,7 +213,7 @@
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore '${DESKTOP_SELFSIGNED_CERTIFICATE}' " />
 			<arg line="-storepass '${DESKTOP_SELFSIGNED_CERTIFICATE_PASS}'" />
-			<arg line="-tsa 'http://timestamp.comodoca.com/rfc3161'" />
+			<arg line="-tsa 'http://timestamp.digicert.com'" />
 			<arg line="-target native"/>
 			<arg line="${DEPLOY_DIR}/${DESKTOP_PACKAGE_NAME}.dmg" />
 			<arg line="${DESKTOP_DESCRIPTOR}" />

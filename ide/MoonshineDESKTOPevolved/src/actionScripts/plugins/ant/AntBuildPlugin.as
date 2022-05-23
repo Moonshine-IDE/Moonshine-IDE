@@ -372,10 +372,10 @@ package actionScripts.plugins.ant
             }
             else if (("antBuildPath" in selectedAntProject) && selectedAntProject["antBuildPath"])
             {
-                var antFile:FileLocation = new FileLocation(selectedAntProject["antBuildPath"]);
+                var antFile:FileLocation = selectedAntProject.folderLocation.fileBridge.resolvePath(selectedAntProject["antBuildPath"]);
                 if (antFile.fileBridge.exists)
                 {
-                    model.antScriptFile = new FileLocation(selectedAntProject["antBuildPath"]);
+                    model.antScriptFile = antFile;
                     antBuildHandler();
                 }
                 else
