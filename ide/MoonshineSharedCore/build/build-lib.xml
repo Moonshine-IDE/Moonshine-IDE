@@ -1000,9 +1000,48 @@
 				<arg value="-haxeflag=-swf-lib-extern=${FLEX_HOME}/frameworks/libs/air/aircore.swc"/>
 				<arg value="-haxeflag=-swf-lib-extern=${FLEX_HOME}/frameworks/libs/air/airframework.swc"/>
 				<arg value="-haxeflag=-swf-lib-extern=${FLEX_HOME}/frameworks/libs/mx/mx.swc"/>
+				<arg value="-haxeflag=-swf-lib-extern=${LibraryMoonshineCore}/bin/MoonshineSharedCore.swc"/>
 			-->
-			<arg value="--haxeflag=--swf-lib-extern=${LibraryMoonshineCore}/bin/MoonshineSharedCore.swc"/>
 		</exec>
+	</target>
+
+	<!-- Compile intermediary SWC file. Required only in some specific test circumstances -->
+	<target name="CompileSharedCore">
+		<echo>Compiling MoonshineSharedCore SWC</echo>
+		<compc output="${LibraryMoonshineCore}/libs/MoonshineSharedCore.swc" 
+			   swf-version="44" 
+			   locale="${locale.list}" 
+			   fork="true" 
+			   optimize="true" 
+			   debug="{IsDebug}" 
+			   actionscript-file-encoding="UTF-8" 
+			   incremental="false"
+			   keep-generated-actionscript="false"
+			   allow-source-path-overlap="true"
+			   maxmemory="2048m">
+			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
+			<source-path path-element="${LibraryMoonshineCore}/src"/>
+			<source-path path-element="${applicationSourceDirectory}"/>
+			<include-sources dir="${LibraryMoonshineCore}/src" includes="actionScripts/**/*.as" />
+			<compiler.external-library-path dir="${FLEX_HOME}/frameworks/libs/air">
+				<include name="airglobal.swc" />
+			</compiler.external-library-path>
+			<compiler.external-library-path dir="${FLEX_HOME}/frameworks/libs">
+				<include name="core.swc" />
+				<include name="framework.swc" />
+			</compiler.external-library-path>
+			<compiler.external-library-path dir="${FLEX_HOME}/frameworks/libs/mx">
+				<include name="mx.swc" />
+			</compiler.external-library-path>
+			<compiler.external-library-path dir="../libs">
+				<include name="**/*.swc" />
+			</compiler.external-library-path>
+			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+				<include name="*.swc" />
+			</compiler.library-path>
+			<compiler.verbose-stacktraces>true</compiler.verbose-stacktraces>
+			<define name="CONFIG::OSX" value="false"/>
+		</compc>
 	</target>
 
 	<!-- Compile SWF to build directory for desktop packaging -->
