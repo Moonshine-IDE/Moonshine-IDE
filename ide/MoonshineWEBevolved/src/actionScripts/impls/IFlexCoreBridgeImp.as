@@ -490,6 +490,11 @@ package actionScripts.impls
 			return false;
 		}
 		
+		public function searchAntFile(insideProject:ProjectVO):ArrayCollection
+		{
+			return (new ArrayCollection());
+		}
+		
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE LISTENERS

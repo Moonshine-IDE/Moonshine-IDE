@@ -90,6 +90,19 @@ package actionScripts.plugin.genericproj.importer
 				project.gradleBuildOptions.parse(settingsData.gradleBuild);
 			}
 
+			if (settingsData)
+			{
+				project.buildOptions.parse(settingsData.build);
+				if (!project.buildOptions.antBuildPath)
+				{
+					project.isAntFileAvailable = project.hasAnt();
+				}
+				else
+				{
+					project.isAntFileAvailable = true;
+				}
+			}
+
 			project.menuType = ProjectMenuTypes.GENERIC;
 			return project;
 		}

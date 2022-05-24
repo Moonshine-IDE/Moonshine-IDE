@@ -84,6 +84,7 @@ package actionScripts.interfaces
 		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
 		function setMSDKILocalPathConfig():void;
 		function checkRequireJava(project:ProjectVO=null):Boolean;
+		function searchAntFile(insideProject:ProjectVO):ArrayCollection;
 
         /**
          *
