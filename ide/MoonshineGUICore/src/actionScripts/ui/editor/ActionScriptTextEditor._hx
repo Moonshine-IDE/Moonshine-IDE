@@ -1,0 +1,14 @@
+package actionScripts.ui.editor;
+
+import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+import actionScripts.ui.editor.LanguageServerTextEditor;
+import flash.events.KeyboardEvent;
+
+class ActionScriptTextEditor extends LanguageServerTextEditor {
+	public static final LANGUAGE_ID_ACTIONSCRIPT:String = "actionscript";
+
+	public function new(project:AS3ProjectVO, readOnly:Bool = false) {
+		super(LANGUAGE_ID_ACTIONSCRIPT, project, readOnly);
+		editor.allowToggleBreakpoints = true;
+	}
+}
