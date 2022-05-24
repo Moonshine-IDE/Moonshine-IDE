@@ -168,7 +168,7 @@ package visualEditor.plugin
         private function createConvertedFiles(convertedFiles:Array):Array
         {
             var views:Array = [];
-            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("src" + exportedProject.sourceFolder.fileBridge.separator + "view");
+            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("view");
             if (!viewFolder.fileBridge.exists)
             {
                 viewFolder.fileBridge.createDirectory();
@@ -235,7 +235,7 @@ package visualEditor.plugin
         private function getMainContent(views:Array):String
         {
             var jNamespace:Namespace = new Namespace("j", "library://ns.apache.org/royale/jewel");
-            var viewNamespace:Namespace = new Namespace("view", "src.view.*");
+            var viewNamespace:Namespace = new Namespace("view", "view.*");
 
             var content:XML = <ApplicationMainContent/>;
                 content.@id="mainContent";
@@ -252,7 +252,7 @@ package visualEditor.plugin
                     content.@selectedContent = item.content;
                 }
 
-                var sectionContent:XML = <SectionContent />;
+                var sectionContent:XML = <ScrollableSectionContent />;
                     sectionContent.setNamespace(jNamespace);
                     sectionContent.@name = item.content;
                 var viewName:String = String(item.label).split(" ").join("");
