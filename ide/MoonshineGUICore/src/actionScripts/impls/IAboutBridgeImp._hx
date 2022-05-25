@@ -32,10 +32,10 @@ class IAboutBridgeImp implements IAboutBridge {
 	}
 
 	public function open(about:IFlexDisplayObject) {
-		Window(about).open();
+		cast( about, Window ).open();
 	}
 
 	public function setFocus(about:IFlexDisplayObject) {
-		Window(about).setFocus();
+		cast( about, Window ).setFocus();
 	}
 }
