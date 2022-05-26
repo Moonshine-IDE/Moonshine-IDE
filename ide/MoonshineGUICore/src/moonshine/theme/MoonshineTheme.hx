@@ -570,8 +570,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		itemRenderer.textFormat = getLightOnDarkTextFormat();
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		itemRenderer.textFormat = getLightOnDarkSecondaryTextFormat();
-		itemRenderer.disabledTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
+		itemRenderer.secondaryTextFormat = getLightOnDarkSecondaryTextFormat();
+		itemRenderer.disabledSecondaryTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
 		// itemRenderer.embedFonts = true;
 
 		itemRenderer.horizontalAlign = LEFT;
@@ -1016,6 +1016,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		itemRenderer.textFormat = getLightOnDarkTextFormat();
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
+		itemRenderer.secondaryTextFormat = getLightOnDarkSecondaryTextFormat();
+		itemRenderer.disabledSecondaryTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
 		// itemRenderer.embedFonts = true;
 
 		itemRenderer.horizontalAlign = LEFT;
