@@ -41,7 +41,7 @@ import feathers.controls.TreeGridView;
 import feathers.controls.TreeView;
 import feathers.controls.VProgressBar;
 import feathers.controls.VScrollBar;
-import feathers.controls.dataRenderers.GridViewHeaderRenderer;
+import feathers.controls.dataRenderers.SortOrderHeaderRenderer;
 import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
@@ -117,7 +117,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(GridView, null, setGridViewStyles);
 		this.styleProvider.setStyleFunction(GridView, GridView.VARIANT_BORDERLESS, setBorderlessGridViewStyles);
-		this.styleProvider.setStyleFunction(GridViewHeaderRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
+		this.styleProvider.setStyleFunction(SortOrderHeaderRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 		this.styleProvider.setStyleFunction(LayoutGroupItemRenderer, null, setLayoutGroupItemRendererStyles);
@@ -157,7 +157,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(TreeGridView, null, setTreeGridViewStyles);
 		this.styleProvider.setStyleFunction(TreeGridView, TreeGridView.VARIANT_BORDERLESS, setBorderlessTreeGridViewStyles);
-		this.styleProvider.setStyleFunction(GridViewHeaderRenderer, TreeGridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
+		this.styleProvider.setStyleFunction(SortOrderHeaderRenderer, TreeGridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
 
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
@@ -432,7 +432,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		gridView.fixedScrollBars = true;
 	}
 
-	private function setGridViewOrTreeGridViewHeaderStyles(headerRenderer:GridViewHeaderRenderer):Void {
+	private function setGridViewOrTreeGridViewHeaderStyles(headerRenderer:SortOrderHeaderRenderer):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x555555);
 		headerRenderer.backgroundSkin = backgroundSkin;
