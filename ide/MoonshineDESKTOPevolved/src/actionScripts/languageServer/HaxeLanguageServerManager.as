@@ -81,7 +81,7 @@ package actionScripts.languageServer
 	public class HaxeLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	{
 		private static const LANGUAGE_SERVER_ROOT_PATH:String = "elements/haxe-language-server";
-		private static const LANGUAGE_SERVER_SCRIPT_PATH:String = LANGUAGE_SERVER_ROOT_PATH + "/server.js";
+		private static const LANGUAGE_SERVER_SCRIPT_PATH:String = LANGUAGE_SERVER_ROOT_PATH + "/moonshine-haxe.js";
 		
 		private static const LANGUAGE_ID_HAXE:String = "haxe";
 
@@ -357,7 +357,7 @@ package actionScripts.languageServer
 				processInfo.arguments = processArgs;
 				processInfo.executable = cmdFile;
 				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-				
+
 				_haxeVersionProcess = new NativeProcess();
 				_haxeVersionProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, haxeVersionProcess_standardOutputDataHandler);
 				_haxeVersionProcess.addEventListener(NativeProcessExitEvent.EXIT, haxeVersionProcess_exitHandler);
@@ -414,7 +414,7 @@ package actionScripts.languageServer
 				processInfo.arguments = processArgs;
 				processInfo.executable = cmdFile;
 				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-				
+
 				_limeDisplayProcess = new NativeProcess();
 				_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeDisplayProcess_standardOutputDataHandler);
 				_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
