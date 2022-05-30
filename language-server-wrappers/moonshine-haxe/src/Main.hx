@@ -6,9 +6,6 @@ import js.node.ChildProcess;
 
 class Main {
 
-    static var execPath:String;
-    static var pid:Int;
-
     public static function main() {
 
         var cwd = process.cwd();
