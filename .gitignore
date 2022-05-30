@@ -19,6 +19,7 @@ library/ApacheFlexSDKInstallerLib/obj/
 language-server-wrappers/moonshine-as3mxml/moonshine-as3mxml.iml
 language-server-wrappers/moonshine-as3mxml/dist/
 language-server-wrappers/moonshine-as3mxml/build/
+ide/MoonshineSharedCore/src/elements/jdt-language-server/configuration/*
 .DS_Store
 *.code-workspace
 .vscode/
