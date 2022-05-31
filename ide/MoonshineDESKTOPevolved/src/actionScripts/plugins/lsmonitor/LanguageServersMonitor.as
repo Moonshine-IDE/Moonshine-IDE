@@ -134,6 +134,8 @@ package actionScripts.plugins.lsmonitor
 			var globalInstances:Array = LanguageServerGlobals.getLanguageServerInstances();
 			var instances:ArrayCollection = new ArrayCollection();
 
+			instances.sortCompareFunction = languageServerSort;
+
 			for (var i:int=0; i < globalInstances.length; i++)
 			{
 				var instance:ILanguageServerManager = globalInstances[ i ];
@@ -161,6 +163,18 @@ package actionScripts.plugins.lsmonitor
 			);
 			*/
 		}
+
+		private function languageServerSort( item1:LanguageServerInstanceVO, item2:LanguageServerInstanceVO ):int {
+
+			if ( item1.projectName > item2.projectName ) {
+				return 1;
+			} else if ( item1.projectName < item2.projectName ) {
+				return -1;
+			}
+			return 0;
+
+		}
+
 	}
 }
 
