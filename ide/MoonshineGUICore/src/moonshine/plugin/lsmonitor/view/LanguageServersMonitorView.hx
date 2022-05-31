@@ -93,6 +93,7 @@ class LanguageServersMonitorView extends LayoutGroup implements IViewWithTitle
 		this.gridView = new GridView();
 		this.gridView.variant = TreeView.VARIANT_BORDERLESS;
 		this.gridView.layoutData = AnchorLayoutData.fill();
+		this.gridView.sortableColumns = true;
 		this.gridView.columns = new ArrayCollection([
 			new GridViewColumn("Project", (data:LanguageServerInstanceVO) -> data.projectName),
 			new GridViewColumn("Process ID", (data:LanguageServerInstanceVO) -> data.processID, 200)/*,
