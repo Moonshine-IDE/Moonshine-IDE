@@ -30,7 +30,7 @@ package actionScripts.plugin.haxe.hxproject
 		
 		override public function get name():String 			{ return "Haxe Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
-		override public function get description():String 	{ return "ConstantsCoreVO project importing, exporting & scaffolding."; }
+		override public function get description():String 	{ return "Haxe project importing, exporting & scaffolding."; }
 		
 		override public function activate():void
 		{
