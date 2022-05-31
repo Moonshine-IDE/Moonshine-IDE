@@ -95,7 +95,8 @@ package actionScripts.languageServer
 		//when updating the JDT language server, the name of this JAR file will
 		//change, and Moonshine will automatically update the version that is
 		//copied to File.applicationStorageDirectory
-		private static const LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX:String = "org.eclipse.equinox.launcher_";
+		//Language server is being initialized with a wrapper
+		private static const LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX:String = "moonshine-jdt";
 		private static const LANGUAGE_SERVER_JAR_FOLDER_PATH:String = "plugins";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
