@@ -670,6 +670,9 @@ package actionScripts.languageServer
 					autobuild: {
 						enabled: false
 					},
+					completion: {
+						maxResults: 0
+					},
 					configuration: {
 						runtimes: runtimes
 					}
