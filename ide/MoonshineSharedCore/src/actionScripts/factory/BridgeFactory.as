@@ -134,6 +134,13 @@ package actionScripts.factory
 			var gb: IHaxeBridge = new clsToCreate();
 			return gb;
 		}
+		
+		public static function getBasicInstance(): IBasicBridge 
+		{
+			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IBasicBridgeImpl");
+			var gb: IBasicBridge = new clsToCreate();
+			return gb;
+		}
 
 		public static function getLanguageServerCoreInstance(): ILanguageServerBridge
 		{

@@ -32,6 +32,7 @@ package actionScripts.locator
     import actionScripts.interfaces.IGroovyBridge;
     import actionScripts.interfaces.IHaxeBridge;
     import actionScripts.interfaces.IJavaBridge;
+    import actionScripts.interfaces.IBasicBridge;
     import actionScripts.interfaces.ILanguageServerBridge;
     import actionScripts.interfaces.IOSXBookmarkerBridge;
     import actionScripts.interfaces.IOnDiskBridge;
@@ -59,6 +60,7 @@ package actionScripts.locator
 		public var visualEditorCore:IVisualEditorBridge;
 		public var javaCore:IJavaBridge;
 		public var groovyCore:IGroovyBridge;
+		public var basicCore:IBasicBridge;
 		public var haxeCore:IHaxeBridge;
 		public var ondiskCore:IOnDiskBridge;
 		public var genericCore:IGenericProjectBridge;

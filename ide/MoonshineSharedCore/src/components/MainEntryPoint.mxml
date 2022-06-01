@@ -71,6 +71,7 @@
 				ideModel.javaCore = BridgeFactory.getJavaInstance();
 				ideModel.groovyCore = BridgeFactory.getGroovyInstance();
 				ideModel.haxeCore = BridgeFactory.getHaxeInstance();
+				ideModel.basicCore = BridgeFactory.getBasicInstance(); 
 				ideModel.ondiskCore = BridgeFactory.getOnDiskInstance();
 				ideModel.genericCore = BridgeFactory.getGenericInstance();
 			}
