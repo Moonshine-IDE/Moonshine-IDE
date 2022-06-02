@@ -404,6 +404,7 @@ package actionScripts.languageServer
 			var languageServerCommand:Vector.<String> = new <String>[
 				cmdFile.nativePath,
 				"-Dfile.encoding=UTF8",
+				"-Xmx2g",
 				"-Droyalelib=" + frameworksPath,
 				"-cp",
 				cp,
