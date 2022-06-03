@@ -73,13 +73,15 @@ package actionScripts.languageServer
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
+	import actionScripts.languageServer.LanguageServerGlobals;
+
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
 
 	public class HaxeLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	{
 		private static const LANGUAGE_SERVER_ROOT_PATH:String = "elements/haxe-language-server";
-		private static const LANGUAGE_SERVER_SCRIPT_PATH:String = LANGUAGE_SERVER_ROOT_PATH + "/server.js";
+		private static const LANGUAGE_SERVER_SCRIPT_PATH:String = LANGUAGE_SERVER_ROOT_PATH + "/moonshine-haxe.js";
 		
 		private static const LANGUAGE_ID_HAXE:String = "haxe";
 
@@ -93,6 +95,8 @@ package actionScripts.languageServer
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["hx"];
 
 		private static const LANGUAGE_SERVER_SHUTDOWN_TIMEOUT:Number = 8000;
+
+		private static const LANGUAGE_SERVER_PROCESS_FORMATTED_PID:RegExp = new RegExp( /(%%%[0-9]+%%%)/ );
 
 		private var _project:HaxeProjectVO;
 		private var _languageClient:LanguageClient;
@@ -113,6 +117,7 @@ package actionScripts.languageServer
 		private var _activeProgressTokens:Array = [];
 		private var _watchedFiles:Object = {};
 		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
+		private var _pid:int = -1;
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -132,6 +137,8 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
+
+			LanguageServerGlobals.addLanguageServerManager( this );
 
 			bootstrapThenStartNativeProcess();
 		}
@@ -154,6 +161,11 @@ package actionScripts.languageServer
 		public function get active():Boolean
 		{
 			return _languageClient && _languageClient.initialized;
+		}
+
+		public function get pid():int
+		{
+			return _pid;
 		}
 
 		public function createTextEditorForUri(uri:String, readOnly:Boolean = false):BasicTextEditor
@@ -212,6 +224,7 @@ package actionScripts.languageServer
 			{
 				_waitingToDispose = true;
 			}
+
 		}
 
 		protected function cleanupLanguageClient():void
@@ -241,6 +254,10 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(LspNotificationEvent.SHOW_MESSAGE, languageClient_showMessageHandler);
 			_languageClient.removeEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			_languageClient = null;
+			
+			LanguageServerGlobals.removeLanguageServerManager( this );
+			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
+			
 		}
 
 		private function isHaxeVersionSupported(version:String):Boolean
@@ -340,7 +357,7 @@ package actionScripts.languageServer
 				processInfo.arguments = processArgs;
 				processInfo.executable = cmdFile;
 				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-				
+
 				_haxeVersionProcess = new NativeProcess();
 				_haxeVersionProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, haxeVersionProcess_standardOutputDataHandler);
 				_haxeVersionProcess.addEventListener(NativeProcessExitEvent.EXIT, haxeVersionProcess_exitHandler);
@@ -397,7 +414,7 @@ package actionScripts.languageServer
 				processInfo.arguments = processArgs;
 				processInfo.executable = cmdFile;
 				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-				
+
 				_limeDisplayProcess = new NativeProcess();
 				_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, limeDisplayProcess_standardOutputDataHandler);
 				_limeDisplayProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, limeDisplayProcess_standardErrorDataHandler);
@@ -460,8 +477,9 @@ package actionScripts.languageServer
 				processInfo.arguments = processArgs;
 				processInfo.executable = cmdFile;
 				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
-				
+
 				_languageServerProcess = new NativeProcess();
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
 				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 				_languageServerProcess.start(processInfo);
@@ -602,6 +620,23 @@ package actionScripts.languageServer
 			_languageServerProcess.exit(true);
 		}
 
+		private function languageServerProcess_standardOutputDataHandler(e:ProgressEvent):void
+		{
+			var output:IDataInput = _languageServerProcess.standardOutput;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			if ( data.search(LANGUAGE_SERVER_PROCESS_FORMATTED_PID) > -1 ) {
+				// Formatted PID found
+				var a:Array = data.match(LANGUAGE_SERVER_PROCESS_FORMATTED_PID);
+				var spid:String = a[ 0 ].split("%%%")[ 1 ];
+				_pid = parseInt(spid);
+				if ( _pid > 0 ) {
+					// PID is set, we don't need the stdout handler anymore
+					_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
+					LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.ADDED ) );
+				}
+			}
+		}
+
 		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
@@ -623,6 +658,8 @@ package actionScripts.languageServer
 				
 				warning("Haxe language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
+			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
+			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 			_languageServerProcess.exit();
