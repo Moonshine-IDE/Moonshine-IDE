@@ -303,7 +303,7 @@
 	</resizableTitleWindow:states>
 	
 	<s:VGroup height="100%" width="100%" 
-			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"
+			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12" horizontalAlign="center"
 			  includeIn="default" creationComplete="initialContentHeight=event.target.height">
 		<view:PromptTextInput id="txtSource"
 							  width="100%" styleName="textInput"
@@ -326,7 +326,7 @@
 				 width="100%" textAlign="center" color="0xff0000"
 				 visible="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}"/>
 		<s:Label text="Destination path is already exists."
-				 width="100%" textAlign="center" color="0xff0000"
+				 styleName="errorTextWithBackground"
 				 visible="{isDestinationPathExists}" includeInLayout="{isDestinationPathExists}"/>
 		<s:HGroup width="100%" verticalAlign="middle"
 				  includeInLayout="false" visible="false">
