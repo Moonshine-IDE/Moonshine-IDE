@@ -93,6 +93,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final THEME_VARIANT_DARK_BUTTON:String = "moonshine-button--dark";
 	public static final THEME_VARIANT_LARGE_BUTTON:String = "moonshine-button--large";
 	public static final THEME_VARIANT_LIGHT_LABEL:String = "moonshine-label--light";
+	public static final THEME_VARIANT_LIGHT_SECONDARY_LABEL:String = "moonshine-label--light-secondary";
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
 	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
 	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
@@ -124,6 +125,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_LABEL, setLightLabelStyles);
+		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_SECONDARY_LABEL, setLightSecondaryLabelStyles);
 		this.styleProvider.setStyleFunction(Label, DefaultToolTipManager.CHILD_VARIANT_TOOL_TIP, setToolTipLabelStyles);
 
 		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
@@ -202,7 +204,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 	}
 
 	private function getLightOnDarkSecondaryTextFormat():TextFormat {
-		return new TextFormat(DEFAULT_FONT_NAME, SECONDARY_FONT_SIZE, 0xf3f3f3);
+		return new TextFormat(DEFAULT_FONT_NAME, SECONDARY_FONT_SIZE, 0xbfbfbf);
 	}
 
 	private function getLightOnDarkSecondaryDisabledTextFormat():TextFormat {
@@ -628,6 +630,12 @@ class MoonshineTheme extends SDKInstallerTheme {
 	private function setLightLabelStyles(label:Label):Void {
 		label.textFormat = getLightOnDarkTextFormat();
 		label.disabledTextFormat = getLightOnDarkDisabledTextFormat();
+		// label.embedFonts = true;
+	}
+
+	private function setLightSecondaryLabelStyles(label:Label):Void {
+		label.textFormat = getLightOnDarkSecondaryTextFormat();
+		label.disabledTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
 		// label.embedFonts = true;
 	}
 
