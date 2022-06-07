@@ -25,6 +25,7 @@ import feathers.controls.Panel;
 import feathers.controls.TreeView;
 import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.core.InvalidationFlag;
+import feathers.data.ArrayCollection;
 import feathers.data.ArrayHierarchicalCollection;
 import feathers.data.TreeViewItemState;
 import feathers.events.HierarchicalCollectionEvent;
@@ -36,8 +37,15 @@ import moonshine.lsp.SymbolInformation;
 import moonshine.plugin.symbols.view.SymbolIcon;
 import moonshine.ui.SideBarViewHeader;
 import openfl.events.Event;
+import openfl.events.EventType;
 
 class OutlineView extends Panel implements IViewWithTitle {
+	public static final SORT_BY_POSITION = "position";
+	public static final SORT_BY_NAME = "name";
+	public static final SORT_BY_CATEGORY = "category";
+
+	public static final EVENT_SORT_CHANGE:EventType<Event> = "sortChange";
+
 	public function new() {
 		super();
 	}
@@ -85,6 +93,25 @@ class OutlineView extends Panel implements IViewWithTitle {
 		return this.treeView.selectedItem;
 	}
 
+	private var _sortBy:String = SORT_BY_POSITION;
+
+	@:flash.property
+	public var sortBy(get, set):String;
+
+	public function get_sortBy():String {
+		return this._sortBy;
+	}
+
+	public function set_sortBy(value:String):String {
+		if (this._sortBy == value) {
+			return this._sortBy;
+		}
+		this._sortBy = value;
+		this.setInvalid(DATA);
+		this.dispatchEvent(new Event(EVENT_SORT_CHANGE));
+		return this._sortBy;
+	}
+
 	override private function initialize():Void {
 		this.layout = new AnchorLayout();
 
@@ -121,6 +148,17 @@ class OutlineView extends Panel implements IViewWithTitle {
 
 		var header = new SideBarViewHeader();
 		header.title = this.title;
+		header.menuDataProvider = new ArrayCollection([
+			new SideBarViewHeaderMenuItem("Sort By: Position", (item) -> {
+				this.sortBy = SORT_BY_POSITION;
+			}),
+			new SideBarViewHeaderMenuItem("Sort By: Name", (item) -> {
+				this.sortBy = SORT_BY_NAME;
+			}),
+			new SideBarViewHeaderMenuItem("Sort By: Category", (item) -> {
+				this.sortBy = SORT_BY_CATEGORY;
+			})
+		]);
 		header.closeEnabled = true;
 		header.addEventListener(Event.CLOSE, header_closeHandler);
 		this.header = header;
@@ -132,6 +170,11 @@ class OutlineView extends Panel implements IViewWithTitle {
 		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
 
 		if (dataInvalid) {
+			this._outline.sortCompareFunction = switch (this._sortBy) {
+				case SORT_BY_NAME: sortByName;
+				case SORT_BY_CATEGORY: sortByCategory;
+				default: sortByPosition;
+			}
 			this.treeView.dataProvider = this._outline;
 			if (this._outline != null && this._outline.getLength() > 0) {
 				// open the first branch, if possible
@@ -142,6 +185,86 @@ class OutlineView extends Panel implements IViewWithTitle {
 			}
 		}
 		super.update();
+	}
+
+	private function sortByPosition(s1:Dynamic, s2:Dynamic):Int {
+		var l1 = 0;
+		var c1 = 0;
+		var l2 = 0;
+		var c2 = 0;
+		if (Std.isOfType(s1, SymbolInformation)) {
+			var si1 = (s1 : SymbolInformation);
+			var rangeStart = si1.location.range.start;
+			l1 = rangeStart.line;
+			c1 = rangeStart.character;
+		} else if (Std.isOfType(s1, DocumentSymbol)) {
+			var ds1 = (s1 : DocumentSymbol);
+			var rangeStart = ds1.range.start;
+			l1 = rangeStart.line;
+			c1 = rangeStart.character;
+		}
+		if (Std.isOfType(s2, SymbolInformation)) {
+			var si2 = (s2 : SymbolInformation);
+			var rangeStart = si2.location.range.start;
+			l2 = rangeStart.line;
+			c2 = rangeStart.character;
+		} else if (Std.isOfType(s2, DocumentSymbol)) {
+			var ds2 = (s2 : DocumentSymbol);
+			var rangeStart = ds2.range.start;
+			l2 = rangeStart.line;
+			c2 = rangeStart.character;
+		}
+		if (l1 < l2) {
+			return -1;
+		}
+		if (l1 > l2) {
+			return 1;
+		}
+		if (c1 < c2) {
+			return -1;
+		}
+		if (c1 > c2) {
+			return 1;
+		}
+		return 0;
+	}
+
+	private function sortByCategory(s1:Dynamic, s2:Dynamic):Int {
+		var c1 = 0;
+		var c2 = 0;
+		if (Std.isOfType(s1, SymbolInformation)) {
+			var si1 = (s1 : SymbolInformation);
+			c1 = si1.kind;
+		} else if (Std.isOfType(s1, DocumentSymbol)) {
+			var ds1 = (s1 : DocumentSymbol);
+			c1 = ds1.kind;
+		}
+		if (Std.isOfType(s2, SymbolInformation)) {
+			var si2 = (s2 : SymbolInformation);
+			c2 = si2.kind;
+		} else if (Std.isOfType(s2, DocumentSymbol)) {
+			var ds2 = (s2 : DocumentSymbol);
+			c2 = ds2.kind;
+		}
+		if (c1 < c2) {
+			return -1;
+		}
+		if (c1 > c2) {
+			return 1;
+		}
+		return sortByName(s1, s2);
+	}
+
+	private function sortByName(s1:Dynamic, s2:Dynamic):Int {
+		var text1 = this.treeView.itemToText(s1).toLowerCase();
+		var text2 = this.treeView.itemToText(s2).toLowerCase();
+		if (text1 < text2) {
+			return -1;
+		}
+		if (text1 > text2) {
+			return 1;
+		}
+		return 0;
 	}
 
 	private function header_closeHandler(event:Event):Void {
