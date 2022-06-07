@@ -183,10 +183,20 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 	}
 
 	private function problemsView_problems_addItemHandler(event:HierarchicalCollectionEvent):Void {
+		if (!this.created && !this.validating) {
+			// ensure that the TreeView data provider has been populated
+			// or toggleBranch() won't work
+			this.validateNow();
+		}
 		this.treeView.toggleBranch(event.addedItem, true);
 	}
 
 	private function problemsView_problems_replaceItemHandler(event:HierarchicalCollectionEvent):Void {
+		if (!this.created && !this.validating) {
+			// ensure that the TreeView data provider has been populated
+			// or toggleBranch() won't work
+			this.validateNow();
+		}
 		this.treeView.toggleBranch(event.addedItem, true);
 		if (!this.locationContains(event.location, this.treeView.selectedLocation)) {
 			return;
