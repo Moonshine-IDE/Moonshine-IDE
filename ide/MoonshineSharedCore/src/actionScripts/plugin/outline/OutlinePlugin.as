@@ -40,6 +40,7 @@ package actionScripts.plugin.outline
 	import moonshine.lsp.SymbolInformation;
 	import moonshine.plugin.outline.view.OutlineView;
 	import moonshine.editor.text.events.TextEditorChangeEvent;
+	import actionScripts.ui.tabview.CloseTabEvent;
 
 	public class OutlinePlugin extends PluginBase
 	{
@@ -94,6 +95,7 @@ package actionScripts.plugin.outline
 		{
 			super.activate();
 			dispatcher.addEventListener(EVENT_OUTLINE, handleOutlineShow);
+			dispatcher.addEventListener(CloseTabEvent.EVENT_TAB_CLOSED, handleTabClose);
 			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, handleTabSelect);
 			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, handleLanguageServerOpened);
 			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_REGISTER_CAPABILITY, handleLanguageServerRegisterCapability);
@@ -104,6 +106,7 @@ package actionScripts.plugin.outline
 		{
 			super.deactivate();
 			dispatcher.removeEventListener(EVENT_OUTLINE, handleOutlineShow);
+			dispatcher.removeEventListener(CloseTabEvent.EVENT_TAB_CLOSED, handleTabClose);
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, handleTabSelect);
 			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, handleLanguageServerOpened);
 			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, handleDidSave);
@@ -231,11 +234,28 @@ package actionScripts.plugin.outline
 			}, handleShowDocumentSymbols);
 		}
 
-		private function handleTabSelect(event:TabEvent):void
+		private function handleTabClose(event:CloseTabEvent):void
 		{
-			//we switched to a different file, so remove the old symbols
+			if (_activeEditor != event.tab)
+			{
+				return;
+			}
+			//we closed the current file, so remove the old symbols
 			var collection:ArrayHierarchicalCollection = outlineView.outline;
 			collection.removeAll();
+
+			setActiveEditor(null);
+
+			//nothing to refresh, wait for tab select
+		}
+
+		private function handleTabSelect(event:TabEvent):void
+		{
+			if (_activeEditor != event.child) {
+				//we switched to a different file, so remove the old symbols
+				var collection:ArrayHierarchicalCollection = outlineView.outline;
+				collection.removeAll();
+			}
 
 			setActiveEditor(event.child as LanguageServerTextEditor);
 

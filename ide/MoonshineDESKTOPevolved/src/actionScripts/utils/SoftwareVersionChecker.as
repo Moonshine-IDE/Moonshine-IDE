@@ -482,7 +482,7 @@ package actionScripts.utils
 						match = value.output.match(/Version:/);
 						if (match && !components[int(tmpQueue.extraArguments[0])].version)
 						{
-							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
+							components[int(tmpQueue.extraArguments[0])].version = StringUtil.trim(getVersionNumberedTypeLine(value.output).replace("|", ""));
 						}
 						break;
 					}
