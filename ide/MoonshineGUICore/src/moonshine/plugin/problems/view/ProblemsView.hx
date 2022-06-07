@@ -113,27 +113,6 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 			return Std.string(item);
 		}
 		this.treeView.itemRendererRecycler = DisplayObjectRecycler.withClass(ProblemItemRenderer);
-		// this.treeView.itemRendererRecycler = DisplayObjectRecycler.withClass(HierarchicalItemRenderer, (itemRenderer, state:TreeViewItemState) -> {
-		// 	var item = state.data;
-		// 	if ((item is MoonshineDiagnostic)) {
-		// 		var diagnostic = cast(item, MoonshineDiagnostic);
-		// 		var icon = cast(itemRenderer.icon, DiagnosticSeverityIcon);
-		// 		if (icon == null) {
-		// 			icon = new DiagnosticSeverityIcon();
-		// 			itemRenderer.icon = icon;
-		// 		}
-		// 		itemRenderer.htmlText = this.getMessageLabel(diagnostic, true);
-		// 		icon.severity = diagnostic.severity;
-		// 		itemRenderer.toolTip = diagnostic.message;
-		// 	} else if ((item is DiagnosticsByUri)) {
-		// 		var diagnosticsByUri = cast(item, DiagnosticsByUri);
-		// 		if (itemRenderer.icon != null) {
-		// 			itemRenderer.icon = null;
-		// 		}
-		// 		itemRenderer.htmlText = this.getLocationLabel(diagnosticsByUri, true);
-		// 		itemRenderer.toolTip = null;
-		// 	}
-		// });
 		this.treeView.addEventListener(TreeViewEvent.ITEM_TRIGGER, problemsView_treeView_itemTriggerHandler);
 		this.treeView.name = "diagnostics";
 		this.addChild(this.treeView);
@@ -204,10 +183,20 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 	}
 
 	private function problemsView_problems_addItemHandler(event:HierarchicalCollectionEvent):Void {
+		if (!this.created && !this.validating) {
+			// ensure that the TreeView data provider has been populated
+			// or toggleBranch() won't work
+			this.validateNow();
+		}
 		this.treeView.toggleBranch(event.addedItem, true);
 	}
 
 	private function problemsView_problems_replaceItemHandler(event:HierarchicalCollectionEvent):Void {
+		if (!this.created && !this.validating) {
+			// ensure that the TreeView data provider has been populated
+			// or toggleBranch() won't work
+			this.validateNow();
+		}
 		this.treeView.toggleBranch(event.addedItem, true);
 		if (!this.locationContains(event.location, this.treeView.selectedLocation)) {
 			return;
