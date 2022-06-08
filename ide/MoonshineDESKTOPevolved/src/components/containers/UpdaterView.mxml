@@ -52,7 +52,7 @@
 			[Bindable] public var updater				: NativeApplicationUpdater;
 
 			private var _isUpdateAvailable				: int;
-			[Bindable]
+			
 			public function set isUpdateAvailable(value:int):void
 			{
 				_isUpdateAvailable = value;
