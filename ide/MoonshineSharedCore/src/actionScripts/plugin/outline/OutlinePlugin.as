@@ -41,8 +41,14 @@ package actionScripts.plugin.outline
 	import moonshine.plugin.outline.view.OutlineView;
 	import moonshine.editor.text.events.TextEditorChangeEvent;
 	import actionScripts.ui.tabview.CloseTabEvent;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.BooleanSetting;
+	import mx.collections.ArrayCollection;
+	import actionScripts.plugin.settings.vo.DropDownListSetting;
+	import actionScripts.plugin.settings.event.SetSettingsEvent;
 
-	public class OutlinePlugin extends PluginBase
+	public class OutlinePlugin extends PluginBase implements ISettingsProvider
 	{
 		public static const EVENT_OUTLINE:String = "EVENT_OUTLINE";
 
@@ -55,6 +61,7 @@ package actionScripts.plugin.outline
 			outlineView = new OutlineView();
 			outlineView.addEventListener(Event.CHANGE, outlineView_changeHandler);
 			outlineView.addEventListener(Event.CLOSE, outlineView_closeHandler);
+			outlineView.addEventListener(OutlineView.EVENT_SORT_CHANGE, outlineView_sortChangeHandler);
 			outlineViewWrapper = new OutlineViewWrapper(outlineView);
 			outlineViewWrapper.percentWidth = 100;
 			outlineViewWrapper.percentHeight = 100;
@@ -66,6 +73,17 @@ package actionScripts.plugin.outline
 		override public function get name():String { return "Outline Plugin"; }
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays an outline of the symbols in a source file."; }
+
+		private var _sortBy:String = OutlineView.SORT_BY_POSITION;
+
+		public function get sortBy():String {
+			return _sortBy;
+		}
+
+		public function set sortBy(value:String):void {
+			_sortBy = value;
+			outlineView.sortBy = value;
+		}
 		
 		private var _activeEditor:LanguageServerTextEditor;
 
@@ -110,6 +128,26 @@ package actionScripts.plugin.outline
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, handleTabSelect);
 			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_OPENED, handleLanguageServerOpened);
 			dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, handleDidSave);
+		}
+
+        public function getSettingsList():Vector.<ISetting>
+        {
+			return new <ISetting>[
+				new DropDownListSetting(this, "sortBy", "Sort By", new ArrayCollection([
+					{ value: OutlineView.SORT_BY_POSITION },
+					{ value: OutlineView.SORT_BY_NAME },
+					{ value: OutlineView.SORT_BY_CATEGORY },
+				]), "value")
+			];
+        }
+		
+		override public function onSettingsClose():void
+		{
+			// if (pathSetting)
+			// {
+			// 	pathSetting.removeEventListener(AbstractSetting.PATH_SELECTED, onSDKPathSelected);
+			// 	pathSetting = null;
+			// }
 		}
 
 		private function handleLanguageServerOpened(event:ProjectEvent):void
@@ -324,6 +362,12 @@ package actionScripts.plugin.outline
 			//the user has finished editing the file, so update the outline to
 			//reflect the new changes
 			this.refreshSymbols();
+		}
+
+		private function outlineView_sortChangeHandler(event:Event):void {
+			sortBy = outlineView.sortBy;
+			var thisSettings:Vector.<ISetting> = getSettingsList();
+			dispatcher.dispatchEvent(new SetSettingsEvent(SetSettingsEvent.SAVE_SPECIFIC_PLUGIN_SETTING, null, "actionScripts.plugin.outline::OutlinePlugin", thisSettings));
 		}
 	}
 }
