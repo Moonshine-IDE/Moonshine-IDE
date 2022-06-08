@@ -1,0 +1,73 @@
+//TODO
+
+package actionScripts.valueObjects;
+
+import actionScripts.factory.FileLocation;
+
+class RoyaleApiReportVO {
+	public function new(royaleSdkPath:String, flexSdkPath:String, libraries:Array<FileLocation>, mainAppFile:String, reportOutputPath:String,
+			reportOutputLogPath:String, workingDirectory:String) {
+		_royaleSdkPath = royaleSdkPath;
+		_flexSdkPath = flexSdkPath;
+		_libraries = libraries;
+		_mainAppFile = mainAppFile;
+		_reportOutputPath = reportOutputPath;
+		_reportOutputLogPath = reportOutputLogPath;
+		_workingDirectory = workingDirectory;
+	}
+
+	public var royaleSdkPath(get, null):String;
+
+	private var _royaleSdkPath:String;
+
+	public function get_royaleSdkPath():String {
+		return _royaleSdkPath;
+	}
+
+	public var flexSdkPath(get, null):String;
+
+	private var _flexSdkPath:String;
+
+	public function get_flexSdkPath():String {
+		return _flexSdkPath;
+	}
+
+	public var libraries(get, null):Array<FileLocation>;
+
+	private var _libraries:Array<FileLocation>;
+
+	public function get_libraries():Array<FileLocation> {
+		return _libraries;
+	}
+
+	public var mainAppFile(get, null):String;
+
+	private var _mainAppFile:String;
+
+	public function get_mainAppFile():String {
+		return _mainAppFile;
+	}
+
+	public var reportOutputPath(get, null):String;
+
+	private var _reportOutputPath:String;
+
+	public function get_reportOutputPath():String {
+		return _reportOutputPath;
+	}
+
+	public var reportOutputLogPath(get, null):String;
+
+	private var _reportOutputLogPath:String;
+
+	public function get_reportOutputLogPath():String {
+		return _reportOutputLogPath;
+	}
+
+	private var workingDirectory(get, null):String;
+	private var _workingDirectory:String;
+
+	public function get_workingDirectory():String {
+		return _workingDirectory;
+	}
+}

@@ -30,4 +30,6 @@ extern class FileLocation extends EventDispatcher {
 	public var name(default, null):String;
 
 	public var fileBridge:IFileBridge;
+
+	public function resolvePath(path:String):FileLocation;
 }

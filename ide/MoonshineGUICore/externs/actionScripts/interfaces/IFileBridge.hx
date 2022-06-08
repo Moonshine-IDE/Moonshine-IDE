@@ -50,6 +50,9 @@ extern interface IFileBridge {
 	@:flash.property
 	public var isDirectory(default, default):Bool;
 
+	@:flash.property
+	public var separator(default, null):String;
+
 	public function read():Dynamic;
 
 	public function canonicalize():Void;
@@ -59,4 +62,7 @@ extern interface IFileBridge {
 	public function browseForDirectory(title:String, selectListener:(file:Any) -> Void, ?cancelListener:() -> Void, ?startFromLocation:String):Void;
 
 	public function getRelativePath(ref:FileLocation, useDotDot:Bool = false):String;
+
+	public function isPathExists(value:String):Bool;
+
 }
