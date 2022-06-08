@@ -1,9 +1,10 @@
 //TODO
 package actionScripts.valueObjects;
 
-import haxe.DynamicAccess;
 import actionScripts.factory.FileLocation;
 import actionScripts.locator.IDEModel;
+import haxe.DynamicAccess;
+import openfl.Vector;
 
 class ProjectReferenceVO {
 	public var name:String;
@@ -14,7 +15,7 @@ class ProjectReferenceVO {
 	public var sdk:String;
 	public var isAway3D:Bool;
 	public var isTemplate:Bool;
-	public var hiddenPaths:Array<FileLocation> = [];
+	public var hiddenPaths:Vector<FileLocation> = new Vector<FileLocation>();
 	public var showHiddenPaths:Bool;
 	public var sourceFolder:FileLocation;
 
