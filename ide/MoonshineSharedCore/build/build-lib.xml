@@ -452,11 +452,11 @@
 	
 	<!-- Compile .pkg to distribute through app store -->
 	<target name="buildAppStorePKG" depends="compile app project" if="${Is.Keychain.Certificate.Defined}">
-		<copy tofile="${desktopBinaryFilename}/Contents/Resources/Icon.icns" file="${basedir}/elements/images/moonshineIcons.icns" overwrite="true"/>
+		<copy tofile="${desktopBinaryFilename}/Contents/Resources/Icon.icns" file="${basedir}/elements/images/moonshineIcons.icns" overwrite="true" failonerror="true"/>
 		<!-- Some Apple-required tags does not generates automatically
 			we'll add them here in a simple find/replace way as parsing info.plist in XML way
 			and determine the tag position to replace is a hard way -->
-		<replace file="${desktopBinaryFilename}/Contents/Info.plist">
+		<replace file="${desktopBinaryFilename}/Contents/Info.plist" failOnNoReplacements="true">
 			<replacefilter>
 				<replacetoken><![CDATA[<string>Moonshine ActionScript File</string>]]></replacetoken>
 				<replacevalue><![CDATA[<string>Moonshine ActionScript File</string>
@@ -561,7 +561,7 @@
 		<if>
 			<equals arg1="${IsDevelopmentBuild}" arg2="true"/>
 			<then>
-				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
+				<replace file="${desktopBinaryFilename}/Contents/Info.plist" failOnNoReplacements="true">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
 							<replacevalue><![CDATA[<string>Icon.icns</string>
 					<key>ITSAppUsesNonExemptEncryption</key><false/>
@@ -574,7 +574,7 @@
 				</replace>
 			</then>
 			<else>
-				<replace file="${desktopBinaryFilename}/Contents/Info.plist">
+				<replace file="${desktopBinaryFilename}/Contents/Info.plist" failOnNoReplacements="true">
 					<replacetoken><![CDATA[<string>Icon.icns</string>]]></replacetoken>
 							<replacevalue><![CDATA[<string>Icon.icns</string>
 					<key>ITSAppUsesNonExemptEncryption</key><false/>
@@ -596,7 +596,7 @@
 				<replaceregexp file="${desktopBinaryFilename}/Contents/Info.plist" match="macapp-identifier" replace="com.moonshine-ide" flags="g"/>
 			</else>			
 		</if>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='security unlock-keychain -p "${certSignedMacOSKeychainPass}"'/>
 		</exec>
@@ -604,7 +604,7 @@
 			<arg value="-c"/>
 			<arg value="rm ${desktopBinaryFilename}/Contents/Frameworks/Adobe\ AIR.framework/Versions/1.0/Resources/WebKit.dylib"/>
 		</exec>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value="chmod -R 777 ${desktopBinaryFilename}"/>
 		</exec>
@@ -636,26 +636,26 @@
 			<arg value="-c"/>
 			<arg value='codesign -f --timestamp -v -s "${certSignedDevIDKeychainName}" ${desktopBinaryFilename}/Contents/Resources/META-INF/AIR/extensions/karar.santanu.SecurityScopeBookmark/META-INF/ANE/MacOS-x86-64/SecurityScopeBookmark.framework/Versions/A'/>
 		</exec>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" --deep ${desktopBinaryFilename}'/>
 		</exec>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='codesign -f --options runtime --timestamp -v -s "${certSignedDevIDKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
 		</exec>
 		<echo>Signing checks on Sandbox APP: spctl -vvv --assess --type exec ${desktopBinaryFilename}</echo>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='spctl -vvv --assess --type exec ${desktopBinaryFilename}'/>
 		</exec>
 		<echo>Hardened runtime checks on Sandbox APP: codesign --display --verbose ${desktopBinaryFilename}</echo>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='codesign --display --verbose ${desktopBinaryFilename}'/>
 		</exec>
 		<echo>Timestamp check on Sandbox APP: codesign -dvv ${desktopBinaryFilename}</echo>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='codesign -dvv ${desktopBinaryFilename}'/>
 		</exec>
@@ -664,35 +664,35 @@
 			<arg value='productbuild --component ${desktopBinaryFilename} /Applications ${deploy_dir}/${installerName}.pkg --sign "Developer ID Installer: Prominic.NET, Inc."'/>
 		</exec>
 		<echo>Installer check on Sandbox PKG: pkgutil --check-signature ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg</echo>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='pkgutil --check-signature ${deploy_dir}/${installerName}.pkg'/>
 		</exec>
 		
 
 		<!-- @devsena: Marking something in the app file to determine between App Store or non-App-Store build -->
-		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml">
+		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml" failOnNoReplacements="true">
 			<replacetoken><![CDATA[$isAppStoreVersion]]></replacetoken>
 			<replacevalue><![CDATA[false]]></replacevalue>
 		</replace>
 		<!-- @devsena: Avail non-sandbox entitlement to be use in upcoming process -->
 		<copy file="entitlement-non-sandbox.plist" tofile="${debug_dir}/entitlement.plist" overwrite="true"/>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='codesign -f --options runtime --timestamp -v -s "${certSignedDevIDKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
 		</exec>
 		<echo>Signing checks on Non-Sandbox APP: spctl -vvv --assess --type exec ${desktopBinaryFilename}</echo>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='spctl -vvv --assess --type exec ${desktopBinaryFilename}'/>
 		</exec>
 		<echo>Hardened runtime checks: codesign --display --verbose ${desktopBinaryFilename}</echo>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='codesign --display --verbose ${desktopBinaryFilename}'/>
 		</exec>
 		<echo>Timestamp check: codesign -dvv ${desktopBinaryFilename}</echo>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='codesign -dvv ${desktopBinaryFilename}'/>
 		</exec>
@@ -706,7 +706,7 @@
 			<arg value='productsign --sign "Developer ID Installer: Prominic.NET, Inc." ${deploy_dir}/${installerName}_DONOTUSE.pkg ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg'/>
 		</exec>
 		<echo>Installer check on Non-Sandbox PKG: pkgutil --check-signature ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg</echo>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='pkgutil --check-signature ${deploy_dir}/${installerName}_Signed_NonSandbox.pkg'/>
 		</exec>
@@ -719,7 +719,7 @@
 	<target name="signItemsBeforePackaging">
 		<mkdir dir="${debug_dir}/groovy-language-server-all" />
 		<copy file="elements/groovy-language-server/groovy-language-server-all.jar" todir="${debug_dir}/groovy-language-server-all" overwrite="true"/>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='unzip ${debug_dir}/groovy-language-server-all/groovy-language-server-all.jar -d ${debug_dir}/groovy-language-server-all'/>
 		</exec>
@@ -776,12 +776,12 @@
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-9/deasync.node'/>
 		</exec>
-		<exec executable="bash">
+		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='cd ${debug_dir}/groovy-language-server-all;zip -r groovy-language-server-all.jar .'/>
 		</exec>
-		<delete file="elements/groovy-language-server/groovy-language-server-all.jar"/>
-		<copy file="${debug_dir}/groovy-language-server-all/groovy-language-server-all.jar" todir="elements/groovy-language-server" overwrite="true"/>
+		<delete file="elements/groovy-language-server/groovy-language-server-all.jar" failonerror="true"/>
+		<copy file="${debug_dir}/groovy-language-server-all/groovy-language-server-all.jar" todir="elements/groovy-language-server" overwrite="true" failonerror="true"/>
 		<delete dir="${debug_dir}/groovy-language-server-all"/>
 	</target>
 	
