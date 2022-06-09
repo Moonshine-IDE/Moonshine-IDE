@@ -152,9 +152,11 @@
                 </fx:Component>
             </s:itemRenderer>
         </s:List>
-        <s:Label text="You need Git installed on your system to continue."
-                 width="100%" textAlign="center" color="0xff0000"
-                 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>
+        <s:HGroup width="100%" verticalAlign="middle" horizontalAlign="center"
+                  visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}">
+            <s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+            <s:Label text="You need Git installed on your system to continue."/>
+        </s:HGroup>
     </s:VGroup>
 
     <s:Group id="grpProgress"
