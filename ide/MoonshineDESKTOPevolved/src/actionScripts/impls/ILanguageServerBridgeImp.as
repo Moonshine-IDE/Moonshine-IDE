@@ -14,7 +14,7 @@ package actionScripts.impls
 	import actionScripts.languageServer.ILanguageServerManager;
 	import actionScripts.languageServer.JavaLanguageServerManager;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import actionScripts.plugin.groovy.graiпlsproject.vo.GrailsProjectVO;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
@@ -210,6 +210,13 @@ package actionScripts.impls
 			{
 				var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
 				var haxeManager:HaxeLanguageServerManager = new HaxeLanguageServerManager(haxeProject);
+				manager = haxeManager;
+			}
+			
+			if(project is BasicProjectVO)
+			{
+				var basicProject:BasicProjectVO = BasicProjectVO(project);
+				var haxeManager:BasicLanguageServerManager = new BasicLanguageServerManager(basicProject);
 				manager = haxeManager;
 			}
 			if ((project is OnDiskProjectVO) || (project is GenericProjectVO))

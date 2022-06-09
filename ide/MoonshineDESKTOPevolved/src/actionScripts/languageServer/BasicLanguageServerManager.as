@@ -5,20 +5,30 @@ package actionScripts.languageServer
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.ui.editor.BasicTextEditor;
     import moonshine.lsp.LanguageClient;
+    import actionScripts.plugin.basic.vo.BasicProjectVO;
 
     [Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
-	public class BasicLanguageServer  implements ILanguageServerManager
+	public class BasicLanguageServerManager  implements ILanguageServerManager
 	
 	{
 		
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["tibbo"];
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
 		private var _languageClient:LanguageClient;
+		private var _project:BasicProjectVO;
+		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		
-		public function BasicLanguageServer()
+		public function BasicLanguageServerManager (project:BasicProjectVO)
 		{
+			this._project=project;
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_CREATED, fileCreatedHandler);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
+			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 		}
+		
+		
+		
 
 		public function get active():Boolean
 		{
@@ -27,7 +37,7 @@ package actionScripts.languageServer
 
 		public function get project():ProjectVO
 		{
-			throw new Error("Method not implemented.");
+			return this._project;
 		}
 
 		public function get uriSchemes():Vector.<String>
@@ -45,29 +55,17 @@ package actionScripts.languageServer
 			throw new Error("Method not implemented.");
 		}
 
-		public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
+
+		
+		private function saveProjectSettingsHandler(event:ProjectEvent):void
 		{
-			throw new Error("Method not implemented.");
+			bootstrapThenStartNativeProcess();			
+		}
+		
+		private function bootstrapThenStartNativeProcess():void
+		{
+			
 		}
 
-		public function removeEventListener(type:String, listener:Function, useCapture:Boolean = false):void
-		{
-			throw new Error("Method not implemented.");
-		}
-
-		public function dispatchEvent(event:flash.events.Event):Boolean
-		{
-			throw new Error("Method not implemented.");
-		}
-
-		public function hasEventListener(type:String):Boolean
-		{
-			throw new Error("Method not implemented.");
-		}
-
-		public function willTrigger(type:String):Boolean
-		{
-			throw new Error("Method not implemented.");
-		}
 	}
 }
