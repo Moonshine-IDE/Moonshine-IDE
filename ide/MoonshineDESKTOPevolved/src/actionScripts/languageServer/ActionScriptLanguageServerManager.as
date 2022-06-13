@@ -460,7 +460,7 @@ package actionScripts.languageServer
 			trace("AS3 & MXML language server workspace root: " + project.folderPath);
 			trace("AS3 & MXML language server SDK: " + sdkPath);
 
-			var debugMode:Boolean = true;
+			var debugMode:Boolean = false;
 			var initOptions:Object = {
 				config: getProjectConfiguration(),
 				supportsSimpleSnippets: true
