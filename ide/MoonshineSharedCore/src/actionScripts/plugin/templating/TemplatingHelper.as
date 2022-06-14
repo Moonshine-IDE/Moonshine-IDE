@@ -67,15 +67,20 @@ package actionScripts.plugin.templating
 				{
 					var directorySourceName:String = FileLocation(file).fileBridge.name;
 					// do not copy stocked 'src' and 'visualeditor-src' folder if user choose to create a project with his/her existing source
-					if (!isProjectFromExistingSource || (directorySourceName != "src" && directorySourceName != "visualeditor-src"))
+					if (!excludedFiles || !excludedFiles.some(function(item:String, index:int, arr:Array):Boolean{
+						return item == directorySourceName;
+					}))
 					{
-						if (ConstantsCoreVO.IS_AIR)
+						if (!isProjectFromExistingSource || (directorySourceName != "src" && directorySourceName != "visualeditor-src"))
 						{
-							newFile = toDir.resolvePath(templatedFileName(file as FileLocation));
-							newFile.fileBridge.createDirectory();
+							if (ConstantsCoreVO.IS_AIR)
+							{
+								newFile = toDir.resolvePath(templatedFileName(file as FileLocation));
+								newFile.fileBridge.createDirectory();
+							}
+
+							copyFiles(file as FileLocation, newFile, excludedFiles);
 						}
-						
-						copyFiles(file as FileLocation, newFile);
 					}
 				}
 				else
@@ -111,7 +116,7 @@ package actionScripts.plugin.templating
 		private function templatedFileName(src:FileLocation):String
 		{
 			var name:String = src.fileBridge.name;
-			if (name.indexOf("$") > -1)
+			if ((name.indexOf("$") > -1) || (name.indexOf("%") > -1))
 			{
 				var m:int;
 				for (var key:String in templatingData)

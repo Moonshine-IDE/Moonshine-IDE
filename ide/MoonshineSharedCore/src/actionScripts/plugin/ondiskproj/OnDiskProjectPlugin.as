@@ -56,6 +56,7 @@ package actionScripts.plugin.ondiskproj
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler, false, 0, true);
 			dispatcher.addEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest, false, 0, true);
+			dispatcher.addEventListener(OnDiskBuildEvent.GENERATE_JAVA_AGENTS, onGenerateCRUDJavaAgentsRequest, false, 0, true);
 			
 			super.activate();
 		}
@@ -65,6 +66,7 @@ package actionScripts.plugin.ondiskproj
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
 			dispatcher.removeEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow);
 			dispatcher.removeEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest);
+			dispatcher.removeEventListener(OnDiskBuildEvent.GENERATE_JAVA_AGENTS, onGenerateCRUDJavaAgentsRequest);
 			
 			super.deactivate();
 		}
@@ -142,6 +144,11 @@ package actionScripts.plugin.ondiskproj
 		protected function onRoyaleCRUDProjectRequest(event:Event):void
 		{
 			model.flexCore.generateTabularRoyaleProject();
+		}
+
+		protected function onGenerateCRUDJavaAgentsRequest(event:Event):void
+		{
+			model.flexCore.generateCRUDJavaAgents();
 		}
 	}
 }

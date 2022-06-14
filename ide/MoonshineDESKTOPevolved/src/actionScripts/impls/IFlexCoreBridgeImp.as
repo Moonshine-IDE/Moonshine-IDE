@@ -23,6 +23,7 @@ package actionScripts.impls
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugins.lsmonitor.LanguageServersMonitor;
 	import actionScripts.plugins.macports.MacPortsPlugin;
+	import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.valueObjects.HelperConstants;
@@ -631,6 +632,15 @@ package actionScripts.impls
 			{
 				var tmpExporter:OnDiskRoyaleCRUDProjectExporter = new OnDiskRoyaleCRUDProjectExporter(null);
 				tmpExporter.browseToExport();
+			}
+		}
+
+		public function generateCRUDJavaAgents():void
+		{
+			if (IDEModel.getInstance().activeProject &&
+					(IDEModel.getInstance().activeProject is OnDiskProjectVO))
+			{
+				new CRUDJavaAgentsExporter();
 			}
 		}
 
