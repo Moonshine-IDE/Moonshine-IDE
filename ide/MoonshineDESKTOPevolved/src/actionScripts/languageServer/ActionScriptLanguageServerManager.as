@@ -460,7 +460,7 @@ package actionScripts.languageServer
 			trace("AS3 & MXML language server workspace root: " + project.folderPath);
 			trace("AS3 & MXML language server SDK: " + sdkPath);
 
-			var debugMode:Boolean = true;
+			var debugMode:Boolean = false;
 			var initOptions:Object = {
 				config: getProjectConfiguration(),
 				supportsSimpleSnippets: true
@@ -682,8 +682,8 @@ package actionScripts.languageServer
 				warning("ActionScript & MXML language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
 			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
+			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
-			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardOutputDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 			_languageServerProcess.exit();
 			_languageServerProcess = null;
