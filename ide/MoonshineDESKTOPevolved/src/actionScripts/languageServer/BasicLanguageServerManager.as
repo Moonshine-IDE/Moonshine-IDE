@@ -27,6 +27,7 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_CREATED, fileCreatedHandler);
 			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
 			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
+			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
 		}
 		
 		
@@ -151,7 +152,7 @@ package actionScripts.languageServer
 				var cmdFile:File = null;
 				var processArgs:Vector.<String> = new <String>[];
 				
-				if (Settings.os == "win")
+				/**if (Settings.os == "win")
 				{
 					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
 					processArgs.push("/c");
@@ -162,7 +163,7 @@ package actionScripts.languageServer
 					cmdFile = new File("/bin/bash");
 					processArgs.push("-c");
 					processArgs.push(value);
-				}
+				}*/
 
 				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 				processInfo.arguments = processArgs;
@@ -196,7 +197,7 @@ package actionScripts.languageServer
 				//abnormally, it might not have
 				_languageClient.shutdown();
 				
-				warning("Haxe language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
+				warning("Basic language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
@@ -247,6 +248,26 @@ package actionScripts.languageServer
 			}
 			_shutdownTimeoutID = setTimeout(shutdownTimeout, LANGUAGE_SERVER_SHUTDOWN_TIMEOUT);
 			_languageClient.shutdown();
+		}
+		
+		protected function dispose():void
+		{
+			_dispatcher.removeEventListener(SdkEvent.CHANGE_HAXE_SDK, changeHaxeSDKHandler);
+			_dispatcher.removeEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler);
+			_dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
+			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
+			_dispatcher.removeEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler);
+			_dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+			_dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
+			_dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
+			_dispatcher.removeEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_CREATED, fileCreatedHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
+			_dispatcher.removeEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
+
+			cleanupLanguageClient();
+
+			
 		}
 		
 	}
