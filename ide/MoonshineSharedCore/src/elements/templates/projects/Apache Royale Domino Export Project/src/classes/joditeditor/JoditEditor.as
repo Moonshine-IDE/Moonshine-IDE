@@ -23,6 +23,13 @@ package classes.joditeditor
 			addEventListener("beadsAdded", onJoditEditorInitComplete);
 		}
 
+		private var _options:Object;
+
+		public function set options(value:Object):void
+		{
+			_options = value;
+		}
+
 		private var _buttons:String;
 
 		public function set buttons(value:String):void
@@ -44,24 +51,23 @@ package classes.joditeditor
 			this._readonly = value;
 		}
 
+		private var _data:String = "";
 		public function get data():String
 		{
-			if (!myEditor)
-			{
-				return "";
-			}
-			return myEditor.value;
+			return _data;
 		}
 
 		public function set data(value:String):void
 		{
-			if (!myEditor)
-			{
-				return;
-			}
 			if (!value)
 			{
 				value = "";
+			}
+			_data = value;
+
+			if (!myEditor)
+			{
+				return;
 			}
 
 			myEditor.value = value;
@@ -97,7 +103,16 @@ package classes.joditeditor
 						config.buttons = _buttons;
 					}
 
+					for (var p:String in _options)
+					{
+						if (!config[p])
+						{
+							config[p] = _options[p];
+						}
+					}
+
 					myEditor = new window["Jodit"](textArea.element, config);
+					myEditor.value = _data;
 					cancelAnimationFrame(animateFrameReqId);
 				});
 			}

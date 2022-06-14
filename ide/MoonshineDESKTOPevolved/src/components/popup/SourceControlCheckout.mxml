@@ -303,7 +303,7 @@
 	</resizableTitleWindow:states>
 	
 	<s:VGroup height="100%" width="100%" 
-			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"
+			  paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12" horizontalAlign="center"
 			  includeIn="default" creationComplete="initialContentHeight=event.target.height">
 		<view:PromptTextInput id="txtSource"
 							  width="100%" styleName="textInput"
@@ -322,12 +322,16 @@
 								  styleName="textInput" restrict="0-9A-Za-z_"
 								  change="onFolderNameChanged(event)"/>
 		</s:HGroup>
-		<s:Label text="You need Git installed on your system to continue."
-				 width="100%" textAlign="center" color="0xff0000"
-				 visible="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}"/>
-		<s:Label text="Destination path is already exists."
-				 width="100%" textAlign="center" color="0xff0000"
-				 visible="{isDestinationPathExists}" includeInLayout="{isDestinationPathExists}"/>
+		<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="center"
+				  visible="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}" includeInLayout="{!isGitAvailable &amp;&amp; type == VersionControlTypes.GIT}">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label text="You need Git installed on your system to continue."/>
+		</s:HGroup>
+		<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="center"
+				  visible="{isDestinationPathExists}" includeInLayout="{isDestinationPathExists}">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label text="Destination path already exists."/>
+		</s:HGroup>
 		<s:HGroup width="100%" verticalAlign="middle"
 				  includeInLayout="false" visible="false">
 			<s:CheckBox id="cbLogin"

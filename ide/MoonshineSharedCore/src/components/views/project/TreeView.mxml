@@ -96,6 +96,7 @@
 			private var fileCollection:Array;
 	
 			private var _projects:ArrayCollection;
+			private var _refreshActiveProjectTimeout:uint = uint.MAX_VALUE;
 
 			[Bindable]
 			public function get projects():ArrayCollection
@@ -740,7 +741,7 @@
 					{
 						if(fw.file.fileBridge.isDirectory && tree.dataDescriptor.isBranch(fw))
 						{
-							tree.expandItem(fw, true, true);
+							tree.expandItem(fw, true);
 						} else
 						{
 							tmpFLs.push(fw.file);
@@ -1165,16 +1166,34 @@
 				var item:FileWrapper = tree.selectedItem as FileWrapper;
 				if(tree.dataDescriptor.isBranch(item))
 				{
-					refreshActiveProject(item);
-					tree.expandItem(item, !tree.isItemOpen(item), true);
-				} else
+					callRefreshActiveProject(item);
+					tree.expandItem(item, !tree.isItemOpen(item));
+				} 
+				else
 				{
 					if(item.file.fileBridge.isDirectory || item.isWorking) return;
-	
-					refreshActiveProject(item);
+
+					callRefreshActiveProject(item);
 					dispatcher.dispatchEvent(
 							new OpenFileEvent(OpenFileEvent.OPEN_FILE, [item.file], -1, [item])
 					);
+				}
+
+				/*
+				 * @local
+				 */
+				function callRefreshActiveProject(value:FileWrapper):void
+				{
+					if (_refreshActiveProjectTimeout != uint.MAX_VALUE)
+					{
+						clearTimeout(_refreshActiveProjectTimeout);
+						_refreshActiveProjectTimeout = uint.MAX_VALUE;
+					}
+					_refreshActiveProjectTimeout = setTimeout(function():void
+					{
+						_refreshActiveProjectTimeout = uint.MAX_VALUE;
+						refreshActiveProject(value);
+					}, 300);
 				}
 			}
 	

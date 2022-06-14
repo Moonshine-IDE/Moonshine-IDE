@@ -97,6 +97,16 @@ s|WindowedApplication
 	fontFamily: '_sans';
 }
 
+.errorTextWithBackground
+{
+	color: #B20E13;
+	backgroundColor: #eeeeee;
+	paddingTop: 2px;
+	paddingBottom: 2px;
+	paddingLeft: 4px;
+	paddingRight: 4px;
+}
+
 .uiTextWhite
 {
 	fontFamily: '_sans';
