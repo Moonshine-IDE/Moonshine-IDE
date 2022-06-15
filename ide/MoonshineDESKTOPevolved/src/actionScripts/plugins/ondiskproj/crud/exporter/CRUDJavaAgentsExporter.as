@@ -19,11 +19,16 @@
 package actionScripts.plugins.ondiskproj.crud.exporter
 {
 	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.MenuEvent;
+	import actionScripts.events.OpenFileEvent;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.utils.FileDownloader;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectReferenceVO;
 
 	import flash.events.ErrorEvent;
 
@@ -84,6 +89,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 		private function startDownloadArchive():void
 		{
+			warning("Downloading Java agent templates");
 			fileDownloader = new FileDownloader(TEMPLATE_DOWNLOAD_URL, archiveDirectory.resolvePath("template.zip"));
 			configureFileDownloaderListeners(true);
 			fileDownloader.load();
@@ -119,7 +125,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 		private function onTemplatesZipDownloadProgress(event:Event):void
 		{
-			this.outputMsg(": Templates file downloading: "+ fileDownloader.downloadPercent +"%");
+			notice("Files downloaded: "+ fileDownloader.downloadPercent +"%");
 		}
 
 		private function unzipTemplateArchive(value:File):void
@@ -214,16 +220,16 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 		protected function browseToExport():void
 		{
-			model.fileCore.browseForDirectory("Select Directory to Export", onDirectorySelected, onDirectorySelectionCancelled);
+			model.fileCore.browseForDirectory("Select Parent Directory to Export", onDirectorySelected, onDirectorySelectionCancelled);
 		}
 
 		protected function onDirectorySelected(path:File):void
 		{
-			targetDirectory = path;
+			targetDirectory = path.resolvePath(model.activeProject.name + "_JavaAgents");
 			if (!targetDirectory.exists) targetDirectory.createDirectory();
-			if (targetDirectory.getDirectoryListing().length > 0)
+			else
 			{
-				error("error: "+ targetDirectory.nativePath +" is non-empty, terminating process.")
+				error(model.activeProject.name + "_JavaAgents directory already exists. Terminating process.");
 				return;
 			}
 
@@ -232,15 +238,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 		protected function onDirectorySelectionCancelled():void
 		{
-			//project = null;
+
 		}
 
 		protected function createFileSystemBeforeSave():void
 		{
 			// project folder copy
 			var th:TemplatingHelper = new TemplatingHelper();
-			th.templatingData["%project%"] = "MyProjectName";
-			th.templatingData["%NotesExecutablePath%"] = model.notesPath;
+			th.templatingData["%project%"] = targetDirectory.name;
+			th.templatingData["%NotesExecutablePath%"] = ConstantsCoreVO.IS_MACOS ? model.notesPath +"/Contents/MacOS/" : model.notesPath;
 
 			var excludes:Array = ["%eachform%Agents"];
 
@@ -267,17 +273,8 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		private function onModulesExported():void
 		{
 			// success message
-			/*dispatcher.dispatchEvent(
-					new ConsoleOutputEvent(
-							ConsoleOutputEvent.CONSOLE_PRINT,
-							"Project saved at: "+ targetDirectory.resolvePath((project as ProjectVO).name).nativePath,
-							false, false,
-							ConsoleOutputEvent.TYPE_SUCCESS
-					)
-			);
-			dispatcher.dispatchEvent(
-					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Opening project in Moonshine..")
-			);*/
+			notice("Project saved at: "+ targetDirectory.nativePath);
+			notice("Opening project in Moonshine..");
 
 			// open project in Moonshine
 			openProjectInMoonshine();
@@ -285,13 +282,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		
 		private function openProjectInMoonshine():void
 		{
-			/*dispatcher.dispatchEvent(
-				new ProjectEvent(ProjectEvent.ADD_PROJECT, project)
-			);
-			
-			dispatcher.dispatchEvent( 
-				new OpenFileEvent(OpenFileEvent.OPEN_FILE, [project.targets[0]], -1, [project.projectFolder])
-			);*/
+			var refVO:ProjectReferenceVO = new ProjectReferenceVO();
+			refVO.path = targetDirectory.nativePath;
+			refVO.name = targetDirectory.name;
+			dispatcher.dispatchEvent(new MenuEvent("eventOpenRecentProject", false, false, refVO));
 		}
 	}
 }

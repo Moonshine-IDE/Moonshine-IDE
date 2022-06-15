@@ -133,15 +133,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			{
 				copyTemplates(form);
 			}
-			
-			// ** IMPORTANT **
-			// update files-list once ALL file
-			// creation are complete
-			// run once to save process
-			//project.projectFolder.updateChildren();
 
-			// class-files gneration
-			
+			// all done?
+			onCompleteHandler();
+			onCompleteHandler = null;
 		}
 		
 		protected function copyTemplates(form:DominoFormVO):void
@@ -168,8 +163,6 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			generateElementsParametersCategory(keyTemplates, form, th, keyTemplates.name);
 			generateElementsParametersCategory(editableTemplates, form, th, editableTemplates.name);
 			//generateElementsParametersCategory(requiredTemplates, form, th, requiredTemplates.name);
-
-			success("Java agent project population completes");
 		}
 
 		protected function generateElementsParametersCategory(elementsDirectory:File, form:DominoFormVO, th:TemplatingHelper, type:String):void
@@ -242,37 +235,6 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			}
 
 			return original;
-		}
-		
-		protected function generateProjectClasses():void
-		{
-			new MainContentPageGenerator(this.project, formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
-			new DashboardPageGenerator(this.project, formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
-		}
-
-		protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void
-		{
-			completionCount++;
-
-			if (waitingCount == completionCount)
-			{
-				waitingCount = 2;
-				completionCount = 0;
-
-				// project specific generation
-				generateProjectClasses();
-			}
-		}
-
-		protected function onProjectFilesGenerationCompletes(origin:RoyalePageGeneratorBase):void
-		{
-			completionCount++;
-
-			if (waitingCount == completionCount)
-			{
-				onCompleteHandler();
-				onCompleteHandler = null;
-			}
 		}
 	}
 }
