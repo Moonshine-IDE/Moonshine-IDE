@@ -175,7 +175,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 				var replaceToken:String = "";
 				for each (var formItem:DominoFormFieldVO in form.fields)
 				{
-					if (testObjects(formItem, type))
+					if (validateElementWiseFieldConditions(formItem, type))
 					{
 						var tmpFieldDictionary:Dictionary = new Dictionary();
 						tmpFieldDictionary['name'] = formItem.name;
@@ -193,15 +193,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			}
 		}
 
-		protected function testObjects(field:DominoFormFieldVO, type:String):Boolean
+		protected function validateElementWiseFieldConditions(field:DominoFormFieldVO, type:String):Boolean
 		{
 			switch (type)
 			{
 				case "all":
 					return true;
-					break;
 				case "key":
-						trace(">>>>> ", field.sortOption.label);
 					if (field.isIncludeInView && field.sortOption.label != 'No sorting')
 						return true;
 					break;
@@ -210,8 +208,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 						return true;
 					break;
 				case "required":
-					return "false"; // we don't have a DominoFormFieldVO.isRequired yet
-					break;
+					return false; // we don't have a DominoFormFieldVO.isRequired yet
 			}
 
 			return false;
