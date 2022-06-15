@@ -29,8 +29,18 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
+			_dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler, false, 0, true);
+			
 		}
 		
+		private function removeProjectHandler(event:ProjectEvent):void
+		{
+			if(event.project != _project)
+			{
+				return;
+			}
+			shutdown();
+		}
 		
 		private function fileSavedHandler(event:SaveFileEvent):void
 		{
