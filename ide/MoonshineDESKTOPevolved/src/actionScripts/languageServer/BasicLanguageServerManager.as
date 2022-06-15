@@ -28,8 +28,22 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_DELETED, fileDeletedHandler);
 			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
+			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 		}
 		
+		
+		private function fileSavedHandler(event:SaveFileEvent):void
+		{
+			var savedFile:FileLocation = event.file;
+			
+			var savedFileFolder:FileLocation = savedFile.fileBridge.parent;
+			if(savedFileFolder.fileBridge.nativePath != _project.folderLocation.fileBridge.nativePath)
+			{
+				return;
+			}
+
+			restartLanguageServer();
+		}
 		
 		private function saveProjectSettingsHandler(event:ProjectEvent):void
 		{
@@ -85,6 +99,33 @@ package actionScripts.languageServer
 			_languageClient = null;
 		}
 
+		private function fileSavedHandler(event:SaveFileEvent):void
+		{
+			
+			restartLanguageServer();
+		}
+		
+		private function restartLanguageServer():void
+		{
+			if(_waitingToRestart)
+			{
+				//we'll just continue waiting
+				return;
+			}
+			_waitingToRestart = false;
+			if(_languageClient || _languageServerProcess)
+			{
+				_waitingToRestart = true;
+				shutdown();
+			}
+			
+
+			if(!_waitingToRestart)
+			{
+				bootstrapThenStartNativeProcess();
+			}
+		}
+		
 		public function get active():Boolean
 		{
 			return _languageClient && _languageClient.initialized;
@@ -112,10 +153,10 @@ package actionScripts.languageServer
 		
 		private function bootstrapThenStartNativeProcess():void
 		{
-			
+			startNativeProcess()
 		}
 		
-		private function startNativeProcess(displayArguments:Array):void
+		private function startNativeProcess():void
 		{
 			if(_languageServerProcess)
 			{
