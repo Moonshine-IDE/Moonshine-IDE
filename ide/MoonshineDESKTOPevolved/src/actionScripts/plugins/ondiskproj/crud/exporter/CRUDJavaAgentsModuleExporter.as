@@ -135,8 +135,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			}
 
 			// all done?
-			onCompleteHandler();
-			onCompleteHandler = null;
+			if (onCompleteHandler != null)
+			{
+				onCompleteHandler();
+				onCompleteHandler = null;
+			}
 		}
 		
 		protected function copyTemplates(form:DominoFormVO):void
