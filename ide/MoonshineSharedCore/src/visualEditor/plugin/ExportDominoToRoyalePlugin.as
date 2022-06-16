@@ -196,6 +196,9 @@ package visualEditor.plugin
 
                 convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
+                var componentData:Array = item.surface.getComponentData();
+
+                saveVO(componentData, convertedFile.fileBridge.nameWithoutExtension);
 
                 convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString());
 
@@ -203,6 +206,42 @@ package visualEditor.plugin
             }
 
             return views;
+        }
+
+        private function saveVO(componentData:Array, fileName:String):void
+        {
+            if (componentData.length == 0) return;
+
+            var voFolder:FileLocation = exportedProject.sourceFolder.resolvePath("vo");
+            if (!voFolder.fileBridge.exists)
+            {
+                voFolder.fileBridge.createDirectory();
+            }
+
+            var classContent:String = "package vo\n" +
+                    "{\n" +
+                    "   [Bindable] \n" +
+                    "   public class " + fileName + "\n" +
+                    "   {\n ";
+
+            for (var i:int = 0; i < componentData.length; i++)
+            {
+                var data:Object = componentData[i];
+                var fields:Array = data.fields;
+
+                for each (var field:Object in fields)
+                {
+                    var fieldValue = field.fieldValue ? field.fieldValue : "\"\"";
+                    var publicVar:String = "   public var " + field.name + ":String = " +
+                                            fieldValue + ";\n";
+                    classContent += publicVar;
+                }
+            }
+
+            classContent += "   } \n}";
+
+            var voFile:FileLocation = voFolder.resolvePath(voFolder.fileBridge.nativePath + voFolder.fileBridge.separator + fileName + ".as");
+                voFile.fileBridge.save(classContent);
         }
 
         private function getNavigationDp(views:Array):String

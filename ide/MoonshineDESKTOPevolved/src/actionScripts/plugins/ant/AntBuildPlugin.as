@@ -347,7 +347,7 @@ package actionScripts.plugins.ant
                             if (buildChildren[j].extension == "xml")
                             {
                                 var str:String = FileUtils.readFromFile(buildChildren[j] as File) as String;
-                                if ((str.search("<project ") != -1) || (str.search("<project>") != -1))
+                                if (str && ((str.search("<project ") != -1) || (str.search("<project>") != -1)))
                                 {
                                     collection.addItem(new FileLocation(buildChildren[j].nativePath));
                                 }
