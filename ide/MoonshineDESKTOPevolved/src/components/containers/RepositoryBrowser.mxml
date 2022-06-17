@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		  xmlns:s="library://ns.adobe.com/flex/spark" 
-		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*"
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:utils="actionScripts.utils.*" xmlns:ui="actionScripts.ui.*"
 		  gap="10"
 		  creationComplete="onCreationCompletes(event)">
 	<fx:Script>
@@ -165,7 +165,7 @@
 					treeRepositories.expandItem(event.item, false);
 					return;
 				}
-				
+
 				requestRemoteSvnList(event.item as RepositoryItemVO);
 			}
 			
@@ -223,13 +223,12 @@
 				if (item.notes) return item.notes;
 				return null;
 			}
-			
 		]]>
 	</fx:Script>
 	
 	<s:Label text="Select any repository to checkout/clone:"/>
 	
-	<mx:Tree id="treeRepositories" 
+	<ui:AutoSortChildrenTree id="treeRepositories"
 			 width="100%" height="100%"
 			 labelFunction="repositoryLabelFunction"
 			 itemRenderer="actionScripts.ui.renderers.RepositoryTreeItemRenderer"
@@ -237,6 +236,7 @@
 			 rollOverColor="0xe4e4e4"
 			 selectionColor="0xCCCCCC"
 			 color="0x000"
+			 sortItemLabel="label"
 			 showDataTips="true"
 			 dataTipFunction="getTreeTooltip"
 			 alternatingItemColors="[0xEEEEEE,0xFFFFFF]"
