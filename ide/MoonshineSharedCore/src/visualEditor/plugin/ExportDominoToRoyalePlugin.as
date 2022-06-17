@@ -231,7 +231,9 @@ package visualEditor.plugin
 
                 for each (var field:Object in fields)
                 {
-                    var fieldValue = field.fieldValue ? field.fieldValue : "\"\"";
+                    var fieldValue = field.fieldValue ? field.fieldValue : "";
+                        fieldValue = "\"" + fieldValue + "\"";
+
                     var publicVar:String = "   public var " + field.name + ":String = " +
                                             fieldValue + ";\n";
                     classContent += publicVar;
