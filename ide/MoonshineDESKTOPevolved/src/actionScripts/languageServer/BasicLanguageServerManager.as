@@ -20,6 +20,7 @@ package actionScripts.languageServer
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _waitingToRestart:Boolean = false;
 		private var _languageServerProcess:NativeProcess;
+		private var _previousNodePath:String = null;
 		
 		public function BasicLanguageServerManager (project:BasicProjectVO)
 		{
@@ -30,7 +31,64 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler, false, 0, true);
 			_dispatcher.addEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			_dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler, false, 0, true);
+			_dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler, false, 0, true);
+			_dispatcher.addEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler, false, 0, true);
+			_dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler, false, 0, true);
+			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler, false, 0, true);
 			
+		}
+		
+		private function executeLanguageServerCommandHandler(event:ExecuteLanguageServerCommandEvent):void
+		{
+			if(event.project != _project)
+			{
+				//it's for a different project
+				return;
+			}
+			if(event.isDefaultPrevented())
+			{
+				//it's already handled somewhere else
+				return;
+			}
+			if(!_languageClient)
+			{
+				//not ready yet
+				return;
+			}
+
+			_languageClient.executeCommand({
+				command: event.command,
+				arguments: event.arguments
+			}, function(result:Object):void {
+				event.result = result;
+			});
+		}
+		
+		private function tabSelectHandler(event:TabEvent):void
+		{
+			var textEditor:BasicTextEditor = event.child as BasicTextEditor;
+			if(!textEditor || !textEditor.currentFile)
+			{
+				return;
+			}
+			if(!_languageClient || !_languageClient.initialized)
+			{
+				return;
+			}
+			_languageClient.sendNotification("basic/didChangeActiveTextEditor", {uri: textEditor.currentFile.fileBridge.url});
+		}
+		
+		private function changeNodeSDKHandler(event:SdkEvent):void
+		{
+			if(UtilsCore.getNodeBinPath() != _previousNodePath)
+			{
+				restartLanguageServer();
+			}
+		}
+		
+		private function applicationExitHandler(event:ApplicationEvent):void
+		{
+			shutdown();
 		}
 		
 		private function removeProjectHandler(event:ProjectEvent):void
@@ -109,11 +167,7 @@ package actionScripts.languageServer
 			_languageClient = null;
 		}
 
-		private function fileSavedHandler(event:SaveFileEvent):void
-		{
-			
-			restartLanguageServer();
-		}
+		
 		
 		private function restartLanguageServer():void
 		{
@@ -254,7 +308,7 @@ package actionScripts.languageServer
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 			_languageServerProcess.exit();
 			_languageServerProcess = null;
-			if(_waitingToRestart)
+			if(!_waitingToRestart)
 			{
 				_waitingToRestart = false;
 				bootstrapThenStartNativeProcess();
@@ -303,11 +357,11 @@ package actionScripts.languageServer
 		
 		protected function dispose():void
 		{
-			_dispatcher.removeEventListener(SdkEvent.CHANGE_HAXE_SDK, changeHaxeSDKHandler);
+			
 			_dispatcher.removeEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler);
 			_dispatcher.removeEventListener(SaveFileEvent.FILE_SAVED, fileSavedHandler);
 			_dispatcher.removeEventListener(ProjectEvent.SAVE_PROJECT_SETTINGS, saveProjectSettingsHandler);
-			_dispatcher.removeEventListener(HaxelibEvent.HAXELIB_INSTALL_COMPLETE, haxelibInstallCompleteHandler);
+			
 			_dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 			_dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, removeProjectHandler);
 			_dispatcher.removeEventListener(ApplicationEvent.APPLICATION_EXIT, applicationExitHandler);
