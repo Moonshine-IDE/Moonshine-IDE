@@ -431,7 +431,7 @@ package actionScripts.languageServer
 				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 				_languageServerProcess.start(processInfo);
-				initializeLanguageServer(haxePath, displayArguments);
+				initializeLanguageServer();
 			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
 		}
 		
