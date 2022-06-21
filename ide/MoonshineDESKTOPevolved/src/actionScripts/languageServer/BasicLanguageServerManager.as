@@ -4,6 +4,7 @@ package actionScripts.languageServer
     import flash.events.Event;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.LotusBasicTextEditor;
     import moonshine.lsp.LanguageClient;
     import actionScripts.plugin.basic.vo.BasicProjectVO;
 
@@ -15,6 +16,7 @@ package actionScripts.languageServer
 		
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["tibbo"];
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
+		private static const LANGUAGE_ID_BASIC:String = "basic";
 		private var _languageClient:LanguageClient;
 		private var _project:BasicProjectVO;
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -51,7 +53,7 @@ package actionScripts.languageServer
 			
 
 			var debugMode:Boolean = false;
-			_languageClient = new LanguageClient(LANGUAGE_ID_GROOVY,
+			_languageClient = new LanguageClient(LANGUAGE_ID_BASIC,
 				_languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA,
 				_languageServerProcess.standardInput);
 			_languageClient.debugMode = debugMode;
@@ -364,7 +366,27 @@ package actionScripts.languageServer
 
 		public function createTextEditorForUri(uri:String, readOnly:Boolean = false):BasicTextEditor
 		{
-			throw new Error("Method not implemented.");
+			var colonIndex:int = uri.indexOf(":");
+			if(colonIndex == -1)
+			{
+				throw new URIError("Invalid URI: " + uri);
+			}
+			var scheme:String = uri.substr(0, colonIndex);
+
+			var editor:GroovyTextEditor = new LotusBasicTextEditor(_project, readOnly);
+			if(scheme == URI_SCHEME_FILE)
+			{
+				//the regular OpenFileEvent should be used to open this one
+				return editor;
+			}
+			switch(scheme)
+			{
+				default:
+				{
+					throw new URIError("Unknown URI scheme for BASIC: " + scheme);
+				}
+			}
+			return editor;
 		}
 		
 		private function bootstrapThenStartNativeProcess():void
