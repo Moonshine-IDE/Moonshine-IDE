@@ -88,10 +88,11 @@
 				}
 				
 				editingRepository.isRequireAuthentication = cbLogin.selected;
-				editingRepository.userName = editingRepository.isRequireAuthentication ? 
-					((StringUtil.trim(txtLogin.text).length != 0) ? txtLogin.text : null) : 
-					null;
-				
+				if (editingRepository.isRequireAuthentication)
+				{
+					editingRepository.userName = ((StringUtil.trim(txtLogin.text).length != 0) ? txtLogin.text : null);
+				}
+
 				updateRepository();
 				
 				submitObject = new Object();
