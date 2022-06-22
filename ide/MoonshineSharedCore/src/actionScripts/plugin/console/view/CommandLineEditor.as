@@ -49,7 +49,6 @@ package actionScripts.plugin.console.view
 			backgroundSkin = null;
 			showLineNumbers = false;
 			var textStyles:IntMap = new IntMap();
-			Settings.doSomething();
 			textStyles.set(0, new TextFormat(Settings.font.defaultFontFamily, Settings.font.defaultFontSize, 0xdddddd));
 			setParserAndTextStyles(null, textStyles);
 			embedFonts = Settings.font.defaultFontEmbedded;
