@@ -216,7 +216,7 @@ package actionScripts.plugins.svn.commands
 			toAdd = null;
 		}
 		
-		protected function doCommit(user:String=null, password:String=null, commitInfo:Object=null, repository:RepositoryItemVO=null):void
+		protected function doCommit(user:String=null, password:String=null, commitInfo:Object=null):void
 		{	
 			// TODO: Check for empty commits, since svn commit will recurse-commit everything
 			if (commitInfo)
@@ -226,7 +226,6 @@ package actionScripts.plugins.svn.commands
 				this.root ||= commitInfo.runningForFile;
 			}
 
-			this.repositoryItem = repository;
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
 			
