@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn.commands
 {
+	import actionScripts.valueObjects.RepositoryItemVO;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
@@ -62,12 +64,13 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 		
-		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null, isTrustServerCertificateSVN:Boolean=false):void
+		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null, isTrustServerCertificateSVN:Boolean=false, repositoryItem:RepositoryItemVO=null):void
 		{
 			this.root = file.fileBridge.getFile as File;
 			this.isTrustServerCertificateSVN = isTrustServerCertificateSVN;
 			this.commitInfo = commitInfo;
 			this.message = message;
+			this.repositoryItem = repositoryItem;
 			
 			if (user && password)
 			{
@@ -213,7 +216,7 @@ package actionScripts.plugins.svn.commands
 			toAdd = null;
 		}
 		
-		protected function doCommit(user:String=null, password:String=null, commitInfo:Object=null):void
+		protected function doCommit(user:String=null, password:String=null, commitInfo:Object=null, repository:RepositoryItemVO=null):void
 		{	
 			// TODO: Check for empty commits, since svn commit will recurse-commit everything
 			if (commitInfo)
@@ -222,7 +225,8 @@ package actionScripts.plugins.svn.commands
 				this.message ||= commitInfo.message;
 				this.root ||= commitInfo.runningForFile;
 			}
-			
+
+			this.repositoryItem = repository;
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
 			
@@ -247,7 +251,14 @@ package actionScripts.plugins.svn.commands
 			args = args.concat(argFiles);
 			args.push("--message");
 			args.push(this.message);
-			if (user && password)
+			if (repositoryItem && repositoryItem.userName && repositoryItem.userPassword)
+			{
+				args.push("--username");
+				args.push(repositoryItem.userName);
+				args.push("--password");
+				args.push(repositoryItem.userPassword);
+			}
+			else if (user && password)
 			{
 				args.push("--username");
 				args.push(user);
