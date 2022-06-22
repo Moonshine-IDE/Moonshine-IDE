@@ -193,7 +193,11 @@ class AboutScreen extends LayoutGroup {
 		_contentGroup.addChild(_hDivider);
 
 		_sdkGrid = new SDKGrid();
+		_sdkGrid.enabled = false;
+		_sdkGrid.alpha = .5;
 		_editorGrid = new EditorGrid();
+		_editorGrid.enabled = false;
+		_editorGrid.alpha = .5;
 
 		_tabs = new ArrayCollection<TabItem>();
 		var tabItem = TabItem.withDisplayObject("Configured SDKs", _sdkGrid);
@@ -346,6 +350,8 @@ class AboutScreen extends LayoutGroup {
 
 	function onSDKRetrievalComplete(e:Event) {
 		_softwareVersionChecker.removeEventListener(Event.COMPLETE, onSDKRetrievalComplete);
+		_sdkGrid.enabled = true;
+		_sdkGrid.alpha = 1;
 		_sdkComponents.refresh();
 		_sdkComponents.updateAll();
 		dispatchEvent(e);
@@ -361,8 +367,9 @@ class AboutScreen extends LayoutGroup {
 	}
 
 	function onEditorRetrievalComplete(e:Event) {
-		trace("onEditorRetrievalComplete");
 		_editorVersionChecker.removeEventListener(Event.COMPLETE, onEditorRetrievalComplete);
+		_editorGrid.enabled = true;
+		_editorGrid.alpha = 1;
 		_editorComponents.refresh();
 		_editorComponents.updateAll();
 		dispatchEvent(e);
