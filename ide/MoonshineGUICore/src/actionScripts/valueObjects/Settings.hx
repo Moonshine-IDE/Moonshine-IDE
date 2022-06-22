@@ -75,10 +75,4 @@ class Settings {
 
 	public function new() {}
 
-	static public function doSomething() {
-		trace("1:", Clipboard.generalClipboard.formats);
-		// trace( "2:", Clipboard.generalClipboard.supportsFilePromise );
-
-		trace("Hello Pjotr!");
-	}
 }
