@@ -198,7 +198,8 @@ package visualEditor.plugin
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
                 var componentData:Array = item.surface.getComponentData();
 
-                saveVO(componentData, convertedFile.fileBridge.nameWithoutExtension);
+                var classContent:String = getVOClass(componentData, convertedFile.fileBridge.nameWithoutExtension);
+                saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
 
                 convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString());
 
@@ -208,42 +209,86 @@ package visualEditor.plugin
             return views;
         }
 
-        private function saveVO(componentData:Array, fileName:String):void
+        private function getVOClass(componentData:Array, className:String):String
         {
-            if (componentData.length == 0) return;
+            if (componentData.length == 0) return "";
 
+            var classContent:String = "package vo\n" +
+                    "{\n" +
+                    "   [Bindable] \n" +
+                    "   public class " + className + "\n" +
+                    "   {\n";
+
+            classContent += getVOContentClass(componentData, "");
+
+            classContent += "   } \n}";
+
+            return classContent;
+        }
+
+        private function getVOContentClass(componentData:Array, content:String):String
+        {
+            for (var i:int = 0; i < componentData.length; i++)
+            {
+                var data:Object = componentData[i];
+                var fields:Array = data.fields;
+
+                var publicVar:String = "";
+                if (!data.fields && data.name)
+                {
+                    publicVar = "       " + getContentVariable(data);
+                    content += publicVar;
+                }
+                else
+                {
+                    for each (var field:Object in fields)
+                    {
+                        if (!field.name)
+                        {
+                            if (field.fields)
+                            {
+                                content += getVOContentClass(field.fields, "");
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            publicVar = "       " + getContentVariable(field);
+                            content += publicVar;
+                        }
+                    }
+                }
+            }
+
+            return content;
+        }
+
+        private function getContentVariable(data:Object):String
+        {
+            if (!data.name) return "";
+
+            var fieldValue = data.fieldValue ? data.fieldValue : "";
+            fieldValue = "\"" + fieldValue + "\"";
+
+            var publicVar:String = "public var " + data.name + ":String = " +
+                    fieldValue + ";\n";
+
+            return publicVar;
+        }
+
+        private function saveVO(content:String, fileName:String):void
+        {
             var voFolder:FileLocation = exportedProject.sourceFolder.resolvePath("vo");
             if (!voFolder.fileBridge.exists)
             {
                 voFolder.fileBridge.createDirectory();
             }
 
-            var classContent:String = "package vo\n" +
-                    "{\n" +
-                    "   [Bindable] \n" +
-                    "   public class " + fileName + "\n" +
-                    "   {\n ";
-
-            for (var i:int = 0; i < componentData.length; i++)
-            {
-                var data:Object = componentData[i];
-                var fields:Array = data.fields;
-
-                for each (var field:Object in fields)
-                {
-                    var fieldValue = field.fieldValue ? field.fieldValue : "";
-                        fieldValue = "\"" + fieldValue + "\"";
-
-                    var publicVar:String = "   public var " + field.name + ":String = " +
-                                            fieldValue + ";\n";
-                    classContent += publicVar;
-                }
-            }
-
-            classContent += "   } \n}";
-
             var voFile:FileLocation = voFolder.resolvePath(voFolder.fileBridge.nativePath + voFolder.fileBridge.separator + fileName + ".as");
-                voFile.fileBridge.save(classContent);
+            voFile.fileBridge.save(content);
         }
 
         private function getNavigationDp(views:Array):String
