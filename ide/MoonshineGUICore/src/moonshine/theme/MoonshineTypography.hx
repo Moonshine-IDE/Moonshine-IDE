@@ -17,9 +17,9 @@ class MoonshineTypography {
     private static final _DEFAULT_TEXT_FORMAT:TextFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, MoonshineColor.GREY_2);
     private static final _TEXT_FORMAT_CACHE:Map<String, TextFormat> = [];
 
-    public static function getTextFormat( size:Int = DEFAULT_FONT_SIZE, color:MoonshineColor = MoonshineColor.GREY_2, bold:Bool = false, italic:Bool = false ):TextFormat {
+    public static function getTextFormat( size:Int = DEFAULT_FONT_SIZE, color:MoonshineColor = MoonshineColor.GREY_2, bold:Bool = false, italic:Bool = false, underline:Bool = false ):TextFormat {
 
-        var id:String = Std.string(size) + "-" + Std.string(color) + "-" + Std.string(bold) + "-" + Std.string(italic);
+        var id:String = Std.string(size) + "-" + Std.string(color) + "-" + Std.string(bold) + "-" + Std.string(italic) + "-" + Std.string(underline);
         if ( _TEXT_FORMAT_CACHE.exists( id ) ) return _TEXT_FORMAT_CACHE.get( id );
 
         var tf = _DEFAULT_TEXT_FORMAT.clone();
@@ -27,6 +27,7 @@ class MoonshineTypography {
         tf.color = color;
         tf.bold = bold;
         tf.italic = italic;
+        tf.underline = underline;
         _TEXT_FORMAT_CACHE.set(id, tf);
 
         return tf;

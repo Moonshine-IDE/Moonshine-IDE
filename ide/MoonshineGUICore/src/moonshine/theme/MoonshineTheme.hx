@@ -33,6 +33,7 @@ import feathers.controls.ListView;
 import feathers.controls.Panel;
 import feathers.controls.PopUpListView;
 import feathers.controls.Radio;
+import feathers.controls.TabBar;
 import feathers.controls.TextInput;
 import feathers.controls.TextInputState;
 import feathers.controls.ToggleButton;
@@ -45,6 +46,7 @@ import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
 import feathers.controls.dataRenderers.SortOrderHeaderRenderer;
+import feathers.controls.navigators.TabNavigator;
 import feathers.core.DefaultToolTipManager;
 import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
@@ -107,6 +109,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
 	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
 	public static final THEME_VARIANT_LIGHT_GRID_VIEW:String = "moonshine-light-grid-view";
+	public static final THEME_VARIANT_LIGHT_GRID_VIEW_TABBAR:String = "moonshine-light-grid-view-tabbar";
+	public static final THEME_VARIANT_LIGHT_TAB_NAVIGATOR:String = "moonshine-light-tab-navigator";
 
 	public static final ASSET_LOGO:String = "/elements/moonshine_logo/logo_new_48.png";
 	public static final ASSET_COPY_ICON:String = "/elements/images/copy_content_icon.png";
@@ -201,7 +205,13 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(HProgressBar, null, setHProgressBarStyles);
 		this.styleProvider.setStyleFunction(VProgressBar, null, setVProgressBarStyles);
 
-		//this.styleProvider.setStyleFunction(ToggleButton, TabBar.CHILD_VARIANT_TAB, setTabBarToggleButtonStyles);
+		//
+		// An NPE bug in FeathersUI doesn't allow customizing the style of TabBar
+		// this.styleProvider.setStyleFunction(TabBar, TabNavigator.CHILD_VARIANT_TAB_BAR, setLightGridViewTabbarStyles);
+		//
+
+		this.styleProvider.setStyleFunction(TabNavigator, THEME_VARIANT_LIGHT_TAB_NAVIGATOR, setLightTabNavigatorStyles);
+		this.styleProvider.setStyleFunction(ToggleButton, TabBar.CHILD_VARIANT_TAB, setTabBarToggleButtonStyles);
 	}
 
 	private function setLightButtonStyles(button:Button):Void {
@@ -428,7 +438,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 	private function setLightGridViewStyles(gridView:GridView):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(MoonshineColor.WHITE);
-		backgroundSkin.border = SolidColor(2, MoonshineColor.GREY_4);
+		backgroundSkin.border = SolidColor(1, MoonshineColor.GREY_6);
 		backgroundSkin.cornerRadius = 0.0;
 		backgroundSkin.minWidth = 160.0;
 		backgroundSkin.minHeight = 160.0;
@@ -446,6 +456,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		var layout = new VerticalListLayout();
 		layout.requestedRowCount = 5;
+		layout.setPadding( 1 );
 		gridView.layout = layout;
 
 		gridView.fixedScrollBars = true;
@@ -1510,11 +1521,43 @@ class MoonshineTheme extends SDKInstallerTheme {
 	}
 
 	private function setTabBarToggleButtonStyles(button:ToggleButton):Void {
-		var upSkinDeselected = new RectangleSkin(FillStyle.SolidColor(MoonshineColor.GREY_4));
-		var downSkinDeselected = new RectangleSkin(FillStyle.SolidColor(MoonshineColor.MAROON));
-		button.setSkinForState(ToggleButtonState.UP(false), upSkinDeselected);
-		button.setSkinForState(ToggleButtonState.UP(true), upSkinDeselected);
-		button.setSkinForState(ToggleButtonState.DOWN(false), downSkinDeselected);
-		button.setSkinForState(ToggleButtonState.DOWN(true), downSkinDeselected);
+		var greySkin = new RectangleSkin(FillStyle.SolidColor(MoonshineColor.GREY_4));
+		var maroonSkin = new RectangleSkin(FillStyle.SolidColor(MoonshineColor.MAROON));
+
+		button.setSkinForState(ToggleButtonState.UP(false), greySkin);
+		button.setSkinForState(ToggleButtonState.UP(true), maroonSkin);
+		button.setSkinForState(ToggleButtonState.DOWN(false), maroonSkin);
+		button.setSkinForState(ToggleButtonState.DOWN(true), maroonSkin);
+		button.setSkinForState(ToggleButtonState.HOVER(false), greySkin);
+		button.setSkinForState(ToggleButtonState.HOVER(true), maroonSkin);
+
+		button.textFormat = MoonshineTypography.getTextFormat( MoonshineTypography.SMALL_FONT_SIZE, MoonshineColor.WHITE );
+		button.paddingLeft = button.paddingRight = 8;
+		button.paddingTop = button.paddingBottom = 3;
 	}
+
+	private function setLightGridViewTabbarStyles(tabbar:TabBar):Void {
+
+		//
+		// An NPE bug in FeathersUI doesn't allow customizing the style of TabBar
+		// tabbar.backgroundSkin = new RectangleSkin(FillStyle.SolidColor(MoonshineColor.WHITE));
+		//
+
+	}
+
+	private function setLightTabNavigatorStyles(navigator:TabNavigator):Void {
+
+		navigator.tabBarFactory = () -> {
+
+            var tb:TabBar = new TabBar();
+            var lyt = new HorizontalLayout();
+            lyt.gap = 1;
+            tb.layout = lyt;
+            tb.backgroundSkin = new RectangleSkin( FillStyle.SolidColor( MoonshineColor.WHITE ) );
+            return tb;
+
+        };
+
+	}
+
 }

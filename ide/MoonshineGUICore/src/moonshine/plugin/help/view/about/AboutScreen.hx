@@ -1,9 +1,13 @@
 package moonshine.plugin.help.view.about;
 
 import actionScripts.events.GlobalEventDispatcher;
+import actionScripts.events.SettingsEvent;
 import actionScripts.locator.HelperModel;
 import actionScripts.locator.IDEModel;
 import actionScripts.plugin.console.ConsoleOutputEvent;
+import actionScripts.plugins.externalEditors.ExternalEditorsPlugin;
+import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
+import actionScripts.plugins.startup.StartupHelperPlugin;
 import actionScripts.utils.FileUtils;
 import actionScripts.utils.SDKUtils;
 import actionScripts.utils.SoftwareVersionChecker;
@@ -11,35 +15,44 @@ import actionScripts.valueObjects.ComponentTypes;
 import actionScripts.valueObjects.ComponentVO;
 import actionScripts.valueObjects.ConstantsCoreVO;
 import actionScripts.valueObjects.SDKReferenceVO;
+import components.popup.InfoBackgroundPopup;
 import feathers.controls.AssetLoader;
 import feathers.controls.Button;
 import feathers.controls.GridView;
 import feathers.controls.GridViewColumn;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
+import feathers.controls.ToggleButtonState;
+import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
 import feathers.controls.navigators.TabItem;
-import feathers.controls.navigators.TabNavigator;
 import feathers.data.ArrayCollection;
+import feathers.data.GridViewCellState;
 import feathers.events.TriggerEvent;
 import feathers.layout.AnchorLayout;
 import feathers.layout.HorizontalAlign;
 import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
 import feathers.layout.RelativePosition;
-import feathers.layout.RelativePositions;
 import feathers.layout.VerticalAlign;
 import feathers.layout.VerticalLayout;
 import feathers.layout.VerticalLayoutData;
 import feathers.skins.RectangleSkin;
+import feathers.utils.DisplayObjectRecycler;
 import flash.desktop.NativeApplication;
 import haxe.xml.Access;
 import moonshine.components.HDivider;
 import moonshine.components.MoonshineTabNavigator;
+import moonshine.theme.MoonshineColor;
 import moonshine.theme.MoonshineTheme;
+import moonshine.theme.MoonshineTypography;
+import mx.core.FlexGlobals;
+import mx.events.CloseEvent;
+import mx.managers.PopUpManager;
 import openfl.desktop.Clipboard;
 import openfl.desktop.ClipboardFormats;
 import openfl.display.DisplayObject;
 import openfl.events.Event;
+import openfl.events.MouseEvent;
 import openfl.system.Capabilities;
 
 using moonshine.utils.data.ArrayCollectionUtil;
@@ -57,14 +70,15 @@ class AboutScreen extends LayoutGroup {
 	var _aboutLabel3:Label;
 	var _assetLoader:AssetLoader;
 	var _bottomGroup:LayoutGroup;
+	var _bottomGroupLabel:Label;
 	var _bottomGroupLabel2:Label;
 	var _bottomGroupLayout:VerticalLayout;
 	var _contentGroup:LayoutGroup;
 	var _contentGroupLayout:VerticalLayout;
 	var _copyButton:Button;
 	var _copyIconLoader:AssetLoader;
-	var _editorComponents:ArrayCollection<ComponentVO>;
-	var _editorGrid:SDKGrid;
+	var _editorComponents:ArrayCollection<ExternalEditorVO>;
+	var _editorGrid:EditorGrid;
 	var _editorVersionChecker:SoftwareVersionChecker;
 	var _hDivider:HDivider;
 	var _header:LayoutGroup;
@@ -79,6 +93,7 @@ class AboutScreen extends LayoutGroup {
 	var _sdkGrid:SDKGrid;
 	var _softwareVersionChecker:SoftwareVersionChecker;
 	var _tabs:ArrayCollection<TabItem>;
+	var _infoBackground:InfoBackgroundPopup;
 
 	//
 	// Public vars
@@ -178,7 +193,7 @@ class AboutScreen extends LayoutGroup {
 		_contentGroup.addChild(_hDivider);
 
 		_sdkGrid = new SDKGrid();
-		_editorGrid = new SDKGrid();
+		_editorGrid = new EditorGrid();
 
 		_tabs = new ArrayCollection<TabItem>();
 		var tabItem = TabItem.withDisplayObject("Configured SDKs", _sdkGrid);
@@ -200,7 +215,15 @@ class AboutScreen extends LayoutGroup {
 		_bottomGroup.layout = _bottomGroupLayout;
 		_bottomGroup.layoutData = new VerticalLayoutData(100);
 
+		_bottomGroupLabel = new Label("About the background image");
+		_bottomGroupLabel.textFormat = MoonshineTypography.getTextFormat(MoonshineTypography.SECONDARY_FONT_SIZE, MoonshineColor.MAROON, false, false, true);
+		_bottomGroupLabel.useHandCursor = _bottomGroupLabel.buttonMode = _bottomGroupLabel.mouseEnabled = true;
+		_bottomGroupLabel.mouseChildren = false;
+		_bottomGroupLabel.addEventListener(MouseEvent.CLICK, bottomGroupLabelClicked);
+		_bottomGroup.addChild(_bottomGroupLabel);
+
 		_bottomGroupLabel2 = new Label(ConstantsCoreVO.MOONSHINE_IDE_COPYRIGHT_LABEL);
+		_bottomGroupLabel2.textFormat = MoonshineTypography.getTextFormat(MoonshineTypography.SECONDARY_FONT_SIZE);
 		_bottomGroup.addChild(_bottomGroupLabel2);
 
 		_contentGroup.addChild(_bottomGroup);
@@ -214,10 +237,28 @@ class AboutScreen extends LayoutGroup {
 		super.layoutGroup_addedToStageHandler(event);
 
 		getSDKs();
+		getEditors();
 	}
 
 	function copyInfoToClipboard(e:TriggerEvent) {
-		var aboutInformation:String = ConstantsCoreVO.MOONSHINE_IDE_LABEL + "\n" + getAIRVersion() + "\n" + getOS();
+		var aboutInformation:String = ConstantsCoreVO.MOONSHINE_IDE_LABEL + "\n" + getAIRVersion() + "\n" + getOS() + "\n\n";
+
+		var versions:String = "Configured SDKs in Moonshine:\n===========================================\n\n";
+		for (component in _sdkComponents) {
+			versions += component.title + ": " + ((component.version != null) ? component.version : "Not Installed") + "\n";
+		}
+
+		versions += "\nConfigured External Editors in Moonshine:\n===========================================\n\n";
+		for (component in _editorComponents) {
+			versions += component.title
+				+ ": "
+				+ ((component.version != null) ? component.version : "Not Installed")
+				+ " ["
+				+ ((component.isEnabled) ? "Enabled" : "Disabled")
+				+ "]\n";
+		}
+
+		aboutInformation += versions;
 		Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, aboutInformation);
 		GlobalEventDispatcher.getInstance()
 			.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Copied Moonshine About information to clipboard.", false, false,
@@ -267,7 +308,7 @@ class AboutScreen extends LayoutGroup {
 			_sdkComponents.add(cloned);
 		}
 
-		updateWithMoonshinePaths();
+		updateSDKWithMoonshinePaths();
 
 		var tmpAddition:ComponentVO = new ComponentVO();
 		tmpAddition.title = "Default SDK";
@@ -305,43 +346,29 @@ class AboutScreen extends LayoutGroup {
 
 	function onSDKRetrievalComplete(e:Event) {
 		_softwareVersionChecker.removeEventListener(Event.COMPLETE, onSDKRetrievalComplete);
-		trace("onSDKRetrievalComplete");
-
-		for (c in _sdkComponents) {
-			trace(c.title, c.installToPath);
-		}
-
 		_sdkComponents.refresh();
 		_sdkComponents.updateAll();
 		dispatchEvent(e);
-		// getEditors();
 	}
 
 	function getEditors() {
-		/*
-			_softwareVersionChecker = new SoftwareVersionChecker();
-			_softwareVersionChecker.addEventListener(Event.COMPLETE, onEditorRetrievalComplete, false, 0, true);
-			_softwareVersionChecker.versionCheckType = SoftwareVersionChecker.VERSION_CHECK_TYPE_EDITOR;
-			_softwareVersionChecker.retrieveEditorsInformation(ExternalEditorsPlugin.editors);
-		 */
+		_editorComponents = ExternalEditorsPlugin.editors.fromMXCollection();
+		_editorGrid.setData(_editorComponents);
+		_editorVersionChecker = new SoftwareVersionChecker();
+		_editorVersionChecker.addEventListener(Event.COMPLETE, onEditorRetrievalComplete, false, 0, true);
+		_editorVersionChecker.versionCheckType = SoftwareVersionChecker.VERSION_CHECK_TYPE_EDITOR;
+		_editorVersionChecker.retrieveEditorsInformation(ExternalEditorsPlugin.editors);
 	}
 
 	function onEditorRetrievalComplete(e:Event) {
-		/*
-			_softwareVersionChecker.removeEventListener(Event.COMPLETE, onSDKRetrievalComplete);
-			trace("onRetrievalComplete");
-
-			for ( c in _sdkComponents ) {
-				trace( c.title, c.installToPath );
-			}
-
-			_components.refresh();
-			_components.updateAll();
-			//dispatchEvent(e);
-		 */
+		trace("onEditorRetrievalComplete");
+		_editorVersionChecker.removeEventListener(Event.COMPLETE, onEditorRetrievalComplete);
+		_editorComponents.refresh();
+		_editorComponents.updateAll();
+		dispatchEvent(e);
 	}
 
-	function updateWithMoonshinePaths() {
+	function updateSDKWithMoonshinePaths() {
 		var sdkReference:SDKReferenceVO;
 		for (component in _sdkComponents) {
 			sdkReference = null;
@@ -397,6 +424,36 @@ class AboutScreen extends LayoutGroup {
 			component.version = null;
 		}
 	}
+
+	function bottomGroupLabelClicked(e:MouseEvent) {
+		if (_infoBackground == null) {
+			_infoBackground = cast(PopUpManager.createPopUp(cast(FlexGlobals.topLevelApplication, DisplayObject), InfoBackgroundPopup,
+				true), InfoBackgroundPopup);
+			_infoBackground.addEventListener(CloseEvent.CLOSE, handleInfoBackgroundPopupClose);
+			_infoBackground.height = cast(FlexGlobals.topLevelApplication, DisplayObject).height - 100;
+
+			PopUpManager.centerPopUp(cast(_infoBackground));
+		} else {
+			_infoBackground.setFocus();
+		}
+	}
+
+	private function handleInfoBackgroundPopupClose(event:CloseEvent) {
+		_infoBackground.removeEventListener(CloseEvent.CLOSE, handleInfoBackgroundPopupClose);
+		PopUpManager.removePopUp( cast _infoBackground );
+		_infoBackground = null;
+	}
+
+	public function dispose() {
+		if (_softwareVersionChecker != null)
+			_softwareVersionChecker.dispose();
+		if (_editorVersionChecker != null)
+			_editorVersionChecker.dispose();
+		if (_editorComponents != null)
+			_editorComponents.removeAll();
+		if (_sdkComponents != null)
+			_sdkComponents.removeAll();
+	}
 }
 
 class SDKGrid extends GridView {
@@ -420,11 +477,227 @@ class SDKGrid extends GridView {
 	public function setData(data:ArrayCollection<ComponentVO>) {
 		this.dataProvider = data;
 
-		this.columns = new ArrayCollection([
+		var recycler = DisplayObjectRecycler.withFunction(() -> {
+			var cellRenderer = new LayoutGroupItemRenderer();
 
-			new GridViewColumn("Name", (data) -> data.title),
-			new GridViewColumn("Info", (data) -> data.version)
+			var backgroundSkin = new RectangleSkin();
+			backgroundSkin.fill = SolidColor(MoonshineColor.WHITE);
+			backgroundSkin.selectedFill = SolidColor(MoonshineColor.GREY_B);
+			backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_D));
+			cellRenderer.backgroundSkin = backgroundSkin;
 
-		]);
+			var alternateBackgroundSkin = new RectangleSkin();
+			alternateBackgroundSkin.fill = SolidColor(MoonshineColor.GREY_E);
+			alternateBackgroundSkin.selectedFill = SolidColor(MoonshineColor.GREY_B);
+			alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_C));
+			cellRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
+
+			var layout = new HorizontalLayout();
+			layout.gap = 4.0;
+			layout.paddingTop = 4.0;
+			layout.paddingBottom = 4.0;
+			layout.paddingLeft = 6.0;
+			layout.paddingRight = 6.0;
+			cellRenderer.layout = layout;
+			cellRenderer.mouseChildren = true;
+			cellRenderer.mouseEnabled = true;
+
+			/*
+				var icon = new AssetLoader();
+				icon.name = "loader";
+				cellRenderer.addChild(icon);
+			 */
+
+			var labelLoading = new Label();
+			labelLoading.name = "labelLoading";
+			labelLoading.text = "Loading...";
+			labelLoading.textFormat = MoonshineTypography.getGreyTextFormat();
+			cellRenderer.addChild(labelLoading);
+
+			var labelVersion = new Label();
+			labelVersion.name = "labelVersion";
+			labelVersion.includeInLayout = labelVersion.visible = false;
+			labelVersion.textFormat = MoonshineTypography.getGreyTextFormat();
+			cellRenderer.addChild(labelVersion);
+
+			var labelFix = new DataLabel();
+			labelFix.name = "labelFix";
+			labelFix.text = "Fix this";
+			labelFix.includeInLayout = labelFix.visible = false;
+			labelFix.textFormat = MoonshineTypography.getTextFormat(MoonshineTypography.DEFAULT_FONT_SIZE, MoonshineColor.MAROON, false, false, true);
+			labelFix.useHandCursor = labelFix.buttonMode = labelFix.mouseEnabled = true;
+			labelFix.mouseChildren = false;
+			labelFix.addEventListener(MouseEvent.CLICK, labelFixClicked);
+			cellRenderer.addChild(labelFix);
+
+			return cellRenderer;
+		});
+
+		recycler.update = (cellRenderer:LayoutGroupItemRenderer, state:GridViewCellState) -> {
+			var labelLoading = cast(cellRenderer.getChildByName("labelLoading"), Label);
+			var labelVersion = cast(cellRenderer.getChildByName("labelVersion"), Label);
+			var labelFix = cast(cellRenderer.getChildByName("labelFix"), DataLabel);
+			labelFix.data = state.data;
+
+			if (state.text == null || state.text == "") {
+				labelLoading.visible = labelLoading.includeInLayout = false;
+				labelVersion.visible = labelVersion.includeInLayout = true;
+				labelFix.visible = labelFix.includeInLayout = true;
+				labelVersion.text = "Not installed.";
+			} else {
+				labelLoading.visible = labelLoading.includeInLayout = false;
+				labelFix.visible = labelFix.includeInLayout = false;
+				labelVersion.visible = labelVersion.includeInLayout = true;
+				labelVersion.text = state.text;
+			}
+
+			// var loader = cast(cellRenderer.getChildByName("loader"), AssetLoader);
+			// loader.source = state.data.icon;
+		};
+
+		var gvc1 = new GridViewColumn("Name", getNameLabel);
+		var gvc2 = new GridViewColumn("Info", getInfoLabel);
+		gvc2.cellRendererRecycler = recycler;
+		this.columns = new ArrayCollection([gvc1, gvc2]);
+	}
+
+	function getNameLabel(data:ComponentVO):String {
+		return data.title;
+	}
+
+	function getInfoLabel(data:ComponentVO):String {
+		return data.version;
+	}
+
+	function labelFixClicked(e:MouseEvent) {
+		var label:DataLabel = cast e.target;
+		GlobalEventDispatcher.getInstance().dispatchEvent(new Event(StartupHelperPlugin.EVENT_GETTING_STARTED));
+	}
+}
+
+class EditorGrid extends GridView {
+	public function new() {
+		super();
+		this.virtualLayout = true;
+		this.sortableColumns = false;
+		this.variant = MoonshineTheme.THEME_VARIANT_LIGHT_GRID_VIEW;
+		this.customHeaderRendererVariant = MoonshineTheme.THEME_VARIANT_LIGHT_GRID_VIEW;
+		this.customCellRendererVariant = MoonshineTheme.THEME_VARIANT_LIGHT_GRID_VIEW;
+	}
+
+	override function columnToHeaderRenderer(column:GridViewColumn):DisplayObject {
+		return new LayoutGroup();
+	}
+
+	function headerRenderer(column:GridViewColumn):DisplayObject {
+		return null;
+	}
+
+	public function setData(data:ArrayCollection<ExternalEditorVO>) {
+		this.dataProvider = data;
+
+		var recycler = DisplayObjectRecycler.withFunction(() -> {
+			var cellRenderer = new LayoutGroupItemRenderer();
+
+			var backgroundSkin = new RectangleSkin();
+			backgroundSkin.fill = SolidColor(MoonshineColor.WHITE);
+			backgroundSkin.selectedFill = SolidColor(MoonshineColor.GREY_B);
+			backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_D));
+			cellRenderer.backgroundSkin = backgroundSkin;
+
+			var alternateBackgroundSkin = new RectangleSkin();
+			alternateBackgroundSkin.fill = SolidColor(MoonshineColor.GREY_E);
+			alternateBackgroundSkin.selectedFill = SolidColor(MoonshineColor.GREY_B);
+			alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_C));
+			cellRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
+
+			var layout = new HorizontalLayout();
+			layout.gap = 4.0;
+			layout.paddingTop = 4.0;
+			layout.paddingBottom = 4.0;
+			layout.paddingLeft = 6.0;
+			layout.paddingRight = 6.0;
+			cellRenderer.layout = layout;
+			cellRenderer.mouseChildren = true;
+			cellRenderer.mouseEnabled = true;
+
+			/*
+				var icon = new AssetLoader();
+				icon.name = "loader";
+				cellRenderer.addChild(icon);
+			 */
+
+			var labelLoading = new Label();
+			labelLoading.name = "labelLoading";
+			labelLoading.text = "Loading...";
+			labelLoading.textFormat = MoonshineTypography.getGreyTextFormat();
+			cellRenderer.addChild(labelLoading);
+
+			var labelVersion = new Label();
+			labelVersion.name = "labelVersion";
+			labelVersion.includeInLayout = labelVersion.visible = false;
+			labelVersion.textFormat = MoonshineTypography.getGreyTextFormat();
+			cellRenderer.addChild(labelVersion);
+
+			var labelFix = new DataLabel();
+			labelFix.name = "labelFix";
+			labelFix.text = "Fix this";
+			labelFix.includeInLayout = labelFix.visible = false;
+			labelFix.textFormat = MoonshineTypography.getTextFormat(MoonshineTypography.DEFAULT_FONT_SIZE, MoonshineColor.MAROON, false, false, true);
+			labelFix.useHandCursor = labelFix.buttonMode = labelFix.mouseEnabled = true;
+			labelFix.mouseChildren = false;
+			labelFix.addEventListener(MouseEvent.CLICK, labelFixClicked);
+			cellRenderer.addChild(labelFix);
+
+			return cellRenderer;
+		});
+
+		recycler.update = (cellRenderer:LayoutGroupItemRenderer, state:GridViewCellState) -> {
+			var labelLoading = cast(cellRenderer.getChildByName("labelLoading"), Label);
+			var labelVersion = cast(cellRenderer.getChildByName("labelVersion"), Label);
+			var labelFix = cast(cellRenderer.getChildByName("labelFix"), DataLabel);
+			labelFix.data = state.data;
+
+			if (state.text == null || state.text == "") {
+				labelLoading.visible = labelLoading.includeInLayout = false;
+				labelVersion.visible = labelVersion.includeInLayout = true;
+				labelFix.visible = labelFix.includeInLayout = true;
+				labelVersion.text = "Not installed.";
+			} else {
+				labelLoading.visible = labelLoading.includeInLayout = false;
+				labelFix.visible = labelFix.includeInLayout = false;
+				labelVersion.visible = labelVersion.includeInLayout = true;
+				labelVersion.text = state.text;
+			}
+
+			// var loader = cast(cellRenderer.getChildByName("loader"), AssetLoader);
+			// loader.source = state.data.icon;
+		};
+
+		var gvc1 = new GridViewColumn("Name", getNameLabel);
+		var gvc2 = new GridViewColumn("Info", getInfoLabel);
+		gvc2.cellRendererRecycler = recycler;
+		this.columns = new ArrayCollection([gvc1, gvc2]);
+	}
+
+	function getNameLabel(data:ExternalEditorVO):String {
+		return data.title;
+	}
+
+	function getInfoLabel(data:ExternalEditorVO):String {
+		return data.version;
+	}
+
+	function labelFixClicked(e:MouseEvent) {
+		var label:DataLabel = cast e.target;
+		GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, ExternalEditorsPlugin.NAMESPACE));
+	}
+}
+
+class DataLabel extends Label {
+	public var data:Dynamic;
+
+	public function new(?text:String) {
+		super(text);
 	}
 }

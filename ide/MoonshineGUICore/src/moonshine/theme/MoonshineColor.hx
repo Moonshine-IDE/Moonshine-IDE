@@ -3,6 +3,7 @@ package moonshine.theme;
 enum abstract MoonshineColor(Int) to Int {
     
     var BLACK = 0x333334;
+    var BLUE = 0x0000FF;
     var DARK_TEAL = 0x6F7777;
     var GREY_2 = 0x222222;
     var GREY_29 = 0x292929;
@@ -32,6 +33,7 @@ enum abstract MoonshineColor(Int) to Int {
     var PINK_2 = 0xC165B8;
     var PINK_3 = 0xff00e4;
     var PURPLE = 0xFF00FF;
+    var RED = 0xFF0000;
     var WHITE = 0xFFFFFF;
 
 }

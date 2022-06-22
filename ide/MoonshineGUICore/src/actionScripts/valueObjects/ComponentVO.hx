@@ -164,7 +164,7 @@ class ComponentVO extends EventDispatcher {
         if (_hasWarning != value) {
 
             _hasWarning = value;
-            dispatchEvent(new Event( EVENT_UPDATED));
+            dispatchEvent(new Event(EVENT_UPDATED));
 
         }
 
