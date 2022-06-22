@@ -20,10 +20,15 @@
 
 package actionScripts.utils;
 
-import actionScripts.valueObjects.SDKReferenceVO;
 import actionScripts.factory.FileLocation;
+import actionScripts.valueObjects.SDKReferenceVO;
 
 extern class SDKUtils {
-	public static final BUNDLED:String;
+
+	public static inline final BUNDLED:String = "Bundled";
+
+	public static function checkSDKTypeInSDKList(type:String):SDKReferenceVO;
+	public static function getSDKFromSavedList(byPath:String):SDKReferenceVO;
 	public static function getSDKReference(location:FileLocation):SDKReferenceVO;
+
 }

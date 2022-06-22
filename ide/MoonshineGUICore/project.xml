@@ -24,10 +24,12 @@
 	<haxeflag name="--macro" value="include('motion', true, null, null, true)"/>
 	<haxeflag name="--macro" value="include('actionScripts', true, null, null, true)"/>
 	<haxeflag name="--swf-version" value="44"/>
-	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/airglobal.swc"/>
 	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/aircore.swc"/>
-	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/airframework.swc"/>
+	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/airglobal.swc"/>
 	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/framework.swc"/>
+	<!--
+	<haxeflag name="- -swf-lib-extern" value="${flexhome}/frameworks/libs/air/airframework.swc"/>
+	-->
 
 	<haxedef name="no-deprecation-warnings" />
 	<haxedef name="air" />

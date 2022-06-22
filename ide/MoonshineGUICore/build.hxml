@@ -1,0 +1,11 @@
+# Haxe buildfile for language server support. Do not call this directly
+--swf bin/main.swf
+--library openfl
+--library feathersui
+--class-path src
+--class-path externs
+--class-path ../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/src
+--class-path ../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/externs
+--swf-lib-extern /Volumes/Work/sdk/flex/frameworks/libs/air/aircore.swc
+--swf-lib-extern /Volumes/Work/sdk/flex/frameworks/libs/air/airglobal.swc
+--swf-lib-extern /Volumes/Work/sdk/flex/frameworks/libs/framework.swc

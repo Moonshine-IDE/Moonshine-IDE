@@ -41,6 +41,7 @@ package actionScripts.plugin.help
 	import actionScripts.factory.FileLocation;
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.feathersWrapper.help.AboutScreenWrapper;
 
 	public class HelpPlugin extends PluginBase implements IPlugin
 	{
@@ -213,7 +214,11 @@ package actionScripts.plugin.help
 				}
 			}
 			
-			var aboutScreen: IFlexDisplayObject = model.aboutCore.getNewAbout(null);
+			var aboutScreen:AboutScreenWrapper = AboutScreenWrapper(model.aboutCore.getNewAbout(null));
+			aboutScreen.percentWidth = 100;
+			aboutScreen.percentHeight = 100;
+			aboutScreen.minWidth = 0;
+			aboutScreen.minHeight = 0;
 			dispatcher.dispatchEvent(new AddTabEvent(aboutScreen as IContentWindow));
 		}
 		
