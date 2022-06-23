@@ -199,7 +199,10 @@ package visualEditor.plugin
                 var componentData:Array = item.surface.getComponentData();
 
                 var classContent:String = getVOClass(componentData, convertedFile.fileBridge.nameWithoutExtension);
-                saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
+                if (classContent)
+                {
+                    saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
+                }
 
                 convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString());
 
@@ -216,7 +219,7 @@ package visualEditor.plugin
             var classContent:String = "package vo\n" +
                     "{\n" +
                     "   [Bindable] \n" +
-                    "   public class " + className + "\n" +
+                    "   public class " + className + "VO\n" +
                     "   {\n";
 
             classContent += getVOContentClass(componentData, "");
@@ -287,7 +290,7 @@ package visualEditor.plugin
                 voFolder.fileBridge.createDirectory();
             }
 
-            var voFile:FileLocation = voFolder.resolvePath(voFolder.fileBridge.nativePath + voFolder.fileBridge.separator + fileName + ".as");
+            var voFile:FileLocation = voFolder.resolvePath(voFolder.fileBridge.nativePath + voFolder.fileBridge.separator + fileName + "VO.as");
             voFile.fileBridge.save(content);
         }
 
