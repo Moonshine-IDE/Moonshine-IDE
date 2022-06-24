@@ -93,7 +93,7 @@
 				{
 					lblMess.text = value;
 					lblMess.setStyle("color", 0xe32636);
-					lblMess.includeInLayout = lblMess.visible = true;
+					hgError.includeInLayout = hgError.visible = true;
 				}
 			}
 
@@ -113,7 +113,7 @@
 				{
 					lblMess.text = "Validating..";
 					lblMess.setStyle("color", 0xF4F4F4);
-					lblMess.includeInLayout = lblMess.visible = true;
+					hgError.includeInLayout = hgError.visible = true;
 
 					btnCommit.enabled = false;
 					dispatchEvent(new GeneralEvent(VALIDATE_NAME, txtName.text));
@@ -139,12 +139,18 @@
 							  restrict="a-zA-Z0-9`!@#$%()_+={}';.\-\/\&amp;"/>
 		<s:CheckBox id="cbPush"
 					label="Push newly created branch to remote"/>
-		<s:Label text="You need Git installed on your system to continue."
-				 width="100%" textAlign="center" color="0xff0000"
-				 visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}"/>
-		<s:Label id="lblMess"
-				 width="100%" maxDisplayedLines="3"
-				 includeInLayout="false" visible="false"/>
+		<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="center"
+				  visible="{!isGitAvailable}" includeInLayout="{!isGitAvailable}">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label text="You need Git installed on your system to continue."/>
+		</s:HGroup>
+		<s:HGroup id="hgError"
+				  width="100%" verticalAlign="middle" horizontalAlign="center"
+				  visible="false" includeInLayout="false">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label id="lblMess"
+					 maxDisplayedLines="3"/>
+		</s:HGroup>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

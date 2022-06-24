@@ -9,6 +9,7 @@
 	<winSDKPath><![CDATA[]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	<winSDKPath64><![CDATA[c:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_33.1\temp\]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	<unixSDKPath><![CDATA[]]></unixSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<haxeLibDirectory><![CDATA[]]></haxeLibDirectory> <!-- Set path of system HAXE_HOME, i.e. c:/HaxeToolkit/haxe (Windows), /usr/local/lib/haxe (macOS) -->
 	
 	<!-- BUNDLED SDK PATHS -->
 	<bundledFlexSDK><![CDATA[c:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_33.1\temp\]]></bundledFlexSDK> <!-- Leave blank if you do not want to include a bundled Flex SDK -->

@@ -347,7 +347,7 @@ package actionScripts.plugins.ant
                             if (buildChildren[j].extension == "xml")
                             {
                                 var str:String = FileUtils.readFromFile(buildChildren[j] as File) as String;
-                                if ((str.search("<project ") != -1) || (str.search("<project>") != -1))
+                                if (str && ((str.search("<project ") != -1) || (str.search("<project>") != -1)))
                                 {
                                     collection.addItem(new FileLocation(buildChildren[j].nativePath));
                                 }
@@ -372,10 +372,10 @@ package actionScripts.plugins.ant
             }
             else if (("antBuildPath" in selectedAntProject) && selectedAntProject["antBuildPath"])
             {
-                var antFile:FileLocation = new FileLocation(selectedAntProject["antBuildPath"]);
+                var antFile:FileLocation = selectedAntProject.folderLocation.fileBridge.resolvePath(selectedAntProject["antBuildPath"]);
                 if (antFile.fileBridge.exists)
                 {
-                    model.antScriptFile = new FileLocation(selectedAntProject["antBuildPath"]);
+                    model.antScriptFile = antFile;
                     antBuildHandler();
                 }
                 else

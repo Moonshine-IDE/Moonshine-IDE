@@ -217,9 +217,20 @@ class CallStackHierarchicalCollection extends EventDispatcher implements IHierar
 				collection = new ArrayCollection();
 				this._threadsToStackFrames.set(thread, collection);
 			}
+			var oldItems = collection.array;
+			var location = this.locationOf(thread);
+			for (i in 0...oldItems.length) {
+				location.push(i);
+				this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.REMOVE_ITEM, location, null, oldItems[i]));
+				location.pop();
+			}
 			collection.array = stackFrames.copy();
+			for (i in 0...stackFrames.length) {
+				location.push(i);
+				this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.ADD_ITEM, location, stackFrames[i], null));
+				location.pop();
+			}
 		}
-		this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.RESET, null));
 		this.dispatchEvent(new Event(Event.CHANGE));
 	}
 }

@@ -166,7 +166,7 @@
 			
 			private function onTypeChanged(event:Event):void
 			{
-				lblNoPath.visible = lblNoPath.includeInLayout = false;
+				hgError.visible = hgError.includeInLayout = false;
 				if (rgType.selectedValue == VersionControlTypes.SVN)
 				{
 					type = VersionControlTypes.SVN;
@@ -187,7 +187,7 @@
 				function displayNoPathMessageFor(pathType:String):void
 				{
 					lblNoPath.text = "You need "+ pathType +" installed on your system.";
-					lblNoPath.visible = lblNoPath.includeInLayout = true;
+					hgError.visible = hgError.includeInLayout = true;
 				}
 			}
 			
@@ -215,12 +215,15 @@
 		<view:PromptTextInput id="txtNotes" 
 							  prompt="Repostory notes.." width="100%" styleName="textInput"/>
 	</s:VGroup>
-	<s:Label id="lblNoPath" 
-			 width="100%" textAlign="center" color="0xff0000"
-			 includeInLayout="false" visible="false"/>
+	<s:HGroup id="hgError"
+			  width="100%" verticalAlign="middle" horizontalAlign="center"
+			  visible="false" includeInLayout="false">
+		<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+		<s:Label id="lblNoPath"/>
+	</s:HGroup>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<s:CheckBox id="cbLogin"
-					label="Need Authentication" selected="false"/>
+					label="Needs Authentication" selected="false"/>
 		<s:CheckBox id="cbTrustCert" label="Trust Server Certificate"
 					enabled="{type == VersionControlTypes.SVN}"/>
 	</s:HGroup>
