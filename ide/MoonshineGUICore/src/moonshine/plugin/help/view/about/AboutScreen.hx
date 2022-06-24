@@ -194,10 +194,10 @@ class AboutScreen extends LayoutGroup {
 
 		_sdkGrid = new SDKGrid();
 		_sdkGrid.enabled = false;
-		_sdkGrid.alpha = .5;
+		_sdkGrid.alpha = .3;
 		_editorGrid = new EditorGrid();
 		_editorGrid.enabled = false;
-		_editorGrid.alpha = .5;
+		_editorGrid.alpha = .3;
 
 		_tabs = new ArrayCollection<TabItem>();
 		var tabItem = TabItem.withDisplayObject("Configured SDKs", _sdkGrid);
