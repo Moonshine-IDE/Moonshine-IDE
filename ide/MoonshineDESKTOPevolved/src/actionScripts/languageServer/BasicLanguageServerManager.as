@@ -17,6 +17,7 @@ package actionScripts.languageServer
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["tibbo"];
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
 		private static const LANGUAGE_ID_BASIC:String = "basic";
+		private static const LANGUAGE_SERVER_SCRIPT_PATH:String="";
 		private var _languageClient:LanguageClient;
 		private var _project:BasicProjectVO;
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
