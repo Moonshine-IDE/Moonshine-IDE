@@ -273,10 +273,14 @@ package visualEditor.plugin
         {
             if (!data.name) return "";
 
-            var fieldValue = data.fieldValue ? data.fieldValue : "";
-            fieldValue = "\"" + fieldValue + "\"";
+            var fieldValue:String = data.fieldValue != null ? data.fieldValue : "";
+            var fieldType:String = data.fieldType ? data.fieldType : "String";
+            if (fieldType != "Boolean")
+            {
+                fieldValue = "\"" + fieldValue + "\"";
+            }
 
-            var publicVar:String = "public var " + data.name + ":String = " +
+            var publicVar:String = "public var " + data.name + ":" + fieldType + " = " +
                     fieldValue + ";\n";
 
             return publicVar;
