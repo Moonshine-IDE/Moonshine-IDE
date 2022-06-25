@@ -199,7 +199,10 @@ package visualEditor.plugin
                 var componentData:Array = item.surface.getComponentData();
 
                 var classContent:String = getVOClass(componentData, convertedFile.fileBridge.nameWithoutExtension);
-                saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
+                if (classContent)
+                {
+                    saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
+                }
 
                 convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString());
 
@@ -216,7 +219,7 @@ package visualEditor.plugin
             var classContent:String = "package vo\n" +
                     "{\n" +
                     "   [Bindable] \n" +
-                    "   public class " + className + "\n" +
+                    "   public class " + className + "VO\n" +
                     "   {\n";
 
             classContent += getVOContentClass(componentData, "");
@@ -270,10 +273,14 @@ package visualEditor.plugin
         {
             if (!data.name) return "";
 
-            var fieldValue = data.fieldValue ? data.fieldValue : "";
-            fieldValue = "\"" + fieldValue + "\"";
+            var fieldValue:String = data.fieldValue != null ? data.fieldValue : "";
+            var fieldType:String = data.fieldType ? data.fieldType : "String";
+            if (fieldType != "Boolean")
+            {
+                fieldValue = "\"" + fieldValue + "\"";
+            }
 
-            var publicVar:String = "public var " + data.name + ":String = " +
+            var publicVar:String = "public var " + data.name + ":" + fieldType + " = " +
                     fieldValue + ";\n";
 
             return publicVar;
@@ -287,7 +294,7 @@ package visualEditor.plugin
                 voFolder.fileBridge.createDirectory();
             }
 
-            var voFile:FileLocation = voFolder.resolvePath(voFolder.fileBridge.nativePath + voFolder.fileBridge.separator + fileName + ".as");
+            var voFile:FileLocation = voFolder.resolvePath(voFolder.fileBridge.nativePath + voFolder.fileBridge.separator + fileName + "VO.as");
             voFile.fileBridge.save(content);
         }
 
