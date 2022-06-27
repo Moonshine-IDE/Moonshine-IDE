@@ -71,8 +71,8 @@ class AboutScreen extends LayoutGroup {
 	var _aboutLabel3:Label;
 	var _assetLoader:AssetLoader;
 	var _bottomGroup:LayoutGroup;
-	var _bottomGroupLabel:Label;
 	var _bottomGroupLabel2:Label;
+	var _bottomGroupLabel:Label;
 	var _bottomGroupLayout:VerticalLayout;
 	var _contentGroup:LayoutGroup;
 	var _contentGroupLayout:VerticalLayout;
@@ -85,16 +85,16 @@ class AboutScreen extends LayoutGroup {
 	var _headerLayout:HorizontalLayout;
 	var _headerMiddle:LayoutGroup;
 	var _headerMiddleLayout:VerticalLayout;
+	var _infoBackground:InfoBackgroundPopup;
 	var _model:IDEModel;
 	var _navigator:MoonshineTabNavigator;
+	var _progressIndicator:ProgressIndicator;
 	var _screen:LayoutGroup;
 	var _screenLayout:VerticalLayout;
 	var _sdkComponents:ArrayCollection<ComponentVO>;
 	var _sdkGrid:SDKGrid;
 	var _softwareVersionChecker:SoftwareVersionChecker;
 	var _tabs:ArrayCollection<TabItem>;
-	var _infoBackground:InfoBackgroundPopup;
-	var _progressIndicator:ProgressIndicator;
 
 	//
 	// Public vars
@@ -150,7 +150,7 @@ class AboutScreen extends LayoutGroup {
 	//
 	// Private methods
 	//
-	
+
 	override function initialize() {
 		super.initialize();
 
@@ -362,7 +362,6 @@ class AboutScreen extends LayoutGroup {
 	}
 
 	function componentUpdated(e:Event) {
-		trace("componentUpdated", e.target);
 		var component:ComponentVO = cast e.target;
 		component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
 		_sdkComponents.refresh();
