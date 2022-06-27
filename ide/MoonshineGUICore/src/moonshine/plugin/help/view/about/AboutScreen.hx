@@ -135,6 +135,9 @@ class AboutScreen extends LayoutGroup {
 		if (_editorVersionChecker != null)
 			_editorVersionChecker.dispose();
 		if (_editorComponents != null) {
+			for (component in _editorComponents) {
+				component.removeEventListener(Event.CHANGE, editorComponentUpdated);
+			}
 			_editorComponents.removeAll();
 			_editorComponents = null;
 		}
@@ -363,7 +366,6 @@ class AboutScreen extends LayoutGroup {
 
 	function componentUpdated(e:Event) {
 		var component:ComponentVO = cast e.target;
-		component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
 		_sdkComponents.refresh();
 		_sdkComponents.updateAt(_sdkComponents.indexOf(component));
 	}
@@ -380,11 +382,20 @@ class AboutScreen extends LayoutGroup {
 
 	function getEditors() {
 		_editorComponents = ExternalEditorsPlugin.editors.fromMXCollection();
+		for (component in _editorComponents) {
+			component.addEventListener(Event.CHANGE, editorComponentUpdated);
+		}
 		_editorGrid.setData(_editorComponents);
 		_editorVersionChecker = new SoftwareVersionChecker();
 		_editorVersionChecker.addEventListener(Event.COMPLETE, onEditorRetrievalComplete, false, 0, true);
 		_editorVersionChecker.versionCheckType = SoftwareVersionChecker.VERSION_CHECK_TYPE_EDITOR;
 		_editorVersionChecker.retrieveEditorsInformation(ExternalEditorsPlugin.editors);
+	}
+
+	function editorComponentUpdated(e:Event) {
+		var component:ExternalEditorVO = cast e.target;
+		_editorComponents.refresh();
+		_editorComponents.updateAt(_editorComponents.indexOf(component));
 	}
 
 	function onEditorRetrievalComplete(e:Event) {
@@ -469,7 +480,6 @@ class AboutScreen extends LayoutGroup {
 		PopUpManager.removePopUp(cast _infoBackground);
 		_infoBackground = null;
 	}
-
 }
 
 class SDKGrid extends GridView {
@@ -640,12 +650,12 @@ class EditorGrid extends GridView {
 			cellRenderer.mouseChildren = true;
 			cellRenderer.mouseEnabled = true;
 
-			var tickLoader = new AssetLoader( "/elements/images/tick_circle_frame.png" );
+			var tickLoader = new AssetLoader("/elements/images/tick_circle_frame.png");
 			tickLoader.name = "tickLoader";
 			tickLoader.includeInLayout = tickLoader.visible = false;
 			cellRenderer.addChild(tickLoader);
 
-			var crossLoader = new AssetLoader( "/elements/images/cross_circle_frame.png" );
+			var crossLoader = new AssetLoader("/elements/images/cross_circle_frame.png");
 			crossLoader.name = "crossLoader";
 			cellRenderer.addChild(crossLoader);
 
