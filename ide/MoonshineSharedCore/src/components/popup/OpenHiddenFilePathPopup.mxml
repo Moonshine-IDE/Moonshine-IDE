@@ -53,6 +53,8 @@
 
 			protected function onOpenPath(event:MouseEvent):void
 			{
+				if (!btnOpen.enabled) return;
+
 				if (isDirectory)
 				{
 					model.fileCore.browseForDirectory("Browse", onDirectorySelected, null, txtFileName.text);
@@ -87,7 +89,7 @@
 	<s:VGroup width="100%" height="100%" paddingLeft="12" paddingBottom="10" paddingTop="9" paddingRight="13"
 			  verticalAlign="middle">
 		<view:PromptTextInput id="txtFileName"
-							  prompt="Enter path value" width="100%" styleName="textInput" restrict="0-9A-Za-z_/"
+							  prompt="Enter path value" width="100%" styleName="textInput" restrict="0-9A-Za-z_.\-/ "
 							  change="onPathValueChanged(event)" enter="onOpenPath(null)"/>
 	</s:VGroup>
 	
