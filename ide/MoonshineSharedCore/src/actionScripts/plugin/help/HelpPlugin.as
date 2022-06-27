@@ -207,7 +207,7 @@ package actionScripts.plugin.help
 			// Show About Panel in Tab
 			for each (var tab:IContentWindow in model.editors)
 			{
-				if (tab["className"] == "AboutScreen") 
+				if (tab["className"] == "AboutScreenWrapper") 
 				{
 					model.activeEditor = tab;
 					return;
