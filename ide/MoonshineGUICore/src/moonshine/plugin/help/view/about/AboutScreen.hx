@@ -42,6 +42,7 @@ import flash.desktop.NativeApplication;
 import haxe.xml.Access;
 import moonshine.components.HDivider;
 import moonshine.components.MoonshineTabNavigator;
+import moonshine.components.ProgressIndicator;
 import moonshine.theme.MoonshineColor;
 import moonshine.theme.MoonshineTheme;
 import moonshine.theme.MoonshineTypography;
@@ -94,6 +95,7 @@ class AboutScreen extends LayoutGroup {
 	var _softwareVersionChecker:SoftwareVersionChecker;
 	var _tabs:ArrayCollection<TabItem>;
 	var _infoBackground:InfoBackgroundPopup;
+	var _progressIndicator:ProgressIndicator;
 
 	//
 	// Public vars
@@ -178,13 +180,18 @@ class AboutScreen extends LayoutGroup {
 		_aboutLabel3.variant = MoonshineTheme.THEME_VARIANT_GREY_SMALL_LABEL;
 		_headerMiddle.addChild(_aboutLabel3);
 
+		_progressIndicator = new ProgressIndicator();
+		_progressIndicator.scaleX = _progressIndicator.scaleY = .24;
+		_progressIndicator.start();
+		_header.addChild(_progressIndicator);
+
 		_copyIconLoader = new AssetLoader(MoonshineTheme.ASSET_COPY_ICON);
 
 		_copyButton = new Button();
 		_copyButton.toolTip = "Copy Moonshine About Information";
-		// _copyButton.setPadding( 0 );
 		_copyButton.icon = _copyIconLoader;
 		_copyButton.addEventListener(TriggerEvent.TRIGGER, copyInfoToClipboard);
+		_copyButton.includeInLayout = _copyButton.visible = false;
 		_header.addChild(_copyButton);
 
 		_contentGroup.addChild(_header);
@@ -193,11 +200,7 @@ class AboutScreen extends LayoutGroup {
 		_contentGroup.addChild(_hDivider);
 
 		_sdkGrid = new SDKGrid();
-		_sdkGrid.enabled = false;
-		_sdkGrid.alpha = .3;
 		_editorGrid = new EditorGrid();
-		_editorGrid.enabled = false;
-		_editorGrid.alpha = .3;
 
 		_tabs = new ArrayCollection<TabItem>();
 		var tabItem = TabItem.withDisplayObject("Configured SDKs", _sdkGrid);
@@ -308,7 +311,7 @@ class AboutScreen extends LayoutGroup {
 
 		for (component in HelperModel.getInstance().components) {
 			var cloned = component.clone();
-			// cloned.addEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
+			cloned.addEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
 			_sdkComponents.add(cloned);
 		}
 
@@ -320,7 +323,7 @@ class AboutScreen extends LayoutGroup {
 			var sdkReference:SDKReferenceVO = SDKUtils.getSDKFromSavedList(_model.defaultSDK.fileBridge.nativePath);
 			tmpAddition.type = sdkReference.type;
 			tmpAddition.installToPath = sdkReference.path;
-			// tmpAddition.addEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
+			tmpAddition.addEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
 		}
 		_sdkComponents.addAt(tmpAddition, 0);
 
@@ -329,7 +332,7 @@ class AboutScreen extends LayoutGroup {
 		if (_model.virtualBoxPath != null && FileUtils.isPathExists(_model.virtualBoxPath)) {
 			tmpAddition.type = ComponentTypes.TYPE_VIRTUALBOX;
 			tmpAddition.installToPath = _model.virtualBoxPath;
-			// tmpAddition.addEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
+			tmpAddition.addEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
 		}
 		_sdkComponents.add(tmpAddition);
 
@@ -341,20 +344,22 @@ class AboutScreen extends LayoutGroup {
 	}
 
 	function componentUpdated(e:Event) {
-		trace("componentUpdated");
+		trace("componentUpdated", e.target);
 		var component:ComponentVO = cast e.target;
 		component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
 		_sdkComponents.refresh();
-		_sdkComponents.updateAll();
+		_sdkComponents.updateAt( _sdkComponents.indexOf( component ) );
+		//_sdkComponents.updateAll();
 	}
 
 	function onSDKRetrievalComplete(e:Event) {
 		_softwareVersionChecker.removeEventListener(Event.COMPLETE, onSDKRetrievalComplete);
-		_sdkGrid.enabled = true;
-		_sdkGrid.alpha = 1;
 		_sdkComponents.refresh();
 		_sdkComponents.updateAll();
 		dispatchEvent(e);
+		_progressIndicator.stop();
+		_progressIndicator.visible = _progressIndicator.includeInLayout = false;
+		_copyButton.visible = _copyButton.includeInLayout = true;
 	}
 
 	function getEditors() {
@@ -368,8 +373,6 @@ class AboutScreen extends LayoutGroup {
 
 	function onEditorRetrievalComplete(e:Event) {
 		_editorVersionChecker.removeEventListener(Event.COMPLETE, onEditorRetrievalComplete);
-		_editorGrid.enabled = true;
-		_editorGrid.alpha = 1;
 		_editorComponents.refresh();
 		_editorComponents.updateAll();
 		dispatchEvent(e);
@@ -447,7 +450,7 @@ class AboutScreen extends LayoutGroup {
 
 	private function handleInfoBackgroundPopupClose(event:CloseEvent) {
 		_infoBackground.removeEventListener(CloseEvent.CLOSE, handleInfoBackgroundPopupClose);
-		PopUpManager.removePopUp( cast _infoBackground );
+		PopUpManager.removePopUp(cast _infoBackground);
 		_infoBackground = null;
 	}
 
@@ -456,10 +459,17 @@ class AboutScreen extends LayoutGroup {
 			_softwareVersionChecker.dispose();
 		if (_editorVersionChecker != null)
 			_editorVersionChecker.dispose();
-		if (_editorComponents != null)
+		if (_editorComponents != null) {
 			_editorComponents.removeAll();
-		if (_sdkComponents != null)
+			_editorComponents = null;
+		}
+		if (_sdkComponents != null) {
+			for (component in _sdkComponents) {
+				component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
+			}
 			_sdkComponents.removeAll();
+			_sdkComponents = null;
+		}
 	}
 }
 
