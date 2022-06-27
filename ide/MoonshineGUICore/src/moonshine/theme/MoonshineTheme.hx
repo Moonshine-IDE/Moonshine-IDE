@@ -20,6 +20,7 @@
 
 package moonshine.theme;
 
+import moonshine.style.MoonshineVScrollBarLightThumbSkin;
 import feathers.controls.BasicButton;
 import feathers.controls.Button;
 import feathers.controls.ButtonState;
@@ -111,6 +112,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final THEME_VARIANT_LIGHT_GRID_VIEW:String = "moonshine-light-grid-view";
 	public static final THEME_VARIANT_LIGHT_GRID_VIEW_TABBAR:String = "moonshine-light-grid-view-tabbar";
 	public static final THEME_VARIANT_LIGHT_TAB_NAVIGATOR:String = "moonshine-light-tab-navigator";
+	public static final THEME_VARIANT_LIGHT_VSCROLLBAR:String = "moonshine-light-vscrollbar";
 
 	public static final ASSET_LOGO:String = "/elements/moonshine_logo/logo_new_48.png";
 	public static final ASSET_COPY_ICON:String = "/elements/images/copy_content_icon.png";
@@ -161,6 +163,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(HScrollBar, null, setHScrollBarStyles);
 		this.styleProvider.setStyleFunction(VScrollBar, null, setVScrollBarStyles);
+		this.styleProvider.setStyleFunction(VScrollBar, THEME_VARIANT_LIGHT_VSCROLLBAR, setVScrollBarLightStyles);
 
 		this.styleProvider.setStyleFunction(Radio, null, setRadioStyles);
 
@@ -849,6 +852,27 @@ class MoonshineTheme extends SDKInstallerTheme {
 		thumbSkin.minWidth = 15.0;
 		thumbSkin.minHeight = 15.0;
 		scrollBar.thumbSkin = thumbSkin;
+	}
+
+	private function setVScrollBarLightStyles(scrollBar:VScrollBar):Void {
+		var trackSkin = new RectangleSkin();
+		trackSkin.fill = Gradient(LINEAR, [0x3A3A3A, 0x414141, 0x414141], [1.0, 1.0, 1.0], [0x00, 0x3F, 0xFF]);
+		trackSkin.width = 15.0;
+		trackSkin.height = 15.0;
+		trackSkin.minWidth = 15.0;
+		trackSkin.minHeight = 15.0;
+		scrollBar.trackSkin = trackSkin;
+
+		var thumbSkin = new MoonshineVScrollBarLightThumbSkin();
+		thumbSkin.width = 15.0;
+		thumbSkin.height = 15.0;
+		thumbSkin.minWidth = 15.0;
+		thumbSkin.minHeight = 15.0;
+		scrollBar.thumbSkin = thumbSkin;
+
+		scrollBar.paddingRight = 1;
+		scrollBar.paddingTop = 1;
+		scrollBar.paddingBottom = 1;
 	}
 
 	private function setSideBarViewHeaderStyles(header:SideBarViewHeader):Void {
