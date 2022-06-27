@@ -345,7 +345,6 @@ class AboutScreen extends LayoutGroup {
 		component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
 		_sdkComponents.refresh();
 		_sdkComponents.updateAt(_sdkComponents.indexOf(component));
-		// _sdkComponents.updateAll();
 	}
 
 	function onSDKRetrievalComplete(e:Event) {
@@ -520,12 +519,6 @@ class SDKGrid extends GridView {
 			cellRenderer.mouseChildren = true;
 			cellRenderer.mouseEnabled = true;
 
-			/*
-				var icon = new AssetLoader();
-				icon.name = "loader";
-				cellRenderer.addChild(icon);
-			 */
-
 			var labelLoading = new Label();
 			labelLoading.name = "labelLoading";
 			labelLoading.text = "Loading...";
@@ -568,13 +561,11 @@ class SDKGrid extends GridView {
 				labelVersion.visible = labelVersion.includeInLayout = true;
 				labelVersion.text = state.text;
 			}
-
-			// var loader = cast(cellRenderer.getChildByName("loader"), AssetLoader);
-			// loader.source = state.data.icon;
 		};
 
 		var gvc1 = new GridViewColumn("Name", getNameLabel);
 		var gvc2 = new GridViewColumn("Info", getInfoLabel);
+		gvc2.width = 300;
 		gvc2.cellRendererRecycler = recycler;
 		this.columns = new ArrayCollection([gvc1, gvc2]);
 	}
@@ -640,15 +631,19 @@ class EditorGrid extends GridView {
 			layout.paddingBottom = 4.0;
 			layout.paddingLeft = 6.0;
 			layout.paddingRight = 6.0;
+			layout.verticalAlign = VerticalAlign.MIDDLE;
 			cellRenderer.layout = layout;
 			cellRenderer.mouseChildren = true;
 			cellRenderer.mouseEnabled = true;
 
-			/*
-				var icon = new AssetLoader();
-				icon.name = "loader";
-				cellRenderer.addChild(icon);
-			 */
+			var tickLoader = new AssetLoader( "/elements/images/tick_circle_frame.png" );
+			tickLoader.name = "tickLoader";
+			tickLoader.includeInLayout = tickLoader.visible = false;
+			cellRenderer.addChild(tickLoader);
+
+			var crossLoader = new AssetLoader( "/elements/images/cross_circle_frame.png" );
+			crossLoader.name = "crossLoader";
+			cellRenderer.addChild(crossLoader);
 
 			var labelLoading = new Label();
 			labelLoading.name = "labelLoading";
@@ -676,6 +671,8 @@ class EditorGrid extends GridView {
 		});
 
 		recycler.update = (cellRenderer:LayoutGroupItemRenderer, state:GridViewCellState) -> {
+			var tickLoader = cast(cellRenderer.getChildByName("tickLoader"), AssetLoader);
+			var crossLoader = cast(cellRenderer.getChildByName("crossLoader"), AssetLoader);
 			var labelLoading = cast(cellRenderer.getChildByName("labelLoading"), Label);
 			var labelVersion = cast(cellRenderer.getChildByName("labelVersion"), Label);
 			var labelFix = cast(cellRenderer.getChildByName("labelFix"), DataLabel);
@@ -686,19 +683,21 @@ class EditorGrid extends GridView {
 				labelVersion.visible = labelVersion.includeInLayout = true;
 				labelFix.visible = labelFix.includeInLayout = true;
 				labelVersion.text = "Not installed.";
+				tickLoader.visible = tickLoader.includeInLayout = false;
+				crossLoader.visible = crossLoader.includeInLayout = true;
 			} else {
 				labelLoading.visible = labelLoading.includeInLayout = false;
 				labelFix.visible = labelFix.includeInLayout = false;
 				labelVersion.visible = labelVersion.includeInLayout = true;
 				labelVersion.text = state.text;
+				tickLoader.visible = tickLoader.includeInLayout = true;
+				crossLoader.visible = crossLoader.includeInLayout = false;
 			}
-
-			// var loader = cast(cellRenderer.getChildByName("loader"), AssetLoader);
-			// loader.source = state.data.icon;
 		};
 
 		var gvc1 = new GridViewColumn("Name", getNameLabel);
 		var gvc2 = new GridViewColumn("Info", getInfoLabel);
+		gvc2.width = 300;
 		gvc2.cellRendererRecycler = recycler;
 		this.columns = new ArrayCollection([gvc1, gvc2]);
 	}
