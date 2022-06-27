@@ -205,8 +205,19 @@ class VariablesReferenceHierarchicalCollection extends EventDispatcher implement
 	public function setVariablesForScopeOrVar(variables:Array<Variable>, scopeOrVar:Any):Void {
 		this.populateCollectionsForParentReferences(variables);
 		var collection = this._variablesReferenceToVariables.get(scopeOrVar);
+		var oldItems = collection.array;
+		var location = this.locationOf(scopeOrVar);
+		for (i in 0...oldItems.length) {
+			location.push(i);
+			this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.REMOVE_ITEM, location, null, oldItems[i]));
+			location.pop();
+		}
 		collection.array = variables.copy();
-		this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.RESET, null));
+		for (i in 0...variables.length) {
+			location.push(i);
+			this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.ADD_ITEM, location, variables[i], null));
+			location.pop();
+		}
 		this.dispatchEvent(new Event(Event.CHANGE));
 	}
 

@@ -88,10 +88,11 @@
 				}
 				
 				editingRepository.isRequireAuthentication = cbLogin.selected;
-				editingRepository.userName = editingRepository.isRequireAuthentication ? 
-					((StringUtil.trim(txtLogin.text).length != 0) ? txtLogin.text : null) : 
-					null;
-				
+				if (editingRepository.isRequireAuthentication)
+				{
+					editingRepository.userName = ((StringUtil.trim(txtLogin.text).length != 0) ? txtLogin.text : null);
+				}
+
 				updateRepository();
 				
 				submitObject = new Object();
@@ -335,7 +336,7 @@
 		<s:HGroup width="100%" verticalAlign="middle"
 				  includeInLayout="false" visible="false">
 			<s:CheckBox id="cbLogin"
-						label="Need Authentication" selected="false"/>
+						label="Needs Authentication" selected="false"/>
 			<s:CheckBox id="cbTrustCert" label="Trust Server Certificate"
 						enabled="{type == VersionControlTypes.SVN}"/>
 		</s:HGroup>

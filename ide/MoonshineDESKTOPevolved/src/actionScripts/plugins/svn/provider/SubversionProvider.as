@@ -48,10 +48,10 @@ package actionScripts.plugins.svn.provider
 			commit(FileLocation(event.target.data));
 		}
 		
-		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null, isTrustServerCertificateSVN:Boolean=false):void
+		public function commit(file:FileLocation, message:String=null, user:String=null, password:String=null, commitInfo:Object=null, isTrustServerCertificateSVN:Boolean=false, repositoryItem:RepositoryItemVO=null):void
 		{
 			var commitCommand:CommitCommand = new CommitCommand(executable, root, status);
-			commitCommand.commit(file, message, user, password, commitInfo, isTrustServerCertificateSVN);
+			commitCommand.commit(file, message, user, password, commitInfo, isTrustServerCertificateSVN, repositoryItem);
 		}
 		
 		protected function handleUpdate(event:Event):void
@@ -59,10 +59,10 @@ package actionScripts.plugins.svn.provider
 			update(FileLocation(event.target.data).fileBridge.getFile as File);
 		}
 		
-		public function update(file:File, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
+		public function update(file:File, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false, repositoryItem:RepositoryItemVO=null):void
 		{
 			var updateCommand:UpdateCommand = new UpdateCommand(executable, root);
-			updateCommand.update(file, user, password, isTrustServerCertificateSVN);
+			updateCommand.update(file, user, password, isTrustServerCertificateSVN, repositoryItem);
 		}
 		
 		public function checkout(url:String, rootDirectory:File, targetFolder:String, isTrustServerCertificateSVN:Boolean, repository:RepositoryItemVO, userName:String=null, userPassword:String=null):void

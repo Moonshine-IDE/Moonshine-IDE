@@ -196,6 +196,13 @@ package visualEditor.plugin
 
                 convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
+                var componentData:Array = item.surface.getComponentData();
+
+                var classContent:String = getVOClass(componentData, convertedFile.fileBridge.nameWithoutExtension);
+                if (classContent)
+                {
+                    saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
+                }
 
                 convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString());
 
@@ -203,6 +210,92 @@ package visualEditor.plugin
             }
 
             return views;
+        }
+
+        private function getVOClass(componentData:Array, className:String):String
+        {
+            if (componentData.length == 0) return "";
+
+            var classContent:String = "package vo\n" +
+                    "{\n" +
+                    "   [Bindable] \n" +
+                    "   public class " + className + "VO\n" +
+                    "   {\n";
+
+            classContent += getVOContentClass(componentData, "");
+
+            classContent += "   } \n}";
+
+            return classContent;
+        }
+
+        private function getVOContentClass(componentData:Array, content:String):String
+        {
+            for (var i:int = 0; i < componentData.length; i++)
+            {
+                var data:Object = componentData[i];
+                var fields:Array = data.fields;
+
+                var publicVar:String = "";
+                if (!data.fields && data.name)
+                {
+                    publicVar = "       " + getContentVariable(data);
+                    content += publicVar;
+                }
+                else
+                {
+                    for each (var field:Object in fields)
+                    {
+                        if (!field.name)
+                        {
+                            if (field.fields)
+                            {
+                                content += getVOContentClass(field.fields, "");
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            publicVar = "       " + getContentVariable(field);
+                            content += publicVar;
+                        }
+                    }
+                }
+            }
+
+            return content;
+        }
+
+        private function getContentVariable(data:Object):String
+        {
+            if (!data.name) return "";
+
+            var fieldValue:String = data.fieldValue != null ? data.fieldValue : "";
+            var fieldType:String = data.fieldType ? data.fieldType : "String";
+            if (fieldType != "Boolean")
+            {
+                fieldValue = "\"" + fieldValue + "\"";
+            }
+
+            var publicVar:String = "public var " + data.name + ":" + fieldType + " = " +
+                    fieldValue + ";\n";
+
+            return publicVar;
+        }
+
+        private function saveVO(content:String, fileName:String):void
+        {
+            var voFolder:FileLocation = exportedProject.sourceFolder.resolvePath("vo");
+            if (!voFolder.fileBridge.exists)
+            {
+                voFolder.fileBridge.createDirectory();
+            }
+
+            var voFile:FileLocation = voFolder.resolvePath(voFolder.fileBridge.nativePath + voFolder.fileBridge.separator + fileName + "VO.as");
+            voFile.fileBridge.save(content);
         }
 
         private function getNavigationDp(views:Array):String
