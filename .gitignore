@@ -36,3 +36,4 @@ ide/MoonshineSharedCore/src/elements/templates/projects/Domino Project/nsfs/.git
 
 ide/MoonshineGUICore/bin/**/haxe
 ide/MoonshineGUICore/bin/**/obj
+ide/MoonshineGUICore/build.hxml

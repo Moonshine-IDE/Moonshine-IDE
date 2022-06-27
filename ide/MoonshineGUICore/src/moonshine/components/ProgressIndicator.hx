@@ -8,6 +8,10 @@ import openfl.events.Event;
 import openfl.geom.Matrix;
 import openfl.geom.Point;
 
+/**
+ * Rotating ProgressIndicator component. Use this for displaying progress
+ * that does not have a minimum and a maximum value.
+ */
 class ProgressIndicator extends FeathersControl {
 
     var alphaStep:Float;
@@ -25,6 +29,13 @@ class ProgressIndicator extends FeathersControl {
     var step:Float;
     var thickness:Float = 15;
 
+    /**
+     * Creates a ProgressIndicator component. The shapes are drawn onto Graphics, then rendered
+     * into a transparent Bitmap for better quality and performance.
+     * @param size The width and height of the component
+     * @param segments How many segments (lines) should be drawn
+     * @param color The color of the component's segments (lines)
+     */
     public function new( size:Float = 100, segments:Int = 16, color:Int = 0 ) {
 
         super();
@@ -76,12 +87,25 @@ class ProgressIndicator extends FeathersControl {
 
     }
 
+    override function feathersControl_removedFromStageHandler(event:Event) {
+
+        stop();
+        super.feathersControl_removedFromStageHandler(event);
+
+    }
+
+    /**
+     * Start rotation
+     */
     public function start() {
 
         this.addEventListener( Event.ENTER_FRAME, enterFrame );
 
     }
 
+    /**
+     * Stop rotation
+     */
     public function stop() {
 
         this.removeEventListener( Event.ENTER_FRAME, enterFrame );
@@ -90,6 +114,8 @@ class ProgressIndicator extends FeathersControl {
 
     function enterFrame( e:Event ) {
 
+        odd = !odd;
+
         if ( odd ) {
 
             if ( sprite != null ) {
@@ -97,12 +123,6 @@ class ProgressIndicator extends FeathersControl {
                 sprite.rotation += step;
                 
             }
-
-            odd = false;
-
-        } else {
-
-            odd = true;
 
         }
 

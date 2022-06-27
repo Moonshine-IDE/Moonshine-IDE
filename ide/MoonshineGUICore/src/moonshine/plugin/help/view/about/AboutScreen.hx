@@ -71,8 +71,8 @@ class AboutScreen extends LayoutGroup {
 	var _aboutLabel3:Label;
 	var _assetLoader:AssetLoader;
 	var _bottomGroup:LayoutGroup;
-	var _bottomGroupLabel:Label;
 	var _bottomGroupLabel2:Label;
+	var _bottomGroupLabel:Label;
 	var _bottomGroupLayout:VerticalLayout;
 	var _contentGroup:LayoutGroup;
 	var _contentGroupLayout:VerticalLayout;
@@ -85,16 +85,16 @@ class AboutScreen extends LayoutGroup {
 	var _headerLayout:HorizontalLayout;
 	var _headerMiddle:LayoutGroup;
 	var _headerMiddleLayout:VerticalLayout;
+	var _infoBackground:InfoBackgroundPopup;
 	var _model:IDEModel;
 	var _navigator:MoonshineTabNavigator;
+	var _progressIndicator:ProgressIndicator;
 	var _screen:LayoutGroup;
 	var _screenLayout:VerticalLayout;
 	var _sdkComponents:ArrayCollection<ComponentVO>;
 	var _sdkGrid:SDKGrid;
 	var _softwareVersionChecker:SoftwareVersionChecker;
 	var _tabs:ArrayCollection<TabItem>;
-	var _infoBackground:InfoBackgroundPopup;
-	var _progressIndicator:ProgressIndicator;
 
 	//
 	// Public vars
@@ -128,6 +128,31 @@ class AboutScreen extends LayoutGroup {
 		MoonshineTheme.initializeTheme();
 		super();
 	}
+
+	public function dispose() {
+		if (_softwareVersionChecker != null)
+			_softwareVersionChecker.dispose();
+		if (_editorVersionChecker != null)
+			_editorVersionChecker.dispose();
+		if (_editorComponents != null) {
+			for (component in _editorComponents) {
+				component.removeEventListener(Event.CHANGE, editorComponentUpdated);
+			}
+			_editorComponents.removeAll();
+			_editorComponents = null;
+		}
+		if (_sdkComponents != null) {
+			for (component in _sdkComponents) {
+				component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
+			}
+			_sdkComponents.removeAll();
+			_sdkComponents = null;
+		}
+	}
+
+	//
+	// Private methods
+	//
 
 	override function initialize() {
 		super.initialize();
@@ -340,9 +365,7 @@ class AboutScreen extends LayoutGroup {
 	}
 
 	function componentUpdated(e:Event) {
-		trace("componentUpdated", e.target);
 		var component:ComponentVO = cast e.target;
-		component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
 		_sdkComponents.refresh();
 		_sdkComponents.updateAt(_sdkComponents.indexOf(component));
 	}
@@ -359,11 +382,20 @@ class AboutScreen extends LayoutGroup {
 
 	function getEditors() {
 		_editorComponents = ExternalEditorsPlugin.editors.fromMXCollection();
+		for (component in _editorComponents) {
+			component.addEventListener(Event.CHANGE, editorComponentUpdated);
+		}
 		_editorGrid.setData(_editorComponents);
 		_editorVersionChecker = new SoftwareVersionChecker();
 		_editorVersionChecker.addEventListener(Event.COMPLETE, onEditorRetrievalComplete, false, 0, true);
 		_editorVersionChecker.versionCheckType = SoftwareVersionChecker.VERSION_CHECK_TYPE_EDITOR;
 		_editorVersionChecker.retrieveEditorsInformation(ExternalEditorsPlugin.editors);
+	}
+
+	function editorComponentUpdated(e:Event) {
+		var component:ExternalEditorVO = cast e.target;
+		_editorComponents.refresh();
+		_editorComponents.updateAt(_editorComponents.indexOf(component));
 	}
 
 	function onEditorRetrievalComplete(e:Event) {
@@ -447,24 +479,6 @@ class AboutScreen extends LayoutGroup {
 		_infoBackground.removeEventListener(CloseEvent.CLOSE, handleInfoBackgroundPopupClose);
 		PopUpManager.removePopUp(cast _infoBackground);
 		_infoBackground = null;
-	}
-
-	public function dispose() {
-		if (_softwareVersionChecker != null)
-			_softwareVersionChecker.dispose();
-		if (_editorVersionChecker != null)
-			_editorVersionChecker.dispose();
-		if (_editorComponents != null) {
-			_editorComponents.removeAll();
-			_editorComponents = null;
-		}
-		if (_sdkComponents != null) {
-			for (component in _sdkComponents) {
-				component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
-			}
-			_sdkComponents.removeAll();
-			_sdkComponents = null;
-		}
 	}
 }
 
@@ -636,12 +650,12 @@ class EditorGrid extends GridView {
 			cellRenderer.mouseChildren = true;
 			cellRenderer.mouseEnabled = true;
 
-			var tickLoader = new AssetLoader( "/elements/images/tick_circle_frame.png" );
+			var tickLoader = new AssetLoader("/elements/images/tick_circle_frame.png");
 			tickLoader.name = "tickLoader";
 			tickLoader.includeInLayout = tickLoader.visible = false;
 			cellRenderer.addChild(tickLoader);
 
-			var crossLoader = new AssetLoader( "/elements/images/cross_circle_frame.png" );
+			var crossLoader = new AssetLoader("/elements/images/cross_circle_frame.png");
 			crossLoader.name = "crossLoader";
 			cellRenderer.addChild(crossLoader);
 
