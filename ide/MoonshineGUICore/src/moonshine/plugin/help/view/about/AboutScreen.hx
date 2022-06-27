@@ -129,6 +129,28 @@ class AboutScreen extends LayoutGroup {
 		super();
 	}
 
+	public function dispose() {
+		if (_softwareVersionChecker != null)
+			_softwareVersionChecker.dispose();
+		if (_editorVersionChecker != null)
+			_editorVersionChecker.dispose();
+		if (_editorComponents != null) {
+			_editorComponents.removeAll();
+			_editorComponents = null;
+		}
+		if (_sdkComponents != null) {
+			for (component in _sdkComponents) {
+				component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
+			}
+			_sdkComponents.removeAll();
+			_sdkComponents = null;
+		}
+	}
+
+	//
+	// Private methods
+	//
+	
 	override function initialize() {
 		super.initialize();
 
@@ -449,23 +471,6 @@ class AboutScreen extends LayoutGroup {
 		_infoBackground = null;
 	}
 
-	public function dispose() {
-		if (_softwareVersionChecker != null)
-			_softwareVersionChecker.dispose();
-		if (_editorVersionChecker != null)
-			_editorVersionChecker.dispose();
-		if (_editorComponents != null) {
-			_editorComponents.removeAll();
-			_editorComponents = null;
-		}
-		if (_sdkComponents != null) {
-			for (component in _sdkComponents) {
-				component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
-			}
-			_sdkComponents.removeAll();
-			_sdkComponents = null;
-		}
-	}
 }
 
 class SDKGrid extends GridView {
