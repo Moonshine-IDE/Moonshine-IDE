@@ -23,6 +23,7 @@ import feathers.controls.GridViewColumn;
 import feathers.controls.Label;
 import feathers.controls.LayoutGroup;
 import feathers.controls.ToggleButtonState;
+import feathers.controls.VScrollBar;
 import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
 import feathers.controls.navigators.TabItem;
 import feathers.data.ArrayCollection;
@@ -40,7 +41,6 @@ import feathers.skins.RectangleSkin;
 import feathers.utils.DisplayObjectRecycler;
 import flash.desktop.NativeApplication;
 import haxe.xml.Access;
-import moonshine.components.HDivider;
 import moonshine.components.MoonshineTabNavigator;
 import moonshine.components.ProgressIndicator;
 import moonshine.theme.MoonshineColor;
@@ -81,7 +81,6 @@ class AboutScreen extends LayoutGroup {
 	var _editorComponents:ArrayCollection<ExternalEditorVO>;
 	var _editorGrid:EditorGrid;
 	var _editorVersionChecker:SoftwareVersionChecker;
-	var _hDivider:HDivider;
 	var _header:LayoutGroup;
 	var _headerLayout:HorizontalLayout;
 	var _headerMiddle:LayoutGroup;
@@ -195,9 +194,6 @@ class AboutScreen extends LayoutGroup {
 		_header.addChild(_copyButton);
 
 		_contentGroup.addChild(_header);
-
-		_hDivider = new HDivider();
-		_contentGroup.addChild(_hDivider);
 
 		_sdkGrid = new SDKGrid();
 		_editorGrid = new EditorGrid();
@@ -348,8 +344,8 @@ class AboutScreen extends LayoutGroup {
 		var component:ComponentVO = cast e.target;
 		component.removeEventListener(ComponentVO.EVENT_UPDATED, componentUpdated);
 		_sdkComponents.refresh();
-		_sdkComponents.updateAt( _sdkComponents.indexOf( component ) );
-		//_sdkComponents.updateAll();
+		_sdkComponents.updateAt(_sdkComponents.indexOf(component));
+		// _sdkComponents.updateAll();
 	}
 
 	function onSDKRetrievalComplete(e:Event) {
@@ -481,6 +477,11 @@ class SDKGrid extends GridView {
 		this.variant = MoonshineTheme.THEME_VARIANT_LIGHT_GRID_VIEW;
 		this.customHeaderRendererVariant = MoonshineTheme.THEME_VARIANT_LIGHT_GRID_VIEW;
 		this.customCellRendererVariant = MoonshineTheme.THEME_VARIANT_LIGHT_GRID_VIEW;
+		this.scrollBarYFactory = () -> {
+			var sb:VScrollBar = new VScrollBar();
+			sb.variant = MoonshineTheme.THEME_VARIANT_LIGHT_VSCROLLBAR;
+			return sb;
+		}
 	}
 
 	override function columnToHeaderRenderer(column:GridViewColumn):DisplayObject {
@@ -600,6 +601,11 @@ class EditorGrid extends GridView {
 		this.variant = MoonshineTheme.THEME_VARIANT_LIGHT_GRID_VIEW;
 		this.customHeaderRendererVariant = MoonshineTheme.THEME_VARIANT_LIGHT_GRID_VIEW;
 		this.customCellRendererVariant = MoonshineTheme.THEME_VARIANT_LIGHT_GRID_VIEW;
+		this.scrollBarYFactory = () -> {
+			var sb:VScrollBar = new VScrollBar();
+			sb.variant = MoonshineTheme.THEME_VARIANT_LIGHT_VSCROLLBAR;
+			return sb;
+		}
 	}
 
 	override function columnToHeaderRenderer(column:GridViewColumn):DisplayObject {
