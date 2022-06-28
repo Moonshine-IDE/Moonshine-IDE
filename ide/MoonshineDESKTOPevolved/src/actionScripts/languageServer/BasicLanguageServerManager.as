@@ -7,10 +7,39 @@ package actionScripts.languageServer
     import actionScripts.ui.editor.LotusBasicTextEditor;
     import moonshine.lsp.LanguageClient;
     import actionScripts.plugin.basic.vo.BasicProjectVO;
+  	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.DiagnosticsEvent;
+	import actionScripts.events.ExecuteLanguageServerCommandEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.SaveFileEvent;
+	import actionScripts.events.SdkEvent;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.events.WatchedFileChangeEvent;
+	import moonshine.lsp.events.LspNotificationEvent;
+	import actionScripts.ui.tabview.TabEvent;
+	import flash.events.Event;
+	import flash.events.NativeProcessExitEvent;
+	import flash.events.ProgressEvent;
+	import flash.desktop.NativeProcess;
+	
+	import actionScripts.utils.CommandLineUtil;
+	import flash.desktop.NativeProcess;
+	
+	import actionScripts.utils.CommandLineUtil;
+	import actionScripts.utils.EnvironmentSetupUtils;
+	import actionScripts.utils.GlobPatterns;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.utils.applyWorkspaceEdit;
+	import actionScripts.utils.getProjectSDKPath;
+	import actionScripts.utils.isUriInProject;
+	import actionScripts.plugin.console.ConsoleOutputter
+	
+	
 
     [Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
-	public class BasicLanguageServerManager  implements ILanguageServerManager
+	public class BasicLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	
 	{
 		
@@ -277,30 +306,10 @@ package actionScripts.languageServer
 			{
 				return;	
 			}
-			restartLanguageServer();
+			restartLanguageServerrestartLanguageServer();
 			
 		}
-		
-		private function restartLanguageServer():void
-		{
-			if(_waitingToRestart)
-			{
-				//we'll just continue waiting
-				return;
-			}
-			_waitingToRestart = false;
-			if(_languageClient || _languageServerProcess)
-			{
-				_waitingToRestart = true;
-				shutdown();
-			}
-
-			if(!_waitingToRestart)
-			{
-				bootstrapThenStartNativeProcess();
-			}
-		}
-		
+				
 		protected function cleanupLanguageClient():void
 		{
 			if(!_languageClient)
@@ -323,27 +332,6 @@ package actionScripts.languageServer
 		}
 
 		
-		
-		private function restartLanguageServer():void
-		{
-			if(_waitingToRestart)
-			{
-				//we'll just continue waiting
-				return;
-			}
-			_waitingToRestart = false;
-			if(_languageClient || _languageServerProcess)
-			{
-				_waitingToRestart = true;
-				shutdown();
-			}
-			
-
-			if(!_waitingToRestart)
-			{
-				bootstrapThenStartNativeProcess();
-			}
-		}
 		
 		public function get active():Boolean
 		{
@@ -549,6 +537,55 @@ package actionScripts.languageServer
 
 			
 		}
+		
+		private function fileCreatedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 1
+					}
+				]
+			});
+		}
+
+		private function fileDeletedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 3
+					}
+				]
+			});
+		}
+
+		private function fileModifiedHandler(event:WatchedFileChangeEvent):void
+		{
+			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles({
+				changes: [
+					{
+						uri: event.file.fileBridge.url,
+						type: 2
+					}
+				]
+			});
+		}
+
 		
 	}
 }

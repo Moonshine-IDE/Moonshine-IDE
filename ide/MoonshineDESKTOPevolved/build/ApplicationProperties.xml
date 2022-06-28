@@ -6,13 +6,13 @@
 	<keepDebugFiles>false</keepDebugFiles> <!-- true|false -->
 
 	<!-- FLEX SDK INFORMATION -->
-	<winSDKPath><![CDATA[]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
-	<winSDKPath64><![CDATA[c:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_33.1\temp\]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<winSDKPath><![CDATA[c:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_33.1]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<winSDKPath64><![CDATA[c:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_33.1]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	<unixSDKPath><![CDATA[]]></unixSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	<haxeLibDirectory><![CDATA[]]></haxeLibDirectory> <!-- Set path of system HAXE_HOME, i.e. c:/HaxeToolkit/haxe (Windows), /usr/local/lib/haxe (macOS) -->
 	
 	<!-- BUNDLED SDK PATHS -->
-	<bundledFlexSDK><![CDATA[c:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_33.1\temp\]]></bundledFlexSDK> <!-- Leave blank if you do not want to include a bundled Flex SDK -->
+	<bundledFlexSDK><![CDATA[c:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_33.1]]></bundledFlexSDK> <!-- Leave blank if you do not want to include a bundled Flex SDK -->
 	<bundledFlexJSSDK><![CDATA[]]></bundledFlexJSSDK> <!-- Leave blank if you do not want to include a bundled FlexJS SDK -->
 
 	<isSignedBuild>false</isSignedBuild> <!-- true|false --> <!-- Leave false if you're not sure or do not have requisite certificates -->

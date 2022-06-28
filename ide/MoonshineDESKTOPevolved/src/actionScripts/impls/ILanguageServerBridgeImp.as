@@ -14,12 +14,15 @@ package actionScripts.impls
 	import actionScripts.languageServer.ILanguageServerManager;
 	import actionScripts.languageServer.JavaLanguageServerManager;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.groovy.graiпlsproject.vo.GrailsProjectVO;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+	import  actionScripts.plugin.basic.vo.BasicProjectVO;
+	import actionScripts.languageServer.ILanguageServerManager
+	import actionScripts.languageServer.BasicLanguageServerManager
 
 	public class ILanguageServerBridgeImp implements ILanguageServerBridge
 	{
@@ -216,8 +219,8 @@ package actionScripts.impls
 			if(project is BasicProjectVO)
 			{
 				var basicProject:BasicProjectVO = BasicProjectVO(project);
-				var haxeManager:BasicLanguageServerManager = new BasicLanguageServerManager(basicProject);
-				manager = haxeManager;
+				var basicManager:BasicLanguageServerManager = new BasicLanguageServerManager(basicProject);
+				manager = basicManager;
 			}
 			if ((project is OnDiskProjectVO) || (project is GenericProjectVO))
 			{

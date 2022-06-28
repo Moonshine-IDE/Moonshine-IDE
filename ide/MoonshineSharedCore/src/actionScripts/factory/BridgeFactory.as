@@ -31,6 +31,7 @@ package actionScripts.factory
     import actionScripts.interfaces.IGroovyBridge;
     import actionScripts.interfaces.IHaxeBridge;
     import actionScripts.interfaces.IJavaBridge;
+    import actionScripts.interfaces.IBasicBridge;
     import actionScripts.interfaces.ILanguageServerBridge;
     import actionScripts.interfaces.IOSXBookmarkerBridge;
     import actionScripts.interfaces.IOnDiskBridge;
