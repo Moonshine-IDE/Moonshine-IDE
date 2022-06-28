@@ -33,7 +33,23 @@ package actionScripts.languageServer
 	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
-	import actionScripts.plugin.console.ConsoleOutputter
+	import actionScripts.plugin.console.ConsoleOutputter;
+	import moonshine.lsp.RegistrationParams;
+	import  moonshine.lsp.PublishDiagnosticsParams;
+	import moonshine.lsp.RegistrationParams;
+	import moonshine.lsp.LanguageClient;
+	import moonshine.lsp.LogMessageParams;
+	import moonshine.lsp.PublishDiagnosticsParams;
+	import moonshine.lsp.Registration;
+	import moonshine.lsp.RegistrationParams;
+	import moonshine.lsp.ShowMessageParams;
+	import moonshine.lsp.Unregistration;
+	import moonshine.lsp.UnregistrationParams;
+	import moonshine.lsp.WorkspaceEdit;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import mx.controls.Alert;
+	import actionScripts.factory.FileLocation;
+	
 	
 	
 
@@ -53,6 +69,7 @@ package actionScripts.languageServer
 		private var _waitingToRestart:Boolean = false;
 		private var _languageServerProcess:NativeProcess;
 		private var _previousNodePath:String = null;
+		private var _watchedFiles:Object = {};
 		
 		public function BasicLanguageServerManager (project:BasicProjectVO)
 		{
@@ -306,7 +323,7 @@ package actionScripts.languageServer
 			{
 				return;	
 			}
-			restartLanguageServerrestartLanguageServer();
+			restartLanguageServer();
 			
 		}
 				
