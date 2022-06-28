@@ -20,17 +20,21 @@
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-				   xmlns:s="library://ns.adobe.com/flex/spark"
-				   backgroundColor="0xf5f5f5"
-				   width="350" minWidth="150" autoLayout="true"
-				   xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
-				   skinClass="components.skins.ResizableTitleWindowSkin" title="Go to Folder" creationComplete="onCreationCompletes()">
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:validators="mx.validators.*"
+										   backgroundColor="0xf5f5f5"
+										   width="350" minWidth="150" autoLayout="true"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   skinClass="components.skins.ResizableTitleWindowSkin" title="Go to Folder"
+										   creationComplete="onCreationCompletes()">
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.locator.IDEModel;
 
 			import mx.utils.StringUtil;
+			import mx.validators.Validator;
 
 			import spark.events.TextOperationEvent;
 
@@ -53,7 +57,19 @@
 
 			protected function onOpenPath(event:MouseEvent):void
 			{
-				if (!btnOpen.enabled) return;
+				var tmpArr:Array = new Array(pathValidator);
+				if (Validator.validateAll(tmpArr).length != 0)
+				{
+					return;
+				}
+
+				// validate path value
+				var isValidPath:Boolean = model.fileCore.isPathExists(txtFileName.text);
+				if (!isValidPath)
+				{
+					hgError.visible = hgError.includeInLayout = true;
+					return;
+				}
 
 				if (isDirectory)
 				{
@@ -67,10 +83,9 @@
 			
 			protected function onPathValueChanged(event:TextOperationEvent):void
 			{
-				if (StringUtil.trim(txtFileName.text).length != 0)
+				if (hgError.visible)
 				{
-					btnOpen.enabled = model.fileCore.isPathExists(txtFileName.text);
-					txtFileName.errorString = btnOpen.enabled ? null : "Path does not exists.";
+					hgError.visible = hgError.includeInLayout = false;
 				}
 			}
 
@@ -85,18 +100,27 @@
 			
 		]]>
 	</fx:Script>
+	<fx:Declarations>
+		<validators:StringValidator id="pathValidator" source="{txtFileName}" property="text" trigger="{btnOpen}" triggerEvent="click"/>
+	</fx:Declarations>
 	
 	<s:VGroup width="100%" height="100%" paddingLeft="12" paddingBottom="10" paddingTop="9" paddingRight="13"
 			  verticalAlign="middle">
 		<view:PromptTextInput id="txtFileName"
-							  prompt="Enter path value" width="100%" styleName="textInput" restrict="0-9A-Za-z_.\-/ "
-							  change="onPathValueChanged(event)" enter="onOpenPath(null)"/>
+							  prompt="Enter path value" width="100%" styleName="textInput"
+							  enter="onOpenPath(null)" change="onPathValueChanged(event)"/>
+		<s:HGroup id="hgError"
+				  width="100%" verticalAlign="middle" horizontalAlign="center"
+				  visible="false" includeInLayout="false">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label text="The folder can't be found."/>
+		</s:HGroup>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
 		<s:Button id="btnOpen"
 				  label="Open Path"
-				  styleName="darkButton" enabled="false"
+				  styleName="darkButton"
 				  click="onOpenPath(event)"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
