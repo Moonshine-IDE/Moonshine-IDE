@@ -60,7 +60,7 @@ package actionScripts.languageServer
 	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
-	import actionScripts.utils.findOpenPort;
+	import actionScripts.utils.FindOpenPort;
 	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
@@ -491,7 +491,7 @@ package actionScripts.languageServer
 
 		private function startServerSocket():void
 		{
-			_port = findOpenPort();
+			_port = FindOpenPort.findOpenPort();
 
 			_serverSocket = new ServerSocket();
 			_serverSocket.bind(_port);

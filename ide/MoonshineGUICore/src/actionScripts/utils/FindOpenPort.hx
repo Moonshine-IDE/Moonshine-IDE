@@ -23,7 +23,7 @@ package actionScripts.utils;
 import flash.net.ServerSocket;
 
 class FindOpenPort {
-	public function FindOpenPort():Int {
+	public static function findOpenPort():Int {
 		var portFinder:ServerSocket = new ServerSocket();
 		portFinder.bind();
 		var port:Int = portFinder.localPort;
