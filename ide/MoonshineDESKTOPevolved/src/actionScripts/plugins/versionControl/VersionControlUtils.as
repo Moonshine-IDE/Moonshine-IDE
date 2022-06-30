@@ -70,6 +70,21 @@ package actionScripts.plugins.versionControl
 			
 			return null;
 		}
+
+		public static function getRepositoryItemByLocalPath(path:String, ofType:String=null):RepositoryItemVO
+		{
+			for each (var item:RepositoryItemVO in REPOSITORIES)
+			{
+				if (item.pathToDownloaded &&
+						item.pathToDownloaded == path)
+				{
+					if (ofType && item.type == ofType) return item;
+					else if (!ofType) return item;
+				}
+			}
+
+			return null;
+		}
 		
 		public static function hasAuthenticationFailError(value:String):Boolean
 		{

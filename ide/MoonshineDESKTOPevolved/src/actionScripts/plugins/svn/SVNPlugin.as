@@ -19,10 +19,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn
 {
+	import actionScripts.plugins.versionControl.VersionControlUtils;
+
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.filesystem.File;
-	
+
+	import mx.collections.ArrayCollection;
+
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
@@ -283,19 +287,22 @@ package actionScripts.plugins.svn
 		protected function handleCommitRequest(event:Event, user:String=null, password:String=null, commitInfo:Object=null):void
 		{
 			if (!model.activeProject) return;
-			
+
+			var repositoryItem:RepositoryItemVO = VersionControlUtils.getRepositoryItemByLocalPath(model.activeProject.projectFolder.nativePath);
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.commit(model.activeProject.folderLocation, null, user, password, commitInfo, model.activeProject.isTrustServerCertificateSVN);
+			trace(model.activeProject.projectRemotePath);
+			provider.commit(model.activeProject.folderLocation, null, user, password, commitInfo, model.activeProject.isTrustServerCertificateSVN, repositoryItem);
 		}
 		
 		protected function handleUpdateRequest(event:Event, user:String=null, password:String=null):void
 		{
 			if (!model.activeProject) return;
-			
+
+			var repositoryItem:RepositoryItemVO = VersionControlUtils.getRepositoryItemByLocalPath(model.activeProject.projectFolder.nativePath);
 			var provider:SubversionProvider = new SubversionProvider();
 			provider.executable = new File(svnBinaryPath);
-			provider.update(model.activeProject.folderLocation.fileBridge.getFile as File, user, password, model.activeProject.isTrustServerCertificateSVN);
+			provider.update(model.activeProject.folderLocation.fileBridge.getFile as File, user, password, model.activeProject.isTrustServerCertificateSVN, repositoryItem);
 		}
 		
 		protected function isVersioned(folder:FileLocation):Boolean
