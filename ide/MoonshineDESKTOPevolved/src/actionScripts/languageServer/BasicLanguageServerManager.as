@@ -1,55 +1,63 @@
 package actionScripts.languageServer
 {
+    import actionScripts.events.ApplicationEvent;
+    import actionScripts.events.DiagnosticsEvent;
+    import actionScripts.events.ExecuteLanguageServerCommandEvent;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.events.ProjectEvent;
+    import actionScripts.events.SaveFileEvent;
+    import actionScripts.events.SdkEvent;
+    import actionScripts.events.StatusBarEvent;
+    import actionScripts.events.WatchedFileChangeEvent;
+    import actionScripts.factory.FileLocation;
     import actionScripts.languageServer.ILanguageServerManager;
-    import flash.events.Event;
-    import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.editor.LotusBasicTextEditor;
-    import moonshine.lsp.LanguageClient;
     import actionScripts.plugin.basic.vo.BasicProjectVO;
-  	import actionScripts.events.ApplicationEvent;
-	import actionScripts.events.DiagnosticsEvent;
-	import actionScripts.events.ExecuteLanguageServerCommandEvent;
-	import actionScripts.events.GlobalEventDispatcher;
-	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.SaveFileEvent;
-	import actionScripts.events.SdkEvent;
-	import actionScripts.events.StatusBarEvent;
-	import actionScripts.events.WatchedFileChangeEvent;
-	import moonshine.lsp.events.LspNotificationEvent;
-	import actionScripts.ui.tabview.TabEvent;
-	import flash.events.Event;
-	import flash.events.NativeProcessExitEvent;
-	import flash.events.ProgressEvent;
-	import flash.desktop.NativeProcess;
-	
-	import actionScripts.utils.CommandLineUtil;
-	import flash.desktop.NativeProcess;
-	
-	import actionScripts.utils.CommandLineUtil;
-	import actionScripts.utils.EnvironmentSetupUtils;
-	import actionScripts.utils.GlobPatterns;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.utils.applyWorkspaceEdit;
-	import actionScripts.utils.getProjectSDKPath;
-	import actionScripts.utils.isUriInProject;
-	import actionScripts.plugin.console.ConsoleOutputter;
-	import moonshine.lsp.RegistrationParams;
-	import  moonshine.lsp.PublishDiagnosticsParams;
-	import moonshine.lsp.RegistrationParams;
-	import moonshine.lsp.LanguageClient;
-	import moonshine.lsp.LogMessageParams;
-	import moonshine.lsp.PublishDiagnosticsParams;
-	import moonshine.lsp.Registration;
-	import moonshine.lsp.RegistrationParams;
-	import moonshine.lsp.ShowMessageParams;
-	import moonshine.lsp.Unregistration;
-	import moonshine.lsp.UnregistrationParams;
-	import moonshine.lsp.WorkspaceEdit;
-	import actionScripts.plugin.console.ConsoleOutputEvent;
-	import mx.controls.Alert;
-	import actionScripts.factory.FileLocation;
-	
+    import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.plugin.console.ConsoleOutputter;
+    import actionScripts.ui.FeathersUIWrapper;
+    import actionScripts.ui.editor.BasicTextEditor;
+    import actionScripts.ui.editor.GroovyTextEditor;
+    import actionScripts.ui.editor.LotusBasicTextEditor;
+    import actionScripts.ui.tabview.TabEvent;
+    import actionScripts.utils.CommandLineUtil;
+    import actionScripts.utils.EnvironmentSetupUtils;
+    import actionScripts.utils.GlobPatterns;
+    import actionScripts.utils.UtilsCore;
+    import actionScripts.utils.applyWorkspaceEdit;
+    import actionScripts.utils.isUriInProject;
+    import actionScripts.valueObjects.ProjectVO;
+
+    import feathers.controls.Button;
+
+    import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcessStartupInfo;
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    import flash.events.NativeProcessExitEvent;
+    import flash.events.ProgressEvent;
+    import flash.filesystem.File;
+    import flash.utils.IDataInput;
+    import flash.utils.clearTimeout;
+    import flash.utils.setTimeout;
+
+    import moonshine.components.StandardPopupView;
+    import moonshine.lsp.LanguageClient;
+    import moonshine.lsp.LogMessageParams;
+    import moonshine.lsp.PublishDiagnosticsParams;
+    import moonshine.lsp.Registration;
+    import moonshine.lsp.RegistrationParams;
+    import moonshine.lsp.ShowMessageParams;
+    import moonshine.lsp.Unregistration;
+    import moonshine.lsp.UnregistrationParams;
+    import moonshine.lsp.WorkspaceEdit;
+    import moonshine.lsp.events.LspNotificationEvent;
+
+    import mx.controls.Alert;
+    import moonshine.theme.MoonshineTheme;
+    import flash.events.MouseEvent;
+    import mx.managers.PopUpManager;
+    import mx.core.FlexGlobals;
+    import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	
 
@@ -58,7 +66,12 @@ package actionScripts.languageServer
 	public class BasicLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	
 	{
-		
+		private static const MESSAGE_TYPE_LOG:int = 4;
+		private static const METHOD_LANGUAGE__STATUS:String = "language/status";	
+		private static const METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION:String = "language/actionableNotification";
+		private static const METHOD_LANGUAGE__EVENT_NOTIFICATION:String = "language/eventNotification";
+		private static const METHOD_JAVA__PROJECT_CONFIG_UPDATE:String = "basic/projectConfigurationUpdate";
+		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["tibbo"];
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
 		private static const LANGUAGE_ID_BASIC:String = "basic";
@@ -70,6 +83,11 @@ package actionScripts.languageServer
 		private var _languageServerProcess:NativeProcess;
 		private var _previousNodePath:String = null;
 		private var _watchedFiles:Object = {};
+		private var _languageStatusDone:Boolean = false;
+		private static const LANGUAGE_SERVER_SHUTDOWN_TIMEOUT:Number = 8000;
+		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
+		private static const URI_SCHEME_FILE:String = "file";
+		private var _pid:int = -1;
 		
 		public function BasicLanguageServerManager (project:BasicProjectVO)
 		{
@@ -85,6 +103,157 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler, false, 0, true);
 			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler, false, 0, true);
 			
+		}
+		
+		private function shutdownTimeout():void
+		{
+			_shutdownTimeoutID = uint.MAX_VALUE;
+			if (!_languageServerProcess) {
+				return;
+			}
+			var message:String = "Timed out while shutting down Haxe language server for project " + _project.name + ". Forcing process to exit.";
+			warning(message);
+			trace(message);
+			_languageClient = null;
+			_languageServerProcess.exit(true);
+		}
+		
+		private function language__actionableNotification(notification:Object):void
+		{
+			var params:Object = notification.params;
+			var severity:int = notification.severity as int;
+			var message:String = params.message;
+			var commands:Array = params.commands as Array;
+
+			if(severity == MESSAGE_TYPE_LOG) //log
+			{
+				print(message);
+				trace(message);
+				return;
+			}
+
+			var popup:StandardPopupView = new StandardPopupView();
+			popup.data = this; // Keep the command from getting GC'd
+			popup.text = message;
+			var popupWrapper:FeathersUIWrapper = new FeathersUIWrapper(popup);
+
+			var buttons:Array = [];
+			var commandCount:int = commands.length;
+			for(var i:int = 0; i < commandCount; i++)
+			{
+				var command:Object = commands[i];
+				var title:String = command.title as String;
+				var commandName:String = command.command;
+				var args:Array = command.arguments as Array;
+
+				var button:Button = new Button();
+				button.variant = MoonshineTheme.THEME_VARIANT_LIGHT_BUTTON;
+				button.text = title;
+				button.addEventListener(MouseEvent.CLICK, createCommandListener(commandName, args, popup, popupWrapper), false, 0, false);
+				buttons.push(button);
+			}
+			
+			popup.controls = buttons;
+			
+			PopUpManager.addPopUp(popupWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
+			popupWrapper.y = (ConstantsCoreVO.IS_MACOS) ? 25 : 45;
+			popupWrapper.x = (FlexGlobals.topLevelApplication.width-popupWrapper.width)/2;
+			popupWrapper.assignFocus("top");
+		}
+		
+		private function createCommandListener(command:String, args:Array, popup:StandardPopupView, popupWrapper:FeathersUIWrapper):Function
+		{
+			return function(event:Event):void
+			{
+				_dispatcher.dispatchEvent(new ExecuteLanguageServerCommandEvent(
+					ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
+					project, command, args ? args : []));
+				if(popupWrapper)
+				{
+					PopUpManager.removePopUp(popupWrapper);
+				}
+				if(popup)
+				{
+					popup.data = null;
+				}
+			};
+		}
+
+		
+		private function language__status(message:Object):void
+		{
+			if(_languageStatusDone)
+			{
+				return;
+			}
+			switch(message.params.type)
+			{
+				case "ServiceReady":
+				{
+					//hide the status message
+					_languageStatusDone = true;
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name
+					));
+					break;
+				}
+				case "Starting":
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name, message.params.message, false
+					));
+					break;
+				}
+				case "Message":
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name, message.params.message, false
+					));
+					break;
+				}
+				case "Started":
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name, message.params.message, false
+					));
+					break;
+				}
+				case "Error":
+				{
+					_languageStatusDone = true;
+					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
+						StatusBarEvent.LANGUAGE_SERVER_STATUS,
+						project.name
+					));
+					break;
+				}
+				default:
+				{
+					trace("Unknown " + METHOD_LANGUAGE__STATUS + " message type:", message.params.type);
+					break;
+				}
+			}
+		}
+		
+		private function isWatchingFile(file:FileLocation):Boolean
+		{
+			var relativePath:String = project.folderLocation.fileBridge.getRelativePath(file);
+			var matchesPattern:Boolean = false;
+			for(var id:String in _watchedFiles)
+			{
+				var watchers:Array = _watchedFiles[id];
+				for each(var pattern:RegExp in watchers)
+				{
+					if(pattern.test(relativePath)) {
+						return true;
+					}
+				}
+			}
+			return false;
 		}
 		
 		private function initializeLanguageServer():void
@@ -336,7 +505,6 @@ package actionScripts.languageServer
 						
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__STATUS, language__status);
 			_languageClient.removeNotificationListener(METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION, language__actionableNotification);
-			_languageClient.removeNotificationListener(METHOD_LANGUAGE__EVENT_NOTIFICATION, language__eventNotification);
 			_languageClient.removeEventListener(Event.INIT, languageClient_initHandler);
 			_languageClient.removeEventListener(Event.CLOSE, languageClient_closeHandler);
 			_languageClient.removeEventListener(LspNotificationEvent.PUBLISH_DIAGNOSTICS, languageClient_publishDiagnosticsHandler);
@@ -379,7 +547,7 @@ package actionScripts.languageServer
 			}
 			var scheme:String = uri.substr(0, colonIndex);
 
-			var editor:GroovyTextEditor = new LotusBasicTextEditor(_project, readOnly);
+			var editor:LotusBasicTextEditor = new LotusBasicTextEditor(_project, readOnly);
 			if(scheme == URI_SCHEME_FILE)
 			{
 				//the regular OpenFileEvent should be used to open this one
@@ -601,8 +769,11 @@ package actionScripts.languageServer
 					}
 				]
 			});
-		}
+		}		
 
-		
+		public function get pid():int
+		{
+			return _pid;
+		}
 	}
 }
