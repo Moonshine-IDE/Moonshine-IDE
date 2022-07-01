@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:mx="library://ns.adobe.com/flex/mx"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   backgroundColor="0xf5f5f5" title="Linked Vagrant Instance"
+										   width="500" minWidth="400" autoLayout="true"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   creationComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+
+			import mx.events.FlexEvent;
+
+			import actionScripts.events.GlobalEventDispatcher;
+
+			import mx.validators.Validator;
+
+			public static const EVENT_ADD_UPDATE_INSTANCE:String = "eventAddUpdateVagrantInstance";
+
+			[Bindable] public var instance:VagrantInstanceVO;
+
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var model:IDEModel = IDEModel.getInstance();
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (instance)
+				{
+					txtLabel.text = instance.title;
+					txtURL.text = instance.url;
+					txtBrowsedPath.text = instance.localPath;
+				}
+			}
+
+			private function onBrowse():void
+			{
+				model.fileCore.browseForDirectory("Select Path", onPathSelected);
+			}
+
+			private function onPathSelected(file:Object):void
+			{
+				txtBrowsedPath.text = file.nativePath;
+			}
+
+			private function onSubmit():void
+			{
+				var tmpArr:Array = new Array(svLabel, svURL);
+				if (Validator.validateAll(tmpArr).length != 0)
+				{
+					return;
+				}
+
+				if (!instance) instance = new VagrantInstanceVO();
+				instance.title = txtLabel.text;
+				instance.url = txtURL.text;
+				instance.localPath = txtBrowsedPath.text;
+				dispatchEvent(new Event(EVENT_ADD_UPDATE_INSTANCE));
+				closeThis();
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="svLabel" source="{txtLabel}" property="text" trigger="{btnSubmit}"/>
+		<mx:StringValidator id="svURL" source="{txtURL}" property="text" trigger="{btnSubmit}"/>
+	</fx:Declarations>
+
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+
+	<s:Label text="Label:"/>
+	<view:PromptTextInput id="txtLabel"
+						  width="100%" styleName="textInput"
+						  prompt="Instance label"/>
+	<s:Label text="Base URL:"/>
+	<view:PromptTextInput id="txtURL"
+						  prompt="eg.http://127.0.0.1:8095" width="100%" styleName="textInput"/>
+	<s:Label text="Local Path (Optional):"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<view:PromptTextInput id="txtBrowsedPath"
+							  prompt="Select path.." width="100%" styleName="textInput" enabled="false"/>
+		<s:Button label="Browse" styleName="darkButton"
+			click="onBrowse()"/>
+		<s:Button label="Open" styleName="darkButton"/>
+	</s:HGroup>
+	<s:BorderContainer width="100%" borderColor="#666666" backgroundColor="#a0a0a0" cornerRadius="2">
+		<s:Form width="100%">
+			<s:layout>
+				<s:FormLayout gap="-4"/>
+			</s:layout>
+			<s:FormHeading label="Status"/>
+			<s:FormItem label="State" styleName="uiTextSettingsLabel">
+				<s:Label id="txtState"
+						 width="100%" styleName="uiTextSettingsValue"
+						 fontWeight="bold"/>
+			</s:FormItem>
+			<s:FormItem label="Capabilities" styleName="uiTextSettingsLabel">
+				<s:Label id="txtCapabilities"
+						 width="100%" styleName="uiTextSettingsValue"
+						 fontWeight="bold"/>
+			</s:FormItem>
+		</s:Form>
+	</s:BorderContainer>
+
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit"
+				  label="Save" styleName="darkButton"
+					click="onSubmit()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

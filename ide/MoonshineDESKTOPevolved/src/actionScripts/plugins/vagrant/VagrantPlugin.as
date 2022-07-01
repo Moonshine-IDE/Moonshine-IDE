@@ -18,13 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
-	import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
+	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
-	
+
 	import mx.collections.ArrayCollection;
+
 	import mx.events.CloseEvent;
 	
 	import spark.components.Alert;
@@ -38,8 +38,6 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
-	import actionScripts.plugins.externalEditors.importer.ExternalEditorsImporter;
-	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.utils.FileUtils;
@@ -62,6 +60,7 @@ package actionScripts.plugins.vagrant
 		private var haltMethod:MethodDescriptor;
 		private var destroyMethod:MethodDescriptor;
 		private var vagrantFileLocation:FileLocation;
+		private var vagrantInstances:ArrayCollection = new ArrayCollection();
 
 		public function get vagrantPath():String
 		{
@@ -147,7 +146,8 @@ package actionScripts.plugins.vagrant
 
 			return Vector.<ISetting>([
 				pathSetting,
-				new PathSetting(this, 'virtualBoxPath', 'VirtualBox Home (Optional)', true, virtualBoxPath, false, false, defaultVirtualBoxPath)
+				new PathSetting(this, 'virtualBoxPath', 'VirtualBox Home (Optional)', true, virtualBoxPath, false, false, defaultVirtualBoxPath),
+				new LinkedInstancesSetting(vagrantInstances)
 			]);
         }
 
