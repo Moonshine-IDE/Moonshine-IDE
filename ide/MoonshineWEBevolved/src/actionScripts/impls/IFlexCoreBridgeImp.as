@@ -475,6 +475,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function generateCRUDJavaAgents():void
+		{
+			
+		}
+		
 		public function getModulesFinder():IModulesFinder
 		{
 			return null;

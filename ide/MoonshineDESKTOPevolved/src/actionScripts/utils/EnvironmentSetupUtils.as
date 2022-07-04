@@ -441,16 +441,19 @@ package actionScripts.utils
 		
 		private function onDisposeFootprints(event:ApplicationEvent):void
 		{
+			var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine");
 			if (!ConstantsCoreVO.IS_MACOS)
 			{
-				var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine/environmental");
-				
 				customInfo = new NativeProcessStartupInfo();
 				customInfo.executable = new File("c:\\Windows\\System32\\cmd.exe");
 				
 				customInfo.arguments = Vector.<String>(["/c", "rmdir", "/q", "/s", tempDirectory.fileBridge.nativePath]);
 				customProcess = new NativeProcess();
 				customProcess.start(customInfo);
+			}
+			else
+			{
+				FileUtils.deleteDirectoryAsync(tempDirectory.fileBridge.getFile as File);
 			}
 		}
 		

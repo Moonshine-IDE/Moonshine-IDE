@@ -351,11 +351,11 @@ package actionScripts.plugins.as3project.mxmlc
 				var isValidSDKPath:Boolean = HelperUtils.isValidSDKDirectoryBy(ComponentTypes.TYPE_OPENJAVA, javaPathSetting.stringValue, tmpComponent.pathValidation);
 				if (!isValidSDKPath)
 				{
-					javaPathSetting.setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
+					(event.target as PathSetting).setMessage("Invalid path: Path must contain "+ tmpComponent.pathValidation +".", AbstractSetting.MESSAGE_CRITICAL);
 				}
 				else
 				{
-					javaPathSetting.setMessage(null);
+					(event.target as PathSetting).setMessage(null);
 				}
 			}
 		}
