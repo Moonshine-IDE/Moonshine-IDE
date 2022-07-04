@@ -23,6 +23,7 @@ package actionScripts.events
 	public class DominoEvent extends Event
 	{
 		public static const NDS_KILL:String = "eventNDSKill";
+		public static const EVENT_CONVERT_DOMINO_DATABASE:String = "eventConvertDominoDatabase";
 
 		public function DominoEvent(type:String)
 		{

@@ -20,8 +20,11 @@ package actionScripts.plugins.domino
 {
 	import actionScripts.events.DominoEvent;
 
+	import components.popup.ConvertDominoDatabasePopup;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
+	import flash.display.DisplayObject;
 
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
@@ -29,7 +32,8 @@ package actionScripts.plugins.domino
 	
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
-	
+	import mx.managers.PopUpManager;
+
 	import spark.components.Alert;
 	
 	import actionScripts.events.SettingsEvent;
@@ -61,7 +65,7 @@ package actionScripts.plugins.domino
 		public static var NAMESPACE:String = "actionScripts.plugins.domino::DominoPlugin";
 		
 		private static const TEMP_UPDATE_SITE_DOWNLOAD_PATH:File = File.applicationStorageDirectory.resolvePath("dominoUpdateSiteGeneration");
-		
+
 		override public function get name():String			{ return "Domino and Notes Client"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team.<br/>Based on <a href='https://github.com/OpenNTF/org.openntf.nsfodp'>NSF ODP Tooling</a> by Jesse Gallagher and the OpenNTF team."; }
 		override public function get description():String	{ return "HCL® Notes / Domino Integration"; }
@@ -74,6 +78,7 @@ package actionScripts.plugins.domino
 		private var notesMacPermissionPop:NotesMacPermissionPopup;
 		private var targetUpdateSitePath:File;
 		private var lastExecutionType:String;
+		private var convertDominoDBPopup:ConvertDominoDatabasePopup;
 
 		private var _macNDSDefaultLookupPath:String;
 		public function get macNDSDefaultLookupPath():String
@@ -114,6 +119,7 @@ package actionScripts.plugins.domino
 			dispatcher.addEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest, false, 0, true);
 			dispatcher.addEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved, false, 0, true);
 			dispatcher.addEventListener(DominoEvent.NDS_KILL, onNDSKillRequest, false, 0, true);
+			dispatcher.addEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS)
 			{
@@ -155,6 +161,7 @@ package actionScripts.plugins.domino
 			dispatcher.removeEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest);
 			dispatcher.removeEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved);
 			dispatcher.removeEventListener(DominoEvent.NDS_KILL, onNDSKillRequest);
+			dispatcher.removeEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase);
 		}
 
 		override public function resetSettings():void
@@ -207,6 +214,21 @@ package actionScripts.plugins.domino
 				instructions
 			]);
         }
+
+		private function onConvertDominoDatabase(event:Event):void
+		{
+			if (!convertDominoDBPopup)
+			{
+				convertDominoDBPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ConvertDominoDatabasePopup, true) as ConvertDominoDatabasePopup;
+				convertDominoDBPopup.addEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
+				PopUpManager.centerPopUp(convertDominoDBPopup);
+			}
+		}
+
+		private function onConvertDominoDBPopupClosed(event:CloseEvent):void
+		{
+			convertDominoDBPopup = null;
+		}
 		
 		private function onMacNotesAccessRequest(event:Event):void
 		{

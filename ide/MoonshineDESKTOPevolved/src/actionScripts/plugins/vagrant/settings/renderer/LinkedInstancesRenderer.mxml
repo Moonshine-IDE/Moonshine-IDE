@@ -29,6 +29,7 @@
 	<fx:Script>
 		<![CDATA[
 			import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
+			import actionScripts.plugins.vagrant.utils.VagrantUtil;
 			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 
 			import components.popup.CreateNewVagrantInstancePopup;
@@ -78,6 +79,8 @@
 				{
 					setting.vagrantInstances.addItem(instance);
 				}
+
+				VagrantUtil.saveVagrantInstances(setting.vagrantInstances);
 			}
 
 			private function capabilitiesLabelFunction(item:VagrantInstanceVO, column:GridColumn):String
@@ -121,8 +124,8 @@
 		<s:columns>
 			<s:ArrayList>
 				<s:GridColumn headerText="State" dataField="state" width="100" minWidth="100"/>
-				<s:GridColumn headerText="Name" dataField="title" minWidth="200"/>
-				<s:GridColumn headerText="URL" dataField="url" minWidth="200"/>
+				<s:GridColumn headerText="Name" dataField="title"/>
+				<s:GridColumn headerText="URL" dataField="url"/>
 				<s:GridColumn headerText="Capabilities" dataField="roles" labelFunction="capabilitiesLabelFunction"/>
 			</s:ArrayList>
 		</s:columns>

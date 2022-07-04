@@ -20,7 +20,9 @@ package actionScripts.plugins.vagrant.utils
 {
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 	import actionScripts.utils.FileUtils;
+	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.utils.UtilsCore;
 
 	import flash.desktop.NativeProcess;
@@ -28,6 +30,9 @@ package actionScripts.plugins.vagrant.utils
 	import flash.desktop.NativeProcessStartupInfo;
 
 	import flash.filesystem.File;
+	import flash.net.SharedObject;
+
+	import mx.collections.ArrayCollection;
 
 	public class VagrantUtil
 	{
@@ -77,6 +82,31 @@ package actionScripts.plugins.vagrant.utils
 			sshAt = path;
 			var destinationFile:File = File.applicationStorageDirectory.resolvePath(SSH_FILE_LOCATION);
 			FileUtils.writeToFileAsync(destinationFile, AS_VAGRANT_SSH.valueOf().toString(), onVagrantSSHFileWriteCompletes, onVagrantSSHFileWriteFail);
+		}
+
+		public static function getVagrantInstances():ArrayCollection
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+			var instances:ArrayCollection = new ArrayCollection();
+			if (cookie.data.hasOwnProperty('vagrantInstances'))
+			{
+				var storedInstances:Array = cookie.data.vagrantInstances;
+				for each (var instance:Object in storedInstances)
+				{
+					instances.addItem(
+							VagrantInstanceVO.getNewInstance(instance)
+					);
+				}
+			}
+
+			return instances;
+		}
+
+		public static function saveVagrantInstances(value:ArrayCollection):void
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+			cookie.data['vagrantInstances'] = value.source;
+			cookie.flush();
 		}
 
 		private static function onVagrantSSHFileWriteCompletes():void

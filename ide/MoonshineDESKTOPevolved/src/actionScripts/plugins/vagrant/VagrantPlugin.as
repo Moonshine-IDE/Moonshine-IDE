@@ -60,7 +60,7 @@ package actionScripts.plugins.vagrant
 		private var haltMethod:MethodDescriptor;
 		private var destroyMethod:MethodDescriptor;
 		private var vagrantFileLocation:FileLocation;
-		private var vagrantInstances:ArrayCollection = new ArrayCollection();
+		private var vagrantInstances:ArrayCollection;
 
 		public function get vagrantPath():String
 		{
@@ -90,6 +90,7 @@ package actionScripts.plugins.vagrant
 		{
 			super.activate();
 			updateEventListeners();
+			vagrantInstances = VagrantUtil.getVagrantInstances();
 
 			if (!ConstantsCoreVO.IS_MACOS || !ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{

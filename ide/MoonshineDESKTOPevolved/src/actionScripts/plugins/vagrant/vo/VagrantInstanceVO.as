@@ -74,5 +74,17 @@ package actionScripts.plugins.vagrant.vo
 		{
 			_localPath = value;
 		}
+
+		public static function getNewInstance(value:Object):VagrantInstanceVO
+		{
+			var tmpInstance:VagrantInstanceVO = new VagrantInstanceVO();
+			if ("state" in value) tmpInstance.state = value.state;
+			if ("title" in value) tmpInstance.title = value.title;
+			if ("url" in value) tmpInstance.url = value.url;
+			if ("capabilities" in value) tmpInstance.capabilities = value.capabilities;
+			if ("localPath" in value) tmpInstance.localPath = value.localPath;
+
+			return tmpInstance;
+		}
 	}
 }
