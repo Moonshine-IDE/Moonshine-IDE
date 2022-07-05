@@ -18,15 +18,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
+	import actionScripts.events.DominoEvent;
 	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
+
+	import components.popup.ConvertDominoDatabasePopup;
+
+	import flash.display.DisplayObject;
+
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
 
 	import mx.collections.ArrayCollection;
+	import mx.core.FlexGlobals;
 
 	import mx.events.CloseEvent;
-	
+	import mx.managers.PopUpManager;
+
 	import spark.components.Alert;
 	
 	import actionScripts.events.FilePluginEvent;
@@ -61,6 +69,7 @@ package actionScripts.plugins.vagrant
 		private var destroyMethod:MethodDescriptor;
 		private var vagrantFileLocation:FileLocation;
 		private var vagrantInstances:ArrayCollection;
+		private var convertDominoDBPopup:ConvertDominoDatabasePopup;
 
 		public function get vagrantPath():String
 		{
@@ -113,6 +122,8 @@ package actionScripts.plugins.vagrant
 					model.virtualBoxPath = defaultVirtualBoxPath;
 				}
 			}
+
+			dispatcher.addEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -120,6 +131,7 @@ package actionScripts.plugins.vagrant
 			super.deactivate();
 			removeMenuListeners();
 			onConsoleDeactivated(null);
+			dispatcher.removeEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase);
 		}
 
 		override public function resetSettings():void
@@ -151,6 +163,22 @@ package actionScripts.plugins.vagrant
 				new LinkedInstancesSetting(vagrantInstances)
 			]);
         }
+
+		private function onConvertDominoDatabase(event:Event):void
+		{
+			if (!convertDominoDBPopup)
+			{
+				convertDominoDBPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ConvertDominoDatabasePopup, true) as ConvertDominoDatabasePopup;
+				convertDominoDBPopup.instances = vagrantInstances;
+				convertDominoDBPopup.addEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
+				PopUpManager.centerPopUp(convertDominoDBPopup);
+			}
+		}
+
+		private function onConvertDominoDBPopupClosed(event:CloseEvent):void
+		{
+			convertDominoDBPopup = null;
+		}
 
 		private function updateEventListeners():void
 		{

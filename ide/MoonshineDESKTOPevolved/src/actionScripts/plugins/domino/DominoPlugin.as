@@ -78,7 +78,6 @@ package actionScripts.plugins.domino
 		private var notesMacPermissionPop:NotesMacPermissionPopup;
 		private var targetUpdateSitePath:File;
 		private var lastExecutionType:String;
-		private var convertDominoDBPopup:ConvertDominoDatabasePopup;
 
 		private var _macNDSDefaultLookupPath:String;
 		public function get macNDSDefaultLookupPath():String
@@ -119,7 +118,6 @@ package actionScripts.plugins.domino
 			dispatcher.addEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest, false, 0, true);
 			dispatcher.addEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved, false, 0, true);
 			dispatcher.addEventListener(DominoEvent.NDS_KILL, onNDSKillRequest, false, 0, true);
-			dispatcher.addEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase, false, 0, true);
 			
 			if (ConstantsCoreVO.IS_MACOS)
 			{
@@ -161,7 +159,6 @@ package actionScripts.plugins.domino
 			dispatcher.removeEventListener(RELAY_MAC_NOTES_PERMISSION_REQUEST, onMacNotesAccessRequest);
 			dispatcher.removeEventListener(SettingsEvent.EVENT_SETTINGS_SAVED, onSettingsSaved);
 			dispatcher.removeEventListener(DominoEvent.NDS_KILL, onNDSKillRequest);
-			dispatcher.removeEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase);
 		}
 
 		override public function resetSettings():void
@@ -214,21 +211,6 @@ package actionScripts.plugins.domino
 				instructions
 			]);
         }
-
-		private function onConvertDominoDatabase(event:Event):void
-		{
-			if (!convertDominoDBPopup)
-			{
-				convertDominoDBPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ConvertDominoDatabasePopup, true) as ConvertDominoDatabasePopup;
-				convertDominoDBPopup.addEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
-				PopUpManager.centerPopUp(convertDominoDBPopup);
-			}
-		}
-
-		private function onConvertDominoDBPopupClosed(event:CloseEvent):void
-		{
-			convertDominoDBPopup = null;
-		}
 		
 		private function onMacNotesAccessRequest(event:Event):void
 		{

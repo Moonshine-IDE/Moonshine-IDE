@@ -22,158 +22,88 @@
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
 										   xmlns:s="library://ns.adobe.com/flex/spark"
-										   xmlns:mx="library://ns.adobe.com/flex/mx"
 										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:controls="components.controls.*"
 										   backgroundColor="0xf5f5f5" title="Convert Domino Database"
 										   width="600" minWidth="400" autoLayout="true"
 										   skinClass="components.skins.ResizableTitleWindowSkin"
 										   creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.controllers.DataAgent;
-		import actionScripts.locator.IDEModel;
+			import actionScripts.controllers.DataAgent;
+			import actionScripts.events.SettingsEvent;
+			import actionScripts.plugins.vagrant.VagrantPlugin;
 			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+
+			import mx.collections.ArrayCollection;
 
 			import mx.events.FlexEvent;
 
 			import actionScripts.events.GlobalEventDispatcher;
 
-			import mx.validators.Validator;
-
 			public static const EVENT_ADD_UPDATE_INSTANCE:String = "eventAddUpdateVagrantInstance";
 
-			[Bindable] public var instance:VagrantInstanceVO;
+			public var instances:ArrayCollection;
+
+			[Bindable] private var nsfConverterInstances:ArrayCollection;
 
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-			private var model:IDEModel = IDEModel.getInstance();
-			private var isValidURL:Boolean;
 			private var loader:DataAgent;
 			
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
-				if (instance)
+				if (instances)
 				{
-					txtLabel.text = instance.title;
-					txtURL.text = instance.url;
-					txtBrowsedPath.text = instance.localPath;
-
-					getVagrantInfo();
+					nsfConverterInstances = new ArrayCollection();
+					for each (var instance:VagrantInstanceVO in instances)
+					{
+						if (instance.capabilities && (instance.capabilities.indexOf("nsfconverter") != -1))
+						{
+							nsfConverterInstances.addItem(instance);
+						}
+					}
 				}
 			}
 
-			private function onBrowse():void
+			private function onConfigure():void
 			{
-				model.fileCore.browseForDirectory("Select Path", onPathSelected);
-			}
-
-			private function onPathSelected(file:Object):void
-			{
-				txtBrowsedPath.text = file.nativePath;
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, VagrantPlugin.NAMESPACE));
 			}
 
 			private function onSubmit():void
 			{
-				var tmpArr:Array = new Array(svLabel, svURL);
-				if (Validator.validateAll(tmpArr).length != 0)
-				{
-					return;
-				}
-
-				if (!instance) instance = new VagrantInstanceVO();
-				instance.title = txtLabel.text;
-				instance.url = txtURL.text;
-				instance.localPath = txtBrowsedPath.text;
-				instance.state = txtState.text;
-				instance.capabilities = txtCapabilities.text.split(", ");
-				dispatchEvent(new Event(EVENT_ADD_UPDATE_INSTANCE));
-				closeThis();
-			}
-
-			private function updatePossiblePath():void
-			{
-				var searchRegExp:RegExp;
-				var results:Array;
-				// expected format is https://github.com/{organization/author}/{project}
-				searchRegExp = new RegExp("(?:https?|http)\://.*:+([0-9]{4})", "i");
-				results = searchRegExp.exec(txtURL.text);
-				isValidURL = (results != null) ? true : false;
-
-				if (isValidURL)
-				{
-					getVagrantInfo();
-				}
-				else
-				{
-					txtState.text = txtCapabilities.text = "";
-				}
-			}
-
-			private function getVagrantInfo():void
-			{
-				loader = new DataAgent(txtURL.text +"/info", onServerInfoLoaded, onServerInfoFault, null, DataAgent.GETEVENT);
-			}
-
-			private function onServerInfoLoaded(value:Object, message:String=null):void
-			{
-				var infoObject:Object = JSON.parse(value as String);
-				txtState.text = ("status" in infoObject) ? infoObject["status"] : "";
-				txtCapabilities.text = ("capabilities" in infoObject) ? (infoObject["capabilities"] as Array).join(", ") : "";
-
-				loader = null;
-			}
-	
-			private function onServerInfoFault(message:String):void
-			{
-				loader = null;
-				txtState.text = txtCapabilities.text = "";
+				flUpload.uploadUrl = (ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/upload";
+				flUpload.uploadField = "file";
+				flUpload.startUpload();
+				//dispatchEvent(new Event(EVENT_ADD_UPDATE_INSTANCE));
+				//closeThis();
 			}
 
 		]]>
 	</fx:Script>
-	<fx:Declarations>
-		<mx:StringValidator id="svLabel" source="{txtLabel}" property="text" trigger="{btnSubmit}"/>
-		<mx:StringValidator id="svURL" source="{txtURL}" property="text" trigger="{btnSubmit}"/>
-	</fx:Declarations>
 
 	<resizableTitleWindow:layout>
 		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
 	</resizableTitleWindow:layout>
 
-	<s:Label text="Label:"/>
-	<view:PromptTextInput id="txtLabel"
-						  width="100%" styleName="textInput"
-						  prompt="Instance label"/>
-	<s:Label text="Base URL:"/>
-	<view:PromptTextInput id="txtURL"
-						  prompt="eg.http://127.0.0.1:8095" width="100%" styleName="textInput"
-						  focusOut="updatePossiblePath()"/>
-	<s:Label text="Local Path (Optional):"/>
+	<s:Label text="Select a Database (*.nsf):"/>
 	<s:HGroup width="100%" verticalAlign="middle">
-		<view:PromptTextInput id="txtBrowsedPath"
-							  prompt="Select path.." width="100%" styleName="textInput" enabled="false"/>
-		<s:Button label="Browse" styleName="darkButton"
-			click="onBrowse()"/>
-		<s:Button label="Open" styleName="darkButton"/>
+		<controls:FileUpload id="flUpload"
+							 width="100%"
+							 fileFilters="{[new FileFilter('Database .nsf File', '*.nsf')]}"/>
 	</s:HGroup>
-	<s:BorderContainer width="100%" borderColor="#666666" backgroundColor="#a0a0a0" cornerRadius="2">
-		<s:Form width="100%">
-			<s:layout>
-				<s:FormLayout gap="-4"/>
-			</s:layout>
-			<s:FormHeading label="Status"/>
-			<s:FormItem label="State" styleName="uiTextSettingsLabel">
-				<s:Label id="txtState"
-						 width="100%" styleName="uiTextSettingsValue"
-						 fontWeight="bold"/>
-			</s:FormItem>
-			<s:FormItem label="Capabilities" styleName="uiTextSettingsLabel">
-				<s:Label id="txtCapabilities"
-						 width="100%" styleName="uiTextSettingsValue"
-						 fontWeight="bold"/>
-			</s:FormItem>
-		</s:Form>
-	</s:BorderContainer>
+
+	<s:Label text="%Requirement Notes to Come here%" paddingTop="6" paddingBottom="10"/>
+
+	<s:Label text="NSF Converter:"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:DropDownList id="ddlInstances"
+						width="100%" height="26"
+						dataProvider="{nsfConverterInstances}" labelField="title" requireSelection="true"/>
+		<s:Button label="Configure" styleName="darkButton"
+				  click="onConfigure()"/>
+	</s:HGroup>
 
 	<resizableTitleWindow:controlBarContent>
 		<s:Spacer width="100%"/>
