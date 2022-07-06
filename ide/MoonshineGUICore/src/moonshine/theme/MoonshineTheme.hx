@@ -656,11 +656,14 @@ class MoonshineTheme extends SDKInstallerTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x222222);
 		backgroundSkin.border = SolidColor(1.0, 0x000000);
+		backgroundSkin.maxWidth = 550;
 		toolTip.backgroundSkin = backgroundSkin;
 
 		toolTip.textFormat = getLightOnDarkTextFormat();
 		toolTip.disabledTextFormat = getLightOnDarkDisabledTextFormat();
 		// toolTip.embedFonts = true;
+
+		toolTip.wordWrap = true;
 
 		toolTip.paddingTop = 4.0;
 		toolTip.paddingRight = 4.0;
