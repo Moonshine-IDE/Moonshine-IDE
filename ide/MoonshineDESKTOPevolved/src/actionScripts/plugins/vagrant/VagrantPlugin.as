@@ -168,7 +168,7 @@ package actionScripts.plugins.vagrant
 		{
 			if (!convertDominoDBPopup)
 			{
-				convertDominoDBPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ConvertDominoDatabasePopup, true) as ConvertDominoDatabasePopup;
+				convertDominoDBPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ConvertDominoDatabasePopup) as ConvertDominoDatabasePopup;
 				convertDominoDBPopup.instances = vagrantInstances;
 				convertDominoDBPopup.addEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
 				PopUpManager.centerPopUp(convertDominoDBPopup);

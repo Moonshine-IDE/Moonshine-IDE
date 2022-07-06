@@ -20,6 +20,7 @@
             public var anUV:URLVariables;
             public var uploadField:String;
 			public var isUploadFileSelected : Boolean;
+			public var isSingleUpload:Boolean;
 			public var fileFilters:Array;
             
             // Set uploadUrl
@@ -36,39 +37,66 @@
             // Called to add file(s) for upload
             private function addFiles():void {
 				//var fileFilter : FileFilter = new FileFilter("ProminicID", "*.id");
-                _refAddFiles = new FileReferenceList();
-                _refAddFiles.addEventListener(Event.SELECT, onSelectFile);
-                _refAddFiles.browse(fileFilters);
+				if (isSingleUpload)
+				{
+					_refUploadFile = new FileReference();
+					_refUploadFile.addEventListener(Event.SELECT, onSelectFile, false, 0, true);
+					_refUploadFile.browse(fileFilters);
+				}
+				else
+				{
+					_refAddFiles = new FileReferenceList();
+					_refAddFiles.addEventListener(Event.SELECT, onSelectFile, false, 0, true);
+					_refAddFiles.browse(fileFilters);
+				}
             }
             
             // Called when a file is selected
             private function onSelectFile(event:Event):void {
                 var arrFoundList:Array = new Array();
                 _arrUploadFiles = new Array(); // For single Upload
-                // Get list of files from fileList, make list of files already on upload list
-                for (var i:Number = 0; i < _arrUploadFiles.length; i++) {
-                    for (var j:Number = 0; j < _refAddFiles.fileList.length; j++) {
-                        if (_arrUploadFiles[i].name == _refAddFiles.fileList[j].name) {
-                            arrFoundList.push(_refAddFiles.fileList[j].name);
-                            _refAddFiles.fileList.splice(j, 1);
-                            j--;
-                        }
-                    }
-                }
-                if (_refAddFiles.fileList.length >= 1) {                
-                    for (var k:Number = 0; k < _refAddFiles.fileList.length; k++) {
-                        _arrUploadFiles.push({
-                            name:_refAddFiles.fileList[k].name,
-                            size:formatFileSize(_refAddFiles.fileList[k].size),
-                            file:_refAddFiles.fileList[k]});
-                    }
-                    //listFiles.dataProvider = _arrUploadFiles;
-                    //listFiles.selectedIndex = _arrUploadFiles.length - 1;
-                    txtFile.text = _arrUploadFiles[_arrUploadFiles.length - 1].name;
-                }                
-                /* if (arrFoundList.length >= 1) {
-                    Alert.show("The file(s): \n\n• " + arrFoundList.join("\n• ") + "\n\n...are already on the upload list. Please change the filename(s) or pick a different file.", "File(s) already on list");
-                } */
+
+				if (isSingleUpload)
+				{
+					_refUploadFile.removeEventListener(Event.SELECT, onSelectFile);
+
+					_arrUploadFiles.push({
+						name:_refUploadFile.name,
+						size:formatFileSize(_refUploadFile.size),
+						file:_refUploadFile});
+
+					txtFile.text = _refUploadFile.name;
+				}
+				else
+				{
+					_refAddFiles.removeEventListener(Event.SELECT, onSelectFile);
+
+					// Get list of files from fileList, make list of files already on upload list
+					for (var i:Number = 0; i < _arrUploadFiles.length; i++) {
+						for (var j:Number = 0; j < _refAddFiles.fileList.length; j++) {
+							if (_arrUploadFiles[i].name == _refAddFiles.fileList[j].name) {
+								arrFoundList.push(_refAddFiles.fileList[j].name);
+								_refAddFiles.fileList.splice(j, 1);
+								j--;
+							}
+						}
+					}
+					if (_refAddFiles.fileList.length >= 1) {
+						for (var k:Number = 0; k < _refAddFiles.fileList.length; k++) {
+							_arrUploadFiles.push({
+								name:_refAddFiles.fileList[k].name,
+								size:formatFileSize(_refAddFiles.fileList[k].size),
+								file:_refAddFiles.fileList[k]});
+						}
+						//listFiles.dataProvider = _arrUploadFiles;
+						//listFiles.selectedIndex = _arrUploadFiles.length - 1;
+						txtFile.text = _arrUploadFiles[_arrUploadFiles.length - 1].name;
+					}
+					/* if (arrFoundList.length >= 1) {
+                        Alert.show("The file(s): \n\n• " + arrFoundList.join("\n• ") + "\n\n...are already on the upload list. Please change the filename(s) or pick a different file.", "File(s) already on list");
+                    } */
+				}
+
                 updateProgBar();
 				isUploadFileSelected = true;
 				dispatchEvent( new Event("UPLOAD_LOADED") );
@@ -121,23 +149,6 @@
                     _refUploadFile.upload(request, uploadField);
                 }
             }
-
-			private static var _boundary:String = "";
-
-			/**
-			 * Get the boundary for the post.
-			 * Must be passed as part of the contentType of the UrlRequest
-			 */
-			public static function getBoundary():String {
-
-				if(_boundary.length == 0) {
-					for (var i:int = 0; i < 0x20; i++ ) {
-						_boundary += String.fromCharCode( int( 97 + Math.random() * 25 ) );
-					}
-				}
-
-				return _boundary;
-			}
 			
 			private function onUploadFails( event:HTTPStatusEvent ) : void {
 
@@ -199,6 +210,7 @@
             // Get upload progress
             private function onUploadProgress(event:ProgressEvent):void {
                 var numPerc:Number = Math.round((event.bytesLoaded / event.bytesTotal) * 100);
+				trace(numPerc);
                 updateProgBar(numPerc);
             }
             
