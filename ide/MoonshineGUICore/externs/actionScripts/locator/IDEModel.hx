@@ -1,12 +1,14 @@
 package actionScripts.locator;
 
-import mx.collections.ArrayCollection;
-import actionScripts.interfaces.IFileBridge;
 import actionScripts.factory.FileLocation;
+import actionScripts.interfaces.IFileBridge;
+import actionScripts.ui.IContentWindow;
+import mx.collections.ArrayCollection;
 
 extern class IDEModel {
 	public static function getInstance():IDEModel;
 
+	public var activeEditor:IContentWindow;
 	public var antHomePath:FileLocation;
 	public var defaultSDK:FileLocation;
 	public var editors:ArrayCollection;
