@@ -1,3 +1,7 @@
 package actionScripts.controllers;
 
-extern class DeleteFileCommand {}
+import openfl.events.Event;
+
+extern class DeleteFileCommand implements ICommand {
+    public function execute(event:Event):Void;
+}

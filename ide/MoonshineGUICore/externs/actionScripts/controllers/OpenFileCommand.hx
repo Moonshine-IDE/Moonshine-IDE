@@ -1,3 +1,7 @@
 package actionScripts.controllers;
 
-extern class OpenFileCommand {}
+import openfl.events.Event;
+
+extern class OpenFileCommand implements ICommand {
+    public function execute(event:Event):Void;
+}

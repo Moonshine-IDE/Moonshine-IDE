@@ -1,3 +1,7 @@
 package actionScripts.controllers;
 
-extern class OpenLocationCommand {}
+import openfl.events.Event;
+
+extern class OpenLocationCommand implements ICommand {
+    public function execute(event:Event):Void;
+}

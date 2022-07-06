@@ -1,5 +1,7 @@
 package actionScripts.controllers;
 
-extern class QuitCommand {
-    
+import openfl.events.Event;
+
+extern class QuitCommand implements ICommand {
+    public function execute(event:Event):Void;
 }

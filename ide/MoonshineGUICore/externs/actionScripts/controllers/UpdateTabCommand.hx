@@ -1,5 +1,7 @@
 package actionScripts.controllers;
 
-extern class UpdateTabCommand {
-    
+import openfl.events.Event;
+
+extern class UpdateTabCommand implements ICommand {
+    public function execute(event:Event):Void;
 }
