@@ -24,6 +24,7 @@ extern class ConstantsCoreVO {
 
 	public static inline final MOONSHINE_IDE_COPYRIGHT_LABEL:String = "Copyright © STARTcloud, Inc. 2015-2022. All rights reserved.";
 
+	public static var IS_AIR:Bool;
 	public static var MOONSHINE_IDE_LABEL:String;
 	public static var IS_MACOS:Bool;
 	public static var IS_APP_STORE_VERSION:Bool;

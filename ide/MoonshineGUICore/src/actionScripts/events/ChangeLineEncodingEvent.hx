@@ -20,7 +20,7 @@
 
 package actionScripts.events;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class ChangeLineEncodingEvent extends Event {
 	public static final EVENT_CHANGE_TO_WIN:String = "lineEncodingWin";

@@ -4,6 +4,7 @@ import openfl.events.Event;
 
 class OnDiskBuildEvent extends Event {
 	public static final GENERATE_CRUD_ROYALE:String = "generateCRUDRoyaleProject";
+	public static final GENERATE_JAVA_AGENTS:String = "generateCRUDJavaAgents";
 
 	private var _buildId:String;
 	private var _buildDirectory:String;
@@ -27,23 +28,23 @@ class OnDiskBuildEvent extends Event {
 		_commands = commands != null ? commands : [];
 	}
 
-	public function get_buildId():String {
+	private function get_buildId():String {
 		return _buildId;
 	}
 
-	public function get_buildDirectory():String {
+	private function get_buildDirectory():String {
 		return _buildDirectory;
 	}
 
-	public function get_preCommands():Array<Dynamic> {
+	private function get_preCommands():Array<Dynamic> {
 		return _preCommands;
 	}
 
-	public function get_commands():Array<Dynamic> {
+	private function get_commands():Array<Dynamic> {
 		return _commands;
 	}
 
-	public function get_status():Int {
+	private function get_status():Int {
 		return _status;
 	}
 }

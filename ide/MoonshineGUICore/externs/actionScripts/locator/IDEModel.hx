@@ -27,6 +27,7 @@ extern class IDEModel {
 	public var svnPath:String;
 	public var vagrantPath:String;
     public var virtualBoxPath:String;
+	public var projects:ArrayCollection;
 
 	public function getVersionWithBuildNumber():String;
 }
