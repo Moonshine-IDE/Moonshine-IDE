@@ -20,6 +20,7 @@ package visualEditor.plugin
 {
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.templating.TemplatingHelper;
+    import actionScripts.utils.TextUtil;
     import actionScripts.valueObjects.FileWrapper;
 
     import actionScripts.events.ExportVisualEditorProjectEvent;
@@ -195,16 +196,40 @@ package visualEditor.plugin
                 }
 
                 convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
-                var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
                 var componentData:Array = item.surface.getComponentData();
+                var propertyVOName:String = convertedFile.fileBridge.nameWithoutExtension.toLowerCase() + "VO";
+                var royaleMXMLContentFile:XML = null;
+                var contentMXMLFile:String = "";
 
-                var classContent:String = getVOClass(componentData, convertedFile.fileBridge.nameWithoutExtension);
-                if (classContent)
+                if (componentData.length > 0)
                 {
+                    //Prepare Data for VO
+                    royaleMXMLContentFile = item.surface.toRoyaleConvertCode({
+                        prop: [
+                            {
+                                propName: propertyVOName,
+                                propType: convertedFile.fileBridge.nameWithoutExtension + "VO",
+                                newInstance: true
+                            }
+                        ]
+                    });
+                    contentMXMLFile = royaleMXMLContentFile.toXMLString();
+
+                    //Save VO
+                    var classContent:String = getVOClass(componentData, convertedFile.fileBridge.nameWithoutExtension);
                     saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
+
+                    //Apply VO to mxml
+                    var re:RegExp = new RegExp(TextUtil.escapeRegex("$valueobject"), "g");
+                    contentMXMLFile = contentMXMLFile.replace(re, propertyVOName);
+                }
+                else
+                {
+                    royaleMXMLContentFile = item.surface.toRoyaleConvertCode();
+                    contentMXMLFile = royaleMXMLContentFile.toXMLString();
                 }
 
-                convertedFile.fileBridge.save(royaleMXMLContentFile.toXMLString());
+                convertedFile.fileBridge.save(contentMXMLFile);
 
                 views.push(viewObj);
             }

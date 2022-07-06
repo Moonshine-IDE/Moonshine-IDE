@@ -579,20 +579,6 @@ package actionScripts.languageServer
 			}
 		}
 
-		private function sendWorkspaceSettings():void
-		{
-			if(!_languageClient || !_languageClient.initialized)
-			{
-				return;
-			}
-			var frameworkSDK:String = getProjectSDKPath(_project, _model);
-			var settings:Object = { as3mxml: { sdk: { framework: frameworkSDK } } };
-			
-			var params:Object = new Object();
-			params.settings = settings;
-			_languageClient.sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
-		}
-
 		private function getProjectConfiguration():Object
 		{
 			var type:String = "app";
@@ -674,7 +660,7 @@ package actionScripts.languageServer
 
 		private function sendProjectConfiguration():void
 		{
-			if(!_languageClient || !_languageClient.initialized)
+			if(!_languageClient || !_languageClient.initialized || _languageClient.stopping || _languageClient.stopped)
 			{
 				return;
 			}
