@@ -80,6 +80,7 @@ package actionScripts.interfaces
 		function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean;
 		function getExternalEditors():ArrayCollection;
 		function generateTabularRoyaleProject():void;
+		function generateCRUDJavaAgents():void;
 		function getModulesFinder():IModulesFinder;
 		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
 		function setMSDKILocalPathConfig():void;

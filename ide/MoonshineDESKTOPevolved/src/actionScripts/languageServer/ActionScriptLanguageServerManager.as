@@ -22,10 +22,17 @@ package actionScripts.languageServer
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
+	import flash.events.SecurityErrorEvent;
+	import flash.events.ServerSocketConnectEvent;
 	import flash.filesystem.File;
+	import flash.net.ServerSocket;
+	import flash.net.Socket;
 	import flash.utils.IDataInput;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 
 	import mx.controls.Alert;
 
@@ -53,6 +60,7 @@ package actionScripts.languageServer
 	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
+	import actionScripts.utils.findOpenPort;
 	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
@@ -72,8 +80,6 @@ package actionScripts.languageServer
 	import moonshine.lsp.UnregistrationParams;
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
-	import flash.utils.setTimeout;
-	import flash.utils.clearTimeout;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -100,6 +106,7 @@ package actionScripts.languageServer
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var _useSocket:Boolean = false;
 		private var _languageServerProcess:NativeProcess;
 		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
@@ -109,6 +116,8 @@ package actionScripts.languageServer
 		private var _waitingToDispose:Boolean = false;
 		private var _watchedFiles:Object = {};
 		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
+		private var _serverSocket:ServerSocket;
+		private var _clientSocket:Socket;
 		private var _pid:int = -1;
 
 		public function ActionScriptLanguageServerManager(project:AS3ProjectVO)
@@ -220,6 +229,8 @@ package actionScripts.languageServer
 
 		protected function dispose():void
 		{
+			cleanupClientSocket();
+			cleanupServerSocket();
 			cleanupLanguageClient();
 			
 			_project.removeEventListener(AS3ProjectVO.CHANGE_CUSTOM_SDK, projectChangeCustomSDKHandler);
@@ -258,7 +269,30 @@ package actionScripts.languageServer
 			
 			LanguageServerGlobals.removeLanguageServerManager( this );
 			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
+		}
+		
 
+		private function cleanupServerSocket():void
+		{
+			if (!_serverSocket)
+			{
+				return;
+			}
+			_serverSocket.removeEventListener(Event.CONNECT, serverSocket_connectHandler);
+			_serverSocket = null;
+		}
+
+		private function cleanupClientSocket():void
+		{
+			if (!_clientSocket)
+			{
+				return;
+			}
+
+			_clientSocket.removeEventListener(IOErrorEvent.IO_ERROR, clientSocket_ioErrorHandler);
+			_clientSocket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, clientSocket_securityErrorHandler);
+            _clientSocket.removeEventListener(Event.CLOSE, clientSocket_closeHandler);
+            _clientSocket = null;
 		}
 
 		private function extractVersionStringFromStandardErrorOutput(versionOutput:String):String
@@ -410,6 +444,10 @@ package actionScripts.languageServer
 				cp,
 				"moonshine.Main"
 			];
+			if (_useSocket)
+			{
+				languageServerCommand.insertAt(2, "-Dmoonshine.port=" + _port);
+			}
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
 				var cmdFile:File = null;
@@ -439,13 +477,28 @@ package actionScripts.languageServer
 				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 				_languageServerProcess.start(processInfo);
 
-				initializeLanguageServer(sdkPath);
+				if (!_serverSocket)
+				{
+					initializeLanguageServer(sdkPath);
+				}
 				
 				GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 					StatusBarEvent.LANGUAGE_SERVER_STATUS,
 					project.name, "Starting ActionScript & MXML code intelligence..."
 				));
 			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
+		}
+
+		private function startServerSocket():void
+		{
+			_port = findOpenPort();
+
+			_serverSocket = new ServerSocket();
+			_serverSocket.bind(_port);
+			_serverSocket.addEventListener(ServerSocketConnectEvent.CONNECT, serverSocket_connectHandler);
+			_serverSocket.listen();
+
+			startNativeProcess();
 		}
 		
 		private function initializeLanguageServer(sdkPath:String):void
@@ -465,9 +518,17 @@ package actionScripts.languageServer
 				config: getProjectConfiguration(),
 				supportsSimpleSnippets: true
 			};
-			_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT,
-				_languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA,
-				_languageServerProcess.standardInput);
+			if (_useSocket)
+			{
+				_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT,
+					_clientSocket, _clientSocket, ProgressEvent.SOCKET_DATA, _clientSocket, flushSocket);
+			}
+			else
+			{
+				_languageClient = new LanguageClient(LANGUAGE_ID_ACTIONSCRIPT,
+					_languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA,
+					_languageServerProcess.standardInput);
+			}
 			_languageClient.debugMode = debugMode;
 			_languageClient.registerUriScheme("swc");
 			_languageClient.addWorkspaceFolder({
@@ -488,6 +549,15 @@ package actionScripts.languageServer
 			initParams.initializationOptions = initOptions;
 			_languageClient.initialize(initParams);
 		}
+	
+		private function flushSocket():void
+		{
+			if(!_clientSocket)
+			{
+				return;
+			}
+			_clientSocket.flush();
+		}
 
 		private function restartLanguageServer():void
 		{
@@ -507,20 +577,6 @@ package actionScripts.languageServer
 			{
 				bootstrapThenStartNativeProcess();
 			}
-		}
-
-		private function sendWorkspaceSettings():void
-		{
-			if(!_languageClient || !_languageClient.initialized)
-			{
-				return;
-			}
-			var frameworkSDK:String = getProjectSDKPath(_project, _model);
-			var settings:Object = { as3mxml: { sdk: { framework: frameworkSDK } } };
-			
-			var params:Object = new Object();
-			params.settings = settings;
-			_languageClient.sendNotification(METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION, params);
 		}
 
 		private function getProjectConfiguration():Object
@@ -604,7 +660,7 @@ package actionScripts.languageServer
 
 		private function sendProjectConfiguration():void
 		{
-			if(!_languageClient || !_languageClient.initialized)
+			if(!_languageClient || !_languageClient.initialized || _languageClient.stopping || _languageClient.stopped)
 			{
 				return;
 			}
@@ -738,7 +794,14 @@ package actionScripts.languageServer
 					error("Java version 8 or newer is required. Version not supported: " + this._javaVersion + ". ActionScript & MXML code intelligence disabled for project: " + project.name + ".");
 					return;
 				}
-				startNativeProcess();
+				if (_useSocket)
+				{
+					startServerSocket();
+				}
+				else
+				{
+					startNativeProcess();
+				}
 			}
 			else
 			{
@@ -760,6 +823,8 @@ package actionScripts.languageServer
 		{
 			if(_waitingToRestart)
 			{
+				cleanupClientSocket();
+				cleanupServerSocket();
 				cleanupLanguageClient();
 				//the native process will automatically exit, so we continue
 				//waiting for that to complete
@@ -1014,6 +1079,31 @@ package actionScripts.languageServer
 					}
 				]
 			});
+		}
+
+		private function serverSocket_connectHandler(event:ServerSocketConnectEvent):void
+		{
+			_clientSocket = event.socket;
+			_clientSocket.addEventListener(IOErrorEvent.IO_ERROR, clientSocket_ioErrorHandler);
+			_clientSocket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, clientSocket_securityErrorHandler);
+            _clientSocket.addEventListener(Event.CLOSE, clientSocket_closeHandler);
+			
+			initializeLanguageServer(_previousSDKPath);
+		}
+
+		private function clientSocket_ioErrorHandler(event:IOErrorEvent):void
+		{
+			error("ioError " + event.text);
+		}
+
+		private function clientSocket_securityErrorHandler(event:SecurityErrorEvent):void
+		{
+			error("securityError " + event.text);
+		}
+
+		private function clientSocket_closeHandler(event:Event):void
+		{
+			cleanupClientSocket();
 		}
 	}
 }
