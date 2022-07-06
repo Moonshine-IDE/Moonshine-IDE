@@ -4,10 +4,10 @@ import mx.core.IUIComponent;
 
 extern interface IContentWindow extends IUIComponent {
 
-    @flash.property
+    @:flash.property
     public var label(default, null):String;
 
-    @flash.property
+    @:flash.property
     public var longLabel(default, null):String;
 
     function save():Void;

@@ -16,22 +16,16 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.controllers
+package actionScripts.plugin.core.sourcecontrol
 {
-	import flash.events.Event;
+	import actionScripts.factory.FileLocation;
 	
-	import actionScripts.locator.IDEModel;
-	import actionScripts.ui.IContentWindow;
-	import actionScripts.ui.notifier.ActionNotifier;
-	
-	public class SaveFileCommand implements ICommand
+	public interface _ISourceControlProvider
 	{
-		public function execute(event:Event):void {
-			
-			ActionNotifier.getInstance().notify("Saving");
-			
-			var editor:IContentWindow = IDEModel.getInstance().activeEditor as IContentWindow;
-			editor.save();
-		}
+		function get systemNameShort():String;
+		function getStatus(filePath:String):String;
+		function getTreeRightClickMenu(file:FileLocation):Object;
+		function refresh(file:FileLocation):void;
+		function remove(file:FileLocation):void;
 	}
 }

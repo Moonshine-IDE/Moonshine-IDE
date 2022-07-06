@@ -16,16 +16,13 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.core.sourcecontrol
+package actionScripts.plugin.build.vo
 {
-	import actionScripts.factory.FileLocation;
-	
-	public interface ISourceControlProvider
+	public class BuildActionType
 	{
-		function get systemNameShort():String;
-		function getStatus(filePath:String):String;
-		function getTreeRightClickMenu(file:FileLocation):Object;
-		function refresh(file:FileLocation):void;
-		function remove(file:FileLocation):void;
+		public static const BUILD_TYPE_GRADLE:String = "buildGradle";
+		public static const BUILD_TYPE_GRAILS:String = "buildGrails";
+		public static const BUILD_TYPE_MAVEN:String = "buildMaven";
+		public static const BUILD_TYPE_ANT:String = "buildAnt";
 	}
 }

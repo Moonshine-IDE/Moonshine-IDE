@@ -47,6 +47,7 @@ package actionScripts.plugin.workspace
 	import feathers.data.ArrayCollection;
 
 	import moonshine.plugin.workspace.view.LoadWorkspaceView;
+	import moonshine.data.preferences.MoonshinePreferences;
 
 	public class WorkspacePlugin extends PluginBase
 	{
@@ -73,6 +74,8 @@ package actionScripts.plugin.workspace
 		private var newWorkspaceView:NewWorkspaceView;
 		private var newWorkspaceViewWrapper:FeathersUIWrapper;
 
+		private var preferences:MoonshinePreferences;
+
 		private var _currentWorkspaceLabel:String;
 		private function get currentWorkspaceLabel():String
 		{
@@ -98,6 +101,7 @@ package actionScripts.plugin.workspace
 		public function WorkspacePlugin()
 		{
 			super();
+			preferences = MoonshinePreferences.getLocal();
 		}
 		
 		override public function activate():void
@@ -335,6 +339,10 @@ package actionScripts.plugin.workspace
 			cookie.data["workspaces"] = workspaces;
 			
 			cookie.flush();
+
+			preferences.workspace.current = currentWorkspaceLabel;
+			preferences.workspace.workspaces = workspaces;
+			preferences.flush();
 		}
 		
 		private function outputToConsole():void

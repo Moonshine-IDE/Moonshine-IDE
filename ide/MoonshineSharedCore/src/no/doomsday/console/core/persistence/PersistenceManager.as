@@ -23,6 +23,7 @@ package no.doomsday.console.core.persistence
     import flash.net.SharedObject;
 	import no.doomsday.console.core.commands.ConsoleCommand;
 	import no.doomsday.console.core.DConsole;
+	import moonshine.data.preferences.MoonshinePreferences;
 	/**
 	 * ...
 	 * @author Andreas Rønning
@@ -36,8 +37,10 @@ package no.doomsday.console.core.persistence
 		private var historySO:SharedObject;
 		public var maxHistory:int = 10;
 		private var _dockState:int = 0;
+		private var preferences:MoonshinePreferences;
 		public function PersistenceManager(console:DConsole) 
 		{
+			preferences = MoonshinePreferences.getLocal();
 			this.console = console;
 			historySO = SharedObject.getLocal(SharedObjectConst.CONSOLE_HISTORY);
 			if (!historySO.data.history) historySO.data.history = [];
@@ -51,6 +54,8 @@ package no.doomsday.console.core.persistence
 		public function clearHistory():void
 		{
 			historySO.data.history = [];
+			preferences.clearHistory();
+			preferences.flush();
 		}
 		
 		public function get dockState():int { return _dockState; }
@@ -59,6 +64,8 @@ package no.doomsday.console.core.persistence
 		{
 			_dockState = value;
 			historySO.data.dockState = _dockState;
+			preferences.history.dockState = _dockState;
+			preferences.flush();
 		}
 		
 		public function get commandIndex():int { return _commandIndex; }
@@ -74,6 +81,8 @@ package no.doomsday.console.core.persistence
 		{
 			_previousCommands = value;
 			historySO.data.history = _previousCommands;
+			preferences.history.previousCommands = _previousCommands;
+			preferences.flush();
 		}
 		
 		public function get numLines():int { return _numLines; }
@@ -82,6 +91,8 @@ package no.doomsday.console.core.persistence
 		{
 			_numLines = value;
 			historySO.data.numLines = _numLines;
+			preferences.history.numLines = _numLines;
+			preferences.flush();
 		}
 		
 		public function historyUp():String {
@@ -101,11 +112,14 @@ package no.doomsday.console.core.persistence
 		public function addtoHistory(cmdStr:String):Boolean {
 			if (previousCommands[previousCommands.length - 1] != cmdStr) {
 				previousCommands.push(cmdStr);
+				preferences.history.previousCommands.push(cmdStr);
 				if (previousCommands.length > maxHistory) {
 					previousCommands.shift();
+					preferences.history.previousCommands.shift();
 				}
 			}
 			commandIndex = previousCommands.length;
+			preferences.flush();
 			return true;
 		}
 		

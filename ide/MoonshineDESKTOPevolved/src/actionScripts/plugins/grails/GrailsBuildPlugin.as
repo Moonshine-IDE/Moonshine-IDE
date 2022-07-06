@@ -357,8 +357,9 @@ package actionScripts.plugins.grails
 			return [];
 		}
 		
-		protected function prepareStart(arguments:Array, buildDirectory:FileLocation, commandType:String=BuildActionType.BUILD_TYPE_GRAILS):void
+		protected function prepareStart(arguments:Array, buildDirectory:FileLocation, commandType:String="buildGrails"):void
 		{
+			var s = BuildActionType.BUILD_TYPE_GRAILS;
             dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
 
 			if (!buildDirectory || !buildDirectory.fileBridge.exists)
