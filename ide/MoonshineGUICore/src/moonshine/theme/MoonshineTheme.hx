@@ -20,7 +20,6 @@
 
 package moonshine.theme;
 
-import flash.filters.DropShadowFilter;
 import feathers.controls.BasicButton;
 import feathers.controls.Button;
 import feathers.controls.ButtonState;
@@ -34,6 +33,7 @@ import feathers.controls.ListView;
 import feathers.controls.Panel;
 import feathers.controls.PopUpListView;
 import feathers.controls.Radio;
+import feathers.controls.TextCallout;
 import feathers.controls.TextInput;
 import feathers.controls.TextInputState;
 import feathers.controls.ToggleButton;
@@ -42,10 +42,10 @@ import feathers.controls.TreeGridView;
 import feathers.controls.TreeView;
 import feathers.controls.VProgressBar;
 import feathers.controls.VScrollBar;
-import feathers.controls.dataRenderers.SortOrderHeaderRenderer;
 import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
+import feathers.controls.dataRenderers.SortOrderHeaderRenderer;
 import feathers.core.DefaultToolTipManager;
 import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
@@ -55,6 +55,7 @@ import feathers.skins.RectangleSkin;
 import feathers.skins.TriangleSkin;
 import feathers.style.Theme;
 import flash.display.Bitmap;
+import flash.filters.DropShadowFilter;
 import moonshine.components.StandardPopupView;
 import moonshine.plugin.debugadapter.view.DebugAdapterView;
 import moonshine.plugin.debugadapter.view.ThreadOrStackFrameItemRenderer;
@@ -188,6 +189,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_OVER_BUTTON, setMiniDebugStepOverButtonStyles);
 		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_INTO_BUTTON, setMiniDebugStepIntoButtonStyles);
 		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_OUT_BUTTON, setMiniDebugStepOutButtonStyles);
+
+		this.styleProvider.setStyleFunction(TextCallout, null, setTextCalloutStyles);
 
 		this.styleProvider.setStyleFunction(HProgressBar, null, setHProgressBarStyles);
 		this.styleProvider.setStyleFunction(VProgressBar, null, setVProgressBarStyles);
@@ -663,6 +666,67 @@ class MoonshineTheme extends SDKInstallerTheme {
 		toolTip.paddingRight = 4.0;
 		toolTip.paddingBottom = 4.0;
 		toolTip.paddingLeft = 4.0;
+	}
+
+	private function setTextCalloutStyles(callout:TextCallout):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x222222);
+		backgroundSkin.border = SolidColor(1.0, 0x000000);
+		callout.backgroundSkin = backgroundSkin;
+
+		callout.textFormat = getLightOnDarkTextFormat();
+		// toolTip.embedFonts = true;
+
+		var topArrowSkin = new TriangleSkin();
+		topArrowSkin.pointPosition = TOP;
+		topArrowSkin.drawBaseBorder = false;
+		topArrowSkin.fill = SolidColor(0x222222);
+		topArrowSkin.border = SolidColor(1.0, 0x000000);
+		topArrowSkin.width = 10.0;
+		topArrowSkin.height = 6.0;
+		callout.topArrowSkin = topArrowSkin;
+
+		var rightArrowSkin = new TriangleSkin();
+		rightArrowSkin.pointPosition = RIGHT;
+		rightArrowSkin.drawBaseBorder = false;
+		rightArrowSkin.fill = SolidColor(0x222222);
+		rightArrowSkin.border = SolidColor(1.0, 0x000000);
+		rightArrowSkin.width = 6.0;
+		rightArrowSkin.height = 10.0;
+		callout.rightArrowSkin = rightArrowSkin;
+
+		var bottomArrowSkin = new TriangleSkin();
+		bottomArrowSkin.pointPosition = BOTTOM;
+		bottomArrowSkin.drawBaseBorder = false;
+		bottomArrowSkin.fill = SolidColor(0x222222);
+		bottomArrowSkin.border = SolidColor(1.0, 0x000000);
+		bottomArrowSkin.width = 10.0;
+		bottomArrowSkin.height = 6.0;
+		callout.bottomArrowSkin = bottomArrowSkin;
+
+		var leftArrowSkin = new TriangleSkin();
+		leftArrowSkin.pointPosition = LEFT;
+		leftArrowSkin.drawBaseBorder = false;
+		leftArrowSkin.fill = SolidColor(0x222222);
+		leftArrowSkin.border = SolidColor(1.0, 0x000000);
+		leftArrowSkin.width = 6.0;
+		leftArrowSkin.height = 10.0;
+		callout.leftArrowSkin = leftArrowSkin;
+
+		callout.topArrowGap = -1.0;
+		callout.rightArrowGap = -1.0;
+		callout.bottomArrowGap = -1.0;
+		callout.leftArrowGap = -1.0;
+
+		callout.paddingTop = 4.0;
+		callout.paddingRight = 4.0;
+		callout.paddingBottom = 4.0;
+		callout.paddingLeft = 4.0;
+
+		callout.marginTop = 10.0;
+		callout.marginRight = 10.0;
+		callout.marginBottom = 10.0;
+		callout.marginLeft = 10.0;
 	}
 
 	private function setListViewStyles(listView:ListView):Void {
