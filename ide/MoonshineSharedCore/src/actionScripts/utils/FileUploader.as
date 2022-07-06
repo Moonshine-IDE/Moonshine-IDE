@@ -19,6 +19,7 @@
 package actionScripts.utils
 {
 	import actionScripts.events.FileUploaderEvent;
+	import actionScripts.events.GlobalEventDispatcher;
 
 	import flash.events.DataEvent;
 	import flash.events.Event;
@@ -51,6 +52,7 @@ package actionScripts.utils
 			_strUploadUrl = strUploadUrl;
 		}
 
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var _refAddFiles:FileReferenceList;
 		private var _refUploadFile:FileReference;
 		private var _arrUploadFiles:Array;
@@ -173,6 +175,7 @@ package actionScripts.utils
 		private function onUploadFails( event:HTTPStatusEvent ) : void {
 
 			trace(event);
+			dispatchEvent(new FileUploaderEvent(FileUploaderEvent.EVENT_UPLOAD_ERROR, event.toString()));
 			//clearUpload( true );
 			//dispatchEvent( new GeneralEvents(GeneralEvents.UPLOAD_ERROR, "Error!\nUpload failed to connect!") );
 		}

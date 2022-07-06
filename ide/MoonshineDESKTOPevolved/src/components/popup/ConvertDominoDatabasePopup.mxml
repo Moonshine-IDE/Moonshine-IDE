@@ -47,6 +47,8 @@
 
 			import actionScripts.events.GlobalEventDispatcher;
 
+			import spark.components.BusyIndicator;
+
 			public static const EVENT_ADD_UPDATE_INSTANCE:String = "eventAddUpdateVagrantInstance";
 			private static const CONVERSION_TEST_INTERVAL:int = 5000; // 5 seconds
 
@@ -60,6 +62,9 @@
 			private var uploadedNSFFilePath:String;
 			private var uploadedNSFFileSize:Number;
 			private var conversioTestTimeout:uint;
+			private var retryCount:int;
+			private var busyIndicator:BusyIndicator;
+			private var isProcessCanceled:Boolean;
 			
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
@@ -90,12 +95,6 @@
 
 			private function onNSFBrowse():void
 			{
-				dispatcher.dispatchEvent(
-						new ConsoleOutputEvent(
-								ConsoleOutputEvent.CONSOLE_PRINT,
-								".nsf file starts uploading to: "+ (ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/upload"
-						)
-				);
 				fileUploader.addFiles([new FileFilter('Database .nsf File', '*.nsf')]);
 			}
 
@@ -154,8 +153,19 @@
 			private function onSubmit():void
 			{
 				enableBusyUI();
+				retryCount = 0;
+				isProcessCanceled = false;
+				dispatcher.dispatchEvent(
+						new ConsoleOutputEvent(
+								ConsoleOutputEvent.CONSOLE_PRINT,
+								".nsf file starts uploading to: "+ (ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/upload",
+								true
+						)
+				);
+
 				fileUploader.uploadUrl = (ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/upload";
 				fileUploader.startUpload();
+
 				//dispatchEvent(new Event(EVENT_ADD_UPDATE_INSTANCE));
 				//closeThis();
 			}
@@ -174,6 +184,9 @@
 
 			private function onConversionRunResponseLoaded(value:Object, message:String=null):void
 			{
+				if (isProcessCanceled)
+					return;
+
 				var infoObject:Object = JSON.parse(value as String);
 				loader = null;
 
@@ -194,9 +207,16 @@
 					{
 						if ("taskStatus" in infoObject)
 						{
+
 							switch ((infoObject.taskStatus as String).toLowerCase())
 							{
 								case "executing":
+									dispatcher.dispatchEvent(
+											new ConsoleOutputEvent(
+													ConsoleOutputEvent.CONSOLE_PRINT,
+													"Re-try conversion check: "+ (++retryCount)
+											)
+									);
 									conversioTestTimeout = setTimeout(
 											runConversionCommandOnServer,
 											CONVERSION_TEST_INTERVAL,
@@ -224,10 +244,15 @@
 													)
 											);
 
-											var downloader:FileDownloader = new FileDownloader((ddlInstances.selectedItem as VagrantInstanceVO).url + infoObject.workingDir +"/result.zip", File.desktopDirectory.resolvePath("result.zip"));
+											var downloader:FileDownloader = new FileDownloader(
+													(ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/download?path="+ infoObject.workingDir +"/result.zip", File.desktopDirectory.resolvePath("result.zip")
+											);
 											configureListenerOnFileDownloader(downloader, true);
 											downloader.load();
 										}
+									break;
+								default:
+									trace(">>>>>> ", infoObject.taskStatus);
 									break;
 							}
 						}
@@ -250,7 +275,13 @@
 			private function onConversionRunFault(message:String):void
 			{
 				loader = null;
-				trace(message);
+				dispatcher.dispatchEvent(
+						new ConsoleOutputEvent(
+								ConsoleOutputEvent.CONSOLE_PRINT,
+								"Conversion request failed: "+ message,
+								false, false, ConsoleOutputEvent.TYPE_ERROR
+						)
+				);
 			}
 
 			private function onFileDownloadedOrFailed(event:Event):void
@@ -264,6 +295,7 @@
 				btnBrowse.enabled = false;
 				btnSubmit.enabled = false;
 				ddlInstances.enabled = false;
+				addRemoveBusyIndicator();
 			}
 
 			private function disableBusyUI():void
@@ -271,6 +303,27 @@
 				btnBrowse.enabled = true;
 				btnSubmit.enabled = true;
 				ddlInstances.enabled = true;
+				addRemoveBusyIndicator();
+			}
+
+			private function addRemoveBusyIndicator():void
+			{
+				if (!busyIndicator)
+				{
+					busyIndicator = new BusyIndicator();
+					grpBusyIndicator.addElement(busyIndicator);
+				}
+				else
+				{
+					grpBusyIndicator.removeElement(busyIndicator);
+					busyIndicator = null;
+				}
+			}
+
+			private function onCancel():void
+			{
+				isProcessCanceled = true;
+				if (busyIndicator) disableBusyUI();
 			}
 
 		]]>
@@ -300,9 +353,14 @@
 	</s:HGroup>
 
 	<resizableTitleWindow:controlBarContent>
+		<s:VGroup id="grpBusyIndicator"
+			percentHeight="100" autoLayout="true" verticalAlign="middle"/>
 		<s:Spacer width="100%"/>
 		<s:Button id="btnSubmit"
-				  label="Save" styleName="darkButton"
+				  label="Submit" styleName="darkButton"
 					click="onSubmit()"/>
+		<s:Button id="btnCancel"
+				  label="Cancel" styleName="darkButton"
+				  click="onCancel()"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
