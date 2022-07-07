@@ -495,6 +495,7 @@ package actionScripts.plugins.as3project.importer
 										//fix hide 
 
 										dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
+										dominoXml=MainApplicationCodeUtils.fixPardefAlign(dominoXml);
 								
 									}
 									
