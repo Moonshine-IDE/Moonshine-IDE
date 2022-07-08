@@ -137,6 +137,9 @@
 			private function onOpenRequest():void
 			{
 				dispatcher.dispatchEvent(
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Trying to open project from: "+ txtBrowsedPath.text)
+				);
+				dispatcher.dispatchEvent(
 						new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(txtBrowsedPath.text))
 				);
 			}
