@@ -231,16 +231,19 @@
 					tmpFW = wrappersToSort.shift();
 					sortChildren(tmpFW);
 					var children:Array = tmpFW.children;
-					var childCount:int = children.length;
-					for(var i:int = 0; i < childCount; i++)
+					if (children)
 					{
-						var child:FileWrapper = FileWrapper(children[i]);
-						if (tree.dataDescriptor.isBranch(child) && tree.isItemOpen(child))
+						var childCount:int = children.length;
+						for(var i:int = 0; i < childCount; i++)
 						{
-							// when calling refreshItem(), all children are
-							// replaced with new FileWrapper instances, so their
-							// children will need to be sorted too
-							wrappersToSort.push(child);
+							var child:FileWrapper = FileWrapper(children[i]);
+							if (tree.dataDescriptor.isBranch(child) && tree.isItemOpen(child))
+							{
+								// when calling refreshItem(), all children are
+								// replaced with new FileWrapper instances, so their
+								// children will need to be sorted too
+								wrappersToSort.push(child);
+							}
 						}
 					}
 				}
