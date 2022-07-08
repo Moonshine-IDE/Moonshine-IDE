@@ -25,7 +25,7 @@ package actionScripts.plugins.vagrant.vo
 		{
 		}
 
-		private var _state:String;
+		private var _state:String = VagrantInstanceState.UNREACHABLE;
 		public function get state():String
 		{
 			return _state;

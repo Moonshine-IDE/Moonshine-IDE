@@ -32,8 +32,10 @@
 	<fx:Script>
 		<![CDATA[
 		import actionScripts.controllers.DataAgent;
+		import actionScripts.events.ProjectEvent;
 		import actionScripts.locator.IDEModel;
-			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 
 			import mx.events.FlexEvent;
 
@@ -111,7 +113,7 @@
 
 			private function getVagrantInfo():void
 			{
-				loader = new DataAgent(txtURL.text +"/info", onServerInfoLoaded, onServerInfoFault, null, DataAgent.GETEVENT);
+				loader = new DataAgent(txtURL.text +"/info", onServerInfoLoaded, onServerInfoFault, null, DataAgent.GETEVENT, 0, false);
 			}
 
 			private function onServerInfoLoaded(value:Object, message:String=null):void
@@ -127,6 +129,16 @@
 			{
 				loader = null;
 				txtState.text = txtCapabilities.text = "";
+				dispatcher.dispatchEvent(
+						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Unable to check status: "+ message, false, false, ConsoleOutputEvent.TYPE_ERROR)
+				);
+			}
+
+			private function onOpenRequest():void
+			{
+				dispatcher.dispatchEvent(
+						new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(txtBrowsedPath.text))
+				);
 			}
 
 		]]>
@@ -154,14 +166,15 @@
 							  prompt="Select path.." width="100%" styleName="textInput" editable="false"/>
 		<s:Button label="Browse" styleName="darkButton"
 			click="onBrowse()"/>
-		<s:Button label="Open" styleName="darkButton"/>
+		<s:Button label="Open" styleName="darkButton"
+			enabled="{txtBrowsedPath.text != ''}"
+			click="onOpenRequest()"/>
 	</s:HGroup>
 	<s:BorderContainer width="100%" borderColor="#666666" backgroundColor="#a0a0a0" cornerRadius="2">
 		<s:Form width="100%">
 			<s:layout>
-				<s:FormLayout gap="-4"/>
+				<s:FormLayout gap="-2"/>
 			</s:layout>
-			<s:FormHeading label="Status"/>
 			<s:FormItem label="State" styleName="uiTextSettingsLabel">
 				<s:Label id="txtState"
 						 width="100%" styleName="uiTextSettingsValue"

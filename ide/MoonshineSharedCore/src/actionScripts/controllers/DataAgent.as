@@ -72,6 +72,8 @@ package actionScripts.controllers
 		public var eventType					: String;
 		public var postUrl						: String;
 		public var timeOut						: Number;
+		public var showAlert					: Boolean;
+
 		//--------------------------------------------------------------------------
 		//
 		//  PRIVATE VARIABLES
@@ -93,7 +95,7 @@ package actionScripts.controllers
 		 * postURL, postObject, timeoutSeconds
 		 */
 		
-		public function DataAgent(_postURL:String, _successFn:Function, _errorFn:Function, _anObject:Object = null, _eventType:String=POSTEVENT, _timeout:Number=0)
+		public function DataAgent(_postURL:String, _successFn:Function, _errorFn:Function, _anObject:Object = null, _eventType:String=POSTEVENT, _timeout:Number=0, _showAlert:Boolean=true)
 		{
 			successFunctionCallback = _successFn;
 			errorFunctionCallback = _errorFn;
@@ -101,6 +103,7 @@ package actionScripts.controllers
 			anObject = _anObject;
 			eventType = _eventType;
 			timeOut = _timeout;
+			showAlert = _showAlert;
 			
 			// starting the call
 			var urlVariables : URLVariables = new URLVariables();
@@ -206,7 +209,8 @@ package actionScripts.controllers
 			// in the Post event initiator component.
 			if (errorFunctionCallback != null)
 			{
-				Alert.show(event.text, "Error!");
+				if (showAlert)
+					Alert.show(event.text, "Error!");
 				errorFunctionCallback( event.text );
 			}
 			
@@ -223,7 +227,8 @@ package actionScripts.controllers
 			// in the Post event initiator component.
 			if (errorFunctionCallback != null)
 			{
-				Alert.show(event.text, "Error!");
+				if (showAlert)
+					Alert.show(event.text, "Error!");
 				errorFunctionCallback( event.text );
 			}
 			

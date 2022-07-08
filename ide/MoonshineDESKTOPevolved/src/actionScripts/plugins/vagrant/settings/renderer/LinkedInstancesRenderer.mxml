@@ -123,7 +123,36 @@
 				doubleClick="onItemDoubleClicked(event)" doubleClickEnabled="true">
 		<s:columns>
 			<s:ArrayList>
-				<s:GridColumn headerText="State" dataField="state" width="100" minWidth="100"/>
+				<s:GridColumn headerText="Status" dataField="state" width="100" minWidth="100">
+					<s:itemRenderer>
+						<fx:Component>
+							<s:GridItemRenderer width="100%">
+								<fx:Script>
+									<![CDATA[
+									import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
+
+									override public function set data(value:Object):void
+										{
+											if (value)
+											{
+												super.data = value;
+											}
+										}
+									]]>
+								</fx:Script>
+								<s:Image source="@Embed(source='/elements/images/tick_circle_frame.png')"
+									visible="{data.state == VagrantInstanceState.READY}" includeInLayout="{data.state == VagrantInstanceState.READY}"
+									toolTip="{data.state}" horizontalCenter="0" verticalCenter="0"/>
+								<s:Image source="@Embed(source='/elements/images/iconExclamationRed.png')"
+										 visible="{data.state == VagrantInstanceState.UNREACHABLE}" includeInLayout="{data.state == VagrantInstanceState.UNREACHABLE}"
+										 toolTip="unreachable" horizontalCenter="0" verticalCenter="0"/>
+								<s:Image source="@Embed(source='/elements/images/exclamation.png')"
+										 visible="{data.state == VagrantInstanceState.OTHER}" includeInLayout="{data.state == VagrantInstanceState.OTHER}"
+										 toolTip="{data.state}" horizontalCenter="0" verticalCenter="0"/>
+							</s:GridItemRenderer>
+						</fx:Component>
+					</s:itemRenderer>
+				</s:GridColumn>
 				<s:GridColumn headerText="Name" dataField="title"/>
 				<s:GridColumn headerText="URL" dataField="url"/>
 				<s:GridColumn headerText="Capabilities" dataField="roles" labelFunction="capabilitiesLabelFunction"/>
@@ -132,16 +161,12 @@
 	</s:DataGrid>
 
 	<s:HGroup width="100%" verticalAlign="middle" gap="4">
-		<s:Button label="New"
+		<s:Button label="+"
 				  styleName="lightButton"
 					click="onNewInstance(event)"/>
-		<s:Button label="Remove"
+		<s:Button label="-"
 				  enabled="{dgVagrantInstances.selectedItem}"
 				  styleName="lightButton"
 					click="onInstanceRemove(event)"/>
-		<s:Button label="Edit"
-				  enabled="{dgVagrantInstances.selectedItem}"
-				  styleName="lightButton"
-					click="onInstanceEdit(event)"/>
 	</s:HGroup>
 </s:VGroup>
