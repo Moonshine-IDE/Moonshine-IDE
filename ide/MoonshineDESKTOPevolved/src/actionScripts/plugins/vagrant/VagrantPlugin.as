@@ -171,13 +171,21 @@ package actionScripts.plugins.vagrant
 				convertDominoDBPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ConvertDominoDatabasePopup) as ConvertDominoDatabasePopup;
 				convertDominoDBPopup.instances = vagrantInstances;
 				convertDominoDBPopup.addEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
+				convertDominoDBPopup.addEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartNSFConversionProcess);
 				PopUpManager.centerPopUp(convertDominoDBPopup);
 			}
 		}
 
 		private function onConvertDominoDBPopupClosed(event:CloseEvent):void
 		{
+			convertDominoDBPopup.removeEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
+			convertDominoDBPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartNSFConversionProcess);
 			convertDominoDBPopup = null;
+		}
+
+		private function onStartNSFConversionProcess(event:Event):void
+		{
+			onConvertDominoDBPopupClosed(null);
 		}
 
 		private function updateEventListeners():void

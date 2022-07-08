@@ -22,6 +22,7 @@
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
 										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:mx="library://ns.adobe.com/flex/mx"
 										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   xmlns:view="actionScripts.plugin.findreplace.view.*"
 										   xmlns:controls="components.controls.*"
@@ -33,13 +34,15 @@
 		<![CDATA[
 			import actionScripts.controllers.DataAgent;
 			import actionScripts.events.FileUploaderEvent;
+			import actionScripts.events.ProjectEvent;
 			import actionScripts.events.SettingsEvent;
+			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.console.ConsoleOutputEvent;
 			import actionScripts.plugins.vagrant.VagrantPlugin;
 			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 			import actionScripts.utils.FileDownloader;
-			import actionScripts.utils.FileDownloader;
 			import actionScripts.utils.FileUploader;
+			import actionScripts.utils.Unzip;
 
 			import mx.collections.ArrayCollection;
 
@@ -47,9 +50,11 @@
 
 			import actionScripts.events.GlobalEventDispatcher;
 
-			import spark.components.BusyIndicator;
+			import mx.validators.Validator;
 
-			public static const EVENT_ADD_UPDATE_INSTANCE:String = "eventAddUpdateVagrantInstance";
+			import spark.components.Alert;
+
+			public static const EVENT_START_CONVERSION:String = "eventStartConversion";
 			private static const CONVERSION_TEST_INTERVAL:int = 5000; // 5 seconds
 
 			public var instances:ArrayCollection;
@@ -63,8 +68,6 @@
 			private var uploadedNSFFileSize:Number;
 			private var conversioTestTimeout:uint;
 			private var retryCount:int;
-			private var busyIndicator:BusyIndicator;
-			private var isProcessCanceled:Boolean;
 			
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
@@ -96,6 +99,16 @@
 			private function onNSFBrowse():void
 			{
 				fileUploader.addFiles([new FileFilter('Database .nsf File', '*.nsf')]);
+			}
+
+			private function onDownloadDirBrowse():void
+			{
+				IDEModel.getInstance().fileCore.browseForDirectory("Select Download Folder", onDownloadDirBrowsed);
+			}
+
+			private function onDownloadDirBrowsed(location:File):void
+			{
+				txtDownloadDir.text = location.nativePath;
 			}
 
 			private function onFilesLoaded(event:FileUploaderEvent):void
@@ -152,9 +165,20 @@
 
 			private function onSubmit():void
 			{
-				enableBusyUI();
+				// validations
+				var tmpArr:Array = new Array(svPath, svDownloadDir);
+				if (Validator.validateAll(tmpArr).length != 0)
+				{
+					return;
+				}
+
+				if (!ddlInstances.selectedItem)
+				{
+					Alert.show("A valid NSF Converter is missing.", "Error!");
+					return;
+				}
+
 				retryCount = 0;
-				isProcessCanceled = false;
 				dispatcher.dispatchEvent(
 						new ConsoleOutputEvent(
 								ConsoleOutputEvent.CONSOLE_PRINT,
@@ -166,7 +190,7 @@
 				fileUploader.uploadUrl = (ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/upload";
 				fileUploader.startUpload();
 
-				//dispatchEvent(new Event(EVENT_ADD_UPDATE_INSTANCE));
+				//dispatchEvent(new Event(EVENT_START_CONVERSION));
 				//closeThis();
 			}
 
@@ -184,9 +208,6 @@
 
 			private function onConversionRunResponseLoaded(value:Object, message:String=null):void
 			{
-				if (isProcessCanceled)
-					return;
-
 				var infoObject:Object = JSON.parse(value as String);
 				loader = null;
 
@@ -264,11 +285,13 @@
 			{
 				if (listen)
 				{
-					downloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onFileDownloadedOrFailed, false, 0, true);
+					downloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onFileDownloadeded, false, 0, true);
+					downloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onFileDownloadFailed, false, 0, true);
 				}
 				else
 				{
-					downloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onFileDownloadedOrFailed);
+					downloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onFileDownloadeded);
+					downloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onFileDownloadFailed);
 				}
 			}
 
@@ -284,9 +307,34 @@
 				);
 			}
 
-			private function onFileDownloadedOrFailed(event:Event):void
+			private function onFileDownloadeded(event:Event):void
 			{
 				disableBusyUI();
+				configureListenerOnFileDownloader(event.target as FileDownloader, false);
+
+				var unzip:Unzip = new Unzip(File.desktopDirectory.resolvePath("result.zip"));
+				unzip.addEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
+
+				/*
+				 * @local
+				 */
+				function onFileLoadSuccess(ev:Event):void
+				{
+					var destinationProjectFolder:File = File.desktopDirectory.resolvePath("result");
+					destinationProjectFolder.createDirectory();
+
+					unzip.unzipTo(destinationProjectFolder, onUnzipSuccess);
+				}
+			}
+
+			private function onUnzipSuccess(destination:File):void
+			{
+				trace("UNZIP DONE");
+				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, File.desktopDirectory.resolvePath("result")));
+			}
+
+			private function onFileDownloadFailed(event:Event):void
+			{
 				configureListenerOnFileDownloader(event.target as FileDownloader, false);
 			}
 
@@ -295,7 +343,6 @@
 				btnBrowse.enabled = false;
 				btnSubmit.enabled = false;
 				ddlInstances.enabled = false;
-				addRemoveBusyIndicator();
 			}
 
 			private function disableBusyUI():void
@@ -303,31 +350,14 @@
 				btnBrowse.enabled = true;
 				btnSubmit.enabled = true;
 				ddlInstances.enabled = true;
-				addRemoveBusyIndicator();
-			}
-
-			private function addRemoveBusyIndicator():void
-			{
-				if (!busyIndicator)
-				{
-					busyIndicator = new BusyIndicator();
-					grpBusyIndicator.addElement(busyIndicator);
-				}
-				else
-				{
-					grpBusyIndicator.removeElement(busyIndicator);
-					busyIndicator = null;
-				}
-			}
-
-			private function onCancel():void
-			{
-				isProcessCanceled = true;
-				if (busyIndicator) disableBusyUI();
 			}
 
 		]]>
 	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="svPath" source="{txtFile}" property="text" trigger="{btnSubmit}"/>
+		<mx:StringValidator id="svDownloadDir" source="{txtDownloadDir}" property="text" trigger="{btnSubmit}"/>
+	</fx:Declarations>
 
 	<resizableTitleWindow:layout>
 		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
@@ -339,6 +369,13 @@
 							  width="100%" styleName="textInput" prompt="Select path.." editable="false"/>
 		<s:Button id="btnBrowse"
 				  label="Browse" click="onNSFBrowse()" styleName="darkButton"/>
+	</s:HGroup>
+
+	<s:Label text="Select Parent Directory to Download:"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<view:PromptTextInput id="txtDownloadDir"
+							  width="100%" styleName="textInput" prompt="Select path.." editable="false"/>
+		<s:Button label="Browse" click="onDownloadDirBrowse()" styleName="darkButton"/>
 	</s:HGroup>
 
 	<s:Label text="%Requirement Notes to Come here%" paddingTop="6" paddingBottom="10"/>
@@ -353,14 +390,9 @@
 	</s:HGroup>
 
 	<resizableTitleWindow:controlBarContent>
-		<s:VGroup id="grpBusyIndicator"
-			percentHeight="100" autoLayout="true" verticalAlign="middle"/>
 		<s:Spacer width="100%"/>
 		<s:Button id="btnSubmit"
 				  label="Submit" styleName="darkButton"
 					click="onSubmit()"/>
-		<s:Button id="btnCancel"
-				  label="Cancel" styleName="darkButton"
-				  click="onCancel()"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>

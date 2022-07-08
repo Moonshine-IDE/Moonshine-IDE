@@ -151,7 +151,7 @@
 	<s:Label text="Local Path (Optional):"/>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<view:PromptTextInput id="txtBrowsedPath"
-							  prompt="Select path.." width="100%" styleName="textInput" enabled="false"/>
+							  prompt="Select path.." width="100%" styleName="textInput" editable="false"/>
 		<s:Button label="Browse" styleName="darkButton"
 			click="onBrowse()"/>
 		<s:Button label="Open" styleName="darkButton"/>
