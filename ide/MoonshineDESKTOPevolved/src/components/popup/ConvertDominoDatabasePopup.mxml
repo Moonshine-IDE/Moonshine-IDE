@@ -32,17 +32,14 @@
 										   creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.controllers.DataAgent;
 			import actionScripts.events.FileUploaderEvent;
-			import actionScripts.events.ProjectEvent;
 			import actionScripts.events.SettingsEvent;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.console.ConsoleOutputEvent;
 			import actionScripts.plugins.vagrant.VagrantPlugin;
 			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
-			import actionScripts.utils.FileDownloader;
 			import actionScripts.utils.FileUploader;
-			import actionScripts.utils.Unzip;
+			import actionScripts.utils.FileUtils;
 
 			import mx.collections.ArrayCollection;
 
@@ -55,19 +52,29 @@
 			import spark.components.Alert;
 
 			public static const EVENT_START_CONVERSION:String = "eventStartConversion";
-			private static const CONVERSION_TEST_INTERVAL:int = 5000; // 5 seconds
 
 			public var instances:ArrayCollection;
 
 			[Bindable] private var nsfConverterInstances:ArrayCollection;
 
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-			private var loader:DataAgent;
 			private var fileUploader:FileUploader;
-			private var uploadedNSFFilePath:String;
-			private var uploadedNSFFileSize:Number;
-			private var conversioTestTimeout:uint;
-			private var retryCount:int;
+
+			private var _uploadRequestReturn:Object;
+			public function get uploadRequestReturn():Object
+			{
+				return _uploadRequestReturn;
+			}
+
+			public function get destinationFolder():File
+			{
+				return (new File(txtDownloadDir.text).resolvePath("result"));
+			}
+
+			public function get selectedInstance():VagrantInstanceVO
+			{
+				return ddlInstances.selectedItem;
+			}
 			
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
@@ -120,34 +127,9 @@
 			{
 				if (event.value && ((event.value as String) != ""))
 				{
-					var serverReturn:Object = JSON.parse(event.value as String);
-					if (serverReturn)
-					{
-						if ("error" in serverReturn)
-						{
-							disableBusyUI();
-							dispatcher.dispatchEvent(
-									new ConsoleOutputEvent(
-											ConsoleOutputEvent.CONSOLE_PRINT,
-											"Failed to upload file with exit code:"+ serverReturn.error +"\n"+ serverReturn.message,
-											false, false, ConsoleOutputEvent.TYPE_ERROR
-									)
-							);
-						}
-						else
-						{
-							uploadedNSFFilePath = serverReturn.path;
-							uploadedNSFFileSize = Number(serverReturn.size);
-
-							dispatcher.dispatchEvent(
-									new ConsoleOutputEvent(
-											ConsoleOutputEvent.CONSOLE_PRINT,
-											"Requesting conversion job to: "+ (ddlInstances.selectedItem as VagrantInstanceVO).url +"/task"
-									)
-							);
-							runConversionCommandOnServer();
-						}
-					}
+					_uploadRequestReturn = JSON.parse(event.value as String);
+					dispatchEvent(new Event(EVENT_START_CONVERSION));
+					closeThis();
 				}
 			}
 
@@ -178,176 +160,38 @@
 					return;
 				}
 
-				retryCount = 0;
+				if (FileUtils.isPathExists(txtDownloadDir.text + "/result"))
+				{
+					if ((new File(txtDownloadDir.text + "/result")).getDirectoryListing().length > 0)
+					{
+						Alert.show(txtDownloadDir.text + "/result should be empty.", "Error!");
+						return;
+					}
+				}
+
 				dispatcher.dispatchEvent(
 						new ConsoleOutputEvent(
 								ConsoleOutputEvent.CONSOLE_PRINT,
-								".nsf file starts uploading to: "+ (ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/upload",
+								"Trying to upload request to: "+ (ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/upload. This may take some time..",
 								true
 						)
 				);
 
+				disableBusyUI();
 				fileUploader.uploadUrl = (ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/upload";
 				fileUploader.startUpload();
-
-				//dispatchEvent(new Event(EVENT_START_CONVERSION));
-				//closeThis();
-			}
-
-			private function runConversionCommandOnServer(withId:String=null):void
-			{
-				clearInterval(conversioTestTimeout);
-				loader = new DataAgent(
-						(ddlInstances.selectedItem as VagrantInstanceVO).url +"/task"+ (withId ? "/"+ withId : ""),
-						onConversionRunResponseLoaded,
-						onConversionRunFault,
-						withId ? null : {command: "/bin/bash /opt/nsf-converter-portal/scripts/nsf-odp-convert.sh '"+ uploadedNSFFilePath +"' 'result.zip'"},
-						withId ? DataAgent.GETEVENT : DataAgent.POSTEVENT
-				);
-			}
-
-			private function onConversionRunResponseLoaded(value:Object, message:String=null):void
-			{
-				var infoObject:Object = JSON.parse(value as String);
-				loader = null;
-
-				if (infoObject)
-				{
-					if ("error" in infoObject)
-					{
-						disableBusyUI();
-						dispatcher.dispatchEvent(
-								new ConsoleOutputEvent(
-										ConsoleOutputEvent.CONSOLE_PRINT,
-										"Conversion failed with exit code:"+ infoObject.error +"\n"+ infoObject.message,
-										false, false, ConsoleOutputEvent.TYPE_ERROR
-								)
-						);
-					}
-					else
-					{
-						if ("taskStatus" in infoObject)
-						{
-
-							switch ((infoObject.taskStatus as String).toLowerCase())
-							{
-								case "executing":
-									dispatcher.dispatchEvent(
-											new ConsoleOutputEvent(
-													ConsoleOutputEvent.CONSOLE_PRINT,
-													"Re-try conversion check: "+ (++retryCount)
-											)
-									);
-									conversioTestTimeout = setTimeout(
-											runConversionCommandOnServer,
-											CONVERSION_TEST_INTERVAL,
-											infoObject.id
-									);
-									break;
-								case "completed":
-										if (infoObject.exitStatus != "0" && ("errorMessage" in infoObject))
-										{
-											disableBusyUI();
-											dispatcher.dispatchEvent(
-													new ConsoleOutputEvent(
-															ConsoleOutputEvent.CONSOLE_PRINT,
-															"Conversion failed with exit code: "+ infoObject.exitStatus +"\n"+ infoObject.errorMessage,
-															false, false, ConsoleOutputEvent.TYPE_ERROR
-													)
-											);
-										}
-										else
-										{
-											dispatcher.dispatchEvent(
-													new ConsoleOutputEvent(
-															ConsoleOutputEvent.CONSOLE_PRINT,
-															"Checking conversion project from: "+ (ddlInstances.selectedItem as VagrantInstanceVO).url + infoObject.workingDir
-													)
-											);
-
-											var downloader:FileDownloader = new FileDownloader(
-													(ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/download?path="+ infoObject.workingDir +"/result.zip", File.desktopDirectory.resolvePath("result.zip")
-											);
-											configureListenerOnFileDownloader(downloader, true);
-											downloader.load();
-										}
-									break;
-								default:
-									trace(">>>>>> ", infoObject.taskStatus);
-									break;
-							}
-						}
-					}
-				}
-			}
-
-			private function configureListenerOnFileDownloader(downloader:FileDownloader, listen:Boolean):void
-			{
-				if (listen)
-				{
-					downloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onFileDownloadeded, false, 0, true);
-					downloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onFileDownloadFailed, false, 0, true);
-				}
-				else
-				{
-					downloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onFileDownloadeded);
-					downloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onFileDownloadFailed);
-				}
-			}
-
-			private function onConversionRunFault(message:String):void
-			{
-				loader = null;
-				dispatcher.dispatchEvent(
-						new ConsoleOutputEvent(
-								ConsoleOutputEvent.CONSOLE_PRINT,
-								"Conversion request failed: "+ message,
-								false, false, ConsoleOutputEvent.TYPE_ERROR
-						)
-				);
-			}
-
-			private function onFileDownloadeded(event:Event):void
-			{
-				disableBusyUI();
-				configureListenerOnFileDownloader(event.target as FileDownloader, false);
-
-				var unzip:Unzip = new Unzip(File.desktopDirectory.resolvePath("result.zip"));
-				unzip.addEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
-
-				/*
-				 * @local
-				 */
-				function onFileLoadSuccess(ev:Event):void
-				{
-					var destinationProjectFolder:File = File.desktopDirectory.resolvePath("result");
-					destinationProjectFolder.createDirectory();
-
-					unzip.unzipTo(destinationProjectFolder, onUnzipSuccess);
-				}
-			}
-
-			private function onUnzipSuccess(destination:File):void
-			{
-				trace("UNZIP DONE");
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, File.desktopDirectory.resolvePath("result")));
-			}
-
-			private function onFileDownloadFailed(event:Event):void
-			{
-				configureListenerOnFileDownloader(event.target as FileDownloader, false);
 			}
 
 			private function enableBusyUI():void
 			{
-				btnBrowse.enabled = false;
+				btnBrowse.enabled = btnBrowseDestination.enabled = false;
 				btnSubmit.enabled = false;
 				ddlInstances.enabled = false;
 			}
 
 			private function disableBusyUI():void
 			{
-				btnBrowse.enabled = true;
+				btnBrowse.enabled = btnBrowseDestination.enabled = true;
 				btnSubmit.enabled = true;
 				ddlInstances.enabled = true;
 			}
@@ -375,7 +219,8 @@
 	<s:HGroup width="100%" verticalAlign="middle">
 		<view:PromptTextInput id="txtDownloadDir"
 							  width="100%" styleName="textInput" prompt="Select path.." editable="false"/>
-		<s:Button label="Browse" click="onDownloadDirBrowse()" styleName="darkButton"/>
+		<s:Button id="btnBrowseDestination"
+				  label="Browse" click="onDownloadDirBrowse()" styleName="darkButton"/>
 	</s:HGroup>
 
 	<s:Label text="%Requirement Notes to Come here%" paddingTop="6" paddingBottom="10"/>

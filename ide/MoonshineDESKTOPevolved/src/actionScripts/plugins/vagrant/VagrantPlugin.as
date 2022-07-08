@@ -20,6 +20,7 @@ package actionScripts.plugins.vagrant
 {
 	import actionScripts.events.DominoEvent;
 	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
+	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
 
 	import components.popup.ConvertDominoDatabasePopup;
 
@@ -70,6 +71,7 @@ package actionScripts.plugins.vagrant
 		private var vagrantFileLocation:FileLocation;
 		private var vagrantInstances:ArrayCollection;
 		private var convertDominoDBPopup:ConvertDominoDatabasePopup;
+		private var dbConversionJob:ConvertDatabaseJob;
 
 		public function get vagrantPath():String
 		{
@@ -185,7 +187,44 @@ package actionScripts.plugins.vagrant
 
 		private function onStartNSFConversionProcess(event:Event):void
 		{
-			onConvertDominoDBPopupClosed(null);
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Converting SomeNSF"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateConversionRequest, false, 0, true);
+
+			// get the object to work with
+			dbConversionJob = new ConvertDatabaseJob(
+					convertDominoDBPopup.uploadRequestReturn,
+					convertDominoDBPopup.selectedInstance.url,
+					convertDominoDBPopup.destinationFolder
+			);
+			configureListenersDBConversionJob(true);
+		}
+
+		private function configureListenersDBConversionJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				dbConversionJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDBConversionEnded, false, 0, true);
+				dbConversionJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDBConversionEnded, false, 0, true);
+			}
+			else
+			{
+				dbConversionJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDBConversionEnded);
+				dbConversionJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDBConversionEnded);
+				dbConversionJob = null;
+			}
+		}
+
+		private function onDBConversionEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateConversionRequest);
+			configureListenersDBConversionJob(false);
+		}
+
+		private function onTerminateConversionRequest(event:StatusBarEvent):void
+		{
+			dbConversionJob.stop();
+			onDBConversionEnded(null);
 		}
 
 		private function updateEventListeners():void
