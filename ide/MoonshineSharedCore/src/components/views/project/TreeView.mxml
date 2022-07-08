@@ -193,9 +193,10 @@
 					sortChildren(fileWrapper);
 				}
 			}
-	
+
 			public function refresh(dir:FileLocation, markAsDeletion:Boolean = false):void
 			{
+				var wrappersToSort:Vector.<FileWrapper> = new <FileWrapper>[];
 				for each (var fw:FileWrapper in model.selectedprojectFolders)
 				{
 					if(ConstantsCoreVO.IS_AIR)
@@ -212,15 +213,35 @@
 										tree.selectedItem.isDeleting = markAsDeletion;
 								}
 								refreshItem(tmpFW);
-								sortChildren(tmpFW);
+								wrappersToSort.push(tmpFW);
 							}
-							return;
+							break;
 						}
-					} else
+					}
+					else
 					{
-						tmpFW = UtilsCore.findFileWrapperAgainstFileLocation(fw, dir)
+						tmpFW = UtilsCore.findFileWrapperAgainstFileLocation(fw, dir);
 						refreshItem(tmpFW);
-						sortChildren(tmpFW);
+						wrappersToSort.push(tmpFW);
+					}
+				}
+
+				while(wrappersToSort.length > 0)
+				{
+					tmpFW = wrappersToSort.shift();
+					sortChildren(tmpFW);
+					var children:Array = tmpFW.children;
+					var childCount:int = children.length;
+					for(var i:int = 0; i < childCount; i++)
+					{
+						var child:FileWrapper = FileWrapper(children[i]);
+						if (tree.dataDescriptor.isBranch(child) && tree.isItemOpen(child))
+						{
+							// when calling refreshItem(), all children are
+							// replaced with new FileWrapper instances, so their
+							// children will need to be sorted too
+							wrappersToSort.push(child);
+						}
 					}
 				}
 			}
