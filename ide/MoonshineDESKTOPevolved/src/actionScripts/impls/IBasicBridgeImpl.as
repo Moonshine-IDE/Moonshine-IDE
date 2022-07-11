@@ -4,35 +4,47 @@ package actionScripts.impls
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.core.ProjectBridgeImplBase;
 	import actionScripts.interfaces.IBasicBridge;
+	import actionScripts.plugin.basic.importer.BasicImporter;	
+	import actionScripts.plugin.basic.vo.BasicProjectVO;	
+	import flash.filesystem.File;
+	import actionScripts.plugin.syntax.BasicSyntaxPlugin;
+	import actionScripts.plugin.basic.BasicProjectPlugin;
 
-	public class BasicBridgeImpl extends ProjectBridgeImplBase implements IBasicBridge
+	public class IBasicBridgeImpl extends ProjectBridgeImplBase implements IBasicBridge
 	{
-		public function BasicBridgeImpl()
+		public function IBasicBridgeImpl()
 		{
 			super()
 		}
 		
 		public function testBasic(file:Object):FileLocation {
-			throw new Error("testBasic method is not implemented")
+			
+			return BasicImporter.test(file as File);
+			
 		}
 		
         public function parseBasic(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):BasicProjectVO{
-        		throw new Error("testBasic method is not implemented")
+        		return BasicImporter.parse(file, projectName, settingsFileLocation);
         }
 
         public function getCorePlugins():Array
         {
-        		return [];
+        		return [
+            ];
         }
 
         public function getDefaultPlugins():Array
         {
-        	throw new Error("Method not implemented.");
+            return [
+			    BasicSyntaxPlugin,
+                BasicProjectPlugin
+				
+            ];
         }
 
         public function getPluginsNotToShowInSettings():Array
         {
-        	throw new Error("Method not implemented.");
+        		return []
         }
 
         public function get runtimeVersion():String

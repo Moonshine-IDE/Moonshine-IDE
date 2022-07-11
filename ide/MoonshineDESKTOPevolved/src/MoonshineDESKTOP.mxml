@@ -54,6 +54,7 @@
 			import actionScripts.impls.IOSXBookmarkerBridgeImp;
 			import actionScripts.impls.IOnDiskBridgeImpl;
 			import actionScripts.impls.IVisualEditorProjectBridgeImpl;
+			import actionScripts.impls.IBasicBridgeImpl;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.ui.LayoutModifier;
 			import actionScripts.ui.menu.MenuPlugin;
@@ -85,6 +86,7 @@
 			private static const NEEDED_FOR_COMPILATION12:IHaxeBridgeImpl = null;
 			private static const NEEDED_FOR_COMPILATION13:IOnDiskBridgeImpl = null;
 			private static const NEEDED_FOR_COMPILATION14:IGenericBridgeImpl = null;
+			private static const NEEDED_FOR_COMPILATION15:IBasicBridgeImpl = null;
 
 			//--------------------------------------------------------------------------
 			//

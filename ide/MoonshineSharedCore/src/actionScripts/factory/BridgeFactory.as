@@ -36,6 +36,7 @@ package actionScripts.factory
     import actionScripts.interfaces.IOSXBookmarkerBridge;
     import actionScripts.interfaces.IOnDiskBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
+    import actionScripts.impls.IBasicBridgeImpl;
 	
 	/**
 	 * BridgeFactory

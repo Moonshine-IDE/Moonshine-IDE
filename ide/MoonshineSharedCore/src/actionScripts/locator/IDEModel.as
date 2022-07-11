@@ -67,6 +67,7 @@ package actionScripts.locator
 		public var languageServerCore:ILanguageServerBridge;
 		public var osxBookmarkerCore:IOSXBookmarkerBridge;
 		
+		
 		// Currently active editor
 		public var activeEditor:IContentWindow;
 		
