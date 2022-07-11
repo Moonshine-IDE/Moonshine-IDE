@@ -45,7 +45,7 @@
 			
 			private function init():void
 			{
-				
+				VagrantUtil.checkStates(setting.vagrantInstances);
 			}
 
 			private function onNewInstance(event:MouseEvent):void
@@ -145,9 +145,10 @@
 									toolTip="{data.state}" horizontalCenter="0" verticalCenter="0"/>
 								<s:Image source="@Embed(source='/elements/images/iconExclamationRed.png')"
 										 visible="{data.state == VagrantInstanceState.UNREACHABLE}" includeInLayout="{data.state == VagrantInstanceState.UNREACHABLE}"
-										 toolTip="unreachable" horizontalCenter="0" verticalCenter="0"/>
+										 toolTip="{data.state}" horizontalCenter="0" verticalCenter="0"/>
 								<s:Image source="@Embed(source='/elements/images/exclamation.png')"
-										 visible="{data.state == VagrantInstanceState.OTHER}" includeInLayout="{data.state == VagrantInstanceState.OTHER}"
+										 visible="{(data.state != VagrantInstanceState.READY) &amp;&amp; (data.state != VagrantInstanceState.UNREACHABLE)}"
+										 includeInLayout="{(data.state != VagrantInstanceState.READY) &amp;&amp; (data.state != VagrantInstanceState.UNREACHABLE)}"
 										 toolTip="{data.state}" horizontalCenter="0" verticalCenter="0"/>
 							</s:GridItemRenderer>
 						</fx:Component>

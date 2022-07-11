@@ -180,7 +180,7 @@ package actionScripts.plugins.vagrant.utils
 		private function onUnzipSuccess(event:Event):void
 		{
 			GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, File.desktopDirectory.resolvePath("result"))
+					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, destinationProjectFolder)
 			);
 
 			dispatchEvent(new Event(EVENT_CONVERSION_COMPLETE));

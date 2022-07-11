@@ -35,6 +35,7 @@
 		import actionScripts.events.ProjectEvent;
 		import actionScripts.locator.IDEModel;
 		import actionScripts.plugin.console.ConsoleOutputEvent;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
 		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 
 			import mx.events.FlexEvent;
@@ -88,6 +89,10 @@
 				instance.localPath = txtBrowsedPath.text;
 				instance.state = txtState.text;
 				instance.capabilities = txtCapabilities.text.split(", ");
+				if (instance.state == "")
+				{
+					instance.state = VagrantInstanceState.UNREACHABLE;
+				}
 				dispatchEvent(new Event(EVENT_ADD_UPDATE_INSTANCE));
 				closeThis();
 			}
@@ -113,13 +118,13 @@
 
 			private function getVagrantInfo():void
 			{
-				loader = new DataAgent(txtURL.text +"/info", onServerInfoLoaded, onServerInfoFault, null, DataAgent.GETEVENT, 0, false);
+				loader = new DataAgent(txtURL.text +"/info", onServerInfoLoaded, onServerInfoFault, null, DataAgent.GETEVENT);
 			}
 
 			private function onServerInfoLoaded(value:Object, message:String=null):void
 			{
 				var infoObject:Object = JSON.parse(value as String);
-				txtState.text = ("status" in infoObject) ? infoObject["status"] : "";
+				txtState.text = ("status" in infoObject) ? infoObject["status"] : VagrantInstanceState.UNREACHABLE;
 				txtCapabilities.text = ("capabilities" in infoObject) ? (infoObject["capabilities"] as Array).join(", ") : "";
 
 				loader = null;
@@ -132,6 +137,10 @@
 				dispatcher.dispatchEvent(
 						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Unable to check status: "+ message, false, false, ConsoleOutputEvent.TYPE_ERROR)
 				);
+				if (instance)
+				{
+					instance.state = VagrantInstanceState.UNREACHABLE;
+				}
 			}
 
 			private function onOpenRequest():void

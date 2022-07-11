@@ -152,8 +152,8 @@ package actionScripts.utils
 		}
 
 		// Called to upload file based on current upload number
-		public function startUpload():void {
-
+		public function startUpload():void
+		{
 			if (_arrUploadFiles.length > 0)
 			{
 				var request:URLRequest = new URLRequest();
@@ -162,13 +162,35 @@ package actionScripts.utils
 				request.method = URLRequestMethod.POST;
 				_refUploadFile = new FileReference();
 				_refUploadFile = _arrUploadFiles[_arrUploadFiles.length - 1].file;
+				configureListeners(true);
+				_refUploadFile.upload(request, uploadField);
+			}
+		}
+
+		private function configureListeners(listen:Boolean, clearUploadComplete:Boolean=false):void
+		{
+			if (listen)
+			{
+				_refUploadFile.addEventListener(Event.CANCEL, onUploadCanceled);
 				_refUploadFile.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
 				_refUploadFile.addEventListener(Event.COMPLETE, onUploadComplete);
 				_refUploadFile.addEventListener(IOErrorEvent.IO_ERROR, onUploadIoError);
 				_refUploadFile.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
 				_refUploadFile.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, uploadCompleteDataHandler);
 				_refUploadFile.addEventListener(HTTPStatusEvent.HTTP_STATUS, onUploadFails);
-				_refUploadFile.upload(request, uploadField);
+			}
+			else if (_refUploadFile)
+			{
+				_refUploadFile.removeEventListener(Event.CANCEL, onUploadCanceled);
+				_refUploadFile.removeEventListener(ProgressEvent.PROGRESS, onUploadProgress);
+				_refUploadFile.removeEventListener(Event.COMPLETE, onUploadComplete);
+				_refUploadFile.removeEventListener(IOErrorEvent.IO_ERROR, onUploadIoError);
+				_refUploadFile.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
+				if ( clearUploadComplete ) _refUploadFile.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, uploadCompleteDataHandler);
+				_refUploadFile.removeEventListener(HTTPStatusEvent.HTTP_STATUS, onUploadFails);
+				_refUploadFile = null;
+
+				updateProgBar();
 			}
 		}
 
@@ -183,7 +205,7 @@ package actionScripts.utils
 		private function uploadCompleteDataHandler(event:DataEvent):void {
 
 			//var tmpXML : XMLList = XMLList(event.data);
-			clearUpload(true);
+			configureListeners(false, true);
 			this.dispatchEvent(new FileUploaderEvent(FileUploaderEvent.EVENT_UPLOAD_COMPLETE_DATA, event.data));
 
 			// checking the session status
@@ -198,21 +220,6 @@ package actionScripts.utils
 			//}
 		}
 
-		// Cancel and clear eventlisteners on last upload
-		public function clearUpload( clearUploadComplete:Boolean=false ):void {
-
-			if ( !_refUploadFile ) return;
-
-			_refUploadFile.removeEventListener(ProgressEvent.PROGRESS, onUploadProgress);
-			_refUploadFile.removeEventListener(Event.COMPLETE, onUploadComplete);
-			_refUploadFile.removeEventListener(IOErrorEvent.IO_ERROR, onUploadIoError);
-			_refUploadFile.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
-			_refUploadFile.removeEventListener(HTTPStatusEvent.HTTP_STATUS, onUploadFails);
-			if ( clearUploadComplete ) _refUploadFile.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, uploadCompleteDataHandler);
-			_refUploadFile.cancel();
-			updateProgBar();
-		}
-
 		// mark as no 'holding' uploads
 		private function clearUploadHolding() : void {
 
@@ -224,7 +231,7 @@ package actionScripts.utils
 
 		// Called on upload cancel
 		private function onUploadCanceled():void {
-			clearUpload(true);
+			configureListeners(false, true);
 			dispatchEvent(new FileUploaderEvent(FileUploaderEvent.EVENT_UPLOAD_CANCELED));
 		}
 
@@ -256,19 +263,19 @@ package actionScripts.utils
 			/* if (_numCurrentUpload < _arrUploadFiles.length) {
 				startUpload();
 			} else { */
-			clearUpload();
+			configureListeners(false);
 			//}
 		}
 
 		// Called on upload io error
 		private function onUploadIoError(event:IOErrorEvent):void {
-			clearUpload(true);
+			configureListeners(false, true);
 			dispatchEvent(new FileUploaderEvent(FileUploaderEvent.EVENT_UPLOAD_ERROR, event.text));
 		}
 
 		// Called on upload security error
 		private function onUploadSecurityError(event:SecurityErrorEvent):void {
-			clearUpload(true);
+			configureListeners(false, true);
 			dispatchEvent(new FileUploaderEvent(FileUploaderEvent.EVENT_UPLOAD_ERROR, event.text));
 		}
 	}

@@ -37,6 +37,7 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.console.ConsoleOutputEvent;
 			import actionScripts.plugins.vagrant.VagrantPlugin;
+			import actionScripts.plugins.vagrant.utils.VagrantUtil;
 			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 			import actionScripts.utils.FileUploader;
 			import actionScripts.utils.FileUtils;
@@ -59,6 +60,7 @@
 
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			private var fileUploader:FileUploader;
+			private var instanceStateCheckCount:int;
 
 			private var _uploadRequestReturn:Object;
 			public function get uploadRequestReturn():Object
@@ -68,14 +70,25 @@
 
 			public function get destinationFolder():File
 			{
-				return (new File(txtDownloadDir.text).resolvePath("result"));
+				var tmpFileSplilt:Array = txtFile.text.split(".");
+				tmpFileSplilt.pop();
+				var targetDirectoryName:String = tmpFileSplilt.join(".");
+				targetDirectoryName = targetDirectoryName.replace(/ /g, "");
+
+				return (new File(txtDownloadDir.text).resolvePath(targetDirectoryName));
 			}
 
 			public function get selectedInstance():VagrantInstanceVO
 			{
 				return ddlInstances.selectedItem;
 			}
-			
+
+			override protected function closeThis():void
+			{
+				dispatcher.removeEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked);
+				super.closeThis();
+			}
+
 			protected function onCreationCompletes(event:FlexEvent):void
 			{
 				fileUploader = new FileUploader();
@@ -85,8 +98,17 @@
 				fileUploader.addEventListener(FileUploaderEvent.EVENT_UPLOAD_COMPLETE_DATA, onFileUploadedData, false, 0, true);
 				fileUploader.addEventListener(FileUploaderEvent.EVENT_UPLOAD_ERROR, onFileUploadError, false, 0, true);
 
-				if (instances)
+				disableUI();
+				dispatcher.addEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked, false, 0, true);
+				VagrantUtil.checkStates(instances);
+			}
+
+			private function onIndividualInstanceChecked(event:Event):void
+			{
+				instanceStateCheckCount++;
+				if (instances && (instances.length == instanceStateCheckCount))
 				{
+					enableUI();
 					nsfConverterInstances = new ArrayCollection();
 					for each (var instance:VagrantInstanceVO in instances)
 					{
@@ -135,7 +157,7 @@
 
 			private function onFileUploadError(event:FileUploaderEvent):void
 			{
-				disableBusyUI();
+				enableUI();
 				dispatcher.dispatchEvent(
 						new ConsoleOutputEvent(
 								ConsoleOutputEvent.CONSOLE_PRINT,
@@ -160,11 +182,12 @@
 					return;
 				}
 
-				if (FileUtils.isPathExists(txtDownloadDir.text + "/result"))
+				var destinationFolder:File = this.destinationFolder;
+				if (destinationFolder.exists)
 				{
-					if ((new File(txtDownloadDir.text + "/result")).getDirectoryListing().length > 0)
+					if (destinationFolder.getDirectoryListing().length > 0)
 					{
-						Alert.show(txtDownloadDir.text + "/result should be empty.", "Error!");
+						Alert.show(destinationFolder.nativePath +" should be empty.", "Error!");
 						return;
 					}
 				}
@@ -177,19 +200,19 @@
 						)
 				);
 
-				disableBusyUI();
+				disableUI();
 				fileUploader.uploadUrl = (ddlInstances.selectedItem as VagrantInstanceVO).url +"/file/upload";
 				fileUploader.startUpload();
 			}
 
-			private function enableBusyUI():void
+			private function disableUI():void
 			{
 				btnBrowse.enabled = btnBrowseDestination.enabled = false;
 				btnSubmit.enabled = false;
 				ddlInstances.enabled = false;
 			}
 
-			private function disableBusyUI():void
+			private function enableUI():void
 			{
 				btnBrowse.enabled = btnBrowseDestination.enabled = true;
 				btnSubmit.enabled = true;
