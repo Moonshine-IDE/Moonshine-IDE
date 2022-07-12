@@ -118,7 +118,7 @@
 
 			private function getVagrantInfo():void
 			{
-				loader = new DataAgent(txtURL.text +"/info", onServerInfoLoaded, onServerInfoFault, null, DataAgent.GETEVENT);
+				loader = new DataAgent(txtURL.text +"/info", onServerInfoLoaded, onServerInfoFault, null, DataAgent.GETEVENT, 0, false);
 			}
 
 			private function onServerInfoLoaded(value:Object, message:String=null):void
@@ -134,12 +134,9 @@
 			{
 				loader = null;
 				txtState.text = txtCapabilities.text = "";
-				dispatcher.dispatchEvent(
-						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Unable to check status: "+ message, false, false, ConsoleOutputEvent.TYPE_ERROR)
-				);
 				if (instance)
 				{
-					instance.state = VagrantInstanceState.UNREACHABLE;
+					txtState.text = instance.state = VagrantInstanceState.UNREACHABLE;
 				}
 			}
 
@@ -187,7 +184,7 @@
 			<s:layout>
 				<s:FormLayout gap="-2"/>
 			</s:layout>
-			<s:FormItem label="State" styleName="uiTextSettingsLabel">
+			<s:FormItem label="Status" styleName="uiTextSettingsLabel">
 				<s:Label id="txtState"
 						 width="100%" styleName="uiTextSettingsValue"
 						 fontWeight="bold"/>

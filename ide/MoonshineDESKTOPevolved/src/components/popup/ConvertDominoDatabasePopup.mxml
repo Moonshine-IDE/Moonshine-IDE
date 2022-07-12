@@ -246,7 +246,17 @@
 				  label="Browse" click="onDownloadDirBrowse()" styleName="darkButton"/>
 	</s:HGroup>
 
-	<s:Label text="%Requirement Notes to Come here%" paddingTop="6" paddingBottom="10"/>
+	<s:RichText lineBreak="toFit" width="100%" paddingBottom="10" color="0x333333">
+		<s:content>
+			<s:p fontStyle="italic">Requirements:</s:p>
+			<s:list>
+				<s:li>The database should be design-only copy (not required)</s:li>
+				<s:li>The database must not locally encrypted</s:li>
+				<s:li>The ACL must grant at least Designer access to the -Default- entry</s:li>
+				<s:li>The database must not be hidden</s:li>
+			</s:list>
+		</s:content>
+	</s:RichText>
 
 	<s:Label text="NSF Converter:"/>
 	<s:HGroup width="100%" verticalAlign="middle">

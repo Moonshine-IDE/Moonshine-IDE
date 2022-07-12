@@ -161,10 +161,6 @@ package actionScripts.plugins.vagrant.utils
 
 		private static function onStateCheckIOError(event:IOErrorEvent):void
 		{
-			dispatcher.dispatchEvent(
-					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Unable to check status: "+ event.text, false, false, ConsoleOutputEvent.TYPE_ERROR)
-			);
-
 			var instance:VagrantInstanceVO = instanceStateCheckLoaders[event.target];
 			instance.state = VagrantInstanceState.UNREACHABLE;
 			instance.capabilities = [];
@@ -176,10 +172,6 @@ package actionScripts.plugins.vagrant.utils
 
 		private static function onStateCheckSecurityError(event:SecurityErrorEvent):void
 		{
-			dispatcher.dispatchEvent(
-					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Unable to check status: "+ event.text, false, false, ConsoleOutputEvent.TYPE_ERROR)
-			);
-
 			var instance:VagrantInstanceVO = instanceStateCheckLoaders[event.target];
 			instance.state = VagrantInstanceState.UNREACHABLE;
 			instance.capabilities = [];
