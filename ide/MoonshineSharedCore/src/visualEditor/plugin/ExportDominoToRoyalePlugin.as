@@ -198,21 +198,34 @@ package visualEditor.plugin
                 convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
                 var componentData:Array = item.surface.getComponentData();
                 var propertyVOName:String = convertedFile.fileBridge.nameWithoutExtension.toLowerCase() + "VO";
+                var dataProviderName:String = propertyVOName + "Items";
+
                 var royaleMXMLContentFile:XML = null;
                 var contentMXMLFile:String = "";
 
                 if (componentData.length > 0)
                 {
+                    for (var k:int = 0; k < componentData.length; k++)
+                    {
+                        var componentDataItem:Object = componentData[k];
+                        if (!componentDataItem.fields && !componentDataItem.name)
+                        {
+                            componentData.splice(k, 1);
+                        }
+                    }
+
+                    var dataGridContent:XML = getDataGridContent(dataProviderName, componentData);
                     //Prepare Data for VO
                     royaleMXMLContentFile = item.surface.toRoyaleConvertCode({
                         prop: [
                             {
                                 propName: propertyVOName,
                                 propType: convertedFile.fileBridge.nameWithoutExtension + "VO",
-                                newInstance: true
+                                newInstance: false
                             }
                         ]
                     });
+                    royaleMXMLContentFile.appendChild(dataGridContent);
                     contentMXMLFile = royaleMXMLContentFile.toXMLString();
 
                     //Save VO
@@ -235,6 +248,69 @@ package visualEditor.plugin
             }
 
             return views;
+        }
+
+        private function getDataGridContent(dpName:String, componentData:Array):XML
+        {
+            var columns:Array = getDataGridColumns(componentData, []);
+
+            var dataGridNamespace:Namespace = new Namespace("dataGrid", "classes.dataGrid.*");
+            var dataGridXML:XML = new XML("<DataGrid />");
+                dataGridXML.setNamespace(dataGridNamespace);
+                dataGridXML.@columns = columns.length > 0 ? "{[" + columns.join(",") + "]}" : "{[]}";
+                dataGridXML.@dataProvider = "{" + dpName + "}";
+                dataGridXML.@localId = "dg";
+                dataGridXML.@includeIn = "dataGridState";
+                dataGridXML.@className = "dxDataGrid";
+                dataGridXML.@percentWidth = "100";
+
+            return dataGridXML;
+        }
+
+        private function getDataGridColumns(componentData:Array, columns:Array):Array
+        {
+            var data:Object = null;
+            var fields:Array = null;
+            var componentDataCount:int = componentData.length > 3 ? 3 : componentData.length;
+            for (var i:int = 0; i < componentDataCount; i++)
+            {
+                data = componentData[i];
+                fields = data.fields;
+                if (!data.fields && !data.name)
+                {
+                    continue;
+                }
+
+                if (!data.fields && data.name)
+                {
+                    columns.push("{caption: '" + data.name + "', dataField: '"  + data.name + "'}");
+                }
+                else
+                {
+                    var fieldsCount:int = fields.length > 3 ? 3 : fields.length;
+                    for (var j:int = 0; j < fieldsCount; j++)
+                    {
+                        var field:Object = fields[j];
+                        if (!field.name)
+                        {
+                            if (field.fields)
+                            {
+                                getDataGridColumns(field.fields, columns);
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            columns.push("{caption: '" + field.name + "', dataField: '"  + field.name + "'}");
+                        }
+                    }
+                }
+            }
+
+            return columns;
         }
 
         private function getVOClass(componentData:Array, className:String):String
