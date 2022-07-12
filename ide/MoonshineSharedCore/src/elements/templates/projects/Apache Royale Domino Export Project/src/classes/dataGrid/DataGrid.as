@@ -4,6 +4,7 @@ package classes.dataGrid
 	import org.apache.royale.events.Event;
 
 	[Event(name="rowDoubleClick", type="org.apache.royale.events.Event")]
+	[Event(name="selectionChanged", type="org.apache.royale.events.Event")]
 	public class DataGrid extends Group
 	{
 		private var dg:Object;
@@ -17,6 +18,7 @@ package classes.dataGrid
 
 		private var _selectedItem:Object;
 
+		[Bindable]
 		public function get selectedItem():Object
 		{
 			return _selectedItem;
@@ -69,6 +71,7 @@ package classes.dataGrid
 				},
 				onSelectionChanged: function(selectedItems:Object):void {
 					selectedItem = selectedItems.selectedRowsData[0];
+					dispatchEvent(new Event("selectionChanged"));
 				},
 				selection: {
 					mode: 'single'
