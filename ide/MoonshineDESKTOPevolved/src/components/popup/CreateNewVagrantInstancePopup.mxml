@@ -128,15 +128,37 @@
 				txtCapabilities.text = ("capabilities" in infoObject) ? (infoObject["capabilities"] as Array).join(", ") : "";
 
 				loader = null;
+				updateStatusIcon();
 			}
 	
 			private function onServerInfoFault(message:String):void
 			{
 				loader = null;
-				txtState.text = txtCapabilities.text = "";
+				txtState.text = VagrantInstanceState.UNREACHABLE;
+				txtCapabilities.text = "";
+
 				if (instance)
 				{
 					txtState.text = instance.state = VagrantInstanceState.UNREACHABLE;
+				}
+
+				updateStatusIcon();
+			}
+
+			private function updateStatusIcon():void
+			{
+				icoExclamationRed.visible = icoExclamationRed.includeInLayout = icoExclamationYellow.visible =
+						icoExclamationYellow.includeInLayout = icoTick.visible = icoTick.includeInLayout = false;
+				switch (txtState.text)
+				{
+					case VagrantInstanceState.UNREACHABLE:
+						icoExclamationRed.visible = icoExclamationRed.includeInLayout = true;
+						break;
+					case VagrantInstanceState.READY:
+						icoTick.includeInLayout = icoTick.visible = true;
+						break;
+					default:
+						icoExclamationYellow.includeInLayout = icoExclamationYellow.visible = true;
 				}
 			}
 
@@ -185,9 +207,20 @@
 				<s:FormLayout gap="-2"/>
 			</s:layout>
 			<s:FormItem label="Status" styleName="uiTextSettingsLabel">
-				<s:Label id="txtState"
-						 width="100%" styleName="uiTextSettingsValue"
-						 fontWeight="bold"/>
+				<s:HGroup percentWidth="100" verticalAlign="middle">
+					<s:Image id="icoTick"
+							 source="@Embed(source='/elements/images/tick_circle_frame.png')"
+							 visible="false" includeInLayout="false"/>
+					<s:Image id="icoExclamationRed"
+							 source="@Embed(source='/elements/images/iconExclamationRed.png')"
+							 visible="false" includeInLayout="false"/>
+					<s:Image id="icoExclamationYellow"
+							 source="@Embed(source='/elements/images/exclamation.png')"
+							 visible="false" includeInLayout="false"/>
+					<s:Label id="txtState"
+							 width="100%" styleName="uiTextSettingsValue"
+							 fontWeight="bold"/>
+				</s:HGroup>
 			</s:FormItem>
 			<s:FormItem label="Capabilities" styleName="uiTextSettingsLabel">
 				<s:Label id="txtCapabilities"
