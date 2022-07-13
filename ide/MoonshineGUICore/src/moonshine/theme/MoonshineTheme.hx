@@ -35,6 +35,7 @@ import feathers.controls.Panel;
 import feathers.controls.PopUpListView;
 import feathers.controls.Radio;
 import feathers.controls.TabBar;
+import feathers.controls.TextCallout;
 import feathers.controls.TextInput;
 import feathers.controls.TextInputState;
 import feathers.controls.ToggleButton;
@@ -728,6 +729,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(MoonshineColor.GREY_2);
 		backgroundSkin.border = SolidColor(1.0, MoonshineColor.BLACK);
+		backgroundSkin.maxWidth = 550;
 		toolTip.backgroundSkin = backgroundSkin;
 
 		toolTip.textFormat = MoonshineTypography.getLightOnDarkTextFormat();
