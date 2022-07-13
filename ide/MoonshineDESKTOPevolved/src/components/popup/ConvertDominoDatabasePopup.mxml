@@ -38,6 +38,7 @@
 			import actionScripts.plugin.console.ConsoleOutputEvent;
 			import actionScripts.plugins.vagrant.VagrantPlugin;
 			import actionScripts.plugins.vagrant.utils.VagrantUtil;
+			import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
 			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 			import actionScripts.utils.FileUploader;
 			import actionScripts.utils.FileUtils;
@@ -112,7 +113,8 @@
 					nsfConverterInstances = new ArrayCollection();
 					for each (var instance:VagrantInstanceVO in instances)
 					{
-						if (instance.capabilities && (instance.capabilities.indexOf("nsfconverter") != -1))
+						if (instance.capabilities && (instance.capabilities.indexOf("nsfconverter") != -1) &&
+								(instance.state == VagrantInstanceState.READY))
 						{
 							nsfConverterInstances.addItem(instance);
 						}

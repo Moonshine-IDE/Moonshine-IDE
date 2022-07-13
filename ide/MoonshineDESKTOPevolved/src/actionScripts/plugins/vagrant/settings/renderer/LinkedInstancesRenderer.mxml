@@ -140,7 +140,7 @@
 										}
 									]]>
 								</fx:Script>
-								<s:Image source="@Embed(source='/elements/images/tick_circle_frame.png')"
+								<s:Image source="@Embed(source='/elements/images/icoTickSmall.png')"
 									visible="{data.state == VagrantInstanceState.READY}" includeInLayout="{data.state == VagrantInstanceState.READY}"
 									toolTip="{data.state}" horizontalCenter="0" verticalCenter="0"/>
 								<s:Image source="@Embed(source='/elements/images/iconExclamationRed.png')"

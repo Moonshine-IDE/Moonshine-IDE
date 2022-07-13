@@ -78,7 +78,7 @@
 			private function onSubmit():void
 			{
 				var tmpArr:Array = new Array(svLabel, svURL);
-				if (Validator.validateAll(tmpArr).length != 0)
+				if ((Validator.validateAll(tmpArr).length != 0) || !isValidURL)
 				{
 					return;
 				}
@@ -108,10 +108,12 @@
 
 				if (isValidURL)
 				{
+					txtURL.errorString = null;
 					getVagrantInfo();
 				}
 				else
 				{
+					txtURL.errorString = "URL is invalid.";
 					txtState.text = txtCapabilities.text = "";
 				}
 			}
@@ -206,10 +208,10 @@
 			<s:layout>
 				<s:FormLayout gap="-2"/>
 			</s:layout>
-			<s:FormItem label="Status" styleName="uiTextSettingsLabel">
-				<s:HGroup percentWidth="100" verticalAlign="middle">
+			<s:FormItem label="Status" styleName="uiTextSettingsLabel" width="100%">
+				<s:HGroup width="100%" verticalAlign="middle">
 					<s:Image id="icoTick"
-							 source="@Embed(source='/elements/images/tick_circle_frame.png')"
+							 source="@Embed(source='/elements/images/icoTickSmall.png')"
 							 visible="false" includeInLayout="false"/>
 					<s:Image id="icoExclamationRed"
 							 source="@Embed(source='/elements/images/iconExclamationRed.png')"
@@ -222,7 +224,7 @@
 							 fontWeight="bold"/>
 				</s:HGroup>
 			</s:FormItem>
-			<s:FormItem label="Capabilities" styleName="uiTextSettingsLabel">
+			<s:FormItem label="Capabilities" styleName="uiTextSettingsLabel" width="100%">
 				<s:Label id="txtCapabilities"
 						 width="100%" styleName="uiTextSettingsValue"
 						 fontWeight="bold"/>
