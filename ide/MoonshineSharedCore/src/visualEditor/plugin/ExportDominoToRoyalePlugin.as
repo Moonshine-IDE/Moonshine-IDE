@@ -198,6 +198,7 @@ package visualEditor.plugin
                 convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
                 var componentData:Array = item.surface.getComponentData();
                 var propertyVOName:String = convertedFile.fileBridge.nameWithoutExtension.toLowerCase() + "VO";
+                var propertyVOType:String = convertedFile.fileBridge.nameWithoutExtension + "VO";
                 var dataProviderName:String = propertyVOName + "Items";
 
                 var royaleMXMLContentFile:XML = null;
@@ -214,17 +215,18 @@ package visualEditor.plugin
                         }
                     }
 
-                    var dataGridContent:XML = getDataGridContent(dataProviderName, componentData);
+                    var dataGridContent:XML = getDataGridContent(dataProviderName, propertyVOName, propertyVOType, componentData);
                     //Prepare Data for VO
-                    royaleMXMLContentFile = item.surface.toRoyaleConvertCode({
+                    var propData:Object = {
                         prop: [
                             {
                                 propName: propertyVOName,
-                                propType: convertedFile.fileBridge.nameWithoutExtension + "VO",
+                                propType: propertyVOType,
                                 newInstance: false
                             }
                         ]
-                    });
+                    };
+                    royaleMXMLContentFile = item.surface.toRoyaleConvertCode(propData);
                     royaleMXMLContentFile.appendChild(dataGridContent);
                     contentMXMLFile = royaleMXMLContentFile.toXMLString();
 
@@ -250,7 +252,7 @@ package visualEditor.plugin
             return views;
         }
 
-        private function getDataGridContent(dpName:String, componentData:Array):XML
+        private function getDataGridContent(dpName:String, propertyName:String, propertyType:String, componentData:Array):XML
         {
             var columns:Array = getDataGridColumns(componentData, []);
 
@@ -263,6 +265,8 @@ package visualEditor.plugin
                 dataGridXML.@includeIn = "dataGridState";
                 dataGridXML.@className = "dxDataGrid";
                 dataGridXML.@percentWidth = "100";
+                dataGridXML.@doubleClick = "{this.currentState = 'contentState'}";
+                dataGridXML.@selectionChanged = "{this." + propertyName + " = dg.selectedItem as " + propertyType + ";}";
 
             return dataGridXML;
         }
