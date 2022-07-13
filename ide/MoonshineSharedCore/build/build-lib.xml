@@ -998,6 +998,7 @@
 			<arg value="flash"/>
 			<arg value="-debug"/>
 			<arg value="-Dflexhome='${FLEX_HOME}'"/>
+			<arg value="-Dair"/>
 			<!--
 				Necessary external SWC libraries for successful compilation
 				These are temporary included until the entire codebase has been converted to Haxe
