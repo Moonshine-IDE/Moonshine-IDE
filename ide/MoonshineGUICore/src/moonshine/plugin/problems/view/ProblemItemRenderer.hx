@@ -163,7 +163,15 @@ class ProblemItemRenderer extends LayoutGroupItemRenderer implements IOpenCloseT
 	private inline function getLocationPrimaryLabel(diagnosticsByUri:DiagnosticsByUri):String {
 		var uri = diagnosticsByUri.uri;
 		var index = uri.lastIndexOf("/");
-		return uri.substr(index + 1);
+		while (index == (uri.length - 1)) {
+			uri = uri.substr(0, uri.length - 1);
+			index = uri.lastIndexOf("/");
+		}
+		var fileName = uri.substr(index + 1);
+		if (fileName.length == 0 && diagnosticsByUri.project != null) {
+			fileName = diagnosticsByUri.project.name;
+		}
+		return fileName;
 	}
 
 	private inline function getLocationSecondaryLabel(diagnosticsByUri:DiagnosticsByUri):String {

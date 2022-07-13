@@ -22,6 +22,7 @@ package moonshine.filesystem;
 
 import moonshine.events.FileSystemWatcherEvent;
 import openfl.errors.ArgumentError;
+import openfl.errors.Error;
 import openfl.events.EventDispatcher;
 import openfl.events.TimerEvent;
 import openfl.utils.Timer;
@@ -159,7 +160,14 @@ class FileSystemWatcher extends EventDispatcher {
 				continue;
 			}
 			var fileInfoForDir = _watchedDirectories.get(rootDirectory);
-			var files = rootDirectory.getDirectoryListing();
+			var files:Array<File> = null;
+			try {
+				files = rootDirectory.getDirectoryListing();
+			} catch (error:Error) {
+				// this may fail sometimes. for instance, if the directory was
+				// deleted after we checked the value of exists above
+				continue;
+			}
 			for (existingNativePath in fileInfoForDir.keys()) {
 				var found = false;
 				var i = files.length - 1;
@@ -175,7 +183,7 @@ class FileSystemWatcher extends EventDispatcher {
 						var modificationDate = fileInfo.modificationDate;
 						try {
 							modificationDate = file.modificationDate.getTime();
-						} catch(e:Dynamic) {
+						} catch (e:Dynamic) {
 							// may have been deleted since calling getDirectoryListing()
 							// in that case, we won't send a FILE_MODIFIED event, and we'll
 							// switch to FILE_DELETED instead
@@ -199,7 +207,7 @@ class FileSystemWatcher extends EventDispatcher {
 				var modificationDate = 0.0;
 				try {
 					modificationDate = file.modificationDate.getTime();
-				} catch(e:Dynamic) {
+				} catch (e:Dynamic) {
 					// the file may have been deleted since calling getDirectoryListing()
 					// in that case, just skip it
 					continue;
