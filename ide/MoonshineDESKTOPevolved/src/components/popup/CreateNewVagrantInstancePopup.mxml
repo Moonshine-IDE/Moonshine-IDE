@@ -37,8 +37,9 @@
 		import actionScripts.plugin.console.ConsoleOutputEvent;
 		import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
 		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+		import actionScripts.utils.FileUtils;
 
-			import mx.events.FlexEvent;
+		import mx.events.FlexEvent;
 
 			import actionScripts.events.GlobalEventDispatcher;
 
@@ -61,6 +62,7 @@
 					txtURL.text = instance.url;
 					txtBrowsedPath.text = instance.localPath;
 
+					updatePossiblePath();
 					getVagrantInfo();
 				}
 			}
@@ -108,13 +110,16 @@
 
 				if (isValidURL)
 				{
+					hgError.visible = hgError.includeInLayout = false;
 					txtURL.errorString = null;
 					getVagrantInfo();
 				}
 				else
 				{
-					txtURL.errorString = "URL is invalid.";
+					hgError.visible = hgError.includeInLayout = true;
+					txtURL.errorString = "Invalid URL format. Expected format is http(s)://address:port";
 					txtState.text = txtCapabilities.text = "";
+					updateStatusIcon();
 				}
 			}
 
@@ -151,6 +156,8 @@
 			{
 				icoExclamationRed.visible = icoExclamationRed.includeInLayout = icoExclamationYellow.visible =
 						icoExclamationYellow.includeInLayout = icoTick.visible = icoTick.includeInLayout = false;
+				if (txtState.text == "")
+					return;
 				switch (txtState.text)
 				{
 					case VagrantInstanceState.UNREACHABLE:
@@ -166,12 +173,25 @@
 
 			private function onOpenRequest():void
 			{
-				dispatcher.dispatchEvent(
-						new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Trying to open project from: "+ txtBrowsedPath.text)
-				);
-				dispatcher.dispatchEvent(
-						new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(txtBrowsedPath.text))
-				);
+				if (FileUtils.isPathExists(txtBrowsedPath.text))
+				{
+					dispatcher.dispatchEvent(
+							new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Trying to open project from: "+ txtBrowsedPath.text)
+					);
+					dispatcher.dispatchEvent(
+							new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(txtBrowsedPath.text))
+					);
+				}
+				else
+				{
+					dispatcher.dispatchEvent(
+							new ConsoleOutputEvent(
+									ConsoleOutputEvent.CONSOLE_PRINT,
+									"Unable to open from: "+ txtBrowsedPath.text,
+									false, false, ConsoleOutputEvent.TYPE_ERROR
+							)
+					);
+				}
 			}
 
 		]]>
@@ -231,6 +251,12 @@
 			</s:FormItem>
 		</s:Form>
 	</s:BorderContainer>
+	<s:HGroup id="hgError"
+			  width="100%" verticalAlign="middle" horizontalAlign="center"
+				visible="false" includeInLayout="false">
+		<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+		<s:Label text="Invalid URL format. Expected format is http(s)://address:port"/>
+	</s:HGroup>
 
 	<resizableTitleWindow:controlBarContent>
 		<s:Spacer width="100%"/>
