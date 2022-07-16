@@ -7,6 +7,7 @@ package actionScripts.plugin.basic.vo
 
 	public class BasicProjectVO extends LanguageServerProjectVO
 	{
+		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public function BasicProjectVO(folder:FileLocation, projectName:String=null, updateToTreeView:Boolean=true)
 		{
 			super(folder, projectName, updateToTreeView);

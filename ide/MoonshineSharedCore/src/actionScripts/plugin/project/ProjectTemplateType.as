@@ -37,5 +37,7 @@ package actionScripts.plugin.project
         public static const HAXE:String = "Haxe";
 		public static const ONDISK:String = "On Disk Project";
 		public static const GENERIC:String = "Generic Project";
+		public static const BASIC:String = "Basic";
+		
     }
 }

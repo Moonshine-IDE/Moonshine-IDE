@@ -50,7 +50,16 @@ package actionScripts.plugin.basic.importer
             }
             
             var project:BasicProjectVO = new BasicProjectVO(projectFolder, projectName);
-            throw new Error("Method is not implemented")
+            project.projectFile = settingsFileLocation;
+			
+			var settingsData:XML = null;
+			if (settingsFileLocation.fileBridge.exists)
+			{
+				settingsData = new XML(settingsFileLocation.fileBridge.read());
+			}
+			
+		
+			return project;
             
 		}
 	}
