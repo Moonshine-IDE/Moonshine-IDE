@@ -20,23 +20,41 @@ package actionScripts.plugins.vagrant.utils
 {
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
+	import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 	import actionScripts.utils.FileUtils;
+	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.utils.UtilsCore;
 
 	import flash.desktop.NativeProcess;
 
 	import flash.desktop.NativeProcessStartupInfo;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.events.IOErrorEvent;
+	import flash.events.SecurityErrorEvent;
 
 	import flash.filesystem.File;
+	import flash.net.SharedObject;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
+	import flash.utils.Dictionary;
 
-	public class VagrantUtil
+	import mx.collections.ArrayCollection;
+
+	public class VagrantUtil extends EventDispatcher
 	{
+		public static const EVENT_INSTANCE_STATE_CHECK_COMPLETES:String = "eventInstanceStateCheckCompletes";
+
 		public static const VAGRANT_UP:String = "Up";
 		public static const VAGRANT_HALT:String = "Halt";
 		public static const VAGRANT_RELOAD:String = "Reload (to sync files)";
 		public static const VAGRANT_SSH:String = "SSH";
 		public static const VAGRANT_DESTROY:String = "Destroy";
 		public static const VAGRANT_MENU_OPTIONS:Array = [VAGRANT_UP, VAGRANT_HALT, VAGRANT_RELOAD, VAGRANT_SSH, VAGRANT_DESTROY];
+
+		private static const instanceStateCheckLoaders:Dictionary = new Dictionary();
+		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
 		public static const AS_VAGRANT_SSH: XML = <root><![CDATA[
 			#!/bin/bash
@@ -79,6 +97,90 @@ package actionScripts.plugins.vagrant.utils
 			FileUtils.writeToFileAsync(destinationFile, AS_VAGRANT_SSH.valueOf().toString(), onVagrantSSHFileWriteCompletes, onVagrantSSHFileWriteFail);
 		}
 
+		public static function getVagrantInstances():ArrayCollection
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+			var instances:ArrayCollection = new ArrayCollection();
+			if (cookie.data.hasOwnProperty('vagrantInstances'))
+			{
+				var storedInstances:Array = cookie.data.vagrantInstances;
+				for each (var instance:Object in storedInstances)
+				{
+					instances.addItem(
+							VagrantInstanceVO.getNewInstance(instance)
+					);
+				}
+			}
+
+			return instances;
+		}
+
+		public static function saveVagrantInstances(value:ArrayCollection):void
+		{
+			var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
+			cookie.data['vagrantInstances'] = value.source;
+			cookie.flush();
+		}
+
+		public static function checkStates(value:ArrayCollection):void
+		{
+			for each (var instance:VagrantInstanceVO in value)
+			{
+				var request:URLRequest = new URLRequest();
+				request.url = instance.url +"/info";
+				request.method = "GET";
+
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(Event.COMPLETE, onStateCheckSuccess);
+				loader.addEventListener(IOErrorEvent.IO_ERROR, onStateCheckIOError);
+				loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onStateCheckSecurityError);
+				instanceStateCheckLoaders[loader] = instance;
+
+				loader.load( request );
+			}
+		}
+		
+		private static function releaseLoaderListeners(loader:URLLoader):void
+		{
+			loader.removeEventListener(Event.COMPLETE, onStateCheckSuccess);
+			loader.removeEventListener(IOErrorEvent.IO_ERROR, onStateCheckIOError);
+			loader.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onStateCheckSecurityError);
+		}
+
+		private static function onStateCheckSuccess(event:Event):void
+		{
+			var infoObject:Object = JSON.parse(event.target.data.toString());
+			var instance:VagrantInstanceVO = instanceStateCheckLoaders[event.target];
+			instance.state = ("status" in infoObject) ? infoObject["status"] : VagrantInstanceState.UNREACHABLE;
+			instance.capabilities = ("capabilities" in infoObject) ? (infoObject["capabilities"] as Array) : [];
+
+			releaseLoaderListeners(event.target as URLLoader);
+			delete instanceStateCheckLoaders[event.target];
+			dispatcher.dispatchEvent(new Event(EVENT_INSTANCE_STATE_CHECK_COMPLETES));
+		}
+
+		private static function onStateCheckIOError(event:IOErrorEvent):void
+		{
+			var instance:VagrantInstanceVO = instanceStateCheckLoaders[event.target];
+			instance.state = VagrantInstanceState.UNREACHABLE;
+			instance.capabilities = [];
+
+			releaseLoaderListeners(event.target as URLLoader);
+			delete instanceStateCheckLoaders[event.target];
+			dispatcher.dispatchEvent(new Event(EVENT_INSTANCE_STATE_CHECK_COMPLETES));
+		}
+
+		private static function onStateCheckSecurityError(event:SecurityErrorEvent):void
+		{
+			var instance:VagrantInstanceVO = instanceStateCheckLoaders[event.target];
+			instance.state = VagrantInstanceState.UNREACHABLE;
+			instance.capabilities = [];
+
+			releaseLoaderListeners(event.target as URLLoader);
+			delete instanceStateCheckLoaders[event.target];
+			dispatcher.dispatchEvent(new Event(EVENT_INSTANCE_STATE_CHECK_COMPLETES));
+		}
+
 		private static function onVagrantSSHFileWriteCompletes():void
 		{
 			// declare necessary arguments
@@ -99,7 +201,7 @@ package actionScripts.plugins.vagrant.utils
 
 		private static function onVagrantSSHFileWriteFail(value:String):void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(
+			dispatcher.dispatchEvent(
 					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, value, false, false, ConsoleOutputEvent.TYPE_ERROR)
 			);
 		}

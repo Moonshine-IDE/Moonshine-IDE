@@ -59,7 +59,7 @@ package classes.dataGrid
 			{
 				_dataProvider = value;
 
-				refreshDataProvider();
+				refreshCurrentDataProvider();
 			}
 		}
 
@@ -79,7 +79,7 @@ package classes.dataGrid
 			});
 
 			this.refreshColumns();
-			this.refreshDataProvider();
+			this.refreshCurrentDataProvider();
 		}
 
 		private function refreshColumns():void
@@ -92,7 +92,7 @@ package classes.dataGrid
 			}
 		}
 
-		private function refreshDataProvider():void
+		public function refreshCurrentDataProvider():void
 		{
 			if (this.dg)
 			{

@@ -18,15 +18,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
-	import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
+	import actionScripts.events.DominoEvent;
+	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
+	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
+
+	import components.popup.ConvertDominoDatabasePopup;
+
+	import flash.display.DisplayObject;
+
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
-	
+
 	import mx.collections.ArrayCollection;
+	import mx.core.FlexGlobals;
+
 	import mx.events.CloseEvent;
-	
+	import mx.managers.PopUpManager;
+
 	import spark.components.Alert;
 	
 	import actionScripts.events.FilePluginEvent;
@@ -38,8 +47,6 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
-	import actionScripts.plugins.externalEditors.importer.ExternalEditorsImporter;
-	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.utils.FileUtils;
@@ -62,6 +69,9 @@ package actionScripts.plugins.vagrant
 		private var haltMethod:MethodDescriptor;
 		private var destroyMethod:MethodDescriptor;
 		private var vagrantFileLocation:FileLocation;
+		private var vagrantInstances:ArrayCollection;
+		private var convertDominoDBPopup:ConvertDominoDatabasePopup;
+		private var dbConversionJob:ConvertDatabaseJob;
 
 		public function get vagrantPath():String
 		{
@@ -91,6 +101,7 @@ package actionScripts.plugins.vagrant
 		{
 			super.activate();
 			updateEventListeners();
+			vagrantInstances = VagrantUtil.getVagrantInstances();
 
 			if (!ConstantsCoreVO.IS_MACOS || !ConstantsCoreVO.IS_APP_STORE_VERSION)
 			{
@@ -113,6 +124,8 @@ package actionScripts.plugins.vagrant
 					model.virtualBoxPath = defaultVirtualBoxPath;
 				}
 			}
+
+			dispatcher.addEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -120,6 +133,7 @@ package actionScripts.plugins.vagrant
 			super.deactivate();
 			removeMenuListeners();
 			onConsoleDeactivated(null);
+			dispatcher.removeEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase);
 		}
 
 		override public function resetSettings():void
@@ -147,9 +161,71 @@ package actionScripts.plugins.vagrant
 
 			return Vector.<ISetting>([
 				pathSetting,
-				new PathSetting(this, 'virtualBoxPath', 'VirtualBox Home (Optional)', true, virtualBoxPath, false, false, defaultVirtualBoxPath)
+				new PathSetting(this, 'virtualBoxPath', 'VirtualBox Home (Optional)', true, virtualBoxPath, false, false, defaultVirtualBoxPath),
+				new LinkedInstancesSetting(vagrantInstances)
 			]);
         }
+
+		private function onConvertDominoDatabase(event:Event):void
+		{
+			if (!convertDominoDBPopup)
+			{
+				convertDominoDBPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ConvertDominoDatabasePopup) as ConvertDominoDatabasePopup;
+				convertDominoDBPopup.instances = vagrantInstances;
+				convertDominoDBPopup.addEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
+				convertDominoDBPopup.addEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartNSFConversionProcess);
+				PopUpManager.centerPopUp(convertDominoDBPopup);
+			}
+		}
+
+		private function onConvertDominoDBPopupClosed(event:CloseEvent):void
+		{
+			convertDominoDBPopup.removeEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
+			convertDominoDBPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartNSFConversionProcess);
+			convertDominoDBPopup = null;
+		}
+
+		private function onStartNSFConversionProcess(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Converting SomeNSF"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateConversionRequest, false, 0, true);
+
+			// get the object to work with
+			dbConversionJob = new ConvertDatabaseJob(
+					convertDominoDBPopup.uploadRequestReturn,
+					convertDominoDBPopup.selectedInstance.url,
+					convertDominoDBPopup.destinationFolder
+			);
+			configureListenersDBConversionJob(true);
+		}
+
+		private function configureListenersDBConversionJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				dbConversionJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDBConversionEnded, false, 0, true);
+				dbConversionJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDBConversionEnded, false, 0, true);
+			}
+			else
+			{
+				dbConversionJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDBConversionEnded);
+				dbConversionJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDBConversionEnded);
+				dbConversionJob = null;
+			}
+		}
+
+		private function onDBConversionEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateConversionRequest);
+			configureListenersDBConversionJob(false);
+		}
+
+		private function onTerminateConversionRequest(event:StatusBarEvent):void
+		{
+			dbConversionJob.stop();
+			onDBConversionEnded(null);
+		}
 
 		private function updateEventListeners():void
 		{
