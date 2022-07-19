@@ -4,10 +4,12 @@
 	<meta title="MoonshineGUICore" package="Moonshine" version="1.0.0" company="Prominic.NET" />
 	<app file="MoonshineGUICore" />
 
-	<source path="externs" />
-	<source path="src" />
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/src" />
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/externs" />
+	<source path="externs" />
+	<source path="src" />
+	<!--
+	-->
 
 	<haxelib name="openfl" />
 	<haxelib name="actuate" />
