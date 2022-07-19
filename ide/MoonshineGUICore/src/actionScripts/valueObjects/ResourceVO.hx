@@ -2,7 +2,7 @@ package actionScripts.valueObjects;
 
 import actionScripts.locator.IDEModel;
 import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-import moonshine.utils.data.ArrayCollectionUtil;
+import moonshine.utils.flexbridge.ArrayCollectionUtil;
 
 class ResourceVO {
 	public var name:String;

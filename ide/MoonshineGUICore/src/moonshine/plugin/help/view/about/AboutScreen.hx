@@ -56,7 +56,7 @@ import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.system.Capabilities;
 
-using moonshine.utils.data.ArrayCollectionUtil;
+using moonshine.utils.flexbridge.ArrayCollectionUtil;
 
 @:styleContext
 class AboutScreen extends LayoutGroup {
