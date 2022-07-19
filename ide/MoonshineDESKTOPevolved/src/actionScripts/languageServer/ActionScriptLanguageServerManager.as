@@ -805,7 +805,7 @@ package actionScripts.languageServer
 			}
 			else
 			{
-				error("Failed to load Java version. ActionScript & MXML code intelligence disabled for project: " + project.name + ".");
+				error("Failed to load Java version. ActionScript & MXML code intelligence disabled for project: " + project.name + ". Exit code: " + event.exitCode);
 			}
 		}
 
