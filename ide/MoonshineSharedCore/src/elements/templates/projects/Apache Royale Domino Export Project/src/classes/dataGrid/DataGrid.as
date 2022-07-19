@@ -29,6 +29,19 @@ package classes.dataGrid
 			_selectedItem = value;
 		}
 
+		private var _selectedIndex:int = -1;
+
+		[Bindable]
+		public function get selectedIndex():int
+		{
+			return _selectedIndex;
+		}
+
+		public function set selectedIndex(value:int):void
+		{
+			_selectedIndex = value;
+		};
+
 		private var _columns:Array;
 
 		public function get columns():Array
@@ -69,8 +82,10 @@ package classes.dataGrid
 				onRowDblClick: function(event:Object):void {
 					dispatchEvent(new Event("rowDoubleClick"));
 				},
-				onSelectionChanged: function(selectedItems:Object):void {
-					selectedItem = selectedItems.selectedRowsData[0];
+				onSelectionChanged: function(options:Object):void {
+					selectedItem = options.selectedRowsData[0];
+					selectedIndex = options.component.getRowIndexByKey(selectedItem);
+
 					dispatchEvent(new Event("selectionChanged"));
 				},
 				selection: {
