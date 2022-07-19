@@ -4,8 +4,8 @@
 	<meta title="MoonshineGUICore" package="Moonshine" version="1.0.0" company="Prominic.NET" />
 	<app file="MoonshineGUICore" />
 
-	<source path="src" />
 	<source path="externs" />
+	<source path="src" />
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/src" />
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/externs" />
 
@@ -24,16 +24,14 @@
 	<haxeflag name="--macro" value="include('motion', true, null, null, true)"/>
 	<haxeflag name="--macro" value="include('actionScripts', true, null, null, true)"/>
 	<haxeflag name="--swf-version" value="44"/>
-	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/aircore.swc"/>
-	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/air/airglobal.swc"/>
-	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/framework.swc"/>
+	<haxeflag name="--swf-lib" value="${flexhome}/frameworks/libs/framework.swc"/>
 	<!--
+	<haxeflag name="- -swf-lib" value="${flexhome}/frameworks/libs/air/airglobal.swc"/>
+	<haxeflag name="- -swf-lib" value="${flexhome}/frameworks/libs/air/aircore.swc"/>
 	<haxeflag name="- -swf-lib-extern" value="${flexhome}/frameworks/libs/air/airframework.swc"/>
 	-->
 
 	<haxedef name="no-deprecation-warnings" />
-	<haxedef name="air" />
-	<define name="air" />
 	<define name="desktop" />
 
 	<section if="flash">
