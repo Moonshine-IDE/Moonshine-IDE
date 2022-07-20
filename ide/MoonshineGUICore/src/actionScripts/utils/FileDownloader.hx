@@ -16,31 +16,31 @@ import openfl.net.URLLoaderDataFormat;
 import openfl.net.URLRequest;
 
 class FileDownloader extends EventDispatcher {
+	public static final EVENT_FILE_DOWNLOADED:String = "eventFileDownloaded";
+	public static final EVENT_FILE_DOWNLOAD_FAILED:String = "eventFileDownloadFailed";
+	public static final EVENT_FILE_DOWNLOAD_PROGRESS:String = "eventFileDownloadingInProgress";
 
-    public static final EVENT_FILE_DOWNLOADED:String = "eventFileDownloaded";
-    public static final EVENT_FILE_DOWNLOAD_FAILED:String = "eventFileDownloadFailed";
-    public static final EVENT_FILE_DOWNLOAD_PROGRESS:String = "eventFileDownloadingInProgress";
+	private var _downloadPercent:Int;
+	private var _targetLocation:File;
+	private var remoteLocation:String;
+	private var urlStream:URLLoader;
+	private var waitingForDataToWrite:Bool;
 
-    private var _downloadPercent:Int;
-    private var _targetLocation:File;
-    private var remoteLocation:String;
-    private var urlStream:URLLoader;
-    private var waitingForDataToWrite:Bool;
+	public var downloadPercent(get, never):Int;
+	public var targetLocation(get, never):File;
 
-    public var downloadPercent(get, never):Int;
-    public var targetLocation(get, never):File;
+	private function get_downloadPercent():Int
+		return _downloadPercent;
 
-    private function get_downloadPercent():Int return _downloadPercent;
-    private function get_targetLocation():File return _targetLocation;
+	private function get_targetLocation():File
+		return _targetLocation;
 
-    public function new(remoteLocation:String, targetLocation:File) {
+	public function new(remoteLocation:String, targetLocation:File) {
+		super();
 
-        super();
-
-        this.remoteLocation = remoteLocation;
-        _targetLocation = targetLocation;
-
-    }
+		this.remoteLocation = remoteLocation;
+		_targetLocation = targetLocation;
+	}
 
 	public function load():Void {
 		if (urlStream != null) {
@@ -109,5 +109,4 @@ class FileDownloader extends EventDispatcher {
 			.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, event.text, false, false, ConsoleOutputEvent.TYPE_ERROR));
 		dispatchEvent(new Event(EVENT_FILE_DOWNLOAD_FAILED));
 	}
-
 }
