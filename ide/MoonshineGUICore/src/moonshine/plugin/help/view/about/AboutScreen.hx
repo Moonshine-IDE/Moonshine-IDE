@@ -56,7 +56,7 @@ import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.system.Capabilities;
 
-using moonshine.utils.flexbridge.ArrayCollectionUtil;
+using moonshine.flexbridge.CollectionUtil;
 
 @:styleContext
 class AboutScreen extends LayoutGroup {
@@ -361,7 +361,7 @@ class AboutScreen extends LayoutGroup {
 
 		_softwareVersionChecker.addEventListener(Event.COMPLETE, onSDKRetrievalComplete);
 		_softwareVersionChecker.versionCheckType = SoftwareVersionChecker.VERSION_CHECK_TYPE_SDK;
-		_softwareVersionChecker.retrieveSDKsInformation(_sdkComponents.toMXCollection());
+		_softwareVersionChecker.retrieveSDKsInformation(_sdkComponents.toMXArrayCollection());
 	}
 
 	function componentUpdated(e:Event) {

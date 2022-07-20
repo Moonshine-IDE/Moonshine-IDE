@@ -2,7 +2,7 @@ package actionScripts.valueObjects;
 
 import actionScripts.locator.IDEModel;
 import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-import moonshine.utils.flexbridge.ArrayCollectionUtil;
+import moonshine.flexbridge.CollectionUtil;
 
 class ResourceVO {
 	public var name:String;
@@ -32,7 +32,7 @@ class ResourceVO {
 	}
 
 	private function set_resourcePath(value:String):String {
-		for (project in ArrayCollectionUtil.fromMXCollection(IDEModel.getInstance().projects)) {
+		for (project in CollectionUtil.fromMXCollection(IDEModel.getInstance().projects)) {
 			var folderPath:String = project.folderPath;
 			if (!ConstantsCoreVO.IS_AIR)
 				folderPath = folderPath.substr(project.folderPath.indexOf("?path=") + 7, folderPath.length);
