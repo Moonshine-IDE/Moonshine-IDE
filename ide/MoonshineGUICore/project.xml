@@ -8,8 +8,6 @@
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/externs" />
 	<source path="externs" />
 	<source path="src" />
-	<!--
-	-->
 
 	<haxelib name="openfl" />
 	<haxelib name="actuate" />
