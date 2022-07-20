@@ -2,12 +2,13 @@ package flash.display;
 
 import flash.display.NativeMenu;
 
-@:require(flash10_1) extern class NativeMenuItem extends flash.events.EventDispatcher {
-	@:flash.property var enabled(get,set) : Bool;
-	function new( label:String = "", isSeparator:Bool = false ) : Void;
-	private function get_enabled() : Bool;
-	private function set_enabled(value : Bool) : Bool;
-    @:flash.property var submenu(get,set) : NativeMenu;
-    private function get_submenu():NativeMenu;
-    private function set_submenu( value:NativeMenu ):NativeMenu;
+/**
+	This extern overrides Lime's definition of NativeMenuItem for compatiblity reasons
+**/
+extern class NativeMenuItem extends flash.events.EventDispatcher {
+	@:flash.property var enabled(default, default):Bool;
+	@:flash.property var keyEquivalent(default, default):String;
+	@:flash.property var keyEquivalentModifiers(default, default):Array<Int>;
+    @:flash.property var submenu(default, default):NativeMenu;
+	function new(label:String = "", isSeparator:Bool = false):Void;
 }

@@ -1,0 +1,153 @@
+package actionScripts.ui.menu;
+
+import actionScripts.ui.menu.MenuModel;
+import actionScripts.ui.menu.interfaces.ICustomMenu;
+import actionScripts.ui.menu.interfaces.ICustomMenuItem;
+import actionScripts.ui.menu.renderers.MenuBarItemRenderer;
+import mx.containers.Canvas;
+import openfl.events.Event;
+import openfl.events.MouseEvent;
+import openfl.geom.Matrix;
+import openfl.utils.Dictionary;
+import spark.components.HGroup;
+
+class MenuBar extends Canvas {
+
+    private var _menu:ICustomMenu;
+    private var bar:HGroup;
+    private var lastActiveMenuBarItem:MenuBarItemRenderer;
+    private var menuLookup:Dictionary<String, ICustomMenuItem> = new Dictionary<String, ICustomMenuItem>();
+    private var model:MenuModel;
+    private var needsRedrawing:Bool = false;
+
+    public var menu(get, set):ICustomMenu;
+    public var numOfRenderers(get, never):Int;
+
+    private function get_menu():ICustomMenu return _menu;
+    private function get_numOfRenderers():Int return _menu.items.length;
+
+	private function set_menu(value:ICustomMenu):ICustomMenu {
+		_menu = value;
+		needsRedrawing = true;
+		invalidateDisplayList();
+        return _menu;
+	}
+
+    public function new() {
+
+        super();
+
+        createMenuModelInContext();
+
+    }
+
+	private function createMenuModelInContext():Void {
+		model = new MenuModel(this);
+		model.addEventListener("topMenuClosed", modelTopMenuClosedHandler);
+		model.addEventListener(MenuModelEvent.ACTIVE_ALL_MENUS, activeAllMenusHandler);
+	}
+
+	//private function activeAllMenusHandler(e:MenuModelEvent):Void {}
+	private function activeAllMenusHandler(e:Event):Void {}
+
+	private function modelTopMenuClosedHandler(e:Event):Void {
+		if (lastActiveMenuBarItem==null)
+			return;
+		lastActiveMenuBarItem.active = false;
+		// Check to see if mouse is still over last bar item and if so reselect it
+		if (lastActiveMenuBarItem.hitTestPoint(mouseX, mouseY))
+			lastActiveMenuBarItem.dispatchEvent(new MouseEvent(MouseEvent.ROLL_OVER));
+		lastActiveMenuBarItem = null;
+	}
+
+	override function createChildren():Void {
+		super.createChildren();
+		percentWidth = 100;
+		height = 21;
+
+		bar = new HGroup();
+		bar.setStyle("left", 0);
+
+		bar.percentWidth = 100;
+		bar.mouseChildren = true;
+
+		bar.gap = 0;
+
+		addChild(bar);
+	}
+
+	private function drawMenuState():Void {
+		var barItem:MenuBarItemRenderer;
+		var items:Array<ICustomMenuItem> = _menu.items;
+		for (item in items) {
+			barItem = new MenuBarItemRenderer();
+			menuLookup[item.label] = item;
+			barItem.text = item.label;
+			barItem.addEventListener(MouseEvent.MOUSE_DOWN, barItemOpenMenu, false, 0xFFFFFFFF, true);
+			barItem.addEventListener(MouseEvent.ROLL_OVER, barItemOpenMenu, false, 0xFFFFFFFF, true);
+
+			// barItem.menu = item;
+			bar.addElement(barItem);
+		}
+
+		needsRedrawing = false;
+	}
+
+	public function getRendererAt(index:Int):MenuBarItemRenderer {
+		return cast (bar.getElementAt(index), MenuBarItemRenderer);
+	}
+
+	public function displayMenuAt(index:Int):Void {
+		var barItem:MenuBarItemRenderer = getRendererAt(index);
+		var item:ICustomMenuItem = cast(menuLookup[barItem.text], ICustomMenuItem);
+		if (item == null || item.data == null)
+			return;
+
+		var menuItems:Array<ICustomMenuItem> = (item.data != null) ? cast(item.data, ICustomMenu).items : null;
+
+		if (menuItems == null || menuItems.length == 0)
+			return;
+
+		if (lastActiveMenuBarItem != null)
+			lastActiveMenuBarItem.active = false;
+		barItem.active = true;
+		lastActiveMenuBarItem = barItem;
+		model.displayMenu(barItem, cast(item.data, ICustomMenu).items);
+	}
+
+	private function barItemOpenMenu(e:Event):Void {
+		if (e.type == MouseEvent.ROLL_OVER && !model.isOpen())
+			return;
+
+		var barItem:MenuBarItemRenderer = cast(e.target, MenuBarItemRenderer);
+		// Menu is open but we must also check to see if the current menu items are the same,
+		// if so we will skip opening the window otherwise we will close it due to the toggle statement
+		// in _model.displayMenu
+
+		if (e.type == MouseEvent.ROLL_OVER && lastActiveMenuBarItem == barItem)
+			return;
+
+		displayMenuAt(bar.getElementIndex(barItem));
+	}
+
+	override function updateDisplayList(unscaledWidth:Float, unscaledHeight:Float):Void {
+		super.updateDisplayList(unscaledWidth, unscaledHeight);
+
+		var mtr:Matrix = new Matrix();
+		mtr.createGradientBox(unscaledWidth, unscaledHeight, Math.PI / 2, 0, 0);
+
+		graphics.clear();
+		graphics.beginGradientFill("linear", [0xebeff7, 0xCACBCD], [1, 1], [64, 255], mtr);
+		graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
+		graphics.endFill();
+
+		graphics.lineStyle(1);
+		graphics.moveTo(0, unscaledHeight - 1);
+		graphics.lineTo(unscaledWidth, unscaledHeight - 1);
+
+		if (needsRedrawing) {
+			drawMenuState();
+		}
+	}
+
+}

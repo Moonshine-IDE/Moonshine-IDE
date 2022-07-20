@@ -1,0 +1,68 @@
+package actionScripts.ui.menu.renderers;
+
+import mx.core.UIComponent;
+//import openfl.display.Sprite;
+import openfl.events.MouseEvent;
+import spark.components.Label;
+
+class MenuBarItemRenderer extends Label {
+
+    private var _active:Bool;
+	//private var background:Sprite;
+    private var itemContainer:UIComponent;
+    private var labelView:Label;
+    private var needsRedrawing:Bool;
+
+    public var active(never, set):Bool;
+
+	private function set_active(value:Bool):Bool {
+		_active = value;
+		drawBackground(_active);
+		return _active;
+	}
+
+    public function new() {
+
+        super();
+
+        minWidth = 10;
+        minHeight=13;
+
+        setStyle("paddingTop", 5);
+        setStyle("paddingBottom",4);
+        setStyle("lineBreak", "explicit");
+        setStyle("lineHeight",13);
+        setStyle("fontSize",12);
+        setStyle("textAlign","center");
+        setStyle("backgroundColor", 0xB3B6BD);
+        setStyle("backgroundAlpha", 0);
+        setStyle("paddingLeft", 6); // for some reason we need to +1 to have even sides 
+        setStyle("paddingRight", 5);
+        setStyle("color",0x333333);
+
+        addEventListener(MouseEvent.ROLL_OVER, rollOverHandler);
+        addEventListener(MouseEvent.ROLL_OUT, rollOutHandler);
+
+    }
+
+	private function drawBackground(show:Bool):Void {
+        /*
+		graphics.clear();
+		if (show) {
+			graphics.beginFill(0xB3B6BD, .8);
+			graphics.drawRect(0, 0, width, height - 1);
+			graphics.endFill();
+		}
+        */
+	}
+
+	private function rollOverHandler(e:MouseEvent):Void {
+		drawBackground(true);
+	}
+
+	private function rollOutHandler(e:MouseEvent):Void {
+		if (!_active)
+			drawBackground(false);
+	}
+
+}
