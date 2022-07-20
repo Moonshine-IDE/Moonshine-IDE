@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:mx="library://ns.adobe.com/flex/mx"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   backgroundColor="0xf5f5f5" title="Linked Vagrant Instance"
+										   width="500" minWidth="400" autoLayout="true"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   creationComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+		import actionScripts.controllers.DataAgent;
+		import actionScripts.events.ProjectEvent;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+		import actionScripts.utils.FileUtils;
+
+		import mx.events.FlexEvent;
+
+			import actionScripts.events.GlobalEventDispatcher;
+
+			import mx.validators.Validator;
+
+			public static const EVENT_ADD_UPDATE_INSTANCE:String = "eventAddUpdateVagrantInstance";
+
+			[Bindable] public var instance:VagrantInstanceVO;
+
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var model:IDEModel = IDEModel.getInstance();
+			private var isValidURL:Boolean;
+			private var loader:DataAgent;
+			
+			protected function onCreationCompletes(event:FlexEvent):void
+			{
+				if (instance)
+				{
+					txtLabel.text = instance.title;
+					txtURL.text = instance.url;
+					txtBrowsedPath.text = instance.localPath;
+
+					updatePossiblePath();
+					getVagrantInfo();
+				}
+			}
+
+			private function onBrowse():void
+			{
+				model.fileCore.browseForDirectory("Select Path", onPathSelected);
+			}
+
+			private function onPathSelected(file:Object):void
+			{
+				txtBrowsedPath.text = file.nativePath;
+			}
+
+			private function onSubmit():void
+			{
+				var tmpArr:Array = new Array(svLabel, svURL);
+				if ((Validator.validateAll(tmpArr).length != 0) || !isValidURL)
+				{
+					return;
+				}
+
+				if (!instance) instance = new VagrantInstanceVO();
+				instance.title = txtLabel.text;
+				instance.url = txtURL.text;
+				instance.localPath = txtBrowsedPath.text;
+				instance.state = txtState.text;
+				instance.capabilities = txtCapabilities.text.split(", ");
+				if (instance.state == "")
+				{
+					instance.state = VagrantInstanceState.UNREACHABLE;
+				}
+				dispatchEvent(new Event(EVENT_ADD_UPDATE_INSTANCE));
+				closeThis();
+			}
+
+			private function updatePossiblePath():void
+			{
+				var searchRegExp:RegExp;
+				var results:Array;
+				// expected format is https://github.com/{organization/author}/{project}
+				searchRegExp = new RegExp("(?:https?|http)\://.*:+([0-9]{4})", "i");
+				results = searchRegExp.exec(txtURL.text);
+				isValidURL = (results != null) ? true : false;
+
+				if (isValidURL)
+				{
+					hgError.visible = hgError.includeInLayout = false;
+					txtURL.errorString = null;
+					getVagrantInfo();
+				}
+				else
+				{
+					hgError.visible = hgError.includeInLayout = true;
+					txtURL.errorString = "Invalid URL format. Expected format is http(s)://address:port";
+					txtState.text = txtCapabilities.text = "";
+					updateStatusIcon();
+				}
+			}
+
+			private function getVagrantInfo():void
+			{
+				loader = new DataAgent(txtURL.text +"/info", onServerInfoLoaded, onServerInfoFault, null, DataAgent.GETEVENT, 0, false);
+			}
+
+			private function onServerInfoLoaded(value:Object, message:String=null):void
+			{
+				var infoObject:Object = JSON.parse(value as String);
+				txtState.text = ("status" in infoObject) ? infoObject["status"] : VagrantInstanceState.UNREACHABLE;
+				txtCapabilities.text = ("capabilities" in infoObject) ? (infoObject["capabilities"] as Array).join(", ") : "";
+
+				loader = null;
+				updateStatusIcon();
+			}
+	
+			private function onServerInfoFault(message:String):void
+			{
+				loader = null;
+				txtState.text = VagrantInstanceState.UNREACHABLE;
+				txtCapabilities.text = "";
+
+				if (instance)
+				{
+					txtState.text = instance.state = VagrantInstanceState.UNREACHABLE;
+				}
+
+				updateStatusIcon();
+			}
+
+			private function updateStatusIcon():void
+			{
+				icoExclamationRed.visible = icoExclamationRed.includeInLayout = icoExclamationYellow.visible =
+						icoExclamationYellow.includeInLayout = icoTick.visible = icoTick.includeInLayout = false;
+				if (txtState.text == "")
+					return;
+				switch (txtState.text)
+				{
+					case VagrantInstanceState.UNREACHABLE:
+						icoExclamationRed.visible = icoExclamationRed.includeInLayout = true;
+						break;
+					case VagrantInstanceState.READY:
+						icoTick.includeInLayout = icoTick.visible = true;
+						break;
+					default:
+						icoExclamationYellow.includeInLayout = icoExclamationYellow.visible = true;
+				}
+			}
+
+			private function onOpenRequest():void
+			{
+				if (FileUtils.isPathExists(txtBrowsedPath.text))
+				{
+					dispatcher.dispatchEvent(
+							new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Trying to open project from: "+ txtBrowsedPath.text)
+					);
+					dispatcher.dispatchEvent(
+							new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, new File(txtBrowsedPath.text))
+					);
+				}
+				else
+				{
+					dispatcher.dispatchEvent(
+							new ConsoleOutputEvent(
+									ConsoleOutputEvent.CONSOLE_PRINT,
+									"Unable to open from: "+ txtBrowsedPath.text,
+									false, false, ConsoleOutputEvent.TYPE_ERROR
+							)
+					);
+				}
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="svLabel" source="{txtLabel}" property="text" trigger="{btnSubmit}"/>
+		<mx:StringValidator id="svURL" source="{txtURL}" property="text" trigger="{btnSubmit}"/>
+	</fx:Declarations>
+
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+
+	<s:Label text="Label:"/>
+	<view:PromptTextInput id="txtLabel"
+						  width="100%" styleName="textInput"
+						  prompt="Instance label"/>
+	<s:Label text="Base URL:"/>
+	<view:PromptTextInput id="txtURL"
+						  prompt="eg.http://127.0.0.1:8095" width="100%" styleName="textInput"
+						  focusOut="updatePossiblePath()"/>
+	<s:Label text="Local Path (Optional):"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<view:PromptTextInput id="txtBrowsedPath"
+							  prompt="Select path.." width="100%" styleName="textInput" editable="false"/>
+		<s:Button label="Browse" styleName="darkButton"
+			click="onBrowse()"/>
+		<s:Button label="Open" styleName="darkButton"
+			enabled="{txtBrowsedPath.text != ''}"
+			click="onOpenRequest()"/>
+	</s:HGroup>
+	<s:BorderContainer width="100%" borderColor="#666666" backgroundColor="#a0a0a0" cornerRadius="2">
+		<s:Form width="100%">
+			<s:layout>
+				<s:FormLayout gap="-2"/>
+			</s:layout>
+			<s:FormItem label="Status" styleName="uiTextSettingsLabel" width="100%">
+				<s:HGroup width="100%" verticalAlign="middle">
+					<s:Image id="icoTick"
+							 source="@Embed(source='/elements/images/icoTickSmall.png')"
+							 visible="false" includeInLayout="false"/>
+					<s:Image id="icoExclamationRed"
+							 source="@Embed(source='/elements/images/iconExclamationRed.png')"
+							 visible="false" includeInLayout="false"/>
+					<s:Image id="icoExclamationYellow"
+							 source="@Embed(source='/elements/images/exclamation.png')"
+							 visible="false" includeInLayout="false"/>
+					<s:Label id="txtState"
+							 width="100%" styleName="uiTextSettingsValue"
+							 fontWeight="bold"/>
+				</s:HGroup>
+			</s:FormItem>
+			<s:FormItem label="Capabilities" styleName="uiTextSettingsLabel" width="100%">
+				<s:Label id="txtCapabilities"
+						 width="100%" styleName="uiTextSettingsValue"
+						 fontWeight="bold"/>
+			</s:FormItem>
+		</s:Form>
+	</s:BorderContainer>
+	<s:HGroup id="hgError"
+			  width="100%" verticalAlign="middle" horizontalAlign="center"
+				visible="false" includeInLayout="false">
+		<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+		<s:Label text="Invalid URL format. Expected format is http(s)://address:port"/>
+	</s:HGroup>
+
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit"
+				  label="Save" styleName="darkButton"
+					click="onSubmit()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

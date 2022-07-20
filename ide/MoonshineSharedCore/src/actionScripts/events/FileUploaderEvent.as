@@ -19,15 +19,22 @@
 package actionScripts.events
 {
 	import flash.events.Event;
-
-	public class DominoEvent extends Event
+	
+	public class FileUploaderEvent extends Event
 	{
-		public static const NDS_KILL:String = "eventNDSKill";
-		public static const EVENT_CONVERT_DOMINO_DATABASE:String = "eventConvertDominoDatabase";
+		public static const EVENT_UPLOAD_LOADED:String = "eventUploadLoaded";
+		public static const EVENT_UPLOAD_COMPLETE_DATA:String = "eventUploadCompleteData";
+		public static const EVENT_UPLOAD_CANCELED:String = "eventUploadCanceled";
+		public static const EVENT_UPLOAD_PROGRESS:String = "eventUploadProgress";
+		public static const EVENT_UPLOAD_ERROR:String = "eventUploadError";
+		public static const EVENT_UPLOAD_COMPLETE:String = "eventUploadComplete";
 
-		public function DominoEvent(type:String)
+		public var value:Object;
+		
+		public function FileUploaderEvent(type:String, value:Object=null, _bubble:Boolean=false, _cancelable:Boolean=true)
 		{
-			super(type, false, false);
+			this.value = value;
+			super(type, _bubble, _cancelable);
 		}
 	}
 }

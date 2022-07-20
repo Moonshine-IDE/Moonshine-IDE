@@ -114,6 +114,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 		private function onTemplatesZipDownloaded(event:Event):void
 		{
+			success("Success: Java agent generation templates downloaded");
 			unzipTemplateArchive(fileDownloader.targetLocation);
 			configureFileDownloaderListeners(false);
 		}

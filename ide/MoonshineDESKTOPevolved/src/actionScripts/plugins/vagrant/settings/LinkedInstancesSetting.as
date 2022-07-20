@@ -16,18 +16,36 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.events
+package actionScripts.plugins.vagrant.settings
 {
-	import flash.events.Event;
+	import actionScripts.plugins.vagrant.settings.renderer.LinkedInstancesRenderer;
 
-	public class DominoEvent extends Event
+	import mx.collections.ArrayCollection;
+
+	import mx.core.IVisualElement;
+	
+	import actionScripts.plugin.settings.vo.AbstractSetting;
+
+	public class LinkedInstancesSetting extends AbstractSetting
 	{
-		public static const NDS_KILL:String = "eventNDSKill";
-		public static const EVENT_CONVERT_DOMINO_DATABASE:String = "eventConvertDominoDatabase";
+		protected var rdr:LinkedInstancesRenderer = new LinkedInstancesRenderer();
 
-		public function DominoEvent(type:String)
+		[Bindable] public var vagrantInstances:ArrayCollection;
+		public var fakeSetting:String = "";
+		
+		public function LinkedInstancesSetting(instances:ArrayCollection)
 		{
-			super(type, false, false);
+			super();
+			this.vagrantInstances = instances;
+			this.provider = this;
+			this.name = 'fakeSetting';
+			defaultValue = stringValue = "";
+		}
+		
+		override public function get renderer():IVisualElement
+		{
+			rdr.setting = this;
+			return rdr;
 		}
 	}
 }
