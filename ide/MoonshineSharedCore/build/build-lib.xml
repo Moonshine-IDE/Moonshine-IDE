@@ -998,16 +998,6 @@
 			<arg value="flash"/>
 			<arg value="-debug"/>
 			<arg value="-Dflexhome='${FLEX_HOME}'"/>
-			<arg value="-Dair"/>
-			<!--
-				Necessary external SWC libraries for successful compilation
-				These are temporary included until the entire codebase has been converted to Haxe
-				<arg value="-haxeflag=-swf-lib-extern=${FLEX_HOME}/frameworks/libs/air/airglobal.swc"/>
-				<arg value="-haxeflag=-swf-lib-extern=${FLEX_HOME}/frameworks/libs/air/aircore.swc"/>
-				<arg value="-haxeflag=-swf-lib-extern=${FLEX_HOME}/frameworks/libs/air/airframework.swc"/>
-				<arg value="-haxeflag=-swf-lib-extern=${FLEX_HOME}/frameworks/libs/mx/mx.swc"/>
-				<arg value="-haxeflag=-swf-lib-extern=${LibraryMoonshineCore}/bin/MoonshineSharedCore.swc"/>
-			-->
 		</exec>
 	</target>
 
