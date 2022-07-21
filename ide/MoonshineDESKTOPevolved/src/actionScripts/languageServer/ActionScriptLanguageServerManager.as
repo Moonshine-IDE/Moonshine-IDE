@@ -381,6 +381,7 @@ package actionScripts.languageServer
 
 				_javaVersionProcess = new NativeProcess();
 				_javaVersionProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, javaVersionProcess_standardErrorDataHandler);
+				_javaVersionProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, javaVersionProcess_standardOutputData);
 				_javaVersionProcess.addEventListener(NativeProcessExitEvent.EXIT, javaVersionProcess_exitHandler);
 				_javaVersionProcess.start(processInfo);
 			}, null, [CommandLineUtil.joinOptions(javaVersionCommand)]);
@@ -761,6 +762,15 @@ package actionScripts.languageServer
 			}
 		}
 
+		private function javaVersionProcess_standardOutputData(event:ProgressEvent):void
+		{
+			if (_javaVersionProcess)
+			{
+				var javaVersionData:String = _javaVersionProcess.standardOutput.readUTFBytes(_javaVersionProcess.standardOutput.bytesAvailable);
+				print("Java version output data: " + javaVersionData);
+			}
+		}
+
 		private function javaVersionProcess_exitHandler(event:NativeProcessExitEvent):void
 		{
 			_dispatcher.dispatchEvent(new StatusBarEvent(
@@ -769,6 +779,7 @@ package actionScripts.languageServer
 			));
 
 			_javaVersionProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, javaVersionProcess_standardErrorDataHandler);
+			_javaVersionProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, javaVersionProcess_standardOutputData);
 			_javaVersionProcess.removeEventListener(NativeProcessExitEvent.EXIT, javaVersionProcess_exitHandler);
 			_javaVersionProcess.exit();
 			_javaVersionProcess = null;
