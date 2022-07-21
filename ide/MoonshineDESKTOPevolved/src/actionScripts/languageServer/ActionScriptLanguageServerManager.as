@@ -759,6 +759,7 @@ package actionScripts.languageServer
 				var output:IDataInput = _javaVersionProcess.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 				this._javaVersion += data;
+				print("Java version full information: " + data);
 			}
 		}
 
