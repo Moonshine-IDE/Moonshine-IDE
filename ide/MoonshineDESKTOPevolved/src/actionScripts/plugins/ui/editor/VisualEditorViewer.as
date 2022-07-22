@@ -311,6 +311,7 @@ package actionScripts.plugins.ui.editor
 		override protected function openHandler(event:Event):void
 		{
 			super.openHandler(event);
+			Alert.show("view openHanlder");
 			
 			createVisualEditorFile();
 		}
