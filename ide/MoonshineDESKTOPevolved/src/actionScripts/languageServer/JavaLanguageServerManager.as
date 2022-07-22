@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
+	import com.adobe.utils.StringUtil;
+	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.DisplayObject;
@@ -31,12 +33,14 @@ package actionScripts.languageServer
 	import flash.net.navigateToURL;
 	import flash.utils.ByteArray;
 	import flash.utils.IDataInput;
-
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+	
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
 	import mx.utils.SHA256;
-
+	
 	import actionScripts.events.ApplicationEvent;
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
@@ -67,11 +71,9 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-
-	import com.adobe.utils.StringUtil;
-
+	
 	import feathers.controls.Button;
-
+	
 	import moonshine.components.StandardPopupView;
 	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.LogMessageParams;
@@ -84,8 +86,6 @@ package actionScripts.languageServer
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
 	import moonshine.theme.MoonshineTheme;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -473,8 +473,9 @@ package actionScripts.languageServer
 				configFile = storageFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
 			}
 
+			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				cmdFile.nativePath,
+				javaEncodedPath,
 				// uncomment to allow connection to debugger
 				// "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044",
 				"-Declipse.application=org.eclipse.jdt.ls.core.id1",
