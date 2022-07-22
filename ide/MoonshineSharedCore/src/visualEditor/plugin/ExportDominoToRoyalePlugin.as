@@ -255,6 +255,7 @@ package visualEditor.plugin
         private function getDataGridContent(dpName:String, propertyName:String, propertyType:String, componentData:Array):XML
         {
             var columns:Array = getDataGridColumns(componentData, []);
+                columns = columns.slice(0, 3);
 
             var dataGridNamespace:Namespace = new Namespace("dataGrid", "classes.dataGrid.*");
             var dataGridXML:XML = new XML("<DataGrid />");
@@ -290,8 +291,7 @@ package visualEditor.plugin
                 }
                 else
                 {
-                    var fieldsCount:int = fields.length > 3 ? 3 : fields.length;
-                    for (var j:int = 0; j < fieldsCount; j++)
+                    for (var j:int = 0; j < fields.length; j++)
                     {
                         var field:Object = fields[j];
                         if (!field.name)
