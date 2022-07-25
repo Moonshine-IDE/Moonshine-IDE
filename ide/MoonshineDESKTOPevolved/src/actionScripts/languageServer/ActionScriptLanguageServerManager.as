@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
+	import com.adobe.utils.StringUtil;
+	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -33,9 +35,9 @@ package actionScripts.languageServer
 	import flash.utils.IDataInput;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
-
+	
 	import mx.controls.Alert;
-
+	
 	import actionScripts.events.ApplicationEvent;
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.EditorPluginEvent;
@@ -66,9 +68,7 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-
-	import com.adobe.utils.StringUtil;
-
+	
 	import moonshine.lsp.ApplyWorkspaceEditParams;
 	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.LogMessageParams;
@@ -381,7 +381,6 @@ package actionScripts.languageServer
 
 				_javaVersionProcess = new NativeProcess();
 				_javaVersionProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, javaVersionProcess_standardErrorDataHandler);
-				_javaVersionProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, javaVersionProcess_standardOutputData);
 				_javaVersionProcess.addEventListener(NativeProcessExitEvent.EXIT, javaVersionProcess_exitHandler);
 				_javaVersionProcess.start(processInfo);
 			}, null, [CommandLineUtil.joinOptions(javaVersionCommand)]);
@@ -436,8 +435,9 @@ package actionScripts.languageServer
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_COMPILER_PATH).nativePath + File.separator + "*";
 
+			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				cmdFile.nativePath,
+				javaEncodedPath,
 				"-Dfile.encoding=UTF8",
 				"-Xmx2g",
 				"-Droyalelib=" + frameworksPath,
@@ -759,15 +759,7 @@ package actionScripts.languageServer
 				var output:IDataInput = _javaVersionProcess.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 				this._javaVersion += data;
-			}
-		}
-
-		private function javaVersionProcess_standardOutputData(event:ProgressEvent):void
-		{
-			if (_javaVersionProcess)
-			{
-				var javaVersionData:String = _javaVersionProcess.standardOutput.readUTFBytes(_javaVersionProcess.standardOutput.bytesAvailable);
-				print("Java version output data: " + javaVersionData);
+				print("Java version full information: " + data);
 			}
 		}
 
@@ -779,7 +771,6 @@ package actionScripts.languageServer
 			));
 
 			_javaVersionProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, javaVersionProcess_standardErrorDataHandler);
-			_javaVersionProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, javaVersionProcess_standardOutputData);
 			_javaVersionProcess.removeEventListener(NativeProcessExitEvent.EXIT, javaVersionProcess_exitHandler);
 			_javaVersionProcess.exit();
 			_javaVersionProcess = null;

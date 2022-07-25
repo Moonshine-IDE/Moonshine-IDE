@@ -30,10 +30,10 @@ You should place SDK Installer repository on the same level as Moonshine IDE. So
 
 ### 4. Additional Required Projects
 
-These projects are also required, but do not require separate compilation:
+These projects are also required:
 - Visual Editor ([documentation](https://github.com/Moonshine-IDE/Moonshine-IDE/wiki/Visual-Editor-Architecture))
-    - [VisualEditorConverterLib](https://github.com/Moonshine-IDE/VisualEditorConverterLib)
-    - [MockupVisualEditor](https://github.com/Moonshine-IDE/MockupVisualEditor)
+    - [VisualEditorConverterLib](https://github.com/Moonshine-IDE/VisualEditorConverterLib) - required to [build](https://github.com/Moonshine-IDE/VisualEditorConverterLib#visualeditorconverterlib-swc-library)
+    - [MockupVisualEditor](https://github.com/Moonshine-IDE/MockupVisualEditor) - required to [build](https://github.com/Moonshine-IDE/MockupVisualEditor#moonshine-swc-library)
 - Text Editor:
     - [moonshine-feathersui-text-editor](https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor)
     - Language server integration:  [moonshine-openfl-language-client](https://github.com/Moonshine-IDE/moonshine-openfl-language-client) 

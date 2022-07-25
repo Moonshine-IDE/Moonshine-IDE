@@ -26,9 +26,11 @@ package actionScripts.languageServer
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
-
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+	
 	import mx.controls.Alert;
-
+	
 	import actionScripts.events.ApplicationEvent;
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
@@ -53,6 +55,7 @@ package actionScripts.languageServer
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.GradleBuildUtil;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
@@ -60,7 +63,7 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-
+	
 	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.LogMessageParams;
 	import moonshine.lsp.PublishDiagnosticsParams;
@@ -71,8 +74,6 @@ package actionScripts.languageServer
 	import moonshine.lsp.UnregistrationParams;
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -257,8 +258,10 @@ package actionScripts.languageServer
 			{
 				cp += ":";
 			}
+			
+			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				cmdFile.nativePath,
+				javaEncodedPath,
 				"-cp",
 				cp,
 				"moonshine.groovyls.Main"
