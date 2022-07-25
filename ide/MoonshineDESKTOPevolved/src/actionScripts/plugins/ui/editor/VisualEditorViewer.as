@@ -311,7 +311,6 @@ package actionScripts.plugins.ui.editor
 		override protected function openHandler(event:Event):void
 		{
 			super.openHandler(event);
-			Alert.show("view openHanlder");
 			
 			createVisualEditorFile();
 		}
@@ -445,6 +444,11 @@ package actionScripts.plugins.ui.editor
 			if (veFilePath)
 			{
 				visualEditorView.visualEditor.loadFile(veFilePath);
+				//if it is a domino form file, open the Objects for the editor.text
+				 if(file.fileBridge.nativePath.lastIndexOf(".form")>=0){
+					
+				 }
+				Alert.show("veFilePath:"+file.fileBridge.nativePath);
 			}
 		}
 
