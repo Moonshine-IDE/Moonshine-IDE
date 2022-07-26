@@ -77,6 +77,7 @@ package actionScripts.utils
 			if (ConstantsCoreVO.IS_MACOS) runAppStoreHelperOSX();
 			else
 			{
+				nativeApplicationUpdater = new NativeApplicationUpdater();
 				if (executableFile.exists)
 				{
 					runAppStoreHelperWindows();
@@ -98,8 +99,6 @@ package actionScripts.utils
 			
 			updaterHelper = new AutoUpdaterHelper();
 			updaterHelper.addEventListener(GeneralEvent.DONE, onUpdaterHelperDone, false, 0, true);
-			
-			nativeApplicationUpdater = new NativeApplicationUpdater();
 			updaterHelper.updater = nativeApplicationUpdater;
 
 			nativeApplicationUpdater.addEventListener(UpdateEvent.INITIALIZED, updaterHelper.updater_initializedHandler, false, 0, true);
