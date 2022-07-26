@@ -206,7 +206,12 @@ package actionScripts.utils
 		
 		private function runAppStoreHelperWindows():void
 		{
-			if (executableFile.exists) executableFile.openWithDefaultApplication();
+			if (executableFile.exists)
+			{
+				nativeApplicationUpdater.exitApplicationBeforeInstall = false;
+				nativeApplicationUpdater.installFromFile(executableFile);
+				//executableFile.openWithDefaultApplication();
+			}
 		}
 	}
 }

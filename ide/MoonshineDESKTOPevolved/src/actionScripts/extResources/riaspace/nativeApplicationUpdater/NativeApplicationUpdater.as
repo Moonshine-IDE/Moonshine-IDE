@@ -1,6 +1,7 @@
 package actionScripts.extResources.riaspace.nativeApplicationUpdater
 {
 	import actionScripts.locator.IDEModel;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	import flash.desktop.NativeApplication;
@@ -490,7 +491,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 			}
 		}
 		
-		protected function installFromFile(updateFile:File):void
+		public function installFromFile(updateFile:File):void
 		{
 			var beforeInstallEvent:UpdateEvent = new UpdateEvent(UpdateEvent.BEFORE_INSTALL, false, true);
 			dispatchEvent(beforeInstallEvent);
@@ -510,7 +511,7 @@ package actionScripts.extResources.riaspace.nativeApplicationUpdater
 					if (cmdExe && cmdExe.exists)
 					{
 						var args:Vector.<String> = new Vector.<String>();
-						args.push("/c", updateFile.nativePath);
+						args.push("/c", UtilsCore.getEncodedForShell(updateFile.nativePath));
 						
 						info.executable = cmdExe;
 						info.arguments = args;

@@ -374,7 +374,6 @@ package actionScripts.languageServer
 					processArgs.push(value);
 				}
 
-				print("Java version environment values: " + value);
 				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 				processInfo.arguments = processArgs;
 				processInfo.executable = cmdFile;
