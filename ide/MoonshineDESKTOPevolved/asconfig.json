@@ -2,17 +2,30 @@
 	"compilerOptions": {
 		"output": "bin-debug/MoonshineDESKTOP.swf",
 		"accessible": true,
+		"swf-version": 39,
 		"source-path": [
 			"src",
 			"../MoonshineSharedCore/src",
 			"../MoonshineSharedCore/src/locale/en_US",
-			"../../../Moonshine-SDK-Installer/InstallerSharedCore/src"
+			"../../../Moonshine-SDK-Installer/InstallerSharedCore/src",
+			"../../../VisualEditorConverterLib/src",
+			"../../../MockupVisualEditor/src"
 		],
 		"library-path": [
 			"libs",
 			"libs/ApacheFlexSDKInstallerLib.swc",
 			"../MoonshineSharedCore/libs",
 			"../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"
+		],
+		"define": [
+			{
+				"name": "CONFIG::MOONSHINE",
+				"value": true
+			},
+			{
+				"name": "CONFIG::OSX",
+				"value": false
+			}
 		]
 	},
 	"files": [
@@ -20,7 +33,7 @@
 	],
 	"application": "src/MoonshineDESKTOP-app.xml",
 	"copySourcePathAssets": true,
-	"additionalOptions": "-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false",
+	"additionalOptions": "-locale en_US ja_JP -allow-source-path-overlap=true",
 	"airOptions": {
 		"output": "MoonshineDESKTOP.air",
 		"extdir": [
