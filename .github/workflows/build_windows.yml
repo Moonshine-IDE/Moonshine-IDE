@@ -24,5 +24,7 @@ jobs:
       working-directory: ..
       run: |
         git clone https://github.com/Moonshine-IDE/Moonshine-SDK-Installer.git
+        git clone https://github.com/Moonshine-IDE/VisualEditorConverterLib.git
+        git clone https://github.com/Moonshine-IDE/MockupVisualEditor.git
     - name: Build with Ant
       run: ant -noinput -buildfile 'ide\MoonshineDESKTOPevolved\build\build.xml' CompileSWFWindows
