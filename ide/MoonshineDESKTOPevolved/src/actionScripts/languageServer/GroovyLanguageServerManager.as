@@ -50,7 +50,7 @@ package actionScripts.languageServer
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.GroovyTextEditor;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.GlobPatterns;
@@ -160,7 +160,7 @@ package actionScripts.languageServer
 			}
 			var scheme:String = uri.substr(0, colonIndex);
 
-			var editor:GroovyTextEditor = new GroovyTextEditor(_project, readOnly);
+			var editor:LanguageServerTextEditor = new LanguageServerTextEditor(LANGUAGE_ID_GROOVY, _project, readOnly);
 			if(scheme == URI_SCHEME_FILE)
 			{
 				//the regular OpenFileEvent should be used to open this one
