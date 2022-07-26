@@ -139,7 +139,9 @@ package actionScripts.plugin.settings
 				model.javaCore.getPluginsNotToShowInSettings(),
 				model.groovyCore.getPluginsNotToShowInSettings(),
 				model.haxeCore.getPluginsNotToShowInSettings(),
-				model.ondiskCore.getPluginsNotToShowInSettings()
+				model.ondiskCore.getPluginsNotToShowInSettings(),
+				model.genericCore.getPluginsNotToShowInSettings(),
+				model.visualEditorCore.getPluginsNotToShowInSettings()
 			);
 			
 			dispatcher.addEventListener(SettingsEvent.EVENT_OPEN_SETTINGS, openAppSettings);
