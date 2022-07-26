@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
+	import com.adobe.utils.StringUtil;
+	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -33,9 +35,9 @@ package actionScripts.languageServer
 	import flash.utils.IDataInput;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
-
+	
 	import mx.controls.Alert;
-
+	
 	import actionScripts.events.ApplicationEvent;
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.EditorPluginEvent;
@@ -66,9 +68,7 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-
-	import com.adobe.utils.StringUtil;
-
+	
 	import moonshine.lsp.ApplyWorkspaceEditParams;
 	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.LogMessageParams;
@@ -435,8 +435,9 @@ package actionScripts.languageServer
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_COMPILER_PATH).nativePath + File.separator + "*";
 
+			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				cmdFile.nativePath,
+				javaEncodedPath,
 				"-Dfile.encoding=UTF8",
 				"-Xmx2g",
 				"-Droyalelib=" + frameworksPath,
@@ -758,6 +759,7 @@ package actionScripts.languageServer
 				var output:IDataInput = _javaVersionProcess.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 				this._javaVersion += data;
+				print("Java version full information: " + data);
 			}
 		}
 
@@ -805,7 +807,7 @@ package actionScripts.languageServer
 			}
 			else
 			{
-				error("Failed to load Java version. ActionScript & MXML code intelligence disabled for project: " + project.name + ".");
+				error("Failed to load Java version. ActionScript & MXML code intelligence disabled for project: " + project.name + ". Exit code: " + event.exitCode);
 			}
 		}
 

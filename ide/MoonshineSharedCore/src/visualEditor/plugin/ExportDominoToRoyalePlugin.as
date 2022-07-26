@@ -255,6 +255,7 @@ package visualEditor.plugin
         private function getDataGridContent(dpName:String, propertyName:String, propertyType:String, componentData:Array):XML
         {
             var columns:Array = getDataGridColumns(componentData, []);
+                columns = columns.slice(0, 3);
 
             var dataGridNamespace:Namespace = new Namespace("dataGrid", "classes.dataGrid.*");
             var dataGridXML:XML = new XML("<DataGrid />");
@@ -265,8 +266,7 @@ package visualEditor.plugin
                 dataGridXML.@includeIn = "dataGridState";
                 dataGridXML.@className = "dxDataGrid";
                 dataGridXML.@percentWidth = "100";
-                dataGridXML.@doubleClick = "{this.currentState = 'contentState'}";
-                dataGridXML.@selectionChanged = "{this." + propertyName + " = dg.selectedItem as " + propertyType + ";}";
+                dataGridXML.@doubleClick = "{this.currentState = 'contentState'; this.selectedRowIndex = dg.selectedIndex; this." + propertyName + " = dg.selectedItem.copy();}";
 
             return dataGridXML;
         }
@@ -291,8 +291,7 @@ package visualEditor.plugin
                 }
                 else
                 {
-                    var fieldsCount:int = fields.length > 3 ? 3 : fields.length;
-                    for (var j:int = 0; j < fieldsCount; j++)
+                    for (var j:int = 0; j < fields.length; j++)
                     {
                         var field:Object = fields[j];
                         if (!field.name)
@@ -327,7 +326,14 @@ package visualEditor.plugin
                     "   public class " + className + "VO\n" +
                     "   {\n";
 
-            classContent += getVOContentClass(componentData, "");
+            var copyMethod:String = "       public function copy():Object\n";
+                copyMethod += "       {\n" +
+                        "           var o:Object = new " + className + "VO();\n     ";
+
+            classContent += getVOContentClass(componentData, "") + "\n";
+            classContent += getVOCopyMethod(componentData, className, copyMethod);
+            classContent += "   return o;\n";
+            classContent += "}\n";
 
             classContent += "   } \n}";
 
@@ -366,6 +372,43 @@ package visualEditor.plugin
                         {
                             publicVar = "       " + getContentVariable(field);
                             content += publicVar;
+                        }
+                    }
+                }
+            }
+
+            return content;
+        }
+
+        private function getVOCopyMethod(componentData:Array, className:String, content:String):String
+        {
+            for (var i:int = 0; i < componentData.length; i++)
+            {
+                var data:Object = componentData[i];
+                var fields:Array = data.fields;
+
+                if (!data.fields && data.name)
+                {
+                    content += "o." + data.name + " = this." + data.name + ";\n          ";
+                }
+                else
+                {
+                    for each (var field:Object in fields)
+                    {
+                        if (!field.name)
+                        {
+                            if (field.fields)
+                            {
+                                content += getVOCopyMethod(field.fields, className, "");
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            content += "o." + field.name + " = this." + field.name + ";\n        ";
                         }
                     }
                 }
