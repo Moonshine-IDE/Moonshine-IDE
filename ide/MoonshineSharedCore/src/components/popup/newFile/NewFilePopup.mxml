@@ -231,14 +231,16 @@
                 if (lblExtension.text && lblExtension.text == ".form")
                 {
                     //get the domino project form folder value:
-                    var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms"
+                    var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/Forms";
+                    var dominoSUbFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/SharedElements/Subforms";
+
                     var currentPath:String = UtilsCore.getPathStringByProjectPath(
                             Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
                             tree.selectedItem.nativePath);
                     //btnCreate.enabled = false;
-                    if (currentPath != dominoFormFolder)
+                    if (currentPath != dominoFormFolder && currentPath != dominoSUbFormFolder)
                     {
-                        warningMessage = "Domino forms are only supported in the Forms folder.";
+                        warningMessage = "Domino forms are only supported in the Forms folder or  sub form folder";
                         hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
                         tree.selectedItem = wrapperOfFolderLocation;
                     }

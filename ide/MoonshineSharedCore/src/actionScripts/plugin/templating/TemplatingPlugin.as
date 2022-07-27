@@ -1280,6 +1280,10 @@ package actionScripts.plugin.templating
 
 		protected function openDominoFormComponentTypeChoose(event:Event):void
 		{
+			var dominoFormFolderStr:String;
+			var dominoFormFolder:FileLocation;
+			var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+
 			if (!newDominoFormComponentPopup)
 			{
 				newDominoFormComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoFormPopup, true) as NewDominoFormPopup;
@@ -1294,9 +1298,7 @@ package actionScripts.plugin.templating
 				}
 				else
 				{
-					// try to check if there is any selection in 
-					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+					
 					if (treeSelectedItem)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
@@ -1306,10 +1308,18 @@ package actionScripts.plugin.templating
 					}
 				}
 				//only for fixed folder for domino form file
+				
 			
-			
-				var dominoFormFolderStr:String=newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
-				var dominoFormFolder:FileLocation=new FileLocation(dominoFormFolderStr);
+				if(treeSelectedItem && UtilsCore.endsWith(treeSelectedItem.nativePath,"Subforms")){
+					dominoFormFolderStr =newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Subforms";
+				}else{
+					dominoFormFolderStr =newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
+				}
+				dominoFormFolder =new FileLocation(dominoFormFolderStr);
+				
+				
+				//if it is a subform it should be fix again to sub form 
+
 				if(dominoFormFolder.fileBridge.exists){
 					//set the tree selct to domino form folder
 					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
