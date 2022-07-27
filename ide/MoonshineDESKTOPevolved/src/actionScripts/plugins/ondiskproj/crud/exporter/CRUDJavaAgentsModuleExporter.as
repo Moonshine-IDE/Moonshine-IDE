@@ -65,6 +65,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		protected var project:ProjectVO;
 		protected var formObjects:Vector.<DominoFormVO>;
 
+		private var targetPath:File;
 		private var completionCount:int;
 		private var waitingCount:int;
 		private var onCompleteHandler:Function;
@@ -82,6 +83,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 			TEMPLATE_ELEMENTS_PATH = originPath.resolvePath("elements");
 
+			this.targetPath = targetPath;
 			this.project = project;
 			this.onCompleteHandler = onComplete;
 
@@ -151,6 +153,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			th.templatingData["%eachform%"] = th.templatingData["%form%"] = form.formName.replace(/[^0-9a-zA-Z_]/, '');
 			th.templatingData["%formRaw%"] = form.formName;
 			th.templatingData["%view%"] = form.viewName;
+			th.templatingData["%project%"] = targetPath.name;
 			generateModuleFilesContent(form, th);
 
 			for (var source:Object in moduleCopyTargets)
