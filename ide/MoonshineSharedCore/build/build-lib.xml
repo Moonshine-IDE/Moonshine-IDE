@@ -926,6 +926,22 @@
 
 	<target name="InstallHaxeDependencies" unless="nohaxelib">
 		<echo>Installing Haxe Libraries</echo>
+ 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+ 			dir="${LibraryGUICore}"
+ 			failonerror="true">
+ 			<arg value="git"/>
+ 			<arg value="lime"/>
+ 			<arg value="https://github.com/openfl/lime.git"/>
+ 			<arg value="--quiet"/>
+ 		</exec>
+ 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+ 			dir="${LibraryGUICore}"
+ 			failonerror="true">
+ 			<arg value="git"/>
+ 			<arg value="openfl"/>
+ 			<arg value="https://github.com/openfl/openfl.git"/>
+ 			<arg value="--quiet"/>
+ 		</exec>
 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 			dir="${LibraryGUICore}"
 			failonerror="true">
@@ -937,21 +953,7 @@
 			dir="${LibraryGUICore}"
 			failonerror="true">
 			<arg value="install"/>
-			<arg value="openfl"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
 			<arg value="actuate"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="lime"/>
 			<arg value="--quiet"/>
 		</exec>
 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
