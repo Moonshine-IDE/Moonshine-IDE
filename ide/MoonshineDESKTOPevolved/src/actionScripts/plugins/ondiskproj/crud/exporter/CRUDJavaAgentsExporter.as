@@ -249,7 +249,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			th.templatingData["%project%"] = targetDirectory.name;
 			th.templatingData["%NotesExecutablePath%"] = ConstantsCoreVO.IS_MACOS ? model.notesPath +"/Contents/MacOS/" : model.notesPath;
 
-			var excludes:Array = ["%eachform%Agents"];
+			var excludes:Array = ["%eachform%Agents", "%eachform%Docs", "%eachform%Scripts"];
 
 			th.projectTemplate(
 					new FileLocation(archiveDirectory.resolvePath("project").nativePath),
