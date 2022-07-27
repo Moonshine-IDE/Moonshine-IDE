@@ -26,9 +26,11 @@ package actionScripts.languageServer
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
-
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+	
 	import mx.controls.Alert;
-
+	
 	import actionScripts.events.ApplicationEvent;
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
@@ -53,6 +55,7 @@ package actionScripts.languageServer
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.GradleBuildUtil;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
@@ -60,7 +63,7 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-
+	
 	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.LogMessageParams;
 	import moonshine.lsp.PublishDiagnosticsParams;
@@ -71,8 +74,6 @@ package actionScripts.languageServer
 	import moonshine.lsp.UnregistrationParams;
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -98,8 +99,11 @@ package actionScripts.languageServer
 		private var _previousJDKPath:String = null;
 		private var _watchedFiles:Object = {};
 		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
+		private var _pid:int = -1;
 
 		private static const LANGUAGE_SERVER_SHUTDOWN_TIMEOUT:Number = 8000;
+
+		private static const LANGUAGE_SERVER_PROCESS_FORMATTED_PID:RegExp = new RegExp( /(%%%[0-9]+%%%)/ );
 
 		public function GroovyLanguageServerManager(project:GrailsProjectVO)
 		{
@@ -115,6 +119,9 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(WatchedFileChangeEvent.FILE_MODIFIED, fileModifiedHandler);
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
+
+			LanguageServerGlobals.addLanguageServerManager( this );
+			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
 
 			preTaskLanguageServer();
 		}
@@ -137,6 +144,11 @@ package actionScripts.languageServer
 		public function get active():Boolean
 		{
 			return _languageClient && _languageClient.initialized;
+		}
+
+		public function get pid():int
+		{
+			return _pid;
 		}
 
 		public function createTextEditorForUri(uri:String, readOnly:Boolean = false):BasicTextEditor
@@ -192,6 +204,10 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(LspNotificationEvent.SHOW_MESSAGE, languageClient_showMessageHandler);
 			_languageClient.removeEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			_languageClient = null;
+			
+			LanguageServerGlobals.removeLanguageServerManager( this );
+			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
+
 		}
 		
 		private function onGradleClassPathRefresh(event:Event):void
@@ -242,8 +258,10 @@ package actionScripts.languageServer
 			{
 				cp += ":";
 			}
+			
+			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				cmdFile.nativePath,
+				javaEncodedPath,
 				"-cp",
 				cp,
 				"moonshine.groovyls.Main"
@@ -273,6 +291,7 @@ package actionScripts.languageServer
 				
 				_languageServerProcess = new NativeProcess();
 				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
 				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 				_languageServerProcess.start(processInfo);
 
@@ -401,15 +420,10 @@ package actionScripts.languageServer
 				return;
 			}
 			_waitingToRestart = false;
-			if(_languageClient)
+			if(_languageClient || _languageServerProcess)
 			{
 				_waitingToRestart = true;
 				shutdown();
-			}
-			else if(_languageServerProcess)
-			{
-				_waitingToRestart = true;
-				_languageServerProcess.exit();
 			}
 
 			if(!_waitingToRestart)
@@ -420,8 +434,16 @@ package actionScripts.languageServer
 
 		private function shutdown():void
 		{
-			if(!_languageClient)
+			if(!_languageClient || !_languageClient.initialized)
 			{
+				if (_languageClient)
+				{
+					cleanupLanguageClient();
+				}
+				if (_languageServerProcess)
+				{
+					_languageServerProcess.exit(true);
+				}
 				return;
 			}
 			_shutdownTimeoutID = setTimeout(shutdownTimeout, LANGUAGE_SERVER_SHUTDOWN_TIMEOUT);
@@ -439,6 +461,23 @@ package actionScripts.languageServer
 			trace(message);
 			_languageClient = null;
 			_languageServerProcess.exit(true);
+		}
+
+		private function languageServerProcess_standardOutputDataHandler(e:ProgressEvent):void
+		{
+			var output:IDataInput = _languageServerProcess.standardOutput;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			if ( data.search(LANGUAGE_SERVER_PROCESS_FORMATTED_PID) > -1 ) {
+				// Formatted PID found
+				var a:Array = data.match(LANGUAGE_SERVER_PROCESS_FORMATTED_PID);
+				var spid:String = a[ 0 ].split("%%%")[ 1 ];
+				_pid = parseInt(spid);
+				if ( _pid > 0 ) {
+					// PID is set, we don't need the stdout handler anymore
+					_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
+					LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.ADDED ) );
+				}
+			}
 		}
 
 		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
@@ -462,6 +501,8 @@ package actionScripts.languageServer
 				
 				warning("Groovy language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
+			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
+			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
 			_languageServerProcess.exit();
@@ -674,7 +715,7 @@ package actionScripts.languageServer
 
 		private function removeProjectHandler(event:ProjectEvent):void
 		{
-			if(event.project != _project || !_languageClient)
+			if(event.project != _project)
 			{
 				return;
 			}
@@ -683,10 +724,6 @@ package actionScripts.languageServer
 
 		private function applicationExitHandler(event:ApplicationEvent):void
 		{
-			if(!_languageClient)
-			{
-				return;
-			}
 			shutdown();
 		}
 

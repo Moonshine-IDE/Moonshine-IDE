@@ -32,6 +32,8 @@
 		removedFromStage="onPathRendererRemovedFromStage(event)">
 	<fx:Script>
 		<![CDATA[
+		import components.popup.OpenHiddenFilePathPopup;
+
 		import mx.collections.ArrayCollection;
 		import mx.controls.Alert;
 		import mx.core.FlexGlobals;
@@ -53,8 +55,10 @@
 
 		import moonshine.components.SDKDefineView;
 		import moonshine.components.SDKSelectorView;
+
 		import actionScripts.ui.FeathersUIWrapper;
 		import actionScripts.valueObjects.ConstantsCoreVO;
+
 		import feathers.data.ArrayCollection;
 
 		[Bindable]
@@ -73,6 +77,7 @@
 		private var sdkPopupWrapper:FeathersUIWrapper;
 		private var sdkPathPopup:SDKDefineView;
 		private var sdkPathPopupWrapper:FeathersUIWrapper;
+		private var gotoFolderPopup:OpenHiddenFilePathPopup;
 
 		private var message:String;
 		private var messageType:String;
@@ -82,7 +87,7 @@
 			this.message = value;
 			this.messageType = type;
 
-			if(!lblMessage)
+			if (!lblMessage)
 			{
 				return;
 			}
@@ -93,7 +98,7 @@
 			}
 
 			lblMessage.includeInLayout = lblMessage.visible = true;
-			if(isDropDown && dropdownListItems && dropdownListItems.length == 0)
+			if (isDropDown && dropdownListItems && dropdownListItems.length == 0)
 			{
 				value = "Select path to continue";
 				type = AbstractSetting.MESSAGE_CRITICAL;
@@ -118,9 +123,9 @@
 		private function selectPath():void
 		{
 			// opens only if sdkpop not opens already
-			if(isSDKPath)
+			if (isSDKPath)
 			{
-				if(!sdkPopup)
+				if (!sdkPopup)
 				{
 					sdkPopup = new SDKSelectorView();
 					sdkPopup.sdks = new feathers.data.ArrayCollection(model.userSavedSDKs.source);
@@ -144,7 +149,7 @@
 					startFromLocation = location.fileBridge.nativePath;
 				}
 
-				if(setting.directory)
+				if (setting.directory)
 				{
 					model.fileCore.browseForDirectory("Select directory", openFile, null, startFromLocation);
 				}
@@ -153,6 +158,30 @@
 					model.fileCore.browseForOpen("Select file", openFile, null, setting.fileFilters, startFromLocation);
 				} // for Balsmiq project we need only .xml file to get selected.
 			}
+		}
+
+		private function openPopupToAccessArbitraryFolder():void
+		{
+			if (!gotoFolderPopup)
+			{
+				gotoFolderPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, OpenHiddenFilePathPopup, true) as OpenHiddenFilePathPopup;
+				gotoFolderPopup.isDirectory = setting.directory;
+				gotoFolderPopup.addEventListener(OpenHiddenFilePathPopup.EVENT_PATH_SELECTED, onGotoFolderPathSelected);
+				gotoFolderPopup.addEventListener(CloseEvent.CLOSE, onGotoFolderWindowClosed);
+				PopUpManager.centerPopUp(gotoFolderPopup);
+			}
+		}
+
+		private function onGotoFolderWindowClosed(event:CloseEvent):void
+		{
+			gotoFolderPopup.removeEventListener(OpenHiddenFilePathPopup.EVENT_PATH_SELECTED, onGotoFolderPathSelected);
+			gotoFolderPopup.removeEventListener(CloseEvent.CLOSE, onGotoFolderWindowClosed);
+			gotoFolderPopup = null;
+		}
+
+		private function onGotoFolderPathSelected(event:Event):void
+		{
+			openFile(gotoFolderPopup.path);
 		}
 
 		private function sdkPopup_stage_resizeHandler(event:Event):void
@@ -188,12 +217,12 @@
 		private function onSDKPopupClosed(event:Event):void
 		{
 			var selectedSDK:SDKReferenceVO = sdkPopup.selectedSDK;
-			if(selectedSDK)
+			if (selectedSDK)
 			{
 				// in case user deleted the entry
 				setting.stringValue = selectedSDK.path;
 				lblValue.text = selectedSDK.name;
-				if(selectedSDK.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
+				if (selectedSDK.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
 				hideDefineSDKLink(selectedSDK.name);
 			}
 
@@ -204,8 +233,8 @@
 			PopUpManager.removePopUp(sdkPopupWrapper);
 			sdkPopup.removeEventListener(Event.CLOSE, onSDKPopupClosed);
 			sdkPopup = null;
-			
-			if(selectedSDK)
+
+			if (selectedSDK)
 			{
 				setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 			}
@@ -214,8 +243,8 @@
 		private function openFile(fileDir:Object):void
 		{
 			setting.stringValue = fileDir.nativePath;
-			if(isDropDown) dropdownListItems.addItem(fileDir.nativePath);
- 
+			if (isDropDown) dropdownListItems.addItem(fileDir.nativePath);
+
 			cmbPath.selectedItem = setting.stringValue;
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 
@@ -226,22 +255,23 @@
 			dropdownListItems = setting.dropdownListItems;
 
 			// process this following only in case of project's custom SDK
-			if(isSDKPath && setting.stringValue)
+			if (isSDKPath && setting.stringValue)
 			{
 				// check if sdk is available to the user
 				var isFound:SDKReferenceVO = UtilsCore.getUserDefinedSDK(setting.stringValue, "path");
-				if(!isFound)
+				if (!isFound)
 				{
 					hgUndefinedSDK.visible = hgUndefinedSDK.includeInLayout = true;
-				} else
+				}
+				else
 				{
 					hideDefineSDKLink(isFound.name);
 					lblValue.text = isFound.name;
-					if(isFound.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
+					if (isFound.status == SDKUtils.BUNDLED) lblValue.text += " (Bundled)";
 				}
 			}
 
-			if(isDropDown)
+			if (isDropDown)
 			{
 				cmbPath.setStyle("contentBackgroundColor", "#FFFFFF");
 				cmbPath.selectedItem = setting.provider[setting.name];
@@ -250,11 +280,12 @@
 			setting.dispatchEvent(new Event(AbstractSetting.PATH_SELECTED));
 
 			// validate path
-			if(!isSDKPath && setting.stringValue && !isDropDown)
+			if (!isSDKPath && setting.stringValue && !isDropDown)
 			{
-				if(!(new FileLocation(setting.stringValue).fileBridge.exists))
+				if (!(new FileLocation(setting.stringValue).fileBridge.exists))
 					setMessage("Path is not accessible.", AbstractSetting.MESSAGE_CRITICAL);
-			} else
+			}
+			else
 			{
 				setMessage(this.message, this.messageType);
 			}
@@ -262,12 +293,12 @@
 
 		private function hideDefineSDKLink(withSDKName:String):void
 		{
-			if(hgUndefinedSDK.visible)
+			if (hgUndefinedSDK.visible)
 			{
 				hgUndefinedSDK.visible = hgUndefinedSDK.includeInLayout = false;
 
 				// updates to project custom SDK values
-				if(setting.provider.hasOwnProperty("buildOptions"))
+				if (setting.provider.hasOwnProperty("buildOptions"))
 				{
 					setting.provider.buildOptions.customSDKPath = withSDKName;
 					setting.provider.swfOutput.swfVersion = SDKUtils.getSdkSwfMajorVersion(withSDKName);
@@ -285,7 +316,7 @@
 
 		private function editSDK(sdk:SDKReferenceVO):void
 		{
-			if(!sdkPathPopup)
+			if (!sdkPathPopup)
 			{
 				sdkPathPopup = new SDKDefineView();
 				sdkPathPopup.sdk = sdk;
@@ -315,11 +346,11 @@
 
 		protected function onSDKPathPopupClosed(event:Event):void
 		{
-			if(!sdkPathPopup)
+			if (!sdkPathPopup)
 			{
 				return;
 			}
-			
+
 			var newSDK:SDKReferenceVO = sdkPathPopup.sdk;
 			// detects been new or edit situation
 			if (newSDK is SDKReferenceVO)
@@ -341,7 +372,7 @@
 					model.userSavedSDKs.refresh();
 				}
 				GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.FLEX_SDK_UDPATED));
-				if(sdkPopup)
+				if (sdkPopup)
 				{
 					sdkPopup.sdks = new feathers.data.ArrayCollection(model.userSavedSDKs.source);
 				}
@@ -380,6 +411,11 @@
 		<s:Button label="Change"
 				  skinClass="{LinkButtonSkin}"
 				  click="selectPath()" />
+
+		<s:Button label="Go to Folder"
+				  skinClass="{LinkButtonSkin}"
+				  click="openPopupToAccessArbitraryFolder()"
+					includeInLayout="{ConstantsCoreVO.IS_MACOS &amp;&amp; !isSDKPath}" visible="{ConstantsCoreVO.IS_MACOS &amp;&amp; !isSDKPath}"/>
 	</s:HGroup>
 
 	<s:Label id="lblValue"

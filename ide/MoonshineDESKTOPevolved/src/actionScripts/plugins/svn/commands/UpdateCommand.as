@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.svn.commands
 {
+	import actionScripts.valueObjects.RepositoryItemVO;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -37,13 +39,14 @@ package actionScripts.plugins.svn.commands
 			super(executable, root);
 		}
 		
-		public function update(file:File, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false):void
+		public function update(file:File, user:String=null, password:String=null, isTrustServerCertificateSVN:Boolean=false, repositoryItem:RepositoryItemVO=null):void
 		{
 			if (customProcess && customProcess.running)
 			{
 				return;
 			}
-			
+
+			this.repositoryItem = repositoryItem;
 			this.isTrustServerCertificateSVN = isTrustServerCertificateSVN;
 			root = file;
 			
@@ -65,7 +68,7 @@ package actionScripts.plugins.svn.commands
 			}
 		}
 		
-		private function doUpdate(user:String=null, password:String=null):void
+		private function doUpdate(user:String=null, password:String=null, repository:RepositoryItemVO=null):void
 		{
 			customInfo = new NativeProcessStartupInfo();
 			customInfo.executable = executable;
@@ -80,6 +83,14 @@ package actionScripts.plugins.svn.commands
 				args.push("--password");
 				args.push(password);
 			}
+			else if (repositoryItem && repositoryItem.userName && repositoryItem.userPassword)
+			{
+				args.push("--username");
+				args.push(repositoryItem.userName);
+				args.push("--password");
+				args.push(repositoryItem.userPassword);
+			}
+
 			args.push("--non-interactive");
 			if (isTrustServerCertificateSVN) args.push("--trust-server-cert");
 			

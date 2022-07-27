@@ -19,6 +19,7 @@
 package actionScripts.plugins.as3project
 {
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
+	import actionScripts.valueObjects.ProjectVO;
 
 	import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -76,6 +77,7 @@ package actionScripts.plugins.as3project
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.TemplateVO;
 	import actionScripts.interfaces.IVisualEditorProjectVO;
+	import actionScripts.events.ExportVisualEditorProjectEvent;
 
 	import actionScripts.locator.IDEModel;
 
@@ -714,12 +716,20 @@ package actionScripts.plugins.as3project
             project = createFileSystemBeforeSave(project, view.exportProject as AS3ProjectVO);
 			if (!project) return;
 
+			if (projectTemplateType == ProjectTemplateType.ROYALE_DOMINO_EXPORT_PROJECT)
+			{
+				dispatcher.dispatchEvent(new ExportVisualEditorProjectEvent(ExportVisualEditorProjectEvent.EVENT_EXPORT_DOMINO_VISUALEDITOR_PROJECT_TO_ROYALE, project as AS3ProjectVO));
+			}
+
             if (view.exportProject)
             {
                 exportVisualEditorProject(project, view.exportProject as AS3ProjectVO);
             }
 
-            if (!isProjectFromExistingSource) targetFolder = targetFolder.resolvePath(project.projectName);
+            if (!isProjectFromExistingSource)
+			{
+				targetFolder = targetFolder.resolvePath(project.projectName);
+			}
 			
 			// Close settings view
 			onCreateProjectClose(event);
@@ -975,20 +985,23 @@ package actionScripts.plugins.as3project
 				th.projectTemplate(templateDir.resolvePath("obj"), targetFolder.resolvePath("obj"));
 				th.projectTemplate(templateDir.resolvePath("src"), targetFolder.resolvePath("src"));
 				th.projectTemplate(templateDir.resolvePath("visualeditor-src"), targetFolder.resolvePath("visualeditor-src"));
-				var original_royaleMxml:FileLocation =  templateDir.resolvePath("src"+File.separator+"RoyaleTabularCRUDTemplate.mxml");
-				if(original_royaleMxml.fileBridge.exists){
+				var originalRoyaleMxml:FileLocation =  templateDir.resolvePath("src"+File.separator+"RoyaleTabularCRUDTemplate.mxml");
+				if(originalRoyaleMxml.fileBridge.exists)
+				{
 					var newRoyaleMxml:FileLocation =  targetFolder.resolvePath("src"+File.separator+pvo.projectName + ".mxml"); 
-					original_royaleMxml.fileBridge.copyTo(newRoyaleMxml, true); 
+					originalRoyaleMxml.fileBridge.copyTo(newRoyaleMxml, true);
+
 					var dupliyRoyaleMxml:FileLocation =  targetFolder.resolvePath("src"+File.separator + "RoyaleTabularCRUDTemplate.mxml"); 
-					if(dupliyRoyaleMxml.fileBridge.exists){
+					if(dupliyRoyaleMxml.fileBridge.exists)
+					{
 						dupliyRoyaleMxml.fileBridge.deleteFile();
 					}
 				}
-				var original_royaleTemplate:FileLocation =  templateDir.resolvePath("RoyaleTabularCRUDTemplate.as3proj");
-				if(original_royaleTemplate.fileBridge.exists)
+				var originalRoyaleTemplate:FileLocation =  templateDir.resolvePath("RoyaleTabularCRUDTemplate.as3proj");
+				if(originalRoyaleTemplate.fileBridge.exists)
 				{
 						var newRoyaleTemplate:FileLocation =  targetFolder.resolvePath(pvo.projectName + ".as3proj"); 
-						original_royaleTemplate.fileBridge.copyTo(newRoyaleTemplate, true); 
+						originalRoyaleTemplate.fileBridge.copyTo(newRoyaleTemplate, true);
 				}
 			}
 			if (projectTemplateType == ProjectTemplateType.ROYALE_DOMINO_EXPORT_PROJECT)
@@ -997,57 +1010,17 @@ package actionScripts.plugins.as3project
 				th.projectTemplate(templateDir.resolvePath("obj"), targetFolder.resolvePath("obj"));
 				th.projectTemplate(templateDir.resolvePath("src"), targetFolder.resolvePath("src"));
 				th.projectTemplate(templateDir.resolvePath("visualeditor-src"), targetFolder.resolvePath("visualeditor-src"));
-				var royaleMxml:FileLocation =  templateDir.resolvePath("src"+File.separator+"$ProjectName.mxml.template");
-				if(royaleMxml.fileBridge.exists)
+				var mainFileTemplateMxml:FileLocation =  templateDir.resolvePath("src" + File.separator + "$ProjectName.mxml.template");
+				if(mainFileTemplateMxml.fileBridge.exists)
 				{
-					var newRoyaleMxml:FileLocation =  targetFolder.resolvePath("src"+File.separator+pvo.projectName + ".mxml");
+					var newFileMxml:FileLocation =  targetFolder.resolvePath("src" + File.separator + pvo.projectName + ".mxml");
 
-					royaleMxml.fileBridge.copyTo(newRoyaleMxml, true);
+					mainFileTemplateMxml.fileBridge.copyTo(newFileMxml, true);
 					var duplicateRoyaleMxml:FileLocation =  targetFolder.resolvePath("src"+File.separator + "$ProjectName.mxml.template");
 					if(duplicateRoyaleMxml.fileBridge.exists)
 					{
 						duplicateRoyaleMxml.fileBridge.deleteFile();
 					}
-				}
-				var royaleTempalte:FileLocation =  templateDir.resolvePath("$Settings.as3proj.template");
-				if(royaleTempalte.fileBridge.exists)
-				{
-					var newRoyaleTemplate:FileLocation =  targetFolder.resolvePath(pvo.projectName + ".as3proj");
-					royaleTempalte.fileBridge.copyTo(newRoyaleTemplate, true);
-				}
-
-				//start convert from Domino Visual Editor .
-
-				if(model)
-				{
-					for (var i:int = 0; i < model.editors.length; i++)
-					{
-						var editor:VisualEditorViewer = model.editors[i] as VisualEditorViewer;
-
-						if(editor){
-							var edit:VisualEditorView=editor.editorView;
-							if(edit){
-								if(edit.visualEditorProject!=null){
-									if((edit.visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject)
-									{
-										var mxmlCode:XML = edit.visualEditor.editingSurface.toRoyaleCode(pvo.projectName);
-
-										var newRoyaleFile:FileLocation = targetFolder.resolvePath("src" + File.separator + "view" + File.separator + "Content.mxml");
-										if (newRoyaleFile.fileBridge.exists)
-										{
-											newRoyaleFile.fileBridge.deleteFile();
-										}
-
-										newRoyaleFile.fileBridge.save(mxmlCode.toXMLString());
-									}
-								}
-							}
-						}
-					}
-				}
-				else
-				{
-					Alert.show(" Not Found model");
 				}
 			}
 			else if (isVisualEditorProject)
@@ -1107,13 +1080,10 @@ package actionScripts.plugins.as3project
 				projectSettingsFile_new_file.fileBridge.copyTo(projectSettingsFile_original, true); 
 
 				//remove the new config
-				if (projectSettingsFile_new_file.fileBridge.exists)projectSettingsFile_new_file.fileBridge.deleteFile();
-
-				
-
-
-				
-
+				if (projectSettingsFile_new_file.fileBridge.exists)
+				{
+					projectSettingsFile_new_file.fileBridge.deleteFile();
+				}
 			}
 			if (isLibraryProject)
 			{

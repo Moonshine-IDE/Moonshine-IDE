@@ -20,8 +20,11 @@ package actionScripts.plugins.domino
 {
 	import actionScripts.events.DominoEvent;
 
+	import components.popup.ConvertDominoDatabasePopup;
+
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
+	import flash.display.DisplayObject;
 
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
@@ -29,7 +32,8 @@ package actionScripts.plugins.domino
 	
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
-	
+	import mx.managers.PopUpManager;
+
 	import spark.components.Alert;
 	
 	import actionScripts.events.SettingsEvent;
@@ -61,7 +65,7 @@ package actionScripts.plugins.domino
 		public static var NAMESPACE:String = "actionScripts.plugins.domino::DominoPlugin";
 		
 		private static const TEMP_UPDATE_SITE_DOWNLOAD_PATH:File = File.applicationStorageDirectory.resolvePath("dominoUpdateSiteGeneration");
-		
+
 		override public function get name():String			{ return "Domino and Notes Client"; }
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team.<br/>Based on <a href='https://github.com/OpenNTF/org.openntf.nsfodp'>NSF ODP Tooling</a> by Jesse Gallagher and the OpenNTF team."; }
 		override public function get description():String	{ return "HCL® Notes / Domino Integration"; }

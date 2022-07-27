@@ -144,6 +144,7 @@ package actionScripts.plugins.svn.commands
 				if (target.userObject.save && repositoryItem)
 				{
 					repositoryItem.userName = target.userObject.userName;
+					repositoryItem.userPassword = target.userObject.password;
 				}
 				onAuthenticationSuccess(target.userObject.userName, target.userObject.password);
 			}

@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
+	import actionScripts.plugin.genericproj.interfaces.IGenericProjectBridge;
+
 	import mx.collections.ArrayCollection;
     import mx.core.IFlexDisplayObject;
     
@@ -59,6 +61,7 @@ package actionScripts.locator
 		public var groovyCore:IGroovyBridge;
 		public var haxeCore:IHaxeBridge;
 		public var ondiskCore:IOnDiskBridge;
+		public var genericCore:IGenericProjectBridge;
 		public var languageServerCore:ILanguageServerBridge;
 		public var osxBookmarkerCore:IOSXBookmarkerBridge;
 		

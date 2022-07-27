@@ -25,6 +25,10 @@ import org.eclipse.lsp4j.services.LanguageClient;
 
 public class Main {
     public static void main(String[] args) {
+
+        String spid = SysTools.getFormattedPID();
+        System.out.println(spid);
+
         GroovyLanguageServer server = new GroovyLanguageServer(new GrailsProjectCompilationUnitFactory());
         Launcher<LanguageClient> launcher = Launcher.createLauncher(server, LanguageClient.class, System.in,
                 System.out);

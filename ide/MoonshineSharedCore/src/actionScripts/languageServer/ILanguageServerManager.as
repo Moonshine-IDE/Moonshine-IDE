@@ -30,6 +30,11 @@ package actionScripts.languageServer
 		function get active():Boolean;
 
 		/**
+		 * The spawned process' ID. Currently implemented in Java-based language server processes only
+		 */
+		function get pid():int;
+
+		/**
 		 * The project associated with this language server.
 		 */
 		function get project():ProjectVO;

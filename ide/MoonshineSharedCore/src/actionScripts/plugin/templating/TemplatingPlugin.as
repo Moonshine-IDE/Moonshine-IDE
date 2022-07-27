@@ -1725,8 +1725,9 @@ package actionScripts.plugin.templating
 				var as3FileAttributes:AS3ClassAttributes = event.extraParameters[0] as AS3ClassAttributes;
 
 				content = content.replace(pattern, getNestingClassName(event.fileName));
-				
-				var packagePath:String = UtilsCore.getPackageReferenceByProjectPath(event.ofProject["classpaths"], getNestedPackagePath(event.fileName, event.insideLocation.nativePath), null, null, false);
+
+				var packagePath:String = (event.ofProject.hasOwnProperty("classpaths")) ?
+						UtilsCore.getPackageReferenceByProjectPath(event.ofProject["classpaths"], getNestedPackagePath(event.fileName, event.insideLocation.nativePath), null, null, false) : "";
 				if (packagePath != "")
 				{
 					packagePath = packagePath.substr(1, packagePath.length);

@@ -19,6 +19,7 @@
 package actionScripts.plugin.problems
 {
 	import flash.events.Event;
+	import flash.utils.Dictionary;
 
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.OpenFileEvent;
@@ -29,13 +30,11 @@ package actionScripts.plugin.problems
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 
-	import feathers.data.IFlatCollection;
-
 	import moonshine.lsp.Diagnostic;
+	import moonshine.plugin.problems.data.DiagnosticHierarchicalCollection;
+	import moonshine.plugin.problems.events.ProblemsViewEvent;
 	import moonshine.plugin.problems.view.ProblemsView;
 	import moonshine.plugin.problems.vo.MoonshineDiagnostic;
-	import flash.utils.Dictionary;
-	import moonshine.plugin.problems.events.ProblemsViewEvent;
 
 	public class ProblemsPlugin extends PluginBase
 	{
@@ -120,14 +119,10 @@ package actionScripts.plugin.problems
 			{
 				return;
 			}
-			var problems:IFlatCollection = problemsView.problems;
+			var problems:DiagnosticHierarchicalCollection = problemsView.problems;
 			for(var uri:String in diagnosticsByUri)
 			{
-				var oldDiagnostics:Array = diagnosticsByUri[uri];
-				for each(var oldDiagnostic:MoonshineDiagnostic in oldDiagnostics)
-				{
-					problems.remove(oldDiagnostic);
-				}
+				problems.clearDiagnostics(uri, project);
 			}
 		}
 
@@ -148,7 +143,7 @@ package actionScripts.plugin.problems
 
 		private function handleShowDiagnostics(event:DiagnosticsEvent):void
 		{
-			var problems:IFlatCollection = problemsView.problems;
+			var problems:DiagnosticHierarchicalCollection = problemsView.problems;
 			var project:ProjectVO = event.project;
 			var diagnosticsByUri:Object = diagnosticsByProject[project];
 			if(!diagnosticsByUri)
@@ -157,17 +152,8 @@ package actionScripts.plugin.problems
 				diagnosticsByProject[project] = diagnosticsByUri;
 			}
 			var uri:String = event.uri;
-			if(uri in diagnosticsByUri)
-			{
-				var oldDiagnostics:Array = diagnosticsByUri[uri];
-				for each(var oldDiagnostic:MoonshineDiagnostic in oldDiagnostics)
-				{
-					problems.remove(oldDiagnostic);
-				}
-				delete diagnosticsByUri[uri];
-			}
-			var newDiagnostics:Array = event.diagnostics;
-			newDiagnostics = newDiagnostics.map(function(diagnostic:Diagnostic, index:int, source:Array):MoonshineDiagnostic
+			var diagnostics:Array = event.diagnostics;
+			diagnostics = diagnostics.map(function(diagnostic:Diagnostic, index:int, source:Array):MoonshineDiagnostic
 			{
 				var result:MoonshineDiagnostic = new MoonshineDiagnostic(new FileLocation(uri, true), project);
 				result.code = diagnostic.code;
@@ -176,16 +162,8 @@ package actionScripts.plugin.problems
 				result.severity = diagnostic.severity;
 				return result;
 			});
-			diagnosticsByUri[uri] = newDiagnostics;
-			for each(var newDiagnostic:MoonshineDiagnostic in newDiagnostics)
-			{
-				if(newDiagnostic.severity == 4 /* DiagnosticSeverity.Hint */)
-				{
-					//hints aren't meant to be displayed in the list of problems
-					continue;
-				}
-				problems.add(newDiagnostic);
-			}
+			diagnosticsByUri[uri] = diagnostics;
+			problems.setDiagnostics(uri, project, diagnostics);
 		}
 
 		private function problemsPanel_openProblemHandler(event:ProblemsViewEvent):void

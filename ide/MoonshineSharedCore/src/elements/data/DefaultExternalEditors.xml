@@ -156,7 +156,7 @@
 				<macos>/Applications/BlueJ.app</macos>
 			</defaultLocation>
 			<fileTypes>bluej</fileTypes>
-			<website>https://balsamiq.com</website>
+			<website>https://www.bluej.org</website>
 		</editor>
 		<editor id="jgrasp" isWindows="true" isMac="true">
 			<title>jGRASP</title>

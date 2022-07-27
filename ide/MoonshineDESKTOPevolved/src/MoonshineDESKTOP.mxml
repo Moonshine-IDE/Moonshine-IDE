@@ -32,7 +32,9 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			import mx.events.FlexEvent;
+		import actionScripts.impls.IGenericBridgeImpl;
+
+		import mx.events.FlexEvent;
 
 			import spark.components.Alert;
 
@@ -82,6 +84,7 @@
 			private static const NEEDED_FOR_COMPILATION11:IOSXBookmarkerBridgeImp = null;
 			private static const NEEDED_FOR_COMPILATION12:IHaxeBridgeImpl = null;
 			private static const NEEDED_FOR_COMPILATION13:IOnDiskBridgeImpl = null;
+			private static const NEEDED_FOR_COMPILATION14:IGenericBridgeImpl = null;
 
 			//--------------------------------------------------------------------------
 			//

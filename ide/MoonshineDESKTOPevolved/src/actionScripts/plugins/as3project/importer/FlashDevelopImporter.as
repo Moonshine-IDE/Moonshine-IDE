@@ -40,6 +40,11 @@ package actionScripts.plugins.as3project.importer
 	import utils.MainApplicationCodeUtils;
 	
 	import actionScripts.utils.DominoUtils;
+	import mx.utils.Base64Encoder;
+	import utils.StringHelper;
+
+	import global.domino.DominoGlobals;
+
 
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 
@@ -75,7 +80,7 @@ package actionScripts.plugins.as3project.importer
 			project.projectFolder.name = project.projectName;
 			
 			var stream:FileStream = new FileStream();
-			//Alert.show("file.fileBridge 69:"+file.fileBridge.nativePath);
+			
 			stream.open(file.fileBridge.getFile as File, FileMode.READ);
 			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
 			stream.close();
@@ -212,7 +217,7 @@ package actionScripts.plugins.as3project.importer
 			
 			var platform:int = int(data.moonshineRunCustomization.option.@targetPlatform);
 			
-			//Alert.show("platform:"+platform);
+	
 			switch(platform)
 			{
 				case AS3ProjectPlugin.AS3PROJ_AS_ANDROID:
@@ -320,12 +325,14 @@ package actionScripts.plugins.as3project.importer
 								_fileStreamMoonshine.open(xml, FileMode.READ);
 								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
 								var internalxml:XML = new XML(data);
+								
 								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
 								if(surfaceModel!=null){
 									var dominoMainContainer:XML = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
 									
 									//convert to dxl
 									var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
+									
 									//fix the div node from the domino code 
 									for each(var div:XML in dominoCode..div) //no matter of depth Note here
 									{
@@ -339,6 +346,28 @@ package actionScripts.plugins.as3project.importer
 										}
 										
 									}
+									//fix null pardef
+									for each(var pardef:XML in dominoCode..pardef)
+									{
+										var hideStr:String =pardef.@hide;
+										if(pardef && pardef.@id && hideStr==""){
+											var id:String = pardef.@id;
+											for each(var par:XML in dominoCode..par)
+											{
+												if(par.@def==id){
+													if(par && par.@hide){
+														pardef.@hide=par.@hide;
+														continue;
+													}
+												}
+
+											}
+										
+											
+										}
+									}
+
+									
 
 									if(dominoCode!=null ){
 										var hasRichText:Boolean=false;	
@@ -369,8 +398,104 @@ package actionScripts.plugins.as3project.importer
 										{
 											dominoXml.appendChild(dominoCode);
 										}
+
+										for each(var body:XML in dominoXml..body) //no matter of depth Note here
+										{
+											if(body.parent().name() == "richtext"){
+												var bodyChilren:XMLList = body.children();
+												for each (var bodyChilrenNode:XML in bodyChilren)
+												{
+													body.parent().appendChild(bodyChilrenNode)
+												}
+												delete body.parent().children()[body.childIndex()];
+											}
+											
+										}
+
+										//fix the formula base64 code to normal UTF-8 code 
+										for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
+										{
+											if(formula.text()){
+												var encodeBase64: String =  StringHelper.base64Decode(formula.text());
+												var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
+												formula.parent().appendChild(newFormulaNode);
+												delete formula.parent().children()[formula.childIndex()];
+											}
+										}
+										//fix hidewhen
+										var richtextNodeList:XMLList=dominoXml..richtext;
+										var richtextNode=richtextNodeList[0];
+										for each(var par:XML in dominoXml..par) //no matter of depth Note here
+										{
+											if(par.@hidewhen !=null && par.@hidewhen!="" && par.@def){
+												
+												var pardefId:String=par.@def;
+												if(pardefId!=null){
+													for each(var pardef:XML in dominoXml..pardef)
+													{
+														var id:String = pardef.@id;
+														if(pardefId==id){
+														
+															if(pardef.code!=null){
+																if(pardef.code.@event!=null && pardef.code.@event!=""){
+																	if(pardef.code.@event=="hidewhen"){
+																		var formulaXmlList:XMLList=pardef.code.formula;
+																		var formulaXml=formulaXmlList[0];
+																		if(formulaXml){
+																		
+																			if(formulaXml.text()!=par.@hidewhen){
+																			
+																				var newFormulaNodeFix:XML = new XML("<formula>"+par.@hidewhen+"</formula>");
+																				formulaXml.parent().appendChild(newFormulaNodeFix);
+																				delete formulaXml.parent().children()[formulaXml.childIndex()];
+																			}
+																		}
+																	}
+																}
+															}
+
+															//fix the hide in here
+															if(pardef.@hide){
+																	if(par.@hide){
+																		if(pardef.@hide!=par.@hide){
+																			var parHideString:String=par.@hide;
+																			var parHideWhenString:String=par.@hidewhen;
+																			if(parHideString!=null){
+																				if(parHideWhenString!=null&& parHideWhenString.length>0){
+																					//it par have the hidewhen property, so we need merge the hide option on the hidewhen 
+																					if(parHideString.length>0){
+																						pardef.@hide=parHideString;
+																					}
+																					
+																				}else{
+																					DominoGlobals.PardefDivId++;
+																					var pardefXml:XML = new XML("<pardef id=\""+DominoGlobals.PardefDivId+"\" "+" dominotype=\"fixedhide\" />" );
+																					pardefXml.@hide=par.@hide;
+
+																					par.@def=DominoGlobals.PardefDivId;
+																					//var parParentNode:XML = par.parent();
+																					//delete par.parent().children()[par.childIndex()];
+																					if(richtextNode!=null)
+																					richtextNode.insertChildAfter(richtextNode.children()[0],pardefXml);
+																				}
+																				
+																				//parParentNode.appendChild(par);
+																				
+																			}
+																		}
+																	}
+															} 
+															continue;
+														}
+													}
+												}
+											}
+										}
+
+										//fix hide 
+
 										dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
-									
+								
 									}
 									
 									//fix the dxl format
@@ -381,7 +506,7 @@ package actionScripts.plugins.as3project.importer
 									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
 									var _targetfileStreamMoonshine:FileStream = new FileStream();
 									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
-									_targetfileStreamMoonshine.writeUTFBytes(dominoXml.toXMLString());
+									_targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml));
 									_targetfileStreamMoonshine.close();
 
 								}

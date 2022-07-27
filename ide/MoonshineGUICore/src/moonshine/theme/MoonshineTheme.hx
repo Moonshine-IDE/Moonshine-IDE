@@ -33,6 +33,7 @@ import feathers.controls.ListView;
 import feathers.controls.Panel;
 import feathers.controls.PopUpListView;
 import feathers.controls.Radio;
+import feathers.controls.TextCallout;
 import feathers.controls.TextInput;
 import feathers.controls.TextInputState;
 import feathers.controls.ToggleButton;
@@ -41,10 +42,10 @@ import feathers.controls.TreeGridView;
 import feathers.controls.TreeView;
 import feathers.controls.VProgressBar;
 import feathers.controls.VScrollBar;
-import feathers.controls.dataRenderers.GridViewHeaderRenderer;
 import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
+import feathers.controls.dataRenderers.SortOrderHeaderRenderer;
 import feathers.core.DefaultToolTipManager;
 import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
@@ -54,6 +55,7 @@ import feathers.skins.RectangleSkin;
 import feathers.skins.TriangleSkin;
 import feathers.style.Theme;
 import flash.display.Bitmap;
+import flash.filters.DropShadowFilter;
 import moonshine.components.StandardPopupView;
 import moonshine.plugin.debugadapter.view.DebugAdapterView;
 import moonshine.plugin.debugadapter.view.ThreadOrStackFrameItemRenderer;
@@ -93,11 +95,14 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final THEME_VARIANT_DARK_BUTTON:String = "moonshine-button--dark";
 	public static final THEME_VARIANT_LARGE_BUTTON:String = "moonshine-button--large";
 	public static final THEME_VARIANT_LIGHT_LABEL:String = "moonshine-label--light";
+	public static final THEME_VARIANT_LIGHT_SECONDARY_LABEL:String = "moonshine-label--light-secondary";
 	public static final THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR = "moonshine-title-window-control-bar";
 	public static final THEME_VARIANT_WARNING_BAR:String = "moonshine-warning-bar";
 	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
 	public static final THEME_VARIANT_PLUGIN_LARGE_TITLE:String = "moonshine-plugin-large-title";
 	public static final IMAGE_VARIANT_LARGE_REFRESH_ICON:String = "image-icon-large-refresh";
+	public static final THEME_VARIANT_MENU_LIST_VIEW = "moonshine-list-view--menu";
+	public static final THEME_VARIANT_MENU_ITEM_RENDERER = "moonshine-item-renderer--menu";
 
 	public static final DEFAULT_FONT_NAME:String = "_sans";
 	public static final DEFAULT_FONT_SIZE:Int = 13;
@@ -117,19 +122,22 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(GridView, null, setGridViewStyles);
 		this.styleProvider.setStyleFunction(GridView, GridView.VARIANT_BORDERLESS, setBorderlessGridViewStyles);
-		this.styleProvider.setStyleFunction(GridViewHeaderRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
+		this.styleProvider.setStyleFunction(SortOrderHeaderRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
 		this.styleProvider.setStyleFunction(LayoutGroupItemRenderer, null, setLayoutGroupItemRendererStyles);
+		this.styleProvider.setStyleFunction(ItemRenderer, THEME_VARIANT_MENU_ITEM_RENDERER, setMenuItemRendererStyles);
 
 		this.styleProvider.setStyleFunction(Label, null, setLabelStyles);
 		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_LABEL, setLightLabelStyles);
+		this.styleProvider.setStyleFunction(Label, THEME_VARIANT_LIGHT_SECONDARY_LABEL, setLightSecondaryLabelStyles);
 		this.styleProvider.setStyleFunction(Label, DefaultToolTipManager.CHILD_VARIANT_TOOL_TIP, setToolTipLabelStyles);
 
 		this.styleProvider.setStyleFunction(LayoutGroup, LayoutGroup.VARIANT_TOOL_BAR, setToolBarLayoutGroupStyles);
 		this.styleProvider.setStyleFunction(LayoutGroup, THEME_VARIANT_WARNING_BAR, setWarningBarLayoutGroupStyles);
 
 		this.styleProvider.setStyleFunction(ListView, null, setListViewStyles);
+		this.styleProvider.setStyleFunction(ListView, THEME_VARIANT_MENU_LIST_VIEW, setMenuListViewStyles);
 
 		this.styleProvider.setStyleFunction(Panel, null, setPanelStyles);
 
@@ -143,6 +151,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(SideBarViewHeader, null, setSideBarViewHeaderStyles);
 		this.styleProvider.setStyleFunction(Label, SideBarViewHeader.CHILD_VARIANT_TITLE, setSideBarViewHeaderTitleStyles);
 		this.styleProvider.setStyleFunction(Button, SideBarViewHeader.CHILD_VARIANT_CLOSE_BUTTON, setSideBarViewHeaderCloseButtonStyles);
+		this.styleProvider.setStyleFunction(Button, SideBarViewHeader.CHILD_VARIANT_MENU_BUTTON, setSideBarViewHeaderMenuButtonStyles);
 
 		this.styleProvider.setStyleFunction(StandardPopupView, null, setStandardPopupViewStyles);
 
@@ -157,7 +166,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		this.styleProvider.setStyleFunction(TreeGridView, null, setTreeGridViewStyles);
 		this.styleProvider.setStyleFunction(TreeGridView, TreeGridView.VARIANT_BORDERLESS, setBorderlessTreeGridViewStyles);
-		this.styleProvider.setStyleFunction(GridViewHeaderRenderer, TreeGridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
+		this.styleProvider.setStyleFunction(SortOrderHeaderRenderer, TreeGridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
 
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
@@ -181,6 +190,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_INTO_BUTTON, setMiniDebugStepIntoButtonStyles);
 		this.styleProvider.setStyleFunction(Button, ThreadOrStackFrameItemRenderer.CHILD_VARIANT_STEP_OUT_BUTTON, setMiniDebugStepOutButtonStyles);
 
+		this.styleProvider.setStyleFunction(TextCallout, null, setTextCalloutStyles);
+
 		this.styleProvider.setStyleFunction(HProgressBar, null, setHProgressBarStyles);
 		this.styleProvider.setStyleFunction(VProgressBar, null, setVProgressBarStyles);
 	}
@@ -202,7 +213,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 	}
 
 	private function getLightOnDarkSecondaryTextFormat():TextFormat {
-		return new TextFormat(DEFAULT_FONT_NAME, SECONDARY_FONT_SIZE, 0xf3f3f3);
+		return new TextFormat(DEFAULT_FONT_NAME, SECONDARY_FONT_SIZE, 0xbfbfbf);
 	}
 
 	private function getLightOnDarkSecondaryDisabledTextFormat():TextFormat {
@@ -382,7 +393,6 @@ class MoonshineTheme extends SDKInstallerTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = SolidColor(1.0, 0x666666);
-		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
 		backgroundSkin.minWidth = 160.0;
 		backgroundSkin.minHeight = 160.0;
@@ -409,7 +419,6 @@ class MoonshineTheme extends SDKInstallerTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = null;
-		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
 		backgroundSkin.minWidth = 160.0;
 		backgroundSkin.minHeight = 160.0;
@@ -432,7 +441,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		gridView.fixedScrollBars = true;
 	}
 
-	private function setGridViewOrTreeGridViewHeaderStyles(headerRenderer:GridViewHeaderRenderer):Void {
+	private function setGridViewOrTreeGridViewHeaderStyles(headerRenderer:SortOrderHeaderRenderer):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x555555);
 		headerRenderer.backgroundSkin = backgroundSkin;
@@ -570,8 +579,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		itemRenderer.textFormat = getLightOnDarkTextFormat();
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
-		itemRenderer.textFormat = getLightOnDarkSecondaryTextFormat();
-		itemRenderer.disabledTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
+		itemRenderer.secondaryTextFormat = getLightOnDarkSecondaryTextFormat();
+		itemRenderer.disabledSecondaryTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
 		// itemRenderer.embedFonts = true;
 
 		itemRenderer.horizontalAlign = LEFT;
@@ -631,6 +640,12 @@ class MoonshineTheme extends SDKInstallerTheme {
 		// label.embedFonts = true;
 	}
 
+	private function setLightSecondaryLabelStyles(label:Label):Void {
+		label.textFormat = getLightOnDarkSecondaryTextFormat();
+		label.disabledTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
+		// label.embedFonts = true;
+	}
+
 	override public function setItalicLabelStyles(label:Label):Void {
 		label.textFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x292929, false, true);
 		label.disabledTextFormat = new TextFormat(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, 0x999999, false, true);
@@ -641,11 +656,14 @@ class MoonshineTheme extends SDKInstallerTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x222222);
 		backgroundSkin.border = SolidColor(1.0, 0x000000);
+		backgroundSkin.maxWidth = 550;
 		toolTip.backgroundSkin = backgroundSkin;
 
 		toolTip.textFormat = getLightOnDarkTextFormat();
 		toolTip.disabledTextFormat = getLightOnDarkDisabledTextFormat();
 		// toolTip.embedFonts = true;
+
+		toolTip.wordWrap = true;
 
 		toolTip.paddingTop = 4.0;
 		toolTip.paddingRight = 4.0;
@@ -653,11 +671,71 @@ class MoonshineTheme extends SDKInstallerTheme {
 		toolTip.paddingLeft = 4.0;
 	}
 
+	private function setTextCalloutStyles(callout:TextCallout):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x222222);
+		backgroundSkin.border = SolidColor(1.0, 0x000000);
+		callout.backgroundSkin = backgroundSkin;
+
+		callout.textFormat = getLightOnDarkTextFormat();
+		// toolTip.embedFonts = true;
+
+		var topArrowSkin = new TriangleSkin();
+		topArrowSkin.pointPosition = TOP;
+		topArrowSkin.drawBaseBorder = false;
+		topArrowSkin.fill = SolidColor(0x222222);
+		topArrowSkin.border = SolidColor(1.0, 0x000000);
+		topArrowSkin.width = 10.0;
+		topArrowSkin.height = 6.0;
+		callout.topArrowSkin = topArrowSkin;
+
+		var rightArrowSkin = new TriangleSkin();
+		rightArrowSkin.pointPosition = RIGHT;
+		rightArrowSkin.drawBaseBorder = false;
+		rightArrowSkin.fill = SolidColor(0x222222);
+		rightArrowSkin.border = SolidColor(1.0, 0x000000);
+		rightArrowSkin.width = 6.0;
+		rightArrowSkin.height = 10.0;
+		callout.rightArrowSkin = rightArrowSkin;
+
+		var bottomArrowSkin = new TriangleSkin();
+		bottomArrowSkin.pointPosition = BOTTOM;
+		bottomArrowSkin.drawBaseBorder = false;
+		bottomArrowSkin.fill = SolidColor(0x222222);
+		bottomArrowSkin.border = SolidColor(1.0, 0x000000);
+		bottomArrowSkin.width = 10.0;
+		bottomArrowSkin.height = 6.0;
+		callout.bottomArrowSkin = bottomArrowSkin;
+
+		var leftArrowSkin = new TriangleSkin();
+		leftArrowSkin.pointPosition = LEFT;
+		leftArrowSkin.drawBaseBorder = false;
+		leftArrowSkin.fill = SolidColor(0x222222);
+		leftArrowSkin.border = SolidColor(1.0, 0x000000);
+		leftArrowSkin.width = 6.0;
+		leftArrowSkin.height = 10.0;
+		callout.leftArrowSkin = leftArrowSkin;
+
+		callout.topArrowGap = -1.0;
+		callout.rightArrowGap = -1.0;
+		callout.bottomArrowGap = -1.0;
+		callout.leftArrowGap = -1.0;
+
+		callout.paddingTop = 4.0;
+		callout.paddingRight = 4.0;
+		callout.paddingBottom = 4.0;
+		callout.paddingLeft = 4.0;
+
+		callout.marginTop = 10.0;
+		callout.marginRight = 10.0;
+		callout.marginBottom = 10.0;
+		callout.marginLeft = 10.0;
+	}
+
 	private function setListViewStyles(listView:ListView):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = SolidColor(1.0, 0x666666);
-		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
 		backgroundSkin.minWidth = 160.0;
 		backgroundSkin.minHeight = 160.0;
@@ -685,7 +763,6 @@ class MoonshineTheme extends SDKInstallerTheme {
 			var backgroundSkin = new RectangleSkin();
 			backgroundSkin.fill = SolidColor(0x444444);
 			backgroundSkin.border = null;
-			backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 			backgroundSkin.cornerRadius = 0.0;
 			backgroundSkin.minWidth = 160.0;
 			backgroundSkin.minHeight = 160.0;
@@ -783,7 +860,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		layout.paddingRight = 6.0;
 		layout.paddingBottom = 6.0;
 		layout.paddingLeft = 6.0;
-		layout.gap = 4.0;
+		layout.gap = 6.0;
 		header.layout = layout;
 	}
 
@@ -813,6 +890,82 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		button.horizontalAlign = CENTER;
 		button.verticalAlign = MIDDLE;
+	}
+
+	private function setSideBarViewHeaderMenuButtonStyles(button:Button):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.border = None;
+		backgroundSkin.fill = SolidColor(0xff00ff, 0.0);
+		backgroundSkin.width = 12.0;
+		backgroundSkin.height = 12.0;
+		button.backgroundSkin = backgroundSkin;
+
+		var icon = new Shape();
+		icon.graphics.lineStyle(2.0, 0x444444, 0.8, true, NORMAL, SQUARE);
+		icon.graphics.moveTo(1.0, 1.0);
+		icon.graphics.lineTo(11.0, 1.0);
+		icon.graphics.moveTo(1.0, 6.0);
+		icon.graphics.lineTo(11.0, 6.0);
+		icon.graphics.moveTo(1.0, 11.0);
+		icon.graphics.lineTo(11.0, 11.0);
+		button.icon = icon;
+
+		button.horizontalAlign = CENTER;
+		button.verticalAlign = MIDDLE;
+	}
+
+	private function setMenuListViewStyles(listView:ListView):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x4D4C4C);
+		backgroundSkin.border = SolidColor(1.0, 0x666666);
+		backgroundSkin.minWidth = 260.0;
+		backgroundSkin.minHeight = 10.0;
+		backgroundSkin.cornerRadius = 10.0;
+		listView.backgroundSkin = backgroundSkin;
+
+		var maskSkin = new RectangleSkin();
+		maskSkin.fill = SolidColor(0xff00ff);
+		maskSkin.cornerRadius = 6.0;
+		listView.viewPortMaskSkin = maskSkin;
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, 0xC165B8);
+		focusRectSkin.cornerRadius = 10.0;
+		listView.focusRectSkin = focusRectSkin;
+
+		var layout = new VerticalListLayout();
+		layout.requestedMinRowCount = 1;
+		listView.layout = layout;
+
+		listView.setPadding(6.0);
+
+		listView.fixedScrollBars = true;
+
+		listView.filters = [new DropShadowFilter(3, 60, 0x000000, 0.45, 6.0, 6.0)];
+
+		listView.customItemRendererVariant = THEME_VARIANT_MENU_ITEM_RENDERER;
+	}
+
+	private function setMenuItemRendererStyles(itemRenderer:ItemRenderer):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(0x4D4C4C, 0.0);
+		backgroundSkin.selectedFill = SolidColor(0xC165B8);
+		backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(0xC165B8));
+		backgroundSkin.cornerRadius = 6.0;
+		itemRenderer.backgroundSkin = backgroundSkin;
+
+		itemRenderer.textFormat = getLightOnDarkTextFormat();
+		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
+		itemRenderer.secondaryTextFormat = getLightOnDarkSecondaryTextFormat();
+		itemRenderer.disabledSecondaryTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
+
+		itemRenderer.horizontalAlign = LEFT;
+		itemRenderer.paddingTop = 4.0;
+		itemRenderer.paddingRight = 6.0;
+		itemRenderer.paddingBottom = 4.0;
+		itemRenderer.paddingLeft = 6.0;
+		itemRenderer.gap = 4.0;
 	}
 
 	private function setStandardPopupViewStyles(view:LayoutGroup):Void {
@@ -951,7 +1104,6 @@ class MoonshineTheme extends SDKInstallerTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = SolidColor(1.0, 0x666666);
-		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
 		backgroundSkin.minWidth = 160.0;
 		backgroundSkin.minHeight = 160.0;
@@ -978,7 +1130,6 @@ class MoonshineTheme extends SDKInstallerTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = null;
-		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
 		backgroundSkin.minWidth = 160.0;
 		backgroundSkin.minHeight = 160.0;
@@ -1016,6 +1167,8 @@ class MoonshineTheme extends SDKInstallerTheme {
 
 		itemRenderer.textFormat = getLightOnDarkTextFormat();
 		itemRenderer.disabledTextFormat = getLightOnDarkDisabledTextFormat();
+		itemRenderer.secondaryTextFormat = getLightOnDarkSecondaryTextFormat();
+		itemRenderer.disabledSecondaryTextFormat = getLightOnDarkSecondaryDisabledTextFormat();
 		// itemRenderer.embedFonts = true;
 
 		itemRenderer.horizontalAlign = LEFT;
@@ -1079,7 +1232,6 @@ class MoonshineTheme extends SDKInstallerTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = SolidColor(1.0, 0x666666);
-		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
 		backgroundSkin.minWidth = 160.0;
 		backgroundSkin.minHeight = 160.0;
@@ -1106,7 +1258,6 @@ class MoonshineTheme extends SDKInstallerTheme {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(0x444444);
 		backgroundSkin.border = null;
-		backgroundSkin.setBorderForState(TextInputState.FOCUSED, SolidColor(1.0, 0xC165B8));
 		backgroundSkin.cornerRadius = 0.0;
 		backgroundSkin.minWidth = 160.0;
 		backgroundSkin.minHeight = 160.0;

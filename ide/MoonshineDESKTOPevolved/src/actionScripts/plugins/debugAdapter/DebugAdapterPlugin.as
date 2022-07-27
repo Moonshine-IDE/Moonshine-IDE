@@ -53,6 +53,7 @@ package actionScripts.plugins.debugAdapter
 	import moonshine.plugin.debugadapter.events.DebugAdapterViewThreadEvent;
 	import moonshine.plugin.debugadapter.events.DebugAdapterViewLoadVariablesEvent;
 	import moonshine.plugin.debugadapter.events.DebugAdapterViewStackFrameEvent;
+	import actionScripts.plugin.console.ConsoleEvent;
 
     public class DebugAdapterPlugin extends PluginBase
 	{
@@ -464,17 +465,11 @@ package actionScripts.plugins.debugAdapter
 			switch(request) {
 				case "attach":
 					_debugAdapter.attach(additionalProperties ? additionalProperties : {}, 
-						function():void
-						{
-							refreshView();
-						});
+						debugAdapter_onAttachOrLaunchSuccess, debugAdapter_onAttachOrLaunchError);
 					break;
 				case "launch":
 					_debugAdapter.launch(additionalProperties ? additionalProperties : {},
-						function():void
-						{
-							refreshView();
-						});
+						debugAdapter_onAttachOrLaunchSuccess, debugAdapter_onAttachOrLaunchError);
 					break;
 				default:
 					error("Unknown request: " + request);
@@ -629,6 +624,31 @@ package actionScripts.plugins.debugAdapter
 				handlePostInit();
 			}
 			attachOrLaunch();
+		}
+
+		private function debugAdapter_onAttachOrLaunchSuccess():void
+		{
+			refreshView();
+		}
+
+		private function debugAdapter_onAttachOrLaunchError(body:Object):void
+		{
+			var attachOrLaunchError:Object = body.error;
+			// in this particular case, any value except false for showUser
+			// must be treated as true. normally, only true is treated as true.
+			var showUser:Boolean = attachOrLaunchError == null || attachOrLaunchError.showUser !== false;
+			if (showUser) {
+				var message:String = attachOrLaunchError != null ? attachOrLaunchError.format : "Debug initialization failed";
+				if (attachOrLaunchError.variables) {
+					var variables:Object = attachOrLaunchError.variables;
+					for(var key:String in variables) {
+						message = message.replace(new RegExp("{" + key + "}", "g"), variables[key]);
+					}
+				}
+				error(message);
+            	dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+			}
+			dispatcher.dispatchEvent(new DebugActionEvent(DebugActionEvent.DEBUG_STOP));
 		}
 
 		private function debugAdapter_onConfigurationDoneResponse():void

@@ -5,6 +5,7 @@ package actionScripts.events
     public class OnDiskBuildEvent extends Event
     {
         public static const GENERATE_CRUD_ROYALE:String = "generateCRUDRoyaleProject";
+        public static const GENERATE_JAVA_AGENTS:String = "generateCRUDJavaAgents";
 
         private var _buildId:String;
         private var _buildDirectory:String;
