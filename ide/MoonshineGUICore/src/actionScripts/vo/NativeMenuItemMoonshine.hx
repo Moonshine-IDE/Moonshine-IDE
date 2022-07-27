@@ -23,7 +23,7 @@ package actionScripts.vo;
 import flash.display.NativeMenuItem;
 
 class NativeMenuItemMoonshine extends NativeMenuItem {
-	public var enableTypes:Array<Dynamic>;
+	public var enableTypes:Array<String>;
 	public var dynamicItem:Bool;
 
 	public function new(label:String = "", isSeparator:Bool = false) {

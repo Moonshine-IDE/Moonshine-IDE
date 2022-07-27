@@ -18,7 +18,7 @@ class CustomMenuItem implements ICustomMenuItem implements IMenuEntity {
 	public var data(get, set):Dynamic;
 	public var dynamicItem(get, set):Bool;
 	public var enabled(get, set):Bool;
-	public var enableTypes:Array<Dynamic>;
+	public var enableTypes:Array<String>;
 	public var isSeparator(get, set):Bool;
 	public var label(get, set):String;
 	public var shortcut(get, set):KeyboardShortcut;
