@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:validators="mx.validators.*"
+										   backgroundColor="0xf5f5f5"
+										   width="350" minWidth="150" autoLayout="true"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   skinClass="components.skins.ResizableTitleWindowSkin" title="Go to Folder"
+										   creationComplete="onCreationCompletes()">
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.locator.IDEModel;
+
+			import mx.utils.StringUtil;
+			import mx.validators.Validator;
+
+			import spark.events.TextOperationEvent;
+
+			public static const EVENT_PATH_SELECTED:String = "eventArbitraryPathSelected";
+
+			public var isDirectory:Boolean;
+
+			private var _path:Object;
+			public function get path():Object
+			{
+				return _path;
+			}
+
+			private var model:IDEModel = IDEModel.getInstance();
+
+			private function onCreationCompletes():void
+			{
+				txtFileName.setFocus();
+			}
+
+			protected function onOpenPath(event:MouseEvent):void
+			{
+				var tmpArr:Array = new Array(pathValidator);
+				if (Validator.validateAll(tmpArr).length != 0)
+				{
+					return;
+				}
+
+				// validate path value
+				var isValidPath:Boolean = model.fileCore.isPathExists(txtFileName.text);
+				if (!isValidPath)
+				{
+					hgError.visible = hgError.includeInLayout = true;
+					return;
+				}
+
+				if (isDirectory)
+				{
+					model.fileCore.browseForDirectory("Browse", onDirectorySelected, null, txtFileName.text);
+				}
+				else
+				{
+					model.fileCore.browseForOpen("Browse File", onDirectorySelected, null, null, txtFileName.text);
+				}
+			}
+			
+			protected function onPathValueChanged(event:TextOperationEvent):void
+			{
+				if (hgError.visible)
+				{
+					hgError.visible = hgError.includeInLayout = false;
+				}
+			}
+
+			private function onDirectorySelected(file:Object):void
+			{
+				_path = file;
+				txtFileName.text = _path.nativePath;
+
+				dispatchEvent(new Event(EVENT_PATH_SELECTED));
+				closeThis();
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<validators:StringValidator id="pathValidator" source="{txtFileName}" property="text" trigger="{btnOpen}" triggerEvent="click"/>
+	</fx:Declarations>
+	
+	<s:VGroup width="100%" height="100%" paddingLeft="12" paddingBottom="10" paddingTop="9" paddingRight="13"
+			  verticalAlign="middle">
+		<view:PromptTextInput id="txtFileName"
+							  prompt="Enter path value" width="100%" styleName="textInput"
+							  enter="onOpenPath(null)" change="onPathValueChanged(event)"/>
+		<s:HGroup id="hgError"
+				  width="100%" verticalAlign="middle" horizontalAlign="center"
+				  visible="false" includeInLayout="false">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label text="The folder can't be found."/>
+		</s:HGroup>
+	</s:VGroup>
+	
+	<resizableTitleWindow:controlBarContent>
+		<s:Button id="btnOpen"
+				  label="Open Path"
+				  styleName="darkButton"
+				  click="onOpenPath(event)"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

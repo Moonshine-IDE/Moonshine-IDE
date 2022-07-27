@@ -19,9 +19,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
+	import actionScripts.events.DominoEvent;
 	import actionScripts.managers.StartupHelper;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.lsmonitor.LanguageServersMonitor;
 	import actionScripts.plugins.macports.MacPortsPlugin;
+	import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.valueObjects.HelperConstants;
@@ -282,7 +285,8 @@ package actionScripts.impls
 				RoyaleApiReportPlugin,
 				ExternalEditorsPlugin,
 				VagrantPlugin,
-				FSWatcherPlugin
+				FSWatcherPlugin,
+				LanguageServersMonitor
 			];
 
 			// conditional additions
@@ -300,7 +304,7 @@ package actionScripts.impls
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
 					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin, LanguageServersMonitor];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -398,6 +402,7 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','OUTLINE_VIEW'), null, null, OutlinePlugin.EVENT_OUTLINE),
 					new MenuItem(resourceManager.getString('resources','PROBLEMS_VIEW'), null, null, ProblemsPlugin.EVENT_PROBLEMS),
 					new MenuItem(resourceManager.getString('resources','DEBUG_VIEW'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], DebugAdapterPlugin.EVENT_SHOW_HIDE_DEBUG_VIEW),
+					new MenuItem(resourceManager.getString('resources','LS_MONITOR_VIEW'), null, [], LanguageServersMonitor.EVENT_SHOW_LS_MONITOR_VIEW),
 					new MenuItem(resourceManager.getString('resources','HOME'), null, null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
 					new MenuItem(null), //separator
 					new MenuItem(resourceManager.getString('resources','NAVIGATE_NEXT_PREVIOUS'), null, null, TabEvent.EVENT_TAB_NAVIGATE_NEXT_PREVIOUS_HOTKEYS,
@@ -452,7 +457,9 @@ package actionScripts.impls
 				]),
 				new MenuItem("Others", [
 					new MenuItem(resourceManager.getString('resources','BUILD_AWAY3D_MODEL'), null, null, Away3DPlugin.OPEN_AWAY3D_BUILDER),
-                    new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, null, AntBuildPlugin.EVENT_ANTBUILD)
+                    new MenuItem(resourceManager.getString('resources','BUILD_APACHE_ANT'), null, null, AntBuildPlugin.EVENT_ANTBUILD),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources','CONVERT_DOMINO_DATABASE'), null, null, DominoEvent.EVENT_CONVERT_DOMINO_DATABASE)
 				]),
 				new MenuItem(resourceManager.getString('resources', 'HELP'), [
 					new MenuItem(resourceManager.getString('resources', 'ABOUT'), null, null, MenuPlugin.EVENT_ABOUT),
@@ -631,6 +638,15 @@ package actionScripts.impls
 			}
 		}
 
+		public function generateCRUDJavaAgents():void
+		{
+			if (IDEModel.getInstance().activeProject &&
+					(IDEModel.getInstance().activeProject is OnDiskProjectVO))
+			{
+				new CRUDJavaAgentsExporter();
+			}
+		}
+
 		public function getModulesFinder():IModulesFinder
 		{
 			return (new ModulesFinder());
@@ -645,6 +661,11 @@ package actionScripts.impls
 		public function checkRequireJava(project:ProjectVO=null):Boolean
 		{
 			return ConsoleBuildPluginBase.checkRequireJava(project);
+		}
+
+		public function searchAntFile(insideProject:ProjectVO):ArrayCollection
+		{
+			return AntBuildPlugin.searchAntFile(insideProject);
 		}
 	}
 }

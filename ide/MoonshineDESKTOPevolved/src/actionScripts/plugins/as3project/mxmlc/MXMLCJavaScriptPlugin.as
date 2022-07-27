@@ -47,6 +47,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.locator.HelperModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
+	import actionScripts.plugin.console.ConsoleEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.core.compiler.JavaScriptBuildEvent;
@@ -77,7 +78,6 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
-	import actionScripts.plugin.console.ConsoleEvent;
 
     public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
 	{
@@ -397,9 +397,9 @@ package actionScripts.plugins.as3project.mxmlc
 					// FlexJS Application
 					shellInfo = new NativeProcessStartupInfo();
 					fschstr = fschFile.nativePath;
-					fschstr = UtilsCore.convertString(fschstr);
+					//fschstr = UtilsCore.convertString(fschstr);
 					SDKstr = currentSDK.nativePath;
-					SDKstr = UtilsCore.convertString(SDKstr);
+					//SDKstr = UtilsCore.convertString(SDKstr);
 					
 					// update build config file
 					as3Pvo.updateConfig();
@@ -461,8 +461,8 @@ package actionScripts.plugins.as3project.mxmlc
 
 			var sdkPathHomeArg:String;
 			var enLanguageArg:String = "SETUP_SH_VMARGS=\"-Duser.language=en -Duser.region=en\"";
-			var compilerPathHomeArg:String = "FALCON_HOME=\"" + SDKstr +"\"";
-			var compilerArg:String = "&& \"" + fschstr +"\"";
+			var compilerPathHomeArg:String = "FALCON_HOME=" + UtilsCore.getEncodedForShell(SDKstr);
+			var compilerArg:String = "&& " + UtilsCore.getEncodedForShell(fschstr);
 			var configArg:String = " -load-config+=" + project.folderLocation.fileBridge.getRelativePath(project.config.file);
 			var additionalBuildArgs:String = project.buildOptions.getArguments();
 			additionalBuildArgs = " " + additionalBuildArgs.replace("-optimize=false", "");
@@ -489,11 +489,11 @@ package actionScripts.plugins.as3project.mxmlc
                 if (project.isRoyale)
                 {
                     jsCompilationArg = " -compiler.targets=JSRoyale";
-					sdkPathHomeArg = "ROYALE_HOME=\"" + SDKstr +"\"";
+					sdkPathHomeArg = "ROYALE_HOME=" + UtilsCore.getEncodedForShell(SDKstr);
 					compilerPathHomeArg = "";
                 }
 
-				jsCompilationArg += " -js-output=\"".concat(project.jsOutputPath) +"\"";
+				jsCompilationArg += " -js-output=".concat(UtilsCore.getEncodedForShell(project.jsOutputPath));
 			}
 
             if(Settings.os == "win")

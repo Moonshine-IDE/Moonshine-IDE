@@ -38,6 +38,7 @@ package actionScripts.ui.menu.vo
 		public static const GRAILS:String = "grails";
 		public static const HAXE:String = "haxe";
 		public static const ON_DISK:String = "onDisk";
+		public static const GENERIC:String = "generic";
 		public static const TEMPLATE:String = "template";
 		
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS:Array;

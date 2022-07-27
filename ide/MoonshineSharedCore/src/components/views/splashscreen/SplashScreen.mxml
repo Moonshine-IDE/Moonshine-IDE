@@ -459,7 +459,7 @@
 	</s:VGroup>
 	
 	<s:Group id="vgProjects"
-		width="40%" right="0" top="20" bottom="40">
+		width="40%" right="0" top="20" bottom="20">
 		<s:Label id="lblRecent"
 			text="RECENT"
 			color="0xFFFFFF"

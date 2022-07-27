@@ -19,7 +19,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.factory
 {
-    import flash.system.ApplicationDomain;
+	import actionScripts.plugin.genericproj.interfaces.IGenericProjectBridge;
+
+	import flash.system.ApplicationDomain;
     
     import actionScripts.interfaces.IAboutBridge;
     import actionScripts.interfaces.IClipboardBridge;
@@ -144,6 +146,13 @@ package actionScripts.factory
 		{
 			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IOnDiskBridgeImpl");
 			var gb: IOnDiskBridge = new clsToCreate();
+			return gb;
+		}
+
+		public static function getGenericInstance(): IGenericProjectBridge
+		{
+			var clsToCreate : Object = getClassToCreate("actionScripts.impls.IGenericBridgeImpl");
+			var gb: IGenericProjectBridge = new clsToCreate();
 			return gb;
 		}
 		

@@ -48,17 +48,43 @@ package actionScripts.languageServer
 							completionItem: {
 								snippetSupport: false,
 								commitCharactersSupport: false,
-								documentationFormat: ["plaintext", "markdown"],
+								documentationFormat: ["markdown", "plaintext"],
 								deprecatedSupport: false,
 								preselectSupport: false,
 								//tagSupport: { valueSet: []},
 								insertReplaceSupport: false,
-								//resolveSupport: { properties: []},
+								resolveSupport: { properties: ["documentation", "detail", "additionalTextEdits"]},
 								//insertTextModeSupport: { valueSet: []},
 								labelDetailsSupport: false
 							},
 							completionItemKind: {
-								// valueSet: []
+								valueSet: [
+									1,
+									2,
+									3,
+									4,
+									5,
+									6,
+									7,
+									8,
+									9,
+									10,
+									11,
+									12,
+									13,
+									14,
+									15,
+									16,
+									17,
+									18,
+									19,
+									20,
+									21,
+									22,
+									23,
+									24,
+									25
+								]
 							},
 							contextSupport: false
 						},
@@ -96,7 +122,34 @@ package actionScripts.languageServer
 							dynamicRegistration: true,
 							hierarchicalDocumentSymbolSupport: true,
 							symbolKind: {
-								// valueSet: []
+								valueSet: [
+									1,
+									2,
+									3,
+									4,
+									5,
+									6,
+									7,
+									8,
+									9,
+									10,
+									11,
+									12,
+									13,
+									14,
+									15,
+									16,
+									17,
+									18,
+									19,
+									20,
+									21,
+									22,
+									23,
+									24,
+									25,
+									26
+								]
 							},
 							//tagSupport: {valueSet: []},
 							labelSupport: false

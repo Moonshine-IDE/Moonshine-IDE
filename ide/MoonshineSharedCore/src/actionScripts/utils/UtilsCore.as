@@ -430,6 +430,8 @@ package actionScripts.utils
 					if (child.children) {
 						return findFileWrapperAgainstFileLocation(child, target);
 					}
+
+					break;
 				}
 			}
 			return current;

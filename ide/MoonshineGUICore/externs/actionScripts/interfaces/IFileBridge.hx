@@ -57,4 +57,6 @@ extern interface IFileBridge {
 	public function resolvePath(path:String, toRelativePath:String = null):FileLocation;
 
 	public function browseForDirectory(title:String, selectListener:(file:Any) -> Void, ?cancelListener:() -> Void, ?startFromLocation:String):Void;
+
+	public function getRelativePath(ref:FileLocation, useDotDot:Bool = false):String;
 }

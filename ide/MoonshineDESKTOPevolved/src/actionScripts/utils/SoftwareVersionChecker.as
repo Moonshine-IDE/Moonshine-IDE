@@ -482,7 +482,7 @@ package actionScripts.utils
 						match = value.output.match(/Version:/);
 						if (match && !components[int(tmpQueue.extraArguments[0])].version)
 						{
-							components[int(tmpQueue.extraArguments[0])].version = getVersionNumberedTypeLine(value.output);
+							components[int(tmpQueue.extraArguments[0])].version = StringUtil.trim(getVersionNumberedTypeLine(value.output).replace("|", ""));
 						}
 						break;
 					}
@@ -532,7 +532,7 @@ package actionScripts.utils
 			var lines:Array = value.split(UtilsCore.getLineBreakEncoding());
 			for each (var line:String in lines)
 			{
-				if ((line.match(/\d+.\d+.\d+/)) || line.match(/\d+.\d+/)) return line;
+				if ((line.match(/\d+\.\d+\.\d+/)) || line.match(/\d+\.\d+/)) return line;
 			}
 			
 			return null;

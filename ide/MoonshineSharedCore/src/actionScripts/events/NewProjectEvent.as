@@ -27,6 +27,7 @@ package actionScripts.events
 	public class NewProjectEvent extends Event
 	{
 		public static const CREATE_NEW_PROJECT:String = "createNewProjectEvent";
+		public static const IMPORT_AS_NEW_PROJECT:String = "openFolderAsNewProjectEvent";
 
 		private var _exportProject:AS3ProjectVO;
 		

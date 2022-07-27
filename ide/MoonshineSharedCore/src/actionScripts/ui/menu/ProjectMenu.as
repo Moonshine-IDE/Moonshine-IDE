@@ -20,6 +20,7 @@ package actionScripts.ui.menu
 {
     import actionScripts.events.DominoEvent;
     import actionScripts.events.ProjectEvent;
+    import actionScripts.plugin.genericproj.vo.GenericProjectVO;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectTypes;
 
     import flash.ui.Keyboard;
@@ -60,6 +61,7 @@ package actionScripts.ui.menu
         private var grailsMenu:Vector.<MenuItem>;
         private var haxeMenu:Vector.<MenuItem>;
 		private var onDiskMenu:Vector.<MenuItem>;
+        private var genericMenu:Vector.<MenuItem>;
 
         private var currentProject:ProjectVO;
         private var resourceManager:IResourceManager = ResourceManager.getInstance();
@@ -117,6 +119,11 @@ package actionScripts.ui.menu
 			{
 				return getOnDiskMenuItems();
 			}
+
+            if (project is GenericProjectVO)
+            {
+                return getGenericMenuIems();
+            }
 
             return null;
         }
@@ -295,7 +302,7 @@ package actionScripts.ui.menu
             {           
                 dominoMenu = Vector.<MenuItem>([
                      // Piotr: Temporary disable conversion to Royale in menu
-                    //new MenuItem(resourceManager.getString('resources','GENERATE_APACHE_ROYALE_PROJECT'), null, null, ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT),
+                    new MenuItem(resourceManager.getString('resources','GENERATE_APACHE_ROYALE_PROJECT'), null, null, ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT),
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], MavenBuildEvent.START_MAVEN_BUILD),
                     new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], ProjectActionEvent.CLEAN_PROJECT)
@@ -361,6 +368,7 @@ package actionScripts.ui.menu
 			{
 				onDiskMenu = Vector.<MenuItem>([
 					new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'GENERATE_JAVA_AGENTS'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_JAVA_AGENTS),
 					new MenuItem(resourceManager.getString('resources', 'GENERATE_CRUD_ROYALE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_CRUD_ROYALE),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.ON_DISK], MavenBuildEvent.START_MAVEN_BUILD),
@@ -373,6 +381,42 @@ package actionScripts.ui.menu
 			
 			return onDiskMenu;
 		}
+
+        private function getGenericMenuIems():Vector.<MenuItem>
+        {
+            // re-generate every time based on
+            // project's availabilities
+            genericMenu = new Vector.<MenuItem>();
+            if ((currentProject as GenericProjectVO).hasPom())
+            {
+                genericMenu.push(
+                        new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.GENERIC], MavenBuildEvent.START_MAVEN_BUILD)
+                );
+            }
+            if ((currentProject as GenericProjectVO).hasGradleBuild())
+            {
+                genericMenu.push(
+                    new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, [ProjectMenuTypes.GENERIC], GradleBuildEvent.START_GRADLE_BUILD,
+                        'b', [Keyboard.COMMAND],
+                        'b', [Keyboard.CONTROL])
+                );
+            }
+            if ((currentProject as GenericProjectVO).isAntFileAvailable)
+            {
+                genericMenu.push(
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.GENERIC], "selectedProjectAntBuild")
+                );
+            }
+
+            if (genericMenu.length > 0)
+            {
+                genericMenu.insertAt(0, new MenuItem(null));
+            }
+
+            genericMenu.forEach(makeDynamic);
+
+            return genericMenu;
+        }
 
         private function makeDynamic(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
         {

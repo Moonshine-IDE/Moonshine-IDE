@@ -475,6 +475,11 @@ package actionScripts.impls
 			
 		}
 		
+		public function generateCRUDJavaAgents():void
+		{
+			
+		}
+		
 		public function getModulesFinder():IModulesFinder
 		{
 			return null;
@@ -488,6 +493,11 @@ package actionScripts.impls
 		public function checkRequireJava(project:ProjectVO=null):Boolean
 		{
 			return false;
+		}
+		
+		public function searchAntFile(insideProject:ProjectVO):ArrayCollection
+		{
+			return (new ArrayCollection());
 		}
 		
 		//--------------------------------------------------------------------------

@@ -18,8 +18,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.valueObjects.HelperConstants;
-
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.IOErrorEvent;
@@ -37,6 +35,7 @@ package actionScripts.utils
 	import actionScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
+	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.SDKTypes;
 	
@@ -389,23 +388,25 @@ package actionScripts.utils
 				return getSetExportWithQuote(field, path);
 			}
 
-			return "set "+ field +"="+ path +"\r\n";
+			return "set "+ field +"="+ UtilsCore.getEncodedForShell(path) +"\r\n";
 		}
 
 		private function onBatchFileWriteComplete():void
 		{
+			var windowsBatchFileEncodedPath:String = UtilsCore.getEncodedForShell(windowsBatchFile.nativePath);
 			if (externalCallCompletionHandler != null)
 			{
 				// returns batch file path to be 
 				// executed by the caller's nativeProcess process
-				if (windowsBatchFile) externalCallCompletionHandler(windowsBatchFile.nativePath);
+				if (windowsBatchFile) 
+					externalCallCompletionHandler(windowsBatchFileEncodedPath);
 
 				isSingleProcessRunning = false;
 				flush();
 			}
 			else if (windowsBatchFile)
 			{
-				onCommandLineExecutionWith(windowsBatchFile.nativePath);
+				onCommandLineExecutionWith(windowsBatchFileEncodedPath);
 			}
 		}
 		
@@ -441,16 +442,19 @@ package actionScripts.utils
 		
 		private function onDisposeFootprints(event:ApplicationEvent):void
 		{
+			var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine");
 			if (!ConstantsCoreVO.IS_MACOS)
 			{
-				var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine/environmental");
-				
 				customInfo = new NativeProcessStartupInfo();
 				customInfo.executable = new File("c:\\Windows\\System32\\cmd.exe");
 				
 				customInfo.arguments = Vector.<String>(["/c", "rmdir", "/q", "/s", tempDirectory.fileBridge.nativePath]);
 				customProcess = new NativeProcess();
 				customProcess.start(customInfo);
+			}
+			else
+			{
+				FileUtils.deleteDirectoryAsync(tempDirectory.fileBridge.getFile as File);
 			}
 		}
 		

@@ -46,8 +46,8 @@ package actionScripts.utils
 			var startupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			var arguments:Vector.<String> = new Vector.<String>();
 			
-			tar = new File("/usr/bin/tar");
-			if (!tar.exists) tar = new File("/usr/bin/bsdtar");
+			tar = new File("/usr/bin/bsdtar");
+			if (!tar.exists) tar = new File("/usr/bin/tar");
 			
 			arguments.push("xf");
 			arguments.push(fileToUnzip.fileBridge.nativePath);

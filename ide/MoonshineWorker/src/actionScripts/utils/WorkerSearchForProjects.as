@@ -6,7 +6,7 @@ package actionScripts.utils
 	
 	public class WorkerSearchForProjects
 	{
-		public static const READABLE_FILES_PATTERNS:Array = ["as3proj", "veditorproj", "javaproj", "grailsproj", "ondiskproj"];
+		public static const READABLE_FILES_PATTERNS:Array = ["as3proj", "veditorproj", "javaproj", "grailsproj", "ondiskproj", "genericproj", "actionScriptProperties"];
 		
 		public var worker:MoonshineWorker;
 		public var projectSearchObject:Object;
