@@ -7,6 +7,7 @@ package classes.joditeditor
 		import org.apache.royale.html.elements.Textarea;
 	}
 
+	[Event(name="textChange", type="org.apache.royale.events.Event")]
 	COMPILE::JS
 	public class JoditEditor extends org.apache.royale.core.UIBase
 	{
@@ -54,6 +55,11 @@ package classes.joditeditor
 		private var _data:String = "";
 		public function get data():String
 		{
+			if (myEditor)
+			{
+				return myEditor.value;	
+			}
+			
 			return _data;
 		}
 
@@ -110,9 +116,13 @@ package classes.joditeditor
 							config[p] = _options[p];
 						}
 					}
-
+					
 					myEditor = new window["Jodit"](textArea.element, config);
 					myEditor.value = _data;
+					myEditor.events.on("change", function(event:Object):void {
+						dispatchEvent(new Event("textChange"));
+					});
+					
 					cancelAnimationFrame(animateFrameReqId);
 				});
 			}

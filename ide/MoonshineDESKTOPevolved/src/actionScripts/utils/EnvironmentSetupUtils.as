@@ -393,18 +393,20 @@ package actionScripts.utils
 
 		private function onBatchFileWriteComplete():void
 		{
+			var windowsBatchFileEncodedPath:String = UtilsCore.getEncodedForShell(windowsBatchFile.nativePath);
 			if (externalCallCompletionHandler != null)
 			{
 				// returns batch file path to be 
 				// executed by the caller's nativeProcess process
-				if (windowsBatchFile) externalCallCompletionHandler(windowsBatchFile.nativePath);
+				if (windowsBatchFile) 
+					externalCallCompletionHandler(windowsBatchFileEncodedPath);
 
 				isSingleProcessRunning = false;
 				flush();
 			}
 			else if (windowsBatchFile)
 			{
-				onCommandLineExecutionWith(windowsBatchFile.nativePath);
+				onCommandLineExecutionWith(windowsBatchFileEncodedPath);
 			}
 		}
 		

@@ -57,15 +57,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	
 	public class CRUDJavaAgentsModuleExporter extends ConsoleOutputter
 	{
-		private static var TEMPLATE_MODULE_PATH:File;
 		private static var TEMPLATE_ELEMENTS_PATH:File;
 		
 		[Bindable] protected var classReferenceSettings:RoyaleCRUDClassReferenceSettings = new RoyaleCRUDClassReferenceSettings();
-		
-		protected var targetPath:File;
+
+		protected var moduleCopyTargets:ObjectMap = new ObjectMap();
 		protected var project:ProjectVO;
 		protected var formObjects:Vector.<DominoFormVO>;
 
+		private var targetPath:File;
 		private var completionCount:int;
 		private var waitingCount:int;
 		private var onCompleteHandler:Function;
@@ -77,10 +77,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			waitingCount = 0;
 			completionCount = 0;
 
-			TEMPLATE_MODULE_PATH = originPath.resolvePath("project/src/main/java");
+			moduleCopyTargets.set(originPath.resolvePath("project/src/main/java"), targetPath.resolvePath("src/main/java"));
+			moduleCopyTargets.set(originPath.resolvePath("project/docs"), targetPath.resolvePath("docs"));
+			moduleCopyTargets.set(originPath.resolvePath("project/agentProperties/agentbuild"), targetPath.resolvePath("agentProperties/agentbuild"));
+
 			TEMPLATE_ELEMENTS_PATH = originPath.resolvePath("elements");
 
-			this.targetPath = targetPath.resolvePath("src/main/java");
+			this.targetPath = targetPath;
 			this.project = project;
 			this.onCompleteHandler = onComplete;
 
@@ -150,9 +153,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			th.templatingData["%eachform%"] = th.templatingData["%form%"] = form.formName.replace(/[^0-9a-zA-Z_]/, '');
 			th.templatingData["%formRaw%"] = form.formName;
 			th.templatingData["%view%"] = form.viewName;
+			th.templatingData["%project%"] = targetPath.name;
 			generateModuleFilesContent(form, th);
 
-			th.projectTemplate(new FileLocation(TEMPLATE_MODULE_PATH.nativePath), new FileLocation(targetPath.nativePath));
+			for (var source:Object in moduleCopyTargets)
+			{
+				th.projectTemplate(new FileLocation(source.nativePath), new FileLocation(moduleCopyTargets[source].nativePath));
+			}
 		}
 		
 		protected function generateModuleFilesContent(form:DominoFormVO, th:TemplatingHelper):void
