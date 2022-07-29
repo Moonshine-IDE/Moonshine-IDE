@@ -18,6 +18,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
+    import flash.display.DisplayObject;
+    import flash.events.Event;
+    import flash.utils.clearInterval;
+    import flash.utils.setTimeout;
+
+    import mx.core.FlexGlobals;
+    import mx.events.FlexEvent;
+    import mx.managers.IFocusManagerComponent;
+    import mx.managers.PopUpManager;
+    import mx.utils.ObjectUtil;
+
+    import spark.components.Group;
+
     import actionScripts.controllers.DataAgent;
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.events.RefreshTreeEvent;
@@ -27,8 +40,6 @@ package actionScripts.ui.editor
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsoleOutputEvent;
-    import actionScripts.plugin.texteditor.TextEditorPlugin;
-    import actionScripts.plugin.texteditor.events.TextEditorSyntaxEvent;
     import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IContentWindowReloadable;
@@ -40,43 +51,16 @@ package actionScripts.ui.editor
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
-    import actionScripts.valueObjects.Settings;
     import actionScripts.valueObjects.URLDescriptorVO;
 
     import components.popup.FileSavePopup;
     import components.popup.SelectOpenedProject;
     import components.views.project.TreeView;
 
-    import feathers.graphics.FillStyle;
-    import feathers.skins.RectangleSkin;
-    import feathers.utils.DisplayObjectFactory;
-
-    import flash.display.DisplayObject;
-    import flash.events.Event;
-    import flash.utils.clearInterval;
-    import flash.utils.setTimeout;
-
-    import haxe.IMap;
-
     import moonshine.editor.text.TextEditor;
     import moonshine.editor.text.TextEditorSearchResult;
     import moonshine.editor.text.events.TextEditorChangeEvent;
     import moonshine.editor.text.events.TextEditorLineEvent;
-    import moonshine.editor.text.lines.TextLineRenderer;
-    import moonshine.editor.text.lsp.LspTextEditor;
-    import moonshine.editor.text.lsp.lines.LspTextLineRenderer;
-    import moonshine.editor.text.syntax.format.PlainTextFormatBuilder;
-    import moonshine.editor.text.syntax.format.SyntaxColorSettings;
-    import moonshine.editor.text.syntax.format.SyntaxFontSettings;
-    import moonshine.editor.text.syntax.parser.PlainTextLineParser;
-
-    import mx.core.FlexGlobals;
-    import mx.events.FlexEvent;
-    import mx.managers.IFocusManagerComponent;
-    import mx.managers.PopUpManager;
-    import mx.utils.ObjectUtil;
-
-    import spark.components.Group;
 
     public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
@@ -238,7 +222,6 @@ package actionScripts.ui.editor
 		protected function addedToStageHandler(event:Event):void
 		{
 			this.addGlobalListeners();
-			updateSyntaxColorScheme();
 		}
 		
 		protected function removedFromStageHandler(event:Event):void
@@ -248,10 +231,9 @@ package actionScripts.ui.editor
 		
 		protected function addGlobalListeners():void
 		{
-			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler, false, 0, true);
-			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler, false, 0, true);
-			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_FINISH, setDebugFinishHandler, false, 0, true);
-			dispatcher.addEventListener(TextEditorSyntaxEvent.SYNTAX_COLOR_SCHEME_CHANGE, syntaxColorSchemeChangeHandler, false, 0, true);
+			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
+			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_FINISH, setDebugFinishHandler);
 		}
 		
 		protected function removeGlobalListeners():void
@@ -259,7 +241,6 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 			dispatcher.removeEventListener(DebugLineEvent.SET_DEBUG_FINISH, setDebugFinishHandler);
-			dispatcher.removeEventListener(TextEditorSyntaxEvent.SYNTAX_COLOR_SCHEME_CHANGE, syntaxColorSchemeChangeHandler);
 		}
 		
 		protected function closeTabHandler(event:Event):void
@@ -299,10 +280,6 @@ package actionScripts.ui.editor
 			if(!editor)
 			{
 				editor = new TextEditor(null, _readOnly);
-			}
-			if(!editor.parser)
-			{
-				editor.parser = new PlainTextLineParser();
 			}
 			editor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
 			editor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
@@ -616,52 +593,6 @@ package actionScripts.ui.editor
 			}, 1000);
 		}
 
-		private function getColorSettings():SyntaxColorSettings
-		{
-			var colorSettings:SyntaxColorSettings;
-			switch(model.syntaxColorScheme)
-			{
-				case TextEditorPlugin.SYNTAX_COLOR_SCHEME_DARK:
-					return SyntaxColorSettings.defaultDark();
-				case TextEditorPlugin.SYNTAX_COLOR_SCHEME_MONOKAI:
-					return SyntaxColorSettings.monokai();
-				default: // light
-					return SyntaxColorSettings.defaultLight();
-			}
-		}
-
-		private function updateSyntaxColorScheme():void
-		{
-			var colorSettings:SyntaxColorSettings = getColorSettings();
-			if (editor.parser is PlainTextLineParser)
-			{
-				var formatBuilder:PlainTextFormatBuilder = new PlainTextFormatBuilder();
-				formatBuilder.setFontSettings(new SyntaxFontSettings(Settings.font.defaultFontFamily, Settings.font.defaultFontSize));
-				formatBuilder.setColorSettings(colorSettings);
-				var formats:IMap = formatBuilder.build();
-				editor.textStyles = formats;
-				editor.embedFonts = Settings.font.defaultFontEmbedded;
-			}
-			editor.backgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.backgroundColor));
-			editor.textLineRendererFactory = DisplayObjectFactory.withFunction(function():TextLineRenderer
-			{
-				var textLineRenderer:TextLineRenderer = (editor is LspTextEditor) ? new LspTextLineRenderer() : new TextLineRenderer();
-				textLineRenderer.backgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.backgroundColor));
-				textLineRenderer.gutterBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.backgroundColor));
-				textLineRenderer.selectedTextBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.selectionBackgroundColor,
-					colorSettings.selectionBackgroundAlpha));
-				textLineRenderer.selectedTextBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.selectionUnfocusedBackgroundColor,
-					colorSettings.selectionUnfocusedBackgroundAlpha));
-				textLineRenderer.focusedBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.focusedLineBackgroundColor));
-				textLineRenderer.debuggerStoppedBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.backgroundColor));
-				textLineRenderer.searchResultBackgroundSkinFactory = function():RectangleSkin
-				{
-					return new RectangleSkin(FillStyle.SolidColor(colorSettings.searchResultBackgroundColor));
-				}
-				return textLineRenderer;
-			});
-		}
-
 		protected function handleSaveAsSelect(fileObj:Object):void
 		{
 			saveAs(new FileLocation(fileObj.nativePath));
@@ -697,11 +628,6 @@ package actionScripts.ui.editor
 		private function setDebugFinishHandler(event:DebugLineEvent):void
 		{
 			editor.debuggerLineIndex = -1;
-		}
-
-		private function syntaxColorSchemeChangeHandler(event:TextEditorSyntaxEvent):void
-		{
-			updateSyntaxColorScheme();
 		}
     }
 }
