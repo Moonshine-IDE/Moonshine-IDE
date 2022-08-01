@@ -20,6 +20,7 @@ package actionScripts.plugins.ui.editor
 {
 	import flash.events.Event;
 	import flash.filesystem.File;
+	import actionScripts.utils.UtilsCore;
 
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
@@ -53,6 +54,7 @@ package actionScripts.plugins.ui.editor
 	import flash.filesystem.File;
 	import actionScripts.utils.DominoUtils;
 	import spark.components.Alert;
+	import mx.collections.ArrayList;
 
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
@@ -176,6 +178,8 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 
 			dispatcher.addEventListener(EVENT_SWITCH_TAB_TO_CODE, switchTabToCodeHandler);
+
+			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 		}
 
 		private function previewStartCompleteHandler(event:PreviewPluginEvent):void
@@ -395,6 +399,10 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.setFocus();
 				visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 				visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
+				//when it swtich back the current view edtior , it need reload the sub from again
+				if(visualEditorView.visualEditor.editingSurface)
+				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+
 			}
 		}
 
@@ -410,6 +418,7 @@ package actionScripts.plugins.ui.editor
 		{
 			var mxmlCode:XML = null;
 			var mxmlString:String="";
+			
 
 			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){			
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
@@ -482,6 +491,34 @@ package actionScripts.plugins.ui.editor
 			}
 
 			return null;
+		}
+
+		private function getSubFromList():ArrayList {
+			var subforms:ArrayList = new ArrayList();
+				subforms.addItem({label: "none",value: "none",description:"none"});
+			var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
+			fileSoucePath=fileSoucePath.replace("Forms","SharedElements");
+			fileSoucePath=fileSoucePath+File.separator+"Subforms";
+			var directory = new File(fileSoucePath);
+			if (directory.exists) {
+				var list:Array = directory.getDirectoryListing();
+				for (var i:uint = 0; i < list.length; i++) {
+					if(UtilsCore.endsWith(list[i].nativePath,"form")){
+						var subFromFile:String=list[i].name.substring(0,list[i].nativePath.length-5);
+						
+						subforms.addItem(  {label: subFromFile,value: list[i].nativePath,description:list[i].name});
+						
+							
+					}
+					
+				}
+			}
+			
+			
+
+			
+			
+			return subforms;
 		}
 	}
 }
