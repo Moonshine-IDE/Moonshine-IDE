@@ -2,6 +2,9 @@ package $packagePath
 {
     import org.apache.royale.collections.ArrayList;
     import org.apache.royale.events.EventDispatcher;
+    import classes.vo.Constants;
+    import org.apache.royale.jewel.Snackbar;
+	import org.apache.royale.net.events.FaultEvent;
     %ImportStatements%
 
 	public class $moduleNameProxy extends EventDispatcher
@@ -61,11 +64,25 @@ package $packagePath
             var itemIndex:int = items.getItemIndex(value);
             if (itemIndex != -1)
             {
-                items[itemIndex] = value;
+                if (Constants.AGENT_BASE_URL)
+            	{
+            		this.serviceDelegate.addNewAuthor(value.toRequestObject(), on$moduleNameCreated, on$moduleNameCreationFailed);
+            	}
+            	else
+            	{
+            		items[itemIndex] = value;
+            	}
             }
             else
             {
-                items.addItem(value);
+                if (Constants.AGENT_BASE_URL)
+            	{
+            			
+            	}
+            	else
+            	{
+            		items.addItem(value);
+            	}
             }
             
             this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
@@ -76,5 +93,48 @@ package $packagePath
             items.removeItem(value);
             this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
         }
+        
+        private function on$moduleNameCreated(event:Event):void
+		{
+			var fetchedData:String = event.target["data"];
+			if (fetchedData)
+			{
+				var json:Object = JSON.parse(fetchedData as String);
+				/*if (!sessionCheckProxy.checkUserSession(xmlData))
+				{
+					return;
+				}
+				
+				var errorMessage:String = xmlData["ErrorMessage"].toString();
+				
+				if (!errorMessage)
+				{
+					if (xmlData[0].Results.affectedObject == null)
+					{
+						sendNotification(NOTE_DISK_CREATE_FAILED, "Failed to add Disk! Please, try later.");
+					}
+					else
+					{
+						manageVmBaseProxy.selectedVM.disksAC = new ArrayList();
+						ParseCentralVMs.parseVMDisks(xmlData[0].Results.affectedObject, manageVmBaseProxy.selectedVM.disksAC);
+						
+						sendNotification(NOTE_DISK_CREATE_COMPLETED);
+					}
+				}
+				else
+				{
+					sendNotification(NOTE_DISK_CREATE_FAILED, "Disk create request failed: " + errorMessage);
+				}*/
+			}
+			else
+			{
+				Snackbar.show("Creation of new $moduleName failed!", 4000, null);
+			}
+		}
+		
+		private function on$moduleNameCreationFailed(event:FaultEvent):void
+		{
+			Snackbar.show("Creation of new $moduleName failed!\n"+ event.message.toLocaleString(), 4000, null);
+		}
 	}
 }

@@ -60,7 +60,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			{
 				fileContent = fileContent.replace(/%PropertyStatements%/ig, generateProperties());
 				fileContent = fileContent.replace(/$moduleName/ig, form.formName);
-				fileContent = fileContent.replace(/%ToRequestObjectStatements%/g, "return null;"); // <---- TEMPORARY
+				fileContent = fileContent.replace(/%ToRequestObjectStatements%/g, generateToRequestObjects()); // <---- TEMPORARY
 
 				saveFile(fileContent);
 				dispatchCompletion();
@@ -95,6 +95,30 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			}
 
 			return tmpContent;
+		}
+
+		private function generateToRequestObjects():String
+		{
+			var tmpContent:String = "return {";
+			for each (var field:DominoFormFieldVO in form.fields)
+			{
+				if (field.isMultiValue)
+				{
+					//tmpContent += PropertyDeclarationStatement.getArrayList(field.name) +"\n\n"; // need server-sending example
+				}
+				else
+				{
+					tmpContent += "\n"+ field.name +": this."+ field.name +","
+				}
+			}
+
+			// remove the ending comma
+			if (tmpContent.charAt(tmpContent.length - 1) == ",")
+			{
+				tmpContent = tmpContent.substr(0, tmpContent.length - 1);
+			}
+
+			return (tmpContent + "\n};");
 		}
 	}
 }
