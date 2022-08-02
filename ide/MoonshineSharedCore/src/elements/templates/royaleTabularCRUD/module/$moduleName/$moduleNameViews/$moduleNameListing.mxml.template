@@ -25,7 +25,7 @@
             private function onInitCompletes():void
             {
                 proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onItemBeingAdded);
-                dgItems.addEventListener(DeleteItemEvent.DELETE_TABLE_ITEM, onItemDeletionRequest)
+                dgItems.addEventListener(DeleteItemEvent.DELETE_TABLE_ITEM, onItemDeletionRequest);
             }
 
 			private function onAddNewRequest(event:MouseEvent):void

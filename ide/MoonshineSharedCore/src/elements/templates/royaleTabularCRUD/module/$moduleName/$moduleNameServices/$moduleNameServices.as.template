@@ -8,10 +8,10 @@ package $packagePath
 	
 	public class $moduleNameServices
 	{
-		public static const LISTING_AGENT:String = "Test-Moonshine-Domino-CRUD.nsf/AuthorRead?OpenAgent";
-		public static const ADD_AGENT:String = "Test-Moonshine-Domino-CRUD.nsf/AuthorCreate?OpenAgent";
-		public static const EDIT_AGENT:String = "Test-Moonshine-Domino-CRUD.nsf/AuthorUpdate?OpenAgent";
-		public static const REMOVE_AGENT:String = "Test-Moonshine-Domino-CRUD.nsf/AuthorDelete?OpenAgent";
+		public static const LISTING_AGENT:String = "/Test-Moonshine-Domino-CRUD.nsf/AuthorRead?OpenAgent";
+		public static const ADD_AGENT:String = "/Test-Moonshine-Domino-CRUD.nsf/AuthorCreate?OpenAgent";
+		public static const EDIT_AGENT:String = "/Test-Moonshine-Domino-CRUD.nsf/AuthorUpdate?OpenAgent";
+		public static const REMOVE_AGENT:String = "/Test-Moonshine-Domino-CRUD.nsf/AuthorDelete?OpenAgent";
 		
 		public function $moduleNameServices()
 		{
@@ -55,6 +55,26 @@ package $packagePath
 			service.addEventListener("ioError", faultCallback);
 			service.send();
 		}
+
+		public function remove$moduleName(documentID:String, resultCallback:Function, faultCallback:Function=null):void
+        {
+            if (faultCallback == null)
+            {
+                faultCallback = onFault;
+            }
+
+            var urlParams:URLSearchParams = new URLSearchParams();
+            urlParams.set("DominoUniversalID", documentID);
+
+            var service:HTTPService = new HTTPService();
+            service.addBead(new CORSCredentialsBead(true));
+            service.url = Constants.AGENT_BASE_URL + REMOVE_AGENT;
+            service.contentData = urlParams;
+            service.method = "POST";
+            service.addEventListener("complete", resultCallback);
+            service.addEventListener("ioError", faultCallback);
+            service.send();
+        }
 		
 		public function onFault(event:FaultEvent):void 
 		{

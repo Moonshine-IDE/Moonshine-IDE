@@ -13,7 +13,7 @@ package $packagePath
         public static const EVENT_ITEM_REMOVED:String = "eventItemRemoved";
         public static const EVENT_ITEM_SELECTED:String = "eventItemSelected";
 
-		private var serviceDelegate:$moduleNameServices;
+		private var serviceDelegate:$moduleNameServices = new $moduleNameServices();
 		
 		private static var _instance:$moduleNameProxy;
         public static function getInstance():$moduleNameProxy
@@ -57,6 +57,14 @@ package $packagePath
         {
             _selectedItem = value;
         }
+
+        public function requestItems():void
+        {
+            if (Constants.AGENT_BASE_URL)
+            {
+                this.serviceDelegate.get$moduleNameList(on$moduleNameListLoaded, on$moduleNameListLoadFailed);
+            }
+        }
         
         public function submitItem(value:$moduleNameVO):void
         {
@@ -66,7 +74,7 @@ package $packagePath
             {
                 if (Constants.AGENT_BASE_URL)
             	{
-            		this.serviceDelegate.addNewAuthor(value.toRequestObject(), on$moduleNameCreated, on$moduleNameCreationFailed);
+            		
             	}
             	else
             	{
@@ -77,7 +85,7 @@ package $packagePath
             {
                 if (Constants.AGENT_BASE_URL)
             	{
-            			
+            		this.serviceDelegate.addNew$moduleName(value.toRequestObject(), on$moduleNameCreated, on$moduleNameCreationFailed);
             	}
             	else
             	{
@@ -90,8 +98,59 @@ package $packagePath
         
         public function removeItem(value:$moduleNameVO):void
         {
-            items.removeItem(value);
+            if (Constants.AGENT_BASE_URL)
+            {
+                this.serviceDelegate.remove$moduleName(value.dominoUniversalID, on$moduleNameRemoved, on$moduleNameRemoveFailed);
+            }
+            else
+            {
+                items.removeItem(value);
+            }
+
             this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+        }
+
+        private function on$moduleNameListLoaded(event:Event):void
+        {
+            var fetchedData:String = event.target["data"];
+            if (fetchedData)
+            {
+                var json:Object = JSON.parse(fetchedData as String);
+                /*if (!sessionCheckProxy.checkUserSession(xmlData))
+                {
+                    return;
+                }
+
+                var errorMessage:String = xmlData["ErrorMessage"].toString();
+
+                if (!errorMessage)
+                {
+                    if (xmlData[0].Results.affectedObject == null)
+                    {
+                        sendNotification(NOTE_DISK_CREATE_FAILED, "Failed to add Disk! Please, try later.");
+                    }
+                    else
+                    {
+                        manageVmBaseProxy.selectedVM.disksAC = new ArrayList();
+                        ParseCentralVMs.parseVMDisks(xmlData[0].Results.affectedObject, manageVmBaseProxy.selectedVM.disksAC);
+
+                        sendNotification(NOTE_DISK_CREATE_COMPLETED);
+                    }
+                }
+                else
+                {
+                    sendNotification(NOTE_DISK_CREATE_FAILED, "Disk create request failed: " + errorMessage);
+                }*/
+            }
+            else
+            {
+                Snackbar.show("Loading lists of new $moduleName failed!", 4000, null);
+            }
+        }
+
+        private function on$moduleNameListLoadFailed(event:FaultEvent):void
+        {
+            Snackbar.show("Loading lists of new $moduleName failed!\n"+ event.message.toLocaleString(), 4000, null);
         }
         
         private function on$moduleNameCreated(event:Event):void
@@ -136,5 +195,48 @@ package $packagePath
 		{
 			Snackbar.show("Creation of new $moduleName failed!\n"+ event.message.toLocaleString(), 4000, null);
 		}
+
+		private function on$moduleNameRemoved(event:Event):void
+        {
+            var fetchedData:String = event.target["data"];
+            if (fetchedData)
+            {
+                var json:Object = JSON.parse(fetchedData as String);
+                /*if (!sessionCheckProxy.checkUserSession(xmlData))
+                {
+                    return;
+                }
+
+                var errorMessage:String = xmlData["ErrorMessage"].toString();
+
+                if (!errorMessage)
+                {
+                    if (xmlData[0].Results.affectedObject == null)
+                    {
+                        sendNotification(NOTE_DISK_CREATE_FAILED, "Failed to add Disk! Please, try later.");
+                    }
+                    else
+                    {
+                        manageVmBaseProxy.selectedVM.disksAC = new ArrayList();
+                        ParseCentralVMs.parseVMDisks(xmlData[0].Results.affectedObject, manageVmBaseProxy.selectedVM.disksAC);
+
+                        sendNotification(NOTE_DISK_CREATE_COMPLETED);
+                    }
+                }
+                else
+                {
+                    sendNotification(NOTE_DISK_CREATE_FAILED, "Disk create request failed: " + errorMessage);
+                }*/
+            }
+            else
+            {
+                Snackbar.show("Deletion of new $moduleName failed!", 4000, null);
+            }
+        }
+
+        private function on$moduleNameRemoveFailed(event:FaultEvent):void
+        {
+            Snackbar.show("Deletion of new $moduleName failed!\n"+ event.message.toLocaleString(), 4000, null);
+        }
 	}
 }

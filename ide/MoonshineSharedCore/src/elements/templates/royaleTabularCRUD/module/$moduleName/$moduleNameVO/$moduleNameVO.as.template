@@ -5,6 +5,8 @@ package views.modules.$moduleName.$moduleNameVO
     [Bindable]
 	public class $moduleNameVO  
 	{
+	    public var dominoUniversalID:String;
+
 	    %PropertyStatements%
 
 		public function $moduleNameVO()
@@ -15,5 +17,11 @@ package views.modules.$moduleName.$moduleNameVO
 		{
 			%ToRequestObjectStatements%
 		}
+
+		public static function get$moduleNameVO(value:Object):$moduleNameVO
+        {
+            var tmpVO:$moduleNameVO = new $moduleNameVO();
+            return tmpVO;
+        }
 	}
 }
