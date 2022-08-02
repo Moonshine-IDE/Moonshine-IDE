@@ -467,23 +467,27 @@ package actionScripts.plugins.ui.editor
 		
 		private function getVisualEditorFilePath():String
 		{
+			var visualEditorProjectSourcedPath = (visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
+			
 			if ((visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder)
 			{
 				
 				var filePath:String = file.fileBridge.nativePath;
 				var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
-	
+
+				
 				if(filePath.indexOf(".page")>=0){
 					fileSoucePath=fileSoucePath.replace("Forms","");
-					filePath=filePath.replace(fileSoucePath,
-								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath+File.separator);
+					filePath=filePath.replace(fileSoucePath,visualEditorProjectSourcedPath+File.separator);
 
 					filePath=filePath.replace(/.mxml$|.xhtml$|.form$|.page$|.dve$/, ".xml");
 					filePath=filePath.replace("Pages","pages");	
+				}if(filePath.indexOf("Subforms")>=0){
+					filePath= visualEditorProjectSourcedPath+File.separator+"subforms"+File.separator+file.fileBridge.name;
+					filePath=filePath.replace(/.mxml$|.xhtml$|.form$|.page$|.dve$/, ".xml");
+					
 				}else{
-					filePath=filePath.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
-								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath)
-						.replace(/.mxml$|.xhtml$|.form$|.dve$/, ".xml");	
+					filePath=filePath.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,visualEditorProjectSourcedPath).replace(/.mxml$|.xhtml$|.form$|.dve$/, ".xml");	
 				}
 				
 							
