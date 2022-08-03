@@ -40,7 +40,7 @@
 
 			private function onAddNewRequest(event:MouseEvent):void
 			{
-			    this.dgItems.selectedItem = null;
+			    this.proxy.selectedItem = null;
 				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, $moduleNameAddEdit.NAME));
 			}
 
