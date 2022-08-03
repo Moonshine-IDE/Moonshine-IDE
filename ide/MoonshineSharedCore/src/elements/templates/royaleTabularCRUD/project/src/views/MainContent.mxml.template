@@ -14,7 +14,11 @@
 			private function onNavigationChangeRequest(event:ScreenEvent):void
 			{
 				mainContent.selectedContent = event.screenName;
-				this[event.screenName +"_ID"].refresh();
+				// temp
+                if (event.screenName.indexOf("Listing") != -1)
+                {
+                    this[event.screenName +"_ID"].refresh();
+                }
 			}
 			
 		]]>

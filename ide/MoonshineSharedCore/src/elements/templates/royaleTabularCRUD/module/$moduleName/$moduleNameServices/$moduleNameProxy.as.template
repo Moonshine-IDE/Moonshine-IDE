@@ -79,6 +79,7 @@ package $packagePath
             	else
             	{
             		items[itemIndex] = value;
+            		this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
             	}
             }
             else
@@ -90,24 +91,27 @@ package $packagePath
             	else
             	{
             		items.addItem(value);
+            		this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
             	}
             }
-            
-            this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
         }
         
         public function removeItem(value:$moduleNameVO):void
         {
             if (Constants.AGENT_BASE_URL)
             {
-                this.serviceDelegate.remove$moduleName(value.dominoUniversalID, on$moduleNameRemoved, on$moduleNameRemoveFailed);
+                selectedItem = value;
+                this.serviceDelegate.remove$moduleName(
+                    {DominoUniversalID: value.dominoUniversalID},
+                    on$moduleNameRemoved,
+                    on$moduleNameRemoveFailed
+                );
             }
             else
             {
                 items.removeItem(value);
+                this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
             }
-
-            this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
         }
 
         private function on$moduleNameListLoaded(event:Event):void
@@ -116,8 +120,10 @@ package $packagePath
             if (fetchedData)
             {
                 var json:Object = JSON.parse(fetchedData as String);
-                if (("documents" in json) && (json.documents is Array))
+                if (!json.errorMessage)
                 {
+                    if (("documents" in json) && (json.documents is Array))
+                    {
                         items = new ArrayList();
                         for (var i:int=0; i < json.documents.length; i++)
                         {
@@ -126,9 +132,13 @@ package $packagePath
                                 $moduleNameVO.get$moduleNameVO(json.documents[i])
                             );
                         }
+                        this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+                    }
                 }
-                //temp
-                this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+                else
+                {
+                    Snackbar.show("Loading lists of new $moduleName failed!\n"+ json.errorMessage, 4000, null);
+                }
 
                 /*if (!sessionCheckProxy.checkUserSession(xmlData))
                 {
@@ -173,6 +183,21 @@ package $packagePath
 			if (fetchedData)
 			{
 				var json:Object = JSON.parse(fetchedData as String);
+                if (!json.errorMessage)
+                {
+                    if ("document" in json)
+                    {
+                        items.addItem(
+                            $moduleNameVO.get$moduleNameVO(json.document)
+                        );
+                    }
+                    this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+                }
+                else
+                {
+                    Snackbar.show("Creation of new $moduleName failed!\n"+ json.errorMessage, 4000, null);
+                }
+
 				/*if (!sessionCheckProxy.checkUserSession(xmlData))
 				{
 					return;
@@ -216,6 +241,20 @@ package $packagePath
             if (fetchedData)
             {
                 var json:Object = JSON.parse(fetchedData as String);
+                if (!json.errorMessage)
+                {
+                    if (selectedItem)
+                    {
+                        items.removeItem(selectedItem);
+                        selectedItem = null;
+                        this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+                    }
+                }
+                else
+                {
+                    Snackbar.show("Deletion of $moduleName failed!\n"+ json.errorMessage, 4000, null);
+                }
+
                 /*if (!sessionCheckProxy.checkUserSession(xmlData))
                 {
                     return;
@@ -244,13 +283,13 @@ package $packagePath
             }
             else
             {
-                Snackbar.show("Deletion of new $moduleName failed!", 4000, null);
+                Snackbar.show("Deletion of $moduleName failed!", 4000, null);
             }
         }
 
         private function on$moduleNameRemoveFailed(event:FaultEvent):void
         {
-            Snackbar.show("Deletion of new $moduleName failed!\n"+ event.message.toLocaleString(), 4000, null);
+            Snackbar.show("Deletion of $moduleName failed!\n"+ event.message.toLocaleString(), 4000, null);
         }
 	}
 }

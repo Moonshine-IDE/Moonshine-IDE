@@ -92,7 +92,8 @@
 						<js:MaterialIcon text="{MaterialIconType.ADD}" />
 					</j:icon>
 				</j:IconButton>
-				<j:IconButton text="Refresh">
+				<j:IconButton text="Refresh"
+				                click="onRefresh(event)">
 					<j:icon>
 						<js:MaterialIcon text="{MaterialIconType.REFRESH}" />
 					</j:icon>
