@@ -60,7 +60,8 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			{
 				fileContent = fileContent.replace(/%PropertyStatements%/ig, generateProperties());
 				fileContent = fileContent.replace(/$moduleName/ig, form.formName);
-				fileContent = fileContent.replace(/%ToRequestObjectStatements%/g, generateToRequestObjects()); // <---- TEMPORARY
+				fileContent = fileContent.replace(/%ToRequestObjectStatements%/g, generateToRequestObjects());
+				fileContent = fileContent.replace(/%GetNewVOStatements%/g, generateNewVOfromObject());
 
 				saveFile(fileContent);
 				dispatchCompletion();
@@ -119,6 +120,18 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			}
 
 			return (tmpContent + "\n};");
+		}
+
+		private function generateNewVOfromObject():String
+		{
+			var tmpContent:String = "";
+			for each (var field:DominoFormFieldVO in form.fields)
+			{
+				tmpContent += "if (\""+ field.name +"\" in value){\ttmpVO."+ field.name +" = value."+ field.name +";\t}\n";
+			}
+			tmpContent += "if (\"DominoUniversalID\" in value){\ttmpVO.dominoUniversalID = value.DominoUniversalID;\t}\n";
+
+			return tmpContent;
 		}
 	}
 }

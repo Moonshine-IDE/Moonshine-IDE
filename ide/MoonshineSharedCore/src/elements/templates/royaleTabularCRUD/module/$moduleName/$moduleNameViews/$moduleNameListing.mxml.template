@@ -21,6 +21,16 @@
 
 			[Bindable]
             private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
+            private var isItemsRequested:Boolean;
+
+            public function refresh():void
+            {
+                if (!isItemsRequested)
+                {
+                    onRefresh(null);
+                    isItemsRequested = true;
+                }
+            }
 
             private function onInitCompletes():void
             {
@@ -33,6 +43,11 @@
 			    this.dgItems.selectedItem = null;
 				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, $moduleNameAddEdit.NAME));
 			}
+
+			private function onRefresh(event:MouseEvent):void
+            {
+                proxy.requestItems();
+            }
 			
 			private function onBackRequest(event:MouseEvent):void
 			{

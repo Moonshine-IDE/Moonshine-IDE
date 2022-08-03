@@ -116,6 +116,20 @@ package $packagePath
             if (fetchedData)
             {
                 var json:Object = JSON.parse(fetchedData as String);
+                if (("documents" in json) && (json.documents is Array))
+                {
+                        items = new ArrayList();
+                        for (var i:int=0; i < json.documents.length; i++)
+                        {
+                            var item:$moduleNameVO = new $moduleNameVO();
+                            items.addItem(
+                                $moduleNameVO.get$moduleNameVO(json.documents[i])
+                            );
+                        }
+                }
+                //temp
+                this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+
                 /*if (!sessionCheckProxy.checkUserSession(xmlData))
                 {
                     return;

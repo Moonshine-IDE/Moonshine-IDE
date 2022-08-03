@@ -21,6 +21,7 @@ package views.modules.$moduleName.$moduleNameVO
 		public static function get$moduleNameVO(value:Object):$moduleNameVO
         {
             var tmpVO:$moduleNameVO = new $moduleNameVO();
+            %GetNewVOStatements%
             return tmpVO;
         }
 	}
