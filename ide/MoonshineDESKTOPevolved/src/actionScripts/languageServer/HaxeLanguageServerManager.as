@@ -45,7 +45,7 @@ package actionScripts.languageServer
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugins.haxelib.events.HaxelibEvent;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.HaxeTextEditor;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.ui.tabview.TabEvent;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
@@ -177,7 +177,8 @@ package actionScripts.languageServer
 			}
 			var scheme:String = uri.substr(0, colonIndex);
 
-			var editor:HaxeTextEditor = new HaxeTextEditor(_project, readOnly);
+			var editor:LanguageServerTextEditor = new LanguageServerTextEditor(LANGUAGE_ID_HAXE, _project, readOnly);
+			editor.editor.allowToggleBreakpoints = true;
 			if(scheme == URI_SCHEME_FILE)
 			{
 				//the regular OpenFileEvent should be used to open this one

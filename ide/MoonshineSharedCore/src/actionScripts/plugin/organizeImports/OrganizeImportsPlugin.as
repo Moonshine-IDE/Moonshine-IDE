@@ -23,10 +23,10 @@ package actionScripts.plugin.organizeImports
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.utils.getProjectForUri;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 
 	public class OrganizeImportsPlugin extends PluginBase
 	{
@@ -53,8 +53,8 @@ package actionScripts.plugin.organizeImports
 		private function handleOrganizeImports(event:Event):void
 		{
 			// TODO: switch to the standardized organize imports code action
-			var editor:ActionScriptTextEditor = model.activeEditor as ActionScriptTextEditor;
-			if(!editor || !editor.currentFile)
+			var editor:LanguageServerTextEditor = model.activeEditor as LanguageServerTextEditor;
+			if(!editor || !editor.currentFile || (editor.currentFile.fileBridge.extension != "as" && editor.currentFile.fileBridge.extension != "mxml"))
 			{
 				return;
 			}
