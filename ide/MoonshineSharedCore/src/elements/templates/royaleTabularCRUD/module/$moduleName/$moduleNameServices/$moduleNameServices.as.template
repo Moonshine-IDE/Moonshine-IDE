@@ -56,6 +56,29 @@ package $packagePath
 			service.send();
 		}
 
+		public function update$moduleName(submitObject:Object, resultCallback:Function, faultCallback:Function=null):void
+        {
+            if (faultCallback == null)
+            {
+                faultCallback = onFault;
+            }
+
+            var urlParams:URLSearchParams = new URLSearchParams();
+            for (var property:String in submitObject)
+            {
+                urlParams.set(property, submitObject[property]);
+            }
+
+            var service:HTTPService = new HTTPService();
+            service.addBead(new CORSCredentialsBead(true));
+            service.url = Constants.AGENT_BASE_URL + EDIT_AGENT;
+            service.contentData = urlParams;
+            service.method = "POST";
+            service.addEventListener("complete", resultCallback);
+            service.addEventListener("ioError", faultCallback);
+            service.send();
+        }
+
 		public function remove$moduleName(submitObject:Object, resultCallback:Function, faultCallback:Function=null):void
         {
             if (faultCallback == null)

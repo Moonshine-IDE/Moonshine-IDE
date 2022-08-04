@@ -69,16 +69,15 @@ package $packagePath
         public function submitItem(value:$moduleNameVO):void
         {
             // simple in-memory add/update for now
-            var itemIndex:int = items.getItemIndex(value);
-            if (itemIndex != -1)
+            if (selectedItem != null)
             {
                 if (Constants.AGENT_BASE_URL)
             	{
-            		
+            		this.serviceDelegate.update$moduleName(value.toRequestObject(), on$moduleNameUpdated, on$moduleNameUpdateFailed);
             	}
             	else
             	{
-            		items[itemIndex] = value;
+            		items[items.getItemIndex(selectedItem)] = value;
             		this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
             	}
             }
@@ -168,13 +167,13 @@ package $packagePath
             }
             else
             {
-                Snackbar.show("Loading lists of new $moduleName failed!", 4000, null);
+                Snackbar.show("Loading lists of new $moduleName failed!", 8000, null);
             }
         }
 
         private function on$moduleNameListLoadFailed(event:FaultEvent):void
         {
-            Snackbar.show("Loading lists of new $moduleName failed!\n"+ event.message.toLocaleString(), 4000, null);
+            Snackbar.show("Loading lists of new $moduleName failed!\n"+ event.message.toLocaleString(), 8000, null);
         }
         
         private function on$moduleNameCreated(event:Event):void
@@ -226,14 +225,70 @@ package $packagePath
 			}
 			else
 			{
-				Snackbar.show("Creation of new $moduleName failed!", 4000, null);
+				Snackbar.show("Creation of new $moduleName failed!", 8000, null);
 			}
 		}
 		
 		private function on$moduleNameCreationFailed(event:FaultEvent):void
 		{
-			Snackbar.show("Creation of new $moduleName failed!\n"+ event.message.toLocaleString(), 4000, null);
+			Snackbar.show("Creation of new $moduleName failed!\n"+ event.message.toLocaleString(), 8000, null);
 		}
+
+		private function on$moduleNameUpdated(event:Event):void
+        {
+            var fetchedData:String = event.target["data"];
+            if (fetchedData)
+            {
+                var json:Object = JSON.parse(fetchedData as String);
+                if (!json.errorMessage)
+                {
+                    if ("document" in json)
+                    {
+                        items[itemIndex] = selectedItem;
+                    }
+                    this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+                }
+                else
+                {
+                    Snackbar.show("Creation of new $moduleName failed!\n"+ json.errorMessage, 4000, null);
+                }
+
+                /*if (!sessionCheckProxy.checkUserSession(xmlData))
+                {
+                    return;
+                }
+
+                var errorMessage:String = xmlData["ErrorMessage"].toString();
+
+                if (!errorMessage)
+                {
+                    if (xmlData[0].Results.affectedObject == null)
+                    {
+                        sendNotification(NOTE_DISK_CREATE_FAILED, "Failed to add Disk! Please, try later.");
+                    }
+                    else
+                    {
+                        manageVmBaseProxy.selectedVM.disksAC = new ArrayList();
+                        ParseCentralVMs.parseVMDisks(xmlData[0].Results.affectedObject, manageVmBaseProxy.selectedVM.disksAC);
+
+                        sendNotification(NOTE_DISK_CREATE_COMPLETED);
+                    }
+                }
+                else
+                {
+                    sendNotification(NOTE_DISK_CREATE_FAILED, "Disk create request failed: " + errorMessage);
+                }*/
+            }
+            else
+            {
+                Snackbar.show("Update of new $moduleName failed!", 8000, null);
+            }
+        }
+
+        private function on$moduleNameUpdateFailed(event:FaultEvent):void
+        {
+            Snackbar.show("Update of new $moduleName failed!\n"+ event.message.toLocaleString(), 8000, null);
+        }
 
 		private function on$moduleNameRemoved(event:Event):void
         {
@@ -283,13 +338,13 @@ package $packagePath
             }
             else
             {
-                Snackbar.show("Deletion of $moduleName failed!", 4000, null);
+                Snackbar.show("Deletion of $moduleName failed!", 8000, null);
             }
         }
 
         private function on$moduleNameRemoveFailed(event:FaultEvent):void
         {
-            Snackbar.show("Deletion of $moduleName failed!\n"+ event.message.toLocaleString(), 4000, null);
+            Snackbar.show("Deletion of $moduleName failed!\n"+ event.message.toLocaleString(), 8000, null);
         }
 	}
 }
