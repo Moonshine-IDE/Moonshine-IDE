@@ -423,7 +423,7 @@ package actionScripts.plugins.ui.editor
 			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){			
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 				mxmlString=DominoUtils.fixDominButton(mxmlCode);
-			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0){
+			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0 || file.fileBridge.nativePath.lastIndexOf(".subform")>=0){
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 				mxmlString=DominoUtils.fixDominButton(mxmlCode);
 			} 
@@ -484,10 +484,10 @@ package actionScripts.plugins.ui.editor
 					filePath=filePath.replace("Pages","pages");	
 				}if(filePath.indexOf("Subforms")>=0){
 					filePath= visualEditorProjectSourcedPath+File.separator+"subforms"+File.separator+file.fileBridge.name;
-					filePath=filePath.replace(/.mxml$|.xhtml$|.form$|.page$|.dve$/, ".xml");
+					filePath=filePath.replace(/.mxml$|.xhtml$|.subform$|.page$|.dve$/, ".xml");
 					
 				}else{
-					filePath=filePath.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,visualEditorProjectSourcedPath).replace(/.mxml$|.xhtml$|.form$|.dve$/, ".xml");	
+					filePath=filePath.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,visualEditorProjectSourcedPath).replace(/.mxml$|.xhtml$|.form$|.dve$|.subform$/, ".xml");	
 				}
 				
 							
@@ -509,8 +509,8 @@ package actionScripts.plugins.ui.editor
 				for (var i:uint = 0; i < list.length; i++) {
 					if(UtilsCore.endsWith(list[i].nativePath,"form")){
 						var subFromFile:String=list[i].name.substring(0,list[i].nativePath.length-5);
-						
-						subforms.addItem(  {label: subFromFile,value: list[i].nativePath,description:list[i].name});
+						subFromFile=subFromFile.replace(".subform","");
+						subforms.addItem(  {label: subFromFile,value: subFromFile,description:list[i].nativePath});
 						
 							
 					}

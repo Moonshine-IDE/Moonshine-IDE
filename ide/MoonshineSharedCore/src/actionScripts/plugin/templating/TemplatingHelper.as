@@ -214,6 +214,8 @@ package actionScripts.plugin.templating
 					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];
 				case "Domino Visual Editor Page":
 					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];
+				case "Domino Visual Editor Sub Form":
+					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];	
 				case "Groovy Class":
 				case "Java Class":
 					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.GENERIC];
