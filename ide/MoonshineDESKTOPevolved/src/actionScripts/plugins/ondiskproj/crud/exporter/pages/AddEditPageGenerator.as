@@ -113,11 +113,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 
 		private function generateAssignComponentsValuesToProxy():String
 		{
-			var tmpContent:String = "var submitObject:"+ form.formName +"VO = proxy.selectedItem ? proxy.selectedItem : new "+ form.formName +"VO();\n";
+			var tmpContent:String = "var submitObject:"+ form.formName +"VO = new "+ form.formName +"VO();\n";
 			for each (var field:DominoFormFieldVO in form.fields)
 			{
 				tmpContent += "submitObject."+ field.name + RoyaleFormItem.retrieveComponentValuesToCode(field) +";\n";
 			}
+
+			tmpContent += "if (proxy.selectedItem) submitObject.DominoUniversalID = proxy.selectedItem.DominoUniversalID;\n";
 			tmpContent += "proxy.submitItem(submitObject);\n";
 
 			return tmpContent;

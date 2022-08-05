@@ -14,6 +14,7 @@ package $packagePath
         public static const EVENT_ITEM_SELECTED:String = "eventItemSelected";
 
 		private var serviceDelegate:$moduleNameServices = new $moduleNameServices();
+		private var lastEditingIndex:int = -1;
 		
 		private static var _instance:$moduleNameProxy;
         public static function getInstance():$moduleNameProxy
@@ -73,6 +74,8 @@ package $packagePath
             {
                 if (Constants.AGENT_BASE_URL)
             	{
+            		lastEditingIndex = items.getItemIndex(selectedItem);
+            		selectedItem = value;
             		this.serviceDelegate.update$moduleName(value.toRequestObject(), on$moduleNameUpdated, on$moduleNameUpdateFailed);
             	}
             	else
@@ -101,7 +104,7 @@ package $packagePath
             {
                 selectedItem = value;
                 this.serviceDelegate.remove$moduleName(
-                    {DominoUniversalID: value.dominoUniversalID},
+                    {DominoUniversalID: value.DominoUniversalID},
                     on$moduleNameRemoved,
                     on$moduleNameRemoveFailed
                 );
@@ -242,10 +245,9 @@ package $packagePath
                 var json:Object = JSON.parse(fetchedData as String);
                 if (!json.errorMessage)
                 {
-                    if ("document" in json)
-                    {
-                        items[itemIndex] = selectedItem;
-                    }
+                    items[lastEditingIndex] = selectedItem;
+                    selectedItem = null;
+                    lastEditingIndex = -1;
                     this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
                 }
                 else

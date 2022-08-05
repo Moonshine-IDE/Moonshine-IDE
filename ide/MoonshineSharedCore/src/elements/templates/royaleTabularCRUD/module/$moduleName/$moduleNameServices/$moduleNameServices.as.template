@@ -8,10 +8,10 @@ package $packagePath
 	
 	public class $moduleNameServices
 	{
-		public static const LISTING_AGENT:String = "/AuthorRead?OpenAgent";
-		public static const ADD_AGENT:String = "/AuthorCreate?OpenAgent";
-		public static const EDIT_AGENT:String = "/AuthorUpdate?OpenAgent";
-		public static const REMOVE_AGENT:String = "/AuthorDelete?OpenAgent";
+		public static const LISTING_AGENT:String = "/$moduleNameRead?OpenAgent";
+		public static const ADD_AGENT:String = "/$moduleNameCreate?OpenAgent";
+		public static const EDIT_AGENT:String = "/$moduleNameUpdate?OpenAgent";
+		public static const REMOVE_AGENT:String = "/$moduleNameDelete?OpenAgent";
 		
 		public function $moduleNameServices()
 		{

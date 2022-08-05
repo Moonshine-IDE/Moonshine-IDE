@@ -108,10 +108,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 					switch (field.type)
 					{
 						case FormBuilderFieldType.DATETIME:
-							tmpContents.push("\n"+ field.name +": "+ form.formName +"VO.getToRequestMultivalueDateString("+ field.name +")");
+							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? \"[\"+ "+ form.formName +"VO.getToRequestMultivalueDateString(this."+ field.name +") +\"]\" : null");
 							break;
 						default:
-							tmpContents.push("\n"+ field.name +": this."+ field.name +".source.join(\",\")");
+							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? \"[\"+ "+ field.name +".source.join(\",\") +\"]\" : null");
 							break;
 					}
 				}
@@ -120,7 +120,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 					switch (field.type)
 					{
 						case FormBuilderFieldType.DATETIME:
-							tmpContents.push("\n"+ field.name +": "+ form.formName +"VO.getToRequestDateString("+ field.name +")");
+							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? "+ form.formName +"VO.getToRequestDateString(this."+ field.name +") : null");
 							break;
 						default:
 							tmpContents.push("\n"+ field.name +": this."+ field.name);
@@ -129,7 +129,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 				}
 			}
 
-			return ("return {\n\t"+ tmpContents.join(",") + "\n};");
+			return ("var tmpRequestObject:Object = {\n\t"+ tmpContents.join(",") + "\n};\n" +
+					"if (DominoUniversalID) tmpRequestObject.DominoUniversalID = DominoUniversalID;\n" +
+					"return tmpRequestObject;");
 		}
 
 		private function generateNewVOfromObject():String
@@ -145,7 +147,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 							tmpContent += "if (\""+ field.name +"\" in value){\ttmpVO."+ field.name +" = "+ form.formName +"VO.parseFromRequestMultivalueDateString(value."+ field.name +");\t}\n";
 							break;
 						default:
-							tmpContent += "if (\""+ field.name +"\" in value){\ttmpVO."+ field.name +" = value."+ field.name +".split(\",\");\t}\n";
+							tmpContent += "if (\""+ field.name +"\" in value){\ttmpVO."+ field.name +" = new ArrayList(value."+ field.name +");\t}\n";
 							break;
 					}
 				}
@@ -162,7 +164,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 					}
 				}
 			}
-			tmpContent += "if (\"DominoUniversalID\" in value){\ttmpVO.dominoUniversalID = value.DominoUniversalID;\t}\n";
+			tmpContent += "if (\"DominoUniversalID\" in value){\ttmpVO.DominoUniversalID = value.DominoUniversalID;\t}\n";
 
 			return tmpContent;
 		}

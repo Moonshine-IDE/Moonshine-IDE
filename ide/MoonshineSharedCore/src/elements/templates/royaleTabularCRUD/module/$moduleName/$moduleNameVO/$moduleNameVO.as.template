@@ -5,7 +5,7 @@ package views.modules.$moduleName.$moduleNameVO
     [Bindable]
 	public class $moduleNameVO  
 	{
-	    public var dominoUniversalID:String;
+	    public var DominoUniversalID:String;
 
 	    %PropertyStatements%
 
@@ -30,7 +30,7 @@ package views.modules.$moduleName.$moduleNameVO
             var dates:Array = [];
             for (var i:int; i < value.length; i++)
             {
-                dates.push(getToRequestDateString(value[i] as Date));
+                dates.push(getToRequestDateString(value.getItemAt(i) as Date));
             }
 
             return dates.join(",");
@@ -38,12 +38,13 @@ package views.modules.$moduleName.$moduleNameVO
 
         public static function getToRequestDateString(value:Date):String
         {
-            return value.toISOString();
+            var dateString:String = value.toISOString();
+            return dateString;
         }
 
         public static function parseFromRequestMultivalueDateString(value:Array):ArrayList
         {
-            var dates:Array = new ArrayList();
+            var dates:ArrayList = new ArrayList();
             for (var i:int; i < value.length; i++)
             {
                 dates.addItem(parseFromRequestDateString(value[i]));
