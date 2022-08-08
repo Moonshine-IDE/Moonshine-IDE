@@ -15,6 +15,7 @@ package $packagePath
 
 		private var serviceDelegate:$moduleNameServices = new $moduleNameServices();
 		private var lastEditingIndex:int = -1;
+		private var lastEditingItem:$moduleNameVO;
 		
 		private static var _instance:$moduleNameProxy;
         public static function getInstance():$moduleNameProxy
@@ -75,7 +76,7 @@ package $packagePath
                 if (Constants.AGENT_BASE_URL)
             	{
             		lastEditingIndex = items.getItemIndex(selectedItem);
-            		selectedItem = value;
+            		lastEditingItem = value;
             		this.serviceDelegate.update$moduleName(value.toRequestObject(), on$moduleNameUpdated, on$moduleNameUpdateFailed);
             	}
             	else
@@ -245,8 +246,8 @@ package $packagePath
                 var json:Object = JSON.parse(fetchedData as String);
                 if (!json.errorMessage)
                 {
-                    items[lastEditingIndex] = selectedItem;
-                    selectedItem = null;
+                    items[lastEditingIndex] = lastEditingItem;
+                    lastEditingItem = null;
                     lastEditingIndex = -1;
                     this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
                 }

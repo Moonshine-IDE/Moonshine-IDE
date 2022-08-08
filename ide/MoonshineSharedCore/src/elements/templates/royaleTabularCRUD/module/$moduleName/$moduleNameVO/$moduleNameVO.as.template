@@ -33,7 +33,7 @@ package views.modules.$moduleName.$moduleNameVO
                 dates.push(getToRequestDateString(value.getItemAt(i) as Date));
             }
 
-            return dates.join(",");
+            return JSON.stringify(dates);
         }
 
         public static function getToRequestDateString(value:Date):String

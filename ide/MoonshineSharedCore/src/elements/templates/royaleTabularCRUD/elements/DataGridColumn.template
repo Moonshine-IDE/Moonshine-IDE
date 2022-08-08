@@ -1,1 +1,1 @@
-<j:DataGridColumn label="%label%" dataField="%dataField%" columnWidth="200"/>
+<j:DataGridColumn label="%label%" dataField="%dataField%" %itemRenderer% columnWidth="200"/>

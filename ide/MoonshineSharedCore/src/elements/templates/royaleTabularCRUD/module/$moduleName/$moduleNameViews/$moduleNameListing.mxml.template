@@ -101,7 +101,7 @@
 				<j:IconButton text="Back"
 								click="onBackRequest(event)">
 					<j:icon>
-						<js:MaterialIcon text="{MaterialIconType.REFRESH}" />
+						<js:MaterialIcon text="{MaterialIconType.ARROW_BACK}" />
 					</j:icon>
 				</j:IconButton>
 			</j:HGroup>

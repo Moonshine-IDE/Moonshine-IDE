@@ -23,6 +23,7 @@
 			private function onInitCompletes():void
             {
                 proxy.addEventListener($moduleNameProxy.EVENT_ITEM_SELECTED, onItemBeingSelected);
+                proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onItemBeingUpdated);
             }
 
             private function onItemBeingSelected(event:Event):void
@@ -42,6 +43,10 @@
 			private function onFormValid(event:Event):void
             {
                 %ComponentValuesToProxyCodes%
+            }
+
+            private function onItemBeingUpdated(event:Event):void
+            {
                 onBackRequest(null);
             }
 
