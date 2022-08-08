@@ -111,7 +111,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? "+ form.formName +"VO.getToRequestMultivalueDateString(this."+ field.name +") : null");
 							break;
 						default:
-							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? "+ field.name +".source.join(\",\") : null");
+							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? JSON.stringify("+ field.name +".source) : null");
 							break;
 					}
 				}
