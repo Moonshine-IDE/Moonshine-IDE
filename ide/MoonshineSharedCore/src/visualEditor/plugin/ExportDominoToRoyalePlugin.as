@@ -187,7 +187,7 @@ package visualEditor.plugin
                         convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator, "");
 
                 //Replace white spaces in file for conversion purposes
-                destinationFilePath = destinationFilePath.replace(/\s/, "");
+                destinationFilePath = destinationFilePath.replace(/[\s_\(\)]/, "");
                 var extensionIndex:int = destinationFilePath.lastIndexOf(convertedFile.fileBridge.extension);
                 if (extensionIndex > -1)
                 {
