@@ -12,6 +12,7 @@
 	<fx:Script>
 		<![CDATA[
 			import classes.events.ScreenEvent;
+			import classes.events.ErrorEvent;
             import org.apache.royale.jewel.Snackbar;
             import org.apache.royale.events.Event;
 			%ImportStatements%
@@ -24,6 +25,7 @@
             {
                 proxy.addEventListener($moduleNameProxy.EVENT_ITEM_SELECTED, onItemBeingSelected);
                 proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onItemBeingUpdated);
+                proxy.addEventListener(ErrorEvent.SERVER_ERROR, onSubmitError);
             }
 
             private function onItemBeingSelected(event:Event):void
@@ -42,6 +44,8 @@
 
 			private function onFormValid(event:Event):void
             {
+                resetErrorMessage();
+
                 %ComponentValuesToProxyCodes%
             }
 
@@ -50,9 +54,31 @@
                 onBackRequest(null);
             }
 
+            private function onSubmitError(event:ErrorEvent):void
+            {
+                lblError.visible = true;
+                lblError.text = event.errorMessage;
+                if (event.errors && (event.errors is Array))
+                {
+                    lblError.text += "\n";
+                    for (var i:int=0; i < event.errors.length; i++)
+                    {
+                        lblError.text += "\n"+ event.errors[i].message;
+                    }
+                }
+            }
+
             private function reset():void
             {
+                resetErrorMessage();
+
                 %FormResetCodes%
+            }
+
+            private function resetErrorMessage():void
+            {
+                lblError.text = null;
+                lblError.visible = false;
             }
 			
 		]]>
@@ -73,7 +99,10 @@
 		</j:beads>
 		%FormItems%
 	</j:Form>
-	
+
+	<j:Label localId="lblError"
+	    multiline="true" className="errorText" visible="false"/>
+
 	<j:Spacer height="20"/>
 	
 	<j:HGroup itemsHorizontalAlign="itemsCenter" gap="3" percentWidth="100">

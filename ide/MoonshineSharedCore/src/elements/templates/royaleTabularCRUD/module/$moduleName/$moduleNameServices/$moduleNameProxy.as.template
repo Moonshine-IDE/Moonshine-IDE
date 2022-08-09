@@ -5,6 +5,8 @@ package $packagePath
     import classes.vo.Constants;
     import org.apache.royale.jewel.Snackbar;
 	import org.apache.royale.net.events.FaultEvent;
+	import classes.events.ErrorEvent;
+	import classes.utils.Utils;
     %ImportStatements%
 
 	public class $moduleNameProxy extends EventDispatcher
@@ -64,6 +66,7 @@ package $packagePath
         {
             if (Constants.AGENT_BASE_URL)
             {
+                Utils.setBusy();
                 this.serviceDelegate.get$moduleNameList(on$moduleNameListLoaded, on$moduleNameListLoadFailed);
             }
         }
@@ -77,6 +80,7 @@ package $packagePath
             	{
             		lastEditingIndex = items.getItemIndex(selectedItem);
             		lastEditingItem = value;
+            		Utils.setBusy();
             		this.serviceDelegate.update$moduleName(value.toRequestObject(), on$moduleNameUpdated, on$moduleNameUpdateFailed);
             	}
             	else
@@ -89,6 +93,7 @@ package $packagePath
             {
                 if (Constants.AGENT_BASE_URL)
             	{
+            		Utils.setBusy();
             		this.serviceDelegate.addNew$moduleName(value.toRequestObject(), on$moduleNameCreated, on$moduleNameCreationFailed);
             	}
             	else
@@ -104,6 +109,7 @@ package $packagePath
             if (Constants.AGENT_BASE_URL)
             {
                 selectedItem = value;
+                Utils.setBusy();
                 this.serviceDelegate.remove$moduleName(
                     {DominoUniversalID: value.DominoUniversalID},
                     on$moduleNameRemoved,
@@ -119,6 +125,7 @@ package $packagePath
 
         private function on$moduleNameListLoaded(event:Event):void
         {
+            Utils.removeBusy();
             var fetchedData:String = event.target["data"];
             if (fetchedData)
             {
@@ -140,7 +147,13 @@ package $packagePath
                 }
                 else
                 {
-                    Snackbar.show("Loading lists of new $moduleName failed!\n"+ json.errorMessage, 4000, null);
+                    this.dispatchEvent(
+                        new ErrorEvent(
+                            ErrorEvent.SERVER_ERROR,
+                            json.errorMessage,
+                            ("validationErrors" in json) ? json.validationErrors : null
+                        )
+                    );
                 }
 
                 /*if (!sessionCheckProxy.checkUserSession(xmlData))
@@ -177,11 +190,13 @@ package $packagePath
 
         private function on$moduleNameListLoadFailed(event:FaultEvent):void
         {
+            Utils.removeBusy();
             Snackbar.show("Loading lists of new $moduleName failed!\n"+ event.message.toLocaleString(), 8000, null);
         }
         
         private function on$moduleNameCreated(event:Event):void
 		{
+			Utils.removeBusy();
 			var fetchedData:String = event.target["data"];
 			if (fetchedData)
 			{
@@ -198,7 +213,13 @@ package $packagePath
                 }
                 else
                 {
-                    Snackbar.show("Creation of new $moduleName failed!\n"+ json.errorMessage, 4000, null);
+                    this.dispatchEvent(
+                        new ErrorEvent(
+                            ErrorEvent.SERVER_ERROR,
+                            json.errorMessage,
+                            ("validationErrors" in json) ? json.validationErrors : null
+                        )
+                    );
                 }
 
 				/*if (!sessionCheckProxy.checkUserSession(xmlData))
@@ -235,11 +256,18 @@ package $packagePath
 		
 		private function on$moduleNameCreationFailed(event:FaultEvent):void
 		{
-			Snackbar.show("Creation of new $moduleName failed!\n"+ event.message.toLocaleString(), 8000, null);
+			Utils.removeBusy();
+			this.dispatchEvent(
+                new ErrorEvent(
+                    ErrorEvent.SERVER_ERROR,
+                    "Creation of new $moduleName failed!\n"+ event.message.toLocaleString()
+                )
+            );
 		}
 
 		private function on$moduleNameUpdated(event:Event):void
         {
+            Utils.removeBusy();
             var fetchedData:String = event.target["data"];
             if (fetchedData)
             {
@@ -253,7 +281,13 @@ package $packagePath
                 }
                 else
                 {
-                    Snackbar.show("Creation of new $moduleName failed!\n"+ json.errorMessage, 4000, null);
+                    this.dispatchEvent(
+                        new ErrorEvent(
+                            ErrorEvent.SERVER_ERROR,
+                            json.errorMessage,
+                            ("validationErrors" in json) ? json.validationErrors : null
+                        )
+                    );
                 }
 
                 /*if (!sessionCheckProxy.checkUserSession(xmlData))
@@ -290,11 +324,18 @@ package $packagePath
 
         private function on$moduleNameUpdateFailed(event:FaultEvent):void
         {
-            Snackbar.show("Update of new $moduleName failed!\n"+ event.message.toLocaleString(), 8000, null);
+            Utils.removeBusy();
+            this.dispatchEvent(
+                new ErrorEvent(
+                    ErrorEvent.SERVER_ERROR,
+                    "Update of $moduleName failed!\n"+ event.message.toLocaleString()
+                )
+            );
         }
 
 		private function on$moduleNameRemoved(event:Event):void
         {
+            Utils.removeBusy();
             var fetchedData:String = event.target["data"];
             if (fetchedData)
             {
@@ -310,7 +351,13 @@ package $packagePath
                 }
                 else
                 {
-                    Snackbar.show("Deletion of $moduleName failed!\n"+ json.errorMessage, 4000, null);
+                    this.dispatchEvent(
+                        new ErrorEvent(
+                            ErrorEvent.SERVER_ERROR,
+                            json.errorMessage,
+                            ("validationErrors" in json) ? json.validationErrors : null
+                        )
+                    );
                 }
 
                 /*if (!sessionCheckProxy.checkUserSession(xmlData))
@@ -347,7 +394,13 @@ package $packagePath
 
         private function on$moduleNameRemoveFailed(event:FaultEvent):void
         {
-            Snackbar.show("Deletion of $moduleName failed!\n"+ event.message.toLocaleString(), 8000, null);
+            Utils.removeBusy();
+            this.dispatchEvent(
+                new ErrorEvent(
+                    ErrorEvent.SERVER_ERROR,
+                    "Removal of $moduleName failed!\n"+ event.message.toLocaleString()
+                )
+            );
         }
 	}
 }

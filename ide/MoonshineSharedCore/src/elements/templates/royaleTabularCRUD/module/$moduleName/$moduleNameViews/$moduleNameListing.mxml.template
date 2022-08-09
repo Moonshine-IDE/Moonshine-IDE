@@ -34,7 +34,7 @@
 
             private function onInitCompletes():void
             {
-                proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onItemBeingAdded);
+                proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onItemBeingUpdated);
                 dgItems.addEventListener(DeleteItemEvent.DELETE_TABLE_ITEM, onItemDeletionRequest);
             }
 
@@ -67,9 +67,9 @@
                 proxy.removeItem(item);
             }
             
-            private function onItemBeingAdded(event:Event):void
+            private function onItemBeingUpdated(event:Event):void
             {
-                Snackbar.show("Request submitted successfully.", 4000, null);
+                //Snackbar.show("Request submitted successfully.", 4000, null);
             }
 			
 		]]>
