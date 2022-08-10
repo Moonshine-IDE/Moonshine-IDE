@@ -1689,18 +1689,20 @@ package actionScripts.utils
 
 		public static function getVisualEditorSourceFile(fw:FileWrapper):FileLocation
 		{
-			var as3ProjectVO:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;
-			if (as3ProjectVO && as3ProjectVO.isVisualEditorProject)
-			{
-				var veSourcePathFile:String = fw.file.fileBridge.nativePath
-						.replace(as3ProjectVO.sourceFolder.fileBridge.nativePath,
-								as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath);
-				veSourcePathFile = veSourcePathFile.replace(/\.(mxml|xhtml|form)$/, ".xml");
+			const as3ProjectVO:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;			
+			if (!as3ProjectVO || !as3ProjectVO.isVisualEditorProject) return null;
+			
+			const extensionPattern: RegExp = /\.(mxml|xhtml|form)$/;
+			const veSourcePathFile:String = fw.file.fileBridge.nativePath;
+			if(!veSourcePathFile.match(extensionPattern)) return null
+			
+			const veOutputPathFile:String = veSourcePathFile
+				.replace(
+					as3ProjectVO.sourceFolder.fileBridge.nativePath,
+					as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath)
+				.replace(extensionPattern, ".xml");
 
-				return new FileLocation(veSourcePathFile);
-			}
-
-			return null;
+			return new FileLocation(veOutputPathFile);
 		}
 
         private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
