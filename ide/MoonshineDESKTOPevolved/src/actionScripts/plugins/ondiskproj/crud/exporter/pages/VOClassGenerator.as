@@ -108,10 +108,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 					switch (field.type)
 					{
 						case FormBuilderFieldType.DATETIME:
-							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? "+ form.formName +"VO.getToRequestMultivalueDateString(this."+ field.name +") : []");
+							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? "+ form.formName +"VO.getToRequestMultivalueDateString(this."+ field.name +") : \"[]\"");
 							break;
 						default:
-							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? JSON.stringify("+ field.name +".source) : []");
+							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? JSON.stringify("+ field.name +".source) : \"[]\"");
 							break;
 					}
 				}
