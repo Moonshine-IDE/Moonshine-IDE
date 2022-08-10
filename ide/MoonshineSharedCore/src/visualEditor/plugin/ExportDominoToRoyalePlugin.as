@@ -335,7 +335,7 @@ package visualEditor.plugin
             classContent += getVOContentClass(componentData, "") + "\n";
             classContent += getVOCopyMethod(componentData, className, copyMethod);
             classContent += "   return o;\n";
-            classContent += "}\n";
+            classContent += "       }\n";
 
             classContent += "   } \n}";
 
@@ -391,7 +391,7 @@ package visualEditor.plugin
 
                 if (!data.fields && data.name)
                 {
-                    content += "o." + data.name + " = this." + data.name + ";\n          ";
+                    content += "        o." + data.name + " = this." + data.name + ";\n          ";
                 }
                 else
                 {
@@ -410,7 +410,7 @@ package visualEditor.plugin
                         }
                         else
                         {
-                            content += "o." + field.name + " = this." + field.name + ";\n        ";
+                            content += "        o." + field.name + " = this." + field.name + ";\n        ";
                         }
                     }
                 }
@@ -430,7 +430,13 @@ package visualEditor.plugin
                 fieldValue = "\"" + fieldValue + "\"";
             }
 
-            var publicVar:String = "public var " + data.name + ":" + fieldType + " = " +
+            var publicVar:String = "";
+            if (data.fieldComment)
+            {
+                publicVar = "/*" + data.fieldComment + "*/\n        ";
+            }
+
+            publicVar += "public var " + data.name + ":" + fieldType + " = " +
                     fieldValue + ";\n";
 
             return publicVar;
