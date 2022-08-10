@@ -186,6 +186,8 @@ package visualEditor.plugin
                                 "pages" + exportedProject.sourceFolder.fileBridge.separator, "") :
                         convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator, "");
 
+                //Replace white spaces in file for conversion purposes
+                destinationFilePath = destinationFilePath.replace(/[\s_\(\)]/, "");
                 var extensionIndex:int = destinationFilePath.lastIndexOf(convertedFile.fileBridge.extension);
                 if (extensionIndex > -1)
                 {
@@ -333,7 +335,7 @@ package visualEditor.plugin
             classContent += getVOContentClass(componentData, "") + "\n";
             classContent += getVOCopyMethod(componentData, className, copyMethod);
             classContent += "   return o;\n";
-            classContent += "}\n";
+            classContent += "       }\n";
 
             classContent += "   } \n}";
 
@@ -389,7 +391,7 @@ package visualEditor.plugin
 
                 if (!data.fields && data.name)
                 {
-                    content += "o." + data.name + " = this." + data.name + ";\n          ";
+                    content += "        o." + data.name + " = this." + data.name + ";\n          ";
                 }
                 else
                 {
@@ -408,7 +410,7 @@ package visualEditor.plugin
                         }
                         else
                         {
-                            content += "o." + field.name + " = this." + field.name + ";\n        ";
+                            content += "        o." + field.name + " = this." + field.name + ";\n        ";
                         }
                     }
                 }
@@ -428,7 +430,13 @@ package visualEditor.plugin
                 fieldValue = "\"" + fieldValue + "\"";
             }
 
-            var publicVar:String = "public var " + data.name + ":" + fieldType + " = " +
+            var publicVar:String = "";
+            if (data.fieldComment)
+            {
+                publicVar = "/*" + data.fieldComment + "*/\n        ";
+            }
+
+            publicVar += "public var " + data.name + ":" + fieldType + " = " +
                     fieldValue + ";\n";
 
             return publicVar;

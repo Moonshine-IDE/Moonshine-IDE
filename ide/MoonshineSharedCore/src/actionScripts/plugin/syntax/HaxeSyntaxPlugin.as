@@ -34,9 +34,14 @@ package actionScripts.plugin.syntax
 	import moonshine.editor.text.syntax.parser.HaxeLineParser;
 	import moonshine.editor.text.TextEditor;
 	import moonshine.editor.text.utils.AutoClosingPair;
+	import actionScripts.plugin.texteditor.events.TextEditorSettingsEvent;
+	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	
 	public class HaxeSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
 	{
+		private static const FILE_EXTENSION_HX:String = "hx";
+
 		override public function get name():String 			{return "Haxe Syntax Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for Haxe.";}
@@ -46,37 +51,98 @@ package actionScripts.plugin.syntax
 		{ 
 			super.activate();
 			dispatcher.addEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
+			dispatcher.addEventListener(TextEditorSettingsEvent.SYNTAX_COLOR_SCHEME_CHANGE, handleSyntaxColorChange);
+			dispatcher.addEventListener(TextEditorSettingsEvent.FONT_SIZE_CHANGE, handleFontSizeChange);
 		}
 
 		override public function deactivate():void
 		{ 
 			super.deactivate();
 			dispatcher.removeEventListener(EditorPluginEvent.EVENT_EDITOR_OPEN, handleEditorOpen);
+			dispatcher.removeEventListener(TextEditorSettingsEvent.SYNTAX_COLOR_SCHEME_CHANGE, handleSyntaxColorChange);
+			dispatcher.removeEventListener(TextEditorSettingsEvent.FONT_SIZE_CHANGE, handleFontSizeChange);
+		}
+		
+		private function isExpectedType(type:String):Boolean
+		{
+			return type == FILE_EXTENSION_HX;
+		}
+
+		private function getColorSettings():SyntaxColorSettings
+		{
+			var colorSettings:SyntaxColorSettings;
+			switch(model.syntaxColorScheme)
+			{
+				case TextEditorPlugin.SYNTAX_COLOR_SCHEME_DARK:
+					return SyntaxColorSettings.defaultDark();
+				case TextEditorPlugin.SYNTAX_COLOR_SCHEME_MONOKAI:
+					return SyntaxColorSettings.monokai();
+				default: // light
+					return SyntaxColorSettings.defaultLight();
+			}
+		}
+
+		private function applySyntaxColorSettings(textEditor:TextEditor, colorSettings:SyntaxColorSettings):void
+		{
+			var formatBuilder:HaxeSyntaxFormatBuilder = new HaxeSyntaxFormatBuilder();
+			formatBuilder.setFontSettings(new SyntaxFontSettings(Settings.font.defaultFontFamily, Settings.font.defaultFontSize));
+			formatBuilder.setColorSettings(colorSettings);
+			var formats:IMap = formatBuilder.build();
+			textEditor.setParserAndTextStyles(new HaxeLineParser(), formats);
+			textEditor.embedFonts = Settings.font.defaultFontEmbedded;
+		}
+
+		private function initializeTextEditor(textEditor:TextEditor):void
+		{
+			var colorSettings:SyntaxColorSettings = getColorSettings();
+			applySyntaxColorSettings(textEditor, colorSettings);
+			textEditor.brackets = [["{", "}"], ["[", "]"], ["(", ")"]];
+			textEditor.autoClosingPairs = [
+				new AutoClosingPair("{", "}"),
+				new AutoClosingPair("[", "]"),
+				new AutoClosingPair("(", ")"),
+				new AutoClosingPair("'", "'"),
+				new AutoClosingPair("\"", "\"")
+			];
+			textEditor.lineComment = "//";
+			textEditor.blockComment = ["/*", "*/"];
 		}
 		
 		private function handleEditorOpen(event:EditorPluginEvent):void
 		{
-			if (event.fileExtension == "hx")
+			if (isExpectedType(event.fileExtension))
 			{
-				var formatBuilder:HaxeSyntaxFormatBuilder = new HaxeSyntaxFormatBuilder();
-				formatBuilder.setFontSettings(new SyntaxFontSettings(Settings.font.defaultFontFamily, Settings.font.defaultFontSize));
-				formatBuilder.setColorSettings(new SyntaxColorSettings());
-				var formats:IMap = formatBuilder.build();
 				var textEditor:TextEditor = event.editor;
-				textEditor.brackets = [["{", "}"], ["[", "]"], ["(", ")"]];
-				textEditor.autoClosingPairs = [
-					new AutoClosingPair("{", "}"),
-					new AutoClosingPair("[", "]"),
-					new AutoClosingPair("(", ")"),
-					new AutoClosingPair("'", "'"),
-					new AutoClosingPair("\"", "\"")
-				];
-				textEditor.lineComment = "//";
-				textEditor.blockComment = ["/*", "*/"];
-				textEditor.setParserAndTextStyles(new HaxeLineParser(), formats);
-				textEditor.embedFonts = Settings.font.defaultFontEmbedded;
+				initializeTextEditor(textEditor);
 			}
 		}
-		
+
+		private function applyFontAndSyntaxSettingsToAll():void
+		{
+			var colorSettings:SyntaxColorSettings = getColorSettings();
+			var editorCount:int = model.editors.length;
+			for(var i:int = 0; i < editorCount; i++)
+			{
+				var editor:BasicTextEditor = model.editors.getItemAt(i) as BasicTextEditor;
+				if (!editor)
+				{
+					continue;
+				}
+				if (editor.currentFile && isExpectedType(editor.currentFile.fileBridge.extension))
+				{
+					applySyntaxColorSettings(editor.getEditorComponent(), colorSettings);
+				}
+			}
+		}
+
+		private function handleSyntaxColorChange(event:TextEditorSettingsEvent):void
+		{
+			applyFontAndSyntaxSettingsToAll();
+		}
+
+		private function handleFontSizeChange(event:TextEditorSettingsEvent):void
+		{
+			applyFontAndSyntaxSettingsToAll();
+		}
 	}
 }
