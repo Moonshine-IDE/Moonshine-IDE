@@ -421,8 +421,8 @@ package actionScripts.plugins.as3project.importer
 										for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
 										{
 											if(formula.text()){
-											 if(XMLUtils.specialCharacterCheck(formula.text()))	{
-												var encodeBase64: String =  StringHelper.base64Decode(formula.text());
+											var encodeBase64: String =  StringHelper.base64Decode(formula.text());
+											 if(!XMLUtils.specialCharacterCheck(encodeBase64))	{
 												var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
 												formula.parent().appendChild(newFormulaNode);
 												delete formula.parent().children()[formula.childIndex()];
