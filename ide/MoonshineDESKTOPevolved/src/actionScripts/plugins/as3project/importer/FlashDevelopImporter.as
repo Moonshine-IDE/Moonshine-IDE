@@ -44,6 +44,7 @@ package actionScripts.plugins.as3project.importer
 	import utils.StringHelper;
 
 	import global.domino.DominoGlobals;
+	import actionScripts.utils.XMLUtils;
 
 
 
@@ -416,16 +417,18 @@ package actionScripts.plugins.as3project.importer
 											
 										}
 
-										//fix the formula base64 code to normal UTF-8 code 
-										// for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
-										// {
-										// 	if(formula.text()){
-										// 		var encodeBase64: String =  StringHelper.base64Decode(formula.text());
-										// 		var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
-										// 		formula.parent().appendChild(newFormulaNode);
-										// 		delete formula.parent().children()[formula.childIndex()];
-										// 	}
-										// }
+										//fix the formula base64 code to normal UTF-8 code , when it contain some speacical string
+										for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
+										{
+											if(formula.text()){
+											 if(XMLUtils.specialCharacterCheck(formula.text()))	{
+												var encodeBase64: String =  StringHelper.base64Decode(formula.text());
+												var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
+												formula.parent().appendChild(newFormulaNode);
+												delete formula.parent().children()[formula.childIndex()];
+											 }
+											}
+										}
 										//fix hidewhen
 										var richtextNodeList:XMLList=dominoXml..richtext;
 										var richtextNode=richtextNodeList[0];
