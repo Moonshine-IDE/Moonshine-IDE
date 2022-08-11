@@ -433,7 +433,7 @@ package visualEditor.plugin
             var publicVar:String = "";
             if (data.fieldComment)
             {
-                publicVar = "/*" + data.fieldComment + "*/\n        ";
+                publicVar = "/* FormulaDefaultValue: " + data.fieldComment + "*/\n        ";
             }
 
             publicVar += "public var " + data.name + ":" + fieldType + " = " +
