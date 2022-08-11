@@ -46,6 +46,8 @@ package actionScripts.plugins.as3project.importer
 	import global.domino.DominoGlobals;
 
 
+
+
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
@@ -325,6 +327,8 @@ package actionScripts.plugins.as3project.importer
 								_fileStreamMoonshine.open(xml, FileMode.READ);
 								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
 								var internalxml:XML = new XML(data);
+
+							
 								
 								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
 								if(surfaceModel!=null){
@@ -413,15 +417,15 @@ package actionScripts.plugins.as3project.importer
 										}
 
 										//fix the formula base64 code to normal UTF-8 code 
-										for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
-										{
-											if(formula.text()){
-												var encodeBase64: String =  StringHelper.base64Decode(formula.text());
-												var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
-												formula.parent().appendChild(newFormulaNode);
-												delete formula.parent().children()[formula.childIndex()];
-											}
-										}
+										// for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
+										// {
+										// 	if(formula.text()){
+										// 		var encodeBase64: String =  StringHelper.base64Decode(formula.text());
+										// 		var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
+										// 		formula.parent().appendChild(newFormulaNode);
+										// 		delete formula.parent().children()[formula.childIndex()];
+										// 	}
+										// }
 										//fix hidewhen
 										var richtextNodeList:XMLList=dominoXml..richtext;
 										var richtextNode=richtextNodeList[0];
