@@ -123,7 +123,9 @@ package visualEditor.plugin
 
             var veSrcFiles:Array = visualEditorSrcFolder.fileBridge.getDirectoryListing();
 
-            return veSrcFiles;
+            return veSrcFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                return item.extension == "xml";
+            });
         }
 
         private function getXmlConversion(file:FileLocation):XML
@@ -433,7 +435,7 @@ package visualEditor.plugin
             var publicVar:String = "";
             if (data.fieldComment)
             {
-                publicVar = "/*" + data.fieldComment + "*/\n        ";
+                publicVar = "/* FormulaDefaultValue: " + data.fieldComment + "*/\n        ";
             }
 
             publicVar += "public var " + data.name + ":" + fieldType + " = " +

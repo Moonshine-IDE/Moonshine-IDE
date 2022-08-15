@@ -1690,11 +1690,17 @@ package actionScripts.utils
 		public static function getVisualEditorSourceFile(fw:FileWrapper):FileLocation
 		{
 			const as3ProjectVO:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;			
-			if (!as3ProjectVO || !as3ProjectVO.isVisualEditorProject) return null;
+			if (!as3ProjectVO || !as3ProjectVO.isVisualEditorProject) 
+			{
+				return null;
+			}
 			
 			const extensionPattern: RegExp = /\.(mxml|xhtml|form)$/;
 			const veSourcePathFile:String = fw.file.fileBridge.nativePath;
-			if(!veSourcePathFile.match(extensionPattern)) return null
+			if(!veSourcePathFile.match(extensionPattern))
+			{
+				return null;
+			}
 			
 			const veOutputPathFile:String = veSourcePathFile
 				.replace(
