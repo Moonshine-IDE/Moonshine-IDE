@@ -49,6 +49,8 @@ package actionScripts.plugins.as3project.importer
 
 
 
+
+
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
@@ -315,25 +317,53 @@ package actionScripts.plugins.as3project.importer
 				//2.start convert domino 
 				//2.1 load xml from visualeditor-src and convert it to dxl
 				var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
-				if(xmlFileLocation.fileBridge.exists){
+				var subformXmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
+				
+				if(xmlFileLocation.fileBridge.exists || subformXmlFileLocation.fileBridge.exists){
 					var directory:Array = xmlFileLocation.fileBridge.getDirectoryListing();
+					var subdirectory:Array = subformXmlFileLocation.fileBridge.getDirectoryListing();
+					if(subdirectory){
+						for each (var subxml:File in subdirectory)
+						{
+							directory.push(subxml);
+						}
+					}
+					//add subfrom xml into directory ;
+					
+
 						for each (var xml:File in directory)
 						{
 							if (xml.extension == "xml" ) {
 								var xmlNameextensionIndex:int = xml.name.lastIndexOf("xml");
 								var xmlName:String=xml.name.substring(0, xmlNameextensionIndex - 1);
-		
-								var dominoXml:XML = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
+								var xmlNavePath:String = xml.nativePath;
+
+								var dominoXml:XML;
+								if(xmlNavePath.indexOf("subforms")>=0){
+									dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
+								} else {
+									dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
+								}
+								
+								
 								var _fileStreamMoonshine:FileStream = new FileStream();
 								_fileStreamMoonshine.open(xml, FileMode.READ);
 								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
 								var internalxml:XML = new XML(data);
+								
 
 							
 								
 								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
 								if(surfaceModel!=null){
-									var dominoMainContainer:XML = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
+									var dominoMainContainer:XML ;
+									if(xmlNavePath.indexOf("subforms")>=0){
+										dominoMainContainer= MainApplicationCodeUtils.getDominPageMainContainerTag(dominoXml);
+									}else{
+										dominoMainContainer = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
+									}									
+									
+									
 									
 									//convert to dxl
 									var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
@@ -421,9 +451,9 @@ package actionScripts.plugins.as3project.importer
 										for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
 										{
 											if(formula.text()){
-											var encodeBase64: String =  StringHelper.base64Decode(formula.text());
-											 if(!XMLUtils.specialCharacterCheck(encodeBase64))	{
-												var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
+											var decodeBase64: String =  StringHelper.base64Decode(formula.text());
+											 if(!XMLUtils.specialCharacterCheck(decodeBase64))	{
+												var newFormulaNode:XML = new XML("<formula>"+decodeBase64+"</formula>");
 												formula.parent().appendChild(newFormulaNode);
 												delete formula.parent().children()[formula.childIndex()];
 											 }
@@ -510,7 +540,15 @@ package actionScripts.plugins.as3project.importer
 									var extensionIndex:int = xml.name.lastIndexOf(xml.extension);
 									//write the dxl to traget form file
 									var xmlFileName:String=xml.name.substring(0, extensionIndex - 1);
-									var targetFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
+									var targetFileLocation:FileLocation ;
+
+									if(xmlNavePath.indexOf("subforms")>=0){
+										targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms"+File.separator+xmlFileName+".subform");
+									}else{
+										targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
+									}
+									
+									
 									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
 									var _targetfileStreamMoonshine:FileStream = new FileStream();
 									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
