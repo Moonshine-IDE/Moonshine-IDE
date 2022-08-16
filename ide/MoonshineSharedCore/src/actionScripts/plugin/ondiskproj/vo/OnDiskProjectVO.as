@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.ondiskproj.vo
 {
+	import actionScripts.plugin.settings.vo.StringSetting;
+
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.factory.FileLocation;
@@ -81,6 +83,10 @@ package actionScripts.plugin.ondiskproj.vo
 		public function get jdkType():String									{	return _jdkType;	}
 		public function set jdkType(value:String):void							{	_jdkType = value;	}
 
+		private var _dominoBaseAgentURL:String;
+		public function get dominoBaseAgentURL():String							{	return _dominoBaseAgentURL;	}
+		public function set dominoBaseAgentURL(value:String):void				{	_dominoBaseAgentURL = value;}
+
 		public function OnDiskProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
 		{
 			super(folder, projectName, updateToTreeView);
@@ -101,6 +107,9 @@ package actionScripts.plugin.ondiskproj.vo
 						new PathSetting(this, "visualEditorExportPath", "Export Path", true, visualEditorExportPath)
 					])
 				),
+				new SettingsWrapper("Domino", new <ISetting>[
+					new StringSetting(this, "dominoBaseAgentURL", "Base Agent URL")
+				]),
 				new SettingsWrapper("Maven Build", Vector.<ISetting>([
 					new ProjectDirectoryPathSetting(this.mavenBuildOptions, this.projectFolder.nativePath, "buildPath", "Maven Build File", this.mavenBuildOptions.buildPath),
 					new BuildActionsListSettings(this.mavenBuildOptions, mavenBuildOptions.buildActions, "commandLine", "Build Actions"),

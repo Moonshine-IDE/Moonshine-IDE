@@ -19,6 +19,7 @@
 package actionScripts.plugins.ondiskproj.crud.exporter
 {
 	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.GlobalClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.VOClassGenerator;
@@ -158,6 +159,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		{
 			new MainContentPageGenerator(this.project, formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
 			new DashboardPageGenerator(this.project, formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
+			new GlobalClassGenerator(this.project, classReferenceSettings, onProjectFilesGenerationCompletes);
 		}
 
 		protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void
@@ -166,7 +168,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 			if (waitingCount == completionCount)
 			{
-				waitingCount = 2;
+				waitingCount = 3;
 				completionCount = 0;
 
 				// project specific generation

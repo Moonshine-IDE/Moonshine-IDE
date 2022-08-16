@@ -153,6 +153,7 @@ package actionScripts.impls
 	import visualEditor.plugin.ExportDominoToRoyalePlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
+	import actionScripts.plugin.texteditor.TextEditorPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -286,7 +287,8 @@ package actionScripts.impls
 				ExternalEditorsPlugin,
 				VagrantPlugin,
 				FSWatcherPlugin,
-				LanguageServersMonitor
+				LanguageServersMonitor,
+				TextEditorPlugin
 			];
 
 			// conditional additions

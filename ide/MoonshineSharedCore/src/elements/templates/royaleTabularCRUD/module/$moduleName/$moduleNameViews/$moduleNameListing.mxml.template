@@ -21,18 +21,33 @@
 
 			[Bindable]
             private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
+            private var isItemsRequested:Boolean;
+
+            public function refresh():void
+            {
+                if (!isItemsRequested)
+                {
+                    onRefresh(null);
+                    isItemsRequested = true;
+                }
+            }
 
             private function onInitCompletes():void
             {
-                proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onItemBeingAdded);
-                dgItems.addEventListener(DeleteItemEvent.DELETE_TABLE_ITEM, onItemDeletionRequest)
+                proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onItemBeingUpdated);
+                dgItems.addEventListener(DeleteItemEvent.DELETE_TABLE_ITEM, onItemDeletionRequest);
             }
 
 			private function onAddNewRequest(event:MouseEvent):void
 			{
-			    this.dgItems.selectedItem = null;
+			    this.proxy.selectedItem = null;
 				dispatchEvent(new ScreenEvent(ScreenEvent.EVENT_NAVIGATE_TO, $moduleNameAddEdit.NAME));
 			}
+
+			private function onRefresh(event:MouseEvent):void
+            {
+                proxy.requestItems();
+            }
 			
 			private function onBackRequest(event:MouseEvent):void
 			{
@@ -52,9 +67,9 @@
                 proxy.removeItem(item);
             }
             
-            private function onItemBeingAdded(event:Event):void
+            private function onItemBeingUpdated(event:Event):void
             {
-                Snackbar.show("Request submitted successfully.", 4000, null);
+                //Snackbar.show("Request submitted successfully.", 4000, null);
             }
 			
 		]]>
@@ -77,7 +92,8 @@
 						<js:MaterialIcon text="{MaterialIconType.ADD}" />
 					</j:icon>
 				</j:IconButton>
-				<j:IconButton text="Refresh">
+				<j:IconButton text="Refresh"
+				                click="onRefresh(event)">
 					<j:icon>
 						<js:MaterialIcon text="{MaterialIconType.REFRESH}" />
 					</j:icon>
@@ -85,7 +101,7 @@
 				<j:IconButton text="Back"
 								click="onBackRequest(event)">
 					<j:icon>
-						<js:MaterialIcon text="{MaterialIconType.REFRESH}" />
+						<js:MaterialIcon text="{MaterialIconType.ARROW_BACK}" />
 					</j:icon>
 				</j:IconButton>
 			</j:HGroup>

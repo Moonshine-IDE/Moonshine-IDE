@@ -1,1 +1,1 @@
-<%Namespace%:%ViewComponentName% eventNavigateTo="onNavigationChangeRequest(event)"/>
+<%Namespace%:%ViewComponentName% localId="%ViewComponentName%_ID" eventNavigateTo="onNavigationChangeRequest(event)"/>

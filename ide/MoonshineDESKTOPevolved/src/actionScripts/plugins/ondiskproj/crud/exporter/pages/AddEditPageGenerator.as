@@ -89,14 +89,23 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var tmpContent:String = "";
 			for each (var field:DominoFormFieldVO in form.fields)
 			{
-				switch (field.type)
+				if (field.type == FormBuilderFieldType.NUMBER && !field.isMultiValue)
+				{
+					tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"proxy.selectedItem."+ field.name + ".toString();\n";
+				}
+				else
+				{
+					tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"proxy.selectedItem."+ field.name + ";\n";
+				}
+				/*switch (field.type)
 				{
 					case FormBuilderFieldType.NUMBER:
-						tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"proxy.selectedItem."+ field.name + ".toString();\n";
+						if (!field.isMultiValue)
+
 						break;
 					default:
-						tmpContent += RoyaleFormItem.assignValuesToComponentCode(field) +"proxy.selectedItem."+ field.name + ";\n";
-				}
+
+				}*/
 			}
 
 			return tmpContent;
@@ -104,11 +113,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 
 		private function generateAssignComponentsValuesToProxy():String
 		{
-			var tmpContent:String = "var submitObject:"+ form.formName +"VO = proxy.selectedItem ? proxy.selectedItem : new "+ form.formName +"VO();\n";
+			var tmpContent:String = "var submitObject:"+ form.formName +"VO = new "+ form.formName +"VO();\n";
 			for each (var field:DominoFormFieldVO in form.fields)
 			{
 				tmpContent += "submitObject."+ field.name + RoyaleFormItem.retrieveComponentValuesToCode(field) +";\n";
 			}
+
+			tmpContent += "if (proxy.selectedItem) submitObject.DominoUniversalID = proxy.selectedItem.DominoUniversalID;\n";
 			tmpContent += "proxy.submitItem(submitObject);\n";
 
 			return tmpContent;

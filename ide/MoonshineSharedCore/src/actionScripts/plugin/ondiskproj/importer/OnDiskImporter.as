@@ -94,9 +94,12 @@ package actionScripts.plugin.ondiskproj.importer
             project.postbuildCommands = SerializeUtil.deserializeString(data.postBuildCommand);
             project.postbuildAlways = SerializeUtil.deserializeBoolean(data.postBuildCommand.@alwaysRun);
 			if (data.options.option.hasOwnProperty('@jdkType')) 
-				project.jdkType = SerializeUtil.deserializeString(data.options.option.@jdkType); 
+				project.jdkType = SerializeUtil.deserializeString(data.options.option.@jdkType);
 
             project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
+
+			if (data.domino.option.hasOwnProperty('@dominoBaseAgentURL'))
+				project.dominoBaseAgentURL = SerializeUtil.deserializeString(data.domino.option.@dominoBaseAgentURL);
 			
 			if (project.targets.length > 0)
 			{
