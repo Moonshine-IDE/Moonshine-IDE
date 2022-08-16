@@ -16,20 +16,18 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.ui.editor
+package actionScripts.plugin.texteditor.events
 {
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+	import flash.events.Event;
 
-	import flash.events.KeyboardEvent;
-
-	public class HaxeTextEditor extends LanguageServerTextEditor
+	public class TextEditorSettingsEvent extends Event
 	{
-		public static const LANGUAGE_ID_HAXE:String = "haxe";
+		public static const SYNTAX_COLOR_SCHEME_CHANGE:String = "syntaxColorSchemeChange";
+		public static const FONT_SIZE_CHANGE:String = "fontSizeChange";
 
-		public function HaxeTextEditor(project:HaxeProjectVO, readOnly:Boolean = false)
+		public function TextEditorSettingsEvent(type:String)
 		{
-			super(LANGUAGE_ID_HAXE, project, readOnly);
-			editor.allowToggleBreakpoints = true;
+			super(type, false, false);
 		}
 	}
 }

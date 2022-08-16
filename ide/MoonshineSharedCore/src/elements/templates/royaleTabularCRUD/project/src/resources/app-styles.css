@@ -35,6 +35,12 @@
 	color: #666666;
 }
 
+.jewel.label.errorText {
+	fontSize: 14px;
+	color: #ff0000;
+	textAlign: center;
+}
+
 .bodyPadding {
 	padding: 20px;
 }

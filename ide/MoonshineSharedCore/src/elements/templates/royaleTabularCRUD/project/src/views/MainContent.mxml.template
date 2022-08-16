@@ -4,16 +4,28 @@
 						     xmlns:js="library://ns.apache.org/royale/basic"
 						     xmlns:html="library://ns.apache.org/royale/html"
 						     xmlns:general="views.general.*" 
-						     %Namespaces%>
+						     %Namespaces%
+						     initComplete="onInitCompleted()">
 	<fx:Script>
 		<![CDATA[
 			import classes.events.ScreenEvent;
+			import classes.utils.Utils;
 			
 			%ImportStatements%
-			
+
+			private function onInitCompleted():void
+            {
+            	Utils.mainContentView = this;
+            }
+
 			private function onNavigationChangeRequest(event:ScreenEvent):void
 			{
 				mainContent.selectedContent = event.screenName;
+				// temp
+                if (event.screenName.indexOf("Listing") != -1)
+                {
+                    this[event.screenName +"_ID"].refresh();
+                }
 			}
 			
 		]]>

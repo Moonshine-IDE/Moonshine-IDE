@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<j:DataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  			 xmlns:j="library://ns.apache.org/royale/jewel" 
+		  			 xmlns:js="library://ns.apache.org/royale/basic">
+	 <j:beads>
+        <js:ItemRendererDataBinding/>
+        <j:VerticalCenteredLayout />
+    </j:beads>
+	<fx:Script>
+		<![CDATA[
+			
+            override public function set data(value:Object):void
+            {
+            		if (value)
+            		{
+	            		super.data = value;
+	            		if (value[labelField]) lblValue.text = value[labelField].source.join(", ");
+			 	}
+            }
+			
+		]]>
+	</fx:Script>
+
+	<j:Label localId="lblValue" percentWidth="100" multiline="true"/>
+</j:DataGridItemRenderer>

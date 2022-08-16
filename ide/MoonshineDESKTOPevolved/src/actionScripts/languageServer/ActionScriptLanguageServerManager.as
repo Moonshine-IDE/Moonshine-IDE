@@ -55,7 +55,6 @@ package actionScripts.languageServer
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
@@ -80,6 +79,7 @@ package actionScripts.languageServer
 	import moonshine.lsp.UnregistrationParams;
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -176,7 +176,9 @@ package actionScripts.languageServer
 			}
 			var scheme:String = uri.substr(0, colonIndex);
 
-			var editor:ActionScriptTextEditor = new ActionScriptTextEditor(_project, readOnly);
+			var editor:LanguageServerTextEditor = new LanguageServerTextEditor(LANGUAGE_ID_ACTIONSCRIPT, _project, readOnly);
+			// TODO: add property to BasicTextEditor that passes this down to TextEditor
+			editor.editor.allowToggleBreakpoints = true;
 			if(scheme == URI_SCHEME_FILE)
 			{
 				//the regular OpenFileEvent should be used to open this one

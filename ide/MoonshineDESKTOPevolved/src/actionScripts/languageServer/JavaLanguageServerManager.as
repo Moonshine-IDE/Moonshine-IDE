@@ -59,7 +59,7 @@ package actionScripts.languageServer
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.JavaTextEditor;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.GlobPatterns;
@@ -216,7 +216,7 @@ package actionScripts.languageServer
 			}
 			var scheme:String = uri.substr(0, colonIndex);
 
-			var editor:JavaTextEditor = new JavaTextEditor(_project, readOnly);
+			var editor:LanguageServerTextEditor = new LanguageServerTextEditor(LANGUAGE_ID_JAVA, _project, readOnly);
 			if(scheme == URI_SCHEME_FILE)
 			{
 				//the regular OpenFileEvent should be used to open this one

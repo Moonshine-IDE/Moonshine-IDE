@@ -926,43 +926,14 @@
 
 	<target name="InstallHaxeDependencies" unless="nohaxelib">
 		<echo>Installing Haxe Libraries</echo>
- 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
- 			dir="${LibraryGUICore}"
- 			failonerror="true">
- 			<arg value="git"/>
- 			<arg value="lime"/>
- 			<arg value="https://github.com/openfl/lime.git"/>
- 			<arg value="--quiet"/>
- 		</exec>
- 		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
- 			dir="${LibraryGUICore}"
- 			failonerror="true">
- 			<arg value="git"/>
- 			<arg value="openfl"/>
- 			<arg value="https://github.com/openfl/openfl.git"/>
- 			<arg value="--quiet"/>
- 		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="feathersui"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="actuate"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="markdown-openfl-textfield"/>
-			<arg value="--quiet"/>
-		</exec>
+                <haxelibInstall library="feathersui" version="1.0.0-rc.2" />
+                <haxelibInstall library="openfl" version="9.1.0" />
+                <haxelibInstall library="actuate" version="1.8.9" />
+                <haxelibInstall library="lime" version="7.9.0" />
+                <haxelibInstall library="markdown-openfl-textfield" version="1.0.2" />
+                <haxelibInstall library="format" version="3.5.0" />
+
+                <!-- install from Git -->
  		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
  			dir="${LibraryGUICore}"
  			failonerror="true">
@@ -998,48 +969,7 @@
 			<arg value="openfl"/>
 			<arg value="build"/>
 			<arg value="flash"/>
-			<arg value="-debug"/>
-			<arg value="-Dflexhome='${FLEX_HOME}'"/>
 		</exec>
-	</target>
-
-	<!-- Compile intermediary SWC file. Required only in some specific test circumstances -->
-	<target name="CompileSharedCore">
-		<echo>Compiling MoonshineSharedCore SWC</echo>
-		<compc output="${LibraryMoonshineCore}/libs/MoonshineSharedCore.swc" 
-			   swf-version="44" 
-			   locale="${locale.list}" 
-			   fork="true" 
-			   optimize="true" 
-			   debug="{IsDebug}" 
-			   actionscript-file-encoding="UTF-8" 
-			   incremental="false"
-			   keep-generated-actionscript="false"
-			   allow-source-path-overlap="true"
-			   maxmemory="2048m">
-			<load-config filename="${FLEX_HOME}/frameworks/air-config.xml"/>
-			<source-path path-element="${LibraryMoonshineCore}/src"/>
-			<source-path path-element="${applicationSourceDirectory}"/>
-			<include-sources dir="${LibraryMoonshineCore}/src" includes="actionScripts/**/*.as" />
-			<compiler.external-library-path dir="${FLEX_HOME}/frameworks/libs/air">
-				<include name="airglobal.swc" />
-			</compiler.external-library-path>
-			<compiler.external-library-path dir="${FLEX_HOME}/frameworks/libs">
-				<include name="core.swc" />
-				<include name="framework.swc" />
-			</compiler.external-library-path>
-			<compiler.external-library-path dir="${FLEX_HOME}/frameworks/libs/mx">
-				<include name="mx.swc" />
-			</compiler.external-library-path>
-			<compiler.external-library-path dir="../libs">
-				<include name="**/*.swc" />
-			</compiler.external-library-path>
-			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
-				<include name="*.swc" />
-			</compiler.library-path>
-			<compiler.verbose-stacktraces>true</compiler.verbose-stacktraces>
-			<define name="CONFIG::OSX" value="false"/>
-		</compc>
 	</target>
 
 	<!-- Compile SWF to build directory for desktop packaging -->
@@ -1257,4 +1187,23 @@
 			</then>
 		</if>
 	</target>
+	
+
+	<macrodef name="haxelibInstall" description="Install a haxe library">
+		<attribute name="library" />
+		<attribute name="version" />
+
+		<sequential>
+			<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+				dir="${LibraryGUICore}"
+				failonerror="true">
+				<arg value="install"/>
+				<arg value="@{library}"/>
+				<arg value="@{version}"/>
+				<arg value="--always"/> <!-- accept prompt to switch to versions that are already installed -->
+				<arg value="--quiet"/>
+			</exec>
+		
+		</sequential>
+	</macrodef>
 </project>
