@@ -1,17 +1,16 @@
 package actionScripts.factory;
 
 import actionScripts.interfaces.INativeMenuItemBridge;
-import haxe.Constraints.Function;
+import openfl.events.Event;
 
 class NativeMenuItemLocation {
     
     public var item:INativeMenuItemBridge;
 
-    public function new(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array<String>=null) {
+    public function new(label:String="", isSeparator:Bool=false, listener:(Event)->Void=null, enableTypes:Array<String>=null) {
 
         // ** IMPORTANT **
-		var obj:Dynamic = BridgeFactory.getNativeMenuItemInstance();
-		item = new obj();
+		item = BridgeFactory.getNativeMenuItemInstance();
 		item.createMenu(label, isSeparator, listener, enableTypes);
 
     }
