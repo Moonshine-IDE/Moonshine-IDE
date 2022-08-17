@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template displayHome="true">
+        <title>Basic Project</title>
+        <homeTitle>Basic Project</homeTitle>
+        <name>Basic Project</name>
+        <icon>Haxe Project.png</icon>
+        <description>Create a Basic project.</description>
+    </template>
+    
+</templates>

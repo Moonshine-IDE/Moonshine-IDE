@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -337,6 +337,7 @@ package actionScripts.plugin.actionscript.as3project.vo
 				data.compiler.appendChild(
 					<accessible>false</accessible>
 				);
+				sdkPath=sdkPath.replace("\\","/")
 				data.compiler.appendChild(
 					<theme><filename>{sdkPath}/frameworks/themes/Mobile/mobile.swc</filename></theme>
 					);
