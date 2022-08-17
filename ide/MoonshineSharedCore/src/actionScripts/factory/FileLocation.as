@@ -34,8 +34,7 @@ package actionScripts.factory
 		public function FileLocation(path:String = null, isURL:Boolean = false):void
 		{
 			// ** IMPORTANT **
-			var obj:Object = BridgeFactory.getFileInstanceObject();
-			fileBridge = new obj();
+			fileBridge = BridgeFactory.getFileInstanceObject();
 			if (!path) 
 			{
 				path = IDEModel.getInstance().fileCore.nativePath;

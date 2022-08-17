@@ -21,13 +21,14 @@
 package actionScripts.impls;
 
 import actionScripts.interfaces.IAboutBridge;
-import actionScripts.plugins.help.view.AboutScreen;
+import actionScripts.ui.feathersWrapper.help.AboutScreenWrapper;
 import mx.core.IFlexDisplayObject;
 import mx.core.Window;
 
 class IAboutBridgeImp implements IAboutBridge {
 	public function getNewAbout(closeListener:() -> Void):IFlexDisplayObject {
-		var about:IFlexDisplayObject = new AboutScreen();
+		var screen:AboutScreen = new AboutScreen();
+		var about:AboutScreenWrapper = new AboutScreenWrapper( screen );
 		return about;
 	}
 

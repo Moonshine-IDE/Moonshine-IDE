@@ -28,8 +28,7 @@ package actionScripts.factory
 		public function NativeMenuItemLocation(label:String="", isSeparator:Boolean=false, listener:Function=null, enableTypes:Array=null)
 		{
 			// ** IMPORTANT **
-			var obj:Object = BridgeFactory.getNativeMenuItemInstance();
-			item = new obj();
+			item = BridgeFactory.getNativeMenuItemInstance();
 			item.createMenu(label, isSeparator, listener, enableTypes);
 		}
 	}
