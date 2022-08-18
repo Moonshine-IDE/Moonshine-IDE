@@ -337,9 +337,10 @@ package actionScripts.plugins.as3project.importer
 								var xmlNameextensionIndex:int = xml.name.lastIndexOf("xml");
 								var xmlName:String=xml.name.substring(0, xmlNameextensionIndex - 1);
 								var xmlNavePath:String = xml.nativePath;
+								var subfromPath:String = "subforms"+File.separator+xml.name;
 
 								var dominoXml:XML;
-								if(xmlNavePath.indexOf("subforms")>=0){
+								if(xmlNavePath.indexOf(subfromPath)>=0){
 									dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
 								} else {
 									dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
@@ -357,7 +358,7 @@ package actionScripts.plugins.as3project.importer
 								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
 								if(surfaceModel!=null){
 									var dominoMainContainer:XML ;
-									if(xmlNavePath.indexOf("subforms")>=0){
+									if(xmlNavePath.indexOf(subfromPath)>=0){
 										dominoMainContainer= MainApplicationCodeUtils.getDominPageMainContainerTag(dominoXml);
 									}else{
 										dominoMainContainer = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
@@ -542,7 +543,7 @@ package actionScripts.plugins.as3project.importer
 									var xmlFileName:String=xml.name.substring(0, extensionIndex - 1);
 									var targetFileLocation:FileLocation ;
 
-									if(xmlNavePath.indexOf("subforms")>=0){
+									if(xmlNavePath.indexOf(subfromPath)>=0){
 										targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms"+File.separator+xmlFileName+".subform");
 									}else{
 										targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");

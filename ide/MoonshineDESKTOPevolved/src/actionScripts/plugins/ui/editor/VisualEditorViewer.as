@@ -482,7 +482,7 @@ package actionScripts.plugins.ui.editor
 
 					filePath=filePath.replace(/.mxml$|.xhtml$|.form$|.page$|.dve$/, ".xml");
 					filePath=filePath.replace("Pages","pages");	
-				}if(filePath.indexOf("Subforms")>=0){
+				}if(filePath.indexOf(".subform")>=0){
 					filePath= visualEditorProjectSourcedPath+File.separator+"subforms"+File.separator+file.fileBridge.name;
 					filePath=filePath.replace(/.mxml$|.xhtml$|.subform$|.page$|.dve$/, ".xml");
 					
