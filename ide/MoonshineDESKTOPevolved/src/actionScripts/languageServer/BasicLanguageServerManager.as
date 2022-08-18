@@ -72,7 +72,7 @@ package actionScripts.languageServer
 		private static const METHOD_LANGUAGE__EVENT_NOTIFICATION:String = "language/eventNotification";
 		private static const METHOD_JAVA__PROJECT_CONFIG_UPDATE:String = "basic/projectConfigurationUpdate";
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
-		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["tibbo"];
+		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["lss"];
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
 		private static const LANGUAGE_ID_BASIC:String = "basic";
 		private static const LANGUAGE_SERVER_SCRIPT_PATH:String="";
