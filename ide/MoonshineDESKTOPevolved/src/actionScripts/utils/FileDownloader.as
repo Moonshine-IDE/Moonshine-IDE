@@ -93,7 +93,7 @@ package actionScripts.utils
 
 			configureListeners(false);
 			GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Success: Java agent generation templates downloaded", false, false, ConsoleOutputEvent.TYPE_SUCCESS));
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "File download completes."));
 			dispatchEvent(new Event(EVENT_FILE_DOWNLOADED));
 		}
 
@@ -117,7 +117,9 @@ package actionScripts.utils
 
 		private function httpStatusHandler(event:HTTPStatusEvent):void
 		{
-			trace("httpStatusHandler: " + event);
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, event.toString(), false, false, ConsoleOutputEvent.TYPE_ERROR));
+			//dispatchEvent(new Event(EVENT_FILE_DOWNLOAD_FAILED));
 		}
 
 		private function ioErrorHandler(event:IOErrorEvent):void

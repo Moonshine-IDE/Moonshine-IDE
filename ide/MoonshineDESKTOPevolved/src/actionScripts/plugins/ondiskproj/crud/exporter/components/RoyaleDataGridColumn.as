@@ -19,6 +19,7 @@
 package actionScripts.plugins.ondiskproj.crud.exporter.components
 {
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
+	import view.dominoFormBuilder.vo.FormBuilderFieldType;
 
 	public class RoyaleDataGridColumn extends RoyaleElemenetBase
 	{
@@ -27,8 +28,26 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 			var column:String = readTemplate("DataGridColumn.template");
 			column = column.replace(/%label%/ig, value.label);
 			column = column.replace(/%dataField%/ig, value.name);
+			column = column.replace(/%itemRenderer%/ig, getRenderer(value));
 			
 			return column;
+		}
+
+		private static function getRenderer(value:DominoFormFieldVO):String
+		{
+			if (value.isMultiValue)
+			{
+				switch (value.type)
+				{
+					case FormBuilderFieldType.DATETIME:
+						return "itemRenderer=\"views.renderers.MultivalueDateGridItemRenderer\"";
+						break;
+					default:
+						return "itemRenderer=\"views.renderers.MultivalueStringGridItemRenderer\"";
+						break;
+				}
+			}
+			return "";
 		}
 	}
 }

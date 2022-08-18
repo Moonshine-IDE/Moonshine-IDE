@@ -117,6 +117,7 @@ package actionScripts.locator
 		public var openPreviouslyOpenedFiles:Boolean;
 		public var confirmApplicationExit:Boolean;
 		public var showHiddenPaths:Boolean;
+		public var syntaxColorScheme:String;
 
 		public var version: String = "1.0.0";
 		public var build: String = "";

@@ -19,6 +19,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.languageServer
 {
+	import com.adobe.utils.StringUtil;
+	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.Event;
@@ -33,9 +35,9 @@ package actionScripts.languageServer
 	import flash.utils.IDataInput;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
-
+	
 	import mx.controls.Alert;
-
+	
 	import actionScripts.events.ApplicationEvent;
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.EditorPluginEvent;
@@ -53,7 +55,6 @@ package actionScripts.languageServer
 	import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.ui.editor.ActionScriptTextEditor;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
@@ -66,9 +67,7 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-
-	import com.adobe.utils.StringUtil;
-
+	
 	import moonshine.lsp.ApplyWorkspaceEditParams;
 	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.LogMessageParams;
@@ -80,6 +79,7 @@ package actionScripts.languageServer
 	import moonshine.lsp.UnregistrationParams;
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -176,7 +176,9 @@ package actionScripts.languageServer
 			}
 			var scheme:String = uri.substr(0, colonIndex);
 
-			var editor:ActionScriptTextEditor = new ActionScriptTextEditor(_project, readOnly);
+			var editor:LanguageServerTextEditor = new LanguageServerTextEditor(LANGUAGE_ID_ACTIONSCRIPT, _project, readOnly);
+			// TODO: add property to BasicTextEditor that passes this down to TextEditor
+			editor.editor.allowToggleBreakpoints = true;
 			if(scheme == URI_SCHEME_FILE)
 			{
 				//the regular OpenFileEvent should be used to open this one
@@ -435,8 +437,9 @@ package actionScripts.languageServer
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_COMPILER_PATH).nativePath + File.separator + "*";
 
+			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				cmdFile.nativePath,
+				javaEncodedPath,
 				"-Dfile.encoding=UTF8",
 				"-Xmx2g",
 				"-Droyalelib=" + frameworksPath,
@@ -758,6 +761,7 @@ package actionScripts.languageServer
 				var output:IDataInput = _javaVersionProcess.standardError;
 				var data:String = output.readUTFBytes(output.bytesAvailable);
 				this._javaVersion += data;
+				print("Java version full information: " + data);
 			}
 		}
 
@@ -805,7 +809,7 @@ package actionScripts.languageServer
 			}
 			else
 			{
-				error("Failed to load Java version. ActionScript & MXML code intelligence disabled for project: " + project.name + ".");
+				error("Failed to load Java version. ActionScript & MXML code intelligence disabled for project: " + project.name + ". Exit code: " + event.exitCode);
 			}
 		}
 

@@ -633,13 +633,13 @@ package actionScripts.plugins.debugAdapter
 
 		private function debugAdapter_onAttachOrLaunchError(body:Object):void
 		{
-			var attachOrLaunchError:Object = body.error;
+			var attachOrLaunchError:Object = body ? body.error : null;
 			// in this particular case, any value except false for showUser
 			// must be treated as true. normally, only true is treated as true.
 			var showUser:Boolean = attachOrLaunchError == null || attachOrLaunchError.showUser !== false;
 			if (showUser) {
 				var message:String = attachOrLaunchError != null ? attachOrLaunchError.format : "Debug initialization failed";
-				if (attachOrLaunchError.variables) {
+				if (attachOrLaunchError && attachOrLaunchError.variables) {
 					var variables:Object = attachOrLaunchError.variables;
 					for(var key:String in variables) {
 						message = message.replace(new RegExp("{" + key + "}", "g"), variables[key]);

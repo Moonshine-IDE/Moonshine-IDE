@@ -26,9 +26,11 @@ package actionScripts.languageServer
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.utils.IDataInput;
-
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
+	
 	import mx.controls.Alert;
-
+	
 	import actionScripts.events.ApplicationEvent;
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.ExecuteLanguageServerCommandEvent;
@@ -48,11 +50,12 @@ package actionScripts.languageServer
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.GroovyTextEditor;
+	import actionScripts.ui.editor.LanguageServerTextEditor;
 	import actionScripts.utils.CommandLineUtil;
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.GradleBuildUtil;
+	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
@@ -60,7 +63,7 @@ package actionScripts.languageServer
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.Settings;
-
+	
 	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.LogMessageParams;
 	import moonshine.lsp.PublishDiagnosticsParams;
@@ -71,8 +74,6 @@ package actionScripts.languageServer
 	import moonshine.lsp.UnregistrationParams;
 	import moonshine.lsp.WorkspaceEdit;
 	import moonshine.lsp.events.LspNotificationEvent;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
@@ -159,7 +160,7 @@ package actionScripts.languageServer
 			}
 			var scheme:String = uri.substr(0, colonIndex);
 
-			var editor:GroovyTextEditor = new GroovyTextEditor(_project, readOnly);
+			var editor:LanguageServerTextEditor = new LanguageServerTextEditor(LANGUAGE_ID_GROOVY, _project, readOnly);
 			if(scheme == URI_SCHEME_FILE)
 			{
 				//the regular OpenFileEvent should be used to open this one
@@ -257,8 +258,10 @@ package actionScripts.languageServer
 			{
 				cp += ":";
 			}
+			
+			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				cmdFile.nativePath,
+				javaEncodedPath,
 				"-cp",
 				cp,
 				"moonshine.groovyls.Main"

@@ -452,3 +452,10 @@ mx|ScrollBar.black
 	skinClass: ClassReference("elements.skins.CodeActionButtonSkin");
 	icon: Embed("/elements/images/code-action-icon.png");
 }
+
+mx|NumericStepper
+{
+	fontFamily: '_sans';
+	fontSize: 13;
+	color: #f3f3f3;
+}

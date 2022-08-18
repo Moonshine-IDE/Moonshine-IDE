@@ -23,3 +23,7 @@
     color: #808080;
     padding: 0;
 }
+
+.dxDataGrid {
+    height: calc(100vh - 20px);
+}

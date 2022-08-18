@@ -16,19 +16,36 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.ui.editor
+package actionScripts.plugins.vagrant.settings
 {
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugins.vagrant.settings.renderer.LinkedInstancesRenderer;
 
-	import flash.events.KeyboardEvent;
+	import mx.collections.ArrayCollection;
 
-	public class JavaTextEditor extends LanguageServerTextEditor
+	import mx.core.IVisualElement;
+	
+	import actionScripts.plugin.settings.vo.AbstractSetting;
+
+	public class LinkedInstancesSetting extends AbstractSetting
 	{
-		public static const LANGUAGE_ID_JAVA:String = "java";
+		protected var rdr:LinkedInstancesRenderer = new LinkedInstancesRenderer();
 
-		public function JavaTextEditor(project:JavaProjectVO, readOnly:Boolean = false)
+		[Bindable] public var vagrantInstances:ArrayCollection;
+		public var fakeSetting:String = "";
+		
+		public function LinkedInstancesSetting(instances:ArrayCollection)
 		{
-			super(LANGUAGE_ID_JAVA, project, readOnly);
+			super();
+			this.vagrantInstances = instances;
+			this.provider = this;
+			this.name = 'fakeSetting';
+			defaultValue = stringValue = "";
+		}
+		
+		override public function get renderer():IVisualElement
+		{
+			rdr.setting = this;
+			return rdr;
 		}
 	}
 }

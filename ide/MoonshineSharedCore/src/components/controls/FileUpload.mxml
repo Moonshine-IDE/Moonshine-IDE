@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:view="actionScripts.plugin.findreplace.view.*"
+		  creationComplete="initCom()">
+    <fx:Metadata>
+		[Event(name="UPLOAD_LOADED")]
+        [Event(name="UPLOAD_CANCELED")]
+    </fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			
+			[Bindable] public var isProgressBarHidden : Boolean;
+			
+            private var _strUploadUrl:String;
+            private var _refAddFiles:FileReferenceList;    
+            private var _refUploadFile:FileReference;
+            private var _arrUploadFiles:Array;
+            private var _numCurrentUpload:Number = 0;     
+            public var anUV:URLVariables;
+            public var uploadField:String;
+			public var isUploadFileSelected : Boolean;
+			public var isSingleUpload:Boolean;
+			public var fileFilters:Array;
+            
+            // Set uploadUrl
+            public function set uploadUrl(strUploadUrl:String):void {
+                _strUploadUrl = strUploadUrl;
+            }
+            
+            // Initalize
+            private function initCom():void {
+                _arrUploadFiles = new Array();                
+                enableUI();
+            }
+            
+            // Called to add file(s) for upload
+            private function addFiles():void {
+				//var fileFilter : FileFilter = new FileFilter("ProminicID", "*.id");
+				if (isSingleUpload)
+				{
+					_refUploadFile = new FileReference();
+					_refUploadFile.addEventListener(Event.SELECT, onSelectFile, false, 0, true);
+					_refUploadFile.browse(fileFilters);
+				}
+				else
+				{
+					_refAddFiles = new FileReferenceList();
+					_refAddFiles.addEventListener(Event.SELECT, onSelectFile, false, 0, true);
+					_refAddFiles.browse(fileFilters);
+				}
+            }
+            
+            // Called when a file is selected
+            private function onSelectFile(event:Event):void {
+                var arrFoundList:Array = new Array();
+                _arrUploadFiles = new Array(); // For single Upload
+
+				if (isSingleUpload)
+				{
+					_refUploadFile.removeEventListener(Event.SELECT, onSelectFile);
+
+					_arrUploadFiles.push({
+						name:_refUploadFile.name,
+						size:formatFileSize(_refUploadFile.size),
+						file:_refUploadFile});
+
+					txtFile.text = _refUploadFile.name;
+				}
+				else
+				{
+					_refAddFiles.removeEventListener(Event.SELECT, onSelectFile);
+
+					// Get list of files from fileList, make list of files already on upload list
+					for (var i:Number = 0; i < _arrUploadFiles.length; i++) {
+						for (var j:Number = 0; j < _refAddFiles.fileList.length; j++) {
+							if (_arrUploadFiles[i].name == _refAddFiles.fileList[j].name) {
+								arrFoundList.push(_refAddFiles.fileList[j].name);
+								_refAddFiles.fileList.splice(j, 1);
+								j--;
+							}
+						}
+					}
+					if (_refAddFiles.fileList.length >= 1) {
+						for (var k:Number = 0; k < _refAddFiles.fileList.length; k++) {
+							_arrUploadFiles.push({
+								name:_refAddFiles.fileList[k].name,
+								size:formatFileSize(_refAddFiles.fileList[k].size),
+								file:_refAddFiles.fileList[k]});
+						}
+						//listFiles.dataProvider = _arrUploadFiles;
+						//listFiles.selectedIndex = _arrUploadFiles.length - 1;
+						txtFile.text = _arrUploadFiles[_arrUploadFiles.length - 1].name;
+					}
+					/* if (arrFoundList.length >= 1) {
+                        Alert.show("The file(s): \n\n• " + arrFoundList.join("\n• ") + "\n\n...are already on the upload list. Please change the filename(s) or pick a different file.", "File(s) already on list");
+                    } */
+				}
+
+                updateProgBar();
+				isUploadFileSelected = true;
+				dispatchEvent( new Event("UPLOAD_LOADED") );
+            }
+            
+            // Called to format number to file size
+            private function formatFileSize(numSize:Number):String {
+                var strReturn:String;
+                numSize = Number(numSize / 1000);
+                strReturn = String(numSize.toFixed(1) + " KB");
+                if (numSize > 1000) {
+                    numSize = numSize / 1000;
+                    strReturn = String(numSize.toFixed(1) + " MB");
+                    if (numSize > 1000) {
+                        numSize = numSize / 1000;
+                        strReturn = String(numSize.toFixed(1) + " GB");
+                    }
+                }                
+                return strReturn;
+            }
+            
+            // Disable UI control
+            private function disableUI():void {
+				btnBrowse.enabled = false;
+            }
+            
+            // Enable UI control
+            private function enableUI():void {
+				btnBrowse.enabled = true;
+            }
+            
+            // Called to upload file based on current upload number
+            public function startUpload():void {
+        
+                if (_arrUploadFiles.length > 0) {
+                    disableUI();
+                    
+                    var request:URLRequest = new URLRequest();
+                    //request.data = anUV;
+                    request.url = _strUploadUrl;
+                    request.method = URLRequestMethod.POST;
+                    _refUploadFile = new FileReference();
+                    _refUploadFile = _arrUploadFiles[_arrUploadFiles.length - 1].file;
+                    _refUploadFile.addEventListener(ProgressEvent.PROGRESS, onUploadProgress);
+                    _refUploadFile.addEventListener(Event.COMPLETE, onUploadComplete);
+                    _refUploadFile.addEventListener(IOErrorEvent.IO_ERROR, onUploadIoError);
+                    _refUploadFile.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
+					_refUploadFile.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, uploadCompleteDataHandler);
+					_refUploadFile.addEventListener(HTTPStatusEvent.HTTP_STATUS, onUploadFails);
+                    _refUploadFile.upload(request, uploadField);
+                }
+            }
+			
+			private function onUploadFails( event:HTTPStatusEvent ) : void {
+
+				trace(event);
+				//clearUpload( true );
+				//dispatchEvent( new GeneralEvents(GeneralEvents.UPLOAD_ERROR, "Error!\nUpload failed to connect!") );
+			}
+			
+			private function uploadCompleteDataHandler(event:DataEvent):void {
+				
+				//var tmpXML : XMLList = XMLList(event.data);
+				clearUpload(true);
+				
+				// checking the session status
+				//if ( (tmpXML..ErrorMessage != "") ) {
+					
+					//dispatchEvent( new GeneralEvents(GeneralEvents.UPLOAD_RESULT, tmpXML..ErrorMessage) );
+					
+				//} else {
+					
+					//dispatchEvent( new GeneralEvents(GeneralEvents.UPLOAD_RESULT_SUCCESS, tmpXML..successMessage) );
+					clearUploadHolding();
+				//}
+			}
+            
+            // Cancel and clear eventlisteners on last upload
+            public function clearUpload( clearUploadComplete:Boolean=false ):void {
+				
+				if ( !_refUploadFile ) return;
+				
+                _refUploadFile.removeEventListener(ProgressEvent.PROGRESS, onUploadProgress);
+                _refUploadFile.removeEventListener(Event.COMPLETE, onUploadComplete);
+                _refUploadFile.removeEventListener(IOErrorEvent.IO_ERROR, onUploadIoError);
+                _refUploadFile.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onUploadSecurityError);
+				_refUploadFile.removeEventListener(HTTPStatusEvent.HTTP_STATUS, onUploadFails);
+				if ( clearUploadComplete ) _refUploadFile.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, uploadCompleteDataHandler);
+                _refUploadFile.cancel();
+                updateProgBar();
+                enableUI();
+            }
+			
+			// mark as no 'holding' uploads
+			private function clearUploadHolding() : void {
+				
+				_numCurrentUpload = 0;
+				_arrUploadFiles = new Array();
+				updateProgBar();
+				txtFile.text = "";
+				progBar.label = "";
+				progBar.validateNow();
+			}
+            
+            // Called on upload cancel
+            private function onUploadCanceled():void {
+                clearUpload(true);
+                dispatchEvent(new Event("UPLOAD_CANCELED"));
+            }
+            
+            // Get upload progress
+            private function onUploadProgress(event:ProgressEvent):void {
+                var numPerc:Number = Math.round((event.bytesLoaded / event.bytesTotal) * 100);
+				trace(numPerc);
+                updateProgBar(numPerc);
+            }
+            
+            // Update progBar
+            private function updateProgBar(numPerc:Number = 0):void {
+                //var strLabel:String = (_numCurrentUpload + 1) + "/" + _arrUploadFiles.length;
+                var strLabel:String = _arrUploadFiles.length.toString();
+                strLabel = (_numCurrentUpload + 1 <= _arrUploadFiles.length && numPerc > 0 && numPerc < 100) ? numPerc + "% - " + strLabel : strLabel;
+                strLabel = (_numCurrentUpload + 1 == _arrUploadFiles.length && numPerc == 100) ? "Upload Complete - " + strLabel : strLabel;
+                strLabel = (_arrUploadFiles.length == 0) ? "" : strLabel;
+                progBar.label = strLabel;
+				trace(numPerc);
+                progBar.setProgress(numPerc, 100);
+                progBar.validateNow();
+            }
+            
+            // Called on upload complete
+            private function onUploadComplete(event:Event):void {
+                _numCurrentUpload++;                
+                /* if (_numCurrentUpload < _arrUploadFiles.length) {
+                    startUpload();
+                } else { */
+                    clearUpload();
+                //}
+            }
+            
+            // Called on upload io error
+            private function onUploadIoError(event:IOErrorEvent):void {
+                clearUpload(true);
+                //dispatchEvent( new GeneralEvents(GeneralEvents.UPLOAD_ERROR, event.text) );
+            }
+            
+            // Called on upload security error
+            private function onUploadSecurityError(event:SecurityErrorEvent):void {
+                clearUpload(true);
+				//dispatchEvent( new GeneralEvents(GeneralEvents.UPLOAD_ERROR, event.text) );
+            }
+            
+            // Change view state
+            private function changeView():void {
+                currentState = (currentState == "mini") ? "" : "mini";
+            }
+            
+        ]]>
+    </fx:Script>
+    
+    <s:HGroup width="100%" verticalAlign="middle">
+		<view:PromptTextInput id="txtFile"
+					 width="100%" styleName="textInput" prompt="Select path.." editable="false"/>
+    	<s:Button id="btnBrowse" 
+				  label="Browse" click="addFiles()" styleName="darkButton"/>
+    </s:HGroup>
+    
+    <mx:ProgressBar id="progBar" 
+					mode="manual" label="" labelPlacement="center" width="{txtFile.width}"
+					visible="{!isProgressBarHidden}" includeInLayout="{!isProgressBarHidden}"/>
+</s:VGroup>

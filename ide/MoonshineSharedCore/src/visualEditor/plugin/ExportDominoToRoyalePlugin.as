@@ -123,7 +123,9 @@ package visualEditor.plugin
 
             var veSrcFiles:Array = visualEditorSrcFolder.fileBridge.getDirectoryListing();
 
-            return veSrcFiles;
+            return veSrcFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                return item.extension == "xml";
+            });
         }
 
         private function getXmlConversion(file:FileLocation):XML
@@ -186,6 +188,8 @@ package visualEditor.plugin
                                 "pages" + exportedProject.sourceFolder.fileBridge.separator, "") :
                         convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator, "");
 
+                //Replace white spaces in file for conversion purposes
+                destinationFilePath = destinationFilePath.replace(/[\s_\(\)]/, "");
                 var extensionIndex:int = destinationFilePath.lastIndexOf(convertedFile.fileBridge.extension);
                 if (extensionIndex > -1)
                 {
@@ -198,21 +202,36 @@ package visualEditor.plugin
                 convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
                 var componentData:Array = item.surface.getComponentData();
                 var propertyVOName:String = convertedFile.fileBridge.nameWithoutExtension.toLowerCase() + "VO";
+                var propertyVOType:String = convertedFile.fileBridge.nameWithoutExtension + "VO";
+                var dataProviderName:String = propertyVOName + "Items";
+
                 var royaleMXMLContentFile:XML = null;
                 var contentMXMLFile:String = "";
 
                 if (componentData.length > 0)
                 {
+                    for (var k:int = 0; k < componentData.length; k++)
+                    {
+                        var componentDataItem:Object = componentData[k];
+                        if (!componentDataItem.fields && !componentDataItem.name)
+                        {
+                            componentData.splice(k, 1);
+                        }
+                    }
+
+                    var dataGridContent:XML = getDataGridContent(dataProviderName, propertyVOName, propertyVOType, componentData);
                     //Prepare Data for VO
-                    royaleMXMLContentFile = item.surface.toRoyaleConvertCode({
+                    var propData:Object = {
                         prop: [
                             {
                                 propName: propertyVOName,
-                                propType: convertedFile.fileBridge.nameWithoutExtension + "VO",
-                                newInstance: true
+                                propType: propertyVOType,
+                                newInstance: false
                             }
                         ]
-                    });
+                    };
+                    royaleMXMLContentFile = item.surface.toRoyaleConvertCode(propData);
+                    royaleMXMLContentFile.appendChild(dataGridContent);
                     contentMXMLFile = royaleMXMLContentFile.toXMLString();
 
                     //Save VO
@@ -237,6 +256,70 @@ package visualEditor.plugin
             return views;
         }
 
+        private function getDataGridContent(dpName:String, propertyName:String, propertyType:String, componentData:Array):XML
+        {
+            var columns:Array = getDataGridColumns(componentData, []);
+                columns = columns.slice(0, 3);
+
+            var dataGridNamespace:Namespace = new Namespace("dataGrid", "classes.dataGrid.*");
+            var dataGridXML:XML = new XML("<DataGrid />");
+                dataGridXML.setNamespace(dataGridNamespace);
+                dataGridXML.@columns = columns.length > 0 ? "{[" + columns.join(",") + "]}" : "{[]}";
+                dataGridXML.@dataProvider = "{" + dpName + "}";
+                dataGridXML.@localId = "dg";
+                dataGridXML.@includeIn = "dataGridState";
+                dataGridXML.@className = "dxDataGrid";
+                dataGridXML.@percentWidth = "100";
+                dataGridXML.@doubleClick = "{this.currentState = 'contentState'; this.selectedRowIndex = dg.selectedIndex; this." + propertyName + " = dg.selectedItem.copy();}";
+
+            return dataGridXML;
+        }
+
+        private function getDataGridColumns(componentData:Array, columns:Array):Array
+        {
+            var data:Object = null;
+            var fields:Array = null;
+            var componentDataCount:int = componentData.length > 3 ? 3 : componentData.length;
+            for (var i:int = 0; i < componentDataCount; i++)
+            {
+                data = componentData[i];
+                fields = data.fields;
+                if (!data.fields && !data.name)
+                {
+                    continue;
+                }
+
+                if (!data.fields && data.name)
+                {
+                    columns.push("{caption: '" + data.name + "', dataField: '"  + data.name + "'}");
+                }
+                else
+                {
+                    for (var j:int = 0; j < fields.length; j++)
+                    {
+                        var field:Object = fields[j];
+                        if (!field.name)
+                        {
+                            if (field.fields)
+                            {
+                                getDataGridColumns(field.fields, columns);
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            columns.push("{caption: '" + field.name + "', dataField: '"  + field.name + "'}");
+                        }
+                    }
+                }
+            }
+
+            return columns;
+        }
+
         private function getVOClass(componentData:Array, className:String):String
         {
             if (componentData.length == 0) return "";
@@ -247,7 +330,14 @@ package visualEditor.plugin
                     "   public class " + className + "VO\n" +
                     "   {\n";
 
-            classContent += getVOContentClass(componentData, "");
+            var copyMethod:String = "       public function copy():Object\n";
+                copyMethod += "       {\n" +
+                        "           var o:Object = new " + className + "VO();\n     ";
+
+            classContent += getVOContentClass(componentData, "") + "\n";
+            classContent += getVOCopyMethod(componentData, className, copyMethod);
+            classContent += "   return o;\n";
+            classContent += "       }\n";
 
             classContent += "   } \n}";
 
@@ -294,6 +384,43 @@ package visualEditor.plugin
             return content;
         }
 
+        private function getVOCopyMethod(componentData:Array, className:String, content:String):String
+        {
+            for (var i:int = 0; i < componentData.length; i++)
+            {
+                var data:Object = componentData[i];
+                var fields:Array = data.fields;
+
+                if (!data.fields && data.name)
+                {
+                    content += "        o." + data.name + " = this." + data.name + ";\n          ";
+                }
+                else
+                {
+                    for each (var field:Object in fields)
+                    {
+                        if (!field.name)
+                        {
+                            if (field.fields)
+                            {
+                                content += getVOCopyMethod(field.fields, className, "");
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            content += "        o." + field.name + " = this." + field.name + ";\n        ";
+                        }
+                    }
+                }
+            }
+
+            return content;
+        }
+
         private function getContentVariable(data:Object):String
         {
             if (!data.name) return "";
@@ -305,7 +432,13 @@ package visualEditor.plugin
                 fieldValue = "\"" + fieldValue + "\"";
             }
 
-            var publicVar:String = "public var " + data.name + ":" + fieldType + " = " +
+            var publicVar:String = "";
+            if (data.fieldComment)
+            {
+                publicVar = "/* FormulaDefaultValue: " + data.fieldComment + "*/\n        ";
+            }
+
+            publicVar += "public var " + data.name + ":" + fieldType + " = " +
                     fieldValue + ";\n";
 
             return publicVar;

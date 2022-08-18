@@ -106,8 +106,16 @@ package actionScripts.controllers
 				if (lastOpenEvent.files.length != 0)
 				{
 					tmpFL = lastOpenEvent.files[0];
+					if (tmpFL.fileBridge.isDirectory)
+					{
+						trace("OpenFileCommand cannot open a directory: " + tmpFL.fileBridge.nativePath);
+						lastOpenEvent.files.shift();
+						countIndex++;
+						prepareBeforeOpen();
+						return;
+					}
 					// in case of awd file proceed to different process
-					if (tmpFL.fileBridge.extension == "awd")
+					else if (tmpFL.fileBridge.extension == "awd")
 					{
 						GlobalEventDispatcher.getInstance().dispatchEvent(new ProjectEvent(ProjectEvent.OPEN_PROJECT_AWAY3D, tmpFL));
 						fileLoadCompletes(null);

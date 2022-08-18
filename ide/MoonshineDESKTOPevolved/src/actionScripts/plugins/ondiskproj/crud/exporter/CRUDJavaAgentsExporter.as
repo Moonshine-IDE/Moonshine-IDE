@@ -114,6 +114,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 		private function onTemplatesZipDownloaded(event:Event):void
 		{
+			success("Success: Java agent generation templates downloaded");
 			unzipTemplateArchive(fileDownloader.targetLocation);
 			configureFileDownloaderListeners(false);
 		}
@@ -248,7 +249,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			th.templatingData["%project%"] = targetDirectory.name;
 			th.templatingData["%NotesExecutablePath%"] = ConstantsCoreVO.IS_MACOS ? model.notesPath +"/Contents/MacOS/" : model.notesPath;
 
-			var excludes:Array = ["%eachform%Agents"];
+			var excludes:Array = ["%eachform%Agents", "%eachform%Docs", "%eachform%Scripts"];
 
 			th.projectTemplate(
 					new FileLocation(archiveDirectory.resolvePath("project").nativePath),

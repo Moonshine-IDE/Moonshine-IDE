@@ -20,14 +20,12 @@
 
 package moonshine.plugin.problems.view;
 
-import openfl.events.Event;
+import openfl.events.MouseEvent;
 import actionScripts.interfaces.IViewWithTitle;
 import feathers.controls.LayoutGroup;
+import feathers.controls.TextCallout;
 import feathers.controls.TreeView;
-import feathers.controls.dataRenderers.HierarchicalItemRenderer;
-import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.core.InvalidationFlag;
-import feathers.data.TreeViewItemState;
 import feathers.events.HierarchicalCollectionEvent;
 import feathers.events.TreeViewEvent;
 import feathers.layout.AnchorLayout;
@@ -36,6 +34,7 @@ import feathers.utils.DisplayObjectRecycler;
 import moonshine.plugin.problems.data.DiagnosticHierarchicalCollection;
 import moonshine.plugin.problems.events.ProblemsViewEvent;
 import moonshine.plugin.problems.vo.MoonshineDiagnostic;
+import openfl.events.Event;
 
 class ProblemsView extends LayoutGroup implements IViewWithTitle {
 	public function new() {
@@ -105,10 +104,10 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		this.treeView.itemToText = item -> {
 			if ((item is MoonshineDiagnostic)) {
 				var diagnostic = cast(item, MoonshineDiagnostic);
-				return this.getMessageLabel(diagnostic, false);
+				return this.getMessageLabel(diagnostic);
 			} else if ((item is DiagnosticsByUri)) {
 				var diagnosticsByUri = cast(item, DiagnosticsByUri);
-				return this.getLocationLabel(diagnosticsByUri, false);
+				return this.getLocationLabel(diagnosticsByUri);
 			}
 			return Std.string(item);
 		}
@@ -130,7 +129,7 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		super.update();
 	}
 
-	private function getMessageLabel(diagnostic:MoonshineDiagnostic, useHTML:Bool):String {
+	private function getMessageLabel(diagnostic:MoonshineDiagnostic):String {
 		var result = diagnostic.message;
 		var hasCode = diagnostic.code != null && diagnostic.code.length > 0;
 		var range = diagnostic.range;
@@ -138,36 +137,31 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 		var hasRangeStart = start != null;
 		if (hasCode || hasRangeStart) {
 			result += " ";
-			if (useHTML) {
-				result += "<font size='-2' color='#AFAFAF'>";
-			}
 			if (hasCode) {
 				result += "(" + diagnostic.code + ")";
 			}
 			if (hasRangeStart) {
 				result += " [Ln " + (start.line + 1) + ", Col " + (start.character + 1) + "]";
 			}
-			if (useHTML) {
-				result += "</font>";
-			}
 		}
 		return result;
 	}
 
-	private function getLocationLabel(diagnosticsByUri:DiagnosticsByUri, useHTML:Bool):String {
+	private function getLocationLabel(diagnosticsByUri:DiagnosticsByUri):String {
 		var uri = diagnosticsByUri.uri;
 		var index = uri.lastIndexOf("/");
+		while (index == (uri.length - 1)) {
+			uri = uri.substr(0, uri.length - 1);
+			index = uri.lastIndexOf("/");
+		}
 		var fileName = uri.substr(index + 1);
+		if (fileName.length == 0 && diagnosticsByUri.project != null) {
+			fileName = diagnosticsByUri.project.name;
+		}
 		var result = fileName;
 		if (diagnosticsByUri.project != null) {
 			result += " ";
-			if (useHTML) {
-				result += "<font size='-2' color='#AFAFAF'>";
-			}
 			result += diagnosticsByUri.project.name;
-			if (useHTML) {
-				result += "</font>";
-			}
 		}
 		return result;
 	}
@@ -175,7 +169,18 @@ class ProblemsView extends LayoutGroup implements IViewWithTitle {
 	private function problemsView_treeView_itemTriggerHandler(event:TreeViewEvent):Void {
 		var item = event.state.data;
 		if ((item is MoonshineDiagnostic)) {
-			this.dispatchEvent(new ProblemsViewEvent(ProblemsViewEvent.OPEN_PROBLEM, cast(item, MoonshineDiagnostic)));
+			var diagnostic = cast(item, MoonshineDiagnostic);
+			if (diagnostic.fileLocation.fileBridge.isDirectory) {
+				var itemRenderer = cast(treeView.itemToItemRenderer(event.state.data));
+				if (itemRenderer != null) {
+					var callout = TextCallout.show("File cannot be opened because file is a directory", itemRenderer);
+					callout.addEventListener(MouseEvent.MOUSE_DOWN, event -> {
+						callout.close();
+					});
+				}
+				return;
+			}
+			this.dispatchEvent(new ProblemsViewEvent(ProblemsViewEvent.OPEN_PROBLEM, diagnostic));
 		} else if (treeView.dataProvider.isBranch(item)) {
 			var isOpen = treeView.isBranchOpen(item);
 			this.treeView.toggleBranch(item, !isOpen);

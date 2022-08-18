@@ -68,6 +68,13 @@ package actionScripts.plugin.ondiskproj.exporter
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			projectXML.appendChild(options);
 
+			options = <domino />;
+			var dominoPairs:Object = {
+				dominoBaseAgentURL	:	SerializeUtil.serializeString(project.dominoBaseAgentURL)
+			}
+			options.appendChild(SerializeUtil.serializePairs(dominoPairs, <option />));
+			projectXML.appendChild(options);
+
 			options = <moonshineRunCustomization />;
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			projectXML.appendChild(options);

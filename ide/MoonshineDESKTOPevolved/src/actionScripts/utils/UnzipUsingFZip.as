@@ -35,7 +35,7 @@ package actionScripts.utils
 	
 	[Event(name="FILE_LOAD_SUCCESS", type="flash.events.Event")]
 	[Event(name="FILE_LOAD_ERROR", type="flash.events.Event")]
-	public class Unzip extends EventDispatcher
+	public class UnzipUsingFZip extends EventDispatcher
 	{
 		public static const FILE_LOAD_SUCCESS:String = "fileLoadSuccess";
 		public static const FILE_LOAD_ERROR:String = "fileLoadError";
@@ -50,7 +50,7 @@ package actionScripts.utils
 			return _filesCount;
 		}
 		
-		public function Unzip(zipFile:File)
+		public function UnzipUsingFZip(zipFile:File)
 		{
 			// @NOTE
 			// Since load method as provided by the FZip

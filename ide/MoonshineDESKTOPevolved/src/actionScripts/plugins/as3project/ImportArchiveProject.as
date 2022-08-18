@@ -50,7 +50,7 @@ package actionScripts.plugins.as3project
     import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.SharedObjectConst;
-    import actionScripts.utils.Unzip;
+    import actionScripts.utils.UnzipUsingFZip;
 
 	CONFIG::OSX
 		{
@@ -66,7 +66,7 @@ package actionScripts.plugins.as3project
 		private var project:AS3ProjectVO;
 		private var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var unzip:Unzip;
+		private var unzip:UnzipUsingFZip;
 		private var settingsView:SettingsView;
 		private var isNameManualChanged:Boolean;
 		private var isProjectResidesInSubFolder:String;
@@ -138,9 +138,9 @@ package actionScripts.plugins.as3project
 			originalNameByConfiguration = null;
 			originalExtensionConfiguration = null;
 			var archivePathFile:File = new File(archivePath);
-			unzip = new Unzip(archivePathFile);
-			unzip.addEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
-			unzip.addEventListener(Unzip.FILE_LOAD_ERROR, onFileLoadError);
+			unzip = new UnzipUsingFZip(archivePathFile);
+			unzip.addEventListener(UnzipUsingFZip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
+			unzip.addEventListener(UnzipUsingFZip.FILE_LOAD_ERROR, onFileLoadError);
 			
 			/*
 			 * @local
@@ -212,8 +212,8 @@ package actionScripts.plugins.as3project
 			}
 			function releaseListeners():void
 			{
-				unzip.removeEventListener(Unzip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
-				unzip.removeEventListener(Unzip.FILE_LOAD_ERROR, onFileLoadError);
+				unzip.removeEventListener(UnzipUsingFZip.FILE_LOAD_SUCCESS, onFileLoadSuccess);
+				unzip.removeEventListener(UnzipUsingFZip.FILE_LOAD_ERROR, onFileLoadError);
 			}
 		}
 		

@@ -16,19 +16,25 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.ui.editor
+package actionScripts.events
 {
-	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-
-	import flash.events.KeyboardEvent;
-
-	public class GroovyTextEditor extends LanguageServerTextEditor
+	import flash.events.Event;
+	
+	public class FileUploaderEvent extends Event
 	{
-		public static const LANGUAGE_ID_GROOVY:String = "groovy";
+		public static const EVENT_UPLOAD_LOADED:String = "eventUploadLoaded";
+		public static const EVENT_UPLOAD_COMPLETE_DATA:String = "eventUploadCompleteData";
+		public static const EVENT_UPLOAD_CANCELED:String = "eventUploadCanceled";
+		public static const EVENT_UPLOAD_PROGRESS:String = "eventUploadProgress";
+		public static const EVENT_UPLOAD_ERROR:String = "eventUploadError";
+		public static const EVENT_UPLOAD_COMPLETE:String = "eventUploadComplete";
 
-		public function GroovyTextEditor(project:GrailsProjectVO, readOnly:Boolean = false)
+		public var value:Object;
+		
+		public function FileUploaderEvent(type:String, value:Object=null, _bubble:Boolean=false, _cancelable:Boolean=true)
 		{
-			super(LANGUAGE_ID_GROOVY, project, readOnly);
+			this.value = value;
+			super(type, _bubble, _cancelable);
 		}
 	}
 }
