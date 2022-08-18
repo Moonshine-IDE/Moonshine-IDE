@@ -7,5 +7,5 @@ if [ -x "${HELPER_PATH}" ]; then
   open -b "net.prominic.MoonshineSDKInstaller"
   exit 1
 else
-  open https://moonshine-ide.com/moonshine-app-store-helper/
+  open https://moonshine-ide.com/download-sdk-installer/
 fi
