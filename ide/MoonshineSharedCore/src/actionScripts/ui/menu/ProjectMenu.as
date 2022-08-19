@@ -301,7 +301,8 @@ package actionScripts.ui.menu
             if (dominoMenu == null)
             {           
                 dominoMenu = Vector.<MenuItem>([
-                     // Piotr: Temporary disable conversion to Royale in menu
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources','GENERATE_JAVA_AGENTS'), null, null, ExportVisualEditorProjectEvent.EVENT_GENERATE_DOMINO_JAVA_AGENTS_OUT_OF_VISUALEDITOR_PROJECT),
                     new MenuItem(resourceManager.getString('resources','GENERATE_APACHE_ROYALE_PROJECT'), null, null, ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT),
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], MavenBuildEvent.START_MAVEN_BUILD),

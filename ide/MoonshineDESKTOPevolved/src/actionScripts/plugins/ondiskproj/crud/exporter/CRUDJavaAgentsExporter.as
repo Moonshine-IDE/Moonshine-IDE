@@ -49,9 +49,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	{
 		private static const TEMPLATE_DOWNLOAD_URL:String = "https://moonshine-ide.com/downloads/Moonshine-Domino-CRUD/dev/template.zip";
 
-		private var archiveDirectory:File;
-		private var targetDirectory:File;
-		private var model:IDEModel = IDEModel.getInstance();
+		protected var archiveDirectory:File;
+		protected var targetDirectory:File;
+		protected var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var fileDownloader:FileDownloader;
 
@@ -91,37 +91,20 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		{
 			warning("Downloading Java agent templates");
 			fileDownloader = new FileDownloader(TEMPLATE_DOWNLOAD_URL, archiveDirectory.resolvePath("template.zip"));
-			configureFileDownloaderListeners(true);
+			addFileDownloaderListeners();
 			fileDownloader.load();
-		}
-
-		private function configureFileDownloaderListeners(attach:Boolean):void
-		{
-			if (attach)
-			{
-				fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
-				fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
-				fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
-			}
-			else
-			{
-				fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
-				fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
-				fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
-				fileDownloader = null;
-			}
 		}
 
 		private function onTemplatesZipDownloaded(event:Event):void
 		{
 			success("Success: Java agent generation templates downloaded");
 			unzipTemplateArchive(fileDownloader.targetLocation);
-			configureFileDownloaderListeners(false);
+			removeAndCleanFileDownloaderListeners();
 		}
 
 		private function onTemplatesZipDownloadFailed(event:Event):void
 		{
-			configureFileDownloaderListeners(false);
+			removeAndCleanFileDownloaderListeners();
 		}
 
 		private function onTemplatesZipDownloadProgress(event:Event):void
@@ -139,32 +122,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			fs.readBytes(zipFileBytes);
 			fs.close();
 
-			configureUnzipListeners(fzip, true);
+			addUnzipListeners(fzip);
 			fzip.loadBytes(zipFileBytes);
-		}
-
-		private function configureUnzipListeners(fzip:Zip, attach:Boolean):void
-		{
-			if (attach)
-			{
-				fzip.addEventListener(ZipEvent.FILE_LOADED, onFileLoaded, false, 0, true);
-				fzip.addEventListener(Event.COMPLETE, onUnzipCompletes, false, 0, true);
-				fzip.addEventListener(ErrorEvent.ERROR, onUnzipError, false, 0, true);
-			}
-			else
-			{
-				fzip.removeEventListener(ZipEvent.FILE_LOADED, onFileLoaded);
-				fzip.removeEventListener(Event.COMPLETE, onUnzipCompletes);
-				fzip.removeEventListener(ErrorEvent.ERROR, onUnzipError);
-
-				fzip.close();
-				fzip = null;
-			}
 		}
 
 		private function onUnzipCompletes(event:Event):void
 		{
-			configureUnzipListeners(event.target as Zip, false);
+			removeAndCloseUnzipListeners(event.target as Zip);
 			archiveDirectory.resolvePath("template.zip").deleteFile();
 
 			// open file-browser for export location
@@ -193,14 +157,46 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			catch (e:Error)
 			{
 				error("Template files failed to unzip: " + e.message);
-				configureUnzipListeners(event.target as Zip, false);
+				removeAndCloseUnzipListeners(event.target as Zip);
 			}
 		}
 
 		private function onUnzipError(event:ErrorEvent):void
 		{
-			configureUnzipListeners(event.target as Zip, false);
+			removeAndCloseUnzipListeners(event.target as Zip);
 			error("Template file failed to unzip: " + event.text);
+		}
+
+		private function addFileDownloaderListeners():void
+		{
+			fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
+			fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
+			fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
+		}
+
+		private function removeAndCleanFileDownloaderListeners():void
+		{
+			fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
+			fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
+			fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
+			fileDownloader = null;
+		}
+
+		private function addUnzipListeners(fzip:Zip):void
+		{
+			fzip.addEventListener(ZipEvent.FILE_LOADED, onFileLoaded, false, 0, true);
+			fzip.addEventListener(Event.COMPLETE, onUnzipCompletes, false, 0, true);
+			fzip.addEventListener(ErrorEvent.ERROR, onUnzipError, false, 0, true);
+		}
+
+		private function removeAndCloseUnzipListeners(fzip:Zip):void
+		{
+			fzip.removeEventListener(ZipEvent.FILE_LOADED, onFileLoaded);
+			fzip.removeEventListener(Event.COMPLETE, onUnzipCompletes);
+			fzip.removeEventListener(ErrorEvent.ERROR, onUnzipError);
+
+			fzip.close();
+			fzip = null;
 		}
 
 		private function isDirectory(file:ZipFile):Boolean
@@ -261,7 +257,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			generateModules();
 		}
 
-		private function generateModules():void
+		protected function generateModules():void
 		{
 			new CRUDJavaAgentsModuleExporter(
 					archiveDirectory,
@@ -271,7 +267,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			);
 		}
 
-		private function onModulesExported():void
+		protected function onModulesExported():void
 		{
 			// success message
 			notice("Project saved at: "+ targetDirectory.nativePath);

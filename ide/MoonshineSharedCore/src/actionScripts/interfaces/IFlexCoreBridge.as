@@ -81,6 +81,7 @@ package actionScripts.interfaces
 		function getExternalEditors():ArrayCollection;
 		function generateTabularRoyaleProject():void;
 		function generateCRUDJavaAgents():void;
+		function generateJavaAgentsVisualEditor(components:Array):void;
 		function getModulesFinder():IModulesFinder;
 		function getJavaVersion(javaPath:String=null, onComplete:Function=null):void;
 		function setMSDKILocalPathConfig():void;
