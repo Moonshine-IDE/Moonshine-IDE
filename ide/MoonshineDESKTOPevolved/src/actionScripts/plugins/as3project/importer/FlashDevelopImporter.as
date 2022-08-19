@@ -305,6 +305,8 @@ package actionScripts.plugins.as3project.importer
 			
 			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
 			var requireFileLocation:FileLocation;
+
+			var base64CodeReg:RegExp = new RegExp("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$","i");
 		
 			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
 			//1. first check the .xml_conversion_required file
@@ -452,12 +454,14 @@ package actionScripts.plugins.as3project.importer
 										for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
 										{
 											if(formula.text()){
-											var decodeBase64: String =  StringHelper.base64Decode(formula.text());
-											 if(!XMLUtils.specialCharacterCheck(decodeBase64))	{
-												var newFormulaNode:XML = new XML("<formula>"+decodeBase64+"</formula>");
-												formula.parent().appendChild(newFormulaNode);
-												delete formula.parent().children()[formula.childIndex()];
-											 }
+												if(formula.text().match(base64CodeReg)){
+													var decodeBase64: String =  StringHelper.base64Decode(formula.text());
+													var newFormulaNode:XML = new XML("<formula>"+decodeBase64+"</formula>");
+													formula.parent().appendChild(newFormulaNode);
+													delete formula.parent().children()[formula.childIndex()];
+												}
+											
+											 
 											}
 										}
 										//fix hidewhen
