@@ -16,7 +16,6 @@ package actionScripts.languageServer
     import actionScripts.plugin.console.ConsoleOutputter;
     import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.editor.GroovyTextEditor;
     import actionScripts.ui.editor.LotusBasicTextEditor;
     import actionScripts.ui.tabview.TabEvent;
     import actionScripts.utils.CommandLineUtil;
