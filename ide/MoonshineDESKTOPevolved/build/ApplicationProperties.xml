@@ -2,7 +2,7 @@
 <root>
 	<isDesktop>true</isDesktop> <!-- true|false -->
 	<isDevelopmentVersion>false</isDevelopmentVersion> <!-- true|false -->
-	<buildVersion><![CDATA[2.7.0]]></buildVersion>
+	<buildVersion><![CDATA[2.7.1]]></buildVersion>
 	<keepDebugFiles>false</keepDebugFiles> <!-- true|false -->
 
 	<!-- FLEX SDK INFORMATION -->
