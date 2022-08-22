@@ -98,6 +98,9 @@ package actionScripts.plugins.visualEditor.domino
 				{
 					dominoField.name = data.name;
 					dominoField.type = getDominoType(data);
+					dominoField.isMultiValue = data.allowMultiValues;
+
+					form.fields.addItem(dominoField);
 				}
 				else
 				{
@@ -119,11 +122,12 @@ package actionScripts.plugins.visualEditor.domino
 						{
 							dominoField.name = field.name;
 							dominoField.type = getDominoType(field);
+							dominoField.isMultiValue = field.allowMultiValues;
+
+							form.fields.addItem(dominoField);
 						}
 					}
 				}
-
-				form.fields.addItem(dominoField);
 			}
 		}
 
@@ -136,6 +140,9 @@ package actionScripts.plugins.visualEditor.domino
 					break;
 				case "Number":
 						return FormBuilderFieldType.NUMBER;
+					break;
+				case "Date":
+						return FormBuilderFieldType.DATETIME;
 					break;
 				default:
 						return FormBuilderFieldType.TEXT;
