@@ -27,6 +27,7 @@ package actionScripts.impls
 	import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
+	import actionScripts.plugins.visualEditor.domino.DominoJavaAgentsExporter;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -151,6 +152,7 @@ package actionScripts.impls
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
 	import visualEditor.plugin.ExportDominoToRoyalePlugin;
+	import visualEditor.plugin.ExportDominoJavaAgentsPlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
@@ -240,6 +242,7 @@ package actionScripts.impls
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
 				ExportDominoToRoyalePlugin,
+				ExportDominoJavaAgentsPlugin,
                 VisualEditorRefreshFilesPlugin,
 				FileAssociationPlugin,
 				FilesCopyPlugin,
@@ -646,6 +649,15 @@ package actionScripts.impls
 					(IDEModel.getInstance().activeProject is OnDiskProjectVO))
 			{
 				new CRUDJavaAgentsExporter();
+			}
+		}
+
+		public function generateJavaAgentsVisualEditor(components:Array):void
+		{
+			if (IDEModel.getInstance().activeProject &&
+				IDEModel.getInstance().activeProject["isDominoVisualEditorProject"])
+			{
+				new DominoJavaAgentsExporter(components);
 			}
 		}
 
