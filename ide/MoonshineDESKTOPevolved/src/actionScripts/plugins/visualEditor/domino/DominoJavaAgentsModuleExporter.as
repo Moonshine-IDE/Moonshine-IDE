@@ -68,6 +68,8 @@ package actionScripts.plugins.visualEditor.domino
 
 					var tmpFormObject:DominoFormVO = new DominoFormVO();
 						tmpFormObject.formName = this.components[i].file.fileBridge.nameWithoutExtension;
+						//Temporary assign viewName same as formName
+						tmpFormObject.viewName = this.components[i].file.fileBridge.nameWithoutExtension;
 
 					parseComponents(componentData, tmpFormObject);
 					formObjects.push(tmpFormObject);
