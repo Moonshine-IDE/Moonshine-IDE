@@ -136,7 +136,7 @@ package actionScripts.plugins.visualEditor.domino
 			switch(field.fieldType)
 			{
 				case "String":
-						return FormBuilderFieldType.TEXT;
+						return field.isRichText ? FormBuilderFieldType.RICH_TEXT : FormBuilderFieldType.TEXT;
 					break;
 				case "Number":
 						return FormBuilderFieldType.NUMBER;
