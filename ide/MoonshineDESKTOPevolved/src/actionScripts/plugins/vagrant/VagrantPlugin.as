@@ -19,10 +19,13 @@
 package actionScripts.plugins.vagrant
 {
 	import actionScripts.events.DominoEvent;
+	import actionScripts.events.OnDiskBuildEvent;
 	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
 	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
+	import actionScripts.plugins.vagrant.utils.DeployDatabaseJob;
 
 	import components.popup.ConvertDominoDatabasePopup;
+	import components.popup.DeployDominoDatabasePopup;
 
 	import flash.display.DisplayObject;
 
@@ -71,7 +74,9 @@ package actionScripts.plugins.vagrant
 		private var vagrantFileLocation:FileLocation;
 		private var vagrantInstances:ArrayCollection;
 		private var convertDominoDBPopup:ConvertDominoDatabasePopup;
+		private var deployDominoDBPopup:DeployDominoDatabasePopup;
 		private var dbConversionJob:ConvertDatabaseJob;
+		private var deployDBJob:DeployDatabaseJob;
 
 		public function get vagrantPath():String
 		{
@@ -126,6 +131,7 @@ package actionScripts.plugins.vagrant
 			}
 
 			dispatcher.addEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase, false, 0, true);
+			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -134,6 +140,7 @@ package actionScripts.plugins.vagrant
 			removeMenuListeners();
 			onConsoleDeactivated(null);
 			dispatcher.removeEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase);
+			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest);
 		}
 
 		override public function resetSettings():void
@@ -178,11 +185,30 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function onDeployDominoDatabseRequest(event:Event):void
+		{
+			if (!deployDominoDBPopup)
+			{
+				deployDominoDBPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, DeployDominoDatabasePopup) as DeployDominoDatabasePopup;
+				deployDominoDBPopup.instances = vagrantInstances;
+				deployDominoDBPopup.addEventListener(CloseEvent.CLOSE, onDeployDominoDBPopupClosed);
+				deployDominoDBPopup.addEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployDatabaseProcess);
+				PopUpManager.centerPopUp(deployDominoDBPopup);
+			}
+		}
+
 		private function onConvertDominoDBPopupClosed(event:CloseEvent):void
 		{
 			convertDominoDBPopup.removeEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
 			convertDominoDBPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartNSFConversionProcess);
 			convertDominoDBPopup = null;
+		}
+
+		private function onDeployDominoDBPopupClosed(event:CloseEvent):void
+		{
+			deployDominoDBPopup.removeEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
+			deployDominoDBPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployDatabaseProcess);
+			deployDominoDBPopup = null;
 		}
 
 		private function onStartNSFConversionProcess(event:Event):void
@@ -195,6 +221,20 @@ package actionScripts.plugins.vagrant
 					convertDominoDBPopup.uploadRequestReturn,
 					convertDominoDBPopup.selectedInstance.url,
 					convertDominoDBPopup.destinationFolder
+			);
+			configureListenersDBConversionJob(true);
+		}
+
+		private function onStartDeployDatabaseProcess(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Deploying Database"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateConversionRequest, false, 0, true);
+
+			// get the object to work with
+			deployDBJob = new DeployDatabaseJob(
+					convertDominoDBPopup.uploadRequestReturn,
+					convertDominoDBPopup.selectedInstance.url,
+					"name pathao"
 			);
 			configureListenersDBConversionJob(true);
 		}

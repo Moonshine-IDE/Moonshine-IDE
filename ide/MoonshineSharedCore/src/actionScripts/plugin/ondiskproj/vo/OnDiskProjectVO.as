@@ -83,9 +83,21 @@ package actionScripts.plugin.ondiskproj.vo
 		public function get jdkType():String									{	return _jdkType;	}
 		public function set jdkType(value:String):void							{	_jdkType = value;	}
 
-		private var _dominoBaseAgentURL:String;
+		private var _dominoBaseAgentURL:String = "https://127.0.0.1:8080/%CleanProjectName%.nsf";
 		public function get dominoBaseAgentURL():String							{	return _dominoBaseAgentURL;	}
 		public function set dominoBaseAgentURL(value:String):void				{	_dominoBaseAgentURL = value;}
+
+		private var _localDatabase:String = "nsfs/nsf-moonshine/target/nsf-moonshine-domino-1.0.0.nsf";
+		public function get localDatabase():String								{	return _localDatabase;	}
+		public function set localDatabase(value:String):void					{	_localDatabase = value;	}
+
+		private var _targetServer:String = "demo/DEMO";
+		public function get targetServer():String								{	return _targetServer;	}
+		public function set targetServer(value:String):void						{	_targetServer = value;	}
+
+		private var _targetDatabase:String = "%CleanProjectName%.nsf";
+		public function get targetDatabase():String								{	return _targetDatabase;	}
+		public function set targetDatabase(value:String):void					{	_targetDatabase = value;	}
 
 		public function OnDiskProjectVO(folder:FileLocation, projectName:String = null, updateToTreeView:Boolean = true)
 		{
@@ -108,6 +120,9 @@ package actionScripts.plugin.ondiskproj.vo
 					])
 				),
 				new SettingsWrapper("Domino", new <ISetting>[
+					new StringSetting(this, "localDatabase", "Local Database"),
+					new StringSetting(this, "targetServer", "Target Server"),
+					new StringSetting(this, "targetDatabase", "Target Database"),
 					new StringSetting(this, "dominoBaseAgentURL", "Base Agent URL")
 				]),
 				new SettingsWrapper("Maven Build", Vector.<ISetting>([

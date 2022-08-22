@@ -6,6 +6,7 @@ package actionScripts.events
     {
         public static const GENERATE_CRUD_ROYALE:String = "generateCRUDRoyaleProject";
         public static const GENERATE_JAVA_AGENTS:String = "generateCRUDJavaAgents";
+        public static const DEPLOY_DOMINO_DATABASE:String = "eventDeployDominoDatabase";
 
         private var _buildId:String;
         private var _buildDirectory:String;

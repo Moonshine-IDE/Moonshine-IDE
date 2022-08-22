@@ -23,11 +23,12 @@ package actionScripts.plugins.vagrant.utils
 
 		private static const CONVERSION_TEST_INTERVAL:int = 5000; // 5 seconds
 
-		private var serverURL:String;
-		private var uploadedNSFFilePath:String;
+		protected var loader:DataAgent;
+		protected var conversioTestTimeout:uint;
+		protected var serverURL:String;
+		protected var uploadedNSFFilePath:String;
+
 		private var uploadedNSFFileSize:Number;
-		private var loader:DataAgent;
-		private var conversioTestTimeout:uint;
 		private var retryCount:int;
 		private var destinationProjectFolder:File;
 		private var isTerminate:Boolean;
@@ -62,7 +63,7 @@ package actionScripts.plugins.vagrant.utils
 			warning("Conversion job terminates. Note: Some process may still runs on server.");
 		}
 
-		private function runConversionCommandOnServer(withId:String=null):void
+		protected function runConversionCommandOnServer(withId:String=null):void
 		{
 			clearTimeout(conversioTestTimeout);
 			loader = new DataAgent(
@@ -74,7 +75,7 @@ package actionScripts.plugins.vagrant.utils
 			);
 		}
 
-		private function onConversionRunResponseLoaded(value:Object, message:String=null):void
+		protected function onConversionRunResponseLoaded(value:Object, message:String=null):void
 		{
 			// probable termination
 			if (isTerminate)
@@ -136,7 +137,7 @@ package actionScripts.plugins.vagrant.utils
 			}
 		}
 
-		private function onConversionRunFault(message:String):void
+		protected function onConversionRunFault(message:String):void
 		{
 			loader = null;
 			error("Conversion request failed: "+ message);
@@ -158,7 +159,7 @@ package actionScripts.plugins.vagrant.utils
 			}
 		}
 
-		private function onFileDownloadeded(event:Event):void
+		protected function onFileDownloadeded(event:Event):void
 		{
 			configureListenerOnFileDownloader(false);
 			if (!destinationProjectFolder.exists)
@@ -172,12 +173,12 @@ package actionScripts.plugins.vagrant.utils
 			);
 		}
 
-		private function onFileDownloadFailed(event:Event):void
+		protected function onFileDownloadFailed(event:Event):void
 		{
 			configureListenerOnFileDownloader(false);
 		}
 
-		private function onUnzipSuccess(event:Event):void
+		protected function onUnzipSuccess(event:Event):void
 		{
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, destinationProjectFolder)
@@ -186,7 +187,7 @@ package actionScripts.plugins.vagrant.utils
 			dispatchEvent(new Event(EVENT_CONVERSION_COMPLETE));
 		}
 
-		private function onUnzipError(event:ErrorEvent=null):void
+		protected function onUnzipError(event:ErrorEvent=null):void
 		{
 			if (event) error("Unzip error: ", event.toString());
 			else error("Unzip terminated with unhandled error!");
