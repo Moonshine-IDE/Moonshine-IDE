@@ -56,6 +56,9 @@ package actionScripts.plugins.ui.editor
 	import spark.components.Alert;
 	import mx.collections.ArrayList;
 
+	import utils.GenericUtils;
+	import mx.collections.ArrayCollection;
+
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
 		private static const EVENT_SWITCH_TAB_TO_CODE:String = "switchTabToCode";
@@ -520,6 +523,21 @@ package actionScripts.plugins.ui.editor
 			
 			
 
+			//sort the subfrom 
+			 if(subforms.length>0){
+                var arry:ArrayCollection= new ArrayCollection(subforms.toArray());
+
+                arry=GenericUtils.arrayCollectionSort(arry,"label",false);
+                
+				subforms=new ArrayList();
+				for each(var item:Object in arry)
+				{
+					subforms.addItem(item);
+					
+				}
+				
+
+            }
 			
 			
 			return subforms;

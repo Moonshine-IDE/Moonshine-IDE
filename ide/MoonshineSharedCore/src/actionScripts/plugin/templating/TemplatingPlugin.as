@@ -304,7 +304,7 @@ package actionScripts.plugin.templating
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_DOMINO_PAGE = files;
 			
-			files = templatesDir.resolvePath("files/Domino Visual Editor Sub Form.subform.template");
+			files = templatesDir.resolvePath("files/Domino Visual Editor Subform.subform.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_DOMINO_SUBFORM = files;
 			// Just to generate a divider in relevant UI
@@ -983,7 +983,7 @@ package actionScripts.plugin.templating
 					case "Domino Visual Editor Form":
 						openDominoFormComponentTypeChoose(event);
 						break;
-					case "Domino Visual Editor Sub Form":
+					case "Domino Visual Editor Subform":
 						openDominoSubFormComponentTypeChoose(event);
 						break;	
 					case "Domino Visual Editor Page":

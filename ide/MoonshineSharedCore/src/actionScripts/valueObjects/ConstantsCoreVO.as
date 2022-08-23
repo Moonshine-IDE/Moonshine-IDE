@@ -343,7 +343,7 @@ package actionScripts.valueObjects
 
 			//TEMPLATE_DOMINO_SUBFORM
 			TEMPLATE_DOMINO_SUBFORM = new FileLocation("TEMPLATE");
-			TEMPLATE_DOMINO_SUBFORM.fileBridge.name = "Domino Visual Editor Sub Form.subform";
+			TEMPLATE_DOMINO_SUBFORM.fileBridge.name = "Domino Visual Editor Subform.subform";
 			TEMPLATE_DOMINO_SUBFORM.fileBridge.isDirectory = false;
 			TEMPLATE_DOMINO_SUBFORM.fileBridge.extension = "subform";
 			TEMPLATE_DOMINO_SUBFORM.fileBridge.data = "";
