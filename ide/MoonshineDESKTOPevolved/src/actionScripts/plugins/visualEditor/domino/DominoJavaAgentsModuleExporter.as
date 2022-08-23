@@ -68,6 +68,8 @@ package actionScripts.plugins.visualEditor.domino
 
 					var tmpFormObject:DominoFormVO = new DominoFormVO();
 						tmpFormObject.formName = this.components[i].file.fileBridge.nameWithoutExtension;
+						//Temporary assign viewName same as formName
+						tmpFormObject.viewName = this.components[i].file.fileBridge.nameWithoutExtension;
 
 					parseComponents(componentData, tmpFormObject);
 					formObjects.push(tmpFormObject);
@@ -98,6 +100,9 @@ package actionScripts.plugins.visualEditor.domino
 				{
 					dominoField.name = data.name;
 					dominoField.type = getDominoType(data);
+					dominoField.isMultiValue = data.allowMultiValues;
+
+					form.fields.addItem(dominoField);
 				}
 				else
 				{
@@ -119,11 +124,12 @@ package actionScripts.plugins.visualEditor.domino
 						{
 							dominoField.name = field.name;
 							dominoField.type = getDominoType(field);
+							dominoField.isMultiValue = field.allowMultiValues;
+
+							form.fields.addItem(dominoField);
 						}
 					}
 				}
-
-				form.fields.addItem(dominoField);
 			}
 		}
 
@@ -132,10 +138,13 @@ package actionScripts.plugins.visualEditor.domino
 			switch(field.fieldType)
 			{
 				case "String":
-						return FormBuilderFieldType.TEXT;
+						return field.isRichText ? FormBuilderFieldType.RICH_TEXT : FormBuilderFieldType.TEXT;
 					break;
 				case "Number":
 						return FormBuilderFieldType.NUMBER;
+					break;
+				case "Date":
+						return FormBuilderFieldType.DATETIME;
 					break;
 				default:
 						return FormBuilderFieldType.TEXT;
