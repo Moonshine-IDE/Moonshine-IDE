@@ -461,9 +461,9 @@ package actionScripts.plugins.as3project.mxmlc
 
 			var sdkPathHomeArg:String;
 			var enLanguageArg:String = "SETUP_SH_VMARGS=\"-Duser.language=en -Duser.region=en\"";
-			var compilerPathHomeArg:String = "FALCON_HOME=" + UtilsCore.getEncodedForShell(SDKstr);
-			var compilerArg:String = "&& " + UtilsCore.getEncodedForShell(fschstr);
-			var configArg:String = " -load-config+=" + project.folderLocation.fileBridge.getRelativePath(project.config.file);
+			var compilerPathHomeArg:String = "FALCON_HOME=".concat('"', SDKstr, '"');
+			var compilerArg:String = "&& ".concat('"', fschstr, '"');
+			var configArg:String = " -load-config+=".concat('"', project.folderLocation.fileBridge.getRelativePath(project.config.file), '"');
 			var additionalBuildArgs:String = project.buildOptions.getArguments();
 			additionalBuildArgs = " " + additionalBuildArgs.replace("-optimize=false", "");
 				
@@ -489,11 +489,11 @@ package actionScripts.plugins.as3project.mxmlc
                 if (project.isRoyale)
                 {
                     jsCompilationArg = " -compiler.targets=JSRoyale";
-					sdkPathHomeArg = "ROYALE_HOME=" + UtilsCore.getEncodedForShell(SDKstr);
+					sdkPathHomeArg = "ROYALE_HOME=".concat('"', SDKstr, '"');
 					compilerPathHomeArg = "";
                 }
 
-				jsCompilationArg += " -js-output=".concat(UtilsCore.getEncodedForShell(project.jsOutputPath));
+				jsCompilationArg += " -js-output=".concat('"', project.jsOutputPath, '"');
 			}
 
             if(Settings.os == "win")
