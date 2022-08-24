@@ -109,6 +109,7 @@ package actionScripts.plugin.ondiskproj.importer
 
 			project.dominoBaseAgentURL = project.dominoBaseAgentURL.replace(/%CleanProjectName%/gi, projectName);
 			project.targetDatabase = project.targetDatabase.replace(/%CleanProjectName%/gi, projectName);
+			project.localDatabase = project.localDatabase.replace(/%ProjectPath%/gi, project.projectFolder.nativePath);
 
 			if (project.targets.length > 0)
 			{

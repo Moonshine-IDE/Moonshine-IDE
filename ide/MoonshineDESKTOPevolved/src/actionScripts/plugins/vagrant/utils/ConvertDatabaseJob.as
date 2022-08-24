@@ -113,12 +113,7 @@ package actionScripts.plugins.vagrant.utils
 								}
 								else
 								{
-									print("Checking conversion project from: "+ serverURL + infoObject.workingDir);
-									downloader = new FileDownloader(
-											serverURL +"/file/download?path="+ infoObject.workingDir +"/result.zip", File.cacheDirectory.resolvePath("moonshine/result.zip")
-									);
-									configureListenerOnFileDownloader(true);
-									downloader.load();
+									onTaskStatusCompleted(infoObject);
 								}
 								break;
 							case "created":
@@ -135,6 +130,16 @@ package actionScripts.plugins.vagrant.utils
 					}
 				}
 			}
+		}
+
+		protected function onTaskStatusCompleted(withJSONObject:Object):void
+		{
+			print("Checking conversion project from: "+ serverURL + withJSONObject.workingDir);
+			downloader = new FileDownloader(
+					serverURL +"/file/download?path="+ withJSONObject.workingDir +"/result.zip", File.cacheDirectory.resolvePath("moonshine/result.zip")
+			);
+			configureListenerOnFileDownloader(true);
+			downloader.load();
 		}
 
 		protected function onConversionRunFault(message:String):void

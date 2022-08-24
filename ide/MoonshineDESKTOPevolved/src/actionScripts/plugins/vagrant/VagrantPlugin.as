@@ -228,15 +228,15 @@ package actionScripts.plugins.vagrant
 		private function onStartDeployDatabaseProcess(event:Event):void
 		{
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Deploying Database"));
-			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateConversionRequest, false, 0, true);
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployDatabaseRequest, false, 0, true);
 
 			// get the object to work with
 			deployDBJob = new DeployDatabaseJob(
-					convertDominoDBPopup.uploadRequestReturn,
-					convertDominoDBPopup.selectedInstance.url,
-					"name pathao"
+					deployDominoDBPopup.uploadRequestReturn,
+					deployDominoDBPopup.selectedInstance.url,
+					deployDominoDBPopup.targetDatabase
 			);
-			configureListenersDBConversionJob(true);
+			configureListenersDeployDatabaseJob(true);
 		}
 
 		private function configureListenersDBConversionJob(listen:Boolean):void
@@ -254,6 +254,21 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function configureListenersDeployDatabaseJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				deployDBJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDeployDatabaseEnded, false, 0, true);
+				deployDBJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDeployDatabaseEnded, false, 0, true);
+			}
+			else
+			{
+				deployDBJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDeployDatabaseEnded);
+				deployDBJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDeployDatabaseEnded);
+				deployDBJob = null;
+			}
+		}
+
 		private function onDBConversionEnded(event:Event):void
 		{
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
@@ -261,10 +276,23 @@ package actionScripts.plugins.vagrant
 			configureListenersDBConversionJob(false);
 		}
 
+		private function onDeployDatabaseEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployDatabaseRequest);
+			configureListenersDeployDatabaseJob(false);
+		}
+
 		private function onTerminateConversionRequest(event:StatusBarEvent):void
 		{
 			dbConversionJob.stop();
 			onDBConversionEnded(null);
+		}
+
+		private function onTerminateDeployDatabaseRequest(event:StatusBarEvent):void
+		{
+			deployDBJob.stop();
+			onDeployDatabaseEnded(null);
 		}
 
 		private function updateEventListeners():void

@@ -42,6 +42,7 @@
 			import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
 			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 			import actionScripts.utils.FileUploader;
+			import actionScripts.utils.FileUtils;
 
 			import mx.collections.ArrayCollection;
 
@@ -57,9 +58,8 @@
 
 			public var instances:ArrayCollection;
 
-			[Bindable] private var nsfConverterInstances:ArrayCollection;
 			[Bindable] private var project:OnDiskProjectVO;
-
+			[Bindable] private var nsfConverterInstances:ArrayCollection;
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			private var fileUploader:FileUploader;
 			private var instanceStateCheckCount:int;
@@ -70,14 +70,9 @@
 				return _uploadRequestReturn;
 			}
 
-			public function get destinationFolder():File
+			public function get targetDatabase():String
 			{
-				var tmpFileSplilt:Array = txtFile.text.split(".");
-				tmpFileSplilt.pop();
-				var targetDirectoryName:String = tmpFileSplilt.join(".");
-				targetDirectoryName = targetDirectoryName.replace(/ /g, "");
-
-				return (new File(txtTargetDatabase.text).resolvePath(targetDirectoryName));
+				return txtTargetDatabase.text.replace(/ /g, "");
 			}
 
 			public function get selectedInstance():VagrantInstanceVO
@@ -192,16 +187,6 @@
 					return;
 				}
 
-				var destinationFolder:File = this.destinationFolder;
-				if (destinationFolder.exists)
-				{
-					if (destinationFolder.getDirectoryListing().length > 0)
-					{
-						Alert.show(destinationFolder.nativePath +" should be empty.", "Error!");
-						return;
-					}
-				}
-
 				dispatcher.dispatchEvent(
 						new ConsoleOutputEvent(
 								ConsoleOutputEvent.CONSOLE_PRINT,
@@ -243,8 +228,7 @@
 	<s:Label text="Local Database (*.nsf):"/>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<view:PromptTextInput id="txtFile"
-							  width="100%" styleName="textInput" prompt="Select path.." editable="false"
-								text="{project.localDatabase}"/>
+							  width="100%" styleName="textInput" prompt="Select path.." editable="false"/>
 		<s:Button id="btnBrowse"
 				  label="Browse" click="onNSFBrowse()" styleName="darkButton"/>
 	</s:HGroup>
@@ -261,8 +245,8 @@
 	<s:Label text="Target Database Path:"/>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<view:PromptTextInput id="txtTargetDatabase"
-							  width="100%" styleName="textInput"
-								text="{project.targetDatabase}"/>
+							  width="100%" styleName="textInput" restrict="A-Za-z0-9_."
+								text="{project.targetDatabase}" prompt="Path to database.nsf"/>
 	</s:HGroup>
 
 	<resizableTitleWindow:controlBarContent>

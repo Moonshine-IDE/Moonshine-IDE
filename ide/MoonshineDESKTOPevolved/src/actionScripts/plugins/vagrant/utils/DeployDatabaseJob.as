@@ -38,5 +38,11 @@ package actionScripts.plugins.vagrant.utils
 					withId ? DataAgent.GETEVENT : DataAgent.POSTEVENT
 			);
 		}
+
+		override protected function onTaskStatusCompleted(withJSONObject:Object):void
+		{
+			success(withJSONObject.output);
+			dispatchEvent(new Event(EVENT_CONVERSION_COMPLETE));
+		}
 	}
 }

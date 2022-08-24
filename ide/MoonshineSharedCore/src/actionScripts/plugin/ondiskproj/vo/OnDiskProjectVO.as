@@ -87,7 +87,7 @@ package actionScripts.plugin.ondiskproj.vo
 		public function get dominoBaseAgentURL():String							{	return _dominoBaseAgentURL;	}
 		public function set dominoBaseAgentURL(value:String):void				{	_dominoBaseAgentURL = value;}
 
-		private var _localDatabase:String = "nsfs/nsf-moonshine/target/nsf-moonshine-domino-1.0.0.nsf";
+		private var _localDatabase:String = "%ProjectPath%/nsfs/nsf-moonshine/target/nsf-moonshine-domino-1.0.0.nsf";
 		public function get localDatabase():String								{	return _localDatabase;	}
 		public function set localDatabase(value:String):void					{	_localDatabase = value;	}
 
