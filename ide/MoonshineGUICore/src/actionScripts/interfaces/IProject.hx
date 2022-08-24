@@ -2,7 +2,6 @@ package actionScripts.interfaces;
 
 import actionScripts.events.NewProjectEvent;
 import actionScripts.valueObjects.FileWrapper;
-import haxe.Constraints.Function;
 
 interface IProject {
 
@@ -13,7 +12,7 @@ interface IProject {
     * @param projectWrapper
     * @param finishHandler - handler must return FileWrapper object
     */
-    function deleteProject(projectWrapper:FileWrapper, finishHandler:()->FileWrapper, isDeleteRoot:Bool=false):Void;
+    function deleteProject(projectWrapper:FileWrapper, finishHandler:(FileWrapper)->Void, isDeleteRoot:Bool=false):Void;
 
     function getCorePlugins():Array<Dynamic>;
     function getDefaultPlugins():Array<Dynamic>;
