@@ -69,7 +69,8 @@ package actionScripts.utils
 	
 	import feathers.data.ArrayCollection;
 
-	//import flash.filesystem.File;
+	import flash.filesystem.File;
+	
 
 	public class UtilsCore 
 	{
@@ -1695,19 +1696,34 @@ package actionScripts.utils
 				return null;
 			}
 			
-			const extensionPattern: RegExp = /\.(mxml|xhtml|form)$/;
+			const extensionPattern: RegExp = /\.(mxml|xhtml|form|subform|page)$/;
 			const veSourcePathFile:String = fw.file.fileBridge.nativePath;
 			if(!veSourcePathFile.match(extensionPattern))
 			{
 				return null;
 			}
 			
-			const veOutputPathFile:String = veSourcePathFile
-				.replace(
-					as3ProjectVO.sourceFolder.fileBridge.nativePath,
-					as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath)
-				.replace(extensionPattern, ".xml");
+			var veOutputPathFile:String ;
+			var targetReplacementPath:String;
+			var sourceReplacementPath:String
+			const veSourcePathFileExtension:String = fw.file.fileBridge.extension;
+			if(veSourcePathFileExtension=="subform"){
+				sourceReplacementPath=as3ProjectVO.sourceFolder.fileBridge.nativePath.replace("Forms","")+"SharedElements"+File.separator+"Subforms";
+				targetReplacementPath=as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath+ File.separator+"subforms";
+			}else if(veSourcePathFileExtension=="page"){ 
+				sourceReplacementPath=as3ProjectVO.sourceFolder.fileBridge.nativePath.replace("Forms","Pages");
+				targetReplacementPath=as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath+ File.separator+"pages";
+			}else{
+				sourceReplacementPath=as3ProjectVO.sourceFolder.fileBridge.nativePath;
+				targetReplacementPath=as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath;
+			}
 
+		
+			
+			veOutputPathFile = veSourcePathFile
+				.replace(sourceReplacementPath,targetReplacementPath)
+				.replace(extensionPattern, ".xml");
+			
 			return new FileLocation(veOutputPathFile);
 		}
 

@@ -207,7 +207,7 @@ package actionScripts.plugin.rename
 			if (fileVisualEditor)
 			{
 				var newVisualEditorFile:FileLocation = fileVisualEditor.fileBridge.parent.resolvePath(newFile.fileBridge.nameWithoutExtension + ".xml");
-				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);
+				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);	
 			}
 
 			// we need to update file location of the (if any) opened instance 
