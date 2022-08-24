@@ -293,6 +293,17 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			_visualEditorSourceFolder = value;
 		}
+
+		private var _dominoBaseAgentURL:String;
+		public function get dominoBaseAgentURL():String
+		{
+			return _dominoBaseAgentURL;
+		}
+
+		public function set dominoBaseAgentURL(value:String):void
+		{
+			_dominoBaseAgentURL = value;
+		}
 		
 		private var _filesList:ArrayCollection;
 		[Bindable]
@@ -816,6 +827,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 			//setting_new.stringValue="clean install";
 			
             return Vector.<SettingsWrapper>([
+					new SettingsWrapper("Domino", new <ISetting>[
+						new StringSetting(this, "dominoBaseAgentURL", "Base Agent URL")
+					]),
 					new SettingsWrapper("Paths",
 							Vector.<ISetting>([
 								new PathListSetting(this, "classpaths", "Class paths", folderLocation, false, true, true, true),
