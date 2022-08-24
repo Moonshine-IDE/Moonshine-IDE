@@ -69,7 +69,7 @@ package actionScripts.utils
 	
 	import feathers.data.ArrayCollection;
 
-	import flash.filesystem.File;
+	//import flash.filesystem.File;
 	
 
 	public class UtilsCore 
@@ -1708,11 +1708,11 @@ package actionScripts.utils
 			var sourceReplacementPath:String
 			const veSourcePathFileExtension:String = fw.file.fileBridge.extension;
 			if(veSourcePathFileExtension=="subform"){
-				sourceReplacementPath=as3ProjectVO.sourceFolder.fileBridge.nativePath.replace("Forms","")+"SharedElements"+File.separator+"Subforms";
-				targetReplacementPath=as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath+ File.separator+"subforms";
+				sourceReplacementPath=as3ProjectVO.sourceFolder.fileBridge.nativePath.replace("Forms","")+"SharedElements"+model.fileCore.separator+"Subforms";
+				targetReplacementPath=as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath+ model.fileCore.separator+"subforms";
 			}else if(veSourcePathFileExtension=="page"){ 
 				sourceReplacementPath=as3ProjectVO.sourceFolder.fileBridge.nativePath.replace("Forms","Pages");
-				targetReplacementPath=as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath+ File.separator+"pages";
+				targetReplacementPath=as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath+ model.fileCore.separator+"pages";
 			}else{
 				sourceReplacementPath=as3ProjectVO.sourceFolder.fileBridge.nativePath;
 				targetReplacementPath=as3ProjectVO.visualEditorSourceFolder.fileBridge.nativePath;
