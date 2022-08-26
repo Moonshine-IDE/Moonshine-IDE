@@ -1688,6 +1688,16 @@ package actionScripts.utils
 			return (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
 		}
 
+		public static function getProjectFolder(fw:FileWrapper):String
+		{
+			const as3ProjectVO:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;			
+			if (!as3ProjectVO || !as3ProjectVO.isVisualEditorProject) 
+			{
+				return null;
+			}
+			return as3ProjectVO.folderPath;
+		}
+
 		public static function getVisualEditorSourceFile(fw:FileWrapper):FileLocation
 		{
 			const as3ProjectVO:AS3ProjectVO = UtilsCore.getProjectFromProjectFolder(fw) as AS3ProjectVO;			
@@ -1695,9 +1705,12 @@ package actionScripts.utils
 			{
 				return null;
 			}
+
+		
 			
 			const extensionPattern: RegExp = /\.(mxml|xhtml|form|subform|page)$/;
 			const veSourcePathFile:String = fw.file.fileBridge.nativePath;
+						
 			if(!veSourcePathFile.match(extensionPattern))
 			{
 				return null;
@@ -1726,6 +1739,8 @@ package actionScripts.utils
 			
 			return new FileLocation(veOutputPathFile);
 		}
+
+		
 
         private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
         {

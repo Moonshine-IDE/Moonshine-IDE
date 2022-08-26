@@ -56,6 +56,11 @@ package actionScripts.plugin.rename
     import moonshine.lsp.Position;
     import actionScripts.utils.applyWorkspaceEdit;
 
+	import flash.filesystem.File;
+	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
+
 	public class RenamePlugin extends PluginBase
 	{
 		private var renameSymbolViewWrapper:FeathersUIWrapper;
@@ -197,6 +202,8 @@ package actionScripts.plugin.rename
 		private function onFileRenamedRequest(fileWrapper:FileWrapper, newName:String):void
 		{
 			var fileVisualEditor:FileLocation = UtilsCore.getVisualEditorSourceFile(fileWrapper);
+			
+			var sourceFileName:String =fileWrapper.file.fileBridge.nameWithoutExtension;
 			var newFile:FileLocation = fileWrapper.file.fileBridge.parent.resolvePath(newName);
 			_existingFilePath = fileWrapper.nativePath;
 			
@@ -224,6 +231,15 @@ package actionScripts.plugin.rename
 			// updating the tree view
 			var tree:CustomTree = model.mainView.getTreeViewPanel().tree;
 			var tmpParent:FileWrapper = tree.getParentItem(fileWrapper);
+
+
+			//update subfrom name in the old form/subfrom 
+			var projectPath:String=UtilsCore.getProjectFolder(fileWrapper);
+			if(projectPath){
+				var projectFolder:FileLocation = new FileLocation(projectPath);
+				
+				replaceSubfromFromAllReferencesFiles(projectFolder,sourceFileName,newName);
+			}
 			
 			var timeoutValue:uint = setTimeout(function():void 
 				{
@@ -238,6 +254,74 @@ package actionScripts.plugin.rename
 					dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_RENAMED, null, fileWrapper));
 					clearTimeout(timeoutValue);
 				}, 300);
+		}
+
+		
+
+		private  function replaceSubfromFromAllReferencesFiles(projectFolderLocation:FileLocation,sourceSubformName:String,targetSubformName:String){
+			
+			var formFolderPath:String = "nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms";
+			var subFormFolderPath:String = "nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms";
+			var formFileLocation:FileLocation = projectFolderLocation.resolvePath(formFolderPath);
+			var subformFileLocation:FileLocation = projectFolderLocation.resolvePath(subFormFolderPath);
+			
+			if(formFileLocation.fileBridge.exists || subformFileLocation.fileBridge.exists){
+				
+				var directory:Array = formFileLocation.fileBridge.getDirectoryListing();
+				var subdirectory:Array = subformFileLocation.fileBridge.getDirectoryListing();
+				if(subdirectory){
+					for each (var subxml:File in subdirectory)
+					{
+						directory.push(subxml);
+					}
+				}
+
+				for each (var form:File in directory)
+				{
+					if (form.extension == "form" || form.extension == "subform") {
+						
+						var _fileStreamMoonshine:FileStream = new FileStream();
+						_fileStreamMoonshine.open(form, FileMode.READ);
+						var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
+						var xml:XML = new XML(data);
+						
+						var xmlns:Namespace = new Namespace("http://www.lotus.com/dxl");
+						xml.setNamespace(xmlns);
+						
+						 
+
+						var subformList:XMLList=xml.@xmlns::subform;
+						for each(var subform:XML in xml..subform){
+							Alert.show("souce subform name :"+subform.@name);
+							if(subform.@name==sourceSubformName){
+								subform.@name=targetSubformName;
+							}
+						}
+						
+						var subformrefList:XMLList=xml.xmlns::subformref;
+						//Alert.show("subformrefList:"+subformrefList.length());
+	
+						for each(var subform:XML in xml..subformref) //no matter of depth Note here
+						{
+							Alert.show("souce name ref:"+subform.@name);
+							if(subform.@name==sourceSubformName){
+								Alert.show("found subfrom:"+sourceSubformName);
+								subform.@name=targetSubformName;
+							}
+						}
+
+						//overwrite the old file  
+										
+						//_fileStreamMoonshine.writeUTFBytes(internalForm.toXMLString());
+						_fileStreamMoonshine.close();
+						//remove old file 
+						// var fileLocation:FileLocation=new FileLocation(form.nativePath);
+						// fileLocation.fileBridge.deleteFile();
+						// fileLocation.fileBridge.save(internalForm);
+					}
+				}
+			}
+			
 		}
 		
 		private function handleOpenDuplicateFileView(event:DuplicateEvent):void
