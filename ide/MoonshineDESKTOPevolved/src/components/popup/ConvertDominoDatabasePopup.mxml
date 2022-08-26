@@ -218,7 +218,7 @@
             disableUI();
 			fileUploader.upload(
 					new FileLocation(txtFile.text),
-					(ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload",
+					(ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload?rand="+ Math.random(),
 					"file"
 			);
         }
