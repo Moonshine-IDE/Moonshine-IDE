@@ -547,6 +547,15 @@ package actionScripts.plugin.project
 							project = model.genericCore.parseGenericProject(projectLocation);
 						}
 					}
+					
+					if (!project)
+					{
+						projectFileLocation = model.basicCore.testBasic(projectFile);
+						if (projectFileLocation)
+						{
+							project = model.basicCore.parseBasic(projectLocation);
+						}
+					}
 
                     if (project)
                     {

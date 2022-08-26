@@ -9,6 +9,8 @@ package actionScripts.impls
 	import flash.filesystem.File;
 	import actionScripts.plugin.syntax.BasicSyntaxPlugin;
 	import actionScripts.plugin.basic.BasicProjectPlugin;
+	import actionScripts.events.NewProjectEvent;
+	import actionScripts.plugin.basic.CreateBasicProject;
 
 	public class IBasicBridgeImpl extends ProjectBridgeImplBase implements IBasicBridge
 	{
@@ -23,6 +25,12 @@ package actionScripts.impls
 			
 		}
 		
+		protected var executeCreateBasicProject:CreateBasicProject;
+		
+		override public function createProject(event:NewProjectEvent):void
+        {
+			executeCreateBasicProject = new CreateBasicProject(event);
+		}
         public function parseBasic(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):BasicProjectVO{
         		return BasicImporter.parse(file, projectName, settingsFileLocation);
         }

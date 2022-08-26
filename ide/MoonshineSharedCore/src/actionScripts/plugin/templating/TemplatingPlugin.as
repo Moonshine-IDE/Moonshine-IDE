@@ -91,6 +91,7 @@ package actionScripts.plugin.templating
 
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
+	
 
     /*
     Templating plugin
@@ -399,8 +400,10 @@ package actionScripts.plugin.templating
 			var royaleVisualProjectTemplates:ArrayCollection = new ArrayCollection();
 			var royaleDominoExportTemplates:ArrayCollection = new ArrayCollection();
 			var javaProjectTemplates:ArrayCollection = new ArrayCollection();
+			var basicProjectTemplates:ArrayCollection = new ArrayCollection();
 			var grailsProjectTemplates:ArrayCollection = new ArrayCollection();
 			var haxeProjectTemplates:ArrayCollection = new ArrayCollection();
+			
 
 			allLoadedTemplates = [];
             for each (var templateConfig:XML in templateConfigs)
@@ -461,6 +464,7 @@ package actionScripts.plugin.templating
 					{
                         javaProjectTemplates.addItem(template);
 					}
+					
 
 					if (template.title.indexOf("Grails") != -1)
 					{
@@ -470,6 +474,11 @@ package actionScripts.plugin.templating
 					if (template.title.indexOf("Haxe") != -1)
 					{
                         haxeProjectTemplates.addItem(template);
+					}
+					
+					if (template.title.indexOf("Basic") != -1)
+					{
+                        basicProjectTemplates.addItem(template);
 					}
 
 					allLoadedTemplates.push(template);
@@ -487,6 +496,7 @@ package actionScripts.plugin.templating
 			ConstantsCoreVO.TEMPLATES_PROJECTS_GRAILS = grailsProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_HAXE = haxeProjectTemplates;
 			ConstantsCoreVO.TEMPLATES_PROJECTS_ACTIONSCRIPT = actionScriptProjectTemplates;
+			ConstantsCoreVO.TEMPLATES_PROJECTS_BASIC = basicProjectTemplates;
         }
 
 		public function getSettingsList():Vector.<ISetting>

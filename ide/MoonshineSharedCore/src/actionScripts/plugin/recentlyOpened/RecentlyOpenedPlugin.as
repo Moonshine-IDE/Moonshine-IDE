@@ -648,6 +648,12 @@ package actionScripts.plugin.recentlyOpened
 				{
 					return model.genericCore.parseGenericProject(recentOpenedProjectObject as FileLocation);
 				}
+				
+				projectFileLocation = model.basicCore.testBasic(projectFile);
+				if (projectFileLocation)
+				{
+					return model.basicCore.parseBasic(recentOpenedProjectObject as FileLocation);
+				}
 			}
 			
 			return null;

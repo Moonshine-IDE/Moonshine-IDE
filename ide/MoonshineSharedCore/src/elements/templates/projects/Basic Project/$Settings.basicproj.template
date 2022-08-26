@@ -16,7 +16,7 @@
     <option path=""/>
   </jsOutput>
   <classpaths>
-    <class path="src"/>
+    <class path="./"/>
   </classpaths>
   <moonshineResourcePaths></moonshineResourcePaths>
   <moonshineNativeExtensionPaths></moonshineNativeExtensionPaths>
@@ -26,7 +26,6 @@
     <option antBuildPath="build/build.xml"/>
     <option strict="True"/>
     <option showActionScriptWarnings="True"/>
-    <option customSDK="$FlexHome"/>
     <option accessible="False"/>
     <option allowSourcePathOverlap="False"/>
     <option es="False"/>
@@ -45,29 +44,10 @@
     <option verboseStackTraces="False"/>
     <option compilerConstants=""/>
   </build>
-  <mavenBuild>
-    <option mavenBuildPath=""/>
-    <option dominoNotesPlatform=""/>
-    <option settingsFilePath=""/>
-    <option commandLine=""/>
-    <option dominoNotesProgram=""/>
-    <actions>
-      <action actionName="Build" action="install"/>
-      <action actionName="Clean and package" action="clean package"/>
-      <action actionName="Clean" action="clean"/>
-      <action actionName="Clean and Build" action="clean install"/>
-      <action actionName="Exploded" action="war:exploded"/>
-    </actions>
-  </mavenBuild>
   <includeLibraries></includeLibraries>
   <libraryPaths></libraryPaths>
   <externalLibraryPaths></externalLibraryPaths>
   <rslPaths></rslPaths>
-  <intrinsics>
-    <element path="Library/AS3/frameworks/Flex4"/>
-    <element path="Library\AS3\frameworks\Flex4"/>
-    <element path="Library\AS3\frameworks\Flex4"/>
-  </intrinsics>
   <library></library>
   <modules/>
   <compileTargets>
@@ -84,14 +64,13 @@
     <option isDominoVisualEditor="False"/>
     <option testMovieCommand=""/>
     <option testMovie=""/>
-    <option jdkType="default-java"/>
     <option isPrimeFacesVisualEditor="False"/>
     <option defaultBuildTargets=""/>
     <option isExportedToExistingSource="False"/>
   </options>
   <moonshineRunCustomization>
     <option launchMethod="Simulator"/>
-    <option projectType="2"/>
+    <option projectType="10"/>
     <option deviceConnectType="USB"/>
     <option urlToLaunch=""/>
     <option targetPlatform="5"/>

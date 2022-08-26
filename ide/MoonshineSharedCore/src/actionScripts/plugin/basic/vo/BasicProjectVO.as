@@ -25,7 +25,7 @@ package actionScripts.plugin.basic.vo
 			/**
 			Do nothing for now
 			*/
-			return new Vector.<SettingsWrapper>();
+			return super.getSettings();
 		}
 		
 		

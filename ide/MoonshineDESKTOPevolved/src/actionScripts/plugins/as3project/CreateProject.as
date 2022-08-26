@@ -85,6 +85,8 @@ package actionScripts.plugins.as3project
 	
 	import actionScripts.plugins.ui.editor.VisualEditorViewer;
 	import actionScripts.plugins.help.view.VisualEditorView;
+	import actionScripts.plugin.basic.exporter.BasicExporter;
+	import actionScripts.plugin.basic.vo.BasicProjectVO;
     public class CreateProject
 	{
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
@@ -110,6 +112,7 @@ package actionScripts.plugins.as3project
 		private var isVisualDominoEditorProject:Boolean;
 		private var isAway3DProject:Boolean;
 		private var isLibraryProject:Boolean;
+		private var isBasicProject:Boolean;
 		private var isCustomTemplateProject:Boolean;
 		private var isFlexJSRoyalVisualProject:Boolean;
 		private var isRoyaleDominoExportProject:Boolean;
@@ -676,7 +679,7 @@ package actionScripts.plugins.as3project
 
 			//save  project path in shared object
 			var tmpParent:FileLocation;
-			if (isProjectFromExistingSource && !isJavaProject && !isGrailsProject && !isHaxeProject)
+			if (isProjectFromExistingSource && !isJavaProject && !isGrailsProject && !isHaxeProject && !isBasicProject)
 			{
 				// validate if all requirement supplied
 				if (newProjectWithExistingSourcePathSetting.stringValue == "")
@@ -1143,7 +1146,7 @@ package actionScripts.plugins.as3project
                     new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
 			// Alert.show("projectSettingsFile:"+projectSettingsFile);
-			if (!isJavaProject && !isGrailsProject && !isHaxeProject)
+			if (!isJavaProject && !isGrailsProject && !isHaxeProject && !isBasicProject)
 			{
 				//Alert.show("Line 1032");
 				// Set some stuff to get the paths right
@@ -1210,6 +1213,9 @@ package actionScripts.plugins.as3project
 			else if (isHaxeProject)
 			{
 				HaxeExporter.export(pvo as HaxeProjectVO);
+			}
+			else if (isBasicProject){
+				BasicExporter.export(pvo as BasicProjectVO)
 			}
 			else
 			{
@@ -1357,6 +1363,10 @@ package actionScripts.plugins.as3project
             isGrailsProject = false;
             isHaxeProject = false;
 
+            if (templateName.indexOf(ProjectTemplateType.BASIC)!=-1){
+            		isBasicProject=true;
+            }
+            
 			if (templateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) != -1 &&templateName.indexOf("Royale") == -1)
 			{
 				isVisualEditorProject = true;
@@ -1460,6 +1470,8 @@ package actionScripts.plugins.as3project
 			{
 				return ProjectMenuTypes.HAXE;
 			}
+			
+		
 
 			return ProjectMenuTypes.FLEX_AS;
 		}

@@ -141,6 +141,7 @@ package actionScripts.plugin.settings
 				model.haxeCore.getPluginsNotToShowInSettings(),
 				model.ondiskCore.getPluginsNotToShowInSettings(),
 				model.genericCore.getPluginsNotToShowInSettings(),
+				model.basicCore.getPluginsNotToShowInSettings(),
 				model.visualEditorCore.getPluginsNotToShowInSettings()
 			);
 			

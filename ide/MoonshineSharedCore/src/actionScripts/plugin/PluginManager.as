@@ -55,7 +55,8 @@ package actionScripts.plugin
                     model.groovyCore.getDefaultPlugins(),
                     model.haxeCore.getDefaultPlugins(),
 					model.ondiskCore.getDefaultPlugins(),
-					model.genericCore.getDefaultPlugins());
+					model.genericCore.getDefaultPlugins(),
+					model.basicCore.getDefaultPlugins());
         	
             var plug:Class;
             for each (plug in allPlugins)

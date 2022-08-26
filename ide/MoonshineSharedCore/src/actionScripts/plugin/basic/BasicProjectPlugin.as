@@ -9,6 +9,7 @@ package actionScripts.plugin.basic
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.valueObjects.ConstantsCoreVO;	
+    import actionScripts.events.NewProjectEvent;
 
 	public class BasicProjectPlugin extends PluginBase
 	{	
