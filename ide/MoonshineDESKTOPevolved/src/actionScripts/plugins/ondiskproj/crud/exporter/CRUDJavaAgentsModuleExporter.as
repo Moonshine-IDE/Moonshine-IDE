@@ -101,7 +101,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			
 			// get all available dfb files
 			var resources:ArrayCollection = new ArrayCollection();
-			UtilsCore.parseFilesList(resources, null,null, ["dfb"], false, onFilesParseCompletes);
+			UtilsCore.parseFilesList(resources, null, this.project, ["dfb"], false, onFilesParseCompletes);
 
 			/*
 			 * @local
