@@ -257,7 +257,7 @@ package actionScripts.plugin.rename
 				}, 300);
 		}
 
-		private  function replaceSubfromFromAllReferencesFilesXml(projectFolderLocation:FileLocation,sourceSubformName:String,targetSubformName:String){
+		private  function replaceSubfromFromAllReferencesFilesXml(projectFolderLocation:FileLocation,sourceSubformName:String,targetSubformName:String):void{
 			var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
 				var subformXmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
 				
@@ -298,7 +298,7 @@ package actionScripts.plugin.rename
 				}
 		}
 
-		private  function replaceSubfromFromAllReferencesFiles(projectFolderLocation:FileLocation,sourceSubformName:String,targetSubformName:String){
+		private  function replaceSubfromFromAllReferencesFiles(projectFolderLocation:FileLocation,sourceSubformName:String,targetSubformName:String):void{
 			
 			var formFolderPath:String = "nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms";
 			var subFormFolderPath:String = "nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms";
