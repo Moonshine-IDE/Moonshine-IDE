@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package visualEditor.plugin
+package actionScripts.plugins.visualEditor.domino
 {
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.templating.TemplatingHelper;
@@ -30,6 +30,7 @@ package visualEditor.plugin
     import converter.DominoConverter;
     import surface.SurfaceMockup;
     import lookup.Lookup;
+    import actionScripts.valueObjects.ProjectVO;
 
     public class ExportDominoToRoyalePlugin extends PluginBase
     {
@@ -252,6 +253,11 @@ package visualEditor.plugin
 
                 views.push(viewObj);
             }
+
+            new DominoRoyaleModuleExporter(
+                    exportedProject.sourceFolder.resolvePath("views/modules"),
+                    exportedProject as ProjectVO, convertedFiles
+            );
 
             return views;
         }
