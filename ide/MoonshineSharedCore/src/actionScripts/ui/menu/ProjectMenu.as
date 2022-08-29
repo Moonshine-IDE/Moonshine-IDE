@@ -187,7 +187,9 @@ package actionScripts.ui.menu
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, [ProjectMenuTypes.JS_ROYALE], ProjectActionEvent.BUILD_RELEASE),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.JS_ROYALE], "selectedProjectAntBuild"),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA], MavenBuildEvent.START_MAVEN_BUILD),
-                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ProjectActionEvent.CLEAN_PROJECT)
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ProjectActionEvent.CLEAN_PROJECT),
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'DEPLOY_ROYALE_TO_VAGRANT'), null, [ProjectMenuTypes.JS_ROYALE], OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT)
                 ]);
                 royaleMenu.forEach(makeDynamic);
             }

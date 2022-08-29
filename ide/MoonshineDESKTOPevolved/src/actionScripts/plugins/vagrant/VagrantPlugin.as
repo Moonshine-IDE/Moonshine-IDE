@@ -23,15 +23,19 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
 	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
 	import actionScripts.plugins.vagrant.utils.DeployDatabaseJob;
+	import actionScripts.plugins.vagrant.utils.DeployRoyaleToVagrantJob;
 
 	import components.popup.ConvertDominoDatabasePopup;
 	import components.popup.DeployDominoDatabasePopup;
+	import components.popup.DeployRoyaleVagrantPopup;
 
 	import flash.display.DisplayObject;
 
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
 
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
@@ -75,8 +79,10 @@ package actionScripts.plugins.vagrant
 		private var vagrantInstances:ArrayCollection;
 		private var convertDominoDBPopup:ConvertDominoDatabasePopup;
 		private var deployDominoDBPopup:DeployDominoDatabasePopup;
+		private var deployRoyaleVagrantPopup:DeployRoyaleVagrantPopup;
 		private var dbConversionJob:ConvertDatabaseJob;
 		private var deployDBJob:DeployDatabaseJob;
+		private var deployRoyaleToVagrantJob:DeployRoyaleToVagrantJob;
 
 		public function get vagrantPath():String
 		{
@@ -132,6 +138,7 @@ package actionScripts.plugins.vagrant
 
 			dispatcher.addEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest, false, 0, true);
+			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -141,6 +148,7 @@ package actionScripts.plugins.vagrant
 			onConsoleDeactivated(null);
 			dispatcher.removeEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase);
 			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest);
+			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest);
 		}
 
 		override public function resetSettings():void
@@ -197,6 +205,18 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function onDeployRoyalToVagrantRequest(event:Event):void
+		{
+			if (!deployRoyaleVagrantPopup)
+			{
+				deployRoyaleVagrantPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, DeployRoyaleVagrantPopup) as DeployRoyaleVagrantPopup;
+				deployRoyaleVagrantPopup.instances = vagrantInstances;
+				deployRoyaleVagrantPopup.addEventListener(CloseEvent.CLOSE, onDeployRoyaleVagrantPopupClosed);
+				deployRoyaleVagrantPopup.addEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployRoyaleVagrantProcess);
+				PopUpManager.centerPopUp(deployRoyaleVagrantPopup);
+			}
+		}
+
 		private function onConvertDominoDBPopupClosed(event:CloseEvent):void
 		{
 			convertDominoDBPopup.removeEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
@@ -209,6 +229,13 @@ package actionScripts.plugins.vagrant
 			deployDominoDBPopup.removeEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
 			deployDominoDBPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployDatabaseProcess);
 			deployDominoDBPopup = null;
+		}
+
+		private function onDeployRoyaleVagrantPopupClosed(event:CloseEvent):void
+		{
+			deployRoyaleVagrantPopup.removeEventListener(CloseEvent.CLOSE, onDeployRoyaleVagrantPopupClosed);
+			deployRoyaleVagrantPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployRoyaleVagrantProcess);
+			deployRoyaleVagrantPopup = null;
 		}
 
 		private function onStartNSFConversionProcess(event:Event):void
@@ -237,6 +264,21 @@ package actionScripts.plugins.vagrant
 					deployDominoDBPopup.targetDatabase
 			);
 			configureListenersDeployDatabaseJob(true);
+		}
+
+		private function onStartDeployRoyaleVagrantProcess(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Deploying Royale to Vagrant"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployRoyaleVagrantRequest, false, 0, true);
+
+			// get the object to work with
+			deployRoyaleToVagrantJob = new DeployRoyaleToVagrantJob(
+					deployRoyaleVagrantPopup.uploadRequestReturn,
+					deployRoyaleVagrantPopup.selectedInstance.url,
+					deployRoyaleVagrantPopup.targetDatabase
+			);
+			deployRoyaleToVagrantJob.deployedURL = deployRoyaleVagrantPopup.databaseURL;
+			configureListenersDeployRoyaleToVagrantJob(true);
 		}
 
 		private function configureListenersDBConversionJob(listen:Boolean):void
@@ -269,6 +311,21 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function configureListenersDeployRoyaleToVagrantJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				deployRoyaleToVagrantJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDeployRoyaleEnded, false, 0, true);
+				deployRoyaleToVagrantJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDeployRoyaleEnded, false, 0, true);
+			}
+			else
+			{
+				deployRoyaleToVagrantJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDeployRoyaleEnded);
+				deployRoyaleToVagrantJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDeployRoyaleEnded);
+				deployRoyaleToVagrantJob = null;
+			}
+		}
+
 		private function onDBConversionEnded(event:Event):void
 		{
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
@@ -283,6 +340,19 @@ package actionScripts.plugins.vagrant
 			configureListenersDeployDatabaseJob(false);
 		}
 
+		private function onDeployRoyaleEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployDatabaseRequest);
+
+			if (event && event.type == ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE)
+			{
+				navigateToURL(new URLRequest(deployRoyaleToVagrantJob.deployedURL));
+			}
+
+			configureListenersDeployRoyaleToVagrantJob(false);
+		}
+
 		private function onTerminateConversionRequest(event:StatusBarEvent):void
 		{
 			dbConversionJob.stop();
@@ -293,6 +363,12 @@ package actionScripts.plugins.vagrant
 		{
 			deployDBJob.stop();
 			onDeployDatabaseEnded(null);
+		}
+
+		private function onTerminateDeployRoyaleVagrantRequest(event:StatusBarEvent):void
+		{
+			deployRoyaleToVagrantJob.stop();
+			onDeployRoyaleEnded(null);
 		}
 
 		private function updateEventListeners():void

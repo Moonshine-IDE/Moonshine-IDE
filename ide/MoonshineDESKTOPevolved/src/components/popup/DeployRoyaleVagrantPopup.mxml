@@ -26,7 +26,7 @@
 										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   xmlns:view="actionScripts.plugin.findreplace.view.*"
 										   xmlns:controls="components.controls.*"
-										   backgroundColor="0xf5f5f5" title="Deploy Domino Database"
+										   backgroundColor="0xf5f5f5" title="Deploy to Vagrant Server"
 										   width="600" minWidth="400" autoLayout="true"
 										   skinClass="components.skins.ResizableTitleWindowSkin"
 										   creationComplete="onCreationCompletes(event)">
@@ -36,6 +36,7 @@
 		import actionScripts.events.SettingsEvent;
 		import actionScripts.factory.FileLocation;
 		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 		import actionScripts.plugin.console.ConsoleOutputEvent;
 		import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 		import actionScripts.plugins.vagrant.VagrantPlugin;
@@ -43,13 +44,17 @@
 		import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
 		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 		import actionScripts.utils.FileUtils;
+		import actionScripts.utils.ZipUsingNP;
 		import actionScripts.utils.uploadUsingURLLoader.FileUploaderUsingURLLoader;
+		import actionScripts.valueObjects.ProjectVO;
 
 		import mx.collections.ArrayCollection;
 
 		import mx.events.FlexEvent;
 
 		import actionScripts.events.GlobalEventDispatcher;
+
+		import mx.utils.UIDUtil;
 
 		import mx.validators.Validator;
 
@@ -60,12 +65,16 @@
 		public var instances:ArrayCollection;
 
 		[Bindable]
-		private var project:OnDiskProjectVO;
+		private var project:ProjectVO;
 		[Bindable]
 		private var nsfConverterInstances:ArrayCollection;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var fileUploader:FileUploaderUsingURLLoader;
 		private var instanceStateCheckCount:int;
+		private var zip:ZipUsingNP;
+		private var zipUploadSource:File;
+		private var sourceDirectory:File;
+		private var isInvalidSource:Boolean;
 
 		private var _uploadRequestReturn:Object;
 		public function get uploadRequestReturn():Object
@@ -78,6 +87,11 @@
 			return txtTargetDatabase.text.replace(/ /g, "");
 		}
 
+		public function get databaseURL():String
+		{
+			return txtURL.text;
+		}
+
 		public function get selectedInstance():VagrantInstanceVO
 		{
 			return ddlInstances.selectedItem;
@@ -87,6 +101,8 @@
 		{
 			fileUploader.removeEventListener(FileUploaderEvent.EVENT_UPLOAD_COMPLETE, onFileUploadedData);
 			fileUploader.removeEventListener(FileUploaderEvent.EVENT_UPLOAD_ERROR, onFileUploadError);
+			zip.removeEventListener(ZipUsingNP.EVENT_ZIP_COMPLETES, onZipCompletes);
+			zip.removeEventListener(ZipUsingNP.EVENT_ZIP_FAILED, onZipFailed);
 			dispatcher.removeEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked);
 
 			super.closeThis();
@@ -94,24 +110,26 @@
 
 		protected function onCreationCompletes(event:FlexEvent):void
 		{
-			if (IDEModel.getInstance().activeProject &&
-					(IDEModel.getInstance().activeProject is OnDiskProjectVO))
-			{
-				project = (IDEModel.getInstance().activeProject as OnDiskProjectVO);
-			}
+			project = IDEModel.getInstance().activeProject;
 
 			fileUploader = new FileUploaderUsingURLLoader();
 			fileUploader.addEventListener(FileUploaderEvent.EVENT_UPLOAD_COMPLETE, onFileUploadedData, false, 0, true);
 			fileUploader.addEventListener(FileUploaderEvent.EVENT_UPLOAD_ERROR, onFileUploadError, false, 0, true);
 
-			if (project.localDatabase)
-			{
-				txtFile.text = project.localDatabase;
-			}
+			zip = new ZipUsingNP();
+			zip.addEventListener(ZipUsingNP.EVENT_ZIP_COMPLETES, onZipCompletes, false, 0, true);
+			zip.addEventListener(ZipUsingNP.EVENT_ZIP_FAILED, onZipFailed, false, 0, true);
 
 			disableUI();
 			dispatcher.addEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked, false, 0, true);
 			VagrantUtil.checkStates(instances);
+
+			sourceDirectory = project.folderLocation.resolvePath("bin").fileBridge.getFile as File;
+			if (!sourceDirectory.exists || (sourceDirectory.getDirectoryListing().length == 0))
+			{
+				hgError.includeInLayout = hgError.visible = true;
+				isInvalidSource = true;
+			}
 		}
 
 		private function onIndividualInstanceChecked(event:Event):void
@@ -123,7 +141,7 @@
 				nsfConverterInstances = new ArrayCollection();
 				for each (var instance:VagrantInstanceVO in instances)
 				{
-					if (instance.capabilities && (instance.capabilities.indexOf("upload-database") != -1) &&
+					if (instance.capabilities && (instance.capabilities.indexOf("upload-html") != -1) &&
 							(instance.state == VagrantInstanceState.READY))
 					{
 						nsfConverterInstances.addItem(instance);
@@ -137,22 +155,6 @@
 			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, VagrantPlugin.NAMESPACE));
 		}
 
-		private function onNSFBrowse():void
-		{
-			IDEModel.getInstance().fileCore.browseForOpen(
-					"Select Database File",
-					onNSFFileSelected,
-					null,
-					["*.nsf"],
-					txtFile.text ? txtFile.text : null
-			);
-		}
-
-		private function onNSFFileSelected(file:Object):void
-		{
-			txtFile.text = file.nativePath;
-		}
-
 		private function onFileUploadedData(event:FileUploaderEvent):void
 		{
 			if (event.value && ((event.value as String) != ""))
@@ -161,6 +163,35 @@
 				dispatchEvent(new Event(EVENT_START_CONVERSION));
 				closeThis();
 			}
+		}
+
+		private function getZipPath():File
+		{
+			var tempDirectory:File = File.cacheDirectory.resolvePath("moonshine/onDisk");
+			if (!tempDirectory.exists)
+			{
+				tempDirectory.createDirectory();
+			}
+
+			var zipFile:File = tempDirectory.resolvePath(UIDUtil.createUID() +".zip");
+			return zipFile;
+		}
+
+		private function onZipCompletes(event:Event):void
+		{
+			uploadZipFile();
+		}
+
+		private function onZipFailed(event:Event):void
+		{
+			dispatcher.dispatchEvent(
+					new ConsoleOutputEvent(
+							ConsoleOutputEvent.CONSOLE_PRINT,
+							zip.errorText,
+							false, false, ConsoleOutputEvent.TYPE_ERROR
+					)
+			);
+			enableUI();
 		}
 
 		private function onFileUploadError(event:FileUploaderEvent):void
@@ -178,57 +209,72 @@
 		private function onSubmit():void
 		{
 			// validations
-			var tmpArr:Array = new Array(svPath, svDownloadDir);
-			if (Validator.validateAll(tmpArr).length != 0)
+			var tmpArr:Array = new Array(svDownloadDir);
+			if (Validator.validateAll(tmpArr).length != 0 || isInvalidSource)
 			{
 				return;
 			}
 
 			Alert.OK_LABEL = "OK";
-			if (!FileUtils.isPathExists(txtFile.text))
-			{
-				Alert.show("Local database path doesn't exist.", "Error!");
-				return;
-			}
 			if (!ddlInstances.selectedItem)
 			{
-				Alert.show("A valid NSF Converter is missing.", "Error!");
+				Alert.show("A valid Vagrant Instance is missing.", "Error!");
 				return;
 			}
 
-			dispatcher.dispatchEvent(
-					new ConsoleOutputEvent(
-							ConsoleOutputEvent.CONSOLE_PRINT,
-							"Trying to upload request to: " + (ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload. This may take some time..",
-							true
-					)
-			);
-
 			disableUI();
-			fileUploader.upload(
-					new FileLocation(txtFile.text),
-					(ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload?rand="+ Math.random(),
-					"file"
-			);
+			zipRoyaleFiles();
 		}
 
 		private function disableUI():void
 		{
-			btnBrowse.enabled = false;
 			btnSubmit.enabled = false;
 			ddlInstances.enabled = false;
 		}
 
 		private function enableUI():void
 		{
-			btnBrowse.enabled = true;
 			btnSubmit.enabled = true;
 			ddlInstances.enabled = true;
+		}
+
+		private function zipRoyaleFiles():void
+		{
+			dispatcher.dispatchEvent(
+				new ConsoleOutputEvent(
+						ConsoleOutputEvent.CONSOLE_PRINT,
+						"Zipping files from: " + project.projectFolder.nativePath + "/bin.",
+						true
+				)
+			);
+
+			zipUploadSource = getZipPath();
+			zip.zip(
+					sourceDirectory,
+					zipUploadSource
+			);
+		}
+
+		private function uploadZipFile():void
+		{
+			dispatcher.dispatchEvent(
+				new ConsoleOutputEvent(
+						ConsoleOutputEvent.CONSOLE_PRINT,
+						"Trying to upload request to: " + (ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload. This may take some time..",
+						false, false,
+						ConsoleOutputEvent.TYPE_NOTE
+				)
+			);
+
+			fileUploader.upload(
+					new FileLocation(zipUploadSource.nativePath),
+					(ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload?rand="+ Math.random(),
+					"file"
+			);
 		}
 		]]>
 	</fx:Script>
 	<fx:Declarations>
-		<mx:StringValidator id="svPath" source="{txtFile}" property="text" trigger="{btnSubmit}"/>
 		<mx:StringValidator id="svDownloadDir" source="{txtTargetDatabase}" property="text" trigger="{btnSubmit}"/>
 	</fx:Declarations>
 
@@ -236,15 +282,7 @@
 		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
 	</resizableTitleWindow:layout>
 
-	<s:Label text="Local Database (*.nsf):"/>
-	<s:HGroup width="100%" verticalAlign="middle">
-		<view:PromptTextInput id="txtFile"
-							  width="100%" styleName="textInput" prompt="Select path.." editable="false"/>
-		<s:Button id="btnBrowse"
-				  label="Browse" click="onNSFBrowse()" styleName="darkButton"/>
-	</s:HGroup>
-
-	<s:Label text="NSF Converter:"/>
+	<s:Label text="Vagrant Instances:"/>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<s:DropDownList id="ddlInstances"
 						width="100%" height="26"
@@ -253,11 +291,22 @@
 				  click="onConfigure()"/>
 	</s:HGroup>
 
-	<s:Label text="Target Database Path:"/>
+	<s:Label text="Target Directory:"/>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<view:PromptTextInput id="txtTargetDatabase"
-							  width="100%" styleName="textInput" restrict="A-Za-z0-9_."
-								text="{project.targetDatabase}" prompt="Path to database.nsf"/>
+							  width="100%" styleName="textInput" restrict="A-Za-z0-9_"
+								text="{project.name}"/>
+	</s:HGroup>
+
+	<s:Label text="URL:"/>
+	<s:Label id="txtURL" width="100%" maxDisplayedLines="3" fontWeight="bold"
+		text="http://127.0.0.1:8080/{txtTargetDatabase.text}/js-debug/index.html"/>
+
+	<s:HGroup id="hgError"
+			  width="100%" verticalAlign="middle" horizontalAlign="center"
+			  visible="false" includeInLayout="false">
+		<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+		<s:Label text="Project does not contains /bin/js-debug or /bin/js-release"/>
 	</s:HGroup>
 
 	<resizableTitleWindow:controlBarContent>
