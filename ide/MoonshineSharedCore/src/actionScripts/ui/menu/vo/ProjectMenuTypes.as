@@ -40,6 +40,7 @@ package actionScripts.ui.menu.vo
 		public static const ON_DISK:String = "onDisk";
 		public static const GENERIC:String = "generic";
 		public static const TEMPLATE:String = "template";
+		public static const BASIC:String = "basic";
 		
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS:Array;
 		public static var VISUAL_EDITOR_FILE_TEMPLATE_ITEMS_TYPE:Array;

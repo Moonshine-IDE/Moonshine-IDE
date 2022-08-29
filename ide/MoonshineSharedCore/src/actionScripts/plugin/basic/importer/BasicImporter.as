@@ -4,6 +4,7 @@ package actionScripts.plugin.basic.importer
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.basic.vo.BasicProjectVO;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 
 	public class BasicImporter  extends FlashDevelopImporterBase
 	{
@@ -57,7 +58,8 @@ package actionScripts.plugin.basic.importer
 			{
 				settingsData = new XML(settingsFileLocation.fileBridge.read());
 			}
-			
+			//@TODO check this settings, is it correct?
+			project.menuType=ProjectMenuTypes.BASIC;
 		
 			return project;
             

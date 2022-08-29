@@ -1,0 +1,2 @@
+LET MAX = 5000
+print(MAX)
