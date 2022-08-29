@@ -68,6 +68,8 @@
 		private var project:ProjectVO;
 		[Bindable]
 		private var nsfConverterInstances:ArrayCollection;
+		[Bindable]
+		private var targetDatabaseName:String;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var fileUploader:FileUploaderUsingURLLoader;
 		private var instanceStateCheckCount:int;
@@ -111,6 +113,7 @@
 		protected function onCreationCompletes(event:FlexEvent):void
 		{
 			project = IDEModel.getInstance().activeProject;
+			targetDatabaseName = project.name;
 
 			fileUploader = new FileUploaderUsingURLLoader();
 			fileUploader.addEventListener(FileUploaderEvent.EVENT_UPLOAD_COMPLETE, onFileUploadedData, false, 0, true);
@@ -295,12 +298,12 @@
 	<s:HGroup width="100%" verticalAlign="middle">
 		<view:PromptTextInput id="txtTargetDatabase"
 							  width="100%" styleName="textInput" restrict="A-Za-z0-9_"
-								text="{project.name}"/>
+								text="{targetDatabaseName}" change="{targetDatabaseName=event.target.text}"/>
 	</s:HGroup>
 
 	<s:Label text="URL:"/>
 	<s:Label id="txtURL" width="100%" maxDisplayedLines="3" fontWeight="bold"
-		text="http://127.0.0.1:8080/{txtTargetDatabase.text}/js-debug/index.html"/>
+		text="http://127.0.0.1:8080/{targetDatabaseName}/js-debug/index.html"/>
 
 	<s:HGroup id="hgError"
 			  width="100%" verticalAlign="middle" horizontalAlign="center"
