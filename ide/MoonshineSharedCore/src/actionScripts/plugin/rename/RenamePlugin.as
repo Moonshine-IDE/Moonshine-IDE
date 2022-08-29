@@ -206,6 +206,7 @@ package actionScripts.plugin.rename
 			var sourceFileName:String =fileWrapper.file.fileBridge.nameWithoutExtension;
 			var newFile:FileLocation = fileWrapper.file.fileBridge.parent.resolvePath(newName);
 			_existingFilePath = fileWrapper.nativePath;
+			var newFileNameWithoutExtension:String = newFile.fileBridge.nameWithoutExtension;
 			
 			fileWrapper.file.fileBridge.moveTo(newFile, false);
 			fileWrapper.name = newFile.name;
@@ -238,7 +239,7 @@ package actionScripts.plugin.rename
 			if(projectPath){
 				var projectFolder:FileLocation = new FileLocation(projectPath);
 				
-				replaceSubfromFromAllReferencesFiles(projectFolder,sourceFileName,newName);
+				replaceSubfromFromAllReferencesFilesXml(projectFolder,sourceFileName,newFileNameWithoutExtension);
 			}
 			
 			var timeoutValue:uint = setTimeout(function():void 
@@ -256,7 +257,46 @@ package actionScripts.plugin.rename
 				}, 300);
 		}
 
-		
+		private  function replaceSubfromFromAllReferencesFilesXml(projectFolderLocation:FileLocation,sourceSubformName:String,targetSubformName:String){
+			var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
+				var subformXmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
+				
+				if(xmlFileLocation.fileBridge.exists || subformXmlFileLocation.fileBridge.exists){
+					var directory:Array = xmlFileLocation.fileBridge.getDirectoryListing();
+					var subdirectory:Array = subformXmlFileLocation.fileBridge.getDirectoryListing();
+					if(subdirectory){
+						for each (var subxml:File in subdirectory)
+						{
+							directory.push(subxml);
+						}
+					}
+					//add subfrom xml into directory ;
+					
+
+						for each (var xml:File in directory)
+						{
+							if (xml.extension == "xml" ) {
+								var _fileStreamMoonshine:FileStream = new FileStream();
+								_fileStreamMoonshine.open(xml, FileMode.READ);
+								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
+								var internalxml:XML = new XML(data);
+								for each(var subformref:XML in internalxml..Subformref) //no matter of depth Note here
+								{
+									
+									if(subformref.@subFormName==sourceSubformName){
+										subformref.@subFormName=targetSubformName;
+									}
+								}
+
+								//remove old file 
+								var fileLocation:FileLocation=new FileLocation(xml.nativePath);
+								fileLocation.fileBridge.deleteFile();
+								fileLocation.fileBridge.save(internalxml);
+
+							}
+						}
+				}
+		}
 
 		private  function replaceSubfromFromAllReferencesFiles(projectFolderLocation:FileLocation,sourceSubformName:String,targetSubformName:String){
 			
@@ -286,17 +326,19 @@ package actionScripts.plugin.rename
 						var xml:XML = new XML(data);
 						
 						var xmlns:Namespace = new Namespace("http://www.lotus.com/dxl");
-						xml.setNamespace(xmlns);
 						
-						 
-
-						var subformList:XMLList=xml.@xmlns::subform;
+						var subformList:XMLList=xml.xmlns::subform;
+						Alert.show("subformList len:"+subformList.length())
 						for each(var subform:XML in xml..subform){
 							Alert.show("souce subform name :"+subform.@name);
 							if(subform.@name==sourceSubformName){
 								subform.@name=targetSubformName;
 							}
 						}
+
+						// for each(var subform:XML in xml){
+						// 	Alert.show("name:"+subform.name())
+						// }
 						
 						var subformrefList:XMLList=xml.xmlns::subformref;
 						//Alert.show("subformrefList:"+subformrefList.length());
