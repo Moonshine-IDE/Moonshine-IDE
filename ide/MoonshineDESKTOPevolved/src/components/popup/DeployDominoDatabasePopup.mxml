@@ -192,7 +192,7 @@
 			}
 			if (!ddlInstances.selectedItem)
 			{
-				Alert.show("A valid NSF Converter is missing.", "Error!");
+				Alert.show("A valid Vagrant Instance is missing.", "Error!");
 				return;
 			}
 
@@ -244,7 +244,7 @@
 				  label="Browse" click="onNSFBrowse()" styleName="darkButton"/>
 	</s:HGroup>
 
-	<s:Label text="NSF Converter:"/>
+	<s:Label text="Vagrant Instance:"/>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<s:DropDownList id="ddlInstances"
 						width="100%" height="26"
