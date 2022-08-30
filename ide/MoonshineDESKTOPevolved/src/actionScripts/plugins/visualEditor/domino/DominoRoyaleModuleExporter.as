@@ -12,6 +12,8 @@ package actionScripts.plugins.visualEditor.domino
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.templating.TemplatingHelper;
 
 	import view.dominoFormBuilder.vo.FormBuilderFieldType;
 
@@ -56,6 +58,18 @@ package actionScripts.plugins.visualEditor.domino
 			}
 
 			copyModuleTemplates();
+		}
+
+		override protected function copyTemplates(form:DominoFormVO):void
+		{
+			var moduleName:String = form.formName;
+
+			var th:TemplatingHelper = new TemplatingHelper();
+			th.templatingData["$moduleName"] = moduleName;
+			th.templatingData["$packagePath"] = "views.modules."+ moduleName +"."+ moduleName +"Services";
+
+			var excludes:Array = ["$moduleNameVO", "$moduleNameViews"];
+			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath, excludes);
 		}
 
 		override protected function generateModuleClasses():void

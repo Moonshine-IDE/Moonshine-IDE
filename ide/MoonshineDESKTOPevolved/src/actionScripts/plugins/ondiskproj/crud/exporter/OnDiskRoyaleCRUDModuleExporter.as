@@ -47,7 +47,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	
 	public class OnDiskRoyaleCRUDModuleExporter
 	{
-		private static const TEMPLATE_MODULE_PATH:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/templates/royaleTabularCRUD/module");
+		protected static const TEMPLATE_MODULE_PATH:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/templates/royaleTabularCRUD/module");
 		
 		[Bindable] protected var classReferenceSettings:RoyaleCRUDClassReferenceSettings = new RoyaleCRUDClassReferenceSettings();
 		

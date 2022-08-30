@@ -172,7 +172,7 @@ package actionScripts.plugins.visualEditor.domino
         private function createConvertedFiles(convertedFiles:Array):Array
         {
             var views:Array = [];
-            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("view");
+            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("views");
             if (!viewFolder.fileBridge.exists)
             {
                 viewFolder.fileBridge.createDirectory();
@@ -492,7 +492,7 @@ package actionScripts.plugins.visualEditor.domino
         private function getMainContent(views:Array):String
         {
             var jNamespace:Namespace = new Namespace("j", "library://ns.apache.org/royale/jewel");
-            var viewNamespace:Namespace = new Namespace("view", "view.*");
+            var viewNamespace:Namespace = new Namespace("view", "views.*");
 
             var content:XML = <ApplicationMainContent/>;
                 content.@id="mainContent";
