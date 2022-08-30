@@ -555,6 +555,9 @@ package actionScripts.plugins.as3project.importer
 									
 									
 									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
+									//remove old file
+									var targetFormFileFileLocation:FileLocation= new FileLocation(targetFormFile.nativePath);
+									targetFormFileFileLocation.fileBridge.deleteFile();
 									var _targetfileStreamMoonshine:FileStream = new FileStream();
 									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
 									_targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml));

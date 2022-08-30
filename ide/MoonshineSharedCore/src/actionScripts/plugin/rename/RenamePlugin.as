@@ -60,6 +60,7 @@ package actionScripts.plugin.rename
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
+	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
 
 	public class RenamePlugin extends PluginBase
 	{
@@ -240,6 +241,24 @@ package actionScripts.plugin.rename
 				var projectFolder:FileLocation = new FileLocation(projectPath);
 				
 				replaceSubfromFromAllReferencesFilesXml(projectFolder,sourceFileName,newFileNameWithoutExtension);
+				//look for the project file from project folder  :
+				var listing:Array = projectFolder.fileBridge.getDirectoryListing();
+				var projectFile:FileLocation = null;
+				for each (var file:Object in listing)
+				{
+					if (file.extension == "veditorproj")
+					{
+						projectFile=new FileLocation(file.nativePath);
+					}
+				}
+
+				if(projectFile!=null){
+					//create auto update file:
+					var auto_fileLocation:FileLocation=new FileLocation(projectPath+File.separator+".xml_conversion_required");
+						auto_fileLocation.fileBridge.save("");
+
+					FlashDevelopImporter.convertDomino(projectFile);
+				}
 			}
 			
 			var timeoutValue:uint = setTimeout(function():void 
