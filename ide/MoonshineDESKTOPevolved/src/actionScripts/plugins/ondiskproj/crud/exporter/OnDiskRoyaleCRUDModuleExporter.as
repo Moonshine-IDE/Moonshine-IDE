@@ -24,10 +24,6 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.VOClassGenerator;
 
-	import avmplus.getQualifiedClassName;
-
-	import flash.events.Event;
-
 	import flash.filesystem.File;
 	
 	import mx.collections.ArrayCollection;
@@ -58,10 +54,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		protected var targetPath:FileLocation;
 		protected var project:ProjectVO;
 		protected var formObjects:Vector.<DominoFormVO>;
+		protected var waitingCount:int;
 
 		private var completionCount:int;
-		private var waitingCount:int;
-		private var onCompleteHandler:Function;
+		protected var onCompleteHandler:Function;
 		
 		public function OnDiskRoyaleCRUDModuleExporter(targetPath:FileLocation, project:ProjectVO, onComplete:Function)
 		{
