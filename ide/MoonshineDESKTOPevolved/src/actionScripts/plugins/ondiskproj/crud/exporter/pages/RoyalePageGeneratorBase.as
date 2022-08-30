@@ -53,7 +53,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var paths:Array = [];
 			for each (var item:PageImportReferenceVO in pageImportReferences)
 			{
-				paths.push("import "+ classReferenceSettings[(item.name + RoyaleCRUDClassReferenceSettings.IMPORT)] +";");
+				if (classReferenceSettings[(item.name + RoyaleCRUDClassReferenceSettings.IMPORT)] != undefined)
+				{
+					paths.push("import "+ classReferenceSettings[(item.name + RoyaleCRUDClassReferenceSettings.IMPORT)] +";");
+				}
 			}
 			return paths;
 		}
@@ -145,11 +148,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			 */
 			function onImportCompletes(importPath:String):void
 			{
-				classReferenceSettings[(refObj.name + RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
+				if (importPath != null)
+				{
+					classReferenceSettings[(refObj.name + RoyaleCRUDClassReferenceSettings.IMPORT)] = importPath;
 
-				var splitPath:Array = importPath.split(".");
-				splitPath[splitPath.length - 1] = "*";
-				classReferenceSettings[(refObj.name + RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
+					var splitPath:Array = importPath.split(".");
+					splitPath[splitPath.length - 1] = "*";
+					classReferenceSettings[(refObj.name + RoyaleCRUDClassReferenceSettings.NAMESPACE)] = splitPath.join(".");
+				}
+
 				startReferenceCollecting(onReferenceCollected);
 			}
 		}
