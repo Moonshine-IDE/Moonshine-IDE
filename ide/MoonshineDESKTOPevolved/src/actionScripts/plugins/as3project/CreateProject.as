@@ -1138,7 +1138,9 @@ package actionScripts.plugins.as3project
 			{
 				projectSettingsFile = projectName+".hxproj";
 			}
-
+			else if (isBasicProject){
+				projectSettingsFile = projectName+".basicproj";
+			}
 			// Figure out which one is the settings file
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
             
@@ -1469,6 +1471,9 @@ package actionScripts.plugins.as3project
 			if (isHaxeProject)
 			{
 				return ProjectMenuTypes.HAXE;
+			}
+			if (isBasicProject){
+				return ProjectMenuTypes.BASIC
 			}
 			
 		

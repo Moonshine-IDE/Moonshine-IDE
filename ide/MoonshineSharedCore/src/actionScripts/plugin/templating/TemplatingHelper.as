@@ -200,7 +200,7 @@ package actionScripts.plugin.templating
 				case "AS3 Class":
 				case "AS3 Interface":
 					return [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.TEMPLATE];
-				case "CSS File":
+				case "CSS Fi/le":
 				case "XML File":
 				case "File":
 					return [];
@@ -224,6 +224,8 @@ package actionScripts.plugin.templating
 					//Alert.show("226 Visual Editor DXL File");
 				case "Form Builder DXL File":
 					return [ProjectMenuTypes.ON_DISK];
+				/*case "Basic File":
+					return [ProjectMenuTypes.BASIC];*/
 			}
 			
 			return [];

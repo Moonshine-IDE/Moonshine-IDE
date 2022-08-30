@@ -57,6 +57,7 @@ package actionScripts.languageServer
     import mx.managers.PopUpManager;
     import mx.core.FlexGlobals;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.valueObjects.Settings;
 	
 	
 
@@ -73,8 +74,8 @@ package actionScripts.languageServer
 		private static const METHOD_WORKSPACE__DID_CHANGE_CONFIGURATION:String = "workspace/didChangeConfiguration";
 		private static const FILE_EXTENSIONS:Vector.<String> = new <String>["lss"];
 		private static const URI_SCHEMES:Vector.<String> = new <String>[];
-		private static const LANGUAGE_ID_BASIC:String = "basic";
-		private static const LANGUAGE_SERVER_SCRIPT_PATH:String="";
+		private static const LANGUAGE_ID_BASIC:String = "tibbo-basic";
+		private static const LANGUAGE_SERVER_SCRIPT_PATH:String="elements/basic-language-server/server.js";
 		private var _languageClient:LanguageClient;
 		private var _project:BasicProjectVO;
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -101,7 +102,7 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler, false, 0, true);
 			_dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler, false, 0, true);
 			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler, false, 0, true);
-			
+			bootstrapThenStartNativeProcess();
 		}
 		
 		private function shutdownTimeout():void
@@ -110,7 +111,7 @@ package actionScripts.languageServer
 			if (!_languageServerProcess) {
 				return;
 			}
-			var message:String = "Timed out while shutting down Haxe language server for project " + _project.name + ". Forcing process to exit.";
+			var message:String = "Timed out while shutting down Basic language server for project " + _project.name + ". Forcing process to exit.";
 			warning(message);
 			trace(message);
 			_languageClient = null;
@@ -604,7 +605,7 @@ package actionScripts.languageServer
 				var cmdFile:File = null;
 				var processArgs:Vector.<String> = new <String>[];
 				
-				/**if (Settings.os == "win")
+				if (Settings.os == "win")
 				{
 					cmdFile = new File("c:\\Windows\\System32\\cmd.exe");
 					processArgs.push("/c");
@@ -615,7 +616,7 @@ package actionScripts.languageServer
 					cmdFile = new File("/bin/bash");
 					processArgs.push("-c");
 					processArgs.push(value);
-				}*/
+				}
 
 				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 				processInfo.arguments = processArgs;
