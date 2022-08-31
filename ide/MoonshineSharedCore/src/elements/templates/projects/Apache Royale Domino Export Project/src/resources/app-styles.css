@@ -27,3 +27,7 @@
 .dxDataGrid {
     height: calc(100vh - 20px);
 }
+
+.jewel.navigationlink {
+    padding: 15px;
+}
