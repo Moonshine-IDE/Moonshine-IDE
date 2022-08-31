@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter
 {
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.GlobalClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
@@ -47,7 +49,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	
 	public class OnDiskRoyaleCRUDModuleExporter
 	{
-		private static const TEMPLATE_MODULE_PATH:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/templates/royaleTabularCRUD/module");
+		protected static const TEMPLATE_MODULE_PATH:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/templates/royaleTabularCRUD/module");
 		
 		[Bindable] protected var classReferenceSettings:RoyaleCRUDClassReferenceSettings = new RoyaleCRUDClassReferenceSettings();
 		
@@ -92,6 +94,20 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 				// parse to dfb files to form-object
 				// no matter opened or non-opened
 				formObjects = new Vector.<DominoFormVO>();
+				if (resources.length == 0)
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+							new ConsoleOutputEvent(
+									ConsoleOutputEvent.CONSOLE_PRINT,
+									"No .dfb module found in: "+ IDEModel.getInstance().activeProject.name +". Process terminates.",
+									false, false,
+									ConsoleOutputEvent.TYPE_ERROR
+							)
+					);
+					onCompleteHandler = null;
+					return;
+				}
+
 				for each (var resource:Object in resources)
 				{
 					tmpFormObject = new DominoFormVO();

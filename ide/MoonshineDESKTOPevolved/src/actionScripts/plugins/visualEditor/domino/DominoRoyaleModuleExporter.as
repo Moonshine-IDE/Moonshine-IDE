@@ -1,6 +1,7 @@
 package actionScripts.plugins.visualEditor.domino
 {
 	import actionScripts.plugins.ondiskproj.crud.exporter.OnDiskRoyaleCRUDModuleExporter;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.GlobalClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
@@ -12,6 +13,8 @@ package actionScripts.plugins.visualEditor.domino
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.templating.TemplatingHelper;
 
 	import view.dominoFormBuilder.vo.FormBuilderFieldType;
 
@@ -58,21 +61,30 @@ package actionScripts.plugins.visualEditor.domino
 			copyModuleTemplates();
 		}
 
+		override protected function copyTemplates(form:DominoFormVO):void
+		{
+			var moduleName:String = form.formName;
+
+			var th:TemplatingHelper = new TemplatingHelper();
+			th.templatingData["$moduleName"] = moduleName;
+			th.templatingData["$packagePath"] = "views.modules."+ moduleName +"."+ moduleName +"Services";
+
+			var excludes:Array = ["$moduleNameVO", "$moduleNameViews"];
+			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath, excludes);
+		}
+
 		override protected function generateModuleClasses():void
 		{
 			for each (var form:DominoFormVO in formObjects)
 			{
 				waitingCount += 1;
-				//new VOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 				new ProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
-				//new ListingPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
-			//	new AddEditPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 			}
 		}
 
 		override protected function generateProjectClasses():void
 		{
-
+			new GlobalClassGenerator(this.project, classReferenceSettings, onProjectFilesGenerationCompletes);
 		}
 
 		override protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void

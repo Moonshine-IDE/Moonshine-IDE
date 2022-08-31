@@ -96,6 +96,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			 */
 			function onFilesParseCompletes():void
 			{
+				if (resources.length == 0)
+				{
+					error("No .dfb module found in: "+ project.name +". Process terminates.");
+					onCompleteHandler = null;
+					return;
+				}
+
 				// parse to dfb files to form-object
 				// no matter opened or non-opened
 				formObjects = new Vector.<DominoFormVO>();
