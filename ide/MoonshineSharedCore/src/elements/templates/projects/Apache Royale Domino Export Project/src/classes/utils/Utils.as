@@ -1,4 +1,4 @@
-package elements.templates.projects.Apache
+package classes.utils
 {
 	import org.apache.royale.html.beads.DisableBead;
 	import org.apache.royale.html.beads.DisabledAlphaBead;
