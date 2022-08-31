@@ -16,7 +16,7 @@
 // Use this software at your own risk.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package visualEditor.plugin
+package actionScripts.plugins.visualEditor.domino
 {
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.templating.TemplatingHelper;
@@ -30,6 +30,7 @@ package visualEditor.plugin
     import converter.DominoConverter;
     import surface.SurfaceMockup;
     import lookup.Lookup;
+    import actionScripts.valueObjects.ProjectVO;
 
     public class ExportDominoToRoyalePlugin extends PluginBase
     {
@@ -171,7 +172,7 @@ package visualEditor.plugin
         private function createConvertedFiles(convertedFiles:Array):Array
         {
             var views:Array = [];
-            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("view");
+            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("views");
             if (!viewFolder.fileBridge.exists)
             {
                 viewFolder.fileBridge.createDirectory();
@@ -252,6 +253,11 @@ package visualEditor.plugin
 
                 views.push(viewObj);
             }
+
+            new DominoRoyaleModuleExporter(
+                    exportedProject.sourceFolder.resolvePath("views/modules"),
+                    exportedProject as ProjectVO, convertedFiles
+            );
 
             return views;
         }
@@ -486,7 +492,7 @@ package visualEditor.plugin
         private function getMainContent(views:Array):String
         {
             var jNamespace:Namespace = new Namespace("j", "library://ns.apache.org/royale/jewel");
-            var viewNamespace:Namespace = new Namespace("view", "view.*");
+            var viewNamespace:Namespace = new Namespace("view", "views.*");
 
             var content:XML = <ApplicationMainContent/>;
                 content.@id="mainContent";

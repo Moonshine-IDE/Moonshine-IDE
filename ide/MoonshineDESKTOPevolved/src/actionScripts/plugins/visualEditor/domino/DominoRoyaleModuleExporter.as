@@ -1,49 +1,34 @@
-////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
-////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.visualEditor.domino
 {
-	import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsModuleExporter;
+	import actionScripts.plugins.ondiskproj.crud.exporter.OnDiskRoyaleCRUDModuleExporter;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.GlobalClassGenerator;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
 
-	import flash.filesystem.File;
 	import interfaces.ISurface;
 
-	import actionScripts.valueObjects.ProjectVO;
-
-	import view.dominoFormBuilder.utils.FormBuilderCodeUtils;
-
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
+
 	import view.dominoFormBuilder.vo.DominoFormVO;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.locator.IDEModel;
+	import actionScripts.plugin.templating.TemplatingHelper;
+
 	import view.dominoFormBuilder.vo.FormBuilderFieldType;
 
-	public class DominoJavaAgentsModuleExporter extends CRUDJavaAgentsModuleExporter
+	public class DominoRoyaleModuleExporter extends OnDiskRoyaleCRUDModuleExporter
 	{
 		private var components:Array;
 
-		public function DominoJavaAgentsModuleExporter(originPath:File, targetPath:File, project:ProjectVO, onComplete:Function, components:Array = null)
+		public function DominoRoyaleModuleExporter(targetPath:FileLocation, project:ProjectVO, components:Array)
 		{
-			super(originPath, targetPath, project, onComplete);
-
 			this.components = components;
 
-			parseModules();
+			super(targetPath, project, function():void {});
 		}
-		
+
 		override protected function parseModules():void
 		{
 			if (!this.components) return;
@@ -65,8 +50,8 @@ package actionScripts.plugins.visualEditor.domino
 					}
 
 					var tmpFormObject:DominoFormVO = new DominoFormVO();
-						tmpFormObject.formName = this.components[i].file.fileBridge.nameWithoutExtension;
-						tmpFormObject.viewName = "All By UNID_5c" + this.components[i].file.fileBridge.nameWithoutExtension + ".view";
+					tmpFormObject.formName = this.components[i].file.fileBridge.nameWithoutExtension;
+					tmpFormObject.viewName = "All By UNID_5c" + this.components[i].file.fileBridge.nameWithoutExtension + ".view";
 
 					parseComponents(componentData, tmpFormObject);
 					formObjects.push(tmpFormObject);
@@ -74,6 +59,39 @@ package actionScripts.plugins.visualEditor.domino
 			}
 
 			copyModuleTemplates();
+		}
+
+		override protected function copyTemplates(form:DominoFormVO):void
+		{
+			var moduleName:String = form.formName;
+
+			var th:TemplatingHelper = new TemplatingHelper();
+			th.templatingData["$moduleName"] = moduleName;
+			th.templatingData["$packagePath"] = "views.modules."+ moduleName +"."+ moduleName +"Services";
+
+			var excludes:Array = ["$moduleNameVO", "$moduleNameViews"];
+			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath, excludes);
+		}
+
+		override protected function generateModuleClasses():void
+		{
+			for each (var form:DominoFormVO in formObjects)
+			{
+				waitingCount += 1;
+				new ProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+			}
+		}
+
+		override protected function generateProjectClasses():void
+		{
+			new GlobalClassGenerator(this.project, classReferenceSettings, onProjectFilesGenerationCompletes);
+		}
+
+		override protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void
+		{
+			super.onModuleGenerationCompletes(origin);
+
+			onCompleteHandler = null;
 		}
 
 		private function parseComponents(componentData:Array, form:DominoFormVO):void
@@ -135,16 +153,16 @@ package actionScripts.plugins.visualEditor.domino
 			switch(field.fieldType)
 			{
 				case "String":
-						return field.isRichText ? FormBuilderFieldType.RICH_TEXT : FormBuilderFieldType.TEXT;
+					return field.isRichText ? FormBuilderFieldType.RICH_TEXT : FormBuilderFieldType.TEXT;
 					break;
 				case "Number":
-						return FormBuilderFieldType.NUMBER;
+					return FormBuilderFieldType.NUMBER;
 					break;
 				case "Date":
-						return FormBuilderFieldType.DATETIME;
+					return FormBuilderFieldType.DATETIME;
 					break;
 				default:
-						return FormBuilderFieldType.TEXT;
+					return FormBuilderFieldType.TEXT;
 					break;
 			}
 		}

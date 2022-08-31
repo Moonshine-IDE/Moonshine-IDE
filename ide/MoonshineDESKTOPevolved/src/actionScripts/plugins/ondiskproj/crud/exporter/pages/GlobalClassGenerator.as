@@ -19,7 +19,6 @@
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
 	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -33,7 +32,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		
 		override public function generate():void
 		{
-			var onDiskProject:OnDiskProjectVO = IDEModel.getInstance().activeProject as OnDiskProjectVO;
+			var onDiskProject:Object = IDEModel.getInstance().activeProject;
 			pagePath = project.sourceFolder.resolvePath("classes/vo/Constants.as")
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
