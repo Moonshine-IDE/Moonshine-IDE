@@ -2014,8 +2014,28 @@ package actionScripts.plugin.templating
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".form");
 				fileToSave.fileBridge.save(content);
 
+				//create the view for each form 
+				var parent:FileLocation=event.fromTemplate.fileBridge.parent;
+				var viewTemplate:FileLocation=new FileLocation(parent.fileBridge.nativePath+parent.fileBridge.separator+"All By UNID_5c%form%.view");
+
+				if(viewTemplate.fileBridge.exists){
+					var viewFolder:FileLocation= fileToSave.fileBridge.parent;
+					viewFolder=viewFolder.fileBridge.parent;
+					var viewfileToSave:FileLocation = new FileLocation( viewFolder.fileBridge.nativePath+ event.fromTemplate.fileBridge.separator+"Views"+ event.fromTemplate.fileBridge.separator+ "All By UNID_5c"+event.fileName +".view");
+					if(!viewfileToSave.fileBridge.exists){
+						var viewcontent:String = String(viewTemplate.fileBridge.read());
+						var re:RegExp = new RegExp("%form%", "g");
+						viewcontent = viewcontent.replace(re, event.fileName);
+						viewfileToSave.fileBridge.save(viewcontent);
+					}
+					
+
+				}
+
                 notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
+			
+
 		}
 
 		protected function onDominoPageFileCreateRequest(event:NewFileEvent):void
