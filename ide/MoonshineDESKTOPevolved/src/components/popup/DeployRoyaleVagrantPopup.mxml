@@ -301,16 +301,19 @@
 								text="{targetDatabaseName}" change="{targetDatabaseName=event.target.text}"/>
 	</s:HGroup>
 
-	<s:Label text="URL:"/>
-	<s:Label id="txtURL" width="100%" maxDisplayedLines="3" fontWeight="bold"
-		text="http://127.0.0.1:8080/{targetDatabaseName}/js-debug/index.html"/>
+	<s:Label text="Possible URL:"/>
+	<s:Label id="txtURL" width="100%" maxDisplayedLines="3" styleName="uiText"
+		text="http://127.0.0.1:8080/{targetDatabaseName}/js-debug/index.html" fontStyle="italic"/>
 
-	<s:HGroup id="hgError"
-			  width="100%" verticalAlign="middle" horizontalAlign="center"
+    <s:VGroup id="hgError"
+			  width="100%" paddingTop="6"
 			  visible="false" includeInLayout="false">
-		<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
-		<s:Label text="Project does not contains /bin/js-debug or /bin/js-release"/>
-	</s:HGroup>
+		<mx:HRule height="1" width="100%" strokeColor="0x666666"/>
+		<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="center">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label text="Project does not contains /bin/js-debug or /bin/js-release"/>
+		</s:HGroup>
+	</s:VGroup>
 
 	<resizableTitleWindow:controlBarContent>
 		<s:Spacer width="100%"/>
