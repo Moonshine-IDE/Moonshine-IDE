@@ -92,7 +92,7 @@ package actionScripts.plugin.templating
 
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
-
+	import actionScripts.utils.TextUtil;
     /*
     Templating plugin
 
@@ -2021,7 +2021,8 @@ package actionScripts.plugin.templating
 				if(viewTemplate.fileBridge.exists){
 					var viewFolder:FileLocation= fileToSave.fileBridge.parent;
 					viewFolder=viewFolder.fileBridge.parent;
-					var viewfileToSave:FileLocation = new FileLocation( viewFolder.fileBridge.nativePath+ event.fromTemplate.fileBridge.separator+"Views"+ event.fromTemplate.fileBridge.separator+ "All By UNID_5c"+event.fileName +".view");
+				
+					var viewfileToSave:FileLocation = new FileLocation( viewFolder.fileBridge.nativePath+ event.fromTemplate.fileBridge.separator+"Views"+ event.fromTemplate.fileBridge.separator+ "All By UNID_5c"+TextUtil.htmlEscape(event.fileName) +".view");
 					if(!viewfileToSave.fileBridge.exists){
 						var viewcontent:String = String(viewTemplate.fileBridge.read());
 						var re:RegExp = new RegExp("%form%", "g");
