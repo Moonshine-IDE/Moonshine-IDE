@@ -1,0 +1,242 @@
+<j:VGroup  xmlns:j="library://ns.apache.org/royale/jewel" xmlns:fx="http://ns.adobe.com/mxml/2009"
+			xmlns:js="library://ns.apache.org/royale/basic" xmlns:html="library://ns.apache.org/royale/html"
+			xmlns:joditeditor="classes.joditeditor.*" xmlns:dataGrid="classes.dataGrid.*"
+			currentState="dataGridState" gap="5" stateChangeComplete="{this.dispatchEvent(new Event('valueChange'))}"
+			itemsVerticalAlign="itemsTop">
+  <j:beads>
+    <js:ContainerDataBinding/>
+    <js:SimpleStatesImpl/>
+  </j:beads>
+  <j:states>
+    <js:State name="dataGridState"/>
+    <js:State name="contentState"/>
+  </j:states>
+  <fx:Script><![CDATA[
+	import org.apache.royale.jewel.Alert;
+	%ImportStatements%
+
+	private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
+
+	[Bindable] private var itemVO:$moduleNameVO;
+	[Bindable] private var isDisabled:Boolean = false;
+
+    public static const NAME:String = "%ViewComponentName%";
+
+	private function removeItem():void
+	{
+		var alert:Alert = Alert.show('Are you sure you want to remove this item?',  'Remove', Alert.OK | Alert.CANCEL);
+			alert.addEventListener('close', function closeAlert(e:Event):void { if (e['detail'] == Alert.OK)
+    									{
+    										proxy.items.splice(proxy.selectedIndex, 1);
+    										dg.refreshCurrentDataProvider();
+    									}});
+	}
+]]></fx:Script>
+  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
+    <j:Button text="Add" click="{this.proxy.selectedIndex = -1; this.currentState = 'contentState'; this.itemVO= new AuthorVO();}" includeIn="dataGridState"/>
+    <j:Button text="Edit" click="{this.currentState = 'contentState'; this.proxy.selectedIndex = dg.selectedIndex; this.itemVO = dg.selectedItem.copy();}" includeIn="dataGridState">
+      <j:beads>
+        <j:Disabled disabled="{dg.selectedIndex == -1}"/>
+      </j:beads>
+    </j:Button>
+    <j:Button text="Remove" click="{removeItem()}" includeIn="dataGridState">
+      <j:beads>
+        <j:Disabled disabled="{dg.selectedIndex == -1}"/>
+      </j:beads>
+    </j:Button>
+  </j:HGroup>
+  <j:VGroup includeIn="contentState">
+    <j:Label text="" className="cursor-pointer" multiline="true"/>
+    <j:Label text="" className="cursor-pointer" multiline="true"/>
+    <j:HGroup>
+      <j:Label text="Authors" className="cursor-pointer" multiline="true"/>
+    </j:HGroup>
+    <j:SimpleTable>
+      <j:TBody>
+        <j:TableRow>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="ID" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:TextInput text="{itemVO.AuthorID}" className="readOnlyInput" change="{itemVO.AuthorID = event.currentTarget.text;}">
+                  <j:beads>
+                    <j:Disabled disabled="{isDisabled}"/>
+                  </j:beads>
+                </j:TextInput>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup/>
+            </j:HGroup>
+          </j:TableCell>
+        </j:TableRow>
+        <j:TableRow>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="First Name" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:TextInput text="{authorVO.NameFirst}" className="readOnlyInput" change="{authorVO.NameFirst = event.currentTarget.text;}">
+                  <j:beads>
+                    <j:Disabled disabled="{isDisabled}"/>
+                  </j:beads>
+                </j:TextInput>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="Given name" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+        </j:TableRow>
+        <j:TableRow>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="Last Name" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:TextInput text="{authorVO.NameLast}" className="readOnlyInput" change="{authorVO.NameLast = event.currentTarget.text;}">
+                  <j:beads>
+                    <j:Disabled disabled="{isDisabled}"/>
+                  </j:beads>
+                </j:TextInput>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="Surname, Family Name" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+        </j:TableRow>
+        <j:TableRow>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="Age" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:TextInput text="{authorVO.Age}" className="readOnlyInput" change="{authorVO.Age = event.currentTarget.text;}">
+                  <j:beads>
+                    <j:Disabled disabled="{isDisabled}"/>
+                  </j:beads>
+                </j:TextInput>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup/>
+            </j:HGroup>
+          </j:TableCell>
+        </j:TableRow>
+        <j:TableRow>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="Date of Birth" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:DateField dateFormat="MM/DD/YYYY" className="readOnlyDateField">
+                  <j:beads>
+                    <j:Disabled disabled="{isDisabled}"/>
+                  </j:beads>
+                </j:DateField>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup/>
+            </j:HGroup>
+          </j:TableCell>
+        </j:TableRow>
+        <j:TableRow>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="Biography" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <joditeditor:JoditEditor data="{itemVO.Biography}" textChange="{itemVO.Biography = event.target.data;}" readonly="{isDisabled}" toolbarVisible="{!isDisabled}" options="{{allowResizeY: !isDisabled, showCharsCounter: !isDisabled, showWordsCounter: !isDisabled, showXPathInStatusbar: !isDisabled, inline: isDisabled, defaultLineHeight: isDisabled ? 0.25 : null}}" className=""/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup/>
+            </j:HGroup>
+          </j:TableCell>
+        </j:TableRow>
+        <j:TableRow>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="Updates" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:DateField dateFormat="MM/DD/YYYY" className="readOnlyDateField">
+                  <j:beads>
+                    <j:Disabled disabled="{isDisabled}"/>
+                  </j:beads>
+                </j:DateField>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+          <j:TableCell>
+            <j:HGroup>
+              <j:HGroup>
+                <j:Label text="Timestamps for updates" className="cursor-pointer" multiline="true"/>
+              </j:HGroup>
+            </j:HGroup>
+          </j:TableCell>
+        </j:TableRow>
+      </j:TBody>
+    </j:SimpleTable>
+    <j:HGroup/>
+  </j:VGroup>
+  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsCenter" gap="2" includeIn="contentState">
+    <j:Button text="Save" click="{this.currentState = 'dataGridState'; if (this.proxy.selectedIndex == -1) {this.proxy.items.push(this.itemVO);}else {this.proxy.items[this.proxy.selectedIndex] = this.itemVO;} this.dg.refreshCurrentDataProvider();}"/>
+    <j:Button text="Cancel" click="{this.currentState = 'dataGridState'; this.proxy.selectedIndex = -1; this.itemVO = null}"/>
+  </j:HGroup>
+  <dataGrid:DataGrid columns="{[{caption: 'AuthorID', dataField: 'AuthorID'},{caption: 'NameFirst', dataField: 'NameFirst'},{caption: 'NameLast', dataField: 'NameLast'}]}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="{this.currentState = 'contentState'; this.proxy.selectedIndex = dg.selectedIndex; this.itemVO = dg.selectedItem.copy();}"/>
+</j:VGroup>

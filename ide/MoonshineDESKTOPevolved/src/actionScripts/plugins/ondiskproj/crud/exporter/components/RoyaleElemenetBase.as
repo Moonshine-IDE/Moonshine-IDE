@@ -26,7 +26,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 	{
 		public static function readTemplate(path:String):String
 		{
-			var filePath:File = File.applicationDirectory.resolvePath("elements/templates/royaleTabularCRUD/elements/"+ path);
+			var filePath:File = File.applicationDirectory.resolvePath(path);
 			if (filePath.exists)
 			{
 				return (FileUtils.readFromFile(filePath) as String);

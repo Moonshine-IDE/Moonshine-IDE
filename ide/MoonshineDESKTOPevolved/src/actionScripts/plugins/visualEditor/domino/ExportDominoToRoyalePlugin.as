@@ -236,8 +236,8 @@ package actionScripts.plugins.visualEditor.domino
                     contentMXMLFile = royaleMXMLContentFile.toXMLString();
 
                     //Save VO
-                    var classContent:String = getVOClass(componentData, convertedFile.fileBridge.nameWithoutExtension);
-                    saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
+                   // var classContent:String = getVOClass(componentData, convertedFile.fileBridge.nameWithoutExtension);
+                  //  saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
 
                     //Apply VO to mxml
                     var re:RegExp = new RegExp(TextUtil.escapeRegex("$valueobject"), "g");

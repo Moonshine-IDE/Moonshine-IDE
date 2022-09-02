@@ -22,7 +22,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 	{
 		public static function toCode(componentName:String, componentLabel:String):String
 		{
-			var button:String = readTemplate("ModuleLinkButton.template");
+			var button:String = readTemplate("elements/templates/royaleTabularCRUD/elements/ModuleLinkButton.template");
 			
 			button = button.replace(/%ViewComponentName%/ig, componentName);
 			button = button.replace(/%ViewComponentLabel%/ig, componentLabel);

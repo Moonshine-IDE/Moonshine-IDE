@@ -5,6 +5,7 @@ package actionScripts.plugins.visualEditor.domino
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.VOClassGenerator;
 
 	import interfaces.ISurface;
 
@@ -20,6 +21,8 @@ package actionScripts.plugins.visualEditor.domino
 
 	public class DominoRoyaleModuleExporter extends OnDiskRoyaleCRUDModuleExporter
 	{
+		protected static const TEMPLATE_MODULE_PATH:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/templates/royaleDominoElements/module");
+
 		private var components:Array;
 
 		public function DominoRoyaleModuleExporter(targetPath:FileLocation, project:ProjectVO, components:Array)
@@ -69,21 +72,23 @@ package actionScripts.plugins.visualEditor.domino
 			th.templatingData["$moduleName"] = moduleName;
 			th.templatingData["$packagePath"] = "views.modules."+ moduleName +"."+ moduleName +"Services";
 
-			var excludes:Array = ["$moduleNameVO", "$moduleNameViews"];
-			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath, excludes);
+			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath);
 		}
 
 		override protected function generateModuleClasses():void
 		{
 			for each (var form:DominoFormVO in formObjects)
 			{
-				waitingCount += 1;
+				waitingCount += 3;
+				new VOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 				new ProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				new DominoPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 			}
 		}
 
 		override protected function generateProjectClasses():void
 		{
+			new DominoMainContentPageGenerator(this.project, this.formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
 			new GlobalClassGenerator(this.project, classReferenceSettings, onProjectFilesGenerationCompletes);
 		}
 
