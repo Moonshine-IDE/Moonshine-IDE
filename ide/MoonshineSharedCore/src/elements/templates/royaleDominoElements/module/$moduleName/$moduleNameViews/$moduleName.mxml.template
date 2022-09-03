@@ -15,7 +15,7 @@
 	import org.apache.royale.jewel.Alert;
 	%ImportStatements%
 
-	private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
+	[Bindable] private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
 
 	[Bindable] private var itemVO:$moduleNameVO;
 	[Bindable] private var isDisabled:Boolean = false;

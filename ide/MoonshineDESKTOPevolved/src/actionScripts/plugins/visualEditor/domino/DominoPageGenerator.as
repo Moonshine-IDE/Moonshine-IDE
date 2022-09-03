@@ -4,6 +4,8 @@ package actionScripts.plugins.visualEditor.domino
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.plugins.ondiskproj.crud.exporter.vo.PageImportReferenceVO;
 
+	import view.dominoFormBuilder.vo.DominoFormFieldVO;
+
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -52,6 +54,9 @@ package actionScripts.plugins.visualEditor.domino
 				}
 
 				fileContent = fileContent.replace(/%ViewContent%/ig, pageContent);
+
+				var dgColumnList:String = getDataGridColumnsList();
+				fileContent = fileContent.replace(/%DataGridColumnsList%/ig, dgColumnList);
 				/*fileContent = fileContent.replace(/$moduleName/ig, form.formName);
 				fileContent = fileContent.replace(/%ListingComponentName%/ig, form.formName +"Listing");
 				fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"AddEdit");
@@ -64,6 +69,22 @@ package actionScripts.plugins.visualEditor.domino
 				saveFile(fileContent);
 				dispatchCompletion();
 			}
+		}
+
+		private function getDataGridColumnsList():String
+		{
+			var fields:Object = this.form.fields;
+			var columns:Array = [];
+			if (fields)
+			{
+				for (var i:int = 0; i < fields.length; i++)
+				{
+					var field:DominoFormFieldVO = fields.getItemAt(i);
+					columns.push("{caption: '" + field.name + "', dataField: '"  + field.name + "'}");
+				}
+			}
+
+			return columns.length > 0 ? "[" + columns.join(",") + "]" : "[]";
 		}
 	}
 }
