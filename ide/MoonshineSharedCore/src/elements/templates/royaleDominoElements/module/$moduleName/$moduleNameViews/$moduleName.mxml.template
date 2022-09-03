@@ -27,7 +27,7 @@
 		var alert:Alert = Alert.show('Are you sure you want to remove this item?',  'Remove', Alert.OK | Alert.CANCEL);
 			alert.addEventListener('close', function closeAlert(e:Event):void { if (e['detail'] == Alert.OK)
     									{
-    										proxy.items.splice(proxy.selectedIndex, 1);
+    										proxy.removeItem(itemVO);
     										dg.refreshCurrentDataProvider();
     									}});
 	}
@@ -44,7 +44,7 @@
     	this.currentState = 'contentState';
     	this.proxy.selectedIndex = dg.selectedIndex;
     	var reqObj:Object = dg.selectedItem.toRequestObject();
-    	this.itemVO = $moduleNameVO.getAuthorVO(reqObj);
+    	this.itemVO = $moduleNameVO.get$moduleNameVO(reqObj);
     }
 ]]></fx:Script>
   %ViewContent%
