@@ -55,7 +55,7 @@ package actionScripts.plugins.visualEditor.domino
 			
 			for each (var form:DominoFormVO in forms)
 			{
-				scrollableContents += DominoRoyaleScrolableSectionContent.toCode(form.formName,"views.modules." + form.formName + "." + form.formName + "Views.") + "\n";
+				scrollableContents += DominoRoyaleScrollableSectionContent.toCode(form.formName,"views.modules." + form.formName + "." + form.formName + "Views.") + "\n";
 			}
 			
 			fileContent = fileContent.replace(/%Namespaces%/gi, namespacePathStatements.join("\n"));

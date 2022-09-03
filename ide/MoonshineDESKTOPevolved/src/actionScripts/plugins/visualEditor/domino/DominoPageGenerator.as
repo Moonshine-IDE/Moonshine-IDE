@@ -42,6 +42,16 @@ package actionScripts.plugins.visualEditor.domino
 			{
 				fileContent = fileContent.replace(/%ImportStatements%/ig, importPathStatements.join("\n"));
 				fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName);
+
+				var pageChildren:XMLList = form.pageContent.children();
+				var pageContent:String = "";
+				for (var i:int = 0; i < pageChildren.length(); i++)
+				{
+					var page:String = pageChildren[i].toXMLString();
+					pageContent += page + "\n";
+				}
+
+				fileContent = fileContent.replace(/%ViewContent%/ig, pageContent);
 				/*fileContent = fileContent.replace(/$moduleName/ig, form.formName);
 				fileContent = fileContent.replace(/%ListingComponentName%/ig, form.formName +"Listing");
 				fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName +"AddEdit");

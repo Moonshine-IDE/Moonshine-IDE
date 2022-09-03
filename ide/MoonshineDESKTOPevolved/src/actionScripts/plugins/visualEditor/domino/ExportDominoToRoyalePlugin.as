@@ -220,7 +220,7 @@ package actionScripts.plugins.visualEditor.domino
                         }
                     }
 
-                    var dataGridContent:XML = getDataGridContent(dataProviderName, propertyVOName, propertyVOType, componentData);
+                 //   var dataGridContent:XML = getDataGridContent(dataProviderName, propertyVOName, propertyVOType, componentData);
                     //Prepare Data for VO
                     var propData:Object = {
                         prop: [
@@ -232,7 +232,7 @@ package actionScripts.plugins.visualEditor.domino
                         ]
                     };
                     royaleMXMLContentFile = item.surface.toRoyaleConvertCode(propData);
-                    royaleMXMLContentFile.appendChild(dataGridContent);
+                   // royaleMXMLContentFile.appendChild(dataGridContent);
                     contentMXMLFile = royaleMXMLContentFile.toXMLString();
 
                     //Save VO
@@ -240,8 +240,8 @@ package actionScripts.plugins.visualEditor.domino
                   //  saveVO(classContent, convertedFile.fileBridge.nameWithoutExtension);
 
                     //Apply VO to mxml
-                    var re:RegExp = new RegExp(TextUtil.escapeRegex("$valueobject"), "g");
-                    contentMXMLFile = contentMXMLFile.replace(re, propertyVOName);
+                  //  var re:RegExp = new RegExp(TextUtil.escapeRegex("$valueobject"), "g");
+                //    contentMXMLFile = contentMXMLFile.replace(re, propertyVOName);
                 }
                 else
                 {
@@ -249,7 +249,8 @@ package actionScripts.plugins.visualEditor.domino
                     contentMXMLFile = royaleMXMLContentFile.toXMLString();
                 }
 
-                convertedFile.fileBridge.save(contentMXMLFile);
+                item.pageContent = royaleMXMLContentFile;
+              //  convertedFile.fileBridge.save(contentMXMLFile);
 
                 views.push(viewObj);
             }

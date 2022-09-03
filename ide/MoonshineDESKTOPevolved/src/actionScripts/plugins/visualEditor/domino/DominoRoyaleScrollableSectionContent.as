@@ -2,7 +2,7 @@ package actionScripts.plugins.visualEditor.domino
 {
 	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleElemenetBase;
 
-	public class DominoRoyaleScrolableSectionContent extends RoyaleElemenetBase
+	public class DominoRoyaleScrollableSectionContent extends RoyaleElemenetBase
 	{
 		public static function toCode(componentName:String, ambiguousName:String = ""):String
 		{
