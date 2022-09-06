@@ -41,7 +41,7 @@
     				<j:dataProvider xmlns:j="library://ns.apache.org/royale/jewel">
     				    <js:ArrayList xmlns:js="library://ns.apache.org/royale/basic">
                             %MainContentMenu%
-                        </js:ArrayList>
+                       </js:ArrayList>
     				</j:dataProvider>
     			</j:Navigation>
     		</j:DrawerContent>

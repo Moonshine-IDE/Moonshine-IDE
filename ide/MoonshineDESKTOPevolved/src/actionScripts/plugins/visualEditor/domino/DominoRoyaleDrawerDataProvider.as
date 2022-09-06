@@ -11,7 +11,7 @@ package actionScripts.plugins.visualEditor.domino
 			drawerObject = drawerObject.replace(/%DrawerLabel%/ig, drawerLabel);
 			drawerObject = drawerObject.replace(/%DrawerContent%/ig, drawerContent);
 
-			return drawerObject + "\n";
+			return drawerObject;
 		}
 	}
 }

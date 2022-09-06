@@ -52,16 +52,17 @@ package actionScripts.plugins.visualEditor.domino
 			if (!fileContent) return;
 
 			var scrollableContents:String = "";
-			var drawerDataProvider:String = "";
-			for each (var form:DominoFormVO in forms)
+			var drawerDataProvider:Array = [];
+			for (var i:int = 0; i < forms.length; i++)
 			{
+				var form:DominoFormVO = forms[i];
 				scrollableContents += DominoRoyaleScrollableSectionContent.toCode(form.formName,"views.modules." + form.formName + "." + form.formName + "Views.") + "\n";
-				drawerDataProvider += DominoRoyaleDrawerDataProvider.toCode(form.formName, form.formName);
+				drawerDataProvider.push(DominoRoyaleDrawerDataProvider.toCode(form.formName, form.formName));
 			}
 			
 			fileContent = fileContent.replace(/%Namespaces%/gi, namespacePathStatements.join("\n"));
-			fileContent = fileContent.replace(/%ImportStatements%/gi, importPathStatements.join("\n"));
-			fileContent = fileContent.replace(/%MainContentMenu%/gi, drawerDataProvider);
+			fileContent = fileContent.replace(/%ImportStatements%/gi, importPathStatements.join("\n\t\t\t"));
+			fileContent = fileContent.replace(/%MainContentMenu%/gi, drawerDataProvider.join("\n\t\t\t\t\t\t\t"));
 			fileContent = fileContent.replace(/%ScrollableSectionContents%/gi, scrollableContents);
 			
 			saveFile(fileContent);
