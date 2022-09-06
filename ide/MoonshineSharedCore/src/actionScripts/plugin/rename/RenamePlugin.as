@@ -259,6 +259,19 @@ package actionScripts.plugin.rename
 
 					FlashDevelopImporter.convertDomino(projectFile);
 				}
+
+				//rename old simple view
+				var viewfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+sourceFileName +".view");
+				var viewTargetfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+newFileNameWithoutExtension +".view");
+				if(viewfileToSave.fileBridge.exists){
+					var viewcontent:String = String(viewfileToSave.fileBridge.read());
+						var re:RegExp = new RegExp(sourceFileName, "g");
+						viewcontent = viewcontent.replace(re, newFileNameWithoutExtension);
+						viewTargetfileToSave.fileBridge.save(viewcontent);
+						viewfileToSave.fileBridge.deleteFile();
+					//create a new simple file with new form name 
+
+				}
 			}
 			
 			var timeoutValue:uint = setTimeout(function():void 
