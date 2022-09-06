@@ -129,6 +129,19 @@ package actionScripts.plugins.as3project.exporter
 			}
 			options.appendChild(SerializeUtil.serializePairs(optionPairs, <option />));
 			project.appendChild(options);
+
+			if (p.isDominoVisualEditorProject)
+			{
+				options = <domino />;
+				var dominoPairs:Object = {
+					dominoBaseAgentURL	:	SerializeUtil.serializeString(p.dominoBaseAgentURL),
+					localDatabase		: 	SerializeUtil.serializeString(p.localDatabase),
+					targetServer		:	SerializeUtil.serializeString(p.targetServer),
+					targetDatabase		:	SerializeUtil.serializeString(p.targetDatabase)
+				}
+				options.appendChild(SerializeUtil.serializePairs(dominoPairs, <option />));
+				project.appendChild(options);
+			}
 			
 			var projType:int = !p.air ? AS3ProjectPlugin.AS3PROJ_AS_WEB : AS3ProjectPlugin.AS3PROJ_AS_AIR;
 			if (p.isMobile) projType = AS3ProjectPlugin.AS3PROJ_AS_ANDROID;

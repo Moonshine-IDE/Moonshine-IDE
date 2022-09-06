@@ -35,6 +35,7 @@
 		import actionScripts.events.FileUploaderEvent;
 		import actionScripts.events.SettingsEvent;
 		import actionScripts.factory.FileLocation;
+		import actionScripts.interfaces.IDeployDominoDatabaseProject;
 		import actionScripts.locator.IDEModel;
 		import actionScripts.plugin.console.ConsoleOutputEvent;
 		import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
@@ -60,7 +61,7 @@
 		public var instances:ArrayCollection;
 
 		[Bindable]
-		private var project:OnDiskProjectVO;
+		private var project:IDeployDominoDatabaseProject;
 		[Bindable]
 		private var nsfConverterInstances:ArrayCollection;
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
@@ -95,9 +96,9 @@
 		protected function onCreationCompletes(event:FlexEvent):void
 		{
 			if (IDEModel.getInstance().activeProject &&
-					(IDEModel.getInstance().activeProject is OnDiskProjectVO))
+					(IDEModel.getInstance().activeProject is IDeployDominoDatabaseProject))
 			{
-				project = (IDEModel.getInstance().activeProject as OnDiskProjectVO);
+				project = (IDEModel.getInstance().activeProject as IDeployDominoDatabaseProject);
 			}
 
 			fileUploader = new FileUploaderUsingURLLoader();

@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.ondiskproj.vo
 {
+	import actionScripts.interfaces.IDeployDominoDatabaseProject;
 	import actionScripts.plugin.settings.vo.StringSetting;
 
 	import mx.collections.ArrayCollection;
@@ -38,7 +39,7 @@ package actionScripts.plugin.ondiskproj.vo
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO, IJavaProject
+	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO, IJavaProject, IDeployDominoDatabaseProject
 	{
 		public static const DOMINO_EXPORT_PATH:String = "nsfs/nsf-moonshine";
 		
