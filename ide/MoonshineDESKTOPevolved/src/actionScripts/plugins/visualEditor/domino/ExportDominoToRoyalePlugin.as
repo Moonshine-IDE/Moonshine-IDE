@@ -201,44 +201,8 @@ package actionScripts.plugins.visualEditor.domino
                 }
 
                 convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
-                var componentData:Array = item.surface.getComponentData();
-                var propertyVOName:String = convertedFile.fileBridge.nameWithoutExtension.toLowerCase() + "VO";
-                var propertyVOType:String = convertedFile.fileBridge.nameWithoutExtension + "VO";
-
-                var royaleMXMLContentFile:XML = null;
-                var contentMXMLFile:String = "";
-
-                if (componentData.length > 0)
-                {
-                    for (var k:int = 0; k < componentData.length; k++)
-                    {
-                        var componentDataItem:Object = componentData[k];
-                        if (!componentDataItem.fields && !componentDataItem.name)
-                        {
-                            componentData.splice(k, 1);
-                        }
-                    }
-
-                    //Prepare Data for VO
-                    var propData:Object = {
-                        prop: [
-                            {
-                                propName: propertyVOName,
-                                propType: propertyVOType,
-                                newInstance: false
-                            }
-                        ]
-                    };
-                    royaleMXMLContentFile = item.surface.toRoyaleConvertCode(propData);
-                    contentMXMLFile = royaleMXMLContentFile.toXMLString();
-
-                }
-                else
-                {
-                    royaleMXMLContentFile = item.surface.toRoyaleConvertCode();
-                    contentMXMLFile = royaleMXMLContentFile.toXMLString();
-                }
-
+   
+                var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
                 item.pageContent = royaleMXMLContentFile;
 
                 views.push(viewObj);
