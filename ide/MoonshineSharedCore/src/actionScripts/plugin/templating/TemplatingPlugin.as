@@ -2016,13 +2016,13 @@ package actionScripts.plugin.templating
 
 				//create the view for each form 
 				var parent:FileLocation=event.fromTemplate.fileBridge.parent;
-				var viewTemplate:FileLocation=new FileLocation(parent.fileBridge.nativePath+parent.fileBridge.separator+"All By UNID_5c%form%.view");
+				var viewTemplate:FileLocation=new FileLocation(parent.fileBridge.nativePath+parent.fileBridge.separator+"All By UNID_5cCRUD_5c%form%.view");
 
 				if(viewTemplate.fileBridge.exists){
 					var viewFolder:FileLocation= fileToSave.fileBridge.parent;
 					viewFolder=viewFolder.fileBridge.parent;
 				
-					var viewfileToSave:FileLocation = new FileLocation( viewFolder.fileBridge.nativePath+ event.fromTemplate.fileBridge.separator+"Views"+ event.fromTemplate.fileBridge.separator+ "All By UNID_5c"+TextUtil.htmlEscape(event.fileName) +".view");
+					var viewfileToSave:FileLocation = new FileLocation( viewFolder.fileBridge.nativePath+ event.fromTemplate.fileBridge.separator+"Views"+ event.fromTemplate.fileBridge.separator+ "All By UNID_5cCRUD_5c"+TextUtil.htmlEscape(event.fileName) +".view");
 					if(!viewfileToSave.fileBridge.exists){
 						var viewcontent:String = String(viewTemplate.fileBridge.read());
 						var re:RegExp = new RegExp("%form%", "g");

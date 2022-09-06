@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<view name="All By UNID\CRUD\%form%" showinmenu="false" noreplace="true" publicaccess="false" designerversion="8.5.3" unreadmarks="none" onopengoto="lastopened" onrefresh="displayindicator" headers="beveled" opencollapsed="false" showresponsehierarchy="true" showmargin="true" shrinkrows="false" extendlastcolumn="false" showhierarchies="false" unreadcolor="black" rowlinecount="1" headerlinecount="1" rowspacing="1" bgcolor="white" totalscolor="black" headerbgcolor="white" boldunreadrows="false" evaluateactions="false" allownewdocuments="false" allowcustomizations="true" hidemarginborder="false" marginwidth="0px" marginbgcolor="white" uniquekeys="false">
+  <code event="selection">
+    <formula>SELECT "%form%" = Form</formula>
+  </code>
+  <actionbar bgcolor="#f0f0f0" bordercolor="black">
+    <actionbuttonstyle bgcolor="#f0f0f0"/>
+    <font color="system"/>
+    <border style="solid" width="0px 0px 1px"/>
+    <action title="New">
+      <code event="click">
+        <formula>@Command([Compose]; "%form%")</formula>
+      </code>
+    </action>
+  </actionbar>
+  <column sort="ascending" hidedetailrows="false" itemname="$0" width="27" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false">
+    <columnheader title="UNID">
+      <font size="9pt" style="bold"/>
+    </columnheader>
+    <code event="value">
+      <formula>@Text(@DocumentUniqueID)</formula>
+    </code>
+  </column>
+</view>
+
