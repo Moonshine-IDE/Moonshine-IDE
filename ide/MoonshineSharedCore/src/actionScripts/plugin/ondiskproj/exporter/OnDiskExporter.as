@@ -70,7 +70,10 @@ package actionScripts.plugin.ondiskproj.exporter
 
 			options = <domino />;
 			var dominoPairs:Object = {
-				dominoBaseAgentURL	:	SerializeUtil.serializeString(project.dominoBaseAgentURL)
+				dominoBaseAgentURL	:	SerializeUtil.serializeString(project.dominoBaseAgentURL),
+				localDatabase		: 	SerializeUtil.serializeString(project.localDatabase),
+				targetServer		:	SerializeUtil.serializeString(project.targetServer),
+				targetDatabase		:	SerializeUtil.serializeString(project.targetDatabase)
 			}
 			options.appendChild(SerializeUtil.serializePairs(dominoPairs, <option />));
 			projectXML.appendChild(options);

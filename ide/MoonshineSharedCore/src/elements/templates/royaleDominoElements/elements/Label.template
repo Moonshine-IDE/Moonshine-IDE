@@ -1,0 +1,2 @@
+<j:Label multiline="%Multiline%" className="%ClassName%" percentWidth="%PercentWidth%"
+					text="%Text%"/>

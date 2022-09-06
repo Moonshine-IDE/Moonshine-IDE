@@ -34,7 +34,7 @@ package actionScripts.utils
 	import flash.net.URLRequestMethod;
 	import flash.net.URLVariables;
 
-	public class FileUploader extends EventDispatcher
+	public class FileUploaderUsingFileReference extends EventDispatcher
 	{
 		public var anUV:URLVariables;
 		public var uploadField:String;
@@ -58,7 +58,7 @@ package actionScripts.utils
 		private var _arrUploadFiles:Array;
 		private var _numCurrentUpload:Number = 0;
 
-		public function FileUploader()
+		public function FileUploaderUsingFileReference()
 		{
 			super();
 			_arrUploadFiles = new Array();

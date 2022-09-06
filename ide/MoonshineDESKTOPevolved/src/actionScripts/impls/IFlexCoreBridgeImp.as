@@ -28,6 +28,7 @@ package actionScripts.impls
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.plugins.visualEditor.domino.DominoJavaAgentsExporter;
+	import actionScripts.plugins.visualEditor.domino.ExportDominoToRoyalePlugin;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -151,7 +152,6 @@ package actionScripts.impls
 	
 	import visualEditor.plugin.ExportToFlexPlugin;
 	import visualEditor.plugin.ExportToPrimeFacesPlugin;
-	import visualEditor.plugin.ExportDominoToRoyalePlugin;
 	import visualEditor.plugin.ExportDominoJavaAgentsPlugin;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
@@ -309,7 +309,7 @@ package actionScripts.impls
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
 					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin, LanguageServersMonitor];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

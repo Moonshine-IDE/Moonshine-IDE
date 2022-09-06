@@ -457,7 +457,7 @@ package actionScripts.plugins.haxe
             }
 		}
 
-		override public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
+		override public function start(args:Vector.<String>, buildDirectory:*=null, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
 		{
             dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
             if (running)

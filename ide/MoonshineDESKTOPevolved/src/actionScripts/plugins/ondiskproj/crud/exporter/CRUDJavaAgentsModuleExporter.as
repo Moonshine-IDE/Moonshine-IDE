@@ -20,30 +20,18 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 {
 	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.VOClassGenerator;
 	import actionScripts.utils.FileUtils;
-
-	import avmplus.getQualifiedClassName;
-
-	import flash.events.Event;
 
 	import flash.filesystem.File;
 	import flash.utils.Dictionary;
 
 	import haxe.ds.ObjectMap;
-	import haxe.ds.StringMap;
 
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.templating.TemplatingHelper;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.AddEditPageGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.DashboardPageGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.MainContentPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ProjectVO;
@@ -101,13 +89,20 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			
 			// get all available dfb files
 			var resources:ArrayCollection = new ArrayCollection();
-			UtilsCore.parseFilesList(resources, null,null, ["dfb"], false, onFilesParseCompletes);
+			UtilsCore.parseFilesList(resources, null, this.project, ["dfb"], false, onFilesParseCompletes);
 
 			/*
 			 * @local
 			 */
 			function onFilesParseCompletes():void
 			{
+				if (resources.length == 0)
+				{
+					error("No .dfb module found in: "+ project.name +". Process terminates.");
+					onCompleteHandler = null;
+					return;
+				}
+
 				// parse to dfb files to form-object
 				// no matter opened or non-opened
 				formObjects = new Vector.<DominoFormVO>();

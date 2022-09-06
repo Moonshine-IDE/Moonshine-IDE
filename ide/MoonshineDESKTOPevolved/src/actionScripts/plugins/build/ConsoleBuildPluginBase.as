@@ -66,7 +66,7 @@ package actionScripts.plugins.build
             nativeProcessStartupInfo = null;
         }
 
-        public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
+        public function start(args:Vector.<String>, buildDirectory:*=null, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
         {
             if (nativeProcess.running && _running)
             {

@@ -18,15 +18,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter
 {
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.GlobalClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.VOClassGenerator;
-
-	import avmplus.getQualifiedClassName;
-
-	import flash.events.Event;
 
 	import flash.filesystem.File;
 	
@@ -58,10 +56,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		protected var targetPath:FileLocation;
 		protected var project:ProjectVO;
 		protected var formObjects:Vector.<DominoFormVO>;
+		protected var waitingCount:int;
 
 		private var completionCount:int;
-		private var waitingCount:int;
-		private var onCompleteHandler:Function;
+		protected var onCompleteHandler:Function;
 		
 		public function OnDiskRoyaleCRUDModuleExporter(targetPath:FileLocation, project:ProjectVO, onComplete:Function)
 		{
@@ -86,7 +84,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			
 			// get all available dfb files
 			var resources:ArrayCollection = new ArrayCollection();
-			UtilsCore.parseFilesList(resources, null,null, ["dfb"], false, onFilesParseCompletes);
+			UtilsCore.parseFilesList(resources, null, IDEModel.getInstance().activeProject, ["dfb"], false, onFilesParseCompletes);
 
 			/*
 			 * @local
@@ -96,6 +94,20 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 				// parse to dfb files to form-object
 				// no matter opened or non-opened
 				formObjects = new Vector.<DominoFormVO>();
+				if (resources.length == 0)
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(
+							new ConsoleOutputEvent(
+									ConsoleOutputEvent.CONSOLE_PRINT,
+									"No .dfb module found in: "+ IDEModel.getInstance().activeProject.name +". Process terminates.",
+									false, false,
+									ConsoleOutputEvent.TYPE_ERROR
+							)
+					);
+					onCompleteHandler = null;
+					return;
+				}
+
 				for each (var resource:Object in resources)
 				{
 					tmpFormObject = new DominoFormVO();

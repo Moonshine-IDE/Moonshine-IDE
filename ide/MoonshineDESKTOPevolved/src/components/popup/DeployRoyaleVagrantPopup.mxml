@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:mx="library://ns.adobe.com/flex/mx"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:controls="components.controls.*"
+										   backgroundColor="0xf5f5f5" title="Deploy to Vagrant Server"
+										   width="600" minWidth="400" autoLayout="true"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   creationComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+		import actionScripts.events.FileUploaderEvent;
+		import actionScripts.events.SettingsEvent;
+		import actionScripts.factory.FileLocation;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
+		import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+		import actionScripts.plugins.vagrant.VagrantPlugin;
+		import actionScripts.plugins.vagrant.utils.VagrantUtil;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+		import actionScripts.utils.FileUtils;
+		import actionScripts.utils.ZipUsingNP;
+		import actionScripts.utils.uploadUsingURLLoader.FileUploaderUsingURLLoader;
+		import actionScripts.valueObjects.ProjectVO;
+
+		import mx.collections.ArrayCollection;
+
+		import mx.events.FlexEvent;
+
+		import actionScripts.events.GlobalEventDispatcher;
+
+		import mx.utils.UIDUtil;
+
+		import mx.validators.Validator;
+
+		import spark.components.Alert;
+
+		public static const EVENT_START_CONVERSION:String = "eventStartConversion";
+
+		public var instances:ArrayCollection;
+
+		[Bindable]
+		private var project:ProjectVO;
+		[Bindable]
+		private var nsfConverterInstances:ArrayCollection;
+		[Bindable]
+		private var targetDatabaseName:String;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var fileUploader:FileUploaderUsingURLLoader;
+		private var instanceStateCheckCount:int;
+		private var zip:ZipUsingNP;
+		private var zipUploadSource:File;
+		private var sourceDirectory:File;
+		private var isInvalidSource:Boolean;
+
+		private var _uploadRequestReturn:Object;
+		public function get uploadRequestReturn():Object
+		{
+			return _uploadRequestReturn;
+		}
+
+		public function get targetDatabase():String
+		{
+			return txtTargetDatabase.text.replace(/ /g, "");
+		}
+
+		public function get databaseURL():String
+		{
+			return txtURL.text;
+		}
+
+		public function get selectedInstance():VagrantInstanceVO
+		{
+			return ddlInstances.selectedItem;
+		}
+
+		override protected function closeThis():void
+		{
+			fileUploader.removeEventListener(FileUploaderEvent.EVENT_UPLOAD_COMPLETE, onFileUploadedData);
+			fileUploader.removeEventListener(FileUploaderEvent.EVENT_UPLOAD_ERROR, onFileUploadError);
+			zip.removeEventListener(ZipUsingNP.EVENT_ZIP_COMPLETES, onZipCompletes);
+			zip.removeEventListener(ZipUsingNP.EVENT_ZIP_FAILED, onZipFailed);
+			dispatcher.removeEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked);
+
+			super.closeThis();
+		}
+
+		protected function onCreationCompletes(event:FlexEvent):void
+		{
+			project = IDEModel.getInstance().activeProject;
+			targetDatabaseName = project.name;
+
+			fileUploader = new FileUploaderUsingURLLoader();
+			fileUploader.addEventListener(FileUploaderEvent.EVENT_UPLOAD_COMPLETE, onFileUploadedData, false, 0, true);
+			fileUploader.addEventListener(FileUploaderEvent.EVENT_UPLOAD_ERROR, onFileUploadError, false, 0, true);
+
+			zip = new ZipUsingNP();
+			zip.addEventListener(ZipUsingNP.EVENT_ZIP_COMPLETES, onZipCompletes, false, 0, true);
+			zip.addEventListener(ZipUsingNP.EVENT_ZIP_FAILED, onZipFailed, false, 0, true);
+
+			disableUI();
+			dispatcher.addEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked, false, 0, true);
+			VagrantUtil.checkStates(instances);
+
+			sourceDirectory = project.folderLocation.resolvePath("bin").fileBridge.getFile as File;
+			if (!sourceDirectory.exists || (sourceDirectory.getDirectoryListing().length == 0))
+			{
+				hgError.includeInLayout = hgError.visible = true;
+				isInvalidSource = true;
+			}
+		}
+
+		private function onIndividualInstanceChecked(event:Event):void
+		{
+			instanceStateCheckCount++;
+			if (instances && (instances.length == instanceStateCheckCount))
+			{
+				enableUI();
+				nsfConverterInstances = new ArrayCollection();
+				for each (var instance:VagrantInstanceVO in instances)
+				{
+					if (instance.capabilities && (instance.capabilities.indexOf("upload-html") != -1) &&
+							(instance.state == VagrantInstanceState.READY))
+					{
+						nsfConverterInstances.addItem(instance);
+					}
+				}
+			}
+		}
+
+		private function onConfigure():void
+		{
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, VagrantPlugin.NAMESPACE));
+		}
+
+		private function onFileUploadedData(event:FileUploaderEvent):void
+		{
+			if (event.value && ((event.value as String) != ""))
+			{
+				_uploadRequestReturn = JSON.parse(event.value as String);
+				dispatchEvent(new Event(EVENT_START_CONVERSION));
+				closeThis();
+			}
+		}
+
+		private function getZipPath():File
+		{
+			var tempDirectory:File = File.cacheDirectory.resolvePath("moonshine/onDisk");
+			if (!tempDirectory.exists)
+			{
+				tempDirectory.createDirectory();
+			}
+
+			var zipFile:File = tempDirectory.resolvePath(UIDUtil.createUID() +".zip");
+			return zipFile;
+		}
+
+		private function onZipCompletes(event:Event):void
+		{
+			uploadZipFile();
+		}
+
+		private function onZipFailed(event:Event):void
+		{
+			dispatcher.dispatchEvent(
+					new ConsoleOutputEvent(
+							ConsoleOutputEvent.CONSOLE_PRINT,
+							zip.errorText,
+							false, false, ConsoleOutputEvent.TYPE_ERROR
+					)
+			);
+			enableUI();
+		}
+
+		private function onFileUploadError(event:FileUploaderEvent):void
+		{
+			enableUI();
+			dispatcher.dispatchEvent(
+					new ConsoleOutputEvent(
+							ConsoleOutputEvent.CONSOLE_PRINT,
+							"Failed to upload file on server:\n" + (event.value as String),
+							false, false, ConsoleOutputEvent.TYPE_ERROR
+					)
+			);
+		}
+
+		private function onSubmit():void
+		{
+			// validations
+			var tmpArr:Array = new Array(svDownloadDir);
+			if (Validator.validateAll(tmpArr).length != 0 || isInvalidSource)
+			{
+				return;
+			}
+
+			Alert.OK_LABEL = "OK";
+			if (!ddlInstances.selectedItem)
+			{
+				Alert.show("A valid Vagrant Instance is missing.", "Error!");
+				return;
+			}
+
+			disableUI();
+			zipRoyaleFiles();
+		}
+
+		private function disableUI():void
+		{
+			btnSubmit.enabled = false;
+			ddlInstances.enabled = false;
+		}
+
+		private function enableUI():void
+		{
+			btnSubmit.enabled = true;
+			ddlInstances.enabled = true;
+		}
+
+		private function zipRoyaleFiles():void
+		{
+			dispatcher.dispatchEvent(
+				new ConsoleOutputEvent(
+						ConsoleOutputEvent.CONSOLE_PRINT,
+						"Zipping files from: " + project.projectFolder.nativePath + "/bin.",
+						true
+				)
+			);
+
+			zipUploadSource = getZipPath();
+			zip.zip(
+					sourceDirectory,
+					zipUploadSource
+			);
+		}
+
+		private function uploadZipFile():void
+		{
+			dispatcher.dispatchEvent(
+				new ConsoleOutputEvent(
+						ConsoleOutputEvent.CONSOLE_PRINT,
+						"Trying to upload request to: " + (ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload. This may take some time..",
+						false, false,
+						ConsoleOutputEvent.TYPE_NOTE
+				)
+			);
+
+			fileUploader.upload(
+					new FileLocation(zipUploadSource.nativePath),
+					(ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload?rand="+ Math.random(),
+					"file"
+			);
+		}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="svDownloadDir" source="{txtTargetDatabase}" property="text" trigger="{btnSubmit}"/>
+	</fx:Declarations>
+
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+
+	<s:Label text="Vagrant Instances:"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:DropDownList id="ddlInstances"
+						width="100%" height="26"
+						dataProvider="{nsfConverterInstances}" labelField="title" requireSelection="true"/>
+		<s:Button label="Configure" styleName="darkButton"
+				  click="onConfigure()"/>
+	</s:HGroup>
+
+	<s:Label text="Target Directory:"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<view:PromptTextInput id="txtTargetDatabase"
+							  width="100%" styleName="textInput" restrict="A-Za-z0-9_"
+								text="{targetDatabaseName}" change="{targetDatabaseName=event.target.text}"/>
+	</s:HGroup>
+
+	<s:Label text="Possible URL:"/>
+	<s:Label id="txtURL" width="100%" maxDisplayedLines="3" styleName="uiText"
+		text="http://127.0.0.1:8080/{targetDatabaseName}/js-debug/index.html" fontStyle="italic"/>
+
+    <s:VGroup id="hgError"
+			  width="100%" paddingTop="6"
+			  visible="false" includeInLayout="false">
+		<mx:HRule height="1" width="100%" strokeColor="0x666666"/>
+		<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="center">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label text="Project does not contains /bin/js-debug or /bin/js-release"/>
+		</s:HGroup>
+	</s:VGroup>
+
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit"
+				  label="Submit" styleName="darkButton"
+					click="onSubmit()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

@@ -187,7 +187,9 @@ package actionScripts.ui.menu
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, [ProjectMenuTypes.JS_ROYALE], ProjectActionEvent.BUILD_RELEASE),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.JS_ROYALE], "selectedProjectAntBuild"),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA], MavenBuildEvent.START_MAVEN_BUILD),
-                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ProjectActionEvent.CLEAN_PROJECT)
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ProjectActionEvent.CLEAN_PROJECT),
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'DEPLOY_ROYALE_TO_VAGRANT'), null, [ProjectMenuTypes.JS_ROYALE], OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT)
                 ]);
                 royaleMenu.forEach(makeDynamic);
             }
@@ -303,6 +305,7 @@ package actionScripts.ui.menu
                 dominoMenu = Vector.<MenuItem>([
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources','GENERATE_JAVA_AGENTS'), null, null, ExportVisualEditorProjectEvent.EVENT_GENERATE_DOMINO_JAVA_AGENTS_OUT_OF_VISUALEDITOR_PROJECT),
+                    new MenuItem(resourceManager.getString('resources', 'DEPLOY_DOMINO_DATABASE'), null, null, OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE),
                     new MenuItem(resourceManager.getString('resources','GENERATE_APACHE_ROYALE_PROJECT'), null, null, ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT),
                     new MenuItem(null),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], MavenBuildEvent.START_MAVEN_BUILD),
@@ -369,6 +372,7 @@ package actionScripts.ui.menu
 			{
 				onDiskMenu = Vector.<MenuItem>([
 					new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'DEPLOY_DOMINO_DATABASE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE),
                     new MenuItem(resourceManager.getString('resources', 'GENERATE_JAVA_AGENTS'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_JAVA_AGENTS),
 					new MenuItem(resourceManager.getString('resources', 'GENERATE_CRUD_ROYALE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_CRUD_ROYALE),
 					new MenuItem(null),

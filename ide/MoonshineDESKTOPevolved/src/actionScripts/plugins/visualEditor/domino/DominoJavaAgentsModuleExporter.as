@@ -33,8 +33,6 @@ package actionScripts.plugins.visualEditor.domino
 
 	public class DominoJavaAgentsModuleExporter extends CRUDJavaAgentsModuleExporter
 	{
-		private static var TEMPLATE_ELEMENTS_PATH:File;
-
 		private var components:Array;
 
 		public function DominoJavaAgentsModuleExporter(originPath:File, targetPath:File, project:ProjectVO, onComplete:Function, components:Array = null)

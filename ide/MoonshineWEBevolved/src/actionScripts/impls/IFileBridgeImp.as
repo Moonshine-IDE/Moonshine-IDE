@@ -24,6 +24,7 @@ package actionScripts.impls
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IFileBridge;
 	import actionScripts.valueObjects.FileReference;
+	import flash.utils.ByteArray;
 	
 	CONFIG::OSX
 	{
@@ -411,6 +412,11 @@ package actionScripts.impls
 		}
 		
 		public function get documentsDirectory():Object
+		{
+			return null;
+		}
+		
+		public function get readByteArray():ByteArray
 		{
 			return null;
 		}
