@@ -598,7 +598,8 @@ package actionScripts.languageServer
 				nodePath,
 				// uncomment --inspect to allow devtools debugging of the Node.js script
 				// "--inspect",
-				scriptFile.nativePath
+				scriptFile.nativePath,
+				"--stdio"
 			];
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
@@ -618,6 +619,7 @@ package actionScripts.languageServer
 					processArgs.push(value);
 				}
 
+				
 				var processInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 				processInfo.arguments = processArgs;
 				processInfo.executable = cmdFile;
