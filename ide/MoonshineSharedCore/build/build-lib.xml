@@ -931,7 +931,7 @@
 
 	<target name="InstallHaxeDependencies" unless="nohaxelib">
 		<echo>Installing Haxe Libraries</echo>
-                <haxelibInstall library="feathersui" version="1.0.0-rc.2" />
+                <haxelibInstall library="feathersui" version="1.0.0" />
                 <haxelibInstall library="openfl" version="9.2.0" />
                 <haxelibInstall library="actuate" version="1.8.9" />
                 <haxelibInstall library="lime" version="8.0.0" />
