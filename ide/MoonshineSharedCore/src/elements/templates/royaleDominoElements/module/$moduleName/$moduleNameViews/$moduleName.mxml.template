@@ -48,17 +48,35 @@
     }
 ]]></fx:Script>
   <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
-      <j:Button text="Add" click="{this.proxy.selectedIndex = -1; this.currentState = 'contentState'; this.itemVO = new $moduleNameVO();}" includeIn="dataGridState"/>
-      <j:Button text="Edit" click="{this.currentState = 'contentState'; this.proxy.selectedIndex = dg.selectedIndex; this.itemVO = dg.selectedItem.copy();}" includeIn="dataGridState">
-        <j:beads>
-          <j:Disabled disabled="{dg.selectedIndex == -1}"/>
-        </j:beads>
-      </j:Button>
-      <j:Button text="Remove" click="{removeItem()}" includeIn="dataGridState">
-        <j:beads>
-          <j:Disabled disabled="{dg.selectedIndex == -1}"/>
-        </j:beads>
-      </j:Button>
+      <j:IconButton text="Add" includeIn="dataGridState"
+                    click="{this.proxy.selectedIndex = -1; this.currentState = 'contentState'; this.itemVO = new $moduleNameVO();}">
+        <j:icon>
+            <js:MaterialIcon text="{MaterialIconType.ADD}" />
+        </j:icon>
+      </j:IconButton>
+      <j:IconButton text="Edit" includeIn="dataGridState"
+                    click="{this.currentState = 'contentState'; this.proxy.selectedIndex = dg.selectedIndex; this.itemVO = dg.selectedItem.copy();}">
+          <j:icon>
+              <js:MaterialIcon text="{MaterialIconType.MODE_EDIT}" />
+          </j:icon>
+           <j:beads>
+                <j:Disabled disabled="{dg.selectedIndex == -1}"/>
+          </j:beads>
+      </j:IconButton>
+       <j:IconButton text="Remove" includeIn="dataGridState" click="{removeItem()}" >
+          <j:icon>
+              <js:MaterialIcon text="{MaterialIconType.REMOVE}" />
+          </j:icon>
+          <j:beads>
+            <j:Disabled disabled="{dg.selectedIndex == -1}"/>
+          </j:beads>
+        </j:IconButton>
+      <j:IconButton text="Refresh" includeIn="dataGridState"
+                    click="{this.proxy.requestItems()}">
+        <j:icon>
+            <js:MaterialIcon text="{MaterialIconType.REFRESH}" />
+        </j:icon>
+      </j:IconButton>
   </j:HGroup>
   %ViewContent%
   <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsCenter" gap="2" includeIn="contentState">

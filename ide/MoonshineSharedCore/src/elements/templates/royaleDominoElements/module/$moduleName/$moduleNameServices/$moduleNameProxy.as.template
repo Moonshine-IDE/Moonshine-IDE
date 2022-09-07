@@ -134,7 +134,7 @@ package $packagePath
                 {
                     if (("documents" in json) && (json.documents is Array))
                     {
-                        items = new Array();
+                        items = [];
                         for (var i:int=0; i < json.documents.length; i++)
                         {
                             var item:$moduleNameVO = new $moduleNameVO();
