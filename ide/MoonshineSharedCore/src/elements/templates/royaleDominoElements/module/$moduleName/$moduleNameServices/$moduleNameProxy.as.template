@@ -1,0 +1,403 @@
+package $packagePath
+{
+    import org.apache.royale.events.EventDispatcher;
+    import classes.vo.Constants;
+    import org.apache.royale.jewel.Snackbar;
+	import org.apache.royale.net.events.FaultEvent;
+	import classes.events.ErrorEvent;
+	import classes.utils.Utils;
+    %ImportStatements%
+
+	public class $moduleNameProxy extends EventDispatcher
+	{
+	    public static const EVENT_ITEM_UPDATED:String = "eventItemUpdated";
+        public static const EVENT_ITEM_REMOVED:String = "eventItemRemoved";
+        public static const EVENT_ITEM_SELECTED:String = "eventItemSelected";
+
+		private var serviceDelegate:$moduleNameServices = new $moduleNameServices();
+		private var lastEditingItem:$moduleNameVO;
+		
+		private static var _instance:$moduleNameProxy;
+        public static function getInstance():$moduleNameProxy
+        {
+            if (!_instance)
+            {
+                _instance = new $moduleNameProxy();
+            }
+            return _instance;
+        }
+        
+        public function $moduleNameProxy()
+        {
+            if (_instance != null) 
+            {
+                throw new Error("New Instances Not Possible.", "$moduleNameProxy");
+            }			
+            else 
+            {
+                _instance = this;
+            }
+        }
+        
+        private var _items:Array = new Array();
+        [Bindable]
+        public function get items():Array
+        {
+            return _items;
+        }
+        public function set items(value:Array):void
+        {
+            _items = value;
+        }
+        
+        private var _selectedIndex:int;
+        public function get selectedIndex():int
+        {
+            return _selectedIndex;
+        }
+        public function set selectedIndex(value:int):void
+        {
+            _selectedIndex = value;
+        }
+
+        public function requestItems():void
+        {
+            if (Constants.AGENT_BASE_URL)
+            {
+                Utils.setBusy();
+                this.serviceDelegate.get$moduleNameList(on$moduleNameListLoaded, on$moduleNameListLoadFailed);
+            }
+        }
+        
+        public function submitItem(value:$moduleNameVO):void
+        {
+            // simple in-memory add/update for now
+            if (this.selectedIndex != -1)
+            {
+                if (Constants.AGENT_BASE_URL)
+            	{
+            		Utils.setBusy();
+            		this.serviceDelegate.update$moduleName(value.toRequestObject(), on$moduleNameUpdated, on$moduleNameUpdateFailed);
+            	}
+            	else
+            	{
+            		items[this.selectedIndex] = value;
+            		this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+            	}
+            }
+            else
+            {
+                if (Constants.AGENT_BASE_URL)
+            	{
+            		Utils.setBusy();
+            		this.serviceDelegate.addNew$moduleName(value.toRequestObject(), on$moduleNameCreated, on$moduleNameCreationFailed);
+            	}
+            	else
+            	{
+            		items.push(value);
+            		this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+            	}
+            }
+        }
+        
+        public function removeItem(value:$moduleNameVO):void
+        {
+            var indexOf:int = items.indexOf(value);
+            if (Constants.AGENT_BASE_URL)
+            {
+                this.selectedIndex = indexOf;
+                Utils.setBusy();
+                this.serviceDelegate.remove$moduleName(
+                    {DominoUniversalID: value.DominoUniversalID},
+                    on$moduleNameRemoved,
+                    on$moduleNameRemoveFailed
+                );
+            }
+            else
+            {
+                if (indexOf > -1)
+                {
+                    items.splice(indexOf, 1);
+                }
+                this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+            }
+        }
+
+        private function on$moduleNameListLoaded(event:Event):void
+        {
+            Utils.removeBusy();
+            var fetchedData:String = event.target["data"];
+            if (fetchedData)
+            {
+                var json:Object = JSON.parse(fetchedData as String);
+                if (!json.errorMessage)
+                {
+                    if (("documents" in json) && (json.documents is Array))
+                    {
+                        items = new Array();
+                        for (var i:int=0; i < json.documents.length; i++)
+                        {
+                            var item:$moduleNameVO = new $moduleNameVO();
+                            items.push(
+                                $moduleNameVO.get$moduleNameVO(json.documents[i])
+                            );
+                        }
+                        this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+                    }
+                }
+                else
+                {
+                    this.dispatchEvent(
+                        new ErrorEvent(
+                            ErrorEvent.SERVER_ERROR,
+                            json.errorMessage,
+                            ("validationErrors" in json) ? json.validationErrors : null
+                        )
+                    );
+                }
+
+                /*if (!sessionCheckProxy.checkUserSession(xmlData))
+                {
+                    return;
+                }
+
+                var errorMessage:String = xmlData["ErrorMessage"].toString();
+
+                if (!errorMessage)
+                {
+                    if (xmlData[0].Results.affectedObject == null)
+                    {
+                        sendNotification(NOTE_DISK_CREATE_FAILED, "Failed to add Disk! Please, try later.");
+                    }
+                    else
+                    {
+                        manageVmBaseProxy.selectedVM.disksAC = new ArrayList();
+                        ParseCentralVMs.parseVMDisks(xmlData[0].Results.affectedObject, manageVmBaseProxy.selectedVM.disksAC);
+
+                        sendNotification(NOTE_DISK_CREATE_COMPLETED);
+                    }
+                }
+                else
+                {
+                    sendNotification(NOTE_DISK_CREATE_FAILED, "Disk create request failed: " + errorMessage);
+                }*/
+            }
+            else
+            {
+                Snackbar.show("Loading lists of new $moduleName failed!", 8000, null);
+            }
+        }
+
+        private function on$moduleNameListLoadFailed(event:FaultEvent):void
+        {
+            Utils.removeBusy();
+            Snackbar.show("Loading lists of new $moduleName failed!\n"+ event.message.toLocaleString(), 8000, null);
+        }
+        
+        private function on$moduleNameCreated(event:Event):void
+		{
+			Utils.removeBusy();
+			var fetchedData:String = event.target["data"];
+			if (fetchedData)
+			{
+				var json:Object = JSON.parse(fetchedData as String);
+                if (!json.errorMessage)
+                {
+                    if ("document" in json)
+                    {
+                        items.push(
+                            $moduleNameVO.get$moduleNameVO(json.document)
+                        );
+                    }
+                    this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+                }
+                else
+                {
+                    this.dispatchEvent(
+                        new ErrorEvent(
+                            ErrorEvent.SERVER_ERROR,
+                            json.errorMessage,
+                            ("validationErrors" in json) ? json.validationErrors : null
+                        )
+                    );
+                }
+
+				/*if (!sessionCheckProxy.checkUserSession(xmlData))
+				{
+					return;
+				}
+				
+				var errorMessage:String = xmlData["ErrorMessage"].toString();
+				
+				if (!errorMessage)
+				{
+					if (xmlData[0].Results.affectedObject == null)
+					{
+						sendNotification(NOTE_DISK_CREATE_FAILED, "Failed to add Disk! Please, try later.");
+					}
+					else
+					{
+						manageVmBaseProxy.selectedVM.disksAC = new Array();
+						ParseCentralVMs.parseVMDisks(xmlData[0].Results.affectedObject, manageVmBaseProxy.selectedVM.disksAC);
+						
+						sendNotification(NOTE_DISK_CREATE_COMPLETED);
+					}
+				}
+				else
+				{
+					sendNotification(NOTE_DISK_CREATE_FAILED, "Disk create request failed: " + errorMessage);
+				}*/
+			}
+			else
+			{
+				Snackbar.show("Creation of new $moduleName failed!", 8000, null);
+			}
+		}
+		
+		private function on$moduleNameCreationFailed(event:FaultEvent):void
+		{
+			Utils.removeBusy();
+			this.dispatchEvent(
+                new ErrorEvent(
+                    ErrorEvent.SERVER_ERROR,
+                    "Creation of new $moduleName failed!\n"+ event.message.toLocaleString()
+                )
+            );
+		}
+
+		private function on$moduleNameUpdated(event:Event):void
+        {
+            Utils.removeBusy();
+            var fetchedData:String = event.target["data"];
+            if (fetchedData)
+            {
+                var json:Object = JSON.parse(fetchedData as String);
+                if (!json.errorMessage)
+                {
+                    this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+                }
+                else
+                {
+                    this.dispatchEvent(
+                        new ErrorEvent(
+                            ErrorEvent.SERVER_ERROR,
+                            json.errorMessage,
+                            ("validationErrors" in json) ? json.validationErrors : null
+                        )
+                    );
+                }
+
+                /*if (!sessionCheckProxy.checkUserSession(xmlData))
+                {
+                    return;
+                }
+
+                var errorMessage:String = xmlData["ErrorMessage"].toString();
+
+                if (!errorMessage)
+                {
+                    if (xmlData[0].Results.affectedObject == null)
+                    {
+                        sendNotification(NOTE_DISK_CREATE_FAILED, "Failed to add Disk! Please, try later.");
+                    }
+                    else
+                    {
+                        manageVmBaseProxy.selectedVM.disksAC = new ArrayList();
+                        ParseCentralVMs.parseVMDisks(xmlData[0].Results.affectedObject, manageVmBaseProxy.selectedVM.disksAC);
+
+                        sendNotification(NOTE_DISK_CREATE_COMPLETED);
+                    }
+                }
+                else
+                {
+                    sendNotification(NOTE_DISK_CREATE_FAILED, "Disk create request failed: " + errorMessage);
+                }*/
+            }
+            else
+            {
+                Snackbar.show("Update of new $moduleName failed!", 8000, null);
+            }
+        }
+
+        private function on$moduleNameUpdateFailed(event:FaultEvent):void
+        {
+            Utils.removeBusy();
+            this.dispatchEvent(
+                new ErrorEvent(
+                    ErrorEvent.SERVER_ERROR,
+                    "Update of $moduleName failed!\n"+ event.message.toLocaleString()
+                )
+            );
+        }
+
+		private function on$moduleNameRemoved(event:Event):void
+        {
+            Utils.removeBusy();
+            var fetchedData:String = event.target["data"];
+            if (fetchedData)
+            {
+                var json:Object = JSON.parse(fetchedData as String);
+                if (!json.errorMessage)
+                {
+                    if (selectedIndex > -1)
+                    {
+                        items.splice(this.selectedIndex, 1);
+                        this.selectedIndex = -1;
+                        this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
+                    }
+                }
+                else
+                {
+                    this.dispatchEvent(
+                        new ErrorEvent(
+                            ErrorEvent.SERVER_ERROR,
+                            json.errorMessage,
+                            ("validationErrors" in json) ? json.validationErrors : null
+                        )
+                    );
+                }
+
+                /*if (!sessionCheckProxy.checkUserSession(xmlData))
+                {
+                    return;
+                }
+
+                var errorMessage:String = xmlData["ErrorMessage"].toString();
+
+                if (!errorMessage)
+                {
+                    if (xmlData[0].Results.affectedObject == null)
+                    {
+                        sendNotification(NOTE_DISK_CREATE_FAILED, "Failed to add Disk! Please, try later.");
+                    }
+                    else
+                    {
+                        manageVmBaseProxy.selectedVM.disksAC = new ArrayList();
+                        ParseCentralVMs.parseVMDisks(xmlData[0].Results.affectedObject, manageVmBaseProxy.selectedVM.disksAC);
+
+                        sendNotification(NOTE_DISK_CREATE_COMPLETED);
+                    }
+                }
+                else
+                {
+                    sendNotification(NOTE_DISK_CREATE_FAILED, "Disk create request failed: " + errorMessage);
+                }*/
+            }
+            else
+            {
+                Snackbar.show("Deletion of $moduleName failed!", 8000, null);
+            }
+        }
+
+        private function on$moduleNameRemoveFailed(event:FaultEvent):void
+        {
+            Utils.removeBusy();
+            this.dispatchEvent(
+                new ErrorEvent(
+                    ErrorEvent.SERVER_ERROR,
+                    "Removal of $moduleName failed!\n"+ event.message.toLocaleString()
+                )
+            );
+        }
+	}
+}

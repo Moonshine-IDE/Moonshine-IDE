@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
+	import actionScripts.interfaces.IDeployDominoDatabaseProject;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugin.settings.vo.MultiOptionSetting;
 
@@ -53,7 +54,7 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.languageServer.LanguageServerProjectVO;
 	
-	public class AS3ProjectVO extends LanguageServerProjectVO implements ICloneable, IVisualEditorProjectVO
+	public class AS3ProjectVO extends LanguageServerProjectVO implements ICloneable, IVisualEditorProjectVO, IDeployDominoDatabaseProject
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 		public static const NATIVE_EXTENSION_MESSAGE:String = "NATIVE_EXTENSION_MESSAGE";
@@ -294,17 +295,6 @@ package actionScripts.plugin.actionscript.as3project.vo
 			_visualEditorSourceFolder = value;
 		}
 
-		private var _dominoBaseAgentURL:String;
-		public function get dominoBaseAgentURL():String
-		{
-			return _dominoBaseAgentURL;
-		}
-
-		public function set dominoBaseAgentURL(value:String):void
-		{
-			_dominoBaseAgentURL = value;
-		}
-		
 		private var _filesList:ArrayCollection;
 		[Bindable]
 		public function get filesList():ArrayCollection
@@ -411,6 +401,22 @@ package actionScripts.plugin.actionscript.as3project.vo
 
             _jsOutputPath = value;
         }
+
+		private var _dominoBaseAgentURL:String = "http://127.0.0.1:8080/%CleanProjectName%.nsf";
+		public function get dominoBaseAgentURL():String							{	return _dominoBaseAgentURL;	}
+		public function set dominoBaseAgentURL(value:String):void				{	_dominoBaseAgentURL = value;}
+
+		private var _localDatabase:String = "%ProjectPath%/nsfs/nsf-moonshine/target/nsf-moonshine-domino-1.0.0.nsf";
+		public function get localDatabase():String								{	return _localDatabase;	}
+		public function set localDatabase(value:String):void					{	_localDatabase = value;	}
+
+		private var _targetServer:String = "demo/DEMO";
+		public function get targetServer():String								{	return _targetServer;	}
+		public function set targetServer(value:String):void						{	_targetServer = value;	}
+
+		private var _targetDatabase:String = "%CleanProjectName%.nsf";
+		public function get targetDatabase():String								{	return _targetDatabase;	}
+		public function set targetDatabase(value:String):void					{	_targetDatabase = value;	}
 
 		public function getRoyaleDebugPath():String
 		{
@@ -828,6 +834,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 			
             return Vector.<SettingsWrapper>([
 					new SettingsWrapper("Domino", new <ISetting>[
+						new StringSetting(this, "localDatabase", "Local Database"),
+						new StringSetting(this, "targetServer", "Target Server"),
+						new StringSetting(this, "targetDatabase", "Target Database"),
 						new StringSetting(this, "dominoBaseAgentURL", "Base Agent URL")
 					]),
 					new SettingsWrapper("Paths",

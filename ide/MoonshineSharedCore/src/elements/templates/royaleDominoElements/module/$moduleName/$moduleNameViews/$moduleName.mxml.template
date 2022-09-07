@@ -1,0 +1,69 @@
+<j:VGroup  xmlns:j="library://ns.apache.org/royale/jewel" xmlns:fx="http://ns.adobe.com/mxml/2009"
+			xmlns:js="library://ns.apache.org/royale/basic" xmlns:html="library://ns.apache.org/royale/html"
+			xmlns:joditeditor="classes.joditeditor.*" xmlns:dataGrid="classes.dataGrid.*"
+			currentState="dataGridState" gap="5" stateChangeComplete="{this.dispatchEvent(new Event('valueChange'))}"
+			itemsVerticalAlign="itemsTop">
+  <j:beads>
+    <js:ContainerDataBinding/>
+    <js:SimpleStatesImpl/>
+  </j:beads>
+  <j:states>
+    <js:State name="dataGridState"/>
+    <js:State name="contentState"/>
+  </j:states>
+  <fx:Script><![CDATA[
+	import org.apache.royale.jewel.Alert;
+	%ImportStatements%
+
+	[Bindable] private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
+
+	[Bindable] private var itemVO:$moduleNameVO;
+	[Bindable] private var isDisabled:Boolean = false;
+
+    public static const NAME:String = "%ViewComponentName%";
+
+	private function removeItem():void
+	{
+		var alert:Alert = Alert.show('Are you sure you want to remove this item?',  'Remove', Alert.OK | Alert.CANCEL);
+			alert.addEventListener('close', function closeAlert(e:Event):void { if (e['detail'] == Alert.OK)
+    									{
+    										proxy.removeItem(itemVO);
+    										dg.refreshCurrentDataProvider();
+    									}});
+	}
+
+	private function onSaveClick(event:Event):void
+    {
+        this.currentState = 'dataGridState';
+        this.proxy.submitItem(this.itemVO);
+        this.dg.refreshCurrentDataProvider();
+    }
+
+    private function onDgDoubleClick(event:Event):void
+    {
+        this.currentState = 'contentState';
+        this.proxy.selectedIndex = dg.selectedIndex;
+        var reqObj:Object = dg.selectedItem.toRequestObject();
+        this.itemVO = $moduleNameVO.get$moduleNameVO(reqObj);
+    }
+]]></fx:Script>
+  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
+      <j:Button text="Add" click="{this.proxy.selectedIndex = -1; this.currentState = 'contentState'; this.itemVO = new $moduleNameVO();}" includeIn="dataGridState"/>
+      <j:Button text="Edit" click="{this.currentState = 'contentState'; this.proxy.selectedIndex = dg.selectedIndex; this.itemVO = dg.selectedItem.copy();}" includeIn="dataGridState">
+        <j:beads>
+          <j:Disabled disabled="{dg.selectedIndex == -1}"/>
+        </j:beads>
+      </j:Button>
+      <j:Button text="Remove" click="{removeItem()}" includeIn="dataGridState">
+        <j:beads>
+          <j:Disabled disabled="{dg.selectedIndex == -1}"/>
+        </j:beads>
+      </j:Button>
+  </j:HGroup>
+  %ViewContent%
+  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsCenter" gap="2" includeIn="contentState">
+    <j:Button text="Save" click="onSaveClick(event)"/>
+    <j:Button text="Cancel" click="{this.currentState = 'dataGridState'; this.proxy.selectedIndex = -1; this.itemVO = null}"/>
+  </j:HGroup>
+  <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onDgDoubleClick(event)"/>
+</j:VGroup>

@@ -100,7 +100,17 @@ package actionScripts.plugin.ondiskproj.importer
 
 			if (data.domino.option.hasOwnProperty('@dominoBaseAgentURL'))
 				project.dominoBaseAgentURL = SerializeUtil.deserializeString(data.domino.option.@dominoBaseAgentURL);
-			
+			if (data.domino.option.hasOwnProperty('@localDatabase'))
+				project.localDatabase = SerializeUtil.deserializeString(data.domino.option.@localDatabase);
+			if (data.domino.option.hasOwnProperty('@targetServer'))
+				project.targetServer = SerializeUtil.deserializeString(data.domino.option.@targetServer);
+			if (data.domino.option.hasOwnProperty('@targetDatabase'))
+				project.targetDatabase = SerializeUtil.deserializeString(data.domino.option.@targetDatabase);
+
+			project.dominoBaseAgentURL = project.dominoBaseAgentURL.replace(/%CleanProjectName%/gi, projectName);
+			project.targetDatabase = project.targetDatabase.replace(/%CleanProjectName%/gi, projectName);
+			project.localDatabase = project.localDatabase.replace(/%ProjectPath%/gi, project.projectFolder.nativePath);
+
 			if (project.targets.length > 0)
 			{
 				var target:FileLocation = project.targets[0];

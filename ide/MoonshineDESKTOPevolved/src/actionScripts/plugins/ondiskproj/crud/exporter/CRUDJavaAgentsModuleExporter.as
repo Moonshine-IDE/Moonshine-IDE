@@ -89,13 +89,20 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			
 			// get all available dfb files
 			var resources:ArrayCollection = new ArrayCollection();
-			UtilsCore.parseFilesList(resources, null,null, ["dfb"], false, onFilesParseCompletes);
+			UtilsCore.parseFilesList(resources, null, this.project, ["dfb"], false, onFilesParseCompletes);
 
 			/*
 			 * @local
 			 */
 			function onFilesParseCompletes():void
 			{
+				if (resources.length == 0)
+				{
+					error("No .dfb module found in: "+ project.name +". Process terminates.");
+					onCompleteHandler = null;
+					return;
+				}
+
 				// parse to dfb files to form-object
 				// no matter opened or non-opened
 				formObjects = new Vector.<DominoFormVO>();

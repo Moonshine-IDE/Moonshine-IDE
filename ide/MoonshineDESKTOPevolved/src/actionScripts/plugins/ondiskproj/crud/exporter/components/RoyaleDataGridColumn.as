@@ -25,7 +25,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 	{
 		public static function toCode(value:DominoFormFieldVO):String
 		{
-			var column:String = readTemplate("DataGridColumn.template");
+			var column:String = readTemplate("elements/templates/royaleTabularCRUD/elements/DataGridColumn.template");
 			column = column.replace(/%label%/ig, value.label);
 			column = column.replace(/%dataField%/ig, value.name);
 			column = column.replace(/%itemRenderer%/ig, getRenderer(value));

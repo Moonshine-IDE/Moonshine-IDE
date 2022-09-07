@@ -20,15 +20,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 {
 	public class RoyaleScrollableSectionContent extends RoyaleElemenetBase
 	{
-		public static function toCode(componentName:String):String
+		public static function toCode(componentName:String, ambiguousName:String = ""):String
 		{
-			var scrollableSectionContent:String = readTemplate("ScrollableSectionContent.template");
-			var viewComponent:String = readTemplate("ViewComponent.template");
+			var scrollableSectionContent:String = readTemplate("elements/templates/royaleTabularCRUD/elements/ScrollableSectionContent.template");
+			var viewComponent:String = readTemplate("elements/templates/royaleTabularCRUD/elements/ViewComponent.template");
 			
 			viewComponent = viewComponent.replace(/%ViewComponentName%/ig, componentName);
 			viewComponent = viewComponent.replace(/%Namespace%/ig, componentName);
 			
-			scrollableSectionContent = scrollableSectionContent.replace(/%ViewComponentName%/ig, componentName);
+			scrollableSectionContent = scrollableSectionContent.replace(/%ViewComponentName%/ig, ambiguousName + componentName);
 			scrollableSectionContent = scrollableSectionContent.replace(/%ViewComponent%/ig, viewComponent);
 			
 			return scrollableSectionContent;

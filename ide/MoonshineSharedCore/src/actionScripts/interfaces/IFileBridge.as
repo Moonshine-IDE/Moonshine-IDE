@@ -21,6 +21,8 @@ package actionScripts.interfaces
 {
 	import actionScripts.factory.FileLocation;
 
+	import flash.utils.ByteArray;
+
 	[Bindable] public interface IFileBridge
 	{
 		CONFIG::OSX
@@ -102,5 +104,6 @@ package actionScripts.interfaces
 		function get documentsDirectory():Object;
 		function get isBrowsed():Boolean;
 		function get nameWithoutExtension():String;
+		function get readByteArray():ByteArray;
 	}
 }

@@ -264,8 +264,6 @@ package actionScripts.plugin.ondiskproj
 			var sourceFileWithExtension:String = pvo.projectName + ".dve";
 			var sourcePath:String = "src" + model.fileCore.separator + "main";
 			var sourceDominoVisualFormPath:String="nsfs"+ model.fileCore.separator + "nsf-moonshine"+ model.fileCore.separator +"odp"+model.fileCore.separator +"Forms"+model.fileCore.separator +pvo.projectName + ".form";
-			
-
 			var targetFolder:FileLocation = pvo.folderLocation;
 			
 			// Create project root directory
@@ -279,7 +277,7 @@ package actionScripts.plugin.ondiskproj
 					}
 				}
 				
-				targetFolder = targetFolder.resolvePath(projectName);
+			targetFolder = targetFolder.resolvePath(projectName);
 			targetFolder.fileBridge.createDirectory();
 			
 			// Time to do the templating thing!
@@ -312,7 +310,7 @@ package actionScripts.plugin.ondiskproj
 			{
 				pvo.mavenBuildOptions.settingsFilePath = OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath; 
 			}
-			
+
 			OnDiskExporter.export(pvo);
 
 			//pvo.isDominoVisualEditorProject=true;

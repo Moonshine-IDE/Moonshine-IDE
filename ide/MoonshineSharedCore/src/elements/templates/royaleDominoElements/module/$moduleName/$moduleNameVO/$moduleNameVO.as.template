@@ -1,0 +1,61 @@
+package views.modules.$moduleName.$moduleNameVO
+{
+    import org.apache.royale.collections.ArrayList;
+
+    [Bindable]
+	public class $moduleNameVO  
+	{
+	    public var DominoUniversalID:String;
+
+	    %PropertyStatements%
+
+		public function $moduleNameVO()
+		{
+		}
+		
+		public function toRequestObject():Object
+		{
+			%ToRequestObjectStatements%
+		}
+
+		public static function get$moduleNameVO(value:Object):$moduleNameVO
+        {
+            var tmpVO:$moduleNameVO = new $moduleNameVO();
+            %GetNewVOStatements%
+            return tmpVO;
+        }
+
+        public static function getToRequestMultivalueDateString(value:ArrayList):String
+        {
+            var dates:Array = [];
+            for (var i:int; i < value.length; i++)
+            {
+                dates.push(getToRequestDateString(value.getItemAt(i) as Date));
+            }
+
+			return ((dates.length > 0) ? JSON.stringify(dates) : "[]");
+        }
+
+        public static function getToRequestDateString(value:Date):String
+        {
+            var dateString:String = value.toISOString();
+            return dateString;
+        }
+
+        public static function parseFromRequestMultivalueDateString(value:Array):ArrayList
+        {
+            var dates:ArrayList = new ArrayList();
+            for (var i:int; i < value.length; i++)
+            {
+                dates.addItem(parseFromRequestDateString(value[i]));
+            }
+
+            return dates;
+        }
+
+        public static function parseFromRequestDateString(value:String):Date
+        {
+            return (new Date(value));
+        }
+	}
+}

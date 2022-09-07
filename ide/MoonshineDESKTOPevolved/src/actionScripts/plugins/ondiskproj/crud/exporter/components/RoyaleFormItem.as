@@ -26,7 +26,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 	{
 		public static function toCode(value:DominoFormFieldVO):String
 		{
-			var formItem:String = readTemplate("FormItem.template");
+			var formItem:String = readTemplate("elements/templates/royaleTabularCRUD/elements/FormItem.template");
 			var formContent:String;
 			
 			if (value.isMultiValue)

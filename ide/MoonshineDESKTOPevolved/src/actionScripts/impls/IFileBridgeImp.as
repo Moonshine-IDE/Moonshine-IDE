@@ -30,7 +30,9 @@ package actionScripts.impls
 	import actionScripts.utils.TextUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
-    CONFIG::OSX
+	import flash.utils.ByteArray;
+
+	CONFIG::OSX
 	{
 		// ** IMPORTANT **
 		// DO NOT DELETE THE IMPORT EVEN IF 
@@ -789,6 +791,17 @@ package actionScripts.impls
 		public function get documentsDirectory():Object
 		{
 			return File.documentsDirectory;
+		}
+
+		public function get readByteArray():ByteArray
+		{
+			var readedBytes:ByteArray = new ByteArray();
+			var inStream:FileStream = new FileStream();
+			inStream.open(getFile as File, FileMode.READ);
+			inStream.readBytes(readedBytes);
+			inStream.close();
+
+			return readedBytes;
 		}
 
 		public function checkFileExistenceAndReport(showAlert:Boolean=true):Boolean

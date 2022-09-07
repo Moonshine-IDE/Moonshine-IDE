@@ -197,7 +197,7 @@ package actionScripts.plugins.grails
             return args;
         }
 
-		override public function start(args:Vector.<String>, buildDirectory:*, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
+		override public function start(args:Vector.<String>, buildDirectory:*=null, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
 		{
             if (nativeProcess.running && running)
             {
