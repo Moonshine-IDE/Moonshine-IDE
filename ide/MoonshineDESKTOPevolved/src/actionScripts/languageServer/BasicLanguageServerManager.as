@@ -66,6 +66,7 @@ package actionScripts.languageServer
 	public class BasicLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	
 	{
+		private static const LANGUAGE_SERVER_PROCESS_FORMATTED_PID:RegExp = new RegExp( /(%%%[0-9]+%%%)/ );
 		private static const MESSAGE_TYPE_LOG:int = 4;
 		private static const METHOD_LANGUAGE__STATUS:String = "language/status";	
 		private static const METHOD_LANGUAGE__ACTIONABLE_NOTIFICATION:String = "language/actionableNotification";
@@ -268,7 +269,7 @@ package actionScripts.languageServer
 			trace("Basic language server workspace root: " + project.folderPath);
 			
 
-			var debugMode:Boolean = false;
+			var debugMode:Boolean = true;
 			_languageClient = new LanguageClient(LANGUAGE_ID_BASIC,
 				_languageServerProcess.standardOutput, _languageServerProcess, ProgressEvent.STANDARD_OUTPUT_DATA,
 				_languageServerProcess.standardInput);
@@ -598,8 +599,8 @@ package actionScripts.languageServer
 				nodePath,
 				// uncomment --inspect to allow devtools debugging of the Node.js script
 				// "--inspect",
-				scriptFile.nativePath,
-				"--stdio"
+				scriptFile.nativePath
+				,"--stdio"
 			];
 			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(function(value:String):void
 			{
@@ -626,19 +627,42 @@ package actionScripts.languageServer
 				processInfo.workingDirectory = _project.folderLocation.fileBridge.getFile as File;
 				
 				_languageServerProcess = new NativeProcess();
-				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				
 				_languageServerProcess.addEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
+				
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
+				_languageServerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
+				
+				
 				_languageServerProcess.start(processInfo);
 				initializeLanguageServer();
 			}, null, [CommandLineUtil.joinOptions(languageServerCommand)]);
 		}
 		
+		private function languageServerProcess_standardOutputDataHandler(e:ProgressEvent):void
+		{
+			var output:IDataInput = _languageServerProcess.standardOutput;
+			var data:String = output.readUTFBytes(output.bytesAvailable);
+			if ( data.search(LANGUAGE_SERVER_PROCESS_FORMATTED_PID) > -1 ) {
+				// Formatted PID found
+				var a:Array = data.match(LANGUAGE_SERVER_PROCESS_FORMATTED_PID);
+				var spid:String = a[ 0 ].split("%%%")[ 1 ];
+				_pid = parseInt(spid);
+				if ( _pid > 0 ) {
+					// PID is set, we don't need the stdout handler anymore
+					_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
+					LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.ADDED ) );
+				}
+			}
+		}
+
 		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			trace(data);
 		}
+
 
 		private function languageServerProcess_exitHandler(e:NativeProcessExitEvent):void
 		{
