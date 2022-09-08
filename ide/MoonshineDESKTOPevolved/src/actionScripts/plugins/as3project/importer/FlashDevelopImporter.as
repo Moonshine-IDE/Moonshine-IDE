@@ -332,7 +332,9 @@ package actionScripts.plugins.as3project.importer
 				//2.1 load xml from visualeditor-src and convert it to dxl
 				var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
 				var subformXmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
-				
+				if(!subformXmlFileLocation.fileBridge.exists){
+					subformXmlFileLocation.fileBridge.createDirectory()
+				}
 				if(xmlFileLocation.fileBridge.exists || subformXmlFileLocation.fileBridge.exists){
 					var directory:Array = xmlFileLocation.fileBridge.getDirectoryListing();
 					var subdirectory:Array = subformXmlFileLocation.fileBridge.getDirectoryListing();

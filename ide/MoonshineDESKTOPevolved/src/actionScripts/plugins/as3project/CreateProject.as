@@ -1084,6 +1084,32 @@ package actionScripts.plugins.as3project
 				{
 					projectSettingsFile_new_file.fileBridge.deleteFile();
 				}
+				//create subfrom folder if is miss.
+				var project_subfromFolder:FileLocation =  targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms");
+				if(!project_subfromFolder.fileBridge.exists){
+					project_subfromFolder.fileBridge.createDirectory();
+				}
+				var project_subfromxmlFolder:FileLocation =  targetFolder.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
+				if(!project_subfromxmlFolder.fileBridge.exists){
+					project_subfromxmlFolder.fileBridge.createDirectory();
+				}
+				//remove not need simple fiel
+				var simple_view:FileLocation = targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator+"All By UNID"+File.separator+"All By UNID_5c%form%.view");
+				if(simple_view.fileBridge.exists){
+					simple_view.fileBridge.deleteFile()
+				}
+				//create a new simple view for default form.
+				var viewTemplatefile:FileLocation = targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator+"All By UNID_5cCRUD_5c%form%.view"); 
+				if(viewTemplatefile.fileBridge.exists){
+					var viewfileToSave:FileLocation =  targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator+"All By UNID_5cCRUD_5c"+pvo.projectName+".view");
+					if(!viewfileToSave.fileBridge.exists){
+						var viewcontent:String = String(viewTemplatefile.fileBridge.read());
+						var re:RegExp = new RegExp("%form%", "g");
+						viewcontent = viewcontent.replace(re,pvo.projectName);
+						viewfileToSave.fileBridge.save(viewcontent);
+					}
+					viewTemplatefile.fileBridge.deleteFile();
+				}
 			}
 			if (isLibraryProject)
 			{
