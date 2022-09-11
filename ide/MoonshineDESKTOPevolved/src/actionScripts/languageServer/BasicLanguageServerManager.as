@@ -103,6 +103,7 @@ package actionScripts.languageServer
 			_dispatcher.addEventListener(SdkEvent.CHANGE_NODE_SDK, changeNodeSDKHandler, false, 0, true);
 			_dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler, false, 0, true);
 			_dispatcher.addEventListener(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND, executeLanguageServerCommandHandler, false, 0, true);
+			LanguageServerGlobals.addLanguageServerManager( this );
 			bootstrapThenStartNativeProcess();
 		}
 		
@@ -515,6 +516,9 @@ package actionScripts.languageServer
 			_languageClient.removeEventListener(LspNotificationEvent.SHOW_MESSAGE, languageClient_showMessageHandler);
 			_languageClient.removeEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			_languageClient = null;
+			
+			LanguageServerGlobals.removeLanguageServerManager( this );
+			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
 		}
 
 		
