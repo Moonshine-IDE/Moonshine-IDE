@@ -64,7 +64,6 @@ package $packagePath
         {
             if (Constants.AGENT_BASE_URL)
             {
-                Utils.setBusy();
                 this.serviceDelegate.get$moduleNameList(on$moduleNameListLoaded, on$moduleNameListLoadFailed);
             }
         }
