@@ -2,7 +2,7 @@
 			xmlns:js="library://ns.apache.org/royale/basic" xmlns:html="library://ns.apache.org/royale/html"
 			xmlns:joditeditor="classes.joditeditor.*" xmlns:dataGrid="classes.dataGrid.*"
 			currentState="dataGridState" gap="5" stateChangeComplete="{this.dispatchEvent(new Event('valueChange'))}"
-			itemsVerticalAlign="itemsTop">
+			itemsVerticalAlign="itemsTop" initComplete="onViewInitComplete(event)">
   <j:beads>
     <js:ContainerDataBinding/>
     <js:SimpleStatesImpl/>
@@ -13,6 +13,7 @@
   </j:states>
   <fx:Script><![CDATA[
 	import org.apache.royale.jewel.Alert;
+	import classes.events.ErrorEvent;
 	%ImportStatements%
 
 	[Bindable] private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
@@ -21,6 +22,12 @@
 	[Bindable] private var isDisabled:Boolean = false;
 
     public static const NAME:String = "%ViewComponentName%";
+
+    private function onViewInitComplete(event:Event):void
+    {
+        proxy.addEventListener(ErrorEvent.SERVER_ERROR, onServerError);
+        proxy.requestItems();
+    }
 
 	private function removeItem():void
 	{
@@ -45,6 +52,21 @@
         this.proxy.selectedIndex = dg.selectedIndex;
         var reqObj:Object = dg.selectedItem.toRequestObject();
         this.itemVO = $moduleNameVO.get$moduleNameVO(reqObj);
+    }
+
+    private function onServerError(event:ErrorEvent):void
+    {
+        var errorMessage:String = event.errorMessage;
+        if (event.errors && (event.errors is Array))
+        {
+            errorMessage += "\n";
+            for (var i:int=0; i < event.errors.length; i++)
+            {
+                errorMessage += "\n"+ event.errors[i].message;
+            }
+        }
+
+        Alert.show(errorMessage,  'Error!', Alert.OK);
     }
 ]]></fx:Script>
   <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">

@@ -13,6 +13,8 @@ package actionScripts.plugins.visualEditor.domino
 	{
 		private var _pageRelativePathString:String;
 
+		private const MAX_LIST_COLUMNS_COUNT:int = 4;
+
 		public function DominoPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
 		{
 			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +".mxml";
@@ -77,7 +79,8 @@ package actionScripts.plugins.visualEditor.domino
 			var columns:Array = [];
 			if (fields)
 			{
-				for (var i:int = 0; i < fields.length; i++)
+				var maxListColCount:int = fields.length > MAX_LIST_COLUMNS_COUNT ? MAX_LIST_COLUMNS_COUNT : fields.length;
+				for (var i:int = 0; i < maxListColCount; i++)
 				{
 					var field:DominoFormFieldVO = fields.getItemAt(i);
 					columns.push("{caption: '" + field.name + "', dataField: '"  + field.name + "'}");
