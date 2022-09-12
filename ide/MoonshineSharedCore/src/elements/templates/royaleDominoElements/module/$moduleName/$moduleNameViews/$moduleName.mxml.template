@@ -26,6 +26,7 @@
     private function onViewInitComplete(event:Event):void
     {
         proxy.addEventListener(ErrorEvent.SERVER_ERROR, onServerError);
+        proxy.requestItems();
     }
 
 	private function removeItem():void
