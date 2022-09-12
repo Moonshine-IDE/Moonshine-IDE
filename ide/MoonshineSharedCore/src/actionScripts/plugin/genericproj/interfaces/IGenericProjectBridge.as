@@ -7,6 +7,6 @@ package actionScripts.plugin.genericproj.interfaces
 	public interface IGenericProjectBridge extends IProject
 	{
 		function testGenericProject(file:Object):FileLocation;
-		function parseGenericProject(file:FileLocation):GenericProjectVO;
+		function parseGenericProject(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):GenericProjectVO;
 	}
 }
