@@ -70,9 +70,9 @@ package actionScripts.impls
             return GenericProjectImporter.test(file);
         }
 
-        public function parseGenericProject(file:FileLocation):GenericProjectVO
+        public function parseGenericProject(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):GenericProjectVO
         {
-            return GenericProjectImporter.parse(file);
+            return GenericProjectImporter.parse(file, projectName, settingsFileLocation);
         }
 		
 		override public function createProject(event:NewProjectEvent):void
