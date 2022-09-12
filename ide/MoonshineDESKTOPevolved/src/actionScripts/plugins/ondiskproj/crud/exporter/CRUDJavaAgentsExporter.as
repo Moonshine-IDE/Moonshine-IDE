@@ -24,7 +24,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IDeployDominoDatabaseProject;
 	import actionScripts.plugin.console.ConsoleOutputter;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.utils.FileDownloader;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -244,6 +246,8 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.templatingData["%project%"] = targetDirectory.name;
 			th.templatingData["%NotesExecutablePath%"] = ConstantsCoreVO.IS_MACOS ? model.notesPath +"/Contents/MacOS/" : model.notesPath;
+			th.templatingData["%server%"] = (model.activeProject as IDeployDominoDatabaseProject).targetServer;
+			th.templatingData["%databaseName%"] = (model.activeProject as IDeployDominoDatabaseProject).targetDatabase;
 
 			var excludes:Array = ["%eachform%Agents", "%eachform%Docs", "%eachform%Scripts"];
 
