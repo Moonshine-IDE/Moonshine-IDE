@@ -1,0 +1,4 @@
+-p src
+--js ../../ide/MoonshineSharedCore/src/elements/basic-language-server/moonshine-basic.js
+-L hxnodejs
+-m Main
