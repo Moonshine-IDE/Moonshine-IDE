@@ -31,3 +31,7 @@
 .jewel.navigationlink {
     padding: 15px;
 }
+
+.navIconLinkItemRenderer {
+    ISelectableItemRenderer: ClassReference("org.apache.royale.jewel.beads.itemRenderers.ClassSelectorListSelectableItemRendererBead");
+}

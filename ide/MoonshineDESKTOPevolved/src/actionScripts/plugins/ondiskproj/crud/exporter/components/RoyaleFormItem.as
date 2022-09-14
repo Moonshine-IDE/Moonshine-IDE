@@ -111,7 +111,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var beads:String = updateBeads(field);
 			
-			var textInput:String = readTemplate("TextInput.template");;
+			var textInput:String = readTemplate("elements/templates/royaleTabularCRUD/elements/TextInput.template");;
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
 			textInput = textInput.replace(/%Beads%/ig, beads);
 			
@@ -123,7 +123,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var beads:String = updateBeads(field);
 			
-			var textInput:String = readTemplate("TextInput.template");;
+			var textInput:String = readTemplate("elements/templates/royaleTabularCRUD/elements/TextInput.template");;
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
 			textInput = textInput.replace(/%Beads%/ig, beads);
 			
@@ -133,7 +133,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function toMultiValueListCode(field:DominoFormFieldVO):String
 		{			
-			var multiValueField:String = readTemplate("MultiValueList.template");;
+			var multiValueField:String = readTemplate("elements/templates/royaleTabularCRUD/elements/MultiValueList.template");;
 			multiValueField = multiValueField.replace(/%localId%/ig, field.name +"_id");
 			multiValueField = multiValueField.replace(/%InputType%/ig, field.type);
 			multiValueField = multiValueField.replace(/%Restrict%/ig, 
@@ -147,7 +147,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var beads:String = updateBeads(field);
 			
-			var dateField:String = readTemplate("DateField.template");;
+			var dateField:String = readTemplate("elements/templates/royaleTabularCRUD/elements/DateField.template");;
 			dateField = dateField.replace(/%localId%/ig, field.name +"_id");
 			dateField = dateField.replace(/%Beads%/ig, beads);
 			
@@ -157,7 +157,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function toRichTextFieldCode(field:DominoFormFieldVO):String
 		{
-			var richText:String = readTemplate("JoditEditor.template");
+			var richText:String = readTemplate("elements/templates/royaleTabularCRUD/elements/JoditEditor.template");
 			richText = richText.replace(/%localId%/ig, field.name +"_id");
 			
 			if (field.description) return formItemWithDescription(richText, field);
@@ -166,12 +166,12 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function updateBeads(field:DominoFormFieldVO):String
 		{
-			var beads:String = readTemplate("Beads.template");
+			var beads:String = readTemplate("elements/templates/royaleTabularCRUD/elements/Beads.template");
 			var beadElements:String = "";
 			
 			if (field.editable != FormBuilderEditableType.EDITABLE)
 			{
-				beadElements = readTemplate("BeadDisabled.template") +"\n";
+				beadElements = readTemplate("elements/templates/royaleTabularCRUD/elements/BeadDisabled.template") +"\n";
 			}
 			
 			switch (field.type)
@@ -183,7 +183,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 				case FormBuilderFieldType.RICH_TEXT:
 					break;
 				case FormBuilderFieldType.NUMBER:
-					var beadRestrict:String = readTemplate("BeadRestrict.template");
+					var beadRestrict:String = readTemplate("elements/templates/royaleTabularCRUD/elements/BeadRestrict.template");
 					beadElements += beadRestrict.replace(/%pattern%/gi, "[^0-9]") +"\n";
 					break;
 			}
@@ -196,7 +196,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var container:String = "<j:VGroup percentWidth=\"100\">\n"+ formItem;
 			
-			var label:String = readTemplate("Label.template");
+			var label:String = readTemplate("elements/templates/royaleTabularCRUD/elements/Label.template");
 			label = label.replace(/%Multiline%/ig, "true");
 			label = label.replace(/%ClassName%/ig, "formFieldDescription");
 			label = label.replace(/%PercentWidth%/ig, "100");

@@ -55,8 +55,8 @@ package actionScripts.plugin.ondiskproj.importer
 		{
 			if (!projectName)
 			{
-				var airFile:Object = projectFolder.fileBridge.getFile;
-				projectName = airFile.name;
+				if (settingsFileLocation) projectName = settingsFileLocation.fileBridge.nameWithoutExtension;
+				else projectName = projectFolder.name;
 			}
 
             if (!settingsFileLocation)

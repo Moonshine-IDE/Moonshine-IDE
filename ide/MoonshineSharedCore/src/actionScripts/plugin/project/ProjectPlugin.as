@@ -535,7 +535,7 @@ package actionScripts.plugin.project
 						projectFileLocation = model.ondiskCore.testOnDisk(projectFile);
 						if (projectFileLocation)
 						{
-							project = model.ondiskCore.parseOnDisk(projectLocation);
+							project = model.ondiskCore.parseOnDisk(projectLocation, null, projectFileLocation);
 						}
 					}
 
@@ -544,7 +544,7 @@ package actionScripts.plugin.project
 						projectFileLocation = model.genericCore.testGenericProject(projectFile);
 						if (projectFileLocation)
 						{
-							project = model.genericCore.parseGenericProject(projectLocation);
+							project = model.genericCore.parseGenericProject(projectLocation, null, projectFileLocation);
 						}
 					}
 

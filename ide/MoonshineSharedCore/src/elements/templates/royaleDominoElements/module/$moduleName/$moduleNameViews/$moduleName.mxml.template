@@ -2,7 +2,7 @@
 			xmlns:js="library://ns.apache.org/royale/basic" xmlns:html="library://ns.apache.org/royale/html"
 			xmlns:joditeditor="classes.joditeditor.*" xmlns:dataGrid="classes.dataGrid.*"
 			currentState="dataGridState" gap="5" stateChangeComplete="{this.dispatchEvent(new Event('valueChange'))}"
-			itemsVerticalAlign="itemsTop">
+			itemsVerticalAlign="itemsTop" initComplete="onViewInitComplete(event)">
   <j:beads>
     <js:ContainerDataBinding/>
     <js:SimpleStatesImpl/>
@@ -13,6 +13,7 @@
   </j:states>
   <fx:Script><![CDATA[
 	import org.apache.royale.jewel.Alert;
+	import classes.events.ErrorEvent;
 	%ImportStatements%
 
 	[Bindable] private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
@@ -21,6 +22,12 @@
 	[Bindable] private var isDisabled:Boolean = false;
 
     public static const NAME:String = "%ViewComponentName%";
+
+    private function onViewInitComplete(event:Event):void
+    {
+        proxy.addEventListener(ErrorEvent.SERVER_ERROR, onServerError);
+        proxy.requestItems();
+    }
 
 	private function removeItem():void
 	{
@@ -46,19 +53,52 @@
         var reqObj:Object = dg.selectedItem.toRequestObject();
         this.itemVO = $moduleNameVO.get$moduleNameVO(reqObj);
     }
+
+    private function onServerError(event:ErrorEvent):void
+    {
+        var errorMessage:String = event.errorMessage;
+        if (event.errors && (event.errors is Array))
+        {
+            errorMessage += "\n";
+            for (var i:int=0; i < event.errors.length; i++)
+            {
+                errorMessage += "\n"+ event.errors[i].message;
+            }
+        }
+
+        Alert.show(errorMessage,  'Error!', Alert.OK);
+    }
 ]]></fx:Script>
   <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
-      <j:Button text="Add" click="{this.proxy.selectedIndex = -1; this.currentState = 'contentState'; this.itemVO = new $moduleNameVO();}" includeIn="dataGridState"/>
-      <j:Button text="Edit" click="{this.currentState = 'contentState'; this.proxy.selectedIndex = dg.selectedIndex; this.itemVO = dg.selectedItem.copy();}" includeIn="dataGridState">
-        <j:beads>
-          <j:Disabled disabled="{dg.selectedIndex == -1}"/>
-        </j:beads>
-      </j:Button>
-      <j:Button text="Remove" click="{removeItem()}" includeIn="dataGridState">
-        <j:beads>
-          <j:Disabled disabled="{dg.selectedIndex == -1}"/>
-        </j:beads>
-      </j:Button>
+      <j:IconButton text="Add" includeIn="dataGridState"
+                    click="{this.proxy.selectedIndex = -1; this.currentState = 'contentState'; this.itemVO = new $moduleNameVO();}">
+        <j:icon>
+            <js:MaterialIcon text="{MaterialIconType.ADD}" />
+        </j:icon>
+      </j:IconButton>
+      <j:IconButton text="Edit" includeIn="dataGridState"
+                    click="{this.currentState = 'contentState'; this.proxy.selectedIndex = dg.selectedIndex; this.itemVO = dg.selectedItem.copy();}">
+          <j:icon>
+              <js:MaterialIcon text="{MaterialIconType.MODE_EDIT}" />
+          </j:icon>
+           <j:beads>
+                <j:Disabled disabled="{dg.selectedIndex == -1}"/>
+          </j:beads>
+      </j:IconButton>
+       <j:IconButton text="Remove" includeIn="dataGridState" click="{removeItem()}" >
+          <j:icon>
+              <js:MaterialIcon text="{MaterialIconType.REMOVE}" />
+          </j:icon>
+          <j:beads>
+            <j:Disabled disabled="{dg.selectedIndex == -1}"/>
+          </j:beads>
+        </j:IconButton>
+      <j:IconButton text="Refresh" includeIn="dataGridState"
+                    click="{this.proxy.requestItems()}">
+        <j:icon>
+            <js:MaterialIcon text="{MaterialIconType.REFRESH}" />
+        </j:icon>
+      </j:IconButton>
   </j:HGroup>
   %ViewContent%
   <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsCenter" gap="2" includeIn="contentState">
