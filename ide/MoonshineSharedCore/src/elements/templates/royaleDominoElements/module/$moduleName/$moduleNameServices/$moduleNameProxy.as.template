@@ -102,6 +102,11 @@ package $packagePath
         public function removeItem(value:$moduleNameVO):void
         {
             var indexOf:int = items.indexOf(value);
+            if (indexOf == -1)
+            {
+                return;
+            }
+
             if (Constants.AGENT_BASE_URL)
             {
                 this.selectedIndex = indexOf;
@@ -114,10 +119,7 @@ package $packagePath
             }
             else
             {
-                if (indexOf > -1)
-                {
-                    items.splice(indexOf, 1);
-                }
+                items.splice(indexOf, 1);
                 this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
             }
         }
