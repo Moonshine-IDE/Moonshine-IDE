@@ -26,6 +26,9 @@
     private function onViewInitComplete(event:Event):void
     {
         proxy.addEventListener(ErrorEvent.SERVER_ERROR, onServerError);
+        proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onServerItemChanged);
+        proxy.addEventListener($moduleNameProxy.EVENT_ITEM_REMOVED, onServerItemChanged);
+
         proxy.requestItems();
     }
 
@@ -43,7 +46,6 @@
     {
         this.currentState = 'dataGridState';
         this.proxy.submitItem(this.itemVO);
-        this.dg.refreshCurrentDataProvider();
     }
 
     private function onDgDoubleClick(event:Event):void
@@ -52,6 +54,11 @@
         this.proxy.selectedIndex = dg.selectedIndex;
         var reqObj:Object = dg.selectedItem.toRequestObject();
         this.itemVO = $moduleNameVO.get$moduleNameVO(reqObj);
+    }
+
+    private function onServerItemChanged(event:Event):void
+    {
+        this.dg.refreshCurrentDataProvider();
     }
 
     private function onServerError(event:ErrorEvent):void
