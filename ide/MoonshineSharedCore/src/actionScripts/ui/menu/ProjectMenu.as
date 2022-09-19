@@ -270,6 +270,10 @@ package actionScripts.ui.menu
 					]);
                     if ((currentProject as JavaProjectVO).projectType == JavaProjectTypes.JAVA_DOMINO)
                     {
+                        javaMenuGradle.insertAt(
+                                2,
+                                new MenuItem(resourceManager.getString('resources', 'RUN_ON_VAGRANT'), null, enabledTypes, DominoEvent.EVENT_RUN_DOMINO_ON_VAGRANT)
+                        );
                         addNSDKillOption(javaMenuGradle);
                     }
 				}
