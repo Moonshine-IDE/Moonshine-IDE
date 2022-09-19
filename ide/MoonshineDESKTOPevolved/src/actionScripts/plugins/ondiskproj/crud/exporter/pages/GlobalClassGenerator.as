@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
+	import actionScripts.interfaces.IDeployDominoDatabaseProject;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.valueObjects.ProjectVO;
@@ -32,14 +33,16 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		
 		override public function generate():void
 		{
-			var onDiskProject:Object = IDEModel.getInstance().activeProject;
+			var dominoDeployingProject:IDeployDominoDatabaseProject = IDEModel.getInstance().activeProject as IDeployDominoDatabaseProject;
+			if (!dominoDeployingProject) return;
+
 			pagePath = project.sourceFolder.resolvePath("classes/vo/Constants.as")
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
 
 			fileContent = fileContent.replace(
 					/%AGENT_BASE_URL%/gi,
-					onDiskProject.dominoBaseAgentURL ? "\""+ onDiskProject.dominoBaseAgentURL +"\"" : "null"
+					dominoDeployingProject.dominoBaseAgentURL ? "\""+ dominoDeployingProject.dominoBaseAgentURL +"\"" : "null"
 			);
 			saveFile(fileContent);
 			dispatchCompletion();

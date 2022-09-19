@@ -30,7 +30,7 @@
     <option accessible="False"/>
     <option allowSourcePathOverlap="False"/>
     <option es="False"/>
-    <option sourceMap="True"/>
+    <option sourceMap="False"/>
     <option useNetwork="True"/>
     <option showDeprecationWarnings="True"/>
     <option loadConfig=""/>

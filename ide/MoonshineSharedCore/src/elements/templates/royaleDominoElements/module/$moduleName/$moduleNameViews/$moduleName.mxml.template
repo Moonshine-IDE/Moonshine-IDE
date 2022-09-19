@@ -26,6 +26,9 @@
     private function onViewInitComplete(event:Event):void
     {
         proxy.addEventListener(ErrorEvent.SERVER_ERROR, onServerError);
+        proxy.addEventListener($moduleNameProxy.EVENT_ITEM_UPDATED, onServerItemChanged);
+        proxy.addEventListener($moduleNameProxy.EVENT_ITEM_REMOVED, onServerItemChanged);
+
         proxy.requestItems();
     }
 
@@ -35,7 +38,6 @@
 			alert.addEventListener('close', function closeAlert(e:Event):void { if (e['detail'] == Alert.OK)
     									{
     										proxy.removeItem(itemVO);
-    										dg.refreshCurrentDataProvider();
     									}});
 	}
 
@@ -43,15 +45,19 @@
     {
         this.currentState = 'dataGridState';
         this.proxy.submitItem(this.itemVO);
-        this.dg.refreshCurrentDataProvider();
     }
 
-    private function onDgDoubleClick(event:Event):void
+    private function onEditItem(event:Event):void
     {
         this.currentState = 'contentState';
         this.proxy.selectedIndex = dg.selectedIndex;
         var reqObj:Object = dg.selectedItem.toRequestObject();
         this.itemVO = $moduleNameVO.get$moduleNameVO(reqObj);
+    }
+
+    private function onServerItemChanged(event:Event):void
+    {
+        this.dg.refreshCurrentDataProvider();
     }
 
     private function onServerError(event:ErrorEvent):void
@@ -77,7 +83,7 @@
         </j:icon>
       </j:IconButton>
       <j:IconButton text="Edit" includeIn="dataGridState"
-                    click="{this.currentState = 'contentState'; this.proxy.selectedIndex = dg.selectedIndex; this.itemVO = dg.selectedItem.copy();}">
+                    click="onEditItem(event)">
           <j:icon>
               <js:MaterialIcon text="{MaterialIconType.MODE_EDIT}" />
           </j:icon>
@@ -105,5 +111,5 @@
     <j:Button text="Save" click="onSaveClick(event)"/>
     <j:Button text="Cancel" click="{this.currentState = 'dataGridState'; this.proxy.selectedIndex = -1; this.itemVO = null}"/>
   </j:HGroup>
-  <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onDgDoubleClick(event)"/>
+  <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onEditItem(event)"/>
 </j:VGroup>
