@@ -33,7 +33,8 @@
         import actionScripts.events.SettingsEvent;
         import actionScripts.plugins.vagrant.VagrantPlugin;
         import actionScripts.plugins.vagrant.utils.VagrantUtil;
-        import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 		import mx.collections.ArrayCollection;
         import mx.events.FlexEvent;
 
@@ -44,6 +45,7 @@
         public static const EVENT_INSTANCE_SELECTED:String = "eventVagrantInstanceSelected";
 
         public var instances:ArrayCollection;
+		public var requireCapability:String;
 
         [Bindable]
         private var nsfConverterInstances:ArrayCollection;
@@ -75,15 +77,22 @@
             if (instances && (instances.length == instanceStateCheckCount))
             {
                 enableUI();
-                nsfConverterInstances = instances;
-                /*for each (var instance:VagrantInstanceVO in instances)
-                {
-                    if (instance.capabilities && (instance.capabilities.indexOf("nsfconverter") != -1) &&
-                            (instance.state == VagrantInstanceState.READY))
-                    {
-                        nsfConverterInstances.addItem(instance);
-                    }
-                }*/
+				if (!requireCapability)
+				{
+					nsfConverterInstances = instances;
+				}
+				else
+				{
+					nsfConverterInstances = new ArrayCollection();
+					for each (var instance:VagrantInstanceVO in instances)
+					{
+						if (instance.capabilities && (instance.capabilities.indexOf(requireCapability) != -1) &&
+								(instance.state == VagrantInstanceState.READY))
+						{
+							nsfConverterInstances.addItem(instance);
+						}
+					}
+				}
             }
         }
 

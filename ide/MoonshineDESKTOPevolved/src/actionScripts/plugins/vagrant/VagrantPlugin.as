@@ -205,6 +205,7 @@ package actionScripts.plugins.vagrant
 			{
 				selectVagrantPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SelectVagrantPopup) as SelectVagrantPopup;
 				selectVagrantPopup.instances = vagrantInstances;
+				selectVagrantPopup.requireCapability = "java-domino-gradle";
 				selectVagrantPopup.addEventListener(CloseEvent.CLOSE, onSelectVagrantPopupClosed);
 				selectVagrantPopup.addEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelected);
 				PopUpManager.centerPopUp(selectVagrantPopup);

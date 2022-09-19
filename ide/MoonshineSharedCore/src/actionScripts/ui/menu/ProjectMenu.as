@@ -259,8 +259,8 @@ package actionScripts.ui.menu
 			// for gradle project type
 			if ((currentProject as JavaProjectVO).hasGradleBuild())
 			{
-				if (!javaMenuGradle)
-				{
+				//if (!javaMenuGradle)
+				//{
 					javaMenuGradle = Vector.<MenuItem>([
 						new MenuItem(null),
 						new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
@@ -268,6 +268,7 @@ package actionScripts.ui.menu
 							'b', [Keyboard.CONTROL]),
 						new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
 					]);
+
                     if ((currentProject as JavaProjectVO).projectType == JavaProjectTypes.JAVA_DOMINO)
                     {
                         javaMenuGradle.insertAt(
@@ -276,7 +277,7 @@ package actionScripts.ui.menu
                         );
                         addNSDKillOption(javaMenuGradle);
                     }
-				}
+				//}
 
 				javaMenuGradle.forEach(makeDynamic);
 				return javaMenuGradle;
