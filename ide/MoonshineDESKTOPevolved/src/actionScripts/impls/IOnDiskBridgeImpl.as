@@ -83,9 +83,9 @@ package actionScripts.impls
 			return OnDiskImporter.test(file as File);
 		}
 
-		public function parseOnDisk(file:FileLocation):OnDiskProjectVO
+		public function parseOnDisk(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):OnDiskProjectVO
 		{
-			return OnDiskImporter.parse(file);
+			return OnDiskImporter.parse(file, projectName, settingsFileLocation);
 		}
     }
 }

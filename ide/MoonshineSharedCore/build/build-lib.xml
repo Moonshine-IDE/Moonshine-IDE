@@ -601,6 +601,11 @@
 				<replaceregexp file="${desktopBinaryFilename}/Contents/Info.plist" match="macapp-identifier" replace="com.moonshine-ide" flags="g"/>
 			</else>			
 		</if>
+		<!-- @devsena: Marking something in the app file to determine between App Store or non-App-Store build.
+			App Store build will contains the AppStoreConfig.xml where non-App-Store build won't -->  
+		<echo file="${desktopBinaryFilename}/Contents/Resources/elements/AppStoreConfig.xml" append="true">
+		   &lt;isAppStore&gt;true&lt;&#47;isAppStore&gt;
+		</echo>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='security unlock-keychain -p "${certSignedMacOSKeychainPass}"'/>
@@ -675,11 +680,11 @@
 		</exec>
 		
 
-		<!-- @devsena: Marking something in the app file to determine between App Store or non-App-Store build -->
-		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml" failOnNoReplacements="true">
-			<replacetoken><![CDATA[$isAppStoreVersion]]></replacetoken>
-			<replacevalue><![CDATA[false]]></replacevalue>
-		</replace>
+		<!-- @devsena: Remove the file in non-App-Store build so Moonshine thinks a Non-App-Store build  -->
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value="rm ${desktopBinaryFilename}/Contents/Resources/elements/AppStoreConfig.xml"/>
+		</exec>
 		<!-- @devsena: Avail non-sandbox entitlement to be use in upcoming process -->
 		<copy file="entitlement-non-sandbox.plist" tofile="${debug_dir}/entitlement.plist" overwrite="true"/>
 		<exec executable="bash" failonerror="true">

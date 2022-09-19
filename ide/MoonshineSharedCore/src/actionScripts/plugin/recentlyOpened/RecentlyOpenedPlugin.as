@@ -640,13 +640,13 @@ package actionScripts.plugin.recentlyOpened
 				projectFileLocation = model.ondiskCore.testOnDisk(projectFile);
 				if (projectFileLocation)
 				{
-					return model.ondiskCore.parseOnDisk(recentOpenedProjectObject as FileLocation);
+					return model.ondiskCore.parseOnDisk(recentOpenedProjectObject as FileLocation, null, projectFileLocation);
 				}
 
 				projectFileLocation = model.genericCore.testGenericProject(projectFile);
 				if (projectFileLocation)
 				{
-					return model.genericCore.parseGenericProject(recentOpenedProjectObject as FileLocation);
+					return model.genericCore.parseGenericProject(recentOpenedProjectObject as FileLocation, null, projectFileLocation);
 				}
 			}
 			

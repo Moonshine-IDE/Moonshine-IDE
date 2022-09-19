@@ -124,7 +124,8 @@ package actionScripts.plugins.as3project.importer
 			project.isTrustServerCertificateSVN = SerializeUtil.deserializeBoolean(data.trustSVNCertificate);
 
             project.showHiddenPaths = SerializeUtil.deserializeBoolean(data.options.option.@showHiddenPaths);
-            project.isDominoVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isDominoVisualEditor);
+            project.isDominoVisualEditorProject = (projectTemplateType == ProjectTemplateType.VISUAL_EDITOR_DOMINO) ||
+					SerializeUtil.deserializeBoolean(data.options.option.@isDominoVisualEditor);
 			if (project.isDominoVisualEditorProject)
 			{
 				project.jdkType = JavaTypes.JAVA_8;

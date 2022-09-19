@@ -25,7 +25,7 @@ package actionScripts.interfaces
     public interface IOnDiskBridge extends IProject
     {
 		function testOnDisk(file:Object):FileLocation;
-		function parseOnDisk(file:FileLocation):OnDiskProjectVO;
+		function parseOnDisk(file:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):OnDiskProjectVO;
 		function getTabularInterfaceEditor(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow;
     }
 }

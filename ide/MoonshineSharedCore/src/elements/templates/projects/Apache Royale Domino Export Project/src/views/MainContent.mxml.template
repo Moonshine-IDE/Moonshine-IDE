@@ -34,7 +34,7 @@
     			<j:Label text="Sections"/>
     		</j:DrawerHeader>
     		<j:DrawerContent>
-    			<j:Navigation id="navigation" labelField="label" change="onNavigationChange(event)">
+    			<j:Navigation id="navigation" labelField="label" change="onNavigationChange(event)" className="navIconLinkItemRenderer">
     				<j:beads>
     					<j:NavigationActionNotifier/>
     				</j:beads>

@@ -288,13 +288,13 @@ package actionScripts.plugin.actionscript.as3project
 				flashDevelopProjectFile = model.ondiskCore.testOnDisk(dir);
 				if (flashDevelopProjectFile)
 				{
-					importFDProject(flashDevelopProjectFile, false, model.ondiskCore.parseOnDisk(new FileLocation(dir.nativePath)));
+					importFDProject(flashDevelopProjectFile, false, model.ondiskCore.parseOnDisk(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
 					return;
 				}
 				flashDevelopProjectFile = model.genericCore.testGenericProject(dir);
 				if (flashDevelopProjectFile)
 				{
-					importFDProject(flashDevelopProjectFile, false, model.genericCore.parseGenericProject(new FileLocation(dir.nativePath)));
+					importFDProject(flashDevelopProjectFile, false, model.genericCore.parseGenericProject(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
 					return;
 				}
 			}

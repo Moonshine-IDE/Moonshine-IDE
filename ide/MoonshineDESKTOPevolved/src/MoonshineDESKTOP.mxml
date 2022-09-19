@@ -173,14 +173,15 @@
 				// verify if an App Store version
 				if (ConstantsCoreVO.IS_MACOS)
 				{
-					var tmpConfiguration:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/InstallConfig.xml");
+					var tmpConfiguration:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/AppStoreConfig.xml");
 					if (tmpConfiguration.fileBridge.exists)
 					{
-						var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
+						ConstantsCoreVO.IS_APP_STORE_VERSION = true;
+						/*var tmpXML:XML = new XML(tmpConfiguration.fileBridge.read());
 						if (String(tmpXML.isAppStoreVersion) != "false")
 						{
 							ConstantsCoreVO.IS_APP_STORE_VERSION = true;
-						}
+						}*/
 					}
 				}
 
