@@ -77,7 +77,6 @@
 			
 			private function onCreationCompletes(event:Event):void
 			{
-				this.addItemForm.addEventListener("valid", onAddItemFormValid);
 				toggleInputsByType();
 			}
 			
@@ -174,16 +173,19 @@
 			
 			private function onAddItemFormValid(event:Event):void
 			{
-				if (editingItem) 
-				{
-					updateItemByType();
+			    if (this.formValidator.validate())
+			    {
+                    if (editingItem)
+                    {
+                        updateItemByType();
+                    }
+                    else
+                    {
+                        addItemByType();
+                    }
+
+                    toggleFormView(false);
 				}
-				else
-				{
-					addItemByType();
-				}
-				
-				toggleFormView(false);
 			}
 			
 			private function onModifyButtonClicked():void
@@ -225,7 +227,7 @@
 			  visible="false">
 		<j:Form localId="addItemForm">
 			<j:beads>
-				<j:FormValidator id="formValidator" trigger="{btnSubmit}" triggerEvent="click" 
+				<j:FormValidator localId="formValidator"
 								 requiredFieldError="At least one field has a validation error. Please correct the problem and submit again."/>
 			</j:beads>
 			<j:FormItem localId="fiTextInput" 
@@ -244,7 +246,7 @@
 			</j:FormItem>
 		</j:Form>
 		<j:HGroup itemsHorizontalAlign="itemsRight" gap="2" percentWidth="100">
-			<j:Button localId="btnSubmit" text="Update to List"/>
+			<j:Button localId="btnSubmit" text="Update to List" click="onAddItemFormValid(event)"/>
 			<j:Button text="Cancel" click="onAddItemCancelled()"/>
 		</j:HGroup>
 	</j:VGroup>
