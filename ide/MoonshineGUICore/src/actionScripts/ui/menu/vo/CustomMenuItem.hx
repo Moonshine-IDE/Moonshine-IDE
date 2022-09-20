@@ -48,7 +48,8 @@ class CustomMenuItem implements ICustomMenuItem implements IMenuEntity {
 	private function get_submenu():ICustomMenu {
 		if (_data == null)
 			return null;
-		return cast(_data, ICustomMenu);
+		if ( Std.isOfType( _data, ICustomMenu ) ) return cast(_data, ICustomMenu);
+		return null;
 	};
 
 	private function set_checked(value:Bool):Bool {
