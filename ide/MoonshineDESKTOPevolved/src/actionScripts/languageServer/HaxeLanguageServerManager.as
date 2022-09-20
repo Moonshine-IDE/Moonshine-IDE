@@ -816,7 +816,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			if(!_languageClient || !_languageClient.initialized)
+			if(!_languageClient || !_languageClient.initialized || _languageClient.stopping || _languageClient.stopped)
 			{
 				return;
 			}
