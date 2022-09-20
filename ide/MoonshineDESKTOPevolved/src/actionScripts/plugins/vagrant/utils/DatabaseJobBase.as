@@ -87,6 +87,10 @@ package actionScripts.plugins.vagrant.utils
 			{
 				if ("error" in infoObject)
 				{
+					if (infoObject.output)
+					{
+						print("Output: "+ infoObject.output);
+					}
 					error("Conversion failed with exit code:"+ infoObject.error +"\n"+ infoObject.message);
 					dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 				}
