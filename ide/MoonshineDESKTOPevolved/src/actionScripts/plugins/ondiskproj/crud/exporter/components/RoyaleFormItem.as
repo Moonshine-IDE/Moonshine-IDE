@@ -111,7 +111,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var beads:String = updateBeads(field);
 			
-			var textInput:String = readTemplate("elements/templates/royaleTabularCRUD/elements/TextInput.template");;
+			var textInput:String = readTemplate("elements/templates/royaleTabularCRUD/elements/TextInput.template");
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
 			textInput = textInput.replace(/%Beads%/ig, beads);
 			
@@ -123,7 +123,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var beads:String = updateBeads(field);
 			
-			var textInput:String = readTemplate("elements/templates/royaleTabularCRUD/elements/TextInput.template");;
+			var textInput:String = readTemplate("elements/templates/royaleTabularCRUD/elements/TextInput.template");
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
 			textInput = textInput.replace(/%Beads%/ig, beads);
 			
@@ -133,7 +133,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function toMultiValueListCode(field:DominoFormFieldVO):String
 		{			
-			var multiValueField:String = readTemplate("elements/templates/royaleTabularCRUD/elements/MultiValueList.template");;
+			var multiValueField:String = readTemplate("elements/templates/royaleTabularCRUD/elements/MultiValueList.template");
 			multiValueField = multiValueField.replace(/%localId%/ig, field.name +"_id");
 			multiValueField = multiValueField.replace(/%InputType%/ig, field.type);
 			multiValueField = multiValueField.replace(/%Restrict%/ig, 
@@ -147,7 +147,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var beads:String = updateBeads(field);
 			
-			var dateField:String = readTemplate("elements/templates/royaleTabularCRUD/elements/DateField.template");;
+			var dateField:String = readTemplate("elements/templates/royaleTabularCRUD/elements/DateField.template");
 			dateField = dateField.replace(/%localId%/ig, field.name +"_id");
 			dateField = dateField.replace(/%Beads%/ig, beads);
 			
