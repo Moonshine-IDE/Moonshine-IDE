@@ -715,7 +715,7 @@ package actionScripts.languageServer
 
 		private function sendWorkspaceSettings():void
 		{
-			if(!_languageClient || !_languageClient.initialized)
+			if(!_languageClient || !_languageClient.initialized || _languageClient.stopping || _languageClient.stopped)
 			{
 				return;
 			}
