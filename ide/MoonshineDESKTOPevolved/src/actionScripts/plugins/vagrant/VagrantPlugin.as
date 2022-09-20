@@ -22,6 +22,7 @@ package actionScripts.plugins.vagrant
 	import actionScripts.events.OnDiskBuildEvent;
 	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
 	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
+	import actionScripts.plugins.vagrant.utils.DatabaseJobBase;
 	import actionScripts.plugins.vagrant.utils.DeployDatabaseJob;
 	import actionScripts.plugins.vagrant.utils.DeployRoyaleToVagrantJob;
 	import actionScripts.plugins.vagrant.utils.RunDatabaseOnVagrantJob;
@@ -271,11 +272,11 @@ package actionScripts.plugins.vagrant
 
 			// get the object to work with
 			dbConversionJob = new ConvertDatabaseJob(
-					convertDominoDBPopup.uploadRequestReturn,
 					convertDominoDBPopup.selectedInstance.url,
 					convertDominoDBPopup.destinationFolder
 			);
 			configureListenersDBConversionJob(true);
+			dbConversionJob.uploadAndRunCommandOnServer(new File(convertDominoDBPopup.databasePath));
 		}
 
 		private function onStartDeployDatabaseProcess(event:Event):void
@@ -285,11 +286,11 @@ package actionScripts.plugins.vagrant
 
 			// get the object to work with
 			deployDBJob = new DeployDatabaseJob(
-					deployDominoDBPopup.uploadRequestReturn,
 					deployDominoDBPopup.selectedInstance.url,
 					deployDominoDBPopup.targetDatabase
 			);
 			configureListenersDeployDatabaseJob(true);
+			deployDBJob.uploadAndRunCommandOnServer(new File(deployDominoDBPopup.localDatabasePath));
 		}
 
 		private function onStartDeployRoyaleVagrantProcess(event:Event):void
@@ -299,12 +300,12 @@ package actionScripts.plugins.vagrant
 
 			// get the object to work with
 			deployRoyaleToVagrantJob = new DeployRoyaleToVagrantJob(
-					deployRoyaleVagrantPopup.uploadRequestReturn,
 					deployRoyaleVagrantPopup.selectedInstance.url,
 					deployRoyaleVagrantPopup.targetDatabase
 			);
 			deployRoyaleToVagrantJob.deployedURL = deployRoyaleVagrantPopup.databaseURL;
 			configureListenersDeployRoyaleToVagrantJob(true);
+			deployRoyaleToVagrantJob.zipProject(deployRoyaleVagrantPopup.sourceDirectory);
 		}
 
 		private function onVagrantInstanceSelected(event:Event):void
@@ -324,13 +325,17 @@ package actionScripts.plugins.vagrant
 		{
 			if (listen)
 			{
-				dbConversionJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDBConversionEnded, false, 0, true);
-				dbConversionJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDBConversionEnded, false, 0, true);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDBConversionEnded, false, 0, true);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDBConversionEnded, false, 0, true);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDBConversionUploadUpdates, false, 0, true);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDBConversionUploadUpdates, false, 0, true);
 			}
 			else
 			{
-				dbConversionJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDBConversionEnded);
-				dbConversionJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDBConversionEnded);
+				dbConversionJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDBConversionEnded);
+				dbConversionJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDBConversionEnded);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDBConversionUploadUpdates);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDBConversionUploadUpdates);
 				dbConversionJob = null;
 			}
 		}
@@ -339,13 +344,17 @@ package actionScripts.plugins.vagrant
 		{
 			if (listen)
 			{
-				deployDBJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDeployDatabaseEnded, false, 0, true);
-				deployDBJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDeployDatabaseEnded, false, 0, true);
+				deployDBJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployDatabaseEnded, false, 0, true);
+				deployDBJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployDatabaseEnded, false, 0, true);
+				deployDBJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDeployDatabaseUploadUpdates, false, 0, true);
+				deployDBJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDeployDatabaseUploadUpdates, false, 0, true);
 			}
 			else
 			{
-				deployDBJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDeployDatabaseEnded);
-				deployDBJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDeployDatabaseEnded);
+				deployDBJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployDatabaseEnded);
+				deployDBJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployDatabaseEnded);
+				deployDBJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDeployDatabaseUploadUpdates);
+				deployDBJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDeployDatabaseUploadUpdates);
 				deployDBJob = null;
 			}
 		}
@@ -354,13 +363,17 @@ package actionScripts.plugins.vagrant
 		{
 			if (listen)
 			{
-				deployRoyaleToVagrantJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDeployRoyaleEnded, false, 0, true);
-				deployRoyaleToVagrantJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDeployRoyaleEnded, false, 0, true);
+				deployRoyaleToVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployRoyaleEnded, false, 0, true);
+				deployRoyaleToVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployRoyaleEnded, false, 0, true);
+				deployRoyaleToVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDeployRoyaleUploadUpdates, false, 0, true);
+				deployRoyaleToVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDeployRoyaleUploadUpdates, false, 0, true);
 			}
 			else
 			{
-				deployRoyaleToVagrantJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDeployRoyaleEnded);
-				deployRoyaleToVagrantJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDeployRoyaleEnded);
+				deployRoyaleToVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployRoyaleEnded);
+				deployRoyaleToVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployRoyaleEnded);
+				deployRoyaleToVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDeployRoyaleUploadUpdates);
+				deployRoyaleToVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDeployRoyaleUploadUpdates);
 				deployRoyaleToVagrantJob = null;
 			}
 		}
@@ -369,13 +382,17 @@ package actionScripts.plugins.vagrant
 		{
 			if (listen)
 			{
-				runDatabaseOnVagrantJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onRunDatabaseToVagrantEnded, false, 0, true);
-				runDatabaseOnVagrantJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onRunDatabaseToVagrantEnded, false, 0, true);
+				runDatabaseOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onRunDatabaseToVagrantEnded, false, 0, true);
+				runDatabaseOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onRunDatabaseToVagrantEnded, false, 0, true);
+				runDatabaseOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onVagrantUploadUpdates, false, 0, true);
+				runDatabaseOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onVagrantUploadUpdates, false, 0, true);
 			}
 			else
 			{
-				runDatabaseOnVagrantJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onRunDatabaseToVagrantEnded);
-				runDatabaseOnVagrantJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onRunDatabaseToVagrantEnded);
+				runDatabaseOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onRunDatabaseToVagrantEnded);
+				runDatabaseOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onRunDatabaseToVagrantEnded);
+				runDatabaseOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onVagrantUploadUpdates);
+				runDatabaseOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onVagrantUploadUpdates);
 				runDatabaseOnVagrantJob = null;
 			}
 		}
@@ -399,7 +416,7 @@ package actionScripts.plugins.vagrant
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployDatabaseRequest);
 
-			if (event && event.type == ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE)
+			if (event && event.type == DatabaseJobBase.EVENT_CONVERSION_COMPLETE)
 			{
 				navigateToURL(new URLRequest(deployRoyaleToVagrantJob.deployedURL));
 			}
@@ -412,12 +429,60 @@ package actionScripts.plugins.vagrant
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunDatabaseVagrantRequest);
 
-			if (event && event.type == ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE)
+			if (event && event.type == DatabaseJobBase.EVENT_CONVERSION_COMPLETE)
 			{
 
 			}
 
 			configureListenersRunDatabaseToVagrantJob(false);
+		}
+
+		private function onDBConversionUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				convertDominoDBPopup.close();
+			}
+			else
+			{
+				convertDominoDBPopup.reset();
+			}
+		}
+
+		private function onDeployDatabaseUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				deployDominoDBPopup.close();
+			}
+			else
+			{
+				deployDominoDBPopup.reset();
+			}
+		}
+
+		private function onDeployRoyaleUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				deployRoyaleVagrantPopup.close();
+			}
+			else
+			{
+				deployRoyaleVagrantPopup.reset();
+			}
+		}
+
+		private function onVagrantUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				selectVagrantPopup.close();
+			}
+			else
+			{
+				selectVagrantPopup.reset();
+			}
 		}
 
 		private function onTerminateConversionRequest(event:StatusBarEvent):void

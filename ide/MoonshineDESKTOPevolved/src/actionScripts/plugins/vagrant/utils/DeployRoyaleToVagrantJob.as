@@ -3,9 +3,11 @@ package actionScripts.plugins.vagrant.utils
 	import actionScripts.controllers.DataAgent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.utils.FileDownloader;
 	import actionScripts.utils.UnzipUsingAS3CommonZip;
+	import actionScripts.utils.ZipUsingNP;
 
 	import flash.events.ErrorEvent;
 
@@ -16,17 +18,33 @@ package actionScripts.plugins.vagrant.utils
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
-	public class DeployRoyaleToVagrantJob extends ConvertDatabaseJob
+	import mx.utils.UIDUtil;
+
+	public class DeployRoyaleToVagrantJob extends DatabaseJobBase
 	{
 		public var deployedURL:String;
 
 		protected var databaseName:String;
+		protected var zip:ZipUsingNP;
+		protected var zipUploadSource:File;
 
-		public function DeployRoyaleToVagrantJob(nsfUploadCompletionData:Object, server:String, dbName:String)
+		public function DeployRoyaleToVagrantJob(server:String, dbName:String)
 		{
 			databaseName = dbName;
+			super(server);
+		}
 
-			super(nsfUploadCompletionData, server, null);
+		public function zipProject(pathFile:File):void
+		{
+			zip = new ZipUsingNP();
+			configureZipListeners(true);
+
+			print("Zipping files from: " + pathFile.nativePath);
+			zipUploadSource = getZipPath();
+			zip.zip(
+					pathFile,
+					zipUploadSource
+			);
 		}
 
 		override protected function runConversionCommandOnServer(withId:String = null):void
@@ -45,6 +63,46 @@ package actionScripts.plugins.vagrant.utils
 		{
 			success(withJSONObject.output);
 			dispatchEvent(new Event(EVENT_CONVERSION_COMPLETE));
+		}
+
+		private function getZipPath():File
+		{
+			var tempDirectory:File = File.cacheDirectory.resolvePath("moonshine/onDisk");
+			if (!tempDirectory.exists)
+			{
+				tempDirectory.createDirectory();
+			}
+
+			var zipFile:File = tempDirectory.resolvePath(UIDUtil.createUID() +".zip");
+			return zipFile;
+		}
+
+		private function configureZipListeners(listen:Boolean):void
+		{
+			if (listen)
+			{
+				zip.addEventListener(ZipUsingNP.EVENT_ZIP_COMPLETES, onZipCompletes, false, 0, true);
+				zip.addEventListener(ZipUsingNP.EVENT_ZIP_FAILED, onZipFailed, false, 0, true);
+			}
+			else
+			{
+				zip.removeEventListener(ZipUsingNP.EVENT_ZIP_COMPLETES, onZipCompletes);
+				zip.removeEventListener(ZipUsingNP.EVENT_ZIP_FAILED, onZipFailed);
+				zip = null;
+			}
+		}
+
+		private function onZipCompletes(event:Event):void
+		{
+			uploadAndRunCommandOnServer(zipUploadSource);
+			configureZipListeners(false);
+		}
+
+		private function onZipFailed(event:Event):void
+		{
+			error(zip.errorText);
+			configureZipListeners(false);
+			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 		}
 	}
 }

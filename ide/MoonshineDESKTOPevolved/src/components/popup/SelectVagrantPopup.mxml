@@ -58,6 +58,16 @@
             return ddlInstances.selectedItem;
         }
 
+		public function reset():void
+		{
+			enableUI();
+		}
+
+		public function close():void
+		{
+			closeThis();
+		}
+
         override protected function closeThis():void
         {
             dispatcher.removeEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked);
@@ -111,8 +121,8 @@
                 return;
             }
 
+			disableUI();
 			dispatchEvent(new Event(EVENT_INSTANCE_SELECTED));
-			closeThis();
         }
 
         private function disableUI():void

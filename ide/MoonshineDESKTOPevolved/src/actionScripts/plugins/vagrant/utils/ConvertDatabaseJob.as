@@ -16,54 +16,18 @@ package actionScripts.plugins.vagrant.utils
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
-	public class ConvertDatabaseJob extends ConsoleOutputter
+	public class ConvertDatabaseJob extends DatabaseJobBase
 	{
-		public static const EVENT_CONVERSION_COMPLETE:String = "eventDBConversionCompletes";
-		public static const EVENT_CONVERSION_FAILED:String = "eventDBConversionFailed";
-
-		private static const CONVERSION_TEST_INTERVAL:int = 5000; // 5 seconds
-
-		protected var loader:DataAgent;
-		protected var conversioTestTimeout:uint;
-		protected var serverURL:String;
-		protected var uploadedNSFFilePath:String;
-
-		private var uploadedNSFFileSize:Number;
-		private var retryCount:int;
 		private var destinationProjectFolder:File;
-		private var isTerminate:Boolean;
 		private var downloader:FileDownloader;
 
-		public function ConvertDatabaseJob(nsfUploadCompletionData:Object, server:String, destinationFolder:File)
+		public function ConvertDatabaseJob(server:String, destinationFolder:File)
 		{
-			if (nsfUploadCompletionData)
-			{
-				serverURL = server;
-				destinationProjectFolder = destinationFolder;
-				if ("error" in nsfUploadCompletionData)
-				{
-					error("Failed to upload file with exit code:"+ nsfUploadCompletionData.error +"\n"+ nsfUploadCompletionData.message);
-				}
-				else
-				{
-					uploadedNSFFilePath = nsfUploadCompletionData.path;
-					uploadedNSFFileSize = Number(nsfUploadCompletionData.size);
-
-					print("Requesting conversion job to: "+ serverURL +"/task");
-					runConversionCommandOnServer();
-				}
-			}
+			destinationProjectFolder = destinationFolder;
+			super(server);
 		}
 
-		public function stop():void
-		{
-			clearTimeout(conversioTestTimeout);
-			isTerminate = true;
-			if (downloader) configureListenerOnFileDownloader(false);
-			warning("Conversion job terminates. Note: Some process may still runs on server.");
-		}
-
-		protected function runConversionCommandOnServer(withId:String=null):void
+		override protected function runConversionCommandOnServer(withId:String=null):void
 		{
 			clearTimeout(conversioTestTimeout);
 			loader = new DataAgent(
@@ -75,64 +39,7 @@ package actionScripts.plugins.vagrant.utils
 			);
 		}
 
-		protected function onConversionRunResponseLoaded(value:Object, message:String=null):void
-		{
-			// probable termination
-			if (isTerminate)
-				return;
-
-			var infoObject:Object = JSON.parse(value as String);
-			loader = null;
-
-			if (infoObject)
-			{
-				if ("error" in infoObject)
-				{
-					error("Conversion failed with exit code:"+ infoObject.error +"\n"+ infoObject.message);
-					dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
-				}
-				else
-				{
-					if ("taskStatus" in infoObject)
-					{
-						switch ((infoObject.taskStatus as String).toLowerCase())
-						{
-							case "executing":
-								print("Re-try conversion(#"+ infoObject.id +") check: "+ (++retryCount));
-								conversioTestTimeout = setTimeout(
-										runConversionCommandOnServer,
-										CONVERSION_TEST_INTERVAL,
-										infoObject.id
-								);
-								break;
-							case "completed":
-								if (infoObject.exitStatus != "0" && ("errorMessage" in infoObject))
-								{
-									error("Conversion failed with exit code: "+ infoObject.exitStatus +"\n"+ infoObject.errorMessage);
-									dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
-								}
-								else
-								{
-									onTaskStatusCompleted(infoObject);
-								}
-								break;
-							case "created":
-								trace(">>>>>> ", infoObject.taskStatus);
-								break;
-							case "failed":
-								if (infoObject.exitStatus != "0" && ("errorMessage" in infoObject))
-								{
-									error("Conversion failed with exit code: "+ infoObject.exitStatus +"\n"+ infoObject.errorMessage);
-									dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
-								}
-								break;
-						}
-					}
-				}
-			}
-		}
-
-		protected function onTaskStatusCompleted(withJSONObject:Object):void
+		override protected function onTaskStatusCompleted(withJSONObject:Object):void
 		{
 			print("Checking conversion project from: "+ serverURL + withJSONObject.workingDir);
 			downloader = new FileDownloader(
@@ -140,13 +47,6 @@ package actionScripts.plugins.vagrant.utils
 			);
 			configureListenerOnFileDownloader(true);
 			downloader.load();
-		}
-
-		protected function onConversionRunFault(message:String):void
-		{
-			loader = null;
-			error("Conversion request failed: "+ message);
-			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 		}
 
 		private function configureListenerOnFileDownloader(listen:Boolean):void

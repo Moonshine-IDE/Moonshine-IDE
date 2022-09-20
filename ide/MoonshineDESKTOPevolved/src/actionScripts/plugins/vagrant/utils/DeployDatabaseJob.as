@@ -16,15 +16,14 @@ package actionScripts.plugins.vagrant.utils
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
-	public class DeployDatabaseJob extends ConvertDatabaseJob
+	public class DeployDatabaseJob extends DatabaseJobBase
 	{
 		protected var databaseName:String;
 
-		public function DeployDatabaseJob(nsfUploadCompletionData:Object, server:String, dbName:String)
+		public function DeployDatabaseJob(server:String, dbName:String)
 		{
 			databaseName = dbName;
-
-			super(nsfUploadCompletionData, server, null);
+			super(server);
 		}
 
 		override protected function runConversionCommandOnServer(withId:String = null):void
