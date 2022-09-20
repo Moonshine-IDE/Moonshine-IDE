@@ -63,6 +63,11 @@
 					this.addItemGroup.visible = false;
 				}
 			}
+
+			private function onMultivalueListChange(event:Event):void
+            {
+                this.refreshDisabledButtons();
+            }
 			
 			private function onAddButtonClicked():void
 			{
@@ -83,6 +88,7 @@
 			private function toggleInputsByType():void
 			{
 				multivalueList = new List();
+				multivalueList.addEventListener(Event.CHANGE, onMultivalueListChange);
 				multivalueList.percentWidth = 100;
 				multivalueList.height = 100;
 
@@ -199,8 +205,15 @@
 			{
 				dataProvider.removeItem(this.multivalueList.selectedItem);
 				this.multivalueList.selectedIndex = -1;
+
+				this.refreshDisabledButtons();
 			}
-			
+
+			private function refreshDisabledButtons():void
+            {
+                this.modifyDisabled.disabled = !multivalueList.selectedItem;
+                this.removeDisabled.disabled = !multivalueList.selectedItem;
+            }
 		]]>
 	</fx:Script>
 	<j:beads>
@@ -212,12 +225,12 @@
 		<j:Button text="Add" click="onAddButtonClicked()"/>
 		<j:Button text="Modify" click="onModifyButtonClicked()">
 			<j:beads>
-				<j:Disabled disabled="{!multivalueList.selectedItem}"/>
+				<j:Disabled localId="modifyDisabled" disabled="true"/>
 			</j:beads>
 		</j:Button>
 		<j:Button text="Remove" click="onRemoveButtonClicked()">
 			<j:beads>
-				<j:Disabled disabled="{!multivalueList.selectedItem}"/>
+				<j:Disabled localId="removeDisabled" disabled="true"/>
 			</j:beads>
 		</j:Button>
 	</j:HGroup>
