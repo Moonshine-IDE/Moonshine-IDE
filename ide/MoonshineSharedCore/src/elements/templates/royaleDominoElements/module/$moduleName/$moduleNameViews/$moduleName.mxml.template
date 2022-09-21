@@ -51,8 +51,7 @@
     {
         this.currentState = 'contentState';
         this.proxy.selectedIndex = dg.selectedIndex;
-        var reqObj:Object = dg.selectedItem.toRequestObject();
-        this.itemVO = $moduleNameVO.get$moduleNameVO(reqObj);
+        this.itemVO = this.itemVO.clone();
     }
 
     private function onServerItemChanged(event:Event):void
