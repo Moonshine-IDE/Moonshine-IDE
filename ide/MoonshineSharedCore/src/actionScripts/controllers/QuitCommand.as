@@ -215,7 +215,14 @@ package actionScripts.controllers
 			dispatcher.dispatchEvent(new ApplicationEvent(ApplicationEvent.DISPOSE_FOOTPRINT));
 			
 			// for non-CONFIG:OSX
-			FlexGlobals.topLevelApplication.stage.nativeWindow.close();
+			setTimeout(function():void
+			{
+				// for some reason a short timeout is necessary to prevent AIR
+				// from hanging when sockets were opened by language servers.
+				// the same doesn't happen when the language servers use
+				// stdio. not sure why, but this is the best workaround so far.
+				FlexGlobals.topLevelApplication.stage.nativeWindow.close();
+			}, 250);
 		}
 		
 		private function askToSave(num:int):void
