@@ -106,7 +106,7 @@ package actionScripts.languageServer
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var _useSocket:Boolean = false;
+		private var _useSocket:Boolean = true;
 		private var _languageServerProcess:NativeProcess;
 		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
