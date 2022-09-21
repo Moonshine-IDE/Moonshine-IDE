@@ -117,7 +117,7 @@
             Alert.OK_LABEL = "OK";
             if (!ddlInstances.selectedItem)
             {
-                Alert.show("A valid NSF Converter is missing.", "Error!");
+                Alert.show("A valid Vagrant instance is missing.", "Error!");
                 return;
             }
 

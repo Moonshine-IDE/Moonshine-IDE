@@ -25,6 +25,7 @@ package actionScripts.events
 		public static const NDS_KILL:String = "eventNDSKill";
 		public static const EVENT_CONVERT_DOMINO_DATABASE:String = "eventConvertDominoDatabase";
 		public static const EVENT_RUN_DOMINO_ON_VAGRANT:String = "eventRunDominoOnVagrant";
+		public static const EVENT_BUILD_ON_VAGRANT:String = "eventBuildOnVagrant";
 
 		public function DominoEvent(type:String)
 		{

@@ -20,31 +20,14 @@ package actionScripts.plugins.vagrant.utils
 
 	import mx.utils.UIDUtil;
 
-	public class DeployRoyaleToVagrantJob extends DatabaseJobBase
+	public class DeployRoyaleToVagrantJob extends RunDatabaseOnVagrantJob
 	{
-		public var deployedURL:String;
-
 		protected var databaseName:String;
-		protected var zip:ZipUsingNP;
-		protected var zipUploadSource:File;
 
 		public function DeployRoyaleToVagrantJob(server:String, dbName:String)
 		{
 			databaseName = dbName;
 			super(server);
-		}
-
-		public function zipProject(pathFile:File):void
-		{
-			zip = new ZipUsingNP();
-			configureZipListeners(true);
-
-			print("Zipping files from: " + pathFile.nativePath);
-			zipUploadSource = getZipPath();
-			zip.zip(
-					pathFile,
-					zipUploadSource
-			);
 		}
 
 		override protected function runConversionCommandOnServer(withId:String = null):void
@@ -63,46 +46,6 @@ package actionScripts.plugins.vagrant.utils
 		{
 			success(withJSONObject.output);
 			dispatchEvent(new Event(EVENT_CONVERSION_COMPLETE));
-		}
-
-		private function getZipPath():File
-		{
-			var tempDirectory:File = File.cacheDirectory.resolvePath("moonshine/onDisk");
-			if (!tempDirectory.exists)
-			{
-				tempDirectory.createDirectory();
-			}
-
-			var zipFile:File = tempDirectory.resolvePath(UIDUtil.createUID() +".zip");
-			return zipFile;
-		}
-
-		private function configureZipListeners(listen:Boolean):void
-		{
-			if (listen)
-			{
-				zip.addEventListener(ZipUsingNP.EVENT_ZIP_COMPLETES, onZipCompletes, false, 0, true);
-				zip.addEventListener(ZipUsingNP.EVENT_ZIP_FAILED, onZipFailed, false, 0, true);
-			}
-			else
-			{
-				zip.removeEventListener(ZipUsingNP.EVENT_ZIP_COMPLETES, onZipCompletes);
-				zip.removeEventListener(ZipUsingNP.EVENT_ZIP_FAILED, onZipFailed);
-				zip = null;
-			}
-		}
-
-		private function onZipCompletes(event:Event):void
-		{
-			uploadAndRunCommandOnServer(zipUploadSource);
-			configureZipListeners(false);
-		}
-
-		private function onZipFailed(event:Event):void
-		{
-			error(zip.errorText);
-			configureZipListeners(false);
-			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 		}
 	}
 }

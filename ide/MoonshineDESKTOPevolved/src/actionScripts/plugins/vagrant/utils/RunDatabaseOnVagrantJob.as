@@ -24,7 +24,6 @@ package actionScripts.plugins.vagrant.utils
 	{
 		public var deployedURL:String;
 
-		protected var databaseName:String;
 		protected var zip:ZipUsingNP;
 		protected var zipUploadSource:File;
 
@@ -33,15 +32,24 @@ package actionScripts.plugins.vagrant.utils
 			super(server);
 		}
 
-		public function zipProject(path:FileLocation):void
+		public function zipProject(fileObject:Object):void
 		{
+			var path:File;
+			if (fileObject is FileLocation) path = (fileObject as FileLocation).fileBridge.getFile as File;
+			else if (fileObject is File) path = fileObject as File;
+			if (!path)
+			{
+				dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
+				return;
+			}
+
 			zip = new ZipUsingNP();
 			configureZipListeners(true);
 
-			print("Zipping files from: " + path.fileBridge.nativePath);
+			print("Zipping files from: " + path.nativePath);
 			zipUploadSource = getZipPath();
 			zip.zip(
-					path.fileBridge.getFile as File,
+					path,
 					zipUploadSource
 			);
 		}

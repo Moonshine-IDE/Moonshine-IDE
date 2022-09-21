@@ -81,6 +81,7 @@ package actionScripts.plugins.vagrant.utils
 		protected function onFileDownloadFailed(event:Event):void
 		{
 			configureListenerOnFileDownloader(false);
+			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 		}
 
 		protected function onUnzipSuccess(event:Event):void

@@ -143,6 +143,7 @@ package actionScripts.plugins.vagrant
 
 			dispatcher.addEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase, false, 0, true);
 			dispatcher.addEventListener(DominoEvent.EVENT_RUN_DOMINO_ON_VAGRANT, onRunDominoOnVagrant, false, 0, true);
+			dispatcher.addEventListener(DominoEvent.EVENT_BUILD_ON_VAGRANT, onBuildOnVagrant, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest, false, 0, true);
 		}
@@ -154,6 +155,7 @@ package actionScripts.plugins.vagrant
 			onConsoleDeactivated(null);
 			dispatcher.removeEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase);
 			dispatcher.removeEventListener(DominoEvent.EVENT_RUN_DOMINO_ON_VAGRANT, onRunDominoOnVagrant);
+			dispatcher.removeEventListener(DominoEvent.EVENT_BUILD_ON_VAGRANT, onBuildOnVagrant);
 			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest);
 			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest);
 		}
@@ -204,11 +206,24 @@ package actionScripts.plugins.vagrant
 		{
 			if (!selectVagrantPopup)
 			{
-				selectVagrantPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SelectVagrantPopup) as SelectVagrantPopup;
+				selectVagrantPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SelectVagrantPopup, true) as SelectVagrantPopup;
 				selectVagrantPopup.instances = vagrantInstances;
 				selectVagrantPopup.requireCapability = "java-domino-gradle";
 				selectVagrantPopup.addEventListener(CloseEvent.CLOSE, onSelectVagrantPopupClosed);
-				selectVagrantPopup.addEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelected);
+				selectVagrantPopup.addEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelectedRunDominoOnVagrant);
+				PopUpManager.centerPopUp(selectVagrantPopup);
+			}
+		}
+
+		private function onBuildOnVagrant(event:Event):void
+		{
+			if (!selectVagrantPopup)
+			{
+				selectVagrantPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SelectVagrantPopup, true) as SelectVagrantPopup;
+				selectVagrantPopup.instances = vagrantInstances;
+				selectVagrantPopup.requireCapability = "nsfodp";
+				selectVagrantPopup.addEventListener(CloseEvent.CLOSE, onSelectVagrantPopupClosed);
+				selectVagrantPopup.addEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelectedBuildOnVagrant);
 				PopUpManager.centerPopUp(selectVagrantPopup);
 			}
 		}
@@ -261,7 +276,8 @@ package actionScripts.plugins.vagrant
 		private function onSelectVagrantPopupClosed(event:CloseEvent):void
 		{
 			selectVagrantPopup.removeEventListener(CloseEvent.CLOSE, onSelectVagrantPopupClosed);
-			selectVagrantPopup.removeEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelected);
+			selectVagrantPopup.removeEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelectedRunDominoOnVagrant);
+			selectVagrantPopup.removeEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelectedBuildOnVagrant);
 			selectVagrantPopup = null;
 		}
 
@@ -308,7 +324,7 @@ package actionScripts.plugins.vagrant
 			deployRoyaleToVagrantJob.zipProject(deployRoyaleVagrantPopup.sourceDirectory);
 		}
 
-		private function onVagrantInstanceSelected(event:Event):void
+		private function onVagrantInstanceSelectedRunDominoOnVagrant(event:Event):void
 		{
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Deploy and run database to Vagrant"));
 			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunDatabaseVagrantRequest, false, 0, true);
@@ -319,6 +335,11 @@ package actionScripts.plugins.vagrant
 			);
 			configureListenersRunDatabaseToVagrantJob(true);
 			runDatabaseOnVagrantJob.zipProject(model.activeProject.folderLocation);
+		}
+
+		private function onVagrantInstanceSelectedBuildOnVagrant(event:Event):void
+		{
+
 		}
 
 		private function configureListenersDBConversionJob(listen:Boolean):void
