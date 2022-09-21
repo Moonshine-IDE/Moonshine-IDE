@@ -181,6 +181,7 @@ package actionScripts.controllers
 			if(languageServerTimeoutID != uint.MAX_VALUE)
 			{
 				clearTimeout(languageServerTimeoutID);
+				languageServerTimeoutID = uint.MAX_VALUE;
 			}
 			
 			// gradle daemon closing
