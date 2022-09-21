@@ -436,9 +436,8 @@ package actionScripts.languageServer
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_COMPILER_PATH).nativePath + File.separator + "*";
 
-			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				javaEncodedPath,
+				cmdFile.nativePath,
 				"-Dfile.encoding=UTF8",
 				"-Xmx2g",
 				"-Droyalelib=" + frameworksPath,

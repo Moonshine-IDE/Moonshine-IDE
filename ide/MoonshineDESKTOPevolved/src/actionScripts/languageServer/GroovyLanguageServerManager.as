@@ -55,7 +55,6 @@ package actionScripts.languageServer
 	import actionScripts.utils.EnvironmentSetupUtils;
 	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.GradleBuildUtil;
-	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
@@ -259,9 +258,8 @@ package actionScripts.languageServer
 				cp += ":";
 			}
 			
-			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				javaEncodedPath,
+				cmdFile.nativePath,
 				"-cp",
 				cp,
 				"moonshine.groovyls.Main"

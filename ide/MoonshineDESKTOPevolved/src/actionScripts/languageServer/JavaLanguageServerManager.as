@@ -485,9 +485,8 @@ package actionScripts.languageServer
 				configFile = storageFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
 			}
 
-			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				javaEncodedPath,
+				cmdFile.nativePath,
 				// uncomment to allow connection to debugger
 				// "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044",
 				"-Declipse.application=org.eclipse.jdt.ls.core.id1",
