@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 
+* Language Server: Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.13.0.
+* Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.15.0.
 
 ### Fixed
 

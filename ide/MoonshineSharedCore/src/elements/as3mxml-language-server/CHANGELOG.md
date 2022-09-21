@@ -1,38 +1,83 @@
 # ActionScript & MXML for Visual Studio Code Changelog
 
+## 1.13.0
+
+### New Features
+
+- Completion: In ASDoc comments, tags such as `@param`, `@return`, and `@see` are now suggested.
+- Definition: ASDoc `@see`, `@throws` and `@copy` tags referencing symbols (like classes, interfaces, properties, and methods) now work with Ctrl+Click to Go To Definition.
+- Hover: ASDoc `@see`, `@throws` and `@copy` tags referencing symbols now display more details about the symbol on mouse hover.
+- Settings: (Advanced) Added `actionscript.trace.server` setting to display (for debugging purposes) the messages passed between Visual Studio Code and the ActionScript & MXML language server.
+
+### Fixed Issues
+
+- General: Improved detection of SDK "short names" to display in the status bar. Some long SDK descriptions were not being stripped of less relevant information.
+- Problems: Fixed issue where some configuration errors and warnings were not reported in the Problems view, and you could see them only when compiling the project.
+- Problems: Fixed issue where non-fatal errors could sometimes block error checking in other files.
+
+## 1.12.1
+
+### Fixed Issues
+
+- Build: Fixed issue where the wrong paths for the Adobe AIR application descriptor and the initial window contents were passed to ADT when packaging an Adobe AIR app.
+
+## 1.12.0
+
+### New Features
+
+- Formatting: ActionScript and MXML code files may be formatted with Visual Studio Code's standard _Format Document_ command. Includes a variety of new settings to configure the code formatting style for these languages.
+
+### Fixed Issues
+
+- Build: Fixed issue where `as3mxml.asconfigc.verboseOutput` was incorrectly ignored when running ActionScript clean task.
+- Build: Fixed issue where replacing values in the Adobe AIR application descriptor XML could fail if elements were duplicated and the first one was commented out.
+- Build: Fixed issues where the `htmlTemplate` files and the Adobe AIR application descriptor file were incorrectly copied to the SWF output directory instead of the JavaScript output directory when targeting JavaScript with Apache Royale.
+- Build: Fixed issue where cleaning a project incorrectly deleted files in the SWF output directory instead of the JavaScript output directories when targeting JavaScript with Apache Royale.
+- Build: Added a final fallback of using the project directory name when the Adobe AIR application ID needs to be generated.
+- Build: Copies asset files before compiling, instead of after, to create a better developer experience with Apache Royale compiler's new upcoming file watcher feature.
+- Documentation: Fixed issue where @ character outside of ASDoc tag was sometimes incorrectly recognized as an ASDoc tag.
+- Documentation: Fixed rendering of HTML entities inside text formatted as code.
+- Documentation: Improved formatting of tables.
+- Documentation: Improved formatting of code blocks on a single line.
+- General: Fix Java icon appearing in macOS dock when launching language server.
+
+### Other Changes
+
+- Dependencies: Apache Royale compiler updated to v0.9.9.
+
 ## 1.11.1
 
 ### Fixed Issues
 
-Build: Fixed issue where multiple Quick Compile & Debug/Run commands could be run simultaneously. Now, you must wait for one to complete before starting a new one.
-Build: Fixed issue where Adobe AIR packaging tasks were incorrectly provided for _.swc_ library projects.
-Documentation: Fixed failure to remove uppercase HTML tags from rendered text.
-Documentation: Fixed line breaks missing between some block-level elements.
-Documentation: Fixed missing formatting for list items.
-Documentation: Fixed display of HTML entities in code blocks.
-General: Fixed wrong Apache Royale version number in error message about invalid `as3mxml.sdk.editor` values.
-General: The thread to watch source paths is a daemon to avoid it blocking the language server from exiting.
+- Build: Fixed issue where multiple Quick Compile & Debug/Run commands could be run simultaneously. Now, you must wait for one to complete before starting a new one.
+- Build: Fixed issue where Adobe AIR packaging tasks were incorrectly provided for _.swc_ library projects.
+- Documentation: Fixed failure to remove uppercase HTML tags from rendered text.
+- Documentation: Fixed line breaks missing between some block-level elements.
+- Documentation: Fixed missing formatting for list items.
+- Documentation: Fixed display of HTML entities in code blocks.
+- General: Fixed wrong Apache Royale version number in error message about invalid `as3mxml.sdk.editor` values.
+- General: The thread to watch source paths is a daemon to avoid it blocking the language server from exiting.
 
 ## 1.11.0
 
 ### New Features
 
-Build: Added a number of new compiler options for Apache Royale to the `compilerOptions` section of _asconfig.json_, meaning that many advanced options no longer need to be added to `additionalOptions`.
-Hover: Documentation is now detected in SDKs that store it in resource bundle _.swc_ files separately from the _.swc_ files containing compiled code. More documentation from the Adobe and Apache Flex SDKs should now be shown in hover, completion, and signature help.
+- Build: Added a number of new compiler options for Apache Royale to the `compilerOptions` section of _asconfig.json_, meaning that many advanced options no longer need to be added to `additionalOptions`.
+- Hover: Documentation is now detected in SDKs that store it in resource bundle _.swc_ files separately from the _.swc_ files containing compiled code. More documentation from the Adobe and Apache Flex SDKs should now be shown in hover, completion, and signature help.
 
 ### Fixed Issues
 
-Build: Fixed issue where module and worker _.swf_ files were not automatically included in Adobe AIR bundles.
-Build: Fixed issue where cleaning the project sometimes would not clean module _.swf_ files.
-General: Fixed an issue with detection of changes to _.swc_ library files that caused the workspace to continue using stale APIs.
-Settings: Fixed validation of relative framework SDK paths on Windows.
-Settings: Fixed issue where changing certain settings sometimes failed to restart the language server.
-Hover: Fixed missing asdoc documentation for members of interfaces.
-Hover: Fixed missing asdoc documentation for APIs in the public-like `AS3` namespace.
-Hover: Fixed missing asdoc documentation for `[Style]` and `[Event]` metadata in _.swc_ libraries.
-Hover: Fixed missing asdoc documentation for accessors when the asdoc comment was added to the setter instead of the getter.
-Imports: Fixed issue where a class outside of the package block had an import for the class inside the package block, and it was incorrectly removed when organizing imports.
-Views: Fixed exception in ActionScript Source Paths view when the project has no source paths yet.
+- Build: Fixed issue where module and worker _.swf_ files were not automatically included in Adobe AIR bundles.
+- Build: Fixed issue where cleaning the project sometimes would not clean module _.swf_ files.
+- General: Fixed an issue with detection of changes to _.swc_ library files that caused the workspace to continue using stale APIs.
+- Settings: Fixed validation of relative framework SDK paths on Windows.
+- Settings: Fixed issue where changing certain settings sometimes failed to restart the language server.
+- Hover: Fixed missing asdoc documentation for members of interfaces.
+- Hover: Fixed missing asdoc documentation for APIs in the public-like `AS3` namespace.
+- Hover: Fixed missing asdoc documentation for `[Style]` and `[Event]` metadata in _.swc_ libraries.
+- Hover: Fixed missing asdoc documentation for accessors when the asdoc comment was added to the setter instead of the getter.
+- Imports: Fixed issue where a class outside of the package block had an import for the class inside the package block, and it was incorrectly removed when organizing imports.
+- Views: Fixed exception in ActionScript Source Paths view when the project has no source paths yet.
 
 ## 1.10.0
 

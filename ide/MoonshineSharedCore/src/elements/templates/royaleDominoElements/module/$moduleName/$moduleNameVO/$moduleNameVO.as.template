@@ -12,7 +12,14 @@ package views.modules.$moduleName.$moduleNameVO
 		public function $moduleNameVO()
 		{
 		}
-		
+
+		public function clone():$moduleNameVO
+		{
+		    var tmpVO:$moduleNameVO = new $moduleNameVO();
+		    %ToCloneStatements%
+		    return tmpVO;
+		}
+
 		public function toRequestObject():Object
 		{
 			%ToRequestObjectStatements%

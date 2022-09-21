@@ -30,12 +30,12 @@ def get_java_executable(validate_java_version):
 
 	out = subprocess.check_output([java_executable, '-version'], stderr = subprocess.STDOUT, universal_newlines=True)
 
-	matches = re.finditer(r"(?P<major>\d+)\.\d+\.\d+", out)
+	matches = re.finditer(r"(?<=version\s\")(?P<major>\d+)(\.\d+\.\d+(_\d+)?)?", out)
 	for match in matches:
 		java_major_version = int(match.group("major"))
 
-		if java_major_version < 11:
-			raise Exception("jdtls requires at least Java 11")
+		if java_major_version < 17:
+			raise Exception("jdtls requires at least Java 17")
 
 		return java_executable
 
@@ -78,25 +78,18 @@ def main(args):
 	shared_config_path = get_shared_config_path(jdtls_base_path)
 	jar_path = find_equinox_launcher(jdtls_base_path)
 
-	os.system(("{java_exec}"
-		" -Declipse.application=org.eclipse.jdt.ls.core.id1"
-		" -Dosgi.bundles.defaultStartLevel=4"
-		" -Declipse.product=org.eclipse.jdt.ls.core.product"
-		" -Dosgi.checkConfiguration=true"
-		" -Dosgi.sharedConfiguration.area='{shared_config_path}'"
-		" -Dosgi.sharedConfiguration.area.readOnly=true"
-		" -Dosgi.configuration.cascaded=true"
-		" -noverify"
-		" -Xms1G"
-		" --add-modules=ALL-SYSTEM"
-		" --add-opens java.base/java.util=ALL-UNNAMED"
-		" --add-opens java.base/java.lang=ALL-UNNAMED"
-		" {jvm_options}"
-		" -jar '{jar_path}'"
-		" {args}").format(
-			java_exec = java_executable,
-			shared_config_path = shared_config_path,
-			jar_path = jar_path,
-			jvm_options = " ".join(f"'{w}'" for w in known_args.jvm_arg),
-			args = " ".join(f"'{w}'" for w in args)))
-
+	os.execvp(java_executable,
+		["-Declipse.application=org.eclipse.jdt.ls.core.id1",
+		"-Dosgi.bundles.defaultStartLevel=4",
+		"-Declipse.product=org.eclipse.jdt.ls.core.product",
+		"-Dosgi.checkConfiguration=true",
+		"-Dosgi.sharedConfiguration.area=" + str(shared_config_path),
+		"-Dosgi.sharedConfiguration.area.readOnly=true",
+		"-Dosgi.configuration.cascaded=true",
+		"-noverify",
+		"-Xms1G",
+		"--add-modules=ALL-SYSTEM",
+		"--add-opens", "java.base/java.util=ALL-UNNAMED",
+		"--add-opens", "java.base/java.lang=ALL-UNNAMED"]
+		+ known_args.jvm_arg
+		+ ["-jar", jar_path] + args)
