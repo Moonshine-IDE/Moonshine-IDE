@@ -273,14 +273,13 @@ package actionScripts.languageServer
 			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
 		}
 		
-
 		private function cleanupServerSocket():void
 		{
 			if (!_serverSocket)
 			{
 				return;
 			}
-			_serverSocket.removeEventListener(Event.CONNECT, serverSocket_connectHandler);
+			_serverSocket.removeEventListener(ServerSocketConnectEvent.CONNECT, serverSocket_connectHandler);
 			_serverSocket = null;
 		}
 
@@ -1087,6 +1086,10 @@ package actionScripts.languageServer
 
 		private function serverSocket_connectHandler(event:ServerSocketConnectEvent):void
 		{
+			// we need only one client socket
+			_serverSocket.close();
+			cleanupServerSocket();
+
 			_clientSocket = event.socket;
 			_clientSocket.addEventListener(IOErrorEvent.IO_ERROR, clientSocket_ioErrorHandler);
 			_clientSocket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, clientSocket_securityErrorHandler);
