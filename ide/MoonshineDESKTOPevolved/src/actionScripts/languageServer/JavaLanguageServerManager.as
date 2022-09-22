@@ -485,9 +485,8 @@ package actionScripts.languageServer
 				configFile = storageFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
 			}
 
-			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				javaEncodedPath,
+				cmdFile.nativePath,
 				// uncomment to allow connection to debugger
 				// "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044",
 				"-Declipse.application=org.eclipse.jdt.ls.core.id1",
@@ -591,7 +590,7 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_serverSocket.removeEventListener(Event.CONNECT, serverSocket_connectHandler);
+			_serverSocket.removeEventListener(ServerSocketConnectEvent.CONNECT, serverSocket_connectHandler);
 			_serverSocket = null;
 		}
 	
@@ -1420,6 +1419,10 @@ package actionScripts.languageServer
 
 		private function serverSocket_connectHandler(event:ServerSocketConnectEvent):void
 		{
+			// we need only one client socket
+			_serverSocket.close();
+			cleanupServerSocket();
+
 			_clientSocket = event.socket;
 			_clientSocket.addEventListener(IOErrorEvent.IO_ERROR, clientSocket_ioErrorHandler);
 			_clientSocket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, clientSocket_securityErrorHandler);

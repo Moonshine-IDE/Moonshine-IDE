@@ -106,7 +106,7 @@ package actionScripts.languageServer
 		private var _languageClient:LanguageClient;
 		private var _model:IDEModel = IDEModel.getInstance();
 		private var _dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-		private var _useSocket:Boolean = false;
+		private var _useSocket:Boolean = true;
 		private var _languageServerProcess:NativeProcess;
 		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToRestart:Boolean = false;
@@ -273,14 +273,13 @@ package actionScripts.languageServer
 			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
 		}
 		
-
 		private function cleanupServerSocket():void
 		{
 			if (!_serverSocket)
 			{
 				return;
 			}
-			_serverSocket.removeEventListener(Event.CONNECT, serverSocket_connectHandler);
+			_serverSocket.removeEventListener(ServerSocketConnectEvent.CONNECT, serverSocket_connectHandler);
 			_serverSocket = null;
 		}
 
@@ -437,9 +436,8 @@ package actionScripts.languageServer
 			}
 			cp += File.applicationDirectory.resolvePath(BUNDLED_COMPILER_PATH).nativePath + File.separator + "*";
 
-			var javaEncodedPath:String = UtilsCore.getEncodedForShell(cmdFile.nativePath);
 			var languageServerCommand:Vector.<String> = new <String>[
-				javaEncodedPath,
+				cmdFile.nativePath,
 				"-Dfile.encoding=UTF8",
 				"-Xmx2g",
 				"-Droyalelib=" + frameworksPath,
@@ -1087,6 +1085,10 @@ package actionScripts.languageServer
 
 		private function serverSocket_connectHandler(event:ServerSocketConnectEvent):void
 		{
+			// we need only one client socket
+			_serverSocket.close();
+			cleanupServerSocket();
+
 			_clientSocket = event.socket;
 			_clientSocket.addEventListener(IOErrorEvent.IO_ERROR, clientSocket_ioErrorHandler);
 			_clientSocket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, clientSocket_securityErrorHandler);
