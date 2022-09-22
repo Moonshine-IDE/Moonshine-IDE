@@ -51,7 +51,7 @@
     {
         this.currentState = 'contentState';
         this.proxy.selectedIndex = dg.selectedIndex;
-        this.itemVO = this.itemVO.clone();
+        this.itemVO = dg.selectedItem.clone();
     }
 
     private function onServerItemChanged(event:Event):void
