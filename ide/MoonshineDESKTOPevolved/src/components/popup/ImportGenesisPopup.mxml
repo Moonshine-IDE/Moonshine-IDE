@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:mx="library://ns.adobe.com/flex/mx"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   backgroundColor="0xf5f5f5" title="Import from Genesis Catalog"
+										   width="600" minWidth="400" autoLayout="true"
+										   skinClass="components.skins.ResizableTitleWindowSkin">
+	<fx:Script>
+		<![CDATA[
+
+		import mx.validators.Validator;
+
+		import spark.components.Alert;
+
+		public static const EVENT_FORM_SUBMIT:String = "eventFormSubmitted";
+
+		public function get url():String
+		{
+			return txtFile.text;
+		}
+
+		private function onSubmit():void
+		{
+			// validations
+			var tmpArr:Array = new Array(svPath);
+			if (Validator.validateAll(tmpArr).length != 0)
+			{
+				return;
+			}
+
+			var urlTest:RegExp = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:\/~\+#]*[\w\-\@?^=%&\/~\+#])?/g;
+			if (!urlTest.exec(txtFile.text))
+			{
+				Alert.show("Please provide a valid URL.", "Error!");
+				return;
+			}
+
+			dispatchEvent(new Event(EVENT_FORM_SUBMIT));
+			closeThis();
+		}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="svPath" source="{txtFile}" property="text" trigger="{btnSubmit}"/>
+	</fx:Declarations>
+
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+
+	<s:Label text="Download URL:"/>
+	<view:PromptTextInput id="txtFile"
+						  width="100%" styleName="textInput" prompt="Enter file URL.."/>
+
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit"
+				  label="Submit" styleName="darkButton"
+					click="onSubmit()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

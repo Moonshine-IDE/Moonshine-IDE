@@ -19,6 +19,7 @@
 package actionScripts.ui.menu
 {
     import actionScripts.events.DominoEvent;
+    import actionScripts.events.GenesisEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.plugin.genericproj.vo.GenericProjectVO;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectTypes;

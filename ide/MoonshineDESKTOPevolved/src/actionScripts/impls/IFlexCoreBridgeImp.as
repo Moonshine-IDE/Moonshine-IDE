@@ -20,8 +20,10 @@
 package actionScripts.impls
 {
 	import actionScripts.events.DominoEvent;
+	import actionScripts.events.GenesisEvent;
 	import actionScripts.managers.StartupHelper;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.genesis.GenesisPlugin;
 	import actionScripts.plugins.lsmonitor.LanguageServersMonitor;
 	import actionScripts.plugins.macports.MacPortsPlugin;
 	import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
@@ -291,7 +293,8 @@ package actionScripts.impls
 				VagrantPlugin,
 				FSWatcherPlugin,
 				LanguageServersMonitor,
-				TextEditorPlugin
+				TextEditorPlugin,
+				GenesisPlugin
 			];
 
 			// conditional additions
@@ -309,7 +312,7 @@ package actionScripts.impls
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
 					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin, GenesisPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -421,7 +424,8 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, 
 						'o', [Keyboard.COMMAND],
 						'o', [Keyboard.CONTROL]),
-					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE)
+					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE),
+					new MenuItem(resourceManager.getString('resources', 'IMPORT_FROM_GENESIS_CATALOG'), null, null, GenesisEvent.IMPORT_GENESIS_PROJECT)
 				]),
 				//GENERATE_APACHE_ROYALE_PROJECT
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
