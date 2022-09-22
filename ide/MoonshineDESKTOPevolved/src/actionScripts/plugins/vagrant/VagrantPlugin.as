@@ -23,6 +23,7 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
 	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
 	import actionScripts.plugins.vagrant.utils.DatabaseJobBase;
+	import actionScripts.plugins.vagrant.utils.DeployBuildOnVagrantJob;
 	import actionScripts.plugins.vagrant.utils.DeployDatabaseJob;
 	import actionScripts.plugins.vagrant.utils.DeployRoyaleToVagrantJob;
 	import actionScripts.plugins.vagrant.utils.RunDatabaseOnVagrantJob;
@@ -88,6 +89,7 @@ package actionScripts.plugins.vagrant
 		private var deployDBJob:DeployDatabaseJob;
 		private var deployRoyaleToVagrantJob:DeployRoyaleToVagrantJob;
 		private var runDatabaseOnVagrantJob:RunDatabaseOnVagrantJob;
+		private var deployBuildOnVagrantJob:DeployBuildOnVagrantJob;
 
 		public function get vagrantPath():String
 		{
@@ -339,7 +341,15 @@ package actionScripts.plugins.vagrant
 
 		private function onVagrantInstanceSelectedBuildOnVagrant(event:Event):void
 		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Running Build on Vagrant"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildOnVagrantRequest, false, 0, true);
 
+			// get the object to work with
+			deployBuildOnVagrantJob = new DeployBuildOnVagrantJob(
+					selectVagrantPopup.selectedInstance.url
+			);
+			configureListenersDeployBuildOnVagrantJob(true);
+			deployBuildOnVagrantJob.zipProject(model.activeProject.folderLocation);
 		}
 
 		private function configureListenersDBConversionJob(listen:Boolean):void
@@ -418,6 +428,25 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function configureListenersDeployBuildOnVagrantJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				deployBuildOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployBuildOnVagrantEnded, false, 0, true);
+				deployBuildOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployBuildOnVagrantEnded, false, 0, true);
+				deployBuildOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onBuildOnVagrantUploadUpdates, false, 0, true);
+				deployBuildOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onBuildOnVagrantUploadUpdates, false, 0, true);
+			}
+			else
+			{
+				deployBuildOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployBuildOnVagrantEnded);
+				deployBuildOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployBuildOnVagrantEnded);
+				deployBuildOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onBuildOnVagrantUploadUpdates);
+				deployBuildOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onBuildOnVagrantUploadUpdates);
+				deployBuildOnVagrantJob = null;
+			}
+		}
+
 		private function onDBConversionEnded(event:Event):void
 		{
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
@@ -456,6 +485,19 @@ package actionScripts.plugins.vagrant
 			}
 
 			configureListenersRunDatabaseToVagrantJob(false);
+		}
+
+		private function onDeployBuildOnVagrantEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildOnVagrantRequest);
+
+			if (event && event.type == DatabaseJobBase.EVENT_CONVERSION_COMPLETE)
+			{
+
+			}
+
+			configureListenersDeployBuildOnVagrantJob(false);
 		}
 
 		private function onDBConversionUploadUpdates(event:Event):void
@@ -506,6 +548,18 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function onBuildOnVagrantUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				selectVagrantPopup.close();
+			}
+			else
+			{
+				selectVagrantPopup.reset();
+			}
+		}
+
 		private function onTerminateConversionRequest(event:StatusBarEvent):void
 		{
 			dbConversionJob.stop();
@@ -528,6 +582,12 @@ package actionScripts.plugins.vagrant
 		{
 			runDatabaseOnVagrantJob.stop();
 			onRunDatabaseToVagrantEnded(null);
+		}
+
+		private function onTerminateBuildOnVagrantRequest(event:StatusBarEvent):void
+		{
+			deployBuildOnVagrantJob.stop();
+			onDeployBuildOnVagrantEnded(null);
 		}
 
 		private function updateEventListeners():void

@@ -25,13 +25,10 @@ package actionScripts.plugins.vagrant.utils
 
 	public class DeployBuildOnVagrantJob extends RunDatabaseOnVagrantJob
 	{
-		protected var databaseName:String;
-
 		private var downloader:FileDownloader;
 
-		public function DeployBuildOnVagrantJob(server:String, dbName:String)
+		public function DeployBuildOnVagrantJob(server:String)
 		{
-			databaseName = dbName;
 			super(server);
 		}
 
