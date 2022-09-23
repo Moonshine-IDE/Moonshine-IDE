@@ -16,20 +16,21 @@
 // Use this software at your own risk.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.events
+package actionScripts.controllers;
+
+import flash.events.Event;
+
+import actionScripts.events.AddTabEvent;
+import actionScripts.locator.IDEModel;
+
+class AddTabCommand implements ICommand
 {
-	import flash.events.Event;
-
-	public class DominoEvent extends Event
-	{
-		public static const NDS_KILL:String = "eventNDSKill";
-		public static const EVENT_CONVERT_DOMINO_DATABASE:String = "eventConvertDominoDatabase";
-		public static const EVENT_RUN_DOMINO_ON_VAGRANT:String = "eventRunDominoOnVagrant";
-		public static const EVENT_BUILD_ON_VAGRANT:String = "eventBuildOnVagrant";
-
-		public function DominoEvent(type:String)
-		{
-			super(type, false, false);
-		}
-	}
+    private var model:IDEModel = IDEModel.getInstance();
+    
+    public function execute(event:Event):Void
+    {
+        var e:AddTabEvent = cast( event, AddTabEvent );
+        model.editors.addItem(e.tab);
+    }
+    
 }
