@@ -3,9 +3,11 @@ package actionScripts.plugins.vagrant.utils
 	import actionScripts.controllers.DataAgent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.utils.FileDownloader;
 	import actionScripts.utils.UnzipUsingAS3CommonZip;
+	import actionScripts.utils.ZipUsingNP;
 
 	import flash.events.ErrorEvent;
 
@@ -16,17 +18,16 @@ package actionScripts.plugins.vagrant.utils
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
-	public class DeployRoyaleToVagrantJob extends ConvertDatabaseJob
-	{
-		public var deployedURL:String;
+	import mx.utils.UIDUtil;
 
+	public class DeployRoyaleToVagrantJob extends RunDatabaseOnVagrantJob
+	{
 		protected var databaseName:String;
 
-		public function DeployRoyaleToVagrantJob(nsfUploadCompletionData:Object, server:String, dbName:String)
+		public function DeployRoyaleToVagrantJob(server:String, dbName:String)
 		{
 			databaseName = dbName;
-
-			super(nsfUploadCompletionData, server, null);
+			super(server);
 		}
 
 		override protected function runConversionCommandOnServer(withId:String = null):void

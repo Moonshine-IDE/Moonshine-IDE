@@ -56,7 +56,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 				"{\n" +
 				"\t_%propertyName% = value;\n" +
 				"}";
-		protected static var arrayListProperty:String = "private var _%propertyName%:ArrayList;\n" +
+		protected static var arrayListProperty:String = "private var _%propertyName%:ArrayList = new ArrayList();\n" +
 				"public function get %propertyName%():ArrayList\n" +
 				"{\n" +
 				"\treturn _%propertyName%;\n" +

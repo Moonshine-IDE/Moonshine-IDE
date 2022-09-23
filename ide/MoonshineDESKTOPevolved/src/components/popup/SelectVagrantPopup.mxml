@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// Copyright 2016 Prominic.NET, Inc.
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// Author: Prominic.NET, Inc.
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:mx="library://ns.adobe.com/flex/mx"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   backgroundColor="0xf5f5f5" title="Select Vagrant Instance"
+										   width="600" minWidth="400" autoLayout="true"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   creationComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+        import actionScripts.events.SettingsEvent;
+        import actionScripts.plugins.vagrant.VagrantPlugin;
+        import actionScripts.plugins.vagrant.utils.VagrantUtil;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+		import mx.collections.ArrayCollection;
+        import mx.events.FlexEvent;
+
+        import actionScripts.events.GlobalEventDispatcher;
+
+        import spark.components.Alert;
+
+        public static const EVENT_INSTANCE_SELECTED:String = "eventVagrantInstanceSelected";
+
+        public var instances:ArrayCollection;
+		public var requireCapability:String;
+
+        [Bindable]
+        private var nsfConverterInstances:ArrayCollection;
+
+        private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+        private var instanceStateCheckCount:int;
+
+        public function get selectedInstance():VagrantInstanceVO
+        {
+            return ddlInstances.selectedItem;
+        }
+
+		public function reset():void
+		{
+			enableUI();
+		}
+
+		public function close():void
+		{
+			closeThis();
+		}
+
+        override protected function closeThis():void
+        {
+            dispatcher.removeEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked);
+            super.closeThis();
+        }
+
+        protected function onCreationCompletes(event:FlexEvent):void
+        {
+            disableUI();
+            dispatcher.addEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked, false, 0, true);
+            VagrantUtil.checkStates(instances);
+        }
+
+        private function onIndividualInstanceChecked(event:Event):void
+        {
+            instanceStateCheckCount++;
+            if (instances && (instances.length == instanceStateCheckCount))
+            {
+                enableUI();
+				if (!requireCapability)
+				{
+					nsfConverterInstances = instances;
+				}
+				else
+				{
+					nsfConverterInstances = new ArrayCollection();
+					for each (var instance:VagrantInstanceVO in instances)
+					{
+						if (instance.capabilities && (instance.capabilities.indexOf(requireCapability) != -1) &&
+								(instance.state == VagrantInstanceState.READY))
+						{
+							nsfConverterInstances.addItem(instance);
+						}
+					}
+				}
+            }
+        }
+
+        private function onConfigure():void
+        {
+            dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, VagrantPlugin.NAMESPACE));
+        }
+
+        private function onSubmit():void
+        {
+            // validations
+            Alert.OK_LABEL = "OK";
+            if (!ddlInstances.selectedItem)
+            {
+                Alert.show("A valid Vagrant instance is missing.", "Error!");
+                return;
+            }
+
+			disableUI();
+			dispatchEvent(new Event(EVENT_INSTANCE_SELECTED));
+        }
+
+        private function disableUI():void
+        {
+            btnSubmit.enabled = false;
+            ddlInstances.enabled = false;
+        }
+
+        private function enableUI():void
+        {
+            btnSubmit.enabled = true;
+            ddlInstances.enabled = true;
+        }
+        ]]>
+	</fx:Script>
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+
+	<s:Label text="Vagrant Instance:"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:DropDownList id="ddlInstances"
+						width="100%" height="26"
+						dataProvider="{nsfConverterInstances}" labelField="title" requireSelection="true"/>
+		<s:Button label="Configure" styleName="darkButton"
+				  click="onConfigure()"/>
+	</s:HGroup>
+
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit"
+				  label="Submit" styleName="darkButton"
+					click="onSubmit()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

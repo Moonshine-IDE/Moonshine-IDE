@@ -93,7 +93,12 @@ package actionScripts.utils
 
 			configureListeners(false);
 			GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "File download completes."));
+					new ConsoleOutputEvent(
+							ConsoleOutputEvent.CONSOLE_PRINT,
+							"File download completes.",
+							false, false,
+							ConsoleOutputEvent.TYPE_SUCCESS
+					));
 			dispatchEvent(new Event(EVENT_FILE_DOWNLOADED));
 		}
 

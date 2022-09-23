@@ -32,29 +32,58 @@ package actionScripts.utils
 	public class UnzipUsingAS3CommonZip
 	{
 		private static var _fileUnzipErrorFunction:Function;
+		private static var _fileUnzipCompleteFunction:Function;
 		private static var _destinationProjectFolder:File;
+
+		private static var _fzip:Zip
+		public static function get zip():Zip
+		{
+			return _fzip;
+		}
 
 		public static function unzip(fileToUnzip:File, destinationToUnzip:File, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void
 		{
 			var zipFileBytes:ByteArray = new ByteArray();
 			var fs:FileStream = new FileStream();
-			var fzip:Zip = new Zip();
+			_fzip = new Zip();
 
 			_destinationProjectFolder = destinationToUnzip;
+			_fileUnzipErrorFunction = unzipErrorFunction;
+			_fileUnzipCompleteFunction = unzipCompleteFunction;
 
 			fs.open(fileToUnzip, FileMode.READ);
 			fs.readBytes(zipFileBytes);
 			fs.close();
 
-			fzip.addEventListener(ZipEvent.FILE_LOADED, onFileLoaded, false, 0, true);
-			fzip.addEventListener(Event.COMPLETE, unzipCompleteFunction, false, 0, true);
-			fzip.addEventListener(Event.COMPLETE, onUnzipComplete, false, 0, true);
-			if (unzipErrorFunction != null)
+			configureListeners();
+
+			_fzip.loadBytes(zipFileBytes);
+		}
+
+		public static function isDirectory(file:ZipFile):Boolean
+		{
+			if (file.filename.substr(file.filename.length - 1) == "/" || file.filename.substr(file.filename.length - 1) == "\\")
 			{
-				fzip.addEventListener(ErrorEvent.ERROR, unzipErrorFunction, false, 0, true);
-				_fileUnzipErrorFunction = unzipErrorFunction
+				return true;
 			}
-			fzip.loadBytes(zipFileBytes);
+			return false;
+		}
+
+		private static function configureListeners():void
+		{
+			_fzip.addEventListener(ZipEvent.FILE_LOADED, onFileLoaded, false, 0, true);
+			_fzip.addEventListener(ErrorEvent.ERROR, onUnzipFailed, false, 0, true);
+			_fzip.addEventListener(Event.COMPLETE, onUnzipComplete, false, 0, true);
+		}
+
+		private static function removeListeners():void
+		{
+			_fzip.removeEventListener(ZipEvent.FILE_LOADED, onFileLoaded);
+			_fzip.removeEventListener(ErrorEvent.ERROR, onUnzipFailed);
+			_fzip.removeEventListener(Event.COMPLETE, onUnzipComplete);
+			_fzip = null;
+			_fileUnzipErrorFunction = null;
+			_fileUnzipCompleteFunction = null;
 		}
 
 		private static function onFileLoaded(event:ZipEvent):void
@@ -84,19 +113,15 @@ package actionScripts.utils
 
 		private static function onUnzipComplete(event:Event):void
 		{
-			var fzip:Zip = event.target as Zip;
-			fzip.close();
-			fzip.removeEventListener(ZipEvent.FILE_LOADED, onFileLoaded);
-			fzip.removeEventListener(Event.COMPLETE, onUnzipComplete);
+			_fzip.close();
+			_fileUnzipCompleteFunction(event);
+			removeListeners();
 		}
 
-		private static function isDirectory(file:ZipFile):Boolean
+		private static function onUnzipFailed(event:ErrorEvent):void
 		{
-			if (file.filename.substr(file.filename.length - 1) == "/" || file.filename.substr(file.filename.length - 1) == "\\")
-			{
-				return true;
-			}
-			return false;
+			if (_fileUnzipErrorFunction != null) _fileUnzipErrorFunction(event);
+			removeListeners();
 		}
 	}
 }
