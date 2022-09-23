@@ -118,6 +118,8 @@ package actionScripts.languageServer
 		private var _watchedFiles:Object = {};
 		private var _shutdownTimeoutID:uint = uint.MAX_VALUE;
 		private var _pid:int = -1;
+		private var _watchedFilesDebounceTimeoutID:uint = uint.MAX_VALUE;
+		private var _watchedFilesPendingChanges:Array = [];
 
 		public function HaxeLanguageServerManager(project:HaxeProjectVO)
 		{
@@ -1120,19 +1122,45 @@ package actionScripts.languageServer
 			return false;
 		}
 
+		private function handleWatchedFilesPendingChanges():void
+		{
+			_watchedFilesDebounceTimeoutID = uint.MAX_VALUE;
+			if (_watchedFilesPendingChanges.length == 0)
+			{
+				return;
+			}
+			if (!_languageClient || !_languageClient.initialized || _languageClient.stopping || _languageClient.stopped)
+			{
+				return;
+			}
+			_languageClient.didChangeWatchedFiles(
+			{
+				changes: _watchedFilesPendingChanges
+			});
+			_watchedFilesPendingChanges = [];
+		}
+
+		private function queueWatchedFileChange(change:Object):void
+		{
+			_watchedFilesPendingChanges.push(change);
+			if (_watchedFilesDebounceTimeoutID != uint.MAX_VALUE)
+			{
+				clearTimeout(_watchedFilesDebounceTimeoutID);
+				_watchedFilesDebounceTimeoutID = uint.MAX_VALUE;
+			}
+			_watchedFilesDebounceTimeoutID = setTimeout(handleWatchedFilesPendingChanges, 500);
+		}
+
 		private function fileCreatedHandler(event:WatchedFileChangeEvent):void
 		{
 			if(!_languageClient || !isUriInProject(event.file.fileBridge.url, project) || !isWatchingFile(event.file))
 			{
 				return;
 			}
-			_languageClient.didChangeWatchedFiles({
-				changes: [
-					{
-						uri: event.file.fileBridge.url,
-						type: 1
-					}
-				]
+			queueWatchedFileChange(
+			{
+				uri: event.file.fileBridge.url,
+				type: 1
 			});
 		}
 
@@ -1142,13 +1170,10 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.didChangeWatchedFiles({
-				changes: [
-					{
-						uri: event.file.fileBridge.url,
-						type: 3
-					}
-				]
+			queueWatchedFileChange(
+			{
+				uri: event.file.fileBridge.url,
+				type: 3
 			});
 		}
 
@@ -1158,13 +1183,10 @@ package actionScripts.languageServer
 			{
 				return;
 			}
-			_languageClient.didChangeWatchedFiles({
-				changes: [
-					{
-						uri: event.file.fileBridge.url,
-						type: 2
-					}
-				]
+			queueWatchedFileChange(
+			{
+				uri: event.file.fileBridge.url,
+				type: 2
 			});
 		}
 	}

@@ -80,6 +80,9 @@ package classes.dataGrid
 		{
 			this.dg = window['$'](this.element).dxDataGrid({
 				onRowDblClick: function(event:Object):void {
+					selectedItem = event.data;
+					selectedIndex = event.dataIndex;
+
 					dispatchEvent(new Event("rowDoubleClick"));
 				},
 				onSelectionChanged: function(options:Object):void {
