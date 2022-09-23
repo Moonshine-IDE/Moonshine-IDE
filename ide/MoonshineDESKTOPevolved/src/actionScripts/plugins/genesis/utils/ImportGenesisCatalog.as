@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.genesis.utils
 {
+	import actionScripts.events.GlobalEventDispatcher;
+	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
@@ -32,11 +34,15 @@ package actionScripts.plugins.genesis.utils
 
 	import mx.utils.UIDUtil;
 
+	import org.as3commons.zip.Zip;
+	import org.as3commons.zip.ZipFile;
+
 	public class ImportGenesisCatalog extends ConsoleOutputter
 	{
 		private var downloadURL:String;
 		private var fileDownloader:FileDownloader;
-		private var downloadDirectory:File;
+		private var tempDownloadDirectory:File;
+		private var targetDownloadDirectory:File;
 		private var model:IDEModel = IDEModel.getInstance();
 
 		public function ImportGenesisCatalog(fromURL:String)
@@ -49,10 +55,10 @@ package actionScripts.plugins.genesis.utils
 
 		private function startDownloading():void
 		{
-			downloadDirectory = getDownloadDirectoryPath();
+			tempDownloadDirectory = gettempDownloadDirectoryPath();
 
 			warning("Downloading Genesis Catalog");
-			fileDownloader = new FileDownloader(downloadURL, downloadDirectory.resolvePath("catalog.zip"));
+			fileDownloader = new FileDownloader(downloadURL, tempDownloadDirectory.resolvePath("catalog.zip"));
 			addFileDownloaderListeners();
 			fileDownloader.load();
 		}
@@ -97,8 +103,9 @@ package actionScripts.plugins.genesis.utils
 
 		private function onDirectorySelected(directory:File):void
 		{
+			targetDownloadDirectory = directory;
 			UnzipUsingAS3CommonZip.unzip(
-					downloadDirectory.resolvePath("catalog.zip"),
+					tempDownloadDirectory.resolvePath("catalog.zip"),
 					directory,
 					onUnzipSuccess,
 					onUnzipError
@@ -107,7 +114,20 @@ package actionScripts.plugins.genesis.utils
 
 		protected function onUnzipSuccess(event:Event):void
 		{
-
+			var fzip:Zip = UnzipUsingAS3CommonZip.zip;
+			var fzipFile:ZipFile = fzip.getFileAt(0);
+			var projectDirectory:File = targetDownloadDirectory.resolvePath(fzipFile.filename);
+			if (UnzipUsingAS3CommonZip.isDirectory(fzipFile))
+			{
+				GlobalEventDispatcher.getInstance().dispatchEvent(
+						new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, projectDirectory)
+				);
+				success("Project downloaded at: "+ projectDirectory.nativePath);
+			}
+			else
+			{
+				error("Failed to open project from: "+ projectDirectory.nativePath);
+			}
 		}
 
 		protected function onUnzipError(event:ErrorEvent=null):void
@@ -116,7 +136,7 @@ package actionScripts.plugins.genesis.utils
 			else error("Unzip terminated with unhandled error!");
 		}
 
-		private function getDownloadDirectoryPath():File
+		private function gettempDownloadDirectoryPath():File
 		{
 			var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine/genesis");
 			if (!tempDirectory.fileBridge.exists)

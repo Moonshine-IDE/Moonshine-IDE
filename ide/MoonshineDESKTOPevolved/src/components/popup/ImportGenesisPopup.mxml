@@ -54,7 +54,7 @@
 			var urlTest:RegExp = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:\/~\+#]*[\w\-\@?^=%&\/~\+#])?/g;
 			if (!urlTest.exec(txtFile.text))
 			{
-				Alert.show("Please provide a valid URL.", "Error!");
+				hgError.includeInLayout = hgError.visible = true;
 				return;
 			}
 
@@ -75,6 +75,13 @@
 	<s:Label text="Download URL:"/>
 	<view:PromptTextInput id="txtFile"
 						  width="100%" styleName="textInput" prompt="Enter file URL.."/>
+
+	<s:HGroup id="hgError"
+			  width="100%" verticalAlign="middle" horizontalAlign="center"
+			  visible="false" includeInLayout="false">
+		<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+		<s:Label text="Invalid URL format."/>
+	</s:HGroup>
 
 	<resizableTitleWindow:controlBarContent>
 		<s:Spacer width="100%"/>
