@@ -23,11 +23,15 @@ package actionScripts.utils
 
 	public class CommandLineUtil
 	{
+		// Source: https://learn.microsoft.com/en-us/previous-versions//cc723564(v=technet.10)
+		private static const WINDOWS_RESERVED_SHELL_CHARACTERS:String = " %&|()<>^";
+	
 		/**
 		 * Escapes a command line option so that it cannot be interpreted as
 		 * multiple options when joined with others in a single string. For
-		 * instance, if a path on the file systems contains spaces, this function
-		 * escapes the spaces for the current platform.
+		 * instance, if a path on the file systems contains spaces or other
+		 * reserved characters, this function escapes the option for the current
+		 * platform.
 		 */
 		public static function escapeSingleOption(option:String):String
 		{
@@ -36,17 +40,22 @@ package actionScripts.utils
 				//on macOS, a backslash can be used to escape a space character
 				return option.replace(/ /g, "\\ ");
 			}
-			var index:int = option.indexOf(" ");
-			if(index == -1)
+			var foundCmdSpecialCharacter:Boolean = false;
+			for(var i:int = 0; i < option.length; i++)
 			{
-				//check for environment variables, which may include spaces after they are expanded
-				index = option.indexOf("%");
+				var character:String = option.charAt(i);
+				if(WINDOWS_RESERVED_SHELL_CHARACTERS.indexOf(character) != -1)
+				{
+					foundCmdSpecialCharacter = true;
+					break;
+				}
 			}
-			if(index == -1)
+			if(!foundCmdSpecialCharacter)
 			{
 				return option;
 			}
-			//on Windows, options containing spaces should be wrapped in quotes
+			//on Windows, options containing certain special chracters should be
+			//wrapped in quotes
 			return "\"" + option + "\"";
 		}
 		

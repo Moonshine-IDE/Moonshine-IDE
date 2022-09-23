@@ -44,6 +44,11 @@ package actionScripts.plugins.as3project.importer
 	import utils.StringHelper;
 
 	import global.domino.DominoGlobals;
+	import actionScripts.utils.XMLUtils;
+
+
+
+
 
 
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
@@ -313,6 +318,8 @@ package actionScripts.plugins.as3project.importer
 			
 			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
 			var requireFileLocation:FileLocation;
+
+			var base64CodeReg:RegExp = new RegExp("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$","i");
 		
 			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
 			//1. first check the .xml_conversion_required file
@@ -325,23 +332,56 @@ package actionScripts.plugins.as3project.importer
 				//2.start convert domino 
 				//2.1 load xml from visualeditor-src and convert it to dxl
 				var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
-				if(xmlFileLocation.fileBridge.exists){
+				var subformXmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
+				if(!subformXmlFileLocation.fileBridge.exists){
+					subformXmlFileLocation.fileBridge.createDirectory()
+				}
+				if(xmlFileLocation.fileBridge.exists || subformXmlFileLocation.fileBridge.exists){
 					var directory:Array = xmlFileLocation.fileBridge.getDirectoryListing();
+					var subdirectory:Array = subformXmlFileLocation.fileBridge.getDirectoryListing();
+					if(subdirectory){
+						for each (var subxml:File in subdirectory)
+						{
+							directory.push(subxml);
+						}
+					}
+					//add subfrom xml into directory ;
+					
+
 						for each (var xml:File in directory)
 						{
 							if (xml.extension == "xml" ) {
 								var xmlNameextensionIndex:int = xml.name.lastIndexOf("xml");
 								var xmlName:String=xml.name.substring(0, xmlNameextensionIndex - 1);
-		
-								var dominoXml:XML = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
+								var xmlNavePath:String = xml.nativePath;
+								var subfromPath:String = "subforms"+File.separator+xml.name;
+
+								var dominoXml:XML;
+								if(xmlNavePath.indexOf(subfromPath)>=0){
+									dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
+								} else {
+									dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
+								}
+								
+								
 								var _fileStreamMoonshine:FileStream = new FileStream();
 								_fileStreamMoonshine.open(xml, FileMode.READ);
 								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
 								var internalxml:XML = new XML(data);
 								
+
+							
+								
 								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
 								if(surfaceModel!=null){
-									var dominoMainContainer:XML = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
+									var dominoMainContainer:XML ;
+									if(xmlNavePath.indexOf(subfromPath)>=0){
+										dominoMainContainer= MainApplicationCodeUtils.getDominPageMainContainerTag(dominoXml);
+									}else{
+										dominoMainContainer = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
+									}									
+									
+									
 									
 									//convert to dxl
 									var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
@@ -425,14 +465,18 @@ package actionScripts.plugins.as3project.importer
 											
 										}
 
-										//fix the formula base64 code to normal UTF-8 code 
+										//fix the formula base64 code to normal UTF-8 code , when it contain some speacical string
 										for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
 										{
 											if(formula.text()){
-												var encodeBase64: String =  StringHelper.base64Decode(formula.text());
-												var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
-												formula.parent().appendChild(newFormulaNode);
-												delete formula.parent().children()[formula.childIndex()];
+												if(formula.text().match(base64CodeReg)){
+													var decodeBase64: String =  StringHelper.base64Decode(formula.text());
+													var newFormulaNode:XML = new XML("<formula>"+decodeBase64+"</formula>");
+													formula.parent().appendChild(newFormulaNode);
+													delete formula.parent().children()[formula.childIndex()];
+												}
+											
+											 
 											}
 										}
 										//fix hidewhen
@@ -508,6 +552,7 @@ package actionScripts.plugins.as3project.importer
 										//fix hide 
 
 										dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
+										dominoXml=MainApplicationCodeUtils.fixPardefAlign(dominoXml);
 								
 									}
 									
@@ -515,8 +560,19 @@ package actionScripts.plugins.as3project.importer
 									var extensionIndex:int = xml.name.lastIndexOf(xml.extension);
 									//write the dxl to traget form file
 									var xmlFileName:String=xml.name.substring(0, extensionIndex - 1);
-									var targetFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
+									var targetFileLocation:FileLocation ;
+
+									if(xmlNavePath.indexOf(subfromPath)>=0){
+										targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms"+File.separator+xmlFileName+".subform");
+									}else{
+										targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
+									}
+									
+									
 									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
+									//remove old file
+									var targetFormFileFileLocation:FileLocation= new FileLocation(targetFormFile.nativePath);
+									targetFormFileFileLocation.fileBridge.deleteFile();
 									var _targetfileStreamMoonshine:FileStream = new FileStream();
 									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
 									_targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml));

@@ -61,6 +61,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 				fileContent = fileContent.replace(/%PropertyStatements%/ig, generateProperties());
 				fileContent = fileContent.replace(/%ToRequestObjectStatements%/g, generateToRequestObjects());
 				fileContent = fileContent.replace(/%GetNewVOStatements%/g, generateNewVOfromObject());
+				fileContent = fileContent.replace(/%ToCloneStatements%/, cloneVOObject());
 				fileContent = fileContent.replace(/$moduleName/ig, form.formName);
 
 				saveFile(fileContent);
@@ -165,6 +166,41 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 				}
 			}
 			tmpContent += "if (\"DominoUniversalID\" in value){\ttmpVO.DominoUniversalID = value.DominoUniversalID;\t}\n";
+
+			return tmpContent;
+		}
+
+		private function cloneVOObject():String
+		{
+			var tmpContent:String = "";
+			for each (var field:DominoFormFieldVO in form.fields)
+			{
+				if (field.isMultiValue)
+				{
+					switch (field.type)
+					{
+						case FormBuilderFieldType.DATETIME:
+							tmpContent += "\t\t\t\ttmpVO."+ field.name +" = this."+ field.name +";\n";
+							break;
+						default:
+							tmpContent += "\t\t\t\ttmpVO."+ field.name +" = new ArrayList(this."+ field.name +".source);\n";
+							break;
+					}
+				}
+				else
+				{
+					switch (field.type)
+					{
+						case FormBuilderFieldType.DATETIME:
+							tmpContent += "\t\t\t\ttmpVO."+ field.name +" = this."+ field.name +";\n";
+							break;
+						default:
+							tmpContent += "\t\t\t\ttmpVO."+ field.name +" = this."+ field.name +";\n";
+							break;
+					}
+				}
+			}
+			tmpContent += "\t\t\t\ttmpVO.DominoUniversalID = this.DominoUniversalID;\n";
 
 			return tmpContent;
 		}
