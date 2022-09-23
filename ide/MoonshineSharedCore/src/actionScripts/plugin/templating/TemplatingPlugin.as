@@ -80,6 +80,7 @@ package actionScripts.plugin.templating
 	import components.popup.newFile.NewCSSFilePopup;
 	import components.popup.newFile.NewDominoFormPopup;
 	import components.popup.newFile.NewDominoPagePopup;
+	import components.popup.newFile.NewDominoSubFormPopup;
 	import components.popup.newFile.NewFilePopup;
 	import components.popup.newFile.NewGroovyFilePopup;
 	import components.popup.newFile.NewHaxeFilePopup;
@@ -91,7 +92,7 @@ package actionScripts.plugin.templating
 
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
-
+	import actionScripts.utils.TextUtil;
     /*
     Templating plugin
 
@@ -129,6 +130,7 @@ package actionScripts.plugin.templating
 		protected var newCSSComponentPopup:NewCSSFilePopup;
 		protected var newDominoFormComponentPopup:NewDominoFormPopup;
 		protected var newDominoPageComponentPopup:NewDominoPagePopup;
+		protected var newDominoSubformComponentPopup:NewDominoSubFormPopup;
 		protected var newMXMLModuleComponentPopup:NewMXMLGenericFilePopup;
 		protected var newVisualEditorFilePopup:NewVisualEditorFilePopup;
 		protected var newOnDiskFilePopup:NewOnDiskFilePopup;
@@ -301,7 +303,10 @@ package actionScripts.plugin.templating
 			files = templatesDir.resolvePath("files/Domino Visual Editor Page.page.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_DOMINO_PAGE = files;
-
+			
+			files = templatesDir.resolvePath("files/Domino Visual Editor Subform.subform.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_DOMINO_SUBFORM = files;
 			// Just to generate a divider in relevant UI
 			//ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem("NOTHING");
 			
@@ -978,6 +983,9 @@ package actionScripts.plugin.templating
 					case "Domino Visual Editor Form":
 						openDominoFormComponentTypeChoose(event);
 						break;
+					case "Domino Visual Editor Subform":
+						openDominoSubFormComponentTypeChoose(event);
+						break;	
 					case "Domino Visual Editor Page":
 						openDominoPageComponentTypeChoose(event);
 						break;
@@ -1280,6 +1288,10 @@ package actionScripts.plugin.templating
 
 		protected function openDominoFormComponentTypeChoose(event:Event):void
 		{
+			var dominoFormFolderStr:String;
+			var dominoFormFolder:FileLocation;
+			var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+
 			if (!newDominoFormComponentPopup)
 			{
 				newDominoFormComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoFormPopup, true) as NewDominoFormPopup;
@@ -1294,9 +1306,7 @@ package actionScripts.plugin.templating
 				}
 				else
 				{
-					// try to check if there is any selection in 
-					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+					
 					if (treeSelectedItem)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
@@ -1306,10 +1316,18 @@ package actionScripts.plugin.templating
 					}
 				}
 				//only for fixed folder for domino form file
+				
 			
-			
-				var dominoFormFolderStr:String=newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
-				var dominoFormFolder:FileLocation=new FileLocation(dominoFormFolderStr);
+				if(treeSelectedItem && UtilsCore.endsWith(treeSelectedItem.nativePath,"Subforms")){
+					dominoFormFolderStr =newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Subforms";
+				}else{
+					dominoFormFolderStr =newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
+				}
+				dominoFormFolder =new FileLocation(dominoFormFolderStr);
+				
+				
+				//if it is a subform it should be fix again to sub form 
+
 				if(dominoFormFolder.fileBridge.exists){
 					//set the tree selct to domino form folder
 					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
@@ -1337,6 +1355,71 @@ package actionScripts.plugin.templating
 					newDominoFormComponentPopup.wrapperOfFolderLocation = dominoFormFolderWrapper;
 					newDominoFormComponentPopup.folderLocation =dominoFormFolder;
 					PopUpManager.centerPopUp(newDominoFormComponentPopup);
+				}else{
+					Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
+				}
+				
+			}
+		}
+		protected function openDominoSubFormComponentTypeChoose(event:Event):void
+		{
+			if (!newDominoSubformComponentPopup)
+			{
+				newDominoSubformComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoSubFormPopup, true) as NewDominoSubFormPopup;
+				newDominoSubformComponentPopup.addEventListener(CloseEvent.CLOSE, handleDominoSubformPopupClose);
+				newDominoSubformComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoSubformFileCreateRequest);
+                //setting default folder or selected folder for new file
+			    if (event is NewFileEvent) 
+				{
+					newDominoSubformComponentPopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+					newDominoSubformComponentPopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+					newDominoSubformComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+				}
+				else
+				{
+					// try to check if there is any selection in 
+					// TreeView item
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+					if (treeSelectedItem)
+					{
+						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+						newDominoSubformComponentPopup.folderLocation = creatingItemIn.file;
+						newDominoSubformComponentPopup.wrapperOfFolderLocation = creatingItemIn;
+						newDominoSubformComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+					}
+				}
+				//only for fixed folder for domino form file
+			
+			
+				var dominoSubformFolderStr:String=newDominoSubformComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Subforms";
+				var dominoSubformFolder:FileLocation=new FileLocation(dominoSubformFolderStr);
+				if(dominoSubformFolder.fileBridge.exists){
+					//set the tree selct to domino form folder
+					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+					var dominoSubformFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoSubformComponentPopup.wrapperBelongToProject.projectFolder, dominoSubformFolderStr);
+					model.mainView.getTreeViewPanel().tree.callLater(function ():void
+					{
+						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+					
+						for (var j:int = 0; j < (wrappers.length - 1); j++)
+						{
+							model.mainView.getTreeViewPanel().tree.expandItem(wrappers[j], true);
+						}
+		
+						// selection
+						model.mainView.getTreeViewPanel().tree.selectedItem = dominoSubformFolderWrapper;
+						// scroll-to
+						model.mainView.getTreeViewPanel().tree.callLater(function ():void
+						{
+							model.mainView.getTreeViewPanel().tree.scrollToIndex(model.mainView.getTreeViewPanel().tree.getItemIndex(dominoSubformFolderWrapper));
+						});
+					});
+					
+					
+					//model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
+					newDominoSubformComponentPopup.wrapperOfFolderLocation = dominoSubformFolderWrapper;
+					newDominoSubformComponentPopup.folderLocation =dominoSubformFolder;
+					PopUpManager.centerPopUp(newDominoSubformComponentPopup);
 				}else{
 					Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
 				}
@@ -1518,6 +1601,13 @@ package actionScripts.plugin.templating
 			newDominoPageComponentPopup.removeEventListener(CloseEvent.CLOSE, handleDominoPagePopupClose);
 			newDominoPageComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoPageFileCreateRequest);
 			newDominoPageComponentPopup = null;
+		}
+
+		protected function handleDominoSubformPopupClose(event:CloseEvent):void
+		{
+			newDominoSubformComponentPopup.removeEventListener(CloseEvent.CLOSE, handleDominoSubformPopupClose);
+			newDominoSubformComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoSubformFileCreateRequest);
+			newDominoSubformComponentPopup = null;
 		}
 
 
@@ -1924,8 +2014,29 @@ package actionScripts.plugin.templating
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".form");
 				fileToSave.fileBridge.save(content);
 
+				//create the view for each form 
+				var parent:FileLocation=event.fromTemplate.fileBridge.parent;
+				var viewTemplate:FileLocation=new FileLocation(parent.fileBridge.nativePath+parent.fileBridge.separator+"All By UNID_5cCRUD_5c%form%.view");
+
+				if(viewTemplate.fileBridge.exists){
+					var viewFolder:FileLocation= fileToSave.fileBridge.parent;
+					viewFolder=viewFolder.fileBridge.parent;
+				
+					var viewfileToSave:FileLocation = new FileLocation( viewFolder.fileBridge.nativePath+ event.fromTemplate.fileBridge.separator+"Views"+ event.fromTemplate.fileBridge.separator+ "All By UNID_5cCRUD_5c"+TextUtil.htmlEscape(event.fileName) +".view");
+					if(!viewfileToSave.fileBridge.exists){
+						var viewcontent:String = String(viewTemplate.fileBridge.read());
+						var re:RegExp = new RegExp("%form%", "g");
+						viewcontent = viewcontent.replace(re, event.fileName);
+						viewfileToSave.fileBridge.save(viewcontent);
+					}
+					
+
+				}
+
                 notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
+			
+
 		}
 
 		protected function onDominoPageFileCreateRequest(event:NewFileEvent):void
@@ -1935,6 +2046,19 @@ package actionScripts.plugin.templating
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".page");
+				fileToSave.fileBridge.save(content);
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
+			}
+		}
+
+		protected function onDominoSubformFileCreateRequest(event:NewFileEvent):void
+		{
+			checkAndUpdateIfTemplateModified(event);
+			if (event.fromTemplate.fileBridge.exists)
+			{
+				var content:String = String(event.fromTemplate.fileBridge.read());
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".subform");
 				fileToSave.fileBridge.save(content);
 
                 notifyNewFileCreated(event.insideLocation, fileToSave);

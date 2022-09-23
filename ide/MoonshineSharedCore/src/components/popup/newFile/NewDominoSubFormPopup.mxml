@@ -22,7 +22,7 @@
 -->
 <newfile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009"
 					 xmlns:s="library://ns.adobe.com/flex/spark"
-					 title="New Domino Page File"
+					 title="New Domino Subform File"
 					 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
 					 xmlns:newfile="components.popup.newFile.*" preinitialize="onPreinitialize(event)">
 	<fx:Metadata>
@@ -57,7 +57,7 @@
 			
 			protected function onPreinitialize(event:FlexEvent):void
 			{
-				createdFileExtension = ".page";
+				createdFileExtension = ".subform";
 				warningMessage = "";
 				isDestinationValid=true;
 			
@@ -100,7 +100,7 @@
 				var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
 				if(SimpleValidator.validate(validateArr))
 				{
-					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_DOMINO_PAGE, wrapperOfFolderLocation);
+					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_DOMINO_SUBFORM, wrapperOfFolderLocation);
 					tmpEvent.fileName = txtFileName.text;
 					dispatchEvent(tmpEvent);
 	
@@ -139,7 +139,7 @@
 			{
 				
                 //get the domino project form folder value:
-                var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Pages"
+                var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Subforms";
                 var currentPath:String = UtilsCore.getPathStringByProjectPath(
                         Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
                         tree.selectedItem.nativePath);
@@ -151,7 +151,7 @@
                 if (!UtilsCore.endsWith(dominoFormFolder,currentPath))
                 {
 					isDominoValid=true;
-                    warningMessage = "Domino page file are only supported in the Pages folder.";
+                    warningMessage = "Domino subform file are only supported in the Subforms folder.";
                     hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
 					
 				   	isSubmitButtonEnabled=false;
@@ -185,7 +185,7 @@
 				
 					if(wrappers.length<4){
 						UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
-						wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator+"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"Pages");
+						wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator+"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"SharedElements"+ model.fileCore.separator+"Subforms");
 					}
 					
                
@@ -261,7 +261,7 @@
 			<view:PromptTextInput id="txtFileName"
 								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_\-/"
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
-			<s:Label text=".page" styleName="textInputLabel" textAlign="right"
+			<s:Label text=".subform" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"

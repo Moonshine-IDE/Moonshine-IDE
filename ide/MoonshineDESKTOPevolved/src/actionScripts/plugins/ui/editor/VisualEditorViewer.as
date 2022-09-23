@@ -20,6 +20,7 @@ package actionScripts.plugins.ui.editor
 {
 	import flash.events.Event;
 	import flash.filesystem.File;
+	import actionScripts.utils.UtilsCore;
 
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
@@ -53,6 +54,10 @@ package actionScripts.plugins.ui.editor
 	import flash.filesystem.File;
 	import actionScripts.utils.DominoUtils;
 	import spark.components.Alert;
+	import mx.collections.ArrayList;
+
+	import utils.GenericUtils;
+	import mx.collections.ArrayCollection;
 
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
@@ -176,6 +181,8 @@ package actionScripts.plugins.ui.editor
 			visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 
 			dispatcher.addEventListener(EVENT_SWITCH_TAB_TO_CODE, switchTabToCodeHandler);
+
+			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 		}
 
 		private function previewStartCompleteHandler(event:PreviewPluginEvent):void
@@ -395,6 +402,10 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.setFocus();
 				visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 				visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
+				//when it swtich back the current view edtior , it need reload the sub from again
+				if(visualEditorView.visualEditor.editingSurface)
+				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+
 			}
 		}
 
@@ -410,11 +421,12 @@ package actionScripts.plugins.ui.editor
 		{
 			var mxmlCode:XML = null;
 			var mxmlString:String="";
+			
 
 			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){			
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 				mxmlString=DominoUtils.fixDominButton(mxmlCode);
-			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0){
+			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0 || file.fileBridge.nativePath.lastIndexOf(".subform")>=0){
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 				mxmlString=DominoUtils.fixDominButton(mxmlCode);
 			} 
@@ -458,23 +470,27 @@ package actionScripts.plugins.ui.editor
 		
 		private function getVisualEditorFilePath():String
 		{
+			var visualEditorProjectSourcedPath = (visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
+			
 			if ((visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder)
 			{
 				
 				var filePath:String = file.fileBridge.nativePath;
 				var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
-	
+
+				
 				if(filePath.indexOf(".page")>=0){
 					fileSoucePath=fileSoucePath.replace("Forms","");
-					filePath=filePath.replace(fileSoucePath,
-								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath+File.separator);
+					filePath=filePath.replace(fileSoucePath,visualEditorProjectSourcedPath+File.separator);
 
 					filePath=filePath.replace(/.mxml$|.xhtml$|.form$|.page$|.dve$/, ".xml");
 					filePath=filePath.replace("Pages","pages");	
+				}if(filePath.indexOf(".subform")>=0){
+					filePath= visualEditorProjectSourcedPath+File.separator+"subforms"+File.separator+file.fileBridge.name;
+					filePath=filePath.replace(/.mxml$|.xhtml$|.subform$|.page$|.dve$/, ".xml");
+					
 				}else{
-					filePath=filePath.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,
-								(visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath)
-						.replace(/.mxml$|.xhtml$|.form$|.dve$/, ".xml");	
+					filePath=filePath.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,visualEditorProjectSourcedPath).replace(/.mxml$|.xhtml$|.form$|.dve$|.subform$/, ".xml");	
 				}
 				
 							
@@ -482,6 +498,49 @@ package actionScripts.plugins.ui.editor
 			}
 
 			return null;
+		}
+
+		private function getSubFromList():ArrayList {
+			var subforms:ArrayList = new ArrayList();
+				subforms.addItem({label: "none",value: "none",description:"none"});
+			var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
+			fileSoucePath=fileSoucePath.replace("Forms","SharedElements");
+			fileSoucePath=fileSoucePath+File.separator+"Subforms";
+			var directory = new File(fileSoucePath);
+			if (directory.exists) {
+				var list:Array = directory.getDirectoryListing();
+				for (var i:uint = 0; i < list.length; i++) {
+					if(UtilsCore.endsWith(list[i].nativePath,"form")){
+						var subFromFile:String=list[i].name.substring(0,list[i].nativePath.length-5);
+						subFromFile=subFromFile.replace(".subform","");
+						subforms.addItem(  {label: subFromFile,value: subFromFile,description:list[i].nativePath});
+						
+							
+					}
+					
+				}
+			}
+			
+			
+
+			//sort the subfrom 
+			 if(subforms.length>0){
+                var arry:ArrayCollection= new ArrayCollection(subforms.toArray());
+
+                arry=GenericUtils.arrayCollectionSort(arry,"label",false);
+                
+				subforms=new ArrayList();
+				for each(var item:Object in arry)
+				{
+					subforms.addItem(item);
+					
+				}
+				
+
+            }
+			
+			
+			return subforms;
 		}
 	}
 }
