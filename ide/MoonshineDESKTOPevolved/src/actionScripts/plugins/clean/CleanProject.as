@@ -161,7 +161,14 @@ package actionScripts.plugins.clean
 				if (project is AS3ProjectVO)
 				{
 					currentCleanType = ProjectType.AS3PROJ_AS_AIR;
-					cleanAS3Project(project as AS3ProjectVO);
+					if ((project as AS3ProjectVO).isDominoVisualEditorProject)
+					{
+						cleanDominoProject(project);
+					}
+					else
+					{
+						cleanAS3Project(project as AS3ProjectVO);
+					}
 				}
 				else if (project is JavaProjectVO)
 				{
@@ -181,7 +188,7 @@ package actionScripts.plugins.clean
 				else if (project is OnDiskProjectVO)
 				{
 					currentCleanType = ProjectType.ONDISK;
-					cleanOnDiskProject(project as OnDiskProjectVO);
+					cleanDominoProject(project);
 				}
 			}
 		}
@@ -269,9 +276,17 @@ package actionScripts.plugins.clean
 			}
 		}
 		
-		private function cleanOnDiskProject(ondiskProject:OnDiskProjectVO):void
+		private function cleanDominoProject(project:ProjectVO):void
 		{
-			//TODO: clean ondisk project
+			if (UtilsCore.isMavenAvailable())
+			{
+				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
+				start(Vector.<String>([UtilsCore.getMavenBinPath() +" clean"]), project.folderLocation);
+			}
+			else
+			{
+				error("Unable to find Maven to run a clean.");
+			}
 		}
 		
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
@@ -281,10 +296,7 @@ package actionScripts.plugins.clean
 			
 			if (event.exitCode == 0)
 			{
-				if (currentCleanType == ProjectType.JAVA)
-				{
-					dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project cleaned successfully."));
-				}
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Project cleaned successfully."));
 			}
 		}
 
