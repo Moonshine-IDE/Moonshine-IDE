@@ -73,6 +73,7 @@ package $packagePath
             // simple in-memory add/update for now
             if (this.selectedIndex != -1)
             {
+                this.lastEditingItem = value;
                 if (Constants.AGENT_BASE_URL)
             	{
             		Utils.setBusy();
@@ -275,10 +276,15 @@ package $packagePath
                 var json:Object = JSON.parse(fetchedData as String);
                 if (!json.errorMessage)
                 {
+                    if (this.selectedIndex > -1 && this.lastEditingItem)
+                    {
+                        this.items[this.selectedIndex] = this.lastEditingItem;
+                    }
                     this.dispatchEvent(new Event(EVENT_ITEM_UPDATED));
                 }
                 else
                 {
+                    this.lastEditingItem = null;
                     this.dispatchEvent(
                         new ErrorEvent(
                             ErrorEvent.SERVER_ERROR,
@@ -322,6 +328,7 @@ package $packagePath
 
         private function on$moduleNameUpdateFailed(event:FaultEvent):void
         {
+            this.lastEditingItem = null;
             Utils.removeBusy();
             this.dispatchEvent(
                 new ErrorEvent(
