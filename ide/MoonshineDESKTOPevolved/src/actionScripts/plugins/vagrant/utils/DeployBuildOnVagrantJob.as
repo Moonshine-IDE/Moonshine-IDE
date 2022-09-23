@@ -77,10 +77,10 @@ package actionScripts.plugins.vagrant.utils
 				targetDirectory.fileBridge.createDirectory();
 			}
 
-			print("Downloading database file from: "+ serverURL + withJSONObject.workingDir);
+			print("Downloading database file from: "+ serverURL +"/file/download?path="+ possibleGeneratedPath);
 			var nsfFileNameSplit:Array = possibleGeneratedPath.split(File.separator);
 			downloader = new FileDownloader(
-					serverURL + possibleGeneratedPath,
+					serverURL +"/file/download?path="+ possibleGeneratedPath,
 					targetDirectory.fileBridge.resolvePath(nsfFileNameSplit[nsfFileNameSplit.length - 1]).fileBridge.getFile as File
 			);
 			configureListenerOnFileDownloader(true);
