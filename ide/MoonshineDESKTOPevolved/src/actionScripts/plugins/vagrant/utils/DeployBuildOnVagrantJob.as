@@ -78,10 +78,9 @@ package actionScripts.plugins.vagrant.utils
 			}
 
 			print("Downloading database file from: "+ serverURL +"/file/download?path="+ possibleGeneratedPath);
-			var nsfFileNameSplit:Array = possibleGeneratedPath.split(File.separator);
 			downloader = new FileDownloader(
 					serverURL +"/file/download?path="+ possibleGeneratedPath,
-					targetDirectory.fileBridge.resolvePath(nsfFileNameSplit[nsfFileNameSplit.length - 1]).fileBridge.getFile as File
+					targetDirectory.fileBridge.resolvePath("nsf-moonshine-domino-1.0.0.nsf").fileBridge.getFile as File
 			);
 			configureListenerOnFileDownloader(true);
 			downloader.load();

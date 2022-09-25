@@ -50,7 +50,6 @@ package actionScripts.plugins.as3project.importer
 
 
 
-
 	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
 
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
@@ -571,8 +570,9 @@ package actionScripts.plugins.as3project.importer
 									
 									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
 									//remove old file
-									var targetFormFileFileLocation:FileLocation= new FileLocation(targetFormFile.nativePath);
-									targetFormFileFileLocation.fileBridge.deleteFile();
+									if(targetFileLocation.fileBridge.exists){
+										targetFileLocation.fileBridge.deleteFile();
+									}
 									var _targetfileStreamMoonshine:FileStream = new FileStream();
 									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
 									_targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml));
