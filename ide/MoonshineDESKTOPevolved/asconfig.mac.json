@@ -1,0 +1,19 @@
+{
+    "extends": "./asconfig.json",
+	"compilerOptions": {
+		"library-path": [
+			"../../nativeExtension/SSB/flex/SSB/ANEBuild/SSB.swc"
+		],
+		"define": [
+			{
+				"name": "CONFIG::OSX",
+				"value": true
+			}
+		]
+	},
+	"airOptions": {
+		"extdir": [
+			"extensions/SSB.ane"
+		]
+    }
+}
