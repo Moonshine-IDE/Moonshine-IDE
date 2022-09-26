@@ -208,6 +208,10 @@ package actionScripts.plugins.ui.editor
 		private function fileRenamedHandler(event:TreeMenuItemEvent):void
 		{
 			reload();
+
+			//update the subform for rename action
+			if(visualEditorView.visualEditor.editingSurface)
+			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 		}
 
 		private function onVisualEditorSaveCode(event:Event):void

@@ -308,10 +308,10 @@ package actionScripts.plugin.rename
 						for each (var xml:File in directory)
 						{
 							if (xml.extension == "xml" ) {
-								var _fileStreamMoonshine:FileStream = new FileStream();
-								_fileStreamMoonshine.open(xml, FileMode.READ);
-								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
-								var internalxml:XML = new XML(data);
+								var fileLocation:FileLocation=new FileLocation(xml.nativePath);
+							
+								//var data:String = ;
+								var internalxml:XML = new XML(fileLocation.fileBridge.read());
 								for each(var subformref:XML in internalxml..Subformref) //no matter of depth Note here
 								{
 									
@@ -320,12 +320,27 @@ package actionScripts.plugin.rename
 									}
 								}
 
-								//remove old file 
-								var fileLocation:FileLocation=new FileLocation(xml.nativePath);
-								fileLocation.fileBridge.deleteFile();
-								fileLocation.fileBridge.save(internalxml);
+								// for each(var label:XML in internalxml..Label)
+								// {
+									
+								// 	if(label.text()==sourceSubformName){
+								// 		label.text=targetSubformName;
+								// 	}
+								// }
+							
 
+								//remove old file 
+								fileLocation.fileBridge.deleteFile();
+								var _targetfileStreamMoonshine:FileStream = new FileStream();
+								_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
+								_targetfileStreamMoonshine.writeUTFBytes(internalxml.toXMLString());
+								_targetfileStreamMoonshine.close();
 							}
+								
+								
+								//fileLocation.fileBridge.save(internalxml.toXMLString());
+
+							
 						}
 				}
 		}
@@ -360,26 +375,23 @@ package actionScripts.plugin.rename
 						var xmlns:Namespace = new Namespace("http://www.lotus.com/dxl");
 						
 						var subformList:XMLList=xml.xmlns::subform;
-						Alert.show("subformList len:"+subformList.length())
+					
 						for each(var subform:XML in xml..subform){
-							Alert.show("souce subform name :"+subform.@name);
+							
 							if(subform.@name==sourceSubformName){
 								subform.@name=targetSubformName;
 							}
 						}
 
-						// for each(var subform:XML in xml){
-						// 	Alert.show("name:"+subform.name())
-						// }
 						
 						var subformrefList:XMLList=xml.xmlns::subformref;
-						//Alert.show("subformrefList:"+subformrefList.length());
+						
 	
 						for each(var subform:XML in xml..subformref) //no matter of depth Note here
 						{
-							Alert.show("souce name ref:"+subform.@name);
+							
 							if(subform.@name==sourceSubformName){
-								Alert.show("found subfrom:"+sourceSubformName);
+								
 								subform.@name=targetSubformName;
 							}
 						}
