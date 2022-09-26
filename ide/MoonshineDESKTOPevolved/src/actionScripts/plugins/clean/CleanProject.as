@@ -285,7 +285,7 @@ package actionScripts.plugins.clean
 			}
 			else
 			{
-				error("Unable to find Maven to run a clean.");
+				error("Specify path to Maven.");
 				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.maven::MavenBuildPlugin"));
 			}
 		}

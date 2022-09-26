@@ -155,7 +155,7 @@ package actionScripts.plugins.maven
 
             if (!mavenPath)
             {
-                error("Specify path to Maven folder.");
+                error("Specify path to Maven.");
                 stop(true);
                 dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.maven::MavenBuildPlugin"));
                 return;
