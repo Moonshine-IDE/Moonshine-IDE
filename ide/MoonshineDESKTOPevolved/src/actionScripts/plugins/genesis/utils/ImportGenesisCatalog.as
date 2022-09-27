@@ -111,7 +111,7 @@ package actionScripts.plugins.genesis.utils
 			targetDownloadDirectory = directory;
 			UnzipUsingAS3CommonZip.unzip(
 					tempDownloadDirectory.resolvePath("catalog.zip"),
-					tempDownloadDirectory,
+					tempDownloadDirectory.resolvePath("unzip"),
 					onUnzipSuccess,
 					onUnzipError
 			);
@@ -122,7 +122,11 @@ package actionScripts.plugins.genesis.utils
 			var fzip:Zip = UnzipUsingAS3CommonZip.zip;
 			var fzipFile:ZipFile = fzip.getFileAt(0);
 			targetDownloadDirectory = targetDownloadDirectory.resolvePath(fzipFile.filename);
-			if (UnzipUsingAS3CommonZip.isDirectory(fzipFile))
+
+			// check if nested root-directory or
+			// all files placed on root
+			var files:Array = tempDownloadDirectory.resolvePath("unzip").getDirectoryListing();
+			if ((files.length == 1) && (files[0] as File).isDirectory)
 			{
 				// overwrite cehck
 				if (targetDownloadDirectory.exists)
@@ -134,7 +138,7 @@ package actionScripts.plugins.genesis.utils
 				{
 					print("This may take some time..");
 					FileUtils.copyFileAsync(
-							tempDownloadDirectory.resolvePath(fzipFile.filename),
+							tempDownloadDirectory.resolvePath("unzip/"+ fzipFile.filename),
 							targetDownloadDirectory,
 							false,
 							onProjectFilesMoved,
@@ -144,7 +148,7 @@ package actionScripts.plugins.genesis.utils
 			}
 			else
 			{
-				error("Zip archive do not contains a nested root. Project fails to open.");
+				error("Unsupported zip file: multiple files at base level.");
 			}
 
 			/*

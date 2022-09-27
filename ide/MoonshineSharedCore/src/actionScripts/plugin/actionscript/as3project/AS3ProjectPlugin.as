@@ -213,8 +213,8 @@ package actionScripts.plugin.actionscript.as3project
 		private function importProjectWithoutDialog(event:ProjectEvent):void
 		{
 			if (!event.anObject) return;
-			
-			openProjectByDirectory(event.anObject);
+
+			searchForProjectsByDirectory(event.anObject);
 		}
 		
 		private function searchForProjectsByDirectory(dir:Object):void

@@ -74,7 +74,8 @@
 
 	<s:Label text="Download URL:"/>
 	<view:PromptTextInput id="txtFile"
-						  width="100%" styleName="textInput" prompt="Enter file URL.."/>
+						  width="100%" styleName="textInput" prompt="Enter file URL.."
+							creationComplete="{(event.target).setFocus()}"/>
 
 	<s:HGroup id="hgError"
 			  width="100%" verticalAlign="middle" horizontalAlign="center"
