@@ -209,6 +209,37 @@ package actionScripts.plugins.ui.editor
 		{
 			reload();
 
+			//if we rename the subfrom , we already update the intermedial xml,
+			//so we must force update the form/subfrom in the visualEditor,otherwise,after user save it .
+			//the update will be overwrite and we will got some duplication element in the dxl and xml both all.
+			//Alert.show("tab:"+visualEditorView.tabBar.dataProvider.length);
+			for(var i=0;i<visualEditorView.tabBar.dataProvider.length;i++){
+				var	visualeEditorView:Object =visualEditorView.tabBar.dataProvider.getItemAt(i);
+				if(visualeEditorView){
+					
+					var visualEditor:Object=  visualeEditorView.contentGroup.getElementAt(0) ;
+					if(visualEditor){
+						if( visualEditor.hasOwnProperty("visualEditorFilePath")){
+							var fileLocation:FileLocation=new FileLocation(visualEditor.visualEditorFilePath);
+							if(fileLocation.fileBridge.exists){
+								
+								var data:Object=fileLocation.fileBridge.read();
+								visualEditor.editingSurface.deleteAllByEditingSureface(visualEditor.editingSurface);
+								
+								var xml:XML = new XML("<mockup/>");
+								visualEditor.editingSurface.fromXMLByEditingSurface(xml,visualEditor.editingSurface);
+
+								
+							
+							}
+							
+						}
+						
+					}
+				}
+				
+			}
+
 			//update the subform for rename action
 			if(visualEditorView.visualEditor.editingSurface)
 			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
@@ -411,6 +442,8 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 
 			}
+
+			
 		}
 
 		private function onStartPreview(event:Event):void
