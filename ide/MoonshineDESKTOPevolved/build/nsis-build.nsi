@@ -212,7 +212,7 @@ FunctionEnd
 ;Installer Sections
 
 Section "Moonshine-IDE" SecMoonshineInstaller
-
+			
 	;copy all files
 	SetOutPath "$INSTDIR"
 	File /r "DEPLOY\${INSTALLERNAME}EXE\*"
@@ -263,6 +263,11 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 		"NoModify" 0x1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"NoRepair" 0x1
+		
+	WriteRegStr HKCR "${INSTALLERNAME}" \
+		"URL Protocol" ""
+	WriteRegStr HKCR "${INSTALLERNAME}\shell\open\command" \
+		"" "$\"$INSTDIR\${INSTALLERNAME}.exe$\" $\"%1$\""
 	
 	${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 	IntFmt $0 "0x%08X" $0
