@@ -222,12 +222,16 @@ package actionScripts.plugins.ui.editor
 						if( visualEditor.hasOwnProperty("visualEditorFilePath")){
 							var fileLocation:FileLocation=new FileLocation(visualEditor.visualEditorFilePath);
 							if(fileLocation.fileBridge.exists){
-								
-								var data:Object=fileLocation.fileBridge.read();
-								visualEditor.editingSurface.deleteAllByEditingSureface(visualEditor.editingSurface);
-								
-								var xml:XML = new XML("<mockup/>");
-								visualEditor.editingSurface.fromXMLByEditingSurface(xml,visualEditor.editingSurface);
+								//we should only let follow code with form&subfrom file.
+								//these code clean the old design element in the surface editor and inital it again,
+								//after user click the tab, it will loading latest xml into surface, this is why we get the duplication element .
+								if(fileLocation.fileBridge.extension=="form" || fileLocation.fileBridge.extension=="subform"){
+									var data:Object=fileLocation.fileBridge.read();
+									visualEditor.editingSurface.deleteAllByEditingSureface(visualEditor.editingSurface);
+									
+									var xml:XML = new XML("<mockup/>");
+									visualEditor.editingSurface.fromXMLByEditingSurface(xml,visualEditor.editingSurface);
+								}
 
 								
 							
