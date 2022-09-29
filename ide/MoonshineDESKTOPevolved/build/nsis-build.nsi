@@ -308,4 +308,5 @@ Section "Uninstall"
 	DeleteRegKey /ifempty HKCU "Software\${INSTALLERNAME}"
 	
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}"
+	DeleteRegKey HKCR "${INSTALLERNAME}"
 SectionEnd
