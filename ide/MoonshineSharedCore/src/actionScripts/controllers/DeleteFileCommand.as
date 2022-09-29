@@ -47,6 +47,7 @@ package actionScripts.controllers
 	
 	import components.popup.ProjectDeletionPopup;
 
+
 	public class DeleteFileCommand implements ICommand
 	{
 		private var file: FileLocation;
@@ -149,6 +150,9 @@ package actionScripts.controllers
 						dispatcher.dispatchEvent(new RefreshTreeEvent(fileForRefresh));
 					}
 				}
+
+				//remove the view ,if the file is form
+				removeSimpleView(fw.file,project);
 			}
 			
 			if (fw.sourceController)
@@ -172,6 +176,21 @@ package actionScripts.controllers
 			
 			// removing the wrapper in tree view
 			fw.isDeleting = true;
+		}
+
+		//we need remove the simple view after the form remove 
+		private function removeSimpleView(removeFile:FileLocation,visualEditorProject:ProjectVO):void{
+			var pathSeparator:String = removeFile.fileBridge.separator;
+			if(removeFile.fileBridge.extension=="form"){
+				var formName:String = removeFile.fileBridge.nameWithoutExtension;
+				//folderLocation
+				var viewPathFileLocation:FileLocation =new FileLocation(visualEditorProject.folderLocation.fileBridge.nativePath+pathSeparator+"nsfs"+pathSeparator+"nsf-moonshine"+pathSeparator+"odp"+pathSeparator+"Views"+pathSeparator+"All By UNID_5cCRUD_5c"+formName+".view");
+				if(viewPathFileLocation.fileBridge.exists){
+					viewPathFileLocation.fileBridge.deleteFile()
+				}
+
+
+			}
 		}
 
 		private function onProjectDeletionConfirmed(event:DeleteFileEvent):void
