@@ -575,7 +575,26 @@
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>60.0</string>]]></replacevalue>
+					<string>60.0</string>
+					<key>CFBundleSupportedPlatforms</key>
+					<array>
+						<string>MacOSX</string>
+					</array>
+					<key>CFBundleURLTypes</key>
+					<array>
+						<dict>
+							<key>CFBundleIdentifier</key>
+							<string>com.moonshine-ide.development</string>
+							<key>CFBundleTypeRole</key>
+							<string>Viewer</string>
+							<key>CFBundleURLName</key>
+							<string>com.moonshine-ide.development</string>
+							<key>CFBundleURLSchemes</key>
+							<array>
+								<string>moonshinedevelopment</string>
+							</array>
+						</dict>
+					</array>]]></replacevalue>
 				</replace>
 			</then>
 			<else>
@@ -588,7 +607,25 @@
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>60.0</string>]]></replacevalue>
+					<string>60.0</string><key>CFBundleSupportedPlatforms</key>
+					<array>
+						<string>MacOSX</string>
+					</array>
+					<key>CFBundleURLTypes</key>
+					<array>
+						<dict>
+							<key>CFBundleIdentifier</key>
+							<string>com.moonshine-ide</string>
+							<key>CFBundleTypeRole</key>
+							<string>Viewer</string>
+							<key>CFBundleURLName</key>
+							<string>com.moonshine-ide</string>
+							<key>CFBundleURLSchemes</key>
+							<array>
+								<string>moonshine</string>
+							</array>
+						</dict>
+					</array>]]></replacevalue>
 				</replace>
 			</else>			
 		</if>
