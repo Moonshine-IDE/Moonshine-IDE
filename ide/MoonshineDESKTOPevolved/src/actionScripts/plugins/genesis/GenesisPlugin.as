@@ -83,10 +83,10 @@ package actionScripts.plugins.genesis
 		{
 			if (event.arguments.length)
 			{
-				var arguments:Array = event.arguments[0].split("&");
+				var arguments:Array = decodeURIComponent(event.arguments[0]).split("&");
 				for each (var argument:String in arguments)
 				{
-					if (argument.toLowerCase().indexOf("gencaturl") != -1)
+					if (argument.toLowerCase().indexOf("gencaturl=") != -1)
 					{
 						var startIndex:int = argument.indexOf("=");
 						var url:String = argument.substr(startIndex + 1, argument.length);
