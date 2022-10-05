@@ -609,6 +609,7 @@ package actionScripts.impls
 
 		public function get defaultInstallationPathSDKs():String
 		{
+			if ( HelperConstants.DEFAULT_INSTALLATION_PATH == null ) HelperConstants.HELPER_STORAGE;
 			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
 		}
 
