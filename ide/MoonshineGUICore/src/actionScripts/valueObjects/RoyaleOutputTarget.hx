@@ -37,10 +37,10 @@ class RoyaleOutputTarget {
 	private var _airVersion:String;
 	private var _flashVersion:String;
 
-	public var name(get, null):String;
-	public var version(get, null):String;
-	public var airVersion(get, null):String;
-	public var flashVersion(get, null):String;
+	public var name(get, never):String;
+	public var version(get, never):String;
+	public var airVersion(get, never):String;
+	public var flashVersion(get, never):String;
 
 	public function new(name:String, version:String, airVersion:String = null, flashVersion:String = null) {
 		_name = name;
