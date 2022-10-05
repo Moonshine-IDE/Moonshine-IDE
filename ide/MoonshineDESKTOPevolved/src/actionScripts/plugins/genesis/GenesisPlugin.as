@@ -25,14 +25,20 @@ package actionScripts.plugins.genesis
 
 	import components.popup.ImportGenesisPopup;
 
+	import flash.desktop.NativeApplication;
+
 	import flash.display.DisplayObject;
 
 	import flash.events.Event;
+	import flash.events.InvokeEvent;
 
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 
 	import mx.managers.PopUpManager;
+	import mx.utils.ObjectUtil;
+
+	import spark.components.Alert;
 
 	public class GenesisPlugin extends ConsoleBuildPluginBase
 	{
@@ -49,6 +55,8 @@ package actionScripts.plugins.genesis
 			super.activate();
 
 			dispatcher.addEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent, false, 0, true);
+
+			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -56,16 +64,35 @@ package actionScripts.plugins.genesis
 			super.deactivate();
 
 			dispatcher.removeEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent);
+			NativeApplication.nativeApplication.removeEventListener(InvokeEvent.INVOKE, onAppInvokeEvent);
 		}
 
-		private function onImportGenesisEvent(event:Event):void
+		private function onImportGenesisEvent(event:Event, withURL:String=null):void
 		{
 			if (!importGenesisPopup)
 			{
 				importGenesisPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ImportGenesisPopup) as ImportGenesisPopup;
+				importGenesisPopup.url = withURL;
 				importGenesisPopup.addEventListener(CloseEvent.CLOSE, onImportGenesisPopupClosed);
 				importGenesisPopup.addEventListener(ImportGenesisPopup.EVENT_FORM_SUBMIT, onImportGenesisPopupSubmit);
 				PopUpManager.centerPopUp(importGenesisPopup);
+			}
+		}
+
+		private function onAppInvokeEvent(event:InvokeEvent):void
+		{
+			if (event.arguments.length)
+			{
+				var arguments:Array = event.arguments[0].split("&");
+				for each (var argument:String in arguments)
+				{
+					if (argument.toLowerCase().indexOf("gencaturl=") != -1)
+					{
+						var startIndex:int = argument.indexOf("=");
+						var url:String = decodeURIComponent(argument.substr(startIndex + 1, argument.length));
+						onImportGenesisEvent(null, url);
+					}
+				}
 			}
 		}
 

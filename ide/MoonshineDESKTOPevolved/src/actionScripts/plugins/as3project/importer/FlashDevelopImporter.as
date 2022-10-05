@@ -573,10 +573,11 @@ package actionScripts.plugins.as3project.importer
 									if(targetFileLocation.fileBridge.exists){
 										targetFileLocation.fileBridge.deleteFile();
 									}
-									var _targetfileStreamMoonshine:FileStream = new FileStream();
-									_targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
-									_targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml));
-									_targetfileStreamMoonshine.close();
+									targetFileLocation.fileBridge.save(dominoXml.toXMLString());
+									// var _targetfileStreamMoonshine:FileStream = new FileStream();
+									// _targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
+									// _targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml.toXMLString()));
+									// _targetfileStreamMoonshine.close();
 
 								}
 								_fileStreamMoonshine.close();

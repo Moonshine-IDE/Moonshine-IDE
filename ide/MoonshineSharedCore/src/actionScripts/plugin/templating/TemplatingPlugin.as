@@ -2016,7 +2016,7 @@ package actionScripts.plugin.templating
 
 				//create the view for each form 
 				var parent:FileLocation=event.fromTemplate.fileBridge.parent;
-				var viewTemplate:FileLocation=new FileLocation(parent.fileBridge.nativePath+parent.fileBridge.separator+"All By UNID_5cCRUD_5c%form%.view");
+				var viewTemplate:FileLocation=new FileLocation(parent.fileBridge.nativePath+parent.fileBridge.separator+"domino"+parent.fileBridge.separator+"All By UNID_5cCRUD_5c%form%.view");
 
 				if(viewTemplate.fileBridge.exists){
 					var viewFolder:FileLocation= fileToSave.fileBridge.parent;

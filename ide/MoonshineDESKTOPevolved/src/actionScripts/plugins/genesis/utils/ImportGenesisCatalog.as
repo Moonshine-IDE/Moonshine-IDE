@@ -24,6 +24,7 @@ package actionScripts.plugins.genesis.utils
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
 	import actionScripts.utils.FileDownloader;
+	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.UnzipUsingAS3CommonZip;
 
 	import flash.events.ErrorEvent;
@@ -32,10 +33,14 @@ package actionScripts.plugins.genesis.utils
 
 	import flash.filesystem.File;
 
+	import mx.events.CloseEvent;
+
 	import mx.utils.UIDUtil;
 
 	import org.as3commons.zip.Zip;
 	import org.as3commons.zip.ZipFile;
+
+	import spark.components.Alert;
 
 	public class ImportGenesisCatalog extends ConsoleOutputter
 	{
@@ -106,7 +111,7 @@ package actionScripts.plugins.genesis.utils
 			targetDownloadDirectory = directory;
 			UnzipUsingAS3CommonZip.unzip(
 					tempDownloadDirectory.resolvePath("catalog.zip"),
-					directory,
+					tempDownloadDirectory.resolvePath("unzip"),
 					onUnzipSuccess,
 					onUnzipError
 			);
@@ -116,18 +121,60 @@ package actionScripts.plugins.genesis.utils
 		{
 			var fzip:Zip = UnzipUsingAS3CommonZip.zip;
 			var fzipFile:ZipFile = fzip.getFileAt(0);
-			var projectDirectory:File = targetDownloadDirectory.resolvePath(fzipFile.filename);
-			if (UnzipUsingAS3CommonZip.isDirectory(fzipFile))
+			targetDownloadDirectory = targetDownloadDirectory.resolvePath(fzipFile.filename);
+
+			// check if nested root-directory or
+			// all files placed on root
+			var files:Array = tempDownloadDirectory.resolvePath("unzip").getDirectoryListing();
+			if ((files.length == 1) && (files[0] as File).isDirectory)
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(
-						new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, projectDirectory)
-				);
-				success("Project downloaded at: "+ projectDirectory.nativePath);
+				// overwrite cehck
+				if (targetDownloadDirectory.exists)
+				{
+					Alert.YES_LABEL = "Browse";
+					Alert.show(targetDownloadDirectory.nativePath +" already exists.\nSelect a new parent directory?", "Error!", Alert.YES|Alert.CANCEL, null, onAlertListener);
+				}
+				else
+				{
+					print("This may take some time..");
+					FileUtils.copyFileAsync(
+							tempDownloadDirectory.resolvePath("unzip/"+ fzipFile.filename),
+							targetDownloadDirectory,
+							false,
+							onProjectFilesMoved,
+							onProjectFilesMoveFailed
+					);
+				}
 			}
 			else
 			{
-				error("Failed to open project from: "+ projectDirectory.nativePath);
+				error("Unsupported zip file: multiple files at base level.");
 			}
+
+			/*
+			 * @local
+			 */
+			function onAlertListener(event2:CloseEvent):void
+			{
+				Alert.YES_LABEL = "Yes";
+				if (event2.detail == Alert.YES)
+				{
+					selectProjectLocation();
+				}
+			}
+		}
+
+		protected function onProjectFilesMoved():void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, targetDownloadDirectory)
+			);
+			success("Project downloaded at: "+ targetDownloadDirectory.nativePath);
+		}
+
+		protected function onProjectFilesMoveFailed(value:String):void
+		{
+			error("File copy error: "+ value);
 		}
 
 		protected function onUnzipError(event:ErrorEvent=null):void

@@ -37,9 +37,15 @@
 
 		public static const EVENT_FORM_SUBMIT:String = "eventFormSubmitted";
 
+		private var _url:String;
+		[Bindable]
 		public function get url():String
 		{
-			return txtFile.text;
+			return _url;
+		}
+		public function set url(value:String):void
+		{
+			_url = value;
 		}
 
 		private function onSubmit():void
@@ -52,7 +58,7 @@
 			}
 
 			var urlTest:RegExp = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:\/~\+#]*[\w\-\@?^=%&\/~\+#])?/g;
-			if (!urlTest.exec(txtFile.text))
+			if (!urlTest.exec(url))
 			{
 				hgError.includeInLayout = hgError.visible = true;
 				return;
@@ -74,7 +80,9 @@
 
 	<s:Label text="Download URL:"/>
 	<view:PromptTextInput id="txtFile"
-						  width="100%" styleName="textInput" prompt="Enter file URL.."/>
+						  width="100%" styleName="textInput"
+						  prompt="Enter file URL.." text="@{url}"
+							creationComplete="{(event.target).setFocus()}"/>
 
 	<s:HGroup id="hgError"
 			  width="100%" verticalAlign="middle" horizontalAlign="center"

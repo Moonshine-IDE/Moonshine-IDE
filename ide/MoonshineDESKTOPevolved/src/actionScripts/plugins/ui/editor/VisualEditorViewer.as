@@ -208,6 +208,45 @@ package actionScripts.plugins.ui.editor
 		private function fileRenamedHandler(event:TreeMenuItemEvent):void
 		{
 			reload();
+
+			//if we rename the subfrom , we already update the intermedial xml,
+			//so we must force update the form/subfrom in the visualEditor,otherwise,after user save it .
+			//the update will be overwrite and we will got some duplication element in the dxl and xml both all.
+			//Alert.show("tab:"+visualEditorView.tabBar.dataProvider.length);
+			for(var i=0;i<visualEditorView.tabBar.dataProvider.length;i++){
+				var	visualeEditorView:Object =visualEditorView.tabBar.dataProvider.getItemAt(i);
+				if(visualeEditorView){
+					
+					var visualEditor:Object=  visualeEditorView.contentGroup.getElementAt(0) ;
+					if(visualEditor){
+						if( visualEditor.hasOwnProperty("visualEditorFilePath")){
+							var fileLocation:FileLocation=new FileLocation(visualEditor.visualEditorFilePath);
+							if(fileLocation.fileBridge.exists){
+								//we should only let follow code with form&subfrom file.
+								//these code clean the old design element in the surface editor and inital it again,
+								//after user click the tab, it will loading latest xml into surface, this is why we get the duplication element .
+								if(fileLocation.fileBridge.extension=="form" || fileLocation.fileBridge.extension=="subform"){
+									var data:Object=fileLocation.fileBridge.read();
+									visualEditor.editingSurface.deleteAllByEditingSureface(visualEditor.editingSurface);
+									
+									var xml:XML = new XML("<mockup/>");
+									visualEditor.editingSurface.fromXMLByEditingSurface(xml,visualEditor.editingSurface);
+								}
+
+								
+							
+							}
+							
+						}
+						
+					}
+				}
+				
+			}
+
+			//update the subform for rename action
+			if(visualEditorView.visualEditor.editingSurface)
+			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 		}
 
 		private function onVisualEditorSaveCode(event:Event):void
@@ -407,6 +446,8 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 
 			}
+
+			
 		}
 
 		private function onStartPreview(event:Event):void
