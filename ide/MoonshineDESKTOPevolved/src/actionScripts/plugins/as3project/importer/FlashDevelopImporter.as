@@ -128,20 +128,32 @@ package actionScripts.plugins.as3project.importer
 			if (project.isDominoVisualEditorProject)
 			{
 				project.jdkType = JavaTypes.JAVA_8;
-				if (data.domino.option.hasOwnProperty('@dominoBaseAgentURL'))
-					project.dominoBaseAgentURL = SerializeUtil.deserializeString(data.domino.option.@dominoBaseAgentURL);
-				if (data.domino.option.hasOwnProperty('@localDatabase'))
-					project.localDatabase = SerializeUtil.deserializeString(data.domino.option.@localDatabase);
-				if (data.domino.option.hasOwnProperty('@targetServer'))
-					project.targetServer = SerializeUtil.deserializeString(data.domino.option.@targetServer);
-				if (data.domino.option.hasOwnProperty('@targetDatabase'))
-					project.targetDatabase = SerializeUtil.deserializeString(data.domino.option.@targetDatabase);
-
-				project.dominoBaseAgentURL = project.dominoBaseAgentURL.replace(/%CleanProjectName%/gi, project.name);
-				project.targetDatabase = project.targetDatabase.replace(/%CleanProjectName%/gi, project.name);
-				project.localDatabase = project.localDatabase.replace(/%ProjectPath%/gi, project.projectFolder.nativePath);
 			}
-			
+
+			if (data.domino.option.hasOwnProperty('@dominoBaseAgentURL'))
+			{
+				project.dominoBaseAgentURL = SerializeUtil.deserializeString(data.domino.option.@dominoBaseAgentURL);
+			}
+
+			if (data.domino.option.hasOwnProperty('@localDatabase'))
+			{
+				project.localDatabase = SerializeUtil.deserializeString(data.domino.option.@localDatabase);
+			}
+
+			if (data.domino.option.hasOwnProperty('@targetServer'))
+			{
+				project.targetServer = SerializeUtil.deserializeString(data.domino.option.@targetServer);
+			}
+
+			if (data.domino.option.hasOwnProperty('@targetDatabase'))
+			{
+				project.targetDatabase = SerializeUtil.deserializeString(data.domino.option.@targetDatabase);
+			}
+
+			project.dominoBaseAgentURL = project.dominoBaseAgentURL.replace(/%CleanProjectName%/gi, project.name);
+			project.targetDatabase = project.targetDatabase.replace(/%CleanProjectName%/gi, project.name);
+			project.localDatabase = project.localDatabase.replace(/%ProjectPath%/gi, project.projectFolder.nativePath);
+
 			project.isPrimeFacesVisualEditorProject = SerializeUtil.deserializeBoolean(data.options.option.@isPrimeFacesVisualEditor);
 			project.isExportedToExistingSource = SerializeUtil.deserializeBoolean(data.options.option.@isExportedToExistingSource);
 			project.visualEditorExportPath = SerializeUtil.deserializeString(data.options.option.@visualEditorExportPath);
