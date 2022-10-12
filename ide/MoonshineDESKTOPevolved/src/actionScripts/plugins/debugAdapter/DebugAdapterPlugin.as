@@ -486,6 +486,10 @@ package actionScripts.plugins.debugAdapter
 			{
 				if("variables" in body)
 				{
+					if (!_scopesAndVars.contains(scopeOrVar))
+					{
+						return;
+					}
 					var variables:Array = body.variables as Array;
 					_scopesAndVars.setVariablesForScopeOrVar(variables, scopeOrVar);
 				}
@@ -548,6 +552,10 @@ package actionScripts.plugins.debugAdapter
 			{
 				if("stackFrames" in body)
 				{
+					if (!_threadsAndStackFrames.contains(thread))
+					{
+						return;
+					}
 					var stackFrames:Array = body.stackFrames as Array;
 					_threadsAndStackFrames.setStackFramesForThread(stackFrames, thread);
 					refreshView();
