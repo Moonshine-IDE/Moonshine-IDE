@@ -840,8 +840,8 @@ package actionScripts.plugins.haxe
         override protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
 			super.onNativeProcessStandardErrorData(event);
-            stop();
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+            //stop();
+			//dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 
         override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
