@@ -40,7 +40,7 @@ class HiddenFilesEvent extends Event {
 
 	private var _fileWrapper:FileWrapper;
 
-	public var fileWrapper(get, null):FileWrapper;
+	public var fileWrapper(get, never):FileWrapper;
 
 	public function new(type:String, fileWrapper:FileWrapper) {
 		super(type);

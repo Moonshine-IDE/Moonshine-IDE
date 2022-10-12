@@ -38,8 +38,8 @@ class ConsoleBuildEvent extends Event {
 	private var _arguments:Array<String>;
 	private var _buildDirectory:FileLocation;
 
-	public var arguments(get, null):Array<Dynamic>;
-	public var buildDirectory(get, null):FileLocation;
+	public var arguments(get, never):Array<Dynamic>;
+	public var buildDirectory(get, never):FileLocation;
 
 	public function new(type:String, arguments:Array<String> = null, buildDirectory:FileLocation = null) {
 		super(type, false, false);

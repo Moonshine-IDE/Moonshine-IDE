@@ -16,7 +16,7 @@ class KeyboardShortcut {
 
 	private var _event:String;
 
-	public var event(get, null):String;
+	public var event(get, never):String;
 
 	private static final SHIFT_KEYCODE_CHAR_MAP:DynamicAccess<Array<String>> = {
 		_192 : ["`", "~"],

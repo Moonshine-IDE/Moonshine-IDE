@@ -38,7 +38,7 @@ class ShortcutEvent extends Event {
 
 	private var _event:String;
 
-	public var event(get, null):String;
+	public var event(get, default):String;
 
 	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, event:String = null) {
 		super(type, bubbles, cancelable);

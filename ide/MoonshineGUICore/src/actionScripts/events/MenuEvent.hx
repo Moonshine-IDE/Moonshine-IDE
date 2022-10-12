@@ -38,7 +38,7 @@ class MenuEvent extends Event {
 
 	private var _data:Dynamic;
 
-	public var data(get, null):Dynamic;
+	public var data(get, default):Dynamic;
 
 	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false, data:Dynamic = null) {
 		super(type, bubbles, cancelable);

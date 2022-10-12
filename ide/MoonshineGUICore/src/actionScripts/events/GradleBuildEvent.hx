@@ -51,11 +51,11 @@ class GradleBuildEvent extends Event {
 	private var _commands:Array<Dynamic>;
 	private var _status:Int;
 
-	public var buildId(get, null):String;
-	public var buildDirectory(get, null):String;
-	public var preCommands(get, null):Array<Dynamic>;
-	public var commands(get, null):Array<Dynamic>;
-	public var status(get, null):Int;
+	public var buildId(get, never):String;
+	public var buildDirectory(get, never):String;
+	public var preCommands(get, never):Array<Dynamic>;
+	public var commands(get, never):Array<Dynamic>;
+	public var status(get, never):Int;
 
 	public function new(type:String, buildId:String, status:Int, buildDirectory:String = null, preCommands:Array<Dynamic> = null,
 			commands:Array<Dynamic> = null) {

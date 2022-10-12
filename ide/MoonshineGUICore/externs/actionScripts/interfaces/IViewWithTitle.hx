@@ -33,5 +33,5 @@ package actionScripts.interfaces;
 
 extern interface IViewWithTitle {
 	@:flash.property
-	public var title(get, null):String;
+	public var title(get, never):String;
 }

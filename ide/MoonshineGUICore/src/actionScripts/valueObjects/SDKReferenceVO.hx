@@ -46,7 +46,7 @@ class SDKReferenceVO {
 
     public function new() {}
 
-    public var isPureActionScriptSdk( get, null ):Bool;
+    public var isPureActionScriptSdk( get, never ):Bool;
 	public function get_isPureActionScriptSdk():Bool {
 		if (!fileLocation.fileBridge.isPathExists(path + "/flex-sdk-description.xml")
 			&& fileLocation.fileBridge.isPathExists(path + "/air-sdk-description.xml")) {
@@ -107,7 +107,7 @@ class SDKReferenceVO {
 		return _name;
 	}
 
-	public var isJSOnlySdk(get, null):Bool;
+	public var isJSOnlySdk(get, never):Bool;
 
 	private function get_isJSOnlySdk():Bool {
 		if (outputTargets != null && outputTargets.length == 1) {
@@ -119,7 +119,7 @@ class SDKReferenceVO {
 
 	private var _fileLocation:FileLocation;
 
-	public var fileLocation(get, null):FileLocation;
+	public var fileLocation(get, never):FileLocation;
 
 	private function get_fileLocation():FileLocation {
 		if (_fileLocation == null) {
@@ -144,7 +144,7 @@ class SDKReferenceVO {
 		return _type;
 	}
 
-	public var hasPlayerglobal(get, null):Bool;
+	public var hasPlayerglobal(get, never):Bool;
 
 	private function get_hasPlayerglobal():Bool {
 		if (type == SDKTypes.ROYALE && !isJSOnlySdk) {
