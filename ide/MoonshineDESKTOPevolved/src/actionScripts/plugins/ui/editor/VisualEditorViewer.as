@@ -213,7 +213,7 @@ package actionScripts.plugins.ui.editor
 			//so we must force update the form/subfrom in the visualEditor,otherwise,after user save it .
 			//the update will be overwrite and we will got some duplication element in the dxl and xml both all.
 			//Alert.show("tab:"+visualEditorView.tabBar.dataProvider.length);
-			for(var i=0;i<visualEditorView.tabBar.dataProvider.length;i++){
+			for(var i:int=0;i<visualEditorView.tabBar.dataProvider.length;i++){
 				var	visualeEditorView:Object =visualEditorView.tabBar.dataProvider.getItemAt(i);
 				if(visualeEditorView){
 					
@@ -511,7 +511,7 @@ package actionScripts.plugins.ui.editor
 		
 		private function getVisualEditorFilePath():String
 		{
-			var visualEditorProjectSourcedPath = (visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
+			var visualEditorProjectSourcedPath:String = (visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
 			
 			if ((visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder)
 			{
@@ -547,7 +547,7 @@ package actionScripts.plugins.ui.editor
 			var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
 			fileSoucePath=fileSoucePath.replace("Forms","SharedElements");
 			fileSoucePath=fileSoucePath+File.separator+"Subforms";
-			var directory = new File(fileSoucePath);
+			var directory:File = new File(fileSoucePath);
 			if (directory.exists) {
 				var list:Array = directory.getDirectoryListing();
 				for (var i:uint = 0; i < list.length; i++) {
