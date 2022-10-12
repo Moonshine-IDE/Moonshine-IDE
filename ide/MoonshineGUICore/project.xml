@@ -2,7 +2,7 @@
 <project>
 
 	<meta title="MoonshineGUICore" package="Moonshine" version="1.0.0" company="Prominic.NET" />
-	<app file="MoonshineGUICore" />
+	<app main="openfl.display.Sprite" file="MoonshineGUICore" />
 
 	<source path="src" />
 	<source path="externs" />
