@@ -31,6 +31,7 @@ it in the license file.
 package actionScripts.locator;
 
 import actionScripts.factory.FileLocation;
+import actionScripts.interfaces.IClipboardBridge;
 import actionScripts.interfaces.IFileBridge;
 import actionScripts.ui.IContentWindow;
 import mx.collections.ArrayCollection;
@@ -40,6 +41,7 @@ extern class IDEModel {
 
 	public var activeEditor:IContentWindow;
 	public var antHomePath:FileLocation;
+	public var clipboardCore:IClipboardBridge;
 	public var defaultSDK:FileLocation;
 	public var editors:ArrayCollection;
 	public var fileCore:IFileBridge;
@@ -54,10 +56,11 @@ extern class IDEModel {
 	public var nekoPath:String;
 	public var nodePath:String;
 	public var notesPath:String;
+	public var projects:ArrayCollection;
 	public var svnPath:String;
+	public var userSavedSDKs:ArrayCollection;
 	public var vagrantPath:String;
     public var virtualBoxPath:String;
-	public var projects:ArrayCollection;
 
 	public function getVersionWithBuildNumber():String;
 }

@@ -41,5 +41,6 @@ extern class SDKUtils {
 	public static function checkSDKTypeInSDKList(type:String):SDKReferenceVO;
 	public static function getSDKFromSavedList(byPath:String):SDKReferenceVO;
 	public static function getSDKReference(location:FileLocation):SDKReferenceVO;
+	public static function setDefaultSDKByBundledSDK():Void;
 
 }

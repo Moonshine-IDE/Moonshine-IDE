@@ -76,4 +76,6 @@ extern interface IFileBridge {
 
 	public function isPathExists(value:String):Bool;
 
+	public function openWithDefaultApplication():Void;
+
 }
