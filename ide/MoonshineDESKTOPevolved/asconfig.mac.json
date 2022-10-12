@@ -9,7 +9,8 @@
 				"name": "CONFIG::OSX",
 				"value": true
 			}
-		]
+		],
+		"warnings": false
 	},
 	"airOptions": {
 		"extdir": [
