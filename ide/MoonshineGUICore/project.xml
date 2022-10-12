@@ -12,6 +12,8 @@
 	<haxelib name="openfl" />
 	<haxelib name="actuate" />
 	<haxelib name="feathersui" />
+	<haxelib name="amfio" />
+	<haxelib name="format" />
 	<haxelib name="markdown-openfl-textfield" />
 	<haxelib name="moonshine-openfl-language-client" />
 	<haxelib name="moonshine-openfl-debug-adapter-client" />
