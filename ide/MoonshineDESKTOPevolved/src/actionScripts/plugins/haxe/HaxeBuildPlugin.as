@@ -530,6 +530,8 @@ package actionScripts.plugins.haxe
             var project:ProjectVO = model.activeProject;
             if (project)
             {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building "));
+                dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
                 dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, onDebugStop, false, 0, true);
 			    dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
             }
@@ -831,13 +833,15 @@ package actionScripts.plugins.haxe
         override protected function onNativeProcessIOError(event:IOErrorEvent):void
         {
             super.onNativeProcessIOError(event);
+            stop();
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
         }
 
         override protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
 			super.onNativeProcessStandardErrorData(event);
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+            //stop();
+			//dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 
         override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
@@ -868,7 +872,7 @@ package actionScripts.plugins.haxe
             {
                 warning("Haxe build has been terminated.");
             }
-            else if(event.exitCode != 0)
+            else if (event.exitCode != 0)
             {
                 warning("Haxe build has been terminated with exit code: " + event.exitCode);
             }

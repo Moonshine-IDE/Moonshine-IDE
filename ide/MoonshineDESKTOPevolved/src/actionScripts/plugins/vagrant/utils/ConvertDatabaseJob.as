@@ -41,7 +41,7 @@ package actionScripts.plugins.vagrant.utils
 
 		override protected function onTaskStatusCompleted(withJSONObject:Object):void
 		{
-			print("Checking conversion project from: "+ serverURL + withJSONObject.workingDir);
+			print("%s", "Checking conversion project from: "+ serverURL + withJSONObject.workingDir);
 			downloader = new FileDownloader(
 					serverURL +"/file/download?path="+ withJSONObject.workingDir +"/result.zip", File.cacheDirectory.resolvePath("moonshine/result.zip")
 			);
@@ -95,7 +95,7 @@ package actionScripts.plugins.vagrant.utils
 
 		protected function onUnzipError(event:ErrorEvent=null):void
 		{
-			if (event) error("Unzip error: ", event.toString());
+			if (event) error("%s", "Unzip error: ", event.toString());
 			else error("Unzip terminated with unhandled error!");
 			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 		}
