@@ -43,7 +43,6 @@
 
 	private function onSaveClick(event:Event):void
     {
-        this.currentState = 'dataGridState';
         this.proxy.submitItem(this.itemVO);
     }
 
@@ -56,6 +55,7 @@
 
     private function onServerItemChanged(event:Event):void
     {
+        this.currentState = 'dataGridState';
         this.dg.refreshCurrentDataProvider();
     }
 
