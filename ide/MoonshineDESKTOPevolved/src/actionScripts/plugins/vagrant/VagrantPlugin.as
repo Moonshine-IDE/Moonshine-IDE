@@ -464,7 +464,7 @@ package actionScripts.plugins.vagrant
 		private function onDeployRoyaleEnded(event:Event):void
 		{
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
-			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployDatabaseRequest);
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployRoyaleVagrantRequest);
 
 			if (event && event.type == DatabaseJobBase.EVENT_CONVERSION_COMPLETE)
 			{
