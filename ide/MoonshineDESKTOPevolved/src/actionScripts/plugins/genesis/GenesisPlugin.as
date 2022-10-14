@@ -93,12 +93,16 @@ import spark.components.Alert;
 
 		private function onAppInvokeEvent(event:InvokeEvent):void
 		{
+			Alert.show(event.arguments.length.toString());
 			if (event.arguments.length)
 			{
+				Alert.show(event.arguments[0]);
 				var arguments:Array = event.arguments[0].split("/");
+				Alert.show(arguments[0] +","+ arguments.length.toString());
 				if ((arguments.length > 1) && (arguments[0].toLowerCase() == "project"))
 				{
 					var applicationID:String = decodeURIComponent(StringUtil.trim(arguments[1]));
+					Alert.show(applicationID);
 					if (applicationID)
 					{
 						var moonshineName:String = ConstantsCoreVO.IS_DEVELOPMENT_MODE ? "moonshinedevelopment" : "moonshine";
