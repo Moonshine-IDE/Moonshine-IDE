@@ -39,8 +39,9 @@ import mx.core.FlexGlobals;
 
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
+import mx.utils.StringUtil;
 
-	import spark.components.Alert;
+import spark.components.Alert;
 
 	public class GenesisPlugin extends ConsoleBuildPluginBase
 	{
@@ -94,14 +95,14 @@ import mx.core.FlexGlobals;
 		{
 			if (event.arguments.length)
 			{
-				var arguments:Array = event.arguments[0].split("&");
-				for each (var argument:String in arguments)
+				var arguments:Array = event.arguments[0].split("/");
+				if ((arguments.length > 1) && (arguments[0].toLowerCase() == "project"))
 				{
-					if (argument.toLowerCase().indexOf("genproject=") != -1)
+					var applicationID:String = decodeURIComponent(StringUtil.trim(arguments[1]));
+					if (applicationID)
 					{
-						var startIndex:int = argument.indexOf("=");
-						var url:String = decodeURIComponent(argument.substr(startIndex + 1, argument.length));
-						onImportGenesisEvent(null, GENESIS_ID_QUERY_URL + url);
+						var moonshineName:String = ConstantsCoreVO.IS_DEVELOPMENT_MODE ? "moonshinedevelopment" : "moonshine";
+						onImportGenesisEvent(null, moonshineName +"://project/"+ applicationID);
 					}
 				}
 			}

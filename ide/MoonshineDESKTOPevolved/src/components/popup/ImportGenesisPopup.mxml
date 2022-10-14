@@ -28,16 +28,21 @@
 										   backgroundColor="0xf5f5f5" title="Import from Genesis Directory Catalog"
 										   width="600" minWidth="400" autoLayout="true"
 										   skinClass="components.skins.ResizableTitleWindowSkin"
-											creationComplete="onCreationCompletes()">
+										   creationComplete="onCreationCompletes()">
 	<fx:Script>
 		<![CDATA[
 		import actionScripts.controllers.DataAgent;
 		import actionScripts.locator.IDEModel;
+		import actionScripts.plugins.genesis.GenesisPlugin;
+		import actionScripts.valueObjects.ConstantsCoreVO;
+
+		import mx.utils.StringUtil;
 
 		import mx.validators.Validator;
 
 		import spark.components.Alert;
 		import spark.components.BusyIndicator;
+		import spark.utils.TextFlowUtil;
 
 		public static const EVENT_FORM_SUBMIT:String = "eventFormSubmitted";
 
@@ -60,20 +65,25 @@
 
 		private var busyIndicator:BusyIndicator;
 		private var loader:DataAgent;
+		private var isLocalURICall:Boolean;
 
 		private function onCreationCompletes():void
 		{
-			if (url)
-			{
-				addRemoveBusyIndicator();
-				releaseUI(false);
-				loader = new DataAgent(
-						url,
-						onQueryDataLoaded,
-						onQueryDataFault,
-						null, DataAgent.GETEVENT, 0, false
-				);
-			}
+			lblFileLabel.textFlow = TextFlowUtil.importFromString(
+					"<p>Genesis Directory Catalog URI (<a href='https://genesis.directory/apps'>https://genesis.directory/apps</a>):</p>"
+			);
+		}
+
+		private function loadURIdata():void
+		{
+			addRemoveBusyIndicator();
+			releaseUI(false);
+			loader = new DataAgent(
+					url,
+					onQueryDataLoaded,
+					onQueryDataFault,
+					null, DataAgent.GETEVENT, 0, false
+			);
 		}
 
 		protected function onQueryDataLoaded(value:Object, message:String=null):void
@@ -91,6 +101,10 @@
 					if (infoObject.app.downloadurl)
 					{
 						txtFile.text = url = infoObject.app.downloadurl;
+						if (isLocalURICall)
+						{
+							onSubmit();
+						}
 						return;
 					}
 				}
@@ -143,6 +157,8 @@
 
 		private function onSubmit():void
 		{
+			hgError.includeInLayout = hgError.visible = false;
+
 			// validations
 			var tmpArr:Array = new Array(svPath, svDownloadDir);
 			if (Validator.validateAll(tmpArr).length != 0)
@@ -150,18 +166,46 @@
 				return;
 			}
 
-			url = txtFile.text;
-
 			var urlTest:RegExp = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:\/~\+#]*[\w\-\@?^=%&\/~\+#])?/g;
-			if (!urlTest.exec(url))
+			if (txtFile.text.toLowerCase().indexOf("://project/") != -1)
+			{
+				// if an user enters something like 'moonshine://project/$applicationID`
+				parseURLfromURI();
+				return;
+			}
+			else if (!urlTest.exec(txtFile.text))
 			{
 				hgError.includeInLayout = hgError.visible = true;
-				lblError.text = "Invalid URL format.";
+				lblError.text = "Invalid URL/URI format.";
 				return;
 			}
 
+			url = txtFile.text;
 			dispatchEvent(new Event(EVENT_FORM_SUBMIT));
 			closeThis();
+		}
+
+		private function parseURLfromURI():void
+		{
+			var valueString:String = txtFile.text.substr(
+					txtFile.text.indexOf("://") + 3,
+					txtFile.text.length
+			);
+			var arguments:Array = valueString.split("/");
+			if ((arguments.length > 1) && (arguments[0].toLowerCase() == "project"))
+			{
+				var applicationID:String = decodeURIComponent(StringUtil.trim(arguments[1]));
+				if (applicationID)
+				{
+					url = GenesisPlugin.GENESIS_ID_QUERY_URL + applicationID;
+					isLocalURICall = true;
+					loadURIdata();
+					return;
+				}
+			}
+
+			hgError.includeInLayout = hgError.visible = true;
+			lblError.text = "Unknown URI format";
 		}
 
 		private function releaseUI(value:Boolean):void
@@ -182,13 +226,16 @@
 		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
 	</resizableTitleWindow:layout>
 
-	<s:Label text="Download URL:"/>
+	<s:RichEditableText id="lblFileLabel"
+						width="100%"
+						editable="false" focusEnabled="false"
+						fontSize="13"/>
 	<view:PromptTextInput id="txtFile"
-						  width="100%" styleName="textInput"
-						  prompt="Enter file URL.."
-							creationComplete="{(event.target).setFocus()}"/>
+						  width="100%" styleName="textInput" text="@{url}"
+						  prompt="{ConstantsCoreVO.IS_DEVELOPMENT_MODE ? 'moonshinedevelopment://project/id' : 'moonshine://project/id'}"
+						  creationComplete="{(event.target).setFocus()}"/>
 
-	<s:Label text="Select Parent Directory to Download:"/>
+	<s:Label text="Select Destination Parent Directory:"/>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<view:PromptTextInput id="txtDownloadDir"
 							  width="100%" styleName="textInput" prompt="Select path.." editable="false"/>
@@ -199,7 +246,7 @@
 	<s:HGroup id="vgProgress"
 			  width="100%"
 			  horizontalAlign="center" verticalAlign="middle"
-				includeInLayout="false" visible="false">
+			  includeInLayout="false" visible="false">
 		<s:Label text="Querying from {url}"
 				 styleName="smallText"/>
 	</s:HGroup>
@@ -215,6 +262,6 @@
 		<s:Spacer width="100%"/>
 		<s:Button id="btnSubmit"
 				  label="Submit" styleName="darkButton"
-					click="onSubmit()"/>
+				  click="onSubmit()"/>
 	</resizableTitleWindow:controlBarContent>
 </resizableTitleWindow:ResizableTitleWindow>
