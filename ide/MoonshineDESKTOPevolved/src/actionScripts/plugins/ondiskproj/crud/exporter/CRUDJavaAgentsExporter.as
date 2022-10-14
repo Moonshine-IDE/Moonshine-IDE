@@ -49,7 +49,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 	public class CRUDJavaAgentsExporter extends ConsoleOutputter
 	{
-		private static const TEMPLATE_DOWNLOAD_URL:String = "https://moonshine-ide.com/downloads/Moonshine-Domino-CRUD/dev/template.zip";
+		private static const TEMPLATE_DOWNLOAD_URL:String = "https://moonshine-ide.com/downloads/Moonshine-Domino-CRUD/prod/template.zip";
 
 		protected var archiveDirectory:File;
 		protected var targetDirectory:File;

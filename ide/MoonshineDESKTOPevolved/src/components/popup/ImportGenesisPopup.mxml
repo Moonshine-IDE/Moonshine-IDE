@@ -25,15 +25,19 @@
 										   xmlns:mx="library://ns.adobe.com/flex/mx"
 										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
 										   xmlns:view="actionScripts.plugin.findreplace.view.*"
-										   backgroundColor="0xf5f5f5" title="Import from Genesis Catalog"
+										   backgroundColor="0xf5f5f5" title="Import from Genesis Directory Catalog"
 										   width="600" minWidth="400" autoLayout="true"
-										   skinClass="components.skins.ResizableTitleWindowSkin">
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+											creationComplete="onCreationCompletes()">
 	<fx:Script>
 		<![CDATA[
+		import actionScripts.controllers.DataAgent;
+		import actionScripts.locator.IDEModel;
 
 		import mx.validators.Validator;
 
 		import spark.components.Alert;
+		import spark.components.BusyIndicator;
 
 		public static const EVENT_FORM_SUBMIT:String = "eventFormSubmitted";
 
@@ -48,19 +52,91 @@
 			_url = value;
 		}
 
+		private var _destinationFolder:File;
+		public function get destinationFolder():File
+		{
+			return _destinationFolder;
+		}
+
+		private var busyIndicator:BusyIndicator;
+		private var loader:DataAgent;
+
+		private function onCreationCompletes():void
+		{
+			if (url)
+			{
+				addRemoveBusyIndicator();
+				releaseUI(false);
+				loader = new DataAgent(
+						url,
+						onQueryDataLoaded,
+						onQueryDataFault,
+						null, DataAgent.GETEVENT, 0, false
+				);
+			}
+		}
+
+		protected function onQueryDataLoaded(value:Object, message:String=null):void
+		{
+			addRemoveBusyIndicator();
+			releaseUI(true);
+
+			var infoObject:Object = JSON.parse(value as String);
+			loader = null;
+		}
+
+		protected function onQueryDataFault(message:String):void
+		{
+			addRemoveBusyIndicator();
+			releaseUI(true);
+
+			hgError.includeInLayout = hgError.visible = true;
+			lblError.text = message;
+		}
+
+		private function addRemoveBusyIndicator():void
+		{
+			if (!busyIndicator)
+			{
+				vgProgress.includeInLayout = vgProgress.visible = true;
+				busyIndicator = new BusyIndicator();
+				vgProgress.addElementAt(busyIndicator, 0);
+			}
+			else
+			{
+				vgProgress.removeElement(busyIndicator);
+				busyIndicator = null;
+				vgProgress.includeInLayout = vgProgress.visible = false;
+			}
+		}
+
+		private function onDownloadDirBrowse():void
+		{
+			IDEModel.getInstance().fileCore.browseForDirectory("Select Download Folder", onDownloadDirBrowsed);
+		}
+
+		private function onDownloadDirBrowsed(location:File):void
+		{
+			_destinationFolder = location;
+			txtDownloadDir.text = location.nativePath;
+		}
+
 		private function onSubmit():void
 		{
 			// validations
-			var tmpArr:Array = new Array(svPath);
+			var tmpArr:Array = new Array(svPath, svDownloadDir);
 			if (Validator.validateAll(tmpArr).length != 0)
 			{
 				return;
 			}
 
+			url = txtFile.text;
+
 			var urlTest:RegExp = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:\/~\+#]*[\w\-\@?^=%&\/~\+#])?/g;
 			if (!urlTest.exec(url))
 			{
 				hgError.includeInLayout = hgError.visible = true;
+				lblError.text = "Invalid URL format.";
 				return;
 			}
 
@@ -68,10 +144,18 @@
 			closeThis();
 		}
 
+		private function releaseUI(value:Boolean):void
+		{
+			txtFile.enabled = value;
+			btnSubmit.enabled = value;
+			btnBrowseDestination.enabled = value;
+		}
+
 		]]>
 	</fx:Script>
 	<fx:Declarations>
 		<mx:StringValidator id="svPath" source="{txtFile}" property="text" trigger="{btnSubmit}"/>
+		<mx:StringValidator id="svDownloadDir" source="{txtDownloadDir}" property="text" trigger="{btnSubmit}"/>
 	</fx:Declarations>
 
 	<resizableTitleWindow:layout>
@@ -84,11 +168,27 @@
 						  prompt="Enter file URL.." text="@{url}"
 							creationComplete="{(event.target).setFocus()}"/>
 
+	<s:Label text="Select Parent Directory to Download:"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<view:PromptTextInput id="txtDownloadDir"
+							  width="100%" styleName="textInput" prompt="Select path.." editable="false"/>
+		<s:Button id="btnBrowseDestination"
+				  label="Browse" click="onDownloadDirBrowse()" styleName="darkButton"/>
+	</s:HGroup>
+
+	<s:HGroup id="vgProgress"
+			  width="100%"
+			  horizontalAlign="center" verticalAlign="middle"
+				includeInLayout="false" visible="false">
+		<s:Label text="Querying from website.."
+				 styleName="smallText"/>
+	</s:HGroup>
+
 	<s:HGroup id="hgError"
 			  width="100%" verticalAlign="middle" horizontalAlign="center"
 			  visible="false" includeInLayout="false">
 		<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
-		<s:Label text="Invalid URL format."/>
+		<s:Label id="lblError"/>
 	</s:HGroup>
 
 	<resizableTitleWindow:controlBarContent>

@@ -50,11 +50,12 @@ package actionScripts.plugins.genesis.utils
 		private var targetDownloadDirectory:File;
 		private var model:IDEModel = IDEModel.getInstance();
 
-		public function ImportGenesisCatalog(fromURL:String)
+		public function ImportGenesisCatalog(fromURL:String, destinationFolder:File)
 		{
 			super();
 
 			downloadURL = fromURL;
+			targetDownloadDirectory = destinationFolder;
 			startDownloading();
 		}
 
@@ -88,7 +89,8 @@ package actionScripts.plugins.genesis.utils
 			removeAndCleanFileDownloaderListeners();
 
 			success("Success: Genesis Catalog downloaded");
-			selectProjectLocation();
+
+			unzipToTempDirectory();
 		}
 
 		private function onTemplatesZipDownloadFailed(event:Event):void
@@ -109,6 +111,12 @@ package actionScripts.plugins.genesis.utils
 		private function onDirectorySelected(directory:File):void
 		{
 			targetDownloadDirectory = directory;
+			unzipToTempDirectory();
+		}
+
+		private function unzipToTempDirectory():void
+		{
+			// stars unzipping to temporary folder
 			UnzipUsingAS3CommonZip.unzip(
 					tempDownloadDirectory.resolvePath("catalog.zip"),
 					tempDownloadDirectory.resolvePath("unzip"),

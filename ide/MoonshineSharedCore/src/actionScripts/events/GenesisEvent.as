@@ -23,6 +23,7 @@ package actionScripts.events
 	public class GenesisEvent extends Event
 	{
 		public static const IMPORT_GENESIS_PROJECT:String = "eventImportGenesisProject";
+		public static const OPEN_GENESIS_CATALOG_IN_BROWSER:String = "eventOpenGenesisCatalogInBrowser";
 
 		public var value:Object;
 

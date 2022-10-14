@@ -425,7 +425,8 @@ package actionScripts.impls
 						'o', [Keyboard.COMMAND],
 						'o', [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE),
-					new MenuItem(resourceManager.getString('resources', 'IMPORT_FROM_GENESIS_CATALOG'), null, null, GenesisEvent.IMPORT_GENESIS_PROJECT)
+					new MenuItem(resourceManager.getString('resources', 'IMPORT_FROM_GENESIS_CATALOG'), null, null, GenesisEvent.IMPORT_GENESIS_PROJECT),
+					new MenuItem(resourceManager.getString('resources', 'OPEN_GENESIS_CATALOG_IN_BROWSER'), null, null, GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER)
 				]),
 				//GENERATE_APACHE_ROYALE_PROJECT
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
