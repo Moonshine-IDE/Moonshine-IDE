@@ -83,6 +83,26 @@
 
 			var infoObject:Object = JSON.parse(value as String);
 			loader = null;
+
+			if ("app" in infoObject)
+			{
+				if ("downloadurl" in infoObject.app)
+				{
+					if (infoObject.app.downloadurl)
+					{
+						txtFile.text = url = infoObject.app.downloadurl;
+						return;
+					}
+				}
+
+				hgError.includeInLayout = hgError.visible = true;
+				lblError.text = "Project download is not currently available for this application.";
+			}
+			else
+			{
+				hgError.includeInLayout = hgError.visible = true;
+				lblError.text = "Not a valid application at: "+ url;
+			}
 		}
 
 		protected function onQueryDataFault(message:String):void
@@ -165,7 +185,7 @@
 	<s:Label text="Download URL:"/>
 	<view:PromptTextInput id="txtFile"
 						  width="100%" styleName="textInput"
-						  prompt="Enter file URL.." text="@{url}"
+						  prompt="Enter file URL.."
 							creationComplete="{(event.target).setFocus()}"/>
 
 	<s:Label text="Select Parent Directory to Download:"/>
@@ -180,7 +200,7 @@
 			  width="100%"
 			  horizontalAlign="center" verticalAlign="middle"
 				includeInLayout="false" visible="false">
-		<s:Label text="Querying from website.."
+		<s:Label text="Querying from {url}"
 				 styleName="smallText"/>
 	</s:HGroup>
 
