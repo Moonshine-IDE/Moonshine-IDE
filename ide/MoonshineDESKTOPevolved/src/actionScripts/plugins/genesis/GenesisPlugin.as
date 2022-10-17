@@ -44,17 +44,22 @@ package actionScripts.plugins.genesis
 
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
+import flash.net.URLRequest;
+import flash.net.navigateToURL;
 
-	import mx.core.FlexGlobals;
+import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
+import mx.utils.StringUtil;
 
-	import spark.components.Alert;
+import spark.components.Alert;
 
 	public class GenesisPlugin extends ConsoleBuildPluginBase
 	{
+		public static const GENESIS_ID_QUERY_URL:String = "https://api.genesis.directory/v1/apps/";
+
 		public static var NAMESPACE:String = "actionScripts.plugins.genesis::GenesisPlugin";
 
 		override public function get name():String			{ return "Genesis"; }
@@ -68,6 +73,7 @@ package actionScripts.plugins.genesis
 			super.activate();
 
 			dispatcher.addEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent, false, 0, true);
+			dispatcher.addEventListener(GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER, onOpenGenesisCatalogBrowserEvent, false, 0, true);
 
 			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
 		}
@@ -77,6 +83,7 @@ package actionScripts.plugins.genesis
 			super.deactivate();
 
 			dispatcher.removeEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent);
+			dispatcher.removeEventListener(GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER, onOpenGenesisCatalogBrowserEvent);
 			NativeApplication.nativeApplication.removeEventListener(InvokeEvent.INVOKE, onAppInvokeEvent);
 		}
 
@@ -92,18 +99,22 @@ package actionScripts.plugins.genesis
 			}
 		}
 
+		private function onOpenGenesisCatalogBrowserEvent(event:Event):void
+		{
+			navigateToURL(new URLRequest("https://genesis.directory/apps"));
+		}
+
 		private function onAppInvokeEvent(event:InvokeEvent):void
 		{
 			if (event.arguments.length)
 			{
-				var arguments:Array = event.arguments[0].split("&");
-				for each (var argument:String in arguments)
+				if ((event.arguments[0] as String).toLowerCase().indexOf("://project/") != -1)
 				{
-					if (argument.toLowerCase().indexOf("gencaturl=") != -1)
+					var arguments:Array = event.arguments[0].split("/");
+					// test only if there is some value followed by 'project/'
+					if (arguments[arguments.length - 1].toLowerCase() != "")
 					{
-						var startIndex:int = argument.indexOf("=");
-						var url:String = decodeURIComponent(argument.substr(startIndex + 1, argument.length));
-						onImportGenesisEvent(null, url);
+						onImportGenesisEvent(null, event.arguments[0] as String);
 					}
 				}
 			}
@@ -111,8 +122,7 @@ package actionScripts.plugins.genesis
 
 		private function onImportGenesisPopupSubmit(event:Event):void
 		{
-			var url:String = importGenesisPopup.url;
-			new ImportGenesisCatalog(url);
+			new ImportGenesisCatalog(importGenesisPopup.url, importGenesisPopup.destinationFolder);
 		}
 
 		private function onImportGenesisPopupClosed(event:CloseEvent):void

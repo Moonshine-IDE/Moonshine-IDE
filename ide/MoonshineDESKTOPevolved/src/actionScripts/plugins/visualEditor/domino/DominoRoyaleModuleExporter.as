@@ -94,6 +94,7 @@ package actionScripts.plugins.visualEditor.domino
 			}
 
 			copyModuleTemplates();
+			generateProjectClasses();
 		}
 
 		override protected function copyTemplates(form:DominoFormVO):void
@@ -122,13 +123,6 @@ package actionScripts.plugins.visualEditor.domino
 		{
 			new DominoMainContentPageGenerator(this.project, this.formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
 			new GlobalClassGenerator(this.project, classReferenceSettings, onProjectFilesGenerationCompletes);
-		}
-
-		override protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void
-		{
-			super.onModuleGenerationCompletes(origin);
-
-			onCompleteHandler = null;
 		}
 
 		private function parseComponents(componentData:Array, form:DominoFormVO):void
@@ -201,6 +195,31 @@ package actionScripts.plugins.visualEditor.domino
 				default:
 					return FormBuilderFieldType.TEXT;
 					break;
+			}
+		}
+
+		override protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void
+		{
+			completionCount++;
+
+			if (waitingCount == completionCount)
+			{
+				waitingCount = 2;
+				completionCount = 0;
+
+				// project specific generation
+				generateProjectClasses();
+			}
+		}
+
+		override protected function onProjectFilesGenerationCompletes(origin:RoyalePageGeneratorBase):void
+		{
+			completionCount++;
+
+			if (waitingCount == completionCount)
+			{
+				onCompleteHandler();
+				onCompleteHandler = null;
 			}
 		}
 	}

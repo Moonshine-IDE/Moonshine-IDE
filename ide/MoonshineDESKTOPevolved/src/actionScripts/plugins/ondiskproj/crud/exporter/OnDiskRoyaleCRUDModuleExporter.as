@@ -71,7 +71,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		protected var formObjects:Vector.<DominoFormVO>;
 		protected var waitingCount:int;
 
-		private var completionCount:int;
+		protected var completionCount:int;
 		protected var onCompleteHandler:Function;
 		
 		public function OnDiskRoyaleCRUDModuleExporter(targetPath:FileLocation, project:ProjectVO, onComplete:Function)

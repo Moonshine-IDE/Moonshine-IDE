@@ -123,7 +123,7 @@ package actionScripts.plugins.nativeFiles
 				{
 					projectFile = tmpFl;
 				}
-				else
+				else if (tmpFl.fileBridge.exists)
 				{
 					// open to editor any other redable files
 					var tmpOpenEvent:OpenFileEvent = new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpFl]);
@@ -134,7 +134,7 @@ package actionScripts.plugins.nativeFiles
 			}
 			
 			// for project-configurations
-			if (projectFile)
+			if (projectFile && projectFile.fileBridge.exists)
 			{
 				// considering file is the only configuration file 
 				// containing to its parent folder

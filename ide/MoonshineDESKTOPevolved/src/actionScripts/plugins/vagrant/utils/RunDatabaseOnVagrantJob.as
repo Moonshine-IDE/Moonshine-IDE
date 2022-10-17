@@ -77,7 +77,7 @@ package actionScripts.plugins.vagrant.utils
 			zip = new ZipUsingNP();
 			configureZipListeners(true);
 
-			print("Zipping files from: " + path.nativePath);
+			print("%s", "Zipping files from: " + path.nativePath);
 			zipUploadSource = getZipPath();
 			zip.zip(
 					path,

@@ -223,7 +223,7 @@ package actionScripts.plugins.haxe
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     {
                         if(!UtilsCore.isNodeAvailable())
@@ -424,7 +424,7 @@ package actionScripts.plugins.haxe
                 switch(project.limeTargetPlatform)
                 {
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
 			            var hxcppDebugServerFolder:File = File.applicationDirectory.resolvePath(HXCPP_DEBUG_SERVER_ROOT_PATH);
                         commandParts.push("--source=" + hxcppDebugServerFolder.nativePath);
@@ -543,6 +543,8 @@ package actionScripts.plugins.haxe
             var project:ProjectVO = model.activeProject;
             if (project)
             {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building "));
+                dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
                 dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, onDebugStop, false, 0, true);
 			    dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
             }
@@ -606,16 +608,21 @@ package actionScripts.plugins.haxe
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     {
-                        var cppExecutableName:String = outputFileNameWithoutExtension;
+                        var cppExecutableRelativePath:String = outputFileNameWithoutExtension;
                         if(Settings.os == "win")
                         {
-                            cppExecutableName += ".exe";
+                            cppExecutableRelativePath += ".exe";
                         }
+                        else if (Settings.os == "mac")
+                        {
+                            cppExecutableRelativePath += ".app" + File.separator + "Contents" + File.separator + "MacOS" + File.separator + cppExecutableRelativePath;
+                        }
+                        cppExecutableRelativePath = outputPath + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableRelativePath;
                         var cppExeFile:File = project.folderLocation.fileBridge
-                            .resolvePath(outputPath + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableName).fileBridge.getFile as File;
+                            .resolvePath(cppExecutableRelativePath).fileBridge.getFile as File;
                         launchArgs["name"] = "Moonshine Lime HXCPP Launch";
                         launchArgs["program"] = cppExeFile.nativePath;
                         debugAdapterType = "hxcpp";
@@ -808,7 +815,7 @@ package actionScripts.plugins.haxe
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -844,13 +851,15 @@ package actionScripts.plugins.haxe
         override protected function onNativeProcessIOError(event:IOErrorEvent):void
         {
             super.onNativeProcessIOError(event);
+            stop();
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
         }
 
         override protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
 			super.onNativeProcessStandardErrorData(event);
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+            //stop();
+			//dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 
         override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
@@ -881,7 +890,7 @@ package actionScripts.plugins.haxe
             {
                 warning("Haxe build has been terminated.");
             }
-            else if(event.exitCode != 0)
+            else if (event.exitCode != 0)
             {
                 warning("Haxe build has been terminated with exit code: " + event.exitCode);
             }

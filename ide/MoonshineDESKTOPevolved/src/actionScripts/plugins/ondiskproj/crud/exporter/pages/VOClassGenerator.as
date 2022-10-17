@@ -31,14 +31,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
-	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleDataGridColumn;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.plugins.ondiskproj.crud.exporter.utils.PropertyDeclarationStatement;
-	import actionScripts.plugins.ondiskproj.crud.exporter.utils.RoyaleCRUDUtils;
-	import actionScripts.plugins.ondiskproj.crud.exporter.vo.PageImportReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
-
-	import flash.events.Event;
 
 	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
@@ -46,8 +41,6 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 
 	public class VOClassGenerator extends RoyalePageGeneratorBase
 	{
-		public static const EVENT_COMPLETE:String = "event-complete";
-
 		private var _pageRelativePathString:String;
 		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
 		
@@ -134,7 +127,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 					switch (field.type)
 					{
 						case FormBuilderFieldType.DATETIME:
-							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? "+ form.formName +"VO.getToRequestDateString(this."+ field.name +") : null");
+							tmpContents.push("\n"+ field.name +": this."+ field.name +" ? "+ form.formName +"VO.getToRequestDateString(this."+ field.name +") : ''");
 							break;
 						default:
 							tmpContents.push("\n"+ field.name +": this."+ field.name);

@@ -85,9 +85,10 @@
 
         public function get destinationFolder():File
         {
-            var tmpFileSplilt:Array = txtFile.text.split(".");
-            tmpFileSplilt.pop();
-            var targetDirectoryName:String = tmpFileSplilt.join(".");
+            var targetDirectoryName:String = txtFile.text.split(File.separator).pop();
+            var targetDirectoryNameSplit:Array = targetDirectoryName.split(".");
+			targetDirectoryNameSplit.pop();
+			targetDirectoryName = targetDirectoryNameSplit.join(".");
             targetDirectoryName = targetDirectoryName.replace(/ /g, "");
 
             return (new File(txtDownloadDir.text).resolvePath(targetDirectoryName));

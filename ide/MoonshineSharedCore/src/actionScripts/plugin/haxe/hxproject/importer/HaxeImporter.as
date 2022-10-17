@@ -225,6 +225,11 @@ package actionScripts.plugin.haxe.hxproject.importer
 					//provide them with a default
 					limeTargetPlatform = HaxeProjectVO.LIME_PLATFORM_HTML5;
 				}
+				if (limeTargetPlatform == "mac")
+				{
+					// use the full name instead of the alias
+					limeTargetPlatform = HaxeProjectVO.LIME_PLATFORM_MACOS;
+				}
 				project.limeTargetPlatform = limeTargetPlatform;
 			}
 			else

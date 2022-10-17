@@ -120,9 +120,9 @@ package actionScripts.plugins.vagrant.utils
 				{
 					if (infoObject.output)
 					{
-						print("Output: "+ infoObject.output);
+						print("%s", "Output: "+ infoObject.output);
 					}
-					error("Conversion failed with exit code:"+ infoObject.error +"\n"+ infoObject.message);
+					error("%s", "Conversion failed with exit code:"+ infoObject.error +"\n"+ infoObject.message);
 					dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 				}
 				else
@@ -134,9 +134,9 @@ package actionScripts.plugins.vagrant.utils
 							case "executing":
 								if (infoObject.output)
 								{
-									print("Output: "+ infoObject.output);
+									print("%s", "Output: "+ infoObject.output);
 								}
-								print("Re-try conversion(#"+ infoObject.id +") check: "+ (++retryCount));
+								print("%s", "Re-try conversion(#"+ infoObject.id +") check: "+ (++retryCount));
 								conversioTestTimeout = setTimeout(
 										runConversionCommandOnServer,
 										CONVERSION_TEST_INTERVAL,
@@ -146,8 +146,8 @@ package actionScripts.plugins.vagrant.utils
 							case "completed":
 								if (infoObject.exitStatus != "0" && ("errorMessage" in infoObject))
 								{
-									if (infoObject.output) print("Output: "+ infoObject.output);
-									error("Conversion failed with exit code: "+ infoObject.exitStatus +"\n"+ infoObject.errorMessage);
+									if (infoObject.output) print("%s", "Output: "+ infoObject.output);
+									error("%s", "Conversion failed with exit code: "+ infoObject.exitStatus +"\n"+ infoObject.errorMessage);
 									dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 								}
 								else
@@ -161,8 +161,8 @@ package actionScripts.plugins.vagrant.utils
 							case "failed":
 								if (infoObject.exitStatus != "0" && ("errorMessage" in infoObject))
 								{
-									if (infoObject.output) print("Output: "+ infoObject.output);
-									error("Conversion failed with exit code: "+ infoObject.exitStatus +"\n"+ infoObject.errorMessage);
+									if (infoObject.output) print("%s", "Output: "+ infoObject.output);
+									error("%s", "Conversion failed with exit code: "+ infoObject.exitStatus +"\n"+ infoObject.errorMessage);
 									dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 								}
 								break;
@@ -180,7 +180,7 @@ package actionScripts.plugins.vagrant.utils
 		protected function onConversionRunFault(message:String):void
 		{
 			loader = null;
-			error("Conversion request failed: "+ message);
+			error("%s", "Conversion request failed: "+ message);
 			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 		}
 
@@ -206,7 +206,7 @@ package actionScripts.plugins.vagrant.utils
 				var nsfUploadCompletionData:Object = JSON.parse(event.value as String);
 				if ("error" in nsfUploadCompletionData)
 				{
-					error("Failed to upload file with exit code:"+ nsfUploadCompletionData.error +"\n"+ nsfUploadCompletionData.message);
+					error("%s", "Failed to upload file with exit code:"+ nsfUploadCompletionData.error +"\n"+ nsfUploadCompletionData.message);
 					fileUploadFailRelease();
 				}
 				else
@@ -214,7 +214,7 @@ package actionScripts.plugins.vagrant.utils
 					uploadedNSFFilePath = nsfUploadCompletionData.path;
 					uploadedNSFFileSize = Number(nsfUploadCompletionData.size);
 
-					print("Requesting conversion job to: "+ serverURL +"/task");
+					print("%s", "Requesting conversion job to: "+ serverURL +"/task");
 					dispatchEvent(new Event(EVENT_VAGRANT_UPLOAD_COMPLETES));
 					runConversionCommandOnServer();
 				}
@@ -223,7 +223,7 @@ package actionScripts.plugins.vagrant.utils
 
 		private function onFileUploadError(event:FileUploaderEvent):void
 		{
-			error("Failed to upload file on server:\n" + (event.value as String));
+			error("%s", "Failed to upload file on server:\n" + (event.value as String));
 			fileUploadFailRelease();
 		}
 

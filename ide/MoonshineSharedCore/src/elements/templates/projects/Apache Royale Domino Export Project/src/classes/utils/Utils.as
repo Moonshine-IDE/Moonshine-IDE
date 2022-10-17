@@ -36,14 +36,27 @@ package classes.utils
 		{
 			var result:DisableBead = getDisableBead();
 			result.disabled = true;
-			addRemoveBusyIndicator();
+			
+			loader = new LoadIndicator();
+			loader.width = loader.height = 50;
+			loader.x = mainContentView.width / 2 - loader.width / 2;
+			loader.y = mainContentView.height / 2 - loader.height / 2;
+			COMPILE::JS
+			{
+				loader.element.style.position = "absolute";
+			}
+			mainContentView.addElement(loader);
 		}
 		
 		public static function removeBusy():void
 		{
 			var result:DisableBead = getDisableBead();
 			result.disabled = false;
-			addRemoveBusyIndicator();
+			if (loader)
+			{
+				mainContentView.removeElement(loader);
+				loader = null;
+			}
 		}
 		
 		private static function getDisableBead():DisableBead
@@ -56,27 +69,6 @@ package classes.utils
                 return result;
             }
             return result;
-		}
-		
-		private static function addRemoveBusyIndicator():void
-		{
-			if (loader)
-			{
-				mainContentView.removeElement(loader);
-				loader = null;
-			}
-			else
-			{
-				loader = new LoadIndicator();
-				loader.width = loader.height = 50;
-				loader.x = mainContentView.width / 2 - loader.width / 2;
-				loader.y = mainContentView.height / 2 - loader.height / 2;
-				COMPILE::JS
-				{
-					loader.element.style.position = "absolute";
-				}
-				mainContentView.addElement(loader);
-			}
 		}
 	}
 }

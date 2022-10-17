@@ -212,13 +212,16 @@ class CallStackHierarchicalCollection extends EventDispatcher implements IHierar
 		if (stackFrames == null) {
 			this._threadsToStackFrames.remove(thread);
 		} else {
+			var location = this.locationOf(thread);
+			if (location == null) {
+				return;
+			}
 			var collection = this._threadsToStackFrames.get(thread);
 			if (collection == null) {
 				collection = new ArrayCollection();
 				this._threadsToStackFrames.set(thread, collection);
 			}
 			var oldItems = collection.array;
-			var location = this.locationOf(thread);
 			for (i in 0...oldItems.length) {
 				location.push(i);
 				this.dispatchEvent(new HierarchicalCollectionEvent(HierarchicalCollectionEvent.REMOVE_ITEM, location, null, oldItems[i]));
