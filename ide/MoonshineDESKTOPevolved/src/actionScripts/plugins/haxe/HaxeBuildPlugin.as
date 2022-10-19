@@ -210,7 +210,7 @@ package actionScripts.plugins.haxe
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     {
                         if(!UtilsCore.isNodeAvailable())
@@ -411,7 +411,7 @@ package actionScripts.plugins.haxe
                 switch(project.limeTargetPlatform)
                 {
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
 			            var hxcppDebugServerFolder:File = File.applicationDirectory.resolvePath(HXCPP_DEBUG_SERVER_ROOT_PATH);
                         commandParts.push("--source=" + hxcppDebugServerFolder.nativePath);
@@ -595,16 +595,21 @@ package actionScripts.plugins.haxe
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     {
-                        var cppExecutableName:String = outputFileNameWithoutExtension;
+                        var cppExecutableRelativePath:String = outputFileNameWithoutExtension;
                         if(Settings.os == "win")
                         {
-                            cppExecutableName += ".exe";
+                            cppExecutableRelativePath += ".exe";
                         }
+                        else if (Settings.os == "mac")
+                        {
+                            cppExecutableRelativePath += ".app" + File.separator + "Contents" + File.separator + "MacOS" + File.separator + cppExecutableRelativePath;
+                        }
+                        cppExecutableRelativePath = outputPath + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableRelativePath;
                         var cppExeFile:File = project.folderLocation.fileBridge
-                            .resolvePath(outputPath + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableName).fileBridge.getFile as File;
+                            .resolvePath(cppExecutableRelativePath).fileBridge.getFile as File;
                         launchArgs["name"] = "Moonshine Lime HXCPP Launch";
                         launchArgs["program"] = cppExeFile.nativePath;
                         debugAdapterType = "hxcpp";
@@ -797,7 +802,7 @@ package actionScripts.plugins.haxe
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
                     case HaxeProjectVO.LIME_PLATFORM_AIR:

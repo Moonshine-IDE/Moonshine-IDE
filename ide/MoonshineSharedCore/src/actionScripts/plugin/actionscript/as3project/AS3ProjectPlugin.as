@@ -203,7 +203,9 @@ package actionScripts.plugin.actionscript.as3project
 				{
 					settingsFile = TemplatingPlugin.getSettingsTemplateFileLocation(projectTemplate);
 					extension = settingsFile ? TemplatingHelper.getExtension(settingsFile) : null;
-					createRoyalVisualProject( new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT,extension, settingsFile, projectTemplate));
+					var proposedProjectName:String = model.activeProject.name + "_Royale";
+					var newProjectEvent:NewProjectEvent = new NewProjectEvent(NewProjectEvent.CREATE_NEW_PROJECT,extension, settingsFile, projectTemplate, null, proposedProjectName);
+					createRoyalVisualProject(newProjectEvent);
 
 					break;
 				}

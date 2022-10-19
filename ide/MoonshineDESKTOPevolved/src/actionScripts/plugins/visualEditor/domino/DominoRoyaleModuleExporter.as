@@ -63,6 +63,7 @@ package actionScripts.plugins.visualEditor.domino
 			}
 
 			copyModuleTemplates();
+			generateProjectClasses();
 		}
 
 		override protected function copyTemplates(form:DominoFormVO):void
@@ -92,13 +93,6 @@ package actionScripts.plugins.visualEditor.domino
 			new DominoMainContentPageGenerator(this.project, this.formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
 			new GlobalClassGenerator(this.project, classReferenceSettings, onProjectFilesGenerationCompletes);
 		}
-
-		/*override protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void
-		{
-			super.onModuleGenerationCompletes(origin);
-
-			//onCompleteHandler = null;
-		}*/
 
 		private function parseComponents(componentData:Array, form:DominoFormVO):void
 		{

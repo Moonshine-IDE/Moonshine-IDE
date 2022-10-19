@@ -51,7 +51,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 
 		public static const LIME_PLATFORM_HTML5:String = "html5";
 		public static const LIME_PLATFORM_WINDOWS:String = "windows";
-		public static const LIME_PLATFORM_MAC:String = "mac";
+		public static const LIME_PLATFORM_MACOS:String = "macos";
 		public static const LIME_PLATFORM_LINUX:String = "linux";
 		public static const LIME_PLATFORM_ANDROID:String = "android";
 		public static const LIME_PLATFORM_IOS:String = "ios";
@@ -168,7 +168,7 @@ package actionScripts.plugin.haxe.hxproject.vo
 			var tmpCollection:ArrayCollection = new ArrayCollection([
 					LIME_PLATFORM_HTML5,
 					LIME_PLATFORM_WINDOWS,
-					LIME_PLATFORM_MAC,
+					LIME_PLATFORM_MACOS,
 					LIME_PLATFORM_LINUX,
 					LIME_PLATFORM_ANDROID,
 					LIME_PLATFORM_IOS,
