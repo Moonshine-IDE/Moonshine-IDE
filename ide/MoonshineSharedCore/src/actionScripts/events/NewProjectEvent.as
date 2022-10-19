@@ -30,19 +30,21 @@ package actionScripts.events
 		public static const IMPORT_AS_NEW_PROJECT:String = "openFolderAsNewProjectEvent";
 
 		private var _exportProject:AS3ProjectVO;
-		
+		private var _proposedProjectName:String;
+
 		public var settingsFile:FileLocation;
 		public var templateDir:FileLocation;
 		public var projectFileEnding:String;
 
 		public function NewProjectEvent(type:String, projectFileEnding:String,
 										settingsFile:FileLocation, templateDir:FileLocation,
-										project:AS3ProjectVO = null)
+										project:AS3ProjectVO = null, proposedProjectName:String = null)
 		{
 			this.projectFileEnding = projectFileEnding;
 			this.settingsFile = settingsFile;
 			this.templateDir = templateDir;
 			_exportProject = project;
+			_proposedProjectName = proposedProjectName;
 
 			super(type, false, true);
 		}
@@ -55,6 +57,11 @@ package actionScripts.events
 		public function get exportProject():AS3ProjectVO
 		{
 			return _exportProject;
+		}
+
+		public function get proposedProjectName():String
+		{
+			return _proposedProjectName;
 		}
 	}
 }

@@ -299,7 +299,7 @@ package actionScripts.plugins.as3project
                 }
 				else if(isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
 				{
-					project.projectName = "NewRoyalConvertProject";
+					project.projectName = event.proposedProjectName;
 					project.isFlexJSRoyalProject = true;
 				}
 				else
