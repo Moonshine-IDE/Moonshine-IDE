@@ -14,9 +14,26 @@
 			import org.apache.royale.binding.ConstantBinding;
 			import org.apache.royale.jewel.beads.itemRenderers.RemoveAllItemRendererForArrayListData;
 
-
 			public var inputType:String;
-			
+
+            private var _isDisabled:Boolean = false;
+
+            [Bindable]
+            public function get isDisabled():Boolean
+            {
+                return _isDisabled;
+            }
+
+            public function set isDisabled(value:Boolean):void
+            {
+                if (this._isDisabled != value)
+                {
+                    _isDisabled = value;
+
+                    this.refreshDisabledButtons();
+                }
+            }
+
 			private var _dataProvider:ArrayList = new ArrayList();
 
 			public function get dataProvider():ArrayList
@@ -82,7 +99,8 @@
 			
 			private function onCreationCompletes(event:Event):void
 			{
-				toggleInputsByType();
+				this.toggleInputsByType();
+                this.refreshDisabledButtons();
 			}
 			
 			private function toggleInputsByType():void
@@ -211,8 +229,9 @@
 
 			private function refreshDisabledButtons():void
             {
-                this.modifyDisabled.disabled = !multivalueList.selectedItem;
-                this.removeDisabled.disabled = !multivalueList.selectedItem;
+                this.modifyDisabled.disabled = (!multivalueList.selectedItem || this.isDisabled == true);
+                this.removeDisabled.disabled = (!multivalueList.selectedItem || this.isDisabled == true);
+                this.addDisabled.disabled = this.isDisabled;
             }
 		]]>
 	</fx:Script>
@@ -222,7 +241,11 @@
 	
 	<j:HGroup localId="buttonsGroup" 
 			  percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
-		<j:Button text="Add" click="onAddButtonClicked()"/>
+		<j:Button text="Add" click="onAddButtonClicked()">
+		    <j:beads>
+		        <j:Disabled localId="addDisabled" disabled="{isDisabled}"/>
+		    </j:beads>
+		</j:Button>
 		<j:Button text="Modify" click="onModifyButtonClicked()">
 			<j:beads>
 				<j:Disabled localId="modifyDisabled" disabled="true"/>

@@ -107,7 +107,11 @@
   </j:HGroup>
   %ViewContent%
   <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsCenter" gap="2" includeIn="contentState">
-    <j:Button text="Save" click="onSaveClick(event)"/>
+    <j:Button text="Save" click="onSaveClick(event)">
+         <j:beads>
+            <j:Disabled disabled="{isDisabled}"/>
+         </j:beads>
+    </j:Button>
     <j:Button text="Cancel" click="{this.currentState = 'dataGridState'; this.proxy.selectedIndex = -1; this.itemVO = null}"/>
   </j:HGroup>
   <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onEditItem(event)"/>
