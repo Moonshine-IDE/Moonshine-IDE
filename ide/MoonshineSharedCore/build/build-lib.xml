@@ -975,7 +975,7 @@
                 <haxelibInstall library="markdown-openfl-textfield" version="1.0.2" />
                 <haxelibInstall library="format" version="3.5.0" />
                 <haxelibInstall library="hxp" version="1.2.2" />
-                <haxelibInstall library="amfio" version="1.0.0" />
+                <haxelibInstall library="amfio" version="1.0.1" />
 				
                 <!-- install from Git -->
  		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
