@@ -1237,17 +1237,13 @@
 
 	<macrodef name="haxelibInstall" description="Install a haxe library">
 		<attribute name="library" />
-		<attribute name="version" />
+		<attribute name="version" default="" />
 
 		<sequential>
 			<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 				dir="${LibraryGUICore}"
 				failonerror="true">
-				<arg value="install"/>
-				<arg value="@{library}"/>
-				<arg value="@{version}"/>
-				<arg value="--always"/> <!-- accept prompt to switch to versions that are already installed -->
-				<arg value="--quiet"/>
+				<arg line="install @{library} @{version} --always --quiet" />
 			</exec>
 		
 		</sequential>
