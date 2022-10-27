@@ -31,11 +31,31 @@ it in the license file.
 
 package actionScripts.valueObjects;
 
-class GenericSelectableObject {
-	public var data:Dynamic;
-	public var isSelected:Bool;
+import openfl.events.Event;
+import openfl.events.EventDispatcher;
+
+class GenericSelectableObject extends EventDispatcher {
+
+	private var _data:Dynamic;
+	public var data(get, set):Dynamic;
+	private function get_data():Dynamic return _data;
+	private function set_data( value:Dynamic ):Dynamic {
+		_data = value;
+		this.dispatchEvent( new Event( Event.CHANGE ) );
+		return _data;
+	}
+
+	private var _isSelected:Bool;
+	public var isSelected(get, set):Bool;
+	private function get_isSelected():Bool return _isSelected;
+	private function set_isSelected( value:Bool ):Bool {
+		_isSelected = value;
+		this.dispatchEvent( new Event( Event.CHANGE ) );
+		return _isSelected;
+	}
 
 	public function new(isSelcted:Bool = false, data:Dynamic = null) {
+		super();
 		this.isSelected = isSelcted;
 		this.data = data;
 	}
