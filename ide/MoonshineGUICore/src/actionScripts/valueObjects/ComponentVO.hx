@@ -136,7 +136,7 @@ class ComponentVO extends EventDispatcher {
 	}
 
 	function get_isDownloaded():Bool {
-		return _isDownloading;
+		return _isDownloaded;
 	}
 
 	function set_isDownloaded(value:Bool):Bool {
