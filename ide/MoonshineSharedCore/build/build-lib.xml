@@ -971,11 +971,11 @@
                 <haxelibInstall library="lime" version="8.0.0" />
                 <haxelibInstall library="openfl" version="9.2.0" />
                 <haxelibInstall library="feathersui" version="1.0.0" />
-                <haxelibInstall library="actuate" version="1.8.9" />
+                <haxelibInstall library="actuate" />
                 <haxelibInstall library="markdown-openfl-textfield" version="1.0.2" />
-                <haxelibInstall library="format" version="3.5.0" />
-                <haxelibInstall library="hxp" version="1.2.2" />
-                <haxelibInstall library="amfio" version="1.0.1" />
+                <haxelibInstall library="format" />
+                <haxelibInstall library="hxp" />
+                <haxelibInstall library="amfio" />
 				
                 <!-- install from Git -->
  		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
