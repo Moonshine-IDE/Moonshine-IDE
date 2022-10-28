@@ -6,26 +6,10 @@
 			"debug": true,
 			"group": {
 				"kind": "build",
-				"windows":{
-					"isDefault": true
-				}
+				"isDefault": true
 			},
 			"problemMatcher": [],
-			"label": "ActionScript: compile debug - MoonshineDESKTOPevolved/asconfig.json",
-			"asconfig": "asconfig.json"
-		},
-		{
-			"type": "actionscript",
-			"debug": true,
-			"group": {
-				"kind": "build",
-				"osx":{
-					"isDefault": true
-				}
-			},
-			"problemMatcher": [],
-			"label": "ActionScript: compile debug macOS - MoonshineDESKTOPevolved/asconfig.mac.json",
-			"asconfig": "asconfig.mac.json"
+			"label": "ActionScript: compile debug - MoonshineDESKTOPevolved"
 		}
 	]
 }
