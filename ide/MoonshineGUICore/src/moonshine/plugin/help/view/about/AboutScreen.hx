@@ -290,13 +290,10 @@ class AboutScreen extends LayoutGroup {
 		this.addChild(_contentGroup);
 
 		_model = IDEModel.getInstance();
-	}
-
-	override function layoutGroup_addedToStageHandler(event:Event) {
-		super.layoutGroup_addedToStageHandler(event);
 
 		getSDKs();
 		getEditors();
+
 	}
 
 	function copyInfoToClipboard(e:TriggerEvent) {
