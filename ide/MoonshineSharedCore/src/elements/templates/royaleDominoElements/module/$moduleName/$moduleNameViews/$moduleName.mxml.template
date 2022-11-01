@@ -46,9 +46,26 @@
         this.proxy.submitItem(this.itemVO);
     }
 
+    private function onAddItem(event:Event):void
+    {
+        this.proxy.selectedIndex = -1;
+        this.currentState = 'contentState';
+        this.isDisabled = false;
+        this.itemVO = new $moduleNameVO();
+    }
+
     private function onEditItem(event:Event):void
     {
         this.currentState = 'contentState';
+        this.isDisabled = false;
+        this.proxy.selectedIndex = dg.selectedIndex;
+        this.itemVO = dg.selectedItem.clone();
+    }
+
+    private function onGridDoubleClick(event:Event):void
+    {
+        this.currentState = 'contentState';
+        this.isDisabled = true;
         this.proxy.selectedIndex = dg.selectedIndex;
         this.itemVO = dg.selectedItem.clone();
     }
@@ -76,7 +93,7 @@
 ]]></fx:Script>
   <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
       <j:IconButton text="Add" includeIn="dataGridState"
-                    click="{this.proxy.selectedIndex = -1; this.currentState = 'contentState'; this.itemVO = new $moduleNameVO();}">
+                    click="onAddItem(event)">
         <j:icon>
             <js:MaterialIcon text="{MaterialIconType.ADD}" />
         </j:icon>
@@ -114,5 +131,5 @@
     </j:Button>
     <j:Button text="Cancel" click="{this.currentState = 'dataGridState'; this.proxy.selectedIndex = -1; this.itemVO = null}"/>
   </j:HGroup>
-  <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onEditItem(event)"/>
+  <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onGridDoubleClick(event)"/>
 </j:VGroup>
