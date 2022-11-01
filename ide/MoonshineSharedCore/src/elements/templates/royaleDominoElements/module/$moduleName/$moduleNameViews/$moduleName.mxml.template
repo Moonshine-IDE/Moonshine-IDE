@@ -32,18 +32,21 @@
         proxy.requestItems();
     }
 
-	private function removeItem():void
-	{
-		var alert:Alert = Alert.show('Are you sure you want to remove this item?',  'Remove', Alert.OK | Alert.CANCEL);
-			alert.addEventListener('close', function closeAlert(e:Event):void { if (e['detail'] == Alert.OK)
-    									{
-    										proxy.removeItem(dg.selectedItem as $moduleNameVO);
-    									}});
-	}
+    public function cancelFormEdit():void
+    {
+        this.currentState = 'dataGridState';
+        this.proxy.selectedIndex = -1;
+        this.itemVO = null;
+    }
 
 	private function onSaveClick(event:Event):void
     {
         this.proxy.submitItem(this.itemVO);
+    }
+
+    private function onCancelClick(event:Event):void
+    {
+        this.cancelFormEdit();
     }
 
     private function onAddItem(event:Event):void
@@ -90,6 +93,16 @@
 
         Alert.show(errorMessage,  'Error!', Alert.OK);
     }
+
+	private function removeItem():void
+	{
+		var alert:Alert = Alert.show('Are you sure you want to remove this item?',  'Remove', Alert.OK | Alert.CANCEL);
+			alert.addEventListener('close', function closeAlert(e:Event):void { if (e['detail'] == Alert.OK)
+    									{
+    										proxy.removeItem(dg.selectedItem as $moduleNameVO);
+    									}});
+	}
+
 ]]></fx:Script>
   <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
       <j:IconButton text="Add" includeIn="dataGridState"
@@ -129,7 +142,7 @@
             <j:Disabled disabled="{isDisabled}"/>
          </j:beads>
     </j:Button>
-    <j:Button text="Cancel" click="{this.currentState = 'dataGridState'; this.proxy.selectedIndex = -1; this.itemVO = null}"/>
+    <j:Button text="Cancel" click="onCancelClick(event)"/>
   </j:HGroup>
   <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onGridDoubleClick(event)"/>
 </j:VGroup>
