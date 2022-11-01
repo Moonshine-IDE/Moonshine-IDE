@@ -45,6 +45,7 @@ class PluginBase extends ConsoleOutputter implements IPlugin {
 
 	private var _activated:Bool = false;
 
+	@:flash.property
 	public var activated(get, never):Bool;
 
 	private function get_activated():Bool
@@ -52,6 +53,7 @@ class PluginBase extends ConsoleOutputter implements IPlugin {
 
 	private var _activatedByDefault:Bool = false;
 
+	@:flash.property
 	public var activatedByDefault(get, never):Bool;
 
 	private function get_activatedByDefault():Bool
@@ -59,6 +61,7 @@ class PluginBase extends ConsoleOutputter implements IPlugin {
 
 	private var _author:String;
 
+	@:flash.property
 	public var author(get, never):String;
 
 	private function get_author():String
@@ -66,6 +69,7 @@ class PluginBase extends ConsoleOutputter implements IPlugin {
 
 	private var _description:String;
 
+	@:flash.property
 	public var description(get, never):String;
 
 	private function get_description():String
@@ -73,6 +77,7 @@ class PluginBase extends ConsoleOutputter implements IPlugin {
 
 	private var _name:String;
 
+	@:flash.property
 	public var name(get, never):String;
 
 	private function get_name():String
