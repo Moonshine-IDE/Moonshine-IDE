@@ -16,7 +16,7 @@
 			"libs",
 			"libs/ApacheFlexSDKInstallerLib.swc",
 			"../MoonshineSharedCore/libs",
-			"../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"
+			"../MoonshineGUICore/bin/air/bin/MoonshineGUICore.swc"
 		],
 		"define": [
 			{
