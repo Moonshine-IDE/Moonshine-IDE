@@ -34,7 +34,7 @@ package actionScripts.plugins.externalEditors.vo;
 import actionScripts.interfaces.IExternalEditorVO;
 import flash.filesystem.File;
 import haxe.DynamicAccess;
-import mx.utils.UIDUtil;
+import moonshine.utils.UIDUtil;
 import openfl.errors.Error;
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
