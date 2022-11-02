@@ -660,6 +660,11 @@
 						FileCoreUtil.copyPathToClipboard(fileWrapper.file);
 						break;
 					}
+					case FTETreeItemRenderer.OPEN_PATH_IN_TERMINAL:
+					{
+						dispatcher.dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_OPEN_PATH_IN_TERMINAL, fileWrapper.file));
+						break;
+					}
 					case FTETreeItemRenderer.SHOW_IN_EXPLORER:
 					case FTETreeItemRenderer.SHOW_IN_FINDER:
 					{

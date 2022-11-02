@@ -71,6 +71,7 @@ package actionScripts.ui.renderers
 		public static const NEW:String = "New";
 		public static const NEW_FOLDER:String = "New Folder";
 		public static const COPY_PATH:String = "Copy Path";
+		public static const OPEN_PATH_IN_TERMINAL:String = "Open in "+ (ConstantsCoreVO.IS_MACOS ? "Terminal" : "Command Line");
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
 		public static const SHOW_IN_FINDER:String = "Show in Finder";
 		public static const DUPLICATE_FILE:String = "Duplicate";
@@ -236,6 +237,8 @@ package actionScripts.ui.renderers
 
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(COPY_PATH, updateOverMultiSelectionOption, "displaying"));
+				model.contextMenuCore.addItem(contextMenu,
+						model.contextMenuCore.getContextMenuItem(OPEN_PATH_IN_TERMINAL, updateOverMultiSelectionOption, "displaying"));
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(
 						ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 

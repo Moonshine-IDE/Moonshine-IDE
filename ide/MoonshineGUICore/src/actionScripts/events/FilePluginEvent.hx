@@ -40,6 +40,7 @@ class FilePluginEvent extends Event {
 	public static final EVENT_FILE_OPEN_WITH:String = "fileOpenWithEvent";
 	public static final EVENT_JAVA_TYPEAHEAD_PATH_SAVE:String = "EVENT_JAVA_TYPEAHEAD_PATH_SAVE";
 	public static final EVENT_JAVA8_PATH_SAVE:String = "EVENT_JAVA8_PATH_SAVE";
+	public static final EVENT_OPEN_PATH_IN_TERMINAL:String = "openPathInTerminalEvent";
 
 	public var file:FileLocation;
 
