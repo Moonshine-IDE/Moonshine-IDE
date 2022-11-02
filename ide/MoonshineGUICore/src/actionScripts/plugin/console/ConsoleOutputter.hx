@@ -37,7 +37,11 @@ import actionScripts.plugin.console.ConsoleTextLineModel;
 import actionScripts.ui.editor.text.TextLineModel;
 import actionScripts.utils.HtmlFormatter;
 import no.doomsday.console.ConsoleUtil;
+#if flash
+import flash.Vector;
+#else
 import openfl.Vector;
+#end
 import openfl.events.EventDispatcher;
 
 class ConsoleOutputter extends EventDispatcher {
@@ -83,7 +87,7 @@ class ConsoleOutputter extends EventDispatcher {
 
 	public function formatOutput(str:String, style:String, showWhenDone:Bool = true):Vector<TextLineModel> {
 		var textLines = str.split("\n");
-		var lines:Vector<TextLineModel> = new Vector<TextLineModel>([]);
+		var lines:Vector<TextLineModel> = new Vector<TextLineModel>();
 		for (i in textLines) {
 			if (i == "")
 				continue;
