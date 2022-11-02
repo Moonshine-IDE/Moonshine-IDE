@@ -1014,6 +1014,7 @@
 			<arg value="build"/>
 			<arg value="air"/>
 			<arg value="-Dflexhome=${FLEX_HOME}"/>
+			<arg value="-DAIR_SDK=${FLEX_HOME}"/>
 		</exec>
 	</target>
 
