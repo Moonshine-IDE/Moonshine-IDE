@@ -102,7 +102,8 @@ package actionScripts.languageServer
 		//change, and Moonshine will automatically update the version that is
 		//copied to File.applicationStorageDirectory
 		//Language server is being initialized with a wrapper
-		private static const LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX:String = "moonshine-jdt";
+		private static const LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX:String = "org.eclipse.equinox.launcher_";
+		private static const LANGUAGE_SERVER_WRAPPER:String = "moonshine-jdt";
 		private static const LANGUAGE_SERVER_JAR_FOLDER_PATH:String = "plugins";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
@@ -161,6 +162,7 @@ package actionScripts.languageServer
 		private var _previousJDK8Path:String = null;
 		private var _previousJDKType:String = null;
 		private var _languageServerLauncherJar:File;
+		private var _languageServerWrapperJar:File;
 		private var _javaVersion:String = null;
 		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToDispose:Boolean = false;
@@ -338,6 +340,7 @@ package actionScripts.languageServer
 			var storagePluginsFolder:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_FOLDER_PATH);
 			
 			this._languageServerLauncherJar = null;
+			this._languageServerWrapperJar = null;
 			var files:Array = appPluginsFolder.getDirectoryListing();
 			var fileCount:int = files.length;
 			for(var i:int = 0; i < fileCount; i++)
@@ -347,12 +350,21 @@ package actionScripts.languageServer
 				{
 					//jarFile = file;
 					this._languageServerLauncherJar = storagePluginsFolder.resolvePath(file.name);
-					break;
+				}
+				if(file.name.indexOf(LANGUAGE_SERVER_WRAPPER) == 0)
+				{
+					// wrapper jarfile
+					this._languageServerWrapperJar = storagePluginsFolder.resolvePath(file.name);
 				}
 			}
 			if(!this._languageServerLauncherJar)
 			{
 				error("Error initializing Java language server. Missing Java language server launcher.");
+				return;
+			}
+			if(!this._languageServerWrapperJar)
+			{
+				error("Error initializing Java language server. Missing Java language server launcher wrapper.");
 				return;
 			}
 			if(this._languageServerLauncherJar.exists)
@@ -499,7 +511,8 @@ package actionScripts.languageServer
 				"-noverify",
 				"-Xmx1G",
 				"-jar",
-				this._languageServerLauncherJar.nativePath,
+				// Starting the wrapper instead of the language server launcher
+				this._languageServerWrapperJar.nativePath,
 				"-configuration",
 				configFile.nativePath,
 				"-data",
