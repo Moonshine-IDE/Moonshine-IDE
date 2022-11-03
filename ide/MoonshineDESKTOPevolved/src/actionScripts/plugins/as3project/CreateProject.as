@@ -72,7 +72,7 @@ package actionScripts.plugins.as3project
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.TemplateVO;

@@ -49,8 +49,8 @@ package actionScripts.plugins.grails
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.HelperUtils;
     import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ComponentTypes;
-    import actionScripts.valueObjects.ComponentVO;
+    import moonshine.haxeScripts.valueObjects.ComponentTypes;
+    import moonshine.haxeScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;

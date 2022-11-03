@@ -42,8 +42,7 @@ import actionScripts.plugins.startup.StartupHelperPlugin;
 import actionScripts.utils.FileUtils;
 import actionScripts.utils.SDKUtils;
 import actionScripts.utils.SoftwareVersionChecker;
-import actionScripts.valueObjects.ComponentTypes;
-import actionScripts.valueObjects.ComponentVO;
+import moonshine.haxeScripts.valueObjects.ComponentTypes;
 import actionScripts.valueObjects.ConstantsCoreVO;
 import actionScripts.valueObjects.SDKReferenceVO;
 import components.popup.InfoBackgroundPopup;
@@ -86,6 +85,7 @@ import openfl.display.DisplayObject;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.system.Capabilities;
+import moonshine.haxeScripts.valueObjects.ComponentVO;
 
 using moonshine.flexbridge.CollectionUtil;
 

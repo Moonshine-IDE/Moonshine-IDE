@@ -35,8 +35,8 @@ package actionScripts.utils
 	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
-	import actionScripts.valueObjects.ComponentTypes;
-	import actionScripts.valueObjects.ComponentVO;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.NativeProcessQueueVO;
 	import actionScripts.valueObjects.ProjectVO;

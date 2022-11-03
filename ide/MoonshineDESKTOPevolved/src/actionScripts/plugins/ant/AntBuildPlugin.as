@@ -65,8 +65,8 @@ package actionScripts.plugins.ant
     import actionScripts.utils.HelperUtils;
     import actionScripts.utils.HtmlFormatter;
     import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ComponentTypes;
-    import actionScripts.valueObjects.ComponentVO;
+    import moonshine.haxeScripts.valueObjects.ComponentTypes;
+    import moonshine.haxeScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.Settings;
