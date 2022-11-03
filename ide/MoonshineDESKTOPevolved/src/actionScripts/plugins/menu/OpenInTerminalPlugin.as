@@ -19,9 +19,15 @@
 package actionScripts.plugins.menu
 {
 	import actionScripts.events.FilePluginEvent;
-	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+import actionScripts.factory.FileLocation;
+import actionScripts.plugins.build.ConsoleBuildPluginBase;
+import actionScripts.valueObjects.ConstantsCoreVO;
 
-	public class OpenInTerminalPlugin extends ConsoleBuildPluginBase
+import flash.desktop.NativeProcess;
+import flash.desktop.NativeProcessStartupInfo;
+import flash.filesystem.File;
+
+public class OpenInTerminalPlugin extends ConsoleBuildPluginBase
 	{
 		override public function get name():String			{ return "OpenInTerminalPlugin"; }
 		
@@ -41,6 +47,42 @@ package actionScripts.plugins.menu
 		
 		private function onOpenPathInTerminal(event:FilePluginEvent):void
 		{
+			if (ConstantsCoreVO.IS_MACOS)
+			{
+				print("%s", "Executing NSD kill process on Terminal window.");
+				startOSAScript(event.file);
+			}
+			else
+			{
+				/*var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
+				print("%s", command);
+				start(
+						new <String>[command],
+						null
+				);*/
+			}
+		}
+
+		private function startOSAScript(path:FileLocation):void
+		{
+			if (nativeProcess.running && running)
+			{
+				warning("Build is running. Wait for finish...");
+				return;
+			}
+
+			var openToPath:String = path.fileBridge.isDirectory ? path.fileBridge.nativePath :
+					path.fileBridge.parent.fileBridge.nativePath;
+
+			nativeProcess = new NativeProcess();
+			nativeProcessStartupInfo = new NativeProcessStartupInfo();
+			nativeProcessStartupInfo.executable = File.documentsDirectory.resolvePath("/usr/bin/osascript");
+
+			var command:String = "tell application \"Terminal\" to activate do script \"cd \\\""+ openToPath +"\\\"\"";
+			nativeProcessStartupInfo.arguments = Vector.<String>(["-e", command]);
+			addNativeProcessEventListeners();
+			nativeProcess.start(nativeProcessStartupInfo);
+			running = true;
 		}
 	}
 }
