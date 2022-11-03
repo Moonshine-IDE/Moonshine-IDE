@@ -1013,8 +1013,6 @@
 			<arg value="openfl"/>
 			<arg value="build"/>
 			<arg value="flash"/>
-			<arg value="-Dflexhome=${FLEX_HOME}"/>
-			<arg value="-Dair"/>
 		</exec>
 	</target>
 
