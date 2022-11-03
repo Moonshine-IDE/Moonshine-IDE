@@ -32,12 +32,6 @@ In a terminal, build _MoonshineGUICore_ with the following command:
 openfl build flash -debug
 ```
 
-> Note: During the transitioning process (moving on from Flex to OpenFL/Feathers) certain bridge methods are being used between the two frameworks. This requires the Flex framework to be available during compile-time. To successfully build the SWC, use the following command:
-> 
-> `openfl build flash -debug -Dair -Dflexhome={flex_home_dir}`
-> 
-> Replace {flex_home_dir} with the path to the root of the Flex SDK on your system.
-
 In an editor or IDE, make sure that the Flash (Debug) OpenFL target is selected before building.
 
 After building the library, you may need to reload the _MoonshineDESKTOPevolved_ application project in your editor/IDE to ensure that it recognizes any changed added/changed classes that you may have included in the compiled _MoonshineGUICore.swc_ file.
