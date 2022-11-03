@@ -101,9 +101,8 @@ package actionScripts.languageServer
 		//when updating the JDT language server, the name of this JAR file will
 		//change, and Moonshine will automatically update the version that is
 		//copied to File.applicationStorageDirectory
-		//Language server is being initialized with a wrapper
-		private static const LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX:String = "org.eclipse.equinox.launcher_";
-		private static const LANGUAGE_SERVER_WRAPPER:String = "moonshine-jdt";
+		private static const LANGUAGE_SERVER_CORE_JAR_FILE_NAME_PREFIX:String = "org.eclipse.jdt.ls.core_";
+		private static const LANGUAGE_SERVER_WRAPPER_JAR_FILE_NAME:String = "moonshine-jdt.jar";
 		private static const LANGUAGE_SERVER_JAR_FOLDER_PATH:String = "plugins";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
@@ -161,7 +160,7 @@ package actionScripts.languageServer
 		private var _previousJDKPath:String = null;
 		private var _previousJDK8Path:String = null;
 		private var _previousJDKType:String = null;
-		private var _languageServerLauncherJar:File;
+		private var _languageServerCoreJar:File;
 		private var _languageServerWrapperJar:File;
 		private var _javaVersion:String = null;
 		private var _javaVersionProcess:NativeProcess;
@@ -339,27 +338,25 @@ package actionScripts.languageServer
 			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
 			var storagePluginsFolder:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_FOLDER_PATH);
 			
-			this._languageServerLauncherJar = null;
+			this._languageServerCoreJar = null;
 			this._languageServerWrapperJar = null;
 			var files:Array = appPluginsFolder.getDirectoryListing();
 			var fileCount:int = files.length;
 			for(var i:int = 0; i < fileCount; i++)
 			{
 				var file:File = File(files[i]);
-				if(file.name.indexOf(LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX) == 0)
-				{
-					//jarFile = file;
-					this._languageServerLauncherJar = storagePluginsFolder.resolvePath(file.name);
+				if(file.name.indexOf(LANGUAGE_SERVER_CORE_JAR_FILE_NAME_PREFIX) == 0)
+				{ 
+					this._languageServerCoreJar = storagePluginsFolder.resolvePath(file.name);
 				}
-				if(file.name.indexOf(LANGUAGE_SERVER_WRAPPER) == 0)
+				else if(file.name == LANGUAGE_SERVER_WRAPPER_JAR_FILE_NAME)
 				{
-					// wrapper jarfile
 					this._languageServerWrapperJar = storagePluginsFolder.resolvePath(file.name);
 				}
 			}
-			if(!this._languageServerLauncherJar)
+			if(!this._languageServerCoreJar)
 			{
-				error("Error initializing Java language server. Missing Java language server launcher.");
+				error("Error initializing Java language server. Missing Java language server core JAR file.");
 				return;
 			}
 			if(!this._languageServerWrapperJar)
@@ -367,7 +364,7 @@ package actionScripts.languageServer
 				error("Error initializing Java language server. Missing Java language server launcher wrapper.");
 				return;
 			}
-			if(this._languageServerLauncherJar.exists)
+			if(this._languageServerCoreJar.exists)
 			{
 				//we've already copied the files to application storage, so
 				//we're good to go!
@@ -390,7 +387,7 @@ package actionScripts.languageServer
 			{
 				showStorageError = true;
 			}
-			if(showStorageError || !storageFolder.exists || !this._languageServerLauncherJar.exists)
+			if(showStorageError || !storageFolder.exists || !this._languageServerCoreJar.exists)
 			{
 				//something went wrong!
 				error("Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath);
