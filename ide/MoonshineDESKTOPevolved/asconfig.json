@@ -4,6 +4,7 @@
 		"debug": true,
 		"accessible": true,
 		"swf-version": 44,
+		"warnings": false,
 		"source-path": [
 			"src",
 			"../MoonshineSharedCore/src",
