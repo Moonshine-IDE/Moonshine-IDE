@@ -18,14 +18,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.menu
 {
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+	import flash.filesystem.File;
+	
 	import actionScripts.events.FilePluginEvent;
-import actionScripts.factory.FileLocation;
-import actionScripts.plugins.build.ConsoleBuildPluginBase;
-import actionScripts.valueObjects.ConstantsCoreVO;
-
-import flash.desktop.NativeProcess;
-import flash.desktop.NativeProcessStartupInfo;
-import flash.filesystem.File;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 public class OpenInTerminalPlugin extends ConsoleBuildPluginBase
 	{
@@ -47,32 +48,26 @@ public class OpenInTerminalPlugin extends ConsoleBuildPluginBase
 		
 		private function onOpenPathInTerminal(event:FilePluginEvent):void
 		{
+			var openToPath:String = event.file.fileBridge.isDirectory ? event.file.fileBridge.nativePath :
+				event.file.fileBridge.parent.fileBridge.nativePath;
+			
 			if (ConstantsCoreVO.IS_MACOS)
 			{
-				print("%s", "Executing NSD kill process on Terminal window.");
-				startOSAScript(event.file);
+				openInTerminal(openToPath);
 			}
 			else
 			{
-				/*var command:String = "\""+ macNDSDefaultLookupPath +"\" -batch -kill";
-				print("%s", command);
-				start(
-						new <String>[command],
-						null
-				);*/
+				openInCommandLine(openToPath);
 			}
 		}
 
-		private function startOSAScript(path:FileLocation):void
+		private function openInTerminal(openToPath:String):void
 		{
 			if (nativeProcess.running && running)
 			{
 				warning("Build is running. Wait for finish...");
 				return;
 			}
-
-			var openToPath:String = path.fileBridge.isDirectory ? path.fileBridge.nativePath :
-					path.fileBridge.parent.fileBridge.nativePath;
 
 			nativeProcess = new NativeProcess();
 			nativeProcessStartupInfo = new NativeProcessStartupInfo();
@@ -83,6 +78,21 @@ public class OpenInTerminalPlugin extends ConsoleBuildPluginBase
 			addNativeProcessEventListeners();
 			nativeProcess.start(nativeProcessStartupInfo);
 			running = true;
+		}
+		
+		private function openInCommandLine(openToPath:String):void
+		{
+			var driveChar:String = "";
+			if (openToPath.charAt(0).toLowerCase() != "c")
+			{
+				driveChar = openToPath.charAt(0) +":&&"
+			}
+			
+			var command:String = "start cmd /k \""+ driveChar +"cd "+ UtilsCore.getEncodedForShell(openToPath) +"\"";
+			start(
+				new <String>[command],
+				null
+			);
 		}
 	}
 }
