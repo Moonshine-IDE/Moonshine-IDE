@@ -30,7 +30,7 @@ it in the license file.
 */
 package actionScripts.locator;
 
-import actionScripts.valueObjects.ComponentVO;
+import moonshine.haxeScripts.valueObjects.ComponentVO;
 import feathers.data.ArrayCollection;
 
 extern class HelperModel {

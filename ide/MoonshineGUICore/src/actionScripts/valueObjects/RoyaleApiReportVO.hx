@@ -32,7 +32,11 @@ it in the license file.
 package actionScripts.valueObjects;
 
 import actionScripts.factory.FileLocation;
+#if flash
+import flash.Vector;
+#else
 import openfl.Vector;
+#end
 
 class RoyaleApiReportVO {
 	public function new(royaleSdkPath:String, flexSdkPath:String, libraries:Vector<FileLocation>, mainAppFile:String, reportOutputPath:String,

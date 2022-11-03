@@ -39,8 +39,8 @@ package actionScripts.ui.feathersWrapper.help
 	import actionScripts.ui.IContentWindow;
 	import actionScripts.utils.MSDKIdownloadUtil;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.valueObjects.ComponentVO;
-	import actionScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentVO;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
 	import actionScripts.utils.HelperUtils;
 	
 	import air.update.events.DownloadErrorEvent;

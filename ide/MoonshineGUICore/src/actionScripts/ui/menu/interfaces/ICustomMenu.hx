@@ -31,7 +31,11 @@ it in the license file.
 
 package actionScripts.ui.menu.interfaces;
 
+#if flash
+import flash.Vector;
+#else
 import openfl.Vector;
+#end
 
 interface ICustomMenu {
 

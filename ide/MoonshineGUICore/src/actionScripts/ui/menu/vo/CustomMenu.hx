@@ -34,7 +34,11 @@ package actionScripts.ui.menu.vo;
 import actionScripts.ui.menu.interfaces.ICustomMenu;
 import actionScripts.ui.menu.interfaces.ICustomMenuItem;
 import actionScripts.ui.menu.interfaces.IMenuEntity;
+#if flash
+import flash.Vector;
+#else
 import openfl.Vector;
+#end
 
 class CustomMenu implements ICustomMenu implements IMenuEntity {
 	private var _items:Vector<ICustomMenuItem> = new Vector<ICustomMenuItem>();

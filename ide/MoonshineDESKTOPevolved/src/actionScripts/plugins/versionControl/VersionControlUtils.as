@@ -228,39 +228,23 @@ package actionScripts.plugins.versionControl
 		
 		public static function getDefaultRepositories():ArrayList
 		{
-			var tmpCollection:ArrayList = new ArrayList();
-			
-			var tmpRepository:RepositoryItemVO = new RepositoryItemVO();
-			tmpRepository.url = "https://github.com/Moonshine-IDE/Moonshine-IDE";
-			tmpRepository.notes = "Moonshine-IDE Source Code";
-			tmpRepository.type = VersionControlTypes.GIT;
-			tmpRepository.udid = UIDUtil.createUID();
-			tmpRepository.isDefault = true;
-			tmpCollection.addItem(tmpRepository);
+			var listFile:File = File.applicationDirectory.resolvePath("elements/data/DefaultRepositories.xml");
+			if (!listFile.exists) return null;
 
-			tmpRepository = new RepositoryItemVO();
-			tmpRepository.url = "https://github.com/Moonshine-IDE/Moonshine-IDE-Examples-Directory-Assistance";
-			tmpRepository.notes = "Moonshine-IDE example projects";
-			tmpRepository.type = VersionControlTypes.GIT;
-			tmpRepository.udid = UIDUtil.createUID();
-			tmpRepository.isDefault = true;
-			tmpCollection.addItem(tmpRepository);
-			
-			tmpRepository = new RepositoryItemVO();
-			tmpRepository.url = "https://github.com/apache/royale-asjs";
-			tmpRepository.notes = "Apache Royale Source and Examples";
-			tmpRepository.type = VersionControlTypes.GIT;
-			tmpRepository.udid = UIDUtil.createUID();
-			tmpRepository.isDefault = true;
-			tmpCollection.addItem(tmpRepository);
-			
-			tmpRepository = new RepositoryItemVO();
-			tmpRepository.url = "https://github.com/Moonshine-IDE/Royale-Examples";
-			tmpRepository.notes = "Additional Apache Royale Examples";
-			tmpRepository.type = VersionControlTypes.GIT;
-			tmpRepository.udid = UIDUtil.createUID();
-			tmpRepository.isDefault = true;
-			tmpCollection.addItem(tmpRepository);
+			var listFileXML:XML = XML(FileUtils.readFromFile(listFile));
+			var tmpCollection:ArrayList = new ArrayList();
+			var tmpRepository:RepositoryItemVO;
+
+			for each (var repository:XML in listFileXML..repository)
+			{
+				tmpRepository = new RepositoryItemVO();
+				tmpRepository.url = String(repository.url);
+				tmpRepository.notes = String(repository.notes);
+				tmpRepository.type = String(repository.@type);
+				tmpRepository.udid = UIDUtil.createUID();
+				tmpRepository.isDefault = true;
+				tmpCollection.addItem(tmpRepository);
+			}
 			
 			return tmpCollection;
 		}

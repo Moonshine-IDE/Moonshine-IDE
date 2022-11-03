@@ -34,7 +34,7 @@ package actionScripts.plugins.externalEditors.vo;
 import actionScripts.interfaces.IExternalEditorVO;
 import flash.filesystem.File;
 import haxe.DynamicAccess;
-import mx.utils.UIDUtil;
+import moonshine.utils.UIDUtil;
 import openfl.errors.Error;
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
@@ -109,7 +109,7 @@ class ExternalEditorVO extends EventDispatcher implements IExternalEditorVO {
 	}
 
     private var _isValid:Bool;
-    public var isValid(get, set):Bool;
+    @:flash.property public var isValid(get, set):Bool;
     private function get_isValid():Bool return _isValid;
     private function set_isValid(value:Bool):Bool {
         if ( _isValid == value ) return _isValid;
@@ -119,7 +119,7 @@ class ExternalEditorVO extends EventDispatcher implements IExternalEditorVO {
     }
 
     private var _isEnabled:Bool;
-    public var isEnabled(get, set):Bool;
+    @:flash.property public var isEnabled(get, set):Bool;
     private function get_isEnabled():Bool return _isEnabled;
     private function set_isEnabled(value:Bool):Bool {
         if ( _isEnabled == value ) return _isEnabled;
@@ -129,7 +129,7 @@ class ExternalEditorVO extends EventDispatcher implements IExternalEditorVO {
     }
 
     private var _localID:String;
-    public var localID(get, set):String;
+    @:flash.property public var localID(get, set):String;
     private function get_localID():String return _localID;
     private function set_localID(value:String):String {
         if ( _localID == value ) return _localID;
@@ -139,7 +139,7 @@ class ExternalEditorVO extends EventDispatcher implements IExternalEditorVO {
     }
 
     private var _title:String;
-    public var title(get, set):String;
+    @:flash.property public var title(get, set):String;
     private function get_title():String return _title;
     private function set_title(value:String):String {
         if ( _title == value ) return _title;
@@ -149,7 +149,7 @@ class ExternalEditorVO extends EventDispatcher implements IExternalEditorVO {
     }
 
     private var _fileTypes:Array<String>;
-    public var fileTypes(get, set):Array<String>;
+    @:flash.property public var fileTypes(get, set):Array<String>;
     private function get_fileTypes():Array<String> return _fileTypes;
     private function set_fileTypes(value:Array<String>):Array<String> {
         if ( _fileTypes == value ) return _fileTypes;

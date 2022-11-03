@@ -1012,9 +1012,9 @@
 			<arg value="run"/>
 			<arg value="openfl"/>
 			<arg value="build"/>
-			<arg value="flash"/>
+			<arg value="air"/>
 			<arg value="-Dflexhome=${FLEX_HOME}"/>
-			<arg value="-Dair"/>
+			<arg value="-DAIR_SDK=${FLEX_HOME}"/>
 		</exec>
 	</target>
 
@@ -1047,7 +1047,7 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
-			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+			<compiler.library-path dir="${LibraryGUICore}/bin/air/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
 			<compiler.verbose-stacktraces>true</compiler.verbose-stacktraces>
@@ -1084,7 +1084,7 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
-			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+			<compiler.library-path dir="${LibraryGUICore}/bin/air/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
 			<compiler.external-library-path dir="${debug_dir}" append="true">
@@ -1125,7 +1125,7 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
-			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+			<compiler.library-path dir="${LibraryGUICore}/bin/air/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
 		</mxmlc>

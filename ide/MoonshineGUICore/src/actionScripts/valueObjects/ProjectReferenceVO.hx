@@ -35,7 +35,11 @@ package actionScripts.valueObjects;
 import actionScripts.factory.FileLocation;
 import actionScripts.locator.IDEModel;
 import haxe.DynamicAccess;
+#if flash
+import flash.Vector;
+#else
 import openfl.Vector;
+#end
 
 class ProjectReferenceVO {
 	public var name:String;

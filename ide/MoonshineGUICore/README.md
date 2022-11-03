@@ -29,10 +29,10 @@ The _MoonshineGUICore_ project is currently compiled as a _.swc_ library file, s
 In a terminal, build _MoonshineGUICore_ with the following command:
 
 ```sh
-openfl build flash -debug
+openfl build air -debug
 ```
 
-In an editor or IDE, make sure that the Flash (Debug) OpenFL target is selected before building.
+In an editor or IDE, make sure that the **AIR / Debug** OpenFL target is selected before building.
 
 After building the library, you may need to reload the _MoonshineDESKTOPevolved_ application project in your editor/IDE to ensure that it recognizes any changed added/changed classes that you may have included in the compiled _MoonshineGUICore.swc_ file.
 

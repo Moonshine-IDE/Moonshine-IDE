@@ -19,7 +19,9 @@
 
 			private function onNavigationChange(event:Event):void
             {
-                this.mainContent.selectedContent = navigation.selectedItem["content"];
+                var selectedContent:String = navigation.selectedItem["content"];
+                this[selectedContent + "_ID"].cancelFormEdit();
+                this.mainContent.selectedContent = selectedContent;
             }
 		]]>
 	</fx:Script>
