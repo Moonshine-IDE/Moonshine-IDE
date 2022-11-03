@@ -109,6 +109,8 @@ package actionScripts.languageServer
 		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
 		private static const PATH_JDT_LANGUAGE_SERVER_APP:String = "elements/jdt-language-server";
 		private static const PATH_JDT_LANGUAGE_SERVER_STORAGE:String = "java/jdt-language-server";
+
+		private static const MINIMUM_JAVA_MAJOR_VERSION:int = 17;
 		
 		private static const LANGUAGE_ID_JAVA:String = "java";
 		
@@ -324,7 +326,7 @@ package actionScripts.languageServer
 				versionNumberParts[i] = parsed;
 			}
 			var major:Number = versionNumberParts[0];
-			if(major < 11)
+			if(major < MINIMUM_JAVA_MAJOR_VERSION)
 			{
 				return false;
 			}
@@ -966,7 +968,7 @@ package actionScripts.languageServer
 				trace("Java version: " + this._javaVersion);
 				if(!isJavaVersionSupported(this._javaVersion))
 				{
-					error("Java version 11.0.0 or newer is required. Version not supported: " + this._javaVersion + ". Java code intelligence disabled for project: " + project.name + ".");
+					error("Java JDK version " + MINIMUM_JAVA_MAJOR_VERSION + " or newer is required. Version not supported: " + this._javaVersion + ". Java code intelligence disabled for project: " + project.name + ".");
 					return;
 				}
 				if (_useSocket)
