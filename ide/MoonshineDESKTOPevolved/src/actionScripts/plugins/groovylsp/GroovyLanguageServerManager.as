@@ -17,7 +17,7 @@
 // No warranty of merchantability or fitness of any kind. 
 // Use this software at your own risk.
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.languageServer
+package actionScripts.plugins.groovylsp
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
@@ -43,6 +43,9 @@ package actionScripts.languageServer
 	import actionScripts.events.WatchedFileChangeEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IJavaProject;
+	import actionScripts.languageServer.ILanguageServerManager;
+	import actionScripts.languageServer.LanguageClientUtil;
+	import actionScripts.languageServer.LanguageServerGlobals;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.console.ConsoleOutputter;

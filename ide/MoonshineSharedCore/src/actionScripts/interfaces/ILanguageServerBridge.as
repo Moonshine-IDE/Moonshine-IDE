@@ -7,6 +7,9 @@ package actionScripts.interfaces
 	{
 		function get connectedProjectCount():int;
 
+		function registerLanguageServerProvider(projectType:Class /* extends ProjectVO */, callback:Function /* (ProjectVO) -> ILanguageServerManager */):void;
+		function unregisterLanguageServerProvider(projectType:Class /* extends ProjectVO */):void;
+
 		function hasLanguageServerForProject(project:ProjectVO):Boolean;
 
 		function hasCustomTextEditorForUri(uri:String, project:ProjectVO):Boolean;

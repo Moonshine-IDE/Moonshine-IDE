@@ -31,6 +31,7 @@ it in the license file.
 
 package actionScripts.impls;
 
+import actionScripts.plugins.haxelsp.HaxeLanguageServerPlugin;
 import actionScripts.events.NewProjectEvent;
 import actionScripts.factory.FileLocation;
 import actionScripts.interfaces.IHaxeBridge;
@@ -65,11 +66,11 @@ class IHaxeBridgeImpl extends ProjectBridgeImplBase implements IHaxeBridge {
 	}
 
 	public function getDefaultPlugins():Array<Class<PluginBase>> {
-		return [HaxeSyntaxPlugin, HaxeProjectPlugin, HaxeBuildPlugin, HaxelibPlugin,];
+		return [HaxeSyntaxPlugin, HaxeProjectPlugin, HaxeBuildPlugin, HaxelibPlugin, HaxeLanguageServerPlugin,];
 	}
 
 	public function getPluginsNotToShowInSettings():Array<Class<PluginBase>> {
-		return [HaxeSyntaxPlugin, HaxeProjectPlugin, HaxelibPlugin,];
+		return [HaxeSyntaxPlugin, HaxeProjectPlugin, HaxelibPlugin, HaxeLanguageServerPlugin,];
 	}
 
 	override public function createProject(event:NewProjectEvent):Void {
