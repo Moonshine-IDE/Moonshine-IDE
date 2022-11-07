@@ -98,17 +98,11 @@ package actionScripts.languageServer
 
 	public class JavaLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	{
-		//when updating the JDT language server, the name of this JAR file will
-		//change, and Moonshine will automatically update the version that is
-		//copied to File.applicationStorageDirectory
-		private static const LANGUAGE_SERVER_CORE_JAR_FILE_NAME_PREFIX:String = "org.eclipse.jdt.ls.core_";
-		private static const LANGUAGE_SERVER_WRAPPER_JAR_FILE_NAME:String = "moonshine-jdt.jar";
-		private static const LANGUAGE_SERVER_JAR_FOLDER_PATH:String = "plugins";
+		private static const LANGUAGE_SERVER_WRAPPER_JAR_PATH:String = "plugins/moonshine-jdt.jar";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
 		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
 		private static const PATH_JDT_LANGUAGE_SERVER_APP:String = "elements/jdt-language-server";
-		private static const PATH_JDT_LANGUAGE_SERVER_STORAGE:String = "java/jdt-language-server";
 
 		private static const MINIMUM_JAVA_MAJOR_VERSION:int = 17;
 		
@@ -162,8 +156,6 @@ package actionScripts.languageServer
 		private var _previousJDKPath:String = null;
 		private var _previousJDK8Path:String = null;
 		private var _previousJDKType:String = null;
-		private var _languageServerCoreJar:File;
-		private var _languageServerWrapperJar:File;
 		private var _javaVersion:String = null;
 		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToDispose:Boolean = false;
@@ -193,7 +185,6 @@ package actionScripts.languageServer
 
 			LanguageServerGlobals.addLanguageServerManager( this );
 
-			prepareApplicationStorage();
 			bootstrapThenStartNativeProcess();
 		}
 
@@ -333,69 +324,6 @@ package actionScripts.languageServer
 			return true;
 		}
 
-		private function prepareApplicationStorage():void
-		{
-			var appFolder:File = File.applicationDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_APP);
-			var appPluginsFolder:File = appFolder.resolvePath(LANGUAGE_SERVER_JAR_FOLDER_PATH)
-			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
-			var storagePluginsFolder:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_FOLDER_PATH);
-			
-			this._languageServerCoreJar = null;
-			this._languageServerWrapperJar = null;
-			var files:Array = appPluginsFolder.getDirectoryListing();
-			var fileCount:int = files.length;
-			for(var i:int = 0; i < fileCount; i++)
-			{
-				var file:File = File(files[i]);
-				if(file.name.indexOf(LANGUAGE_SERVER_CORE_JAR_FILE_NAME_PREFIX) == 0)
-				{ 
-					this._languageServerCoreJar = storagePluginsFolder.resolvePath(file.name);
-				}
-				else if(file.name == LANGUAGE_SERVER_WRAPPER_JAR_FILE_NAME)
-				{
-					this._languageServerWrapperJar = storagePluginsFolder.resolvePath(file.name);
-				}
-			}
-			if(!this._languageServerCoreJar)
-			{
-				error("Error initializing Java language server. Missing Java language server core JAR file.");
-				return;
-			}
-			if(!this._languageServerWrapperJar)
-			{
-				error("Error initializing Java language server. Missing Java language server launcher wrapper.");
-				return;
-			}
-			if(this._languageServerCoreJar.exists)
-			{
-				//we've already copied the files to application storage, so
-				//we're good to go!
-				return;
-			}
-			//this directory may already exist, if an older version of Moonshine
-			//with an older version of the JDT language server was installed
-			//we don't want conflicts between JDT language server versions, so
-			//delete the entire directory and start fresh
-			var showStorageError:Boolean = false;
-			try
-			{
-				if(storageFolder.exists)
-				{
-					storageFolder.deleteDirectory(true);
-				}
-				appFolder.copyTo(storageFolder);
-			}
-			catch(error:Error)
-			{
-				showStorageError = true;
-			}
-			if(showStorageError || !storageFolder.exists || !this._languageServerCoreJar.exists)
-			{
-				//something went wrong!
-				error("Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath);
-			}
-		}
-
 		private function bootstrapThenStartNativeProcess():void
 		{
 			if(!UtilsCore.isJavaForTypeaheadAvailable())
@@ -487,15 +415,17 @@ package actionScripts.languageServer
 				return;
 			}
 
-			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
+			var appFolder:File = File.applicationDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_APP);
+			var jarFile:File = appFolder.resolvePath(LANGUAGE_SERVER_WRAPPER_JAR_PATH)
+
 			var configFile:File = null;
 			if(ConstantsCoreVO.IS_MACOS)
 			{
-				configFile = storageFolder.resolvePath(LANGUAGE_SERVER_MACOS_CONFIG_PATH);
+				configFile = appFolder.resolvePath(LANGUAGE_SERVER_MACOS_CONFIG_PATH);
 			}
 			else
 			{
-				configFile = storageFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
+				configFile = appFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
 			}
 
 			var languageServerCommand:Vector.<String> = new <String>[
@@ -505,15 +435,19 @@ package actionScripts.languageServer
 				"-Declipse.application=org.eclipse.jdt.ls.core.id1",
 				"-Dosgi.bundles.defaultStartLevel=4",
 				"-Declipse.product=org.eclipse.jdt.ls.core.product",
-				// uncomment for extra debug logging
-				// "-Dlog.level=ALL",
-				"-noverify",
+				"-Dosgi.checkConfiguration=true",
+				"-Dosgi.sharedConfiguration.area=" + configFile.nativePath,
+				"-Dosgi.sharedConfiguration.area.readOnly=true",
+				"-Dosgi.configuration.cascaded=true",
 				"-Xmx1G",
+				"--add-modules=ALL-SYSTEM",
+				"--add-opens",
+				"java.base/java.util=ALL-UNNAMED",
+				"--add-opens",
+				"java.base/java.lang=ALL-UNNAMED",
 				"-jar",
 				// Starting the wrapper instead of the language server launcher
-				this._languageServerWrapperJar.nativePath,
-				"-configuration",
-				configFile.nativePath,
+				jarFile.nativePath,
 				"-data",
 				//this is a file outside of the project folder due to limitations
 				//of the language server, which is based on Eclipse
