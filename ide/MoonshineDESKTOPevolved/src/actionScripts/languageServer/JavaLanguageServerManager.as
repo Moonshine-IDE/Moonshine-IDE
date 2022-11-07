@@ -1177,7 +1177,7 @@ package actionScripts.languageServer
 			{
 				case "ServiceReady":
 				{
-					//hide the status message
+					// hide the status bar message
 					_languageStatusDone = true;
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS,
@@ -1187,6 +1187,7 @@ package actionScripts.languageServer
 				}
 				case "Starting":
 				{
+					// display to the user in the status bar
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS,
 						project.name, message.params.message, false
@@ -1195,6 +1196,7 @@ package actionScripts.languageServer
 				}
 				case "Message":
 				{
+					// display to the user in the status bar
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS,
 						project.name, message.params.message, false
@@ -1203,6 +1205,7 @@ package actionScripts.languageServer
 				}
 				case "Started":
 				{
+					// display to the user in the status bar
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS,
 						project.name, message.params.message, false
@@ -1211,11 +1214,25 @@ package actionScripts.languageServer
 				}
 				case "Error":
 				{
+					// hide the status bar message
 					_languageStatusDone = true;
 					GlobalEventDispatcher.getInstance().dispatchEvent(new StatusBarEvent(
 						StatusBarEvent.LANGUAGE_SERVER_STATUS,
 						project.name
 					));
+					// probably best to at least log this for contributors
+					// not sure if it should be shown to user, though
+					trace("Error starting Java language server: " + message.params.message);
+					break;
+				}
+				case "ProjectStatus":
+				{
+					if (message.params.message == "WARNING")
+					{
+						// no message to display to the user, but we should
+						// probably log this for contributors
+						trace("Warning: project status notification not OK");
+					}
 					break;
 				}
 				default:
