@@ -34,25 +34,28 @@
                 }
             }
 
-			private var _dataProvider:ArrayList = new ArrayList();
+			public var _dataProvider:ArrayList;
 
-			public function get dataProvider():ArrayList
+			public function get dataProvider():Array
 			{
-				return _dataProvider;
+				return _dataProvider ? _dataProvider.source : [];
 			}
-			
-			public function set dataProvider(value:ArrayList):void
+
+			public function set dataProvider(value:Array):void
 			{
-				_dataProvider = value;
-				
-				if (this.multivalueList)
+				if (!_dataProvider || _dataProvider.source != value)
 				{
-					this.multivalueList.dataProvider = value;
+					_dataProvider = new ArrayList(value);
+
+					if (this.multivalueList)
+					{
+						this.multivalueList.dataProvider = _dataProvider;
+					}
 				}
 			}
-			
+
 			private var _restrictPattern:String;
-	
+
 			public function get restrictPattern():String
 			{
 				return _restrictPattern;
@@ -61,12 +64,12 @@
 			{
 				_restrictPattern = value;
 			}
-			
+
 			[Bindable]
 			private var multivalueList:List;
-			
+
 			private var editingItem:Object;
-			
+
 			private function toggleFormView(show:Boolean):void
 			{
 				if (show)
@@ -85,24 +88,24 @@
             {
                 this.refreshDisabledButtons();
             }
-			
+
 			private function onAddButtonClicked():void
 			{
 				editingItem = null;
 				toggleFormView(true);
 			}
-			
+
 			private function onAddItemCancelled():void
 			{
 				toggleFormView(false);
 			}
-			
+
 			private function onCreationCompletes(event:Event):void
 			{
 				this.toggleInputsByType();
                 this.refreshDisabledButtons();
 			}
-			
+
 			private function toggleInputsByType():void
 			{
 				multivalueList = new List();
@@ -128,33 +131,33 @@
 						}
 						break;
 				}
-				
+
 				var cb:ConstantBinding = new ConstantBinding();
 				cb.setDocument(this);
-				cb.sourcePropertyName = "dataProvider";
-				cb.destinationPropertyName = "dataProvider";
+				cb.sourcePropertyName = "_dataProvider";
+				cb.destinationPropertyName = "_dataProvider";
 				multivalueList.addBead(cb);
-				
+
 				multivalueList.addBead(new RemoveAllItemRendererForArrayListData());
 				this.addElementAt(multivalueList, 0);
 			}
-			
+
 			private function updateItemByType():void
 			{
-				var editIndex:int = dataProvider.getItemIndex(editingItem);
+				var editIndex:int = _dataProvider.getItemIndex(editingItem);
 				switch (inputType)
 				{
 					case "Datetime":
-						dataProvider.setItemAt(this.dateField.selectedDate, editIndex);
+						_dataProvider.setItemAt(this.dateField.selectedDate, editIndex);
 						break;
 					default:
-						dataProvider.setItemAt(this.txtItemTitle.text, editIndex);
+						_dataProvider.setItemAt(this.txtItemTitle.text, editIndex);
 						break;
 				}
-				
-				this.multivalueList.selectedItem = dataProvider.getItemAt(editIndex);
+
+				this.multivalueList.selectedItem = _dataProvider.getItemAt(editIndex);
 			}
-			
+
 			private function openUpdateFormByType():void
 			{
 				switch (inputType)
@@ -167,26 +170,26 @@
 						break;
 				}
 			}
-			
+
 			private function addItemByType():void
 			{
-				if (dataProvider == null)
+				if (_dataProvider == null)
 				{
-					dataProvider = new ArrayList();
+					_dataProvider = new ArrayList();
 				}
 
 				switch (inputType)
 				{
 					case "Datetime":
-						dataProvider.addItem(this.dateField.selectedDate);
+						_dataProvider.addItem(this.dateField.selectedDate);
 						break;
 					default:
-						dataProvider.addItem(this.txtItemTitle.text);
+						_dataProvider.addItem(this.txtItemTitle.text);
 						this.txtItemTitle.text = null;
 						break;
 				}
 			}
-			
+
 			private function onTextKeyDown(event:Event):void
 			{
 				if (event["keyCode"] == 13)
@@ -194,7 +197,7 @@
 					this.formValidator.validate();
 				}
 			}
-			
+
 			private function onAddItemFormValid(event:Event):void
 			{
 			    if (this.formValidator.validate())
@@ -211,17 +214,17 @@
                     toggleFormView(false);
 				}
 			}
-			
+
 			private function onModifyButtonClicked():void
 			{
 				editingItem = this.multivalueList.selectedItem;
 				toggleFormView(true);
 				openUpdateFormByType();
 			}
-			
+
 			private function onRemoveButtonClicked():void
 			{
-				dataProvider.removeItem(this.multivalueList.selectedItem);
+				_dataProvider.removeItem(this.multivalueList.selectedItem);
 				this.multivalueList.selectedIndex = -1;
 
 				this.refreshDisabledButtons();

@@ -62,7 +62,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			}
 		}
 
-		private function generateProperties():String
+		protected function generateProperties():String
 		{
 			var tmpContent:String = "";
 			for each (var field:DominoFormFieldVO in form.fields)
@@ -92,7 +92,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			return tmpContent;
 		}
 
-		private function generateToRequestObjects():String
+		protected function generateToRequestObjects():String
 		{
 			var tmpContents:Array = [];
 			for each (var field:DominoFormFieldVO in form.fields)
@@ -128,7 +128,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 					"return tmpRequestObject;");
 		}
 
-		private function generateNewVOfromObject():String
+		protected function generateNewVOfromObject():String
 		{
 			var tmpContent:String = "";
 			for each (var field:DominoFormFieldVO in form.fields)
@@ -163,7 +163,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			return tmpContent;
 		}
 
-		private function cloneVOObject():String
+		protected function cloneVOObject():String
 		{
 			var tmpContent:String = "";
 			for each (var field:DominoFormFieldVO in form.fields)

@@ -101,14 +101,16 @@ package actionScripts.languageServer
 		//when updating the JDT language server, the name of this JAR file will
 		//change, and Moonshine will automatically update the version that is
 		//copied to File.applicationStorageDirectory
-		//Language server is being initialized with a wrapper
-		private static const LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX:String = "moonshine-jdt";
+		private static const LANGUAGE_SERVER_CORE_JAR_FILE_NAME_PREFIX:String = "org.eclipse.jdt.ls.core_";
+		private static const LANGUAGE_SERVER_WRAPPER_JAR_FILE_NAME:String = "moonshine-jdt.jar";
 		private static const LANGUAGE_SERVER_JAR_FOLDER_PATH:String = "plugins";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
 		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
 		private static const PATH_JDT_LANGUAGE_SERVER_APP:String = "elements/jdt-language-server";
 		private static const PATH_JDT_LANGUAGE_SERVER_STORAGE:String = "java/jdt-language-server";
+
+		private static const MINIMUM_JAVA_MAJOR_VERSION:int = 17;
 		
 		private static const LANGUAGE_ID_JAVA:String = "java";
 		
@@ -160,7 +162,8 @@ package actionScripts.languageServer
 		private var _previousJDKPath:String = null;
 		private var _previousJDK8Path:String = null;
 		private var _previousJDKType:String = null;
-		private var _languageServerLauncherJar:File;
+		private var _languageServerCoreJar:File;
+		private var _languageServerWrapperJar:File;
 		private var _javaVersion:String = null;
 		private var _javaVersionProcess:NativeProcess;
 		private var _waitingToDispose:Boolean = false;
@@ -323,7 +326,7 @@ package actionScripts.languageServer
 				versionNumberParts[i] = parsed;
 			}
 			var major:Number = versionNumberParts[0];
-			if(major < 11)
+			if(major < MINIMUM_JAVA_MAJOR_VERSION)
 			{
 				return false;
 			}
@@ -337,25 +340,33 @@ package actionScripts.languageServer
 			var storageFolder:File = File.applicationStorageDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_STORAGE);
 			var storagePluginsFolder:File = storageFolder.resolvePath(LANGUAGE_SERVER_JAR_FOLDER_PATH);
 			
-			this._languageServerLauncherJar = null;
+			this._languageServerCoreJar = null;
+			this._languageServerWrapperJar = null;
 			var files:Array = appPluginsFolder.getDirectoryListing();
 			var fileCount:int = files.length;
 			for(var i:int = 0; i < fileCount; i++)
 			{
 				var file:File = File(files[i]);
-				if(file.name.indexOf(LANGUAGE_SERVER_JAR_FILE_NAME_PREFIX) == 0)
+				if(file.name.indexOf(LANGUAGE_SERVER_CORE_JAR_FILE_NAME_PREFIX) == 0)
+				{ 
+					this._languageServerCoreJar = storagePluginsFolder.resolvePath(file.name);
+				}
+				else if(file.name == LANGUAGE_SERVER_WRAPPER_JAR_FILE_NAME)
 				{
-					//jarFile = file;
-					this._languageServerLauncherJar = storagePluginsFolder.resolvePath(file.name);
-					break;
+					this._languageServerWrapperJar = storagePluginsFolder.resolvePath(file.name);
 				}
 			}
-			if(!this._languageServerLauncherJar)
+			if(!this._languageServerCoreJar)
 			{
-				error("Error initializing Java language server. Missing Java language server launcher.");
+				error("Error initializing Java language server. Missing Java language server core JAR file.");
 				return;
 			}
-			if(this._languageServerLauncherJar.exists)
+			if(!this._languageServerWrapperJar)
+			{
+				error("Error initializing Java language server. Missing Java language server launcher wrapper.");
+				return;
+			}
+			if(this._languageServerCoreJar.exists)
 			{
 				//we've already copied the files to application storage, so
 				//we're good to go!
@@ -378,7 +389,7 @@ package actionScripts.languageServer
 			{
 				showStorageError = true;
 			}
-			if(showStorageError || !storageFolder.exists || !this._languageServerLauncherJar.exists)
+			if(showStorageError || !storageFolder.exists || !this._languageServerCoreJar.exists)
 			{
 				//something went wrong!
 				error("Error initializing Java language server. Please delete the following folder, if it exists, and restart Moonshine: " + storageFolder.nativePath);
@@ -499,7 +510,8 @@ package actionScripts.languageServer
 				"-noverify",
 				"-Xmx1G",
 				"-jar",
-				this._languageServerLauncherJar.nativePath,
+				// Starting the wrapper instead of the language server launcher
+				this._languageServerWrapperJar.nativePath,
 				"-configuration",
 				configFile.nativePath,
 				"-data",
@@ -956,7 +968,7 @@ package actionScripts.languageServer
 				trace("Java version: " + this._javaVersion);
 				if(!isJavaVersionSupported(this._javaVersion))
 				{
-					error("Java version 11.0.0 or newer is required. Version not supported: " + this._javaVersion + ". Java code intelligence disabled for project: " + project.name + ".");
+					error("Java JDK version " + MINIMUM_JAVA_MAJOR_VERSION + " or newer is required. Version not supported: " + this._javaVersion + ". Java code intelligence disabled for project: " + project.name + ".");
 					return;
 				}
 				if (_useSocket)
