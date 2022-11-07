@@ -98,11 +98,12 @@ package actionScripts.languageServer
 
 	public class JavaLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	{
-		private static const LANGUAGE_SERVER_WRAPPER_JAR_PATH:String = "plugins/moonshine-jdt.jar";
+		private static const PATH_JDT_LANGUAGE_SERVER_APP:String = "elements/jdt-language-server";
+		private static const LANGUAGE_SERVER_PLUGINS_PATH:String = "plugins";
+		private static const LANGUAGE_SERVER_FEATURES_PATH:String = "features";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
 		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
-		private static const PATH_JDT_LANGUAGE_SERVER_APP:String = "elements/jdt-language-server";
 
 		private static const MINIMUM_JAVA_MAJOR_VERSION:int = 17;
 		
@@ -416,8 +417,6 @@ package actionScripts.languageServer
 			}
 
 			var appFolder:File = File.applicationDirectory.resolvePath(PATH_JDT_LANGUAGE_SERVER_APP);
-			var jarFile:File = appFolder.resolvePath(LANGUAGE_SERVER_WRAPPER_JAR_PATH)
-
 			var configFile:File = null;
 			if(ConstantsCoreVO.IS_MACOS)
 			{
@@ -427,6 +426,19 @@ package actionScripts.languageServer
 			{
 				configFile = appFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
 			}
+			var pluginsPath:File = appFolder.resolvePath(LANGUAGE_SERVER_PLUGINS_PATH);
+			var featuresPath:File = appFolder.resolvePath(LANGUAGE_SERVER_FEATURES_PATH);
+
+			var cp:String = pluginsPath.nativePath + File.separator + "*";
+			if (Settings.os == "win")
+			{
+				cp += ";"
+			}
+			else
+			{
+				cp += ":";
+			}
+			cp += featuresPath.nativePath + File.separator + "*";
 
 			var languageServerCommand:Vector.<String> = new <String>[
 				cmdFile.nativePath,
@@ -445,9 +457,10 @@ package actionScripts.languageServer
 				"java.base/java.util=ALL-UNNAMED",
 				"--add-opens",
 				"java.base/java.lang=ALL-UNNAMED",
-				"-jar",
+				"-cp",
+				cp,
 				// Starting the wrapper instead of the language server launcher
-				jarFile.nativePath,
+				"moonshine.JDTWrapper",
 				"-data",
 				//this is a file outside of the project folder due to limitations
 				//of the language server, which is based on Eclipse
