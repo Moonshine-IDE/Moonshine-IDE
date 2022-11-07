@@ -7,9 +7,16 @@
 		{
 			"type": "swf",
 			"request": "launch",
-			"name": "Launch SWF",
-			"preLaunchTask": "ActionScript: compile debug - MoonshineDESKTOPevolved/asconfig.json",
-			"internalConsoleOptions": "openOnSessionStart"
+			"name": "Launch Moonshine (SWF)",
+			"internalConsoleOptions": "openOnSessionStart",
+			"preLaunchTask": "ActionScript: compile debug - MoonshineDESKTOPevolved",
+			"windows": {
+				"asconfigPath": "asconfig.json"
+			},
+			"osx": {
+				"asconfigPath": "asconfig.mac.json",
+				"extdir": "bin-debug/extensions"
+			}
 		}
 	]
 }

@@ -51,7 +51,7 @@ package actionScripts.plugins.royale
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SharedObjectConst;
-	import actionScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.RoyaleApiReportVO;

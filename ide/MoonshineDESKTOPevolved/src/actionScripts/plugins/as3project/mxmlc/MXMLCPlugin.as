@@ -89,8 +89,8 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.FindAndCopyApplicationDescriptor;
-	import actionScripts.valueObjects.ComponentTypes;
-	import actionScripts.valueObjects.ComponentVO;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.MobileDeviceVO;

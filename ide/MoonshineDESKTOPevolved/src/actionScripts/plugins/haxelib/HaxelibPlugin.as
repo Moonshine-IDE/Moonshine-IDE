@@ -37,7 +37,7 @@ package actionScripts.plugins.haxelib
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugins.haxelib.events.HaxelibEvent;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ComponentVO;
+	import moonshine.haxeScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	import flash.desktop.NativeProcess;
@@ -424,7 +424,7 @@ package actionScripts.plugins.haxelib
 }
 
 import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
-import actionScripts.valueObjects.ComponentVO;
+import moonshine.haxeScripts.valueObjects.ComponentVO;
 
 class ProjectInstallStatus
 {

@@ -50,7 +50,7 @@ package actionScripts.utils
 	import actionScripts.plugins.domino.DominoPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.svn.SVNPlugin;
-	import actionScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKReferenceVO;

@@ -76,8 +76,8 @@ package actionScripts.plugins.git
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.PathSetupHelperUtil;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ComponentTypes;
-	import actionScripts.valueObjects.ComponentVO;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.GenericSelectableObject;
 	import actionScripts.valueObjects.ProjectVO;

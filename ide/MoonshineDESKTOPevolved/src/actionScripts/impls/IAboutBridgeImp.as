@@ -32,8 +32,10 @@
 package actionScripts.impls
 {
 	import actionScripts.interfaces.IAboutBridge;
-	import actionScripts.plugins.help.view.AboutScreen;
-	
+	import actionScripts.ui.feathersWrapper.help.AboutScreenWrapper;
+
+	import moonshine.plugin.help.view.about.AboutScreen;
+
 	import mx.core.IFlexDisplayObject;
 	import mx.core.Window;
 	
@@ -41,7 +43,8 @@ package actionScripts.impls
 	{
 		public function getNewAbout(closeListener:Function):IFlexDisplayObject
 		{
-			var about:IFlexDisplayObject = new AboutScreen();
+			var screen:AboutScreen = new AboutScreen();
+			var about:AboutScreenWrapper = new AboutScreenWrapper( screen );
 			return about;
 		}
 		

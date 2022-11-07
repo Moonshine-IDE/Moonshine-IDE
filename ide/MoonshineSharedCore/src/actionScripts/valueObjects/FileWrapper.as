@@ -34,6 +34,7 @@ package actionScripts.valueObjects
 	import actionScripts.factory.FileLocation;
     import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
 
+	//TODO: Take care of Bindable
     [Bindable]
     public dynamic class FileWrapper
 	{

@@ -78,6 +78,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 				"{\n" +
 				"\t_%propertyName% = value;\n" +
 				"}";
+		protected static var arrayProperty:String = "private var _%propertyName%:Array = [];\n" +
+				"\tpublic function get %propertyName%():Array\n" +
+				"{\n" +
+				"\treturn _%propertyName%;\n" +
+				"}\n" +
+				"public function set %propertyName%(value:Array):void\n" +
+				"{\n" +
+				"\t_%propertyName% = value;\n" +
+				"}";
 
 		public static function getString(field:String):String
 		{
@@ -102,6 +111,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 		public static function getArrayList(field:String):String
 		{
 			return arrayListProperty.replace(/%propertyName%/ig, field);
+		}
+
+		public static function getArray(field:String):String
+		{
+			return arrayProperty.replace(/%propertyName%/ig, field);
 		}
 	}
 }

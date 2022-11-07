@@ -214,7 +214,8 @@ package actionScripts.plugins.visualEditor.domino
                 }
 
                 convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
-   
+                convertedFiles[i].file = convertedFile;
+
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
                 item.pageContent = royaleMXMLContentFile;
 

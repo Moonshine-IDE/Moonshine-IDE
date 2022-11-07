@@ -33,10 +33,8 @@ package actionScripts.plugins.visualEditor.domino
 {
 	import actionScripts.plugins.ondiskproj.crud.exporter.OnDiskRoyaleCRUDModuleExporter;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.GlobalClassGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.VOClassGenerator;
 
 	import interfaces.ISurface;
 
@@ -113,7 +111,7 @@ package actionScripts.plugins.visualEditor.domino
 			for each (var form:DominoFormVO in formObjects)
 			{
 				waitingCount += 3;
-				new VOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				new DominoVOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 				new ProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 				new DominoPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 			}

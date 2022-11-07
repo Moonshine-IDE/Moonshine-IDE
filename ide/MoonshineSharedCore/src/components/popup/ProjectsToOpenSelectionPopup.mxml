@@ -101,17 +101,52 @@
 				requireSelection="true">
 			<s:itemRenderer>
 				<fx:Component>
-					<s:ItemRenderer height="22">
+					<s:ItemRenderer height="22" removed="removed()">
 						<fx:Script>
 							<![CDATA[
+
+								import actionScripts.valueObjects.GenericSelectableObject;
+								import flash.events.Event;
+
 								override public function set data(value:Object):void
 								{
 									if (value) 
 									{
 										super.data = value;
 										labelDisplay.text = data.data.name;
+
+										if ( value is GenericSelectableObject ) {
+
+											var c:GenericSelectableObject = value as GenericSelectableObject;
+											c.addEventListener( Event.CHANGE, dataChange );
+
+										}
+
+									} else {
+
+										removed();
+
 									}
 								}
+
+								function removed():void {
+
+									if ( this.data != null && this.data is GenericSelectableObject ) {
+
+											var d:GenericSelectableObject = this.data as GenericSelectableObject;
+											d.removeEventListener( Event.CHANGE, dataChange );
+
+									}
+
+								}
+
+								function dataChange( e:Event ):void {
+
+									cbSelect.selected = this.data.isSelected;
+									labelDisplay.text = data.data.name;
+
+								}
+
 							]]>
 						</fx:Script>
 						

@@ -36,7 +36,7 @@ package actionScripts.impls
 	import actionScripts.utils.MSDKIdownloadUtil;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
 
 	public class IHelperMoonshineBridgeImp implements IHelperMoonshineBridge
 	{

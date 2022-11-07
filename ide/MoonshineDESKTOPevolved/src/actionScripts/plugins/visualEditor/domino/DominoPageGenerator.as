@@ -86,7 +86,9 @@ package actionScripts.plugins.visualEditor.domino
 					pageContent += page + "\n";
 				}
 
-				fileContent = fileContent.replace(/%ViewContent%/ig, pageContent);
+				//We are inserting here in fileContent quite large content. Unfortunately replace method for some reason
+				//messing up inserted string - because of that we are using here different method for replace/insert.
+				fileContent = fileContent.split(/%ViewContent%/ig).join(pageContent);
 
 				var dgColumnList:String = getDataGridColumnsList();
 				fileContent = fileContent.replace(/%DataGridColumnsList%/ig, dgColumnList);

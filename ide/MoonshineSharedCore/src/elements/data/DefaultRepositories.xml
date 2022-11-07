@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+	<repositories>
+		<repository type="git">
+			<url>https://github.com/Moonshine-IDE/Moonshine-IDE</url>
+			<notes><![CDATA[Moonshine-IDE Source Code]]></notes>
+		</repository>
+		<repository type="git">
+			<url>https://github.com/Moonshine-IDE/Moonshine-IDE-Examples-Directory-Assistance</url>
+			<notes><![CDATA[Moonshine-IDE example projects]]></notes>
+		</repository>
+		<repository type="git">
+			<url>https://github.com/apache/royale-asjs</url>
+			<notes><![CDATA[Apache Royale Source and Examples]]></notes>
+		</repository>
+		<repository type="git">
+			<url>https://github.com/Moonshine-IDE/Royale-Examples</url>
+			<notes><![CDATA[Additional Apache Royale Examples]]></notes>
+		</repository>
+		<repository type="git">
+			<url>https://github.com/DominoVagrant/demo</url>
+			<notes><![CDATA[Setup a test HCL Domino server]]></notes>
+		</repository>
+	</repositories>
+</config>

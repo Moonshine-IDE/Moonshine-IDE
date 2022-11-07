@@ -50,7 +50,7 @@ package actionScripts.plugin.console.view
 	import feathers.skins.RectangleSkin;
 	import feathers.graphics.FillStyle;
 	import feathers.controls.ScrollPolicy;
-	
+
 	public class CommandLineEditor extends TextEditor
 	{
 		private var history:Array = [];

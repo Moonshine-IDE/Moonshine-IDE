@@ -968,14 +968,15 @@
 
 	<target name="InstallHaxeDependencies" unless="nohaxelib">
 		<echo>Installing Haxe Libraries</echo>
-                <haxelibInstall library="feathersui" version="1.0.0-rc.2" />
-                <haxelibInstall library="openfl" version="9.1.0" />
-                <haxelibInstall library="actuate" version="1.8.9" />
-                <haxelibInstall library="lime" version="7.9.0" />
+                <haxelibInstall library="lime" version="8.0.0" />
+                <haxelibInstall library="openfl" version="9.2.0" />
+                <haxelibInstall library="feathersui" version="1.0.0" />
+                <haxelibInstall library="actuate" />
                 <haxelibInstall library="markdown-openfl-textfield" version="1.0.2" />
-                <haxelibInstall library="format" version="3.5.0" />
-                <haxelibInstall library="hxp" version="1.2.2" />
-
+                <haxelibInstall library="format" />
+                <haxelibInstall library="hxp" />
+                <haxelibInstall library="amfio" />
+				
                 <!-- install from Git -->
  		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
  			dir="${LibraryGUICore}"
@@ -1011,7 +1012,9 @@
 			<arg value="run"/>
 			<arg value="openfl"/>
 			<arg value="build"/>
-			<arg value="flash"/>
+			<arg value="air"/>
+			<arg value="-Dflexhome=${FLEX_HOME}"/>
+			<arg value="-DAIR_SDK=${FLEX_HOME}"/>
 		</exec>
 	</target>
 
@@ -1044,7 +1047,7 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
-			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+			<compiler.library-path dir="${LibraryGUICore}/bin/air/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
 			<compiler.verbose-stacktraces>true</compiler.verbose-stacktraces>
@@ -1081,7 +1084,7 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
-			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+			<compiler.library-path dir="${LibraryGUICore}/bin/air/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
 			<compiler.external-library-path dir="${debug_dir}" append="true">
@@ -1122,7 +1125,7 @@
 			<compiler.library-path dir="${LibraryMoonshineCore}/libs" append="true">
 				<include name="**/*.swc" />
 			</compiler.library-path>
-			<compiler.library-path dir="${LibraryGUICore}/bin/flash/bin" append="true">
+			<compiler.library-path dir="${LibraryGUICore}/bin/air/bin" append="true">
 				<include name="*.swc" />
 			</compiler.library-path>
 		</mxmlc>
@@ -1234,17 +1237,13 @@
 
 	<macrodef name="haxelibInstall" description="Install a haxe library">
 		<attribute name="library" />
-		<attribute name="version" />
+		<attribute name="version" default="" />
 
 		<sequential>
 			<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 				dir="${LibraryGUICore}"
 				failonerror="true">
-				<arg value="install"/>
-				<arg value="@{library}"/>
-				<arg value="@{version}"/>
-				<arg value="--always"/> <!-- accept prompt to switch to versions that are already installed -->
-				<arg value="--quiet"/>
+				<arg line="install @{library} @{version} --always --quiet" />
 			</exec>
 		
 		</sequential>

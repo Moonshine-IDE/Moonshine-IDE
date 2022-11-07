@@ -9,7 +9,8 @@
 				"isDefault": true
 			},
 			"problemMatcher": [],
-			"label": "ActionScript: compile debug - MoonshineDESKTOPevolved/asconfig.json"
+			"label": "ActionScript: compile debug - MoonshineDESKTOPevolved",
+			"detail": "Compiles Moonshine.swf",
 		}
 	]
 }

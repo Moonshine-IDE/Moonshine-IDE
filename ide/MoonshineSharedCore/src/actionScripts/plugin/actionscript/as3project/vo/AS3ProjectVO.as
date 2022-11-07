@@ -897,7 +897,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return nativeExtensionSettings;
         }
 
-		public function clone():Object
+		/* IMPORTANT to change * to conrete type */
+		public function clone():*
 		{
 			var as3Project:AS3ProjectVO = new AS3ProjectVO(this.folderLocation, this.projectName, true);
 
