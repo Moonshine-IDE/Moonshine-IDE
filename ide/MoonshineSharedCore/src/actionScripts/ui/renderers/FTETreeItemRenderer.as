@@ -474,7 +474,7 @@ package actionScripts.ui.renderers
 			// have to support for theme
 			if (!ConstantsCoreVO.IS_MACOS)
 			{
-				redispatch(event);
+				updateOverMultiSelectionOption(event);
 				return;
 			}
 
