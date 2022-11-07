@@ -662,7 +662,14 @@
 					}
 					case FTETreeItemRenderer.OPEN_PATH_IN_TERMINAL:
 					{
-						dispatcher.dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_OPEN_PATH_IN_TERMINAL, fileWrapper.file));
+						if (ConstantsCoreVO.IS_MACOS)
+						{
+							dispatcher.dispatchEvent(new FilePluginEvent(event.extra, fileWrapper.file));
+						}
+						else
+						{
+							dispatcher.dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_OPEN_PATH_IN_TERMINAL, fileWrapper.file));
+						}
 						break;
 					}
 					case FTETreeItemRenderer.SHOW_IN_EXPLORER:

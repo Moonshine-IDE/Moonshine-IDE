@@ -640,6 +640,11 @@ import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 		{
 			return ExternalEditorsPlugin.editors;
 		}
+
+		public function getTerminalThemeList():Array
+		{
+			return OpenInTerminalPlugin.TERMINAL_THEMES;
+		}
 		
 		public function generateTabularRoyaleProject():void
 		{

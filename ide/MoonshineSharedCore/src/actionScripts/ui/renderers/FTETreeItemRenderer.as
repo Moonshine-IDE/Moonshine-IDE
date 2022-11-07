@@ -238,7 +238,7 @@ package actionScripts.ui.renderers
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(COPY_PATH, updateOverMultiSelectionOption, "displaying"));
 				model.contextMenuCore.addItem(contextMenu,
-						model.contextMenuCore.getContextMenuItem(OPEN_PATH_IN_TERMINAL, updateOverMultiSelectionOption, "displaying"));
+						model.contextMenuCore.getContextMenuItem(OPEN_PATH_IN_TERMINAL, populateOpenInTerminalMenu, "displaying"));
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(
 						ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 
@@ -468,6 +468,29 @@ package actionScripts.ui.renderers
 			model.contextMenuCore.subMenu(event.target, customize);
 		}
 
+		private function populateOpenInTerminalMenu(event:Event):void
+		{
+			// in case of Windows, for now, we don't
+			// have to support for theme
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				redispatch(event);
+				return;
+			}
+
+			model.contextMenuCore.removeAll(event.target);
+
+			var themes:Array = model.flexCore.getTerminalThemeList();
+			for each (var theme:String in themes)
+			{
+				var eventType:String = "eventOpenInTerminal"+ theme;
+				var item:Object = model.contextMenuCore.getContextMenuItem(theme, redispatchOpenInTerminal, Event.SELECT);
+				item.data = eventType;
+
+				model.contextMenuCore.subMenu(event.target, item);
+			}
+		}
+
 		private function populateVagrantMenu(event:Event):void
 		{
 			model.contextMenuCore.removeAll(event.target);
@@ -581,6 +604,18 @@ package actionScripts.ui.renderers
 				e.extra = event.target.data;
 			}
 			
+			dispatchEvent(e);
+		}
+
+		private function redispatchOpenInTerminal(event:Event):void
+		{
+			var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
+			if (event.target.hasOwnProperty("data") && event.target.data)
+			{
+				e.menuLabel = OPEN_PATH_IN_TERMINAL;
+				e.extra = event.target.data;
+			}
+
 			dispatchEvent(e);
 		}
 		

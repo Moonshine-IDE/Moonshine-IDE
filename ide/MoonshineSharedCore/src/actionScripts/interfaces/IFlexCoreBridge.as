@@ -79,6 +79,7 @@ package actionScripts.interfaces
 		function getComponentByType(type:String):Object;
 		function isValidExecutableBy(type:String, originPath:String, validationPath:Array=null):Boolean;
 		function getExternalEditors():ArrayCollection;
+		function getTerminalThemeList():Array;
 		function generateTabularRoyaleProject():void;
 		function generateCRUDJavaAgents():void;
 		function generateJavaAgentsVisualEditor(components:Array):void;
