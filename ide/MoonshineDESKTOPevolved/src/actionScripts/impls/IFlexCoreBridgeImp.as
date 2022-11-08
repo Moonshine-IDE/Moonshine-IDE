@@ -170,6 +170,7 @@ package actionScripts.impls
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
+	import actionScripts.plugins.as3lsp.AS3LanguageServerPlugin;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -275,6 +276,7 @@ package actionScripts.impls
 				SWFLauncherPlugin,
 				AS3ProjectPlugin,
 				AS3SyntaxPlugin,
+				AS3LanguageServerPlugin,
 				CSSSyntaxPlugin,
 				GroovySyntaxPlugin,
 				JSSyntaxPlugin,
@@ -320,7 +322,7 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
+			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, AS3LanguageServerPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
 					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,

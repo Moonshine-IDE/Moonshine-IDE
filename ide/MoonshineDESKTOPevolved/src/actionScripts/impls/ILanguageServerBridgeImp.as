@@ -31,23 +31,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
-
-	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
-	
+	import flash.utils.Dictionary;
+
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.interfaces.ILanguageServerBridge;
-	import actionScripts.languageServer.ActionScriptLanguageServerManager;
-	import actionScripts.languageServer.GroovyLanguageServerManager;
-	import actionScripts.languageServer.HaxeLanguageServerManager;
+	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.languageServer.ILanguageServerManager;
-	import actionScripts.languageServer.JavaLanguageServerManager;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.valueObjects.ProjectVO;
@@ -65,10 +57,21 @@ package actionScripts.impls
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var managers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
 		private var connectedManagers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
+		private var managerProviders:Dictionary = new Dictionary(true);
 
 		public function get connectedProjectCount():int
 		{
 			return connectedManagers.length;
+		}
+
+		public function registerLanguageServerProvider(projectType:Class /* extends ProjectVO */, callback:Function /* (ProjectVO) -> ILanguageServerManager */):void
+		{
+			managerProviders[projectType] = callback;
+		}
+
+		public function unregisterLanguageServerProvider(projectType:Class /* extends ProjectVO */):void
+		{
+			delete managerProviders[projectType];
 		}
 		
 		public function hasLanguageServerForProject(project:ProjectVO):Boolean
@@ -213,40 +216,21 @@ package actionScripts.impls
 				//projects that have already been added
 				return;
 			}
-			var manager:ILanguageServerManager = null;
-			if(project is AS3ProjectVO)
+			if ((project is IVisualEditorProjectVO && IVisualEditorProjectVO(project).isVisualEditorProject)
+				|| project is OnDiskProjectVO
+				|| project is GenericProjectVO)
 			{
-				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-				if(as3Project.isVisualEditorProject)
-				{
-					//visual editor projects don't have a language server
-					return;
-				}
-				var as3Manager:ActionScriptLanguageServerManager = new ActionScriptLanguageServerManager(as3Project);
-				manager = as3Manager;
+				//these types of projects don't have a language server
+				return;
 			}
-			if(project is JavaProjectVO)
-			{
-				var javaProject:JavaProjectVO = JavaProjectVO(project);
-				var javaManager:JavaLanguageServerManager = new JavaLanguageServerManager(javaProject);
-				manager = javaManager;
-			}
-			if(project is GrailsProjectVO)
-			{
-				var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
-				var groovyManager:GroovyLanguageServerManager = new GroovyLanguageServerManager(grailsProject);
-				manager = groovyManager;
-			}
-			if(project is HaxeProjectVO)
-			{
-				var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
-				var haxeManager:HaxeLanguageServerManager = new HaxeLanguageServerManager(haxeProject);
-				manager = haxeManager;
-			}
-			if ((project is OnDiskProjectVO) || (project is GenericProjectVO))
+			var projectClass:Class = Object(project).constructor as Class;
+			if (!(projectClass in managerProviders))
 			{
 				return;
 			}
+			var manager:ILanguageServerManager = null;
+			var callback:Function = managerProviders[projectClass] as Function;
+			manager = ILanguageServerManager(callback(project));
 			managers.push(manager);
 			manager.addEventListener(Event.INIT, manager_initHandler);
 			manager.addEventListener(Event.CLOSE, manager_closeHandler);

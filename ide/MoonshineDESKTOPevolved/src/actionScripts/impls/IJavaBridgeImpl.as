@@ -41,6 +41,7 @@ package actionScripts.impls
     import actionScripts.factory.FileLocation;
     import flash.filesystem.File;
     import actionScripts.plugin.java.javaproject.importer.JavaImporter;
+	import actionScripts.plugins.javalsp.JavaLanguageServerPlugin;
 
     public class IJavaBridgeImpl extends ProjectBridgeImplBase implements IJavaBridge
     {
@@ -60,6 +61,7 @@ package actionScripts.impls
             return [
 				JavaSyntaxPlugin,
                 JavaProjectPlugin,
+                JavaLanguageServerPlugin,
             ];
         }
 
@@ -67,6 +69,7 @@ package actionScripts.impls
         {
             return [
                 JavaProjectPlugin,
+                JavaLanguageServerPlugin,
             ];
         }
 
