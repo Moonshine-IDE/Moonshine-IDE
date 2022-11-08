@@ -18,15 +18,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.project
 {
-    import flash.events.Event;
+	import actionScripts.plugin.workspace.WorkspacePlugin;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.WorkspaceVO;
+
+	import flash.events.Event;
     import flash.events.MouseEvent;
 	import flash.filters.DropShadowFilter;
 	import flash.filters.GlowFilter;
 	import flash.geom.Matrix;
 	
 	import actionScripts.ui.tabview.TabViewTab;
+	import actionScripts.events.GlobalEventDispatcher;
+	import moonshine.plugin.workspace.events.WorkspaceEvent;
 
-    import spark.components.Image;
+	import spark.components.DropDownList;
+
+	import spark.components.Image;
 
 	[Event(name="scrollFromSource", type="flash.events.Event")]
     public class ProjectViewHeader extends TabViewTab
@@ -41,12 +49,21 @@ package actionScripts.ui.project
 			closeButtonColor = 0x444444;
 			innerGlowColor = 0xFFFFFF;
 			selected = false;
+
+			this.height = 30;
+
+			GlobalEventDispatcher.getInstance().addEventListener(
+					WorkspacePlugin.EVENT_WORKSPACE_COLLECTION_UPDATED,
+					onWorkspaceListUpdates,
+					false, 0, true
+			);
 		}
 
         [Embed(source='/elements/images/scroll_from_source.png')]
-		private var _scrollFromSourceIcon:Class;
+		private var scrollFromSourceIcon:Class;
 
-		private var _scrollFromSource:Image;
+		private var scrollFromSource:Image;
+		private var workspaceDropdown:DropDownList;
 
 		private var _showScrollFromSrouceIcon:Boolean;
 		public function set showScrollFromSourceIcon(value:Boolean):void
@@ -74,38 +91,41 @@ package actionScripts.ui.project
 								  	new DropShadowFilter(2, -90, 0x0, 0.15, 5, 6, 1, 1, true)
 								 ];
 
+			workspaceDropdown = new DropDownList();
+			workspaceDropdown.dataProvider = WorkspacePlugin.workspacesForViews;
+			workspaceDropdown.requireSelection = true;
+			workspaceDropdown.labelFunction = workspaceLabelFunction;
+			workspaceDropdown.addEventListener(Event.CHANGE, onWorkspaceDropdownChange, false, 0, true);
+			addChild(workspaceDropdown);
+
 			if (_showScrollFromSrouceIcon)
 			{
-                _scrollFromSource = new Image();
-				_scrollFromSource.source = _scrollFromSourceIcon;
-				_scrollFromSource.verticalCenter = 0;
-				_scrollFromSource.width = _scrollFromSource.height = 16;
-				_scrollFromSource.buttonMode = true;
-				_scrollFromSource.toolTip = resourceManager.getString('resources', 'SELECT_OPEN_FILE');
-				_scrollFromSource.addEventListener(MouseEvent.CLICK, onScrollToSourceIconClick);
+                scrollFromSource = new Image();
+				scrollFromSource.source = scrollFromSourceIcon;
+				scrollFromSource.verticalCenter = 0;
+				scrollFromSource.width = scrollFromSource.height = 16;
+				scrollFromSource.buttonMode = true;
+				scrollFromSource.toolTip = resourceManager.getString('resources', 'SELECT_OPEN_FILE');
+				scrollFromSource.addEventListener(MouseEvent.CLICK, onScrollToSourceIconClick);
 				
-				addChild(_scrollFromSource);
+				addChild(scrollFromSource);
 			}
 
 			background.addEventListener(MouseEvent.MOUSE_OVER, mouseOver);
 			background.addEventListener(MouseEvent.MOUSE_OUT, mouseOut);
-			closeButton.addEventListener(MouseEvent.MOUSE_OUT, mouseOut); 
+			closeButton.addEventListener(MouseEvent.MOUSE_OUT, mouseOut);
+
+			labelView.includeInLayout = labelView.visible = false;
 		}
 
 		override protected function drawButtonState():void
 		{
 			if (!background) return;
 			
-			closeButton.x = width-closeButtonWidth;
+			closeButton.x = width - closeButtonWidth;
+			closeButton.y = 4;
 
-			if (_scrollFromSource)
-            {
-				_scrollFromSource.y = (height - _scrollFromSource.height) / 2;
-                _scrollFromSource.x = width - _scrollFromSource.width - closeButtonWidth - 5;
-            }
-			
 			background.graphics.clear();
-			
 			background.graphics.lineStyle(1, 0x0, 0.5);
 			background.graphics.moveTo(0, -1);
 			background.graphics.lineTo(width, -1);
@@ -144,10 +164,62 @@ package actionScripts.ui.project
 		{
 
 		}
+
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+		{
+			super.updateDisplayList(unscaledWidth, unscaledHeight);
+
+			if (scrollFromSource)
+			{
+				scrollFromSource.y = (height - scrollFromSource.height) / 2;
+				scrollFromSource.x = width - scrollFromSource.width - closeButtonWidth - 5;
+			}
+
+			if (workspaceDropdown)
+			{
+				workspaceDropdown.x = 6;
+				workspaceDropdown.y = 4;
+				workspaceDropdown.width = scrollFromSource.x - 18;
+				workspaceDropdown.height = this.height - 8;
+			}
+		}
 		
         private function onScrollToSourceIconClick(event:MouseEvent):void
         {
 		    dispatchEvent(new Event("scrollFromSource"));
         }
+
+		private function workspaceLabelFunction(item:Object):String
+		{
+			if (item == workspaceDropdown.selectedItem)
+			{
+				return "Workspace: "+ item.label;
+			}
+
+			return item.label;
+		}
+
+		private function onWorkspaceListUpdates(event:Event):void
+		{
+			workspaceDropdown.dataProvider = WorkspacePlugin.workspacesForViews;
+			workspaceDropdown.callLater(function():void
+			{
+				for each (var workspace:WorkspaceVO in workspaceDropdown.dataProvider)
+				{
+					if (workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE)
+					{
+						workspaceDropdown.selectedItem = workspace;
+						break;
+					}
+				}
+			});
+		}
+
+		private function onWorkspaceDropdownChange(event:Event):void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(
+					new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, workspaceDropdown.selectedItem.label)
+			);
+		}
     }
 }

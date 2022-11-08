@@ -55,6 +55,7 @@ import openfl.events.Event;
 import actionScripts.valueObjects.WorkspaceVO;
 import feathers.events.TriggerEvent;
 import moonshine.theme.assets.ExclamationRedIcon;
+import actionScripts.events.GlobalEventDispatcher;
 
 class NewWorkspaceView extends ResizableTitleWindow {
 
@@ -150,7 +151,7 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		}
 		
 		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, workspaceName);
-		this.dispatchEvent(workspaceEvent);
+		GlobalEventDispatcher.getInstance().dispatchEvent(workspaceEvent);
 		
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}

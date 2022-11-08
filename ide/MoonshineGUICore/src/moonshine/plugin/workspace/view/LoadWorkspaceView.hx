@@ -44,6 +44,7 @@ import openfl.events.Event;
 import feathers.events.TriggerEvent;
 import moonshine.plugin.workspace.events.WorkspaceEvent;
 import actionScripts.valueObjects.WorkspaceVO;
+import actionScripts.events.GlobalEventDispatcher;
 
 class LoadWorkspaceView extends ResizableTitleWindow {
 	public function new() {
@@ -148,8 +149,7 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 	
 	private function loadWorkspaceButton_triggerHandler(event:Event):Void {
 		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, this.workspacePopUpListView.selectedItem.label);
-		
-		this.dispatchEvent(workspaceEvent);
+		GlobalEventDispatcher.getInstance().dispatchEvent(workspaceEvent);
 		
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
