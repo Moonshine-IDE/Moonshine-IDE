@@ -480,6 +480,12 @@ package actionScripts.ui.renderers
 
 			model.contextMenuCore.removeAll(event.target);
 
+			var defaultOption:Object = model.contextMenuCore.getContextMenuItem("Default", redispatchOpenInTerminal, Event.SELECT);
+			defaultOption.data = "eventOpenInTerminalDefault";
+			model.contextMenuCore.subMenu(event.target, defaultOption);
+
+			model.contextMenuCore.subMenu(event.target, model.contextMenuCore.getContextMenuItem(null));
+
 			var themes:Array = model.flexCore.getTerminalThemeList();
 			for each (var theme:String in themes)
 			{

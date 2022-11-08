@@ -56,6 +56,7 @@ package actionScripts.plugins.menu
 			{
 				dispatcher.removeEventListener("eventOpenInTerminal"+ theme, onOpenPathInTerminal);
 			}
+			dispatcher.removeEventListener("eventOpenInTerminalDefault", onOpenPathInTerminal);
 		}
 
 		override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
@@ -88,6 +89,7 @@ package actionScripts.plugins.menu
 			{
 				dispatcher.addEventListener("eventOpenInTerminal"+ theme, onOpenPathInTerminal, false, 0, true);
 			}
+			dispatcher.addEventListener("eventOpenInTerminalDefault", onOpenPathInTerminal, false, 0, true);
 		}
 
 		private function retrieveThemeListOnTerminal():void
@@ -122,6 +124,9 @@ package actionScripts.plugins.menu
 				warning("Build is running. Wait for finish...");
 				return;
 			}
+
+			// in case of Default
+			if (themeName == "Default") themeName = "";
 
 			nativeProcess = new NativeProcess();
 			nativeProcessStartupInfo = new NativeProcessStartupInfo();
