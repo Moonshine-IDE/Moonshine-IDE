@@ -104,7 +104,10 @@
 	}
 
 ]]></fx:Script>
-  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
+  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsLeft" gap="2">
+      <j:style>
+          <js:SimpleCSSStyles padding="10"/>
+      </j:style>
       <j:IconButton text="Add" includeIn="dataGridState"
                     click="onAddItem(event)">
         <j:icon>
@@ -135,7 +138,10 @@
         </j:icon>
       </j:IconButton>
   </j:HGroup>
-  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2" includeIn="contentState">
+  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsLeft" gap="2" includeIn="contentState">
+       <j:style>
+           <js:SimpleCSSStyles paddingLeft="10" marginTop="0"/>
+      </j:style>
       <j:Button text="Save" click="onSaveClick(event)">
            <j:beads>
               <j:Disabled disabled="{isDisabled}"/>
