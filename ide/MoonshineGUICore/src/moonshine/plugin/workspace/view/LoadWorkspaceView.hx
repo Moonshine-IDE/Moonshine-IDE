@@ -148,7 +148,7 @@ class LoadWorkspaceView extends ResizableTitleWindow {
 	}
 	
 	private function loadWorkspaceButton_triggerHandler(event:Event):Void {
-		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, this.workspacePopUpListView.selectedItem.label);
+		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, this.workspacePopUpListView.selectedItem.label);
 		GlobalEventDispatcher.getInstance().dispatchEvent(workspaceEvent);
 		
 		this.dispatchEvent(new Event(Event.CLOSE));

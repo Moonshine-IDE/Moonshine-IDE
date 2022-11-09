@@ -21,6 +21,7 @@ package actionScripts.ui.project
 	import actionScripts.plugin.workspace.WorkspacePlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.WorkspaceVO;
+	import actionScripts.ui.DropDownListNoCropPopup;
 
 	import flash.events.Event;
     import flash.events.MouseEvent;
@@ -32,9 +33,9 @@ package actionScripts.ui.project
 	import actionScripts.events.GlobalEventDispatcher;
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
 
-	import spark.components.DropDownList;
+import mx.collections.ArrayList;
 
-	import spark.components.Image;
+import spark.components.Image;
 
 	[Event(name="scrollFromSource", type="flash.events.Event")]
     public class ProjectViewHeader extends TabViewTab
@@ -53,8 +54,8 @@ package actionScripts.ui.project
 			this.height = 30;
 
 			GlobalEventDispatcher.getInstance().addEventListener(
-					WorkspacePlugin.EVENT_WORKSPACE_COLLECTION_UPDATED,
-					onWorkspaceListUpdates,
+					WorkspacePlugin.EVENT_WORKSPACE_CHANGED,
+					onWorkspaceChanged,
 					false, 0, true
 			);
 		}
@@ -63,7 +64,7 @@ package actionScripts.ui.project
 		private var scrollFromSourceIcon:Class;
 
 		private var scrollFromSource:Image;
-		private var workspaceDropdown:DropDownList;
+		private var workspaceDropdown:DropDownListNoCropPopup;
 
 		private var _showScrollFromSrouceIcon:Boolean;
 		public function set showScrollFromSourceIcon(value:Boolean):void
@@ -91,7 +92,7 @@ package actionScripts.ui.project
 								  	new DropShadowFilter(2, -90, 0x0, 0.15, 5, 6, 1, 1, true)
 								 ];
 
-			workspaceDropdown = new DropDownList();
+			workspaceDropdown = new DropDownListNoCropPopup();
 			workspaceDropdown.dataProvider = WorkspacePlugin.workspacesForViews;
 			workspaceDropdown.requireSelection = true;
 			workspaceDropdown.labelFunction = workspaceLabelFunction;
@@ -199,12 +200,13 @@ package actionScripts.ui.project
 			return item.label;
 		}
 
-		private function onWorkspaceListUpdates(event:Event):void
+		private function onWorkspaceChanged(event:Event):void
 		{
-			workspaceDropdown.dataProvider = WorkspacePlugin.workspacesForViews;
 			workspaceDropdown.callLater(function():void
 			{
-				for each (var workspace:WorkspaceVO in workspaceDropdown.dataProvider)
+				if (!workspaceDropdown.dataProvider)
+					return;
+				for each (var workspace:WorkspaceVO in (workspaceDropdown.dataProvider as ArrayList).source)
 				{
 					if (workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE)
 					{
@@ -218,7 +220,7 @@ package actionScripts.ui.project
 		private function onWorkspaceDropdownChange(event:Event):void
 		{
 			GlobalEventDispatcher.getInstance().dispatchEvent(
-					new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, workspaceDropdown.selectedItem.label)
+					new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, workspaceDropdown.selectedItem.label)
 			);
 		}
     }

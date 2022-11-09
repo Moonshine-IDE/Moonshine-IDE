@@ -151,7 +151,7 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		}
 		
 		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, workspaceName);
-		GlobalEventDispatcher.getInstance().dispatchEvent(workspaceEvent);
+		this.dispatchEvent(workspaceEvent);
 		
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
