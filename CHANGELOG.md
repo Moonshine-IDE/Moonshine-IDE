@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
 
+## Moonshine IDE [3.3.4]
+
+### Summary
+
+### Added
+
+### Changed
+
+* Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.16.0.
+
+### Fixed
+
 ## Moonshine IDE [3.3.3]
 
 ### Summary
