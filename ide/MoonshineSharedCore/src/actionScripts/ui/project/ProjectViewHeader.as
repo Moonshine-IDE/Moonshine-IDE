@@ -112,6 +112,9 @@ package actionScripts.ui.project
 			workspaceDropdown.addEventListener(Event.CHANGE, onWorkspaceDropdownChange, false, 0, true);
 			addChild(workspaceDropdown);
 
+			// selects the correct workspace
+			onWorkspaceChanged(null);
+
 			if (_showScrollFromSrouceIcon)
 			{
                 scrollFromSource = new Image();
