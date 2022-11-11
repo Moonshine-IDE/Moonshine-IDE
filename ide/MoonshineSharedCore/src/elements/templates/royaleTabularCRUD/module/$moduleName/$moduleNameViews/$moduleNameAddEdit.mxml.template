@@ -92,7 +92,7 @@
 	<js:HRule percentWidth="100"/>
 	<j:Spacer height="20"/>
 	
-	<j:Form valid="onFormValid(event)">
+	<j:Form valid="onFormValid(event)" percentWidth="50">
 		<j:beads>
 			<j:FormValidator id="formValidator" trigger="{btnSubmit}" triggerEvent="click" 
 							 requiredFieldError="At least one field has a validation error. Please correct the problem and submit again."/>
