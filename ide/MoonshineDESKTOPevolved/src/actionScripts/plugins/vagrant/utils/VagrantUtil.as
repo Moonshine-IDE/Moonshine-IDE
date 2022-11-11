@@ -142,7 +142,7 @@ package actionScripts.plugins.vagrant.utils
 				var request:URLRequest = new URLRequest();
 				request.url = instance.url +"/info";
 				request.method = "GET";
-				request.idleTimeout = 3000;
+				request.idleTimeout = 2000;
 
 				var loader:URLLoader = new URLLoader();
 				loader.addEventListener(Event.COMPLETE, onStateCheckSuccess);
