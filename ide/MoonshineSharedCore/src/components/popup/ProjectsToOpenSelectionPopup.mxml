@@ -39,8 +39,9 @@
 		 xmlns:ns="library://ns.adobe.com/flashx/textLayout">
 	<fx:Script>
 		<![CDATA[
-			
-			import mx.collections.ArrayCollection;
+		import actionScripts.plugin.workspace.WorkspacePlugin;
+
+		import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
 			
@@ -162,6 +163,11 @@
 				</fx:Component>
 			</s:itemRenderer>
 		</s:List>
+		<s:Label text="Opens in Workspace:"
+				 paddingTop="4" paddingBottom="4"/>
+		<s:DropDownList dataProvider="{WorkspacePlugin.workspacesForViews}" labelField="label"
+			width="100%"
+			requireSelection="true"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
