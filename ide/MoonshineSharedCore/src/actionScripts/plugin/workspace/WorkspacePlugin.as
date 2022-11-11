@@ -103,18 +103,6 @@ package actionScripts.plugin.workspace
 			ConstantsCoreVO.CURRENT_WORKSPACE =	_currentWorkspaceLabel = value;
 		}
 		
-		private function get workspaceLabels():Array
-		{
-			var tmpArray:Array = [];
-			for (var label:String in workspaces)
-			{
-				tmpArray.push(label);
-			}
-			
-			tmpArray.sort(Array.CASEINSENSITIVE);
-			return tmpArray;
-		}
-		
 		public function WorkspacePlugin()
 		{
 			super();
@@ -298,6 +286,8 @@ package actionScripts.plugin.workspace
 				workspacesForViews.addItem(new WorkspaceVO(workspace, workspaces[workspace]));
 			}
 
+			sortWorkspaces();
+
 			currentWorkspacePaths = (workspaces[currentWorkspaceLabel] !== undefined) ?
 				workspaces[currentWorkspaceLabel] : [];
 		}
@@ -342,6 +332,7 @@ package actionScripts.plugin.workspace
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 			workspacesForViews.addItem(new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]));
+			sortWorkspaces();
 			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
 			saveToCookie();
 			outputToConsole();
@@ -353,6 +344,7 @@ package actionScripts.plugin.workspace
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 			workspacesForViews.addItem(new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]));
+			sortWorkspaces();
 			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
 			saveToCookie();
 			outputToConsole();
@@ -412,6 +404,11 @@ package actionScripts.plugin.workspace
 			}
 
 			return null;
+		}
+
+		private function sortWorkspaces():void
+		{
+			workspacesForViews.source.sortOn(["label"]);
 		}
 	}
 }
