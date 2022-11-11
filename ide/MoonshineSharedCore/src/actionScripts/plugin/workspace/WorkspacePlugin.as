@@ -322,7 +322,13 @@ package actionScripts.plugin.workspace
 				tmpProjectLocation = new FileLocation(path);
 				if (tmpProjectLocation.fileBridge.exists)
 				{
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, tmpProjectLocation.fileBridge.getFile));
+					dispatcher.dispatchEvent(
+						new ProjectEvent(
+							ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, 
+							tmpProjectLocation.fileBridge.getFile,
+							WorkspaceEvent.LOAD_PROJECT_BY_WORKSPACE
+						)
+					);
 				}
 			}
 
