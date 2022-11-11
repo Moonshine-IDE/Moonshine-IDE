@@ -406,7 +406,7 @@ package actionScripts.plugin.workspace
 
 		private function getCurrentWorkspaceForView(label:String):WorkspaceVO
 		{
-			for each (var workspace:WorkspaceVO in workspacesForViews)
+			for each (var workspace:WorkspaceVO in workspacesForViews.source)
 			{
 				if (workspace.label == label) return workspace;
 			}
