@@ -770,7 +770,7 @@ package actionScripts.ui.menu
 						eventData:item.data,
 							event:item.event
 					};
-					eventToMenuMapping[item.event] = nativeMenuItem;
+					eventToMenuMapping[item.event + "_" + Math.random()] = nativeMenuItem;
 					nativeMenuItem.item.listener = redispatch;
 					
 				}
