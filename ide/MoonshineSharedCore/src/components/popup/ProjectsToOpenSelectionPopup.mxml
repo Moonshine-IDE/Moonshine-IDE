@@ -125,7 +125,7 @@
 					dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, txtNewWorkspace.text));
 						
 				}
-				else if (ddlWorkspaces.selectedIndex != 0)
+				else
 				{
 					// we need to change to a different existing workspace
 					var selectedWorkspaceLabel:String = ddlWorkspaces.selectedItem.label;
