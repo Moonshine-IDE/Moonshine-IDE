@@ -495,52 +495,99 @@ package actionScripts.plugin.project
 
                     var projectLocation:FileLocation = new FileLocation(projectLocationInfo.path);
                     var projectFile:Object = projectLocation.fileBridge.getFile;
-                    var projectFileLocation:FileLocation = model.flexCore.testFlashDevelop(projectFile);
+					var projectFileLocation:FileLocation = null;
 
-                    if (projectFileLocation)
-                    {
-                        project = model.flexCore.parseFlashDevelop(null, projectFileLocation, projectLocationInfo.name);
-                    }
-					
-					if (!project)
+					projectFileLocation = model.flexCore.testFlashDevelop(projectFile);
+					if (projectFileLocation)
 					{
-	                    projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
-	                    if (projectFileLocation)
-	                    {
-	                        project = model.flexCore.parseFlashBuilder(projectLocation);
-	                    }
+						try
+						{
+							project = model.flexCore.parseFlashDevelop(null, projectFileLocation, projectLocationInfo.name);
+						}
+						catch(e:Error)
+						{
+							// something went wrong trying to parse the project file
+							project = null;
+							error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
+							error(e.message +"\n"+ e.getStackTrace());
+						}
 					}
 					
 					if (!project)
 					{
-	                    projectFileLocation = model.javaCore.testJava(projectFile);
-	                    if (projectFileLocation)
-	                    {
-							var javaSettingsFile:FileLocation = model.javaCore.getSettingsFile(projectFile);
-	                        project = model.javaCore.parseJava(
-									projectLocation,
-									null,
-									javaSettingsFile
-							);
-	                    }
+						projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
+						if (projectFileLocation)
+						{
+							try
+							{
+								project = model.flexCore.parseFlashBuilder(projectLocation);
+							}
+							catch(e:Error)
+							{
+								project = null;
+								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
+								error(e.message +"\n"+ e.getStackTrace());
+							}
+						}
 					}
 					
 					if (!project)
 					{
-	                    projectFileLocation = model.groovyCore.testGrails(projectFile);
-	                    if (projectFileLocation)
-	                    {
-	                        project = model.groovyCore.parseGrails(projectLocation, null, projectFileLocation);
-	                    }
+						var pomOrGradleFileLocation:FileLocation = model.javaCore.testJava(projectFile);
+						if (pomOrGradleFileLocation)
+						{
+							projectFileLocation = model.javaCore.getSettingsFile(projectFile);
+							try
+							{
+								project = model.javaCore.parseJava(
+										projectLocation,
+										null,
+										projectFileLocation
+								);
+							}
+							catch(e:Error)
+							{
+								project = null;
+								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
+								error(e.message +"\n"+ e.getStackTrace());
+							}
+						}
 					}
 					
 					if (!project)
 					{
-	                    projectFileLocation = model.haxeCore.testHaxe(projectFile);
-	                    if (projectFileLocation)
-	                    {
-	                        project = model.haxeCore.parseHaxe(projectLocation, null, projectFileLocation);
-	                    }
+						projectFileLocation = model.groovyCore.testGrails(projectFile);
+						if (projectFileLocation)
+						{
+							try
+							{
+								project = model.groovyCore.parseGrails(projectLocation, null, projectFileLocation);
+							}
+							catch(e:Error)
+							{
+								project = null;
+								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
+								error(e.message +"\n"+ e.getStackTrace());
+							}
+						}
+					}
+					
+					if (!project)
+					{
+						projectFileLocation = model.haxeCore.testHaxe(projectFile);
+						if (projectFileLocation)
+						{
+							try
+							{
+								project = model.haxeCore.parseHaxe(projectLocation, null, projectFileLocation);
+							}
+							catch(e:Error)
+							{
+								project = null;
+								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
+								error(e.message +"\n"+ e.getStackTrace());
+							}
+						}
 					}
 					
 					if (!project)
@@ -548,7 +595,16 @@ package actionScripts.plugin.project
 						projectFileLocation = model.ondiskCore.testOnDisk(projectFile);
 						if (projectFileLocation)
 						{
-							project = model.ondiskCore.parseOnDisk(projectLocation, null, projectFileLocation);
+							try
+							{
+								project = model.ondiskCore.parseOnDisk(projectLocation, null, projectFileLocation);
+							}
+							catch(e:Error)
+							{
+								project = null;
+								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
+								error(e.message +"\n"+ e.getStackTrace());
+							}
 						}
 					}
 
@@ -557,7 +613,16 @@ package actionScripts.plugin.project
 						projectFileLocation = model.genericCore.testGenericProject(projectFile);
 						if (projectFileLocation)
 						{
-							project = model.genericCore.parseGenericProject(projectLocation, null, projectFileLocation);
+							try
+							{
+								project = model.genericCore.parseGenericProject(projectLocation, null, projectFileLocation);
+							}
+							catch(e:Error)
+							{
+								project = null;
+								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
+								error(e.message +"\n"+ e.getStackTrace());
+							}
 						}
 					}
 
