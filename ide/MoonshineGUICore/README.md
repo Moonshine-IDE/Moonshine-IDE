@@ -29,7 +29,7 @@ The _MoonshineGUICore_ project is currently compiled as a _.swc_ library file, s
 In a terminal, build _MoonshineGUICore_ with the following command:
 
 ```sh
-openfl build air -debug
+openfl build flash -debug
 ```
 
 In an editor or IDE, make sure that the **AIR / Debug** OpenFL target is selected before building.
