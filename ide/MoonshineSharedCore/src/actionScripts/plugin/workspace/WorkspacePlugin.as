@@ -31,37 +31,35 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.workspace
 {
-	import actionScripts.ui.FeathersUIWrapper;
-	import actionScripts.valueObjects.WorkspaceVO;
-
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
-
-	import moonshine.plugin.workspace.events.WorkspaceEvent;
-	import moonshine.plugin.workspace.view.NewWorkspaceView;
-
+	
 	import mx.collections.ArrayList;
-
 	import mx.core.FlexGlobals;
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
-
+	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.WorkspaceVO;
+	
 	import feathers.data.ArrayCollection;
-
-	import moonshine.plugin.workspace.view.LoadWorkspaceView;
+	
 	import moonshine.data.preferences.MoonshinePreferences;
+	import moonshine.plugin.workspace.events.WorkspaceEvent;
+	import moonshine.plugin.workspace.view.LoadWorkspaceView;
+	import moonshine.plugin.workspace.view.NewWorkspaceView;
 
 	public class WorkspacePlugin extends PluginBase
 	{
@@ -103,6 +101,22 @@ package actionScripts.plugin.workspace
 			ConstantsCoreVO.CURRENT_WORKSPACE =	_currentWorkspaceLabel = value;
 		}
 		
+		public static function getCurrentWorkspaceForView(label:String):WorkspaceVO
+		{
+			var workspace:WorkspaceVO;
+			workspacesForViews.source.some(function(element:WorkspaceVO, index:int, arr:Array):Boolean
+			{
+				if (element.label == label) 
+				{
+					workspace = element;
+					return true;
+				}
+				return false;
+			});
+			
+			return workspace;
+		}
+		
 		public function WorkspacePlugin()
 		{
 			super();
@@ -118,6 +132,8 @@ package actionScripts.plugin.workspace
 			dispatcher.addEventListener(EVENT_NEW, onNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(EVENT_LOAD, onLoadWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent, false, 0, true);
+			dispatcher.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent, false, 0, true);
+			dispatcher.addEventListener(WorkspaceEvent.SAVE_AS_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent, false, 0, true);
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
@@ -165,13 +181,12 @@ package actionScripts.plugin.workspace
 		private function onSaveAsNewWorkspaceEvent(event:Event):void
 		{
 			var newWorkspaceView:NewWorkspaceView = createNewWorkspaceViewWithTitle("Save As Workspace");
-			newWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
+			newWorkspaceView.isSaveAs = true;
 		}
 
 		private function onNewWorkspaceEvent(event:Event):void
 		{
-			var newWorkspaceView:NewWorkspaceView = createNewWorkspaceViewWithTitle("New Workspace");
-			newWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
+			createNewWorkspaceViewWithTitle("New Workspace");
 		}
 
 		protected function newWorkspaceView_stage_resizeHandler(event:Event):void
@@ -186,9 +201,6 @@ package actionScripts.plugin.workspace
 			newWorkspaceViewWrapper = null;
 
 			newWorkspaceView.removeEventListener(Event.CLOSE, handleNewWorkspacePopupClose);
-			newWorkspaceView.removeEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
-			newWorkspaceView.removeEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
-
 			newWorkspaceView = null;
 		}
 		
@@ -224,7 +236,7 @@ package actionScripts.plugin.workspace
 			loadWorkspaceViewWrapper = new FeathersUIWrapper(loadWorkspaceView);
 
 			loadWorkspaceView.workspaces = new ArrayCollection(workspacesForViews.source);
-			loadWorkspaceView.selectedWorkspace = this.getCurrentWorkspaceForView(currentWorkspaceLabel);
+			loadWorkspaceView.selectedWorkspace = getCurrentWorkspaceForView(currentWorkspaceLabel);
 			loadWorkspaceView.addEventListener(Event.CLOSE, handleLoadWorkspacePopupClose);
 
 			PopUpManager.addPopUp(loadWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
@@ -394,16 +406,6 @@ package actionScripts.plugin.workspace
 					closeAllProjectItems = null;
 				}, 1000);
 			}
-		}
-
-		private function getCurrentWorkspaceForView(label:String):WorkspaceVO
-		{
-			for each (var workspace:WorkspaceVO in workspacesForViews.source)
-			{
-				if (workspace.label == label) return workspace;
-			}
-
-			return null;
 		}
 
 		private function sortWorkspaces():void

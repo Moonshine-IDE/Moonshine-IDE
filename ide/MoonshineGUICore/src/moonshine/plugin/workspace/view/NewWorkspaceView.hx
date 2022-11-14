@@ -74,6 +74,17 @@ class NewWorkspaceView extends ResizableTitleWindow {
 	private var workspaceNameTextInput:TextInput;
 	private var errorContainer:LayoutGroup;
 	
+	private var _isSaveAs:Bool;
+	@:flash.property
+	public var isSaveAs(get, set):Bool;
+	private function get_isSaveAs():Bool {
+		return this._isSaveAs;
+	}
+	private function set_isSaveAs(value:Bool):Bool {
+		this._isSaveAs = value;
+		return this._isSaveAs;
+	}
+	
 	private var _workspaces:ArrayCollection<WorkspaceVO> = new ArrayCollection();
 	
 	@:flash.property
@@ -151,8 +162,11 @@ class NewWorkspaceView extends ResizableTitleWindow {
 			return;
 		}
 		
-		var workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, workspaceName);
-		this.dispatchEvent(workspaceEvent);
+		var workspaceEvent = new WorkspaceEvent(
+				this.isSaveAs ? WorkspaceEvent.SAVE_AS_WORKSPACE_WITH_LABEL : WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, 
+				workspaceName
+				);
+		GlobalEventDispatcher.getInstance().dispatchEvent(workspaceEvent);
 		
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}

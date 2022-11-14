@@ -34,23 +34,66 @@
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark"
-		 width="600" height="300" minWidth="300" minHeight="200"
-		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:marker="actionScripts.ui.marker.*" xmlns:mx="library://ns.adobe.com/flex/mx"
-		 xmlns:ns="library://ns.adobe.com/flashx/textLayout">
+		 width="600" height="400" minWidth="300" minHeight="200"
+		 skinClass="components.skins.ResizableTitleWindowSkin" 
+		 xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" 
+		 xmlns:marker="actionScripts.ui.marker.*" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:ns="library://ns.adobe.com/flashx/textLayout" 
+		 creationComplete="onCreationCompletes()" xmlns:view="actionScripts.plugin.findreplace.view.*">
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.plugin.workspace.WorkspacePlugin;
-
-		import mx.collections.ArrayCollection;
+			import flash.net.registerClassAlias;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
+			import mx.utils.ObjectUtil;
+			import mx.validators.Validator;
 			
+			import spark.events.IndexChangeEvent;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.plugin.workspace.WorkspacePlugin;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.GenericSelectableObject;
+			import actionScripts.valueObjects.WorkspaceVO;
+			
+			import moonshine.plugin.workspace.events.WorkspaceEvent;
 			
 			[Bindable] public var projects:ArrayCollection;
 			[Bindable] public var repositoryRoot:String;
 			
 			public var isSubmit:Boolean;
+						
+			[Bindable] private var workspaces:ArrayList;
+			
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			
+			override protected function closeThis():void
+			{
+				dispatcher.removeEventListener(WorkspacePlugin.EVENT_WORKSPACE_CHANGED, onWorkspaceChanged);
+				super.closeThis();
+			}
+			
+			private function onCreationCompletes():void
+			{
+				registerClassAlias("actionScripts.valueObjects.WorkspaceVO", WorkspaceVO);
+				workspaces = ObjectUtil.copy(WorkspacePlugin.workspacesForViews) as ArrayList;
+				
+				// add two custom objects to function
+				// in this particular interface's needs
+				var tmpWorkspace:WorkspaceVO = new WorkspaceVO("-Create New Workspace-");
+				workspaces.addItemAt(tmpWorkspace, 0);
+				tmpWorkspace = new WorkspaceVO("Current ("+ ConstantsCoreVO.CURRENT_WORKSPACE +")");
+				workspaces.addItemAt(tmpWorkspace, 0);
+				
+				// on submit of 'this', this event will
+				// satisfy that the workspace have changed and then
+				// close 'this' window and add projects by
+				// 'this' owner-Plugin
+				dispatcher.addEventListener(WorkspacePlugin.EVENT_WORKSPACE_CHANGED, onWorkspaceChanged, false, 0, true);
+			}
 			
 			private function onSubmit():void
 			{
@@ -61,12 +104,53 @@
 					return;
 				}
 				
-				btnSubmit.enabled = false;
+				// if new workspace input is showing
+				if (ddlWorkspaces.selectedIndex == 1)
+				{
+					var tmpArr:Array = new Array(workspaceValidator);
+					if (Validator.validateAll(tmpArr).length != 0)
+					{
+						return;
+					}
+					
+					var targetWorkspace:WorkspaceVO = WorkspacePlugin.getCurrentWorkspaceForView(txtNewWorkspace.text);
+					if (targetWorkspace)
+					{
+						Alert.show("A similar named workspace is already exists.", "Error!");
+						return;
+					}
+					
+					// we'll create a new workspace first
+					btnSubmit.enabled = false;
+					dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, txtNewWorkspace.text));
+						
+				}
+				else if (ddlWorkspaces.selectedIndex != 0)
+				{
+					// we need to change to a different existing workspace
+					var selectedWorkspaceLabel:String = ddlWorkspaces.selectedItem.label;
+					var currentWorkspaceLabel:String = "Current ("+ ConstantsCoreVO.CURRENT_WORKSPACE +")";
+					if ((selectedWorkspaceLabel != currentWorkspaceLabel) && (selectedWorkspaceLabel != ConstantsCoreVO.CURRENT_WORKSPACE))
+					{
+						btnSubmit.enabled = false;
+						dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, ddlWorkspaces.selectedItem.label));
+					}
+					else
+					{
+						// no workspace change needed
+						btnSubmit.enabled = false;
+						onWorkspaceChanged(null);
+					}
+				}
+			}
+			
+			private function onWorkspaceChanged(event:Event):void
+			{
 				isSubmit = true;
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
-			protected function onSelectAllChange(event:Event):void
+			private function onSelectAllChange(event:Event):void
 			{
 				var isSelected:Boolean = event.target.selected;
 				for each (var i:GenericSelectableObject in projects)
@@ -75,7 +159,7 @@
 				}
 			}
 			
-			protected function hasSelectionToChanges():Boolean
+			private function hasSelectionToChanges():Boolean
 			{
 				for each (var i:GenericSelectableObject in projects)
 				{
@@ -85,8 +169,16 @@
 				return false;
 			}
 			
+			private function onWorkspaceDropdownChange(event:IndexChangeEvent):void
+			{
+				txtNewWorkspace.includeInLayout = txtNewWorkspace.visible = (event.newIndex == 1);
+			}
+			
 		]]>
 	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="workspaceValidator" source="{txtNewWorkspace}" property="text" trigger="{btnSubmit}" minLength="3" triggerEvent="click"/>
+	</fx:Declarations>
 	
 	<s:VGroup height="100%" width="100%" 
 			  paddingLeft="12" paddingBottom="9" paddingTop="9" paddingRight="13">
@@ -106,8 +198,9 @@
 						<fx:Script>
 							<![CDATA[
 
-								import actionScripts.valueObjects.GenericSelectableObject;
 								import flash.events.Event;
+								
+								import actionScripts.valueObjects.GenericSelectableObject;
 
 								override public function set data(value:Object):void
 								{
@@ -116,38 +209,32 @@
 										super.data = value;
 										labelDisplay.text = data.data.name;
 
-										if ( value is GenericSelectableObject ) {
-
+										if ( value is GenericSelectableObject ) 
+										{
 											var c:GenericSelectableObject = value as GenericSelectableObject;
 											c.addEventListener( Event.CHANGE, dataChange );
-
 										}
-
-									} else {
-
+									} 
+									else 
+									{
 										removed();
-
 									}
 								}
 
-								function removed():void {
-
-									if ( this.data != null && this.data is GenericSelectableObject ) {
-
-											var d:GenericSelectableObject = this.data as GenericSelectableObject;
-											d.removeEventListener( Event.CHANGE, dataChange );
-
+								private function removed():void 
+								{
+									if (this.data != null && this.data is GenericSelectableObject)
+									{
+										var d:GenericSelectableObject = this.data as GenericSelectableObject;
+										d.removeEventListener( Event.CHANGE, dataChange );
 									}
-
 								}
 
-								function dataChange( e:Event ):void {
-
+								private function dataChange(event:Event):void
+								{
 									cbSelect.selected = this.data.isSelected;
 									labelDisplay.text = data.data.name;
-
 								}
-
 							]]>
 						</fx:Script>
 						
@@ -165,9 +252,14 @@
 		</s:List>
 		<s:Label text="Opens in Workspace:"
 				 paddingTop="4" paddingBottom="4"/>
-		<s:DropDownList dataProvider="{WorkspacePlugin.workspacesForViews}" labelField="label"
-			width="100%"
-			requireSelection="true"/>
+		<s:DropDownList id="ddlWorkspaces" 
+						dataProvider="{workspaces}" labelField="label"
+						width="100%"
+						requireSelection="true" change="onWorkspaceDropdownChange(event)"/>
+		<view:PromptTextInput id="txtNewWorkspace"
+							  prompt="New workspace name"
+							  width="100%" styleName="textInput"
+							  includeInLayout="false" visible="false"/>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>
