@@ -71,7 +71,7 @@
     <element path="libs/AwayBuilderLib.swc"/>
     <element path="../MoonshineSharedCore/libs/AsWing.swc"/>
     <element path="../MoonshineSharedCore/libs/Global.swc"/>
-    <element path="../MoonshineGUICore/bin/air/bin/MoonshineGUICore.swc"/>
+    <element path="../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"/>
   </libraryPaths>
   <externalLibraryPaths></externalLibraryPaths>
   <rslPaths></rslPaths>

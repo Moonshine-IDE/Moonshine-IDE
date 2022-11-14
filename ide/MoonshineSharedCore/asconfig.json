@@ -9,7 +9,7 @@
 			"libs"
 		],
 		"external-library-path": [
-			"../MoonshineGUICore/bin/air/bin/MoonshineGUICore.swc"
+			"../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"
 		],
 		"include-sources": [
 			"src/components"

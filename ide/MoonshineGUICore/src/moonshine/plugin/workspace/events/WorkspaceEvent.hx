@@ -34,8 +34,11 @@ package moonshine.plugin.workspace.events;
 
 import openfl.events.Event;
 
-class WorkspaceEvent extends Event {
+class WorkspaceEvent extends Event 
+{
+	public static final LOAD_WORKSPACE_WITH_LABEL:String = "loadWorkspaceWithLabel";
 	public static final NEW_WORKSPACE_WITH_LABEL:String = "newWorkspaceWithLabel";
+	public static final LOAD_PROJECT_BY_WORKSPACE:String = "loadProjectByWorkspace";
 	
 	public function new(type:String, workspaceLabel:String) {
 		super(type);

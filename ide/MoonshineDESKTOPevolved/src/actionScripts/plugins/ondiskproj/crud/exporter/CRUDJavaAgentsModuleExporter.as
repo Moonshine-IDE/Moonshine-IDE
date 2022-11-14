@@ -235,7 +235,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			// since we know this is a subdirectory, we can simply cut off the elementsPath prefix
 			var relativePath:String = template.nativePath.substring(elementsDir.nativePath.length + 1);  // +1 for the file separator
 
-			var key:String = relativePath.replace('\\\\', '/');  // normalize windows paths
+			var key:String = relativePath.replace('\\', '/');  // normalize windows paths
 			key = key.replace('.template', '')  // use replaceAll for regex
 			return key
 		}

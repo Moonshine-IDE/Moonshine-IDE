@@ -84,6 +84,7 @@ package actionScripts.ui.renderers
 		public static const NEW:String = "New";
 		public static const NEW_FOLDER:String = "New Folder";
 		public static const COPY_PATH:String = "Copy Path";
+		public static const OPEN_PATH_IN_TERMINAL:String = "Open in "+ (ConstantsCoreVO.IS_MACOS ? "Terminal" : "Command Line");
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
 		public static const SHOW_IN_FINDER:String = "Show in Finder";
 		public static const DUPLICATE_FILE:String = "Duplicate";
@@ -249,6 +250,8 @@ package actionScripts.ui.renderers
 
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(COPY_PATH, updateOverMultiSelectionOption, "displaying"));
+				model.contextMenuCore.addItem(contextMenu,
+						model.contextMenuCore.getContextMenuItem(OPEN_PATH_IN_TERMINAL, populateOpenInTerminalMenu, "displaying"));
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(
 						ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 
@@ -478,6 +481,35 @@ package actionScripts.ui.renderers
 			model.contextMenuCore.subMenu(event.target, customize);
 		}
 
+		private function populateOpenInTerminalMenu(event:Event):void
+		{
+			// in case of Windows, for now, we don't
+			// have to support for theme
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				updateOverMultiSelectionOption(event);
+				return;
+			}
+
+			model.contextMenuCore.removeAll(event.target);
+
+			var defaultOption:Object = model.contextMenuCore.getContextMenuItem("Default", redispatchOpenInTerminal, Event.SELECT);
+			defaultOption.data = "eventOpenInTerminalDefault";
+			model.contextMenuCore.subMenu(event.target, defaultOption);
+
+			model.contextMenuCore.subMenu(event.target, model.contextMenuCore.getContextMenuItem(null));
+
+			var themes:Array = model.flexCore.getTerminalThemeList();
+			for each (var theme:String in themes)
+			{
+				var eventType:String = "eventOpenInTerminal"+ theme;
+				var item:Object = model.contextMenuCore.getContextMenuItem(theme, redispatchOpenInTerminal, Event.SELECT);
+				item.data = eventType;
+
+				model.contextMenuCore.subMenu(event.target, item);
+			}
+		}
+
 		private function populateVagrantMenu(event:Event):void
 		{
 			model.contextMenuCore.removeAll(event.target);
@@ -591,6 +623,18 @@ package actionScripts.ui.renderers
 				e.extra = event.target.data;
 			}
 			
+			dispatchEvent(e);
+		}
+
+		private function redispatchOpenInTerminal(event:Event):void
+		{
+			var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
+			if (event.target.hasOwnProperty("data") && event.target.data)
+			{
+				e.menuLabel = OPEN_PATH_IN_TERMINAL;
+				e.extra = event.target.data;
+			}
+
 			dispatchEvent(e);
 		}
 		

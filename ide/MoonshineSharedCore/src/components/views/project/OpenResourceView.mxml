@@ -37,7 +37,7 @@
 	width="100%"
 	height="100%" 
 	backgroundColor="0x444444"
-	verticalGap="0" xmlns:ns="library://ns.adobe.com/flex/spark" xmlns:project="actionScripts.ui.project.*">
+	verticalGap="0" xmlns:ns="library://ns.adobe.com/flex/spark" xmlns:project="actionScripts.ui.project.*" xmlns:tabview="actionScripts.ui.tabview.*">
 	
 	<mx:Script>
 		<![CDATA[
@@ -152,7 +152,7 @@
 		]]>
 	</mx:Script>
 	
-	<project:ProjectViewHeader
+	<tabview:TabViewTab
 		id="header"
 		label="Open resource" 
 		width="100%"

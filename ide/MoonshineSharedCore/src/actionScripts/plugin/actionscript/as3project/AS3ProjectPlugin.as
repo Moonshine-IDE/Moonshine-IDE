@@ -63,6 +63,7 @@ package actionScripts.plugin.actionscript.as3project
 	import actionScripts.valueObjects.ProjectVO;
 
 	import actionScripts.plugin.templating.TemplatingPlugin;
+	import moonshine.plugin.workspace.events.WorkspaceEvent;
 	
 	import components.popup.NativeExtensionMessagePopup;
 	import components.popup.OpenFlexProject;
@@ -229,7 +230,17 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			if (!event.anObject) return;
 
-			searchForProjectsByDirectory(event.anObject);
+			// in case of opening by workspace change
+			// do not require to check multiple-project existence
+			// but open by project path that was already opened in sidebar
+			if (event.extras && (event.extras.length != 0) && (event.extras[0] == WorkspaceEvent.LOAD_PROJECT_BY_WORKSPACE))
+			{
+				openProjectByDirectory(event.anObject);
+			}
+			else
+			{
+				searchForProjectsByDirectory(event.anObject);
+			}
 		}
 		
 		private function searchForProjectsByDirectory(dir:Object):void
@@ -265,7 +276,10 @@ package actionScripts.plugin.actionscript.as3project
 		{
 			//onFileSelectionCancelled(event);
 			// probable termination due to error at objC side
-			if (!dir) return;
+			if (!dir) 
+			{
+				return;
+			}
 			
 			var isFBProject: Boolean;
 			var isFDProject: Boolean;

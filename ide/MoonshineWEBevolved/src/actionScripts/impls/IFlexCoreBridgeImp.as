@@ -516,6 +516,11 @@ package actionScripts.impls
 		{
 			return (new ArrayCollection());
 		}
+		
+		public function getTerminalThemeList():Array
+		{
+			return null;
+		}
 
 		//--------------------------------------------------------------------------
 		//
