@@ -328,7 +328,7 @@ import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
 					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin, GenesisPlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin, GenesisPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

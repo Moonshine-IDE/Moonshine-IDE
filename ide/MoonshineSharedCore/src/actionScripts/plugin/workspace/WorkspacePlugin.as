@@ -31,7 +31,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.workspace
 {
-	import flash.display.DisplayObject;
+import actionScripts.events.GeneralEvent;
+import actionScripts.plugin.settings.ISettingsProvider;
+import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
+import actionScripts.plugin.settings.vo.ISetting;
+import actionScripts.plugin.settings.vo.LinkOnlySetting;
+import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
+import actionScripts.plugin.workspace.settings.WorkspaceItemSetting;
+
+import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.clearTimeout;
@@ -61,7 +69,9 @@ package actionScripts.plugin.workspace
 	import moonshine.plugin.workspace.view.LoadWorkspaceView;
 	import moonshine.plugin.workspace.view.NewWorkspaceView;
 
-	public class WorkspacePlugin extends PluginBase
+import spark.components.Alert;
+
+public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 	{
 		public static const EVENT_SAVE_AS:String = "saveAsNewWorkspaceEvent";
 		public static const EVENT_NEW:String = "newWorkspaceEvent";
@@ -82,6 +92,8 @@ package actionScripts.plugin.workspace
 		private var workspaces:Object; // Dictionary<String, [String]>
 		private var methodToCallAfterClosingAllProjects:MethodDescriptor;
 		private var closeAllProjectItems:Array;
+		private var settings:Vector.<ISetting>;
+		private var linkOnlySetting:LinkOnlySetting;
 		
 		private var loadWorkspaceView:LoadWorkspaceView;
 		private var loadWorkspaceViewWrapper:FeathersUIWrapper;
@@ -90,6 +102,7 @@ package actionScripts.plugin.workspace
 		private var newWorkspaceViewWrapper:FeathersUIWrapper;
 
 		private var preferences:MoonshinePreferences;
+		private var selectedWorkspacesInSettings:Array = [];
 
 		private var _currentWorkspaceLabel:String;
 		private function get currentWorkspaceLabel():String
@@ -137,6 +150,78 @@ package actionScripts.plugin.workspace
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
+		}
+
+		public function getSettingsList():Vector.<ISetting>
+		{
+			settings = new Vector.<ISetting>();
+			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
+				new LinkOnlySettingVO("Add"),
+				new LinkOnlySettingVO("Remove"),
+				new LinkOnlySettingVO("Switch")
+			]);
+			linkOnlySetting.addEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked, false, 0, true);
+
+			settings.push(linkOnlySetting);
+			for each (var workspace:WorkspaceVO in workspacesForViews.source)
+			{
+				settings.push(
+						getWorkspaceItemSetting(workspace)
+				);
+			}
+
+			return settings;
+		}
+
+		private function getWorkspaceItemSetting(workspace:WorkspaceVO):WorkspaceItemSetting
+		{
+			var tmpSetting:WorkspaceItemSetting = new WorkspaceItemSetting(workspace);
+			//tmpSetting.addEventListener(ExternalEditorSetting.EVENT_MODIFY, onEditorModify, false, 0, true);
+			//tmpSetting.addEventListener(ExternalEditorSetting.EVENT_REMOVE, onEditorSettingRemove, false, 0, true);
+			tmpSetting.addEventListener(WorkspaceItemSetting.EVENT_SELECT, onWorkspaceItemSelected, false, 0, true);
+
+			return tmpSetting;
+		}
+
+		private function onWorkspaceItemSelected(event:GeneralEvent):void
+		{
+			var itemIndex:int = selectedWorkspacesInSettings.indexOf(event.value);
+			if (itemIndex == -1)
+			{
+				selectedWorkspacesInSettings.push(event.value);
+			}
+			else
+			{
+				selectedWorkspacesInSettings.removeAt(itemIndex);
+			}
+		}
+		
+		private function onLinkItemClicked(event:LinkOnlySettingsEvent):void
+		{
+			if (event.value.label == "Add")
+			{
+				onNewWorkspaceEvent(null);
+			}
+			else if (event.value.label == "Remove")
+			{
+				removeWorkspaces();
+			}
+			else if (event.value.label == "Switch")
+			{
+				onLoadWorkspaceEvent(null);
+			}
+		}
+
+		private function removeWorkspaces():void
+		{
+			if (selectedWorkspacesInSettings.length == 0)
+			{
+				Alert.show("Select Workspace(s) to remove.", "Note!");
+			}
+			else
+			{
+				Alert.show("Work in-progress", "Note!");
+			}
 		}
 		
 		private function handleAddProject(event:ProjectEvent):void
