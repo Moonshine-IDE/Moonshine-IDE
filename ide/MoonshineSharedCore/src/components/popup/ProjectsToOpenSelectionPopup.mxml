@@ -88,7 +88,7 @@
 				// in this particular interface's needs
 				var tmpWorkspace:WorkspaceVO = new WorkspaceVO("-Create New Workspace-");
 				workspaces.addItemAt(tmpWorkspace, 0);
-				tmpWorkspace = new WorkspaceVO("Current ("+ ConstantsCoreVO.CURRENT_WORKSPACE +")");
+				tmpWorkspace = new WorkspaceVO("-Current ("+ ConstantsCoreVO.CURRENT_WORKSPACE +")-");
 				workspaces.addItemAt(tmpWorkspace, 0);
 				
 				// on submit of 'this', this event will
@@ -134,7 +134,7 @@
 
 					// we need to change to a different existing workspace
 					var selectedWorkspaceLabel:String = ddlWorkspaces.selectedItem.label;
-					var currentWorkspaceLabel:String = "Current ("+ ConstantsCoreVO.CURRENT_WORKSPACE +")";
+					var currentWorkspaceLabel:String = "-Current ("+ ConstantsCoreVO.CURRENT_WORKSPACE +")-";
 					if ((selectedWorkspaceLabel != currentWorkspaceLabel) && (selectedWorkspaceLabel != ConstantsCoreVO.CURRENT_WORKSPACE))
 					{
 						dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, ddlWorkspaces.selectedItem.label));
