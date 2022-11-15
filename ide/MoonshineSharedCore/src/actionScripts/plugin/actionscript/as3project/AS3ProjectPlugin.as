@@ -288,41 +288,94 @@ package actionScripts.plugin.actionscript.as3project
 			if (flashDevelopProjectFile) isFDProject = true;
 			
 			// for Java, Grails, and Haxe projects
+			// TODO: these shouldn't be in the AS3ProjectPlugin
 			if (!flashBuilderProjectFile && !flashDevelopProjectFile)
 			{
-				flashDevelopProjectFile = model.javaCore.testJava(dir);
-				if (flashDevelopProjectFile)
+				var invalidProjectFile:Boolean = false;
+				var pomOrGradleFileLocation:FileLocation = model.javaCore.testJava(dir);
+				if (pomOrGradleFileLocation)
 				{
-					var javaSettingsFile:FileLocation = model.javaCore.getSettingsFile(dir);
-					importFDProject(
-							flashDevelopProjectFile,
-							false,
-							model.javaCore.parseJava(new FileLocation(dir.nativePath), null, javaSettingsFile)
-					);
-					return;
+					flashDevelopProjectFile = model.javaCore.getSettingsFile(dir);
+					try
+					{
+						importFDProject(
+								pomOrGradleFileLocation,
+								false,
+								model.javaCore.parseJava(new FileLocation(dir.nativePath), null, flashDevelopProjectFile)
+						);
+						return;
+					}
+					catch(e:Error)
+					{
+						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
+						error(e.message +"\n"+ e.getStackTrace());
+						invalidProjectFile = true;
+					}
 				}
 				flashDevelopProjectFile = model.groovyCore.testGrails(dir);
 				if (flashDevelopProjectFile)
 				{
-					importFDProject(flashDevelopProjectFile, false, model.groovyCore.parseGrails(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
-					return;
+					try
+					{
+						importFDProject(flashDevelopProjectFile, false, model.groovyCore.parseGrails(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
+						return;
+					}
+					catch(e:Error)
+					{
+						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
+						error(e.message +"\n"+ e.getStackTrace());
+						invalidProjectFile = true;
+					}
 				}
 				flashDevelopProjectFile = model.haxeCore.testHaxe(dir);
 				if (flashDevelopProjectFile)
 				{
-					importFDProject(flashDevelopProjectFile, false, model.haxeCore.parseHaxe(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
-					return;
+					try
+					{
+						importFDProject(flashDevelopProjectFile, false, model.haxeCore.parseHaxe(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
+						return;
+					}
+					catch(e:Error)
+					{
+						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
+						error(e.message +"\n"+ e.getStackTrace());
+						invalidProjectFile = true;
+					}
 				}
 				flashDevelopProjectFile = model.ondiskCore.testOnDisk(dir);
 				if (flashDevelopProjectFile)
 				{
-					importFDProject(flashDevelopProjectFile, false, model.ondiskCore.parseOnDisk(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
-					return;
+					try
+					{
+						importFDProject(flashDevelopProjectFile, false, model.ondiskCore.parseOnDisk(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
+						return;
+					}
+					catch(e:Error)
+					{
+						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
+						error(e.message +"\n"+ e.getStackTrace());
+						invalidProjectFile = true;
+					}
 				}
 				flashDevelopProjectFile = model.genericCore.testGenericProject(dir);
 				if (flashDevelopProjectFile)
 				{
-					importFDProject(flashDevelopProjectFile, false, model.genericCore.parseGenericProject(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
+					try
+					{
+						importFDProject(flashDevelopProjectFile, false, model.genericCore.parseGenericProject(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
+						return;
+						
+					}
+					catch(e:Error)
+					{
+						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
+						error(e.message +"\n"+ e.getStackTrace());
+						invalidProjectFile = true;
+					}
+				}
+				if(invalidProjectFile)
+				{
+					Alert.show("Can't import: Not a valid " + ConstantsCoreVO.MOONSHINE_IDE_LABEL + " project directory.", "Error!");
 					return;
 				}
 			}

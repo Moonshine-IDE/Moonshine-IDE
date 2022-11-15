@@ -148,6 +148,11 @@
            </j:beads>
       </j:Button>
       <j:Button text="Cancel" click="onCancelClick(event)"/>
+      <j:Button text="Edit" click="onEditItem(event)">
+      	   <j:beads>
+      		   <j:Disabled disabled="{isDisabled == false}"/>
+      	   </j:beads>
+      </j:Button>
   </j:HGroup>
   %ViewContent%
   <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onGridDoubleClick(event)"/>

@@ -1014,7 +1014,6 @@ package actionScripts.plugins.as3project.mxmlc
 				{
 					outputFile = pvo.swfOutput.path.fileBridge.getFile as File;
 				}
-
 				var output:String;
 				if (outputFile)
 				{

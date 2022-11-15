@@ -19,14 +19,13 @@
 	<haxelib name="moonshine-openfl-debug-adapter-client" />
 	<haxelib name="moonshine-feathersui-text-editor" />
 
-	<template path="templates" if="flash || air"/>
+	<template path="templates" if="flash"/>
 
 	<haxeflag name="--macro" value="include('moonshine', true, null, null, true)"/>
 	<haxeflag name="--macro" value="include('feathers', true, null, null, true)"/>
 	<haxeflag name="--macro" value="include('motion', true, null, null, true)"/>
 	<haxeflag name="--macro" value="include('actionScripts', true, null, null, true)"/>
 	<haxeflag name="--swf-version" value="44"/>
-	<haxeflag name="--swf-lib-extern" value="${flexhome}/frameworks/libs/framework.swc"/>
 
 	<haxedef name="no-deprecation-warnings" />
 	<define name="desktop" />

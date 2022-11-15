@@ -3,7 +3,8 @@
 		"output": "bin-debug/MoonshineDESKTOP.swf",
 		"debug": true,
 		"accessible": true,
-		"swf-version": 39,
+		"swf-version": 44,
+		"warnings": false,
 		"source-path": [
 			"src",
 			"../MoonshineSharedCore/src",

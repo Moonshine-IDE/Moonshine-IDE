@@ -34,9 +34,9 @@ package actionScripts.utils;
 import actionScripts.events.GlobalEventDispatcher;
 import actionScripts.events.StartupHelperEvent;
 import actionScripts.valueObjects.HelperConstants;
+import flash.filesystem.File;
 import openfl.events.EventDispatcher;
 import openfl.events.TimerEvent;
-import openfl.filesystem.File;
 import openfl.utils.Timer;
 
 class SDKInstallerPolling extends EventDispatcher {

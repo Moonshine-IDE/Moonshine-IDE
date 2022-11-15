@@ -49,7 +49,15 @@ package classes.joditeditor
 
 		public function set readonly(value:Boolean):void
 		{
-			this._readonly = value;
+			if (this._readonly != value)
+			{
+				this._readonly = value;
+
+				if (myEditor)
+				{
+					this.myEditor.setReadOnly(value);
+				}
+			}
 		}
 
 		private var _data:String = "";
