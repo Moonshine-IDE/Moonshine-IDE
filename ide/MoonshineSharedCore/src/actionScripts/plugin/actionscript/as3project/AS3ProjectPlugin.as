@@ -31,7 +31,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project
 {
-	import flash.display.DisplayObject;
+import actionScripts.utils.UtilsCore;
+
+import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.setTimeout;
 	
@@ -590,17 +592,20 @@ package actionScripts.plugin.actionscript.as3project
 				var tmpSelectableObject:GenericSelectableObject;
 				var repositoryRootFile:Object = model.fileCore.getFileByPath(workerData.path);
 				var configurationParent:Object;
+				var projectLabel:String;
 				for each (var projectRefFile:Object in projectFiles)
 				{
 					configurationParent = model.fileCore.getFileByPath(projectRefFile.projectFile.nativePath).parent;
 					tmpSelectableObject = new GenericSelectableObject(true);
+					projectLabel = tmpSelectableObject.label = repositoryRootFile.getRelativePath(configurationParent, true);
 					tmpSelectableObject.data = {
-						name: repositoryRootFile.getRelativePath(configurationParent, true),
-							path: projectRefFile.projectFile.nativePath
+						name: projectLabel,
+						path: projectRefFile.projectFile.nativePath
 					};
 					tmpCollection.addItem(tmpSelectableObject);
 				}
-				
+
+				UtilsCore.sortCollection(tmpCollection, ["label"]);
 				openProjectSelectionWindow(tmpCollection, repositoryRootFile);
 			}
 		}

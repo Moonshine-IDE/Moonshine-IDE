@@ -37,6 +37,8 @@ import openfl.events.EventDispatcher;
 
 class GenericSelectableObject extends EventDispatcher {
 
+	public var label:String;
+	
 	private var _data:Dynamic;
 	public var data(get, set):Dynamic;
 	private function get_data():Dynamic return _data;
@@ -55,9 +57,10 @@ class GenericSelectableObject extends EventDispatcher {
 		return _isSelected;
 	}
 
-	public function new(isSelcted:Bool = false, data:Dynamic = null) {
+	public function new(isSelcted:Bool = false, data:Dynamic = null, ?label:String) {
 		super();
 		this.isSelected = isSelcted;
 		this.data = data;
+		this.label = label;
 	}
 }
