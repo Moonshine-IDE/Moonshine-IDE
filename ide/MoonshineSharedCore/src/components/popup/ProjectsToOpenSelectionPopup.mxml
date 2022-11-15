@@ -60,7 +60,9 @@
 			import actionScripts.valueObjects.WorkspaceVO;
 			
 			import moonshine.plugin.workspace.events.WorkspaceEvent;
-			
+
+			import spark.events.TextOperationEvent;
+
 			[Bindable] public var projects:ArrayCollection;
 			[Bindable] public var repositoryRoot:String;
 			
@@ -69,6 +71,7 @@
 			[Bindable] private var workspaces:ArrayList;
 			
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var isDuplicateWorkspace:Boolean;
 			
 			override protected function closeThis():void
 			{
@@ -112,33 +115,33 @@
 					{
 						return;
 					}
-					
-					var targetWorkspace:WorkspaceVO = WorkspacePlugin.getCurrentWorkspaceForView(txtNewWorkspace.text);
-					if (targetWorkspace)
-					{
-						Alert.show("A similar named workspace is already exists.", "Error!");
-						return;
-					}
-					
+
 					// we'll create a new workspace first
 					btnSubmit.enabled = false;
-					dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, txtNewWorkspace.text));
-						
+					if (isDuplicateWorkspace)
+					{
+						// no workspace change needed
+						onWorkspaceChanged(null);
+					}
+					else
+					{
+						dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, txtNewWorkspace.text));
+					}
 				}
 				else
 				{
+					btnSubmit.enabled = false;
+
 					// we need to change to a different existing workspace
 					var selectedWorkspaceLabel:String = ddlWorkspaces.selectedItem.label;
 					var currentWorkspaceLabel:String = "Current ("+ ConstantsCoreVO.CURRENT_WORKSPACE +")";
 					if ((selectedWorkspaceLabel != currentWorkspaceLabel) && (selectedWorkspaceLabel != ConstantsCoreVO.CURRENT_WORKSPACE))
 					{
-						btnSubmit.enabled = false;
 						dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, ddlWorkspaces.selectedItem.label));
 					}
 					else
 					{
 						// no workspace change needed
-						btnSubmit.enabled = false;
 						onWorkspaceChanged(null);
 					}
 				}
@@ -172,6 +175,22 @@
 			private function onWorkspaceDropdownChange(event:IndexChangeEvent):void
 			{
 				txtNewWorkspace.includeInLayout = txtNewWorkspace.visible = (event.newIndex == 1);
+			}
+
+			private function onWorkspaceInputChange(event:TextOperationEvent):void
+			{
+				var targetWorkspace:WorkspaceVO = WorkspacePlugin.getCurrentWorkspaceForView(txtNewWorkspace.text);
+				if (targetWorkspace)
+				{
+					txtErrorLabel.text = "This workspace already exists. The project(s) will be opened in the existing workspace.";
+					hgError.includeInLayout = hgError.visible = true;
+					isDuplicateWorkspace = true;
+				}
+				else
+				{
+					hgError.includeInLayout = hgError.visible = false;
+					isDuplicateWorkspace = false;
+				}
 			}
 			
 		]]>
@@ -259,7 +278,14 @@
 		<view:PromptTextInput id="txtNewWorkspace"
 							  prompt="New workspace name"
 							  width="100%" styleName="textInput"
-							  includeInLayout="false" visible="false"/>
+							  includeInLayout="false" visible="false"
+								change="onWorkspaceInputChange(event)"/>
+		<s:HGroup id="hgError"
+				  width="100%" verticalAlign="middle" horizontalAlign="center"
+				  includeInLayout="false" visible="false">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label id="txtErrorLabel" maxDisplayedLines="3"/>
+		</s:HGroup>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

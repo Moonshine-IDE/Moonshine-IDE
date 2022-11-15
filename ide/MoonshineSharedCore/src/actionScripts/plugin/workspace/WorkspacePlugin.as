@@ -410,7 +410,7 @@ package actionScripts.plugin.workspace
 
 		private function sortWorkspaces():void
 		{
-			workspacesForViews.source.sortOn(["label"]);
+			workspacesForViews.source.sortOn(["label"], Array.CASEINSENSITIVE);
 		}
 	}
 }
