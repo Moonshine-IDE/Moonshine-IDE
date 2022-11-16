@@ -32,6 +32,7 @@
 package actionScripts.plugin.workspace
 {
 import actionScripts.events.GeneralEvent;
+import actionScripts.events.SettingsEvent;
 import actionScripts.plugin.settings.ISettingsProvider;
 import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
 import actionScripts.plugin.settings.vo.ISetting;
@@ -47,7 +48,8 @@ import flash.display.DisplayObject;
 	
 	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
-	import mx.managers.PopUpManager;
+import mx.events.CloseEvent;
+import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.ProjectEvent;
@@ -157,8 +159,8 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 			settings = new Vector.<ISetting>();
 			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
 				new LinkOnlySettingVO("Add"),
-				new LinkOnlySettingVO("Remove"),
-				new LinkOnlySettingVO("Switch")
+				new LinkOnlySettingVO("Switch"),
+				new LinkOnlySettingVO("Select/Remove")
 			]);
 			linkOnlySetting.addEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked, false, 0, true);
 
@@ -202,7 +204,7 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 			{
 				onNewWorkspaceEvent(null);
 			}
-			else if (event.value.label == "Remove")
+			else if (event.value.label == "Select/Remove")
 			{
 				removeWorkspaces();
 			}
@@ -220,7 +222,32 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 			}
 			else
 			{
-				Alert.show("Work in-progress", "Note!");
+				Alert.show("This action can not be undone.\nDo you want to remove the selected workspace(s)?", "Warning!", Alert.YES|Alert.CANCEL, null, onDeleteWorkspaceConfirmed);
+			}
+		}
+
+		private function onDeleteWorkspaceConfirmed(event:CloseEvent):void
+		{
+			if (event.detail == Alert.YES)
+			{
+				var isSelectedWorkspaceDeleting:Boolean;
+				for each (var setting:WorkspaceItemSetting in selectedWorkspacesInSettings)
+				{
+					if (setting.workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE)
+					{
+						isSelectedWorkspaceDeleting = true;
+					}
+					delete workspaces[setting.workspace.label];
+					workspacesForViews.removeItem(setting.workspace);
+					settings.splice(settings.indexOf(setting), 1);
+				}
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+				dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
+				handleLoadWorkspaceEvent(
+						new WorkspaceEvent("", workspacesForViews.getItemAt(0).label)
+				);
+
+				saveToCookie();
 			}
 		}
 		

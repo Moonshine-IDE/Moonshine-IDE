@@ -65,7 +65,7 @@
 
 			private function onSelectChange(event:Event):void
 			{
-				setting.dispatchEvent(new GeneralEvent(WorkspaceItemSetting.EVENT_SELECT, setting.workspace));
+				setting.dispatchEvent(new GeneralEvent(WorkspaceItemSetting.EVENT_SELECT, setting));
 			}
 			
 		]]>
