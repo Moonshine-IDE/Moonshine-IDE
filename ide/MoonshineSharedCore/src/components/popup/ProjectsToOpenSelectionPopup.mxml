@@ -106,6 +106,8 @@
 					Alert.show("There is nothing to Open.", "Note!");
 					return;
 				}
+
+				var currentWorkspaceLabel:String = workspaces.getItemAt(0).label;
 				
 				// if new workspace input is showing
 				if (ddlWorkspaces.selectedIndex == 1)
@@ -120,8 +122,16 @@
 					btnSubmit.enabled = false;
 					if (isDuplicateWorkspace)
 					{
-						// no workspace change needed
-						onWorkspaceChanged(null);
+						if ((txtNewWorkspace.text != ConstantsCoreVO.CURRENT_WORKSPACE)
+								&& (currentWorkspaceLabel != "-Current("+ txtNewWorkspace.text +")-"))
+						{
+							dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, txtNewWorkspace.text));
+						}
+						else
+						{
+							// no workspace change needed
+							onWorkspaceChanged(null);
+						}
 					}
 					else
 					{
@@ -134,8 +144,8 @@
 
 					// we need to change to a different existing workspace
 					var selectedWorkspaceLabel:String = ddlWorkspaces.selectedItem.label;
-					var currentWorkspaceLabel:String = "-Current ("+ ConstantsCoreVO.CURRENT_WORKSPACE +")-";
-					if ((selectedWorkspaceLabel != currentWorkspaceLabel) && (selectedWorkspaceLabel != ConstantsCoreVO.CURRENT_WORKSPACE))
+					if ((selectedWorkspaceLabel != currentWorkspaceLabel)
+							&& (selectedWorkspaceLabel != ConstantsCoreVO.CURRENT_WORKSPACE))
 					{
 						dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, ddlWorkspaces.selectedItem.label));
 					}
