@@ -33,11 +33,28 @@
 
 package actionScripts.valueObjects;
 
-class WorkspaceVO {
-	public var label:String;
+import openfl.events.Event;
+import openfl.events.EventDispatcher;
+
+@:meta(Bindable("change"))
+@:bind
+class WorkspaceVO extends EventDispatcher 
+{
 	public var paths:Array<String>;
 
+	private var _label:String;
+    @:flash.property public var label(get, set):String;
+    private function get_label():String return _label;
+    private function set_label(value:String):String {
+        if ( _label == value ) return _label;
+        _label = value;
+        dispatchEvent( new Event( Event.CHANGE ) );
+        return _label;
+    }
+
 	public function new(label:String, paths:Array<String>) {
+		super();
+
 		this.label = label;
 		this.paths = paths;
 	}

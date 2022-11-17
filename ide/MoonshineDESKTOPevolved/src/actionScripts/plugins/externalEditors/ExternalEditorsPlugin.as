@@ -120,7 +120,7 @@ package actionScripts.plugins.externalEditors
 			// remove all externaleditorsetting listeners
 			if (settings)
 			{
-				for each (var setting:AbstractSetting in setting)
+				for each (var setting:AbstractSetting in settings)
 				{
 					if (setting is ExternalEditorSetting)
 					{

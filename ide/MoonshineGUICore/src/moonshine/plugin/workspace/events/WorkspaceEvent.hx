@@ -33,6 +33,7 @@
 package moonshine.plugin.workspace.events;
 
 import openfl.events.Event;
+import actionScripts.valueObjects.WorkspaceVO;
 
 class WorkspaceEvent extends Event 
 {
@@ -40,6 +41,7 @@ class WorkspaceEvent extends Event
 	public static final NEW_WORKSPACE_WITH_LABEL:String = "newWorkspaceWithLabel";
 	public static final SAVE_AS_WORKSPACE_WITH_LABEL:String = "saveAsWorkspaceWithLabel";
 	public static final LOAD_PROJECT_BY_WORKSPACE:String = "loadProjectByWorkspace";
+	public static final RENAME_WORKSPACE:String = "renameWorkspace";
 	
 	public function new(type:String, workspaceLabel:String) {
 		super(type);
@@ -48,6 +50,7 @@ class WorkspaceEvent extends Event
 	}
 	
 	public var workspaceLabel:String;
+	public var workspace:WorkspaceVO;
 	
 	override public function clone():Event {
 		return new WorkspaceEvent(this.type, this.workspaceLabel);

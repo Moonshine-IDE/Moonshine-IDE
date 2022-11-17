@@ -40,8 +40,7 @@ package actionScripts.plugin.workspace.settings
 
 	public class WorkspaceItemSetting extends AbstractSetting
 	{
-		public static const EVENT_MODIFY:String = "modify";
-		public static const EVENT_REMOVE:String = "delete";
+		public static const EVENT_RENAME:String = "rename";
 		public static const EVENT_SELECT:String = "select";
 		
 		protected var rdr:WorkspaceItemSettingsRenderer = new WorkspaceItemSettingsRenderer();
@@ -56,7 +55,7 @@ package actionScripts.plugin.workspace.settings
 			this.name = 'fakeSetting';
 			this.label = workspace.label;
 			this.workspace = workspace;
-			defaultValue = stringValue = "";
+			defaultValue = stringValue = workspace.label;
 		}
 		
 		override public function get renderer():IVisualElement

@@ -37,7 +37,7 @@
 		  xmlns:mx="library://ns.adobe.com/flex/mx"
 		  width="100%"
 		  paddingLeft="15" paddingTop="15" paddingRight="15" paddingBottom="15"
-		  visible="true" creationComplete="init()">
+		  visible="true">
 	
 	<fx:Script>
 		<![CDATA[
@@ -48,19 +48,9 @@
 
 			[Bindable] public var setting:WorkspaceItemSetting;
 			
-			private function init():void
-			{
-				
-			}
-
-			private function remove():void
-			{
-				//setting.dispatchEvent(new Event(ExternalEditorSetting.EVENT_REMOVE));
-			}
-			
 			private function modify():void
 			{
-				//setting.dispatchEvent(new Event(ExternalEditorSetting.EVENT_MODIFY));
+				setting.dispatchEvent(new GeneralEvent(WorkspaceItemSetting.EVENT_RENAME, setting));
 			}
 
 			private function onSelectChange(event:Event):void

@@ -35,6 +35,7 @@ import actionScripts.events.GeneralEvent;
 import actionScripts.events.SettingsEvent;
 import actionScripts.plugin.settings.ISettingsProvider;
 import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
+import actionScripts.plugin.settings.vo.AbstractSetting;
 import actionScripts.plugin.settings.vo.ISetting;
 import actionScripts.plugin.settings.vo.LinkOnlySetting;
 import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
@@ -71,9 +72,9 @@ import mx.managers.PopUpManager;
 	import moonshine.plugin.workspace.view.LoadWorkspaceView;
 	import moonshine.plugin.workspace.view.NewWorkspaceView;
 
-import spark.components.Alert;
+	import spark.components.Alert;
 
-public class WorkspacePlugin extends PluginBase implements ISettingsProvider
+	public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 	{
 		public static const EVENT_SAVE_AS:String = "saveAsNewWorkspaceEvent";
 		public static const EVENT_NEW:String = "newWorkspaceEvent";
@@ -131,27 +132,59 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 			
 			return workspace;
 		}
-		
+
 		public function WorkspacePlugin()
 		{
 			super();
 			preferences = MoonshinePreferences.getLocal();
+
+			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_WORKSPACE);
+			restoreFromCookie();
+			if (!this.activated)
+			{
+				activate();
+			}
 		}
 		
 		override public function activate():void
 		{
-			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_WORKSPACE);
-			restoreFromCookie();
-			
+			super.activate();
+
 			dispatcher.addEventListener(EVENT_SAVE_AS, onSaveAsNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(EVENT_NEW, onNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(EVENT_LOAD, onLoadWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(WorkspaceEvent.SAVE_AS_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent, false, 0, true);
+			dispatcher.addEventListener(WorkspaceEvent.RENAME_WORKSPACE, handleRenameWorkspaceEvent, false, 0, true);
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
+		}
+
+		override public function onSettingsClose():void
+		{
+			// remove all listeners
+			if (settings)
+			{
+				for each (var setting:AbstractSetting in settings)
+				{
+					if (setting is WorkspaceItemSetting)
+					{
+						setting.removeEventListener(WorkspaceItemSetting.EVENT_SELECT, onWorkspaceItemSelected);
+						setting.removeEventListener(WorkspaceItemSetting.EVENT_RENAME, onWorkspaceItemRename);
+					}
+				}
+			}
+
+			// remove all linkonlysetting listeners
+			if (linkOnlySetting)
+			{
+				linkOnlySetting.removeEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked);
+			}
+
+			settings = null;
+			linkOnlySetting = null;
 		}
 
 		public function getSettingsList():Vector.<ISetting>
@@ -160,7 +193,7 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
 				new LinkOnlySettingVO("Add"),
 				new LinkOnlySettingVO("Switch"),
-				new LinkOnlySettingVO("Select/Remove")
+				new LinkOnlySettingVO("Remove")
 			]);
 			linkOnlySetting.addEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked, false, 0, true);
 
@@ -178,9 +211,8 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 		private function getWorkspaceItemSetting(workspace:WorkspaceVO):WorkspaceItemSetting
 		{
 			var tmpSetting:WorkspaceItemSetting = new WorkspaceItemSetting(workspace);
-			//tmpSetting.addEventListener(ExternalEditorSetting.EVENT_MODIFY, onEditorModify, false, 0, true);
-			//tmpSetting.addEventListener(ExternalEditorSetting.EVENT_REMOVE, onEditorSettingRemove, false, 0, true);
 			tmpSetting.addEventListener(WorkspaceItemSetting.EVENT_SELECT, onWorkspaceItemSelected, false, 0, true);
+			tmpSetting.addEventListener(WorkspaceItemSetting.EVENT_RENAME, onWorkspaceItemRename, false, 0, true);
 
 			return tmpSetting;
 		}
@@ -197,6 +229,11 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 				selectedWorkspacesInSettings.removeAt(itemIndex);
 			}
 		}
+
+		private function onWorkspaceItemRename(event:GeneralEvent):void
+		{
+			createNewWorkspaceViewWithTitle("Rename Workspace", (event.value as WorkspaceItemSetting).workspace);
+		}
 		
 		private function onLinkItemClicked(event:LinkOnlySettingsEvent):void
 		{
@@ -204,7 +241,7 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 			{
 				onNewWorkspaceEvent(null);
 			}
-			else if (event.value.label == "Select/Remove")
+			else if (event.value.label == "Remove")
 			{
 				removeWorkspaces();
 			}
@@ -243,11 +280,15 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 				}
 				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
 				dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
-				handleLoadWorkspaceEvent(
-						new WorkspaceEvent("", workspacesForViews.getItemAt(0).label)
-				);
+				if (isSelectedWorkspaceDeleting)
+				{
+					handleLoadWorkspaceEvent(
+							new WorkspaceEvent("", workspacesForViews.getItemAt(0).label)
+					);
+				}
 
 				saveToCookie();
+				selectedWorkspacesInSettings = [];
 			}
 		}
 		
@@ -290,6 +331,43 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 			duplicateToNewWorkspace(event.workspaceLabel);
 		}
 
+		private function handleRenameWorkspaceEvent(event:WorkspaceEvent):void
+		{
+			sortWorkspaces();
+			saveToCookie();
+			if (event.workspaceLabel == ConstantsCoreVO.CURRENT_WORKSPACE)
+			{
+				ConstantsCoreVO.CURRENT_WORKSPACE = event.workspace.label;
+			}
+			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
+
+			if (settings)
+			{
+				var oldTitleIndex:int;
+				for (var i:int; i < settings.length; i++)
+				{
+					if ((settings[i] is WorkspaceItemSetting) && (settings[i] as WorkspaceItemSetting).stringValue == event.workspaceLabel)
+					{
+						oldTitleIndex = i;
+						break;
+					}
+				}
+
+				var timeoutValue:uint = setTimeout(function():void
+				{
+					clearTimeout(timeoutValue);
+
+					var newTitleIndex:int = workspacesForViews.getItemIndex(event.workspace);
+					var tmpSetting:Object = settings.removeAt(oldTitleIndex);
+					(tmpSetting as WorkspaceItemSetting).workspace = event.workspace;
+					(tmpSetting as WorkspaceItemSetting).stringValue = event.workspace.label;
+					settings.splice(newTitleIndex+2, 0, tmpSetting);
+
+					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+				}, 500);
+			}
+		}
+
 		private function onSaveAsNewWorkspaceEvent(event:Event):void
 		{
 			var newWorkspaceView:NewWorkspaceView = createNewWorkspaceViewWithTitle("Save As Workspace");
@@ -325,9 +403,10 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 			closeAllEditorAsync();
 		}
 
-		private function createNewWorkspaceViewWithTitle(title:String):NewWorkspaceView
+		private function createNewWorkspaceViewWithTitle(title:String, workspace:WorkspaceVO=null):NewWorkspaceView
 		{
 			newWorkspaceView = new NewWorkspaceView();
+			newWorkspaceView.workspace = workspace;
 			newWorkspaceViewWrapper = new FeathersUIWrapper(newWorkspaceView);
 			PopUpManager.addPopUp(newWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
 
@@ -455,11 +534,14 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 			currentWorkspacePaths = [];
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
-			workspacesForViews.addItem(new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]));
+
+			var tmpWorkspace:WorkspaceVO = new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]);
+			workspacesForViews.addItem(tmpWorkspace);
 			sortWorkspaces();
 			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
 			saveToCookie();
 			outputToConsole();
+			addToSettingsAsRequires(tmpWorkspace);
 		}
 		
 		private function duplicateToNewWorkspace(label:String):void
@@ -490,6 +572,22 @@ public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 		private function outputToConsole():void
 		{
 			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Workspace changed to: "+ currentWorkspaceLabel, false, false, ConsoleOutputEvent.TYPE_NOTE));
+		}
+
+		private function addToSettingsAsRequires(value:WorkspaceVO):void
+		{
+			// ensure the settings view is open
+			if (settings)
+			{
+				var tmpSetting:WorkspaceItemSetting = getWorkspaceItemSetting(value);
+				settings.splice(workspacesForViews.getItemIndex(value)+2, 0, tmpSetting);
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+			}
+		}
+
+		private function updateToSettingsAsRequires(value:WorkspaceVO):void
+		{
+
 		}
 		
 		//--------------------------------------------------------------------------

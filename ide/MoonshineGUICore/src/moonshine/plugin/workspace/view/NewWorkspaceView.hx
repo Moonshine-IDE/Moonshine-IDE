@@ -103,6 +103,24 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._workspaces;
 	}
+
+	private var _workspace:WorkspaceVO;
+	@:flash.property
+	public var workspace(get, set):WorkspaceVO;
+
+	private function get_workspace():WorkspaceVO {
+		return this._workspace;
+	}
+
+	private function set_workspace(value:WorkspaceVO):WorkspaceVO {
+		if (this._workspace == value) {
+			return this._workspace;
+		}
+		
+		this._workspace = value;
+		this.setInvalid(InvalidationFlag.DATA);
+		return this._workspace;
+	}
 	
 	override private function initialize():Void {
 		var viewLayout = new VerticalLayout();
@@ -141,6 +159,19 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		
 		super.initialize();
 	}
+
+	override private function update():Void {
+		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
+
+		if (dataInvalid) {
+			if (this.workspace != null)
+			{
+				this.workspaceNameTextInput.text = this.workspace.label;
+			}
+		}	
+		
+		super.update();
+	}
 	
 	private function workspaceNameTextInput_changeHandler(event:Event):Void {
 		this.errorContainer.visible = this.errorContainer.includeInLayout = false;			
@@ -162,10 +193,24 @@ class NewWorkspaceView extends ResizableTitleWindow {
 			return;
 		}
 		
-		var workspaceEvent = new WorkspaceEvent(
-				this.isSaveAs ? WorkspaceEvent.SAVE_AS_WORKSPACE_WITH_LABEL : WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, 
-				workspaceName
-				);
+		var workspaceEvent:WorkspaceEvent = null;
+		if (this.isSaveAs)
+		{
+			// save-as 
+			workspaceEvent = new WorkspaceEvent(WorkspaceEvent.SAVE_AS_WORKSPACE_WITH_LABEL, workspaceName);
+		}
+		else if (this.workspace != null)
+		{
+			// rename with workspace object
+			workspaceEvent = new WorkspaceEvent(WorkspaceEvent.RENAME_WORKSPACE, this.workspace.label); // will help to identify the old label
+			this.workspace.label = workspaceName;
+			workspaceEvent.workspace = this.workspace;
+		}
+		else
+		{
+			// addition
+			workspaceEvent = new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, workspaceName);	
+		}
 		GlobalEventDispatcher.getInstance().dispatchEvent(workspaceEvent);
 		
 		this.dispatchEvent(new Event(Event.CLOSE));
