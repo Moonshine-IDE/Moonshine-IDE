@@ -64,13 +64,9 @@ package actionScripts.interfaces
 		//
 		//--------------------------------------------------------------------------
 		
-		function parseFlashDevelop(project:AS3ProjectVO=null, file:FileLocation=null, projectName:String=null):AS3ProjectVO;
 		function convertFlashDevelopToDomino(file:FileLocation=null):void;
-		function parseFlashBuilder(file:FileLocation):AS3ProjectVO;
 		function exportFlashDevelop(project:AS3ProjectVO, file:FileLocation):void;
 		function exportFlashBuilder(project:AS3ProjectVO, file:FileLocation):void;
-		function testFlashDevelop(file:Object):FileLocation;
-		function testFlashBuilder(file:Object):FileLocation;
 		function getQuitMenuItem():MenuItem;
 		function getSettingsMenuItem():MenuItem;
 		function getAboutMenuItem():MenuItem;

@@ -195,7 +195,7 @@ package actionScripts.plugin.groovy.grailsproject
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = GrailsImporter.test(value.fileBridge.getFile);
+			var tmpFile:FileLocation = GrailsImporter.test(value);
 			if (!tmpFile && value.fileBridge.exists)
 			{
 				tmpFile = value;

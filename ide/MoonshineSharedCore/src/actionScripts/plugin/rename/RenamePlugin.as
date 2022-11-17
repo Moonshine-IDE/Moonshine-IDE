@@ -73,7 +73,7 @@ package actionScripts.plugin.rename
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
-	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 
 	public class RenamePlugin extends PluginBase
 	{

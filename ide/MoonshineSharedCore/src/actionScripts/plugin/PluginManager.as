@@ -64,11 +64,8 @@ package actionScripts.plugin
                     corePlugins,
                     defaultPlugins,
                     model.visualEditorCore.getDefaultPlugins(),
-                    model.javaCore.getDefaultPlugins(),
-                    model.groovyCore.getDefaultPlugins(),
-                    model.haxeCore.getDefaultPlugins(),
-					model.ondiskCore.getDefaultPlugins(),
-					model.genericCore.getDefaultPlugins());
+                    model.projectCore.getDefaultPlugins()
+                );
         	
             var plug:Class;
             for each (plug in allPlugins)
@@ -133,6 +130,12 @@ package actionScripts.plugin
             {
                 SettingsPlugin(plug).pluginManager = this;
                 settingsPlugin = SettingsPlugin(plug);
+            }
+
+            if (plug is IProjectTypePlugin)
+            {
+                var projectTypePlugin:IProjectTypePlugin = IProjectTypePlugin(plug);
+                model.projectCore.registerProjectTypePlugin(projectTypePlugin)
             }
         }
 

@@ -190,7 +190,7 @@ package actionScripts.plugin.haxe.hxproject
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = HaxeImporter.test(value.fileBridge.getFile);
+			var tmpFile:FileLocation = HaxeImporter.test(value);
 			if (!tmpFile && value.fileBridge.exists)
 			{
 				tmpFile = value;

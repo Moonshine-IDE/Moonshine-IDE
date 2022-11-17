@@ -58,8 +58,8 @@
 			import actionScripts.plugin.settings.vo.PluginSetting;
 			import actionScripts.plugin.settings.vo.StaticLabelSetting;
 			import actionScripts.plugin.templating.settings.renderer.PathAccessRenderer;
-			import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
-			import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
+			import actionScripts.plugin.actionscript.as3project.exporter.FlashBuilderExporter;
+			import actionScripts.plugin.actionscript.as3project.exporter.FlashDevelopExporter;
 			import actionScripts.ui.IContentWindow;
 			import actionScripts.utils.OSXBookmarkerNotifiers;
 			import actionScripts.valueObjects.ConstantsCoreVO;

@@ -29,7 +29,7 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.as3project.importer
+package actionScripts.plugin.actionscript.as3project.importer
 {
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugin.project.ProjectTemplateType;
@@ -69,11 +69,11 @@ package actionScripts.plugins.as3project.importer
 
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
-		public static function test(file:File):FileLocation
+		public static function test(file:FileLocation):FileLocation
 		{
-			if (!file.exists) return null;
+			if (!file.fileBridge.exists) return null;
 			
-			var listing:Array = file.getDirectoryListing();
+			var listing:Array = file.fileBridge.getDirectoryListing();
 			for each (var i:File in listing)
 			{
 				if (i.extension == "as3proj" || i.extension == "veditorproj") {

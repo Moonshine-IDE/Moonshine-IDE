@@ -43,9 +43,7 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.impls.IGenericBridgeImpl;
-
-		import mx.events.FlexEvent;
+			import mx.events.FlexEvent;
 
 			import spark.components.Alert;
 
@@ -57,13 +55,10 @@
 			import actionScripts.impls.IContextMenuBridgeImp;
 			import actionScripts.impls.IFileBridgeImp;
 			import actionScripts.impls.IFlexCoreBridgeImp;
-			import actionScripts.impls.IGroovyBridgeImpl;
-			import actionScripts.impls.IHaxeBridgeImpl;
-			import actionScripts.impls.IJavaBridgeImpl;
+			import actionScripts.impls.IProjectBridgeImpl;
 			import actionScripts.impls.ILanguageServerBridgeImp;
 			import actionScripts.impls.INativeMenuItemBridgeImp;
 			import actionScripts.impls.IOSXBookmarkerBridgeImp;
-			import actionScripts.impls.IOnDiskBridgeImpl;
 			import actionScripts.impls.IVisualEditorProjectBridgeImpl;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.ui.LayoutModifier;
@@ -89,13 +84,9 @@
 			private static const NEEDED_FOR_COMPILATION5:IAboutBridgeImp = null;
 	        private static const NEEDED_FOR_COMPILATION6:IVisualEditorProjectBridgeImpl = null;
 	        private static const NEEDED_FOR_COMPILATION7:IClipboardBridgeImp = null;
-	        private static const NEEDED_FOR_COMPILATION8:IJavaBridgeImpl = null;
+	        private static const NEEDED_FOR_COMPILATION8:IProjectBridgeImpl = null;
 	        private static const NEEDED_FOR_COMPILATION9:ILanguageServerBridgeImp = null;
-	        private static const NEEDED_FOR_COMPILATION10:IGroovyBridgeImpl = null;
-			private static const NEEDED_FOR_COMPILATION11:IOSXBookmarkerBridgeImp = null;
-			private static const NEEDED_FOR_COMPILATION12:IHaxeBridgeImpl = null;
-			private static const NEEDED_FOR_COMPILATION13:IOnDiskBridgeImpl = null;
-			private static const NEEDED_FOR_COMPILATION14:IGenericBridgeImpl = null;
+			private static const NEEDED_FOR_COMPILATION10:IOSXBookmarkerBridgeImp = null;
 
 			//--------------------------------------------------------------------------
 			//

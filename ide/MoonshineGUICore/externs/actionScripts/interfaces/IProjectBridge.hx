@@ -29,6 +29,6 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin.genericproj.interfaces;
+package actionScripts.interfaces;
 
-extern interface IGenericProjectBridge {}
+extern interface IProjectBridge {}

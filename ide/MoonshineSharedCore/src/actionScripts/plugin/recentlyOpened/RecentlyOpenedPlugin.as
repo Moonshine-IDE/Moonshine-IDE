@@ -68,6 +68,7 @@ package actionScripts.plugin.recentlyOpened
 	import actionScripts.valueObjects.SDKReferenceVO;
 	
 	import components.views.project.TreeView;
+	import flash.filesystem.File;
 
 	public class RecentlyOpenedPlugin extends PluginBase implements IMenuPlugin
 	{
@@ -615,114 +616,19 @@ package actionScripts.plugin.recentlyOpened
 				lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FB_PROJECT ||
 				lastOpenedOption == ProjectEvent.LAST_OPENED_AS_FD_PROJECT)
 			{
-				projectFileLocation = model.flexCore.testFlashDevelop(projectFile);
-				if(projectFileLocation)
+				try
 				{
-					try
+					var project:ProjectVO = model.projectCore.parseProject(recentOpenedProjectObject);
+					if (project)
 					{
-						return model.flexCore.parseFlashDevelop(null, projectFileLocation, projectName);
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						return null;
+						return project;
 					}
 				}
-				
-				projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
-				if(projectFileLocation)
+				catch(e:Error)
 				{
-					try
-					{
-						return model.flexCore.parseFlashBuilder(recentOpenedProjectObject as FileLocation);
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						return null;
-					}
-				}
-				
-				var pomOrGradleFileLocation:FileLocation = model.javaCore.testJava(projectFile);
-				if(pomOrGradleFileLocation)
-				{
-					projectFileLocation = model.javaCore.getSettingsFile(projectFile);
-					try
-					{
-						return model.javaCore.parseJava(
-								recentOpenedProjectObject as FileLocation,
-								null,
-								projectFileLocation
-						);
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						return null;
-					}
-				}
-				
-				projectFileLocation = model.groovyCore.testGrails(projectFile);
-				if (projectFileLocation)
-				{
-					try
-					{
-						return model.groovyCore.parseGrails(recentOpenedProjectObject as FileLocation, null, projectFileLocation);	
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						return null;
-					}
-				}
-				
-				projectFileLocation = model.haxeCore.testHaxe(projectFile);
-				if (projectFileLocation)
-				{
-					try
-					{
-						return model.haxeCore.parseHaxe(recentOpenedProjectObject as FileLocation, null, projectFileLocation);
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						return null;
-					}
-				}
-				
-				projectFileLocation = model.ondiskCore.testOnDisk(projectFile);
-				if (projectFileLocation)
-				{
-					try
-					{
-						return model.ondiskCore.parseOnDisk(recentOpenedProjectObject as FileLocation, null, projectFileLocation);
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						return null;
-					}
-				}
-
-				projectFileLocation = model.genericCore.testGenericProject(projectFile);
-				if (projectFileLocation)
-				{
-					try
-					{
-						return model.genericCore.parseGenericProject(recentOpenedProjectObject as FileLocation, null, projectFileLocation);	
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						return null;
-					}
+					error("Failed to open project: " + recentOpenedProjectObject.fileBridge.nativePath);
+					error(e.message +"\n"+ e.getStackTrace());
+					return null;
 				}
 			}
 			

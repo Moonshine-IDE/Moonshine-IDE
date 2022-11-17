@@ -192,7 +192,7 @@ package actionScripts.plugin.java.javaproject
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = JavaImporter.test(value.fileBridge.getFile);
+			var tmpFile:FileLocation = JavaImporter.test(value);
 			if (!tmpFile && value.fileBridge.exists)
 			{
 				tmpFile = value;

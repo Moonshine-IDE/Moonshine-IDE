@@ -36,10 +36,15 @@ package actionScripts.plugin.haxe.hxproject
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.plugin.IProjectTypePlugin;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.plugin.haxe.hxproject.importer.HaxeImporter;
+    import actionScripts.valueObjects.ProjectVO;
 	
-	public class HaxeProjectPlugin extends PluginBase
+	public class HaxeProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{	
 		public var activeType:uint = ProjectType.HAXE;
+		private var executeCreateHaxeProject:CreateHaxeProject;
 		
 		override public function get name():String 			{ return "Haxe Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
@@ -58,6 +63,16 @@ package actionScripts.plugin.haxe.hxproject
 			
 			super.deactivate();
 		}
+
+		public function testProjectDirectory(dir:FileLocation):FileLocation
+		{
+			return HaxeImporter.test(dir);
+		}
+
+		public function parseProject(projectFolder:FileLocation, projectName:String = null, settingsFileLocation:FileLocation = null):ProjectVO
+		{
+			return HaxeImporter.parse(projectFolder, projectName, settingsFileLocation);
+		}
 		
 		private function createNewProjectHandler(event:NewProjectEvent):void
 		{
@@ -66,7 +81,7 @@ package actionScripts.plugin.haxe.hxproject
 				return;
 			}
 			
-			model.haxeCore.createProject(event);
+			executeCreateHaxeProject = new CreateHaxeProject(event);
 		}
 
         private function canCreateProject(event:NewProjectEvent):Boolean

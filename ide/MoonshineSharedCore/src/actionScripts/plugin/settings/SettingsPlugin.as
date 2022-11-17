@@ -149,11 +149,7 @@ package actionScripts.plugin.settings
 		{
 			excludeFromSettings = excludeFromSettings.concat(
 				model.flexCore.getPluginsNotToShowInSettings(),
-				model.javaCore.getPluginsNotToShowInSettings(),
-				model.groovyCore.getPluginsNotToShowInSettings(),
-				model.haxeCore.getPluginsNotToShowInSettings(),
-				model.ondiskCore.getPluginsNotToShowInSettings(),
-				model.genericCore.getPluginsNotToShowInSettings(),
+				model.projectCore.getPluginsNotToShowInSettings(),
 				model.visualEditorCore.getPluginsNotToShowInSettings()
 			);
 			

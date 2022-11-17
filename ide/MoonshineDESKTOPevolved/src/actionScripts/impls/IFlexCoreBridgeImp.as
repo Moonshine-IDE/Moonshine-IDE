@@ -38,8 +38,8 @@ package actionScripts.impls
 	import actionScripts.plugins.genesis.GenesisPlugin;
 	import actionScripts.plugins.lsmonitor.LanguageServersMonitor;
 	import actionScripts.plugins.macports.MacPortsPlugin;
-import actionScripts.plugins.menu.OpenInTerminalPlugin;
-import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
+	import actionScripts.plugins.menu.OpenInTerminalPlugin;
+	import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.plugins.visualEditor.domino.DominoJavaAgentsExporter;
@@ -73,7 +73,6 @@ import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 	import actionScripts.interfaces.IFlexCoreBridge;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.interfaces.IModulesFinder;
-	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -99,7 +98,6 @@ import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 	import actionScripts.plugin.settings.SettingsPlugin;
 	import actionScripts.plugin.splashscreen.SplashScreenPlugin;
 	import actionScripts.plugin.symbols.SymbolsPlugin;
-	import actionScripts.plugin.syntax.AS3SyntaxPlugin;
 	import actionScripts.plugin.syntax.CSSSyntaxPlugin;
 	import actionScripts.plugin.syntax.GroovySyntaxPlugin;
 	import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
@@ -110,10 +108,8 @@ import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 	import actionScripts.plugin.workspace.WorkspacePlugin;
 	import actionScripts.plugins.ant.AntBuildPlugin;
 	import actionScripts.plugins.ant.AntBuildScreen;
-	import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
-	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
-	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
-	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugin.actionscript.as3project.exporter.FlashBuilderExporter;
+	import actionScripts.plugin.actionscript.as3project.exporter.FlashDevelopExporter;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCFlashModulePlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
@@ -171,7 +167,8 @@ import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
-	import actionScripts.plugins.as3lsp.AS3LanguageServerPlugin;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -180,30 +177,10 @@ import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 		//  INTERFACE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
-		public function parseFlashDevelop(project:AS3ProjectVO=null, file:FileLocation=null, projectName:String=null):AS3ProjectVO
-		{
-			return FlashDevelopImporter.parse(file, projectName);
-		}
 
 		public function convertFlashDevelopToDomino(file:FileLocation=null):void
 		{
-			 FlashDevelopImporter.convertDomino(file);
-		}
-		
-		public function parseFlashBuilder(file:FileLocation):AS3ProjectVO
-		{
-			return FlashBuilderImporter.parse(file);
-		}
-		
-		public function testFlashDevelop(file:Object):FileLocation
-		{
-			return FlashDevelopImporter.test(file as File);
-		}
-		
-		public function testFlashBuilder(file:Object):FileLocation
-		{
-			return FlashBuilderImporter.test(file as File);
+			FlashDevelopImporter.convertDomino(file);
 		}
 		
 		public function updateFlashPlayerTrustContent(value:FileLocation):void
@@ -276,9 +253,6 @@ import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 				MXMLCJavaScriptPlugin,
 				MXMLCFlashModulePlugin,
 				SWFLauncherPlugin,
-				AS3ProjectPlugin,
-				AS3SyntaxPlugin,
-				AS3LanguageServerPlugin,
 				CSSSyntaxPlugin,
 				GroovySyntaxPlugin,
 				JSSyntaxPlugin,
@@ -324,7 +298,7 @@ import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [FileAssociationPlugin, OpenInTerminalPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, AS3LanguageServerPlugin, CleanProject, DebugAdapterPlugin,
+			return [FileAssociationPlugin, OpenInTerminalPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
 					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
