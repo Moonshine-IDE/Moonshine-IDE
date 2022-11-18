@@ -51,7 +51,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 			return null;
 		}
 		
-		public static function parse(p:AS3ProjectVO):AS3ProjectVO
+		/*public static function parse(p:AS3ProjectVO):AS3ProjectVO
 		{
 			var data:XML = ConstantsCoreVO.AS3PROJ_CONFIG_SOURCE;
 			
@@ -93,6 +93,6 @@ package actionScripts.plugin.actionscript.as3project.importer
 			}
 			
 			return p;
-		}
+		}*/
 	}
 }
