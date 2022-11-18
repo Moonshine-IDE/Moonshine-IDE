@@ -56,7 +56,6 @@ package actionScripts.controllers
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
-	import actionScripts.plugins.ui.editor.dominoFormBuilder.DominoFormBuilderWrapper;
 
 	public class OpenFileCommand implements ICommand
 	{
@@ -402,7 +401,7 @@ package actionScripts.controllers
 		
 		private function openTabularInterfaceEditorFile(project:ProjectVO):void
 		{
-			var editor:IContentWindow = new DominoFormBuilderWrapper(file, project as OnDiskProjectVO);
+			var editor:IContentWindow = model.flexCore.getDominoFormBuilderWrapper(file, project as OnDiskProjectVO);
 			
 			ged.dispatchEvent(
 				new AddTabEvent(editor)

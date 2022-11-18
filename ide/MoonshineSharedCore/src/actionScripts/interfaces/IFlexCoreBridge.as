@@ -31,6 +31,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+	import actionScripts.ui.IContentWindow;
 	import actionScripts.valueObjects.ProjectVO;
 
 	import flash.display.DisplayObject;
@@ -96,6 +98,7 @@ package actionScripts.interfaces
 		function setMSDKILocalPathConfig():void;
 		function checkRequireJava(project:ProjectVO=null):Boolean;
 		function searchAntFile(insideProject:ProjectVO):ArrayCollection;
+		function getDominoFormBuilderWrapper(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow;
 
         /**
          *

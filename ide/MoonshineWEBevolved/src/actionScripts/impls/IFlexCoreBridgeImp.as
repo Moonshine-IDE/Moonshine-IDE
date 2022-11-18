@@ -90,6 +90,8 @@ package actionScripts.impls
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.URLDescriptorVO;
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+	import actionScripts.ui.IContentWindow; 
 
 	import components.popup.Authentication;
 	import components.popup.AuthenticationPopUp;
@@ -111,7 +113,8 @@ package actionScripts.impls
 
 		public function parseFlashDevelop(project:AS3ProjectVO=null, file:FileLocation=null, projectName:String=null):AS3ProjectVO
 		{
-			return FlashDevelopImporter.parse(project);
+			//return FlashDevelopImporter.parse(project);
+			return null;
 		}
 		public function convertFlashDevelopToDomino(file:FileLocation=null):void
 		{
@@ -518,6 +521,11 @@ package actionScripts.impls
 		}
 		
 		public function getTerminalThemeList():Array
+		{
+			return null;
+		}
+		
+		public function getDominoFormBuilderWrapper(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow
 		{
 			return null;
 		}

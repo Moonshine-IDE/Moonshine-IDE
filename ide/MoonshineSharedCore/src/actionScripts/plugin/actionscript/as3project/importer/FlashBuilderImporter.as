@@ -31,10 +31,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.importer
 {
-    import flash.filesystem.File;
-    import flash.filesystem.FileMode;
-    import flash.filesystem.FileStream;
-    
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.actionscript.as3project.vo.BuildOptions;
@@ -60,13 +56,13 @@ package actionScripts.plugin.actionscript.as3project.importer
 		{
 			var p:AS3ProjectVO = new AS3ProjectVO(file);
 			
-			var libSettings:File = file.resolvePath(".flexLibProperties").fileBridge.getFile as File;
-			if (libSettings.exists) p.isLibraryProject = true;
+			var libSettings:FileLocation = file.resolvePath(".flexLibProperties");
+			if (libSettings.fileBridge.exists) p.isLibraryProject = true;
 			
-			var projectSettings:File = file.resolvePath(".project").fileBridge.getFile as File;
+			var projectSettings:FileLocation = file.resolvePath(".project");
 			readProjectSettings(projectSettings, p);
 			
-			var actionscriptProperties:File = file.resolvePath(".actionScriptProperties").fileBridge.getFile as File;
+			var actionscriptProperties:FileLocation = file.resolvePath(".actionScriptProperties");
 			readActionScriptSettings(actionscriptProperties, p);
 			
 			// For AIR projects we need to meddle with the projectname-app.xml file
@@ -74,9 +70,9 @@ package actionScripts.plugin.actionscript.as3project.importer
 			{
 				if (p.targets.length > 0)
 				{
-					var targetApp:File = p.targets[0].fileBridge.getFile as File;
-					var appConfig:File = targetApp.parent.resolvePath(p.projectName+"-app.xml");
-					if (appConfig.exists) updateAppConfigXML(appConfig, p);
+					var targetApp:FileLocation = p.targets[0];
+					var appConfig:FileLocation = targetApp.fileBridge.parent.resolvePath(p.projectName+"-app.xml");
+					if (appConfig.fileBridge.exists) updateAppConfigXML(appConfig, p);
 				}
 			}
 			
@@ -85,24 +81,17 @@ package actionScripts.plugin.actionscript.as3project.importer
 			return p;
 		}
 		
-		protected static function readProjectSettings(file:File, p:AS3ProjectVO):void
+		protected static function readProjectSettings(file:FileLocation, p:AS3ProjectVO):void
 		{
-			var stream:FileStream = new FileStream();
-			stream.open(file, FileMode.READ);
-			var data:XML = XML(stream.readUTFBytes(file.size));
-			stream.close();
-			
+			var data:XML = XML(file.fileBridge.read());
 			p.projectName = data.name;
 		}
 		
-		protected static function readActionScriptSettings(file:File, p:AS3ProjectVO):void
+		protected static function readActionScriptSettings(file:FileLocation, p:AS3ProjectVO):void
 		{
-			var stream:FileStream = new FileStream();
-			stream.open(file, FileMode.READ);
-			var dataString:String = stream.readUTFBytes(file.size);
+			var dataString:String = file.fileBridge.read() as String;
 			var data:XML = XML(dataString);
 			p.flashBuilderProperties = data;
-			stream.close();
 			
 			var isDocumentsPathExists: Boolean = (dataString.indexOf("${DOCUMENTS}") != -1);
 			if (isDocumentsPathExists)
@@ -110,34 +99,31 @@ package actionScripts.plugin.actionscript.as3project.importer
 				var folderToSearch: String = ".metadata";
 				for (var i:int = 0; i < 6; i++)
 				{
-					var m:File;
+					var m:FileLocation;
 					try
 					{
-						if (i == 0) m = p.folderLocation.fileBridge.getFile.parent.resolvePath(folderToSearch);
-						else if (i == 1) m = p.folderLocation.fileBridge.getFile.parent.parent.resolvePath(folderToSearch);
-						else if (i == 2) m = p.folderLocation.fileBridge.getFile.parent.parent.parent.resolvePath(folderToSearch);
-						else if (i == 3) m = p.folderLocation.fileBridge.getFile.parent.parent.parent.parent.resolvePath(folderToSearch);
-						else if (i == 4) m = p.folderLocation.fileBridge.getFile.parent.parent.parent.parent.resolvePath(folderToSearch);
-						else if (i == 5) m = p.folderLocation.fileBridge.getFile.parent.parent.parent.parent.parent.resolvePath(folderToSearch);
+						if (i == 0) m = p.folderLocation.fileBridge.parent.resolvePath(folderToSearch);
+						else if (i == 1) m = p.folderLocation.fileBridge.parent.fileBridge.parent.resolvePath(folderToSearch);
+						else if (i == 2) m = p.folderLocation.fileBridge.parent.fileBridge.parent.fileBridge.parent.resolvePath(folderToSearch);
+						else if (i == 3) m = p.folderLocation.fileBridge.parent.fileBridge.parent.fileBridge.parent.fileBridge.parent.resolvePath(folderToSearch);
+						else if (i == 4) m = p.folderLocation.fileBridge.parent.fileBridge.parent.fileBridge.parent.fileBridge.parent.fileBridge.parent.resolvePath(folderToSearch);
+						else if (i == 5) m = p.folderLocation.fileBridge.parent.fileBridge.parent.fileBridge.parent.fileBridge.parent.fileBridge.parent.fileBridge.parent.resolvePath(folderToSearch);
 					}
 					catch (e:Error)
 					{
 						break;
 					}
-					if (m.exists)
+					if (m.fileBridge.exists)
 					{
 						m = m.resolvePath(".plugins/org.eclipse.core.runtime/.settings/org.eclipse.core.resources.prefs");
-						if (m.exists)
+						if (m.fileBridge.exists)
 						{
 							CONFIG::OSX
 							{
-								if (!checkOSXBookmarked(m.nativePath)) break;
+								if (!checkOSXBookmarked(m.fileBridge.nativePath)) break;
 							}
 							
-							stream = new FileStream();
-							stream.open(m, FileMode.READ);
-							dataString = stream.readUTFBytes(m.size);
-							stream.close();
+							dataString = m.fileBridge.read() as String;
 							
 							var allLines:Array = dataString.split(/\n/);
 							for each (var j:Object in allLines)
@@ -190,13 +176,9 @@ package actionScripts.plugin.actionscript.as3project.importer
 			p.isMobile = UtilsCore.isMobile(p);
 		}
 		
-		protected static function updateAppConfigXML(file:File, p:AS3ProjectVO):void
+		protected static function updateAppConfigXML(file:FileLocation, p:AS3ProjectVO):void
 		{
-			var stream:FileStream = new FileStream();
-			stream.open(file, FileMode.READ);
-			var data:String = stream.readUTFBytes(file.size).toString();
-			stream.close();
-			
+			var data:String = file.fileBridge.read() as String;
 			var replacement:String = p.projectName + ".swf";
 			p.isMobile = UtilsCore.isMobile(p);
 			
@@ -222,10 +204,8 @@ package actionScripts.plugin.actionscript.as3project.importer
 				XML.ignoreComments = true;
 				XML.ignoreWhitespace = true;				
 			}
-						
-			stream.open(file, FileMode.WRITE);
-			stream.writeUTFBytes(data);
-			stream.close();
+
+			file.fileBridge.writeToFile(data);
 		}
 	}
 }

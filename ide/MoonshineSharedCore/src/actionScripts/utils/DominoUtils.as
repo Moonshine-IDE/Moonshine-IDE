@@ -33,7 +33,7 @@ package actionScripts.utils
 {
     import mx.core.UIComponent;
 	import mx.controls.Alert;
-	import com.adobe.utils.StringUtil;
+	import mx.utils.StringUtil;
     
     public class DominoUtils
 	{
