@@ -90,6 +90,7 @@ package actionScripts.impls
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.URLDescriptorVO;
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 
 	import components.popup.Authentication;
 	import components.popup.AuthenticationPopUp;
@@ -518,6 +519,11 @@ package actionScripts.impls
 		}
 		
 		public function getTerminalThemeList():Array
+		{
+			return null;
+		}
+		
+		public function getDominoFormBuilderWrapper(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow
 		{
 			return null;
 		}

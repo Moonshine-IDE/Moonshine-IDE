@@ -36,8 +36,6 @@ package actionScripts.plugin.ondiskproj.importer
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.utils.SerializeUtil;
-	import actionScripts.utils.UtilsCore;
-	import flash.filesystem.File;
 
 	public class OnDiskImporter extends FlashDevelopImporterBase
 	{
@@ -51,7 +49,7 @@ package actionScripts.plugin.ondiskproj.importer
 			}
 
 			var listing:Array = file.fileBridge.getDirectoryListing();
-			for each (var i:File in listing)
+			for each (var i:Object in listing)
 			{
 				var fileName:String = i.name;
 				var extensionIndex:int = fileName.lastIndexOf(FILE_EXTENSION_ONDISKPROJ);
@@ -171,7 +169,7 @@ package actionScripts.plugin.ondiskproj.importer
 			project.mavenBuildOptions.parse(data.mavenBuild);
 
 			project.visualEditorSourceFolder = new FileLocation(
-                        project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src/main/webapp"
+                        project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + "visualeditor-src/main/webapp"
                 );
 
 			return project;

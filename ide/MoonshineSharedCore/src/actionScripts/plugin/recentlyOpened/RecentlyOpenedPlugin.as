@@ -68,7 +68,6 @@ package actionScripts.plugin.recentlyOpened
 	import actionScripts.valueObjects.SDKReferenceVO;
 	
 	import components.views.project.TreeView;
-	import flash.filesystem.File;
 
 	public class RecentlyOpenedPlugin extends PluginBase implements IMenuPlugin
 	{

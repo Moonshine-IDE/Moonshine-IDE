@@ -40,10 +40,12 @@ package actionScripts.impls
 	import actionScripts.plugins.macports.MacPortsPlugin;
 	import actionScripts.plugins.menu.OpenInTerminalPlugin;
 	import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
+	import actionScripts.plugins.ui.editor.dominoFormBuilder.DominoFormBuilderWrapper;
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.plugins.visualEditor.domino.DominoJavaAgentsExporter;
 	import actionScripts.plugins.visualEditor.domino.ExportDominoToRoyalePlugin;
+	import actionScripts.ui.IContentWindow;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -681,6 +683,11 @@ package actionScripts.impls
 		public function searchAntFile(insideProject:ProjectVO):ArrayCollection
 		{
 			return AntBuildPlugin.searchAntFile(insideProject);
+		}
+
+		public function getDominoFormBuilderWrapper(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow
+		{
+			return (new DominoFormBuilderWrapper(file, project as OnDiskProjectVO));
 		}
 	}
 }
