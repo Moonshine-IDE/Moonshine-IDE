@@ -31,17 +31,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.workspace
 {
-import actionScripts.events.GeneralEvent;
-import actionScripts.events.SettingsEvent;
-import actionScripts.plugin.settings.ISettingsProvider;
-import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
-import actionScripts.plugin.settings.vo.AbstractSetting;
-import actionScripts.plugin.settings.vo.ISetting;
-import actionScripts.plugin.settings.vo.LinkOnlySetting;
-import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
-import actionScripts.plugin.workspace.settings.WorkspaceItemSetting;
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
+	import actionScripts.plugin.settings.vo.AbstractSetting;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.LinkOnlySetting;
+	import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
+	import actionScripts.plugin.workspace.settings.WorkspaceItemSetting;
 
-import flash.display.DisplayObject;
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.clearTimeout;
@@ -49,8 +49,8 @@ import flash.display.DisplayObject;
 	
 	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
-import mx.events.CloseEvent;
-import mx.managers.PopUpManager;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
 	
 	import actionScripts.events.ProjectEvent;
@@ -82,6 +82,8 @@ import mx.managers.PopUpManager;
 		public static const EVENT_WORKSPACE_CHANGED:String = "workspaceChangedEvent";
 		
 		private static const LABEL_DEFAULT_WORKSPACE:String = "IDE-Default";
+		private static const LABEL_ADD_NEW:String = "Add New";
+		private static const LABEL_REMOVE:String = "Remove";
 		
 		override public function get name():String 			{return "Workspace";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
@@ -97,6 +99,7 @@ import mx.managers.PopUpManager;
 		private var closeAllProjectItems:Array;
 		private var settings:Vector.<ISetting>;
 		private var linkOnlySetting:LinkOnlySetting;
+		private var changingWorkspace:String;
 		
 		private var loadWorkspaceView:LoadWorkspaceView;
 		private var loadWorkspaceViewWrapper:FeathersUIWrapper;
@@ -173,6 +176,7 @@ import mx.managers.PopUpManager;
 					{
 						setting.removeEventListener(WorkspaceItemSetting.EVENT_SELECT, onWorkspaceItemSelected);
 						setting.removeEventListener(WorkspaceItemSetting.EVENT_RENAME, onWorkspaceItemRename);
+						setting.removeEventListener(WorkspaceItemSetting.EVENT_SWITCH, onWorkspaceItemSwitch);
 					}
 				}
 			}
@@ -191,9 +195,8 @@ import mx.managers.PopUpManager;
 		{
 			settings = new Vector.<ISetting>();
 			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
-				new LinkOnlySettingVO("Add"),
-				new LinkOnlySettingVO("Switch"),
-				new LinkOnlySettingVO("Remove")
+				new LinkOnlySettingVO(LABEL_ADD_NEW),
+				new LinkOnlySettingVO(LABEL_REMOVE)
 			]);
 			linkOnlySetting.addEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked, false, 0, true);
 
@@ -213,6 +216,7 @@ import mx.managers.PopUpManager;
 			var tmpSetting:WorkspaceItemSetting = new WorkspaceItemSetting(workspace);
 			tmpSetting.addEventListener(WorkspaceItemSetting.EVENT_SELECT, onWorkspaceItemSelected, false, 0, true);
 			tmpSetting.addEventListener(WorkspaceItemSetting.EVENT_RENAME, onWorkspaceItemRename, false, 0, true);
+			tmpSetting.addEventListener(WorkspaceItemSetting.EVENT_SWITCH, onWorkspaceItemSwitch, false, 0, true);
 
 			return tmpSetting;
 		}
@@ -234,20 +238,23 @@ import mx.managers.PopUpManager;
 		{
 			createNewWorkspaceViewWithTitle("Rename Workspace", (event.value as WorkspaceItemSetting).workspace);
 		}
+
+		private function onWorkspaceItemSwitch(event:GeneralEvent):void
+		{
+			handleLoadWorkspaceEvent(
+					new WorkspaceEvent("", (event.value as WorkspaceItemSetting).workspace.label)
+			);
+		}
 		
 		private function onLinkItemClicked(event:LinkOnlySettingsEvent):void
 		{
-			if (event.value.label == "Add")
+			if (event.value.label == LABEL_ADD_NEW)
 			{
 				onNewWorkspaceEvent(null);
 			}
-			else if (event.value.label == "Remove")
+			else if (event.value.label == LABEL_REMOVE)
 			{
 				removeWorkspaces();
-			}
-			else if (event.value.label == "Switch")
-			{
-				onLoadWorkspaceEvent(null);
 			}
 		}
 
@@ -333,12 +340,14 @@ import mx.managers.PopUpManager;
 
 		private function handleRenameWorkspaceEvent(event:WorkspaceEvent):void
 		{
-			sortWorkspaces();
-			saveToCookie();
 			if (event.workspaceLabel == ConstantsCoreVO.CURRENT_WORKSPACE)
 			{
-				ConstantsCoreVO.CURRENT_WORKSPACE = event.workspace.label;
+				currentWorkspaceLabel = ConstantsCoreVO.CURRENT_WORKSPACE = event.workspace.label;
 			}
+			workspaces[event.workspace.label] = workspaces[event.workspaceLabel]; // assigning old workspace's collection to new/renamed workspace
+			delete workspaces[event.workspaceLabel]; // delete old workspace before renamed
+			sortWorkspaces();
+			saveToCookie();
 			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
 
 			if (settings)
@@ -448,6 +457,13 @@ import mx.managers.PopUpManager;
 		
 		private function handleLoadWorkspaceEvent(event:WorkspaceEvent):void
 		{
+			if (changingWorkspace == event.workspaceLabel)
+			{
+				return;
+			}
+
+			changingWorkspace = event.workspaceLabel;
+
 			var requestedWorkspace:String = event.workspaceLabel;
 			if (requestedWorkspace != currentWorkspaceLabel)
 			{
@@ -484,9 +500,15 @@ import mx.managers.PopUpManager;
 				workspaces[LABEL_DEFAULT_WORKSPACE] = [];
 			}
 
+			var tmpWorkspace:WorkspaceVO;
 			for (var workspace:String in workspaces)
 			{
-				workspacesForViews.addItem(new WorkspaceVO(workspace, workspaces[workspace]));
+				tmpWorkspace = new WorkspaceVO(workspace, workspaces[workspace]);
+				if (workspace == LABEL_DEFAULT_WORKSPACE)
+				{
+					tmpWorkspace.isDefault = true;
+				}
+				workspacesForViews.addItem(tmpWorkspace);
 			}
 
 			sortWorkspaces();
@@ -583,11 +605,6 @@ import mx.managers.PopUpManager;
 				settings.splice(workspacesForViews.getItemIndex(value)+2, 0, tmpSetting);
 				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
 			}
-		}
-
-		private function updateToSettingsAsRequires(value:WorkspaceVO):void
-		{
-
 		}
 		
 		//--------------------------------------------------------------------------

@@ -877,8 +877,10 @@ package actionScripts.utils
 			
 			for (var i:int = 0; i < editorsCount; i++)
 			{
-				if (model.editors[i] == exceptEditor)
+				if ((model.editors[i] == exceptEditor) ||
+						((model.editors[i] is SettingsView) && !(model.editors[i] as SettingsView).associatedData))
 				{
+					// 'exceptEditor' and Moonshine Settings (not project Settings)
 					continue;
 				}
 

@@ -42,6 +42,7 @@ package actionScripts.plugin.workspace.settings
 	{
 		public static const EVENT_RENAME:String = "rename";
 		public static const EVENT_SELECT:String = "select";
+		public static const EVENT_SWITCH:String = "switch";
 		
 		protected var rdr:WorkspaceItemSettingsRenderer = new WorkspaceItemSettingsRenderer();
 		

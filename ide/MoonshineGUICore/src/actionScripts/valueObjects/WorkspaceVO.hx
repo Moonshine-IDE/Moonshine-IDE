@@ -52,6 +52,16 @@ class WorkspaceVO extends EventDispatcher
         return _label;
     }
 
+    private var _isDefault:Bool;
+    @:flash.property public var isDefault(get, set):Bool;
+    private function get_isDefault():Bool return _isDefault;
+    private function set_isDefault(value:Bool):Bool {
+        if ( _isDefault == value ) return _isDefault;
+        _isDefault = value;
+        dispatchEvent( new Event( Event.CHANGE ) );
+        return _isDefault;
+    }
+
 	public function new(label:String, paths:Array<String>) {
 		super();
 

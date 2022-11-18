@@ -145,7 +145,7 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		this.errorContainer.addChild(new Bitmap(new ExclamationRedIcon(0, 0)));
 		
 		var errorLabel:Label = new Label();
-			errorLabel.text = "Workspace is already exists.";
+			errorLabel.text = "Workspace already exists.";
 		this.errorContainer.addChild(errorLabel);
 		
 		var footer = new LayoutGroup();

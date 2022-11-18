@@ -45,8 +45,9 @@
 		import actionScripts.plugin.workspace.settings.WorkspaceItemSetting;
 
 			import actionScripts.plugin.settings.renderers.LinkButtonSkin;
+		import actionScripts.valueObjects.ConstantsCoreVO;
 
-			[Bindable] public var setting:WorkspaceItemSetting;
+		[Bindable] public var setting:WorkspaceItemSetting;
 			
 			private function modify():void
 			{
@@ -57,6 +58,11 @@
 			{
 				setting.dispatchEvent(new GeneralEvent(WorkspaceItemSetting.EVENT_SELECT, setting));
 			}
+
+			private function switchWorkspace():void
+			{
+				setting.dispatchEvent(new GeneralEvent(WorkspaceItemSetting.EVENT_SWITCH, setting));
+			}
 			
 		]]>
 	</fx:Script>
@@ -65,10 +71,14 @@
 		<s:Label styleName="uiTextSettingsLabel"
 				 text="{setting.workspace.label}" />
 		<mx:Spacer width="100%"/>
+		<s:Button label="Switch"
+				  skinClass="{LinkButtonSkin}"
+					click="switchWorkspace()" enabled="{setting.workspace.label != ConstantsCoreVO.CURRENT_WORKSPACE}"/>
 		<s:Button label="Rename"
 				  skinClass="{LinkButtonSkin}"
-				  click="modify()"/>
+				  click="modify()" enabled="{!setting.workspace.isDefault}"/>
 		<mx:Spacer width="10"/>
-		<s:CheckBox toolTip="Remove" change="onSelectChange(event)"/>
+		<s:CheckBox toolTip="Remove" change="onSelectChange(event)"
+			enabled="{!setting.workspace.isDefault}"/>
 	</s:HGroup>
 </s:VGroup>
