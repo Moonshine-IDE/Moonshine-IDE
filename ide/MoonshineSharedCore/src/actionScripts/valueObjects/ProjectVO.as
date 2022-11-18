@@ -46,6 +46,7 @@ package actionScripts.valueObjects
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	
 	public class ProjectVO extends EventDispatcher
 	{
@@ -278,7 +279,7 @@ package actionScripts.valueObjects
 			var jsonObj:Object = JSON.parse(rawData);
 			
 			ConstantsCoreVO.AS3PROJ_CONFIG_SOURCE = XML(jsonObj.text);
-			model.flexCore.parseFlashDevelop(IDEModel.getInstance().activeProject as AS3ProjectVO);
+			FlashDevelopImporter.parse(null);
 		}
 		
 		private function onFBProjectLoaded(value:Object, message:String=null):void

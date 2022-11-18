@@ -29,6 +29,14 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.interfaces;
+package actionScripts.plugin
+{
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.factory.FileLocation;
 
-extern interface IOnDiskBridge {}
+	public interface IProjectTypePlugin
+	{
+		function testProjectDirectory(file:FileLocation):FileLocation;
+		function parseProject(projectFolder:FileLocation, projectName:String = null, settingsFileLocation:FileLocation = null):ProjectVO;
+	}
+}

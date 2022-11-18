@@ -60,8 +60,11 @@ package actionScripts.plugin.genericproj
     import actionScripts.valueObjects.ConstantsCoreVO;
     
     import components.popup.newFile.NewOnDiskFilePopup;
+    import actionScripts.plugin.IProjectTypePlugin;
+    import actionScripts.plugin.genericproj.importer.GenericProjectImporter;
+    import actionScripts.valueObjects.ProjectVO;
 	
-	public class GenericProjectPlugin extends PluginBase
+	public class GenericProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{
 		public var activeType:uint = ProjectType.ONDISK;
 		
@@ -85,6 +88,16 @@ package actionScripts.plugin.genericproj
 			dispatcher.removeEventListener(GenericProjectEvent.EVENT_OPEN_PROJECT, onGenericProjectImport);
 
 			super.deactivate();
+		}
+
+		public function testProjectDirectory(dir:FileLocation):FileLocation
+		{
+			return GenericProjectImporter.test(dir);
+		}
+
+		public function parseProject(projectFolder:FileLocation, projectName:String = null, settingsFileLocation:FileLocation = null):ProjectVO
+		{
+			return GenericProjectImporter.parse(projectFolder, projectName, settingsFileLocation);
 		}
 		
 		private function createNewProjectHandler(event:NewProjectEvent):void

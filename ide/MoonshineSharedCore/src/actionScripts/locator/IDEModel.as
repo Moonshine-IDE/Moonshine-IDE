@@ -31,8 +31,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
-	import actionScripts.plugin.genericproj.interfaces.IGenericProjectBridge;
-
 	import mx.collections.ArrayCollection;
     import mx.core.IFlexDisplayObject;
     
@@ -42,12 +40,9 @@ package actionScripts.locator
     import actionScripts.interfaces.IContextMenuBridge;
     import actionScripts.interfaces.IFileBridge;
     import actionScripts.interfaces.IFlexCoreBridge;
-    import actionScripts.interfaces.IGroovyBridge;
-    import actionScripts.interfaces.IHaxeBridge;
-    import actionScripts.interfaces.IJavaBridge;
+    import actionScripts.interfaces.IProjectBridge;
     import actionScripts.interfaces.ILanguageServerBridge;
     import actionScripts.interfaces.IOSXBookmarkerBridge;
-    import actionScripts.interfaces.IOnDiskBridge;
     import actionScripts.interfaces.IVisualEditorBridge;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.MainView;
@@ -70,11 +65,7 @@ package actionScripts.locator
 		public var aboutCore: IAboutBridge;
         public var clipboardCore: IClipboardBridge;
 		public var visualEditorCore:IVisualEditorBridge;
-		public var javaCore:IJavaBridge;
-		public var groovyCore:IGroovyBridge;
-		public var haxeCore:IHaxeBridge;
-		public var ondiskCore:IOnDiskBridge;
-		public var genericCore:IGenericProjectBridge;
+		public var projectCore:IProjectBridge;
 		public var languageServerCore:ILanguageServerBridge;
 		public var osxBookmarkerCore:IOSXBookmarkerBridge;
 		

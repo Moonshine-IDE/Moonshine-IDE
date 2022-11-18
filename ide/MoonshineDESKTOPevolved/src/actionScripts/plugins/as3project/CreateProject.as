@@ -77,9 +77,9 @@ package actionScripts.plugins.as3project
 	import actionScripts.plugin.settings.vo.StaticLabelSetting;
 	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.plugin.templating.TemplatingHelper;
-	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
-	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
-	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugin.actionscript.as3project.exporter.FlashDevelopExporter;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
@@ -564,8 +564,8 @@ package actionScripts.plugins.as3project
 
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = FlashDevelopImporter.test(value.fileBridge.getFile as File);
-			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value.fileBridge.getFile as File);
+			var tmpFile:FileLocation = FlashDevelopImporter.test(value);
+			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value);
 			if (!tmpFile && !isProjectFromExistingSource && value.fileBridge.exists) tmpFile = value;
 			
 			if (tmpFile) 

@@ -43,15 +43,15 @@ package actionScripts.plugin.ondiskproj.importer
 	{
 		private static const FILE_EXTENSION_ONDISKPROJ:String = ".ondiskproj";
 
-		public static function test(file:Object):FileLocation
+		public static function test(file:FileLocation):FileLocation
 		{
-			if (!file.exists)
+			if (!file.fileBridge.exists)
 			{
 				return null;
 			}
 
-			var listing:Array = file.getDirectoryListing();
-			for each (var i:Object in listing)
+			var listing:Array = file.fileBridge.getDirectoryListing();
+			for each (var i:File in listing)
 			{
 				var fileName:String = i.name;
 				var extensionIndex:int = fileName.lastIndexOf(FILE_EXTENSION_ONDISKPROJ);

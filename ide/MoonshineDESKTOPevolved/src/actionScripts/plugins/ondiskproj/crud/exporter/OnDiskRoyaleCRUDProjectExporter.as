@@ -42,7 +42,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugins.as3project.CreateProject;
-	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	import actionScripts.valueObjects.ProjectVO;
 	
 	public class OnDiskRoyaleCRUDProjectExporter extends CreateProject

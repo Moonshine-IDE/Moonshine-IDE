@@ -36,10 +36,16 @@ package actionScripts.plugin.groovy.grailsproject
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.valueObjects.ConstantsCoreVO;
+    import actionScripts.factory.FileLocation;
+    import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.plugin.groovy.grailsproject.importer.GrailsImporter;
+    import actionScripts.plugin.IProjectTypePlugin;
 	
-	public class GrailsProjectPlugin extends PluginBase
+	public class GrailsProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{	
 		public var activeType:uint = ProjectType.GROOVY;
+		
+        protected var executeCreateGroovyProject:CreateGrailsProject;
 		
 		override public function get name():String 			{ return "Grails Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
@@ -59,6 +65,16 @@ package actionScripts.plugin.groovy.grailsproject
 			super.deactivate();
 		}
 		
+		public function testProjectDirectory(dir:FileLocation):FileLocation
+		{
+			return GrailsImporter.test(dir);
+		}
+
+		public function parseProject(dir:FileLocation, projectName:String = null, settingsFileLocation:FileLocation = null):ProjectVO
+		{
+			return GrailsImporter.parse(dir, projectName, settingsFileLocation);
+		}
+		
 		private function createNewProjectHandler(event:NewProjectEvent):void
 		{
 			if(!canCreateProject(event))
@@ -66,7 +82,7 @@ package actionScripts.plugin.groovy.grailsproject
 				return;
 			}
 			
-			model.groovyCore.createProject(event);
+			executeCreateGroovyProject = new CreateGrailsProject(event);
 		}
 
         private function canCreateProject(event:NewProjectEvent):Boolean

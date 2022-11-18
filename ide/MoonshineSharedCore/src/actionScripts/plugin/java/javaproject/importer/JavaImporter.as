@@ -31,13 +31,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject.importer
 {
-	import flash.filesystem.File;
-	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.utils.MavenPomUtil;
 	import actionScripts.utils.SerializeUtil;
+	import flash.filesystem.File;
 
 	public class JavaImporter extends FlashDevelopImporterBase
 	{
@@ -45,24 +44,24 @@ package actionScripts.plugin.java.javaproject.importer
 		private static const FILE_NAME_POM_XML:String = "pom.xml";
 		private static const FILE_NAME_BUILD_GRADLE:String = "build.gradle";
 
-		public static function test(file:Object):FileLocation
+		public static function test(file:FileLocation):FileLocation
 		{
-			if (!file.exists)
+			if (!file.fileBridge.exists)
 			{
 				return null;
 			}
 
-			var srcMainJava:File = file.resolvePath("src");
-			if (!srcMainJava.exists || !srcMainJava.isDirectory)
+			var srcMainJava:FileLocation = file.fileBridge.resolvePath("src");
+			if (!srcMainJava.fileBridge.exists || !srcMainJava.fileBridge.isDirectory)
 			{
 				return null;
 			}
 
-			var listing:Array = file.getDirectoryListing();
+			var listing:Array = file.fileBridge.getDirectoryListing();
 			var projectFile:FileLocation = null;
 			var pomFile:FileLocation = null;
 			var gradleFile:FileLocation = null;
-			for each (var i:Object in listing)
+			for each (var i:File in listing)
 			{
 				var fileName:String = i.name;
 				if (fileName == FILE_NAME_POM_XML)
@@ -98,14 +97,18 @@ package actionScripts.plugin.java.javaproject.importer
 			return null;
 		}
 
-		public static function getSettingsFile(projectFolder:File):FileLocation
+		public static function getSettingsFile(projectFolder:FileLocation):FileLocation
 		{
-			if (!projectFolder.exists) return null;
+			if (!projectFolder.fileBridge.exists)
+			{
+				return null;
+			}
 
-			var listing:Array = projectFolder.getDirectoryListing();
+			var listing:Array = projectFolder.fileBridge.getDirectoryListing();
 			for each (var i:File in listing)
 			{
-				if (i.extension == FILE_EXTENSION_JAVAPROJ) {
+				if (i.extension == FILE_EXTENSION_JAVAPROJ)
+				{
 					return (new FileLocation(i.nativePath));
 				}
 			}

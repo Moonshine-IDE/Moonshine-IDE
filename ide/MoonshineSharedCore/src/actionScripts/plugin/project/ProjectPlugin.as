@@ -496,133 +496,18 @@ package actionScripts.plugin.project
                     var projectLocation:FileLocation = new FileLocation(projectLocationInfo.path);
                     var projectFile:Object = projectLocation.fileBridge.getFile;
 					var projectFileLocation:FileLocation = null;
-
-					projectFileLocation = model.flexCore.testFlashDevelop(projectFile);
-					if (projectFileLocation)
+					
+					if (!project)
 					{
 						try
 						{
-							project = model.flexCore.parseFlashDevelop(null, projectFileLocation, projectLocationInfo.name);
+							project = model.projectCore.parseProject(projectLocation);
 						}
 						catch(e:Error)
 						{
-							// something went wrong trying to parse the project file
 							project = null;
-							error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
+							error("Failed to open project: " + projectLocation.fileBridge.nativePath);
 							error(e.message +"\n"+ e.getStackTrace());
-						}
-					}
-					
-					if (!project)
-					{
-						projectFileLocation = model.flexCore.testFlashBuilder(projectFile);
-						if (projectFileLocation)
-						{
-							try
-							{
-								project = model.flexCore.parseFlashBuilder(projectLocation);
-							}
-							catch(e:Error)
-							{
-								project = null;
-								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-								error(e.message +"\n"+ e.getStackTrace());
-							}
-						}
-					}
-					
-					if (!project)
-					{
-						var pomOrGradleFileLocation:FileLocation = model.javaCore.testJava(projectFile);
-						if (pomOrGradleFileLocation)
-						{
-							projectFileLocation = model.javaCore.getSettingsFile(projectFile);
-							try
-							{
-								project = model.javaCore.parseJava(
-										projectLocation,
-										null,
-										projectFileLocation
-								);
-							}
-							catch(e:Error)
-							{
-								project = null;
-								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-								error(e.message +"\n"+ e.getStackTrace());
-							}
-						}
-					}
-					
-					if (!project)
-					{
-						projectFileLocation = model.groovyCore.testGrails(projectFile);
-						if (projectFileLocation)
-						{
-							try
-							{
-								project = model.groovyCore.parseGrails(projectLocation, null, projectFileLocation);
-							}
-							catch(e:Error)
-							{
-								project = null;
-								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-								error(e.message +"\n"+ e.getStackTrace());
-							}
-						}
-					}
-					
-					if (!project)
-					{
-						projectFileLocation = model.haxeCore.testHaxe(projectFile);
-						if (projectFileLocation)
-						{
-							try
-							{
-								project = model.haxeCore.parseHaxe(projectLocation, null, projectFileLocation);
-							}
-							catch(e:Error)
-							{
-								project = null;
-								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-								error(e.message +"\n"+ e.getStackTrace());
-							}
-						}
-					}
-					
-					if (!project)
-					{
-						projectFileLocation = model.ondiskCore.testOnDisk(projectFile);
-						if (projectFileLocation)
-						{
-							try
-							{
-								project = model.ondiskCore.parseOnDisk(projectLocation, null, projectFileLocation);
-							}
-							catch(e:Error)
-							{
-								project = null;
-								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-								error(e.message +"\n"+ e.getStackTrace());
-							}
-						}
-					}
-
-					if (!project)
-					{
-						projectFileLocation = model.genericCore.testGenericProject(projectFile);
-						if (projectFileLocation)
-						{
-							try
-							{
-								project = model.genericCore.parseGenericProject(projectLocation, null, projectFileLocation);
-							}
-							catch(e:Error)
-							{
-								project = null;
-								error("Failed to open project: " + projectFileLocation.fileBridge.nativePath);
-								error(e.message +"\n"+ e.getStackTrace());
-							}
 						}
 					}
 

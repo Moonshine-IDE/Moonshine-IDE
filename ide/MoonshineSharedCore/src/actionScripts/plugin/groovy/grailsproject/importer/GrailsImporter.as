@@ -39,21 +39,20 @@ package actionScripts.plugin.groovy.grailsproject.importer
 	import flash.filesystem.FileStream;
 	import flash.filesystem.FileMode;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
-	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 
 	public class GrailsImporter extends FlashDevelopImporterBase
 	{
 		private static const FILE_EXTENSION_GRAILSPROJ:String = ".grailsproj";
 
-		public static function test(file:Object):FileLocation
+		public static function test(file:FileLocation):FileLocation
 		{
-			if (!file.exists)
+			if (!file.fileBridge.exists)
 			{
 				return null;
 			}
 
-			var listing:Array = file.getDirectoryListing();
-			for each (var i:Object in listing)
+			var listing:Array = file.fileBridge.getDirectoryListing();
+			for each (var i:File in listing)
 			{
 				var fileName:String = i.name;
 				var extensionIndex:int = fileName.lastIndexOf(FILE_EXTENSION_GRAILSPROJ);

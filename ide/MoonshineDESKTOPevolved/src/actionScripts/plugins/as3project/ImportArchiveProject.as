@@ -59,8 +59,8 @@ package actionScripts.plugins.as3project
     import actionScripts.plugin.settings.vo.SettingsWrapper;
     import actionScripts.plugin.settings.vo.StaticLabelSetting;
     import actionScripts.plugin.settings.vo.StringSetting;
-    import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
-    import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+    import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
+    import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.SharedObjectConst;
     import actionScripts.utils.UnzipUsingFZip;
@@ -317,8 +317,8 @@ package actionScripts.plugins.as3project
 		
 		private function checkIfProjectDirectory(value:File):void
 		{
-			var tmpFile:FileLocation = FlashDevelopImporter.test(value);
-			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value);
+			var tmpFile:FileLocation = FlashDevelopImporter.test(new FileLocation(value.nativePath));
+			if (!tmpFile) tmpFile = FlashBuilderImporter.test(new FileLocation(value.nativePath));
 			
 			if (tmpFile) 
 			{

@@ -47,15 +47,15 @@ package actionScripts.plugin.genericproj.importer
 		private static const FILE_EXTENSION_GENERICPROJ:String = ".genericproj";
 		private static const FILE_NAME_POM_XML:String = "pom.xml";
 
-		public static function test(file:Object):FileLocation
+		public static function test(file:FileLocation):FileLocation
 		{
-			if (!file.exists)
+			if (!file.fileBridge.exists)
 			{
 				return null;
 			}
 
-			var listing:Array = file.getDirectoryListing();
-			for each (var i:Object in listing)
+			var listing:Array = file.fileBridge.getDirectoryListing();
+			for each (var i:File in listing)
 			{
 				var fileName:String = i.name;
 				var extensionIndex:int = fileName.lastIndexOf(FILE_EXTENSION_GENERICPROJ);

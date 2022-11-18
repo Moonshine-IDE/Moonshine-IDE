@@ -67,10 +67,13 @@ import flash.display.DisplayObject;
 	import components.popup.NativeExtensionMessagePopup;
 	import components.popup.OpenFlexProject;
 	import components.popup.ProjectsToOpenSelectionPopup;
+	import actionScripts.plugin.IProjectTypePlugin;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
 	
-	public class AS3ProjectPlugin extends PluginBase
+	public class AS3ProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{
 		public static const AS3PROJ_AS_AIR:uint = 1;
 		public static const AS3PROJ_AS_WEB:uint = 2;
@@ -126,6 +129,26 @@ import flash.display.DisplayObject;
 			
 			super.deactivate();
 		}
+
+		public function testProjectDirectory(dir:FileLocation):FileLocation
+		{
+			var flashDevelopSettingsFile:FileLocation = FlashDevelopImporter.test(dir);
+			if (flashDevelopSettingsFile)
+			{
+				return flashDevelopSettingsFile;
+			}
+			return FlashBuilderImporter.test(dir);
+		}
+
+		public function parseProject(projectFolder:FileLocation, projectName:String = null, settingsFileLocation:FileLocation = null):ProjectVO
+		{
+			var flashDevelopSettingsFile:FileLocation = FlashDevelopImporter.test(projectFolder);
+			if (flashDevelopSettingsFile)
+			{
+				return FlashDevelopImporter.parse(flashDevelopSettingsFile, projectName);
+			}
+			return FlashBuilderImporter.parse(projectFolder);
+		}
 		
 		// If user opens project file, open project automagically
 		private function importFDProject(projectFile:FileLocation=null, openWithChoice:Boolean=false, openByProject:ProjectVO=null):void
@@ -147,7 +170,7 @@ import flash.display.DisplayObject;
 			// Is file in an already opened project?
 			if (checkIfProjectIsAlreadyOpened(flashBuilderProjectFile.fileBridge.nativePath)) return;
 			
-			var p:AS3ProjectVO = model.flexCore.parseFlashBuilder(flashBuilderProjectFile);
+			var p:AS3ProjectVO = FlashBuilderImporter.parse(flashBuilderProjectFile);
 			dispatcher.dispatchEvent(
 				new ProjectEvent(ProjectEvent.ADD_PROJECT, p, (openWithChoice) ? ProjectEvent.LAST_OPENED_AS_FB_PROJECT : null)
 			);
@@ -170,7 +193,7 @@ import flash.display.DisplayObject;
 		
 		private function openProject(projectFile:FileLocation, openWithChoice:Boolean=false, openByProject:ProjectVO=null):void
 		{
-			var project:ProjectVO = openByProject ? openByProject : model.flexCore.parseFlashDevelop(null, projectFile);
+			var project:ProjectVO = openByProject ? openByProject : FlashDevelopImporter.parse(projectFile);
 			project.projectFile = projectFile;
 
 			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ADD_PROJECT, project, (openWithChoice) ? ProjectEvent.LAST_OPENED_AS_FD_PROJECT : null));
@@ -281,140 +304,39 @@ import flash.display.DisplayObject;
 			{
 				return;
 			}
-			
-			var isFBProject: Boolean;
-			var isFDProject: Boolean;
-			flashDevelopProjectFile = model.flexCore.testFlashDevelop(dir);
-			flashBuilderProjectFile = model.flexCore.testFlashBuilder(dir);
-			if (flashBuilderProjectFile) isFBProject = true;
-			if (flashDevelopProjectFile) isFDProject = true;
-			
-			// for Java, Grails, and Haxe projects
-			// TODO: these shouldn't be in the AS3ProjectPlugin
-			if (!flashBuilderProjectFile && !flashDevelopProjectFile)
+			// TODO: this probably shouldn't be in the AS3ProjectPlugin
+			// because it is meant to load all languages
+			var invalidProjectFile:Boolean = false;
+			try
 			{
-				var invalidProjectFile:Boolean = false;
-				var pomOrGradleFileLocation:FileLocation = model.javaCore.testJava(dir);
-				if (pomOrGradleFileLocation)
+				var projectCoreProject:ProjectVO = model.projectCore.parseProject(new FileLocation(dir.nativePath));
+				if (projectCoreProject)
 				{
-					flashDevelopProjectFile = model.javaCore.getSettingsFile(dir);
-					try
-					{
-						importFDProject(
-								pomOrGradleFileLocation,
-								false,
-								model.javaCore.parseJava(new FileLocation(dir.nativePath), null, flashDevelopProjectFile)
-						);
-						return;
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						invalidProjectFile = true;
-					}
-				}
-				flashDevelopProjectFile = model.groovyCore.testGrails(dir);
-				if (flashDevelopProjectFile)
-				{
-					try
-					{
-						importFDProject(flashDevelopProjectFile, false, model.groovyCore.parseGrails(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
-						return;
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						invalidProjectFile = true;
-					}
-				}
-				flashDevelopProjectFile = model.haxeCore.testHaxe(dir);
-				if (flashDevelopProjectFile)
-				{
-					try
-					{
-						importFDProject(flashDevelopProjectFile, false, model.haxeCore.parseHaxe(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
-						return;
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						invalidProjectFile = true;
-					}
-				}
-				flashDevelopProjectFile = model.ondiskCore.testOnDisk(dir);
-				if (flashDevelopProjectFile)
-				{
-					try
-					{
-						importFDProject(flashDevelopProjectFile, false, model.ondiskCore.parseOnDisk(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
-						return;
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						invalidProjectFile = true;
-					}
-				}
-				flashDevelopProjectFile = model.genericCore.testGenericProject(dir);
-				if (flashDevelopProjectFile)
-				{
-					try
-					{
-						importFDProject(flashDevelopProjectFile, false, model.genericCore.parseGenericProject(new FileLocation(dir.nativePath), null, flashDevelopProjectFile));
-						return;
-						
-					}
-					catch(e:Error)
-					{
-						error("Failed to open project: " + flashDevelopProjectFile.fileBridge.nativePath);
-						error(e.message +"\n"+ e.getStackTrace());
-						invalidProjectFile = true;
-					}
-				}
-				if(invalidProjectFile)
-				{
-					Alert.show("Can't import: Not a valid " + ConstantsCoreVO.MOONSHINE_IDE_LABEL + " project directory.", "Error!");
+					importFDProject(
+							new FileLocation(dir.nativePath),
+							false,
+							projectCoreProject
+					);
 					return;
 				}
 			}
+			catch(e:Error)
+			{
+				error("Failed to open project: " + dir.nativePath);
+				error(e.message +"\n"+ e.getStackTrace());
+				invalidProjectFile = true;
+			}
+			if(invalidProjectFile)
+			{
+				Alert.show("Can't import: Not a valid " + ConstantsCoreVO.MOONSHINE_IDE_LABEL + " project directory.", "Error!");
+				return;
+			}
 
-			if (!isFBProject && !isFDProject)
-			{
-				nonProjectFolderLocation = new FileLocation(dir.nativePath);
-				Alert.yesLabel = "Create project with source";
-				Alert.noLabel = "Open as generic project";
-				Alert.buttonWidth = 170;
-				Alert.show("This directory is missing the Moonshine project configuration files. Do you want to generate a new project by locating existing source?", "Error!", Alert.YES|Alert.NO|Alert.CANCEL, null, onExistingSourceProjectConfirm);
-			}
-			else if (isFBProject && isFDProject)
-			{
-				// @devsena
-				// check change log in AS3ProjectVO.as against
-				// commenting the following process
-				
-				/*Alert.okLabel = "Flash Builder Project";
-				Alert.yesLabel = "FlashDevelop Project";
-				Alert.buttonWidth = 150;
-				
-				Alert.show("Project directory contains different types of Flex projects. Please, choose an option how you want it to be open.", "Project Type Choice", Alert.OK|Alert.YES|Alert.CANCEL, null, projectChoiceHandler);
-				Alert.okLabel = "OK";
-				Alert.yesLabel = "YES";
-				Alert.buttonWidth = 65;*/
-				
-				importFDProject(flashDevelopProjectFile);
-			}
-			else if (isFBProject)
-			{
-				importFBProject();
-			}
-			else if (isFDProject)
-			{
-				importFDProject(flashDevelopProjectFile);
-			}
+			nonProjectFolderLocation = new FileLocation(dir.nativePath);
+			Alert.yesLabel = "Create project with source";
+			Alert.noLabel = "Open as generic project";
+			Alert.buttonWidth = 170;
+			Alert.show("This directory is missing the Moonshine project configuration files. Do you want to generate a new project by locating existing source?", "Error!", Alert.YES|Alert.NO|Alert.CANCEL, null, onExistingSourceProjectConfirm);
 		}
 		
 		private function onExistingSourceProjectConfirm(event:CloseEvent):void

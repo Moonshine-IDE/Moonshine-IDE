@@ -165,7 +165,7 @@ package actionScripts.plugin.ondiskproj
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = OnDiskImporter.test(value.fileBridge.getFile);
+			var tmpFile:FileLocation = OnDiskImporter.test(value);
 			if (!tmpFile && value.fileBridge.exists)
 			{
 				tmpFile = value;

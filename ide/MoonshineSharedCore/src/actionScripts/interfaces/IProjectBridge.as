@@ -31,13 +31,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-    import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.IProjectTypePlugin;
 
-    public interface IJavaBridge extends IProject
-    {
-		function testJava(file:Object):FileLocation;
-		function getSettingsFile(projectFolder:Object):FileLocation;
-		function parseJava(projectFolder:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):JavaProjectVO;
-    }
+	public interface IProjectBridge
+	{
+        function getCorePlugins():Array;
+        function getDefaultPlugins():Array;
+        function getPluginsNotToShowInSettings():Array;
+		function registerProjectTypePlugin(provider:IProjectTypePlugin):void;
+		function unregisterProjectTypePlugin(provider:IProjectTypePlugin):void;
+		function parseProject(location:FileLocation):ProjectVO;
+	}
 }

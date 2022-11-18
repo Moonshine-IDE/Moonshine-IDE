@@ -51,8 +51,11 @@ package actionScripts.plugin.ondiskproj
     import actionScripts.valueObjects.ConstantsCoreVO;
     
     import components.popup.newFile.NewOnDiskFilePopup;
+    import actionScripts.plugin.IProjectTypePlugin;
+    import actionScripts.plugin.ondiskproj.importer.OnDiskImporter;
+    import actionScripts.valueObjects.ProjectVO;
 	
-	public class OnDiskProjectPlugin extends PluginBase
+	public class OnDiskProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{
 		public static const EVENT_NEW_FILE_WINDOW:String = "onOnDiskNewFileWindowRequest";
 		
@@ -84,6 +87,16 @@ package actionScripts.plugin.ondiskproj
 			super.deactivate();
 		}
 		
+		public function testProjectDirectory(dir:FileLocation):FileLocation
+		{
+			return OnDiskImporter.test(dir);
+		}
+
+		public function parseProject(dir:FileLocation, projectName:String=null, settingsFileLocation:FileLocation = null):ProjectVO
+		{
+			return OnDiskImporter.parse(dir, projectName, settingsFileLocation);
+		}
+		
 		private function createNewProjectHandler(event:NewProjectEvent):void
 		{
 			if(!canCreateProject(event))
@@ -91,7 +104,7 @@ package actionScripts.plugin.ondiskproj
 				return;
 			}
 			
-			model.ondiskCore.createProject(event);
+			new CreateOnDiskProject(event);
 		}
 
         private function canCreateProject(event:NewProjectEvent):Boolean

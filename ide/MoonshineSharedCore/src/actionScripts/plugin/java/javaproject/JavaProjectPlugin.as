@@ -46,12 +46,18 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.plugin.project.ProjectTemplateType;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.plugin.IProjectTypePlugin;
+	import actionScripts.plugin.java.javaproject.importer.JavaImporter;
+	import flash.filesystem.File;
+	import actionScripts.valueObjects.ProjectVO;
 
-	public class JavaProjectPlugin extends PluginBase
+	public class JavaProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{
 		override public function get name():String 			{ return "Java Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String 	{ return "Java project importing, exporting & scaffolding."; }
+		
+        protected var executeCreateJavaProject:CreateJavaProject;
 
 		override public function activate():void
 		{
@@ -74,6 +80,21 @@ package actionScripts.plugin.java.javaproject
 
 			super.deactivate();
 		}
+
+		public function testProjectDirectory(dir:FileLocation):FileLocation
+		{
+			var result:FileLocation = JavaImporter.test(dir);
+			if (!result)
+			{
+				return null;
+			}
+			return JavaImporter.getSettingsFile(dir);
+		}
+
+		public function parseProject(projectFolder:FileLocation, projectName:String = null, settingsFileLocation:FileLocation = null):ProjectVO
+		{
+			return JavaImporter.parse(projectFolder, projectName, settingsFileLocation);
+		}
 		
 		private function createNewProjectHandler(event:NewProjectEvent):void
 		{
@@ -82,7 +103,7 @@ package actionScripts.plugin.java.javaproject
 				return;
 			}
 			
-			model.javaCore.createProject(event);
+			executeCreateJavaProject = new CreateJavaProject(event);
 		}
 
 		private function javaBuildHandler(event:Event):void
