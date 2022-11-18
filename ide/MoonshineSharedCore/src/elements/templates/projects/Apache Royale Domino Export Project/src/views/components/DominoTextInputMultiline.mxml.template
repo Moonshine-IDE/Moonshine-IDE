@@ -11,6 +11,9 @@
     <js:State name="normal"/>
     <js:State name="disabled"/>
   </j:states>
+  <j:style>
+   	<js:SimpleCSSStyles fontFamily="{fontFamily}"/>
+  </j:style>
   <fx:Metadata>
       [Event("change")]
     </fx:Metadata>
@@ -48,7 +51,20 @@
 				switchState();
 			}
 		}
-		
+
+		private var _fontFamily:String;
+
+        [Bindable]
+        public function get fontFamily():String
+        {
+            return _fontFamily;
+        }
+
+        public function set fontFamily(value:String):void
+        {
+            _fontFamily = value;
+        }
+
 		private function switchState():void
 		{
 			this.currentState = isDisabled ? "disabled" : "normal";
