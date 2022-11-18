@@ -209,6 +209,11 @@ package actionScripts.impls
 		
 		}
 		
+		public function writeToFile(data:Object):void
+		{
+		
+		}
+		
 		public function deleteFile():void
 		{
 			_file.deleteFileOrDirectory();

@@ -67,6 +67,7 @@ package actionScripts.interfaces
 		function resolveTemporaryDirectoryPath(pathWith:String=null):FileLocation;
 		function resolvePath(path:String, toRelativePath:String=null):FileLocation;
 		function resolveDocumentDirectoryPath(pathWith:String=null):FileLocation;
+		function writeToFile(data:Object):void;
 		function read():Object;
 		function readAsync(provider:Object, fieldTypeReadObject:*, fieldTypeProvider:*, fieldInProvider:String=null, fieldInReadObject:String=null):void;
 		function readAsyncWithListener(onComplete:Function, onError:Function=null, fileToRead:Object=null):void;

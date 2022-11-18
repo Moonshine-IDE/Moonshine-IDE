@@ -61,10 +61,6 @@ package actionScripts.plugin.ondiskproj
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SharedObjectConst;
-	//import utils.MainApplicationCodeUtils;
-	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
 	import actionScripts.utils.DominoUtils;
 	
 	public class CreateOnDiskProject extends ConsoleOutputter
@@ -341,13 +337,9 @@ package actionScripts.plugin.ondiskproj
 			{
 				dveFile.fileBridge.deleteFile();
 			}
-			var fileTo:File = new File(dveFilePath);
-			//create a new dve file from new template
+
 			var xml:XML=DominoUtils.getDominoParentContent(title,title);
-			var fs:FileStream = new FileStream();
-			fs.open(fileTo, FileMode.WRITE);
-			fs.writeUTFBytes(xml.toXMLString());
-			fs.close();
+			dveFile.fileBridge.writeToFile(xml.toXMLString());
 
 			if(dveFile.fileBridge.exists){
 				var newFormFile:FileLocation =  targetFolder.resolvePath(sourceDominoVisualFormPath); 

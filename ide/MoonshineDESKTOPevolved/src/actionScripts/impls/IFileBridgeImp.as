@@ -443,6 +443,11 @@ package actionScripts.impls
 			
 			return saveData;
 		}
+
+		public function writeToFile(data:Object):void
+		{
+			FileUtils.writeToFile(_file, data);
+		}
 		
 		public function readAsync(provider:Object, fieldTypeReadObject:*, fieldTypeProvider:*, fieldInProvider:String=null, fieldInReadObject:String=null):void
 		{

@@ -91,6 +91,7 @@ package actionScripts.impls
 	import actionScripts.valueObjects.URLDescriptorVO;
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+	imoprt actionScripts.ui.IContentWindow; 
 
 	import components.popup.Authentication;
 	import components.popup.AuthenticationPopUp;

@@ -56,7 +56,6 @@ package actionScripts.controllers
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
-	import actionScripts.plugins.ui.editor.dominoFormBuilder.DominoFormBuilderWrapper;
 
 	public class OpenFileCommand implements ICommand
 	{
