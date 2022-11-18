@@ -37,9 +37,20 @@ package actionScripts.plugin.actionscript.as3project.importer
 	import actionScripts.utils.SerializeUtil;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.factory.FileLocation;
 	
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
+		public static function test(file:FileLocation):FileLocation
+		{
+			return null;
+		}
+		
+		public static function parse(file:FileLocation, projectName:String=null, descriptorFile:FileLocation=null, shallUpdateChildren:Boolean=true, projectTemplateType:String = null):AS3ProjectVO
+		{
+			return null;
+		}
+		
 		public static function parse(p:AS3ProjectVO):AS3ProjectVO
 		{
 			var data:XML = ConstantsCoreVO.AS3PROJ_CONFIG_SOURCE;
