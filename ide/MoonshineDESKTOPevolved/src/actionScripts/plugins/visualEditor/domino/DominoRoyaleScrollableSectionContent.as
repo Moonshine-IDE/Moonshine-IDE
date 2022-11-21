@@ -42,6 +42,7 @@ package actionScripts.plugins.visualEditor.domino
 
 			viewComponent = viewComponent.replace(/%ViewComponentName%/ig, componentName);
 			viewComponent = viewComponent.replace(/%Namespace%/ig, componentName);
+			viewComponent = viewComponent.replace(/%NamespaceImport%/ig, 'xmlns:' + componentName + '="' + ambiguousName + '*"');
 
 			scrollableSectionContent = scrollableSectionContent.replace(/%ViewComponentName%/ig, ambiguousName + componentName);
 			scrollableSectionContent = scrollableSectionContent.replace(/%ViewComponent%/ig, viewComponent);
