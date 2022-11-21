@@ -73,6 +73,7 @@ class NewWorkspaceView extends ResizableTitleWindow {
 	private var newWorkspaceButton:Button;
 	private var workspaceNameTextInput:TextInput;
 	private var errorContainer:LayoutGroup;
+	private var hasWorkspace:Bool;
 	
 	private var _isSaveAs:Bool;
 	@:flash.property
@@ -173,23 +174,18 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		super.update();
 	}
 	
-	private function workspaceNameTextInput_changeHandler(event:Event):Void {
-		this.errorContainer.visible = this.errorContainer.includeInLayout = false;			
+	private function workspaceNameTextInput_changeHandler(event:Event):Void 
+	{
+		this.hasWorkspace = this._workspaces.some(
+			function(workspace:WorkspaceVO, index:Int, arr:ArrayCollection<WorkspaceVO>):Bool {
+									return workspace.label == StringTools.trim(this.workspaceNameTextInput.text);
+								  });
+		this.errorContainer.visible = this.errorContainer.includeInLayout = this.hasWorkspace;
 	}	
 	
 	private function newWorkspaceButton_triggerHandler(event:Event):Void {
 		var workspaceName = StringTools.trim(this.workspaceNameTextInput.text);
-		
-		if (workspaceName == null || workspaceName.length == 0) {
-			return;
-		}
-		
-		var hasWorkspace = this._workspaces.some(
-				function hasWorkspace(workspace:WorkspaceVO, index:Int, arr:ArrayCollection<WorkspaceVO>):Bool {
-										return workspace.label == workspaceName;
-						  			});
-		if (hasWorkspace) {
-			this.errorContainer.visible = this.errorContainer.includeInLayout = true;	
+		if (workspaceName == null || workspaceName.length == 0 || this.hasWorkspace) {
 			return;
 		}
 		
