@@ -153,7 +153,7 @@ class NewWorkspaceView extends ResizableTitleWindow {
 		footer.variant = MoonshineTheme.THEME_VARIANT_TITLE_WINDOW_CONTROL_BAR;
 		this.newWorkspaceButton = new Button();
 		this.newWorkspaceButton.variant = MoonshineTheme.THEME_VARIANT_DARK_BUTTON;
-		this.newWorkspaceButton.text = "Create";
+		this.newWorkspaceButton.text = (this.workspace == null) ? "Create" : "Rename";
 		this.newWorkspaceButton.addEventListener(TriggerEvent.TRIGGER, newWorkspaceButton_triggerHandler);
 		footer.addChild(this.newWorkspaceButton);
 		this.footer = footer;

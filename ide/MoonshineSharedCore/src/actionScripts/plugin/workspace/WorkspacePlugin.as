@@ -290,7 +290,7 @@ package actionScripts.plugin.workspace
 				if (isSelectedWorkspaceDeleting)
 				{
 					handleLoadWorkspaceEvent(
-							new WorkspaceEvent("", workspacesForViews.getItemAt(0).label)
+							new WorkspaceEvent("", LABEL_DEFAULT_WORKSPACE)
 					);
 				}
 
@@ -571,10 +571,13 @@ package actionScripts.plugin.workspace
 			currentWorkspacePaths = ObjectUtil.clone(currentWorkspacePaths) as Array;
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
-			workspacesForViews.addItem(new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]));
+
+			var tmpWorkspace:WorkspaceVO = new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]);
+			workspacesForViews.addItem(tmpWorkspace);
 			sortWorkspaces();
 			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
 			saveToCookie();
+			addToSettingsAsRequires(tmpWorkspace);
 			outputToConsole();
 		}
 		
