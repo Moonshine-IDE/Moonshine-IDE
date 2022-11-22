@@ -9,7 +9,7 @@ package classes.joditeditor
 
 	[Event(name="textChange", type="org.apache.royale.events.Event")]
 	COMPILE::JS
-	public class JoditEditor extends org.apache.royale.core.UIBase
+	public class RichTextEditor extends org.apache.royale.core.UIBase
 	{
 		private var _joditId:String;
 		private var textArea:Textarea;
@@ -17,7 +17,7 @@ package classes.joditeditor
 
 		private var animateFrameReqId:Number;
 
-		public function JoditEditor()
+		public function RichTextEditor()
 		{
 			super();
 
