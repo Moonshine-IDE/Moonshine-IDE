@@ -3,8 +3,7 @@
 						     xmlns:j="library://ns.apache.org/royale/jewel"
 						     xmlns:js="library://ns.apache.org/royale/basic"
 						     xmlns:html="library://ns.apache.org/royale/html"
-						     xmlns:general="views.general.*" 
-						     %Namespaces%
+						     xmlns:general="views.general.*"
 						     initComplete="onInitCompleted()">
 	<fx:Script>
 		<![CDATA[
@@ -19,7 +18,7 @@
 
 			private function onNavigationChange(event:Event):void
             {
-                var selectedContent:String = navigation.selectedItem["content"];
+                var selectedContent:String = event.currentTarget.selectedItem["content"];
                 this[selectedContent + "_ID"].cancelFormEdit();
                 this.mainContent.selectedContent = selectedContent;
             }
@@ -36,7 +35,7 @@
     			<j:Label text="Sections"/>
     		</j:DrawerHeader>
     		<j:DrawerContent>
-    			<j:Navigation id="navigation" labelField="label" change="onNavigationChange(event)" className="navIconLinkItemRenderer">
+    			<j:Navigation labelField="name" change="onNavigationChange(event)" className="navIconLinkItemRenderer">
     				<j:beads>
     					<j:NavigationActionNotifier/>
     				</j:beads>
