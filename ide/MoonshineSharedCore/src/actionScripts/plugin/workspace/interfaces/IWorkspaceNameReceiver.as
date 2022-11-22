@@ -29,31 +29,11 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-package moonshine.plugin.workspace.events;
-
-import openfl.events.Event;
-import actionScripts.valueObjects.WorkspaceVO;
-
-class WorkspaceEvent extends Event 
+package actionScripts.plugin.workspace.interfaces
 {
-	public static final LOAD_WORKSPACE_WITH_LABEL:String = "loadWorkspaceWithLabel";
-	public static final NEW_WORKSPACE_WITH_LABEL:String = "newWorkspaceWithLabel";
-	public static final SAVE_AS_WORKSPACE_WITH_LABEL:String = "saveAsWorkspaceWithLabel";
-	public static final LOAD_PROJECT_BY_WORKSPACE:String = "loadProjectByWorkspace";
-	public static final RENAME_WORKSPACE:String = "renameWorkspace";
-	public static final GET_TARGET_WORKSPACE:String = "getTargetWorkspace";
-	
-	public function new(type:String, workspaceLabel:String) {
-		super(type);
-		
-		this.workspaceLabel = workspaceLabel;
-	}
-	
-	public var workspaceLabel:String;
-	public var workspace:WorkspaceVO;
-	
-	override public function clone():Event {
-		return new WorkspaceEvent(this.type, this.workspaceLabel);
-	}
+    public interface IWorkspaceNameReceiver
+    {
+        function get targetWorkspace():String;
+        function set targetWorkspace(value:String):void;
+    }
 }

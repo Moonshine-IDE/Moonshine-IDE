@@ -38,11 +38,14 @@
 		 skinClass="components.skins.ResizableTitleWindowSkin" 
 		 xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" 
 		 xmlns:marker="actionScripts.ui.marker.*" xmlns:mx="library://ns.adobe.com/flex/mx"
-		 xmlns:ns="library://ns.adobe.com/flashx/textLayout" 
+		 xmlns:ns="library://ns.adobe.com/flashx/textLayout"
+	   implements="actionScripts.plugin.workspace.interfaces.IWorkspaceNameReceiver"
 		 creationComplete="onCreationCompletes()" xmlns:view="actionScripts.plugin.findreplace.view.*">
 	<fx:Script>
 		<![CDATA[
-			import flash.net.registerClassAlias;
+		import actionScripts.events.GeneralEvent;
+
+		import flash.net.registerClassAlias;
 			
 			import mx.collections.ArrayCollection;
 			import mx.collections.ArrayList;
@@ -72,6 +75,32 @@
 			
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			private var isDuplicateWorkspace:Boolean;
+
+			private var _targetWorkspace:String;
+			public function get targetWorkspace():String
+			{
+				return _targetWorkspace;
+			}
+			public function set targetWorkspace(value:String):void
+			{
+				if (_targetWorkspace != value)
+				{
+					_targetWorkspace = value;
+
+					var existingWorkspace:WorkspaceVO = WorkspacePlugin.getCurrentWorkspaceForView(value);
+					if (existingWorkspace)
+					{
+
+					}
+					else
+					{
+						ddlWorkspaces.selectedIndex = 1;
+						ddlWorkspaces.dispatchEvent(new IndexChangeEvent(IndexChangeEvent.CHANGE, false, false, -1, 1));
+						txtNewWorkspace.text = value;
+					}
+				}
+
+			}
 			
 			override protected function closeThis():void
 			{
@@ -96,6 +125,10 @@
 				// close 'this' window and add projects by
 				// 'this' owner-Plugin
 				dispatcher.addEventListener(WorkspacePlugin.EVENT_WORKSPACE_CHANGED, onWorkspaceChanged, false, 0, true);
+
+				// gets target-workspace name if returns by any class
+				// i.e. genesis catalog import
+				dispatcher.dispatchEvent(new GeneralEvent(WorkspaceEvent.GET_TARGET_WORKSPACE, this));
 			}
 			
 			private function onSubmit():void
@@ -189,8 +222,8 @@
 
 			private function onWorkspaceInputChange(event:TextOperationEvent):void
 			{
-				var targetWorkspace:WorkspaceVO = WorkspacePlugin.getCurrentWorkspaceForView(txtNewWorkspace.text);
-				if (targetWorkspace)
+				var tmpWorkspace:WorkspaceVO = WorkspacePlugin.getCurrentWorkspaceForView(txtNewWorkspace.text);
+				if (tmpWorkspace)
 				{
 					txtErrorLabel.text = "This workspace already exists. The project(s) will be opened in the existing workspace.";
 					hgError.includeInLayout = hgError.visible = true;

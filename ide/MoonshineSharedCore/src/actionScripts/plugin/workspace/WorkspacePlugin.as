@@ -335,7 +335,7 @@ package actionScripts.plugin.workspace
 
 		private function handleSaveAsWorkspaceEvent(event:WorkspaceEvent):void
 		{
-			duplicateToNewWorkspace(event.workspaceLabel);
+			changeToNewWorkspace(event.workspaceLabel, true);
 		}
 
 		private function handleRenameWorkspaceEvent(event:WorkspaceEvent):void
@@ -551,9 +551,9 @@ package actionScripts.plugin.workspace
 			outputToConsole();
 		}
 		
-		public function changeToNewWorkspace(label:String):void
+		public function changeToNewWorkspace(label:String, isDuplicateWorkspace:Boolean=false):void
 		{
-			currentWorkspacePaths = [];
+			currentWorkspacePaths = isDuplicateWorkspace ? (ObjectUtil.clone(currentWorkspacePaths) as Array) : [];
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
 
@@ -564,21 +564,6 @@ package actionScripts.plugin.workspace
 			saveToCookie();
 			outputToConsole();
 			addToSettingsAsRequires(tmpWorkspace);
-		}
-		
-		private function duplicateToNewWorkspace(label:String):void
-		{
-			currentWorkspacePaths = ObjectUtil.clone(currentWorkspacePaths) as Array;
-			currentWorkspaceLabel = label;
-			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
-
-			var tmpWorkspace:WorkspaceVO = new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]);
-			workspacesForViews.addItem(tmpWorkspace);
-			sortWorkspaces();
-			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
-			saveToCookie();
-			addToSettingsAsRequires(tmpWorkspace);
-			outputToConsole();
 		}
 		
 		private function saveToCookie():void

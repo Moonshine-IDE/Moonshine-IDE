@@ -31,12 +31,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.genesis.utils
 {
-	import actionScripts.events.GlobalEventDispatcher;
+import actionScripts.events.GeneralEvent;
+import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.utils.FileDownloader;
+import actionScripts.plugin.workspace.interfaces.IWorkspaceNameReceiver;
+import actionScripts.utils.FileDownloader;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.UnzipUsingAS3CommonZip;
 
@@ -46,7 +48,9 @@ package actionScripts.plugins.genesis.utils
 
 	import flash.filesystem.File;
 
-	import mx.events.CloseEvent;
+import moonshine.plugin.workspace.events.WorkspaceEvent;
+
+import mx.events.CloseEvent;
 
 	import mx.utils.UIDUtil;
 
@@ -62,6 +66,7 @@ package actionScripts.plugins.genesis.utils
 		private var tempDownloadDirectory:File;
 		private var targetDownloadDirectory:File;
 		private var model:IDEModel = IDEModel.getInstance();
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
 		public function ImportGenesisCatalog(fromURL:String, destinationFolder:File)
 		{
@@ -187,10 +192,65 @@ package actionScripts.plugins.genesis.utils
 
 		protected function onProjectFilesMoved():void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(
+			// check if a config file supplied
+			if (targetDownloadDirectory.resolvePath("config.xml").exists)
+			{
+				readGenesisCatalogConfiguration(targetDownloadDirectory.resolvePath("config.xml"));
+			}
+			else
+			{
+				openProjectsSelectionDialog();
+			}
+		}
+
+		private function readGenesisCatalogConfiguration(configFile:File):void
+		{
+			var configXML:XML = null;
+			var targetWorkspace:String;
+			try
+			{
+				configXML = new XML(FileUtils.readFromFile(configFile) as String);
+			}
+			catch (e:Error) {}
+			if (configXML)
+			{
+				if (configXML.hasOwnProperty("SuggestedWorkspace"))
+				{
+					targetWorkspace = String(configXML.SuggestedWorkspace);
+				}
+				else
+				{
+					warning("Catalog define no workspace: opening to default workspace.");
+				}
+			}
+			else
+			{
+				error("Catalog configuration file contains unexpected element.");
+			}
+
+			// finally
+			openProjectsSelectionDialog(targetWorkspace);
+		}
+
+		protected function openProjectsSelectionDialog(targetWorkspace:String=null):void
+		{
+			dispatcher.addEventListener(WorkspaceEvent.GET_TARGET_WORKSPACE, onSettingTargetWorkspaceInProjectSelectionPopup, false, 0, true);
+			dispatcher.dispatchEvent(
 					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, targetDownloadDirectory)
 			);
 			success("Project downloaded at: "+ targetDownloadDirectory.nativePath);
+
+			/*
+			 * @local
+			 */
+			function onSettingTargetWorkspaceInProjectSelectionPopup(event:GeneralEvent):void
+			{
+				dispatcher.removeEventListener(WorkspaceEvent.GET_TARGET_WORKSPACE, onSettingTargetWorkspaceInProjectSelectionPopup);
+				if (event.value is IWorkspaceNameReceiver)
+				{
+					(event.value as IWorkspaceNameReceiver).targetWorkspace = targetWorkspace;
+				}
+			}
 		}
 
 		protected function onProjectFilesMoveFailed(value:String):void
