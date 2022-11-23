@@ -15,15 +15,9 @@
             {
             	Utils.mainContentView = this;
             }
-
-			private function onNavigationChange(event:Event):void
-            {
-                var selectedContent:String = event.currentTarget.selectedItem["content"];
-                this[selectedContent + "_ID"].cancelFormEdit();
-                this.mainContent.selectedContent = selectedContent;
-            }
 		]]>
 	</fx:Script>
+	<fx:Script source="../../src/classes/MainContentManager.as"/>
 	<j:beads>
 		<js:ContainerDataBinding/>
 	</j:beads>
@@ -35,7 +29,7 @@
     			<j:Label text="Sections"/>
     		</j:DrawerHeader>
     		<j:DrawerContent>
-    			<j:Navigation labelField="name" change="onNavigationChange(event)" className="navIconLinkItemRenderer">
+    			<j:Navigation labelField="name" change="onMainNavChange(event)" className="navIconLinkItemRenderer">
     				<j:beads>
     					<j:NavigationActionNotifier/>
     				</j:beads>
