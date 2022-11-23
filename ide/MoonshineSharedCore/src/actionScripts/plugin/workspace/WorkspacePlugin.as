@@ -40,8 +40,9 @@ package actionScripts.plugin.workspace
 	import actionScripts.plugin.settings.vo.LinkOnlySetting;
 	import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
 	import actionScripts.plugin.workspace.settings.WorkspaceItemSetting;
+import actionScripts.valueObjects.OpenProjectOptionsVO;
 
-	import flash.display.DisplayObject;
+import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.clearTimeout;
@@ -532,6 +533,8 @@ package actionScripts.plugin.workspace
 			// codes to re-open each projects
 			// saved from the active workspace
 			var tmpProjectLocation:FileLocation;
+			var projectOpeningOption:OpenProjectOptionsVO = new OpenProjectOptionsVO();
+			projectOpeningOption.isLoadProjectAsWorkspaceChanged = true;
 			for each (var path:String in currentWorkspacePaths)
 			{
 				tmpProjectLocation = new FileLocation(path);
@@ -541,7 +544,7 @@ package actionScripts.plugin.workspace
 						new ProjectEvent(
 							ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, 
 							tmpProjectLocation.fileBridge.getFile,
-							WorkspaceEvent.LOAD_PROJECT_BY_WORKSPACE
+							projectOpeningOption
 						)
 					);
 				}

@@ -32,6 +32,7 @@
 package actionScripts.plugin.actionscript.as3project
 {
 import actionScripts.utils.UtilsCore;
+import actionScripts.valueObjects.OpenProjectOptionsVO;
 
 import flash.display.DisplayObject;
 	import flash.events.Event;
@@ -91,6 +92,7 @@ import flash.display.DisplayObject;
 		private var aneMessagePopup:NativeExtensionMessagePopup;
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var projectOpenSelection:ProjectsToOpenSelectionPopup;
+		private var projectOpeningOptions:OpenProjectOptionsVO;
 		
 		override public function get name():String 			{return "AS3 Project Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
@@ -254,15 +256,19 @@ import flash.display.DisplayObject;
 		{
 			if (!event.anObject) return;
 
-			// in case of opening by workspace change
-			// do not require to check multiple-project existence
-			// but open by project path that was already opened in sidebar
-			if (event.extras && (event.extras.length != 0) && (event.extras[0] == WorkspaceEvent.LOAD_PROJECT_BY_WORKSPACE))
+			projectOpeningOptions = null;
+			if (event.extras && (event.extras.length != 0) && (event.extras[0] is OpenProjectOptionsVO))
+			{
+				projectOpeningOptions = event.extras[0] as OpenProjectOptionsVO;
+			}
+
+			if (projectOpeningOptions && projectOpeningOptions.isLoadProjectAsWorkspaceChanged)
 			{
 				openProjectByDirectory(event.anObject);
 			}
 			else
 			{
+				// rest of the case
 				searchForProjectsByDirectory(event.anObject);
 			}
 		}
@@ -499,7 +505,11 @@ import flash.display.DisplayObject;
 		private function loadOrReportOnRepositoryProjects(workerData:Object):void
 		{
 			var projectFiles:Array = workerData.foundProjectsInDirectories;
-			if (projectFiles.length == 0)
+			if (projectOpeningOptions && projectOpeningOptions.needProjectSelection)
+			{
+				prepareOpenProjectSelectionWindow(workerData);
+			}
+			else if (projectFiles.length == 0)
 			{
 				openProjectByDirectory(model.fileCore.getFileByPath(workerData.path));
 			}
@@ -510,26 +520,31 @@ import flash.display.DisplayObject;
 			}
 			else
 			{
-				var tmpCollection:ArrayCollection = new ArrayCollection();
-				var tmpSelectableObject:GenericSelectableObject;
-				var repositoryRootFile:Object = model.fileCore.getFileByPath(workerData.path);
-				var configurationParent:Object;
-				var projectLabel:String;
-				for each (var projectRefFile:Object in projectFiles)
-				{
-					configurationParent = model.fileCore.getFileByPath(projectRefFile.projectFile.nativePath).parent;
-					tmpSelectableObject = new GenericSelectableObject(true);
-					projectLabel = tmpSelectableObject.label = repositoryRootFile.getRelativePath(configurationParent, true);
-					tmpSelectableObject.data = {
-						name: projectLabel,
-						path: projectRefFile.projectFile.nativePath
-					};
-					tmpCollection.addItem(tmpSelectableObject);
-				}
-
-				UtilsCore.sortCollection(tmpCollection, ["label"]);
-				openProjectSelectionWindow(tmpCollection, repositoryRootFile);
+				prepareOpenProjectSelectionWindow(workerData);
 			}
+
+			projectOpeningOptions = null;
+		}
+
+		private function prepareOpenProjectSelectionWindow(workerData:Object):void
+		{
+			var projectFiles:Array = workerData.foundProjectsInDirectories;
+			var tmpCollection:ArrayCollection = new ArrayCollection();
+			var tmpSelectableObject:GenericSelectableObject;
+			var repositoryRootFile:Object = model.fileCore.getFileByPath(workerData.path);
+			var configurationParent:Object;
+			for each (var projectRefFile:Object in projectFiles)
+			{
+				configurationParent = model.fileCore.getFileByPath(projectRefFile.projectFile.nativePath).parent;
+				tmpSelectableObject = new GenericSelectableObject(true);
+				tmpSelectableObject.data = {
+					name: repositoryRootFile.getRelativePath(configurationParent, true),
+					path: projectRefFile.projectFile.nativePath
+				};
+				tmpCollection.addItem(tmpSelectableObject);
+			}
+
+			openProjectSelectionWindow(tmpCollection, repositoryRootFile);
 		}
 		
 		private function openProjectSelectionWindow(collection:ArrayCollection, repositoryRootFile:Object):void
@@ -540,6 +555,10 @@ import flash.display.DisplayObject;
 				projectOpenSelection.title = "Select Projects to Open";
 				projectOpenSelection.projects = collection;
 				projectOpenSelection.repositoryRoot = repositoryRootFile.nativePath;
+				if (projectOpeningOptions && projectOpeningOptions.needWorkspace)
+				{
+					projectOpenSelection.targetWorkspace = projectOpeningOptions.needWorkspace;
+				}
 				projectOpenSelection.addEventListener(CloseEvent.CLOSE, onOpenProjectsWindowClosed);
 				
 				PopUpManager.centerPopUp(projectOpenSelection);

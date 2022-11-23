@@ -39,11 +39,11 @@
 		 xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" 
 		 xmlns:marker="actionScripts.ui.marker.*" xmlns:mx="library://ns.adobe.com/flex/mx"
 		 xmlns:ns="library://ns.adobe.com/flashx/textLayout"
-	   implements="actionScripts.plugin.workspace.interfaces.IWorkspaceNameReceiver"
 		 creationComplete="onCreationCompletes()" xmlns:view="actionScripts.plugin.findreplace.view.*">
 	<fx:Script>
 		<![CDATA[
 		import actionScripts.events.GeneralEvent;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
 
 		import flash.net.registerClassAlias;
 			
@@ -70,37 +70,12 @@
 			[Bindable] public var repositoryRoot:String;
 			
 			public var isSubmit:Boolean;
+			public var targetWorkspace:String;
 						
 			[Bindable] private var workspaces:ArrayList;
 			
 			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 			private var isDuplicateWorkspace:Boolean;
-
-			private var _targetWorkspace:String;
-			public function get targetWorkspace():String
-			{
-				return _targetWorkspace;
-			}
-			public function set targetWorkspace(value:String):void
-			{
-				if (_targetWorkspace != value)
-				{
-					_targetWorkspace = value;
-
-					var existingWorkspace:WorkspaceVO = WorkspacePlugin.getCurrentWorkspaceForView(value);
-					if (existingWorkspace)
-					{
-
-					}
-					else
-					{
-						ddlWorkspaces.selectedIndex = 1;
-						ddlWorkspaces.dispatchEvent(new IndexChangeEvent(IndexChangeEvent.CHANGE, false, false, -1, 1));
-						txtNewWorkspace.text = value;
-					}
-				}
-
-			}
 			
 			override protected function closeThis():void
 			{
@@ -126,9 +101,31 @@
 				// 'this' owner-Plugin
 				dispatcher.addEventListener(WorkspacePlugin.EVENT_WORKSPACE_CHANGED, onWorkspaceChanged, false, 0, true);
 
-				// gets target-workspace name if returns by any class
-				// i.e. genesis catalog import
-				dispatcher.dispatchEvent(new GeneralEvent(WorkspaceEvent.GET_TARGET_WORKSPACE, this));
+				if (targetWorkspace)
+				{
+					var isExistingWorkspace:Boolean = workspaces.source.some(function (element:WorkspaceVO, index:int, arr:Array):Boolean {
+						if (element.label == targetWorkspace)
+						{
+							ddlWorkspaces.selectedIndex = index;
+							dispatcher.dispatchEvent(new ConsoleOutputEvent(
+								ConsoleOutputEvent.CONSOLE_PRINT,
+								"Selected existing target workspace: "+ targetWorkspace,
+								false, false, ConsoleOutputEvent.TYPE_INFO
+							));
+							return true;
+						}
+						return false;
+					});
+
+					// in case no existing workspace display
+					// new-workspace input
+					if (!isExistingWorkspace)
+					{
+						ddlWorkspaces.selectedIndex = 1;
+						ddlWorkspaces.dispatchEvent(new IndexChangeEvent(IndexChangeEvent.CHANGE, false, false, ddlWorkspaces.selectedIndex, 1));
+						txtNewWorkspace.text = targetWorkspace;
+					}
+				}
 			}
 			
 			private function onSubmit():void

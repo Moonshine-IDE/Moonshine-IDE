@@ -29,18 +29,16 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.genesis.utils
-{
-import actionScripts.events.GeneralEvent;
-import actionScripts.events.GlobalEventDispatcher;
+package actionScripts.plugins.genesis.utils {
+	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.console.ConsoleOutputter;
-import actionScripts.plugin.workspace.interfaces.IWorkspaceNameReceiver;
-import actionScripts.utils.FileDownloader;
+	import actionScripts.utils.FileDownloader;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.UnzipUsingAS3CommonZip;
+	import actionScripts.valueObjects.OpenProjectOptionsVO;
 
 	import flash.events.ErrorEvent;
 
@@ -48,9 +46,9 @@ import actionScripts.utils.FileDownloader;
 
 	import flash.filesystem.File;
 
-import moonshine.plugin.workspace.events.WorkspaceEvent;
+	import moonshine.plugin.workspace.events.WorkspaceEvent;
 
-import mx.events.CloseEvent;
+	import mx.events.CloseEvent;
 
 	import mx.utils.UIDUtil;
 
@@ -59,8 +57,7 @@ import mx.events.CloseEvent;
 
 	import spark.components.Alert;
 
-	public class ImportGenesisCatalog extends ConsoleOutputter
-	{
+	public class ImportGenesisCatalog extends ConsoleOutputter {
 		private var downloadURL:String;
 		private var fileDownloader:FileDownloader;
 		private var tempDownloadDirectory:File;
@@ -68,8 +65,7 @@ import mx.events.CloseEvent;
 		private var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
-		public function ImportGenesisCatalog(fromURL:String, destinationFolder:File)
-		{
+		public function ImportGenesisCatalog(fromURL:String, destinationFolder:File) {
 			super();
 
 			downloadURL = fromURL;
@@ -77,8 +73,7 @@ import mx.events.CloseEvent;
 			startDownloading();
 		}
 
-		private function startDownloading():void
-		{
+		private function startDownloading():void {
 			tempDownloadDirectory = gettempDownloadDirectoryPath();
 
 			warning("Downloading Genesis Catalog");
@@ -87,23 +82,20 @@ import mx.events.CloseEvent;
 			fileDownloader.load();
 		}
 
-		private function addFileDownloaderListeners():void
-		{
+		private function addFileDownloaderListeners():void {
 			fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
 			fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
 			fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
 		}
 
-		private function removeAndCleanFileDownloaderListeners():void
-		{
+		private function removeAndCleanFileDownloaderListeners():void {
 			fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
 			fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
 			fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
 			fileDownloader = null;
 		}
 
-		private function onTemplatesZipDownloaded(event:Event):void
-		{
+		private function onTemplatesZipDownloaded(event:Event):void {
 			removeAndCleanFileDownloaderListeners();
 
 			success("Success: Genesis Catalog downloaded");
@@ -111,29 +103,24 @@ import mx.events.CloseEvent;
 			unzipToTempDirectory();
 		}
 
-		private function onTemplatesZipDownloadFailed(event:Event):void
-		{
+		private function onTemplatesZipDownloadFailed(event:Event):void {
 			removeAndCleanFileDownloaderListeners();
 		}
 
-		private function onTemplatesZipDownloadProgress(event:Event):void
-		{
-			notice("File downloaded: "+ fileDownloader.downloadPercent +"%");
+		private function onTemplatesZipDownloadProgress(event:Event):void {
+			notice("File downloaded: " + fileDownloader.downloadPercent + "%");
 		}
 
-		private function selectProjectLocation():void
-		{
+		private function selectProjectLocation():void {
 			model.fileCore.browseForDirectory("Select Parent Directory", onDirectorySelected);
 		}
 
-		private function onDirectorySelected(directory:File):void
-		{
+		private function onDirectorySelected(directory:File):void {
 			targetDownloadDirectory = directory;
 			unzipToTempDirectory();
 		}
 
-		private function unzipToTempDirectory():void
-		{
+		private function unzipToTempDirectory():void {
 			// stars unzipping to temporary folder
 			UnzipUsingAS3CommonZip.unzip(
 					tempDownloadDirectory.resolvePath("catalog.zip"),
@@ -143,8 +130,7 @@ import mx.events.CloseEvent;
 			);
 		}
 
-		protected function onUnzipSuccess(event:Event):void
-		{
+		protected function onUnzipSuccess(event:Event):void {
 			var fzip:Zip = UnzipUsingAS3CommonZip.zip;
 			var fzipFile:ZipFile = fzip.getFileAt(0);
 			targetDownloadDirectory = targetDownloadDirectory.resolvePath(fzipFile.filename);
@@ -152,79 +138,59 @@ import mx.events.CloseEvent;
 			// check if nested root-directory or
 			// all files placed on root
 			var files:Array = tempDownloadDirectory.resolvePath("unzip").getDirectoryListing();
-			if ((files.length == 1) && (files[0] as File).isDirectory)
-			{
+			if ((files.length == 1) && (files[0] as File).isDirectory) {
 				// overwrite cehck
-				if (targetDownloadDirectory.exists)
-				{
+				if (targetDownloadDirectory.exists) {
 					Alert.YES_LABEL = "Browse";
-					Alert.show(targetDownloadDirectory.nativePath +" already exists.\nSelect a new parent directory?", "Error!", Alert.YES|Alert.CANCEL, null, onAlertListener);
-				}
-				else
-				{
+					Alert.show(targetDownloadDirectory.nativePath + " already exists.\nSelect a new parent directory?", "Error!", Alert.YES | Alert.CANCEL, null, onAlertListener);
+				} else {
 					print("This may take some time..");
 					FileUtils.copyFileAsync(
-							tempDownloadDirectory.resolvePath("unzip/"+ fzipFile.filename),
+							tempDownloadDirectory.resolvePath("unzip/" + fzipFile.filename),
 							targetDownloadDirectory,
 							false,
 							onProjectFilesMoved,
 							onProjectFilesMoveFailed
 					);
 				}
-			}
-			else
-			{
+			} else {
 				error("Unsupported zip file: multiple files at base level.");
 			}
 
 			/*
 			 * @local
 			 */
-			function onAlertListener(event2:CloseEvent):void
-			{
+			function onAlertListener(event2:CloseEvent):void {
 				Alert.YES_LABEL = "Yes";
-				if (event2.detail == Alert.YES)
-				{
+				if (event2.detail == Alert.YES) {
 					selectProjectLocation();
 				}
 			}
 		}
 
-		protected function onProjectFilesMoved():void
-		{
+		protected function onProjectFilesMoved():void {
 			// check if a config file supplied
-			if (targetDownloadDirectory.resolvePath("config.xml").exists)
-			{
+			if (targetDownloadDirectory.resolvePath("config.xml").exists) {
 				readGenesisCatalogConfiguration(targetDownloadDirectory.resolvePath("config.xml"));
-			}
-			else
-			{
+			} else {
 				openProjectsSelectionDialog();
 			}
 		}
 
-		private function readGenesisCatalogConfiguration(configFile:File):void
-		{
+		private function readGenesisCatalogConfiguration(configFile:File):void {
 			var configXML:XML = null;
 			var targetWorkspace:String;
-			try
-			{
+			try {
 				configXML = new XML(FileUtils.readFromFile(configFile) as String);
+			} catch (e:Error) {
 			}
-			catch (e:Error) {}
-			if (configXML)
-			{
-				if (configXML.hasOwnProperty("SuggestedWorkspace"))
-				{
+			if (configXML) {
+				if (configXML.hasOwnProperty("SuggestedWorkspace")) {
 					targetWorkspace = String(configXML.SuggestedWorkspace);
-				}
-				else
-				{
+				} else {
 					warning("Catalog define no workspace: opening to default workspace.");
 				}
-			}
-			else
-			{
+			} else {
 				error("Catalog configuration file contains unexpected element.");
 			}
 
@@ -232,43 +198,29 @@ import mx.events.CloseEvent;
 			openProjectsSelectionDialog(targetWorkspace);
 		}
 
-		protected function openProjectsSelectionDialog(targetWorkspace:String=null):void
-		{
-			dispatcher.addEventListener(WorkspaceEvent.GET_TARGET_WORKSPACE, onSettingTargetWorkspaceInProjectSelectionPopup, false, 0, true);
+		protected function openProjectsSelectionDialog(targetWorkspace:String = null):void {
+			var projectOpeningOption:OpenProjectOptionsVO = new OpenProjectOptionsVO();
+			projectOpeningOption.needWorkspace = targetWorkspace;
+			projectOpeningOption.needProjectSelection = true;
+
 			dispatcher.dispatchEvent(
-					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, targetDownloadDirectory)
+					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, targetDownloadDirectory, projectOpeningOption)
 			);
-			success("Project downloaded at: "+ targetDownloadDirectory.nativePath);
-
-			/*
-			 * @local
-			 */
-			function onSettingTargetWorkspaceInProjectSelectionPopup(event:GeneralEvent):void
-			{
-				dispatcher.removeEventListener(WorkspaceEvent.GET_TARGET_WORKSPACE, onSettingTargetWorkspaceInProjectSelectionPopup);
-				if (event.value is IWorkspaceNameReceiver)
-				{
-					(event.value as IWorkspaceNameReceiver).targetWorkspace = targetWorkspace;
-				}
-			}
+			success("Project downloaded at: " + targetDownloadDirectory.nativePath);
 		}
 
-		protected function onProjectFilesMoveFailed(value:String):void
-		{
-			error("File copy error: "+ value);
+		protected function onProjectFilesMoveFailed(value:String):void {
+			error("File copy error: " + value);
 		}
 
-		protected function onUnzipError(event:ErrorEvent=null):void
-		{
+		protected function onUnzipError(event:ErrorEvent = null):void {
 			if (event) error("Unzip error: ", event.toString());
 			else error("Unzip terminated with unhandled error!");
 		}
 
-		private function gettempDownloadDirectoryPath():File
-		{
+		private function gettempDownloadDirectoryPath():File {
 			var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine/genesis");
-			if (!tempDirectory.fileBridge.exists)
-			{
+			if (!tempDirectory.fileBridge.exists) {
 				tempDirectory.fileBridge.createDirectory();
 			}
 
