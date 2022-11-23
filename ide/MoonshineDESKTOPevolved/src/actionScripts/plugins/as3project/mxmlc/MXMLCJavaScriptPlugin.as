@@ -391,13 +391,9 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 
 				var targetFile:FileLocation = compile(activeProject as AS3ProjectVO);
-				if(!targetFile)
+				if(!targetFile || !targetFile.fileBridge.exists)
 				{
-					return;
-				}
-				if(!targetFile.fileBridge.exists)
-				{
-					error("Couldn't find target file");
+					error("Main application file or target file does not exists.");
 					return;
 				}
 				
