@@ -100,8 +100,7 @@ import flash.display.DisplayObject;
 		private var closeAllProjectItems:Array;
 		private var settings:Vector.<ISetting>;
 		private var linkOnlySetting:LinkOnlySetting;
-		private var changingWorkspace:String;
-		
+
 		private var loadWorkspaceView:LoadWorkspaceView;
 		private var loadWorkspaceViewWrapper:FeathersUIWrapper;
 
@@ -458,13 +457,6 @@ import flash.display.DisplayObject;
 		
 		private function handleLoadWorkspaceEvent(event:WorkspaceEvent):void
 		{
-			if (changingWorkspace == event.workspaceLabel)
-			{
-				return;
-			}
-
-			changingWorkspace = event.workspaceLabel;
-
 			var requestedWorkspace:String = event.workspaceLabel;
 			if (requestedWorkspace != currentWorkspaceLabel)
 			{
