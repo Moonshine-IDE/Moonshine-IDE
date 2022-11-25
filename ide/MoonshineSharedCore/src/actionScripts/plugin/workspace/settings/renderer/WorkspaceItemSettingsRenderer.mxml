@@ -37,17 +37,29 @@
 		  xmlns:mx="library://ns.adobe.com/flex/mx"
 		  width="100%"
 		  paddingLeft="15" paddingTop="15" paddingRight="15" paddingBottom="15"
-		  visible="true">
+		  visible="true" creationComplete="onCreationCompletes()">
 	
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.events.GeneralEvent;
-		import actionScripts.plugin.workspace.settings.WorkspaceItemSetting;
+			import actionScripts.events.GeneralEvent;
+			import actionScripts.plugin.workspace.settings.WorkspaceItemSetting;
 
 			import actionScripts.plugin.settings.renderers.LinkButtonSkin;
-		import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 
-		[Bindable] public var setting:WorkspaceItemSetting;
+			import flash.filters.GlowFilter;
+
+			[Bindable] public var setting:WorkspaceItemSetting;
+
+			private function onCreationCompletes():void
+			{
+				grpOpenIcon.graphics.clear();
+				grpOpenIcon.graphics.beginFill(0xe15fd5);
+				grpOpenIcon.graphics.drawCircle(1, 7, 2);
+				grpOpenIcon.graphics.endFill();
+				var glow:GlowFilter = new GlowFilter(0xff00e4, .4, 6, 6, 2);
+				grpOpenIcon.filters = [glow];
+			}
 			
 			private function modify():void
 			{
@@ -67,7 +79,12 @@
 		]]>
 	</fx:Script>
 	
-	<s:HGroup width="100%">
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:Group id="grpOpenIcon"
+				 width="7" height="12"
+				includeInLayout="{setting.workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE}"
+				visible="{setting.workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE}"
+				toolTip="Current Workspace"/>
 		<s:Label styleName="uiTextSettingsLabel"
 				 text="{setting.workspace.label}" />
 		<mx:Spacer width="100%"/>
