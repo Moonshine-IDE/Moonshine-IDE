@@ -24,7 +24,6 @@ package actionScripts.plugins.menu
 	import flash.filesystem.File;
 	
 	import actionScripts.events.FilePluginEvent;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -41,6 +40,7 @@ package actionScripts.plugins.menu
 			
 			super.activate();
 			dispatcher.addEventListener(FilePluginEvent.EVENT_OPEN_PATH_IN_TERMINAL, onOpenPathInTerminal, false, 0, true);
+			dispatcher.addEventListener(FilePluginEvent.EVENT_OPEN_PATH_IN_POWERSHELL, onOpenPathInPowershell, false, 0, true);
 
 			if (ConstantsCoreVO.IS_MACOS)
 			{
@@ -52,6 +52,7 @@ package actionScripts.plugins.menu
 		{
 			super.deactivate();
 			dispatcher.removeEventListener(FilePluginEvent.EVENT_OPEN_PATH_IN_TERMINAL, onOpenPathInTerminal);
+			dispatcher.removeEventListener(FilePluginEvent.EVENT_OPEN_PATH_IN_POWERSHELL, onOpenPathInPowershell);
 			for each (var theme:String in TERMINAL_THEMES)
 			{
 				dispatcher.removeEventListener("eventOpenInTerminal"+ theme, onOpenPathInTerminal);
@@ -115,6 +116,33 @@ package actionScripts.plugins.menu
 			{
 				openInCommandLine(openToPath);
 			}
+		}
+		
+		private function onOpenPathInPowershell(event:FilePluginEvent):void
+		{
+			var command:String;
+			var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
+			if (powerShellPath)
+			{
+				var openToPath:String = event.file.fileBridge.isDirectory ? event.file.fileBridge.nativePath :
+					event.file.fileBridge.parent.fileBridge.nativePath;
+				var driveChar:String = "";
+				if (openToPath.charAt(0).toLowerCase() != "c")
+				{
+					driveChar = openToPath.charAt(0) +":;;"
+				}
+				
+				command = "start "+ powerShellPath +" -NoExit -Command \""+ driveChar +"cd "+ openToPath +"\"";
+			}
+			else
+			{
+				error("Failed to locate PowerShell during execution.");
+				return;
+			}
+			
+			this.start(
+				new <String>[command]
+			);
 		}
 
 		private function openInTerminal(openToPath:String, themeName:String):void
