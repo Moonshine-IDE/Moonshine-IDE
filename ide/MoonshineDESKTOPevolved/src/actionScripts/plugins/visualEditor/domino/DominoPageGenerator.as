@@ -48,7 +48,7 @@ package actionScripts.plugins.visualEditor.domino
 
 		public function DominoPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
 		{
-			_pageRelativePathString = "views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +".mxml";
+			_pageRelativePathString = project.name + "/views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +".mxml";
 			pageImportReferences = new <PageImportReferenceVO>[
 				new PageImportReferenceVO(form.formName +"Proxy", "as"),
 				new PageImportReferenceVO(form.formName +"VO", "as")

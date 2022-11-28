@@ -1,4 +1,4 @@
-package classes.utils
+package $ProjectName.classes.utils
 {
 	import org.apache.royale.html.beads.DisableBead;
 	import org.apache.royale.html.beads.DisabledAlphaBead;

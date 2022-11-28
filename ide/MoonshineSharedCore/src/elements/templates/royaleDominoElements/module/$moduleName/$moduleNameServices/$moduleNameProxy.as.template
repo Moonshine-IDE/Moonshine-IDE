@@ -1,11 +1,11 @@
 package $packagePath
 {
     import org.apache.royale.events.EventDispatcher;
-    import classes.vo.Constants;
+    import $ProjectName.classes.vo.Constants;
     import org.apache.royale.jewel.Snackbar;
 	import org.apache.royale.net.events.FaultEvent;
-	import classes.events.ErrorEvent;
-	import classes.utils.Utils;
+	import $ProjectName.classes.events.ErrorEvent;
+	import $ProjectName.classes.utils.Utils;
     %ImportStatements%
 
 	public class $moduleNameProxy extends EventDispatcher

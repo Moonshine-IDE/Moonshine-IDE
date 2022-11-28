@@ -32,8 +32,6 @@
 package actionScripts.plugins.visualEditor.domino
 {
 	import actionScripts.plugins.ondiskproj.crud.exporter.OnDiskRoyaleCRUDModuleExporter;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.GlobalClassGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
 
 	import interfaces.ISurface;
@@ -101,7 +99,8 @@ package actionScripts.plugins.visualEditor.domino
 
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.templatingData["$moduleName"] = moduleName;
-			th.templatingData["$packagePath"] = "views.modules."+ moduleName +"."+ moduleName +"Services";
+			th.templatingData["$packagePath"] = project.name + ".views.modules."+ moduleName +"."+ moduleName +"Services";
+			th.templatingData["$ProjectName"] = project.name;
 
 			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath);
 		}
@@ -112,7 +111,7 @@ package actionScripts.plugins.visualEditor.domino
 			{
 				waitingCount += 3;
 				new DominoVOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
-				new ProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				new DominoProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 				new DominoPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 			}
 		}
@@ -120,7 +119,7 @@ package actionScripts.plugins.visualEditor.domino
 		override protected function generateProjectClasses():void
 		{
 			new DominoMainContentPageGenerator(this.project, this.formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
-			new GlobalClassGenerator(this.project, classReferenceSettings, onProjectFilesGenerationCompletes);
+			new DominoGlobalClassGenerator(this.project, classReferenceSettings, onProjectFilesGenerationCompletes);
 		}
 
 		private function parseComponents(componentData:Array, form:DominoFormVO):void

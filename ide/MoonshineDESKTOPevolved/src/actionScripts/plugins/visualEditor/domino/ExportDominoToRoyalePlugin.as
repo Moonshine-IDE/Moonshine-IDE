@@ -169,6 +169,7 @@ package actionScripts.plugins.visualEditor.domino
             var contentData:Object = {};
                 contentData["$NavigationContent"] = getNavigationDp(views);
                 contentData["$ApplicationMainContent"] = getMainContent(views);
+                contentData["$ProjectName"] = exportedProject.name;
 
             content = TemplatingHelper.replace(content, contentData);
 
@@ -185,7 +186,8 @@ package actionScripts.plugins.visualEditor.domino
         private function createConvertedFiles(convertedFiles:Array):Array
         {
             var views:Array = [];
-            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("views");
+            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath(exportedProject.name +
+                    exportedProject.sourceFolder.fileBridge.separator + "views");
             if (!viewFolder.fileBridge.exists)
             {
                 viewFolder.fileBridge.createDirectory();
@@ -217,13 +219,21 @@ package actionScripts.plugins.visualEditor.domino
                 convertedFiles[i].file = convertedFile;
 
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
-                item.pageContent = royaleMXMLContentFile;
+
+                var contentData:Object = {};
+                contentData["$ProjectName"] = exportedProject.name;
+
+                var royaleMXMLContentFileString:String = royaleMXMLContentFile.toXMLString();
+                royaleMXMLContentFileString = TemplatingHelper.replace(royaleMXMLContentFileString, contentData);
+
+                XML.ignoreWhitespace = false;
+                item.pageContent = new XML(royaleMXMLContentFileString);
 
                 views.push(viewObj);
             }
 
             new DominoRoyaleModuleExporter(
-                    exportedProject.sourceFolder.resolvePath("views/modules"),
+                    viewFolder.resolvePath("modules"),
                     exportedProject as ProjectVO, convertedFiles
             );
 
@@ -260,8 +270,6 @@ package actionScripts.plugins.visualEditor.domino
         private function getMainContent(views:Array):String
         {
             var jNamespace:Namespace = new Namespace("j", "library://ns.apache.org/royale/jewel");
-            var viewNamespace:Namespace = new Namespace("view", "views.*");
-
             var content:XML = <ApplicationMainContent/>;
                 content.@id="mainContent";
                 content.@hasTopAppBar="true";
@@ -282,7 +290,6 @@ package actionScripts.plugins.visualEditor.domino
                     sectionContent.@name = item.content;
                 var viewName:String = String(item.label).split(" ").join("");
                 var view:XML = new XML('<' + viewName + '/>');
-                    view.setNamespace(viewNamespace);
 
                 sectionContent.appendChild(view);
                 content.appendChild(sectionContent);

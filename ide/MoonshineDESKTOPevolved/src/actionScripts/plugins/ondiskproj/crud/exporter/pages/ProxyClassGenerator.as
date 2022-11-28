@@ -31,15 +31,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.pages
 {
-	import actionScripts.plugins.ondiskproj.crud.exporter.components.RoyaleDataGridColumn;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
-	import actionScripts.plugins.ondiskproj.crud.exporter.utils.RoyaleCRUDUtils;
 	import actionScripts.plugins.ondiskproj.crud.exporter.vo.PageImportReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 
-	import flash.events.Event;
-
-	import view.dominoFormBuilder.vo.DominoFormFieldVO;
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	
 	public class ProxyClassGenerator extends RoyalePageGeneratorBase

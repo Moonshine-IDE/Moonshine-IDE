@@ -866,6 +866,11 @@ package actionScripts.plugins.as3project
 				sourceFileWithExtension = pvo.projectName + ".xhtml";
 				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
 			}
+			else if (isRoyaleDominoExportProject)
+			{
+				sourceFileWithExtension = pvo.projectName + ".mxml";
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + pvo.projectName + File.separator + sourceFileWithExtension) : "";
+			}
 			else
 			{
 				sourceFileWithExtension = pvo.projectName + ".mxml";

@@ -1,4 +1,4 @@
-package classes.joditeditor
+package $ProjectName.classes.joditeditor
 {
 	import org.apache.royale.core.UIBase;
 

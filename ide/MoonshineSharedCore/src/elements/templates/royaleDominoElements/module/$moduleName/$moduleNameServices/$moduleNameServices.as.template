@@ -1,6 +1,6 @@
 package $packagePath
 {
-	import classes.vo.Constants;
+	import $ProjectName.classes.vo.Constants;
 	import org.apache.royale.net.HTTPService;
 	import org.apache.royale.net.beads.CORSCredentialsBead;
 	import org.apache.royale.net.events.FaultEvent;

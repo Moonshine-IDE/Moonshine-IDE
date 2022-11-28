@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <j:Card xmlns:fx="http://ns.adobe.com/mxml/2009"
-		xmlns:j="library://ns.apache.org/royale/jewel" xmlns:controls="view.controls.*"
+		xmlns:j="library://ns.apache.org/royale/jewel"
 		xmlns:js="library://ns.apache.org/royale/basic" 
 		xmlns:html="library://ns.apache.org/royale/html"
 		itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" gap="2"
@@ -9,7 +9,7 @@
 		<![CDATA[
 			import org.apache.royale.collections.ArrayList;
 			import org.apache.royale.jewel.List;
-			import views.renderers.DateListItemRenderer;
+			import $ProjectName.views.renderers.DateListItemRenderer;
 			import org.apache.royale.jewel.beads.controls.textinput.Restrict;
 			import org.apache.royale.binding.ConstantBinding;
 			import org.apache.royale.jewel.beads.itemRenderers.RemoveAllItemRendererForArrayListData;

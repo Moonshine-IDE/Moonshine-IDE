@@ -1,4 +1,4 @@
-package classes.dataGrid
+package $ProjectName.classes.dataGrid
 {
 	import org.apache.royale.jewel.Group;
 	import org.apache.royale.events.Event;

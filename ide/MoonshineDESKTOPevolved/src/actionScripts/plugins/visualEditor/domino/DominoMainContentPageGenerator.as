@@ -41,12 +41,15 @@ package actionScripts.plugins.visualEditor.domino
 	
 	public class DominoMainContentPageGenerator extends RoyalePageGeneratorBase
 	{
-		override protected function get pageRelativePathString():String		{	return "views/MainContent.mxml";	}
+		private var _pageRelativePathString:String;
+
+		override protected function get pageRelativePathString():String		{ return _pageRelativePathString;	}
 		
 		private var forms:Vector.<DominoFormVO>;
 		
 		public function DominoMainContentPageGenerator(project:ProjectVO, forms:Vector.<DominoFormVO>, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
+			_pageRelativePathString = project.name + "/views/MainContent.mxml";
 			super(project, null, classReferenceSettings, onComplete);
 
 			this.forms = forms;
@@ -69,7 +72,7 @@ package actionScripts.plugins.visualEditor.domino
 			for (var i:int = 0; i < forms.length; i++)
 			{
 				var form:DominoFormVO = forms[i];
-				scrollableContents += DominoRoyaleScrollableSectionContent.toCode(form.formName,"views.modules." + form.formName + "." + form.formName + "Views.") + "\n";
+				scrollableContents += DominoRoyaleScrollableSectionContent.toCode(form.formName,project.name + ".views.modules." + form.formName + "." + form.formName + "Views.") + "\n";
 				drawerDataProvider.push(DominoRoyaleDrawerDataProvider.toCode(form.formName, form.formName));
 			}
 			
@@ -87,7 +90,7 @@ package actionScripts.plugins.visualEditor.domino
 			var paths:Array = [];
 			for each (var item:PageImportReferenceVO in pageImportReferences)
 			{
-				paths.push('xmlns:'+ item.name +'="'+ 'views.modules.' + item.name + '.' + item.name +'Views.*" ');
+				paths.push('xmlns:'+ item.name +'="'+ project.name + '.views.modules.' + item.name + '.' + item.name +'Views.*" ');
 			}
 			return paths;
 		}
@@ -97,7 +100,7 @@ package actionScripts.plugins.visualEditor.domino
 			var paths:Array = [];
 			for each (var item:PageImportReferenceVO in pageImportReferences)
 			{
-				paths.push("import "+ 'views.modules.' + item.name + '.' + item.name + 'Views.' + item.name +";");
+				paths.push("import "+ project.name + '.views.modules.' + item.name + '.' + item.name + 'Views.' + item.name +";");
 			}
 			return paths;
 		}

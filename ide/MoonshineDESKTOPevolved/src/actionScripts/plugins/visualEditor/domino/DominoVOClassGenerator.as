@@ -43,8 +43,13 @@ package actionScripts.plugins.visualEditor.domino
 
 	public class DominoVOClassGenerator extends VOClassGenerator
 	{
+		private var _pageRelativePathString:String;
+		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
+
 		public function DominoVOClassGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
 		{
+			_pageRelativePathString = project.name + "/views/modules/"+ form.formName +"/"+ form.formName +"VO/"+ form.formName +"VO.as";
+
 			super(project, form, classReferenceSettings, onComplete);
 		}
 

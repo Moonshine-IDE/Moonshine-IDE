@@ -4,7 +4,7 @@
 					xmlns="http://www.w3.org/1999/xhtml">
 	<fx:Script>
 		<![CDATA[
-			import classes.utils.Utils;
+			import $ProjectName.classes.utils.Utils;
 			
 			override public function set data(value:Object):void
 			{

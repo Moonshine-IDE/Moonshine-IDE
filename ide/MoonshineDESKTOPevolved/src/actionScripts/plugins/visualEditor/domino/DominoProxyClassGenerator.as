@@ -29,38 +29,24 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.ondiskproj.crud.exporter.pages
+package actionScripts.plugins.visualEditor.domino
 {
-	import actionScripts.interfaces.IDeployDominoDatabaseProject;
-	import actionScripts.locator.IDEModel;
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
+
+	import view.dominoFormBuilder.vo.DominoFormVO;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class GlobalClassGenerator extends RoyalePageGeneratorBase
+	public class DominoProxyClassGenerator extends ProxyClassGenerator
 	{
-		public function GlobalClassGenerator(project:ProjectVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
+		private var _pageRelativePathString:String;
+		override protected function get pageRelativePathString():String	{	return _pageRelativePathString;	}
+
+		public function DominoProxyClassGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
 		{
-			super(project, null, classReferenceSettings, onComplete);
+			_pageRelativePathString = project.name + "/views/modules/"+ form.formName +"/"+ form.formName +"Services/"+ form.formName +"Proxy.as";
 
-			pagePath = project.sourceFolder.resolvePath("classes/vo/Constants.as");
-
-			generate();
-		}
-		
-		override public function generate():void
-		{
-			var dominoDeployingProject:IDeployDominoDatabaseProject = IDEModel.getInstance().activeProject as IDeployDominoDatabaseProject;
-			if (!dominoDeployingProject) return;
-
-			var fileContent:String = loadPageFile();
-			if (!fileContent) return;
-
-			fileContent = fileContent.replace(
-					/%AGENT_BASE_URL%/gi,
-					dominoDeployingProject.dominoBaseAgentURL ? "\""+ dominoDeployingProject.dominoBaseAgentURL +"\"" : "null"
-			);
-			saveFile(fileContent);
-			dispatchCompletion();
+			super(project, form, classReferenceSettings, onComplete);
 		}
 	}
 }
