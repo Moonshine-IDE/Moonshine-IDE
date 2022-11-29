@@ -167,6 +167,14 @@ import flash.events.Event;
 			{
 				envCustomJava.sdkPath = buildOptions.customSDKPath;
 			}
+			if (jdkType == JavaTypes.JAVA_8)
+			{
+				envCustomJava.jdkPath = model.java8Path ? model.java8Path.fileBridge.nativePath : null;
+			}
+			else
+			{
+				envCustomJava.jdkPath = model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null;
+			}
 
 			return envCustomJava;
 		}
