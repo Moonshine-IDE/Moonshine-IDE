@@ -18,7 +18,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.menu
 {
-	import flash.desktop.NativeProcess;
+import actionScripts.utils.EnvironmentSetupUtils;
+
+import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
@@ -132,7 +134,7 @@ package actionScripts.plugins.menu
 					driveChar = openToPath.charAt(0) +":;;"
 				}
 				
-				command = "start "+ powerShellPath +" -NoExit -Command \""+ driveChar +"cd "+ openToPath +"\"";
+				command = "start "+ powerShellPath +" -NoExit -Command \""+ driveChar +"cd "+ openToPath +"\";;clear";
 			}
 			else
 			{
@@ -156,15 +158,32 @@ package actionScripts.plugins.menu
 			// in case of Default
 			if (themeName == "Default") themeName = "";
 
-			nativeProcess = new NativeProcess();
-			nativeProcessStartupInfo = new NativeProcessStartupInfo();
-			nativeProcessStartupInfo.executable = File.documentsDirectory.resolvePath("/usr/bin/osascript");
+			// since start(..) uses /bin/bash and here we need
+			// /usr/bin/osascript to run our applescript file,
+			// we'll set newer executable to our nativeProcess.
+			// although, we'll also require the environment-variables
+			// so we can set them in opening terminal window, as per
+			// the requirement
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared);
 
-			var scriptFile:File = File.applicationDirectory.resolvePath( "macOScripts/OpenInTerminal.scpt" );
-			nativeProcessStartupInfo.arguments = Vector.<String>([scriptFile.nativePath, openToPath, themeName]);
-			addNativeProcessEventListeners();
-			nativeProcess.start(nativeProcessStartupInfo);
-			running = true;
+			/*
+			* @local
+			*/
+			function onEnvironmentPrepared(value:String):void
+			{
+				// in case no environment data
+				value ||= ";";
+
+				nativeProcess = new NativeProcess();
+				nativeProcessStartupInfo = new NativeProcessStartupInfo();
+				nativeProcessStartupInfo.executable = File.documentsDirectory.resolvePath("/usr/bin/osascript");
+
+				var scriptFile:File = File.applicationDirectory.resolvePath( "macOScripts/OpenInTerminal.scpt" );
+				nativeProcessStartupInfo.arguments = Vector.<String>([scriptFile.nativePath, openToPath, themeName, value]);
+				addNativeProcessEventListeners();
+				nativeProcess.start(nativeProcessStartupInfo);
+				running = true;
+			}
 		}
 		
 		private function openInCommandLine(openToPath:String):void
@@ -175,7 +194,7 @@ package actionScripts.plugins.menu
 				driveChar = openToPath.charAt(0) +":&&"
 			}
 			
-			var command:String = "start cmd /k \""+ driveChar +"cd "+ UtilsCore.getEncodedForShell(openToPath) +"\"";
+			var command:String = "start cmd /k \""+ driveChar +"cd "+ UtilsCore.getEncodedForShell(openToPath) +"\"&&cls";
 			start(
 				new <String>[command],
 				null
