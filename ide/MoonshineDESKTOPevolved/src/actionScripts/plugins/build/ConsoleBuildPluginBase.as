@@ -122,9 +122,6 @@ package actionScripts.plugins.build
 			*/
 			function onEnvironmentPrepared(value:String):void
 			{
-                // Check if value is null which is defined by EnvironmentSetupUtils.executeOSX()
-                if ( !value ) return;
-
                 if ( !nativeProcess ) {
 
                     nativeProcess = new NativeProcess();
