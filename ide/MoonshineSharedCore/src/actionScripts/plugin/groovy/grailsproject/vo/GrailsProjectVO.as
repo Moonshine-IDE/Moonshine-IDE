@@ -43,7 +43,8 @@ package actionScripts.plugin.groovy.grailsproject.vo
 	import actionScripts.plugin.settings.vo.MultiOptionSetting;
 	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.valueObjects.ProjectVO;
+import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
+import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.languageServer.LanguageServerProjectVO;
 
 	public class GrailsProjectVO extends LanguageServerProjectVO implements IJavaProject
@@ -65,6 +66,14 @@ package actionScripts.plugin.groovy.grailsproject.vo
             projectReference.hiddenPaths = new <FileLocation>[];
 			grailsBuildOptions = new GrailsBuildOptions(folder.fileBridge.nativePath);
 			gradleBuildOptions = new GradleBuildOptions(projectFolder.nativePath);
+		}
+
+		override public function get customSDKs():EnvironmentUtilsCusomSDKsVO
+		{
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomJava.jdkPath = model.java8Path ? model.java8Path.fileBridge.nativePath : null;
+
+			return envCustomJava;
 		}
 		
 		override public function getSettings():Vector.<SettingsWrapper>

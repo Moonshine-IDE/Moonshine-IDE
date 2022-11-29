@@ -143,7 +143,9 @@ import flash.desktop.NativeProcess;
 			}
 			
 			this.start(
-				new <String>[command]
+				new <String>[command],
+					null,
+					model.activeProject.customSDKs
 			);
 		}
 
@@ -164,7 +166,7 @@ import flash.desktop.NativeProcess;
 			// although, we'll also require the environment-variables
 			// so we can set them in opening terminal window, as per
 			// the requirement
-			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared);
+			EnvironmentSetupUtils.getInstance().initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, model.activeProject.customSDKs);
 
 			/*
 			* @local
@@ -197,7 +199,8 @@ import flash.desktop.NativeProcess;
 			var command:String = "start cmd /k \""+ driveChar +"cd "+ UtilsCore.getEncodedForShell(openToPath) +"\"&&cls";
 			start(
 				new <String>[command],
-				null
+				null,
+					model.activeProject.customSDKs
 			);
 		}
 	}

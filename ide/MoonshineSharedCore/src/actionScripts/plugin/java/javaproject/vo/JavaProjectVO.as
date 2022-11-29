@@ -47,7 +47,8 @@ package actionScripts.plugin.java.javaproject.vo
 	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.valueObjects.ProjectVO;
+import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
+import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.languageServer.LanguageServerProjectVO;
 
 	public class JavaProjectVO extends LanguageServerProjectVO implements IJavaProject
@@ -126,6 +127,21 @@ package actionScripts.plugin.java.javaproject.vo
 		override public function saveSettings():void
 		{
 			JavaExporter.export(this);
+		}
+
+		override public function get customSDKs():EnvironmentUtilsCusomSDKsVO
+		{
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			if (jdkType == JavaTypes.JAVA_8)
+			{
+				envCustomJava.jdkPath = model.java8Path ? model.java8Path.fileBridge.nativePath : null;
+			}
+			else
+			{
+				envCustomJava.jdkPath = model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null;
+			}
+
+			return envCustomJava;
 		}
 
 		public var cleanWorkspaceButtonLabel:String = "Clean";
