@@ -31,13 +31,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin
 {
-	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.languageServer.ILanguageServerManager;
+	import actionScripts.valueObjects.ProjectVO;
 
 	/**
 	 * An interface implemented by plugins that launch language servers.
 	 */
-	public interface ILanguageServerPlugin
+	public interface ILanguageServerPlugin extends IPlugin
 	{
 		/**
 		 * Returns a class that extends ProjectVO.

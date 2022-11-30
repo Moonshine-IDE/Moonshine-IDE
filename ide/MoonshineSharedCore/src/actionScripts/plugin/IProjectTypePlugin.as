@@ -31,14 +31,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin
 {
-	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.valueObjects.ProjectVO;
 
 	/**
 	 * An interface implemented by plugins that handle creating and opening
 	 * projects.
 	 */
-	public interface IProjectTypePlugin
+	public interface IProjectTypePlugin extends IPlugin
 	{
 		/**
 		 * Tests if a specific directory contains a project that can be opened
