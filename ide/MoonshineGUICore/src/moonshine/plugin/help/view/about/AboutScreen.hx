@@ -199,10 +199,12 @@ class AboutScreen extends LayoutGroup {
 
 		_contentGroupLayout = new VerticalLayout();
 		_contentGroupLayout.gap = 10;
+		_contentGroupLayout.setPadding( 20 );
+		_contentGroupLayout.paddingTop = 0;
 
 		_contentGroup = new LayoutGroup();
 		_contentGroup.backgroundSkin = new RectangleSkin(FillStyle.SolidColor(0xFFFFFF));
-		_contentGroup.layoutData = new VerticalLayoutData(80, 100);
+		_contentGroup.layoutData = new VerticalLayoutData(100, 100);
 		_contentGroup.layout = _contentGroupLayout;
 
 		_headerLayout = new HorizontalLayout();
