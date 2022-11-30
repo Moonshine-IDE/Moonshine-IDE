@@ -41,6 +41,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 		public function GlobalClassGenerator(project:ProjectVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function=null)
 		{
 			super(project, null, classReferenceSettings, onComplete);
+
+			pagePath = project.sourceFolder.resolvePath("classes/vo/Constants.as");
+
 			generate();
 		}
 		
@@ -49,7 +52,6 @@ package actionScripts.plugins.ondiskproj.crud.exporter.pages
 			var dominoDeployingProject:IDeployDominoDatabaseProject = IDEModel.getInstance().activeProject as IDeployDominoDatabaseProject;
 			if (!dominoDeployingProject) return;
 
-			pagePath = project.sourceFolder.resolvePath("classes/vo/Constants.as")
 			var fileContent:String = loadPageFile();
 			if (!fileContent) return;
 

@@ -122,12 +122,12 @@ package actionScripts.plugins.build
 			*/
 			function onEnvironmentPrepared(value:String):void
 			{
-				if (nativeProcess.running)
-				{
-					removeNativeProcessEventListeners();
-					nativeProcess = new NativeProcess();
-				}
-				
+                if (nativeProcess.running)
+                {
+                    removeNativeProcessEventListeners();
+                    nativeProcess = new NativeProcess();
+                }
+                    
 				var processArgs:Vector.<String> = new Vector.<String>;
 				if (Settings.os == "win")
 				{

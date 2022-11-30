@@ -76,6 +76,11 @@ package actionScripts.valueObjects
 			projectFolder.updateChildren(); // this will help rendered the 's' icon in already opened tree
 		}
 
+		public function get customSDKs():EnvironmentUtilsCusomSDKsVO
+		{
+			return null;
+		}
+
 		public var projectFile: FileLocation;
 		public var projectRemotePath:String;
 		public var projectName:String;

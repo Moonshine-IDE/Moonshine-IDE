@@ -1,6 +1,7 @@
 <j:VGroup  xmlns:j="library://ns.apache.org/royale/jewel" xmlns:fx="http://ns.adobe.com/mxml/2009"
 			xmlns:js="library://ns.apache.org/royale/basic" xmlns:html="library://ns.apache.org/royale/html"
-			xmlns:joditeditor="classes.joditeditor.*" xmlns:dataGrid="classes.dataGrid.*"
+			xmlns:joditeditor="$ProjectName.classes.joditeditor.*" xmlns:dataGrid="$ProjectName.classes.dataGrid.*"
+			xmlns:components="$ProjectName.views.components.*"
 			currentState="dataGridState" gap="5" stateChangeComplete="{this.dispatchEvent(new Event('valueChange'))}"
 			itemsVerticalAlign="itemsTop" initComplete="onViewInitComplete(event)" percentHeight="100">
   <j:beads>
@@ -13,7 +14,7 @@
   </j:states>
   <fx:Script><![CDATA[
 	import org.apache.royale.jewel.Alert;
-	import classes.events.ErrorEvent;
+	import $ProjectName.classes.events.ErrorEvent;
 	%ImportStatements%
 
 	[Bindable] private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();

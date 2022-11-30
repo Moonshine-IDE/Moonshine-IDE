@@ -33,8 +33,9 @@ package actionScripts.plugin.ondiskproj.vo
 {
 	import actionScripts.interfaces.IDeployDominoDatabaseProject;
 	import actionScripts.plugin.settings.vo.StringSetting;
+import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 
-	import mx.collections.ArrayCollection;
+import mx.collections.ArrayCollection;
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.interfaces.IJavaProject;
@@ -122,6 +123,14 @@ package actionScripts.plugin.ondiskproj.vo
 
             projectReference.hiddenPaths = this.hiddenPaths;
 			projectReference.showHiddenPaths = this.showHiddenPaths = model.showHiddenPaths;
+		}
+
+		override public function get customSDKs():EnvironmentUtilsCusomSDKsVO
+		{
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			envCustomJava.jdkPath = model.java8Path ? model.java8Path.fileBridge.nativePath : null;
+
+			return envCustomJava;
 		}
 		
 		override public function getSettings():Vector.<SettingsWrapper>

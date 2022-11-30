@@ -56,6 +56,7 @@ class ProjectEvent extends Event {
 
 	public static final EVENT_IMPORT_PROJECT_ARCHIVE:String = "importProjectArchive";
 	public static final EVENT_GENERATE_APACHE_ROYALE_PROJECT:String = "generateApacheRoyaleProject";
+	public static final EVENT_EXPORT_TO_EXTERNAL_PROJECT:String = "exportToExternalProject";
 	public static final LAST_OPENED_AS_FB_PROJECT:String = "LAST_OPENED_AS_FB_PROJECT";
 	public static final LAST_OPENED_AS_FD_PROJECT:String = "LAST_OPENED_AS_FD_PROJECT";
 

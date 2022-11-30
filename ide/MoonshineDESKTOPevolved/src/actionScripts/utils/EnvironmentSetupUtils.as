@@ -162,7 +162,7 @@ package actionScripts.utils
 			// do not proceed if no path to set
 			if (!setCommand)
 			{
-				if (externalCallCompletionHandler != null) externalCallCompletionHandler(null);
+				if (externalCallCompletionHandler != null) externalCallCompletionHandler("");
 				flush();
 				return;
 			}
@@ -193,7 +193,7 @@ package actionScripts.utils
 			// do not proceed if no path to set
 			if (!setCommand)
 			{
-				if (externalCallCompletionHandler != null) externalCallCompletionHandler(null);
+				if (externalCallCompletionHandler != null) externalCallCompletionHandler("");
 				
 				isSingleProcessRunning = false;
 				flush();

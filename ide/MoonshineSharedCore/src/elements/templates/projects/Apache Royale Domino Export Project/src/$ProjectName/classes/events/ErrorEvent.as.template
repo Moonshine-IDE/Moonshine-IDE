@@ -1,4 +1,4 @@
-package classes.events
+package $ProjectName.classes.events
 {
     import org.apache.royale.events.Event;
 

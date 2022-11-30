@@ -203,7 +203,8 @@ package actionScripts.ui.menu
                     new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA], MavenBuildEvent.START_MAVEN_BUILD),
                     new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ProjectActionEvent.CLEAN_PROJECT),
                     new MenuItem(null),
-                    new MenuItem(resourceManager.getString('resources', 'DEPLOY_ROYALE_TO_VAGRANT'), null, [ProjectMenuTypes.JS_ROYALE], OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT)
+                    new MenuItem(resourceManager.getString('resources', 'DEPLOY_ROYALE_TO_VAGRANT'), null, [ProjectMenuTypes.JS_ROYALE], OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT),
+                    new MenuItem(resourceManager.getString('resources', 'EXPORT_TO_EXTERNAL_PROJECT'), null, [ProjectMenuTypes.JS_ROYALE], ProjectEvent.EVENT_EXPORT_TO_EXTERNAL_PROJECT)
                 ]);
                 royaleMenu.forEach(makeDynamic);
             }

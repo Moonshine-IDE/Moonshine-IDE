@@ -34,8 +34,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 	import actionScripts.interfaces.IDeployDominoDatabaseProject;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 
-	import flash.events.Event;
+import flash.events.Event;
     import flash.events.MouseEvent;
     
     import mx.collections.ArrayCollection;
@@ -157,6 +158,25 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			super.sourceFolder = value;
 			if (flashModuleOptions) flashModuleOptions.sourceFolderLocation = value;
+		}
+
+		override public function get customSDKs():EnvironmentUtilsCusomSDKsVO
+		{
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			if (buildOptions.customSDKPath)
+			{
+				envCustomJava.sdkPath = buildOptions.customSDKPath;
+			}
+			if (jdkType == JavaTypes.JAVA_8)
+			{
+				envCustomJava.jdkPath = model.java8Path ? model.java8Path.fileBridge.nativePath : null;
+			}
+			else
+			{
+				envCustomJava.jdkPath = model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null;
+			}
+
+			return envCustomJava;
 		}
 		
 		public function get air():Boolean

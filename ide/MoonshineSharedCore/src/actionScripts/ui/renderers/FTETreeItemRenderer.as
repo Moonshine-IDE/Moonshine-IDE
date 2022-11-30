@@ -40,11 +40,10 @@ package actionScripts.ui.renderers
 	import flash.filters.GlowFilter;
 	import flash.ui.ContextMenuItem;
 	import flash.ui.Keyboard;
-
-	import mx.controls.Alert;
 	
 	import mx.binding.utils.ChangeWatcher;
 	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 	import mx.controls.Image;
 	import mx.controls.treeClasses.TreeItemRenderer;
 	import mx.core.UIComponent;
@@ -85,6 +84,7 @@ package actionScripts.ui.renderers
 		public static const NEW_FOLDER:String = "New Folder";
 		public static const COPY_PATH:String = "Copy Path";
 		public static const OPEN_PATH_IN_TERMINAL:String = "Open in "+ (ConstantsCoreVO.IS_MACOS ? "Terminal" : "Command Line");
+		public static const OPEN_PATH_IN_POWERSHELL:String = "Open in PowerShell";
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
 		public static const SHOW_IN_FINDER:String = "Show in Finder";
 		public static const DUPLICATE_FILE:String = "Duplicate";
@@ -252,6 +252,11 @@ package actionScripts.ui.renderers
 					model.contextMenuCore.getContextMenuItem(COPY_PATH, updateOverMultiSelectionOption, "displaying"));
 				model.contextMenuCore.addItem(contextMenu,
 						model.contextMenuCore.getContextMenuItem(OPEN_PATH_IN_TERMINAL, populateOpenInTerminalMenu, "displaying"));
+				if (!ConstantsCoreVO.IS_MACOS)
+				{
+					model.contextMenuCore.addItem(contextMenu,
+						model.contextMenuCore.getContextMenuItem(OPEN_PATH_IN_POWERSHELL, updateOverMultiSelectionOption, "displaying"));
+				}
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(
 						ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 

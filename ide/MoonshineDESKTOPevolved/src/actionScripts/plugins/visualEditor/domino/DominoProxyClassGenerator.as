@@ -29,25 +29,24 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
+package actionScripts.plugins.visualEditor.domino
+{
+	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
+	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 
-package actionScripts.events;
+	import view.dominoFormBuilder.vo.DominoFormVO;
+	import actionScripts.valueObjects.ProjectVO;
 
-import actionScripts.factory.FileLocation;
-import openfl.events.Event;
+	public class DominoProxyClassGenerator extends ProxyClassGenerator
+	{
+		private var _pageRelativePathString:String;
+		override protected function get pageRelativePathString():String	{	return _pageRelativePathString;	}
 
-class FilePluginEvent extends Event {
-	public static final EVENT_FILE_OPEN:String = "fileOpenEvent";
-	public static final EVENT_FILE_SAVE:String = "fileSaveEvent";
-	public static final EVENT_FILE_OPEN_WITH:String = "fileOpenWithEvent";
-	public static final EVENT_JAVA_TYPEAHEAD_PATH_SAVE:String = "EVENT_JAVA_TYPEAHEAD_PATH_SAVE";
-	public static final EVENT_JAVA8_PATH_SAVE:String = "EVENT_JAVA8_PATH_SAVE";
-	public static final EVENT_OPEN_PATH_IN_TERMINAL:String = "openPathInTerminalEvent";
-	public static final EVENT_OPEN_PATH_IN_POWERSHELL:String = "openPathInPowerShellEvent";
+		public function DominoProxyClassGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
+		{
+			_pageRelativePathString = project.name + "/views/modules/"+ form.formName +"/"+ form.formName +"Services/"+ form.formName +"Proxy.as";
 
-	public var file:FileLocation;
-
-	public function new(type:String, file:FileLocation) {
-		super(type, false, true);
-		this.file = file;
+			super(project, form, classReferenceSettings, onComplete);
+		}
 	}
 }

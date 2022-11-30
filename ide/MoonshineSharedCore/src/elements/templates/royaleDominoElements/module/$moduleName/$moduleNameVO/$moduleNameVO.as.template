@@ -1,4 +1,4 @@
-package views.modules.$moduleName.$moduleNameVO
+package $ProjectName.views.modules.$moduleName.$moduleNameVO
 {
     [Bindable]
 	public class $moduleNameVO  

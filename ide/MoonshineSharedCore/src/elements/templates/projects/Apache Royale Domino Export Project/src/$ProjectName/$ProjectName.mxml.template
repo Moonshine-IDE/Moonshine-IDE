@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <j:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
 			   xmlns:j="library://ns.apache.org/royale/jewel"
-			   xmlns:js="library://ns.apache.org/royale/basic" xmlns:local="*" xmlns:views="views.*">
+			   xmlns:js="library://ns.apache.org/royale/basic" xmlns:local="*" xmlns:views="$ProjectName.views.*">
 
 	<fx:Style source="resources/export-app-styles.css"/>
 
