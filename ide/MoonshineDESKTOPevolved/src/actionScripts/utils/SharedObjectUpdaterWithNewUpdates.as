@@ -48,11 +48,13 @@ package actionScripts.utils
 				var lastSavedOn:Date = new Date(Date.parse(cookie.data.objectsTested));
 				if (ObjectUtil.dateCompare(updateDate, lastSavedOn) == 1)
 				{
+					// dates are not equal
 					return true;
 				}
 			}
 			else if (!cookie.data.hasOwnProperty('objectsTested'))
 			{
+				// no previously saved date
 				return true;
 			}
 			
@@ -101,7 +103,7 @@ package actionScripts.utils
 									sharedItem[localName] = itemInUpdatedCollection[localName];
 								}
 							}
-							else
+							else if ((localName != "isEnabled") && (localName != "isValid"))
 							{
 								sharedItem[localName] = itemInUpdatedCollection[localName];
 							}
