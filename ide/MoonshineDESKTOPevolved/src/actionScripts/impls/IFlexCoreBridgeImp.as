@@ -251,7 +251,6 @@ package actionScripts.impls
 		{
 			var defaultPlugins:Array = [
 				MultiMenuEventsNotifierPlugin,
-				OpenInTerminalPlugin,
 				StartupHelperPlugin,
 				MXMLCPlugin,
 				MXMLCJavaScriptPlugin,
@@ -288,7 +287,8 @@ package actionScripts.impls
 				FSWatcherPlugin,
 				LanguageServersMonitor,
 				TextEditorPlugin,
-				GenesisPlugin
+				GenesisPlugin,
+				OpenInTerminalPlugin
 			];
 
 			// conditional additions
