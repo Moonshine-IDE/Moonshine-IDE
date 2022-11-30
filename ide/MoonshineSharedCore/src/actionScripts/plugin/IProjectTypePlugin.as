@@ -34,9 +34,22 @@ package actionScripts.plugin
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.factory.FileLocation;
 
+	/**
+	 * An interface implemented by plugins that handle creating and opening
+	 * projects.
+	 */
 	public interface IProjectTypePlugin
 	{
+		/**
+		 * Tests if a specific directory contains a project that can be opened
+		 * by this plugin. Typically, the directory will contain some sort of
+		 * project file, such as .javaproj for Java or .hxproj for Haxe.
+		 */
 		function testProjectDirectory(file:FileLocation):FileLocation;
+
+		/**
+		 * Parses a project that was detected with testProjectDirectory().
+		 */
 		function parseProject(projectFolder:FileLocation, projectName:String = null, settingsFileLocation:FileLocation = null):ProjectVO;
 	}
 }

@@ -29,34 +29,24 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.groovylsp
+package actionScripts.plugin
 {
-	import actionScripts.languageServer.ILanguageServerManager;
-	import actionScripts.plugin.ILanguageServerPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.languageServer.ILanguageServerManager;
 
-	public class GroovyLanguageServerPlugin extends PluginBase implements ILanguageServerPlugin
+	/**
+	 * An interface implemented by plugins that launch language servers.
+	 */
+	public interface ILanguageServerPlugin
 	{
-		override public function get name():String 			{return "Groovy Language Server Plugin";}
-		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team";}
-		override public function get description():String 	{return "Groovy code intelligence provided by a language server";}
+		/**
+		 * Returns a class that extends ProjectVO.
+		 */
+		function get languageServerProjectType():Class;
 
-		public function get languageServerProjectType():Class
-		{
-			return GrailsProjectVO;
-		}
-		
-		public function GroovyLanguageServerPlugin()
-		{
-			super();
-		}
-
-		public function createLanguageServerManager(project:ProjectVO):ILanguageServerManager
-		{
-			return new GroovyLanguageServerManager(GrailsProjectVO(project));
-		}
+		/**
+		 * Creates a language server manager for a specific project.
+		 */
+		function createLanguageServerManager(project:ProjectVO):ILanguageServerManager;
 	}
 }

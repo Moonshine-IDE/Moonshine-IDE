@@ -32,34 +32,31 @@
 package actionScripts.plugins.as3lsp
 {
 	import actionScripts.languageServer.ILanguageServerManager;
+	import actionScripts.plugin.ILanguageServerPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
 
-	public class AS3LanguageServerPlugin extends PluginBase
+	public class AS3LanguageServerPlugin extends PluginBase implements ILanguageServerPlugin
 	{
 		override public function get name():String 			{return "AS3 Language Server Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team";}
 		override public function get description():String 	{return "AS3 project importing, exporting & scaffolding.";}
+
+		public function get languageServerProjectType():Class
+		{
+			return AS3ProjectVO;
+		}
 		
 		public function AS3LanguageServerPlugin()
 		{
 			super();
 		}
-		
-		override public function activate():void
-		{
-			model.languageServerCore.registerLanguageServerProvider(AS3ProjectVO, createLanguageServerManager);
-		}
-		
-		override public function deactivate():void
-		{
-			model.languageServerCore.unregisterLanguageServerProvider(AS3ProjectVO);
-		}
 
-		private function createLanguageServerManager(project:AS3ProjectVO):ILanguageServerManager
+		public function createLanguageServerManager(project:ProjectVO):ILanguageServerManager
 		{
-			return new ActionScriptLanguageServerManager(project);
+			return new ActionScriptLanguageServerManager(AS3ProjectVO(project));
 		}
 	}
 }

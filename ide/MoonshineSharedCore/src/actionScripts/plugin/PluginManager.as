@@ -137,6 +137,12 @@ package actionScripts.plugin
                 var projectTypePlugin:IProjectTypePlugin = IProjectTypePlugin(plug);
                 model.projectCore.registerProjectTypePlugin(projectTypePlugin)
             }
+
+            if (plug is ILanguageServerPlugin)
+            {
+                var lsPlugin:ILanguageServerPlugin = ILanguageServerPlugin(plug);
+			    model.languageServerCore.registerLanguageServerPlugin(lsPlugin);
+            }
         }
 
         moonshine_internal function getPluginByClassName(className:String):IPlugin

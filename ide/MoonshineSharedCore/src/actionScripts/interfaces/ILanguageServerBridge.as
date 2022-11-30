@@ -33,13 +33,14 @@ package actionScripts.interfaces
 {
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.plugin.ILanguageServerPlugin;
 
 	public interface ILanguageServerBridge
 	{
 		function get connectedProjectCount():int;
 
-		function registerLanguageServerProvider(projectType:Class /* extends ProjectVO */, callback:Function /* (ProjectVO) -> ILanguageServerManager */):void;
-		function unregisterLanguageServerProvider(projectType:Class /* extends ProjectVO */):void;
+		function registerLanguageServerPlugin(plugin:ILanguageServerPlugin):void;
+		function unregisterLanguageServerPlugin(plugin:ILanguageServerPlugin):void;
 
 		function hasLanguageServerForProject(project:ProjectVO):Boolean;
 

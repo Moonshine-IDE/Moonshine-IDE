@@ -32,13 +32,13 @@
 package actionScripts.impls
 {
 	import flash.events.Event;
-	import flash.utils.Dictionary;
 
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.interfaces.ILanguageServerBridge;
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.languageServer.ILanguageServerManager;
+	import actionScripts.plugin.ILanguageServerPlugin;
 	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.ui.editor.BasicTextEditor;
@@ -57,21 +57,31 @@ package actionScripts.impls
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var managers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
 		private var connectedManagers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
-		private var managerProviders:Dictionary = new Dictionary(true);
+		private var _languageServerPlugins:Vector.<ILanguageServerPlugin> = new <ILanguageServerPlugin>[];
 
 		public function get connectedProjectCount():int
 		{
 			return connectedManagers.length;
 		}
 
-		public function registerLanguageServerProvider(projectType:Class /* extends ProjectVO */, callback:Function /* (ProjectVO) -> ILanguageServerManager */):void
+		public function registerLanguageServerPlugin(plugin:ILanguageServerPlugin):void
 		{
-			managerProviders[projectType] = callback;
+			var index:int = _languageServerPlugins.indexOf(plugin);
+			if (index != -1)
+			{
+				return;
+			}
+			_languageServerPlugins.push(plugin);
 		}
 
-		public function unregisterLanguageServerProvider(projectType:Class /* extends ProjectVO */):void
+		public function unregisterLanguageServerPlugin(plugin:ILanguageServerPlugin):void
 		{
-			delete managerProviders[projectType];
+			var index:int = _languageServerPlugins.indexOf(plugin);
+			if (index == -1)
+			{
+				return;
+			}
+			_languageServerPlugins.removeAt(index);
 		}
 		
 		public function hasLanguageServerForProject(project:ProjectVO):Boolean
@@ -202,6 +212,19 @@ package actionScripts.impls
 				}
 			}
 		}
+
+		private function findPluginForProjectClass(projectClass:Class):ILanguageServerPlugin
+		{
+			for(var i:int = 0; i < _languageServerPlugins.length; i++)
+			{
+				var plugin:ILanguageServerPlugin = _languageServerPlugins[i];
+				if (plugin.languageServerProjectType == projectClass)
+				{
+					return plugin;
+				}
+			}
+			return null;
+		}
 		
 		private function addProjectHandler(event:ProjectEvent):void
 		{
@@ -224,13 +247,13 @@ package actionScripts.impls
 				return;
 			}
 			var projectClass:Class = Object(project).constructor as Class;
-			if (!(projectClass in managerProviders))
+			var plugin:ILanguageServerPlugin = findPluginForProjectClass(projectClass);
+			if (!plugin)
 			{
 				return;
 			}
 			var manager:ILanguageServerManager = null;
-			var callback:Function = managerProviders[projectClass] as Function;
-			manager = ILanguageServerManager(callback(project));
+			manager = plugin.createLanguageServerManager(project);
 			managers.push(manager);
 			manager.addEventListener(Event.INIT, manager_initHandler);
 			manager.addEventListener(Event.CLOSE, manager_closeHandler);

@@ -32,34 +32,31 @@
 package actionScripts.plugins.javalsp
 {
 	import actionScripts.languageServer.ILanguageServerManager;
+	import actionScripts.plugin.ILanguageServerPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
 
-	public class JavaLanguageServerPlugin extends PluginBase
+	public class JavaLanguageServerPlugin extends PluginBase implements ILanguageServerPlugin
 	{
 		override public function get name():String 			{return "Java Language Server Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team";}
 		override public function get description():String 	{return "Java project importing, exporting & scaffolding.";}
+
+		public function get languageServerProjectType():Class
+		{
+			return JavaProjectVO;
+		}
 		
 		public function JavaLanguageServerPlugin()
 		{
 			super();
 		}
-		
-		override public function activate():void
-		{
-			model.languageServerCore.registerLanguageServerProvider(JavaProjectVO, createLanguageServerManager);
-		}
-		
-		override public function deactivate():void
-		{
-			model.languageServerCore.unregisterLanguageServerProvider(JavaProjectVO);
-		}
 
-		private function createLanguageServerManager(project:JavaProjectVO):ILanguageServerManager
+		public function createLanguageServerManager(project:ProjectVO):ILanguageServerManager
 		{
-			return new JavaLanguageServerManager(project);
+			return new JavaLanguageServerManager(JavaProjectVO(project));
 		}
 	}
 }

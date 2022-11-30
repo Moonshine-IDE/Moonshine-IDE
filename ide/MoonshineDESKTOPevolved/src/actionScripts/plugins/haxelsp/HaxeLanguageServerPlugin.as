@@ -32,34 +32,31 @@
 package actionScripts.plugins.haxelsp
 {
 	import actionScripts.languageServer.ILanguageServerManager;
+	import actionScripts.plugin.ILanguageServerPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.valueObjects.ProjectVO;
 
-	public class HaxeLanguageServerPlugin extends PluginBase
+	public class HaxeLanguageServerPlugin extends PluginBase implements ILanguageServerPlugin
 	{
 		override public function get name():String 			{return "Haxe Language Server Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team";}
 		override public function get description():String 	{return "Haxe code intelligence provided by a language server";}
+
+		public function get languageServerProjectType():Class
+		{
+			return HaxeProjectVO;
+		}
 		
 		public function HaxeLanguageServerPlugin()
 		{
 			super();
 		}
-		
-		override public function activate():void
-		{
-			model.languageServerCore.registerLanguageServerProvider(HaxeProjectVO, createLanguageServerManager);
-		}
-		
-		override public function deactivate():void
-		{
-			model.languageServerCore.unregisterLanguageServerProvider(HaxeProjectVO);
-		}
 
-		private function createLanguageServerManager(project:HaxeProjectVO):ILanguageServerManager
+		public function createLanguageServerManager(project:ProjectVO):ILanguageServerManager
 		{
-			return new HaxeLanguageServerManager(project);
+			return new HaxeLanguageServerManager(HaxeProjectVO(project));
 		}
 	}
 }
