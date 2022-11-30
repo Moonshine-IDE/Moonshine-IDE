@@ -280,6 +280,20 @@ package actionScripts.plugin.haxe.hxproject.vo
 			if (targetPlatformSettings) targetPlatformSettings.removeEventListener(Event.CHANGE, onTargetPlatformChanged);
 		}
 
+		override public function getProjectFilesToDelete():Array
+		{
+			var filesList:Array = [];
+			filesList.unshift(haxeOutput.path,
+				folderLocation.resolvePath("bin"),
+				folderLocation.resolvePath(name +".hxproj"),
+				classpaths);
+			if (isLime)
+			{
+				filesList.unshift(folderLocation.resolvePath("project.xml"));
+			}
+			return filesList;
+		}
+
 		public function openLimeProjectXML():void
 		{
 			if(!this.isLime)

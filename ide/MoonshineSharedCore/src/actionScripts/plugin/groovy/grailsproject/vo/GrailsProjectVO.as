@@ -112,5 +112,12 @@ import actionScripts.valueObjects.ProjectVO;
 		{
 			GrailsExporter.export(this);
 		}
+
+		override public function getProjectFilesToDelete():Array
+		{
+			var filesList:Array = [];
+			filesList.unshift(classpaths);
+			return filesList;
+		}
 	}
 }

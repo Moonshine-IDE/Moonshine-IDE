@@ -187,6 +187,11 @@ package actionScripts.valueObjects
 		{
 			return Vector.<SettingsWrapper>([]);
 		}
+
+		public function getProjectFilesToDelete():Array
+		{
+			return null;
+		}
 		
 		//--------------------------------------------------------------------------
 		//

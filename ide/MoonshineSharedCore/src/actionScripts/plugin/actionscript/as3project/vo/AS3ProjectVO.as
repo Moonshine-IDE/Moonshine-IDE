@@ -459,6 +459,21 @@ import flash.events.Event;
 			return jsOutputPath.concat(indexHtmlPath);
 		}
 
+		override public function getProjectFilesToDelete():Array
+		{
+			var filesList:Array = [];
+			filesList.unshift(swfOutput.path, new FileLocation(urlToLaunch), new FileLocation(buildOptions.antBuildPath),
+				folderLocation.fileBridge.resolvePath("bin"), folderLocation.fileBridge.resolvePath("bin-debug"), folderLocation.fileBridge.resolvePath("html-template"),
+				folderLocation.fileBridge.resolvePath("build"), libraries, includeLibraries, externalLibraries, nativeExtensions, 
+				runtimeSharedLibraries, hiddenPaths, resourcePaths, 
+				classpaths, config.file);
+			if (isVisualEditorProject)
+			{
+				filesList.unshift(folderLocation.fileBridge.resolvePath("src"));
+			}
+			return filesList;
+		}
+
 		private function onTargetPlatformChanged(event:Event):void
 		{
 			if (mobileRunSettings) 

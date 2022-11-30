@@ -117,38 +117,10 @@
 				var filesList:Array = [, project.folderLocation.fileBridge.resolvePath(".git"),
 					project.projectFile]; // either FileLocation or Vector.<FileLocation>
 				
-				if (project is AS3ProjectVO)
+				var projectFilesList:Array = project.getProjectFilesToDelete();
+				if (projectFilesList)
 				{
-					var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-					filesList.unshift(as3Project.swfOutput.path, new FileLocation(as3Project.urlToLaunch), new FileLocation(as3Project.buildOptions.antBuildPath),
-						as3Project.folderLocation.fileBridge.resolvePath("bin"), as3Project.folderLocation.fileBridge.resolvePath("bin-debug"), as3Project.folderLocation.fileBridge.resolvePath("html-template"),
-						as3Project.folderLocation.fileBridge.resolvePath("build"), as3Project.libraries, as3Project.includeLibraries, as3Project.externalLibraries, as3Project.nativeExtensions, 
-						as3Project.runtimeSharedLibraries, as3Project.hiddenPaths, as3Project.resourcePaths, 
-						as3Project.classpaths, as3Project.config.file);
-					if (as3Project.isVisualEditorProject) filesList.unshift(project.folderLocation.fileBridge.resolvePath("src"));
-				}
-				else if (project is JavaProjectVO)
-				{
-					filesList.unshift(project.folderLocation.fileBridge.resolvePath("src"), project.folderLocation.fileBridge.resolvePath("bin"), 
-						project.folderLocation.fileBridge.resolvePath("pom.xml"), project.folderLocation.fileBridge.resolvePath("build.gradle"), 
-						project.folderLocation.fileBridge.resolvePath(".gradle"), project.folderLocation.fileBridge.resolvePath(".settings"),
-						project.folderLocation.fileBridge.resolvePath(".classpath"), project.folderLocation.fileBridge.resolvePath(".project"),
-						project.folderLocation.fileBridge.resolvePath(project.name +".javaproj"), 
-						project.folderLocation.fileBridge.resolvePath("target"), project.folderLocation.fileBridge.resolvePath("build"));
-					filesList.concat(project.projectFolder.projectReference.hiddenPaths);
-				}
-				else if(project is GrailsProjectVO)
-				{
-					var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
-					filesList.unshift(grailsProject.classpaths);
-				}
-				else if(project is HaxeProjectVO)
-				{
-					var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
-					filesList.unshift(haxeProject.haxeOutput.path,
-						haxeProject.folderLocation.resolvePath("bin"),
-						haxeProject.folderLocation.resolvePath(project.name +".hxproj"),
-						haxeProject.classpaths);
+					filesList.push.apply(filesList, projectFilesList);
 				}
 				
 				for (var i:int; i < filesList.length; i++)

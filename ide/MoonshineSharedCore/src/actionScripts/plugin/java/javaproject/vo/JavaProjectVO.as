@@ -153,6 +153,19 @@ import actionScripts.valueObjects.ProjectVO;
 				this, "java.clean.workspace"));
 		}
 
+		override public function getProjectFilesToDelete():Array
+		{
+			var filesList:Array = [];
+			filesList.unshift(folderLocation.fileBridge.resolvePath("src"), folderLocation.fileBridge.resolvePath("bin"), 
+				folderLocation.fileBridge.resolvePath("pom.xml"), folderLocation.fileBridge.resolvePath("build.gradle"), 
+				folderLocation.fileBridge.resolvePath(".gradle"), folderLocation.fileBridge.resolvePath(".settings"),
+				folderLocation.fileBridge.resolvePath(".classpath"), folderLocation.fileBridge.resolvePath(".project"),
+				folderLocation.fileBridge.resolvePath(name +".javaproj"), 
+				folderLocation.fileBridge.resolvePath("target"), folderLocation.fileBridge.resolvePath("build"));
+			filesList.concat(projectFolder.projectReference.hiddenPaths);
+			return filesList;
+		}
+
 		private function getJavaSettings():Vector.<SettingsWrapper>
 		{
 			var pathsSettings:Vector.<ISetting> = new Vector.<ISetting>();
