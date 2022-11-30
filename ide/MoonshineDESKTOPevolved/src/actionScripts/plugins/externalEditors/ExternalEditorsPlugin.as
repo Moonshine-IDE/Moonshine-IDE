@@ -143,6 +143,20 @@ package actionScripts.plugins.externalEditors
 		
         public function getSettingsList():Vector.<ISetting>
         {
+			var editor:ExternalEditorVO;
+
+			// we need a recheck to evaluate any recently updated
+			// path in user's machine
+			if (editors)
+			{
+				for each (editor in editors)
+				{
+					// this should update the isValid property
+					editor.installPath = editor.installPath;
+				}
+				ExternalEditorsSharedObjectUtil.saveExternalEditorsInSO(editors);
+			}
+
 			// not to affect original collection 
 			// unless a save 
 			registerClassAlias("actionScripts.plugins.externalEditors.vo.ExternalEditorVO", ExternalEditorVO);
@@ -158,7 +172,7 @@ package actionScripts.plugins.externalEditors
 			linkOnlySetting.addEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked, false, 0, true);
 			
 			settings.push(linkOnlySetting);
-			for each (var editor:ExternalEditorVO in editorsUntilSave)
+			for each (editor in editorsUntilSave)
 			{
 				settings.push(
 					getEditorSetting(editor)

@@ -192,14 +192,10 @@ class ExternalEditorVO extends EventDispatcher implements IExternalEditorVO {
 		if (value.exists("installPath") && value.get("installPath") != null && value.get("installPath").nativePath != null) {
 			try {
 				tmpVO.installPath = new File(value.get("installPath").nativePath);
-			} catch (e:Error) {}
+			} catch (e:Error) {
+            }
 		}
-
-		if (tmpVO.installPath != null || !tmpVO.installPath.exists) {
-			tmpVO.isEnabled = false;
-			tmpVO.isValid = false;
-		}
-
+        
 		return tmpVO;
 	}
 }
