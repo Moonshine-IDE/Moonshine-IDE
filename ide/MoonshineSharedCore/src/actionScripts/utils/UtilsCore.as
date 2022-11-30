@@ -1370,6 +1370,20 @@ package actionScripts.utils
 			return true;
 		}
 
+		public static function isNekoLinked():Boolean {
+
+			// Check links on macOS only
+			if ( !ConstantsCoreVO.IS_MACOS ) return false;
+
+			if (!model.haxePath || model.haxePath == "")
+			{
+				return false;
+			}
+
+			return model.fileCore.isPathExists( model.haxePath + "/libneko.dylib" );
+
+		}
+
 		public static function getNekoBinPath():String
 		{
 			if (!model.nekoPath || !model.fileCore.isPathExists(model.nekoPath))
