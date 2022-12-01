@@ -31,20 +31,36 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.exportToExternalProject
 {
+    import actionScripts.events.AddTabEvent;
     import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
+    import actionScripts.plugins.exportToExternalProject.utils.TextLineFile;
+    import actionScripts.ui.tabview.CloseTabEvent;
+    import actionScripts.utils.SharedObjectConst;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.locator.IDEWorker;
+    import actionScripts.plugin.exportToExternalProject.ExportToRoyaleTemplatedAppConfigView;
+    import actionScripts.plugin.settings.SettingsView;
+    import actionScripts.plugin.settings.vo.PathSetting;
+    import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.plugin.settings.vo.SettingsWrapper;
+
+    import flash.display.DisplayObject;
 
     import flash.events.Event;
+    import flash.net.SharedObject;
+
+    import mx.events.CloseEvent;
 
     public class ExportToExternalProjectPlugin extends PluginBase
     {
         private var exportedProject:AS3ProjectVO;
+        private var configView:ExportToRoyaleTemplatedAppConfigView;
+
+        public var mainAppFile:String;
 
         public function ExportToExternalProjectPlugin()
         {
@@ -80,39 +96,76 @@ package actionScripts.plugins.exportToExternalProject
                 return;
             }
 
-            var hasFolderProjectName:Boolean = new FileLocation(exportedProject.sourceFolder.fileBridge.nativePath + "/" + exportedProject.name).fileBridge.exists;
+            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
 
-            if (!hasFolderProjectName)
-            {
-                error("Project which you are trying to export externally should contains inside src folder " + exportedProject.name);
-                return;
-            }
-            model.fileCore.browseForDirectory("Project Directory", projectsByDirectory, onFileSelectionCancelled);
+            configView = new ExportToRoyaleTemplatedAppConfigView();
+            configView.label = "Export to Royale Templated Application";
+            configView.defaultSaveLabel = "Export";
+
+            configView.addEventListener(SettingsView.EVENT_SAVE, onExport);
+            configView.addEventListener(CloseEvent.CLOSE, onCancelReport);
+
+            addReportItems();
+            dispatcher.dispatchEvent(new AddTabEvent(configView));
         }
 
-        private function projectsByDirectory(dir:Object):void
+        private function addReportItems():void
         {
-            var projectDir:String = (dir is FileLocation) ? (dir as FileLocation).fileBridge.nativePath : dir.nativePath;
-            var projectDirSrc:FileLocation = new FileLocation(projectDir + "/src");
-            var projectHasSourceDir:Boolean = projectDirSrc.fileBridge.exists;
+            var apiReportItems:Vector.<ISetting> = Vector.<ISetting>([]);
 
-            if (!projectHasSourceDir)
+            var mainAppFile:ISetting = getMainApplicationFileSetting();
+            apiReportItems.push(mainAppFile);
+
+            var settingsWrapper:SettingsWrapper = new SettingsWrapper("Export to an existing Royale Templated Application", apiReportItems);
+
+            configView.addCategory("Export");
+            configView.addSetting(settingsWrapper, "Export");
+        }
+
+        private function onExport(event:Event):void
+        {
+            var mainApplicationFile:FileLocation = new FileLocation(mainAppFile);
+            var separator:String = mainApplicationFile.fileBridge.separator;
+            var mainContentFile:FileLocation = mainApplicationFile.fileBridge.parent.resolvePath("view" + separator + "MainContent.mxml");
+
+            var srcPathRegExp:RegExp = new RegExp("^\\S+\\bsrc\\b");
+            if (!srcPathRegExp.test(mainContentFile.fileBridge.nativePath))
             {
-                error("Project does not contain src folder");
+                error("Project does not contain src folder.");
                 return;
             }
+
+            var textLineFile:TextLineFile = TextLineFile.load(mainAppFile);
+            textLineFile.save("/Users/piotrzarzycki/Downloads/test.txt");
+
+            var projectSrcPath:String = srcPathRegExp.exec(mainContentFile.fileBridge.nativePath)[0];
+            var projectDirSrc:FileLocation = new FileLocation(projectSrcPath);
 
             var generatedFolder:FileLocation = new FileLocation(projectDirSrc.fileBridge.nativePath + "/generated");
-                generatedFolder.fileBridge.createDirectory();
+            generatedFolder.fileBridge.createDirectory();
 
-            var folderProjectName:FileLocation = new FileLocation(exportedProject.sourceFolder.fileBridge.nativePath + "/" + exportedProject.name);
-                folderProjectName.fileBridge.parent.fileBridge.copyInto(generatedFolder);
+            var folderProjectName:FileLocation = new FileLocation(exportedProject.sourceFolder.fileBridge.nativePath + separator + exportedProject.name);
+            folderProjectName.fileBridge.parent.fileBridge.copyInto(generatedFolder);
         }
 
-        private function onFileSelectionCancelled():void
+        private function onCancelReport(event:CloseEvent):void
         {
-            /*event.target.removeEventListener(Event.SELECT, openFile);
-			event.target.removeEventListener(Event.CANCEL, onFileSelectionCancelled);*/
+            dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
+
+            cleanUp();
+        }
+
+        private function getMainApplicationFileSetting():ISetting
+        {
+            return new PathSetting(this, "mainAppFile", "Main application file", false, "", false, false, exportedProject.sourceFolder.fileBridge.parent.fileBridge.nativePath);
+        }
+
+        private function cleanUp():void
+        {
+            configView.removeEventListener(SettingsView.EVENT_CLOSE, onExport);
+            configView.removeEventListener(SettingsView.EVENT_SAVE, onCancelReport);
+
+            configView = null;
         }
     }
 }
