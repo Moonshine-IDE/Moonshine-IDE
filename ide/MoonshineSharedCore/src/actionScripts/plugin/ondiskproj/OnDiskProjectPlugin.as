@@ -148,6 +148,7 @@ package actionScripts.plugin.ondiskproj
 			th.templatingData["$revisedOn"] = tmpDate.toString();
 			th.templatingData["$lastAccessedOn"] = tmpDate.toString();
 			th.templatingData["$addedOn"] = tmpDate.toString();
+			th.templatingData["$FormName"] = event.fileName;
 			
 			// TO-DO
 			// 1. Generate intermediate dfb/dve

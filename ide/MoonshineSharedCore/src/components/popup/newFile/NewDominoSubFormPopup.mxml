@@ -64,7 +64,7 @@
 
 
 
-			private var isDominoValid:Boolean=false;
+			[Bindable] private var isDominoValid:Boolean=false;
 			private var dominoFolderList:FileWrapper=null;
 			
 			protected function onPreinitialize(event:FlexEvent):void
@@ -278,7 +278,7 @@
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  visible="{(isDominoValid)}">
+				  visible="{isDominoValid}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
@@ -288,6 +288,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onCreateButton(event)"
-				  enabled="{isSubmitButtonEnabled &amp;&amp; (!isDominoValid) }"/>
+				  enabled="{isSubmitButtonEnabled &amp;&amp; !isDominoValid }"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>

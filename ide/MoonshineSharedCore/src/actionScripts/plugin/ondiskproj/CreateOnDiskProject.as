@@ -67,7 +67,7 @@ package actionScripts.plugin.ondiskproj
 	{
 		public function CreateOnDiskProject(event:NewProjectEvent)
 		{
-			createGrailsProject(event);
+			create(event);
 		}
 		
 		private var project:OnDiskProjectVO;
@@ -82,7 +82,7 @@ package actionScripts.plugin.ondiskproj
 		
 		private var _currentCauseToBeInvalid:String;
 		
-		private function createGrailsProject(event:NewProjectEvent):void
+		private function create(event:NewProjectEvent):void
 		{
 			var lastSelectedProjectPath:String;
 			
@@ -293,6 +293,7 @@ package actionScripts.plugin.ondiskproj
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.isProjectFromExistingSource = false;
 			th.templatingData["$ProjectName"] = projectName;
+			th.templatingData["$FormName"] = projectName;
 			
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
