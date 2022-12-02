@@ -36,6 +36,7 @@ package actionScripts.plugin.ondiskproj.importer
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.utils.SerializeUtil;
+	import actionScripts.utils.UtilsCore;
 
 	public class OnDiskImporter extends FlashDevelopImporterBase
 	{
@@ -112,7 +113,7 @@ package actionScripts.plugin.ondiskproj.importer
 			if (data.domino.option.hasOwnProperty('@dominoBaseAgentURL'))
 				project.dominoBaseAgentURL = SerializeUtil.deserializeString(data.domino.option.@dominoBaseAgentURL);
 			if (data.domino.option.hasOwnProperty('@localDatabase'))
-				project.localDatabase = SerializeUtil.deserializeString(data.domino.option.@localDatabase);
+				project.localDatabase = UtilsCore.getAbsolutePathAgainstProject(project.folderLocation, data.domino.option.@localDatabase);
 			if (data.domino.option.hasOwnProperty('@targetServer'))
 				project.targetServer = SerializeUtil.deserializeString(data.domino.option.@targetServer);
 			if (data.domino.option.hasOwnProperty('@targetDatabase'))

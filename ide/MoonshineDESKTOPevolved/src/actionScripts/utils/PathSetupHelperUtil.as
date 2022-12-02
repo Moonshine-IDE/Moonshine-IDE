@@ -139,17 +139,17 @@ package actionScripts.utils
 				throw Error("Absolute path against project parameters must be non null.");
 				return null;
 			}
-			if (sourceRelativePathString) 
+			if (!sourceRelativePathString) 
 				return "";
 
 			var projectPathFile:File;
 			var sourcePathFile:File;
-			/*var isSourceRelativePathStringIsAbsolutePathString:Boolean;
+			var isSourceRelativePathStringIsAbsolutePathString:Boolean;
 			try
 			{
 				sourcePathFile = new File(sourceRelativePathString);
 				isSourceRelativePathStringIsAbsolutePathString = true;
-			} catch (e:Error){}*/
+			} catch (e:Error){}
 
 			// type checks
 			if (projectPath is File) projectPathFile = projectPath as File;
@@ -173,8 +173,12 @@ package actionScripts.utils
 				return sourcePathFile.nativePath + File.separator + sourceRelativePathString;
 			}
 
-			// in all other cases
-			return sourceRelativePathString;
+			// in case of full path
+			if (isSourceRelativePathStringIsAbsolutePathString) 
+				return sourceRelativePathString;
+			
+			// in case of path that relative to the project
+			return (projectPathFile.nativePath + File.separator + sourceRelativePathString);
 		}
 		
 		public static function openSettingsViewFor(type:String):void

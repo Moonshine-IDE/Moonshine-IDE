@@ -35,6 +35,7 @@ package actionScripts.plugin.ondiskproj.exporter
     import actionScripts.plugin.core.exporter.FlashDevelopExporterBase;
     import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
     import actionScripts.utils.SerializeUtil;
+    import actionScripts.utils.UtilsCore;
 
     public class OnDiskExporter extends FlashDevelopExporterBase
     {
@@ -84,7 +85,7 @@ package actionScripts.plugin.ondiskproj.exporter
 			options = <domino />;
 			var dominoPairs:Object = {
 				dominoBaseAgentURL	:	SerializeUtil.serializeString(project.dominoBaseAgentURL),
-				localDatabase		: 	SerializeUtil.serializeString(project.localDatabase),
+				localDatabase		: 	UtilsCore.getRelativePathAgainstProject(project.folderLocation, project.localDatabase),
 				targetServer		:	SerializeUtil.serializeString(project.targetServer),
 				targetDatabase		:	SerializeUtil.serializeString(project.targetDatabase)
 			}
