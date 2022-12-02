@@ -37,6 +37,9 @@ package actionScripts.plugins.exportToExternalProject.utils
 
 	public class TextLineFile
 	{
+		private const JEWEL_ROYALE_APPLICATION_FILE:String = "<j:Application";
+		private const APPLICATION_CSS_CURSOR:String = "APPLICATION_CSS_CURSOR";
+
 		public function TextLineFile(lines:Array)
 		{
             _lines = lines;
@@ -53,16 +56,109 @@ package actionScripts.plugins.exportToExternalProject.utils
         {
             var file:FileLocation = new FileLocation(path);
             var content:String = file.fileBridge.read().toString();
-			var fileLines:Array = content.split(File.lineEnding);
+			var fileLines:Array = [];
+
+			if (content)
+			{
+				fileLines = content.split(File.lineEnding);
+			}
 
             return new TextLineFile(fileLines);
         }
 
 		public function save(path:String):void
 		{
-			var content:String = this.lines.join(File.lineEnding);
-			var file:FileLocation = new FileLocation(path);
-			file.fileBridge.save(content);
+			try
+			{
+				var content:String = this.lines.join(File.lineEnding);
+				var file:FileLocation = new FileLocation(path);
+				file.fileBridge.save(content);
+			}
+			catch (e:Error)
+			{
+
+			}
+		}
+
+		public function hasContent():Boolean
+		{
+			return lines != null && lines.length > 0;
+		}
+
+		public function checkIfRoyaleApplicationFile():Boolean
+		{
+			var cursor:int = find(JEWEL_ROYALE_APPLICATION_FILE);
+
+			return cursor > -1;
+		}
+
+		public function insertApplicationCssCursor(content:String):void
+		{
+			var cursor:int = find(APPLICATION_CSS_CURSOR);
+			if(cursor > -1)
+			{
+				lines.insertAt(cursor, content);
+			}
+		}
+
+		private function find(token:String):int
+		{
+			// iterate over lines
+			// use string.find on evry line
+			// if found return index
+			// if not found return null
+			var linesCount:int = lines.length;
+			var itemIndex:int = -1;
+			for (var i:int = 0; i < linesCount; i++)
+			{
+				var line:String = lines[i];
+				var lineIndexOf:int = line.indexOf(token);
+				if (lineIndexOf > -1)
+				{
+					itemIndex = i;
+					break;
+				}
+			}
+
+			return itemIndex;
+		}
+
+		private function findPair(beginToken:String, endToken:String):Array
+		{
+			var linesCount:int = lines.length;
+			var beginTokenIndex:int = -1;
+			var endTokenIndex:int = -1;
+
+			for (var i:int = 0; i < linesCount; i++)
+			{
+				var line:String = lines[i];
+				if (beginTokenIndex == -1)
+				{
+					var beginIndexOf:int = line.indexOf(beginToken);
+					if (beginIndexOf > -1)
+					{
+						beginTokenIndex = i;
+						continue;
+					}
+				}
+
+				if (endTokenIndex == -1)
+				{
+					var endIndexOf:int = line.indexOf(endToken);
+					if (endIndexOf > -1)
+					{
+						endTokenIndex = i;
+						continue;
+					}
+				}
+
+				if (beginTokenIndex > -1 && endTokenIndex > -1)
+				{
+					break;
+				}
+			}
+
+			return [beginTokenIndex, endTokenIndex];
 		}
 	}
 }

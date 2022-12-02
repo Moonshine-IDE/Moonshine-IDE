@@ -116,7 +116,7 @@ package actionScripts.plugins.exportToExternalProject
             var mainAppFile:ISetting = getMainApplicationFileSetting();
             apiReportItems.push(mainAppFile);
 
-            var settingsWrapper:SettingsWrapper = new SettingsWrapper("Export to an existing Royale Templated Application", apiReportItems);
+            var settingsWrapper:SettingsWrapper = new SettingsWrapper("Export to Royale Templated Application", apiReportItems);
 
             configView.addCategory("Export");
             configView.addSetting(settingsWrapper, "Export");
@@ -125,6 +125,15 @@ package actionScripts.plugins.exportToExternalProject
         private function onExport(event:Event):void
         {
             var mainApplicationFile:FileLocation = new FileLocation(mainAppFile);
+            var mainApplicationTextLineFile:TextLineFile = TextLineFile.load(mainAppFile);
+
+            if (!mainApplicationTextLineFile.hasContent() ||
+                !mainApplicationTextLineFile.checkIfRoyaleApplicationFile())
+            {
+                error("Main application file of selected project is empty or it is not Apache Royale project.");
+                return;
+            }
+
             var separator:String = mainApplicationFile.fileBridge.separator;
             var mainContentFile:FileLocation = mainApplicationFile.fileBridge.parent.resolvePath("view" + separator + "MainContent.mxml");
 
@@ -135,17 +144,19 @@ package actionScripts.plugins.exportToExternalProject
                 return;
             }
 
-            var textLineFile:TextLineFile = TextLineFile.load(mainAppFile);
-            textLineFile.save("/Users/piotrzarzycki/Downloads/test.txt");
+            var mainContentTextLineFile:TextLineFile = TextLineFile.load(mainContentFile.fileBridge.nativePath);
+            if (!mainContentTextLineFile.hasContent())
+            {
+                error("Main content application file is empty.");
+                return;
+            }
 
             var projectSrcPath:String = srcPathRegExp.exec(mainContentFile.fileBridge.nativePath)[0];
             var projectDirSrc:FileLocation = new FileLocation(projectSrcPath);
 
-            var generatedFolder:FileLocation = new FileLocation(projectDirSrc.fileBridge.nativePath + "/generated");
-            generatedFolder.fileBridge.createDirectory();
+            copyFilesToNewProject(projectDirSrc);
 
-            var folderProjectName:FileLocation = new FileLocation(exportedProject.sourceFolder.fileBridge.nativePath + separator + exportedProject.name);
-            folderProjectName.fileBridge.parent.fileBridge.copyInto(generatedFolder);
+            onCancelReport(null);
         }
 
         private function onCancelReport(event:CloseEvent):void
@@ -153,6 +164,16 @@ package actionScripts.plugins.exportToExternalProject
             dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
 
             cleanUp();
+        }
+
+        private function copyFilesToNewProject(projectDirSource:FileLocation):void
+        {
+            var separator:String = projectDirSource.fileBridge.separator;
+            var generatedFolder:FileLocation = new FileLocation(projectDirSource.fileBridge.nativePath + separator + "generated");
+            generatedFolder.fileBridge.createDirectory();
+
+            var folderProjectName:FileLocation = new FileLocation(exportedProject.sourceFolder.fileBridge.nativePath + separator + exportedProject.name);
+            folderProjectName.fileBridge.parent.fileBridge.copyInto(generatedFolder);
         }
 
         private function getMainApplicationFileSetting():ISetting
