@@ -99,6 +99,8 @@ package actionScripts.interfaces
 		function checkRequireJava(project:ProjectVO=null):Boolean;
 		function searchAntFile(insideProject:ProjectVO):ArrayCollection;
 		function getDominoFormBuilderWrapper(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow;
+		function getRelativePathAgainstProject(projectPath:Object, sourcePath:Object, forceRelativePath:Boolean=false):String;
+		function getAbsolutePathAgainstProject(projectPath:Object, sourceRelativePathString:String):String;
 
         /**
          *

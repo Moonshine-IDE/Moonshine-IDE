@@ -33,8 +33,9 @@ package actionScripts.plugin.actionscript.as3project.vo
 {
     import actionScripts.plugin.build.vo.BuildActionVO;
     import actionScripts.utils.SerializeUtil;
+import actionScripts.utils.UtilsCore;
 
-    public class MavenBuildOptions extends JavaProjectBuildOptions
+public class MavenBuildOptions extends JavaProjectBuildOptions
     {
 		private var _dominoNotesProgram:String;
 		public function get dominoNotesProgram():String
@@ -85,9 +86,15 @@ package actionScripts.plugin.actionscript.as3project.vo
             var build:XML = <mavenBuild/>;
 
             var pairs:Object = {
-                mavenBuildPath: SerializeUtil.serializeString(buildPath),
+                mavenBuildPath: UtilsCore.getRelativePathAgainstProject(
+                        _defaultBuildPath,
+                        buildPath
+                ),
                 commandLine: SerializeUtil.serializeString(commandLine),
-                settingsFilePath: SerializeUtil.serializeString(settingsFilePath),
+                settingsFilePath: UtilsCore.getRelativePathAgainstProject(
+                        _defaultBuildPath,
+                        settingsFilePath
+                ),
 
                 dominoNotesProgram: SerializeUtil.serializeString(dominoNotesProgram),
                 dominoNotesPlatform: SerializeUtil.serializeString(dominoNotesPlatform)
@@ -101,9 +108,15 @@ package actionScripts.plugin.actionscript.as3project.vo
 
         override protected function parseOptions(options:XMLList):void
         {
-            buildPath = SerializeUtil.deserializeString(options.@mavenBuildPath);
+            buildPath = UtilsCore.getAbsolutePathAgainstProject(
+                    _defaultBuildPath,
+                    options.@mavenBuildPath
+            );
             commandLine = SerializeUtil.deserializeString(options.@commandLine);
-            settingsFilePath = SerializeUtil.deserializeString(options.@settingsFilePath);
+            settingsFilePath = UtilsCore.getAbsolutePathAgainstProject(
+                    _defaultBuildPath,
+                    options.@settingsFilePath
+            );
             dominoNotesProgram = SerializeUtil.deserializeString(options.@dominoNotesProgram);
             dominoNotesPlatform = SerializeUtil.deserializeString(options.@dominoNotesPlatform);
                         
