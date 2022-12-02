@@ -66,11 +66,13 @@ package actionScripts.utils
 
 		public static function getRelativePathAgainstProject(projectPath:Object, sourcePath:Object, forceRelativePath:Boolean=false):String
 		{
-			if (!projectPath || !sourcePath)
+			if (!projectPath)
 			{
 				throw Error("Path against project parameters must be non null.");
 				return null;
 			}
+			if (!sourcePath)
+				return "";
 
 			var projectPathFile:File;
 			var sourcePathFile:File;
@@ -132,11 +134,13 @@ package actionScripts.utils
 
 		public static function getAbsolutePathAgainstProject(projectPath:Object, sourceRelativePathString:String):String
 		{
-			if (!projectPath || !sourceRelativePathString)
+			if (!projectPath)
 			{
 				throw Error("Absolute path against project parameters must be non null.");
 				return null;
 			}
+			if (sourceRelativePathString) 
+				return "";
 
 			var projectPathFile:File;
 			var sourcePathFile:File;
