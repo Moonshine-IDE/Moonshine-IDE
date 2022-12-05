@@ -118,7 +118,7 @@ package actionScripts.plugins.as3project
 		private var isActionScriptProject:Boolean;
 		private var isMobileProject:Boolean;
 		private var isOpenProjectCall:Boolean;
-		private var isFeathersProject:Boolean;
+		private var isFeathersSDKProject:Boolean;
 		private var isVisualEditorProject:Boolean;
 		private var isVisualDominoEditorProject:Boolean;
 		private var isAway3DProject:Boolean;
@@ -845,7 +845,7 @@ package actionScripts.plugins.as3project
 					th.templatingData["$SourceFile"] = pvo.projectWithExistingSourcePaths[1].fileBridge.nativePath;
 				}
 			}
-			else if (isActionScriptProject || isFeathersProject || isAway3DProject)
+			else if (isActionScriptProject || isFeathersSDKProject || isAway3DProject)
 			{
 				sourceFileWithExtension = pvo.projectName + ".as";
 				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
@@ -1233,7 +1233,7 @@ package actionScripts.plugins.as3project
 				// in case of Flex project (where mx or spark controls can be included)
 				// we need to populate the project's intrinsic libraries. this will also help
 				// when next time project opens we can detect between pure AS and flex type of project
-				if ((isLibraryProject && librarySettingObject.type != LibrarySettingsVO.ACTIONSCRIPT_LIBRARY) || (!isLibraryProject && !isActionScriptProject && !isFeathersProject))
+				if ((isLibraryProject && librarySettingObject.type != LibrarySettingsVO.ACTIONSCRIPT_LIBRARY) || (!isLibraryProject && !isActionScriptProject && !isFeathersSDKProject))
 				{
 					pvo.intrinsicLibraries.push("Library\\AS3\\frameworks\\Flex4");
 					pvo.isActionScriptOnly = false;
@@ -1355,7 +1355,7 @@ package actionScripts.plugins.as3project
 			customSdk = null;
 			
 			var sdkReference:SDKReferenceVO;
-			if (isFeathersProject)
+			if (isFeathersSDKProject)
 			{
 				sdkReference = SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_FEATHERS);
 			}
@@ -1392,7 +1392,7 @@ package actionScripts.plugins.as3project
             isVisualEditorProject = false;
 			isVisualDominoEditorProject =false;
             isLibraryProject = false;
-            isFeathersProject = false;
+            isFeathersSDKProject = false;
             isMobileProject = false;
             isAway3DProject = false;
             isFlexJSRoyalProject = false;
@@ -1415,9 +1415,9 @@ package actionScripts.plugins.as3project
 				isLibraryProject = true;
 			}
 
-            if (templateName.indexOf(ProjectTemplateType.FEATHERS) != -1)
+            if (templateName.indexOf(ProjectTemplateType.FEATHERS_SDK) != -1)
             {
-                isFeathersProject = true;
+                isFeathersSDKProject = true;
             }
 
             if (templateName.indexOf(ProjectTemplateType.ACTIONSCRIPT) != -1)
