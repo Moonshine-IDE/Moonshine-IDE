@@ -258,6 +258,14 @@ package actionScripts.utils
 				}
 				else
 				{
+					if (ConstantsCoreVO.IS_MACOS &&
+							(itemUnderCursor.type == ComponentTypes.TYPE_GIT) &&
+							!ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
+					{
+						// on macOS we need to ensure that git/svn access permission given
+						itemUnderCursor.version = ComponentVO.GIT_ACCESS_PERMISSION_MISSING;
+					}
+
 					itemUnderCursorIndex++;
 					startSDKVersionRequestProcess();
 				}
@@ -423,15 +431,17 @@ package actionScripts.utils
 			lastOutput = null;
 		}
 		
-		private function shellTick(value:Object /** type of NativeProcessQueueVO **/):void
+		private function shellTick(value:Object):void
 		{
 			/*var tmpIndex:int = int(value.extraArguments[0]);
 			switch (value.processType)
 			{
-			case QUERY_FLEX_AIR_VERSION:
-			if (!components[tmpIndex].version) components[tmpIndex].version = lastOutput;
-			else components[tmpIndex].version += ", "+ lastOutput;
-			break;
+				case QUERY_SVN_GIT_VERSION:
+					if (!components[tmpIndex].type == ComponentTypes.TYPE_GIT)
+					{
+
+					}
+					break;
 			}*/
 		}
 		
