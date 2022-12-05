@@ -55,9 +55,12 @@ package actionScripts.plugins.exportToExternalProject.utils
 		private const START_GENERATED_SCROLLABLE_SECTION:String = "START_GENERATED_SCROLLABLE_SECTION_";
 		private const END_GENERATED_SCROLLABLE_SECTION:String = "END_GENERATED_SCROLLABLE_SECTION_";
 
-		public function TextLineFile(lines:Array)
+		private var projectName:String;
+
+		public function TextLineFile(lines:Array, projectName:String)
 		{
             _lines = lines;
+			this.projectName = projectName;
 		}
 
 		private var _lines:Array;
@@ -67,7 +70,7 @@ package actionScripts.plugins.exportToExternalProject.utils
 			return _lines;
 		}
 
-        public static function load(path:String):TextLineFile
+        public static function load(path:String, projectName:String):TextLineFile
         {
             var file:FileLocation = new FileLocation(path);
             var content:String = file.fileBridge.read().toString();
@@ -78,7 +81,7 @@ package actionScripts.plugins.exportToExternalProject.utils
 				fileLines = content.split(File.lineEnding);
 			}
 
-            return new TextLineFile(fileLines);
+            return new TextLineFile(fileLines, projectName);
         }
 
 		public function save(path:String):void
@@ -107,16 +110,20 @@ package actionScripts.plugins.exportToExternalProject.utils
 			return cursor > -1;
 		}
 
-		public function insertApplicationCssCursor(content:Array):void
+		public function insertApplicationCssCursor():void
 		{
 			var cursor:int = find(APPLICATION_CSS_CURSOR);
+			var startScriptCss:String = "<!--" + START_GENERATED_SCRIPT_CSSSTYLES + projectName + ":  **DO NOT MODIFY ANYTHING BELOW THIS LINE MANUALLY**-->";
+			var scriptCss:String = "<fx:Style source=\"../../generated/" + projectName + "/resources/export-app-styles.css\"/>";
+			var endScriptCss:String = "<!--" + END_GENERATED_SCRIPT_CSSSTYLES + projectName + ": **DO NOT MODIFY ANYTHING ABOVE THIS LINE MANUALLY**-->";
+
 			if(cursor > -1)
 			{
-				for each (var line:String in content)
-				{
-					lines.insertAt(cursor, line);
-					cursor++;
-				}
+				lines.insertAt(cursor, startScriptCss);
+				cursor++
+				lines.insertAt(cursor, scriptCss);
+				cursor++
+				lines.insertAt(cursor, endScriptCss);
 			}
 		}
 
@@ -127,6 +134,7 @@ package actionScripts.plugins.exportToExternalProject.utils
 			{
 				for each (var line:String in content)
 				{
+					line = line.replace("/src/", "/generated/");
 					lines.insertAt(cursor, line);
 					cursor++;
 				}
@@ -159,7 +167,7 @@ package actionScripts.plugins.exportToExternalProject.utils
 			}
 		}
 
-		public function findScriptCssStyles(projectName:String):Array
+		public function findScriptCssStyles():Array
 		{
 			var outFind:Array = [];
 
@@ -177,7 +185,7 @@ package actionScripts.plugins.exportToExternalProject.utils
 			return outFind;
 		}
 
-		public function findMainContentManager(projectName:String):Array
+		public function findMainContentManager():Array
 		{
 			var outFind:Array = [];
 
@@ -195,7 +203,7 @@ package actionScripts.plugins.exportToExternalProject.utils
 			return outFind;
 		}
 
-		public function findMenuContent(projectName:String):Array
+		public function findMenuContent():Array
 		{
 			var outFind:Array = [];
 
@@ -216,7 +224,7 @@ package actionScripts.plugins.exportToExternalProject.utils
 			return outFind;
 		}
 
-		public function findViews(projectName:String):Array
+		public function findViews():Array
 		{
 			var outFind:Array = [];
 

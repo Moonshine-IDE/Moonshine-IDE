@@ -128,7 +128,7 @@ package actionScripts.plugins.exportToExternalProject
             var mainApplicationFile:FileLocation = new FileLocation(mainAppFile);
             var separator:String = exportedProject.sourceFolder.fileBridge.separator;
 
-            var mainApplicationTextLineFile:TextLineFile = TextLineFile.load(mainAppFile);
+            var mainApplicationTextLineFile:TextLineFile = TextLineFile.load(mainAppFile, exportedProject.name);
 
             if (!mainApplicationTextLineFile.hasContent() ||
                 !mainApplicationTextLineFile.checkIfRoyaleApplicationFile())
@@ -146,7 +146,7 @@ package actionScripts.plugins.exportToExternalProject
                 return;
             }
 
-            var mainContentTextLineFile:TextLineFile = TextLineFile.load(mainContentFile.fileBridge.nativePath);
+            var mainContentTextLineFile:TextLineFile = TextLineFile.load(mainContentFile.fileBridge.nativePath, exportedProject.name);
             if (!mainContentTextLineFile.hasContent())
             {
                 error("Main content application file is empty.");
@@ -155,17 +155,14 @@ package actionScripts.plugins.exportToExternalProject
 
             //Source project
             var sourceProjectFolder:String = exportedProject.sourceFolder.fileBridge.nativePath + separator + exportedProject.name;
-            var sourceProjectMainFilePath:String = sourceProjectFolder + separator + exportedProject.name + ".mxml";
-            var sourceProjectMainAppTextLineFile:TextLineFile = TextLineFile.load(sourceProjectMainFilePath);
-            var findScriptCssStyle:Array = sourceProjectMainAppTextLineFile.findScriptCssStyles(exportedProject.name);
 
-            var sourceProjectMainContentTextLineFile:TextLineFile = TextLineFile.load(sourceProjectFolder + separator + "views" + separator + "MainContent.mxml");
-            var findMainContent:Array = sourceProjectMainContentTextLineFile.findMainContentManager(exportedProject.name);
-            var findMenuContent:Array = sourceProjectMainContentTextLineFile.findMenuContent(exportedProject.name);
-            var findViews:Array = sourceProjectMainContentTextLineFile.findViews(exportedProject.name);
+            var sourceProjectMainContentTextLineFile:TextLineFile = TextLineFile.load(sourceProjectFolder + separator + "views" + separator + "MainContent.mxml", exportedProject.name);
+            var findMainContent:Array = sourceProjectMainContentTextLineFile.findMainContentManager();
+            var findMenuContent:Array = sourceProjectMainContentTextLineFile.findMenuContent();
+            var findViews:Array = sourceProjectMainContentTextLineFile.findViews();
 
             //Target project
-            mainApplicationTextLineFile.insertApplicationCssCursor(findScriptCssStyle);
+            mainApplicationTextLineFile.insertApplicationCssCursor();
             mainApplicationTextLineFile.save(mainAppFile);
 
             mainContentTextLineFile.insertMainContentManagerCursor(findMainContent);
