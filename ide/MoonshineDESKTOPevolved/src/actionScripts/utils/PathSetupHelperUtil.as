@@ -167,7 +167,7 @@ package actionScripts.utils
 				sourceRelativePathString = sourceRelativePathString.replace(/(\.\.\/)/g, "");
 				while (parentCount != 0)
 				{
-					sourcePathFile = projectPathFile.parent;
+					sourcePathFile = (sourcePathFile && sourcePathFile.parent) || projectPathFile.parent;
 					parentCount --;
 				}
 				return sourcePathFile.nativePath + File.separator + sourceRelativePathString;
