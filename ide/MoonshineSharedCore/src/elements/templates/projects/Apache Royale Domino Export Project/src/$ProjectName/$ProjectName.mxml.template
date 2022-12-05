@@ -3,7 +3,9 @@
 			   xmlns:j="library://ns.apache.org/royale/jewel"
 			   xmlns:js="library://ns.apache.org/royale/basic" xmlns:local="*" xmlns:views="$ProjectName.views.*">
 
+    <!--START_GENERATED_SCRIPT_CSSSTYLES_$ProjectName:  **DO NOT MODIFY ANYTHING BELOW THIS LINE MANUALLY**-->
 	<fx:Style source="resources/export-app-styles.css"/>
+    <!--END_GENERATED_SCRIPT_CSSSTYLES_$ProjectName:  **DO NOT MODIFY ANYTHING ABOVE THIS LINE MANUALLY**-->
 
 	<j:valuesImpl>
 		<js:SimpleCSSValuesImpl />

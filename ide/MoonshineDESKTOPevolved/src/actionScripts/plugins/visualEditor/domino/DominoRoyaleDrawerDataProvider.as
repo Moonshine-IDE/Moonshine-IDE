@@ -35,12 +35,13 @@ package actionScripts.plugins.visualEditor.domino
 
 	public class DominoRoyaleDrawerDataProvider extends RoyaleElemenetBase
 	{
-		public static function toCode(drawerLabel:String, drawerContent:String):String
+		public static function toCode(projectName:String, drawerLabel:String, drawerContent:String):String
 		{
 			var drawerObject:String = readTemplate("elements/templates/royaleDominoElements/elements/DrawerDataProvider.template");
 
 			drawerObject = drawerObject.replace(/%DrawerLabel%/ig, drawerLabel);
 			drawerObject = drawerObject.replace(/%DrawerContent%/ig, drawerContent);
+			drawerObject = drawerObject.replace(/%ProjectName%/ig, projectName);
 
 			return drawerObject;
 		}

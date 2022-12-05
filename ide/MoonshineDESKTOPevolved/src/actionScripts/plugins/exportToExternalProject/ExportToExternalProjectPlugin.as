@@ -124,7 +124,10 @@ package actionScripts.plugins.exportToExternalProject
 
         private function onExport(event:Event):void
         {
+            //Target project tests
             var mainApplicationFile:FileLocation = new FileLocation(mainAppFile);
+            var separator:String = exportedProject.sourceFolder.fileBridge.separator;
+
             var mainApplicationTextLineFile:TextLineFile = TextLineFile.load(mainAppFile);
 
             if (!mainApplicationTextLineFile.hasContent() ||
@@ -134,7 +137,6 @@ package actionScripts.plugins.exportToExternalProject
                 return;
             }
 
-            var separator:String = mainApplicationFile.fileBridge.separator;
             var mainContentFile:FileLocation = mainApplicationFile.fileBridge.parent.resolvePath("view" + separator + "MainContent.mxml");
 
             var srcPathRegExp:RegExp = new RegExp("^\\S+\\bsrc\\b");
@@ -151,10 +153,30 @@ package actionScripts.plugins.exportToExternalProject
                 return;
             }
 
-            var projectSrcPath:String = srcPathRegExp.exec(mainContentFile.fileBridge.nativePath)[0];
-            var projectDirSrc:FileLocation = new FileLocation(projectSrcPath);
+            //Source project
+            var sourceProjectFolder:String = exportedProject.sourceFolder.fileBridge.nativePath + separator + exportedProject.name;
+            var sourceProjectMainFilePath:String = sourceProjectFolder + separator + exportedProject.name + ".mxml";
+            var sourceProjectMainAppTextLineFile:TextLineFile = TextLineFile.load(sourceProjectMainFilePath);
+            var findScriptCssStyle:Array = sourceProjectMainAppTextLineFile.findScriptCssStyles(exportedProject.name);
 
-            copyFilesToNewProject(projectDirSrc);
+            var sourceProjectMainContentTextLineFile:TextLineFile = TextLineFile.load(sourceProjectFolder + separator + "views" + separator + "MainContent.mxml");
+            var findMainContent:Array = sourceProjectMainContentTextLineFile.findMainContentManager(exportedProject.name);
+            var findMenuContent:Array = sourceProjectMainContentTextLineFile.findMenuContent(exportedProject.name);
+            var findViews:Array = sourceProjectMainContentTextLineFile.findViews(exportedProject.name);
+
+            //Target project
+            mainApplicationTextLineFile.insertApplicationCssCursor(findScriptCssStyle);
+            mainApplicationTextLineFile.save(mainAppFile);
+
+            mainContentTextLineFile.insertMainContentManagerCursor(findMainContent);
+            mainContentTextLineFile.insertMenuContentCursor(findMenuContent);
+            mainContentTextLineFile.insertViewsCursor(findViews);
+            mainContentTextLineFile.save(mainContentFile.fileBridge.nativePath);
+
+            var targetProjectSrcPath:String = srcPathRegExp.exec(mainContentFile.fileBridge.nativePath)[0];
+            var targetProjectDirSrc:FileLocation = new FileLocation(targetProjectSrcPath);
+
+            copyFilesToNewProject(targetProjectDirSrc);
 
             onCancelReport(null);
         }
