@@ -185,7 +185,7 @@ class ExternalEditorVO extends EventDispatcher implements IExternalEditorVO {
 			tmpVO.defaultInstallPath = value.get("defaultInstallPath");
 		if (value.exists("extraArguments"))
 			tmpVO.extraArguments = value.get("extraArguments");
-		if (value.exists("installPath"))
+		if (value.exists("installPath") && Std.isOfType(value.get("installPath"), File))
 			tmpVO.installPath = value.get("installPath");
 		if (value.exists("fileTypes"))
 			tmpVO.fileTypes = value.get("fileTypes");
