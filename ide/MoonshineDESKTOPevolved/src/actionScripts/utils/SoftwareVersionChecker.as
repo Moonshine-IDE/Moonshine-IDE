@@ -31,15 +31,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import com.adobe.utils.StringUtil;
-	
+import actionScripts.managers.MacOSGitDetector;
+
+import com.adobe.utils.StringUtil;
+
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
-	
+
 	import mx.collections.ArrayCollection;
 	import mx.utils.UIDUtil;
-	
+
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.interfaces.IWorkerSubscriber;
 	import actionScripts.locator.IDEWorker;
@@ -76,12 +78,12 @@ package actionScripts.utils
 		private static const QUERY_NEKO_VERSION:String = "getNekoVersion";
 		private static const QUERY_VIRTUALBOX_VERSION:String = "getVirtualBoxVersion";
 		private static const QUERY_EXTERNAL_EDITOR_VERSION:String = "getExternalEditorVersion";
-		
+
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
 		public var versionCheckType:String;
-		
+
 		protected var processType:String;
-		
+
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var environmentSetup:EnvironmentSetupUtils = EnvironmentSetupUtils.getInstance();
@@ -89,7 +91,7 @@ package actionScripts.utils
 		private var lastOutput:String;
 		private var subscribeIdToWorker:String;
 		private var itemUnderCursorIndex:int;
-		
+
 		/**
 		 * CONSTRUCTOR
 		 */
@@ -97,12 +99,12 @@ package actionScripts.utils
 		{
 			super();
 			activate();
-			
+
 			subscribeIdToWorker = UIDUtil.createUID();
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
-		
+
 		/**
 		 * Checks some required/optional software installation
 		 * and their version if available
@@ -129,7 +131,7 @@ package actionScripts.utils
 		{
 			worker.unSubscribeComponent(subscribeIdToWorker);
 		}
-		
+
 		private function startSDKVersionRequestProcess():void
 		{
 			var itemTypeUnderCursor:String;
@@ -253,19 +255,16 @@ package actionScripts.utils
 							itemTypeUnderCursor = QUERY_NOTES_VERSION;
 							break;
 					}
-					
+
 					environmentSetup.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [commands]);
+				}
+				else if (ConstantsCoreVO.IS_MACOS &&
+						(itemUnderCursor.type == ComponentTypes.TYPE_GIT))
+				{
+					MacOSGitDetector.getInstance().test(onMacGitDetectionCompletes);
 				}
 				else
 				{
-					if (ConstantsCoreVO.IS_MACOS &&
-							(itemUnderCursor.type == ComponentTypes.TYPE_GIT) &&
-							!ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
-					{
-						// on macOS we need to ensure that git/svn access permission given
-						itemUnderCursor.version = ComponentVO.GIT_ACCESS_PERMISSION_MISSING;
-					}
-
 					itemUnderCursorIndex++;
 					startSDKVersionRequestProcess();
 				}
@@ -274,13 +273,25 @@ package actionScripts.utils
 			{
 				dispatchEvent(new Event(Event.COMPLETE));
 			}
-			
+
 			function onEnvironmentPrepared(value:String):void
 			{
 				addToQueue(new NativeProcessQueueVO(value, false, itemTypeUnderCursor, itemUnderCursorIndex));
 				worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 				itemUnderCursorIndex++;
 			}
+		}
+
+		private function onMacGitDetectionCompletes(value:String):void
+		{
+			if (value && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
+			{
+				var gitCVO:ComponentVO = components[itemUnderCursorIndex];
+				gitCVO.version = ComponentVO.GIT_ACCESS_PERMISSION_MISSING;
+			}
+
+			itemUnderCursorIndex++;
+			startSDKVersionRequestProcess();
 		}
 
 		private function startEditorsVersionRequestProcess():void
@@ -296,9 +307,9 @@ package actionScripts.utils
 					if (ConstantsCoreVO.IS_MACOS)
 					{
 						commands = 'defaults read "'+ itemUnderCursor.installPath.nativePath +'/Contents/Info.plist" CFBundleShortVersionString';
-						
+
 						queue = new Vector.<Object>();
-						
+
 						addToQueue(new NativeProcessQueueVO(commands, false, QUERY_EXTERNAL_EDITOR_VERSION, itemUnderCursorIndex));
 						worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 						itemUnderCursorIndex++;
@@ -310,7 +321,7 @@ package actionScripts.utils
 						{
 							powerShellPath = powerShellPath.replace(/\\/g, "/");
 							commands = '"'+ powerShellPath +'" -NoLogo -NoProfile \"(Get-Item -Path \''+ itemUnderCursor.installPath.nativePath +'\').VersionInfo | Select-Object ProductVersion | Format-List -Force\"';
-							
+
 							this.start(
 								new <String>[commands], null
 							);
@@ -333,7 +344,7 @@ package actionScripts.utils
 				dispatchEvent(new Event(Event.COMPLETE));
 			}
 		}
-		
+
 		override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
 		{
 			var stdOutput:String = getDataFromBytes(nativeProcess.standardOutput);
@@ -343,14 +354,14 @@ package actionScripts.utils
 				components[itemUnderCursorIndex].version = stdOutput.split(" : ")[1];
 			}
 		}
-		
+
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
 		{
 			super.onNativeProcessExit(event);
 			itemUnderCursorIndex++;
 			startEditorsVersionRequestProcess();
 		}
-		
+
 		public function onWorkerValueIncoming(value:Object):void
 		{
 			var tmpValue:Object = value.value;
@@ -380,12 +391,12 @@ package actionScripts.utils
 					break;
 			}
 		}
-		
+
 		private function addToQueue(value:Object):void
 		{
 			queue.push(value);
 		}
-		
+
 		private function listOfProcessEnded():void
 		{
 			switch (processType)
@@ -404,13 +415,13 @@ package actionScripts.utils
 				startEditorsVersionRequestProcess();
 			}
 		}
-		
-		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
+
+		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void
 		{
 			error(value.output);
 		}
-		
-		private function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
+
+		private function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void
 		{
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			if (tmpQueue.extraArguments && tmpQueue.extraArguments.length != 0 && lastOutput)
@@ -422,15 +433,15 @@ package actionScripts.utils
 						components[tmpIndex].version = lastOutput;
 						break;
 					case QUERY_MAVEN_VERSION:
-					case QUERY_GRADLE_VERSION:	
+					case QUERY_GRADLE_VERSION:
 						components[tmpIndex].version = getVersionNumberedTypeLine(lastOutput);
 						break;
 				}
 			}
-			
+
 			lastOutput = null;
 		}
-		
+
 		private function shellTick(value:Object):void
 		{
 			/*var tmpIndex:int = int(value.extraArguments[0]);
@@ -444,18 +455,18 @@ package actionScripts.utils
 					break;
 			}*/
 		}
-		
-		private function shellData(value:Object /** type of WorkerNativeProcessResult **/):void 
+
+		private function shellData(value:Object /** type of WorkerNativeProcessResult **/):void
 		{
 			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var isFatal:Boolean;
 			var tmpProject:ProjectVO;
 			var versionNumberString:String;
-			
+
 			match = value.output.match(/fatal: .*/);
 			if (match) isFatal = true;
-			
+
 			match = value.output.match(/is not recognized as an internal or external command/);
 			if (!match)
 			{
@@ -537,7 +548,7 @@ package actionScripts.utils
 						break;
 				}
 			}
-			
+
 			if (isFatal)
 			{
 				shellError(value);
@@ -548,7 +559,7 @@ package actionScripts.utils
 				//notice(value.output);
 			}
 		}
-		
+
 		private function getVersionNumberedTypeLine(value:String):String
 		{
 			var lines:Array = value.split(UtilsCore.getLineBreakEncoding());
@@ -556,10 +567,10 @@ package actionScripts.utils
 			{
 				if ((line.match(/\d+\.\d+\.\d+/)) || line.match(/\d+\.\d+/)) return line;
 			}
-			
+
 			return null;
 		}
-		
+
 		/**
 		 * Retrieves Java path in OSX
 		 */
@@ -569,7 +580,7 @@ package actionScripts.utils
 			cmdFile = File.documentsDirectory.resolvePath("/bin/bash");
 			isMacOS = true;
 			checkingQueues = ["/usr/libexec/java_home/ -v 1.8"];
-			
+
 			nativeInfoReaderHandler = parseJavaOnlyPath;
 			startCheckingProcess();
 		}*/

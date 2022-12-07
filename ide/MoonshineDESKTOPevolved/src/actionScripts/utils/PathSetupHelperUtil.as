@@ -338,9 +338,9 @@ package actionScripts.utils
 
 			if (!isGitPresent)
 			{
-				if (ConstantsCoreVO.IS_MACOS && !isGitPresent)
+				if (ConstantsCoreVO.IS_MACOS)
 				{
-					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_GIT, message: "Feature available. Click on Configure to allow"}));
+					//dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_GIT, message: "Feature available. Click on Configure to allow"}));
 				}
 				else
 				{
