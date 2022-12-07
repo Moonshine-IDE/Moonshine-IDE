@@ -18,6 +18,38 @@ package actionScripts.plugins.exportToExternalProject.utils
 			return _lines;
 		}
 		
+		public function hasContent():Boolean
+		{
+			return _lines != null && _lines.length > 0;
+		}
+		
+		public static function load(location:FileLocation):TextLines
+        {
+            var content:String = location.fileBridge.read().toString();
+            		
+			var lines:Array = [];
+
+			if (content)
+			{
+				lines = content.split(File.lineEnding);
+			}
+
+            return new TextLines(lines);
+        }
+        
+        public function save(location:FileLocation):void
+		{
+			try
+			{
+				var content:String = _lines.join(File.lineEnding);
+				location.fileBridge.save(content);
+			}
+			catch (e:Error)
+			{
+
+			}
+		}
+		
 		public function findFirstLine(token:String):int
 		{
 			for (var i:int = 0; i < _lines.length; i++)

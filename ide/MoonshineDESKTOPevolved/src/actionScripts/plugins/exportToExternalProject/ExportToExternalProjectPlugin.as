@@ -55,7 +55,6 @@ package actionScripts.plugins.exportToExternalProject
     import mx.events.CloseEvent;
     import actionScripts.plugins.exportToExternalProject.utils.ExportConstants;
     import actionScripts.plugins.exportToExternalProject.utils.TextLines;
-    import actionScripts.plugins.exportToExternalProject.utils.ExportLogic;
     import actionScripts.plugins.exportToExternalProject.utils.ExportContext;
 
     public class ExportToExternalProjectPlugin extends PluginBase
@@ -136,25 +135,25 @@ package actionScripts.plugins.exportToExternalProject
                 return;
         		}     		
         		
-        		var targetMainApp:TextLines = ExportLogic.load(context.targetMainAppLocation);
-        		
-        		if (!ExportLogic.hasContent(targetMainApp) || !ExportLogic.isRoyaleApp(targetMainApp))
+        		var targetMainApp:TextLines = TextLines.load(context.targetMainAppLocation);
+        			
+        		if (!targetMainApp.hasContent() || targetMainApp.findFirstLine(constants.jApplication) < 0)
         		{
         			error("Main application file of selected project is empty or it is not Apache Royale project.");
                 return;
         		}
         		
-        		var targetMainContent:TextLines = ExportLogic.load(context.targetMainContentLocation);
+        		var targetMainContent:TextLines = TextLines.load(context.targetMainContentLocation);
         		
-        		if (!ExportLogic.hasContent(targetMainContent))
+        		if (!targetMainContent.hasContent())
         		{
         			error("Main content application file is empty.");
                 return;
         		}        		
         		
-        		var sourceMainContent:TextLines = ExportLogic.load(context.sourceMainContentLocation);
+        		var sourceMainContent:TextLines = TextLines.load(context.sourceMainContentLocation);
         		
-        		var cssSection:TextLines = constants.cssSection();
+        		var cssSection:TextLines = constants.getCssSection();
         			
         		var mainContentSection:TextLines = sourceMainContent.getSection(
         			constants.mainContentManagerStartToken, 
@@ -172,31 +171,31 @@ package actionScripts.plugins.exportToExternalProject
 			
         		targetMainApp.replaceOrInsert(
         			cssSection, 
-        			ExportConstants.START_GENERATED_SCRIPT_CSSSTYLES, 
-        			ExportConstants.END_GENERATED_SCRIPT_CSSSTYLES, 
-        			ExportConstants.CSS_CURSOR);
+        			constants.cssStartToken, 
+        			constants.cssEndToken, 
+        			constants.cssCursor);
         			
-            ExportLogic.save(targetMainApp, context.targetMainAppLocation);
+            targetMainApp.save(context.targetMainAppLocation);
 
             targetMainContent.replaceOrInsert(
         			mainContentSection, 
-        			ExportConstants.START_GENERATED_SCRIPT_MAINCONTENTMANAGER, 
-        			ExportConstants.END_GENERATED_SCRIPT_MAINCONTENTMANAGER, 
-        			ExportConstants.GENERATED_MAINCONTENTMANAGER_CURSOR);
+        			constants.mainContentManagerStartToken, 
+        			constants.mainContentManagerEndToken, 
+        			constants.mainContentMenagerCursor);
         			
         		targetMainContent.replaceOrInsert(
         			menuSection, 
-        			ExportConstants.START_GENERATED_MENU, 
-        			ExportConstants.END_GENERATED_MENU, 
-        			ExportConstants.GENERATED_MENU_CURSOR);
+        			constants.menuStartToken, 
+        			constants.menuEndToken, 
+        			constants.menuCursor);
             
             targetMainContent.replaceOrInsert(
         			viewsSection, 
-        			ExportConstants.START_GENERATED_SCROLLABLE_SECTION, 
-        			ExportConstants.END_GENERATED_SCROLLABLE_SECTION, 
-        			ExportConstants.GENERATED_VIEWS_CURSOR);            
+        			constants.viewsStartToken, 
+        			constants.viewsEndToken, 
+        			constants.viewsCursor);            
             
-            ExportLogic.save(targetMainContent, context.targetMainContentLocation);
+            targetMainContent.save(context.targetMainContentLocation);
 
             copyFilesToNewProject(context.targetSrcFolder);
 
