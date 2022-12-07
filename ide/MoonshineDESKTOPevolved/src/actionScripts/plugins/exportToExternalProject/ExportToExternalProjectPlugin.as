@@ -160,10 +160,7 @@ package actionScripts.plugins.exportToExternalProject
         			constants.mainContentManagerStartToken, 
         			constants.mainContentManagerEndToken);
         		
-        		for (var i:int = 0; i < mainContentSection.lines.length; i++)
-			{
-				mainContentSection.lines[i] = mainContentSection.lines[i].replace("/src/", "/generated/");
-			}        		
+        		mainContentSection.replaceLine("/src/", "/generated/");       		
         			
         		var menuSection:TextLines = sourceMainContent.getSection(
         			constants.menuStartToken, 
@@ -173,23 +170,35 @@ package actionScripts.plugins.exportToExternalProject
         			constants.viewsStartToken, 
         			constants.viewsEndToken);
 			
-        	    var cssCursor:int = targetMainApp.findFirstLine(ExportConstants.CSS_CURSOR);
-            targetMainApp.insertSection(cssSection, cssCursor);
+        		targetMainApp.replaceOrInsert(
+        			cssSection, 
+        			ExportConstants.START_GENERATED_SCRIPT_CSSSTYLES, 
+        			ExportConstants.END_GENERATED_SCRIPT_CSSSTYLES, 
+        			ExportConstants.CSS_CURSOR);
+        			
             ExportLogic.save(targetMainApp, context.targetMainAppLocation);
 
-            var mainContentCursor:int = targetMainContent.findFirstLine(ExportConstants.GENERATED_MAINCONTENTMANAGER_CURSOR);
-            targetMainContent.insertSection(mainContentSection, mainContentCursor);
+            targetMainContent.replaceOrInsert(
+        			mainContentSection, 
+        			ExportConstants.START_GENERATED_SCRIPT_MAINCONTENTMANAGER, 
+        			ExportConstants.END_GENERATED_SCRIPT_MAINCONTENTMANAGER, 
+        			ExportConstants.GENERATED_MAINCONTENTMANAGER_CURSOR);
+        			
+        		targetMainContent.replaceOrInsert(
+        			menuSection, 
+        			ExportConstants.START_GENERATED_MENU, 
+        			ExportConstants.END_GENERATED_MENU, 
+        			ExportConstants.GENERATED_MENU_CURSOR);
             
-            var menuCursor:int = targetMainContent.findFirstLine(ExportConstants.GENERATED_MENU_CURSOR);
-            targetMainContent.insertSection(menuSection, menuCursor);
-            
-            var viewsCursor:int = targetMainContent.findFirstLine(ExportConstants.GENERATED_VIEWS_CURSOR);
-            targetMainContent.insertSection(viewsSection, viewsCursor);
+            targetMainContent.replaceOrInsert(
+        			viewsSection, 
+        			ExportConstants.START_GENERATED_SCROLLABLE_SECTION, 
+        			ExportConstants.END_GENERATED_SCROLLABLE_SECTION, 
+        			ExportConstants.GENERATED_VIEWS_CURSOR);            
             
             ExportLogic.save(targetMainContent, context.targetMainContentLocation);
 
-            var targetSrcLocation:FileLocation = new FileLocation(new RegExp("^\\S+\\bsrc\\b").exec(mainAppFile)[0])
-            copyFilesToNewProject(targetSrcLocation);
+            copyFilesToNewProject(context.targetSrcFolder);
 
             onCancelReport(null);
         }

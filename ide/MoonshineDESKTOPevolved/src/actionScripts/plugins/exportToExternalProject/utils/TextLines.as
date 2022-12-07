@@ -57,6 +57,12 @@ package actionScripts.plugins.exportToExternalProject.utils
 			}
 		}
 		
+		public function replaceLine(pattern:String, replacement:String):void
+		{
+			var pos:int = findFirstLine(pattern);
+			_lines[pos] = _lines[pos].replace(pattern, replacement);
+		}
+		
 		public function findSection(startToken:String, endToken:String):Array
 		{
 			var start:int = findFirstLine(startToken);
@@ -95,9 +101,24 @@ package actionScripts.plugins.exportToExternalProject.utils
 			}
 		}
 		
-		public function replaceSection(section:Array, start:int, end:int):void
+		public function replaceSection(section:TextLines, start:int, end:int):void
 		{
-			_lines.splice(start, end - start, section);
+			_lines.splice(start, end - start + 1);
+			insertSection(section, start);
+		}
+		
+		public function replaceOrInsert(section:TextLines, startToken:String, endToken:String, cursor:String):void
+		{
+			var range:Array = findSection(startToken, endToken);
+			if (range)
+			{
+				replaceSection(section, range[0], range[1]);
+			}
+			else
+			{
+				var pos:int = findFirstLine(cursor);
+				insertSection(section, pos)
+			}
 		}
 	}
 }
