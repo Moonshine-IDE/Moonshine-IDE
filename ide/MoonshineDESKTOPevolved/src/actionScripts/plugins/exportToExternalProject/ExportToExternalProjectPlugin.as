@@ -35,7 +35,6 @@ package actionScripts.plugins.exportToExternalProject
     import actionScripts.events.ProjectEvent;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.PluginBase;
-    import actionScripts.plugins.exportToExternalProject.utils.TextLineFile;
     import actionScripts.ui.tabview.CloseTabEvent;
     import actionScripts.utils.SharedObjectConst;
     import actionScripts.valueObjects.ProjectVO;
@@ -54,6 +53,9 @@ package actionScripts.plugins.exportToExternalProject
     import flash.net.SharedObject;
 
     import mx.events.CloseEvent;
+    import actionScripts.plugins.exportToExternalProject.utils.ExportContext;
+    import actionScripts.plugins.exportToExternalProject.utils.TextLines;
+    import actionScripts.plugins.exportToExternalProject.utils.ExportLogic;
 
     public class ExportToExternalProjectPlugin extends PluginBase
     {
@@ -124,56 +126,66 @@ package actionScripts.plugins.exportToExternalProject
 
         private function onExport(event:Event):void
         {
-            //Target project tests
-            var mainApplicationFile:FileLocation = new FileLocation(mainAppFile);
-            var separator:String = exportedProject.sourceFolder.fileBridge.separator;
-
-            var mainApplicationTextLineFile:TextLineFile = TextLineFile.load(mainAppFile, exportedProject.name);
-
-            if (!mainApplicationTextLineFile.hasContent() ||
-                !mainApplicationTextLineFile.checkIfRoyaleApplicationFile())
-            {
-                error("Main application file of selected project is empty or it is not Apache Royale project.");
+        		var context:ExportContext = new ExportContext(exportedProject, mainAppFile);
+        		var targetMainApp:TextLines = ExportLogic.load(context.targetMainAppLocation);
+        		
+        		if (!ExportLogic.hasContent(targetMainApp) || !ExportLogic.isRoyaleApp(targetMainApp))
+        		{
+        			error("Main application file of selected project is empty or it is not Apache Royale project.");
                 return;
-            }
-
-            var mainContentFile:FileLocation = mainApplicationFile.fileBridge.parent.resolvePath("view" + separator + "MainContent.mxml");
-
-            var srcPathRegExp:RegExp = new RegExp("^\\S+\\bsrc\\b");
-            if (!srcPathRegExp.test(mainContentFile.fileBridge.nativePath))
-            {
-                error("Project does not contain src folder.");
+        		}
+        		
+        		if (!ExportLogic.hasSrcFolder(context.targetMainContentLocation))
+        		{
+       		    error("Project does not contain src folder.");
                 return;
-            }
-
-            var mainContentTextLineFile:TextLineFile = TextLineFile.load(mainContentFile.fileBridge.nativePath, exportedProject.name);
-            if (!mainContentTextLineFile.hasContent())
-            {
-                error("Main content application file is empty.");
+        		}
+        		
+        		var targetMainContent:TextLines = ExportLogic.load(context.targetMainContentLocation);
+        		
+        		if (!ExportLogic.hasContent(targetMainContent))
+        		{
+        			error("Main content application file is empty.");
                 return;
-            }
+        		}
+        		
+        		var sourceMainContent:TextLines = ExportLogic.load(context.sourceMainContentLocation);
+        		
+        		var cssSection:TextLines = context.cssSection();
+        			
+        		var mainContentSection:TextLines = sourceMainContent.getSection(
+        			context.mainContentManagerStartToken, 
+        			context.mainContentManagerEndToken);
+        		
+        		for (var i:int = 0; i < mainContentSection.lines.length; i++)
+			{
+				mainContentSection.lines[i] = mainContentSection.lines[i].replace("/src/", "/generated/");
+			}        		
+        			
+        		var menuSection:TextLines = sourceMainContent.getSection(
+        			context.menuStartToken, 
+        			context.menuEndToken);
+        			
+        		var viewsSection:TextLines = sourceMainContent.getSection(
+        			context.viewsStartToken, 
+        			context.viewsEndToken);
+			
+        	    var cssCursor:int = targetMainApp.findFirstLine(ExportContext.CSS_CURSOR);
+            targetMainApp.insertSection(cssSection, cssCursor);
+            ExportLogic.save(targetMainApp, context.targetMainAppLocation);
 
-            //Source project
-            var sourceProjectFolder:String = exportedProject.sourceFolder.fileBridge.nativePath + separator + exportedProject.name;
+            var mainContentCursor:int = targetMainContent.findFirstLine(ExportContext.GENERATED_MAINCONTENTMANAGER_CURSOR);
+            targetMainContent.insertSection(mainContentSection, mainContentCursor);
+            
+            var menuCursor:int = targetMainContent.findFirstLine(ExportContext.GENERATED_MENU_CURSOR);
+            targetMainContent.insertSection(menuSection, menuCursor);
+            
+            var viewsCursor:int = targetMainContent.findFirstLine(ExportContext.GENERATED_VIEWS_CURSOR);
+            targetMainContent.insertSection(viewsSection, viewsCursor);
+            
+            ExportLogic.save(targetMainContent, context.targetMainContentLocation);
 
-            var sourceProjectMainContentTextLineFile:TextLineFile = TextLineFile.load(sourceProjectFolder + separator + "views" + separator + "MainContent.mxml", exportedProject.name);
-            var findMainContent:Array = sourceProjectMainContentTextLineFile.findMainContentManager();
-            var findMenuContent:Array = sourceProjectMainContentTextLineFile.findMenuContent();
-            var findViews:Array = sourceProjectMainContentTextLineFile.findViews();
-
-            //Target project
-            mainApplicationTextLineFile.insertApplicationCssCursor();
-            mainApplicationTextLineFile.save(mainAppFile);
-
-            mainContentTextLineFile.insertMainContentManagerCursor(findMainContent);
-            mainContentTextLineFile.insertMenuContentCursor(findMenuContent);
-            mainContentTextLineFile.insertViewsCursor(findViews);
-            mainContentTextLineFile.save(mainContentFile.fileBridge.nativePath);
-
-            var targetProjectSrcPath:String = srcPathRegExp.exec(mainContentFile.fileBridge.nativePath)[0];
-            var targetProjectDirSrc:FileLocation = new FileLocation(targetProjectSrcPath);
-
-            copyFilesToNewProject(targetProjectDirSrc);
+            copyFilesToNewProject(context.targetSrcLocation);
 
             onCancelReport(null);
         }
