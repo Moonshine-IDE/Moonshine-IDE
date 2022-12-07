@@ -53,9 +53,10 @@ package actionScripts.plugins.exportToExternalProject
     import flash.net.SharedObject;
 
     import mx.events.CloseEvent;
-    import actionScripts.plugins.exportToExternalProject.utils.ExportContext;
+    import actionScripts.plugins.exportToExternalProject.utils.ExportConstants;
     import actionScripts.plugins.exportToExternalProject.utils.TextLines;
     import actionScripts.plugins.exportToExternalProject.utils.ExportLogic;
+    import actionScripts.plugins.exportToExternalProject.utils.ExportContext;
 
     public class ExportToExternalProjectPlugin extends PluginBase
     {
@@ -126,18 +127,20 @@ package actionScripts.plugins.exportToExternalProject
 
         private function onExport(event:Event):void
         {
-        		var context:ExportContext = new ExportContext(exportedProject, mainAppFile);
+        		var constants:ExportConstants = new ExportConstants(exportedProject.name);
+        		var context:ExportContext = new ExportContext(mainAppFile, exportedProject);
+        		
+			if (!context.targetSrcFolder)
+        		{
+       		    error("Project does not contain src folder.");
+                return;
+        		}     		
+        		
         		var targetMainApp:TextLines = ExportLogic.load(context.targetMainAppLocation);
         		
         		if (!ExportLogic.hasContent(targetMainApp) || !ExportLogic.isRoyaleApp(targetMainApp))
         		{
         			error("Main application file of selected project is empty or it is not Apache Royale project.");
-                return;
-        		}
-        		
-        		if (!ExportLogic.hasSrcFolder(context.targetMainContentLocation))
-        		{
-       		    error("Project does not contain src folder.");
                 return;
         		}
         		
@@ -147,15 +150,15 @@ package actionScripts.plugins.exportToExternalProject
         		{
         			error("Main content application file is empty.");
                 return;
-        		}
+        		}        		
         		
         		var sourceMainContent:TextLines = ExportLogic.load(context.sourceMainContentLocation);
         		
-        		var cssSection:TextLines = context.cssSection();
+        		var cssSection:TextLines = constants.cssSection();
         			
         		var mainContentSection:TextLines = sourceMainContent.getSection(
-        			context.mainContentManagerStartToken, 
-        			context.mainContentManagerEndToken);
+        			constants.mainContentManagerStartToken, 
+        			constants.mainContentManagerEndToken);
         		
         		for (var i:int = 0; i < mainContentSection.lines.length; i++)
 			{
@@ -163,29 +166,30 @@ package actionScripts.plugins.exportToExternalProject
 			}        		
         			
         		var menuSection:TextLines = sourceMainContent.getSection(
-        			context.menuStartToken, 
-        			context.menuEndToken);
+        			constants.menuStartToken, 
+        			constants.menuEndToken);
         			
         		var viewsSection:TextLines = sourceMainContent.getSection(
-        			context.viewsStartToken, 
-        			context.viewsEndToken);
+        			constants.viewsStartToken, 
+        			constants.viewsEndToken);
 			
-        	    var cssCursor:int = targetMainApp.findFirstLine(ExportContext.CSS_CURSOR);
+        	    var cssCursor:int = targetMainApp.findFirstLine(ExportConstants.CSS_CURSOR);
             targetMainApp.insertSection(cssSection, cssCursor);
             ExportLogic.save(targetMainApp, context.targetMainAppLocation);
 
-            var mainContentCursor:int = targetMainContent.findFirstLine(ExportContext.GENERATED_MAINCONTENTMANAGER_CURSOR);
+            var mainContentCursor:int = targetMainContent.findFirstLine(ExportConstants.GENERATED_MAINCONTENTMANAGER_CURSOR);
             targetMainContent.insertSection(mainContentSection, mainContentCursor);
             
-            var menuCursor:int = targetMainContent.findFirstLine(ExportContext.GENERATED_MENU_CURSOR);
+            var menuCursor:int = targetMainContent.findFirstLine(ExportConstants.GENERATED_MENU_CURSOR);
             targetMainContent.insertSection(menuSection, menuCursor);
             
-            var viewsCursor:int = targetMainContent.findFirstLine(ExportContext.GENERATED_VIEWS_CURSOR);
+            var viewsCursor:int = targetMainContent.findFirstLine(ExportConstants.GENERATED_VIEWS_CURSOR);
             targetMainContent.insertSection(viewsSection, viewsCursor);
             
             ExportLogic.save(targetMainContent, context.targetMainContentLocation);
 
-            copyFilesToNewProject(context.targetSrcLocation);
+            var targetSrcLocation:FileLocation = new FileLocation(new RegExp("^\\S+\\bsrc\\b").exec(mainAppFile)[0])
+            copyFilesToNewProject(targetSrcLocation);
 
             onCancelReport(null);
         }

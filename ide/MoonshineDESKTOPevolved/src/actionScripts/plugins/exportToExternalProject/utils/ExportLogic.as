@@ -40,7 +40,7 @@ package actionScripts.plugins.exportToExternalProject.utils
 		
 		public static function isRoyaleApp(textLines:TextLines):Boolean
 		{
-			return textLines.findFirstLine(ExportContext.J_APPLICATION) > -1;
+			return textLines.findFirstLine(ExportConstants.J_APPLICATION) > -1;
 		}
 		
 		public static function hasSrcFolder(location:FileLocation):Boolean
