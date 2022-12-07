@@ -134,7 +134,7 @@
             lbl.setStyle("color", "#e252d3");
             lbl.setStyle("fontWeight", "bold");
             lbl.setStyle("fontSize", 16);
-            lbl.text = "Generating API report is in progress...";
+            lbl.text = "Exporting project is in progress...";
 
             busyContainer.addElement(busyIndicator);
             busyContainer.addElement(lbl);
