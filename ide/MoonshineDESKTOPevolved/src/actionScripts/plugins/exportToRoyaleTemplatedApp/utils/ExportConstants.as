@@ -2,11 +2,10 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 {
     
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.factory.FileLocation;
 
 	public class ExportConstants  
 	{
-		private const J_APPLICATION:String = "<j:Application"
+		private const ROYALE_JEWEL_APPLICATION:String = "<j:Application"
 		
 		// Main Content Manager
 		private const GENERATED_MAINCONTENTMANAGER_CURSOR:String = "GENERATED_MAINCONTENTMANAGER_CURSOR";
@@ -35,9 +34,9 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			_projectName = projectName;
 		}
 		
-		public function get jApplication():String
+		public function get royaleJewelApplication():String
 		{
-			return this.J_APPLICATION;
+			return this.ROYALE_JEWEL_APPLICATION;
 		}
 		
 		// Main Content Manager
@@ -51,7 +50,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			return this.END_GENERATED_SCRIPT_MAINCONTENTMANAGER + "_" + _projectName;
 		}
 		
-		public function get mainContentMenagerCursor():String
+		public function get mainContentManagerCursor():String
 		{
 			return this.GENERATED_MAINCONTENTMANAGER_CURSOR;
 		}

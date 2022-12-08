@@ -137,7 +137,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
         		
         		var targetMainApp:TextLines = TextLines.load(context.targetMainAppLocation);
         			
-        		if (!targetMainApp.hasContent() || targetMainApp.findFirstLine(constants.jApplication) < 0)
+        		if (!targetMainApp.hasContent() || targetMainApp.findFirstLine(constants.royaleJewelApplication) < 0)
         		{
         			error("Main application file of selected project is empty or it is not Apache Royale project.");
                 return;
@@ -181,7 +181,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
         			mainContentSection, 
         			constants.mainContentManagerStartToken, 
         			constants.mainContentManagerEndToken, 
-        			constants.mainContentMenagerCursor);
+        			constants.mainContentManagerCursor);
         			
         		targetMainContent.replaceOrInsert(
         			menuSection, 
