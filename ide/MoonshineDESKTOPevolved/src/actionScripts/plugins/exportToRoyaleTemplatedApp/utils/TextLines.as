@@ -92,7 +92,10 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 		public function replaceLine(pattern:String, replacement:String):void
 		{
 			var pos:int = findFirstLine(pattern);
-			_lines[pos] = _lines[pos].replace(pattern, replacement);
+			if (pos > -1)
+			{
+				_lines[pos] = _lines[pos].replace(pattern, replacement);
+			}
 		}
 		
 		public function findSection(startToken:String, endToken:String):Array
@@ -113,6 +116,11 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 		public function getSection(startToken:String, endToken:String):TextLines
 		{
 			var range:Array = findSection(startToken, endToken);
+			if (!range)
+			{
+				return new TextLines([]);
+			}
+
 			var start:int = range[0];
 			var end:int = range[1];
 			var section:Array = [];
@@ -127,6 +135,8 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 		
 		public function insertSection(section:TextLines, pos:int):void
 		{
+			if (pos < 0) return;
+
 			for(var i:int = 0; i < section.lines.length; i++)
 			{
 				_lines.insertAt(pos + i, section.lines[i]);
