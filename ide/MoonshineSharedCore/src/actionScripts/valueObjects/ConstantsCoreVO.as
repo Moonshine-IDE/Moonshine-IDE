@@ -98,11 +98,6 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_VISUAL_EDITOR_FLEX:FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_PRIMEFACES:FileLocation;
 		public static var TEMPLATE_VISUAL_EDITOR_DOMINO:FileLocation;
-
-		public static var TEMPLATE_JAVACLASS: FileLocation;
-		public static var TEMPLATE_GROOVYCLASS: FileLocation;
-		public static var TEMPLATE_HAXECLASS: FileLocation;
-		public static var TEMPLATE_HAXEINTERFACE: FileLocation;
 		
 		public static var TEMPLATES_FILES: ArrayCollection;
 		public static var TEMPLATES_PROJECTS: ArrayCollection;
@@ -478,16 +473,6 @@ Yg4BAIQAAAAAAAAAAAA=
 </form>
 			]]></root>;
 
-			TEMPLATE_GROOVYCLASS = new FileLocation("TEMPLATE");
-			TEMPLATE_GROOVYCLASS.fileBridge.name = "Groovy Class.groovy";
-			TEMPLATE_GROOVYCLASS.fileBridge.isDirectory = false;
-			TEMPLATE_GROOVYCLASS.fileBridge.extension = "groovy";
-			TEMPLATE_GROOVYCLASS.fileBridge.data = <root><![CDATA[package $packageName;
-
-public class $fileName
-{
-}]]></root>;
-
 			ACTIONSCRIPT_PROJECT = new FileLocation("ActionScript Project (SWF, Desktop)");
 			ACTIONSCRIPT_PROJECT.fileBridge.name = "ActionScript Project (SWF, Desktop)";
 			ACTIONSCRIPT_PROJECT.fileBridge.isDirectory = true;
@@ -541,7 +526,7 @@ public class $fileName
 			
 			TEMPLATES_OPEN_PROJECTS = new ArrayCollection([IS_AIR ? openTemplateProjectVO : openTemplateProject]);
 
-			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_JAVACLASS, TEMPLATE_GROOVYCLASS, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES, TEMPLATE_VISUAL_EDITOR_DOMINO]);
+			TEMPLATES_FILES = new ArrayCollection([TEMPLATE_AS3CLASS, TEMPLATE_AS3INTERFACE, TEMPLATE_MXML, TEMPLATE_CSS, TEMPLATE_TEXT, TEMPLATE_XML, TEMPLATE_VISUAL_EDITOR_FLEX, TEMPLATE_VISUAL_EDITOR_PRIMEFACES, TEMPLATE_VISUAL_EDITOR_DOMINO]);
 			TEMPLATES_PROJECTS = new ArrayCollection([ACTIONSCRIPT_PROJECT,LIBRARY_PROJECT_PROJECT,FLEXBROWSER_PROJECT,FLEXDESKTOP_PROJECT,FLEXMOBILE_PROJECT,FLEXJS_PROJECT,ROYALE_PROJECT,VISUALEDITOR_FLEX_PROJECT]);
 			
 			MENU_TOOLTIP = new ArrayCollection([{label:"Open",tooltip:"Open File/Project"},{label:"Save",tooltip:"Save File"},{label:"Save As",tooltip:"Save As"},{label:"Close",tooltip:"Close File"},{label:"Find",tooltip:"Find/Replace Text"},

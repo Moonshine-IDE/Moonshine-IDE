@@ -1,0 +1,6 @@
+package $packageName
+
+$imports
+$modifierA interface $fileName $extends {
+	
+}
