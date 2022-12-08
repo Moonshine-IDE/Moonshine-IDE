@@ -1,16 +1,10 @@
 package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 {
-    
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
 	public class ExportConstants  
 	{
-		private const ROYALE_JEWEL_APPLICATION:String = "<j:Application"
-		
-		// Main Content Manager
-		private const GENERATED_MAINCONTENTMANAGER_CURSOR:String = "GENERATED_MAINCONTENTMANAGER_CURSOR";
-		private const START_GENERATED_SCRIPT_MAINCONTENTMANAGER:String = "START_GENERATED_SCRIPT_MAINCONTENTMANAGER";
-		private const END_GENERATED_SCRIPT_MAINCONTENTMANAGER:String = "END_GENERATED_SCRIPT_MAINCONTENTMANAGER";
+		private const ROYALE_JEWEL_APPLICATION:String = "<j:Application";
 		
 		// Menu
 		private const GENERATED_MENU_CURSOR:String = "GENERATED_MENU_CURSOR";
@@ -38,23 +32,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 		{
 			return this.ROYALE_JEWEL_APPLICATION;
 		}
-		
-		// Main Content Manager
-		public function get mainContentManagerStartToken():String
-		{
-			return this.START_GENERATED_SCRIPT_MAINCONTENTMANAGER + "_" + _projectName;
-		}
-		
-		public function get mainContentManagerEndToken():String
-		{
-			return this.END_GENERATED_SCRIPT_MAINCONTENTMANAGER + "_" + _projectName;
-		}
-		
-		public function get mainContentManagerCursor():String
-		{
-			return this.GENERATED_MAINCONTENTMANAGER_CURSOR;
-		}
-		
+
 		// Menu
 		public function get menuStartToken():String
 		{

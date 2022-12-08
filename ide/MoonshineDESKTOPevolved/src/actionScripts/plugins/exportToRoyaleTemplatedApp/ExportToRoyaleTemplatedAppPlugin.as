@@ -155,12 +155,6 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
 			var cssSection:TextLines = constants.getCssSection();
 
-			var mainContentSection:TextLines = sourceMainContent.getSection(
-				constants.mainContentManagerStartToken,
-				constants.mainContentManagerEndToken);
-
-			mainContentSection.replaceLine("/src/", "/generated/");
-
 			var menuSection:TextLines = sourceMainContent.getSection(
 				constants.menuStartToken,
 				constants.menuEndToken);
@@ -176,12 +170,6 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 				constants.cssCursor);
         			
             targetMainApp.save(context.targetMainAppLocation);
-
-            targetMainContent.replaceOrInsert(
-				mainContentSection,
-				constants.mainContentManagerStartToken,
-				constants.mainContentManagerEndToken,
-				constants.mainContentManagerCursor);
         			
 			targetMainContent.replaceOrInsert(
 				menuSection,
