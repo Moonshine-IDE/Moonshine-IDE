@@ -16,7 +16,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 		public function ExportContext(mainAppFile:String, exportedProject:AS3ProjectVO)
 		{	
 			var matches:Array = _regex.exec(mainAppFile);
-			_targetSrcFolder = matches.length > 0
+			_targetSrcFolder = matches && matches.length > 0
 				? new FileLocation(matches[0]) 
 				: null;
 			

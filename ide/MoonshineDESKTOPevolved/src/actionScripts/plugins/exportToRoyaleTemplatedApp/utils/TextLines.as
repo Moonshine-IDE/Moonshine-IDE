@@ -25,12 +25,13 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 		
 		public static function load(location:FileLocation):TextLines
         {
-            var content:String = location.fileBridge.read().toString();
+            var readContent:Object = location.fileBridge.read();
             		
 			var lines:Array = [];
 
-			if (content)
+			if (readContent)
 			{
+				var content:String = readContent.toString();
 				lines = content.split(File.lineEnding);
 			}
 

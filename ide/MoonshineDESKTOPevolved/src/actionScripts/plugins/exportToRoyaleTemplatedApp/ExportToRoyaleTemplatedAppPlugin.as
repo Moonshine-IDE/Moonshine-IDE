@@ -98,8 +98,6 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
                 return;
             }
 
-            var cookie:SharedObject = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_LOCAL);
-
             configView = new ExportToRoyaleTemplatedAppConfigView();
             configView.label = "Export to Royale Templated Application";
             configView.defaultSaveLabel = "Export";
@@ -131,7 +129,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
         		
 			if (!context.targetSrcFolder)
 			{
-				error("Project does not contain src folder.");
+				printErrorAndEndExport("Project does not contain src folder.");
 				return;
 			}
         		
@@ -139,7 +137,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
 			if (!targetMainApp.hasContent() || targetMainApp.findFirstLine(constants.royaleJewelApplication) < 0)
 			{
-				error("Main application file of selected project is empty or it is not Apache Royale project.");
+				printErrorAndEndExport("Main application file of selected project is empty or it is not Apache Royale project.");
 				return;
 			}
 
@@ -147,7 +145,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
 			if (!targetMainContent.hasContent())
 			{
-				error("Main content application file is empty.");
+				printErrorAndEndExport("MainContent file does not exists or is empty.");
 				return;
 			}
 
@@ -187,6 +185,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
             copyFilesToNewProject(context.targetSrcFolder);
 
+			print("Export " + exportedProject.name + " to Apache Royale Templated Application successfully finished.");
             onCancelReport(null);
         }
 
@@ -219,5 +218,11 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
             configView = null;
         }
+
+		private function printErrorAndEndExport(errorMessage:String):void
+		{
+			error(errorMessage);
+			onCancelReport(null);
+		}
     }
 }
