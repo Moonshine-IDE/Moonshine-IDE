@@ -1,4 +1,4 @@
-package actionScripts.plugins.exportToExternalProject.utils
+package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 {
     
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;

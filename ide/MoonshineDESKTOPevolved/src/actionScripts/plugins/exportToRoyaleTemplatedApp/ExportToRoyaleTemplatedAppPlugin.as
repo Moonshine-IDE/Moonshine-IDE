@@ -29,7 +29,7 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.exportToExternalProject
+package actionScripts.plugins.exportToRoyaleTemplatedApp
 {
     import actionScripts.events.AddTabEvent;
     import actionScripts.events.ProjectEvent;
@@ -53,18 +53,18 @@ package actionScripts.plugins.exportToExternalProject
     import flash.net.SharedObject;
 
     import mx.events.CloseEvent;
-    import actionScripts.plugins.exportToExternalProject.utils.ExportConstants;
-    import actionScripts.plugins.exportToExternalProject.utils.TextLines;
-    import actionScripts.plugins.exportToExternalProject.utils.ExportContext;
+    import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.ExportConstants;
+    import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.TextLines;
+    import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.ExportContext;
 
-    public class ExportToExternalProjectPlugin extends PluginBase
+    public class ExportToRoyaleTemplatedAppPlugin extends PluginBase
     {
         private var exportedProject:AS3ProjectVO;
         private var configView:ExportToRoyaleTemplatedAppConfigView;
 
         public var mainAppFile:String;
 
-        public function ExportToExternalProjectPlugin()
+        public function ExportToRoyaleTemplatedAppPlugin()
         {
             super();
         }
