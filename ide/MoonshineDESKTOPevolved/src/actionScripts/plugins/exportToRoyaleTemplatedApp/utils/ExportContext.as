@@ -4,7 +4,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
-	public   class ExportContext  
+	public class ExportContext
 	{
 		private var _targetSrcFolder:FileLocation;		
 		private var _targetMainAppLocation:FileLocation;		

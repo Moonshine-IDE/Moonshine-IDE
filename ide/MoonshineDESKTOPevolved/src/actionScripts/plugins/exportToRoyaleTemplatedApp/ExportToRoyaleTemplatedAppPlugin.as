@@ -126,74 +126,74 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
         private function onExport(event:Event):void
         {
-        		var constants:ExportConstants = new ExportConstants(exportedProject.name);
-        		var context:ExportContext = new ExportContext(mainAppFile, exportedProject);
+			var constants:ExportConstants = new ExportConstants(exportedProject.name);
+			var context:ExportContext = new ExportContext(mainAppFile, exportedProject);
         		
 			if (!context.targetSrcFolder)
-        		{
-       		    error("Project does not contain src folder.");
-                return;
-        		}     		
+			{
+				error("Project does not contain src folder.");
+				return;
+			}
         		
-        		var targetMainApp:TextLines = TextLines.load(context.targetMainAppLocation);
-        			
-        		if (!targetMainApp.hasContent() || targetMainApp.findFirstLine(constants.royaleJewelApplication) < 0)
-        		{
-        			error("Main application file of selected project is empty or it is not Apache Royale project.");
-                return;
-        		}
-        		
-        		var targetMainContent:TextLines = TextLines.load(context.targetMainContentLocation);
-        		
-        		if (!targetMainContent.hasContent())
-        		{
-        			error("Main content application file is empty.");
-                return;
-        		}        		
-        		
-        		var sourceMainContent:TextLines = TextLines.load(context.sourceMainContentLocation);
-        		
-        		var cssSection:TextLines = constants.getCssSection();
-        			
-        		var mainContentSection:TextLines = sourceMainContent.getSection(
-        			constants.mainContentManagerStartToken, 
-        			constants.mainContentManagerEndToken);
-        		
-        		mainContentSection.replaceLine("/src/", "/generated/");       		
-        			
-        		var menuSection:TextLines = sourceMainContent.getSection(
-        			constants.menuStartToken, 
-        			constants.menuEndToken);
-        			
-        		var viewsSection:TextLines = sourceMainContent.getSection(
-        			constants.viewsStartToken, 
-        			constants.viewsEndToken);
-			
-        		targetMainApp.replaceOrInsert(
-        			cssSection, 
-        			constants.cssStartToken, 
-        			constants.cssEndToken, 
-        			constants.cssCursor);
+			var targetMainApp:TextLines = TextLines.load(context.targetMainAppLocation);
+
+			if (!targetMainApp.hasContent() || targetMainApp.findFirstLine(constants.royaleJewelApplication) < 0)
+			{
+				error("Main application file of selected project is empty or it is not Apache Royale project.");
+				return;
+			}
+
+			var targetMainContent:TextLines = TextLines.load(context.targetMainContentLocation);
+
+			if (!targetMainContent.hasContent())
+			{
+				error("Main content application file is empty.");
+				return;
+			}
+
+			var sourceMainContent:TextLines = TextLines.load(context.sourceMainContentLocation);
+
+			var cssSection:TextLines = constants.getCssSection();
+
+			var mainContentSection:TextLines = sourceMainContent.getSection(
+				constants.mainContentManagerStartToken,
+				constants.mainContentManagerEndToken);
+
+			mainContentSection.replaceLine("/src/", "/generated/");
+
+			var menuSection:TextLines = sourceMainContent.getSection(
+				constants.menuStartToken,
+				constants.menuEndToken);
+
+			var viewsSection:TextLines = sourceMainContent.getSection(
+				constants.viewsStartToken,
+				constants.viewsEndToken);
+
+			targetMainApp.replaceOrInsert(
+				cssSection,
+				constants.cssStartToken,
+				constants.cssEndToken,
+				constants.cssCursor);
         			
             targetMainApp.save(context.targetMainAppLocation);
 
             targetMainContent.replaceOrInsert(
-        			mainContentSection, 
-        			constants.mainContentManagerStartToken, 
-        			constants.mainContentManagerEndToken, 
-        			constants.mainContentManagerCursor);
+				mainContentSection,
+				constants.mainContentManagerStartToken,
+				constants.mainContentManagerEndToken,
+				constants.mainContentManagerCursor);
         			
-        		targetMainContent.replaceOrInsert(
-        			menuSection, 
-        			constants.menuStartToken, 
-        			constants.menuEndToken, 
-        			constants.menuCursor);
+			targetMainContent.replaceOrInsert(
+				menuSection,
+				constants.menuStartToken,
+				constants.menuEndToken,
+				constants.menuCursor);
             
             targetMainContent.replaceOrInsert(
-        			viewsSection, 
-        			constants.viewsStartToken, 
-        			constants.viewsEndToken, 
-        			constants.viewsCursor);            
+				viewsSection,
+				constants.viewsStartToken,
+				constants.viewsEndToken,
+				constants.viewsCursor);
             
             targetMainContent.save(context.targetMainContentLocation);
 
