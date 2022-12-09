@@ -118,8 +118,8 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
             var settingsWrapper:SettingsWrapper = new SettingsWrapper("Export to Royale Templated Application", apiReportItems);
 
-            configView.addCategory("Export");
-            configView.addSetting(settingsWrapper, "Export");
+            configView.addCategory(exportedProject.name);
+            configView.addSetting(settingsWrapper, exportedProject.name);
         }
 
         private function onExport(event:Event):void
@@ -129,7 +129,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
         		
 			if (!context.targetSrcFolder)
 			{
-				printErrorAndEndExport("Project does not contain src folder.");
+				printErrorAndCloseExport("Project does not contain src folder: " + mainAppFile);
 				return;
 			}
         		
@@ -137,7 +137,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
 			if (!targetMainApp.hasContent() || targetMainApp.findFirstLine(constants.royaleJewelApplication) < 0)
 			{
-				printErrorAndEndExport("Main application file of selected project is empty or it is not Apache Royale project.");
+				printErrorAndCloseExport("Main application file of selected project is empty or it is not Apache Royale project.");
 				return;
 			}
 
@@ -145,7 +145,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
 			if (!targetMainContent.hasContent())
 			{
-				printErrorAndEndExport("MainContent file does not exists or is empty.");
+				printErrorAndCloseExport("MainContent file does not exist or is empty.");
 				return;
 			}
 
@@ -219,7 +219,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
             configView = null;
         }
 
-		private function printErrorAndEndExport(errorMessage:String):void
+		private function printErrorAndCloseExport(errorMessage:String):void
 		{
 			error(errorMessage);
 			onCancelReport(null);
