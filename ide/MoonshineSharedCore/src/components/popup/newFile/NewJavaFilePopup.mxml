@@ -42,6 +42,10 @@
         import actionScripts.valueObjects.ConstantsCoreVO;
 
         import mx.events.FlexEvent;
+        import actionScripts.factory.FileLocation;
+
+        public var templateJavaClass:FileLocation;
+        public var templateJavaInterface:FileLocation;
 
         override protected function onBtnCreateClick(event:MouseEvent):void
         {
@@ -61,7 +65,7 @@
 
                 attributes.imports = newAsFileCompletionManager.classesImports.concat(newAsFileCompletionManager.interfacesImports);
 
-                var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_JAVACLASS, wrapperOfFolderLocation, attributes);
+                var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? templateJavaInterface : templateJavaClass, wrapperOfFolderLocation, attributes);
                 tmpEvent.fileName = txtFileName.text;
                 tmpEvent.ofProject = wrapperBelongToProject;
                 tmpEvent.fileExtension = this.createdFileExtension;
@@ -79,7 +83,7 @@
 
             hasInternalClasses = false;
             cbDynamic.visible = cbDynamic.includeInLayout = false;
-            title = isInterfaceDialog ? "New Interface Class" : "New Java Class";
+            title = isInterfaceDialog ? "New Java Interface" : "New Java Class";
         }
 		
 		override protected function onPreinitialize(event:FlexEvent):void
