@@ -3,7 +3,7 @@
 			   xmlns:j="library://ns.apache.org/royale/jewel"
 			   xmlns:js="library://ns.apache.org/royale/basic" xmlns:local="*" xmlns:views="$ProjectName.views.*">
 
-	<fx:Style source="resources/export-app-styles.css"/>
+	<fx:Style source="resources/app-styles.css"/>
 
 	<j:valuesImpl>
 		<js:SimpleCSSValuesImpl />

@@ -31,7 +31,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.git
 {
-	import flash.display.DisplayObject;
+import actionScripts.managers.MacOSGitDetector;
+
+import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.Dictionary;
 	
@@ -60,7 +62,6 @@ package actionScripts.plugins.git
 	import actionScripts.plugins.git.commands.CloneCommand;
 	import actionScripts.plugins.git.commands.CreateCheckoutNewBranchCommand;
 	import actionScripts.plugins.git.commands.GetCurrentBranchCommand;
-	import actionScripts.plugins.git.commands.GetXCodePathCommand;
 	import actionScripts.plugins.git.commands.GitChangeBranchToCommand;
 	import actionScripts.plugins.git.commands.GitCheckoutCommand;
 	import actionScripts.plugins.git.commands.GitCommitCommand;
@@ -304,12 +305,12 @@ package actionScripts.plugins.git
 		{
 			if (ConstantsCoreVO.IS_MACOS && !UtilsCore.isGitPresent())
 			{
-				new GetXCodePathCommand(onXCodePathDetection, against);
+				MacOSGitDetector.getInstance().test(onXCodePathDetection);
 				return false;
 			}
 			else if (ConstantsCoreVO.IS_MACOS && (against == ProjectMenuTypes.SVN_PROJECT) && !UtilsCore.isSVNPresent()) 
 			{
-				new GetXCodePathCommand(onXCodePathDetection, against);
+				//new GetXCodePathCommand(onXCodePathDetection, against);
 				return false;
 			}
 			else if (ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent() && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
@@ -321,16 +322,14 @@ package actionScripts.plugins.git
 			return true;
 		}
 		
-		private function onXCodePathDetection(path:String, isXCodePath:Boolean, against:String):void
+		private function onXCodePathDetection(path:String):void
 		{
 			// if calls during startup 
 			// do not open the prompt
 			if (!isStartupTest && path && !xCodePermissionWindow)
 			{
 				xCodePermissionWindow = new GitXCodePermissionPopup;
-				xCodePermissionWindow.isXCodePath = isXCodePath;
 				xCodePermissionWindow.xCodePath = path;
-				xCodePermissionWindow.xCodePathAgainst = against;
 				xCodePermissionWindow.horizontalCenter = xCodePermissionWindow.verticalCenter = 0;
 				xCodePermissionWindow.addEventListener(Event.CLOSE, onXCodePermissionClosed, false, 0, true);
 				FlexGlobals.topLevelApplication.addElement(xCodePermissionWindow);
