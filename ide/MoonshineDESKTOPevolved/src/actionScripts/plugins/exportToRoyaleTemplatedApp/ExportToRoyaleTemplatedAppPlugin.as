@@ -103,7 +103,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
             configView.defaultSaveLabel = "Export";
 
             configView.addEventListener(SettingsView.EVENT_SAVE, onExport);
-            configView.addEventListener(CloseEvent.CLOSE, onCancelReport);
+            configView.addEventListener(SettingsView.EVENT_CLOSE, onCancelReport);
 
             addReportItems();
             dispatcher.dispatchEvent(new AddTabEvent(configView));
@@ -189,7 +189,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
             onCancelReport(null);
         }
 
-        private function onCancelReport(event:CloseEvent):void
+        private function onCancelReport(event:Event):void
         {
             dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
 
