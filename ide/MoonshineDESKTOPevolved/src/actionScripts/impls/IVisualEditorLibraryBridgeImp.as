@@ -51,6 +51,8 @@ package actionScripts.impls
 	import view.VisualEditor;
 	import view.interfaces.IVisualEditorLibraryBridge;
 	
+	import flash.events.MouseEvent;
+	import actionScripts.plugin.templating.TemplatingPlugin;
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
 	{
 		public var visualEditorProject:ProjectVO;
@@ -113,6 +115,13 @@ package actionScripts.impls
             if (!editor) return "";
 
             return editor.currentFile.fileBridge.getRelativePath(visualEditorProject.sourceFolder, true);
+        }
+
+		public function openCreateDominoActionPanel(event:MouseEvent):void
+        {
+			var templaetPulgin:TemplatingPlugin=new TemplatingPlugin();
+
+            templaetPulgin.openDominoActionComponentTypeChoose(event);
         }
 
 		private function onNewFileAdded(event:TreeMenuItemEvent):void
