@@ -33,4 +33,4 @@ jobs:
       working-directory: ../MockupVisualEditor
       run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
     - name: Build MoonshineDESKTOPevolved with Ant
-      run: ant -noinput -buildfile 'ide\MoonshineDESKTOPevolved\build\build.xml' CompileSWFWindows
+      run: ant -noinput -buildfile 'ide\MoonshineDESKTOPevolved\build\build.xml'
