@@ -1,11 +1,13 @@
-name: Moonshine IDE Windows
+name: Moonshine IDE
 
 on: [push]
 
 jobs:
   build:
-
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        runs-on: ["windows-latest", "macos-latest"]
+    runs-on: ${{ matrix.runs-on }}
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-java@v3
