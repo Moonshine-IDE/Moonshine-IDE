@@ -29,7 +29,7 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.as3lsp
+package actionScripts.plugins.actionscript
 {
 	import com.adobe.utils.StringUtil;
 	
@@ -98,7 +98,7 @@ package actionScripts.plugins.as3lsp
 
 	[Event(name="init",type="flash.events.Event")]
 	[Event(name="close",type="flash.events.Event")]
-	public class ActionScriptLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
+	public class AS3LanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	{
 		private static const LANGUAGE_SERVER_BIN_PATH:String = "elements/as3mxml-language-server/bin/";
 		private static const BUNDLED_COMPILER_PATH:String = "elements/as3mxml-language-server/bundled-compiler/";
@@ -137,7 +137,7 @@ package actionScripts.plugins.as3lsp
 		private var _watchedFilesDebounceTimeoutID:uint = uint.MAX_VALUE;
 		private var _watchedFilesPendingChanges:Array = [];
 
-		public function ActionScriptLanguageServerManager(project:AS3ProjectVO)
+		public function AS3LanguageServerManager(project:AS3ProjectVO)
 		{
 			_project = project;
 

@@ -29,34 +29,34 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.haxelsp
+package actionScripts.plugins.groovy
 {
 	import actionScripts.languageServer.ILanguageServerManager;
 	import actionScripts.plugin.ILanguageServerPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class HaxeLanguageServerPlugin extends PluginBase implements ILanguageServerPlugin
+	public class GroovyLanguageServerPlugin extends PluginBase implements ILanguageServerPlugin
 	{
-		override public function get name():String 			{return "Haxe Language Server Plugin";}
+		override public function get name():String 			{return "Groovy Language Server Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team";}
-		override public function get description():String 	{return "Haxe code intelligence provided by a language server";}
+		override public function get description():String 	{return "Groovy code intelligence provided by a language server";}
 
 		public function get languageServerProjectType():Class
 		{
-			return HaxeProjectVO;
+			return GrailsProjectVO;
 		}
 		
-		public function HaxeLanguageServerPlugin()
+		public function GroovyLanguageServerPlugin()
 		{
 			super();
 		}
 
 		public function createLanguageServerManager(project:ProjectVO):ILanguageServerManager
 		{
-			return new HaxeLanguageServerManager(HaxeProjectVO(project));
+			return new GroovyLanguageServerManager(GrailsProjectVO(project));
 		}
 	}
 }
