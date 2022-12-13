@@ -1520,7 +1520,13 @@ package actionScripts.plugin.templating
 					
 				}
 				//only for fixed folder for domino form file
-				var dominoActionFolderStr:String=newDominoActionComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"SharedElements"+ model.fileCore.separator+"Actions";
+				var dominoActionFolderStr:String="";
+				if(newDominoActionComponentPopup.wrapperBelongToProject){
+					dominoActionFolderStr=newDominoActionComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"SharedElements"+ model.fileCore.separator+"Actions";
+				}else{
+					dominoActionFolderStr=model.activeProject.projectFolder.nativePath;
+				}
+				
 				var dominoActionFolder:FileLocation=new FileLocation(dominoActionFolderStr);
 				if(!dominoActionFolder.fileBridge.exists){
 					dominoActionFolder.fileBridge.createDirectory();
@@ -1531,7 +1537,7 @@ package actionScripts.plugin.templating
 				if(dominoActionFolder.fileBridge.exists){
 					//set the tree selct to domino form folder
 					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
-					Alert.show("insideLocation:"+insideLocation.file.fileBridge.nativePath);
+					//Alert.show("insideLocation:"+insideLocation.file.fileBridge.nativePath);
 					model.mainView.getTreeViewPanel().tree.callLater(function ():void
 					{
 						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;

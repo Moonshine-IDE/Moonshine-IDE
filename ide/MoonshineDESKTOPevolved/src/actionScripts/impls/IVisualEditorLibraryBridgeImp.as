@@ -53,6 +53,8 @@ package actionScripts.impls
 	
 	import flash.events.MouseEvent;
 	import actionScripts.plugin.templating.TemplatingPlugin;
+
+	import mx.collections.ArrayList;
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
 	{
 		public var visualEditorProject:ProjectVO;
@@ -123,6 +125,16 @@ package actionScripts.impls
 
             templaetPulgin.openDominoActionComponentTypeChoose(event);
         }
+
+		//getDominoActionList
+
+		public function getDominoActionList():ArrayList
+        {              
+			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if (!editor) return null;
+			return editor.getDominoActionList();
+
+		}
 
 		private function onNewFileAdded(event:TreeMenuItemEvent):void
 		{

@@ -196,6 +196,7 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(EVENT_SWITCH_TAB_TO_CODE, switchTabToCodeHandler);
 
 			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+			visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
 		}
 
 		private function previewStartCompleteHandler(event:PreviewPluginEvent):void
@@ -258,8 +259,11 @@ package actionScripts.plugins.ui.editor
 			}
 
 			//update the subform for rename action
-			if(visualEditorView.visualEditor.editingSurface)
-			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+			if(visualEditorView.visualEditor.editingSurface){
+				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+				visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
+			}
+
 		}
 
 		private function onVisualEditorSaveCode(event:Event):void
@@ -455,8 +459,11 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 				visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 				//when it swtich back the current view edtior , it need reload the sub from again
-				if(visualEditorView.visualEditor.editingSurface)
-				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+				if(visualEditorView.visualEditor.editingSurface){
+					visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+					visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
+				}
+
 
 			}
 
@@ -554,6 +561,10 @@ package actionScripts.plugins.ui.editor
 			return null;
 		}
 
+		/** 
+		* This function will loading the subfrom list file from project folder
+		*/
+
 		private function getSubFromList():ArrayList {
 			var subforms:ArrayList = new ArrayList();
 				subforms.addItem({label: "none",value: "none",description:"none"});
@@ -595,6 +606,51 @@ package actionScripts.plugins.ui.editor
 			
 			
 			return subforms;
+		}
+
+		/** 
+		* This function will loading the domino action list file from project folder
+		*/
+		public function getDominoActionList():ArrayList {
+			
+			var actionsList:ArrayList = new ArrayList();
+				actionsList.addItem({label: "none",value: "none",description:"none"});
+			var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
+			fileSoucePath=fileSoucePath.replace("Forms","SharedElements");
+			fileSoucePath=fileSoucePath+File.separator+"Actions";
+			var directory:File = new File(fileSoucePath);
+			if (directory.exists) {
+				var list:Array = directory.getDirectoryListing();
+				for (var i:uint = 0; i < list.length; i++) {
+					
+						var actionFile:String=list[i].name.substring(0,list[i].nativePath.length-4);
+						actionFile=actionFile.replace(".xml","");
+						actionsList.addItem(  {label: actionFile,value: actionFile,description:list[i].nativePath});		
+					
+				}
+			}
+			
+			
+
+			//sort the actionsList 
+			 if(actionsList.length>0){
+                var arry:ArrayCollection= new ArrayCollection(actionsList.toArray());
+
+                arry=GenericUtils.arrayCollectionSort(arry,"label",false);
+                
+				actionsList=new ArrayList();
+				for each(var item:Object in arry)
+				{
+					actionsList.addItem(item);
+					
+				}
+				
+
+            }
+			
+			
+			return actionsList;
+
 		}
 	}
 }
