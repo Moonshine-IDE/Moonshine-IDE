@@ -408,7 +408,9 @@ package actionScripts.plugins.as3lsp
 		{
 			if(_languageServerProcess)
 			{
-				trace("Error: AS3 & MXML language server process already exists!");
+				// the process for the language server wasn't cleaned up
+				// properly before trying to start a new one...
+				trace("Error: AS3 & MXML language server process already exists for project: " +project.name);
 				return;
 			}
 			var jdkFolder:File = null;
@@ -523,8 +525,8 @@ package actionScripts.plugins.as3lsp
 		{
 			if(_languageClient)
 			{
-				//we're already initializing or initialized...
-				trace("Error: AS3 & MXML language client already exists!");
+				// the language server is already initializing or initialized...
+				trace("Error: AS3 & MXML language client already exists for project: " + project.name);
 				return;
 			}
 

@@ -443,7 +443,9 @@ package actionScripts.plugins.haxelsp
 		{
 			if(_languageServerProcess)
 			{
-				trace("Error: Haxe language server process already exists!");
+				// the process for the language server wasn't cleaned up
+				// properly before trying to start a new one...
+				trace("Error: Haxe language server process already exists for project: " + project.name);
 				return;
 			}
 			if(!UtilsCore.isHaxeAvailable() || !UtilsCore.isNekoAvailable() || !UtilsCore.isNodeAvailable())
@@ -507,8 +509,8 @@ package actionScripts.plugins.haxelsp
 		{
 			if(_languageClient)
 			{
-				//we're already initializing or initialized...
-				trace("Error: Haxe language client already exists!");
+				// the language server is already initializing or initialized...
+				trace("Error: Haxe language client already exists for project: " + project.name);
 				return;
 			}
 			var haxeFileName:String = (Settings.os == "win") ? "haxe.exe" : "haxe";
