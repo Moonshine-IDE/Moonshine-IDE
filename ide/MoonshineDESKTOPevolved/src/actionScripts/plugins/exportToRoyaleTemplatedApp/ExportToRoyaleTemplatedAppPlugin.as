@@ -185,15 +185,13 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
             copyFilesToNewProject(context.targetSrcFolder);
 
-			print("Export " + exportedProject.name + " to Apache Royale Templated Application successfully finished.");
-            onCancelReport(null);
+			success("Export " + exportedProject.name + " to Apache Royale Templated Application successfully finished.");
         }
 
         private function onCancelReport(event:Event):void
         {
-            dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
-
-            cleanUp();
+			dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
+			cleanUp();
         }
 
         private function copyFilesToNewProject(projectDirSource:FileLocation):void
@@ -213,8 +211,8 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
         private function cleanUp():void
         {
-            configView.removeEventListener(SettingsView.EVENT_CLOSE, onExport);
-            configView.removeEventListener(SettingsView.EVENT_SAVE, onCancelReport);
+            configView.removeEventListener(SettingsView.EVENT_SAVE, onExport);
+            configView.removeEventListener(SettingsView.EVENT_CLOSE, onCancelReport);
 
             configView = null;
         }

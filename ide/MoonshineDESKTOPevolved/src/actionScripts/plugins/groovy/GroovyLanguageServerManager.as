@@ -29,7 +29,7 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.groovylsp
+package actionScripts.plugins.groovy
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
@@ -238,7 +238,7 @@ package actionScripts.plugins.groovylsp
 		{
 			if(_languageServerProcess)
 			{
-				trace("Error: Groovy language server process already exists!");
+				trace("Error: Groovy language server process already exists for project: " + project.name);
 				return;
 			}
 			var jdkPath:String = getProjectSDKPath(_project, _model);
@@ -337,7 +337,7 @@ package actionScripts.plugins.groovylsp
 
 				if(_languageServerProcess)
 				{
-					trace("Error: Groovy language server process already exists!");
+					trace("Error: Groovy language server process already exists for project: " + project.name);
 					return true;
 				}
 				
@@ -396,8 +396,9 @@ package actionScripts.plugins.groovylsp
 		{
 			if(_languageClient)
 			{
-				//we're already initializing or initialized...
-				trace("Error: Groovy language client already exists!");
+				// the process for the language server wasn't cleaned up
+				// properly before trying to start a new one...
+				trace("Error: Groovy language client already exists for project: " + project.name);
 				return;
 			}
 

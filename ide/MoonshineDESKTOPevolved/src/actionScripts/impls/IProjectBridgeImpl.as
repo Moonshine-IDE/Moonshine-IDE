@@ -44,13 +44,13 @@ package actionScripts.impls
 	import actionScripts.plugin.syntax.GroovySyntaxPlugin;
 	import actionScripts.plugin.syntax.HaxeSyntaxPlugin;
 	import actionScripts.plugin.syntax.JavaSyntaxPlugin;
-	import actionScripts.plugins.as3lsp.AS3LanguageServerPlugin;
+	import actionScripts.plugins.actionscript.AS3LanguageServerPlugin;
 	import actionScripts.plugins.grails.GrailsBuildPlugin;
-	import actionScripts.plugins.groovylsp.GroovyLanguageServerPlugin;
+	import actionScripts.plugins.groovy.GroovyLanguageServerPlugin;
 	import actionScripts.plugins.haxe.HaxeBuildPlugin;
 	import actionScripts.plugins.haxelib.HaxelibPlugin;
-	import actionScripts.plugins.haxelsp.HaxeLanguageServerPlugin;
-	import actionScripts.plugins.javalsp.JavaLanguageServerPlugin;
+	import actionScripts.plugins.haxe.HaxeLanguageServerPlugin;
+	import actionScripts.plugins.java.JavaLanguageServerPlugin;
 	import actionScripts.valueObjects.ProjectVO;
 
 	public class IProjectBridgeImpl implements IProjectBridge
