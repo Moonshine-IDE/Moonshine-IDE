@@ -56,6 +56,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
     import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.ExportConstants;
     import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.TextLines;
     import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.ExportContext;
+    import flash.text.engine.TextLine;
 
     public class ExportToRoyaleTemplatedAppPlugin extends PluginBase
     {
@@ -135,7 +136,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
         		
 			var targetMainApp:TextLines = TextLines.load(context.targetMainAppLocation);
 
-			if (!targetMainApp.hasContent() || targetMainApp.findFirstLine(constants.royaleJewelApplication) < 0)
+			if (!targetMainApp.hasContent() || targetMainApp.findLine(constants.royaleJewelApplication) < 0)
 			{
 				printErrorAndCloseExport("Main application file of selected project is empty or it is not Apache Royale project.");
 				return;
@@ -150,42 +151,64 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 			}
 
 			var sourceMainContent:TextLines = TextLines.load(context.sourceMainContentLocation);
-
-			var cssSection:TextLines = constants.getCssSection();
-
-			var menuSection:TextLines = sourceMainContent.getSection(
-				constants.menuStartToken,
-				constants.menuEndToken);
-
-			var viewsSection:TextLines = sourceMainContent.getSection(
-				constants.viewsStartToken,
-				constants.viewsEndToken);
-
-			targetMainApp.replaceOrInsert(
-				cssSection,
-				constants.cssStartToken,
-				constants.cssEndToken,
-				constants.cssCursor);
+			
+			exportCssSection(targetMainApp, constants);
+			exportMenuSection(sourceMainContent, targetMainContent, constants);
+			
+			var vst:Array = sourceMainContent.findAllLines(constants.viewsStartToken);
+			var vet:Array = sourceMainContent.findAllLines(constants.viewsEndToken);
+			exportViewsSection(sourceMainContent, targetMainContent, constants);
         			
-            targetMainApp.save(context.targetMainAppLocation);
-        			
-			targetMainContent.replaceOrInsert(
-				menuSection,
-				constants.menuStartToken,
-				constants.menuEndToken,
-				constants.menuCursor);
-            
-            targetMainContent.replaceOrInsert(
-				viewsSection,
-				constants.viewsStartToken,
-				constants.viewsEndToken,
-				constants.viewsCursor);
-            
+            targetMainApp.save(context.targetMainAppLocation);            
             targetMainContent.save(context.targetMainContentLocation);
 
             copyFilesToNewProject(context.targetSrcFolder);
 
 			success("Export " + exportedProject.name + " to Apache Royale Templated Application successfully finished.");
+        }
+        
+        private function exportCssSection(target:TextLines, constants:ExportConstants):void
+        {
+        		var cssSection:TextLines = constants.getCssSection();
+			target.replaceOrInsert(
+				cssSection,
+				constants.cssCursor);        		
+        }
+        
+        private function exportMenuSection(source:TextLines, target:TextLines, constants:ExportConstants):void
+        {
+        		var menuSectionRanges:Array = source.findAllSections(
+        			constants.menuStartToken, 
+        			constants.menuEndToken);
+        			
+        		var menuSections:Array = [];
+        		for each (var range:Array in menuSectionRanges)
+        		{
+        			menuSections.push(source.getSection(range[0], range[1]));
+        		}
+        		
+        		for each (var section:TextLines in menuSections)
+			target.replaceOrInsert(
+				section,
+				constants.menuCursor);		
+        }
+        
+        private function exportViewsSection(source:TextLines, target:TextLines, constants:ExportConstants):void
+        {
+        		var viewSectionRanges:Array = source.findAllSections(
+        			constants.viewsStartToken, 
+        			constants.viewsEndToken);
+        			
+        		var viewSections:Array = [];
+        		for each (var range:Array in viewSectionRanges)
+        		{
+        			viewSections.push(source.getSection(range[0], range[1]));
+        		}
+        		
+        		for each (var section:TextLines in viewSections)
+			target.replaceOrInsert(
+				section,
+				constants.viewsCursor);		
         }
 
         private function onCancelReport(event:Event):void
