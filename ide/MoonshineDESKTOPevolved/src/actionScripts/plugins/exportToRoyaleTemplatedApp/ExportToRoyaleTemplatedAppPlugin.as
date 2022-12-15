@@ -57,6 +57,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
     import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.TextLines;
     import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.ExportContext;
     import flash.text.engine.TextLine;
+    import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.GeneratedSection;
 
     public class ExportToRoyaleTemplatedAppPlugin extends PluginBase
     {
@@ -125,7 +126,6 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
         private function onExport(event:Event):void
         {
-			var constants:ExportConstants = new ExportConstants(exportedProject.name);
 			var context:ExportContext = new ExportContext(mainAppFile, exportedProject);
         		
 			if (!context.targetSrcFolder)
@@ -136,7 +136,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
         		
 			var targetMainApp:TextLines = TextLines.load(context.targetMainAppLocation);
 
-			if (!targetMainApp.hasContent() || targetMainApp.findLine(constants.royaleJewelApplication) < 0)
+			if (!targetMainApp.hasContent() || targetMainApp.findLine(ExportConstants.ROYALE_JEWEL_APPLICATION) < 0)
 			{
 				printErrorAndCloseExport("Main application file of selected project is empty or it is not Apache Royale project.");
 				return;
@@ -152,12 +152,9 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
 			var sourceMainContent:TextLines = TextLines.load(context.sourceMainContentLocation);
 			
-			exportCssSection(targetMainApp, constants);
-			exportMenuSection(sourceMainContent, targetMainContent, constants);
-			
-			var vst:Array = sourceMainContent.findAllLines(constants.viewsStartToken);
-			var vet:Array = sourceMainContent.findAllLines(constants.viewsEndToken);
-			exportViewsSection(sourceMainContent, targetMainContent, constants);
+			exportCssSection(targetMainApp);
+			exportMenuSection(sourceMainContent, targetMainContent);			
+			exportViewsSection(sourceMainContent, targetMainContent);
         			
             targetMainApp.save(context.targetMainAppLocation);            
             targetMainContent.save(context.targetMainContentLocation);
@@ -167,19 +164,20 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 			success("Export " + exportedProject.name + " to Apache Royale Templated Application successfully finished.");
         }
         
-        private function exportCssSection(target:TextLines, constants:ExportConstants):void
+        private function exportCssSection(target:TextLines):void
         {
-        		var cssSection:TextLines = constants.getCssSection();
+        		var cssSection:GeneratedSection = ExportConstants.getCssSection(exportedProject.name);
+        		
 			target.replaceOrInsert(
 				cssSection,
-				constants.cssCursor);        		
+				ExportConstants.CSS_CURSOR);        		
         }
         
-        private function exportMenuSection(source:TextLines, target:TextLines, constants:ExportConstants):void
+        private function exportMenuSection(source:TextLines, target:TextLines):void
         {
         		var menuSectionRanges:Array = source.findAllSections(
-        			constants.menuStartToken, 
-        			constants.menuEndToken);
+        			ExportConstants.START_GENERATED_MENU, 
+        			ExportConstants.END_GENERATED_MENU);
         			
         		var menuSections:Array = [];
         		for each (var range:Array in menuSectionRanges)
@@ -187,17 +185,17 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
         			menuSections.push(source.getSection(range[0], range[1]));
         		}
         		
-        		for each (var section:TextLines in menuSections)
+        		for each (var section:GeneratedSection in menuSections)
 			target.replaceOrInsert(
 				section,
-				constants.menuCursor);		
+				ExportConstants.GENERATED_MENU_CURSOR);		
         }
         
-        private function exportViewsSection(source:TextLines, target:TextLines, constants:ExportConstants):void
+        private function exportViewsSection(source:TextLines, target:TextLines):void
         {
         		var viewSectionRanges:Array = source.findAllSections(
-        			constants.viewsStartToken, 
-        			constants.viewsEndToken);
+        			ExportConstants.START_GENERATED_SCROLLABLE_SECTION, 
+        			ExportConstants.END_GENERATED_SCROLLABLE_SECTION);
         			
         		var viewSections:Array = [];
         		for each (var range:Array in viewSectionRanges)
@@ -205,10 +203,10 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
         			viewSections.push(source.getSection(range[0], range[1]));
         		}
         		
-        		for each (var section:TextLines in viewSections)
+        		for each (var section:GeneratedSection in viewSections)
 			target.replaceOrInsert(
 				section,
-				constants.viewsCursor);		
+				ExportConstants.GENERATED_VIEWS_CURSOR);		
         }
 
         private function onCancelReport(event:Event):void

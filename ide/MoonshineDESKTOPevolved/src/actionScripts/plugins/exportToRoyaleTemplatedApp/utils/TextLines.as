@@ -1,10 +1,7 @@
 package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
-{
-    
+{    
 	import actionScripts.factory.FileLocation;
 	import flash.filesystem.File;
-	import flash.utils.Dictionary;
-	import flash.utils.Dictionary;
 	import flash.text.engine.TextLine;
 
 	public class TextLines  
@@ -54,19 +51,6 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			}
 		}
 		
-		public static function substringBetweenTokens(source:String, startToken:String, endToken:String):String
-		{
-			var start:int = source.indexOf(startToken) + startToken.length;
-			var end:int = source.indexOf(endToken);
-			
-			if (start < startToken.length || end < 0 || end <= start)
-			{
-				return null;
-			}
-			
-			return source.substring(start, end);
-		}
-		
 		public function findLine(token:String):int
 		{
 			for (var i:int = 0; i < _lines.length; i++)
@@ -95,7 +79,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			return result;
 		}
 		
-		public function getSection(start:int, end:int):TextLines
+		public function getSection(start:int, end:int):GeneratedSection
 		{
 			var section:Array = [];
 			
@@ -104,7 +88,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 				section.push(_lines[i]);
 			}
 			
-			return new TextLines(section);
+			return new GeneratedSection(section);
 		}
 		
 		public function findAllSections(startToken:String, endToken:String):Array
@@ -133,7 +117,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			return result;
 		}
 		
-		public function insertSection(section:TextLines, pos:int):void
+		public function insertSection(section:GeneratedSection, pos:int):void
 		{
 			if (pos < 0) return;
 
@@ -143,19 +127,16 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			}
 		}
 		
-		public function replaceSection(section:TextLines, start:int, end:int):void
+		public function replaceSection(section:GeneratedSection, start:int, end:int):void
 		{
 			_lines.splice(start, end - start + 1);
 			insertSection(section, start);
 		}
 		
-		public function replaceOrInsert(section:TextLines, cursor:String):void
+		public function replaceOrInsert(section:GeneratedSection, cursor:String):void
 		{
-			var firstLine:String = section.lines[0];
-			var lastLine:String = section.lines[section.lines.length - 1];
-			var startToken:String = TextLines.substringBetweenTokens(firstLine, "GENERATED_", ":");
-			var endToken:String = TextLines.substringBetweenTokens(lastLine, "GENERATED_", ":");
-			
+			var startToken:String = section.getStartToken();
+			var endToken:String = section.getEndToken();			
 			
 			var range:Array = findAllSections(startToken, endToken)[0];
 			if (range)
