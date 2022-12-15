@@ -1,8 +1,8 @@
 package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
-{
-    
+{    
 	import actionScripts.factory.FileLocation;
 	import flash.filesystem.File;
+	import flash.text.engine.TextLine;
 
 	public class TextLines  
 	{
@@ -51,7 +51,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			}
 		}
 		
-		public function findFirstLine(token:String):int
+		public function findLine(token:String):int
 		{
 			for (var i:int = 0; i < _lines.length; i++)
 			{
@@ -64,66 +64,23 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			return -1;
 		}
 		
-		public function findLastLine(token:String):int
+		public function findAllLines(token:String):Array
 		{
-			for (var i:int = _lines.length - 1; i >= 0; i--)
+			var result:Array = [];
+			
+			for (var i:int = 0; i < _lines.length; i++)
 			{
 				if (_lines[i].indexOf(token) > -1)
 				{
-					return i;
+					result.push(i)
 				}
 			}
 
-			return -1;
+			return result;
 		}
 		
-		public function getLine(token:String):String
+		public function getSection(start:int, end:int):GeneratedSection
 		{
-			var index:int = findFirstLine(token);
-			if(index > -1)
-			{
-				return _lines[index];
-			}
-			else
-			{
-				return null;
-			}
-		}
-		
-		public function replaceLine(pattern:String, replacement:String):void
-		{
-			var pos:int = findFirstLine(pattern);
-			if (pos > -1)
-			{
-				_lines[pos] = _lines[pos].replace(pattern, replacement);
-			}
-		}
-		
-		public function findSection(startToken:String, endToken:String):Array
-		{
-			var start:int = findFirstLine(startToken);
-			var end:int = findLastLine(endToken);
-			
-			if (start < end)
-			{
-				return [start, end];
-			}
-			else
-			{
-				return null;
-			}
-		}
-		
-		public function getSection(startToken:String, endToken:String):TextLines
-		{
-			var range:Array = findSection(startToken, endToken);
-			if (!range)
-			{
-				return new TextLines([]);
-			}
-
-			var start:int = range[0];
-			var end:int = range[1];
 			var section:Array = [];
 			
 			for (var i:int = start; i <= end; i++)
@@ -131,10 +88,36 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 				section.push(_lines[i]);
 			}
 			
-			return new TextLines(section);
-		}	
+			return new GeneratedSection(section);
+		}
 		
-		public function insertSection(section:TextLines, pos:int):void
+		public function findAllSections(startToken:String, endToken:String):Array
+		{
+			var result:Array = new Array();
+			var startTokens:Array = findAllLines(startToken);
+			var endTokens:Array = findAllLines(endToken);
+			var length:int = startTokens.length;
+			if (endTokens.length != length)
+			{
+				return null;
+			}
+			for (var i:int = 0; i < length; i++)
+			{
+				var start:int = startTokens[i];
+				var end:int = endTokens[i];
+				if(start < end)
+				{
+					result.push([start, end]);
+				}
+				else
+				{
+					return null;
+				}
+			}
+			return result;
+		}
+		
+		public function insertSection(section:GeneratedSection, pos:int):void
 		{
 			if (pos < 0) return;
 
@@ -144,22 +127,25 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			}
 		}
 		
-		public function replaceSection(section:TextLines, start:int, end:int):void
+		public function replaceSection(section:GeneratedSection, start:int, end:int):void
 		{
 			_lines.splice(start, end - start + 1);
 			insertSection(section, start);
 		}
 		
-		public function replaceOrInsert(section:TextLines, startToken:String, endToken:String, cursor:String):void
+		public function replaceOrInsert(section:GeneratedSection, cursor:String):void
 		{
-			var range:Array = findSection(startToken, endToken);
+			var startToken:String = section.getStartToken();
+			var endToken:String = section.getEndToken();			
+			
+			var range:Array = findAllSections(startToken, endToken)[0];
 			if (range)
 			{
 				replaceSection(section, range[0], range[1]);
 			}
 			else
 			{
-				var pos:int = findFirstLine(cursor);
+				var pos:int = findLine(cursor);
 				insertSection(section, pos)
 			}
 		}

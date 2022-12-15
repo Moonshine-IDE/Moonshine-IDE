@@ -63,6 +63,123 @@ package actionScripts.utils
 		private static var model:IDEModel = IDEModel.getInstance();
 		private static var environmentSetupUtils:EnvironmentSetupUtils = EnvironmentSetupUtils.getInstance();
 		private static var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+
+		public static function getRelativePathAgainstProject(projectPath:Object, sourcePath:Object, forceRelativePath:Boolean=false):String
+		{
+			if (!projectPath)
+			{
+				throw Error("Path against project parameters must be non null.");
+				return null;
+			}
+			if (!sourcePath)
+				return "";
+
+			var projectPathFile:File;
+			var sourcePathFile:File;
+
+			// type checks
+			if (projectPath is File) projectPathFile = projectPath as File;
+			else if (projectPath is FileLocation) projectPathFile = (projectPath as FileLocation).fileBridge.getFile as File;
+			else if (projectPath is String) projectPathFile = new File(projectPath as String);
+
+			if (sourcePath is File) sourcePathFile = sourcePath as File;
+			else if (sourcePath is FileLocation) sourcePathFile = (sourcePath as FileLocation).fileBridge.getFile as File;
+			else if (sourcePath is String) sourcePathFile = new File(sourcePath as String);
+
+			var projectPathString:String = projectPathFile.nativePath.toLowerCase();
+			var sourcePathString:String = sourcePathFile.nativePath.toLowerCase();
+			var isDriveDifferenceOnWindows:Boolean;
+
+			// specific drive-check case on Windows
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				if (projectPathString.charAt(0) != sourcePathString.charAt(0))
+				{
+					isDriveDifferenceOnWindows = true;
+				}
+			}
+
+			// relative path conditions applicable for all platforms
+			if (!isDriveDifferenceOnWindows || ConstantsCoreVO.IS_MACOS)
+			{
+				var sourceRelativePath:String = projectPathFile.getRelativePath(sourcePathFile, true);
+				// if only non-null
+				if (sourceRelativePath || sourceRelativePath == "")
+				{
+					if (sourcePathString.indexOf(projectPathString + File.separator) != -1)
+					{
+						// source path is inside the project directory
+						return sourceRelativePath;
+					}
+					else
+					{
+						// source path is outside from the project directory
+						// - we want to support only one ../ case
+						var parentCount:int = sourceRelativePath.match(/(\.\.\/)/g).length;
+						if (parentCount == 1)
+						{
+							return sourceRelativePath;
+						}
+						else if (parentCount == 0)
+						{
+							return ".";
+						}
+					}
+				}
+			}
+
+			// if above matches not triggers, send absolute path
+			return sourcePathFile.nativePath;
+		}
+
+		public static function getAbsolutePathAgainstProject(projectPath:Object, sourceRelativePathString:String):String
+		{
+			if (!projectPath)
+			{
+				throw Error("Absolute path against project parameters must be non null.");
+				return null;
+			}
+			if (!sourceRelativePathString) 
+				return "";
+
+			var projectPathFile:File;
+			var sourcePathFile:File;
+			var isSourceRelativePathStringIsAbsolutePathString:Boolean;
+			try
+			{
+				sourcePathFile = new File(sourceRelativePathString);
+				isSourceRelativePathStringIsAbsolutePathString = true;
+			} catch (e:Error){}
+
+			// type checks
+			if (projectPath is File) projectPathFile = projectPath as File;
+			else if (projectPath is FileLocation) projectPathFile = (projectPath as FileLocation).fileBridge.getFile as File;
+			else if (projectPath is String) projectPathFile = new File(projectPath as String);
+
+			var isDottedSyntax:Boolean = (sourceRelativePathString.indexOf("../") != -1);
+			if (sourceRelativePathString == ".")
+			{
+				return projectPathFile.nativePath;
+			}
+			else if (isDottedSyntax)
+			{
+				var parentCount:int = sourceRelativePathString.match(/(\.\.\/)/g).length;
+				sourceRelativePathString = sourceRelativePathString.replace(/(\.\.\/)/g, "");
+				while (parentCount != 0)
+				{
+					sourcePathFile = (sourcePathFile && sourcePathFile.parent) || projectPathFile.parent;
+					parentCount --;
+				}
+				return sourcePathFile.nativePath + File.separator + sourceRelativePathString;
+			}
+
+			// in case of full path
+			if (isSourceRelativePathStringIsAbsolutePathString) 
+				return sourceRelativePathString;
+			
+			// in case of path that relative to the project
+			return (projectPathFile.nativePath + File.separator + sourceRelativePathString);
+		}
 		
 		public static function openSettingsViewFor(type:String):void
 		{

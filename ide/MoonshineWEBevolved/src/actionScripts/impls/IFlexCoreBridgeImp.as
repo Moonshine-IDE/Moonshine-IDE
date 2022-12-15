@@ -529,6 +529,16 @@ package actionScripts.impls
 		{
 			return null;
 		}
+		
+		public function getRelativePathAgainstProject(projectPath:Object, sourcePath:Object, forceRelativePath:Boolean=false):String
+		{
+			return null;
+		}
+		
+		public function getAbsolutePathAgainstProject(projectPath:Object, sourceRelativePathString:String):String
+		{
+			return null;
+		}
 
 		//--------------------------------------------------------------------------
 		//

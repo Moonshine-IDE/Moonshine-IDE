@@ -29,34 +29,34 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.javalsp
+package actionScripts.plugins.haxe
 {
 	import actionScripts.languageServer.ILanguageServerManager;
 	import actionScripts.plugin.ILanguageServerPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class JavaLanguageServerPlugin extends PluginBase implements ILanguageServerPlugin
+	public class HaxeLanguageServerPlugin extends PluginBase implements ILanguageServerPlugin
 	{
-		override public function get name():String 			{return "Java Language Server Plugin";}
+		override public function get name():String 			{return "Haxe Language Server Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team";}
-		override public function get description():String 	{return "Java project importing, exporting & scaffolding.";}
+		override public function get description():String 	{return "Haxe code intelligence provided by a language server";}
 
 		public function get languageServerProjectType():Class
 		{
-			return JavaProjectVO;
+			return HaxeProjectVO;
 		}
 		
-		public function JavaLanguageServerPlugin()
+		public function HaxeLanguageServerPlugin()
 		{
 			super();
 		}
 
 		public function createLanguageServerManager(project:ProjectVO):ILanguageServerManager
 		{
-			return new JavaLanguageServerManager(JavaProjectVO(project));
+			return new HaxeLanguageServerManager(HaxeProjectVO(project));
 		}
 	}
 }

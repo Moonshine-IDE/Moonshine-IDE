@@ -40,10 +40,6 @@
         import actionScripts.plugin.settings.vo.PathSetting;
         import actionScripts.plugin.settings.vo.SettingsWrapper;
 
-        import mx.events.CloseEvent;
-
-
-        import spark.components.Alert;
         import spark.components.BusyIndicator;
         import spark.components.Label;
         import spark.components.VGroup;
@@ -96,20 +92,6 @@
                 showBusyIndicator();
                 super.save();
             }
-        }
-
-        private function onCloseInfoPopup(event:CloseEvent):void
-        {
-            event.currentTarget.removeEventListener(CloseEvent.CLOSE, onCloseInfoPopup);
-            if (event.detail == Alert.CANCEL)
-            {
-                close();
-                dispatchEvent(new CloseEvent(CloseEvent.CLOSE, false, false, Alert.CANCEL));
-                return;
-            }
-
-            showBusyIndicator();
-            super.save();
         }
 
         private function onRequiredSettingPathSelect(event:Event):void

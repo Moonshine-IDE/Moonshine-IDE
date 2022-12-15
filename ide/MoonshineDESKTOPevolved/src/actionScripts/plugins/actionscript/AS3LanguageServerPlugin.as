@@ -29,7 +29,7 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.as3lsp
+package actionScripts.plugins.actionscript
 {
 	import actionScripts.languageServer.ILanguageServerManager;
 	import actionScripts.plugin.ILanguageServerPlugin;
@@ -56,7 +56,7 @@ package actionScripts.plugins.as3lsp
 
 		public function createLanguageServerManager(project:ProjectVO):ILanguageServerManager
 		{
-			return new ActionScriptLanguageServerManager(AS3ProjectVO(project));
+			return new AS3LanguageServerManager(AS3ProjectVO(project));
 		}
 	}
 }

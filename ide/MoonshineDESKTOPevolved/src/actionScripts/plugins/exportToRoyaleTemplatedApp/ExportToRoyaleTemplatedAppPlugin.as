@@ -56,6 +56,8 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
     import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.ExportConstants;
     import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.TextLines;
     import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.ExportContext;
+    import flash.text.engine.TextLine;
+    import actionScripts.plugins.exportToRoyaleTemplatedApp.utils.GeneratedSection;
 
     public class ExportToRoyaleTemplatedAppPlugin extends PluginBase
     {
@@ -124,7 +126,6 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
         private function onExport(event:Event):void
         {
-			var constants:ExportConstants = new ExportConstants(exportedProject.name);
 			var context:ExportContext = new ExportContext(mainAppFile, exportedProject);
         		
 			if (!context.targetSrcFolder)
@@ -135,7 +136,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
         		
 			var targetMainApp:TextLines = TextLines.load(context.targetMainAppLocation);
 
-			if (!targetMainApp.hasContent() || targetMainApp.findFirstLine(constants.royaleJewelApplication) < 0)
+			if (!targetMainApp.hasContent() || targetMainApp.findLine(ExportConstants.ROYALE_JEWEL_APPLICATION) < 0)
 			{
 				printErrorAndCloseExport("Main application file of selected project is empty or it is not Apache Royale project.");
 				return;
@@ -150,50 +151,68 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 			}
 
 			var sourceMainContent:TextLines = TextLines.load(context.sourceMainContentLocation);
-
-			var cssSection:TextLines = constants.getCssSection();
-
-			var menuSection:TextLines = sourceMainContent.getSection(
-				constants.menuStartToken,
-				constants.menuEndToken);
-
-			var viewsSection:TextLines = sourceMainContent.getSection(
-				constants.viewsStartToken,
-				constants.viewsEndToken);
-
-			targetMainApp.replaceOrInsert(
-				cssSection,
-				constants.cssStartToken,
-				constants.cssEndToken,
-				constants.cssCursor);
+			
+			exportCssSection(targetMainApp);
+			exportMenuSection(sourceMainContent, targetMainContent);			
+			exportViewsSection(sourceMainContent, targetMainContent);
         			
-            targetMainApp.save(context.targetMainAppLocation);
-        			
-			targetMainContent.replaceOrInsert(
-				menuSection,
-				constants.menuStartToken,
-				constants.menuEndToken,
-				constants.menuCursor);
-            
-            targetMainContent.replaceOrInsert(
-				viewsSection,
-				constants.viewsStartToken,
-				constants.viewsEndToken,
-				constants.viewsCursor);
-            
+            targetMainApp.save(context.targetMainAppLocation);            
             targetMainContent.save(context.targetMainContentLocation);
 
             copyFilesToNewProject(context.targetSrcFolder);
 
-			print("Export " + exportedProject.name + " to Apache Royale Templated Application successfully finished.");
-            onCancelReport(null);
+			success("Export " + exportedProject.name + " to Apache Royale Templated Application successfully finished.");
+        }
+        
+        private function exportCssSection(target:TextLines):void
+        {
+        		var cssSection:GeneratedSection = ExportConstants.getCssSection(exportedProject.name);
+        		
+			target.replaceOrInsert(
+				cssSection,
+				ExportConstants.CSS_CURSOR);        		
+        }
+        
+        private function exportMenuSection(source:TextLines, target:TextLines):void
+        {
+        		var menuSectionRanges:Array = source.findAllSections(
+        			ExportConstants.START_GENERATED_MENU, 
+        			ExportConstants.END_GENERATED_MENU);
+        			
+        		var menuSections:Array = [];
+        		for each (var range:Array in menuSectionRanges)
+        		{
+        			menuSections.push(source.getSection(range[0], range[1]));
+        		}
+        		
+        		for each (var section:GeneratedSection in menuSections)
+			target.replaceOrInsert(
+				section,
+				ExportConstants.GENERATED_MENU_CURSOR);		
+        }
+        
+        private function exportViewsSection(source:TextLines, target:TextLines):void
+        {
+        		var viewSectionRanges:Array = source.findAllSections(
+        			ExportConstants.START_GENERATED_SCROLLABLE_SECTION, 
+        			ExportConstants.END_GENERATED_SCROLLABLE_SECTION);
+        			
+        		var viewSections:Array = [];
+        		for each (var range:Array in viewSectionRanges)
+        		{
+        			viewSections.push(source.getSection(range[0], range[1]));
+        		}
+        		
+        		for each (var section:GeneratedSection in viewSections)
+			target.replaceOrInsert(
+				section,
+				ExportConstants.GENERATED_VIEWS_CURSOR);		
         }
 
         private function onCancelReport(event:Event):void
         {
-            dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
-
-            cleanUp();
+			dispatcher.dispatchEvent(new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, configView as DisplayObject));
+			cleanUp();
         }
 
         private function copyFilesToNewProject(projectDirSource:FileLocation):void
@@ -213,8 +232,8 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 
         private function cleanUp():void
         {
-            configView.removeEventListener(SettingsView.EVENT_CLOSE, onExport);
-            configView.removeEventListener(SettingsView.EVENT_SAVE, onCancelReport);
+            configView.removeEventListener(SettingsView.EVENT_SAVE, onExport);
+            configView.removeEventListener(SettingsView.EVENT_CLOSE, onCancelReport);
 
             configView = null;
         }

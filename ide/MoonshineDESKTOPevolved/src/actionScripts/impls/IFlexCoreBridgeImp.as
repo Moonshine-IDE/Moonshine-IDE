@@ -47,7 +47,8 @@ package actionScripts.impls
 	import actionScripts.plugins.visualEditor.domino.DominoJavaAgentsExporter;
 	import actionScripts.plugins.visualEditor.domino.ExportDominoToRoyalePlugin;
 	import actionScripts.ui.IContentWindow;
-	import actionScripts.valueObjects.HelperConstants;
+import actionScripts.utils.PathSetupHelperUtil;
+import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
 	import flash.desktop.NativeApplication;
@@ -690,6 +691,16 @@ package actionScripts.impls
 		public function getDominoFormBuilderWrapper(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow
 		{
 			return (new DominoFormBuilderWrapper(file, project as OnDiskProjectVO));
+		}
+
+		public function getRelativePathAgainstProject(projectPath:Object, sourcePath:Object, forceRelativePath:Boolean=false):String
+		{
+			return PathSetupHelperUtil.getRelativePathAgainstProject(projectPath, sourcePath, forceRelativePath);
+		}
+
+		public function getAbsolutePathAgainstProject(projectPath:Object, sourceRelativePathString:String):String
+		{
+			return PathSetupHelperUtil.getAbsolutePathAgainstProject(projectPath, sourceRelativePathString);
 		}
 	}
 }
