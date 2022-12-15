@@ -39,9 +39,12 @@
         import actionScripts.extResources.com.validator.ValidatorType;
         import actionScripts.utils.SimpleValidator;
         import actionScripts.valueObjects.AS3ClassAttributes;
-        import actionScripts.valueObjects.ConstantsCoreVO;
 
         import mx.events.FlexEvent;
+        import actionScripts.factory.FileLocation;
+
+        public var templateHaxeClass:FileLocation;
+        public var templateHaxeInterface:FileLocation;
 
         override protected function onBtnCreateClick(event:MouseEvent):void
         {
@@ -61,7 +64,7 @@
 
                 attributes.imports = newAsFileCompletionManager.classesImports.concat(newAsFileCompletionManager.interfacesImports);
 
-                var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? ConstantsCoreVO.TEMPLATE_HAXEINTERFACE : ConstantsCoreVO.TEMPLATE_HAXECLASS, wrapperOfFolderLocation, attributes);
+                var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? templateHaxeInterface : templateHaxeClass, wrapperOfFolderLocation, attributes);
                 tmpEvent.fileName = txtFileName.text;
                 tmpEvent.ofProject = wrapperBelongToProject;
                 tmpEvent.fileExtension = this.createdFileExtension;

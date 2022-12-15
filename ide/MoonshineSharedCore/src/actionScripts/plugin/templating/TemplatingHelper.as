@@ -230,7 +230,9 @@ package actionScripts.plugin.templating
 				case "Domino Visual Editor Subform":
 					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];	
 				case "Groovy Class":
+				case "Groovy Interface":
 				case "Java Class":
+				case "Java Interface":
 					return [ProjectMenuTypes.GRAILS, ProjectMenuTypes.JAVA, ProjectMenuTypes.TEMPLATE, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.GENERIC];
 				case "Haxe Class":
 				case "Haxe Interface":

@@ -35,7 +35,7 @@ package actionScripts.impls
 	import actionScripts.events.GenesisEvent;
 	import actionScripts.managers.StartupHelper;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
-	import actionScripts.plugins.exportToExternalProject.ExportToExternalProjectPlugin;
+	import actionScripts.plugins.exportToRoyaleTemplatedApp.ExportToRoyaleTemplatedAppPlugin;
 	import actionScripts.plugins.genesis.GenesisPlugin;
 	import actionScripts.plugins.lsmonitor.LanguageServersMonitor;
 	import actionScripts.plugins.macports.MacPortsPlugin;
@@ -239,7 +239,7 @@ import actionScripts.valueObjects.HelperConstants;
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
 				ExportDominoToRoyalePlugin,
-				ExportToExternalProjectPlugin,
+				ExportToRoyaleTemplatedAppPlugin,
 				ExportDominoJavaAgentsPlugin,
                 VisualEditorRefreshFilesPlugin,
 				FileAssociationPlugin,
@@ -305,7 +305,7 @@ import actionScripts.valueObjects.HelperConstants;
 		{
 			return [FileAssociationPlugin, OpenInTerminalPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, CleanProject, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
-					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin, ExportToExternalProjectPlugin,
+					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin, ExportToRoyaleTemplatedAppPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
 					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin, GenesisPlugin];
 		}

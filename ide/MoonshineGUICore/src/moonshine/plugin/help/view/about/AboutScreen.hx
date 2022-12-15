@@ -31,6 +31,7 @@ it in the license file.
 
 package moonshine.plugin.help.view.about;
 
+import feathers.controls.Alert;
 import actionScripts.events.GlobalEventDispatcher;
 import actionScripts.events.SettingsEvent;
 import actionScripts.locator.HelperModel;
@@ -600,10 +601,22 @@ class SDKGrid extends GridView {
 				labelFix.visible = labelFix.includeInLayout = true;
 				labelVersion.text = "Not installed.";
 			} else {
+
+				if (state.text == ComponentVO.GIT_ACCESS_PERMISSION_MISSING)
+				{
+					labelVersion.visible = labelVersion.includeInLayout = false;
+					labelFix.text = "Grant permission";
+					labelFix.visible = labelFix.includeInLayout = true;
+				}
+				else
+				{
+					labelVersion.text = state.text;
+					labelFix.text = "Fix this";
+					labelFix.visible = labelFix.includeInLayout = false;
+					labelVersion.visible = labelVersion.includeInLayout = true;
+				}
+
 				labelLoading.visible = labelLoading.includeInLayout = false;
-				labelFix.visible = labelFix.includeInLayout = false;
-				labelVersion.visible = labelVersion.includeInLayout = true;
-				labelVersion.text = state.text;
 			}
 		};
 
@@ -624,7 +637,14 @@ class SDKGrid extends GridView {
 
 	function labelFixClicked(e:MouseEvent) {
 		var label:DataLabel = cast e.target;
-		GlobalEventDispatcher.getInstance().dispatchEvent(new Event(StartupHelperPlugin.EVENT_GETTING_STARTED));
+		if (label.text == "Grant permission")
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(new Event("openManageRepositoriesGit"));
+		}
+		else
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(new Event(StartupHelperPlugin.EVENT_GETTING_STARTED));
+		}
 	}
 }
 
@@ -722,18 +742,21 @@ class EditorGrid extends GridView {
 			var labelFix = cast(cellRenderer.getChildByName("labelFix"), DataLabel);
 			labelFix.data = state.data;
 
-			if (state.text == null || state.text == "") {
+			if (state.text == null || state.text == "") 
+				{
 				labelLoading.visible = labelLoading.includeInLayout = false;
 				labelVersion.visible = labelVersion.includeInLayout = true;
 				labelFix.visible = labelFix.includeInLayout = true;
 				labelVersion.text = "Not installed.";
 				tickLoader.visible = tickLoader.includeInLayout = false;
 				crossLoader.visible = crossLoader.includeInLayout = true;
-			} else {
-				labelLoading.visible = labelLoading.includeInLayout = false;
-				labelFix.visible = labelFix.includeInLayout = false;
-				labelVersion.visible = labelVersion.includeInLayout = true;
+			} 
+			else 
+			{
 				labelVersion.text = state.text;
+				labelFix.visible = labelFix.includeInLayout = false;
+				labelLoading.visible = labelLoading.includeInLayout = false;
+				labelVersion.visible = labelVersion.includeInLayout = true;
 				tickLoader.visible = tickLoader.includeInLayout = true;
 				crossLoader.visible = crossLoader.includeInLayout = false;
 			}
@@ -757,6 +780,7 @@ class EditorGrid extends GridView {
 	function labelFixClicked(e:MouseEvent) {
 		var label:DataLabel = cast e.target;
 		GlobalEventDispatcher.getInstance().dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, ExternalEditorsPlugin.NAMESPACE));
+		
 	}
 }
 

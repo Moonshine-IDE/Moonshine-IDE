@@ -42,6 +42,10 @@
         import actionScripts.valueObjects.ConstantsCoreVO;
 
         import mx.events.FlexEvent;
+        import actionScripts.factory.FileLocation;
+
+        public var templateGroovyClass:FileLocation;
+        public var templateGroovyInterface:FileLocation;
 
         override protected function onBtnCreateClick(event:MouseEvent):void
         {
@@ -61,7 +65,7 @@
 
                 attributes.imports = newAsFileCompletionManager.classesImports.concat(newAsFileCompletionManager.interfacesImports);
 
-                var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_GROOVYCLASS, wrapperOfFolderLocation, attributes);
+                var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, isInterfaceDialog ? templateGroovyInterface : templateGroovyClass, wrapperOfFolderLocation, attributes);
                 tmpEvent.fileName = txtFileName.text;
                 tmpEvent.ofProject = wrapperBelongToProject;
                 tmpEvent.fileExtension = this.createdFileExtension;

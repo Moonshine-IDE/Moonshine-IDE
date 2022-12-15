@@ -72,8 +72,8 @@ package actionScripts.plugins.visualEditor.domino
 			for (var i:int = 0; i < forms.length; i++)
 			{
 				var form:DominoFormVO = forms[i];
-				scrollableContents += DominoRoyaleScrollableSectionContent.toCode(form.formName,project.name + ".views.modules." + form.formName + "." + form.formName + "Views.") + "\n";
-				drawerDataProvider.push(DominoRoyaleDrawerDataProvider.toCode(form.formName, form.formName));
+				scrollableContents += DominoRoyaleScrollableSectionContent.toCode(project.name, form.formName,project.name + ".views.modules." + form.formName + "." + form.formName + "Views.") + "\n";
+				drawerDataProvider.push(DominoRoyaleDrawerDataProvider.toCode(project.name, form.formName, form.formName));
 			}
 			
 			fileContent = fileContent.replace(/%Namespaces%/gi, namespacePathStatements.join("\n"));

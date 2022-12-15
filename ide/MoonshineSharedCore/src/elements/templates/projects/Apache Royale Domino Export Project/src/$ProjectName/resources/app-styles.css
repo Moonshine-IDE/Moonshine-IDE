@@ -23,3 +23,15 @@
     color: #808080;
     padding: 0;
 }
+
+.dxDataGrid {
+    height: calc(100vh - 20px);
+}
+
+.jewel.navigationlink {
+    padding: 15px;
+}
+
+.navIconLinkItemRenderer {
+    ISelectableItemRenderer: ClassReference("org.apache.royale.jewel.beads.itemRenderers.ClassSelectorListSelectableItemRendererBead");
+}

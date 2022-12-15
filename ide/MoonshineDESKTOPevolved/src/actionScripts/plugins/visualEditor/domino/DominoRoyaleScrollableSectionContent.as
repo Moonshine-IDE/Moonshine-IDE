@@ -35,7 +35,7 @@ package actionScripts.plugins.visualEditor.domino
 
 	public class DominoRoyaleScrollableSectionContent extends RoyaleElemenetBase
 	{
-		public static function toCode(componentName:String, ambiguousName:String = ""):String
+		public static function toCode(projectName:String, componentName:String, ambiguousName:String = ""):String
 		{
 			var scrollableSectionContent:String = readTemplate("elements/templates/royaleDominoElements/elements/ScrollableSectionContent.template");
 			var viewComponent:String = readTemplate("elements/templates/royaleDominoElements/elements/ViewComponent.template");
@@ -46,6 +46,8 @@ package actionScripts.plugins.visualEditor.domino
 
 			scrollableSectionContent = scrollableSectionContent.replace(/%ViewComponentName%/ig, ambiguousName + componentName);
 			scrollableSectionContent = scrollableSectionContent.replace(/%ViewComponent%/ig, viewComponent);
+			scrollableSectionContent = scrollableSectionContent.replace(/%ProjectName%/ig, projectName);
+			scrollableSectionContent = scrollableSectionContent.replace(/%ViewName%/ig, componentName);
 
 			return scrollableSectionContent;
 		}

@@ -29,7 +29,7 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.javalsp
+package actionScripts.plugins.java
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
@@ -399,7 +399,9 @@ package actionScripts.plugins.javalsp
 		{
 			if(_languageServerProcess)
 			{
-				trace("Error: Java language server process already exists!");
+				// the process for the language server wasn't cleaned up
+				// properly before trying to start a new one...
+				trace("Error: Java language server process already exists for project: " + project.name);
 				return;
 			}
 			var jdkPath:String = getProjectSDKPath(_project, _model);
@@ -596,8 +598,8 @@ package actionScripts.plugins.javalsp
 		{
 			if(_languageClient)
 			{
-				//we're already initializing or initialized...
-				trace("Error: Java language client already exists!");
+				// the language server is already initializing or initialized...
+				trace("Error: Java language client already exists for project: " + project.name);
 				return;
 			}
 
