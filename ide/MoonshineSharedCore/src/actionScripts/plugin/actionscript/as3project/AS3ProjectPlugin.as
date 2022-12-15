@@ -432,14 +432,11 @@ import flash.display.DisplayObject;
 		// Create new AS3 Project
 		private function createAS3Project(event:NewProjectEvent):void
 		{
-			if (!canCreateProject(event))
+			if (canCreateProject(event))
 			{
-				return;
+				model.flexCore.createProject(event);
 			}
-			
-			model.flexCore.createProject(event);
 		}
-
 
 		private function createRoyalVisualProject(event:NewProjectEvent):void
 		{	
@@ -474,12 +471,13 @@ import flash.display.DisplayObject;
 		private function canCreateProject(event:NewProjectEvent):Boolean
 		{
 			var projectTemplateName:String = event.templateDir.fileBridge.name;
-			return projectTemplateName.indexOf(ProjectTemplateType.VISUAL_EDITOR) == -1 &&
-				projectTemplateName.indexOf(ProjectTemplateType.JAVA) == -1 &&
-				projectTemplateName.indexOf(ProjectTemplateType.GRAILS) == -1 &&
-				projectTemplateName.indexOf(ProjectTemplateType.HAXE) == -1 && 
-				projectTemplateName.indexOf(ProjectTemplateType.ONDISK) == -1 &&
-				projectTemplateName.indexOf(ProjectTemplateType.GENERIC) == -1;
+			return projectTemplateName.indexOf(ProjectTemplateType.ACTIONSCRIPT) != -1 ||
+				projectTemplateName.indexOf(ProjectTemplateType.FLEX) != -1 ||
+				projectTemplateName.indexOf(ProjectTemplateType.ROYALE_VISUAL_PROJECT) != -1 ||
+				projectTemplateName.indexOf(ProjectTemplateType.AWAY3D) != -1 ||
+				projectTemplateName.indexOf(ProjectTemplateType.FEATHERS_SDK) != -1 ||
+				projectTemplateName.indexOf(ProjectTemplateType.LIBRARY_PROJECT) != -1 ||
+				projectTemplateName.indexOf(ProjectTemplateType.ROYALE_PROJECT) != -1;
 		}
 		
 		protected function handleEventSearchForProjectsInDirectories(event:ProjectEvent):void

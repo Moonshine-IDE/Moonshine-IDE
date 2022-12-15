@@ -35,6 +35,7 @@ package actionScripts.plugin.project
     {
         public static const FEATHERS_SDK:String = "Feathers SDK";
         public static const ACTIONSCRIPT:String = "ActionScript";
+        public static const FLEX:String = "Flex";
 		public static const LIBRARY_PROJECT:String = "Library Project";
         public static const MOBILE:String = "Mobile Project";
         public static const VISUAL_EDITOR:String = "Visual Editor";
