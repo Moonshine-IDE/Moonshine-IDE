@@ -304,8 +304,17 @@ package actionScripts.plugins.as3project
 			// remove any ( or ) stuff
 			if (!isOpenProjectCall)
 			{
-				var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
-				project.projectName = event.exportProject ? event.exportProject.name + "_exported" : "New"+tempName;
+				if (event.proposedProjectName)
+				{
+					project.projectName = event.proposedProjectName;
+				}
+				else
+				{
+					var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ?
+							event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) :
+							event.templateDir.fileBridge.name;
+					project.projectName = event.exportProject ? event.exportProject.name + "_exported" : "New"+tempName;
+				}
 
 				if (isFlexJSRoyalProject || isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
 				{
