@@ -196,7 +196,6 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(EVENT_SWITCH_TAB_TO_CODE, switchTabToCodeHandler);
 
 			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
-			visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
 		}
 
 		private function previewStartCompleteHandler(event:PreviewPluginEvent):void
@@ -461,7 +460,6 @@ package actionScripts.plugins.ui.editor
 				//when it swtich back the current view edtior , it need reload the sub from again
 				if(visualEditorView.visualEditor.editingSurface){
 					visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
-					visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
 				}
 
 

@@ -74,7 +74,7 @@
 			
 			protected function onPreinitialize(event:FlexEvent):void
 			{
-				createdFileExtension = ".frl";
+				createdFileExtension = ".action";
 				warningMessage = "";
 				isDestinationValid=true;
 			

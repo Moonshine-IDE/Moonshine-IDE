@@ -49,6 +49,7 @@ package actionScripts.controllers
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
+	import actionScripts.ui.editor.DominoFormulaEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.notifier.ActionNotifier;
     import actionScripts.utils.UtilsCore;
@@ -284,6 +285,9 @@ package actionScripts.controllers
 				{
 					openTabularInterfaceEditorFile(project);
 				}
+				else if (extension == "action"){
+					openDominoActionFile(project, fileData);
+				}
 				else
 				{
 					//try to open dve with domino visual editor.
@@ -468,6 +472,69 @@ package actionScripts.controllers
 			ged.dispatchEvent(
 				new AddTabEvent(editor)
 			);
+		}
+
+		private function openDominoActionFile(project:ProjectVO, value:Object):void
+		{
+			Alert.show("open openDominoActionFile");
+			var editor:DominoFormulaEditor = new DominoFormulaEditor();
+			var extension:String = file.fileBridge.extension;
+			if (!project)
+			{
+				project = model.activeProject;
+			}
+
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
+
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			ged.dispatchEvent(editorEvent);
+			
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
+			
+			var formulaStr:String=loadingFormulaFromActionFile();
+			Alert.show("formulaStr:"+formulaStr);
+			editor.open(file, formulaStr);
+
+			//editor.openFileAsStringHandler(formulaStr);
+			
+			if (atLine > -1)
+			{
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
+			}
+
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+
+		}
+
+		/**
+		 * Loading the formula from action file to editor
+		 * @return 
+		 */
+		private function loadingFormulaFromActionFile():String 
+		{
+			var formula:String = "";
+			if(file){
+				var actionString:String=String(file.fileBridge.read());
+				
+				var actionXml:XML = new XML(actionString);
+				for each(var code:XML in actionXml..formula) //no matter of depth Note here
+				{
+					
+					if(code.text()){
+						formula=formula+code.text();
+					}
+				}
+
+			}
+
+			return formula;
+
 		}
 	}
 }

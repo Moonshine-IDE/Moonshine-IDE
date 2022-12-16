@@ -88,6 +88,13 @@ package actionScripts.impls
 			
 			dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]))
 		}
+
+		public function openDominoActionFile(path:String):void 
+		{
+			var tmpOpenFile:FileLocation = new FileLocation(path);
+			if (!tmpOpenFile) return;
+			dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]))
+		}
 		
 		public function getVisualEditorComponent():VisualEditor
 		{

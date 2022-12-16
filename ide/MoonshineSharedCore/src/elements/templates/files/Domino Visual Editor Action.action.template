@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<action title='Domino Visual Editor Action' version="9.0"  xmlns="http://www.lotus.com/dxl" showinmenu="false" showinbar="false"
+<action title='Domino Visual Editor Action' version="9.0"  showinmenu="false" showinbar="false"
 align="left" graphicalalign="left"> 
     <code event="click">
         <formula>@Text("Action Example")</formula>
