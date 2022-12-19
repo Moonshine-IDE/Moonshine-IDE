@@ -2,6 +2,6 @@
 <action title='Domino Visual Editor Action' version="9.0"  showinmenu="false" showinbar="false"
 align="left" graphicalalign="left"> 
     <code event="click">
-        <formula>@Text("Action Example")</formula>
+        <formula>QFRleHQoIkFjdGlvbiBFeGFtcGxlIik=</formula>
     </code>
 </action>

@@ -32,7 +32,16 @@
 
 package actionScripts.ui.editor
 {
-        import actionScripts.factory.FileLocation;
+	import actionScripts.factory.FileLocation;
+	import utils.StringHelper;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.events.SaveFileEvent;
+	import actionScripts.valueObjects.URLDescriptorVO;
+
+	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.controllers.DataAgent;
+	import actionScripts.valueObjects.URLDescriptorVO;
+
     public class DominoFormulaEditor extends BasicTextEditor
 	{
         public function DominoFormulaEditor()
@@ -50,6 +59,67 @@ package actionScripts.ui.editor
 				return;
 			}
         }
+
+		/**
+		 * For domino action ,it only generate from template file 
+		 * So we don't need consider the file not existing case
+		 */
+		override public function save():void 
+		{
+
+			//StringHelper.base64Encode()
+			var actionString:String=String(file.fileBridge.read());
+			var actionXml:XML = new XML(actionString);
+
+			for each(var formula:XML in actionXml..formula) //no matter of depth Note here
+			{
+				if(super.text){
+					var encodeBase64:String = StringHelper.base64Encode(super.text);
+					var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
+					formula.parent().appendChild(newFormulaNode);
+					delete formula.parent().children()[formula.childIndex()];
+					
+				}
+			}
+
+			var saveText:String = actionXml.toXMLString();
+
+			if (ConstantsCoreVO.IS_AIR)
+			{
+				file.fileBridge.save(saveText);
+				editor.save();
+				super.updateChangeStatus();
+				
+				// Tell the world we've changed
+				dispatcher.dispatchEvent(
+					new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this)
+				);
+			}if (!ConstantsCoreVO.IS_AIR)
+			{
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saving in process..."));
+				super.loader = new DataAgent(URLDescriptorVO.FILE_MODIFY, onSaveSuccess, onSaveFault,
+						{path:file.fileBridge.nativePath,saveText:saveText});
+			}
+
+		}
+
+		private function onSaveFault(message:String):void
+		{
+			//Alert.show("Save Fault"+message);
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Save error!"));
+			loader = null;
+		}
+		
+		private function onSaveSuccess(value:Object, message:String=null):void
+		{
+			//Alert.show("Save Fault"+message);
+			super.loader = null;
+			editor.save();
+			updateChangeStatus();
+			dispatcher.dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saving successful."));
+			dispatcher.dispatchEvent(new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this));
+		}
 
        
 

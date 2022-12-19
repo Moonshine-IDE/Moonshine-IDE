@@ -58,6 +58,9 @@ package actionScripts.controllers
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
 
+	import mx.utils.Base64Encoder;
+	import utils.StringHelper;
+
 	public class OpenFileCommand implements ICommand
 	{
 		protected var model:IDEModel;
@@ -476,7 +479,7 @@ package actionScripts.controllers
 
 		private function openDominoActionFile(project:ProjectVO, value:Object):void
 		{
-			Alert.show("open openDominoActionFile");
+			
 			var editor:DominoFormulaEditor = new DominoFormulaEditor();
 			var extension:String = file.fileBridge.extension;
 			if (!project)
@@ -495,7 +498,7 @@ package actionScripts.controllers
 			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
 			
 			var formulaStr:String=loadingFormulaFromActionFile();
-			Alert.show("formulaStr:"+formulaStr);
+			
 			editor.open(file, formulaStr);
 
 			//editor.openFileAsStringHandler(formulaStr);
@@ -523,11 +526,13 @@ package actionScripts.controllers
 				var actionString:String=String(file.fileBridge.read());
 				
 				var actionXml:XML = new XML(actionString);
-				for each(var code:XML in actionXml..formula) //no matter of depth Note here
+				for each(var formulaXMLNode:XML in actionXml..formula) //no matter of depth Note here
 				{
 					
-					if(code.text()){
-						formula=formula+code.text();
+					if(formulaXMLNode.text()){
+						
+						var decodeBase64: String =  StringHelper.base64Decode(formulaXMLNode.text());
+						formula=formula+decodeBase64;
 					}
 				}
 
