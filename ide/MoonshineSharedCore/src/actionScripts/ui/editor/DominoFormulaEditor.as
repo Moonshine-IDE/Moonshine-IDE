@@ -33,7 +33,7 @@
 package actionScripts.ui.editor
 {
 	import actionScripts.factory.FileLocation;
-	import utils.StringHelper;
+	
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.events.SaveFileEvent;
 	import actionScripts.valueObjects.URLDescriptorVO;
@@ -41,6 +41,10 @@ package actionScripts.ui.editor
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.controllers.DataAgent;
 	import actionScripts.valueObjects.URLDescriptorVO;
+
+	import 	mx.utils.Base64Encoder;
+    import  mx.utils.Base64Decoder;
+    import  flash.utils.ByteArray;
 
     public class DominoFormulaEditor extends BasicTextEditor
 	{
@@ -74,7 +78,7 @@ package actionScripts.ui.editor
 			for each(var formula:XML in actionXml..formula) //no matter of depth Note here
 			{
 				if(super.text){
-					var encodeBase64:String = StringHelper.base64Encode(super.text);
+					var encodeBase64:String = base64Encode(super.text);
 					var newFormulaNode:XML = new XML("<formula>"+encodeBase64+"</formula>");
 					formula.parent().appendChild(newFormulaNode);
 					delete formula.parent().children()[formula.childIndex()];
@@ -119,6 +123,30 @@ package actionScripts.ui.editor
 			dispatcher.dispatchEvent(
 					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saving successful."));
 			dispatcher.dispatchEvent(new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this));
+		}
+
+
+		
+        private static function base64Encode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Encoder = new Base64Encoder();
+			base64.insertNewLines = false;
+			var byte:ByteArray = new ByteArray();
+			byte.writeMultiByte(str, charset);
+			base64.encodeBytes(byte);
+			return base64.toString();
+		}
+		
+		private static function base64Decode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Decoder = new Base64Decoder();
+			base64.decode(str);
+			var byteArray:ByteArray = base64.toByteArray();
+			return byteArray.readMultiByte(byteArray.length, charset);;
 		}
 
        
