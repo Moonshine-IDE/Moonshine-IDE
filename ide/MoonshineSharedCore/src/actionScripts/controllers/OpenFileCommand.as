@@ -58,8 +58,8 @@ package actionScripts.controllers
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
 
-	import mx.utils.Base64Encoder;
-	import utils.StringHelper;
+
+	
 
 	import actionScripts.utils.TextUtil;
 
