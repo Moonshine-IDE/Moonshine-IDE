@@ -33,6 +33,10 @@ package actionScripts.utils
 {
 	import flash.geom.Point;
 	import flash.xml.XMLNode;
+
+	import 	mx.utils.Base64Encoder;
+    import  mx.utils.Base64Decoder;
+    import  flash.utils.ByteArray;
 	
 	public class TextUtil
 	{
@@ -152,6 +156,29 @@ package actionScripts.utils
 		public static function htmlEscape(str:String):String
 		{
     		return new XMLNode( 3, str ).toString();
+		}
+
+
+		public static function base64Encode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Encoder = new Base64Encoder();
+			base64.insertNewLines = false;
+			var byte:ByteArray = new ByteArray();
+			byte.writeMultiByte(str, charset);
+			base64.encodeBytes(byte);
+			return base64.toString();
+		}
+		
+		public static function base64Decode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Decoder = new Base64Decoder();
+			base64.decode(str);
+			var byteArray:ByteArray = base64.toByteArray();
+			return byteArray.readMultiByte(byteArray.length, charset);;
 		}
 
 	}

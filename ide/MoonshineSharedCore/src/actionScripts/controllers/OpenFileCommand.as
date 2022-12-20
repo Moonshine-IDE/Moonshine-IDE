@@ -61,6 +61,8 @@ package actionScripts.controllers
 	import mx.utils.Base64Encoder;
 	import utils.StringHelper;
 
+	import actionScripts.utils.TextUtil;
+
 	public class OpenFileCommand implements ICommand
 	{
 		protected var model:IDEModel;
@@ -531,7 +533,7 @@ package actionScripts.controllers
 					
 					if(formulaXMLNode.text()){
 						
-						var decodeBase64: String =  StringHelper.base64Decode(formulaXMLNode.text());
+						var decodeBase64: String =  TextUtil.base64Decode(formulaXMLNode.text());
 						formula=formula+decodeBase64;
 					}
 				}
