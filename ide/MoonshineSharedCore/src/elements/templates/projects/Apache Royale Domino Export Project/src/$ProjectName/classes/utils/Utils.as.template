@@ -35,6 +35,11 @@ package $ProjectName.classes.utils
 		public static function setBusy():void
 		{
 			var result:DisableBead = getDisableBead();
+			if (!result)
+			{
+			    return;
+			}
+
 			result.disabled = true;
 			
 			loader = new LoadIndicator();
@@ -51,6 +56,11 @@ package $ProjectName.classes.utils
 		public static function removeBusy():void
 		{
 			var result:DisableBead = getDisableBead();
+			if (!result)
+			{
+			    return;
+			}
+
 			result.disabled = false;
 			if (loader)
 			{
@@ -61,6 +71,11 @@ package $ProjectName.classes.utils
 		
 		private static function getDisableBead():DisableBead
 		{
+		    if (!mainContentView)
+		    {
+		        return null;
+		    }
+
 			var result:DisableBead = mainContentView.getBeadByType(DisableBead) as DisableBead;
             if (!result)
             {
