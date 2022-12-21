@@ -44,14 +44,60 @@ package actionScripts.ui.editor
 
 	import actionScripts.utils.TextUtil;
 
-	
+	import actionScripts.ui.FeathersUIWrapper;
 
-    public class DominoFormulaEditor extends BasicTextEditor
+	import actionScripts.plugins.help.view.DominoActionVisualEditorView;
+	import moonshine.editor.text.events.TextEditorChangeEvent;
+
+	import moonshine.editor.text.TextEditor;
+	import moonshine.editor.text.syntax.parser.PlainTextLineParser;
+	import moonshine.editor.text.events.TextEditorLineEvent;
+
+	public class DominoFormulaEditor extends BasicTextEditor
 	{
+
+
+		private var dominoActionVisualEditorView:DominoActionVisualEditorView;
+    
+		public function get dominoActionView():DominoActionVisualEditorView
+		{
+			return dominoActionVisualEditorView;
+		}
+
         public function DominoFormulaEditor()
 		{
 			super();
         }
+
+		override protected function initializeChildrens():void
+		{
+
+			if(!editor)
+			{
+				editor = new TextEditor(null, false);
+			}
+			if(!editor.parser)
+			{
+				editor.parser = new PlainTextLineParser();
+			}
+			editor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
+			editor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
+			editorWrapper = new FeathersUIWrapper(editor);
+			editorWrapper.percentHeight = 100;
+			editorWrapper.percentWidth = 100;
+			text = "";
+			dominoActionVisualEditorView = new DominoActionVisualEditorView();
+			
+			dominoActionVisualEditorView.codeEditor = editorWrapper;
+		
+		}
+
+		 override protected function createChildren():void
+		{
+			addElement(dominoActionVisualEditorView);
+			
+			super.createChildren();
+		}
 
         override public function open(newFile:FileLocation, fileData:Object=null):void
 		{
