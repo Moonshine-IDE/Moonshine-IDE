@@ -64,7 +64,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			if (readContent)
 			{
 				var content:String = readContent.toString();
-				lines = content.split(File.lineEnding);
+				lines = content.split(/\r\n|\r|\n/); // Split text into lines using ANY line ending
 			}
 
             return new TextLines(lines);
@@ -178,7 +178,10 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			else
 			{
 				var pos:int = findLine(cursor);
-				insertSection(section, pos)
+				if (pos >= 0)
+				{
+					insertSection(section, pos)
+				}				
 			}
 		}
 	}
