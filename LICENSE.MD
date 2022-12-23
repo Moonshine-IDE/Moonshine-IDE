@@ -1,4 +1,4 @@
-Copyright (C) 2016-present Prominic.NET, Inc.
+Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the Server Side Public License, version 1,
