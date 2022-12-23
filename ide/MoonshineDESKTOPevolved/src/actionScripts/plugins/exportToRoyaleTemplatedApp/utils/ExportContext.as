@@ -41,16 +41,21 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 		private var _targetSrcFolder:FileLocation;		
 		private var _targetMainAppLocation:FileLocation;		
 		private var _targetMainContentLocation:FileLocation;		
-		private var _sourceMainContentLocation:FileLocation;		
-		
-		private var _regex:RegExp = new RegExp("^\\S+\\bsrc\\b");
+		private var _sourceMainContentLocation:FileLocation;
 		
 		public function ExportContext(mainAppFile:String, exportedProject:AS3ProjectVO)
 		{	
-			var matches:Array = _regex.exec(mainAppFile);
-			_targetSrcFolder = matches && matches.length > 0
-				? new FileLocation(matches[0]) 
-				: null;
+			const src:String = "\\src\\";
+			var pathParts:Array = mainAppFile.split(src);
+			if (pathParts.length == 2)
+			{
+				var firstPart:String = pathParts[0];
+				_targetSrcFolder = new FileLocation(firstPart.concat(src));
+			}
+			else
+			{
+				_targetSrcFolder = null;
+			}
 			
 			var separator:String = exportedProject.sourceFolder.fileBridge.separator;
 			_targetMainAppLocation = new FileLocation(mainAppFile);
