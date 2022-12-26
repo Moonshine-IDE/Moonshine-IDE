@@ -396,6 +396,7 @@ package actionScripts.ui.menu
                     new MenuItem(resourceManager.getString('resources', 'DEPLOY_DOMINO_DATABASE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE),
                     new MenuItem(resourceManager.getString('resources', 'GENERATE_JAVA_AGENTS'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_JAVA_AGENTS),
 					new MenuItem(resourceManager.getString('resources', 'GENERATE_CRUD_ROYALE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_CRUD_ROYALE),
+                    new MenuItem(resourceManager.getString('resources', 'IMPORT_DOCUMENTS_JSON'), null, [ProjectMenuTypes.ON_DISK], DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.ON_DISK], MavenBuildEvent.START_MAVEN_BUILD),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_ON_VAGRANT'), null, [ProjectMenuTypes.ON_DISK], DominoEvent.EVENT_BUILD_ON_VAGRANT),

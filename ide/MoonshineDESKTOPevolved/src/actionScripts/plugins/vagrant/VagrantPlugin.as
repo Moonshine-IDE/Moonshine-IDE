@@ -39,12 +39,14 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugins.vagrant.utils.DeployBuildOnVagrantJob;
 	import actionScripts.plugins.vagrant.utils.DeployDatabaseJob;
 	import actionScripts.plugins.vagrant.utils.DeployRoyaleToVagrantJob;
-	import actionScripts.plugins.vagrant.utils.RunDatabaseOnVagrantJob;
+import actionScripts.plugins.vagrant.utils.ImportDocumentsJSONJob;
+import actionScripts.plugins.vagrant.utils.RunDatabaseOnVagrantJob;
 
 	import components.popup.ConvertDominoDatabasePopup;
 	import components.popup.DeployDominoDatabasePopup;
 	import components.popup.DeployRoyaleVagrantPopup;
-	import components.popup.SelectVagrantPopup;
+import components.popup.ImportDocumentJSONPopup;
+import components.popup.SelectVagrantPopup;
 
 	import flash.display.DisplayObject;
 
@@ -96,10 +98,12 @@ package actionScripts.plugins.vagrant
 		private var vagrantInstances:ArrayCollection;
 		private var convertDominoDBPopup:ConvertDominoDatabasePopup;
 		private var deployDominoDBPopup:DeployDominoDatabasePopup;
+		private var importDocumentsJSONPopup:ImportDocumentJSONPopup;
 		private var deployRoyaleVagrantPopup:DeployRoyaleVagrantPopup;
 		private var selectVagrantPopup:SelectVagrantPopup;
 		private var dbConversionJob:ConvertDatabaseJob;
 		private var deployDBJob:DeployDatabaseJob;
+		private var importDocumentJSONJob:ImportDocumentsJSONJob;
 		private var deployRoyaleToVagrantJob:DeployRoyaleToVagrantJob;
 		private var runDatabaseOnVagrantJob:RunDatabaseOnVagrantJob;
 		private var deployBuildOnVagrantJob:DeployBuildOnVagrantJob;
@@ -159,6 +163,7 @@ package actionScripts.plugins.vagrant
 			dispatcher.addEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase, false, 0, true);
 			dispatcher.addEventListener(DominoEvent.EVENT_RUN_DOMINO_ON_VAGRANT, onRunDominoOnVagrant, false, 0, true);
 			dispatcher.addEventListener(DominoEvent.EVENT_BUILD_ON_VAGRANT, onBuildOnVagrant, false, 0, true);
+			dispatcher.addEventListener(DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT, onImportDocumentsJSONRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest, false, 0, true);
 		}
@@ -171,6 +176,7 @@ package actionScripts.plugins.vagrant
 			dispatcher.removeEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase);
 			dispatcher.removeEventListener(DominoEvent.EVENT_RUN_DOMINO_ON_VAGRANT, onRunDominoOnVagrant);
 			dispatcher.removeEventListener(DominoEvent.EVENT_BUILD_ON_VAGRANT, onBuildOnVagrant);
+			dispatcher.removeEventListener(DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT, onImportDocumentsJSONRequest);
 			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest);
 			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest);
 		}
@@ -255,6 +261,18 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function onImportDocumentsJSONRequest(event:Event):void
+		{
+			if (!importDocumentsJSONPopup)
+			{
+				importDocumentsJSONPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ImportDocumentJSONPopup) as ImportDocumentJSONPopup;
+				importDocumentsJSONPopup.instances = vagrantInstances;
+				importDocumentsJSONPopup.addEventListener(CloseEvent.CLOSE, onImportDocumentJSONPopupClosed);
+				importDocumentsJSONPopup.addEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onImportDocumentJSONDatabaseProcess);
+				PopUpManager.centerPopUp(importDocumentsJSONPopup);
+			}
+		}
+
 		private function onDeployRoyalToVagrantRequest(event:Event):void
 		{
 			if (!deployRoyaleVagrantPopup)
@@ -279,6 +297,13 @@ package actionScripts.plugins.vagrant
 			deployDominoDBPopup.removeEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
 			deployDominoDBPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployDatabaseProcess);
 			deployDominoDBPopup = null;
+		}
+
+		private function onImportDocumentJSONPopupClosed(event:CloseEvent):void
+		{
+			importDocumentsJSONPopup.removeEventListener(CloseEvent.CLOSE, onImportDocumentJSONPopupClosed);
+			importDocumentsJSONPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onImportDocumentJSONDatabaseProcess);
+			importDocumentsJSONPopup = null;
 		}
 
 		private function onDeployRoyaleVagrantPopupClosed(event:CloseEvent):void
@@ -322,6 +347,20 @@ package actionScripts.plugins.vagrant
 			);
 			configureListenersDeployDatabaseJob(true);
 			deployDBJob.uploadAndRunCommandOnServer(new File(deployDominoDBPopup.localDatabasePath));
+		}
+
+		private function onImportDocumentJSONDatabaseProcess(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Deploying Database"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateImportDocumentJSONRequest, false, 0, true);
+
+			// get the object to work with
+			importDocumentJSONJob = new ImportDocumentsJSONJob(
+					importDocumentsJSONPopup.selectedInstance.url,
+					importDocumentsJSONPopup.jsonFilePath
+			);
+			configureListenersImportDocumentJSONJob(true);
+			importDocumentJSONJob.uploadAndRunCommandOnServer(new File(importDocumentsJSONPopup.localDatabasePath));
 		}
 
 		private function onStartDeployRoyaleVagrantProcess(event:Event):void
@@ -403,6 +442,25 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function configureListenersImportDocumentJSONJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				importDocumentJSONJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onImportDocumentJSONJobEnded, false, 0, true);
+				importDocumentJSONJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onImportDocumentJSONJobEnded, false, 0, true);
+				importDocumentJSONJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onImportDocumentJSONUploadUpdates, false, 0, true);
+				importDocumentJSONJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onImportDocumentJSONUploadUpdates, false, 0, true);
+			}
+			else
+			{
+				importDocumentJSONJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onImportDocumentJSONJobEnded);
+				importDocumentJSONJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onImportDocumentJSONJobEnded);
+				importDocumentJSONJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onImportDocumentJSONUploadUpdates);
+				importDocumentJSONJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onImportDocumentJSONUploadUpdates);
+				importDocumentJSONJob = null;
+			}
+		}
+
 		private function configureListenersDeployRoyaleToVagrantJob(listen:Boolean):void
 		{
 			if (listen)
@@ -474,6 +532,13 @@ package actionScripts.plugins.vagrant
 			configureListenersDeployDatabaseJob(false);
 		}
 
+		private function onImportDocumentJSONJobEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateImportDocumentJSONRequest);
+			configureListenersImportDocumentJSONJob(false);
+		}
+
 		private function onDeployRoyaleEnded(event:Event):void
 		{
 			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
@@ -537,6 +602,18 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function onImportDocumentJSONUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				importDocumentsJSONPopup.close();
+			}
+			else
+			{
+				importDocumentsJSONPopup.reset();
+			}
+		}
+
 		private function onDeployRoyaleUploadUpdates(event:Event):void
 		{
 			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
@@ -583,6 +660,12 @@ package actionScripts.plugins.vagrant
 		{
 			deployDBJob.stop();
 			onDeployDatabaseEnded(null);
+		}
+
+		private function onTerminateImportDocumentJSONRequest(event:StatusBarEvent):void
+		{
+			importDocumentJSONJob.stop();
+			onImportDocumentJSONJobEnded(null);
 		}
 
 		private function onTerminateDeployRoyaleVagrantRequest(event:StatusBarEvent):void

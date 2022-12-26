@@ -39,6 +39,7 @@ class DominoEvent extends Event {
 	public static final EVENT_CONVERT_DOMINO_DATABASE:String = "eventConvertDominoDatabase";
 	public static final EVENT_RUN_DOMINO_ON_VAGRANT:String = "eventRunDominoOnVagrant";
 	public static final EVENT_BUILD_ON_VAGRANT:String = "eventBuildOnVagrant";
+	public static final IMPORT_DOCUMENTS_JSON_VAGRANT:String = "eventImportDocumentsJSON";
 
 	public function new(type:String) {
 		super(type, false, false);
