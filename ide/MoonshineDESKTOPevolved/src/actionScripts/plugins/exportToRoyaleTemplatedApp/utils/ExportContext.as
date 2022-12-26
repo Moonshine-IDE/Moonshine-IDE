@@ -44,8 +44,9 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 		private var _sourceMainContentLocation:FileLocation;
 		
 		public function ExportContext(mainAppFile:String, exportedProject:AS3ProjectVO)
-		{	
-			const src:String = "\\src\\";
+		{
+			var separator:String = exportedProject.sourceFolder.fileBridge.separator;
+			var src:String = separator + "src" + separator;
 			var pathParts:Array = mainAppFile.split(src);
 			if (pathParts.length == 2)
 			{
@@ -56,8 +57,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			{
 				_targetSrcFolder = null;
 			}
-			
-			var separator:String = exportedProject.sourceFolder.fileBridge.separator;
+
 			_targetMainAppLocation = new FileLocation(mainAppFile);
 			_targetMainContentLocation = _targetMainAppLocation.fileBridge.parent.resolvePath("view" + separator + "MainContent.mxml");
 			
