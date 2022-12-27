@@ -128,7 +128,8 @@
 
 			var selectedTreeItem:FileWrapper = IDEModel.getInstance().mainView.getTreeViewPanel().tree.selectedItem ?
 					IDEModel.getInstance().mainView.getTreeViewPanel().tree.selectedItem as FileWrapper : null;
-			if (selectedTreeItem && selectedTreeItem.file.fileBridge.extension.toLowerCase() == "json")
+			if (selectedTreeItem && selectedTreeItem.file.fileBridge.extension &&
+					selectedTreeItem.file.fileBridge.extension.toLowerCase() == "json")
 			{
 				txtFile.text = selectedTreeItem.file.fileBridge.nativePath;
 			}
