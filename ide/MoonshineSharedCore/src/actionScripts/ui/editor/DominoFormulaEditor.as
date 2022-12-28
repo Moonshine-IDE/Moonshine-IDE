@@ -32,6 +32,7 @@
 
 package actionScripts.ui.editor
 {
+	import flash.events.Event;
 	import actionScripts.factory.FileLocation;
 	
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -53,8 +54,12 @@ package actionScripts.ui.editor
 	import moonshine.editor.text.syntax.parser.PlainTextLineParser;
 	import moonshine.editor.text.events.TextEditorLineEvent;
 
+	import actionScripts.plugins.help.view.events.DominoActionPropertyChangeEvent;
+	import mx.controls.Alert;
 	public class DominoFormulaEditor extends BasicTextEditor
 	{
+
+		private var actionTitle:String = "";
 
 
 		private var dominoActionVisualEditorView:DominoActionVisualEditorView;
@@ -87,7 +92,8 @@ package actionScripts.ui.editor
 			editorWrapper.percentWidth = 100;
 			text = "";
 			dominoActionVisualEditorView = new DominoActionVisualEditorView();
-			
+			dominoActionVisualEditorView.addEventListener(DominoActionPropertyChangeEvent.PROPERTY_CHANGE, onDominoActionPropertyChange);
+		
 			dominoActionVisualEditorView.codeEditor = editorWrapper;
 		
 		}
@@ -120,7 +126,7 @@ package actionScripts.ui.editor
 			//StringHelper.base64Encode()
 			var actionString:String=String(file.fileBridge.read());
 			var actionXml:XML = new XML(actionString);
-
+			var sourceTitle:String=actionXml.@title;
 			for each(var formula:XML in actionXml..formula) //no matter of depth Note here
 			{
 				if(super.text){
@@ -130,6 +136,17 @@ package actionScripts.ui.editor
 					delete formula.parent().children()[formula.childIndex()];
 					
 				}
+			}
+			
+
+			//update actionTitle
+
+			if(actionTitle!=""){
+
+				if(actionTitle!=sourceTitle){
+					actionXml.@title=actionTitle;
+				}
+
 			}
 
 			var saveText:String = actionXml.toXMLString();
@@ -170,6 +187,42 @@ package actionScripts.ui.editor
 					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saving successful."));
 			dispatcher.dispatchEvent(new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this));
 		}
+
+		public function setEdited(value:Boolean):void 
+		{
+			_isChanged=value;
+
+		}
+
+		private function onDominoActionPropertyChange(event:Event):void
+		{
+			//updateChangeStatus();
+		}
+
+		public function updateTitle(title:String):void
+		{
+			actionTitle=title;
+			super._isChanged=true;
+			dispatchEvent(new Event('labelChanged'));
+		}
+
+		public function getTitle():String
+		{
+			var actionString:String=String(file.fileBridge.read());
+			var actionXml:XML = new XML(actionString);
+			var sourceTitle:String=actionXml.@title;
+
+			return sourceTitle;
+		}
+
+		override protected function removedFromStageHandler(event:Event):void
+		{
+			this.removeGlobalListeners();
+			dispatcher.removeEventListener(DominoActionPropertyChangeEvent.PROPERTY_CHANGE, onDominoActionPropertyChange);
+		}
+
+	
+		
 
 
 		
