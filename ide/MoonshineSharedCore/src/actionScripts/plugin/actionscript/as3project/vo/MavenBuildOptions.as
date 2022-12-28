@@ -32,10 +32,14 @@
 package actionScripts.plugin.actionscript.as3project.vo
 {
     import actionScripts.plugin.build.vo.BuildActionVO;
-    import actionScripts.utils.SerializeUtil;
+import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
+import actionScripts.utils.SerializeUtil;
+import actionScripts.utils.UtilsCore;
 
     public class MavenBuildOptions extends JavaProjectBuildOptions
     {
+        public static const CONFIG_NSFODP_SETTINGS_SPECIFIER:String = "%NSFODP_SETTINGS_FILE%";
+
 		private var _dominoNotesProgram:String;
 		public function get dominoNotesProgram():String
 		{
@@ -85,12 +89,26 @@ package actionScripts.plugin.actionscript.as3project.vo
             var build:XML = <mavenBuild/>;
 
             var pairs:Object = {
-                mavenBuildPath: SerializeUtil.serializeString(buildPath),
+                mavenBuildPath: UtilsCore.getRelativePathAgainstProject(
+                        _defaultBuildPath,
+                        buildPath
+                ),
                 commandLine: SerializeUtil.serializeString(commandLine),
-                settingsFilePath: SerializeUtil.serializeString(settingsFilePath),
-
                 dominoNotesProgram: SerializeUtil.serializeString(dominoNotesProgram),
                 dominoNotesPlatform: SerializeUtil.serializeString(dominoNotesPlatform)
+            }
+
+            var moonshineMavenSettingsPath:String = OnDiskMavenSettingsExporter.mavenSettingsPath ? OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath : null;
+            if (moonshineMavenSettingsPath == settingsFilePath)
+            {
+                pairs.settingsFilePath = CONFIG_NSFODP_SETTINGS_SPECIFIER;
+            }
+            else
+            {
+                pairs.settingsFilePath = UtilsCore.getRelativePathAgainstProject(
+                    _defaultBuildPath,
+                    settingsFilePath
+                );
             }
 
             build.appendChild(SerializeUtil.serializePairs(pairs, <option/>));
@@ -101,9 +119,23 @@ package actionScripts.plugin.actionscript.as3project.vo
 
         override protected function parseOptions(options:XMLList):void
         {
-            buildPath = SerializeUtil.deserializeString(options.@mavenBuildPath);
+            buildPath = UtilsCore.getAbsolutePathAgainstProject(
+                    _defaultBuildPath,
+                    options.@mavenBuildPath
+            );
             commandLine = SerializeUtil.deserializeString(options.@commandLine);
-            settingsFilePath = SerializeUtil.deserializeString(options.@settingsFilePath);
+            if (options.@settingsFilePath == CONFIG_NSFODP_SETTINGS_SPECIFIER && OnDiskMavenSettingsExporter.mavenSettingsPath)
+            {
+                settingsFilePath = OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath;
+            }
+            else
+            {
+                settingsFilePath = UtilsCore.getAbsolutePathAgainstProject(
+                        _defaultBuildPath,
+                        options.@settingsFilePath
+                );
+            }
+
             dominoNotesProgram = SerializeUtil.deserializeString(options.@dominoNotesProgram);
             dominoNotesPlatform = SerializeUtil.deserializeString(options.@dominoNotesPlatform);
                         

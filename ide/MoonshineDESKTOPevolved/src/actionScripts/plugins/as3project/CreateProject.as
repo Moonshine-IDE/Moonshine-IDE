@@ -304,20 +304,21 @@ package actionScripts.plugins.as3project
 			// remove any ( or ) stuff
 			if (!isOpenProjectCall)
 			{
-				var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
-				if (isFlexJSRoyalProject)
-				{
-					project.projectName = "NewJavaScriptBrowserProject";
-					project.isFlexJSRoyalProject = true;
-                }
-				else if(isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
+				if (event.proposedProjectName)
 				{
 					project.projectName = event.proposedProjectName;
-					project.isFlexJSRoyalProject = true;
 				}
 				else
 				{
+					var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ?
+							event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) :
+							event.templateDir.fileBridge.name;
 					project.projectName = event.exportProject ? event.exportProject.name + "_exported" : "New"+tempName;
+				}
+
+				if (isFlexJSRoyalProject || isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
+				{
+					project.isFlexJSRoyalProject = true;
                 }
 			}
 			
@@ -344,7 +345,8 @@ package actionScripts.plugins.as3project
 			
 			settingsView.addCategory("");
 			// Remove spaces from project name
-			project.projectName = project.projectName.replace(/ /g, "");
+			if (project.projectName)
+				project.projectName = project.projectName.replace(/ /g, "");
 
 			var settings:SettingsWrapper = getProjectSettings(project, event);
 

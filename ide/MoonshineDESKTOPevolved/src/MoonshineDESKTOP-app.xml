@@ -282,6 +282,12 @@
 			<description>Moonshine Project Configuration File 6</description>
 			<contentType>text/plain</contentType>
 		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.File.7</name>
+			<extension>hxproj</extension>
+			<description>Moonshine Project Configuration File 7</description>
+			<contentType>text/plain</contentType>
+		</fileType>
 	</fileTypes>
 
     <!-- iOS specific capabilities -->

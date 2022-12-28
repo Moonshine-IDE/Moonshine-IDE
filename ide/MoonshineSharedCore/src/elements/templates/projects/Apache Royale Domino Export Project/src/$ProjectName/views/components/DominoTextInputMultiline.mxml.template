@@ -73,7 +73,7 @@
 		private function onTextChange(event:Event):void
         {
             this._text = event.currentTarget.text;
-            dispatchEvent(event.cloneEvent());
+            dispatchEvent(new Event("change"));
         }
 	]]>
 </fx:Script>

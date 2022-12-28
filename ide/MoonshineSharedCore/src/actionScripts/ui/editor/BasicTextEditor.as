@@ -666,7 +666,7 @@ package actionScripts.ui.editor
 				textLineRenderer.selectedTextBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.selectionUnfocusedBackgroundColor,
 					colorSettings.selectionUnfocusedBackgroundAlpha));
 				textLineRenderer.focusedBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.focusedLineBackgroundColor));
-				textLineRenderer.debuggerStoppedBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.backgroundColor));
+				textLineRenderer.debuggerStoppedBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.debuggerStoppedLineBackgroundColor));
 				textLineRenderer.searchResultBackgroundSkinFactory = function():RectangleSkin
 				{
 					return new RectangleSkin(FillStyle.SolidColor(colorSettings.searchResultBackgroundColor));

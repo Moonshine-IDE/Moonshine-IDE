@@ -1,8 +1,40 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
-{
-    
+{    
 	import actionScripts.factory.FileLocation;
 	import flash.filesystem.File;
+	import flash.text.engine.TextLine;
 
 	public class TextLines  
 	{
@@ -32,7 +64,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			if (readContent)
 			{
 				var content:String = readContent.toString();
-				lines = content.split(File.lineEnding);
+				lines = content.split(/\r\n|\r|\n/); // Split text into lines using ANY line ending
 			}
 
             return new TextLines(lines);
@@ -51,7 +83,7 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			}
 		}
 		
-		public function findFirstLine(token:String):int
+		public function findLine(token:String):int
 		{
 			for (var i:int = 0; i < _lines.length; i++)
 			{
@@ -64,66 +96,23 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			return -1;
 		}
 		
-		public function findLastLine(token:String):int
+		public function findAllLines(token:String):Array
 		{
-			for (var i:int = _lines.length - 1; i >= 0; i--)
+			var result:Array = [];
+			
+			for (var i:int = 0; i < _lines.length; i++)
 			{
 				if (_lines[i].indexOf(token) > -1)
 				{
-					return i;
+					result.push(i)
 				}
 			}
 
-			return -1;
+			return result;
 		}
 		
-		public function getLine(token:String):String
+		public function getSection(start:int, end:int):GeneratedSection
 		{
-			var index:int = findFirstLine(token);
-			if(index > -1)
-			{
-				return _lines[index];
-			}
-			else
-			{
-				return null;
-			}
-		}
-		
-		public function replaceLine(pattern:String, replacement:String):void
-		{
-			var pos:int = findFirstLine(pattern);
-			if (pos > -1)
-			{
-				_lines[pos] = _lines[pos].replace(pattern, replacement);
-			}
-		}
-		
-		public function findSection(startToken:String, endToken:String):Array
-		{
-			var start:int = findFirstLine(startToken);
-			var end:int = findLastLine(endToken);
-			
-			if (start < end)
-			{
-				return [start, end];
-			}
-			else
-			{
-				return null;
-			}
-		}
-		
-		public function getSection(startToken:String, endToken:String):TextLines
-		{
-			var range:Array = findSection(startToken, endToken);
-			if (!range)
-			{
-				return new TextLines([]);
-			}
-
-			var start:int = range[0];
-			var end:int = range[1];
 			var section:Array = [];
 			
 			for (var i:int = start; i <= end; i++)
@@ -131,10 +120,36 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 				section.push(_lines[i]);
 			}
 			
-			return new TextLines(section);
-		}	
+			return new GeneratedSection(section);
+		}
 		
-		public function insertSection(section:TextLines, pos:int):void
+		public function findAllSections(startToken:String, endToken:String):Array
+		{
+			var result:Array = new Array();
+			var startTokens:Array = findAllLines(startToken);
+			var endTokens:Array = findAllLines(endToken);
+			var length:int = startTokens.length;
+			if (endTokens.length != length)
+			{
+				return null;
+			}
+			for (var i:int = 0; i < length; i++)
+			{
+				var start:int = startTokens[i];
+				var end:int = endTokens[i];
+				if(start < end)
+				{
+					result.push([start, end]);
+				}
+				else
+				{
+					return null;
+				}
+			}
+			return result;
+		}
+		
+		public function insertSection(section:GeneratedSection, pos:int):void
 		{
 			if (pos < 0) return;
 
@@ -144,23 +159,29 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp.utils
 			}
 		}
 		
-		public function replaceSection(section:TextLines, start:int, end:int):void
+		public function replaceSection(section:GeneratedSection, start:int, end:int):void
 		{
 			_lines.splice(start, end - start + 1);
 			insertSection(section, start);
 		}
 		
-		public function replaceOrInsert(section:TextLines, startToken:String, endToken:String, cursor:String):void
+		public function replaceOrInsert(section:GeneratedSection, cursor:String):void
 		{
-			var range:Array = findSection(startToken, endToken);
+			var startToken:String = section.getStartToken();
+			var endToken:String = section.getEndToken();			
+			
+			var range:Array = findAllSections(startToken, endToken)[0];
 			if (range)
 			{
 				replaceSection(section, range[0], range[1]);
 			}
 			else
 			{
-				var pos:int = findFirstLine(cursor);
-				insertSection(section, pos)
+				var pos:int = findLine(cursor);
+				if (pos >= 0)
+				{
+					insertSection(section, pos)
+				}				
 			}
 		}
 	}

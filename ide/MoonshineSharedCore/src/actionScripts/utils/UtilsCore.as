@@ -82,9 +82,6 @@ package actionScripts.utils
 	
 	import feathers.data.ArrayCollection;
 
-	//import flash.filesystem.File;
-	
-
 	public class UtilsCore 
 	{
 		public static var wrappersFoundThroughFindingAWrapper:Vector.<FileWrapper>;
@@ -1735,8 +1732,6 @@ package actionScripts.utils
 				return null;
 			}
 
-		
-			
 			const extensionPattern: RegExp = /\.(mxml|xhtml|form|subform|page)$/;
 			const veSourcePathFile:String = fw.file.fileBridge.nativePath;
 						
@@ -1769,7 +1764,15 @@ package actionScripts.utils
 			return new FileLocation(veOutputPathFile);
 		}
 
-		
+		public static function getRelativePathAgainstProject(projectPath:Object, sourcePath:Object, forceRelativePath:Boolean=false):String
+		{
+			return model.flexCore.getRelativePathAgainstProject(projectPath, sourcePath, forceRelativePath);
+		}
+
+		public static function getAbsolutePathAgainstProject(projectPath:Object, sourceRelativePathString:String):String
+		{
+			return model.flexCore.getAbsolutePathAgainstProject(projectPath, sourceRelativePathString);
+		}
 
         private static function parseChildrens(value:FileWrapper, collection:IList, readableExtensions:Array=null):void
         {
