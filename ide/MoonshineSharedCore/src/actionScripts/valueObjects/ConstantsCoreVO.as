@@ -327,7 +327,7 @@ package actionScripts.valueObjects
 			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
 			READABLE_CLASS_FILES.sort();
 
-			READABLE_PROJECT_FILES = ["actionScriptProperties", "as3proj", "veditorproj", "javaproj", "grailsproj", "ondiskproj", "genericproj"];
+			READABLE_PROJECT_FILES = ["actionScriptProperties", "as3proj", "veditorproj", "javaproj", "grailsproj", "ondiskproj", "genericproj", "hxproj"];
 
 					TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";
