@@ -356,11 +356,10 @@ import components.popup.SelectVagrantPopup;
 
 			// get the object to work with
 			importDocumentJSONJob = new ImportDocumentsJSONJob(
-					importDocumentsJSONPopup.selectedInstance.url,
-					importDocumentsJSONPopup.jsonFilePath
+					importDocumentsJSONPopup.selectedInstance.url
 			);
 			configureListenersImportDocumentJSONJob(true);
-			importDocumentJSONJob.uploadAndRunCommandOnServer(new File(importDocumentsJSONPopup.localDatabasePath));
+			importDocumentJSONJob.uploadAndRunCommandOnServer(new File(importDocumentsJSONPopup.jsonFilePath));
 		}
 
 		private function onStartDeployRoyaleVagrantProcess(event:Event):void
