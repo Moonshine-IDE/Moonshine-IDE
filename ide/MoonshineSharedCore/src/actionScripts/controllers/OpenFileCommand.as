@@ -49,7 +49,7 @@ package actionScripts.controllers
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.ui.editor.DominoFormulaEditor;
+	import actionScripts.plugins.ui.editor.DominoFormulaEditor;
     import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.notifier.ActionNotifier;
     import actionScripts.utils.UtilsCore;

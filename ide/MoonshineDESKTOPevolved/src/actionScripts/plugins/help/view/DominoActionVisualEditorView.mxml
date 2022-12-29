@@ -100,7 +100,7 @@
     import mx.core.IVisualElement;
     import mx.events.FlexEvent;
     import flash.events.Event;
-    import actionScripts.ui.editor.DominoFormulaEditor;
+    import actionScripts.plugins.ui.editor.DominoFormulaEditor;
 
     import mx.controls.Alert;
     import actionScripts.ui.FeathersUIWrapper;

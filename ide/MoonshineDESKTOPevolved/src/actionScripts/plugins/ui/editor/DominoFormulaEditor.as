@@ -30,7 +30,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package actionScripts.ui.editor
+package actionScripts.plugins.ui.editor
 {
 	import flash.events.Event;
 	import actionScripts.factory.FileLocation;
@@ -51,6 +51,7 @@ package actionScripts.ui.editor
 	import moonshine.editor.text.events.TextEditorChangeEvent;
 
 	import moonshine.editor.text.TextEditor;
+	import actionScripts.ui.editor.BasicTextEditor;
 	import moonshine.editor.text.syntax.parser.PlainTextLineParser;
 	import moonshine.editor.text.events.TextEditorLineEvent;
 
