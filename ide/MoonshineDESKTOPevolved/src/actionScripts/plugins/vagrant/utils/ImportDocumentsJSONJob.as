@@ -51,12 +51,9 @@ import actionScripts.plugin.console.ConsoleOutputter;
 	public class ImportDocumentsJSONJob extends DatabaseJobBase
 	{
 		private var downloader:FileDownloader;
-		private var jsonFilePath:String;
 
-		public function ImportDocumentsJSONJob(server:String, jsonFilePath:String)
+		public function ImportDocumentsJSONJob(server:String)
 		{
-			this.jsonFilePath = jsonFilePath;
-
 			super(server);
 		}
 
@@ -67,70 +64,15 @@ import actionScripts.plugin.console.ConsoleOutputter;
 					serverURL +"/task"+ (withId ? "/"+ withId : ""),
 					onConversionRunResponseLoaded,
 					onConversionRunFault,
-					withId ? null : {command: "/bin/bash /opt/domino/scripts/import_json_documents.sh '"+ jsonFilePath +"'"},
+					withId ? null : {command: "/bin/bash /opt/domino/scripts/import_json_documents.sh '"+ uploadedNSFFilePath +"'"},
 					withId ? DataAgent.GETEVENT : DataAgent.POSTEVENT
 			);
 		}
 
 		override protected function onTaskStatusCompleted(withJSONObject:Object):void
 		{
-			print("%s", "Checking conversion project from: "+ serverURL + withJSONObject.workingDir);
-			/*downloader = new FileDownloader(
-					serverURL +"/file/download?path="+ withJSONObject.workingDir +"/result.zip", File.cacheDirectory.resolvePath("moonshine/result.zip")
-			);
-			configureListenerOnFileDownloader(true);
-			downloader.load();*/
-		}
-
-		/*private function configureListenerOnFileDownloader(listen:Boolean):void
-		{
-			if (listen)
-			{
-				downloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onFileDownloadeded, false, 0, true);
-				downloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onFileDownloadFailed, false, 0, true);
-			}
-			else
-			{
-				downloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onFileDownloadeded);
-				downloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onFileDownloadFailed);
-				downloader = null;
-			}
-		}
-
-		protected function onFileDownloadeded(event:Event):void
-		{
-			configureListenerOnFileDownloader(false);
-			if (!destinationProjectFolder.exists)
-				destinationProjectFolder.createDirectory();
-
-			UnzipUsingAS3CommonZip.unzip(
-					File.cacheDirectory.resolvePath("moonshine/result.zip"),
-					destinationProjectFolder,
-					onUnzipSuccess,
-					onUnzipError
-			);
-		}
-
-		protected function onFileDownloadFailed(event:Event):void
-		{
-			configureListenerOnFileDownloader(false);
-			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
-		}
-
-		protected function onUnzipSuccess(event:Event):void
-		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(
-					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, destinationProjectFolder)
-			);
-
+			success(withJSONObject.output);
 			dispatchEvent(new Event(EVENT_CONVERSION_COMPLETE));
 		}
-
-		protected function onUnzipError(event:ErrorEvent=null):void
-		{
-			if (event) error("%s", "Unzip error: ", event.toString());
-			else error("Unzip terminated with unhandled error!");
-			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
-		}*/
 	}
 }
