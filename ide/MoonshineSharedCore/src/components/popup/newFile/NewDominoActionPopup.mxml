@@ -177,8 +177,8 @@
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
-			<s:Label text="Source Folder:"/>
-			<view:PromptTextInput id="txtDestination"
+			<s:Label text="Shared actions will be stored at this path:"/>
+			<view:PromptTextInput id="txtDestination" 
 								  prompt="Select Destination" editable="false" width="100%" styleName="textInput"/>
 	
   

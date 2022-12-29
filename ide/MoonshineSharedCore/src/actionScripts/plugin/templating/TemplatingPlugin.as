@@ -2230,10 +2230,23 @@ package actionScripts.plugin.templating
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".action");
+				
+				content=updateDominoActionTitleName(content,event.fileName);
 				fileToSave.fileBridge.save(content);
 
                 notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
+		}
+
+		private function updateDominoActionTitleName(content:String,titleName:String):String
+		{
+			var actionXml:XML = new XML(content);
+			var sourceTitle:String=actionXml.@title;
+			if(sourceTitle!=titleName){
+				actionXml.@title=titleName;
+			}
+
+			return actionXml.toXMLString();
 		}
 
 

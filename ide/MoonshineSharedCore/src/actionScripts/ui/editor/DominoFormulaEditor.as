@@ -54,20 +54,23 @@ package actionScripts.ui.editor
 	import moonshine.editor.text.syntax.parser.PlainTextLineParser;
 	import moonshine.editor.text.events.TextEditorLineEvent;
 
-	import actionScripts.plugins.help.view.events.DominoActionPropertyChangeEvent;
+	//import actionScripts.plugins.help.view.events.DominoActionPropertyChangeEvent;
 	import mx.controls.Alert;
 	public class DominoFormulaEditor extends BasicTextEditor
 	{
 
 		private var actionTitle:String = "";
+		private var actionShowInMenu:String = "false";
+		private var actionShowInBar:String = "false";
 
+		private var actionXmlCache:XML=null;
 
 		private var dominoActionVisualEditorView:DominoActionVisualEditorView;
     
-		public function get dominoActionView():DominoActionVisualEditorView
-		{
-			return dominoActionVisualEditorView;
-		}
+		// public function get dominoActionView():DominoActionVisualEditorView
+		// {
+		// 	return dominoActionVisualEditorView;
+		// }
 
         public function DominoFormulaEditor()
 		{
@@ -92,7 +95,7 @@ package actionScripts.ui.editor
 			editorWrapper.percentWidth = 100;
 			text = "";
 			dominoActionVisualEditorView = new DominoActionVisualEditorView();
-			dominoActionVisualEditorView.addEventListener(DominoActionPropertyChangeEvent.PROPERTY_CHANGE, onDominoActionPropertyChange);
+			//dominoActionVisualEditorView.addEventListener(DominoActionPropertyChangeEvent.PROPERTY_CHANGE, onDominoActionPropertyChange);
 		
 			dominoActionVisualEditorView.codeEditor = editorWrapper;
 		
@@ -114,6 +117,8 @@ package actionScripts.ui.editor
 				super.openFileAsStringHandler(fileData as String);
 				return;
 			}
+
+			
         }
 
 		/**
@@ -127,6 +132,8 @@ package actionScripts.ui.editor
 			var actionString:String=String(file.fileBridge.read());
 			var actionXml:XML = new XML(actionString);
 			var sourceTitle:String=actionXml.@title;
+			var sourceShowMenu:String=actionXml.@showinmenu;
+			var sourceShowBar:String=actionXml.@showinbar;
 			for each(var formula:XML in actionXml..formula) //no matter of depth Note here
 			{
 				if(super.text){
@@ -145,6 +152,22 @@ package actionScripts.ui.editor
 
 				if(actionTitle!=sourceTitle){
 					actionXml.@title=actionTitle;
+				}
+
+			}
+
+			if(actionShowInBar!=""){ 
+
+				if(actionShowInBar!=sourceShowBar){
+					actionXml.@showinbar=actionShowInBar
+				}
+
+			}
+
+			if(actionShowInMenu!=""){ 
+
+				if(actionShowInMenu!=sourceShowMenu){
+					actionXml.@showinmenu=actionShowInMenu
 				}
 
 			}
@@ -201,25 +224,72 @@ package actionScripts.ui.editor
 
 		public function updateTitle(title:String):void
 		{
-			actionTitle=title;
-			super._isChanged=true;
-			dispatchEvent(new Event('labelChanged'));
+			if(title!=actionTitle){
+				actionTitle=title;
+				super._isChanged=true;
+				dispatchEvent(new Event('labelChanged'));
+			}
 		}
+
+		public function updateBar(bar:String):void
+		{
+			if(bar!=actionShowInBar){
+				actionShowInBar=bar;
+				super._isChanged=true;
+				dispatchEvent(new Event('labelChanged'));
+			}
+		}
+		public function updateMenu(menu:String):void
+		{
+			if(menu!=actionShowInMenu){
+				actionShowInMenu=menu;
+				super._isChanged=true;
+				
+				dispatchEvent(new Event('labelChanged'));
+			}
+		}
+
+
 
 		public function getTitle():String
 		{
-			var actionString:String=String(file.fileBridge.read());
-			var actionXml:XML = new XML(actionString);
-			var sourceTitle:String=actionXml.@title;
+			if(actionXmlCache==null){
+				var actionString:String=String(file.fileBridge.read());
+				actionXmlCache = new XML(actionString);
+			}
+			
+			var sourceTitle:String=actionXmlCache.@title;
 
 			return sourceTitle;
 		}
-
-		override protected function removedFromStageHandler(event:Event):void
+		public function getShowinmenu():String
 		{
-			this.removeGlobalListeners();
-			dispatcher.removeEventListener(DominoActionPropertyChangeEvent.PROPERTY_CHANGE, onDominoActionPropertyChange);
+			if(actionXmlCache==null){
+				var actionString:String=String(file.fileBridge.read());
+				actionXmlCache = new XML(actionString);
+			}
+			
+			var source:String=actionXmlCache.@showinmenu;
+
+			return source;
 		}
+		public function getShowinbar():String
+		{
+			if(actionXmlCache==null){
+				var actionString:String=String(file.fileBridge.read());
+				actionXmlCache = new XML(actionString);
+			}
+			
+			var source:String=actionXmlCache.@showinbar;
+
+			return source;
+		}
+
+		// override protected function removedFromStageHandler(event:Event):void
+		// {
+		// 	this.removeGlobalListeners();
+		// 	dispatcher.removeEventListener(DominoActionPropertyChangeEvent.PROPERTY_CHANGE, onDominoActionPropertyChange);
+		// }
 
 	
 		

@@ -50,9 +50,9 @@
         </s:Group>
     </s:Scroller>
 
-    <s:Group width="10%" minWidth="250" minHeight="600" height="100%">
-        <s:VGroup horizontalAlign="left" verticalAlign="top" percentHeight="100" 
-		   paddingLeft="5" paddingRight="5">
+    <s:Group  width="10%"  minWidth="250" minHeight="600" height="100%">
+        <s:VGroup horizontalAlign="left" verticalAlign="top" percentHeight="100" percentWidth="100"
+		   paddingLeft="0" paddingRight="0">
               <view:PropertyEditorHeader id="propertyEditorHeader" width="100%" />
           
                 <s:FormItem  skinClass="skins.FormItemSkin" width="100%">
@@ -67,7 +67,7 @@
                     </s:HGroup>
                 </s:FormItem>
 
-                <s:FormItem  skinClass="skins.FormItemSkin" width="100%">
+                <!-- <s:FormItem  skinClass="skins.FormItemSkin" width="100%">
                     <s:HGroup width="100%" verticalAlign="middle">
                 
                     <s:Label text="ID" width="50" direction="rtl"/>
@@ -77,16 +77,16 @@
                         
                     
                     </s:HGroup>
-                </s:FormItem>    
+                </s:FormItem>     -->
 
 
-            <s:FormItem label="showinmenu" skinClass="skins.FormItemSkin">
+            <s:FormItem label="Show in menu" skinClass="skins.FormItemSkin">
             <s:CheckBox id="showinmenuBox"
                     selected="{showinmenu}"
                     change="check_changeHandler(event)"/>
             </s:FormItem>
 
-             <s:FormItem label="showinbar" skinClass="skins.FormItemSkin">
+             <s:FormItem label="Show in bar" skinClass="skins.FormItemSkin">
             <s:CheckBox id="showinbarBox"
                     selected="{showinbar}"
                     change="check_changeHandler(event)"/>
@@ -104,7 +104,6 @@
 
     import mx.controls.Alert;
     import actionScripts.ui.FeathersUIWrapper;
-    import actionScripts.plugins.help.view.events.DominoActionPropertyChangeEvent;
     import actionScripts.locator.IDEModel;
 
     private var _codeEditor:IVisualElement;
@@ -120,11 +119,27 @@
 
     public function onComplete():void {
 
-        propertyEditorHeader.componentName = "Domino Acrion"
+        propertyEditorHeader.componentName = "Domino Action"
         editor=model.activeEditor as DominoFormulaEditor;
         
         if(editor!=null){
             actionTitle=editor.getTitle();
+            var sourceShowinBar:String=editor.getShowinbar();
+            if(sourceShowinBar!=null){
+                if(sourceShowinBar=="true"){
+                    showinbar=true;
+                }else{
+                    showinbar=false;
+                }
+            }
+            var shourceShowMenu:String=editor.getShowinbar();
+            if(shourceShowMenu!=null){
+                if(shourceShowMenu=="true"){
+                    showinmenu=true;
+                }else{
+                    showinmenu=false;
+                }
+            }
         }
 
 
@@ -154,17 +169,30 @@
                 }
             }
         }
-
-        
-        
-        
-
-        textInput.dispatchEvent(new DominoActionPropertyChangeEvent(DominoActionPropertyChangeEvent.PROPERTY_CHANGE));
-    }
+  }
 
     private function check_changeHandler(event:Event):void
     {
-        this.dispatchEvent(new Event(Event.CHANGE));
+
+         if(editor!=null){
+             if(event.target){
+                if(event.target.id=="showinbarBox"){
+                    if(event.target.selected){
+                        editor.updateBar("true");
+                    }else{
+                        editor.updateBar("false");
+                    }
+                }
+                if(event.target.id=="showinmenuBox"){
+                    if(event.target.selected){
+                        editor.updateMenu("true");
+                    }else{
+                        editor.updateMenu("false");
+                    }
+                }
+            }
+         }
+       
     }
 
 ]]></fx:Script> 
