@@ -33,60 +33,60 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 {
 	public class PropertyDeclarationStatement
 	{
-		protected static var stringProperty:String = "private var _%propertyName%:String;\n" +
-				"public function get %propertyName%():String\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:String):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
-		protected static var intProperty:String = "private var _%propertyName%:int;\n" +
-				"public function get %propertyName%():int\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:int):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
-		protected static var numberProperty:String = "private var _%propertyName%:Number;\n" +
-				"public function get %propertyName%():Number\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:Number):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
-		protected static var dateProperty:String = "private var _%propertyName%:Date;\n" +
-				"public function get %propertyName%():Date\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:Date):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
-		protected static var arrayListProperty:String = "private var _%propertyName%:ArrayList = new ArrayList();\n" +
-				"public function get %propertyName%():ArrayList\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:ArrayList):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
-		protected static var arrayProperty:String = "private var _%propertyName%:Array = [];\n" +
-				"\tpublic function get %propertyName%():Array\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:Array):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
+		protected static var stringProperty:String = "\t\tprivate var _%propertyName%:String;\n" +
+				"\t\tpublic function get %propertyName%():String\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:String):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var intProperty:String = "\t\tprivate var _%propertyName%:int;\n" +
+				"\t\tpublic function get %propertyName%():int\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:int):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var numberProperty:String = "\t\tprivate var _%propertyName%:Number;\n" +
+				"\t\tpublic function get %propertyName%():Number\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:Number):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var dateProperty:String = "\t\tprivate var _%propertyName%:Date;\n" +
+				"\t\tpublic function get %propertyName%():Date\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:Date):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var arrayListProperty:String = "\t\tprivate var _%propertyName%:ArrayList = new ArrayList();\n" +
+				"\t\tpublic function get %propertyName%():ArrayList\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:ArrayList):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var arrayProperty:String = "\t\tprivate var _%propertyName%:Array = [];\n" +
+				"\t\tpublic function get %propertyName%():Array\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:Array):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
 
 		public static function getString(field:String):String
 		{
