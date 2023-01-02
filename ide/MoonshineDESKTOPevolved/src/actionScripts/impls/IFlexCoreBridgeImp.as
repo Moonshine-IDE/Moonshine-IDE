@@ -173,6 +173,9 @@ import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
+	
+	import actionScripts.plugins.ui.editor.DominoFormulaEditor;
+  
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -212,6 +215,11 @@ import actionScripts.valueObjects.HelperConstants;
 		public function getTourDeEditor(swfSource:String):BasicTextEditor
 		{
 			return (new TourDeTextEditor(swfSource));
+		}
+
+		public function getDominoActionEditor():BasicTextEditor
+		{
+			return (new DominoFormulaEditor());
 		}
 		
 		public function getCorePlugins():Array

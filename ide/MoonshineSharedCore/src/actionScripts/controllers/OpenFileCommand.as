@@ -49,8 +49,7 @@ package actionScripts.controllers
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.plugins.ui.editor.DominoFormulaEditor;
-    import actionScripts.ui.editor.text.DebugHighlightManager;
+	import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.notifier.ActionNotifier;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -482,7 +481,7 @@ package actionScripts.controllers
 		private function openDominoActionFile(project:ProjectVO, value:Object):void
 		{
 			
-			var editor:DominoFormulaEditor = new DominoFormulaEditor();
+			var editor:BasicTextEditor = model.flexCore.getDominoActionEditor();
 			var extension:String = file.fileBridge.extension;
 			if (!project)
 			{
