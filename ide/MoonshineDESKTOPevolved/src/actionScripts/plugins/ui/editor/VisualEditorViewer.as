@@ -460,6 +460,7 @@ package actionScripts.plugins.ui.editor
 				//when it swtich back the current view edtior , it need reload the sub from again
 				if(visualEditorView.visualEditor.editingSurface){
 					visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+					visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
 				}
 
 

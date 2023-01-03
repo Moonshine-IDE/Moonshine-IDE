@@ -1490,82 +1490,86 @@ package actionScripts.plugin.templating
 				tmpOnDiskEvent.ofProject = (event is NewFileEvent) ? (event as NewFileEvent).ofProject : model.activeProject;
 
 				dispatcher.dispatchEvent(tmpOnDiskEvent);
+
+				if (!newDominoActionComponentPopup)
+				{
+					newDominoActionComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoActionPopup, true) as NewDominoActionPopup;
+					newDominoActionComponentPopup.addEventListener(CloseEvent.CLOSE, handleDominoActionPopupClose);
+					newDominoActionComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoActionFileCreateRequest);
+					//setting default folder or selected folder for new file
+					if (tmpOnDiskEvent is NewFileEvent) 
+					{
+						
+						newDominoActionComponentPopup.folderLocation = new FileLocation((tmpOnDiskEvent as NewFileEvent).filePath);
+						newDominoActionComponentPopup.wrapperOfFolderLocation = (tmpOnDiskEvent as NewFileEvent).insideLocation;
+						newDominoActionComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((tmpOnDiskEvent as NewFileEvent).insideLocation);
+						
+					}
+					else
+					{
+						
+						
+						// try to check if there is any selection in 
+						// TreeView item
+						
+					}
+					//only for fixed folder for domino form file
+					var dominoActionFolderStr:String="";
+					if(newDominoActionComponentPopup.wrapperBelongToProject){
+						dominoActionFolderStr=newDominoActionComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"SharedElements"+ model.fileCore.separator+"Actions";
+					}else{
+						dominoActionFolderStr=model.activeProject.projectFolder.nativePath;
+					}
+					
+					var dominoActionFolder:FileLocation=new FileLocation(dominoActionFolderStr);
+					if(!dominoActionFolder.fileBridge.exists){
+						dominoActionFolder.fileBridge.createDirectory();
+					}
+					
+				
+					
+					if(dominoActionFolder.fileBridge.exists){
+						//set the tree selct to domino form folder
+						UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+						//Alert.show("insideLocation:"+insideLocation.file.fileBridge.nativePath);
+						model.mainView.getTreeViewPanel().tree.callLater(function ():void
+						{
+							var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+						
+							for (var j:int = 0; j < (wrappers.length - 1); j++)
+							{
+								model.mainView.getTreeViewPanel().tree.expandItem(wrappers[j], true);
+							}
+			
+							// selection
+							model.mainView.getTreeViewPanel().tree.selectedItem = insideLocation;
+							// scroll-to
+							model.mainView.getTreeViewPanel().tree.callLater(function ():void
+							{
+								model.mainView.getTreeViewPanel().tree.scrollToIndex(model.mainView.getTreeViewPanel().tree.getItemIndex(insideLocation));
+							});
+						});
+						
+						
+						//model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
+						newDominoActionComponentPopup.wrapperOfFolderLocation = insideLocation;
+						newDominoActionComponentPopup.folderLocation =dominoActionFolder;
+						PopUpManager.centerPopUp(newDominoActionComponentPopup);
+					}else{
+						Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
+					}
+					
+				}
+
 			}
 			else
 			{
-				error("error: Select location before creating a new file.");
+				Alert.show("Please select which project that you want creat the new Action at first!");
+				//error("error: Select location before creating a new file.");
 			}
 			
 			
-			if (!newDominoActionComponentPopup)
-			{
-				newDominoActionComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoActionPopup, true) as NewDominoActionPopup;
-				newDominoActionComponentPopup.addEventListener(CloseEvent.CLOSE, handleDominoActionPopupClose);
-				newDominoActionComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoActionFileCreateRequest);
-                //setting default folder or selected folder for new file
-			    if (tmpOnDiskEvent is NewFileEvent) 
-				{
-					
-					newDominoActionComponentPopup.folderLocation = new FileLocation((tmpOnDiskEvent as NewFileEvent).filePath);
-					newDominoActionComponentPopup.wrapperOfFolderLocation = (tmpOnDiskEvent as NewFileEvent).insideLocation;
-					newDominoActionComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((tmpOnDiskEvent as NewFileEvent).insideLocation);
-					
-				}
-				else
-				{
-					
-					
-					// try to check if there is any selection in 
-					// TreeView item
-					
-				}
-				//only for fixed folder for domino form file
-				var dominoActionFolderStr:String="";
-				if(newDominoActionComponentPopup.wrapperBelongToProject){
-					dominoActionFolderStr=newDominoActionComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"SharedElements"+ model.fileCore.separator+"Actions";
-				}else{
-					dominoActionFolderStr=model.activeProject.projectFolder.nativePath;
-				}
-				
-				var dominoActionFolder:FileLocation=new FileLocation(dominoActionFolderStr);
-				if(!dominoActionFolder.fileBridge.exists){
-					dominoActionFolder.fileBridge.createDirectory();
-				}
-				
 			
-				
-				if(dominoActionFolder.fileBridge.exists){
-					//set the tree selct to domino form folder
-					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
-					//Alert.show("insideLocation:"+insideLocation.file.fileBridge.nativePath);
-					model.mainView.getTreeViewPanel().tree.callLater(function ():void
-					{
-						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
-					
-						for (var j:int = 0; j < (wrappers.length - 1); j++)
-						{
-							model.mainView.getTreeViewPanel().tree.expandItem(wrappers[j], true);
-						}
-		
-						// selection
-						model.mainView.getTreeViewPanel().tree.selectedItem = insideLocation;
-						// scroll-to
-						model.mainView.getTreeViewPanel().tree.callLater(function ():void
-						{
-							model.mainView.getTreeViewPanel().tree.scrollToIndex(model.mainView.getTreeViewPanel().tree.getItemIndex(insideLocation));
-						});
-					});
-					
-					
-					//model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
-					newDominoActionComponentPopup.wrapperOfFolderLocation = insideLocation;
-					newDominoActionComponentPopup.folderLocation =dominoActionFolder;
-					PopUpManager.centerPopUp(newDominoActionComponentPopup);
-				}else{
-					Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
-				}
-				
-			}
 		}
 
 
