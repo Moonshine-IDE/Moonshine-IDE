@@ -180,6 +180,9 @@ package actionScripts.plugins.ui.editor
 				file.fileBridge.save(saveText);
 				editor.save();
 				super.updateChangeStatus();
+
+				//update domino action from dxl
+				updateDominoActionList(actionXml.@title,saveText);
 				
 				// Tell the world we've changed
 				dispatcher.dispatchEvent(
@@ -191,6 +194,84 @@ package actionScripts.plugins.ui.editor
 				super.loader = new DataAgent(URLDescriptorVO.FILE_MODIFY, onSaveSuccess, onSaveFault,
 						{path:file.fileBridge.nativePath,saveText:saveText});
 			}
+
+		}
+
+		private function updateDominoActionList(actionTitle:String,actionSourceText:String):void 
+		{
+			//1.get the domin action dxl file  
+			var separator:String= file.fileBridge.separator;
+			var actionDxlFolderPath:String=file.fileBridge.parent.fileBridge.parent.fileBridge.parent.fileBridge.nativePath+separator+"Code"+separator+"actions";
+			var actionFolderPath:FileLocation=new FileLocation(actionDxlFolderPath);
+			if(!actionFolderPath.fileBridge.exists){
+				actionFolderPath.fileBridge.createDirectory();
+			} 
+			var actionDxlPath:String = actionFolderPath.fileBridge.nativePath+separator+"Shared Actions";
+			var actionDxl:FileLocation=new FileLocation(actionDxlPath); 
+			if(!actionDxl.fileBridge.exists){
+					actionDxl.fileBridge.save(getDominActionDxlTemplate());
+			}
+			var actionString:String=String(actionDxl.fileBridge.read());
+			var	actionDxlCache:XML = new XML(actionString);
+			var actionSourceXml:XML= new XML(actionSourceText);
+
+			for each(var formulaXMLNode:XML in actionSourceXml..formula) //no matter of depth Note here
+			{
+				if(formulaXMLNode.text()){
+
+					var decodeBase64: String =  TextUtil.base64Decode(formulaXMLNode.text());
+					var newFormulaNode:XML = new XML("<formula>"+decodeBase64+"</formula>");
+					formulaXMLNode.parent().appendChild(newFormulaNode);
+					delete formulaXMLNode.parent().children()[formulaXMLNode.childIndex()];
+				}
+			}
+
+			
+			var actionFlag:Boolean = false;
+			var idCount:Number=1;
+			for each(var action:XML in actionDxlCache..action)
+			{
+				if(actionTitle==action.@title){
+					actionSourceXml.@id=action.@id;
+					action.parent().appendChild(actionSourceXml);
+					delete action.parent().children()[action.childIndex()];
+					actionFlag=true;
+				}
+				idCount++;
+										
+			}
+			
+			if(actionFlag==false){
+				actionSourceXml.@id=idCount;
+				
+				for each(var shareaction:XML in actionDxlCache..sharedactions)
+				{
+					
+					shareaction.appendChild(actionSourceXml);
+				}
+			
+			}
+
+			
+			//actionDxlCache.@xmlns='http://www.lotus.com/dxl';
+		
+			actionDxl.fileBridge.save(actionDxlCache.toXMLString());
+
+
+		}
+
+		private function getDominActionDxlTemplate():String
+		{
+			var  dominlDxl:String="<?xml version='1.0' encoding='utf-8'?> \n";
+			dominlDxl=dominlDxl+"<!DOCTYPE database SYSTEM 'xmlschemas/domino_11_0_1.dtd'> \n";
+			dominlDxl=dominlDxl+"<database  version='11.0' maintenanceversion='1.0'";
+ 			dominlDxl=dominlDxl+"replicaid='862585A6006C3CED'  increasemaxfields='true' compressdesign='true'";
+ 			dominlDxl=dominlDxl+"compressdata='true'> \n";
+ 			dominlDxl=dominlDxl+"<sharedactions hide='v3 v4strict' designerversion='8.5.3' maxid='32'> \n";
+			dominlDxl=dominlDxl+"</sharedactions> \n";
+			dominlDxl=dominlDxl+"</database> \n";
+ 
+			return dominlDxl;
 
 		}
 

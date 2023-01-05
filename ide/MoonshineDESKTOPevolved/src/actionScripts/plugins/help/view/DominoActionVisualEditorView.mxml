@@ -59,10 +59,12 @@
                     <s:HGroup width="100%" verticalAlign="middle">
                 
                     <s:Label text="Title" width="50" direction="rtl"/>
-                    <s:TextInput id="textInput"
+                    <s:Label text="" width="50" id="textInput" direction="rtl"/>
+                   
+                    <!-- <s:TextInput id="textInput"
                                 text=""  width="100" maxChars="100" 
                                 enter="textInput_changeHandler(event)" focusOut="textInput_changeHandler(event)" skinClass="skins.TextInputSkin" prompt="This is title for the action"/>
-                        
+                         -->
                     
                     </s:HGroup>
                 </s:FormItem>

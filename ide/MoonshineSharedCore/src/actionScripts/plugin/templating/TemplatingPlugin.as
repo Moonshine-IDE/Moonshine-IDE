@@ -1564,7 +1564,7 @@ package actionScripts.plugin.templating
 			}
 			else
 			{
-				Alert.show("Please select which project that you want creat the new Action at first!");
+				Alert.show("Please select the project where the shared action should be created.");
 				//error("error: Select location before creating a new file.");
 			}
 			
