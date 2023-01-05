@@ -232,6 +232,8 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".javaproj" "Moonshine.Project.Configuration.File.3"
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".grailsproj" "Moonshine.Project.Configuration.File.4"
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".ondiskproj" "Moonshine.Project.Configuration.File.5"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".hxproj" "Moonshine.Project.Configuration.File.6"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".genericproj" "Moonshine.Project.Configuration.File.7"
 	
 	;Store installation folder
 	WriteRegStr HKCU "Software\${INSTALLERNAME}" "" $INSTDIR
