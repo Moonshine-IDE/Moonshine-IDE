@@ -151,7 +151,13 @@ package actionScripts.plugins.exportToRoyaleTemplatedApp
 			}
 
 			var sourceMainContent:TextLines = TextLines.load(context.sourceMainContentLocation);
-			
+
+			if (!sourceMainContent.hasContent())
+			{
+				printErrorAndCloseExport("MainContent file of source project does not exist or is empty.");
+				return;
+			}
+
 			exportCssSection(targetMainApp);
 			exportMenuSection(sourceMainContent, targetMainContent);			
 			exportViewsSection(sourceMainContent, targetMainContent);
