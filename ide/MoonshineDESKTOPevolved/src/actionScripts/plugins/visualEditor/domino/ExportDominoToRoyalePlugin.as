@@ -199,24 +199,24 @@ package actionScripts.plugins.visualEditor.domino
                 var viewObj:Object = {};
 
                 var convertedFile:FileLocation = item.file;
-                var destinationFilePath:String = convertedFile.fileBridge.parent.name == "pages" ?
+                var destinationFileName:String = convertedFile.fileBridge.parent.name == "pages" ?
                         convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator +
                                 "pages" + exportedProject.sourceFolder.fileBridge.separator, "") :
                         convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator, "");
 
                 //Replace white spaces in file for conversion purposes
-                destinationFilePath = destinationFilePath.replace(/[\s_\(\)-]/g, "");
+                destinationFileName = destinationFileName.replace(/[\s_\(\)-]/g, "");
                 		
-                var extensionIndex:int = destinationFilePath.lastIndexOf(convertedFile.fileBridge.extension);
+                var extensionIndex:int = destinationFileName.lastIndexOf(convertedFile.fileBridge.extension);
                 if (extensionIndex > -1)
                 {
-                    var nameWithoutExt:String = destinationFilePath.substring(0, extensionIndex - 1);
+                    var nameWithoutExt:String = destinationFileName.substring(0, extensionIndex - 1);
                     viewObj.label = nameWithoutExt;
                     viewObj.content = nameWithoutExt;
-                    destinationFilePath = destinationFilePath.replace(".xml", ".mxml");
+                    destinationFileName = destinationFileName.replace(".xml", ".mxml");
                 }
 
-                convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
+                convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFileName);
                 convertedFiles[i].file = convertedFile;
 
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
