@@ -80,8 +80,10 @@ package actionScripts.plugins.visualEditor.domino
 					}
 
 					var tmpFormObject:DominoFormVO = new DominoFormVO();
-					tmpFormObject.formName = this.components[i].file.fileBridge.nameWithoutExtension;
-					tmpFormObject.viewName = "All By UNID/CRUD/" + this.components[i].file.fileBridge.nameWithoutExtension;
+
+					var nameWithoutExt:String = this.components[i].file.fileBridge.nameWithoutExtension;
+					tmpFormObject.formName = nameWithoutExt;
+					tmpFormObject.viewName = "All By UNID/CRUD/" + nameWithoutExt;
 					tmpFormObject.pageContent = this.components[i].pageContent;
 
 					parseComponents(componentData, tmpFormObject);
