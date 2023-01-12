@@ -4,7 +4,7 @@ Main.main = function() {
 	var cwd = process.cwd();
 	var fn = process.mainModule.filename;
 	fn = StringTools.replace(fn,"moonshine-haxe.js","server.js");
-	var child = js_node_ChildProcess.fork(fn,[],{ silent : false, cwd : cwd});
+	var child = js_node_ChildProcess.fork(fn,process.argv.slice(2),{ silent : false, cwd : cwd});
 	console.log("%%%" + child.pid + "%%%");
 };
 var StringTools = function() { };

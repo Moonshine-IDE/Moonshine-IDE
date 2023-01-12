@@ -42,7 +42,7 @@ class Main {
         var cwd = process.cwd();
         var fn = process.mainModule.filename;
         fn = StringTools.replace( fn, "moonshine-haxe.js", "server.js" );
-        var child = ChildProcess.fork( fn, [], { silent: false, cwd: cwd } );
+        var child = ChildProcess.fork( fn, process.argv.slice(2), { silent: false, cwd: cwd } );
         console.log( "%%%" + child.pid + "%%%" );
         
     }
