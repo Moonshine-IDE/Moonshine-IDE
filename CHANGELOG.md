@@ -10,11 +10,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+* Workspaces: Switch Workspaces from Project Sidebar ([#1131](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1131))
+* Workspaces: Manage Workspaces ([#1132](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1132))
+* Workspaces: Open Multiple Projects in Separate Workspace ([#1136](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1136))
+* Open Path in Terminal ([#1038](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1038))
+* Mac Osx: Support for M1/ARM64 ([#1162](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1162))
+
 ### Changed
 
 * Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.16.0.
+* Update Moonshine license to [Server Side Public License](https://www.mongodb.com/licensing/server-side-public-license) ([#577](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/577))
+* Misc. External Editors Update Requirements ([#1154](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1154))
 
 ### Fixed
+
+* "Java language server exited unexpectedly" Error on macOS Monterey ([#1120](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1120))
+* Form Builder: Generated Royale Interface Buttons Needs To Be Resize Properly ([#1128](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1128))
+* About: About screen does not display full screen width anymore ([#1153](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1153))
+* Getting Started Dialog Shows Git Installed When About Does Not ([#1155](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1155))
+* Editor: Editor Breakpoint Highlight Not Showing During Debug ([#1170](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1170))
+* Domino Visual Editor: Fixed issue where namespaces in forms caused problems during conversion to Apache Royale ([#1071](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1071))
+* .hxproj Not In The File-Association List For Moonshine ([#1172](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1172))
+* Java Gradle: Project Does Not Open on Startup - JavaImporter$parse() Error ([#1123](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1123))
 
 ## Moonshine IDE [3.3.3]
 
