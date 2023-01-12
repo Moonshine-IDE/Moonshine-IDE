@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 * "Java language server exited unexpectedly" Error on macOS Monterey ([#1120](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1120))
 * Form Builder: Generated Royale Interface Buttons Needs To Be Resize Properly ([#1128](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1128))
+* Apache Royale build: No error message when main application doesn't exists in attempt of compiling Royale based project ([#1151](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1151))
 * About: About screen does not display full screen width anymore ([#1153](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1153))
 * Getting Started Dialog Shows Git Installed When About Does Not ([#1155](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1155))
 * Editor: Editor Breakpoint Highlight Not Showing During Debug ([#1170](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1170))
