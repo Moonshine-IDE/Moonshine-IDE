@@ -98,7 +98,7 @@ package actionScripts.ui.editor
 				}
 				lspEditor.completionTriggerCharacters = completionTriggerCharacters;
 			}
-			var signatureHelpProvider:Object = serverCapabilities.completionProvider;
+			var signatureHelpProvider:Object = serverCapabilities.signatureHelpProvider;
 			if(signatureHelpProvider)
 			{
 				var signatureHelpTriggerCharacters:Array = signatureHelpProvider.triggerCharacters;
