@@ -34,10 +34,12 @@ package actionScripts.utils
     import mx.core.UIComponent;
 	import mx.controls.Alert;
 	import mx.utils.StringUtil;
-	import flash.filesystem.File;
+	import actionScripts.locator.IDEModel;
     
     public class DominoUtils
 	{
+		
+
         public static function getDominoParentContent(title:String,windowsTitle:String):XML
 		{	   
 			return getDominoMainContainer(title,windowsTitle);	
@@ -45,6 +47,8 @@ package actionScripts.utils
 
         private static function getDominoMainContainer(title:String,windowsTitle:String):XML
 		{
+				var model:IDEModel = IDEModel.getInstance();
+				var separator:String = model.fileCore.separator;
 				var dat:Date = new Date();
 				var xml_str:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 				xml_str=xml_str+"<note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.4' replicaid='4825808B00336E81'>";
@@ -58,7 +62,7 @@ package actionScripts.utils
 				// xml_str=xml_str+"<addedtofile><datetime>"+dat+"</datetime></addedtofile>";
 				// xml_str=xml_str+"</noteinfo>"
 				if(windowsTitle!=null  && windowsTitle!=""){
-					var separatorIndex:int=windowsTitle.lastIndexOf(File.separator);
+					var separatorIndex:int=windowsTitle.lastIndexOf(separator);
 					if(separatorIndex>0){
 						windowsTitle = windowsTitle.substring(separatorIndex + 1);
 					}
