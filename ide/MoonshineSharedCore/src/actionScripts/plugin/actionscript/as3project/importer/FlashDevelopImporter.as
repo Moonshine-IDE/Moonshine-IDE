@@ -61,7 +61,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 	import global.domino.DominoGlobals;
 	import actionScripts.utils.XMLUtils;
 
-
+	import mx.controls.Alert;
 
 
 
@@ -337,15 +337,39 @@ package actionScripts.plugin.actionscript.as3project.importer
 
 		public static function convertDomino(file:FileLocation):void
 		{
-			var folder:File = (file.fileBridge.getFile as File).parent;
-			
 			var projectNameextensionIndex:int = file.fileBridge.name.lastIndexOf("veditorproj");
-			var projectName:String=file.fileBridge.name.substring(0, projectNameextensionIndex - 1);
+			var folder:File ;
+			var projectName:String;
+			var settingFile:File=null;
+			var projectNameextensionIndex:int = file.fileBridge.name.lastIndexOf("veditorproj");
+			if(projectNameextensionIndex>0){
+				folder = (file.fileBridge.getFile as File).parent;
+				projectName=file.fileBridge.name.substring(0, projectNameextensionIndex - 1);
+				settingFile=new File(file.fileBridge.nativePath);
+			}else{
+				//get the correct project setting file end with veditorproj.
+				folder =file.fileBridge.getFile as File;
+				var getfiles:Array = folder.getDirectoryListing();
+					for (var i:int = 0; i < getfiles.length; i++) { 			  	 			  
+						var projectFileNameInt:int=getfiles[i].nativePath.lastIndexOf("veditorproj");
+						if(projectFileNameInt>0){
+							projectName=getfiles[i].nativePath.substring(0, projectFileNameInt - 1);;
+							settingFile=getfiles[i];
+						}
+					}
+			}
+				
+			
+			
+			
+		
+		
 			
 			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
 			var requireFileLocation:FileLocation;
 
-			var base64CodeReg:RegExp = new RegExp("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$","i");
+			var base64CodeReg:RegExp = new RegExp("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$","i");
+			
 		
 			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
 			//1. first check the .xml_conversion_required file
@@ -374,247 +398,251 @@ package actionScripts.plugin.actionscript.as3project.importer
 					//add subfrom xml into directory ;
 					
 
-						for each (var xml:File in directory)
-						{
-							if (xml.extension == "xml" ) {
-								var xmlNameextensionIndex:int = xml.name.lastIndexOf("xml");
-								var xmlName:String=xml.name.substring(0, xmlNameextensionIndex - 1);
-								var xmlNavePath:String = xml.nativePath;
-								var subfromPath:String = "subforms"+File.separator+xml.name;
+					for each (var xml:File in directory)
+					{
+						if (xml.extension == "xml" ) {
+							var xmlNameextensionIndex:int = xml.name.lastIndexOf("xml");
+							var xmlName:String=xml.name.substring(0, xmlNameextensionIndex - 1);
+							var xmlNavePath:String = xml.nativePath;
+							var subfromPath:String = "subforms"+File.separator+xml.name;
 
-								var dominoXml:XML;
-								if(xmlNavePath.indexOf(subfromPath)>=0){
-									dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
-								} else {
-									dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
-								}
-								
-								
-								var _fileStreamMoonshine:FileStream = new FileStream();
-								_fileStreamMoonshine.open(xml, FileMode.READ);
-								var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
-								var internalxml:XML = new XML(data);
-								
-
+							var dominoXml:XML;
+							if(xmlNavePath.indexOf(subfromPath)>=0){
+								dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
+							} else {
+								dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
+							}
 							
+							
+							var _fileStreamMoonshine:FileStream = new FileStream();
+							_fileStreamMoonshine.open(xml, FileMode.READ);
+							var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
+							var internalxml:XML = new XML(data);
+							
+
+						
+							
+							var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
+							if(surfaceModel!=null){
+								var dominoMainContainer:XML ;
+								if(xmlNavePath.indexOf(subfromPath)>=0){
+									dominoMainContainer= MainApplicationCodeUtils.getDominPageMainContainerTag(dominoXml);
+								}else{
+									dominoMainContainer = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
+								}									
 								
-								var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
-								if(surfaceModel!=null){
-									var dominoMainContainer:XML ;
-									if(xmlNavePath.indexOf(subfromPath)>=0){
-										dominoMainContainer= MainApplicationCodeUtils.getDominPageMainContainerTag(dominoXml);
-									}else{
-										dominoMainContainer = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
-									}									
+								
+								
+								//convert to dxl
+								var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
+								
+								//fix the div node from the domino code 
+								for each(var div:XML in dominoCode..div) //no matter of depth Note here
+								{
+									if(div.parent().name() == "tablecell"){
+										var divChilren:XMLList = div.children();
+										for each (var divChilrenNode:XML in divChilren)
+										{
+											div.parent().appendChild(divChilrenNode)
+										}
+										delete div.parent().children()[div.childIndex()];
+									}
 									
-									
-									
-									//convert to dxl
-									var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
-									
-									//fix the div node from the domino code 
-									for each(var div:XML in dominoCode..div) //no matter of depth Note here
-									{
-										if(div.parent().name() == "tablecell"){
-											var divChilren:XMLList = div.children();
-											for each (var divChilrenNode:XML in divChilren)
-											{
-												div.parent().appendChild(divChilrenNode)
+								}
+								//fix null pardef
+								for each(var pardef:XML in dominoCode..pardef)
+								{
+									var hideStr:String =pardef.@hide;
+									if(pardef && pardef.@id && hideStr==""){
+										var id:String = pardef.@id;
+										for each(var par:XML in dominoCode..par)
+										{
+											if(par.@def==id){
+												if(par && par.@hide){
+													pardef.@hide=par.@hide;
+													continue;
+												}
 											}
-											delete div.parent().children()[div.childIndex()];
+
+										}
+									
+										
+									}
+								}
+
+								
+
+								if(dominoCode!=null ){
+									var hasRichText:Boolean=false;	
+									if(dominoCode.children().length() != 0){ 
+										dominoCode=dominoCode.children()[0]
+									}
+									
+									if(dominoCode.name()=="div" || dominoCode.name()=="_moonshineSelected_div"){
+										dominoCode.setName("richtext");
+										hasRichText=true;
+									
+									}
+									if(hasRichText==false){
+										//add new richtext node
+										var richtext:XML = new XML("<richtext style='width:700px;height:700px;' class='flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop' direction='Horizontal' vdirection='Vertical'/>");
+										dominoMainContainer.appendChild(richtext);
+										dominoMainContainer=richtext;
+									}
+								
+									if (dominoMainContainer)
+									{
+										dominoMainContainer.appendChild(dominoCode); 
+										if(dominoCode.name()=="richtext"){
+											dominoMainContainer=dominoCode;
+										}              
+									}
+									else
+									{
+										dominoXml.appendChild(dominoCode);
+									}
+
+									for each(var body:XML in dominoXml..body) //no matter of depth Note here
+									{
+										if(body.parent().name() == "richtext"){
+											var bodyChilren:XMLList = body.children();
+											for each (var bodyChilrenNode:XML in bodyChilren)
+											{
+												body.parent().appendChild(bodyChilrenNode)
+											}
+											delete body.parent().children()[body.childIndex()];
 										}
 										
 									}
-									//fix null pardef
-									for each(var pardef:XML in dominoCode..pardef)
-									{
-										var hideStr:String =pardef.@hide;
-										if(pardef && pardef.@id && hideStr==""){
-											var id:String = pardef.@id;
-											for each(var par:XML in dominoCode..par)
-											{
-												if(par.@def==id){
-													if(par && par.@hide){
-														pardef.@hide=par.@hide;
-														continue;
-													}
-												}
 
+									//fix the formula base64 code to normal UTF-8 code , when it contain some speacical string
+									for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
+									{
+										if(formula.text()){
+											if(formula.text().match(base64CodeReg)){
+												var decodeBase64: String =  StringHelper.base64Decode(formula.text());
+												var newFormulaNode:XML = new XML("<formula>"+decodeBase64+"</formula>");
+												formula.parent().appendChild(newFormulaNode);
+												delete formula.parent().children()[formula.childIndex()];
 											}
 										
 											
 										}
 									}
-
-									
-
-									if(dominoCode!=null ){
-										var hasRichText:Boolean=false;	
-										if(dominoCode.children().length() != 0){ 
-											dominoCode=dominoCode.children()[0]
-										}
-										
-										if(dominoCode.name()=="div" || dominoCode.name()=="_moonshineSelected_div"){
-											dominoCode.setName("richtext");
-											hasRichText=true;
-										
-										}
-										if(hasRichText==false){
-											//add new richtext node
-											var richtext:XML = new XML("<richtext style='width:700px;height:700px;' class='flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop' direction='Horizontal' vdirection='Vertical'/>");
-											dominoMainContainer.appendChild(richtext);
-											dominoMainContainer=richtext;
-										}
-									
-										if (dominoMainContainer)
-										{
-											dominoMainContainer.appendChild(dominoCode); 
-											if(dominoCode.name()=="richtext"){
-												dominoMainContainer=dominoCode;
-											}              
-										}
-										else
-										{
-											dominoXml.appendChild(dominoCode);
-										}
-
-										for each(var body:XML in dominoXml..body) //no matter of depth Note here
-										{
-											if(body.parent().name() == "richtext"){
-												var bodyChilren:XMLList = body.children();
-												for each (var bodyChilrenNode:XML in bodyChilren)
+									//fix hidewhen
+									var richtextNodeList:XMLList=dominoXml..richtext;
+									var richtextNode=richtextNodeList[0];
+									for each(var par:XML in dominoXml..par) //no matter of depth Note here
+									{
+										if(par.@hidewhen !=null && par.@hidewhen!="" && par.@def){
+											
+											var pardefId:String=par.@def;
+											if(pardefId!=null){
+												for each(var pardef:XML in dominoXml..pardef)
 												{
-													body.parent().appendChild(bodyChilrenNode)
-												}
-												delete body.parent().children()[body.childIndex()];
-											}
-											
-										}
-
-										//fix the formula base64 code to normal UTF-8 code , when it contain some speacical string
-										for each(var formula:XML in dominoXml..formula) //no matter of depth Note here
-										{
-											if(formula.text()){
-												if(formula.text().match(base64CodeReg)){
-													var decodeBase64: String =  StringHelper.base64Decode(formula.text());
-													var newFormulaNode:XML = new XML("<formula>"+decodeBase64+"</formula>");
-													formula.parent().appendChild(newFormulaNode);
-													delete formula.parent().children()[formula.childIndex()];
-												}
-											
-											 
-											}
-										}
-										//fix hidewhen
-										var richtextNodeList:XMLList=dominoXml..richtext;
-										var richtextNode=richtextNodeList[0];
-										for each(var par:XML in dominoXml..par) //no matter of depth Note here
-										{
-											if(par.@hidewhen !=null && par.@hidewhen!="" && par.@def){
-												
-												var pardefId:String=par.@def;
-												if(pardefId!=null){
-													for each(var pardef:XML in dominoXml..pardef)
-													{
-														var id:String = pardef.@id;
-														if(pardefId==id){
-														
-															if(pardef.code!=null){
-																if(pardef.code.@event!=null && pardef.code.@event!=""){
-																	if(pardef.code.@event=="hidewhen"){
-																		var formulaXmlList:XMLList=pardef.code.formula;
-																		var formulaXml=formulaXmlList[0];
-																		if(formulaXml){
-																		
-																			if(formulaXml.text()!=par.@hidewhen){
-																			
-																				var newFormulaNodeFix:XML = new XML("<formula>"+par.@hidewhen+"</formula>");
-																				formulaXml.parent().appendChild(newFormulaNodeFix);
-																				delete formulaXml.parent().children()[formulaXml.childIndex()];
+													var id:String = pardef.@id;
+													if(pardefId==id){
+													
+														if(pardef.code!=null){
+															if(pardef.code.@event!=null && pardef.code.@event!=""){
+																if(pardef.code.@event=="hidewhen"){
+																	var formulaXmlList:XMLList=pardef.code.formula;
+																	var formulaXml=formulaXmlList[0];
+																	if(formulaXml){
+																	
+																		if(formulaXml.text()!=par.@hidewhen){
+																			var parhidewhen:String=par.@hidewhen;
+																			if(parhidewhen.match(base64CodeReg)){
+																					parhidewhen =  StringHelper.base64Decode(parhidewhen);
 																			}
+																		
+																			var newFormulaNodeFix:XML = new XML("<formula>"+parhidewhen+"</formula>");
+																			formulaXml.parent().appendChild(newFormulaNodeFix);
+																			delete formulaXml.parent().children()[formulaXml.childIndex()];
 																		}
 																	}
 																}
 															}
+														}
 
-															//fix the hide in here
-															if(pardef.@hide){
-																	if(par.@hide){
-																		if(pardef.@hide!=par.@hide){
-																			var parHideString:String=par.@hide;
-																			var parHideWhenString:String=par.@hidewhen;
-																			if(parHideString!=null){
-																				if(parHideWhenString!=null&& parHideWhenString.length>0){
-																					//it par have the hidewhen property, so we need merge the hide option on the hidewhen 
-																					if(parHideString.length>0){
-																						pardef.@hide=parHideString;
-																					}
-																					
-																				}else{
-																					DominoGlobals.PardefDivId++;
-																					var pardefXml:XML = new XML("<pardef id=\""+DominoGlobals.PardefDivId+"\" "+" dominotype=\"fixedhide\" />" );
-																					pardefXml.@hide=par.@hide;
-
-																					par.@def=DominoGlobals.PardefDivId;
-																					//var parParentNode:XML = par.parent();
-																					//delete par.parent().children()[par.childIndex()];
-																					if(richtextNode!=null)
-																					richtextNode.insertChildAfter(richtextNode.children()[0],pardefXml);
+														//fix the hide in here
+														if(pardef.@hide){
+																if(par.@hide){
+																	if(pardef.@hide!=par.@hide){
+																		var parHideString:String=par.@hide;
+																		var parHideWhenString:String=par.@hidewhen;
+																		if(parHideString!=null){
+																			if(parHideWhenString!=null&& parHideWhenString.length>0){
+																				//it par have the hidewhen property, so we need merge the hide option on the hidewhen 
+																				if(parHideString.length>0){
+																					pardef.@hide=parHideString;
 																				}
 																				
-																				//parParentNode.appendChild(par);
-																				
+																			}else{
+																				DominoGlobals.PardefDivId++;
+																				var pardefXml:XML = new XML("<pardef id=\""+DominoGlobals.PardefDivId+"\" "+" dominotype=\"fixedhide\" />" );
+																				pardefXml.@hide=par.@hide;
+
+																				par.@def=DominoGlobals.PardefDivId;
+																				//var parParentNode:XML = par.parent();
+																				//delete par.parent().children()[par.childIndex()];
+																				if(richtextNode!=null)
+																				richtextNode.insertChildAfter(richtextNode.children()[0],pardefXml);
 																			}
+																			
+																			//parParentNode.appendChild(par);
+																			
 																		}
 																	}
-															} 
-															continue;
-														}
+																}
+														} 
+														continue;
 													}
 												}
 											}
 										}
-
-										//fix hide 
-
-										dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
-										dominoXml=MainApplicationCodeUtils.fixPardefAlign(dominoXml);
-								
 									}
-									
-									//fix the dxl format
-									var extensionIndex:int = xml.name.lastIndexOf(xml.extension);
-									//write the dxl to traget form file
-									var xmlFileName:String=xml.name.substring(0, extensionIndex - 1);
-									var targetFileLocation:FileLocation ;
 
-									if(xmlNavePath.indexOf(subfromPath)>=0){
-										targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms"+File.separator+xmlFileName+".subform");
-									}else{
-										targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
-									}
-									
-									
-									var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
-									//remove old file
-									if(targetFileLocation.fileBridge.exists){
-										targetFileLocation.fileBridge.deleteFile();
-									}
-									targetFileLocation.fileBridge.save(dominoXml.toXMLString());
-									// var _targetfileStreamMoonshine:FileStream = new FileStream();
-									// _targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
-									// _targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml.toXMLString()));
-									// _targetfileStreamMoonshine.close();
+									//fix hide 
 
+									dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
+									dominoXml=MainApplicationCodeUtils.fixPardefAlign(dominoXml);
+							
 								}
-								_fileStreamMoonshine.close();
+								
+								//fix the dxl format
+								var extensionIndex:int = xml.name.lastIndexOf(xml.extension);
+								//write the dxl to traget form file
+								var xmlFileName:String=xml.name.substring(0, extensionIndex - 1);
+								var targetFileLocation:FileLocation ;
+
+								if(xmlNavePath.indexOf(subfromPath)>=0){
+									targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms"+File.separator+xmlFileName+".subform");
+								}else{
+									targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
+								}
+								
+								
+								var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
+								//remove old file
+								if(targetFileLocation.fileBridge.exists){
+									targetFileLocation.fileBridge.deleteFile();
+								}
+								targetFileLocation.fileBridge.save(dominoXml.toXMLString());
+								// var _targetfileStreamMoonshine:FileStream = new FileStream();
+								// _targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
+								// _targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml.toXMLString()));
+								// _targetfileStreamMoonshine.close();
+
 							}
+							_fileStreamMoonshine.close();
 						}
+					}
 
 					//2.2 we should seting the settingsFilePath into .veditorproj file
 					//2.2.1 load the .veditorporj file from local Domino project.
-					if(file.fileBridge.exists){
-						var settingFile:File=new File(file.fileBridge.nativePath);
+					if(settingFile!=null && settingFile.exists){
+						
 						//if manven setting.xml file config exist
 						if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists) { 
 							//load project config file to xml 
@@ -626,7 +654,9 @@ package actionScripts.plugin.actionscript.as3project.importer
 								var opetion:XML=new XML("<option/>");
 								opetion.@settingsFilePath=OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath;
 								settingxml..mavenBuild[0].appendChild(opetion);
-								file.fileBridge.save(settingxml);
+								
+								var settingFileLocation:FileLocation=new FileLocation(settingFile.nativePath);
+								settingFileLocation.fileBridge.save(settingxml);
 							}
 						}
 					}
