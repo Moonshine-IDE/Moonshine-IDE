@@ -628,6 +628,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 								if(targetFileLocation.fileBridge.exists){
 									targetFileLocation.fileBridge.deleteFile();
 								}
+								dominoXml=DominoUtils.fixNewTab(dominoXml);
 								targetFileLocation.fileBridge.save(dominoXml.toXMLString());
 								// var _targetfileStreamMoonshine:FileStream = new FileStream();
 								// _targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
