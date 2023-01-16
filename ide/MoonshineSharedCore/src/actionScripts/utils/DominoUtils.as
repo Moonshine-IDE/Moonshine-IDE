@@ -103,6 +103,7 @@ package actionScripts.utils
 		public static function fixDominButton(xml:XML):String
 		{
 			//remove the first div from table cells
+			var tabpattern:RegExp = /&amp;#tab;/g;
 			
 			var tableCells:XMLList=xml.descendants("tablecell");
 			
@@ -243,7 +244,7 @@ package actionScripts.utils
 					result=result3;
 
 				}
-			 var tabpattern:RegExp = /&amp;#tab;/g;
+			 
 			 result = result.replace(tabpattern,"\t");
 			
 			// remove all new line from section
@@ -279,8 +280,18 @@ package actionScripts.utils
 			}
 
 			
+			result = result.replace(tabpattern,"\t");
 			
 			return result;
+		}
+
+		public static function fixNewTab(xml:XML):XML
+		{
+			var tabpattern:RegExp = /&amp;#tab;/g;
+			var xmlstr:String = xml.toXMLString();
+			xmlstr=xmlstr.replace(tabpattern,"\t");
+			xml =new XML(xmlstr);
+			return xml;
 		}
 
     }
