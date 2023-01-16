@@ -153,7 +153,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 
 			if (data.domino.option.hasOwnProperty('@localDatabase'))
 			{
-				project.localDatabase = SerializeUtil.deserializeString(data.domino.option.@localDatabase);
+				project.localDatabase = UtilsCore.getAbsolutePathAgainstProject(project.folderLocation, data.domino.option.@localDatabase);
 			}
 
 			if (data.domino.option.hasOwnProperty('@targetServer'))

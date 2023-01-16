@@ -32,8 +32,9 @@
 package actionScripts.plugin.actionscript.as3project.exporter
 {
     import actionScripts.utils.SerializeUtil;
+	import actionScripts.utils.UtilsCore;
 
-    import flash.filesystem.File;
+	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	
@@ -150,7 +151,7 @@ package actionScripts.plugin.actionscript.as3project.exporter
 				options = <domino />;
 				var dominoPairs:Object = {
 					dominoBaseAgentURL	:	SerializeUtil.serializeString(p.dominoBaseAgentURL),
-					localDatabase		: 	SerializeUtil.serializeString(p.localDatabase),
+					localDatabase		: 	UtilsCore.getRelativePathAgainstProject(p.folderLocation, p.localDatabase),
 					targetServer		:	SerializeUtil.serializeString(p.targetServer),
 					targetDatabase		:	SerializeUtil.serializeString(p.targetDatabase)
 				}
