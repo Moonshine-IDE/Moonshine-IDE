@@ -157,6 +157,7 @@ package actionScripts.utils
 			else if (projectPath is String) projectPathFile = new File(projectPath as String);
 
 			var isDottedSyntax:Boolean = (sourceRelativePathString.indexOf("../") != -1);
+			var isDottedSyntaxWithSingleDot:Array = sourceRelativePathString.match(/^.\//g);
 			if (sourceRelativePathString == ".")
 			{
 				return projectPathFile.nativePath;
@@ -171,6 +172,11 @@ package actionScripts.utils
 					parentCount --;
 				}
 				return sourcePathFile.nativePath + File.separator + sourceRelativePathString;
+			}
+			else if (isDottedSyntaxWithSingleDot.length > 0)
+			{
+				sourceRelativePathString = sourceRelativePathString.replace(/^.\//g, File.separator);
+				return projectPathFile.nativePath + sourceRelativePathString;
 			}
 
 			// in case of full path
