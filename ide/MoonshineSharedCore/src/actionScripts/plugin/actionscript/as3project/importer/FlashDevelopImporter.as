@@ -62,6 +62,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 	import actionScripts.utils.XMLUtils;
 
 	import mx.controls.Alert;
+	import utils.StringHelperUtils;
 
 
 
@@ -470,6 +471,17 @@ package actionScripts.plugin.actionscript.as3project.importer
 									}
 								}
 
+								//fix wrong size on the font
+								for each(var font:XML in dominoCode..font)
+								{
+									if(font && font.@size){
+										var sizeStr:String = font.@size;
+										if(sizeStr.indexOf("ptpt")>0){
+											font.@size=sizeStr.replace(/ptpt/gi, "pt");
+										}
+									}
+								}	
+
 								
 
 								if(dominoCode!=null ){
@@ -521,7 +533,13 @@ package actionScripts.plugin.actionscript.as3project.importer
 										if(formula.text()){
 											if(formula.text().match(base64CodeReg)){
 												var decodeBase64: String =  StringHelper.base64Decode(formula.text());
-												var newFormulaNode:XML = new XML("<formula>"+decodeBase64+"</formula>");
+												var newFormulaNode:XML
+												try{
+													 newFormulaNode= new XML("<formula>"+decodeBase64+"</formula>");
+												}catch(error:Error){
+													 newFormulaNode= new XML("<formula>"+StringHelperUtils.fixXmlSpecailCharacter(decodeBase64)+"</formula>");
+													
+												}
 												formula.parent().appendChild(newFormulaNode);
 												delete formula.parent().children()[formula.childIndex()];
 											}
@@ -603,6 +621,9 @@ package actionScripts.plugin.actionscript.as3project.importer
 										}
 									}
 
+									//fix wrong size uint 
+
+									
 									//fix hide 
 
 									dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
