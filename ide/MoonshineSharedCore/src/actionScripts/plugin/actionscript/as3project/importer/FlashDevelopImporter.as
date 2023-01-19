@@ -666,21 +666,21 @@ package actionScripts.plugin.actionscript.as3project.importer
 					if(settingFile!=null && settingFile.exists){
 						
 						//if manven setting.xml file config exist
-						if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists) { 
-							//load project config file to xml 
-							var _settingFileStreamMoonshine:FileStream = new FileStream();
-								_settingFileStreamMoonshine.open(settingFile, FileMode.READ);
-							var settingData:String = _settingFileStreamMoonshine.readUTFBytes(_settingFileStreamMoonshine.bytesAvailable);
-							var settingxml:XML = new XML(settingData);
-							if(settingxml..mavenBuild&&settingxml..mavenBuild[0]!=null){
-								var opetion:XML=new XML("<option/>");
-								opetion.@settingsFilePath=OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath;
-								settingxml..mavenBuild[0].appendChild(opetion);
+						// if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists) { 
+						// 	//load project config file to xml 
+						// 	var _settingFileStreamMoonshine:FileStream = new FileStream();
+						// 		_settingFileStreamMoonshine.open(settingFile, FileMode.READ);
+						// 	var settingData:String = _settingFileStreamMoonshine.readUTFBytes(_settingFileStreamMoonshine.bytesAvailable);
+						// 	var settingxml:XML = new XML(settingData);
+						// 	if(settingxml..mavenBuild&&settingxml..mavenBuild[0]!=null){
+						// 		var opetion:XML=new XML("<option/>");
+						// 		opetion.@settingsFilePath=OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.nativePath;
+						// 		settingxml..mavenBuild[0].appendChild(opetion);
 								
-								var settingFileLocation:FileLocation=new FileLocation(settingFile.nativePath);
-								settingFileLocation.fileBridge.save(settingxml);
-							}
-						}
+						// 		var settingFileLocation:FileLocation=new FileLocation(settingFile.nativePath);
+						// 		settingFileLocation.fileBridge.save(settingxml);
+						// 	}
+						// }
 					}
 				}
 
