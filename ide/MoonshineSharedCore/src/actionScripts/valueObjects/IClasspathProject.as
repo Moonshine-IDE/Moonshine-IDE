@@ -29,53 +29,12 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.utils
+package actionScripts.valueObjects
 {
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+	import actionScripts.factory.FileLocation;
 
-	public function getProjectSDKPath(project:ProjectVO, model:IDEModel):String
+	public interface IClasspathProject
 	{
-		if(project is AS3ProjectVO)
-		{
-			var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-			if(as3Project.buildOptions.customSDK)
-			{
-				return as3Project.buildOptions.customSDK.fileBridge.nativePath;
-			}
-			else if(model.defaultSDK)
-			{
-				return model.defaultSDK.fileBridge.nativePath;
-			}
-		}
-		else if(project is JavaProjectVO)
-		{
-			var javaProject:JavaProjectVO = JavaProjectVO(project);
-			if(model.javaPathForTypeAhead)
-			{
-				return model.javaPathForTypeAhead.fileBridge.nativePath;
-			}
-		}
-		else if(project is GrailsProjectVO)
-		{
-			var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
-			if(model.javaPathForTypeAhead)
-			{
-				return model.javaPathForTypeAhead.fileBridge.nativePath;
-			}
-		}
-		else if(project is HaxeProjectVO)
-		{
-			var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
-			if(model.haxePath)
-			{
-				return model.haxePath;
-			}
-		}
-		return null;
+		function get classpaths():Vector.<FileLocation>;
 	}
 }

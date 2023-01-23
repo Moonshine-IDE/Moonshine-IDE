@@ -52,15 +52,24 @@ import mx.collections.ArrayCollection;
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.IClasspathProject;
 
-	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO, IJavaProject, IDeployDominoDatabaseProject
+	public class OnDiskProjectVO extends ProjectVO implements IVisualEditorProjectVO, IJavaProject, IDeployDominoDatabaseProject, IClasspathProject
 	{
 		public static const DOMINO_EXPORT_PATH:String = "nsfs/nsf-moonshine";
 		
 		public var buildOptions:OnDiskBuildOptions;
 		public var mavenBuildOptions:MavenBuildOptions;
 
-		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		private var _classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public function get classpaths():Vector.<FileLocation>
+		{
+			return _classpaths;
+		}
+		public function set classpaths(value:Vector.<FileLocation>):void
+		{
+			_classpaths = value;
+		}
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var targets:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var showHiddenPaths:Boolean = false;

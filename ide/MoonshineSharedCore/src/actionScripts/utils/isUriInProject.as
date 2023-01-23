@@ -32,9 +32,10 @@
 package actionScripts.utils
 {
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.valueObjects.IClasspathProject;
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
 	public function isUriInProject(uri:String, project:ProjectVO):Boolean
 	{
@@ -46,20 +47,35 @@ package actionScripts.utils
 		{
 			return true;
 		}
-		if(project is AS3ProjectVO)
+		if(project is IClasspathProject)
 		{
-			var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-			var sourcePaths:Vector.<FileLocation> = as3Project.classpaths;
-			var sourcePathCount:int = sourcePaths.length;
-			for(var i:int = 0; i < sourcePathCount; i++)
+			var classpathProject:IClasspathProject = IClasspathProject(project);
+			var classpaths:Vector.<FileLocation> = classpathProject.classpaths;
+			var classpathsCount:int = classpaths.length;
+			for(var i:int = 0; i < classpathsCount; i++)
 			{
-				var sourcePath:FileLocation = sourcePaths[i];
-				if(sourcePath.fileBridge.getRelativePath(fileForUri, false) !== null)
+				var classpath:FileLocation = classpaths[i];
+				if(classpath.fileBridge.getRelativePath(fileForUri, false) !== null)
 				{
 					return true;
 				}
 			}
-			var sdkPath:String = getProjectSDKPath(project, IDEModel.getInstance());
+		}
+		if (project is AS3ProjectVO)
+		{
+			// TODO: refactor detection of source file from SDK into an
+			// interface that project VOs can implement, similar to
+			// IClasspathProject above
+			var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+			var sdkPath:String = null;
+			if(as3Project.buildOptions.customSDK)
+			{
+				sdkPath = as3Project.buildOptions.customSDK.fileBridge.nativePath;
+			}
+			else if(IDEModel.getInstance().defaultSDK)
+			{
+				sdkPath = IDEModel.getInstance().defaultSDK.fileBridge.nativePath;
+			}
 			if(sdkPath != null)
 			{
 				var sdkFile:FileLocation = new FileLocation(sdkPath, false);

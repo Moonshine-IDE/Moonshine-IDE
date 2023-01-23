@@ -40,7 +40,6 @@ package actionScripts.plugins.swflauncher
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.locator.IDEModel;
-	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 
 	public class SWFDebugAdapterLauncher extends ConsoleOutputter implements IDebugAdapterLauncher
@@ -56,16 +55,16 @@ package actionScripts.plugins.swflauncher
 			var sdkFile:File = null;
 			if(project is AS3ProjectVO)
 			{
-				var sdkPathAS3Proj:String = getProjectSDKPath(project, model);
-
-				sdkFile = new File(sdkPathAS3Proj);
-			}
-			else
-			{
-				if(model.defaultSDK)
+				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+				if(as3Project.buildOptions.customSDK)
 				{
-					sdkFile = model.defaultSDK.fileBridge.getFile as File;
+					sdkFile = as3Project.buildOptions.customSDK.fileBridge.getFile as File;
 				}
+			}
+
+			if (!sdkFile && model.defaultSDK)
+			{
+				sdkFile = model.defaultSDK.fileBridge.getFile as File;
 			}
 
 			if(!sdkFile)
