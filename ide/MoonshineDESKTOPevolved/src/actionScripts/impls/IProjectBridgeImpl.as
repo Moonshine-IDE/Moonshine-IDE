@@ -50,6 +50,7 @@ package actionScripts.impls
 	import actionScripts.plugins.haxe.HaxeBuildPlugin;
 	import actionScripts.plugins.haxelib.HaxelibPlugin;
 	import actionScripts.plugins.haxe.HaxeLanguageServerPlugin;
+	import actionScripts.plugins.java.JavaBuildPlugin;
 	import actionScripts.plugins.java.JavaLanguageServerPlugin;
 	import actionScripts.valueObjects.ProjectVO;
 
@@ -74,6 +75,7 @@ package actionScripts.impls
 				// java
 				JavaSyntaxPlugin,
                 JavaProjectPlugin,
+				JavaBuildPlugin,
                 JavaLanguageServerPlugin,
 
 				// groovy/grails
@@ -106,6 +108,7 @@ package actionScripts.impls
 
 				// java
                 JavaProjectPlugin,
+				JavaBuildPlugin,
                 JavaLanguageServerPlugin,
 
 				// groovy/grails

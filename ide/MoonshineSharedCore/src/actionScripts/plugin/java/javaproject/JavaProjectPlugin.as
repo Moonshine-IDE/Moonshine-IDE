@@ -62,11 +62,7 @@ package actionScripts.plugin.java.javaproject
 		override public function activate():void
 		{
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
-			dispatcher.addEventListener(JavaBuildEvent.JAVA_BUILD, javaBuildHandler);
-			dispatcher.addEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
-			dispatcher.addEventListener(JavaBuildEvent.CLEAN, cleanHandler);
 			dispatcher.addEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
-			dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, mavenBuildCompleteHandler);
 
 			super.activate();
 		}
@@ -74,11 +70,7 @@ package actionScripts.plugin.java.javaproject
 		override public function deactivate():void
 		{
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
-			dispatcher.removeEventListener(JavaBuildEvent.JAVA_BUILD, javaBuildHandler);
-			dispatcher.removeEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
-			dispatcher.removeEventListener(JavaBuildEvent.CLEAN, cleanHandler);
 			dispatcher.removeEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
-			dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, mavenBuildCompleteHandler);
 
 			super.deactivate();
 		}
@@ -106,72 +98,6 @@ package actionScripts.plugin.java.javaproject
 			}
 			
 			executeCreateJavaProject = new CreateJavaProject(event);
-		}
-
-		private function javaBuildHandler(event:Event):void
-		{
-			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
-			if (javaProject && javaProject.hasGradleBuild())
-			{
-				dispatcher.dispatchEvent(new Event(GradleBuildEvent.START_GRADLE_BUILD));
-			}
-			else if (javaProject)
-			{
-				dispatcher.dispatchEvent(new Event(MavenBuildEvent.START_MAVEN_BUILD));
-			}
-		}
-
-		private function buildAndRunHandler(event:Event):void
-		{
-			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
-			if (javaProject)
-			{
-				if (!javaProject.mainClassName)
-				{
-					warning("Select main application class");
-				}
-				if (javaProject.hasGradleBuild())
-				{
-					dispatcher.dispatchEvent(new GradleBuildEvent(GradleBuildEvent.START_GRADLE_BUILD, model.activeProject.projectName,
-						MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, javaProject.gradleBuildOptions.getCommandLine()));
-				}
-				else
-				{
-					dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, model.activeProject.projectName,
-							MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, javaProject.mavenBuildOptions.getCommandLine()));
-				}
-			}
-		}
-
-		private function cleanHandler(event:Event):void
-		{
-			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
-			if (!javaProject)
-			{
-				return;
-			}
-			if (javaProject.hasGradleBuild())
-			{
-				dispatcher.dispatchEvent(new GradleBuildEvent(GradleBuildEvent.START_GRADLE_BUILD, null, MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, ["clean"]));
-			}
-			else if (javaProject.hasPom())
-			{
-				dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, null, MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, ["clean"]));
-			}
-		}
-
-		private function mavenBuildCompleteHandler(event:MavenBuildEvent):void
-		{
-			runJavaProjectByBuildId(event.buildId);
-		}
-		
-		private function runJavaProjectByBuildId(value:String):void
-		{
-			var project:JavaProjectVO = UtilsCore.getProjectByName(value) as JavaProjectVO;
-			if (project && project.projectName == value)
-			{
-				dispatcher.dispatchEvent(new RunJavaProjectEvent(RunJavaProjectEvent.RUN_JAVA_PROJECT, project));
-			}
 		}
 
 		private function setDefaultApplicationHandler(event:ProjectActionEvent):void
