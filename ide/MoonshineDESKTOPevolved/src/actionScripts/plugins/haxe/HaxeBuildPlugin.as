@@ -192,6 +192,30 @@ package actionScripts.plugins.haxe
 			dispatcher.removeEventListener(HaxeBuildEvent.CLEAN, haxeCleanHandler);
         }
 
+		override protected function checkProjectForInvalidPaths(project:ProjectVO):void
+		{
+			invalidPaths = [];
+			var tmpLocation:FileLocation;
+
+			var hxProject:HaxeProjectVO = project as HaxeProjectVO;
+			if (!hxProject)
+			{
+				return;
+			}
+			var tmpLocation:FileLocation;
+			invalidPaths = [];
+			
+			checkPathFileLocation(hxProject.folderLocation, "Location");
+			if (hxProject.sourceFolder) checkPathFileLocation(hxProject.sourceFolder, "Source Folder");
+			
+			for each (tmpLocation in hxProject.classpaths)
+			{
+				checkPathFileLocation(tmpLocation, "Classpath");
+			}
+			
+			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
+		}
+
         private function haxeCleanHandler(event:Event):void
         {
             var project:HaxeProjectVO = model.activeProject as HaxeProjectVO;

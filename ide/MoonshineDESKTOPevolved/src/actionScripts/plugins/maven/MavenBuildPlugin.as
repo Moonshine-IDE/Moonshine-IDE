@@ -63,8 +63,9 @@ package actionScripts.plugins.maven
     import actionScripts.valueObjects.Settings;
     import actionScripts.plugin.console.ConsoleEvent;
     import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+    import actionScripts.plugins.java.JavaBuildPluginBase;
 
-    public class MavenBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
+    public class MavenBuildPlugin extends JavaBuildPluginBase implements ISettingsProvider
     {
         protected var status:int;
         protected var stopWithoutMessage:Boolean;

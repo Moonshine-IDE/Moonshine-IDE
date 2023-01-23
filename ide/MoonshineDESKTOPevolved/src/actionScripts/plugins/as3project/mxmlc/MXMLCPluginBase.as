@@ -29,64 +29,61 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.build
+package actionScripts.plugins.as3project.mxmlc
 {
-	import flash.filesystem.File;
-	
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.plugins.build.CompilerPluginBase;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class CompilerPluginBase extends PluginBase implements IPlugin
+	public class MXMLCPluginBase extends CompilerPluginBase
 	{
-		protected var invalidPaths:Array;
-
-		protected function checkProjectForInvalidPaths(project:ProjectVO):void
+		override protected function checkProjectForInvalidPaths(project:ProjectVO):void
 		{
 			invalidPaths = [];
-			onProjectPathsValidated(null);
-		}
-		
-		protected function onProjectPathsValidated(paths:Array):void
-		{
-			
-		}
-		
-		protected function getWindowsCompilerFile(sdk:File, compilerPath:String):File
-		{
-			var tmpFile:File = sdk.resolvePath(compilerPath +".exe");
-			if (tmpFile.exists) return tmpFile;
-			
-			return sdk.resolvePath(compilerPath +".bat");
-		}
-		
-		protected function checkPathFileLocation(value:FileLocation, type:String):void
-		{
-			if (value.fileBridge.nativePath.indexOf("{locale}") != -1)
+			var tmpLocation:FileLocation;
+
+			var as3Project:AS3ProjectVO = project as AS3ProjectVO;
+			if (!as3Project)
 			{
-				var localePath:String = OSXBookmarkerNotifiers.isValidLocalePath(value);
-				if (!localePath || !model.fileCore.isPathExists(localePath))
-				{
-					storeInvalidPath(localePath);
-				}
-			}
-			else if (!value.fileBridge.exists)
-			{
-				storeInvalidPath(value.fileBridge.nativePath);
+				return;
 			}
 			
-			/*
-			 * @local
-			 */
-			function storeInvalidPath(path:String):void
+			checkPathFileLocation(as3Project.folderLocation, "Location");
+			if (as3Project.sourceFolder) checkPathFileLocation(as3Project.sourceFolder, "Source Folder");
+			if (as3Project.visualEditorSourceFolder) checkPathFileLocation(as3Project.visualEditorSourceFolder, "Source Folder");
+			
+			if (as3Project.buildOptions.customSDK)
 			{
-				invalidPaths.push(type +": "+ path);
+				checkPathFileLocation(as3Project.buildOptions.customSDK, "Custom SDK");
 			}
+			
+			for each (tmpLocation in as3Project.classpaths)
+			{
+				checkPathFileLocation(tmpLocation, "Classpath");
+			}
+			for each (tmpLocation in as3Project.resourcePaths)
+			{
+				checkPathFileLocation(tmpLocation, "Resource");
+			}
+			for each (tmpLocation in as3Project.externalLibraries)
+			{
+				checkPathFileLocation(tmpLocation, "External Library");
+			}
+			for each (tmpLocation in as3Project.libraries)
+			{
+				checkPathFileLocation(tmpLocation, "Library");
+			}
+			for each (tmpLocation in as3Project.nativeExtensions)
+			{
+				checkPathFileLocation(tmpLocation, "Extension");
+			}
+			for each (tmpLocation in as3Project.runtimeSharedLibraries)
+			{
+				checkPathFileLocation(tmpLocation, "Shared Library");
+			}
+			
+			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
 		}
 	}
 }
