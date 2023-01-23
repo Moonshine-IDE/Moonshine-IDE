@@ -33,6 +33,7 @@ package actionScripts.plugin.project
 {
     public class ProjectTemplateType
     {
+        public static const TIBBO_BASIC:String = "Tibbo Basic";
         public static const FEATHERS_SDK:String = "Feathers SDK";
         public static const ACTIONSCRIPT:String = "ActionScript";
         public static const FLEX:String = "Flex";

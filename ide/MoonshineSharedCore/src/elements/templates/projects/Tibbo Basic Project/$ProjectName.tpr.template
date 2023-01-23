@@ -1,0 +1,17 @@
+[project]
+platform=em202
+name=$ProjectName
+output=$ProjectName.tpc
+debug=on
+address=0.0.0.0.0.0
+watch=
+[file1]
+path=main.tbs
+type=basic
+breakpoints=
+opened=active
+[file2]
+path=global.tbh
+type=header
+breakpoints=
+opened=yes
