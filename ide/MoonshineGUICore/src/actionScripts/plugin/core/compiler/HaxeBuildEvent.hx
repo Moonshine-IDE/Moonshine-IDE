@@ -39,6 +39,7 @@ class HaxeBuildEvent extends Event {
 	public static final BUILD_DEBUG:String = "haxeBuildDebug";
 	public static final BUILD_RELEASE:String = "haxeBuildRelease";
 	public static final BUILD_AND_RUN:String = "haxeBuildAndRun";
+	public static final CLEAN:String = "haxeClean";
 
 	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false) {
 		super(type, bubbles, cancelable);

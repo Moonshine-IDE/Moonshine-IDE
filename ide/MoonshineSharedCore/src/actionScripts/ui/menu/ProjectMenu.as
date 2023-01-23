@@ -281,7 +281,7 @@ package actionScripts.ui.menu
 						new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
 							'b', [Keyboard.COMMAND],
 							'b', [Keyboard.CONTROL]),
-						new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
+						new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, JavaBuildEvent.CLEAN)
 					]);
 
                     if ((currentProject as JavaProjectVO).projectType == JavaProjectTypes.JAVA_DOMINO)
@@ -307,7 +307,7 @@ package actionScripts.ui.menu
                 new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, JavaBuildEvent.BUILD_AND_RUN,
                         "\r\n", [Keyboard.COMMAND],
                         "\n", [Keyboard.CONTROL]),
-                new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
+                new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, JavaBuildEvent.CLEAN)
             ]);
 
             if ((currentProject as JavaProjectVO).projectType == JavaProjectTypes.JAVA_DOMINO)
@@ -352,7 +352,7 @@ package actionScripts.ui.menu
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, GrailsBuildEvent.BUILD_RELEASE,
 						"\r\n", [Keyboard.COMMAND],
 						"\n", [Keyboard.CONTROL]),
-                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, GrailsBuildEvent.CLEAN),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'RUN_GRAILS_TASKS'), null, enabledTypes, GrailsBuildEvent.RUN_COMMAND),
 					new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, enabledTypes, GradleBuildEvent.RUN_COMMAND),
@@ -379,7 +379,7 @@ package actionScripts.ui.menu
 						"\r\n", [Keyboard.COMMAND],
 						"\n", [Keyboard.CONTROL]),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, HaxeBuildEvent.BUILD_RELEASE),
-                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, ProjectActionEvent.CLEAN_PROJECT)
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, HaxeBuildEvent.CLEAN)
                 ]);
                 haxeMenu.forEach(makeDynamic);
             }
@@ -400,7 +400,7 @@ package actionScripts.ui.menu
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.ON_DISK], MavenBuildEvent.START_MAVEN_BUILD),
                     new MenuItem(resourceManager.getString('resources', 'BUILD_ON_VAGRANT'), null, [ProjectMenuTypes.ON_DISK], DominoEvent.EVENT_BUILD_ON_VAGRANT),
-					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.ON_DISK], ProjectActionEvent.CLEAN_PROJECT)
+					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.CLEAN)
 				]);
 
 				addNSDKillOption(onDiskMenu);

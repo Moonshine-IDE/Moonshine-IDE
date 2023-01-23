@@ -64,6 +64,7 @@ package actionScripts.plugin.java.javaproject
 			dispatcher.addEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
 			dispatcher.addEventListener(JavaBuildEvent.JAVA_BUILD, javaBuildHandler);
 			dispatcher.addEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
+			dispatcher.addEventListener(JavaBuildEvent.CLEAN, cleanHandler);
 			dispatcher.addEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
 			dispatcher.addEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, mavenBuildCompleteHandler);
 
@@ -75,6 +76,7 @@ package actionScripts.plugin.java.javaproject
 			dispatcher.removeEventListener(NewProjectEvent.CREATE_NEW_PROJECT, createNewProjectHandler);
 			dispatcher.removeEventListener(JavaBuildEvent.JAVA_BUILD, javaBuildHandler);
 			dispatcher.removeEventListener(JavaBuildEvent.BUILD_AND_RUN, buildAndRunHandler);
+			dispatcher.removeEventListener(JavaBuildEvent.CLEAN, cleanHandler);
 			dispatcher.removeEventListener(ProjectActionEvent.SET_DEFAULT_APPLICATION, setDefaultApplicationHandler);
 			dispatcher.removeEventListener(MavenBuildEvent.MAVEN_BUILD_COMPLETE, mavenBuildCompleteHandler);
 
@@ -138,6 +140,23 @@ package actionScripts.plugin.java.javaproject
 					dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, model.activeProject.projectName,
 							MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, javaProject.mavenBuildOptions.getCommandLine()));
 				}
+			}
+		}
+
+		private function cleanHandler(event:Event):void
+		{
+			var javaProject:JavaProjectVO = model.activeProject as JavaProjectVO;
+			if (!javaProject)
+			{
+				return;
+			}
+			if (javaProject.hasGradleBuild())
+			{
+				dispatcher.dispatchEvent(new GradleBuildEvent(GradleBuildEvent.START_GRADLE_BUILD, null, MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, ["clean"]));
+			}
+			else if (javaProject.hasPom())
+			{
+				dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, null, MavenBuildStatus.STARTED, javaProject.folderLocation.fileBridge.nativePath, null, ["clean"]));
 			}
 		}
 
