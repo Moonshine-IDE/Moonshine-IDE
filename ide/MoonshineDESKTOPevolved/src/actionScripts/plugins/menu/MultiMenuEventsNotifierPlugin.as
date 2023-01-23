@@ -40,6 +40,11 @@ package actionScripts.plugins.menu
 	import actionScripts.plugin.core.compiler.JavaScriptBuildEvent;
 	import actionScripts.plugin.core.compiler.ProjectActionEvent;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.plugin.build.MavenBuildStatus;
+	import actionScripts.events.MavenBuildEvent;
 	
 	public class MultiMenuEventsNotifierPlugin extends PluginBase
 	{
@@ -55,6 +60,7 @@ package actionScripts.plugins.menu
 			dispatcher.addEventListener(ProjectActionEvent.BUILD_AND_RUN, onProjectBuildAndRun, false, 0, true);
 			dispatcher.addEventListener(ProjectActionEvent.BUILD_RELEASE, onProjectBuildAndRelease, false, 0, true);
 			dispatcher.addEventListener(ProjectActionEvent.BUILD_AND_DEBUG, onProjectBuildDebug, false, 0, true);
+			dispatcher.addEventListener(ProjectActionEvent.CLEAN_PROJECT, onProjectClean, false, 0, true);
 		}
 		
 		private function onProjectBuild(event:Event):void
@@ -128,6 +134,40 @@ package actionScripts.plugins.menu
 				}
 				
 				dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.BUILD_AND_DEBUG));
+			}
+		}
+
+		private function onProjectClean(event:Event):void
+		{
+			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+			if (!as3Project || as3Project.isDominoVisualEditorProject)
+			{
+				return;
+			}
+
+			if (as3Project.isDominoVisualEditorProject)
+			{
+				if (UtilsCore.isMavenAvailable())
+				{
+					dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, as3Project.projectName, "Cleaning ", false));
+					dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, null, MavenBuildStatus.STARTED, as3Project.folderLocation.fileBridge.nativePath, null, ["clean"]));
+				}
+				else
+				{
+					error("Specify path to Maven.");
+					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.maven::MavenBuildPlugin"));
+				}
+			}
+			else
+			{
+				if (isMenuOfProjectType(ProjectMenuTypes.JS_ROYALE, as3Project.menuType))
+				{
+					dispatcher.dispatchEvent(new JavaScriptBuildEvent(JavaScriptBuildEvent.CLEAN));
+				}
+				else
+				{
+					dispatcher.dispatchEvent(new Event(ActionScriptBuildEvent.CLEAN));
+				}
 			}
 		}
 		

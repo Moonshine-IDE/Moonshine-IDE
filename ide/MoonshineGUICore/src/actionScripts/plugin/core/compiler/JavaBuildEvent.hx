@@ -38,6 +38,7 @@ import flash.events.Event;
 class JavaBuildEvent extends Event {
 	public static final BUILD_AND_RUN:String = "javaBuildAndRun";
 	public static final JAVA_BUILD:String = "javaBuild";
+	public static final CLEAN:String = "javaClean";
 
 	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false) {
 		super(type, bubbles, cancelable);

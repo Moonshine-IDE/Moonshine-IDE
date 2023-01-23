@@ -54,6 +54,11 @@ package actionScripts.plugin.ondiskproj
     import actionScripts.plugin.IProjectTypePlugin;
     import actionScripts.plugin.ondiskproj.importer.OnDiskImporter;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.events.StatusBarEvent;
+    import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+    import actionScripts.events.SettingsEvent;
+    import actionScripts.plugin.build.MavenBuildStatus;
+    import actionScripts.events.MavenBuildEvent;
 	
 	public class OnDiskProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{
@@ -73,6 +78,7 @@ package actionScripts.plugin.ondiskproj
 			dispatcher.addEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.GENERATE_JAVA_AGENTS, onGenerateCRUDJavaAgentsRequest, false, 0, true);
+			dispatcher.addEventListener(OnDiskBuildEvent.CLEAN, onClean, false, 0, true);
 			
 			super.activate();
 		}
@@ -83,6 +89,7 @@ package actionScripts.plugin.ondiskproj
 			dispatcher.removeEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow);
 			dispatcher.removeEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest);
 			dispatcher.removeEventListener(OnDiskBuildEvent.GENERATE_JAVA_AGENTS, onGenerateCRUDJavaAgentsRequest);
+			dispatcher.removeEventListener(OnDiskBuildEvent.CLEAN, onClean);
 			
 			super.deactivate();
 		}
@@ -176,6 +183,25 @@ package actionScripts.plugin.ondiskproj
 		protected function onGenerateCRUDJavaAgentsRequest(event:Event):void
 		{
 			model.flexCore.generateCRUDJavaAgents();
+		}
+
+		private function onClean(event:Event):void
+		{
+			var project:OnDiskProjectVO = model.activeProject as OnDiskProjectVO;
+			if (!project)
+			{
+				return;
+			}
+			if (UtilsCore.isMavenAvailable())
+			{
+				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
+				dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, null, MavenBuildStatus.STARTED, project.folderLocation.fileBridge.nativePath, null, ["clean"]));
+			}
+			else
+			{
+				error("Specify path to Maven.");
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.maven::MavenBuildPlugin"));
+			}
 		}
 	}
 }

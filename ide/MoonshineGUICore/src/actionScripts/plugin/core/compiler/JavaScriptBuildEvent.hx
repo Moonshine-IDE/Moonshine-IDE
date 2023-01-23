@@ -41,6 +41,7 @@ class JavaScriptBuildEvent extends Event {
 	public static final RUN_AFTER_DEBUG:String = "compilerRoyaleRunAfterDebug";
 	public static final BUILD:String = "compilerRoyaleBuild";
 	public static final BUILD_RELEASE:String = "compilerRoyaleBuildRelease";
+	public static final CLEAN:String = "compilerRoyaleClean";
 
 	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false) {
 		super(type, bubbles, cancelable);

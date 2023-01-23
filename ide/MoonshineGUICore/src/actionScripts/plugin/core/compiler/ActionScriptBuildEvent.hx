@@ -45,6 +45,7 @@ class ActionScriptBuildEvent extends Event {
 	public static final POSTBUILD:String = "compilerPostbuild";
 	public static final EXIT_FDB:String = "EXIT_FDB";
 	public static final SAVE_BEFORE_BUILD:String = "saveBeforeBuild";
+	public static final CLEAN:String = "compilerClean";
 
 	public function new(type:String, bubbles:Bool = false, cancelable:Bool = false) {
 		super(type, bubbles, cancelable);
