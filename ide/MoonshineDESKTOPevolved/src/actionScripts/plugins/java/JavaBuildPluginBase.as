@@ -29,64 +29,35 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugins.build
+package actionScripts.plugins.java
 {
-	import flash.filesystem.File;
-	
 	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.IPlugin;
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.utils.OSXBookmarkerNotifiers;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class CompilerPluginBase extends PluginBase implements IPlugin
+	public class JavaBuildPluginBase extends ConsoleBuildPluginBase
 	{
-		protected var invalidPaths:Array;
-
-		protected function checkProjectForInvalidPaths(project:ProjectVO):void
+		override protected function checkProjectForInvalidPaths(project:ProjectVO):void
 		{
 			invalidPaths = [];
-			onProjectPathsValidated(null);
-		}
-		
-		protected function onProjectPathsValidated(paths:Array):void
-		{
-			
-		}
-		
-		protected function getWindowsCompilerFile(sdk:File, compilerPath:String):File
-		{
-			var tmpFile:File = sdk.resolvePath(compilerPath +".exe");
-			if (tmpFile.exists) return tmpFile;
-			
-			return sdk.resolvePath(compilerPath +".bat");
-		}
-		
-		protected function checkPathFileLocation(value:FileLocation, type:String):void
-		{
-			if (value.fileBridge.nativePath.indexOf("{locale}") != -1)
+			var tmpLocation:FileLocation;
+
+			var javaProject:JavaProjectVO = project as JavaProjectVO;
+			if (!javaProject)
 			{
-				var localePath:String = OSXBookmarkerNotifiers.isValidLocalePath(value);
-				if (!localePath || !model.fileCore.isPathExists(localePath))
-				{
-					storeInvalidPath(localePath);
-				}
+				return;
 			}
-			else if (!value.fileBridge.exists)
+
+			checkPathFileLocation(javaProject.folderLocation, "Location");
+			if (javaProject.sourceFolder) checkPathFileLocation(javaProject.sourceFolder, "Source Folder");
+			
+			for each (tmpLocation in javaProject.classpaths)
 			{
-				storeInvalidPath(value.fileBridge.nativePath);
+				checkPathFileLocation(tmpLocation, "Classpath");
 			}
 			
-			/*
-			 * @local
-			 */
-			function storeInvalidPath(path:String):void
-			{
-				invalidPaths.push(type +": "+ path);
-			}
+			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
 		}
 	}
 }

@@ -107,7 +107,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.formats.TextDecoration;
 	import actionScripts.plugin.console.ConsoleEvent;
 	
-	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
+	public class MXMLCPlugin extends MXMLCPluginBase implements ISettingsProvider
 	{
 		private static const DEFAULT_PORT:int = 7936;
 

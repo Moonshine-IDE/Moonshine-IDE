@@ -92,7 +92,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.formats.TextDecoration;
 	import flash.utils.clearTimeout;
 
-    public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
+    public class MXMLCJavaScriptPlugin extends MXMLCPluginBase implements ISettingsProvider
 	{
 		private static const DEBUG_SERVER_PORT:int = 3000;
 
