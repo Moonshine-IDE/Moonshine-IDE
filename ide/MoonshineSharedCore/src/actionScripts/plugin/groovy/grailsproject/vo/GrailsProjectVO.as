@@ -46,12 +46,21 @@ package actionScripts.plugin.groovy.grailsproject.vo
 import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.languageServer.LanguageServerProjectVO;
+	import actionScripts.valueObjects.IClasspathProject;
 
-	public class GrailsProjectVO extends LanguageServerProjectVO implements IJavaProject
+	public class GrailsProjectVO extends LanguageServerProjectVO implements IJavaProject, IClasspathProject
 	{
 		private static const TARGET_BYTECODE_VALUES:Array = ["1.4", "1.5", "1.6", "1.7", "1.8", "9", "10", "11", "12", "13"];
 
-		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		private var _classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public function get classpaths():Vector.<FileLocation>
+		{
+			return _classpaths;
+		}
+		public function set classpaths(value:Vector.<FileLocation>):void
+		{
+			_classpaths = value;
+		}
 		public var grailsBuildOptions:GrailsBuildOptions;
 		public var gradleBuildOptions:GradleBuildOptions;
 

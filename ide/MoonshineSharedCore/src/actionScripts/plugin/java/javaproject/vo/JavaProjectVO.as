@@ -50,14 +50,23 @@ package actionScripts.plugin.java.javaproject.vo
 import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.languageServer.LanguageServerProjectVO;
+	import actionScripts.valueObjects.IClasspathProject;
 
-	public class JavaProjectVO extends LanguageServerProjectVO implements IJavaProject
+	public class JavaProjectVO extends LanguageServerProjectVO implements IJavaProject, IClasspathProject
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 
 		public var mavenBuildOptions:MavenBuildOptions;
 		public var gradleBuildOptions:GradleBuildOptions;
-		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		private var _classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public function get classpaths():Vector.<FileLocation>
+		{
+			return _classpaths;
+		}
+		public function set classpaths(value:Vector.<FileLocation>):void
+		{
+			_classpaths = value;
+		}
 		
 		private var _jdkType:String = JavaTypes.JAVA_DEFAULT;
 		public function get jdkType():String									{	return _jdkType;	}

@@ -31,10 +31,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
+	import actionScripts.valueObjects.ProjectVO;
 
 	public function getProjectForUri(uri:String):ProjectVO
 	{

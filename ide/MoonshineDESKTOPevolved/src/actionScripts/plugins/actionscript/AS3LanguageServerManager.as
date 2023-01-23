@@ -77,7 +77,6 @@ package actionScripts.plugins.actionscript
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.utils.FindOpenPort;
-	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
@@ -404,6 +403,19 @@ package actionScripts.plugins.actionscript
 			}, null, [CommandLineUtil.joinOptions(javaVersionCommand)]);
 		}
 
+		private function getProjectSDKPath(project:AS3ProjectVO):String
+		{
+			if(project.buildOptions.customSDK)
+			{
+				return project.buildOptions.customSDK.fileBridge.nativePath;
+			}
+			else if(_model.defaultSDK)
+			{
+				return _model.defaultSDK.fileBridge.nativePath;
+			}
+			return null;
+		}
+
 		private function startNativeProcess():void
 		{
 			if(_languageServerProcess)
@@ -418,7 +430,7 @@ package actionScripts.plugins.actionscript
 			{
 				jdkFolder = _model.javaPathForTypeAhead.fileBridge.getFile as File;
 			}
-			var sdkPath:String = getProjectSDKPath(_project, _model);
+			var sdkPath:String = getProjectSDKPath(_project);
 			if(!jdkFolder || !sdkPath)
 			{
 				//we'll need to try again later if the settings change
@@ -958,7 +970,7 @@ package actionScripts.plugins.actionscript
 		private function projectChangeCustomSDKHandler(event:Event):void
 		{
 			//restart only when the path has changed
-			if(getProjectSDKPath(_project, _model) != _previousSDKPath)
+			if(getProjectSDKPath(_project) != _previousSDKPath)
 			{
 				restartLanguageServer();
 			}
@@ -967,7 +979,7 @@ package actionScripts.plugins.actionscript
 		private function changeMenuSDKStateHandler(event:Event):void
 		{
 			//restart only when the path has changed
-			if(getProjectSDKPath(_project, _model) != _previousSDKPath)
+			if(getProjectSDKPath(_project) != _previousSDKPath)
 			{
 				restartLanguageServer();
 			}
