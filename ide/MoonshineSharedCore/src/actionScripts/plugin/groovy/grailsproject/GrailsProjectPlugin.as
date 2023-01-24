@@ -40,16 +40,59 @@ package actionScripts.plugin.groovy.grailsproject
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.plugin.groovy.grailsproject.importer.GrailsImporter;
     import actionScripts.plugin.IProjectTypePlugin;
+    import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
+    import actionScripts.ui.menu.vo.MenuItem;
+    import mx.resources.IResourceManager;
+    import mx.resources.ResourceManager;
+    import flash.ui.Keyboard;
+    import actionScripts.ui.menu.vo.ProjectMenuTypes;
+    import actionScripts.plugin.core.compiler.GrailsBuildEvent;
+    import actionScripts.events.GradleBuildEvent;
 	
 	public class GrailsProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{	
 		public var activeType:uint = ProjectType.GROOVY;
 		
         protected var executeCreateGroovyProject:CreateGrailsProject;
+		private var _projectMenu:Vector.<MenuItem>;
+        private var resourceManager:IResourceManager = ResourceManager.getInstance();
 		
 		override public function get name():String 			{ return "Grails Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
 		override public function get description():String 	{ return "Grails project importing, exporting & scaffolding."; }
+
+		public function get projectClass():Class
+		{
+			return GrailsProjectVO;
+		}
+
+		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
+		{
+            if (_projectMenu == null)
+            {
+                var enabledTypes:Array = [ProjectMenuTypes.GRAILS];
+
+                _projectMenu = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, GrailsBuildEvent.BUILD_AND_RUN,
+						'b', [Keyboard.COMMAND],
+						'b', [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, GrailsBuildEvent.BUILD_RELEASE,
+						"\r\n", [Keyboard.COMMAND],
+						"\n", [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, GrailsBuildEvent.CLEAN),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'RUN_GRAILS_TASKS'), null, enabledTypes, GrailsBuildEvent.RUN_COMMAND),
+					new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, enabledTypes, GradleBuildEvent.RUN_COMMAND),
+					new MenuItem(resourceManager.getString('resources', 'REFRESH_GRADLE_CLASSPATH'), null, enabledTypes, GradleBuildEvent.REFRESH_GRADLE_CLASSPATH)
+                ]);
+                _projectMenu.forEach(function(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
+				{
+					item.dynamicItem = true;
+				});
+            }
+            return _projectMenu;
+		}
 		
 		override public function activate():void
 		{

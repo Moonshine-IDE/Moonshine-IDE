@@ -33,6 +33,7 @@ package actionScripts.plugin
 {
 	import actionScripts.factory.FileLocation;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.ui.menu.vo.MenuItem;
 
 	/**
 	 * An interface implemented by plugins that handle creating and opening
@@ -40,6 +41,17 @@ package actionScripts.plugin
 	 */
 	public interface IProjectTypePlugin extends IPlugin
 	{
+		/**
+		 * The subclass of ProjectVO associated with this plugin.
+		 */
+		function get projectClass():Class;
+
+		/**
+		 * The items to display in the project menu when a project of this type
+		 * is selected in the file tree.
+		 */
+		function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>;
+
 		/**
 		 * Tests if a specific directory contains a project that can be opened
 		 * by this plugin. Typically, the directory will contain some sort of
