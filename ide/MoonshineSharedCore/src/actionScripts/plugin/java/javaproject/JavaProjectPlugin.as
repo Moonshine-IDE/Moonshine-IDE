@@ -50,12 +50,79 @@ package actionScripts.plugin.java.javaproject
 	import actionScripts.plugin.java.javaproject.importer.JavaImporter;
 	import flash.filesystem.File;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.ui.menu.vo.MenuItem;
+	import mx.resources.IResourceManager;
+	import mx.resources.ResourceManager;
+	import actionScripts.plugin.java.javaproject.vo.JavaProjectTypes;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import flash.ui.Keyboard;
+	import actionScripts.events.DominoEvent;
 
 	public class JavaProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{
 		override public function get name():String 			{ return "Java Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String 	{ return "Java project importing, exporting & scaffolding."; }
+
+		private var _gradleProjectMenu:Vector.<MenuItem>;
+		private var _mavenProjectMenu:Vector.<MenuItem>;
+        private var resourceManager:IResourceManager = ResourceManager.getInstance();
+
+		public function get projectClass():Class
+		{
+			return JavaProjectVO;
+		}
+
+		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
+		{
+			var javaProject:JavaProjectVO = JavaProjectVO(project);
+            var enabledTypes:Array = [ProjectMenuTypes.JAVA];
+
+			if (javaProject.hasGradleBuild())
+			{
+				_gradleProjectMenu = Vector.<MenuItem>([
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
+						'b', [Keyboard.COMMAND],
+						'b', [Keyboard.CONTROL]),
+					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, JavaBuildEvent.CLEAN)
+				]);
+
+				if (javaProject.projectType == JavaProjectTypes.JAVA_DOMINO)
+				{
+					_gradleProjectMenu.insertAt(
+							2,
+							new MenuItem(resourceManager.getString('resources', 'RUN_ON_VAGRANT'), null, enabledTypes, DominoEvent.EVENT_RUN_DOMINO_ON_VAGRANT)
+					);
+					_gradleProjectMenu.push(new MenuItem(null));
+					_gradleProjectMenu.push(new MenuItem(resourceManager.getString('resources', 'NSD_KILL'), null, [ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.JAVA], DominoEvent.NDS_KILL))
+				}
+
+				_gradleProjectMenu.forEach(function(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
+				{
+					item.dynamicItem = true;
+				});
+				return _gradleProjectMenu;
+			}
+			else // maven
+			{
+				_mavenProjectMenu = Vector.<MenuItem>([
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, JavaBuildEvent.JAVA_BUILD,
+							'b', [Keyboard.COMMAND],
+							'b', [Keyboard.CONTROL]),
+					new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, JavaBuildEvent.BUILD_AND_RUN,
+							"\r\n", [Keyboard.COMMAND],
+							"\n", [Keyboard.CONTROL]),
+					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, JavaBuildEvent.CLEAN)
+				]);
+				_mavenProjectMenu.forEach(function(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
+				{
+					item.dynamicItem = true;
+				});
+				return _mavenProjectMenu;
+			}
+		}
 		
         protected var executeCreateJavaProject:CreateJavaProject;
 

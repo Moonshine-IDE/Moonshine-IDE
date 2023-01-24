@@ -73,6 +73,19 @@ import flash.display.DisplayObject;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
+	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.ui.menu.vo.ProjectMenuTypes;
+	import actionScripts.events.PreviewPluginEvent;
+	import actionScripts.events.DominoEvent;
+	import actionScripts.events.OnDiskBuildEvent;
+	import actionScripts.events.ExportVisualEditorProjectEvent;
+	import flash.ui.Keyboard;
+	import actionScripts.events.RoyaleApiReportEvent;
+	import mx.resources.IResourceManager;
+	import mx.resources.ResourceManager;
+	import actionScripts.plugin.core.compiler.ProjectActionEvent;
+	import actionScripts.events.MavenBuildEvent;
+	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	
 	public class AS3ProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{
@@ -93,14 +106,56 @@ import flash.display.DisplayObject;
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var projectOpenSelection:ProjectsToOpenSelectionPopup;
 		private var projectOpeningOptions:OpenProjectOptionsVO;
+		private var actionScriptMenu:Vector.<MenuItem>;
+		private var libraryMenu:Vector.<MenuItem>;
+		private var royaleMenu:Vector.<MenuItem>;
+		private var dominoMenu:Vector.<MenuItem>;
+		private var veFlex:Vector.<MenuItem>;
+		private var vePrimeFaces:Vector.<MenuItem>;
+        private var resourceManager:IResourceManager = ResourceManager.getInstance();
 		
 		override public function get name():String 			{return "AS3 Project Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "AS3 project importing, exporting & scaffolding.";}
+
+		public function get projectClass():Class
+		{
+			return AS3ProjectVO;
+		}
 		
 		public function AS3ProjectPlugin()
 		{
 			super();
+		}
+
+		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
+		{
+			var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+			if (as3Project.isLibraryProject)
+			{
+				return getASLibraryMenuItems();
+			}
+			else if (as3Project.isRoyale)
+			{
+				return getRoyaleMenuItems();
+			}
+			else if (as3Project.isVisualEditorProject)
+			{
+				if (as3Project.isPrimeFacesVisualEditorProject)
+				{
+					return getVisualEditorMenuPrimeFacesItems(as3Project);
+				}
+				else if(as3Project.isDominoVisualEditorProject)
+				{
+					return getDominoMenuItems();
+				}
+
+				return getVisualEditorMenuFlexItems();
+			}
+			else
+			{
+				return getASProjectMenuItems();
+			}
 		}
 		
 		override public function activate():void
@@ -584,5 +639,162 @@ import flash.display.DisplayObject;
 			projectOpenSelection.removeEventListener(CloseEvent.CLOSE, onOpenProjectsWindowClosed);
 			projectOpenSelection = null;
 		}
+
+        private function getASProjectMenuItems():Vector.<MenuItem>
+        {
+            if (actionScriptMenu == null)
+            {
+                actionScriptMenu = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JS_ROYALE], ProjectActionEvent.BUILD,
+                            'b', [Keyboard.COMMAND],
+                            'b', [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE], ProjectActionEvent.BUILD_AND_RUN,
+                            "\r\n", [Keyboard.COMMAND],
+                            "\n", [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ProjectActionEvent.BUILD_RELEASE),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], "selectedProjectAntBuild"),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA], MavenBuildEvent.START_MAVEN_BUILD),
+                    new MenuItem(resourceManager.getString('resources', 'ROYALE_API_REPORT'), null, [ProjectMenuTypes.FLEX_AS], RoyaleApiReportEvent.LAUNCH_REPORT_CONFIGURATION),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ProjectActionEvent.CLEAN_PROJECT)
+                ]);
+                actionScriptMenu.forEach(makeDynamic);
+            }
+
+            return actionScriptMenu;
+        }
+
+        private function getASLibraryMenuItems():Vector.<MenuItem>
+        {
+            if (libraryMenu == null)
+            {
+                libraryMenu = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JS_ROYALE], ActionScriptBuildEvent.BUILD,
+                            'b', [Keyboard.COMMAND],
+                            'b', [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.BUILD_RELEASE),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ActionScriptBuildEvent.CLEAN),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], "selectedProjectAntBuild"),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA], MavenBuildEvent.START_MAVEN_BUILD)
+                ]);
+                libraryMenu.forEach(makeDynamic);
+            }
+
+            return libraryMenu;
+        }
+
+        private function getRoyaleMenuItems():Vector.<MenuItem>
+        {
+            if (royaleMenu == null)
+            {
+                royaleMenu = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, [ProjectMenuTypes.JS_ROYALE], ProjectActionEvent.BUILD,
+                            'b', [Keyboard.COMMAND],
+                            'b', [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, [ProjectMenuTypes.JS_ROYALE], ProjectActionEvent.BUILD_AND_RUN,
+                            "\r\n", [Keyboard.COMMAND],
+							"\n", [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, [ProjectMenuTypes.JS_ROYALE], ProjectActionEvent.BUILD_RELEASE),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.JS_ROYALE], "selectedProjectAntBuild"),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA], MavenBuildEvent.START_MAVEN_BUILD),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], ProjectActionEvent.CLEAN_PROJECT),
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'DEPLOY_ROYALE_TO_VAGRANT'), null, [ProjectMenuTypes.JS_ROYALE], OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT),
+                    new MenuItem(resourceManager.getString('resources', 'EXPORT_TO_EXTERNAL_PROJECT'), null, [ProjectMenuTypes.JS_ROYALE], ProjectEvent.EVENT_EXPORT_TO_EXTERNAL_PROJECT)
+                ]);
+                royaleMenu.forEach(makeDynamic);
+            }
+
+            return royaleMenu;
+        }
+
+        private function getVisualEditorMenuFlexItems():Vector.<MenuItem>
+        {
+            if (veFlex == null)
+            {
+                veFlex = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), [
+                        new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'), null, [ProjectMenuTypes.VISUAL_EDITOR_FLEX], ExportVisualEditorProjectEvent.EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX,
+                                null, null, null, null, null, null, null, true),
+                        new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES,
+                                null, null, null, null, null, null, null, true)
+                    ])
+                ]);
+
+                veFlex.forEach(makeDynamic);
+            }
+
+            return veFlex;
+        }
+
+        private function getVisualEditorMenuPrimeFacesItems(project:AS3ProjectVO):Vector.<MenuItem>
+        {
+            if (vePrimeFaces == null)
+            {
+                vePrimeFaces = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT'), [
+                        new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'), null, [ProjectMenuTypes.VISUAL_EDITOR_FLEX], ExportVisualEditorProjectEvent.EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX,
+                                    null, null, null, null, null, null, null, true),
+                        new MenuItem(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], ExportVisualEditorProjectEvent.EVENT_EXPORT_VISUALEDITOR_PROJECT_TO_PRIMEFACES,
+                                    null, null, null, null, null, null, null, true)
+                    ]),
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'START_PREVIEW'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES], PreviewPluginEvent.START_VISUALEDITOR_PREVIEW)
+                ]);
+
+                var as3Project:AS3ProjectVO = project as AS3ProjectVO;
+                var veMenuItem:MenuItem = vePrimeFaces[vePrimeFaces.length - 1];
+                if (as3Project.isPreviewRunning)
+                {
+                    veMenuItem.label = resourceManager.getString('resources', 'STOP_PREVIEW');
+                    veMenuItem.event = PreviewPluginEvent.STOP_VISUALEDITOR_PREVIEW;
+                }
+                else
+                {
+                    veMenuItem.label = resourceManager.getString('resources', 'START_PREVIEW');
+                    veMenuItem.event = PreviewPluginEvent.START_VISUALEDITOR_PREVIEW;
+                }
+
+                vePrimeFaces.forEach(makeDynamic);
+            }
+
+            return vePrimeFaces;
+        }
+
+        private function getDominoMenuItems():Vector.<MenuItem>
+        {
+            if (dominoMenu == null)
+            {           
+                dominoMenu = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources','GENERATE_JAVA_AGENTS'), null, null, ExportVisualEditorProjectEvent.EVENT_GENERATE_DOMINO_JAVA_AGENTS_OUT_OF_VISUALEDITOR_PROJECT),
+                    new MenuItem(resourceManager.getString('resources', 'DEPLOY_DOMINO_DATABASE'), null, null, OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE),
+                    new MenuItem(resourceManager.getString('resources','GENERATE_APACHE_ROYALE_PROJECT'), null, null, ProjectEvent.EVENT_GENERATE_APACHE_ROYALE_PROJECT),
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], MavenBuildEvent.START_MAVEN_BUILD),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_ON_VAGRANT'), null, null, DominoEvent.EVENT_BUILD_ON_VAGRANT),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,ProjectMenuTypes.JAVA,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], ProjectActionEvent.CLEAN_PROJECT)
+                ]);
+                addNSDKillOption(dominoMenu);
+                dominoMenu.forEach(makeDynamic);
+            }
+
+            return dominoMenu;
+        }
+
+        private function makeDynamic(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
+        {
+            item.dynamicItem = true;
+        }
+
+        private function addNSDKillOption(menu:Vector.<MenuItem>):void
+        {
+            menu.push(new MenuItem(null));
+            menu.push(new MenuItem(resourceManager.getString('resources', 'NSD_KILL'), null, [ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.JAVA], DominoEvent.NDS_KILL))
+        }
 	}
 }

@@ -53,6 +53,7 @@ package actionScripts.impls
 	import actionScripts.plugins.java.JavaBuildPlugin;
 	import actionScripts.plugins.java.JavaLanguageServerPlugin;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.ui.menu.vo.MenuItem;
 
 	public class IProjectBridgeImpl implements IProjectBridge
 	{
@@ -160,6 +161,20 @@ package actionScripts.impls
 					continue;
 				}
 				return plugin.parseProject(location, null, settingsFile);
+			}
+			return null;
+		}
+
+		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
+		{
+			for(var i:int = 0; i < _projectTypePlugins.length; i++)
+			{
+				var plugin:IProjectTypePlugin = _projectTypePlugins[i];
+				if (!(project is plugin.projectClass))
+				{
+					continue;
+				}
+				return plugin.getProjectMenuItems(project);
 			}
 			return null;
 		}

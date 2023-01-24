@@ -34,6 +34,7 @@ package actionScripts.interfaces
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IProjectTypePlugin;
+	import actionScripts.ui.menu.vo.MenuItem;
 
 	public interface IProjectBridge
 	{
@@ -43,5 +44,6 @@ package actionScripts.interfaces
 		function registerProjectTypePlugin(provider:IProjectTypePlugin):void;
 		function unregisterProjectTypePlugin(provider:IProjectTypePlugin):void;
 		function parseProject(location:FileLocation):ProjectVO;
+		function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>;
 	}
 }
