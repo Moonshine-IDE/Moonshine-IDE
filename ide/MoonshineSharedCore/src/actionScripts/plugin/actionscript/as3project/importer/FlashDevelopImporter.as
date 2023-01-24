@@ -623,11 +623,57 @@ package actionScripts.plugin.actionscript.as3project.importer
 
 									//fix wrong size uint 
 
-									
-									//fix hide 
-
 									dominoXml=MainApplicationCodeUtils.fixDominField(dominoXml);
 									dominoXml=MainApplicationCodeUtils.fixPardefAlign(dominoXml);
+
+									//fix hide 
+									//remove all empty formual node 
+									for each(var formula:XML in dominoXml..formula){
+										if(formula.parent().name()=="code"){
+											if(formula.parent().parent().name()=="computedtext"){
+												if(formula.parent().parent().parent().name()=="par"){
+													if(formula.children().length()==1&& formula.children()[0]==" "){
+														delete formula.parent().children()[formula.childIndex()];
+													}
+													
+												}
+											}
+										}
+
+									
+										if(formula.children()==null || formula.children().length()==0){
+											
+												delete formula.parent().children()[formula.childIndex()];
+											 
+											 
+										}
+										
+									}
+
+									for each(var code:XML in dominoXml..code){
+										var codeChilren:XMLList = code.children();
+										if(codeChilren.length()  == 0){
+											delete code.parent().children()[code.childIndex()];
+										}
+									}
+									for each(var computedtext:XML in dominoXml..computedtext){
+										var computedtextChilren:XMLList = computedtext.children();
+										if(computedtextChilren.length()  == 0){
+											delete computedtext.parent().children()[computedtext.childIndex()];
+										}
+									}
+									for each(var subformref:XML in dominoXml..subformref){
+										if(subformref.@name==null||subformref.@name=="" ){
+											Alert.show("subformref:"+subformref.toXMLString());
+											var subformrefChilren:XMLList = subformref.children();
+											if(subformrefChilren.length()== 0){
+												delete subformref.parent().children()[subformref.childIndex()];
+											}
+										}
+									
+										
+									}
+									//computedtext
 							
 								}
 								
