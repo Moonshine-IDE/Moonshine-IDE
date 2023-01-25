@@ -15,12 +15,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Workspaces: Open Multiple Projects in Separate Workspace ([#1136](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1136))
 * Open Path in Terminal ([#1038](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1038))
 * Mac Osx: Support for M1/ARM64 ([#1162](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1162))
+* Import Documents by JSON through Genesis ([#1171](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1171))
 
 ### Changed
 
 * Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.16.0.
 * Update Moonshine license to [Server Side Public License](https://www.mongodb.com/licensing/server-side-public-license) ([#577](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/577))
 * Misc. External Editors Update Requirements ([#1154](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1154))
+* Handing paths from project configuration in relative way (experimental) ([#1142](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1142)) 
+* Build File Modified Message Needs To Be Improved ([#1026](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1026))
+* Add DominoVagrant/demo To Default Repository List ([#1104](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1104))
+* AS3ProjectPlugin canCreateProject() should be refactored ([#1164](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1164))
 
 ### Fixed
 
@@ -33,6 +38,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Domino Visual Editor: Fixed issue where namespaces in forms caused problems during conversion to Apache Royale ([#1071](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1071))
 * .hxproj Not In The File-Association List For Moonshine ([#1172](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1172))
 * Java Gradle: Project Does Not Open on Startup - JavaImporter$parse() Error ([#1123](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1123))
+* CRUD Java Agents Generation Throws Error ([#1134](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1134))
+* Projects Not Reopened Properly After Switching Workspace ([#1135](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1135))
+* ReferenceError Error: After launch Moonshine in Getting Started page ([#1112](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1112))
+* TypeError: Error #2007 on app start makes Moonshine unusable ([#1152](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1152))
 
 ## Moonshine IDE [3.3.3]
 
