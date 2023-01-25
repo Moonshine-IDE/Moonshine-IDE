@@ -37,6 +37,7 @@ package actionScripts.plugin.java.javaproject.importer
 	import actionScripts.utils.MavenPomUtil;
 	import actionScripts.utils.SerializeUtil;
 	import flash.filesystem.File;
+	import actionScripts.utils.UtilsCore;
 
 	public class JavaImporter extends FlashDevelopImporterBase
 	{
@@ -202,7 +203,8 @@ package actionScripts.plugin.java.javaproject.importer
 			{
 				javaProject.projectType = SerializeUtil.deserializeString(settingsData.options.option.@projectType);
 			}
-
+			
+			UtilsCore.setProjectMenuType(javaProject);
 
 			return javaProject;
 		}

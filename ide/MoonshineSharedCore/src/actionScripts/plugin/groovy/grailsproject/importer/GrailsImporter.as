@@ -39,6 +39,7 @@ package actionScripts.plugin.groovy.grailsproject.importer
 	import flash.filesystem.FileStream;
 	import flash.filesystem.FileMode;
 	import actionScripts.plugin.core.importer.FlashDevelopImporterBase;
+	import actionScripts.utils.UtilsCore;
 
 	public class GrailsImporter extends FlashDevelopImporterBase
 	{
@@ -121,6 +122,8 @@ package actionScripts.plugin.groovy.grailsproject.importer
 			{
 				project.jdkType = SerializeUtil.deserializeString(data.options.option.@jdkType);
 			}
+			
+			UtilsCore.setProjectMenuType(project);
 
 			return project;
 		}
