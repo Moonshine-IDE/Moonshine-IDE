@@ -116,7 +116,8 @@ package actionScripts.plugins.menu
 		
 		private function onProjectBuildDebug(event:Event):void
 		{
-			if (!model.activeProject)
+			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+			if (!as3Project)
 			{
 				return;
 			}
@@ -127,7 +128,7 @@ package actionScripts.plugins.menu
 			}
 			else
 			{
-				if ((model.activeProject is AS3ProjectVO) && hasModules())
+				if (hasModules())
 				{
 					dispatcher.dispatchEvent(new Event(FlashModuleBuildEvent.BUILD_AND_DEBUG));
 					return;

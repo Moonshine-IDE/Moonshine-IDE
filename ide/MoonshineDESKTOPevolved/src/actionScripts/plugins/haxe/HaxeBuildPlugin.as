@@ -70,6 +70,7 @@ package actionScripts.plugins.haxe
     import actionScripts.valueObjects.Settings;
     import actionScripts.valueObjects.WebBrowserVO;
     import actionScripts.plugin.console.ConsoleEvent;
+    import actionScripts.plugin.core.compiler.ProjectActionEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -174,7 +175,7 @@ package actionScripts.plugins.haxe
         {
             super.activate();
 
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
+			dispatcher.addEventListener(ProjectActionEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
@@ -185,7 +186,7 @@ package actionScripts.plugins.haxe
         {
             super.deactivate();
 
-			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
+			dispatcher.removeEventListener(ProjectActionEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
