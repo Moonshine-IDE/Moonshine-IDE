@@ -663,11 +663,14 @@ package actionScripts.plugin.actionscript.as3project.importer
 										}
 									}
 									for each(var subformref:XML in dominoXml..subformref){
-										if(subformref.@name==null||subformref.@name=="" ){
-											Alert.show("subformref:"+subformref.toXMLString());
-											var subformrefChilren:XMLList = subformref.children();
-											if(subformrefChilren.length()== 0){
-												delete subformref.parent().children()[subformref.childIndex()];
+										if(subformref.@name){
+											var subformname:String=subformref.@name;
+											if(subformname.length<2){
+												
+												var subformrefChilren:XMLList = subformref.children();
+												if(subformrefChilren.length()== 0){
+													delete subformref.parent().children()[subformref.childIndex()];
+												}
 											}
 										}
 									
