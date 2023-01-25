@@ -54,6 +54,16 @@ package actionScripts.plugin.ondiskproj
     import actionScripts.plugin.IProjectTypePlugin;
     import actionScripts.plugin.ondiskproj.importer.OnDiskImporter;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.events.StatusBarEvent;
+    import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
+    import actionScripts.events.SettingsEvent;
+    import actionScripts.plugin.build.MavenBuildStatus;
+    import actionScripts.events.MavenBuildEvent;
+    import actionScripts.ui.menu.vo.MenuItem;
+    import mx.resources.IResourceManager;
+    import mx.resources.ResourceManager;
+    import actionScripts.ui.menu.vo.ProjectMenuTypes;
+    import actionScripts.events.DominoEvent;
 	
 	public class OnDiskProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{
@@ -64,8 +74,40 @@ package actionScripts.plugin.ondiskproj
 		override public function get name():String 			{ return "On Disk Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
 		override public function get description():String 	{ return "On Disk Project importing, exporting & scaffolding."; }
+
+		public function get projectClass():Class
+		{
+			return OnDiskProjectVO;
+		}
 		
 		protected var newOnDiskFilePopup:NewOnDiskFilePopup;
+		private var _projectMenu:Vector.<MenuItem>;
+        private var resourceManager:IResourceManager = ResourceManager.getInstance();
+
+		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
+		{
+			if (_projectMenu == null)
+			{
+				_projectMenu = Vector.<MenuItem>([
+					new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'DEPLOY_DOMINO_DATABASE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE),
+                    new MenuItem(resourceManager.getString('resources', 'GENERATE_JAVA_AGENTS'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_JAVA_AGENTS),
+					new MenuItem(resourceManager.getString('resources', 'GENERATE_CRUD_ROYALE'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.GENERATE_CRUD_ROYALE),
+                    new MenuItem(resourceManager.getString('resources', 'IMPORT_DOCUMENTS_JSON'), null, [ProjectMenuTypes.ON_DISK], DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT),
+					new MenuItem(null),
+					new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.ON_DISK], MavenBuildEvent.START_MAVEN_BUILD),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_ON_VAGRANT'), null, [ProjectMenuTypes.ON_DISK], DominoEvent.EVENT_BUILD_ON_VAGRANT),
+					new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, [ProjectMenuTypes.ON_DISK], OnDiskBuildEvent.CLEAN)
+				]);
+				_projectMenu.push(new MenuItem(null));
+				_projectMenu.push(new MenuItem(resourceManager.getString('resources', 'NSD_KILL'), null, [ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.ON_DISK, ProjectMenuTypes.JAVA], DominoEvent.NDS_KILL))
+				_projectMenu.forEach(function(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
+				{
+					item.dynamicItem = true;
+				});
+			}
+			return _projectMenu;
+		}
 		
 		override public function activate():void
 		{
@@ -73,6 +115,7 @@ package actionScripts.plugin.ondiskproj
 			dispatcher.addEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.GENERATE_JAVA_AGENTS, onGenerateCRUDJavaAgentsRequest, false, 0, true);
+			dispatcher.addEventListener(OnDiskBuildEvent.CLEAN, onClean, false, 0, true);
 			
 			super.activate();
 		}
@@ -83,6 +126,7 @@ package actionScripts.plugin.ondiskproj
 			dispatcher.removeEventListener(EVENT_NEW_FILE_WINDOW, openOnDiskNewFileWindow);
 			dispatcher.removeEventListener(OnDiskBuildEvent.GENERATE_CRUD_ROYALE, onRoyaleCRUDProjectRequest);
 			dispatcher.removeEventListener(OnDiskBuildEvent.GENERATE_JAVA_AGENTS, onGenerateCRUDJavaAgentsRequest);
+			dispatcher.removeEventListener(OnDiskBuildEvent.CLEAN, onClean);
 			
 			super.deactivate();
 		}
@@ -176,6 +220,25 @@ package actionScripts.plugin.ondiskproj
 		protected function onGenerateCRUDJavaAgentsRequest(event:Event):void
 		{
 			model.flexCore.generateCRUDJavaAgents();
+		}
+
+		private function onClean(event:Event):void
+		{
+			var project:OnDiskProjectVO = model.activeProject as OnDiskProjectVO;
+			if (!project)
+			{
+				return;
+			}
+			if (UtilsCore.isMavenAvailable())
+			{
+				dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
+				dispatcher.dispatchEvent(new MavenBuildEvent(MavenBuildEvent.START_MAVEN_BUILD, null, MavenBuildStatus.STARTED, project.folderLocation.fileBridge.nativePath, null, ["clean"]));
+			}
+			else
+			{
+				error("Specify path to Maven.");
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.maven::MavenBuildPlugin"));
+			}
 		}
 	}
 }

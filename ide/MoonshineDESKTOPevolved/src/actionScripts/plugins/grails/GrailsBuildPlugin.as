@@ -166,6 +166,7 @@ package actionScripts.plugins.grails
 
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
+			dispatcher.addEventListener(GrailsBuildEvent.CLEAN, grailsBuildCleanHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.RUN_COMMAND, startConsoleBuildHandler);
 			dispatcher.addEventListener(GradleBuildEvent.RUN_COMMAND, startGradleConsoleBuildHandler);
         }
@@ -176,18 +177,44 @@ package actionScripts.plugins.grails
 
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
+			dispatcher.removeEventListener(GrailsBuildEvent.CLEAN, grailsBuildCleanHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.RUN_COMMAND, startConsoleBuildHandler);
 			dispatcher.removeEventListener(GradleBuildEvent.RUN_COMMAND, startGradleConsoleBuildHandler);
         }
 		
 		private function grailsBuildAndRunHandler(event:Event):void
 		{
-			this.startDebug(new <String>[[UtilsCore.getGrailsBinPath(), "run-app"].join(" ")], model.activeProject.folderLocation);
+			var project:GrailsProjectVO = model.activeProject as GrailsProjectVO;
+			if (!project)
+			{
+				return;
+			}
+			this.startDebug(new <String>[[UtilsCore.getGrailsBinPath(), "run-app"].join(" ")], project.folderLocation);
 		}
 		
 		private function grailsBuildReleaseHandler(event:Event):void
 		{
-			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "war"].join(" ")], model.activeProject.folderLocation);
+			var project:GrailsProjectVO = model.activeProject as GrailsProjectVO;
+			if (!project)
+			{
+				return;
+			}
+			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "war"].join(" ")], project.folderLocation);
+		}
+
+		private function grailsBuildCleanHandler(event:Event):void
+		{
+			var project:GrailsProjectVO = model.activeProject as GrailsProjectVO;
+			if (!project)
+			{
+				return;
+			}
+            if (!UtilsCore.isGrailsAvailable())
+            {
+                error("Project clean failed: Missing Grails configuration in Moonshine settings.");
+                return;
+            }
+			start(new <String>[[UtilsCore.getGrailsBinPath(), "clean"].join(" ")], project.folderLocation);
 		}
 
 		private function grailsStopApp():void
@@ -212,6 +239,7 @@ package actionScripts.plugins.grails
 
 		override public function start(args:Vector.<String>, buildDirectory:*=null, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
 		{
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
             if (nativeProcess.running && running)
             {
                 warning("Build is running. Wait for finish...");

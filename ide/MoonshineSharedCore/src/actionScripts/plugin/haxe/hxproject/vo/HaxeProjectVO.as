@@ -55,8 +55,9 @@ package actionScripts.plugin.haxe.hxproject.vo
 	import mx.collections.ArrayCollection;
 	import mx.utils.StringUtil;
 	import actionScripts.languageServer.LanguageServerProjectVO;
+	import actionScripts.valueObjects.IClasspathProject;
 
-	public class HaxeProjectVO extends LanguageServerProjectVO
+	public class HaxeProjectVO extends LanguageServerProjectVO implements IClasspathProject
 	{
 		public static const TEST_MOVIE_WEBSERVER:String = "Webserver";
 		public static const TEST_MOVIE_CUSTOM:String = "Custom";
@@ -90,7 +91,15 @@ package actionScripts.plugin.haxe.hxproject.vo
 		public var buildOptions:HaxeBuildOptions;
 		public var limeTargetPlatform:String;
 
-		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		private var _classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public function get classpaths():Vector.<FileLocation>
+		{
+			return _classpaths;
+		}
+		public function set classpaths(value:Vector.<FileLocation>):void
+		{
+			_classpaths = value;
+		}
 		public var haxelibs:Vector.<String> = new Vector.<String>();
 		public var targets:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var hiddenPaths:Vector.<FileLocation> = new Vector.<FileLocation>();

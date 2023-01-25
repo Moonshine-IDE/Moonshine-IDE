@@ -44,22 +44,12 @@ package actionScripts.plugins.build
 
 	public class CompilerPluginBase extends PluginBase implements IPlugin
 	{
-		private var invalidPaths:Array;
-		
+		protected var invalidPaths:Array;
+
 		protected function checkProjectForInvalidPaths(project:ProjectVO):void
 		{
-			if (project is AS3ProjectVO)
-			{
-				validateAS3VOPaths(project as AS3ProjectVO);
-			}
-			else if (project is JavaProjectVO)
-			{
-				validateJavaVOPaths(project as JavaProjectVO);
-			}
-			else if (project is HaxeProjectVO)
-			{
-				validateHaxeVOPaths(project as HaxeProjectVO);
-			}
+			invalidPaths = [];
+			onProjectPathsValidated(null);
 		}
 		
 		protected function onProjectPathsValidated(paths:Array):void
@@ -75,89 +65,7 @@ package actionScripts.plugins.build
 			return sdk.resolvePath(compilerPath +".bat");
 		}
 		
-		private function validateAS3VOPaths(project:AS3ProjectVO):void
-		{
-			var tmpLocation:FileLocation;
-			invalidPaths = [];
-			
-			checkPathFileLocation(project.folderLocation, "Location");
-			if (project.sourceFolder) checkPathFileLocation(project.sourceFolder, "Source Folder");
-			if (project.visualEditorSourceFolder) checkPathFileLocation(project.visualEditorSourceFolder, "Source Folder");
-			
-			if (project.buildOptions.customSDK)
-			{
-				checkPathFileLocation(project.buildOptions.customSDK, "Custom SDK");
-			}
-			
-			for each (tmpLocation in project.classpaths)
-			{
-				checkPathFileLocation(tmpLocation, "Classpath");
-			}
-			for each (tmpLocation in project.resourcePaths)
-			{
-				checkPathFileLocation(tmpLocation, "Resource");
-			}
-			for each (tmpLocation in project.externalLibraries)
-			{
-				checkPathFileLocation(tmpLocation, "External Library");
-			}
-			for each (tmpLocation in project.libraries)
-			{
-				checkPathFileLocation(tmpLocation, "Library");
-			}
-			for each (tmpLocation in project.nativeExtensions)
-			{
-				checkPathFileLocation(tmpLocation, "Extension");
-			}
-			for each (tmpLocation in project.runtimeSharedLibraries)
-			{
-				checkPathFileLocation(tmpLocation, "Shared Library");
-			}
-			
-			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
-		}
-		
-		private function validateJavaVOPaths(project:JavaProjectVO):void
-		{
-			var tmpLocation:FileLocation;
-			invalidPaths = [];
-			
-			checkPathFileLocation(project.folderLocation, "Location");
-			if (project.sourceFolder) checkPathFileLocation(project.sourceFolder, "Source Folder");
-			
-			for each (tmpLocation in project.classpaths)
-			{
-				checkPathFileLocation(tmpLocation, "Classpath");
-			}
-			
-			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
-		}
-		
-		private function validateHaxeVOPaths(project:HaxeProjectVO):void
-		{
-			var tmpLocation:FileLocation;
-			invalidPaths = [];
-			
-			checkPathFileLocation(project.folderLocation, "Location");
-			if (project.sourceFolder) checkPathFileLocation(project.sourceFolder, "Source Folder");
-			
-			for each (tmpLocation in project.classpaths)
-			{
-				checkPathFileLocation(tmpLocation, "Classpath");
-			}
-			
-			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
-		}
-		
-		private function checkPathString(value:String, type:String):void
-		{
-			if (!model.fileCore.isPathExists(value))
-			{
-				invalidPaths.push(type +": "+ value);
-			}
-		}
-		
-		private function checkPathFileLocation(value:FileLocation, type:String):void
+		protected function checkPathFileLocation(value:FileLocation, type:String):void
 		{
 			if (value.fileBridge.nativePath.indexOf("{locale}") != -1)
 			{

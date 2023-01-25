@@ -40,15 +40,55 @@ package actionScripts.plugin.haxe.hxproject
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.haxe.hxproject.importer.HaxeImporter;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+    import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.ui.menu.vo.ProjectMenuTypes;
+    import flash.ui.Keyboard;
+    import mx.resources.IResourceManager;
+    import mx.resources.ResourceManager;
+    import actionScripts.plugin.core.compiler.HaxeBuildEvent;
 	
 	public class HaxeProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{	
 		public var activeType:uint = ProjectType.HAXE;
 		private var executeCreateHaxeProject:CreateHaxeProject;
+		private var _projectMenu:Vector.<MenuItem>;
+        private var resourceManager:IResourceManager = ResourceManager.getInstance();
 		
 		override public function get name():String 			{ return "Haxe Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL + " Project Team"; }
 		override public function get description():String 	{ return "Haxe project importing, exporting & scaffolding."; }
+
+		public function get projectClass():Class
+		{
+			return HaxeProjectVO;
+		}
+
+		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
+		{
+            if (_projectMenu == null)
+            {
+                var enabledTypes:Array = [ProjectMenuTypes.HAXE];
+
+                _projectMenu = Vector.<MenuItem>([
+                    new MenuItem(null),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_PROJECT'), null, enabledTypes, HaxeBuildEvent.BUILD_DEBUG,
+                        'b', [Keyboard.COMMAND],
+                        'b', [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_AND_RUN'), null, enabledTypes, HaxeBuildEvent.BUILD_AND_RUN,
+						"\r\n", [Keyboard.COMMAND],
+						"\n", [Keyboard.CONTROL]),
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_RELEASE'), null, enabledTypes, HaxeBuildEvent.BUILD_RELEASE),
+                    new MenuItem(resourceManager.getString('resources', 'CLEAN_PROJECT'), null, enabledTypes, HaxeBuildEvent.CLEAN)
+                ]);
+                _projectMenu.forEach(function(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
+				{
+					item.dynamicItem = true;
+				});
+            }
+
+            return _projectMenu;
+		}
 		
 		override public function activate():void
 		{

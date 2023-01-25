@@ -107,7 +107,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.formats.TextDecoration;
 	import actionScripts.plugin.console.ConsoleEvent;
 	
-	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
+	public class MXMLCPlugin extends MXMLCPluginBase implements ISettingsProvider
 	{
 		private static const DEFAULT_PORT:int = 7936;
 
@@ -260,6 +260,7 @@ package actionScripts.plugins.as3project.mxmlc
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndRun);
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD, build);
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
+			dispatcher.addEventListener(ActionScriptBuildEvent.CLEAN, clean);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, onDefaultSDKUpdatedOutside);
 			
 			tempObj = new Object();
@@ -386,6 +387,87 @@ package actionScripts.plugins.as3project.mxmlc
 		private function releaseCommand(args:Array):void
 		{
 			build(null, false, true);
+		}
+
+		private function clean(event:Event):void
+		{
+			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+			if (!as3Project)
+			{
+				return;
+			}
+
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+
+			var outputFile:FileLocation;
+			var swfPath:FileLocation;
+			var swfFolderPath:FileLocation;
+			var folderCount:int = 0;
+			var currentTargets:Array = [];
+
+			if (as3Project.swfOutput.path)
+			{
+				outputFile = as3Project.swfOutput.path;
+				swfFolderPath = outputFile.fileBridge.parent;
+			}
+
+			if (swfFolderPath.fileBridge.exists)
+			{
+				var directoryItems:Array = swfFolderPath.fileBridge.getDirectoryListing();
+				if (directoryItems.length == 0)
+				{
+					success("Project files cleaned successfully: " + as3Project.name);
+				}
+				for each (var directory:Object in directoryItems)
+				{
+					folderCount++;
+					currentTargets.push(swfFolderPath);
+
+					directory.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+					directory.addEventListener(Event.COMPLETE, onProjectFolderComplete);
+
+					if (directory.isDirectory)
+					{
+						directory.deleteDirectoryAsync(true);
+					}
+					else
+					{
+						directory.deleteFileAsync();
+					}
+				}
+			}
+			else
+			{
+				success("Project files cleaned successfully: " + as3Project.name);
+			}
+
+			function onProjectFolderComplete(event:Event):void
+			{
+				event.target.removeEventListener(Event.COMPLETE, onProjectFolderComplete);
+				event.target.removeEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+
+				if (currentTargets)
+				{
+					folderCount--;
+					if (folderCount <= 0)
+					{
+						for (var i:int = 0; i < currentTargets.length; i++)
+						{
+							dispatcher.dispatchEvent(new RefreshTreeEvent(currentTargets[i], true));
+						}
+
+						success("Project files cleaned successfully: " + as3Project.name);
+						currentTargets = null;
+						folderCount = 0;
+					}
+				}
+			}
+
+			function onCleanProjectIOException(event:IOErrorEvent):void
+			{
+				event.target.removeEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+				error("Cannot delete file or folder: " + event.target.nativePath + "\nError: " + event.text);
+			}
 		}
 		
 		private function reset():void 

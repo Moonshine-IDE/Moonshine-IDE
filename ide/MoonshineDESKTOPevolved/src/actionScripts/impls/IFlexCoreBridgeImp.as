@@ -118,7 +118,6 @@ import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.away3d.Away3DPlugin;
-	import actionScripts.plugins.clean.CleanProject;
 	import actionScripts.plugins.core.ProjectBridgeImplBase;
 	import actionScripts.plugins.debugAdapter.DebugAdapterPlugin;
 	import actionScripts.plugins.domino.DominoPlugin;
@@ -265,7 +264,6 @@ import actionScripts.valueObjects.HelperConstants;
 				XMLSyntaxPlugin,
 				OrganizeImportsPlugin,
 				SplashScreenPlugin,
-				CleanProject,
 				VersionControlPlugin,
 				SVNPlugin,
 				DebugAdapterPlugin,
@@ -303,7 +301,7 @@ import actionScripts.valueObjects.HelperConstants;
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [FileAssociationPlugin, OpenInTerminalPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, CleanProject, DebugAdapterPlugin,
+			return [FileAssociationPlugin, OpenInTerminalPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
 					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin, ExportToRoyaleTemplatedAppPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,

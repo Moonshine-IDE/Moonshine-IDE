@@ -67,7 +67,6 @@ package actionScripts.plugins.haxe
 	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
-	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.ProjectVO;
@@ -453,7 +452,7 @@ package actionScripts.plugins.haxe
 				return;
 			}
 
-			var haxePath:String = getProjectSDKPath(_project, _model);
+			var haxePath:String = _model.haxePath;
 			_previousHaxePath = haxePath;
 			var nodePath:String = UtilsCore.getNodeBinPath();
 			_previousNodePath = nodePath;
@@ -812,7 +811,7 @@ package actionScripts.plugins.haxe
 
 		private function changeHaxeSDKHandler(event:SdkEvent):void
 		{
-			if(getProjectSDKPath(_project, _model) != _previousHaxePath)
+			if(_model.haxePath != _previousHaxePath)
 			{
 				restartLanguageServer();
 			}
@@ -876,7 +875,7 @@ package actionScripts.plugins.haxe
 		{
 			var needsRestart:Boolean = false;
 
-			if(!needsRestart && getProjectSDKPath(_project, _model) != _previousHaxePath)
+			if(!needsRestart && _model.haxePath != _previousHaxePath)
 			{
 				needsRestart = true;
 			}

@@ -84,7 +84,6 @@ package actionScripts.plugins.java
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.applyWorkspaceEdit;
 	import actionScripts.utils.FindOpenPort;
-	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
@@ -404,8 +403,16 @@ package actionScripts.plugins.java
 				trace("Error: Java language server process already exists for project: " + project.name);
 				return;
 			}
-			var jdkPath:String = getProjectSDKPath(_project, _model);
-			var jdk8Path:String = (_model.java8Path != null) ? _model.java8Path.fileBridge.nativePath : null;
+			var jdkPath:String = null;
+			if (_model.javaPathForTypeAhead)
+			{
+				jdkPath = _model.javaPathForTypeAhead.fileBridge.nativePath;
+			}
+			var jdk8Path:String = null;
+			if (_model.java8Path)
+			{
+				jdk8Path = _model.java8Path.fileBridge.nativePath;
+			}
 			if(!jdkPath || (_project.jdkType == JavaTypes.JAVA_8 && !jdk8Path))
 			{
 				//we'll need to try again later if the settings change
@@ -965,7 +972,12 @@ package actionScripts.plugins.java
 		private function jdkPathSaveHandler(event:FilePluginEvent):void
 		{
 			//restart only when the path has changed
-			if(getProjectSDKPath(_project, _model) != _previousJDKPath)
+			var jdkPath:String = null;
+			if (_model.javaPathForTypeAhead)
+			{
+				jdkPath = _model.javaPathForTypeAhead.fileBridge.nativePath
+			}
+			if(jdkPath != _previousJDKPath)
 			{
 				restartLanguageServer();
 			}

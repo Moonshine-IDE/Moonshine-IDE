@@ -95,15 +95,12 @@ package actionScripts.ui.menu
 		private var isFileNewMenuIsEnabled:Boolean;
 		private var moonshineMenu:NativeMenuItem;
 
-		private var projectMenu:ProjectMenu;
-
         override public function get name():String { return "Application Menu Plugin"; }
 		override public function get author():String { return "Keyston Clay & Moonshine Project Team"; }
 		override public function get description():String { return "Adds Menu"; }		
 
 		public function MenuPlugin():void
 		{
-			projectMenu = new ProjectMenu();
 		}
 
 		public function getSettingsList():Vector.<ISetting>
@@ -319,7 +316,7 @@ package actionScripts.ui.menu
 				if (as3Project.isPrimeFacesVisualEditorProject)
 				{
 					var resourceManager:IResourceManager = ResourceManager.getInstance();
-					var projectMenus:Vector.<MenuItem> = projectMenu.getProjectMenuItems(model.activeProject);
+					var projectMenus:Vector.<MenuItem> = model.projectCore.getProjectMenuItems(model.activeProject);
 
 					var previewItem:MenuItem = projectMenus[projectMenus.length - 1];
 					if (as3Project.isPreviewRunning)
@@ -350,7 +347,7 @@ package actionScripts.ui.menu
 				menuItem = menu.items[i];
 				if (menuItem.label == projectMenuItemName)
 				{
-					var projectMenus:Vector.<MenuItem> = projectMenu.getProjectMenuItems(project);
+					var projectMenus:Vector.<MenuItem> = model.projectCore.getProjectMenuItems(project);
                     for (var j:int = menuItem.submenu.numItems - 1; j > 0; j--)
                     {
                         var removeItem:Boolean = false;

@@ -29,39 +29,12 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin
+package actionScripts.valueObjects
 {
 	import actionScripts.factory.FileLocation;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.ui.menu.vo.MenuItem;
 
-	/**
-	 * An interface implemented by plugins that handle creating and opening
-	 * projects.
-	 */
-	public interface IProjectTypePlugin extends IPlugin
+	public interface IClasspathProject
 	{
-		/**
-		 * The subclass of ProjectVO associated with this plugin.
-		 */
-		function get projectClass():Class;
-
-		/**
-		 * The items to display in the project menu when a project of this type
-		 * is selected in the file tree.
-		 */
-		function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>;
-
-		/**
-		 * Tests if a specific directory contains a project that can be opened
-		 * by this plugin. Typically, the directory will contain some sort of
-		 * project file, such as .javaproj for Java or .hxproj for Haxe.
-		 */
-		function testProjectDirectory(file:FileLocation):FileLocation;
-
-		/**
-		 * Parses a project that was detected with testProjectDirectory().
-		 */
-		function parseProject(projectFolder:FileLocation, projectName:String = null, settingsFileLocation:FileLocation = null):ProjectVO;
+		function get classpaths():Vector.<FileLocation>;
 	}
 }

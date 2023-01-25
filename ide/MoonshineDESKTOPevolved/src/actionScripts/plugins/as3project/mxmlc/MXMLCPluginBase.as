@@ -29,39 +29,61 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.plugin
+package actionScripts.plugins.as3project.mxmlc
 {
+	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
+	import actionScripts.plugins.build.CompilerPluginBase;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.ui.menu.vo.MenuItem;
 
-	/**
-	 * An interface implemented by plugins that handle creating and opening
-	 * projects.
-	 */
-	public interface IProjectTypePlugin extends IPlugin
+	public class MXMLCPluginBase extends CompilerPluginBase
 	{
-		/**
-		 * The subclass of ProjectVO associated with this plugin.
-		 */
-		function get projectClass():Class;
+		override protected function checkProjectForInvalidPaths(project:ProjectVO):void
+		{
+			invalidPaths = [];
+			var tmpLocation:FileLocation;
 
-		/**
-		 * The items to display in the project menu when a project of this type
-		 * is selected in the file tree.
-		 */
-		function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>;
-
-		/**
-		 * Tests if a specific directory contains a project that can be opened
-		 * by this plugin. Typically, the directory will contain some sort of
-		 * project file, such as .javaproj for Java or .hxproj for Haxe.
-		 */
-		function testProjectDirectory(file:FileLocation):FileLocation;
-
-		/**
-		 * Parses a project that was detected with testProjectDirectory().
-		 */
-		function parseProject(projectFolder:FileLocation, projectName:String = null, settingsFileLocation:FileLocation = null):ProjectVO;
+			var as3Project:AS3ProjectVO = project as AS3ProjectVO;
+			if (!as3Project)
+			{
+				return;
+			}
+			
+			checkPathFileLocation(as3Project.folderLocation, "Location");
+			if (as3Project.sourceFolder) checkPathFileLocation(as3Project.sourceFolder, "Source Folder");
+			if (as3Project.visualEditorSourceFolder) checkPathFileLocation(as3Project.visualEditorSourceFolder, "Source Folder");
+			
+			if (as3Project.buildOptions.customSDK)
+			{
+				checkPathFileLocation(as3Project.buildOptions.customSDK, "Custom SDK");
+			}
+			
+			for each (tmpLocation in as3Project.classpaths)
+			{
+				checkPathFileLocation(tmpLocation, "Classpath");
+			}
+			for each (tmpLocation in as3Project.resourcePaths)
+			{
+				checkPathFileLocation(tmpLocation, "Resource");
+			}
+			for each (tmpLocation in as3Project.externalLibraries)
+			{
+				checkPathFileLocation(tmpLocation, "External Library");
+			}
+			for each (tmpLocation in as3Project.libraries)
+			{
+				checkPathFileLocation(tmpLocation, "Library");
+			}
+			for each (tmpLocation in as3Project.nativeExtensions)
+			{
+				checkPathFileLocation(tmpLocation, "Extension");
+			}
+			for each (tmpLocation in as3Project.runtimeSharedLibraries)
+			{
+				checkPathFileLocation(tmpLocation, "Shared Library");
+			}
+			
+			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
+		}
 	}
 }

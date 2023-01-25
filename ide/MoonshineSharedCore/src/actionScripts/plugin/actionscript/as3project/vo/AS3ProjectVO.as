@@ -67,8 +67,9 @@ import flash.events.Event;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.languageServer.LanguageServerProjectVO;
+    import actionScripts.valueObjects.IClasspathProject;
 	
-	public class AS3ProjectVO extends LanguageServerProjectVO implements ICloneable, IVisualEditorProjectVO, IDeployDominoDatabaseProject
+	public class AS3ProjectVO extends LanguageServerProjectVO implements ICloneable, IVisualEditorProjectVO, IDeployDominoDatabaseProject, IClasspathProject
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 		public static const NATIVE_EXTENSION_MESSAGE:String = "NATIVE_EXTENSION_MESSAGE";
@@ -89,7 +90,16 @@ import flash.events.Event;
 		public var flashModuleOptions:FlashModuleOptions;
 		public var customHTMLPath:String;
 		
-		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		private var _classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public function get classpaths():Vector.<FileLocation>
+		{
+			return _classpaths;
+		}
+		public function set classpaths(value:Vector.<FileLocation>):void
+		{
+			_classpaths = value;
+		}
+		
 		public var resourcePaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var includeLibraries:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var libraries:Vector.<FileLocation> = new Vector.<FileLocation>();

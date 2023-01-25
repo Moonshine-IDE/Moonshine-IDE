@@ -71,7 +71,6 @@ package actionScripts.plugins.groovy
 	import actionScripts.utils.GlobPatterns;
 	import actionScripts.utils.GradleBuildUtil;
 	import actionScripts.utils.applyWorkspaceEdit;
-	import actionScripts.utils.getProjectSDKPath;
 	import actionScripts.utils.isUriInProject;
 	import actionScripts.valueObjects.EnvironmentExecPaths;
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
@@ -241,7 +240,11 @@ package actionScripts.plugins.groovy
 				trace("Error: Groovy language server process already exists for project: " + project.name);
 				return;
 			}
-			var jdkPath:String = getProjectSDKPath(_project, _model);
+			var jdkPath:String = null;
+			if (_model.javaPathForTypeAhead)
+			{
+				jdkPath = _model.javaPathForTypeAhead.fileBridge.nativePath;
+			}
 			_previousJDKPath = jdkPath;
 			if(!jdkPath)
 			{
@@ -578,7 +581,12 @@ package actionScripts.plugins.groovy
 		private function jdkPathSaveHandler(event:FilePluginEvent):void
 		{
 			//restart only when the path has changed
-			if(getProjectSDKPath(_project, _model) != _previousJDKPath)
+			var jdkPath:String = null;
+			if (_model.javaPathForTypeAhead)
+			{
+				jdkPath = _model.javaPathForTypeAhead.fileBridge.nativePath
+			}
+			if(jdkPath != _previousJDKPath)
 			{
 				restartLanguageServer();
 			}

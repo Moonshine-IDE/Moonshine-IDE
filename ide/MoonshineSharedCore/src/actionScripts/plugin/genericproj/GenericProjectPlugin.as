@@ -63,6 +63,11 @@ package actionScripts.plugin.genericproj
     import actionScripts.plugin.IProjectTypePlugin;
     import actionScripts.plugin.genericproj.importer.GenericProjectImporter;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.ui.menu.vo.MenuItem;
+    import mx.resources.ResourceManager;
+    import mx.resources.IResourceManager;
+    import actionScripts.ui.menu.vo.ProjectMenuTypes;
+    import flash.ui.Keyboard;
 	
 	public class GenericProjectPlugin extends PluginBase implements IProjectTypePlugin
 	{
@@ -73,6 +78,53 @@ package actionScripts.plugin.genericproj
 		override public function get description():String 	{ return "Generic Project importing, exporting & scaffolding."; }
 		
 		protected var newOnDiskFilePopup:NewOnDiskFilePopup;
+		private var _projectMenu:Vector.<MenuItem>;
+        private var resourceManager:IResourceManager = ResourceManager.getInstance();
+
+		public function get projectClass():Class
+		{
+			return GenericProjectVO;
+		}
+
+		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
+		{
+			var genericProject:GenericProjectVO = GenericProjectVO(project);
+            // re-generate every time based on
+            // project's availabilities
+            _projectMenu = new Vector.<MenuItem>();
+            if (genericProject.hasPom())
+            {
+                _projectMenu.push(
+                        new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), null, [ProjectMenuTypes.GENERIC], MavenBuildEvent.START_MAVEN_BUILD)
+                );
+            }
+            if (genericProject.hasGradleBuild())
+            {
+                _projectMenu.push(
+                    new MenuItem(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), null, [ProjectMenuTypes.GENERIC], GradleBuildEvent.START_GRADLE_BUILD,
+                        'b', [Keyboard.COMMAND],
+                        'b', [Keyboard.CONTROL])
+                );
+            }
+            if (genericProject.isAntFileAvailable)
+            {
+                _projectMenu.push(
+                    new MenuItem(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), null, [ProjectMenuTypes.GENERIC], "selectedProjectAntBuild")
+                );
+            }
+
+            if (_projectMenu.length > 0)
+            {
+                _projectMenu.insertAt(0, new MenuItem(null));
+            }
+
+            _projectMenu.forEach(function(item:MenuItem, index:int, vector:Vector.<MenuItem>):void
+			{
+				item.dynamicItem = true;
+			});
+
+            return _projectMenu;
+		}
 		
 		override public function activate():void
 		{

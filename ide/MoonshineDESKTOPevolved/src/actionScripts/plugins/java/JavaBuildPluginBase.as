@@ -29,53 +29,35 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.utils
+package actionScripts.plugins.java
 {
-	import actionScripts.locator.IDEModel;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
-	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.valueObjects.ProjectVO;
 
-	public function getProjectSDKPath(project:ProjectVO, model:IDEModel):String
+	public class JavaBuildPluginBase extends ConsoleBuildPluginBase
 	{
-		if(project is AS3ProjectVO)
+		override protected function checkProjectForInvalidPaths(project:ProjectVO):void
 		{
-			var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-			if(as3Project.buildOptions.customSDK)
+			invalidPaths = [];
+			var tmpLocation:FileLocation;
+
+			var javaProject:JavaProjectVO = project as JavaProjectVO;
+			if (!javaProject)
 			{
-				return as3Project.buildOptions.customSDK.fileBridge.nativePath;
+				return;
 			}
-			else if(model.defaultSDK)
+
+			checkPathFileLocation(javaProject.folderLocation, "Location");
+			if (javaProject.sourceFolder) checkPathFileLocation(javaProject.sourceFolder, "Source Folder");
+			
+			for each (tmpLocation in javaProject.classpaths)
 			{
-				return model.defaultSDK.fileBridge.nativePath;
+				checkPathFileLocation(tmpLocation, "Classpath");
 			}
+			
+			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
 		}
-		else if(project is JavaProjectVO)
-		{
-			var javaProject:JavaProjectVO = JavaProjectVO(project);
-			if(model.javaPathForTypeAhead)
-			{
-				return model.javaPathForTypeAhead.fileBridge.nativePath;
-			}
-		}
-		else if(project is GrailsProjectVO)
-		{
-			var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
-			if(model.javaPathForTypeAhead)
-			{
-				return model.javaPathForTypeAhead.fileBridge.nativePath;
-			}
-		}
-		else if(project is HaxeProjectVO)
-		{
-			var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
-			if(model.haxePath)
-			{
-				return model.haxePath;
-			}
-		}
-		return null;
 	}
 }
