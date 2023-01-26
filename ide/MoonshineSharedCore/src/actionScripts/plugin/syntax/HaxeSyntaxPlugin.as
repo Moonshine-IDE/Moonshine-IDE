@@ -33,8 +33,6 @@ package actionScripts.plugin.syntax
 {
 	import actionScripts.events.EditorPluginEvent;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 
@@ -50,14 +48,13 @@ package actionScripts.plugin.syntax
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	
-	public class HaxeSyntaxPlugin extends PluginBase implements  ISettingsProvider
+	public class HaxeSyntaxPlugin extends PluginBase
 	{
 		private static const FILE_EXTENSION_HX:String = "hx";
 
 		override public function get name():String 			{return "Haxe Syntax Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for Haxe.";}
-		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 				
 		override public function activate():void
 		{ 

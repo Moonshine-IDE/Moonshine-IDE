@@ -33,8 +33,6 @@ package actionScripts.plugin.syntax
 {
 	import actionScripts.events.EditorPluginEvent;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 
@@ -50,7 +48,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	
-	public class GroovySyntaxPlugin extends PluginBase implements  ISettingsProvider
+	public class GroovySyntaxPlugin extends PluginBase
 	{
 		private static const FILE_EXTENSION_GROOVY:String = "groovy";
 		private static const FILE_EXTENSION_GRADLE:String = "gradle";
@@ -58,7 +56,6 @@ package actionScripts.plugin.syntax
 		override public function get name():String 			{return "Groovy Syntax Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for Groovy.";}
-		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 				
 		override public function activate():void
 		{ 
