@@ -32,7 +32,6 @@
 package actionScripts.plugin.syntax
 {
 	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.plugin.IEditorPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -51,7 +50,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	
-	public class XMLSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
+	public class XMLSyntaxPlugin extends PluginBase implements  ISettingsProvider
 	{
 		private static const FILE_EXTENSION_XML:String = "xml";
 		private static const FILE_EXTENSION_AS3PROJ:String = "as3proj";

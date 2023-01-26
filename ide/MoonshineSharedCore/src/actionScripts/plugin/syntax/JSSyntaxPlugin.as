@@ -32,7 +32,6 @@
 package actionScripts.plugin.syntax
 {
 	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.plugin.IEditorPlugin;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.settings.ISettingsProvider;
 	import actionScripts.plugin.settings.vo.ISetting;
@@ -51,7 +50,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	import actionScripts.ui.editor.BasicTextEditor;
 	
-	public class JSSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
+	public class JSSyntaxPlugin extends PluginBase implements  ISettingsProvider
 	{
 		private static const FILE_EXTENSION_JS:String = "js";
 		private static const FILE_EXTENSION_JSON:String = "json";
