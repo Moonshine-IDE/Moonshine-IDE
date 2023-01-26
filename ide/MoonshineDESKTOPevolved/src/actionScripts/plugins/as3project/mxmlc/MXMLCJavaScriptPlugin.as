@@ -1099,12 +1099,12 @@ package actionScripts.plugins.as3project.mxmlc
 			if(runAfterBuild || debugAfterBuild)
 			{
 				dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
-				success("Project %s Build Successfully.", pvo.name);
+				success("Project %s build successfully.", pvo.name);
 				launchApplication();
 			}
 			else
 			{
-				success("Project %s Build Successfully.", pvo.name);
+				success("Project %s build successfully.", pvo.name);
 				dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
 			}
 		}
