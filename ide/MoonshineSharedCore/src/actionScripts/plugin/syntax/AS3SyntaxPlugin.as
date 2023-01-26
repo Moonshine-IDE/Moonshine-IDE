@@ -33,11 +33,8 @@ package actionScripts.plugin.syntax
 {
 	import actionScripts.events.EditorPluginEvent;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	import actionScripts.plugin.texteditor.events.TextEditorSettingsEvent;
-	import actionScripts.ui.IContentWindow;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
@@ -51,14 +48,13 @@ package actionScripts.plugin.syntax
 	import moonshine.editor.text.syntax.parser.AS3LineParser;
 	import moonshine.editor.text.utils.AutoClosingPair;
 	
-	public class AS3SyntaxPlugin extends PluginBase implements  ISettingsProvider
+	public class AS3SyntaxPlugin extends PluginBase
 	{
 		private static const FILE_EXTENSION_AS:String = "as";
 
 		override public function get name():String 			{return "AS3 Syntax Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for AS3.";}
-		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 				
 		override public function activate():void
 		{ 
