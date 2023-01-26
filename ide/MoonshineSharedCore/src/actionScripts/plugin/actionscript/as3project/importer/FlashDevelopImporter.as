@@ -676,6 +676,12 @@ package actionScripts.plugin.actionscript.as3project.importer
 									
 										
 									}
+									for each(var dominoField:XML in dominoXml..field){
+										var choices:String=dominoField.@choicesdialog;
+										if(choices!=null && choices==""){
+											dominoField.@choicesdialog="none"
+										}
+									}
 									//computedtext
 							
 								}
