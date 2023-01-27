@@ -116,7 +116,7 @@
 				var searchRegExp:RegExp;
 				var results:Array;
 				// expected format is https://github.com/{organization/author}/{project}
-				searchRegExp = new RegExp("(?:https?|http)\://.*:+([0-9]{4})", "i");
+				searchRegExp = new RegExp("(?:https?|http)\://.*:+([0-9]{1,5})", "i");
 				results = searchRegExp.exec(txtURL.text);
 				isValidURL = (results != null) ? true : false;
 
