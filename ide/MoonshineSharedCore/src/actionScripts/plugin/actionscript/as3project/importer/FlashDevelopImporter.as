@@ -408,17 +408,24 @@ package actionScripts.plugin.actionscript.as3project.importer
 							var subfromPath:String = "subforms"+File.separator+xml.name;
 
 							var dominoXml:XML;
-							if(xmlNavePath.indexOf(subfromPath)>=0){
-								dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
-							} else {
-								dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
-							}
-							
 							
 							var _fileStreamMoonshine:FileStream = new FileStream();
 							_fileStreamMoonshine.open(xml, FileMode.READ);
 							var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
 							var internalxml:XML = new XML(data);
+
+							var windowsTitleName:String= internalxml.MainApplication.@windowsTitle;
+							if(windowsTitleName!=null && windowsTitleName!=""){
+								windowsTitleName=StringHelper.base64Decode(windowsTitleName);
+							}else{
+								windowsTitleName="@Text(\""+xmlName+"\")";
+							}
+
+							if(xmlNavePath.indexOf(subfromPath)>=0){
+								dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
+							} else {
+								dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,windowsTitleName);
+							}
 							
 
 						
