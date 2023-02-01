@@ -98,6 +98,7 @@ package actionScripts.plugins.as3project
 	
 	import actionScripts.plugins.ui.editor.VisualEditorViewer;
 	import actionScripts.plugins.help.view.VisualEditorView;
+	import utils.StringHelper;
     public class CreateProject
 	{
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
@@ -882,6 +883,8 @@ package actionScripts.plugins.as3project
 			// Time to do the templating thing!
 			th.isProjectFromExistingSource = isProjectFromExistingSource;
 			th.templatingData["$ProjectName"] = projectName;
+			th.templatingData["$ProjectNameBase64Code"] = StringHelper.base64Encode(projectName);
+			
 			
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
