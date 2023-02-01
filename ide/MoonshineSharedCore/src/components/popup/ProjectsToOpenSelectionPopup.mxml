@@ -121,9 +121,15 @@
 					// new-workspace input
 					if (!isExistingWorkspace)
 					{
+						hgError.includeInLayout = hgError.visible = false;
 						ddlWorkspaces.selectedIndex = 1;
 						ddlWorkspaces.dispatchEvent(new IndexChangeEvent(IndexChangeEvent.CHANGE, false, false, ddlWorkspaces.selectedIndex, 1));
 						txtNewWorkspace.text = targetWorkspace;
+					}
+					else
+					{
+						txtErrorLabel.text = "This workspace already exists. The project(s) will be opened in the existing workspace.";
+						hgError.includeInLayout = hgError.visible = true;
 					}
 				}
 			}
