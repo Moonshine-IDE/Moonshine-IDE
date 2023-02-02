@@ -415,12 +415,12 @@ package actionScripts.plugin.actionscript.as3project.importer
 							var internalxml:XML = new XML(data);
 
 							var windowsTitleName:String= internalxml.MainApplication.@windowsTitle;
-							if(windowsTitleName!=null && windowsTitleName!=""){
+							if(windowsTitleName!=null && windowsTitleName!="" && windowsTitleName.length>0){
 								windowsTitleName=StringHelper.base64Decode(windowsTitleName);
 							}else{
 								windowsTitleName="@Text(\""+xmlName+"\")";
 							}
-
+							
 							if(xmlNavePath.indexOf(subfromPath)>=0){
 								dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
 							} else {
