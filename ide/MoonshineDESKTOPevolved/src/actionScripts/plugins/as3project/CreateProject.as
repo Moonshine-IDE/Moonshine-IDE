@@ -883,7 +883,7 @@ package actionScripts.plugins.as3project
 			// Time to do the templating thing!
 			th.isProjectFromExistingSource = isProjectFromExistingSource;
 			th.templatingData["$ProjectName"] = projectName;
-			th.templatingData["$ProjectNameBase64Code"] = StringHelper.base64Encode(projectName);
+			th.templatingData["$WindowsTitleBase64Code"] = StringHelper.base64Encode("\""+projectName+"\"");
 			
 			
 			var pattern:RegExp = new RegExp(/(_)/g);

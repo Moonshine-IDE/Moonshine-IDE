@@ -75,6 +75,7 @@ package actionScripts.plugin.rename
 	import flash.filesystem.FileStream;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 
+	import actionScripts.utils.DominoUtils;
 	public class RenamePlugin extends PluginBase
 	{
 		private var renameSymbolViewWrapper:FeathersUIWrapper;
@@ -229,6 +230,9 @@ package actionScripts.plugin.rename
 			if (fileVisualEditor)
 			{
 				var newVisualEditorFile:FileLocation = fileVisualEditor.fileBridge.parent.resolvePath(newFile.fileBridge.nameWithoutExtension + ".xml");
+				if(fileWrapper.file.fileBridge.extension=="form"){
+					DominoUtils.dominoWindowTitleUpdate(fileVisualEditor,newFileNameWithoutExtension,sourceFileName);
+				}
 				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);	
 			}
 

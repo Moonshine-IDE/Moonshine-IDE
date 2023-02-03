@@ -35,6 +35,8 @@ package actionScripts.utils
 	import mx.controls.Alert;
 	import mx.utils.StringUtil;
 	import actionScripts.locator.IDEModel;
+	import utils.StringHelper;
+	import actionScripts.factory.FileLocation;
     
     public class DominoUtils
 	{
@@ -292,6 +294,31 @@ package actionScripts.utils
 			xmlstr=xmlstr.replace(tabpattern,"\t");
 			xml =new XML(xmlstr);
 			return xml;
+		}
+
+		public static function dominoWindowTitleUpdate(sourceXml:FileLocation,newFormName:String,souceFormName:String):void{
+		
+				
+				var sourceFormXML:XML = new XML(sourceXml.fileBridge.read());
+				var windowsTitleName:String= sourceFormXML.MainApplication.@windowsTitle;
+				if(windowsTitleName!=null && windowsTitleName!="" && windowsTitleName.length>0){
+					windowsTitleName=StringHelper.base64Decode(windowsTitleName);
+					souceFormName="\""+souceFormName+"\"";
+					
+					if(windowsTitleName==souceFormName){
+						windowsTitleName="\""+newFormName+"\"";
+					}
+					
+				}else{
+					windowsTitleName="@Text(\""+newFormName+"\")";
+				}
+				
+				windowsTitleName=StringHelper.base64Encode(windowsTitleName);
+				sourceFormXML.MainApplication.@windowsTitle=windowsTitleName;
+
+				sourceXml.fileBridge.save(sourceFormXML.toXMLString());
+
+			
 		}
 
     }
