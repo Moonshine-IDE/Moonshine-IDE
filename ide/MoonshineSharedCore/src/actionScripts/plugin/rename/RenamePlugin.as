@@ -230,7 +230,7 @@ package actionScripts.plugin.rename
 			if (fileVisualEditor)
 			{
 				var newVisualEditorFile:FileLocation = fileVisualEditor.fileBridge.parent.resolvePath(newFile.fileBridge.nameWithoutExtension + ".xml");
-				if(fileWrapper.file.fileBridge.extension=="form"){
+				if(fileWrapper.file.fileBridge.extension=="form" ||fileWrapper.file.fileBridge.extension=="page" ){
 					DominoUtils.dominoWindowTitleUpdate(fileVisualEditor,newFileNameWithoutExtension,sourceFileName);
 				}
 				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);	
