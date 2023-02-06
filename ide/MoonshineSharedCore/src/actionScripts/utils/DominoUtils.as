@@ -37,7 +37,9 @@ package actionScripts.utils
 	import actionScripts.locator.IDEModel;
 	import utils.StringHelper;
 	import actionScripts.factory.FileLocation;
-    
+	import mx.utils.Base64Encoder;
+    import mx.utils.Base64Decoder;
+    import flash.utils.ByteArray;
     public class DominoUtils
 	{
 		
@@ -302,7 +304,7 @@ package actionScripts.utils
 				var sourceFormXML:XML = new XML(sourceXml.fileBridge.read());
 				var windowsTitleName:String= sourceFormXML.MainApplication.@windowsTitle;
 				if(windowsTitleName!=null && windowsTitleName!="" && windowsTitleName.length>0){
-					windowsTitleName=StringHelper.base64Decode(windowsTitleName);
+					windowsTitleName=base64Decode(windowsTitleName);
 					souceFormName="\""+souceFormName+"\"";
 					
 					if(windowsTitleName==souceFormName){
@@ -313,12 +315,34 @@ package actionScripts.utils
 					windowsTitleName="@Text(\""+newFormName+"\")";
 				}
 				
-				windowsTitleName=StringHelper.base64Encode(windowsTitleName);
+				windowsTitleName=base64Encode(windowsTitleName);
 				sourceFormXML.MainApplication.@windowsTitle=windowsTitleName;
 
 				sourceXml.fileBridge.save(sourceFormXML.toXMLString());
 
 			
+		}
+
+		public static function base64Encode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Encoder = new Base64Encoder();
+			base64.insertNewLines = false;
+			var byte:ByteArray = new ByteArray();
+			byte.writeMultiByte(str, charset);
+			base64.encodeBytes(byte);
+			return base64.toString();
+		}
+		
+		public static function base64Decode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Decoder = new Base64Decoder();
+			base64.decode(str);
+			var byteArray:ByteArray = base64.toByteArray();
+			return byteArray.readMultiByte(byteArray.length, charset);;
 		}
 
     }
