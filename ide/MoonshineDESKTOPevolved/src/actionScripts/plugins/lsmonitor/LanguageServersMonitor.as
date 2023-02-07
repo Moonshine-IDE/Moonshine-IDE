@@ -120,14 +120,14 @@ package actionScripts.plugins.lsmonitor
 				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, lsMonitorViewWrapper));
 				initializeMonitorViewEventHandlers();
 				isMonitorViewVisible = true;
-				LanguageServerGlobals.getEventDispatcher().addEventListener( Event.ADDED, langaugeServerAdded );
-				LanguageServerGlobals.getEventDispatcher().addEventListener( Event.REMOVED, langaugeServerRemoved );
+				LanguageServerGlobals.getInstance().addEventListener( Event.ADDED, langaugeServerAdded );
+				LanguageServerGlobals.getInstance().addEventListener( Event.REMOVED, langaugeServerRemoved );
 				getServerInstances();
 			}
 			else
 			{
-				LanguageServerGlobals.getEventDispatcher().removeEventListener( Event.ADDED, langaugeServerAdded );
-				LanguageServerGlobals.getEventDispatcher().removeEventListener( Event.REMOVED, langaugeServerRemoved );
+				LanguageServerGlobals.getInstance().removeEventListener( Event.ADDED, langaugeServerAdded );
+				LanguageServerGlobals.getInstance().removeEventListener( Event.REMOVED, langaugeServerRemoved );
 				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, lsMonitorViewWrapper));
 				cleanupMonitorViewEventHandlers();
 				monitorPanel_removedFromStageHandler(event);
@@ -162,7 +162,7 @@ package actionScripts.plugins.lsmonitor
 		private function getServerInstances():void
 		{
 
-			var globalInstances:Array = LanguageServerGlobals.getLanguageServerInstances();
+			var globalInstances:Array = LanguageServerGlobals.getInstance().getLanguageServerInstances();
 			var instances:ArrayCollection = new ArrayCollection();
 
 			instances.sortCompareFunction = languageServerSort;
