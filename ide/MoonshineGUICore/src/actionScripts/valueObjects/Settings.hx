@@ -33,9 +33,9 @@
 
 package actionScripts.valueObjects;
 
-import flash.sensors.Accelerometer;
-import flash.system.Capabilities;
-import flash.desktop.Clipboard;
+import openfl.sensors.Accelerometer;
+import openfl.system.Capabilities;
+import openfl.desktop.Clipboard;
 
 class Settings {
 	@:noCompletion

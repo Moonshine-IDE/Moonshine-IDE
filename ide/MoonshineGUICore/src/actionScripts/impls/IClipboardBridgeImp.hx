@@ -34,8 +34,8 @@
 package actionScripts.impls;
 
 import actionScripts.interfaces.IClipboardBridge;
-import flash.desktop.Clipboard;
-import flash.desktop.ClipboardFormats;
+import openfl.desktop.Clipboard;
+import openfl.desktop.ClipboardFormats;
 
 class IClipboardBridgeImp implements IClipboardBridge {
 	public function new() {}

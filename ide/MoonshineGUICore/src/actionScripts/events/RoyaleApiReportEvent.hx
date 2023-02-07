@@ -33,7 +33,7 @@
 package actionScripts.events;
 
 import actionScripts.valueObjects.RoyaleApiReportVO;
-import flash.events.Event;
+import openfl.events.Event;
 
 class RoyaleApiReportEvent extends Event {
 	public static final LAUNCH_REPORT_CONFIGURATION:String = "launchReportConfiguration";

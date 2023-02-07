@@ -33,7 +33,7 @@
 
 package actionScripts.plugin.console;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class ConsoleEvent extends Event {
 	public static final SHOW_CONSOLE:String = "showConsole";
