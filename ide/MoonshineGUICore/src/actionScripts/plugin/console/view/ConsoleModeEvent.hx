@@ -33,7 +33,7 @@
 
 package actionScripts.plugin.console.view;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class ConsoleModeEvent extends Event {
 	public static final CHANGE:String = "consoleModeChange";

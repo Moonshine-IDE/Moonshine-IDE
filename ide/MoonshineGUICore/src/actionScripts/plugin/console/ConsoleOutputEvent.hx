@@ -32,7 +32,7 @@
 
 package actionScripts.plugin.console;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class ConsoleOutputEvent extends Event {
 	public static final CONSOLE_OUTPUT:String = "consoleOutput";

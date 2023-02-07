@@ -35,7 +35,7 @@ package actionScripts.events;
 
 import actionScripts.interfaces.ICustomCommandRunProvider;
 import actionScripts.plugin.build.vo.BuildActionVO;
-import flash.events.Event;
+import openfl.events.Event;
 
 class CustomCommandsEvent extends Event {
 	public static final OPEN_CUSTOM_COMMANDS_ON_SDK:String = "openCustomCommandsInterfaceForSDKtype";

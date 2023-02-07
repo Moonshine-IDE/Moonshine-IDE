@@ -33,7 +33,7 @@
 
 package actionScripts.events;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class ApplicationEvent extends Event {
 	public static final APPLICATION_EXIT:String = "applicationExit";

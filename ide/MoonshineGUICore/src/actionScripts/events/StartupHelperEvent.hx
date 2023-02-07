@@ -33,7 +33,7 @@
 
 package actionScripts.events;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class StartupHelperEvent extends Event {
 	public static final EVENT_TYPEAHEAD_REQUIRES_SDK:String = "EVENT_TYPEAHEAD_REQUIRES_SDK";
