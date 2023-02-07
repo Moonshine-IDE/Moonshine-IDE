@@ -33,7 +33,7 @@
 
 package actionScripts.plugin.core.compiler;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class JavaBuildEvent extends Event {
 	public static final BUILD_AND_RUN:String = "javaBuildAndRun";

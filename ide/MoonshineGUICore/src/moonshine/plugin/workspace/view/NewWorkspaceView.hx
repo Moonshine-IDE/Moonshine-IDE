@@ -35,7 +35,7 @@ package moonshine.plugin.workspace.view;
 import feathers.layout.HorizontalLayout;
 import feathers.controls.Label;
 import openfl.utils.Assets;
-import flash.display.Bitmap;
+import openfl.display.Bitmap;
 import feathers.controls.Button;
 import feathers.controls.LayoutGroup;
 import feathers.controls.PopUpListView;
