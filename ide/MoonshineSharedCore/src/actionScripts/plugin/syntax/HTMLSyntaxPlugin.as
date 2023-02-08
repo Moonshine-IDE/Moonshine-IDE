@@ -32,10 +32,7 @@
 package actionScripts.plugin.syntax
 {
 	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.plugin.IEditorPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 
@@ -51,7 +48,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.plugin.texteditor.events.TextEditorSettingsEvent;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	
-	public class HTMLSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
+	public class HTMLSyntaxPlugin extends PluginBase
 	{
 		private static const FILE_EXTENSION_HTML:String = "html";
 		private static const FILE_EXTENSION_HTM:String = "htm";
@@ -61,7 +58,6 @@ package actionScripts.plugin.syntax
 		override public function get name():String 			{return "HTML Syntax Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for HTML.";}
-		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 				
 		override public function activate():void
 		{ 

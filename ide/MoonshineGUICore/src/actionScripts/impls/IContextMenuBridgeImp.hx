@@ -35,7 +35,7 @@ package actionScripts.impls;
 
 import flash.display.NativeMenu;
 import flash.display.NativeMenuItem;
-import flash.events.Event;
+import openfl.events.Event;
 import flash.ui.ContextMenu;
 import mx.utils.ObjectUtil;
 import actionScripts.interfaces.IContextMenuBridge;

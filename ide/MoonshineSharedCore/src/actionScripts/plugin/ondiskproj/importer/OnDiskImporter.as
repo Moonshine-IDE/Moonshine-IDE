@@ -172,6 +172,8 @@ package actionScripts.plugin.ondiskproj.importer
 			project.visualEditorSourceFolder = new FileLocation(
                         project.folderLocation.fileBridge.nativePath + project.folderLocation.fileBridge.separator + "visualeditor-src/main/webapp"
                 );
+			
+			UtilsCore.setProjectMenuType(project);
 
 			return project;
 		}

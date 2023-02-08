@@ -137,10 +137,14 @@ package actionScripts.impls
 				}
 				else
 				{
-					var schemeIndex:int = manager.uriSchemes.indexOf(scheme);
-					if(schemeIndex != -1)
+					var uriSchemes:Vector.<String> = manager.uriSchemes;
+					if (uriSchemes)
 					{
-						return true;
+						var schemeIndex:int = uriSchemes.indexOf(scheme);
+						if(schemeIndex != -1)
+						{
+							return true;
+						}
 					}
 				}
 			}
@@ -186,10 +190,14 @@ package actionScripts.impls
 				}
 				else
 				{
-					var schemeIndex:int = manager.uriSchemes.indexOf(scheme);
-					if(schemeIndex != -1)
+					var uriSchemes:Vector.<String> = manager.uriSchemes;
+					if (uriSchemes)
 					{
-						return manager.createTextEditorForUri(uri, readOnly);
+						var schemeIndex:int = uriSchemes.indexOf(scheme);
+						if(schemeIndex != -1)
+						{
+							return manager.createTextEditorForUri(uri, readOnly);
+						}
 					}
 				}
 			}

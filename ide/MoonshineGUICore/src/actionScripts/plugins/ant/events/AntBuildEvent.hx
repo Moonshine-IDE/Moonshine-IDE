@@ -33,7 +33,7 @@
 package actionScripts.plugins.ant.events;
 
 import actionScripts.factory.FileLocation;
-import flash.events.Event;
+import openfl.events.Event;
 
 class AntBuildEvent extends Event {
 	public static final ANT_BUILD:String = "ANT_BUILD";

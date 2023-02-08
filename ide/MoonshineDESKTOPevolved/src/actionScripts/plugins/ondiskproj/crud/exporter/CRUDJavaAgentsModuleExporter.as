@@ -79,6 +79,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			completionCount = 0;
 
 			moduleCopyTargets.set(originPath.resolvePath("project/src/main/java"), targetPath.resolvePath("src/main/java"));
+			moduleCopyTargets.set(originPath.resolvePath("project/src/main/generated"), targetPath.resolvePath("src/main/generated"));
 			moduleCopyTargets.set(originPath.resolvePath("project/docs"), targetPath.resolvePath("docs"));
 			moduleCopyTargets.set(originPath.resolvePath("project/agentProperties/agentbuild"), targetPath.resolvePath("agentProperties/agentbuild"));
 

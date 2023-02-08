@@ -32,7 +32,7 @@
 
 package actionScripts.controllers;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 import actionScripts.events.AddTabEvent;
 import actionScripts.locator.IDEModel;

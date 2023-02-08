@@ -37,7 +37,7 @@ import moonshine.plugin.search.events.SearchViewEvent;
 import feathers.controls.Callout;
 import moonshine.components.events.FileTypesCalloutEvent;
 import moonshine.components.FileTypesCallout;
-import flash.ui.Keyboard;
+import openfl.ui.Keyboard;
 import feathers.layout.AnchorLayoutData;
 import actionScripts.valueObjects.ProjectVO;
 import feathers.data.ArrayCollection;

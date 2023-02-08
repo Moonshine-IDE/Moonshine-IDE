@@ -32,7 +32,6 @@
 package actionScripts.plugin.syntax
 {
     import actionScripts.events.EditorPluginEvent;
-    import actionScripts.plugin.IEditorPlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.Settings;
@@ -49,7 +48,7 @@ package actionScripts.plugin.syntax
     import actionScripts.plugin.texteditor.events.TextEditorSettingsEvent;
     import actionScripts.plugin.texteditor.TextEditorPlugin;
 	
-	public class PythonSyntaxPlugin extends PluginBase implements IEditorPlugin
+	public class PythonSyntaxPlugin extends PluginBase
 	{
 		private static const FILE_EXTENSION_PY:String = "py";
 

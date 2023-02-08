@@ -32,10 +32,7 @@
 package actionScripts.plugin.syntax
 {
 	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.plugin.IEditorPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 
@@ -51,7 +48,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	
-	public class XMLSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
+	public class XMLSyntaxPlugin extends PluginBase
 	{
 		private static const FILE_EXTENSION_XML:String = "xml";
 		private static const FILE_EXTENSION_AS3PROJ:String = "as3proj";
@@ -63,7 +60,6 @@ package actionScripts.plugin.syntax
 		override public function get name():String 			{return "XML Syntax Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for XML.";}
-		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 				
 		override public function activate():void
 		{ 

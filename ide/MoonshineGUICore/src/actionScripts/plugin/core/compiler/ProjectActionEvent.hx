@@ -32,7 +32,7 @@
 
 package actionScripts.plugin.core.compiler;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class ProjectActionEvent extends Event {
 	public static final BUILD_DEBUG:String = "projectBuildDebug";

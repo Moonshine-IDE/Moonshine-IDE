@@ -32,10 +32,7 @@
 package actionScripts.plugin.syntax
 {
 	import actionScripts.events.EditorPluginEvent;
-	import actionScripts.plugin.IEditorPlugin;
 	import actionScripts.plugin.PluginBase;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.Settings;
 
@@ -51,7 +48,7 @@ package actionScripts.plugin.syntax
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	import actionScripts.ui.editor.BasicTextEditor;
 	
-	public class JSSyntaxPlugin extends PluginBase implements  ISettingsProvider, IEditorPlugin
+	public class JSSyntaxPlugin extends PluginBase
 	{
 		private static const FILE_EXTENSION_JS:String = "js";
 		private static const FILE_EXTENSION_JSON:String = "json";
@@ -59,7 +56,6 @@ package actionScripts.plugin.syntax
 		override public function get name():String 			{return "JS Syntax Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides highlighting for JS.";}
-		public function getSettingsList():Vector.<ISetting>		{return new Vector.<ISetting>();}
 				
 		override public function activate():void
 		{ 
