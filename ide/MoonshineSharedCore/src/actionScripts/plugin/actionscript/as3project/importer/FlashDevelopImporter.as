@@ -443,6 +443,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 								
 								//convert to dxl
 								var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
+							
 								
 								//fix the div node from the domino code 
 								for each(var div:XML in dominoCode..div) //no matter of depth Note here
@@ -712,7 +713,17 @@ package actionScripts.plugin.actionscript.as3project.importer
 									targetFileLocation.fileBridge.deleteFile();
 								}
 								dominoXml=DominoUtils.fixNewTab(dominoXml);
-								targetFileLocation.fileBridge.save(dominoXml.toXMLString());
+								var dominoCodeXmlStr:String=DominoUtils.fixDominButton(dominoCode);
+								
+								try{
+									dominoCode=new XML(dominoCodeXmlStr);
+								}catch(error:Error){
+									Alert.show("Error #"+ error.errorID +": "+ error.message);	
+									Alert.show("file :"+ xmlNavePath);	
+									Alert.show("xml :"+ dominoCodeXmlStr);	
+									
+								}
+								targetFileLocation.fileBridge.save(dominoCodeXmlStr);
 								// var _targetfileStreamMoonshine:FileStream = new FileStream();
 								// _targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
 								// _targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml.toXMLString()));
