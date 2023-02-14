@@ -713,8 +713,9 @@ package actionScripts.plugin.actionscript.as3project.importer
 									targetFileLocation.fileBridge.deleteFile();
 								}
 								dominoXml=DominoUtils.fixNewTab(dominoXml);
-								var dominoCodeXmlStr:String=DominoUtils.fixDominButton(dominoCode);
-								
+								//var dominoCodeXmlStr:String=DominoUtils.fixDominButton(dominoXml);
+								//fix </button<
+								var dominoCodeXmlStr:String=DominoUtils.fixNotCloseButton(dominoXml.toXMLString());
 								try{
 									dominoCode=new XML(dominoCodeXmlStr);
 								}catch(error:Error){
