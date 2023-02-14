@@ -194,59 +194,59 @@ package actionScripts.utils
 			}
 
 				
-				if(result.indexOf("<font")>=0){
-					var fontFont:Number = 0;
-					var result3:String="";
-					var splitsFont:Array = result.split("<font");
-					for each (var childFont:String in splitsFont ) {
-						
+			if(result.indexOf("<font")>=0){
+				var fontFont:Number = 0;
+				var result3:String="";
+				var splitsFont:Array = result.split("<font");
+				for each (var childFont:String in splitsFont ) {
 					
-						if(childFont.indexOf(">")>=0){
-							var fontString:String="";
-							var splitsFont2:Array = childFont.split(">");
-							var countFont:Number = 0;
-						
-							for each (var childFont2:String in splitsFont2 ) {
-								
-								if(countFont==1){
-									if(childFont2.substring(0,1)!="<"){
-										childFont2=childFont2.substring(1);
-									}
-								
-									var maxLen:int=24;
-									if(childFont2.length<maxLen){
-										maxLen=childFont2.length;
-									}
-									
-									for (var i:int=0; i<maxLen; i++) {
-									  if(childFont2.substring(0,1)==" "){
-										  childFont2=childFont2.substring(1);
-									  }	
-									}	
+				
+					if(childFont.indexOf(">")>=0){
+						var fontString:String="";
+						var splitsFont2:Array = childFont.split(">");
+						var countFont:Number = 0;
+					
+						for each (var childFont2:String in splitsFont2 ) {
+							
+							if(countFont==1){
+								if(childFont2.substring(0,1)!="<"){
+									childFont2=childFont2.substring(1);
+								}
+							
+								var maxLen:int=24;
+								if(childFont2.length<maxLen){
+									maxLen=childFont2.length;
 								}
 								
-								childFont2=childFont2+">";
-								
-								
-								fontString=fontString+childFont2;
-								countFont++;
+								for (var i:int=0; i<maxLen; i++) {
+									if(childFont2.substring(0,1)==" "){
+										childFont2=childFont2.substring(1);
+									}	
+								}	
 							}
 							
-							fontString=fontString.substring(0,fontString.length-1);
-							if(fontFont>0){
-								childFont="<font"+fontString;
-							}
+							childFont2=childFont2+">";
 							
 							
+							fontString=fontString+childFont2;
+							countFont++;
 						}
 						
-						fontFont++;
-				
-						result3=result3+childFont;
+						fontString=fontString.substring(0,fontString.length-1);
+						if(fontFont>0){
+							childFont="<font"+fontString;
+						}
+						
+						
 					}
-					result=result3;
-
+					
+					fontFont++;
+			
+					result3=result3+childFont;
 				}
+				result=result3;
+
+			}
 			 
 			 result = result.replace(tabpattern,"\t");
 			
@@ -286,6 +286,23 @@ package actionScripts.utils
 			result = result.replace(tabpattern,"\t");
 			
 			return result;
+		}
+
+		//fix </button< to </button><
+		public static function fixNotCloseButton(totalXml:String):String 
+		{	
+			var pattern:RegExp = /<button[\s\S]*?<\/button>/g; 
+			totalXml=totalXml.replace(pattern,removeNewLineFN);
+	
+			return totalXml;
+		}
+
+		private static function removeNewLineFN():String{
+			var rex:RegExp = /(\t|\n|\r)/gi;
+			
+			var str:String=arguments[0].replace(rex, '');
+			
+			return str;
 		}
 
 		public static function fixNewTab(xml:XML):XML
