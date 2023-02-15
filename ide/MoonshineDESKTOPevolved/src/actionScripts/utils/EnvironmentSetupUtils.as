@@ -362,10 +362,8 @@ package actionScripts.utils
 			{
 				setCommand += setPathCommand + "$PATH;";
 
-				// adds only if Haxe is available and installed in Moonshine custom location and Neko hasn't been linked yet
-				isNekoSymlinkGenerated = UtilsCore.isNekoLinked();
-				if (isHaxeAvailable && !isNekoSymlinkGenerated &&
-						model.haxePath.indexOf(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath) != -1)
+				// adds only if Haxe is available and installed in Moonshine custom location
+				if (isHaxeAvailable && model.haxePath.indexOf(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath) != -1)
 				{
 					setCommand += HelperConstants.HAXE_SYMLINK_COMMANDS.join(";") +";";
 					isNekoSymlinkGenerated = true;
