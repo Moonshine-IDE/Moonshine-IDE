@@ -2233,6 +2233,10 @@ package actionScripts.plugin.templating
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
+				//action name contain some specail character , so , we need base64 encode in here
+				var fileName:String =event.fileName;
+				fileName=fileName.replace( /\\/g, '%5C');
+				fileName=fileName.replace( /\//g, '%2F');
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".action");
 				
 				content=updateDominoActionTitleName(content,event.fileName);

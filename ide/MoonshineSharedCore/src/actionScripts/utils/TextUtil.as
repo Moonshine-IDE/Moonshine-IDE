@@ -181,5 +181,35 @@ package actionScripts.utils
 			return byteArray.readMultiByte(byteArray.length, charset);;
 		}
 
+		//some time the form name or view name contian some slash, it will break the path ,so we need fix with this function
+
+		public static function fixDominoName(sourceName:String):String
+		{
+			if(sourceName==null){
+				return "";
+			}
+			sourceName=stripAlias(sourceName);
+			sourceName=sourceName.replace(/>/g, "_3e");
+			sourceName=sourceName.replace(/\\\\/g, "_5c");
+			sourceName=sourceName.replace(/\\/g, "_2a");
+			sourceName=sourceName.replace(/\//g, "_2f");
+
+			return sourceName;
+
+		}
+
+		public static function stripAlias(fullName:String):String
+		{
+        	var aliasStartIndex:int = fullName.indexOf('|');
+			if (aliasStartIndex >= 0) {
+				// strip the alias
+				return  fullName.substring(0, aliasStartIndex);
+			}
+			else {
+				// no alias found
+				return fullName;
+			}
+    	}
+
 	}
 }

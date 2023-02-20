@@ -361,5 +361,20 @@ package actionScripts.utils
 			return byteArray.readMultiByte(byteArray.length, charset);;
 		}
 
+		public static function getDominActionDxlTemplate():String
+		{
+			var  dominlDxl:String="<?xml version='1.0' encoding='utf-8'?> \n";
+			dominlDxl=dominlDxl+"<!DOCTYPE database SYSTEM 'xmlschemas/domino_11_0_1.dtd'> \n";
+			dominlDxl=dominlDxl+"<database  version='11.0' maintenanceversion='1.0'";
+ 			dominlDxl=dominlDxl+"replicaid='862585A6006C3CED'  increasemaxfields='true' compressdesign='true'";
+ 			dominlDxl=dominlDxl+"compressdata='true'> \n";
+ 			dominlDxl=dominlDxl+"<sharedactions hide='v3 v4strict' designerversion='8.5.3' maxid='32'> \n";
+			dominlDxl=dominlDxl+"</sharedactions> \n";
+			dominlDxl=dominlDxl+"</database> \n";
+ 
+			return dominlDxl;
+
+		}
+
     }
 }

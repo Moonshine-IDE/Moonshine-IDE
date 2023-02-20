@@ -766,6 +766,47 @@ package actionScripts.plugin.actionscript.as3project.importer
 			if(newFileVisualTemplate.fileBridge.exists){
 				newFileVisualTemplate.fileBridge.deleteFile();
 			}
+
+			convertDominoAction(projectFolderLocation);
+		}
+
+		public static function convertDominoAction(projectFolderLocation:FileLocation):void
+		{
+			var separator:String= projectFolderLocation.fileBridge.separator;
+			var actionDxlFolderPath:String=projectFolderLocation.fileBridge.nativePath+separator+"nsfs"+separator+"nsf-moonshine"+separator+"odp"+separator+"Code"+separator+"actions";
+			var actionDxlFolderFileLocation:FileLocation=new FileLocation(actionDxlFolderPath);
+			if(!actionDxlFolderFileLocation.fileBridge.exists){
+				actionDxlFolderFileLocation.fileBridge.createDirectory();
+			} 
+			var actionDxlPath:String = actionDxlFolderFileLocation.fileBridge.nativePath+separator+"Shared Actions";
+			var actionDxl:FileLocation=new FileLocation(actionDxlPath); 
+			if(!actionDxl.fileBridge.exists){
+					actionDxl.fileBridge.save(DominoUtils.getDominActionDxlTemplate());
+			}
+			var actionString:String=String(actionDxl.fileBridge.read());
+			var	actionDxlCache:XML = new XML(actionString);
+
+			//
+
+			var sourecActionsFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+separator+"nsf-moonshine"+separator+"odp"+separator+"SharedElements"+separator+"Actions");
+
+			if(sourecActionsFileLocation.fileBridge.exists){
+				var actionDirectory:Array = sourecActionsFileLocation.fileBridge.getDirectoryListing();
+				if(actionDirectory){
+					
+					for each (var actionxml:File in actionDirectory)
+					{
+						var actionXmlNavePath:String = actionxml.nativePath;
+						var actionFileLocation:FileLocation=new FileLocation(actionXmlNavePath);
+						var actionSigleFileString:String=String(actionFileLocation.fileBridge.read());
+						var actionSigleXML:XML=new XML(actionSigleFileString);
+						actionDxlCache.sharedactions.appendChild(actionSigleXML);
+					}
+
+					actionDxl.fileBridge.save(actionDxlCache.toXMLString());
+				}
+			}		
+
 		}
 	}
 }
