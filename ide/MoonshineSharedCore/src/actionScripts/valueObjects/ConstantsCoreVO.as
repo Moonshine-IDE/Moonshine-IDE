@@ -91,6 +91,7 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_DOMINO_FORM: FileLocation;
 		public static var TEMPLATE_DOMINO_PAGE: FileLocation;
 		public static var TEMPLATE_DOMINO_SUBFORM: FileLocation;
+		public static var TEMPLATE_DOMINO_SHAREDFIELD: FileLocation;
 		public static var TEMPLATE_DOMINO_ACTION: FileLocation;
 		public static var TEMPLATE_TEXT: FileLocation;
 		public static var TEMPLATE_XML: FileLocation;
@@ -355,6 +356,13 @@ package actionScripts.valueObjects
 			TEMPLATE_DOMINO_SUBFORM.fileBridge.isDirectory = false;
 			TEMPLATE_DOMINO_SUBFORM.fileBridge.extension = "subform";
 			TEMPLATE_DOMINO_SUBFORM.fileBridge.data = "";
+
+			//FOR SHAREDFIELD
+			TEMPLATE_DOMINO_SHAREDFIELD= new FileLocation("TEMPLATE");
+			TEMPLATE_DOMINO_SHAREDFIELD.fileBridge.name = "Domino Visual Share Field.field";
+			TEMPLATE_DOMINO_SHAREDFIELD.fileBridge.isDirectory = false;
+			TEMPLATE_DOMINO_SHAREDFIELD.fileBridge.extension = "field";
+			TEMPLATE_DOMINO_SHAREDFIELD.fileBridge.data = "";
 
 			//TEMPLATE_DOMINO_ACTION
 			TEMPLATE_DOMINO_ACTION = new FileLocation("TEMPLATE");

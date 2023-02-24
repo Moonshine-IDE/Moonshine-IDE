@@ -1116,6 +1116,11 @@ package actionScripts.plugins.as3project
 				if(!project_subfromxmlFolder.fileBridge.exists){
 					project_subfromxmlFolder.fileBridge.createDirectory();
 				}
+
+				var project_sharefieldxmlFolder:FileLocation =  targetFolder.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"fields");
+				if(!project_sharefieldxmlFolder.fileBridge.exists){
+					project_sharefieldxmlFolder.fileBridge.createDirectory();
+				}
 				//remove not need simple fiel
 				var simple_view:FileLocation = targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator+"All By UNID"+File.separator+"All By UNID_5c%form%.view");
 				if(simple_view.fileBridge.exists){

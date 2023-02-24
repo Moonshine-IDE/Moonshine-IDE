@@ -426,9 +426,19 @@ package actionScripts.plugin.actionscript.as3project.importer
 							} else {
 								dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,windowsTitleName);
 							}
-							
 
-						
+							//first we insert the action bar if it exist
+							var xmlFileLocation:FileLocation= new FileLocation(xml.nativePath);
+							var xmlFileString:String=String(xmlFileLocation.fileBridge.read());
+							var	sourceXmlCache:XML = new XML(xmlFileString);
+
+							for each(var actionSource:XML in sourceXmlCache..actionbar) //no matter of depth Note here
+							{
+								var actionNode:XML=new XML("");
+								
+								dominoXml.appendChild(actionSource);
+							}
+
 							
 							var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
 							if(surfaceModel!=null){

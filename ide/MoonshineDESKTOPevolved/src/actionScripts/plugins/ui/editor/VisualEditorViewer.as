@@ -238,7 +238,7 @@ package actionScripts.plugins.ui.editor
 								//we should only let follow code with form&subfrom file.
 								//these code clean the old design element in the surface editor and inital it again,
 								//after user click the tab, it will loading latest xml into surface, this is why we get the duplication element .
-								if(fileLocation.fileBridge.extension=="form" || fileLocation.fileBridge.extension=="subform"){
+								if(fileLocation.fileBridge.extension=="form" || fileLocation.fileBridge.extension=="subform"|| fileLocation.fileBridge.extension=="field"){
 									var data:Object=fileLocation.fileBridge.read();
 									visualEditor.editingSurface.deleteAllByEditingSureface(visualEditor.editingSurface);
 									
@@ -486,7 +486,7 @@ package actionScripts.plugins.ui.editor
 			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){			
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 				mxmlString=DominoUtils.fixDominButton(mxmlCode);
-			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0 || file.fileBridge.nativePath.lastIndexOf(".subform")>=0){
+			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0 || file.fileBridge.nativePath.lastIndexOf(".subform")>=0|| file.fileBridge.nativePath.lastIndexOf(".field")>=0){
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 				mxmlString=DominoUtils.fixDominButton(mxmlCode);
 			} 
@@ -549,6 +549,9 @@ package actionScripts.plugins.ui.editor
 					filePath= visualEditorProjectSourcedPath+File.separator+"subforms"+File.separator+file.fileBridge.name;
 					filePath=filePath.replace(/.mxml$|.xhtml$|.subform$|.page$|.dve$/, ".xml");
 					
+				}if(filePath.indexOf(".field")>=0){
+					filePath= visualEditorProjectSourcedPath+File.separator+"fields"+File.separator+file.fileBridge.name;
+					filePath=filePath.replace(/.mxml$|.xhtml$|.subform$|.page$|.field$|.dve$/, ".xml");
 				}else{
 					filePath=filePath.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,visualEditorProjectSourcedPath).replace(/.mxml$|.xhtml$|.form$|.dve$|.subform$/, ".xml");	
 				}
