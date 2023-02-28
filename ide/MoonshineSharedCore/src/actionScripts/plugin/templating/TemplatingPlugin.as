@@ -2292,6 +2292,10 @@ package actionScripts.plugin.templating
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
+				
+				//replace page name 
+				content=content.replace(/\$Domino_Visual_Editor_Page/g,event.fileName);
+				
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".page");
 				fileToSave.fileBridge.save(content);
 
