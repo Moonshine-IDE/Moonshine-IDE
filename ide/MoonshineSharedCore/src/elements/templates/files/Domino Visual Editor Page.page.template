@@ -15,6 +15,9 @@
 <par def='1'/>
 <par def='1'/>
 </richtext></body>
+<item name="$WindowTitle">
+    <formula>Domino Visual Editor Page</formula>
+</item>
 <item name='$$ScriptName' summary='false' sign='true'><text>$Domino_Visual_Editor_Page</text></item>
 
 </page>
