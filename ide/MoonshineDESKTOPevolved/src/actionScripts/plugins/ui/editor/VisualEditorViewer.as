@@ -526,6 +526,13 @@ package actionScripts.plugins.ui.editor
 			}
 		}
 
+		public function reloadXmlFile(veFile:String):void
+		{
+			if(veFile!=null){
+				visualEditorView.visualEditor.loadFile(veFile);
+			}
+		}
+
 		private function getDominoFormFileName():String
 		{
 			var fullPath:String = getVisualEditorFilePath();

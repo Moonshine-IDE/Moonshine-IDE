@@ -151,6 +151,8 @@ package actionScripts.impls
 
 		}
 
+		
+
 		private function onNewFileAdded(event:TreeMenuItemEvent):void
 		{
 			// add resource only relative to the project

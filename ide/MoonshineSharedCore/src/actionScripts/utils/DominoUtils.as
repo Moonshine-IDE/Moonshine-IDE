@@ -336,7 +336,6 @@ package actionScripts.utils
 
 				sourceXml.fileBridge.save(sourceFormXML.toXMLString());
 
-			
 		}
 
 		public static function base64Encode(str:String, charset:String = "UTF-8"):String{
