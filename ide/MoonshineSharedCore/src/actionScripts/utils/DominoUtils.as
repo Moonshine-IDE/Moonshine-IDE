@@ -393,6 +393,12 @@ package actionScripts.utils
 
 		}
 
+		public static const AMPERSAND:String = "&amp;"
+		public static const APOSTROPHE:String = "&apos;"
+		public static const DBL_QUOTES:String = "&quot;"
+		public static const GT:String = "&gt;"
+		public static const LT:String = "&lt;"
+
 		public static function fixXmlSpecailCharacter(text:String):String
 		{
 			var amppattern:RegExp = /&/g;
