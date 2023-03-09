@@ -185,7 +185,7 @@ package actionScripts.plugins.ui.editor
 				super.updateChangeStatus();
 
 				//update domino action from dxl
-				updateDominoActionList(actionXml.@title,saveText);
+				//updateDominoActionList(actionXml.@title,saveText);
 				
 				// Tell the world we've changed
 				dispatcher.dispatchEvent(

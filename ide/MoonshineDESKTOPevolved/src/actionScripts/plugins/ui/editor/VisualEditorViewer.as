@@ -196,10 +196,10 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(EVENT_SWITCH_TAB_TO_CODE, switchTabToCodeHandler);
 
 			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+			visualEditorView.visualEditor.editingSurface.sharedFieldList=getDominoShareFieldList();
+		
 			if(visualEditorView.visualEditor.dominoActionOrganizer!=null){
 				visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
-				visualEditorView.visualEditor.dominoActionOrganizer.dominoSharedFieldList=getDominoShareFieldList();
-		
 			}
 		}
 
@@ -238,18 +238,25 @@ package actionScripts.plugins.ui.editor
 					var visualEditor:Object=  visualeEditorView.contentGroup.getElementAt(0) ;
 					if(visualEditor){
 						if( visualEditor.hasOwnProperty("visualEditorFilePath")){
-							var fileLocation:FileLocation=new FileLocation(visualEditor.visualEditorFilePath);
-							if(fileLocation.fileBridge.exists){
+							if(visualEditor.editingSurface!=null){
+								var visualEditorFileType:String = visualEditor.editingSurface.visualEditorFileType;
 								//we should only let follow code with form&subfrom file.
 								//these code clean the old design element in the surface editor and inital it again,
 								//after user click the tab, it will loading latest xml into surface, this is why we get the duplication element .
-								if(fileLocation.fileBridge.extension=="form" || fileLocation.fileBridge.extension=="subform"|| fileLocation.fileBridge.extension=="field"){
-									var data:Object=fileLocation.fileBridge.read();
+								//Alert.show("visualEditorFileType:"+visualEditorFileType);
+								if(visualEditorFileType=="form" || visualEditorFileType=="subform"|| visualEditorFileType=="field" || visualEditorFileType=="page"){
 									visualEditor.editingSurface.deleteAllByEditingSureface(visualEditor.editingSurface);
 									
 									var xml:XML = new XML("<mockup/>");
 									visualEditor.editingSurface.fromXMLByEditingSurface(xml,visualEditor.editingSurface);
+									//Alert.show("visualEditorFileType execute:"+visualEditorFileType);
 								}
+								
+							}
+							
+							var fileLocation:FileLocation=new FileLocation(visualEditor.visualEditorFilePath);
+							if(fileLocation.fileBridge.exists){
+								
 
 								
 							
@@ -466,8 +473,8 @@ package actionScripts.plugins.ui.editor
 				//when it swtich back the current view edtior , it need reload the sub from again
 				if(visualEditorView.visualEditor.editingSurface){
 					visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+					visualEditorView.visualEditor.editingSurface.sharedFieldList=getDominoShareFieldList();
 					visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
-					visualEditorView.visualEditor.dominoActionOrganizer.dominoSharedFieldList=getDominoShareFieldList();
 				}
 
 

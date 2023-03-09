@@ -39,6 +39,7 @@ package actionScripts.utils
 	import mx.utils.Base64Encoder;
     import mx.utils.Base64Decoder;
     import flash.utils.ByteArray;
+	import utils.StringHelperUtils;
     public class DominoUtils
 	{
 		
@@ -70,7 +71,7 @@ package actionScripts.utils
 						windowsTitle = windowsTitle.substring(separatorIndex + 1);
 					}
 					
-					xml_str=xml_str+"<item name='$WindowTitle' sign='true'><formula>@Text('"+windowsTitle+"')</formula></item>"
+					xml_str=xml_str+"<item name='$WindowTitle' sign='true'><formula>"+StringHelperUtils.fixXmlSpecailCharacter(windowsTitle)+"</formula></item>"
 				}
 				xml_str=xml_str+"<item name='$Info' sign='true'><rawitemdata type='1'>hhgBAIAAAAAAgAAAAQABAP///wAQAAAA</rawitemdata></item>"
 				xml_str=xml_str+"<item name='$Flags'><text/></item>"
@@ -313,7 +314,17 @@ package actionScripts.utils
 			xml =new XML(xmlstr);
 			return xml;
 		}
+		public static function dominoPageUpdateWithoutSave(newFileLocation:FileLocation,newFormName:String,souceFormName:String):void{
+			var newDxlXMLStr:String =String(newFileLocation.fileBridge.read());
+			
+			newDxlXMLStr=newDxlXMLStr.replace("name='"+souceFormName+"'","name='"+newFormName+"'");
+			newDxlXMLStr=newDxlXMLStr.replace("<text>"+souceFormName+"</text>","<text>"+newFormName+"</text>");
+			newDxlXMLStr=newDxlXMLStr.replace("<formula>\""+souceFormName+"\"</formula>","<formula>\""+newFormName+"\"</formula>");
+			
+			
+			newFileLocation.fileBridge.save(newDxlXMLStr);
 
+		}
 		public static function dominoWindowTitleUpdate(sourceXml:FileLocation,newFormName:String,souceFormName:String):void{
 		
 				
@@ -332,8 +343,15 @@ package actionScripts.utils
 				}
 				
 				windowsTitleName=base64Encode(windowsTitleName);
-				sourceFormXML.MainApplication.@windowsTitle=windowsTitleName;
+				var mainApplicationList:XMLList=sourceFormXML..MainApplication;
+				if(mainApplicationList.length()>0 && mainApplicationList.length()<2){
+					sourceFormXML.MainApplication.@windowsTitle=windowsTitleName;
 
+				} else if (mainApplicationList.length()>0&& mainApplicationList.length()>=2){
+					mainApplicationList[0].@windowsTitle=windowsTitleName;
+					delete mainApplicationList[1]
+				}
+				
 				sourceXml.fileBridge.save(sourceFormXML.toXMLString());
 
 		}
