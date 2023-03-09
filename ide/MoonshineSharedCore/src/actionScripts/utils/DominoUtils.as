@@ -39,7 +39,7 @@ package actionScripts.utils
 	import mx.utils.Base64Encoder;
     import mx.utils.Base64Decoder;
     import flash.utils.ByteArray;
-	import utils.StringHelperUtils;
+
     public class DominoUtils
 	{
 		
@@ -71,7 +71,7 @@ package actionScripts.utils
 						windowsTitle = windowsTitle.substring(separatorIndex + 1);
 					}
 					
-					xml_str=xml_str+"<item name='$WindowTitle' sign='true'><formula>"+StringHelperUtils.fixXmlSpecailCharacter(windowsTitle)+"</formula></item>"
+					xml_str=xml_str+"<item name='$WindowTitle' sign='true'><formula>"+fixXmlSpecailCharacter(windowsTitle)+"</formula></item>"
 				}
 				xml_str=xml_str+"<item name='$Info' sign='true'><rawitemdata type='1'>hhgBAIAAAAAAgAAAAQABAP///wAQAAAA</rawitemdata></item>"
 				xml_str=xml_str+"<item name='$Flags'><text/></item>"
@@ -390,6 +390,28 @@ package actionScripts.utils
 			dominlDxl=dominlDxl+"</database> \n";
  
 			return dominlDxl;
+
+		}
+
+		public static function fixXmlSpecailCharacter(text:String):String
+		{
+			var amppattern:RegExp = /&/g;
+			text = text.replace(amppattern, AMPERSAND);
+
+			var ltpattern:RegExp = /</g;
+			text = text.replace(ltpattern, LT);
+			var gtpattern:RegExp = />/g;
+			text = text.replace(gtpattern, GT);
+
+			var qtpattern:RegExp = /"/g;
+			text = text.replace(qtpattern, DBL_QUOTES);
+
+
+			var aposattern:RegExp = /'/g;
+			text = text.replace(aposattern, APOSTROPHE);
+
+			return text
+
 
 		}
 
