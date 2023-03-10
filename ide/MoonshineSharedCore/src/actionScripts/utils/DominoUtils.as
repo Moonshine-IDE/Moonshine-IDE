@@ -316,7 +316,7 @@ package actionScripts.utils
 		}
 		public static function dominoPageUpdateWithoutSave(newFileLocation:FileLocation,newFormName:String,souceFormName:String):void{
 			var newDxlXMLStr:String =String(newFileLocation.fileBridge.read());
-			
+			newDxlXMLStr=newDxlXMLStr.replace("name=\""+souceFormName+"\"","name=\""+newFormName+"\"");
 			newDxlXMLStr=newDxlXMLStr.replace("name='"+souceFormName+"'","name='"+newFormName+"'");
 			newDxlXMLStr=newDxlXMLStr.replace("<text>"+souceFormName+"</text>","<text>"+newFormName+"</text>");
 			newDxlXMLStr=newDxlXMLStr.replace("<formula>\""+souceFormName+"\"</formula>","<formula>\""+newFormName+"\"</formula>");

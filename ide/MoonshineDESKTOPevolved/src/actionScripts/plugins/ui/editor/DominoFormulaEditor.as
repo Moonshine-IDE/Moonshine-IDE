@@ -212,7 +212,7 @@ package actionScripts.plugins.ui.editor
 			var actionDxlPath:String = actionFolderPath.fileBridge.nativePath+separator+"Shared Actions";
 			var actionDxl:FileLocation=new FileLocation(actionDxlPath); 
 			if(!actionDxl.fileBridge.exists){
-					actionDxl.fileBridge.save(DominoUtils.getDominActionDxlTemplate());
+					//actionDxl.fileBridge.save(DominoUtils.getDominActionDxlTemplate());
 			}
 			var actionString:String=String(actionDxl.fileBridge.read());
 			var	actionDxlCache:XML = new XML(actionString);
