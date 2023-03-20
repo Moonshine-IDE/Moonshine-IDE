@@ -777,7 +777,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 				newFileVisualTemplate.fileBridge.deleteFile();
 			}
 
-			convertDominoAction(projectFolderLocation);
+			//convertDominoAction(projectFolderLocation);
 		}
 
 		public static function convertDominoAction(projectFolderLocation:FileLocation):void

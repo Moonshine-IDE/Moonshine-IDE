@@ -1,5 +1,19 @@
 <?xml version='1.0' encoding='utf-8'?>
-<sharedfield name='ToBeDeleted' xmlns='http://www.lotus.com/dxl' version='12.0'
- maintenanceversion='1.0' replicaid='8625892F006F76C6' designerversion='5'>
+<note class='sharedfield' xmlns='http://www.lotus.com/dxl' version='12.0'
+ maintenanceversion='1.0' replicaid='8625892F006F76C6'>
 
-</sharedfield>
+<item name='$HTMLCode' sign='true'>
+<rawitemdata type='1'>
+</rawitemdata></item>
+<item name='$TITLE'><text>Gateway_Address</text></item>
+<item name='$Info' sign='true'>
+<rawitemdata type='1'>
+hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
+</rawitemdata></item>
+<item name='$Flags'><text/></item>
+<item name='$DesignerVersion'><text>8.5.3</text></item>
+<item name='Gateway_Address' placeholder='true'>
+</item>
+<item name='$Fields'><text>Gateway_Address</text></item>
+<item name='$Body' summary='true' sign='true'><richtext>
+</richtext></item></note>

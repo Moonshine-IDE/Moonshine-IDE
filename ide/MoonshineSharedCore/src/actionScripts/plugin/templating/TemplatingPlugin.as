@@ -1509,12 +1509,14 @@ package actionScripts.plugin.templating
 				//only for fixed folder for domino form file
 			
 				
-			
-				var dominoShareFieldFolderStr:String=newDominoSharedFieldComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Fields";
-				var dominoShareFieldFolder:FileLocation=new FileLocation(dominoShareFieldFolderStr);
-				if(!dominoShareFieldFolder.fileBridge.exists){
-					dominoShareFieldFolder.fileBridge.createDirectory();
-				}
+				if(newDominoSharedFieldComponentPopup.wrapperBelongToProject==null){
+					Alert.show("Please select a project that you want create the shread field!");
+				}else{
+					var dominoShareFieldFolderStr:String=newDominoSharedFieldComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Fields";
+					var dominoShareFieldFolder:FileLocation=new FileLocation(dominoShareFieldFolderStr);
+					if(!dominoShareFieldFolder.fileBridge.exists){
+						dominoShareFieldFolder.fileBridge.createDirectory();
+					}
 				
 				if(dominoShareFieldFolder.fileBridge.exists){
 					//set the tree selct to domino form folder
@@ -1543,9 +1545,11 @@ package actionScripts.plugin.templating
 					newDominoSharedFieldComponentPopup.wrapperOfFolderLocation = dominoShareFieldFolderWrapper;
 					newDominoSharedFieldComponentPopup.folderLocation =dominoShareFieldFolder;
 					PopUpManager.centerPopUp(newDominoSharedFieldComponentPopup);
-				}else{
-					Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
+					}else{
+						Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
+					}
 				}
+				
 				
 			}
 		}

@@ -273,7 +273,7 @@ package actionScripts.plugins.ui.editor
 			if(visualEditorView.visualEditor.editingSurface){
 				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 				visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
-				visualEditorView.visualEditor.dominoActionOrganizer.dominoSharedFieldList=getDominoShareFieldList();
+				visualEditorView.visualEditor.editingSurface.sharedFieldList=getDominoShareFieldList();
 			}
 
 		}
