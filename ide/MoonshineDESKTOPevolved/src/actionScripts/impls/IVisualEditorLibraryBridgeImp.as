@@ -55,6 +55,8 @@ package actionScripts.impls
 	import actionScripts.plugin.templating.TemplatingPlugin;
 
 	import mx.collections.ArrayList;
+	import flash.events.Event;
+
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
 	{
 		public var visualEditorProject:ProjectVO;
@@ -132,6 +134,16 @@ package actionScripts.impls
 
             templaetPulgin.openDominoActionComponentTypeChoose(event);
         }
+
+		//Copy& Past from Visual editor need update the status for it;
+
+		public function updateCurrentVisualEditorStatus():void{
+			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if(editor!=null){
+				editor.editorView.visualEditor.editingSurface.hasChanged=true;
+				editor.editorView.visualEditor.dispatchEvent(new Event('labelChanged'));
+			}
+		}
 
 		//getDominoActionList
 
