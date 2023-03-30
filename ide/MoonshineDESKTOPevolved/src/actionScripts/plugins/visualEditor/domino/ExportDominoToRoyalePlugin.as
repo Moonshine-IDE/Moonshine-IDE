@@ -133,13 +133,28 @@ package actionScripts.plugins.visualEditor.domino
         {
             var separator:String = destination.file.fileBridge.separator;
             var visualEditorSrcPath:String = "visualeditor-src" + separator + "main" + separator + "webapp";
+            var visualEditorSubFormsSrcPath:String = visualEditorSrcPath + separator + "subforms";
+
             var visualEditorSrcFolder:FileLocation = destination.file.resolvePath(visualEditorSrcPath);
+            var visualEditorSubFormsSrcFolder:FileLocation = destination.file.resolvePath(visualEditorSubFormsSrcPath);
 
-            var veSrcFiles:Array = visualEditorSrcFolder.fileBridge.getDirectoryListing();
+            var veSrcFormsFiles:Array = visualEditorSrcFolder.fileBridge.getDirectoryListing();
+            var veSrcSubFormsFiles:Array = [];
 
-            return veSrcFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+            if (visualEditorSubFormsSrcFolder.fileBridge.exists)
+            {
+                veSrcSubFormsFiles = visualEditorSubFormsSrcFolder.fileBridge.getDirectoryListing();
+            }
+
+            var veFormFiles:Array = veSrcFormsFiles.filter(function(item:Object, index:int, array:Array):Boolean {
                 return item.extension == "xml";
             });
+
+            var veSubFormsFiles:Array = veSrcSubFormsFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                return item.extension == "xml";
+            });
+
+            return veFormFiles.concat(veSubFormsFiles);
         }
 
         private function getXmlConversion(file:FileLocation):XML
@@ -224,10 +239,10 @@ package actionScripts.plugins.visualEditor.domino
                 var contentData:Object = {};
                 contentData["$ProjectName"] = exportedProject.name;
 
+                XML.ignoreWhitespace = true;
                 var royaleMXMLContentFileString:String = royaleMXMLContentFile.toXMLString();
                 royaleMXMLContentFileString = TemplatingHelper.replace(royaleMXMLContentFileString, contentData);
 
-                XML.ignoreWhitespace = false;
                 item.pageContent = new XML(royaleMXMLContentFileString);
 
                 views.push(viewObj);
