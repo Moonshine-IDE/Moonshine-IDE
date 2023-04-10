@@ -85,6 +85,7 @@ package actionScripts.plugins.visualEditor.domino
 					tmpFormObject.formName = nameWithoutExt;
 					tmpFormObject.viewName = "All By UNID/CRUD/" + nameWithoutExt;
 					tmpFormObject.pageContent = this.components[i].pageContent;
+					tmpFormObject.isSubForm = this.components[i].isSubForm;
 
 					parseComponents(componentData, tmpFormObject);
 					formObjects.push(tmpFormObject);
@@ -101,19 +102,32 @@ package actionScripts.plugins.visualEditor.domino
 
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.templatingData["$moduleName"] = moduleName;
-			th.templatingData["$packagePath"] = project.name + ".views.modules."+ moduleName +"."+ moduleName +"Services";
+			th.templatingData["$packagePath"] = project.name + ".views.modules." + moduleName + "." + moduleName + "Services";
+
 			th.templatingData["$ProjectName"] = project.name;
 
-			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath);
+			var excludeFiles:Array = [];
+			if (form.isSubForm)
+			{
+				excludeFiles.push("$moduleNameServices");
+				excludeFiles.push("$moduleNameVO");
+			}
+
+			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath, excludeFiles);
 		}
 
 		override protected function generateModuleClasses():void
 		{
 			for each (var form:DominoFormVO in formObjects)
 			{
-				waitingCount += 3;
-				new DominoVOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
-				new DominoProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				if (!form.isSubForm)
+				{
+					waitingCount += 2;
+					new DominoVOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+					new DominoProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				}
+
+				waitingCount += 1;
 				new DominoPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 			}
 		}

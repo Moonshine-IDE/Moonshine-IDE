@@ -187,12 +187,12 @@ package actionScripts.plugins.visualEditor.domino
             if (conversionCounter == 0)
             {
                 var convertedFilesForms:Array = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
-                    return item.isSubForm == false;
+                    return !item.isSubForm;
                 });
                 var formsViews:Array = createConvertedFiles(convertedFilesForms, false);
 
                 convertedFilesForms = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
-                    return item.isSubForm == true;
+                    return item.isSubForm;
                 });
                 var subFormsViews:Array = createConvertedFiles(convertedFilesForms, true);
 
@@ -222,6 +222,7 @@ package actionScripts.plugins.visualEditor.domino
          * Create an array to display converted files in main view of app
          *
          * @param convertedFiles
+         * @param subForms
          * @return Array
          */
         private function createConvertedFiles(convertedFiles:Array, subForms:Boolean):Array
