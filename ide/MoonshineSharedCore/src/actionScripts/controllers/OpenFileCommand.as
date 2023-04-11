@@ -291,8 +291,9 @@ package actionScripts.controllers
 				}
 				else if (extension == "action"){
 					openDominoActionFile(project, fileData);
-				}
-				else
+				}else if (extension == "java"){
+					openDominoJavaAgentFile(project, fileData);
+				}else
 				{
 					//try to open dve with domino visual editor.
 					 /*if ((project is OnDiskProjectVO) && (extension == "dve"))
@@ -513,6 +514,50 @@ package actionScripts.controllers
 			ged.dispatchEvent(
 				new AddTabEvent(editor)
 			);
+
+		}
+
+
+		private function openDominoJavaAgentFile(project:ProjectVO, value:Object):void
+		{
+			Alert.show("openDominoJavaAgentFile");
+			var editor:BasicTextEditor = model.flexCore.getDominoJavaAgentEditor();
+			var extension:String = file.fileBridge.extension;
+			if (!project)
+			{
+				project = model.activeProject;
+			}
+
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
+
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			ged.dispatchEvent(editorEvent);
+			
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
+			if (!ConstantsCoreVO.IS_AIR)
+			{
+				var rawData:String = String(value);
+				var jsonObj:Object = JSON.parse(rawData);
+				editor.open(file, jsonObj.text);
+			}
+			else
+			{
+				editor.open(file, value);
+			}
+			
+			if (atLine > -1)
+			{
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
+			}
+
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+
 
 		}
 

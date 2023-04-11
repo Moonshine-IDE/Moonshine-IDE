@@ -357,6 +357,10 @@ package actionScripts.impls
 			return null;
 		}
 
+		public function getDominoJavaAgentEditor():BasicTextEditor
+		{
+			return null;
+		}
 
 		public function getNewAntBuild():IFlexDisplayObject
 		{

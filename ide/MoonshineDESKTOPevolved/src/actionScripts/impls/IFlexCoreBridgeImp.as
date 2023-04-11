@@ -174,6 +174,7 @@ import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
 	
 	import actionScripts.plugins.ui.editor.DominoFormulaEditor;
+	import actionScripts.plugins.ui.editor.DominoJavaAgentEditor;
   
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
@@ -219,6 +220,11 @@ import actionScripts.valueObjects.HelperConstants;
 		public function getDominoActionEditor():BasicTextEditor
 		{
 			return (new DominoFormulaEditor());
+		}
+
+		public function getDominoJavaAgentEditor():BasicTextEditor
+		{
+			return (new DominoJavaAgentEditor());
 		}
 		
 		public function getCorePlugins():Array
