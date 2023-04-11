@@ -48,7 +48,8 @@ package actionScripts.plugins.visualEditor.domino
 
 		public function DominoPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
 		{
-			_pageRelativePathString = project.name + "/views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +".mxml";
+			this.project = project;
+			this.setPagePath(form);
 			pageImportReferences = new <PageImportReferenceVO>[
 				new PageImportReferenceVO(form.formName +"Proxy", "as"),
 				new PageImportReferenceVO(form.formName +"VO", "as")
@@ -121,6 +122,18 @@ package actionScripts.plugins.visualEditor.domino
 			}
 
 			return columns.length > 0 ? "[" + columns.join(",") + "]" : "[]";
+		}
+
+		private function setPagePath(form:DominoFormVO):void
+		{
+			if (form.isSubForm)
+			{
+				_pageRelativePathString = project.name + "/views/modules/subforms/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +".mxml";
+			}
+			else
+			{
+				_pageRelativePathString = project.name + "/views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +".mxml";
+			}
 		}
 	}
 }

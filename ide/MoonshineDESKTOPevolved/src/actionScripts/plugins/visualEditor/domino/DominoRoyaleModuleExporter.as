@@ -102,15 +102,18 @@ package actionScripts.plugins.visualEditor.domino
 
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.templatingData["$moduleName"] = moduleName;
+			th.templatingData["$subforms"] = moduleName;
 			th.templatingData["$packagePath"] = project.name + ".views.modules." + moduleName + "." + moduleName + "Services";
 
 			th.templatingData["$ProjectName"] = project.name;
 
-			var excludeFiles:Array = [];
+			var excludeFiles:Array = ["$subformsViews"];
 			if (form.isSubForm)
 			{
+				excludeFiles = [];
 				excludeFiles.push("$moduleNameServices");
 				excludeFiles.push("$moduleNameVO");
+				excludeFiles.push("$moduleNameViews");
 			}
 
 			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath, excludeFiles);
