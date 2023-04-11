@@ -262,6 +262,10 @@ package actionScripts.plugins.visualEditor.domino
                 convertedFiles[i].file = convertedFile;
 
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
+                if (!item.isSubForm)
+                {
+                    royaleMXMLContentFile.children()[0].@includeIn = "contentState";
+                }
 
                 var contentData:Object = {};
                 contentData["$ProjectName"] = exportedProject.name;
