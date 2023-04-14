@@ -93,6 +93,7 @@ package actionScripts.plugins.visualEditor.domino
 
             var convertedFiles:Array = [];
 
+            //Convert forms and subforms
             convertToRoyale(visualEditorFiles, convertedFiles, conversionFinishedCallback);
         }
 
@@ -100,7 +101,8 @@ package actionScripts.plugins.visualEditor.domino
         {
             for (var i:int = 0; i < visualEditorFiles.length; i++)
             {
-                var veFile:FileLocation = new FileLocation(visualEditorFiles[i].nativePath);
+                var veFilePath:String = visualEditorFiles[i].file.nativePath;
+                var veFile:FileLocation = new FileLocation(veFilePath);
                 if (!veFile.fileBridge.isDirectory &&
                     veFile.fileBridge.extension == "xml")
                 {
@@ -109,7 +111,7 @@ package actionScripts.plugins.visualEditor.domino
 
                     DominoConverter.fromXML(surfaceMockup, Lookup.DominoNonUILookup,  dominoXML);
 
-                    convertedFiles.push({surface: surfaceMockup, file: veFile});
+                    convertedFiles.push({surface: surfaceMockup, file: veFile, isSubForm: visualEditorFiles[i].isSubForm});
 
                     finishCallback(convertedFiles);
                 }
@@ -133,13 +135,42 @@ package actionScripts.plugins.visualEditor.domino
         {
             var separator:String = destination.file.fileBridge.separator;
             var visualEditorSrcPath:String = "visualeditor-src" + separator + "main" + separator + "webapp";
+            var visualEditorSubFormsSrcPath:String = visualEditorSrcPath + separator + "subforms";
+
             var visualEditorSrcFolder:FileLocation = destination.file.resolvePath(visualEditorSrcPath);
+            var visualEditorSubFormsSrcFolder:FileLocation = destination.file.resolvePath(visualEditorSubFormsSrcPath);
 
-            var veSrcFiles:Array = visualEditorSrcFolder.fileBridge.getDirectoryListing();
+            var veSrcFormsFiles:Array = visualEditorSrcFolder.fileBridge.getDirectoryListing();
 
-            return veSrcFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+            var veSrcSubFormsFiles:Array = [];
+            if (visualEditorSubFormsSrcFolder.fileBridge.exists)
+            {
+                veSrcSubFormsFiles = visualEditorSubFormsSrcFolder.fileBridge.getDirectoryListing();
+            }
+
+            var formFiles:Array = [];
+            var veFormFiles:Array = veSrcFormsFiles.filter(function(item:Object, index:int, array:Array):Boolean {
                 return item.extension == "xml";
             });
+
+            var formFile:Object = null;
+            for (var i:int = 0; i < veFormFiles.length; i++)
+            {
+                formFile = veFormFiles[i];
+                formFiles.push({file: formFile, isSubForm: false});
+            }
+
+            var veSubFormsFiles:Array = veSrcSubFormsFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                return item.extension == "xml";
+            });
+
+            for (var j:int = 0; j < veSubFormsFiles.length; j++)
+            {
+                formFile = veSubFormsFiles[j];
+                formFiles.push({file: formFile, isSubForm: true});
+            }
+
+            return formFiles;
         }
 
         private function getXmlConversion(file:FileLocation):XML
@@ -155,9 +186,19 @@ package actionScripts.plugins.visualEditor.domino
             conversionCounter--;
             if (conversionCounter == 0)
             {
-                var views:Array = createConvertedFiles(convertedFiles);
+                var convertedFilesForms:Array = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                    return !item.isSubForm;
+                });
+                var formsViews:Array = createConvertedFiles(convertedFilesForms, false);
 
-                saveMainFileWithViews(views);
+                convertedFilesForms = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                    return item.isSubForm;
+                });
+                var subFormsViews:Array = createConvertedFiles(convertedFilesForms, true);
+
+                var formsAndSubForms:Array = formsViews.concat(subFormsViews);
+
+                saveMainFileWithViews(formsAndSubForms);
             }
         }
 
@@ -181,9 +222,10 @@ package actionScripts.plugins.visualEditor.domino
          * Create an array to display converted files in main view of app
          *
          * @param convertedFiles
+         * @param subForms
          * @return Array
          */
-        private function createConvertedFiles(convertedFiles:Array):Array
+        private function createConvertedFiles(convertedFiles:Array, subForms:Boolean):Array
         {
             var views:Array = [];
             var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath(exportedProject.name +
@@ -220,21 +262,27 @@ package actionScripts.plugins.visualEditor.domino
                 convertedFiles[i].file = convertedFile;
 
                 var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
+                if (!item.isSubForm)
+                {
+                    royaleMXMLContentFile.children()[0].@includeIn = "contentState";
+                }
 
                 var contentData:Object = {};
                 contentData["$ProjectName"] = exportedProject.name;
 
+                XML.ignoreWhitespace = true;
                 var royaleMXMLContentFileString:String = royaleMXMLContentFile.toXMLString();
                 royaleMXMLContentFileString = TemplatingHelper.replace(royaleMXMLContentFileString, contentData);
 
-                XML.ignoreWhitespace = false;
                 item.pageContent = new XML(royaleMXMLContentFileString);
 
                 views.push(viewObj);
             }
 
+            var modulesPath:FileLocation = subForms ? viewFolder.resolvePath("modules" + exportedProject.sourceFolder.fileBridge.separator + "subforms") :
+                                                      viewFolder.resolvePath("modules");
             new DominoRoyaleModuleExporter(
-                    viewFolder.resolvePath("modules"),
+                     modulesPath,
                     exportedProject as ProjectVO, convertedFiles
             );
 
