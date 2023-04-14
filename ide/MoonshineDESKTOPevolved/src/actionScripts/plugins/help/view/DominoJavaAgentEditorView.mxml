@@ -59,12 +59,25 @@
                     <s:HGroup width="100%" verticalAlign="middle">
                 
                     <s:Label text="Title" width="50" direction="rtl"/>
-                    <s:Label text="" width="50" id="textInput" direction="rtl"/>
-                   
-                    <!-- <s:TextInput id="textInput"
+                    
+                    <s:TextInput id="textInput"
                                 text=""  width="100" maxChars="100" 
                                 enter="textInput_changeHandler(event)" focusOut="textInput_changeHandler(event)" skinClass="skins.TextInputSkin" prompt="This is title for the action"/>
-                         -->
+                        
+                    
+                    </s:HGroup>
+                </s:FormItem>
+
+
+                 <s:FormItem  skinClass="skins.FormItemSkin" width="100%">
+                    <s:HGroup width="100%" verticalAlign="middle">
+                
+                    <s:Label text="Java Main Class" width="50" direction="rtl"/>
+                    
+                    <s:TextInput id="mainClass"
+                                text=""  width="100" maxChars="100" 
+                                enter="textInput_changeHandler(event)" focusOut="textInput_changeHandler(event)" skinClass="skins.TextInputSkin" prompt="This is title for the action"/>
+                        
                     
                     </s:HGroup>
                 </s:FormItem>
@@ -90,8 +103,24 @@
 
              <s:FormItem label="Enabled" skinClass="skins.FormItemSkin">
             <s:CheckBox id="agentenabled"
-                    selected="{showinbar}"
+                    selected="{agentEnabled}"
                     change="check_changeHandler(event)"/>
+            </s:FormItem>
+
+
+            <s:FormItem label="Allow remote debugging" skinClass="skins.FormItemSkin">
+            <s:CheckBox id="allowremotedebuggingBox"
+                    selected="{agentEnabled}"
+                    change="check_changeHandler(event)"/>
+            </s:FormItem>
+
+            <s:FormItem label="Trigger type" skinClass="skins.FormItemSkin">
+            </s:FormItem>
+
+            <s:FormItem label="Documentset type" skinClass="skins.FormItemSkin">
+            </s:FormItem>
+
+            <s:FormItem label="Code event" skinClass="skins.FormItemSkin">
             </s:FormItem>
 
         </s:VGroup>   
@@ -108,11 +137,23 @@
     import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.locator.IDEModel;
 
+    
+
     private var _codeEditor:IVisualElement;
 
-    private var showinmenu:Boolean ;
-    private var showinbar:Boolean ;
-    private var actionTitle:String="";
+    private var agentEnabled:Boolean ;
+    private var runAsWebUser:Boolean ;
+    private var allowremotedebugging:Boolean ;
+    private var publicaccess:Boolean ;
+    private var storehighlights:Boolean;
+    private var clientbackgroundthread:Boolean ;
+
+    private var triggerType:String="actionsmenu";
+    private var documentsetType:String="runonce";
+    private var codeEvent:String="action";
+
+
+    private var actionTitle:String="JavaAgent";
 
     private var model:IDEModel = IDEModel.getInstance();
     private var editor:DominoJavaAgentEditor = null;
@@ -142,8 +183,14 @@
 
         if(editor!=null){
             if(event.target){
-                if(event.target.hasOwnProperty("text")){
-                     //editor.updateTitle(event.target.text);
+                if(event.target.id="textInput"){
+                    if(event.target.hasOwnProperty("text")){
+                        editor.updateTitle(event.target.text);
+                    }
+                }
+
+                if(event.target.id="mainClass"){
+                     editor.updateMainClass(event.target.text);
                 }
             }
         }
@@ -154,7 +201,20 @@
 
          if(editor!=null){
              if(event.target){
-               
+               if(event.target.id=="runaswebuser"){
+                    if(event.target.selected){
+                        editor.updateRunAsWebUser("true");
+                    }else{
+                        editor.updateRunAsWebUser("false");
+                    }
+                }
+                if(event.target.id=="agentenabled"){
+                    if(event.target.selected){
+                        editor.updateEnabled("true");
+                    }else{
+                        editor.updateEnabled("false");
+                    }
+                }
                
             }
          }

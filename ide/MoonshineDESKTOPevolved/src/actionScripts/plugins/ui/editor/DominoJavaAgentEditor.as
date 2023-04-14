@@ -62,16 +62,17 @@ package actionScripts.plugins.ui.editor
 	public class DominoJavaAgentEditor extends BasicTextEditor
 	{
 
-		private var actionTitle:String = "";
-		private var actionShowInMenu:String = "false";
-		private var actionShowInBar:String = "false";
+		private var agentTitle:String = "";
+		private var agentEnabled:String = "false";
+		private var agentRunAsWebUser:String = "false";
 
 		private var actionXmlCache:XML=null;
 
 		private var dominoJavaAgentEditorView:DominoJavaAgentEditorView;
     
-
-		
+		private var javaMainClass:String = "";
+		//<!ENTITY % agent.trigger.types "actionsmenu | agentlist | beforenewmail | afternewmail | docupdate | docpaste | scheduled | serverstart ">
+		private var triggerType:String = "actionsmenu";
 
         public function DominoJavaAgentEditor()
 		{
@@ -105,7 +106,7 @@ package actionScripts.plugins.ui.editor
 
 		 override protected function createChildren():void
 		{
-			//addElement(dominoActionVisualEditorView);
+			addElement(dominoJavaAgentEditorView);
 			
 			super.createChildren();
 		}
@@ -130,6 +131,30 @@ package actionScripts.plugins.ui.editor
 				dispatcher.dispatchEvent(
 					new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this)
 				);
+
+				//save the java source to target dxl
+
+				var agentXML:XML=DominoUtils.generateDominoAgentDomDocument();
+				agentXML.database.agent.@name=agentTitle;
+				agentXML.database.agent.@runaswebuser="false";
+				agentXML.database.agent.@clientbackgroundthread="false";
+				agentXML.database.agent.@allowremotedebugging="false";
+				agentXML.database.agent.@storehighlights="false";
+				agentXML.database.agent.@publicaccess="false";
+
+				var triggerNode:XML=new XML("<trigger/>");
+				triggerNode.@type="actionsmenu";
+
+				var documentsetNode:XML=new XML("<documentset/>");
+				documentsetNode.@type="runonce";
+
+				var codeNode:XML=new XML("<code/>");
+				codeNode.@event="action";
+				var javaprojectNode:XML=new XML("<javaproject/>");
+				javaprojectNode.@class=javaMainClass;
+				javaprojectNode.@codepath="";
+				
+
 			}
             
             if (!ConstantsCoreVO.IS_AIR)
@@ -167,6 +192,44 @@ package actionScripts.plugins.ui.editor
 		{
 			_isChanged=value;
 
+		}
+
+		public function updateTitle(title:String):void
+		{
+			if(title!=agentTitle){
+				agentTitle=title;
+				super._isChanged=true;
+				dispatchEvent(new Event('labelChanged'));
+			}
+		}
+
+		public function updateMainClass(mainClass:String):void
+		{
+			if(mainClass!=javaMainClass){
+				javaMainClass=mainClass;
+				super._isChanged=true;
+				dispatchEvent(new Event('labelChanged'));
+			}
+
+		}
+
+		public function updateEnabled(enabledStr:String):void
+		{
+			
+			if(enabledStr!=agentEnabled){
+		
+				agentEnabled=enabledStr;
+				super._isChanged=true;
+				dispatchEvent(new Event('labelChanged'));
+			}
+		}
+		public function updateRunAsWebUser(runAsWebUser:String):void
+		{
+			if(runAsWebUser!=agentRunAsWebUser){
+				agentRunAsWebUser=runAsWebUser;
+				super._isChanged=true;
+				dispatchEvent(new Event('labelChanged'));
+			}
 		}
 
 		
