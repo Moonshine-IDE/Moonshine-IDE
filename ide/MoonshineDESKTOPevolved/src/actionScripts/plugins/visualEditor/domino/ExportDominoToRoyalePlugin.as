@@ -94,10 +94,10 @@ package actionScripts.plugins.visualEditor.domino
             var convertedFiles:Array = [];
 
             //Convert forms and subforms
-            convertToRoyale(visualEditorFiles, convertedFiles, conversionFinishedCallback);
+            convertToSurfaceMockup(visualEditorFiles, convertedFiles, conversionFinishedCallback);
         }
 
-        private function convertToRoyale(visualEditorFiles:Array, convertedFiles:Array, finishCallback:Function):void
+        private function convertToSurfaceMockup(visualEditorFiles:Array, convertedFiles:Array, finishCallback:Function):void
         {
             for (var i:int = 0; i < visualEditorFiles.length; i++)
             {
@@ -107,11 +107,18 @@ package actionScripts.plugins.visualEditor.domino
                     veFile.fileBridge.extension == "xml")
                 {
                     var dominoXML:XML = this.getXmlConversion(veFile);
+                    var subFormsXML:XMLList = dominoXML.descendants("Subformref").@subFormName;
+                    var subFormsNames:Array = [];
+                    for each (var subFormXML:XML in subFormsXML)
+                    {
+                        subFormsNames.push(subFormXML.toString());
+                    }
+
                     var surfaceMockup:SurfaceMockup = new SurfaceMockup();
 
                     DominoConverter.fromXML(surfaceMockup, Lookup.DominoNonUILookup,  dominoXML);
 
-                    convertedFiles.push({surface: surfaceMockup, file: veFile, isSubForm: visualEditorFiles[i].isSubForm});
+                    convertedFiles.push({surface: surfaceMockup, file: veFile, isSubForm: visualEditorFiles[i].isSubForm, subFormsNames: subFormsNames});
 
                     finishCallback(convertedFiles);
                 }
@@ -121,13 +128,34 @@ package actionScripts.plugins.visualEditor.domino
                     if (veFiles.length > 0)
                     {
                         conversionCounter += veFiles.length - 1;
-                        convertToRoyale(veFiles, convertedFiles, finishCallback);
+                        convertToSurfaceMockup(veFiles, convertedFiles, finishCallback);
                     }
                     else
                     {
                         finishCallback(convertedFiles);
                     }
                 }
+            }
+        }
+
+        private function conversionFinishedCallback(convertedFiles:Array):void
+        {
+            conversionCounter--;
+            if (conversionCounter == 0)
+            {
+                var convertedFilesForms:Array = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                    return !item.isSubForm;
+                });
+                var formsViews:Array = createConvertedFiles(convertedFilesForms, false);
+
+                convertedFilesForms = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                    return item.isSubForm;
+                });
+                var subFormsViews:Array = createConvertedFiles(convertedFilesForms, true);
+
+                var formsAndSubForms:Array = formsViews.concat(subFormsViews);
+
+                saveMainFileWithViews(formsAndSubForms);
             }
         }
 
@@ -179,27 +207,6 @@ package actionScripts.plugins.visualEditor.domino
             var xmlConversion:XML = new XML(data);
 
             return xmlConversion;
-        }
-
-        private function conversionFinishedCallback(convertedFiles:Array):void
-        {
-            conversionCounter--;
-            if (conversionCounter == 0)
-            {
-                var convertedFilesForms:Array = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
-                    return !item.isSubForm;
-                });
-                var formsViews:Array = createConvertedFiles(convertedFilesForms, false);
-
-                convertedFilesForms = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
-                    return item.isSubForm;
-                });
-                var subFormsViews:Array = createConvertedFiles(convertedFilesForms, true);
-
-                var formsAndSubForms:Array = formsViews.concat(subFormsViews);
-
-                saveMainFileWithViews(formsAndSubForms);
-            }
         }
 
         private function saveMainFileWithViews(views:Array):void

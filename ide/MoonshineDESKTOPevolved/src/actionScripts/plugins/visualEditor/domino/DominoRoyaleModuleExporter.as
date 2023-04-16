@@ -86,6 +86,7 @@ package actionScripts.plugins.visualEditor.domino
 					tmpFormObject.viewName = "All By UNID/CRUD/" + nameWithoutExt;
 					tmpFormObject.pageContent = this.components[i].pageContent;
 					tmpFormObject.isSubForm = this.components[i].isSubForm;
+					tmpFormObject.subFormsNames = this.components[i].subFormsNames;
 
 					parseComponents(componentData, tmpFormObject);
 					formObjects.push(tmpFormObject);
@@ -125,13 +126,17 @@ package actionScripts.plugins.visualEditor.domino
 			{
 				if (!form.isSubForm)
 				{
-					waitingCount += 2;
+					waitingCount += 3;
 					new DominoVOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 					new DominoProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+					new DominoFormGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 				}
-
-				waitingCount += 1;
-				new DominoPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				else
+				{
+					waitingCount += 2;
+					new DominoInterfaceVOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+					new DominoSubFormGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				}
 			}
 		}
 

@@ -10,7 +10,7 @@
   <fx:Script><![CDATA[
 	%ImportStatements%
 
-	[Bindable] private var itemVO:$moduleNameVO;
+	[Bindable] private var itemVO:I$moduleNameVO;
 	[Bindable] private var isDisabled:Boolean = false;
 
     public static const NAME:String = "%ViewComponentName%";

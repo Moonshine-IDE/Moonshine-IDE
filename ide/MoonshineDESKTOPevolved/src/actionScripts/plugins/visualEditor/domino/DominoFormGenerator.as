@@ -40,20 +40,24 @@ package actionScripts.plugins.visualEditor.domino
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class DominoPageGenerator extends RoyalePageGeneratorBase
+	public class DominoFormGenerator extends RoyalePageGeneratorBase
 	{
 		private var _pageRelativePathString:String;
 
 		private const MAX_LIST_COLUMNS_COUNT:int = 4;
 
-		public function DominoPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
+		public function DominoFormGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
 		{
 			this.project = project;
 			this.setPagePath(form);
-			pageImportReferences = new <PageImportReferenceVO>[
-				new PageImportReferenceVO(form.formName +"Proxy", "as"),
-				new PageImportReferenceVO(form.formName +"VO", "as")
-			];
+
+			if (!pageImportReferences)
+			{
+				pageImportReferences = new <PageImportReferenceVO>[
+					new PageImportReferenceVO(form.formName + "Proxy", "as"),
+					new PageImportReferenceVO(form.formName + "VO", "as")
+				];
+			}
 
 			super(project, form, classReferenceSettings, onComplete);
 			generate();
