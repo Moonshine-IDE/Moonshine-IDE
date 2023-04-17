@@ -80,6 +80,7 @@ package actionScripts.plugins.visualEditor.domino
 			 */
 			function onGenerationCompletes():void
 			{
+				fileContent = fileContent.replace(/%NamespaceStatements%/ig, namespacePathStatements.join("\n"));
 				fileContent = fileContent.replace(/%ImportStatements%/ig, importPathStatements.join("\n"));
 				fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName);
 
@@ -109,6 +110,17 @@ package actionScripts.plugins.visualEditor.domino
 				saveFile(fileContent);
 				dispatchCompletion();
 			}
+		}
+
+		override protected function get namespacePathStatements():Array
+		{
+			var paths:Array = [];
+			for each (var item:Object in form.subFormsNames)
+			{
+				var subformViews:String = item + "Views";
+				paths.push('xmlns:'+ subformViews +'="'+ this.project.name + ".views.modules.subforms." + item + "." + subformViews + '.*" ');
+			}
+			return paths;
 		}
 
 		private function getDataGridColumnsList():String
