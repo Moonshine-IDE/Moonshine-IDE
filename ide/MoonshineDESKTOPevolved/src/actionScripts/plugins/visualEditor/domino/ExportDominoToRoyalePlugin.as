@@ -45,6 +45,8 @@ package actionScripts.plugins.visualEditor.domino
     import lookup.Lookup;
     import actionScripts.valueObjects.ProjectVO;
 
+    import view.dominoFormBuilder.vo.DominoFormVO;
+
     public class ExportDominoToRoyalePlugin extends PluginBase
     {
         private var currentProject:AS3ProjectVO;
@@ -143,19 +145,21 @@ package actionScripts.plugins.visualEditor.domino
             conversionCounter--;
             if (conversionCounter == 0)
             {
-                var convertedFilesForms:Array = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                /*var convertedFilesForms:Array = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
                     return !item.isSubForm;
                 });
                 var formsViews:Array = createConvertedFiles(convertedFilesForms, false);
 
                 convertedFilesForms = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
                     return item.isSubForm;
-                });
-                var subFormsViews:Array = createConvertedFiles(convertedFilesForms, true);
+                });*/
+                var formsViews:Array = createConvertedFiles(convertedFiles);
 
-                var formsAndSubForms:Array = formsViews.concat(subFormsViews);
+             //   var formsAndSubForms:Array = formsViews.concat(subFormsViews);
+               // combineFormsWithSubforms(formsViews, subFormsViews);
+                //combineFormsWithSubforms(subFormsViews, subFormsViews);
 
-                saveMainFileWithViews(formsAndSubForms);
+                saveMainFileWithViews(formsViews);
             }
         }
 
@@ -214,9 +218,13 @@ package actionScripts.plugins.visualEditor.domino
             var mainFile:FileLocation = exportedProject.targets[0];
             var content:String = String(mainFile.fileBridge.read());
 
+            var navigationViews:Array = views.filter(function(item:Object, index:int, arr:Array):Boolean{
+                return !item.isSubForm;
+            });
+
             var contentData:Object = {};
-                contentData["$NavigationContent"] = getNavigationDp(views);
-                contentData["$ApplicationMainContent"] = getMainContent(views);
+                contentData["$NavigationContent"] = getNavigationDp(navigationViews);
+                contentData["$ApplicationMainContent"] = getMainContent(navigationViews);
                 contentData["$ProjectName"] = exportedProject.name;
 
             content = TemplatingHelper.replace(content, contentData);
@@ -229,10 +237,9 @@ package actionScripts.plugins.visualEditor.domino
          * Create an array to display converted files in main view of app
          *
          * @param convertedFiles
-         * @param subForms
          * @return Array
          */
-        private function createConvertedFiles(convertedFiles:Array, subForms:Boolean):Array
+        private function createConvertedFiles(convertedFiles:Array):Array
         {
             var views:Array = [];
             var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath(exportedProject.name +
@@ -283,14 +290,16 @@ package actionScripts.plugins.visualEditor.domino
 
                 item.pageContent = new XML(royaleMXMLContentFileString);
 
+                viewObj.isSubForm = item.isSubForm;
                 views.push(viewObj);
             }
 
-            var modulesPath:FileLocation = subForms ? viewFolder.resolvePath("modules" + exportedProject.sourceFolder.fileBridge.separator + "subforms") :
-                                                      viewFolder.resolvePath("modules");
+            var modulesPath:FileLocation = viewFolder.resolvePath("modules");
+            var modulesSubFormPath:FileLocation = viewFolder.resolvePath("modules" + exportedProject.sourceFolder.fileBridge.separator + "subforms");
+
             new DominoRoyaleModuleExporter(
                      modulesPath,
-                    exportedProject as ProjectVO, convertedFiles
+                    exportedProject as ProjectVO, convertedFiles, modulesSubFormPath
             );
 
             return views;

@@ -41,7 +41,7 @@ package actionScripts.plugins.visualEditor.domino
 	import view.dominoFormBuilder.vo.FormBuilderFieldType;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class DominoInterfaceVOClassGenerator extends VOClassGenerator
+	public class DominoInterfaceVOClassGenerator extends DominoVOClassGenerator
 	{
 		private var _pageRelativePathString:String;
 		override protected function get pageRelativePathString():String		{	return _pageRelativePathString;	}
@@ -62,31 +62,16 @@ package actionScripts.plugins.visualEditor.domino
 
 			function onGenerationCompleted():void
 			{
-				fileContent = fileContent.replace(/%ImportStatements%/ig, generateImportStatements());
+				var subFormExtends:String = form.toSubformVOExtends();
+
+				fileContent = fileContent.replace(/%ImportStatements%/ig, generateSubformImportStatements());
+				fileContent = fileContent.replace(/%InterfacesExtends%/ig, subFormExtends ? " extends " + form.toSubformVOExtends() : "");
 				fileContent = fileContent.replace(/%PropertyStatements%/ig, generateProperties());
-				fileContent = fileContent.replace(/%InterfacesExtends%/ig, form.toSubformVOInterfacesExtends());
 				fileContent = fileContent.replace(/$moduleName/ig, form.formName);
 
 				saveFile(fileContent);
 				dispatchCompletion();
 			}
-		}
-
-		private function generateImportStatements():String
-		{
-			var importStatements:String = "";
-			for each (var moduleName:String in form.subFormsNames)
-			{
-				importStatements += "import ".concat(project.name, ".", "views.modules.subforms", ".",
-						moduleName, ".", "interfaces", ".I", moduleName, "VO;\n");
-			}
-
-			return importStatements;
-		}
-
-		override protected function generateNewVOfromObject():String
-		{
-			return "";
 		}
 
 		override protected function generateProperties():String
