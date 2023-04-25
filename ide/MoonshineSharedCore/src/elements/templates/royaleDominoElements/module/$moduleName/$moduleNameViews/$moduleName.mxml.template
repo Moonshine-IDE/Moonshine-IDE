@@ -2,6 +2,7 @@
 			xmlns:js="library://ns.apache.org/royale/basic" xmlns:html="library://ns.apache.org/royale/html"
 			xmlns:joditeditor="$ProjectName.classes.joditeditor.*" xmlns:dataGrid="$ProjectName.classes.dataGrid.*"
 			xmlns:components="$ProjectName.views.components.*"
+			%NamespaceStatements%
 			currentState="dataGridState" gap="5" stateChangeComplete="{this.dispatchEvent(new Event('valueChange'))}"
 			itemsVerticalAlign="itemsTop" initComplete="onViewInitComplete(event)" percentHeight="100">
   <j:beads>

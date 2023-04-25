@@ -40,19 +40,24 @@ package actionScripts.plugins.visualEditor.domino
 	import view.dominoFormBuilder.vo.DominoFormVO;
 	import actionScripts.valueObjects.ProjectVO;
 
-	public class DominoPageGenerator extends RoyalePageGeneratorBase
+	public class DominoFormGenerator extends RoyalePageGeneratorBase
 	{
 		private var _pageRelativePathString:String;
 
 		private const MAX_LIST_COLUMNS_COUNT:int = 4;
 
-		public function DominoPageGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
+		public function DominoFormGenerator(project:ProjectVO, form:DominoFormVO, classReferenceSettings:RoyaleCRUDClassReferenceSettings, onComplete:Function = null)
 		{
-			_pageRelativePathString = project.name + "/views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +".mxml";
-			pageImportReferences = new <PageImportReferenceVO>[
-				new PageImportReferenceVO(form.formName +"Proxy", "as"),
-				new PageImportReferenceVO(form.formName +"VO", "as")
-			];
+			this.project = project;
+			this.setPagePath(form);
+
+			if (!pageImportReferences)
+			{
+				pageImportReferences = new <PageImportReferenceVO>[
+					new PageImportReferenceVO(form.formName + "Proxy", "as"),
+					new PageImportReferenceVO(form.formName + "VO", "as")
+				];
+			}
 
 			super(project, form, classReferenceSettings, onComplete);
 			generate();
@@ -75,6 +80,7 @@ package actionScripts.plugins.visualEditor.domino
 			 */
 			function onGenerationCompletes():void
 			{
+				fileContent = fileContent.replace(/%NamespaceStatements%/ig, namespacePathStatements.join("\n"));
 				fileContent = fileContent.replace(/%ImportStatements%/ig, importPathStatements.join("\n"));
 				fileContent = fileContent.replace(/%ViewComponentName%/ig, form.formName);
 
@@ -106,6 +112,17 @@ package actionScripts.plugins.visualEditor.domino
 			}
 		}
 
+		override protected function get namespacePathStatements():Array
+		{
+			var paths:Array = [];
+			for each (var item:Object in form.subFormsNames)
+			{
+				var subformViews:String = item + "Views";
+				paths.push('xmlns:'+ subformViews +'="'+ this.project.name + ".views.modules.subforms." + item + "." + subformViews + '.*" ');
+			}
+			return paths;
+		}
+
 		private function getDataGridColumnsList():String
 		{
 			var fields:Object = this.form.fields;
@@ -121,6 +138,18 @@ package actionScripts.plugins.visualEditor.domino
 			}
 
 			return columns.length > 0 ? "[" + columns.join(",") + "]" : "[]";
+		}
+
+		private function setPagePath(form:DominoFormVO):void
+		{
+			if (form.isSubForm)
+			{
+				_pageRelativePathString = project.name + "/views/modules/subforms/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +".mxml";
+			}
+			else
+			{
+				_pageRelativePathString = project.name + "/views/modules/"+ form.formName +"/"+ form.formName +"Views/"+ form.formName +".mxml";
+			}
 		}
 	}
 }

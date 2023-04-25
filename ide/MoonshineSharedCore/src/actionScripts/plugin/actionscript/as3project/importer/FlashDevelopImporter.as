@@ -347,15 +347,15 @@ package actionScripts.plugin.actionscript.as3project.importer
 			else
 			{
 				//get the correct project setting file end with veditorproj.
-				folder =file.fileBridge.getFile as File;
-				var getfiles:Array = folder.getDirectoryListing();
-				for (var i:int = 0; i < getfiles.length; i++)
+				folder = file.fileBridge.getFile as File;
+				var getFiles:Array = folder.getDirectoryListing();
+				for (var i:int = 0; i < getFiles.length; i++)
 				{
-					var projectFileNameInt:int=getfiles[i].nativePath.lastIndexOf("veditorproj");
+					var projectFileNameInt:int=getFiles[i].nativePath.lastIndexOf("veditorproj");
 					if(projectFileNameInt>0)
 					{
-						projectName=getfiles[i].nativePath.substring(0, projectFileNameInt - 1);
-						settingFile=getfiles[i];
+						projectName=getFiles[i].nativePath.substring(0, projectFileNameInt - 1);
+						settingFile=getFiles[i];
 					}
 				}
 			}
