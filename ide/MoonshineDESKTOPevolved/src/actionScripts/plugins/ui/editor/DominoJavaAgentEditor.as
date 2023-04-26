@@ -151,7 +151,7 @@ package actionScripts.plugins.ui.editor
 				var codeNode:XML=new XML("<code/>");
 				codeNode.@event="action";
 				var javaprojectNode:XML=new XML("<javaproject/>");
-				javaprojectNode.@class=javaMainClass;
+				//javaprojectNode.@class=javaMainClass;
 				javaprojectNode.@codepath="";
 				
 

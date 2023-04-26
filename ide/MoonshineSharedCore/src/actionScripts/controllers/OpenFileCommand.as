@@ -291,10 +291,17 @@ package actionScripts.controllers
 				}
 				else if (extension == "action"){
 					openDominoActionFile(project, fileData);
-				}else if (extension == "java"){
-					openDominoJavaAgentFile(project, fileData);
-				}else
-				{
+				}else if (extension == "java" && model.activeProject && model.activeProject.hasOwnProperty("isDominoVisualEditorProject") && model.activeProject["isDominoVisualEditorProject"] )
+				{	
+					
+					if(file.fileBridge.parent.fileBridge.nativePath.indexOf("agents")>0){
+						openDominoJavaAgentFile(project, fileData);
+					}else{
+						openTextFile(project, fileData);
+					}
+						
+					
+				}else{
 					//try to open dve with domino visual editor.
 					 /*if ((project is OnDiskProjectVO) && (extension == "dve"))
 					 {
