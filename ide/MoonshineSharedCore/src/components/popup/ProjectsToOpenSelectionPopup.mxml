@@ -1,22 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark"
-		 width="600" height="300" minWidth="300" minHeight="200"
-		 skinClass="components.skins.ResizableTitleWindowSkin" xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" xmlns:marker="actionScripts.ui.marker.*" xmlns:mx="library://ns.adobe.com/flex/mx"
-		 xmlns:ns="library://ns.adobe.com/flashx/textLayout">
+		 width="600" height="400" minWidth="300" minHeight="200"
+		 skinClass="components.skins.ResizableTitleWindowSkin" 
+		 xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*" 
+		 xmlns:marker="actionScripts.ui.marker.*" xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:ns="library://ns.adobe.com/flashx/textLayout"
+		 creationComplete="onCreationCompletes()" xmlns:view="actionScripts.plugin.findreplace.view.*">
 	<fx:Script>
 		<![CDATA[
+		import actionScripts.events.GeneralEvent;
+		import actionScripts.plugin.console.ConsoleOutputEvent;
+
+		import flash.net.registerClassAlias;
 			
 			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
+			import mx.utils.ObjectUtil;
+			import mx.validators.Validator;
 			
+			import spark.events.IndexChangeEvent;
+			
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.plugin.workspace.WorkspacePlugin;
+			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.GenericSelectableObject;
+			import actionScripts.valueObjects.WorkspaceVO;
 			
+			import moonshine.plugin.workspace.events.WorkspaceEvent;
+
+			import spark.events.TextOperationEvent;
+
 			[Bindable] public var projects:ArrayCollection;
 			[Bindable] public var repositoryRoot:String;
 			
 			public var isSubmit:Boolean;
+			public var targetWorkspace:String;
+						
+			[Bindable] private var workspaces:ArrayList;
+			
+			private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+			private var isDuplicateWorkspace:Boolean;
+			
+			override protected function closeThis():void
+			{
+				dispatcher.removeEventListener(WorkspacePlugin.EVENT_WORKSPACE_CHANGED, onWorkspaceChanged);
+				super.closeThis();
+			}
+			
+			private function onCreationCompletes():void
+			{
+				registerClassAlias("actionScripts.valueObjects.WorkspaceVO", WorkspaceVO);
+				workspaces = ObjectUtil.copy(WorkspacePlugin.workspacesForViews) as ArrayList;
+				
+				// add two custom objects to function
+				// in this particular interface's needs
+				var tmpWorkspace:WorkspaceVO = new WorkspaceVO("-Create New Workspace-");
+				workspaces.addItemAt(tmpWorkspace, 0);
+				tmpWorkspace = new WorkspaceVO("-Current ("+ ConstantsCoreVO.CURRENT_WORKSPACE +")-");
+				workspaces.addItemAt(tmpWorkspace, 0);
+				
+				// on submit of 'this', this event will
+				// satisfy that the workspace have changed and then
+				// close 'this' window and add projects by
+				// 'this' owner-Plugin
+				dispatcher.addEventListener(WorkspacePlugin.EVENT_WORKSPACE_CHANGED, onWorkspaceChanged, false, 0, true);
+
+				if (targetWorkspace)
+				{
+					var isExistingWorkspace:Boolean = workspaces.source.some(function (element:WorkspaceVO, index:int, arr:Array):Boolean {
+						if (element.label == targetWorkspace)
+						{
+							ddlWorkspaces.selectedIndex = index;
+							dispatcher.dispatchEvent(new ConsoleOutputEvent(
+								ConsoleOutputEvent.CONSOLE_PRINT,
+								"Selected existing target workspace: "+ targetWorkspace,
+								false, false, ConsoleOutputEvent.TYPE_INFO
+							));
+							return true;
+						}
+						return false;
+					});
+
+					// in case no existing workspace display
+					// new-workspace input
+					if (!isExistingWorkspace)
+					{
+						hgError.includeInLayout = hgError.visible = false;
+						ddlWorkspaces.selectedIndex = 1;
+						ddlWorkspaces.dispatchEvent(new IndexChangeEvent(IndexChangeEvent.CHANGE, false, false, ddlWorkspaces.selectedIndex, 1));
+						txtNewWorkspace.text = targetWorkspace;
+					}
+					else
+					{
+						txtErrorLabel.text = "This workspace already exists. The project(s) will be opened in the existing workspace.";
+						hgError.includeInLayout = hgError.visible = true;
+					}
+				}
+			}
 			
 			private function onSubmit():void
 			{
@@ -26,13 +142,64 @@
 					Alert.show("There is nothing to Open.", "Note!");
 					return;
 				}
+
+				var currentWorkspaceLabel:String = workspaces.getItemAt(0).label;
 				
-				btnSubmit.enabled = false;
+				// if new workspace input is showing
+				if (ddlWorkspaces.selectedIndex == 1)
+				{
+					var tmpArr:Array = new Array(workspaceValidator);
+					if (Validator.validateAll(tmpArr).length != 0)
+					{
+						return;
+					}
+
+					// we'll create a new workspace first
+					btnSubmit.enabled = false;
+					if (isDuplicateWorkspace)
+					{
+						if ((txtNewWorkspace.text != ConstantsCoreVO.CURRENT_WORKSPACE)
+								&& (currentWorkspaceLabel != "-Current("+ txtNewWorkspace.text +")-"))
+						{
+							dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, txtNewWorkspace.text));
+						}
+						else
+						{
+							// no workspace change needed
+							onWorkspaceChanged(null);
+						}
+					}
+					else
+					{
+						dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, txtNewWorkspace.text));
+					}
+				}
+				else
+				{
+					btnSubmit.enabled = false;
+
+					// we need to change to a different existing workspace
+					var selectedWorkspaceLabel:String = ddlWorkspaces.selectedItem.label;
+					if ((selectedWorkspaceLabel != currentWorkspaceLabel)
+							&& (selectedWorkspaceLabel != ConstantsCoreVO.CURRENT_WORKSPACE))
+					{
+						dispatcher.dispatchEvent(new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, ddlWorkspaces.selectedItem.label));
+					}
+					else
+					{
+						// no workspace change needed
+						onWorkspaceChanged(null);
+					}
+				}
+			}
+			
+			private function onWorkspaceChanged(event:Event):void
+			{
 				isSubmit = true;
 				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 			}
 			
-			protected function onSelectAllChange(event:Event):void
+			private function onSelectAllChange(event:Event):void
 			{
 				var isSelected:Boolean = event.target.selected;
 				for each (var i:GenericSelectableObject in projects)
@@ -41,7 +208,7 @@
 				}
 			}
 			
-			protected function hasSelectionToChanges():Boolean
+			private function hasSelectionToChanges():Boolean
 			{
 				for each (var i:GenericSelectableObject in projects)
 				{
@@ -51,8 +218,32 @@
 				return false;
 			}
 			
+			private function onWorkspaceDropdownChange(event:IndexChangeEvent):void
+			{
+				txtNewWorkspace.includeInLayout = txtNewWorkspace.visible = (event.newIndex == 1);
+			}
+
+			private function onWorkspaceInputChange(event:TextOperationEvent):void
+			{
+				var tmpWorkspace:WorkspaceVO = WorkspacePlugin.getCurrentWorkspaceForView(txtNewWorkspace.text);
+				if (tmpWorkspace)
+				{
+					txtErrorLabel.text = "This workspace already exists. The project(s) will be opened in the existing workspace.";
+					hgError.includeInLayout = hgError.visible = true;
+					isDuplicateWorkspace = true;
+				}
+				else
+				{
+					hgError.includeInLayout = hgError.visible = false;
+					isDuplicateWorkspace = false;
+				}
+			}
+			
 		]]>
 	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="workspaceValidator" source="{txtNewWorkspace}" property="text" trigger="{btnSubmit}" minLength="3" triggerEvent="click"/>
+	</fx:Declarations>
 	
 	<s:VGroup height="100%" width="100%" 
 			  paddingLeft="12" paddingBottom="9" paddingTop="9" paddingRight="13">
@@ -68,16 +259,46 @@
 				requireSelection="true">
 			<s:itemRenderer>
 				<fx:Component>
-					<s:ItemRenderer height="22">
+					<s:ItemRenderer height="22" removed="removed()">
 						<fx:Script>
 							<![CDATA[
+
+								import flash.events.Event;
+								
+								import actionScripts.valueObjects.GenericSelectableObject;
+
 								override public function set data(value:Object):void
 								{
 									if (value) 
 									{
 										super.data = value;
 										labelDisplay.text = data.data.name;
+
+										if ( value is GenericSelectableObject ) 
+										{
+											var c:GenericSelectableObject = value as GenericSelectableObject;
+											c.addEventListener( Event.CHANGE, dataChange );
+										}
+									} 
+									else 
+									{
+										removed();
 									}
+								}
+
+								private function removed():void 
+								{
+									if (this.data != null && this.data is GenericSelectableObject)
+									{
+										var d:GenericSelectableObject = this.data as GenericSelectableObject;
+										d.removeEventListener( Event.CHANGE, dataChange );
+									}
+								}
+
+								private function dataChange(event:Event):void
+								{
+									cbSelect.selected = this.data.isSelected;
+									labelDisplay.text = data.data.name;
 								}
 							]]>
 						</fx:Script>
@@ -94,6 +315,23 @@
 				</fx:Component>
 			</s:itemRenderer>
 		</s:List>
+		<s:Label text="Opens in Workspace:"
+				 paddingTop="4" paddingBottom="4"/>
+		<s:DropDownList id="ddlWorkspaces" 
+						dataProvider="{workspaces}" labelField="label"
+						width="100%"
+						requireSelection="true" change="onWorkspaceDropdownChange(event)"/>
+		<view:PromptTextInput id="txtNewWorkspace"
+							  prompt="New workspace name"
+							  width="100%" styleName="textInput"
+							  includeInLayout="false" visible="false"
+								change="onWorkspaceInputChange(event)"/>
+		<s:HGroup id="hgError"
+				  width="100%" verticalAlign="middle" horizontalAlign="center"
+				  includeInLayout="false" visible="false">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label id="txtErrorLabel" maxDisplayedLines="3"/>
+		</s:HGroup>
 	</s:VGroup>
 	
 	<resizableTitleWindow:controlBarContent>

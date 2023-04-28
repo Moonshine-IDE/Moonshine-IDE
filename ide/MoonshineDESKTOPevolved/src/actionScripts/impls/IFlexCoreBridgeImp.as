@@ -1,35 +1,54 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2016 Prominic.NET, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// Author: Prominic.NET, Inc.
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
 	import actionScripts.events.DominoEvent;
+	import actionScripts.events.GenesisEvent;
 	import actionScripts.managers.StartupHelper;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.exportToRoyaleTemplatedApp.ExportToRoyaleTemplatedAppPlugin;
+	import actionScripts.plugins.genesis.GenesisPlugin;
 	import actionScripts.plugins.lsmonitor.LanguageServersMonitor;
 	import actionScripts.plugins.macports.MacPortsPlugin;
+	import actionScripts.plugins.menu.OpenInTerminalPlugin;
 	import actionScripts.plugins.ondiskproj.crud.exporter.CRUDJavaAgentsExporter;
+	import actionScripts.plugins.ui.editor.dominoFormBuilder.DominoFormBuilderWrapper;
 	import actionScripts.plugins.vagrant.VagrantPlugin;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.plugins.visualEditor.domino.DominoJavaAgentsExporter;
 	import actionScripts.plugins.visualEditor.domino.ExportDominoToRoyalePlugin;
-	import actionScripts.valueObjects.HelperConstants;
+	import actionScripts.ui.IContentWindow;
+import actionScripts.utils.PathSetupHelperUtil;
+import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
 	import flash.desktop.NativeApplication;
@@ -58,7 +77,6 @@ package actionScripts.impls
 	import actionScripts.interfaces.IFlexCoreBridge;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.interfaces.IModulesFinder;
-	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.HiddenFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.files.SaveFilesPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -84,7 +102,6 @@ package actionScripts.impls
 	import actionScripts.plugin.settings.SettingsPlugin;
 	import actionScripts.plugin.splashscreen.SplashScreenPlugin;
 	import actionScripts.plugin.symbols.SymbolsPlugin;
-	import actionScripts.plugin.syntax.AS3SyntaxPlugin;
 	import actionScripts.plugin.syntax.CSSSyntaxPlugin;
 	import actionScripts.plugin.syntax.GroovySyntaxPlugin;
 	import actionScripts.plugin.syntax.HTMLSyntaxPlugin;
@@ -95,15 +112,12 @@ package actionScripts.impls
 	import actionScripts.plugin.workspace.WorkspacePlugin;
 	import actionScripts.plugins.ant.AntBuildPlugin;
 	import actionScripts.plugins.ant.AntBuildScreen;
-	import actionScripts.plugins.as3project.exporter.FlashBuilderExporter;
-	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
-	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
-	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugin.actionscript.as3project.exporter.FlashBuilderExporter;
+	import actionScripts.plugin.actionscript.as3project.exporter.FlashDevelopExporter;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCFlashModulePlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCJavaScriptPlugin;
 	import actionScripts.plugins.as3project.mxmlc.MXMLCPlugin;
 	import actionScripts.plugins.away3d.Away3DPlugin;
-	import actionScripts.plugins.clean.CleanProject;
 	import actionScripts.plugins.core.ProjectBridgeImplBase;
 	import actionScripts.plugins.debugAdapter.DebugAdapterPlugin;
 	import actionScripts.plugins.domino.DominoPlugin;
@@ -156,6 +170,8 @@ package actionScripts.impls
 	import visualEditor.plugin.VisualEditorRefreshFilesPlugin;
 	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -164,30 +180,10 @@ package actionScripts.impls
 		//  INTERFACE METHODS
 		//
 		//--------------------------------------------------------------------------
-		
-		public function parseFlashDevelop(project:AS3ProjectVO=null, file:FileLocation=null, projectName:String=null):AS3ProjectVO
-		{
-			return FlashDevelopImporter.parse(file, projectName);
-		}
 
 		public function convertFlashDevelopToDomino(file:FileLocation=null):void
 		{
-			 FlashDevelopImporter.convertDomino(file);
-		}
-		
-		public function parseFlashBuilder(file:FileLocation):AS3ProjectVO
-		{
-			return FlashBuilderImporter.parse(file);
-		}
-		
-		public function testFlashDevelop(file:Object):FileLocation
-		{
-			return FlashDevelopImporter.test(file as File);
-		}
-		
-		public function testFlashBuilder(file:Object):FileLocation
-		{
-			return FlashBuilderImporter.test(file as File);
+			FlashDevelopImporter.convertDomino(file);
 		}
 		
 		public function updateFlashPlayerTrustContent(value:FileLocation):void
@@ -242,6 +238,7 @@ package actionScripts.impls
 				ExportToFlexPlugin,
 				ExportToPrimeFacesPlugin,
 				ExportDominoToRoyalePlugin,
+				ExportToRoyaleTemplatedAppPlugin,
 				ExportDominoJavaAgentsPlugin,
                 VisualEditorRefreshFilesPlugin,
 				FileAssociationPlugin,
@@ -259,8 +256,6 @@ package actionScripts.impls
 				MXMLCJavaScriptPlugin,
 				MXMLCFlashModulePlugin,
 				SWFLauncherPlugin,
-				AS3ProjectPlugin,
-				AS3SyntaxPlugin,
 				CSSSyntaxPlugin,
 				GroovySyntaxPlugin,
 				JSSyntaxPlugin,
@@ -269,7 +264,6 @@ package actionScripts.impls
 				XMLSyntaxPlugin,
 				OrganizeImportsPlugin,
 				SplashScreenPlugin,
-				CleanProject,
 				VersionControlPlugin,
 				SVNPlugin,
 				DebugAdapterPlugin,
@@ -291,7 +285,9 @@ package actionScripts.impls
 				VagrantPlugin,
 				FSWatcherPlugin,
 				LanguageServersMonitor,
-				TextEditorPlugin
+				TextEditorPlugin,
+				GenesisPlugin,
+				OpenInTerminalPlugin
 			];
 
 			// conditional additions
@@ -305,11 +301,11 @@ package actionScripts.impls
 		
 		public function getPluginsNotToShowInSettings():Array
 		{
-			return [FileAssociationPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, AS3ProjectPlugin, CleanProject, DebugAdapterPlugin,
+			return [FileAssociationPlugin, OpenInTerminalPlugin, FilesCopyPlugin, ProjectPanelPlugin, ProjectPlugin, HelpPlugin, FindReplacePlugin, FindResourcesPlugin, RecentlyOpenedPlugin, SWFLauncherPlugin, DebugAdapterPlugin,
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
-					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin,
+					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin, ExportToRoyaleTemplatedAppPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, WorkspacePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin, GenesisPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem
@@ -421,7 +417,9 @@ package actionScripts.impls
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, 
 						'o', [Keyboard.COMMAND],
 						'o', [Keyboard.CONTROL]),
-					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE)
+					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE),
+					new MenuItem(resourceManager.getString('resources', 'IMPORT_FROM_GENESIS_CATALOG'), null, null, GenesisEvent.IMPORT_GENESIS_PROJECT),
+					new MenuItem(resourceManager.getString('resources', 'OPEN_GENESIS_CATALOG_IN_BROWSER'), null, null, GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER)
 				]),
 				//GENERATE_APACHE_ROYALE_PROJECT
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
@@ -605,6 +603,7 @@ package actionScripts.impls
 
 		public function get defaultInstallationPathSDKs():String
 		{
+			if ( HelperConstants.DEFAULT_INSTALLATION_PATH == null ) HelperConstants.HELPER_STORAGE;
 			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
 		}
 
@@ -631,6 +630,11 @@ package actionScripts.impls
 		public function getExternalEditors():ArrayCollection
 		{
 			return ExternalEditorsPlugin.editors;
+		}
+
+		public function getTerminalThemeList():Array
+		{
+			return OpenInTerminalPlugin.TERMINAL_THEMES;
 		}
 		
 		public function generateTabularRoyaleProject():void
@@ -680,6 +684,21 @@ package actionScripts.impls
 		public function searchAntFile(insideProject:ProjectVO):ArrayCollection
 		{
 			return AntBuildPlugin.searchAntFile(insideProject);
+		}
+
+		public function getDominoFormBuilderWrapper(file:FileLocation, project:OnDiskProjectVO=null):IContentWindow
+		{
+			return (new DominoFormBuilderWrapper(file, project as OnDiskProjectVO));
+		}
+
+		public function getRelativePathAgainstProject(projectPath:Object, sourcePath:Object, forceRelativePath:Boolean=false):String
+		{
+			return PathSetupHelperUtil.getRelativePathAgainstProject(projectPath, sourcePath, forceRelativePath);
+		}
+
+		public function getAbsolutePathAgainstProject(projectPath:Object, sourceRelativePathString:String):String
+		{
+			return PathSetupHelperUtil.getAbsolutePathAgainstProject(projectPath, sourceRelativePathString);
 		}
 	}
 }

@@ -1,23 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2016 Prominic.NET, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// Author: Prominic.NET, Inc.
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
@@ -32,17 +44,13 @@
 										   creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
-        import actionScripts.events.FileUploaderEvent;
         import actionScripts.events.SettingsEvent;
-		import actionScripts.factory.FileLocation;
 		import actionScripts.locator.IDEModel;
-        import actionScripts.plugin.console.ConsoleOutputEvent;
         import actionScripts.plugins.vagrant.VagrantPlugin;
         import actionScripts.plugins.vagrant.utils.VagrantUtil;
         import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
         import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
         import actionScripts.utils.FileUtils;
-		import actionScripts.utils.uploadUsingURLLoader.FileUploaderUsingURLLoader;
 
 		import mx.collections.ArrayCollection;
 
@@ -62,7 +70,6 @@
         private var nsfConverterInstances:ArrayCollection;
 
         private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
-        private var fileUploader:FileUploaderUsingURLLoader;
         private var instanceStateCheckCount:int;
 
         private var _uploadRequestReturn:Object;
@@ -71,11 +78,17 @@
             return _uploadRequestReturn;
         }
 
+		public function get databasePath():String
+		{
+			return txtFile.text;
+		}
+
         public function get destinationFolder():File
         {
-            var tmpFileSplilt:Array = txtFile.text.split(".");
-            tmpFileSplilt.pop();
-            var targetDirectoryName:String = tmpFileSplilt.join(".");
+            var targetDirectoryName:String = txtFile.text.split(File.separator).pop();
+            var targetDirectoryNameSplit:Array = targetDirectoryName.split(".");
+			targetDirectoryNameSplit.pop();
+			targetDirectoryName = targetDirectoryNameSplit.join(".");
             targetDirectoryName = targetDirectoryName.replace(/ /g, "");
 
             return (new File(txtDownloadDir.text).resolvePath(targetDirectoryName));
@@ -86,21 +99,25 @@
             return ddlInstances.selectedItem;
         }
 
+		public function reset():void
+		{
+			enableUI();
+		}
+
+		public function close():void
+		{
+			closeThis();
+		}
+
         override protected function closeThis():void
         {
-			fileUploader.removeEventListener(FileUploaderEvent.EVENT_UPLOAD_COMPLETE, onFileUploadedData);
-			fileUploader.removeEventListener(FileUploaderEvent.EVENT_UPLOAD_ERROR, onFileUploadError);
             dispatcher.removeEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked);
             super.closeThis();
         }
 
         protected function onCreationCompletes(event:FlexEvent):void
         {
-            fileUploader = new FileUploaderUsingURLLoader();
-            fileUploader.addEventListener(FileUploaderEvent.EVENT_UPLOAD_COMPLETE, onFileUploadedData, false, 0, true);
-            fileUploader.addEventListener(FileUploaderEvent.EVENT_UPLOAD_ERROR, onFileUploadError, false, 0, true);
-
-            disableUI();
+             disableUI();
             dispatcher.addEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked, false, 0, true);
             VagrantUtil.checkStates(instances);
         }
@@ -154,28 +171,6 @@
             txtFile.text = file.nativePath;
         }
 
-        private function onFileUploadedData(event:FileUploaderEvent):void
-        {
-            if (event.value && ((event.value as String) != ""))
-            {
-                _uploadRequestReturn = JSON.parse(event.value as String);
-                dispatchEvent(new Event(EVENT_START_CONVERSION));
-                closeThis();
-            }
-        }
-
-        private function onFileUploadError(event:FileUploaderEvent):void
-        {
-            enableUI();
-            dispatcher.dispatchEvent(
-                    new ConsoleOutputEvent(
-                            ConsoleOutputEvent.CONSOLE_PRINT,
-                            "Failed to upload file on server:\n" + (event.value as String),
-                            false, false, ConsoleOutputEvent.TYPE_ERROR
-                    )
-            );
-        }
-
         private function onSubmit():void
         {
             // validations
@@ -207,20 +202,8 @@
                 }
             }
 
-            dispatcher.dispatchEvent(
-                    new ConsoleOutputEvent(
-                            ConsoleOutputEvent.CONSOLE_PRINT,
-                            "Trying to upload request to: " + (ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload. This may take some time..",
-                            true
-                    )
-            );
-
             disableUI();
-			fileUploader.upload(
-					new FileLocation(txtFile.text),
-					(ddlInstances.selectedItem as VagrantInstanceVO).url + "/file/upload?rand="+ Math.random(),
-					"file"
-			);
+			dispatchEvent(new Event(EVENT_START_CONVERSION));
         }
 
         private function disableUI():void

@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.grails
 {
@@ -49,8 +62,8 @@ package actionScripts.plugins.grails
     import actionScripts.plugins.build.ConsoleBuildPluginBase;
     import actionScripts.utils.HelperUtils;
     import actionScripts.utils.UtilsCore;
-    import actionScripts.valueObjects.ComponentTypes;
-    import actionScripts.valueObjects.ComponentVO;
+    import moonshine.haxeScripts.valueObjects.ComponentTypes;
+    import moonshine.haxeScripts.valueObjects.ComponentVO;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.EnvironmentExecPaths;
     import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
@@ -153,6 +166,7 @@ package actionScripts.plugins.grails
 
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
+			dispatcher.addEventListener(GrailsBuildEvent.CLEAN, grailsBuildCleanHandler);
 			dispatcher.addEventListener(GrailsBuildEvent.RUN_COMMAND, startConsoleBuildHandler);
 			dispatcher.addEventListener(GradleBuildEvent.RUN_COMMAND, startGradleConsoleBuildHandler);
         }
@@ -163,18 +177,44 @@ package actionScripts.plugins.grails
 
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_AND_RUN, grailsBuildAndRunHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.BUILD_RELEASE, grailsBuildReleaseHandler);
+			dispatcher.removeEventListener(GrailsBuildEvent.CLEAN, grailsBuildCleanHandler);
 			dispatcher.removeEventListener(GrailsBuildEvent.RUN_COMMAND, startConsoleBuildHandler);
 			dispatcher.removeEventListener(GradleBuildEvent.RUN_COMMAND, startGradleConsoleBuildHandler);
         }
 		
 		private function grailsBuildAndRunHandler(event:Event):void
 		{
-			this.startDebug(new <String>[[UtilsCore.getGrailsBinPath(), "run-app"].join(" ")], model.activeProject.folderLocation);
+			var project:GrailsProjectVO = model.activeProject as GrailsProjectVO;
+			if (!project)
+			{
+				return;
+			}
+			this.startDebug(new <String>[[UtilsCore.getGrailsBinPath(), "run-app"].join(" ")], project.folderLocation);
 		}
 		
 		private function grailsBuildReleaseHandler(event:Event):void
 		{
-			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "war"].join(" ")], model.activeProject.folderLocation);
+			var project:GrailsProjectVO = model.activeProject as GrailsProjectVO;
+			if (!project)
+			{
+				return;
+			}
+			this.start(new <String>[[UtilsCore.getGrailsBinPath(), "war"].join(" ")], project.folderLocation);
+		}
+
+		private function grailsBuildCleanHandler(event:Event):void
+		{
+			var project:GrailsProjectVO = model.activeProject as GrailsProjectVO;
+			if (!project)
+			{
+				return;
+			}
+            if (!UtilsCore.isGrailsAvailable())
+            {
+                error("Project clean failed: Missing Grails configuration in Moonshine settings.");
+                return;
+            }
+			start(new <String>[[UtilsCore.getGrailsBinPath(), "clean"].join(" ")], project.folderLocation);
 		}
 
 		private function grailsStopApp():void
@@ -199,6 +239,7 @@ package actionScripts.plugins.grails
 
 		override public function start(args:Vector.<String>, buildDirectory:*=null, customSDKs:EnvironmentUtilsCusomSDKsVO=null):void
 		{
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
             if (nativeProcess.running && running)
             {
                 warning("Build is running. Wait for finish...");
@@ -357,8 +398,9 @@ package actionScripts.plugins.grails
 			return [];
 		}
 		
-		protected function prepareStart(arguments:Array, buildDirectory:FileLocation, commandType:String=BuildActionType.BUILD_TYPE_GRAILS):void
+		protected function prepareStart(arguments:Array, buildDirectory:FileLocation, commandType:String="buildGrails"):void
 		{
+			var s = BuildActionType.BUILD_TYPE_GRAILS;
             dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
 
 			if (!buildDirectory || !buildDirectory.fileBridge.exists)

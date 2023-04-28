@@ -1,19 +1,32 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Licensed to the Apache Software Foundation (ASF) under one or more
-//  contributor license agreements.  See the NOTICE file distributed with
-//  this work for additional information regarding copyright ownership.
-//  The ASF licenses this file to You under the Apache License, Version 2.0
-//  (the "License"); you may not use this file except in compliance with
-//  the License.  You may obtain a copy of the License at
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
 //
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ui.editor
@@ -208,6 +221,45 @@ package actionScripts.plugins.ui.editor
 		private function fileRenamedHandler(event:TreeMenuItemEvent):void
 		{
 			reload();
+
+			//if we rename the subfrom , we already update the intermedial xml,
+			//so we must force update the form/subfrom in the visualEditor,otherwise,after user save it .
+			//the update will be overwrite and we will got some duplication element in the dxl and xml both all.
+			//Alert.show("tab:"+visualEditorView.tabBar.dataProvider.length);
+			for(var i:int=0;i<visualEditorView.tabBar.dataProvider.length;i++){
+				var	visualeEditorView:Object =visualEditorView.tabBar.dataProvider.getItemAt(i);
+				if(visualeEditorView){
+					
+					var visualEditor:Object=  visualeEditorView.contentGroup.getElementAt(0) ;
+					if(visualEditor){
+						if( visualEditor.hasOwnProperty("visualEditorFilePath")){
+							var fileLocation:FileLocation=new FileLocation(visualEditor.visualEditorFilePath);
+							if(fileLocation.fileBridge.exists){
+								//we should only let follow code with form&subfrom file.
+								//these code clean the old design element in the surface editor and inital it again,
+								//after user click the tab, it will loading latest xml into surface, this is why we get the duplication element .
+								if(fileLocation.fileBridge.extension=="form" || fileLocation.fileBridge.extension=="subform"){
+									var data:Object=fileLocation.fileBridge.read();
+									visualEditor.editingSurface.deleteAllByEditingSureface(visualEditor.editingSurface);
+									
+									var xml:XML = new XML("<mockup/>");
+									visualEditor.editingSurface.fromXMLByEditingSurface(xml,visualEditor.editingSurface);
+								}
+
+								
+							
+							}
+							
+						}
+						
+					}
+				}
+				
+			}
+
+			//update the subform for rename action
+			if(visualEditorView.visualEditor.editingSurface)
+			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 		}
 
 		private function onVisualEditorSaveCode(event:Event):void
@@ -407,6 +459,8 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 
 			}
+
+			
 		}
 
 		private function onStartPreview(event:Event):void
@@ -470,7 +524,7 @@ package actionScripts.plugins.ui.editor
 		
 		private function getVisualEditorFilePath():String
 		{
-			var visualEditorProjectSourcedPath = (visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
+			var visualEditorProjectSourcedPath:String = (visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
 			
 			if ((visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder)
 			{
@@ -506,7 +560,7 @@ package actionScripts.plugins.ui.editor
 			var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
 			fileSoucePath=fileSoucePath.replace("Forms","SharedElements");
 			fileSoucePath=fileSoucePath+File.separator+"Subforms";
-			var directory = new File(fileSoucePath);
+			var directory:File = new File(fileSoucePath);
 			if (directory.exists) {
 				var list:Array = directory.getDirectoryListing();
 				for (var i:uint = 0; i < list.length; i++) {

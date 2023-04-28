@@ -1,8 +1,10 @@
 <j:VGroup  xmlns:j="library://ns.apache.org/royale/jewel" xmlns:fx="http://ns.adobe.com/mxml/2009"
 			xmlns:js="library://ns.apache.org/royale/basic" xmlns:html="library://ns.apache.org/royale/html"
-			xmlns:joditeditor="classes.joditeditor.*" xmlns:dataGrid="classes.dataGrid.*"
+			xmlns:joditeditor="$ProjectName.classes.joditeditor.*" xmlns:dataGrid="$ProjectName.classes.dataGrid.*"
+			xmlns:components="$ProjectName.views.components.*"
+			%NamespaceStatements%
 			currentState="dataGridState" gap="5" stateChangeComplete="{this.dispatchEvent(new Event('valueChange'))}"
-			itemsVerticalAlign="itemsTop" initComplete="onViewInitComplete(event)">
+			itemsVerticalAlign="itemsTop" initComplete="onViewInitComplete(event)" percentHeight="100">
   <j:beads>
     <js:ContainerDataBinding/>
     <js:SimpleStatesImpl/>
@@ -13,7 +15,7 @@
   </j:states>
   <fx:Script><![CDATA[
 	import org.apache.royale.jewel.Alert;
-	import classes.events.ErrorEvent;
+	import $ProjectName.classes.events.ErrorEvent;
 	%ImportStatements%
 
 	[Bindable] private var proxy:$moduleNameProxy = $moduleNameProxy.getInstance();
@@ -32,31 +34,50 @@
         proxy.requestItems();
     }
 
-	private function removeItem():void
-	{
-		var alert:Alert = Alert.show('Are you sure you want to remove this item?',  'Remove', Alert.OK | Alert.CANCEL);
-			alert.addEventListener('close', function closeAlert(e:Event):void { if (e['detail'] == Alert.OK)
-    									{
-    										proxy.removeItem(itemVO);
-    									}});
-	}
+    public function cancelFormEdit():void
+    {
+        this.currentState = 'dataGridState';
+        this.proxy.selectedIndex = -1;
+        this.itemVO = null;
+    }
 
 	private function onSaveClick(event:Event):void
     {
-        this.currentState = 'dataGridState';
         this.proxy.submitItem(this.itemVO);
+    }
+
+    private function onCancelClick(event:Event):void
+    {
+        this.cancelFormEdit();
+    }
+
+    private function onAddItem(event:Event):void
+    {
+        this.proxy.selectedIndex = -1;
+        this.currentState = 'contentState';
+        this.isDisabled = false;
+        this.itemVO = new $moduleNameVO();
     }
 
     private function onEditItem(event:Event):void
     {
         this.currentState = 'contentState';
+        this.isDisabled = false;
         this.proxy.selectedIndex = dg.selectedIndex;
-        var reqObj:Object = dg.selectedItem.toRequestObject();
-        this.itemVO = $moduleNameVO.get$moduleNameVO(reqObj);
+        this.itemVO = dg.selectedItem.clone();
+    }
+
+    private function onGridDoubleClick(event:Event):void
+    {
+        this.currentState = 'contentState';
+        this.isDisabled = true;
+        this.proxy.selectedIndex = dg.selectedIndex;
+        this.itemVO = dg.selectedItem.clone();
     }
 
     private function onServerItemChanged(event:Event):void
     {
+        this.currentState = 'dataGridState';
         this.dg.refreshCurrentDataProvider();
     }
 
@@ -74,10 +95,23 @@
 
         Alert.show(errorMessage,  'Error!', Alert.OK);
     }
+
+	private function removeItem():void
+	{
+		var alert:Alert = Alert.show('Are you sure you want to remove this item?',  'Remove', Alert.OK | Alert.CANCEL);
+			alert.addEventListener('close', function closeAlert(e:Event):void { if (e['detail'] == Alert.OK)
+    									{
+    										proxy.removeItem(dg.selectedItem as $moduleNameVO);
+    									}});
+	}
+
 ]]></fx:Script>
-  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsRight" gap="2">
+  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsLeft" gap="2">
+      <j:style>
+          <js:SimpleCSSStyles padding="10"/>
+      </j:style>
       <j:IconButton text="Add" includeIn="dataGridState"
-                    click="{this.proxy.selectedIndex = -1; this.currentState = 'contentState'; this.itemVO = new $moduleNameVO();}">
+                    click="onAddItem(event)">
         <j:icon>
             <js:MaterialIcon text="{MaterialIconType.ADD}" />
         </j:icon>
@@ -106,10 +140,22 @@
         </j:icon>
       </j:IconButton>
   </j:HGroup>
-  %ViewContent%
-  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsCenter" gap="2" includeIn="contentState">
-    <j:Button text="Save" click="onSaveClick(event)"/>
-    <j:Button text="Cancel" click="{this.currentState = 'dataGridState'; this.proxy.selectedIndex = -1; this.itemVO = null}"/>
+  <j:HGroup percentWidth="100" itemsHorizontalAlign="itemsLeft" gap="2" includeIn="contentState">
+       <j:style>
+           <js:SimpleCSSStyles paddingLeft="10" marginTop="0"/>
+      </j:style>
+      <j:Button text="Save" click="onSaveClick(event)">
+           <j:beads>
+              <j:Disabled disabled="{isDisabled}"/>
+           </j:beads>
+      </j:Button>
+      <j:Button text="Cancel" click="onCancelClick(event)"/>
+      <j:Button text="Edit" click="onEditItem(event)">
+      	   <j:beads>
+      		   <j:Disabled disabled="{isDisabled == false}"/>
+      	   </j:beads>
+      </j:Button>
   </j:HGroup>
-  <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onEditItem(event)"/>
+  %ViewContent%
+  <dataGrid:DataGrid columns="{%DataGridColumnsList%}" dataProvider="{this.proxy.items}" localId="dg" includeIn="dataGridState" className="dxDataGrid" percentWidth="100" doubleClick="onGridDoubleClick(event)"/>
 </j:VGroup>

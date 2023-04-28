@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project
 {
@@ -64,15 +77,15 @@ package actionScripts.plugins.as3project
 	import actionScripts.plugin.settings.vo.StaticLabelSetting;
 	import actionScripts.plugin.settings.vo.StringSetting;
 	import actionScripts.plugin.templating.TemplatingHelper;
-	import actionScripts.plugins.as3project.exporter.FlashDevelopExporter;
-	import actionScripts.plugins.as3project.importer.FlashBuilderImporter;
-	import actionScripts.plugins.as3project.importer.FlashDevelopImporter;
+	import actionScripts.plugin.actionscript.as3project.exporter.FlashDevelopExporter;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
+	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	import actionScripts.ui.menu.vo.ProjectMenuTypes;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.OSXBookmarkerNotifiers;
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	import actionScripts.valueObjects.TemplateVO;
@@ -105,7 +118,7 @@ package actionScripts.plugins.as3project
 		private var isActionScriptProject:Boolean;
 		private var isMobileProject:Boolean;
 		private var isOpenProjectCall:Boolean;
-		private var isFeathersProject:Boolean;
+		private var isFeathersSDKProject:Boolean;
 		private var isVisualEditorProject:Boolean;
 		private var isVisualDominoEditorProject:Boolean;
 		private var isAway3DProject:Boolean;
@@ -291,20 +304,21 @@ package actionScripts.plugins.as3project
 			// remove any ( or ) stuff
 			if (!isOpenProjectCall)
 			{
-				var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ? event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) : event.templateDir.fileBridge.name;
-				if (isFlexJSRoyalProject)
+				if (event.proposedProjectName)
 				{
-					project.projectName = "NewJavaScriptBrowserProject";
-					project.isFlexJSRoyalProject = true;
-                }
-				else if(isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
-				{
-					project.projectName = "NewRoyalConvertProject";
-					project.isFlexJSRoyalProject = true;
+					project.projectName = event.proposedProjectName;
 				}
 				else
 				{
+					var tempName: String = (event.templateDir.fileBridge.name.indexOf("(") != -1) ?
+							event.templateDir.fileBridge.name.substr(0, event.templateDir.fileBridge.name.indexOf("(")) :
+							event.templateDir.fileBridge.name;
 					project.projectName = event.exportProject ? event.exportProject.name + "_exported" : "New"+tempName;
+				}
+
+				if (isFlexJSRoyalProject || isFlexJSRoyalVisualProject || isRoyaleDominoExportProject)
+				{
+					project.isFlexJSRoyalProject = true;
                 }
 			}
 			
@@ -331,7 +345,8 @@ package actionScripts.plugins.as3project
 			
 			settingsView.addCategory("");
 			// Remove spaces from project name
-			project.projectName = project.projectName.replace(/ /g, "");
+			if (project.projectName)
+				project.projectName = project.projectName.replace(/ /g, "");
 
 			var settings:SettingsWrapper = getProjectSettings(project, event);
 
@@ -551,8 +566,8 @@ package actionScripts.plugins.as3project
 
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = FlashDevelopImporter.test(value.fileBridge.getFile as File);
-			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value.fileBridge.getFile as File);
+			var tmpFile:FileLocation = FlashDevelopImporter.test(value);
+			if (!tmpFile) tmpFile = FlashBuilderImporter.test(value);
 			if (!tmpFile && !isProjectFromExistingSource && value.fileBridge.exists) tmpFile = value;
 			
 			if (tmpFile) 
@@ -832,7 +847,7 @@ package actionScripts.plugins.as3project
 					th.templatingData["$SourceFile"] = pvo.projectWithExistingSourcePaths[1].fileBridge.nativePath;
 				}
 			}
-			else if (isActionScriptProject || isFeathersProject || isAway3DProject)
+			else if (isActionScriptProject || isFeathersSDKProject || isAway3DProject)
 			{
 				sourceFileWithExtension = pvo.projectName + ".as";
 				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
@@ -852,6 +867,11 @@ package actionScripts.plugins.as3project
 			{
 				sourceFileWithExtension = pvo.projectName + ".xhtml";
 				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + sourceFileWithExtension) : "";
+			}
+			else if (isRoyaleDominoExportProject)
+			{
+				sourceFileWithExtension = pvo.projectName + ".mxml";
+				th.templatingData["$SourceFile"] = sourceFileWithExtension ? (sourcePath + File.separator + pvo.projectName + File.separator + sourceFileWithExtension) : "";
 			}
 			else
 			{
@@ -1215,7 +1235,7 @@ package actionScripts.plugins.as3project
 				// in case of Flex project (where mx or spark controls can be included)
 				// we need to populate the project's intrinsic libraries. this will also help
 				// when next time project opens we can detect between pure AS and flex type of project
-				if ((isLibraryProject && librarySettingObject.type != LibrarySettingsVO.ACTIONSCRIPT_LIBRARY) || (!isLibraryProject && !isActionScriptProject && !isFeathersProject))
+				if ((isLibraryProject && librarySettingObject.type != LibrarySettingsVO.ACTIONSCRIPT_LIBRARY) || (!isLibraryProject && !isActionScriptProject && !isFeathersSDKProject))
 				{
 					pvo.intrinsicLibraries.push("Library\\AS3\\frameworks\\Flex4");
 					pvo.isActionScriptOnly = false;
@@ -1337,7 +1357,7 @@ package actionScripts.plugins.as3project
 			customSdk = null;
 			
 			var sdkReference:SDKReferenceVO;
-			if (isFeathersProject)
+			if (isFeathersSDKProject)
 			{
 				sdkReference = SDKUtils.checkSDKTypeInSDKList(ComponentTypes.TYPE_FEATHERS);
 			}
@@ -1374,7 +1394,7 @@ package actionScripts.plugins.as3project
             isVisualEditorProject = false;
 			isVisualDominoEditorProject =false;
             isLibraryProject = false;
-            isFeathersProject = false;
+            isFeathersSDKProject = false;
             isMobileProject = false;
             isAway3DProject = false;
             isFlexJSRoyalProject = false;
@@ -1397,9 +1417,9 @@ package actionScripts.plugins.as3project
 				isLibraryProject = true;
 			}
 
-            if (templateName.indexOf(ProjectTemplateType.FEATHERS) != -1)
+            if (templateName.indexOf(ProjectTemplateType.FEATHERS_SDK) != -1)
             {
-                isFeathersProject = true;
+                isFeathersSDKProject = true;
             }
 
             if (templateName.indexOf(ProjectTemplateType.ACTIONSCRIPT) != -1)

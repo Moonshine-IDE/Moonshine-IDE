@@ -1,70 +1,92 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
 //
-// No warranty of merchantability or fitness of any kind.
-// Use this software at your own risk.
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.utils
 {
 	public class PropertyDeclarationStatement
 	{
-		protected static var stringProperty:String = "private var _%propertyName%:String;\n" +
-				"public function get %propertyName%():String\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:String):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
-		protected static var intProperty:String = "private var _%propertyName%:int;\n" +
-				"public function get %propertyName%():int\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:int):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
-		protected static var numberProperty:String = "private var _%propertyName%:Number;\n" +
-				"public function get %propertyName%():Number\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:Number):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
-		protected static var dateProperty:String = "private var _%propertyName%:Date;\n" +
-				"public function get %propertyName%():Date\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:Date):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
-		protected static var arrayListProperty:String = "private var _%propertyName%:ArrayList;\n" +
-				"public function get %propertyName%():ArrayList\n" +
-				"{\n" +
-				"\treturn _%propertyName%;\n" +
-				"}\n" +
-				"public function set %propertyName%(value:ArrayList):void\n" +
-				"{\n" +
-				"\t_%propertyName% = value;\n" +
-				"}";
+		protected static var stringProperty:String = "\t\tprivate var _%propertyName%:String;\n" +
+				"\t\tpublic function get %propertyName%():String\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:String):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var intProperty:String = "\t\tprivate var _%propertyName%:int;\n" +
+				"\t\tpublic function get %propertyName%():int\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:int):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var numberProperty:String = "\t\tprivate var _%propertyName%:Number;\n" +
+				"\t\tpublic function get %propertyName%():Number\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:Number):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var dateProperty:String = "\t\tprivate var _%propertyName%:Date;\n" +
+				"\t\tpublic function get %propertyName%():Date\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:Date):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var arrayListProperty:String = "\t\tprivate var _%propertyName%:ArrayList = new ArrayList();\n" +
+				"\t\tpublic function get %propertyName%():ArrayList\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:ArrayList):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
+		protected static var arrayProperty:String = "\t\tprivate var _%propertyName%:Array = [];\n" +
+				"\t\tpublic function get %propertyName%():Array\n" +
+				"\t\t{\n" +
+				"\t\t\t\treturn _%propertyName%;\n" +
+				"\t\t}\n" +
+				"\t\tpublic function set %propertyName%(value:Array):void\n" +
+				"\t\t{\n" +
+				"\t\t\t\t_%propertyName% = value;\n" +
+				"\t\t}";
 
 		public static function getString(field:String):String
 		{
@@ -89,6 +111,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter.utils
 		public static function getArrayList(field:String):String
 		{
 			return arrayListProperty.replace(/%propertyName%/ig, field);
+		}
+
+		public static function getArray(field:String):String
+		{
+			return arrayProperty.replace(/%propertyName%/ig, field);
 		}
 	}
 }

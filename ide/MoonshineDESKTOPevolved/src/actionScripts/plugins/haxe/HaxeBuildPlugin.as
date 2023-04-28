@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.haxe
 {
@@ -57,6 +70,7 @@ package actionScripts.plugins.haxe
     import actionScripts.valueObjects.Settings;
     import actionScripts.valueObjects.WebBrowserVO;
     import actionScripts.plugin.console.ConsoleEvent;
+    import actionScripts.plugin.core.compiler.ProjectActionEvent;
 
     public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
@@ -161,20 +175,69 @@ package actionScripts.plugins.haxe
         {
             super.activate();
 
-			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
+			dispatcher.addEventListener(ProjectActionEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
 			dispatcher.addEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
+			dispatcher.addEventListener(HaxeBuildEvent.CLEAN, haxeCleanHandler);
         }
 
         override public function deactivate():void
         {
             super.deactivate();
 
-			dispatcher.removeEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
+			dispatcher.removeEventListener(ProjectActionEvent.BUILD_AND_DEBUG, haxeBuildAndDebugHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_AND_RUN, haxeBuildAndRunHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
+			dispatcher.removeEventListener(HaxeBuildEvent.CLEAN, haxeCleanHandler);
+        }
+
+		override protected function checkProjectForInvalidPaths(project:ProjectVO):void
+		{
+			invalidPaths = [];
+			var tmpLocation:FileLocation;
+
+			var hxProject:HaxeProjectVO = project as HaxeProjectVO;
+			if (!hxProject)
+			{
+				return;
+			}
+			var tmpLocation:FileLocation;
+			invalidPaths = [];
+			
+			checkPathFileLocation(hxProject.folderLocation, "Location");
+			if (hxProject.sourceFolder) checkPathFileLocation(hxProject.sourceFolder, "Source Folder");
+			
+			for each (tmpLocation in hxProject.classpaths)
+			{
+				checkPathFileLocation(tmpLocation, "Classpath");
+			}
+			
+			onProjectPathsValidated((invalidPaths.length > 0) ? invalidPaths : null);
+		}
+
+        private function haxeCleanHandler(event:Event):void
+        {
+            var project:HaxeProjectVO = model.activeProject as HaxeProjectVO;
+            if (!project)
+            {
+                return;
+            }
+            if (!UtilsCore.isHaxeAvailable())
+            {
+                error("Project clean failed: Missing Haxe configuration in Moonshine settings.");
+                return;
+            }
+            if (project.isLime)
+            {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Cleaning ", false));
+                start(Vector.<String>([[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "openfl", "clean", project.limeTargetPlatform].join(" ")]), project.folderLocation);
+            }
+            else
+            {
+                error("Project clean not available for this type of Haxe project");
+            }
         }
 		
 		private function haxeBuildAndDebugHandler(event:Event):void
@@ -206,11 +269,11 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = null;
                         pendingRunFolder = null;
                         pendingDebug = true;
-			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+			            start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     {
                         if(!UtilsCore.isNodeAvailable())
@@ -227,7 +290,7 @@ package actionScripts.plugins.haxe
 			            var hxcppDebugServerFolder:File = File.applicationDirectory.resolvePath(HXCPP_DEBUG_SERVER_ROOT_PATH);
                         commandParts.push("--source=" + hxcppDebugServerFolder.nativePath);
                         commandParts.push(HAXEFLAG_MACRO_INJECT_SERVER);
-			            this.start(new <String>[commandParts.join(" ")], project.folderLocation);
+			            start(new <String>[commandParts.join(" ")], project.folderLocation);
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
@@ -241,7 +304,7 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = null;
                         pendingRunFolder = null;
                         pendingDebug = true;
-			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+			            start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -251,7 +314,7 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = null;
                         pendingRunFolder = null;
                         pendingDebug = true;
-			            this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
+			            start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"].join(" ")], project.folderLocation);
                         break;
                     }
                     default:
@@ -267,7 +330,7 @@ package actionScripts.plugins.haxe
                     case HaxeOutputVO.PLATFORM_FLASH_PLAYER:
                     {
                         pendingDebug = true;
-                        this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, "--debug", "-D", "fdb", project.getHXML().split("\n").join(" ")].join(" ")], project.folderLocation);
+                        start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, "--debug", "-D", "fdb", project.getHXML().split("\n").join(" ")].join(" ")], project.folderLocation);
                         break;
                     }
                     default:
@@ -307,7 +370,7 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = null;
                         pendingRunFolder = null;
                         pendingDebug = false;
-                        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-release"].join(" ")], project.folderLocation);
+                        start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-release"].join(" ")], project.folderLocation);
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -317,12 +380,12 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = null;
                         pendingRunFolder = null;
                         pendingDebug = false;
-                        this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-release"].join(" ")], project.folderLocation);
+                        start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-release"].join(" ")], project.folderLocation);
                         break;
                     }
                     default:
                     {
-			            this.startLimeTest(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.limeTargetPlatform, "-release"].join(" ")], project.folderLocation);
+			            startLimeTest(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "test", project.limeTargetPlatform, "-release"].join(" ")], project.folderLocation);
                     }
                 }
             }
@@ -342,7 +405,7 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = CommandLineUtil.joinOptions(new <String>[project.haxeOutput.path.fileBridge.resolvePath("bin" + File.separator + csharpExecutableName).fileBridge.nativePath]);
                         pendingRunFolder = project.haxeOutput.path.fileBridge.resolvePath("bin").fileBridge.nativePath;
                         pendingDebug = false;
-			            this.start(new <String>[buildCommand], project.folderLocation);
+			            start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
                     case HaxeOutputVO.PLATFORM_CPP:
@@ -356,13 +419,13 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = CommandLineUtil.joinOptions(new <String>[project.haxeOutput.path.fileBridge.resolvePath(cppExecutableName).fileBridge.nativePath]);
                         pendingRunFolder = project.haxeOutput.path.fileBridge.nativePath;
                         pendingDebug = false;
-			            this.start(new <String>[buildCommand], project.folderLocation);
+			            start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
                     case HaxeOutputVO.PLATFORM_FLASH_PLAYER:
                     {
                         pendingRunProject = project;
-			            this.start(new <String>[buildCommand], project.folderLocation);
+			            start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
                     case HaxeOutputVO.PLATFORM_JAVA:
@@ -372,7 +435,7 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = CommandLineUtil.joinOptions(new <String>[EnvironmentExecPaths.JAVA_ENVIRON_EXEC_PATH, "-jar", project.haxeOutput.path.fileBridge.resolvePath(jarName).fileBridge.nativePath]);
                         pendingRunFolder = project.haxeOutput.path.fileBridge.nativePath;
                         pendingDebug = false;
-			            this.start(new <String>[buildCommand], project.folderLocation);
+			            start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
                     case HaxeOutputVO.PLATFORM_NEKO:
@@ -381,7 +444,7 @@ package actionScripts.plugins.haxe
                         pendingRunCommand = CommandLineUtil.joinOptions(new <String>[EnvironmentExecPaths.NEKO_ENVIRON_EXEC_PATH, project.haxeOutput.path.fileBridge.nativePath]);
                         pendingRunFolder = project.haxeOutput.path.fileBridge.parent.fileBridge.nativePath;
                         pendingDebug = false;
-			            this.start(new <String>[buildCommand], project.folderLocation);
+			            start(new <String>[buildCommand], project.folderLocation);
                         break;
                     }
                     default:
@@ -411,14 +474,14 @@ package actionScripts.plugins.haxe
                 switch(project.limeTargetPlatform)
                 {
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
 			            var hxcppDebugServerFolder:File = File.applicationDirectory.resolvePath(HXCPP_DEBUG_SERVER_ROOT_PATH);
                         commandParts.push("--source=" + hxcppDebugServerFolder.nativePath);
                         commandParts.push(HAXEFLAG_MACRO_INJECT_SERVER);
                         break;
                 }
-			    this.start(new <String>[commandParts.join(" ")], project.folderLocation);
+			    start(new <String>[commandParts.join(" ")], project.folderLocation);
             }
             else
             {
@@ -430,7 +493,7 @@ package actionScripts.plugins.haxe
                     //required for Flash/AIR debugger
                     buildCommand += " -D fdb";
                 }
-			    this.start(new <String>[buildCommand], project.folderLocation);
+			    start(new <String>[buildCommand], project.folderLocation);
             }
 		}
 		
@@ -449,11 +512,11 @@ package actionScripts.plugins.haxe
 
             if(project.isLime)
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-final"].join(" ")], project.folderLocation);
+			    start(new <String>[[EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-final"].join(" ")], project.folderLocation);
             }
             else
             {
-			    this.start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, project.getHXML().split("\n").join(" ")].join(" ")], project.folderLocation);
+			    start(new <String>[[EnvironmentExecPaths.HAXE_ENVIRON_EXEC_PATH, project.getHXML().split("\n").join(" ")].join(" ")], project.folderLocation);
             }
 		}
 
@@ -530,6 +593,8 @@ package actionScripts.plugins.haxe
             var project:ProjectVO = model.activeProject;
             if (project)
             {
+                dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, project.projectName, "Building "));
+                dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onProjectBuildTerminate);
                 dispatcher.addEventListener(DebugActionEvent.DEBUG_STOP, onDebugStop, false, 0, true);
 			    dispatcher.addEventListener(ApplicationEvent.APPLICATION_EXIT, onApplicationExit, false, 0, true);
             }
@@ -593,16 +658,21 @@ package actionScripts.plugins.haxe
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     {
-                        var cppExecutableName:String = outputFileNameWithoutExtension;
+                        var cppExecutableRelativePath:String = outputFileNameWithoutExtension;
                         if(Settings.os == "win")
                         {
-                            cppExecutableName += ".exe";
+                            cppExecutableRelativePath += ".exe";
                         }
+                        else if (Settings.os == "mac")
+                        {
+                            cppExecutableRelativePath += ".app" + File.separator + "Contents" + File.separator + "MacOS" + File.separator + cppExecutableRelativePath;
+                        }
+                        cppExecutableRelativePath = outputPath + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableRelativePath;
                         var cppExeFile:File = project.folderLocation.fileBridge
-                            .resolvePath(outputPath + File.separator + project.limeTargetPlatform + File.separator + "bin" + File.separator + cppExecutableName).fileBridge.getFile as File;
+                            .resolvePath(cppExecutableRelativePath).fileBridge.getFile as File;
                         launchArgs["name"] = "Moonshine Lime HXCPP Launch";
                         launchArgs["program"] = cppExeFile.nativePath;
                         debugAdapterType = "hxcpp";
@@ -795,7 +865,7 @@ package actionScripts.plugins.haxe
                         break;
                     }
                     case HaxeProjectVO.LIME_PLATFORM_WINDOWS:
-                    case HaxeProjectVO.LIME_PLATFORM_MAC:
+                    case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
                     case HaxeProjectVO.LIME_PLATFORM_HASHLINK:
                     case HaxeProjectVO.LIME_PLATFORM_AIR:
@@ -831,13 +901,15 @@ package actionScripts.plugins.haxe
         override protected function onNativeProcessIOError(event:IOErrorEvent):void
         {
             super.onNativeProcessIOError(event);
+            stop();
             dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
         }
 
         override protected function onNativeProcessStandardErrorData(event:ProgressEvent):void
         {
 			super.onNativeProcessStandardErrorData(event);
-			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+            //stop();
+			//dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
 		}
 
         override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
@@ -868,7 +940,7 @@ package actionScripts.plugins.haxe
             {
                 warning("Haxe build has been terminated.");
             }
-            else if(event.exitCode != 0)
+            else if (event.exitCode != 0)
             {
                 warning("Haxe build has been terminated with exit code: " + event.exitCode);
             }

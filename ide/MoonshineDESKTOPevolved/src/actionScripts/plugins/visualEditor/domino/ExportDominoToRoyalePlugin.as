@@ -1,19 +1,32 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
 //
-// No warranty of merchantability or fitness of any kind.
-// Use this software at your own risk.
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.visualEditor.domino
@@ -31,6 +44,8 @@ package actionScripts.plugins.visualEditor.domino
     import surface.SurfaceMockup;
     import lookup.Lookup;
     import actionScripts.valueObjects.ProjectVO;
+
+    import view.dominoFormBuilder.vo.DominoFormVO;
 
     public class ExportDominoToRoyalePlugin extends PluginBase
     {
@@ -80,23 +95,32 @@ package actionScripts.plugins.visualEditor.domino
 
             var convertedFiles:Array = [];
 
-            convertToRoyale(visualEditorFiles, convertedFiles, conversionFinishedCallback);
+            //Convert forms and subforms
+            convertToSurfaceMockup(visualEditorFiles, convertedFiles, conversionFinishedCallback);
         }
 
-        private function convertToRoyale(visualEditorFiles:Array, convertedFiles:Array, finishCallback:Function):void
+        private function convertToSurfaceMockup(visualEditorFiles:Array, convertedFiles:Array, finishCallback:Function):void
         {
             for (var i:int = 0; i < visualEditorFiles.length; i++)
             {
-                var veFile:FileLocation = new FileLocation(visualEditorFiles[i].nativePath);
+                var veFilePath:String = visualEditorFiles[i].file.nativePath;
+                var veFile:FileLocation = new FileLocation(veFilePath);
                 if (!veFile.fileBridge.isDirectory &&
                     veFile.fileBridge.extension == "xml")
                 {
                     var dominoXML:XML = this.getXmlConversion(veFile);
+                    var subFormsXML:XMLList = dominoXML.descendants("Subformref").@subFormName;
+                    var subFormsNames:Array = [];
+                    for each (var subFormXML:XML in subFormsXML)
+                    {
+                        subFormsNames.push(subFormXML.toString());
+                    }
+
                     var surfaceMockup:SurfaceMockup = new SurfaceMockup();
 
                     DominoConverter.fromXML(surfaceMockup, Lookup.DominoNonUILookup,  dominoXML);
 
-                    convertedFiles.push({surface: surfaceMockup, file: veFile});
+                    convertedFiles.push({surface: surfaceMockup, file: veFile, isSubForm: visualEditorFiles[i].isSubForm, subFormsNames: subFormsNames});
 
                     finishCallback(convertedFiles);
                 }
@@ -106,7 +130,7 @@ package actionScripts.plugins.visualEditor.domino
                     if (veFiles.length > 0)
                     {
                         conversionCounter += veFiles.length - 1;
-                        convertToRoyale(veFiles, convertedFiles, finishCallback);
+                        convertToSurfaceMockup(veFiles, convertedFiles, finishCallback);
                     }
                     else
                     {
@@ -116,17 +140,69 @@ package actionScripts.plugins.visualEditor.domino
             }
         }
 
+        private function conversionFinishedCallback(convertedFiles:Array):void
+        {
+            conversionCounter--;
+            if (conversionCounter == 0)
+            {
+                /*var convertedFilesForms:Array = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                    return !item.isSubForm;
+                });
+                var formsViews:Array = createConvertedFiles(convertedFilesForms, false);
+
+                convertedFilesForms = convertedFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                    return item.isSubForm;
+                });*/
+                var formsViews:Array = createConvertedFiles(convertedFiles);
+
+             //   var formsAndSubForms:Array = formsViews.concat(subFormsViews);
+               // combineFormsWithSubforms(formsViews, subFormsViews);
+                //combineFormsWithSubforms(subFormsViews, subFormsViews);
+
+                saveMainFileWithViews(formsViews);
+            }
+        }
+
         private function getVisualEditorFiles(destination:FileWrapper):Array
         {
             var separator:String = destination.file.fileBridge.separator;
             var visualEditorSrcPath:String = "visualeditor-src" + separator + "main" + separator + "webapp";
+            var visualEditorSubFormsSrcPath:String = visualEditorSrcPath + separator + "subforms";
+
             var visualEditorSrcFolder:FileLocation = destination.file.resolvePath(visualEditorSrcPath);
+            var visualEditorSubFormsSrcFolder:FileLocation = destination.file.resolvePath(visualEditorSubFormsSrcPath);
 
-            var veSrcFiles:Array = visualEditorSrcFolder.fileBridge.getDirectoryListing();
+            var veSrcFormsFiles:Array = visualEditorSrcFolder.fileBridge.getDirectoryListing();
 
-            return veSrcFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+            var veSrcSubFormsFiles:Array = [];
+            if (visualEditorSubFormsSrcFolder.fileBridge.exists)
+            {
+                veSrcSubFormsFiles = visualEditorSubFormsSrcFolder.fileBridge.getDirectoryListing();
+            }
+
+            var formFiles:Array = [];
+            var veFormFiles:Array = veSrcFormsFiles.filter(function(item:Object, index:int, array:Array):Boolean {
                 return item.extension == "xml";
             });
+
+            var formFile:Object = null;
+            for (var i:int = 0; i < veFormFiles.length; i++)
+            {
+                formFile = veFormFiles[i];
+                formFiles.push({file: formFile, isSubForm: false});
+            }
+
+            var veSubFormsFiles:Array = veSrcSubFormsFiles.filter(function(item:Object, index:int, array:Array):Boolean {
+                return item.extension == "xml";
+            });
+
+            for (var j:int = 0; j < veSubFormsFiles.length; j++)
+            {
+                formFile = veSubFormsFiles[j];
+                formFiles.push({file: formFile, isSubForm: true});
+            }
+
+            return formFiles;
         }
 
         private function getXmlConversion(file:FileLocation):XML
@@ -137,25 +213,19 @@ package actionScripts.plugins.visualEditor.domino
             return xmlConversion;
         }
 
-        private function conversionFinishedCallback(convertedFiles:Array):void
-        {
-            conversionCounter--;
-            if (conversionCounter == 0)
-            {
-                var views:Array = createConvertedFiles(convertedFiles);
-
-                saveMainFileWithViews(views);
-            }
-        }
-
         private function saveMainFileWithViews(views:Array):void
         {
             var mainFile:FileLocation = exportedProject.targets[0];
             var content:String = String(mainFile.fileBridge.read());
 
+            var navigationViews:Array = views.filter(function(item:Object, index:int, arr:Array):Boolean{
+                return !item.isSubForm;
+            });
+
             var contentData:Object = {};
-                contentData["$NavigationContent"] = getNavigationDp(views);
-                contentData["$ApplicationMainContent"] = getMainContent(views);
+                contentData["$NavigationContent"] = getNavigationDp(navigationViews);
+                contentData["$ApplicationMainContent"] = getMainContent(navigationViews);
+                contentData["$ProjectName"] = exportedProject.name;
 
             content = TemplatingHelper.replace(content, contentData);
 
@@ -172,7 +242,8 @@ package actionScripts.plugins.visualEditor.domino
         private function createConvertedFiles(convertedFiles:Array):Array
         {
             var views:Array = [];
-            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath("views");
+            var viewFolder:FileLocation = exportedProject.sourceFolder.resolvePath(exportedProject.name +
+                    exportedProject.sourceFolder.fileBridge.separator + "views");
             if (!viewFolder.fileBridge.exists)
             {
                 viewFolder.fileBridge.createDirectory();
@@ -184,33 +255,51 @@ package actionScripts.plugins.visualEditor.domino
                 var viewObj:Object = {};
 
                 var convertedFile:FileLocation = item.file;
-                var destinationFilePath:String = convertedFile.fileBridge.parent.name == "pages" ?
+                var destinationFileName:String = convertedFile.fileBridge.parent.name == "pages" ?
                         convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator +
                                 "pages" + exportedProject.sourceFolder.fileBridge.separator, "") :
                         convertedFile.fileBridge.nativePath.replace(currentProject.visualEditorSourceFolder.fileBridge.nativePath + exportedProject.sourceFolder.fileBridge.separator, "");
 
                 //Replace white spaces in file for conversion purposes
-                destinationFilePath = destinationFilePath.replace(/[\s_\(\)]/, "");
-                var extensionIndex:int = destinationFilePath.lastIndexOf(convertedFile.fileBridge.extension);
+                destinationFileName = destinationFileName.replace(/[\s_\(\)-]/g, "");
+                		
+                var extensionIndex:int = destinationFileName.lastIndexOf(convertedFile.fileBridge.extension);
                 if (extensionIndex > -1)
                 {
-                    var nameWithoutExt:String = destinationFilePath.substring(0, extensionIndex - 1);
+                    var nameWithoutExt:String = destinationFileName.substring(0, extensionIndex - 1);
                     viewObj.label = nameWithoutExt;
                     viewObj.content = nameWithoutExt;
-                    destinationFilePath = destinationFilePath.replace(".xml", ".mxml");
+                    destinationFileName = destinationFileName.replace(".xml", ".mxml");
                 }
 
-                convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFilePath);
-   
-                var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
-                item.pageContent = royaleMXMLContentFile;
+                convertedFile = viewFolder.resolvePath(viewFolder.fileBridge.nativePath + viewFolder.fileBridge.separator + destinationFileName);
+                convertedFiles[i].file = convertedFile;
 
+                var royaleMXMLContentFile:XML = item.surface.toRoyaleConvertCode();
+                if (!item.isSubForm)
+                {
+                    royaleMXMLContentFile.children()[0].@includeIn = "contentState";
+                }
+
+                var contentData:Object = {};
+                contentData["$ProjectName"] = exportedProject.name;
+
+                XML.ignoreWhitespace = true;
+                var royaleMXMLContentFileString:String = royaleMXMLContentFile.toXMLString();
+                royaleMXMLContentFileString = TemplatingHelper.replace(royaleMXMLContentFileString, contentData);
+
+                item.pageContent = new XML(royaleMXMLContentFileString);
+
+                viewObj.isSubForm = item.isSubForm;
                 views.push(viewObj);
             }
 
+            var modulesPath:FileLocation = viewFolder.resolvePath("modules");
+            var modulesSubFormPath:FileLocation = viewFolder.resolvePath("modules" + exportedProject.sourceFolder.fileBridge.separator + "subforms");
+
             new DominoRoyaleModuleExporter(
-                    exportedProject.sourceFolder.resolvePath("views/modules"),
-                    exportedProject as ProjectVO, convertedFiles
+                     modulesPath,
+                    exportedProject as ProjectVO, convertedFiles, modulesSubFormPath
             );
 
             return views;
@@ -246,8 +335,6 @@ package actionScripts.plugins.visualEditor.domino
         private function getMainContent(views:Array):String
         {
             var jNamespace:Namespace = new Namespace("j", "library://ns.apache.org/royale/jewel");
-            var viewNamespace:Namespace = new Namespace("view", "views.*");
-
             var content:XML = <ApplicationMainContent/>;
                 content.@id="mainContent";
                 content.@hasTopAppBar="true";
@@ -268,7 +355,6 @@ package actionScripts.plugins.visualEditor.domino
                     sectionContent.@name = item.content;
                 var viewName:String = String(item.label).split(" ").join("");
                 var view:XML = new XML('<' + viewName + '/>');
-                    view.setNamespace(viewNamespace);
 
                 sectionContent.appendChild(view);
                 content.appendChild(sectionContent);

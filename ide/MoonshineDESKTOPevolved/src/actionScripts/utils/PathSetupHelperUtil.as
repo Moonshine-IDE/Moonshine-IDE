@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
@@ -37,7 +50,7 @@ package actionScripts.utils
 	import actionScripts.plugins.domino.DominoPlugin;
 	import actionScripts.plugins.git.GitHubPlugin;
 	import actionScripts.plugins.svn.SVNPlugin;
-	import actionScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.SDKReferenceVO;
@@ -50,6 +63,129 @@ package actionScripts.utils
 		private static var model:IDEModel = IDEModel.getInstance();
 		private static var environmentSetupUtils:EnvironmentSetupUtils = EnvironmentSetupUtils.getInstance();
 		private static var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+
+		public static function getRelativePathAgainstProject(projectPath:Object, sourcePath:Object, forceRelativePath:Boolean=false):String
+		{
+			if (!projectPath)
+			{
+				throw Error("Path against project parameters must be non null.");
+				return null;
+			}
+			if (!sourcePath)
+				return "";
+
+			var projectPathFile:File;
+			var sourcePathFile:File;
+
+			// type checks
+			if (projectPath is File) projectPathFile = projectPath as File;
+			else if (projectPath is FileLocation) projectPathFile = (projectPath as FileLocation).fileBridge.getFile as File;
+			else if (projectPath is String) projectPathFile = new File(projectPath as String);
+
+			if (sourcePath is File) sourcePathFile = sourcePath as File;
+			else if (sourcePath is FileLocation) sourcePathFile = (sourcePath as FileLocation).fileBridge.getFile as File;
+			else if (sourcePath is String) sourcePathFile = new File(sourcePath as String);
+
+			var projectPathString:String = projectPathFile.nativePath.toLowerCase();
+			var sourcePathString:String = sourcePathFile.nativePath.toLowerCase();
+			var isDriveDifferenceOnWindows:Boolean;
+
+			// specific drive-check case on Windows
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				if (projectPathString.charAt(0) != sourcePathString.charAt(0))
+				{
+					isDriveDifferenceOnWindows = true;
+				}
+			}
+
+			// relative path conditions applicable for all platforms
+			if (!isDriveDifferenceOnWindows || ConstantsCoreVO.IS_MACOS)
+			{
+				var sourceRelativePath:String = projectPathFile.getRelativePath(sourcePathFile, true);
+				// if only non-null
+				if (sourceRelativePath || sourceRelativePath == "")
+				{
+					if (sourcePathString.indexOf(projectPathString + File.separator) != -1)
+					{
+						// source path is inside the project directory
+						return sourceRelativePath;
+					}
+					else
+					{
+						// source path is outside from the project directory
+						// - we want to support only one ../ case
+						var parentCount:int = sourceRelativePath.match(/(\.\.\/)/g).length;
+						if (parentCount == 1)
+						{
+							return sourceRelativePath;
+						}
+						else if (parentCount == 0)
+						{
+							return ".";
+						}
+					}
+				}
+			}
+
+			// if above matches not triggers, send absolute path
+			return sourcePathFile.nativePath;
+		}
+
+		public static function getAbsolutePathAgainstProject(projectPath:Object, sourceRelativePathString:String):String
+		{
+			if (!projectPath)
+			{
+				throw Error("Absolute path against project parameters must be non null.");
+				return null;
+			}
+			if (!sourceRelativePathString) 
+				return "";
+
+			var projectPathFile:File;
+			var sourcePathFile:File;
+			var isSourceRelativePathStringIsAbsolutePathString:Boolean;
+			try
+			{
+				sourcePathFile = new File(sourceRelativePathString);
+				isSourceRelativePathStringIsAbsolutePathString = true;
+			} catch (e:Error){}
+
+			// type checks
+			if (projectPath is File) projectPathFile = projectPath as File;
+			else if (projectPath is FileLocation) projectPathFile = (projectPath as FileLocation).fileBridge.getFile as File;
+			else if (projectPath is String) projectPathFile = new File(projectPath as String);
+
+			var isDottedSyntax:Boolean = (sourceRelativePathString.indexOf("../") != -1);
+			var isDottedSyntaxWithSingleDot:Array = sourceRelativePathString.match(/^.\//g);
+			if (sourceRelativePathString == ".")
+			{
+				return projectPathFile.nativePath;
+			}
+			else if (isDottedSyntax)
+			{
+				var parentCount:int = sourceRelativePathString.match(/(\.\.\/)/g).length;
+				sourceRelativePathString = sourceRelativePathString.replace(/(\.\.\/)/g, "");
+				while (parentCount != 0)
+				{
+					sourcePathFile = (sourcePathFile && sourcePathFile.parent) || projectPathFile.parent;
+					parentCount --;
+				}
+				return sourcePathFile.nativePath + File.separator + sourceRelativePathString;
+			}
+			else if (isDottedSyntaxWithSingleDot.length > 0)
+			{
+				sourceRelativePathString = sourceRelativePathString.replace(/^.\//g, File.separator);
+				return projectPathFile.nativePath + sourceRelativePathString;
+			}
+
+			// in case of full path
+			if (isSourceRelativePathStringIsAbsolutePathString) 
+				return sourceRelativePathString;
+			
+			// in case of path that relative to the project
+			return (projectPathFile.nativePath + File.separator + sourceRelativePathString);
+		}
 		
 		public static function openSettingsViewFor(type:String):void
 		{
@@ -325,9 +461,9 @@ package actionScripts.utils
 
 			if (!isGitPresent)
 			{
-				if (ConstantsCoreVO.IS_MACOS && !isGitPresent)
+				if (ConstantsCoreVO.IS_MACOS)
 				{
-					dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_GIT, message: "Feature available. Click on Configure to allow"}));
+					//dispatcher.dispatchEvent(new HelperEvent(HelperConstants.WARNING, {type: ComponentTypes.TYPE_GIT, message: "Feature available. Click on Configure to allow"}));
 				}
 				else
 				{

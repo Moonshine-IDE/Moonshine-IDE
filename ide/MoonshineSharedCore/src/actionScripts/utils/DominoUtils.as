@@ -1,30 +1,45 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2016 Prominic.NET, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
 //
-// Author: Prominic.NET, Inc. 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
     import mx.core.UIComponent;
 	import mx.controls.Alert;
-	import com.adobe.utils.StringUtil;
+	import mx.utils.StringUtil;
+	import actionScripts.locator.IDEModel;
     
     public class DominoUtils
 	{
+		
+
         public static function getDominoParentContent(title:String,windowsTitle:String):XML
 		{	   
 			return getDominoMainContainer(title,windowsTitle);	
@@ -32,6 +47,8 @@ package actionScripts.utils
 
         private static function getDominoMainContainer(title:String,windowsTitle:String):XML
 		{
+				var model:IDEModel = IDEModel.getInstance();
+				var separator:String = model.fileCore.separator;
 				var dat:Date = new Date();
 				var xml_str:String = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 				xml_str=xml_str+"<note class='form' xmlns='http://www.lotus.com/dxl' version='9.0' maintenanceversion='1.4' replicaid='4825808B00336E81'>";
@@ -45,7 +62,12 @@ package actionScripts.utils
 				// xml_str=xml_str+"<addedtofile><datetime>"+dat+"</datetime></addedtofile>";
 				// xml_str=xml_str+"</noteinfo>"
 				if(windowsTitle!=null  && windowsTitle!=""){
-					xml_str=xml_str+"<item name='$WindowTitle' sign='true'><formula>"+windowsTitle+"</formula></item>"
+					var separatorIndex:int=windowsTitle.lastIndexOf(separator);
+					if(separatorIndex>0){
+						windowsTitle = windowsTitle.substring(separatorIndex + 1);
+					}
+					
+					xml_str=xml_str+"<item name='$WindowTitle' sign='true'><formula>@Text('"+windowsTitle+"')</formula></item>"
 				}
 				xml_str=xml_str+"<item name='$Info' sign='true'><rawitemdata type='1'>hhgBAIAAAAAAgAAAAQABAP///wAQAAAA</rawitemdata></item>"
 				xml_str=xml_str+"<item name='$Flags'><text/></item>"
@@ -81,6 +103,7 @@ package actionScripts.utils
 		public static function fixDominButton(xml:XML):String
 		{
 			//remove the first div from table cells
+			var tabpattern:RegExp = /&amp;#tab;/g;
 			
 			var tableCells:XMLList=xml.descendants("tablecell");
 			
@@ -221,7 +244,7 @@ package actionScripts.utils
 					result=result3;
 
 				}
-			 var tabpattern:RegExp = /&amp;#tab;/g;
+			 
 			 result = result.replace(tabpattern,"\t");
 			
 			// remove all new line from section
@@ -257,8 +280,18 @@ package actionScripts.utils
 			}
 
 			
+			result = result.replace(tabpattern,"\t");
 			
 			return result;
+		}
+
+		public static function fixNewTab(xml:XML):XML
+		{
+			var tabpattern:RegExp = /&amp;#tab;/g;
+			var xmlstr:String = xml.toXMLString();
+			xmlstr=xmlstr.replace(tabpattern,"\t");
+			xml =new XML(xmlstr);
+			return xml;
 		}
 
     }

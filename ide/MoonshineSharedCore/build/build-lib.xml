@@ -560,6 +560,20 @@
 				<string>Owner</string>]]>
 				</replacevalue>
 			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 6</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 6</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 7</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 7</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
 		</replace>
 		<!-- Since its found impossible to call an ANT variable inside ![CDATA[ section to replace <cfBundleName> value
 			I need to make a conditional statement -->
@@ -575,7 +589,26 @@
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>60.0</string>]]></replacevalue>
+					<string>60.0</string>
+					<key>CFBundleSupportedPlatforms</key>
+					<array>
+						<string>MacOSX</string>
+					</array>
+					<key>CFBundleURLTypes</key>
+					<array>
+						<dict>
+							<key>CFBundleIdentifier</key>
+							<string>com.moonshine-ide.development</string>
+							<key>CFBundleTypeRole</key>
+							<string>Viewer</string>
+							<key>CFBundleURLName</key>
+							<string>com.moonshine-ide.development</string>
+							<key>CFBundleURLSchemes</key>
+							<array>
+								<string>moonshinedevelopment</string>
+							</array>
+						</dict>
+					</array>]]></replacevalue>
 				</replace>
 			</then>
 			<else>
@@ -588,7 +621,25 @@
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>60.0</string>]]></replacevalue>
+					<string>60.0</string><key>CFBundleSupportedPlatforms</key>
+					<array>
+						<string>MacOSX</string>
+					</array>
+					<key>CFBundleURLTypes</key>
+					<array>
+						<dict>
+							<key>CFBundleIdentifier</key>
+							<string>com.moonshine-ide</string>
+							<key>CFBundleTypeRole</key>
+							<string>Viewer</string>
+							<key>CFBundleURLName</key>
+							<string>com.moonshine-ide</string>
+							<key>CFBundleURLSchemes</key>
+							<array>
+								<string>moonshine</string>
+							</array>
+						</dict>
+					</array>]]></replacevalue>
 				</replace>
 			</else>			
 		</if>
@@ -931,14 +982,15 @@
 
 	<target name="InstallHaxeDependencies" unless="nohaxelib">
 		<echo>Installing Haxe Libraries</echo>
-                <haxelibInstall library="feathersui" version="1.0.0-rc.2" />
-                <haxelibInstall library="openfl" version="9.1.0" />
-                <haxelibInstall library="actuate" version="1.8.9" />
-                <haxelibInstall library="lime" version="7.9.0" />
+                <haxelibInstall library="lime" version="8.0.0" />
+                <haxelibInstall library="openfl" version="9.2.0" />
+                <haxelibInstall library="feathersui" version="1.0.0" />
+                <haxelibInstall library="actuate" />
                 <haxelibInstall library="markdown-openfl-textfield" version="1.0.2" />
-                <haxelibInstall library="format" version="3.5.0" />
-                <haxelibInstall library="hxp" version="1.2.2" />
-
+                <haxelibInstall library="format" />
+                <haxelibInstall library="hxp" />
+                <haxelibInstall library="amfio" />
+				
                 <!-- install from Git -->
  		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
  			dir="${LibraryGUICore}"
@@ -1197,17 +1249,13 @@
 
 	<macrodef name="haxelibInstall" description="Install a haxe library">
 		<attribute name="library" />
-		<attribute name="version" />
+		<attribute name="version" default="" />
 
 		<sequential>
 			<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
 				dir="${LibraryGUICore}"
 				failonerror="true">
-				<arg value="install"/>
-				<arg value="@{library}"/>
-				<arg value="@{version}"/>
-				<arg value="--always"/> <!-- accept prompt to switch to versions that are already installed -->
-				<arg value="--quiet"/>
+				<arg line="install @{library} @{version} --always --quiet" />
 			</exec>
 		
 		</sequential>

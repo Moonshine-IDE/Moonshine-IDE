@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<j:Card xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:j="library://ns.apache.org/royale/jewel"
+		xmlns:js="library://ns.apache.org/royale/basic" 
+		xmlns:html="library://ns.apache.org/royale/html"
+		itemsVerticalAlign="itemsCenter" itemsHorizontalAlign="itemsCenter" gap="2"
+		initComplete="onMultiValueCheckboxesInitComplete(event)">
+	<fx:Script>
+		<![CDATA[
+            import org.apache.royale.collections.ArrayList;
+            import org.apache.royale.core.IChild;
+            import org.apache.royale.jewel.CheckBox;
+
+            private var _checkboxesKeywords:String;
+
+            public function get checkboxesKeywords():String
+            {
+            		return _checkboxesKeywords;
+            }
+
+            public function set checkboxesKeywords(value:String):void
+            {
+            		if (_checkboxesKeywords != value)
+            		{
+            			_checkboxesKeywords = value;
+            			
+            			this.createCheckboxes();
+        			}
+            }
+            
+            private var _isDisabled:Boolean = false;
+
+            [Bindable]
+            public function get isDisabled():Boolean
+            {
+                return _isDisabled;
+            }
+
+            public function set isDisabled(value:Boolean):void
+            {
+                if (this._isDisabled != value)
+                {
+                    _isDisabled = value;
+                }
+            }
+
+            private function onMultiValueCheckboxesInitComplete(event:Event):void
+            {
+                this.tvl.requestedRowCount = 4;
+                this.tvl.verticalGap = 2;
+                this.tvl.rowHeight = 25;
+
+                this.createCheckboxes();
+            }
+            
+			private function createCheckboxes():void
+			{
+				if (!this.addItemGroup) return;
+
+                if (this.addItemGroup.numElements > 0)
+                {
+                    for (var i:int = this.addItemGroup.numElements - 1; i > this.addItemGroup.numElements; i--)
+                    {
+                        var checkBoxItem:IChild = this.addItemGroup.getElementAt(i);
+                        this.addItemGroup.removeElement(checkBoxItem);
+                    }
+                }
+
+                var checkboxes:Array = this.getCheckboxesList(this. checkboxesKeywords);
+                for each (var c:Object in checkboxes)
+                {
+                    var checkBox:CheckBox = new CheckBox();
+                        checkBox.maxHeight = 30;
+                        checkBox.minHeight = 20;
+
+                        checkBox.text = c.label;
+                        checkBox.selected = c.value;
+
+                    this.addItemGroup.addElement(checkBox);
+                }
+			}
+			
+			private function getCheckboxesList(keywords:String):Array
+			{
+				var checkboxes:Array = [];
+                if (!keywords)
+                {
+                    checkboxes.push({label: "", value: false});
+                    return checkboxes;
+                }
+				var keywordsArr:Array = keywords.split("\n");
+				for each (var k:String in keywordsArr)
+				{
+					var checkbox:Array = k.split("|");
+					var checkboxValue:Boolean = false;
+					var checkBoxLabel:String = "";
+	
+					if (checkbox.length == 1)
+					{
+						checkBoxLabel = checkbox[0];
+						checkboxValue = checkbox[0].toLowerCase() == "true" ||
+										checkbox[0].toLowerCase() == "1" ||
+										checkbox[0].toLowerCase() == "yes";
+					}
+					else if (checkbox.length > 1)
+					{
+						checkBoxLabel = checkbox[0];
+						checkboxValue = checkbox[1].toLowerCase() == "true" ||
+										checkbox[1].toLowerCase() == "1" ||
+										checkbox[1].toLowerCase() == "yes";
+					}
+	
+					checkboxes.push({label: checkBoxLabel, value: checkboxValue});
+				}
+	
+				return checkboxes;
+			}
+		]]>
+	</fx:Script>
+	<j:beads>
+		<js:ContainerDataBinding />
+	</j:beads>
+
+	<j:Group localId="addItemGroup" 
+			  percentWidth="100">
+		<j:beads>
+			<j:TileVerticalLayout localId="tvl" waitForSize="true"/>
+			<j:Disabled localId="addDisabled" disabled="{isDisabled}"/>
+		</j:beads>
+	</j:Group>
+</j:Card>

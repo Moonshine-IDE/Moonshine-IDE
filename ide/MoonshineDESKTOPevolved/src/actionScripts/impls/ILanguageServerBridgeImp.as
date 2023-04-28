@@ -1,22 +1,45 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
-	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
-
-	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
-	
+
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.interfaces.ILanguageServerBridge;
-	import actionScripts.languageServer.ActionScriptLanguageServerManager;
-	import actionScripts.languageServer.GroovyLanguageServerManager;
-	import actionScripts.languageServer.HaxeLanguageServerManager;
+	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.languageServer.ILanguageServerManager;
-	import actionScripts.languageServer.JavaLanguageServerManager;
-	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
-	import actionScripts.plugin.groovy.grailsproject.vo.GrailsProjectVO;
-	import actionScripts.plugin.haxe.hxproject.vo.HaxeProjectVO;
-	import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
+	import actionScripts.plugin.ILanguageServerPlugin;
+	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
 	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.valueObjects.ProjectVO;
@@ -34,10 +57,31 @@ package actionScripts.impls
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var managers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
 		private var connectedManagers:Vector.<ILanguageServerManager> = new <ILanguageServerManager>[];
+		private var _languageServerPlugins:Vector.<ILanguageServerPlugin> = new <ILanguageServerPlugin>[];
 
 		public function get connectedProjectCount():int
 		{
 			return connectedManagers.length;
+		}
+
+		public function registerLanguageServerPlugin(plugin:ILanguageServerPlugin):void
+		{
+			var index:int = _languageServerPlugins.indexOf(plugin);
+			if (index != -1)
+			{
+				return;
+			}
+			_languageServerPlugins.push(plugin);
+		}
+
+		public function unregisterLanguageServerPlugin(plugin:ILanguageServerPlugin):void
+		{
+			var index:int = _languageServerPlugins.indexOf(plugin);
+			if (index == -1)
+			{
+				return;
+			}
+			_languageServerPlugins.removeAt(index);
 		}
 		
 		public function hasLanguageServerForProject(project:ProjectVO):Boolean
@@ -93,10 +137,14 @@ package actionScripts.impls
 				}
 				else
 				{
-					var schemeIndex:int = manager.uriSchemes.indexOf(scheme);
-					if(schemeIndex != -1)
+					var uriSchemes:Vector.<String> = manager.uriSchemes;
+					if (uriSchemes)
 					{
-						return true;
+						var schemeIndex:int = uriSchemes.indexOf(scheme);
+						if(schemeIndex != -1)
+						{
+							return true;
+						}
 					}
 				}
 			}
@@ -142,10 +190,14 @@ package actionScripts.impls
 				}
 				else
 				{
-					var schemeIndex:int = manager.uriSchemes.indexOf(scheme);
-					if(schemeIndex != -1)
+					var uriSchemes:Vector.<String> = manager.uriSchemes;
+					if (uriSchemes)
 					{
-						return manager.createTextEditorForUri(uri, readOnly);
+						var schemeIndex:int = uriSchemes.indexOf(scheme);
+						if(schemeIndex != -1)
+						{
+							return manager.createTextEditorForUri(uri, readOnly);
+						}
 					}
 				}
 			}
@@ -168,6 +220,19 @@ package actionScripts.impls
 				}
 			}
 		}
+
+		private function findPluginForProjectClass(projectClass:Class):ILanguageServerPlugin
+		{
+			for(var i:int = 0; i < _languageServerPlugins.length; i++)
+			{
+				var plugin:ILanguageServerPlugin = _languageServerPlugins[i];
+				if (plugin.languageServerProjectType == projectClass)
+				{
+					return plugin;
+				}
+			}
+			return null;
+		}
 		
 		private function addProjectHandler(event:ProjectEvent):void
 		{
@@ -182,40 +247,21 @@ package actionScripts.impls
 				//projects that have already been added
 				return;
 			}
-			var manager:ILanguageServerManager = null;
-			if(project is AS3ProjectVO)
+			if ((project is IVisualEditorProjectVO && IVisualEditorProjectVO(project).isVisualEditorProject)
+				|| project is OnDiskProjectVO
+				|| project is GenericProjectVO)
 			{
-				var as3Project:AS3ProjectVO = AS3ProjectVO(project);
-				if(as3Project.isVisualEditorProject)
-				{
-					//visual editor projects don't have a language server
-					return;
-				}
-				var as3Manager:ActionScriptLanguageServerManager = new ActionScriptLanguageServerManager(as3Project);
-				manager = as3Manager;
+				//these types of projects don't have a language server
+				return;
 			}
-			if(project is JavaProjectVO)
-			{
-				var javaProject:JavaProjectVO = JavaProjectVO(project);
-				var javaManager:JavaLanguageServerManager = new JavaLanguageServerManager(javaProject);
-				manager = javaManager;
-			}
-			if(project is GrailsProjectVO)
-			{
-				var grailsProject:GrailsProjectVO = GrailsProjectVO(project);
-				var groovyManager:GroovyLanguageServerManager = new GroovyLanguageServerManager(grailsProject);
-				manager = groovyManager;
-			}
-			if(project is HaxeProjectVO)
-			{
-				var haxeProject:HaxeProjectVO = HaxeProjectVO(project);
-				var haxeManager:HaxeLanguageServerManager = new HaxeLanguageServerManager(haxeProject);
-				manager = haxeManager;
-			}
-			if ((project is OnDiskProjectVO) || (project is GenericProjectVO))
+			var projectClass:Class = Object(project).constructor as Class;
+			var plugin:ILanguageServerPlugin = findPluginForProjectClass(projectClass);
+			if (!plugin)
 			{
 				return;
 			}
+			var manager:ILanguageServerManager = null;
+			manager = plugin.createLanguageServerManager(project);
 			managers.push(manager);
 			manager.addEventListener(Event.INIT, manager_initHandler);
 			manager.addEventListener(Event.CLOSE, manager_closeHandler);

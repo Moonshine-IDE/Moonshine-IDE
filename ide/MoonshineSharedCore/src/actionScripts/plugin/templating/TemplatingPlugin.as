@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.templating
 {
@@ -142,6 +155,15 @@ package actionScripts.plugin.templating
 		private var templateConfigs:Array;
 		private var allLoadedTemplates:Array;
 		private var settings:Vector.<ISetting>;
+
+		private var templateHaxeClass:FileLocation;
+		private var templateHaxeInterface:FileLocation;
+
+		private var templateJavaClass:FileLocation;
+		private var templateJavaInterface:FileLocation;
+
+		private var templateGroovyClass:FileLocation;
+		private var templateGroovyInterface:FileLocation;
 
 		public function TemplatingPlugin()
 		{
@@ -282,19 +304,27 @@ package actionScripts.plugin.templating
 			
 			files = templatesDir.resolvePath("files/Java Class.java.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
-				ConstantsCoreVO.TEMPLATE_JAVACLASS = files;
+				templateJavaClass = files;
+			
+			files = templatesDir.resolvePath("files/Java Interface.java.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				templateJavaInterface = files;
 			
 			files = templatesDir.resolvePath("files/Groovy Class.groovy.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
-				ConstantsCoreVO.TEMPLATE_GROOVYCLASS = files;
+				templateGroovyClass = files;
+			
+			files = templatesDir.resolvePath("files/Groovy Interface.groovy.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				templateGroovyInterface = files;
 			
 			files = templatesDir.resolvePath("files/Haxe Class.hx.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
-				ConstantsCoreVO.TEMPLATE_HAXECLASS = files;
+				templateHaxeClass = files;
 			
 			files = templatesDir.resolvePath("files/Haxe Interface.hx.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
-				ConstantsCoreVO.TEMPLATE_HAXEINTERFACE = files;
+				templateHaxeInterface = files;
 			
 			files = templatesDir.resolvePath("files/Domino Visual Editor Form.form.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
@@ -995,8 +1025,14 @@ package actionScripts.plugin.templating
 					case "Java Class":
 						openJavaTypeChoose(event, false);
 						break;
+					case "Java Interface":
+						openJavaTypeChoose(event, true);
+						break;
 					case "Groovy Class":
 						openGroovyTypeChoose(event, false);
+						break;
+					case "Groovy Interface":
+						openGroovyTypeChoose(event, true);
 						break;
 					case "Haxe Class":
 						openHaxeTypeChoose(event, false);
@@ -1639,7 +1675,7 @@ package actionScripts.plugin.templating
 			{
 				newAS3ComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewASFilePopup, true) as NewASFilePopup;
 				newAS3ComponentPopup.addEventListener(CloseEvent.CLOSE, handleAS3PopupClose);
-				newAS3ComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, isInterfaceDialog ? onNewInterfaceCreateRequest : onNewAS3FileCreateRequest);
+				newAS3ComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, isInterfaceDialog ? onNewInterfaceCreateRequest : onNewFileCreateRequest);
 				newAS3ComponentPopup.isInterfaceDialog = isInterfaceDialog;
 				
 				// newFileEvent sends by TreeView when right-clicked 
@@ -1671,7 +1707,7 @@ package actionScripts.plugin.templating
 		protected function handleAS3PopupClose(event:CloseEvent):void
 		{
 			newAS3ComponentPopup.removeEventListener(CloseEvent.CLOSE, handleAS3PopupClose);
-			newAS3ComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewAS3FileCreateRequest);
+			newAS3ComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewFileCreateRequest);
 			newAS3ComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewInterfaceCreateRequest);
 			newAS3ComponentPopup = null;
 		}
@@ -1679,7 +1715,7 @@ package actionScripts.plugin.templating
 		protected function handleJavaPopupClose(event:CloseEvent):void
 		{
 			newJavaComponentPopup.removeEventListener(CloseEvent.CLOSE, handleJavaPopupClose);
-			newJavaComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewAS3FileCreateRequest);
+			newJavaComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewFileCreateRequest);
 			newJavaComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewInterfaceCreateRequest);
 			newJavaComponentPopup = null;
 		}
@@ -1687,7 +1723,7 @@ package actionScripts.plugin.templating
 		protected function handleGroovyPopupClose(event:CloseEvent):void
 		{
 			newGroovyComponentPopup.removeEventListener(CloseEvent.CLOSE, handleGroovyPopupClose);
-			newGroovyComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewAS3FileCreateRequest);
+			newGroovyComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewFileCreateRequest);
 			newGroovyComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewInterfaceCreateRequest);
 			newGroovyComponentPopup = null;
 		}
@@ -1695,7 +1731,7 @@ package actionScripts.plugin.templating
 		protected function handleHaxePopupClose(event:CloseEvent):void
 		{
 			newHaxeComponentPopup.removeEventListener(CloseEvent.CLOSE, handleHaxePopupClose);
-			newHaxeComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewAS3FileCreateRequest);
+			newHaxeComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewFileCreateRequest);
 			newHaxeComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onNewInterfaceCreateRequest);
 			newHaxeComponentPopup = null;
 		}
@@ -1704,10 +1740,13 @@ package actionScripts.plugin.templating
 		{
 			if (!newJavaComponentPopup)
 			{
-				newJavaComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewJavaFilePopup, true) as NewJavaFilePopup;
+				newJavaComponentPopup = new NewJavaFilePopup();
 				newJavaComponentPopup.addEventListener(CloseEvent.CLOSE, handleJavaPopupClose);
-				newJavaComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, isInterfaceDialog ? onNewInterfaceCreateRequest : onNewAS3FileCreateRequest);
+				newJavaComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, isInterfaceDialog ? onNewInterfaceCreateRequest : onNewFileCreateRequest);
 				newJavaComponentPopup.isInterfaceDialog = isInterfaceDialog;
+				newJavaComponentPopup.templateJavaClass = templateJavaClass;
+				newJavaComponentPopup.templateJavaInterface = templateJavaInterface;
+				PopUpManager.addPopUp(newJavaComponentPopup, FlexGlobals.topLevelApplication as DisplayObject, true);
 
 				// newFileEvent sends by TreeView when right-clicked
 				// context menu
@@ -1739,10 +1778,13 @@ package actionScripts.plugin.templating
 		{
 			if (!newGroovyComponentPopup)
 			{
-				newGroovyComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewGroovyFilePopup, true) as NewGroovyFilePopup;
+				newGroovyComponentPopup = new NewGroovyFilePopup();
 				newGroovyComponentPopup.addEventListener(CloseEvent.CLOSE, handleGroovyPopupClose);
-				newGroovyComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, isInterfaceDialog ? onNewInterfaceCreateRequest : onNewAS3FileCreateRequest);
+				newGroovyComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, isInterfaceDialog ? onNewInterfaceCreateRequest : onNewFileCreateRequest);
 				newGroovyComponentPopup.isInterfaceDialog = isInterfaceDialog;
+				newGroovyComponentPopup.templateGroovyClass = templateGroovyClass;
+				newGroovyComponentPopup.templateGroovyInterface = templateGroovyInterface;
+				PopUpManager.addPopUp(newGroovyComponentPopup, FlexGlobals.topLevelApplication as DisplayObject, true);
 
 				// newFileEvent sends by TreeView when right-clicked
 				// context menu
@@ -1774,10 +1816,13 @@ package actionScripts.plugin.templating
 		{
 			if (!newHaxeComponentPopup)
 			{
-				newHaxeComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewHaxeFilePopup, true) as NewHaxeFilePopup;
+				newHaxeComponentPopup = new NewHaxeFilePopup();
 				newHaxeComponentPopup.addEventListener(CloseEvent.CLOSE, handleHaxePopupClose);
-				newHaxeComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, isInterfaceDialog ? onNewInterfaceCreateRequest : onNewAS3FileCreateRequest);
+				newHaxeComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, isInterfaceDialog ? onNewInterfaceCreateRequest : onNewFileCreateRequest);
 				newHaxeComponentPopup.isInterfaceDialog = isInterfaceDialog;
+				newHaxeComponentPopup.templateHaxeClass = templateHaxeClass;
+				newHaxeComponentPopup.templateHaxeInterface = templateHaxeInterface;
+				PopUpManager.addPopUp(newHaxeComponentPopup, FlexGlobals.topLevelApplication as DisplayObject, true);
 
 				// newFileEvent sends by TreeView when right-clicked
 				// context menu
@@ -1805,7 +1850,7 @@ package actionScripts.plugin.templating
 			}
 		}
 		
-		protected function onNewAS3FileCreateRequest(event:NewFileEvent):void
+		protected function onNewFileCreateRequest(event:NewFileEvent):void
 		{
 			checkAndUpdateIfTemplateModified(event);
 			if (event.fromTemplate.fileBridge.exists)
@@ -2016,7 +2061,7 @@ package actionScripts.plugin.templating
 
 				//create the view for each form 
 				var parent:FileLocation=event.fromTemplate.fileBridge.parent;
-				var viewTemplate:FileLocation=new FileLocation(parent.fileBridge.nativePath+parent.fileBridge.separator+"All By UNID_5cCRUD_5c%form%.view");
+				var viewTemplate:FileLocation=new FileLocation(parent.fileBridge.nativePath+parent.fileBridge.separator+"domino"+parent.fileBridge.separator+"All By UNID_5cCRUD_5c%form%.view");
 
 				if(viewTemplate.fileBridge.exists){
 					var viewFolder:FileLocation= fileToSave.fileBridge.parent;

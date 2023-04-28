@@ -1,28 +1,42 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo
 {
 	import actionScripts.interfaces.IDeployDominoDatabaseProject;
 	import actionScripts.plugin.java.javaproject.vo.JavaTypes;
 	import actionScripts.plugin.settings.vo.MultiOptionSetting;
+import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 
-	import flash.events.Event;
+import flash.events.Event;
     import flash.events.MouseEvent;
     
     import mx.collections.ArrayCollection;
@@ -53,8 +67,9 @@ package actionScripts.plugin.actionscript.as3project.vo
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.MobileDeviceVO;
     import actionScripts.languageServer.LanguageServerProjectVO;
+    import actionScripts.valueObjects.IClasspathProject;
 	
-	public class AS3ProjectVO extends LanguageServerProjectVO implements ICloneable, IVisualEditorProjectVO, IDeployDominoDatabaseProject
+	public class AS3ProjectVO extends LanguageServerProjectVO implements ICloneable, IVisualEditorProjectVO, IDeployDominoDatabaseProject, IClasspathProject
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 		public static const NATIVE_EXTENSION_MESSAGE:String = "NATIVE_EXTENSION_MESSAGE";
@@ -75,7 +90,16 @@ package actionScripts.plugin.actionscript.as3project.vo
 		public var flashModuleOptions:FlashModuleOptions;
 		public var customHTMLPath:String;
 		
-		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		private var _classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public function get classpaths():Vector.<FileLocation>
+		{
+			return _classpaths;
+		}
+		public function set classpaths(value:Vector.<FileLocation>):void
+		{
+			_classpaths = value;
+		}
+		
 		public var resourcePaths:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var includeLibraries:Vector.<FileLocation> = new Vector.<FileLocation>();
 		public var libraries:Vector.<FileLocation> = new Vector.<FileLocation>();
@@ -144,6 +168,25 @@ package actionScripts.plugin.actionscript.as3project.vo
 		{
 			super.sourceFolder = value;
 			if (flashModuleOptions) flashModuleOptions.sourceFolderLocation = value;
+		}
+
+		override public function get customSDKs():EnvironmentUtilsCusomSDKsVO
+		{
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			if (buildOptions.customSDKPath)
+			{
+				envCustomJava.sdkPath = buildOptions.customSDKPath;
+			}
+			if (jdkType == JavaTypes.JAVA_8)
+			{
+				envCustomJava.jdkPath = model.java8Path ? model.java8Path.fileBridge.nativePath : null;
+			}
+			else
+			{
+				envCustomJava.jdkPath = model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null;
+			}
+
+			return envCustomJava;
 		}
 		
 		public function get air():Boolean
@@ -424,6 +467,21 @@ package actionScripts.plugin.actionscript.as3project.vo
 					                   folderLocation.fileBridge.separator, "js-debug",
 					                   folderLocation.fileBridge.separator, "index.html");
 			return jsOutputPath.concat(indexHtmlPath);
+		}
+
+		override public function getProjectFilesToDelete():Array
+		{
+			var filesList:Array = [];
+			filesList.unshift(swfOutput.path, new FileLocation(urlToLaunch), new FileLocation(buildOptions.antBuildPath),
+				folderLocation.fileBridge.resolvePath("bin"), folderLocation.fileBridge.resolvePath("bin-debug"), folderLocation.fileBridge.resolvePath("html-template"),
+				folderLocation.fileBridge.resolvePath("build"), libraries, includeLibraries, externalLibraries, nativeExtensions, 
+				runtimeSharedLibraries, hiddenPaths, resourcePaths, 
+				classpaths, config.file);
+			if (isVisualEditorProject)
+			{
+				filesList.unshift(folderLocation.fileBridge.resolvePath("src"));
+			}
+			return filesList;
 		}
 
 		private function onTargetPlatformChanged(event:Event):void
@@ -884,7 +942,8 @@ package actionScripts.plugin.actionscript.as3project.vo
 			return nativeExtensionSettings;
         }
 
-		public function clone():Object
+		/* IMPORTANT to change * to conrete type */
+		public function clone():*
 		{
 			var as3Project:AS3ProjectVO = new AS3ProjectVO(this.folderLocation, this.projectName, true);
 

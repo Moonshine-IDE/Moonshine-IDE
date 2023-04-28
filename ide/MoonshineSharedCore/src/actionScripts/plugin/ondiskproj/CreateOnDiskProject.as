@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.ondiskproj
 {
@@ -48,17 +61,13 @@ package actionScripts.plugin.ondiskproj
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.SharedObjectConst;
-	//import utils.MainApplicationCodeUtils;
-	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
 	import actionScripts.utils.DominoUtils;
 	
 	public class CreateOnDiskProject extends ConsoleOutputter
 	{
 		public function CreateOnDiskProject(event:NewProjectEvent)
 		{
-			createGrailsProject(event);
+			create(event);
 		}
 		
 		private var project:OnDiskProjectVO;
@@ -73,7 +82,7 @@ package actionScripts.plugin.ondiskproj
 		
 		private var _currentCauseToBeInvalid:String;
 		
-		private function createGrailsProject(event:NewProjectEvent):void
+		private function create(event:NewProjectEvent):void
 		{
 			var lastSelectedProjectPath:String;
 			
@@ -152,7 +161,7 @@ package actionScripts.plugin.ondiskproj
 		
 		private function checkIfProjectDirectory(value:FileLocation):void
 		{
-			var tmpFile:FileLocation = OnDiskImporter.test(value.fileBridge.getFile);
+			var tmpFile:FileLocation = OnDiskImporter.test(value);
 			if (!tmpFile && value.fileBridge.exists)
 			{
 				tmpFile = value;
@@ -284,6 +293,7 @@ package actionScripts.plugin.ondiskproj
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.isProjectFromExistingSource = false;
 			th.templatingData["$ProjectName"] = projectName;
+			th.templatingData["$FormName"] = projectName;
 			
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
@@ -328,13 +338,9 @@ package actionScripts.plugin.ondiskproj
 			{
 				dveFile.fileBridge.deleteFile();
 			}
-			var fileTo:File = new File(dveFilePath);
-			//create a new dve file from new template
+
 			var xml:XML=DominoUtils.getDominoParentContent(title,title);
-			var fs:FileStream = new FileStream();
-			fs.open(fileTo, FileMode.WRITE);
-			fs.writeUTFBytes(xml.toXMLString());
-			fs.close();
+			dveFile.fileBridge.writeToFile(xml.toXMLString());
 
 			if(dveFile.fileBridge.exists){
 				var newFormFile:FileLocation =  targetFolder.resolvePath(sourceDominoVisualFormPath); 

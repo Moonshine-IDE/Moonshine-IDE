@@ -1,77 +1,114 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2016 Prominic.NET, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// Author: Prominic.NET, Inc.
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.workspace
 {
-	import actionScripts.ui.FeathersUIWrapper;
-	import actionScripts.valueObjects.WorkspaceVO;
+	import actionScripts.events.GeneralEvent;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.event.LinkOnlySettingsEvent;
+	import actionScripts.plugin.settings.vo.AbstractSetting;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.LinkOnlySetting;
+	import actionScripts.plugin.settings.vo.LinkOnlySettingVO;
+	import actionScripts.plugin.workspace.settings.WorkspaceItemSetting;
+import actionScripts.valueObjects.OpenProjectOptionsVO;
 
-	import flash.display.DisplayObject;
+import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.net.SharedObject;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
-
-	import moonshine.plugin.workspace.events.WorkspaceEvent;
-	import moonshine.plugin.workspace.view.NewWorkspaceView;
-
+	
+	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
-
+	
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.ui.FeathersUIWrapper;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.SharedObjectConst;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
+	import actionScripts.valueObjects.WorkspaceVO;
+	
 	import feathers.data.ArrayCollection;
-
+	
+	import moonshine.data.preferences.MoonshinePreferences;
+	import moonshine.plugin.workspace.events.WorkspaceEvent;
 	import moonshine.plugin.workspace.view.LoadWorkspaceView;
+	import moonshine.plugin.workspace.view.NewWorkspaceView;
 
-	public class WorkspacePlugin extends PluginBase
+	import spark.components.Alert;
+
+	public class WorkspacePlugin extends PluginBase implements ISettingsProvider
 	{
 		public static const EVENT_SAVE_AS:String = "saveAsNewWorkspaceEvent";
 		public static const EVENT_NEW:String = "newWorkspaceEvent";
 		public static const EVENT_LOAD:String = "loadWorkspaceEvent";
+		public static const EVENT_WORKSPACE_CHANGED:String = "workspaceChangedEvent";
 		
 		private static const LABEL_DEFAULT_WORKSPACE:String = "IDE-Default";
+		private static const LABEL_ADD_NEW:String = "Add New";
+		private static const LABEL_REMOVE:String = "Remove";
 		
 		override public function get name():String 			{return "Workspace";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Workspace manangement for the Moonshine projects.";}
-		
+
+		[Bindable]
+		public static var workspacesForViews:ArrayList;
+
 		private var cookie:SharedObject;
 		private var currentWorkspacePaths:Array;
 		private var workspaces:Object; // Dictionary<String, [String]>
-		private var workspacesForViews:Array;
 		private var methodToCallAfterClosingAllProjects:MethodDescriptor;
 		private var closeAllProjectItems:Array;
-		
+		private var settings:Vector.<ISetting>;
+		private var linkOnlySetting:LinkOnlySetting;
+
 		private var loadWorkspaceView:LoadWorkspaceView;
 		private var loadWorkspaceViewWrapper:FeathersUIWrapper;
 
 		private var newWorkspaceView:NewWorkspaceView;
 		private var newWorkspaceViewWrapper:FeathersUIWrapper;
+
+		private var preferences:MoonshinePreferences;
+		private var selectedWorkspacesInSettings:Array = [];
 
 		private var _currentWorkspaceLabel:String;
 		private function get currentWorkspaceLabel():String
@@ -83,34 +120,183 @@ package actionScripts.plugin.workspace
 			ConstantsCoreVO.CURRENT_WORKSPACE =	_currentWorkspaceLabel = value;
 		}
 		
-		private function get workspaceLabels():Array
+		public static function getCurrentWorkspaceForView(label:String):WorkspaceVO
 		{
-			var tmpArray:Array = [];
-			for (var label:String in workspaces)
+			var workspace:WorkspaceVO;
+			workspacesForViews.source.some(function(element:WorkspaceVO, index:int, arr:Array):Boolean
 			{
-				tmpArray.push(label);
-			}
+				if (element.label == label) 
+				{
+					workspace = element;
+					return true;
+				}
+				return false;
+			});
 			
-			tmpArray.sort(Array.CASEINSENSITIVE);
-			return tmpArray;
+			return workspace;
 		}
-		
+
 		public function WorkspacePlugin()
 		{
 			super();
+			preferences = MoonshinePreferences.getLocal();
+
+			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_WORKSPACE);
+			restoreFromCookie();
+			if (!this.activated)
+			{
+				activate();
+			}
 		}
 		
 		override public function activate():void
 		{
-			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_WORKSPACE);
-			restoreFromCookie();
-			
+			super.activate();
+
 			dispatcher.addEventListener(EVENT_SAVE_AS, onSaveAsNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(EVENT_NEW, onNewWorkspaceEvent, false, 0, true);
 			dispatcher.addEventListener(EVENT_LOAD, onLoadWorkspaceEvent, false, 0, true);
+			dispatcher.addEventListener(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent, false, 0, true);
+			dispatcher.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent, false, 0, true);
+			dispatcher.addEventListener(WorkspaceEvent.SAVE_AS_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent, false, 0, true);
+			dispatcher.addEventListener(WorkspaceEvent.RENAME_WORKSPACE, handleRenameWorkspaceEvent, false, 0, true);
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
+		}
+
+		override public function onSettingsClose():void
+		{
+			// remove all listeners
+			if (settings)
+			{
+				for each (var setting:AbstractSetting in settings)
+				{
+					if (setting is WorkspaceItemSetting)
+					{
+						setting.removeEventListener(WorkspaceItemSetting.EVENT_SELECT, onWorkspaceItemSelected);
+						setting.removeEventListener(WorkspaceItemSetting.EVENT_RENAME, onWorkspaceItemRename);
+						setting.removeEventListener(WorkspaceItemSetting.EVENT_SWITCH, onWorkspaceItemSwitch);
+					}
+				}
+			}
+
+			// remove all linkonlysetting listeners
+			if (linkOnlySetting)
+			{
+				linkOnlySetting.removeEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked);
+			}
+
+			settings = null;
+			linkOnlySetting = null;
+		}
+
+		public function getSettingsList():Vector.<ISetting>
+		{
+			settings = new Vector.<ISetting>();
+			linkOnlySetting = new LinkOnlySetting(new <LinkOnlySettingVO>[
+				new LinkOnlySettingVO(LABEL_ADD_NEW),
+				new LinkOnlySettingVO(LABEL_REMOVE)
+			]);
+			linkOnlySetting.addEventListener(LinkOnlySettingsEvent.EVENT_LINK_CLICKED, onLinkItemClicked, false, 0, true);
+
+			settings.push(linkOnlySetting);
+			for each (var workspace:WorkspaceVO in workspacesForViews.source)
+			{
+				settings.push(
+						getWorkspaceItemSetting(workspace)
+				);
+			}
+
+			return settings;
+		}
+
+		private function getWorkspaceItemSetting(workspace:WorkspaceVO):WorkspaceItemSetting
+		{
+			var tmpSetting:WorkspaceItemSetting = new WorkspaceItemSetting(workspace);
+			tmpSetting.addEventListener(WorkspaceItemSetting.EVENT_SELECT, onWorkspaceItemSelected, false, 0, true);
+			tmpSetting.addEventListener(WorkspaceItemSetting.EVENT_RENAME, onWorkspaceItemRename, false, 0, true);
+			tmpSetting.addEventListener(WorkspaceItemSetting.EVENT_SWITCH, onWorkspaceItemSwitch, false, 0, true);
+
+			return tmpSetting;
+		}
+
+		private function onWorkspaceItemSelected(event:GeneralEvent):void
+		{
+			var itemIndex:int = selectedWorkspacesInSettings.indexOf(event.value);
+			if (itemIndex == -1)
+			{
+				selectedWorkspacesInSettings.push(event.value);
+			}
+			else
+			{
+				selectedWorkspacesInSettings.removeAt(itemIndex);
+			}
+		}
+
+		private function onWorkspaceItemRename(event:GeneralEvent):void
+		{
+			createNewWorkspaceViewWithTitle("Rename Workspace", (event.value as WorkspaceItemSetting).workspace);
+		}
+
+		private function onWorkspaceItemSwitch(event:GeneralEvent):void
+		{
+			handleLoadWorkspaceEvent(
+					new WorkspaceEvent("", (event.value as WorkspaceItemSetting).workspace.label)
+			);
+		}
+		
+		private function onLinkItemClicked(event:LinkOnlySettingsEvent):void
+		{
+			if (event.value.label == LABEL_ADD_NEW)
+			{
+				onNewWorkspaceEvent(null);
+			}
+			else if (event.value.label == LABEL_REMOVE)
+			{
+				removeWorkspaces();
+			}
+		}
+
+		private function removeWorkspaces():void
+		{
+			if (selectedWorkspacesInSettings.length == 0)
+			{
+				Alert.show("Select Workspace(s) to remove.", "Note!");
+			}
+			else
+			{
+				Alert.show("This action can not be undone.\nDo you want to remove the selected workspace(s)?", "Warning!", Alert.YES|Alert.CANCEL, null, onDeleteWorkspaceConfirmed);
+			}
+		}
+
+		private function onDeleteWorkspaceConfirmed(event:CloseEvent):void
+		{
+			if (event.detail == Alert.YES)
+			{
+				var isSelectedWorkspaceDeleting:Boolean;
+				for each (var setting:WorkspaceItemSetting in selectedWorkspacesInSettings)
+				{
+					if (setting.workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE)
+					{
+						isSelectedWorkspaceDeleting = true;
+					}
+					delete workspaces[setting.workspace.label];
+					workspacesForViews.removeItem(setting.workspace);
+					settings.splice(settings.indexOf(setting), 1);
+				}
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+				dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
+				if (isSelectedWorkspaceDeleting)
+				{
+					handleLoadWorkspaceEvent(
+							new WorkspaceEvent("", LABEL_DEFAULT_WORKSPACE)
+					);
+				}
+
+				saveToCookie();
+				selectedWorkspacesInSettings = [];
+			}
 		}
 		
 		private function handleAddProject(event:ProjectEvent):void
@@ -149,19 +335,57 @@ package actionScripts.plugin.workspace
 
 		private function handleSaveAsWorkspaceEvent(event:WorkspaceEvent):void
 		{
-			duplicateToNewWorkspace(event.workspaceLabel);
+			changeToNewWorkspace(event.workspaceLabel, true);
+		}
+
+		private function handleRenameWorkspaceEvent(event:WorkspaceEvent):void
+		{
+			if (event.workspaceLabel == ConstantsCoreVO.CURRENT_WORKSPACE)
+			{
+				currentWorkspaceLabel = ConstantsCoreVO.CURRENT_WORKSPACE = event.workspace.label;
+			}
+			workspaces[event.workspace.label] = workspaces[event.workspaceLabel]; // assigning old workspace's collection to new/renamed workspace
+			delete workspaces[event.workspaceLabel]; // delete old workspace before renamed
+			sortWorkspaces();
+			saveToCookie();
+			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
+
+			if (settings)
+			{
+				var oldTitleIndex:int;
+				for (var i:int; i < settings.length; i++)
+				{
+					if ((settings[i] is WorkspaceItemSetting) && (settings[i] as WorkspaceItemSetting).stringValue == event.workspaceLabel)
+					{
+						oldTitleIndex = i;
+						break;
+					}
+				}
+
+				var timeoutValue:uint = setTimeout(function():void
+				{
+					clearTimeout(timeoutValue);
+
+					var newTitleIndex:int = workspacesForViews.getItemIndex(event.workspace);
+					var tmpSetting:Object = settings.removeAt(oldTitleIndex);
+					(tmpSetting as WorkspaceItemSetting).workspace = event.workspace;
+					(tmpSetting as WorkspaceItemSetting).stringValue = event.workspace.label;
+					settings.splice(newTitleIndex+2, 0, tmpSetting);
+
+					dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+				}, 500);
+			}
 		}
 
 		private function onSaveAsNewWorkspaceEvent(event:Event):void
 		{
 			var newWorkspaceView:NewWorkspaceView = createNewWorkspaceViewWithTitle("Save As Workspace");
-			newWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
+			newWorkspaceView.isSaveAs = true;
 		}
 
 		private function onNewWorkspaceEvent(event:Event):void
 		{
-			var newWorkspaceView:NewWorkspaceView = createNewWorkspaceViewWithTitle("New Workspace");
-			newWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
+			createNewWorkspaceViewWithTitle("New Workspace");
 		}
 
 		protected function newWorkspaceView_stage_resizeHandler(event:Event):void
@@ -176,9 +400,6 @@ package actionScripts.plugin.workspace
 			newWorkspaceViewWrapper = null;
 
 			newWorkspaceView.removeEventListener(Event.CLOSE, handleNewWorkspacePopupClose);
-			newWorkspaceView.removeEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleNewWorkspaceEvent);
-			newWorkspaceView.removeEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleSaveAsWorkspaceEvent);
-
 			newWorkspaceView = null;
 		}
 		
@@ -191,13 +412,14 @@ package actionScripts.plugin.workspace
 			closeAllEditorAsync();
 		}
 
-		private function createNewWorkspaceViewWithTitle(title:String):NewWorkspaceView
+		private function createNewWorkspaceViewWithTitle(title:String, workspace:WorkspaceVO=null):NewWorkspaceView
 		{
 			newWorkspaceView = new NewWorkspaceView();
+			newWorkspaceView.workspace = workspace;
 			newWorkspaceViewWrapper = new FeathersUIWrapper(newWorkspaceView);
 			PopUpManager.addPopUp(newWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
 
-			newWorkspaceView.workspaces = new ArrayCollection(this.workspacesForViews);
+			newWorkspaceView.workspaces = new ArrayCollection(workspacesForViews.source);
 			newWorkspaceView.title = title;
 			newWorkspaceView.addEventListener(Event.CLOSE, handleNewWorkspacePopupClose);
 
@@ -213,10 +435,9 @@ package actionScripts.plugin.workspace
 			loadWorkspaceView = new LoadWorkspaceView();
 			loadWorkspaceViewWrapper = new FeathersUIWrapper(loadWorkspaceView);
 
-			loadWorkspaceView.workspaces = new ArrayCollection(workspacesForViews);
-			loadWorkspaceView.selectedWorkspace = this.getCurrentWorkspaceForView(currentWorkspaceLabel);
+			loadWorkspaceView.workspaces = new ArrayCollection(workspacesForViews.source);
+			loadWorkspaceView.selectedWorkspace = getCurrentWorkspaceForView(currentWorkspaceLabel);
 			loadWorkspaceView.addEventListener(Event.CLOSE, handleLoadWorkspacePopupClose);
-			loadWorkspaceView.addEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
 
 			PopUpManager.addPopUp(loadWorkspaceViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, false);
 			PopUpManager.centerPopUp(loadWorkspaceViewWrapper);
@@ -231,7 +452,6 @@ package actionScripts.plugin.workspace
 			loadWorkspaceViewWrapper = null;
 
 			loadWorkspaceView.removeEventListener(Event.CLOSE, handleLoadWorkspacePopupClose);
-			loadWorkspaceView.removeEventListener(WorkspaceEvent.NEW_WORKSPACE_WITH_LABEL, handleLoadWorkspaceEvent);
 			loadWorkspaceView = null;
 		}
 		
@@ -262,7 +482,7 @@ package actionScripts.plugin.workspace
 		{
 			currentWorkspaceLabel = ("currentWorkspace" in cookie.data) ? cookie.data["currentWorkspace"] : LABEL_DEFAULT_WORKSPACE;
 
-			workspacesForViews = [];
+			workspacesForViews = new ArrayList();
 			workspaces = new Object();
 			if ("workspaces" in cookie.data)
 			{
@@ -273,10 +493,18 @@ package actionScripts.plugin.workspace
 				workspaces[LABEL_DEFAULT_WORKSPACE] = [];
 			}
 
+			var tmpWorkspace:WorkspaceVO;
 			for (var workspace:String in workspaces)
 			{
-				this.workspacesForViews.push(new WorkspaceVO(workspace, workspaces[workspace]));
+				tmpWorkspace = new WorkspaceVO(workspace, workspaces[workspace]);
+				if (workspace == LABEL_DEFAULT_WORKSPACE)
+				{
+					tmpWorkspace.isDefault = true;
+				}
+				workspacesForViews.addItem(tmpWorkspace);
 			}
+
+			sortWorkspaces();
 
 			currentWorkspacePaths = (workspaces[currentWorkspaceLabel] !== undefined) ?
 				workspaces[currentWorkspaceLabel] : [];
@@ -290,42 +518,47 @@ package actionScripts.plugin.workspace
 		public function changeToWorkspace(label:String):void
 		{
 			currentWorkspaceLabel = label;
-			currentWorkspacePaths = workspaces[currentWorkspaceLabel];
+			currentWorkspacePaths = (workspaces[currentWorkspaceLabel] !== undefined) ?
+					workspaces[currentWorkspaceLabel] : [];
 			saveToCookie();
 			
 			// codes to re-open each projects
 			// saved from the active workspace
 			var tmpProjectLocation:FileLocation;
+			var projectOpeningOption:OpenProjectOptionsVO = new OpenProjectOptionsVO();
+			projectOpeningOption.isLoadProjectAsWorkspaceChanged = true;
 			for each (var path:String in currentWorkspacePaths)
 			{
 				tmpProjectLocation = new FileLocation(path);
 				if (tmpProjectLocation.fileBridge.exists)
 				{
-					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, tmpProjectLocation.fileBridge.getFile));
+					dispatcher.dispatchEvent(
+						new ProjectEvent(
+							ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, 
+							tmpProjectLocation.fileBridge.getFile,
+							projectOpeningOption
+						)
+					);
 				}
 			}
-			
+
+			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
 			outputToConsole();
 		}
 		
-		public function changeToNewWorkspace(label:String):void
+		public function changeToNewWorkspace(label:String, isDuplicateWorkspace:Boolean=false):void
 		{
-			currentWorkspacePaths = [];
+			currentWorkspacePaths = isDuplicateWorkspace ? (ObjectUtil.clone(currentWorkspacePaths) as Array) : [];
 			currentWorkspaceLabel = label;
 			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
-			workspacesForViews.push(new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]));
+
+			var tmpWorkspace:WorkspaceVO = new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]);
+			workspacesForViews.addItem(tmpWorkspace);
+			sortWorkspaces();
+			dispatcher.dispatchEvent(new Event(EVENT_WORKSPACE_CHANGED));
 			saveToCookie();
 			outputToConsole();
-		}
-		
-		private function duplicateToNewWorkspace(label:String):void
-		{
-			currentWorkspacePaths = ObjectUtil.clone(currentWorkspacePaths) as Array;
-			currentWorkspaceLabel = label;
-			workspaces[currentWorkspaceLabel] = currentWorkspacePaths;
-			workspacesForViews.push(new WorkspaceVO(currentWorkspaceLabel, workspaces[currentWorkspaceLabel]));
-			saveToCookie();
-			outputToConsole();
+			addToSettingsAsRequires(tmpWorkspace);
 		}
 		
 		private function saveToCookie():void
@@ -335,11 +568,26 @@ package actionScripts.plugin.workspace
 			cookie.data["workspaces"] = workspaces;
 			
 			cookie.flush();
+
+			preferences.workspace.current = currentWorkspaceLabel;
+			preferences.workspace.workspaces = workspaces;
+			preferences.flush();
 		}
 		
 		private function outputToConsole():void
 		{
 			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_PRINT, "Workspace changed to: "+ currentWorkspaceLabel, false, false, ConsoleOutputEvent.TYPE_NOTE));
+		}
+
+		private function addToSettingsAsRequires(value:WorkspaceVO):void
+		{
+			// ensure the settings view is open
+			if (settings)
+			{
+				var tmpSetting:WorkspaceItemSetting = getWorkspaceItemSetting(value);
+				settings.splice(workspacesForViews.getItemIndex(value)+2, 0, tmpSetting);
+				dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_REFRESH_CURRENT_SETTINGS));
+			}
 		}
 		
 		//--------------------------------------------------------------------------
@@ -370,14 +618,9 @@ package actionScripts.plugin.workspace
 			}
 		}
 
-		private function getCurrentWorkspaceForView(label:String):WorkspaceVO
+		private function sortWorkspaces():void
 		{
-			for each (var workspace:WorkspaceVO in this.workspacesForViews)
-			{
-				if (workspace.label == label) return workspace;
-			}
-
-			return null;
+			workspacesForViews.source.sortOn(["label"], Array.CASEINSENSITIVE);
 		}
 	}
 }
