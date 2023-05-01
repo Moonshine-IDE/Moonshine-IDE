@@ -33,6 +33,10 @@ package actionScripts.utils
 {
 	import flash.geom.Point;
 	import flash.xml.XMLNode;
+
+	import 	mx.utils.Base64Encoder;
+    import  mx.utils.Base64Decoder;
+    import  flash.utils.ByteArray;
 	
 	public class TextUtil
 	{
@@ -153,6 +157,59 @@ package actionScripts.utils
 		{
     		return new XMLNode( 3, str ).toString();
 		}
+
+
+		public static function base64Encode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Encoder = new Base64Encoder();
+			base64.insertNewLines = false;
+			var byte:ByteArray = new ByteArray();
+			byte.writeMultiByte(str, charset);
+			base64.encodeBytes(byte);
+			return base64.toString();
+		}
+		
+		public static function base64Decode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Decoder = new Base64Decoder();
+			base64.decode(str);
+			var byteArray:ByteArray = base64.toByteArray();
+			return byteArray.readMultiByte(byteArray.length, charset);;
+		}
+
+		//some time the form name or view name contian some slash, it will break the path ,so we need fix with this function
+
+		public static function fixDominoName(sourceName:String):String
+		{
+			if(sourceName==null){
+				return "";
+			}
+			sourceName=stripAlias(sourceName);
+			sourceName=sourceName.replace(/>/g, "_3e");
+			sourceName=sourceName.replace(/\\\\/g, "_5c");
+			sourceName=sourceName.replace(/\\/g, "_2a");
+			sourceName=sourceName.replace(/\//g, "_2f");
+
+			return sourceName;
+
+		}
+
+		public static function stripAlias(fullName:String):String
+		{
+        	var aliasStartIndex:int = fullName.indexOf('|');
+			if (aliasStartIndex >= 0) {
+				// strip the alias
+				return  fullName.substring(0, aliasStartIndex);
+			}
+			else {
+				// no alias found
+				return fullName;
+			}
+    	}
 
 	}
 }

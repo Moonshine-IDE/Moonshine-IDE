@@ -98,6 +98,7 @@ package actionScripts.plugins.as3project
 	
 	import actionScripts.plugins.ui.editor.VisualEditorViewer;
 	import actionScripts.plugins.help.view.VisualEditorView;
+	import utils.StringHelper;
     public class CreateProject
 	{
 		public var activeType:uint = ProjectType.AS3PROJ_AS_AIR;
@@ -882,6 +883,8 @@ package actionScripts.plugins.as3project
 			// Time to do the templating thing!
 			th.isProjectFromExistingSource = isProjectFromExistingSource;
 			th.templatingData["$ProjectName"] = projectName;
+			th.templatingData["$WindowsTitleBase64Code"] = StringHelper.base64Encode("\""+projectName+"\"");
+			
 			
 			var pattern:RegExp = new RegExp(/(_)/g);
 			th.templatingData["$ProjectID"] = projectName.replace(pattern, "");
@@ -1112,6 +1115,11 @@ package actionScripts.plugins.as3project
 				var project_subfromxmlFolder:FileLocation =  targetFolder.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
 				if(!project_subfromxmlFolder.fileBridge.exists){
 					project_subfromxmlFolder.fileBridge.createDirectory();
+				}
+
+				var project_sharefieldxmlFolder:FileLocation =  targetFolder.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"fields");
+				if(!project_sharefieldxmlFolder.fileBridge.exists){
+					project_sharefieldxmlFolder.fileBridge.createDirectory();
 				}
 				//remove not need simple fiel
 				var simple_view:FileLocation = targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator+"All By UNID"+File.separator+"All By UNID_5c%form%.view");

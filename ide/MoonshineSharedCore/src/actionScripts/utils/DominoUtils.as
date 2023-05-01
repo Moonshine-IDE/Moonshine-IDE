@@ -35,7 +35,11 @@ package actionScripts.utils
 	import mx.controls.Alert;
 	import mx.utils.StringUtil;
 	import actionScripts.locator.IDEModel;
-    
+	import actionScripts.factory.FileLocation;
+	import mx.utils.Base64Encoder;
+    import mx.utils.Base64Decoder;
+    import flash.utils.ByteArray;
+
     public class DominoUtils
 	{
 		
@@ -67,7 +71,7 @@ package actionScripts.utils
 						windowsTitle = windowsTitle.substring(separatorIndex + 1);
 					}
 					
-					xml_str=xml_str+"<item name='$WindowTitle' sign='true'><formula>@Text('"+windowsTitle+"')</formula></item>"
+					xml_str=xml_str+"<item name='$WindowTitle' sign='true'><formula>"+fixXmlSpecailCharacter(windowsTitle)+"</formula></item>"
 				}
 				xml_str=xml_str+"<item name='$Info' sign='true'><rawitemdata type='1'>hhgBAIAAAAAAgAAAAQABAP///wAQAAAA</rawitemdata></item>"
 				xml_str=xml_str+"<item name='$Flags'><text/></item>"
@@ -191,59 +195,59 @@ package actionScripts.utils
 			}
 
 				
-				if(result.indexOf("<font")>=0){
-					var fontFont:Number = 0;
-					var result3:String="";
-					var splitsFont:Array = result.split("<font");
-					for each (var childFont:String in splitsFont ) {
-						
+			if(result.indexOf("<font")>=0){
+				var fontFont:Number = 0;
+				var result3:String="";
+				var splitsFont:Array = result.split("<font");
+				for each (var childFont:String in splitsFont ) {
 					
-						if(childFont.indexOf(">")>=0){
-							var fontString:String="";
-							var splitsFont2:Array = childFont.split(">");
-							var countFont:Number = 0;
-						
-							for each (var childFont2:String in splitsFont2 ) {
-								
-								if(countFont==1){
-									if(childFont2.substring(0,1)!="<"){
-										childFont2=childFont2.substring(1);
-									}
-								
-									var maxLen:int=24;
-									if(childFont2.length<maxLen){
-										maxLen=childFont2.length;
-									}
-									
-									for (var i:int=0; i<maxLen; i++) {
-									  if(childFont2.substring(0,1)==" "){
-										  childFont2=childFont2.substring(1);
-									  }	
-									}	
+				
+					if(childFont.indexOf(">")>=0){
+						var fontString:String="";
+						var splitsFont2:Array = childFont.split(">");
+						var countFont:Number = 0;
+					
+						for each (var childFont2:String in splitsFont2 ) {
+							
+							if(countFont==1){
+								if(childFont2.substring(0,1)!="<"){
+									childFont2=childFont2.substring(1);
+								}
+							
+								var maxLen:int=24;
+								if(childFont2.length<maxLen){
+									maxLen=childFont2.length;
 								}
 								
-								childFont2=childFont2+">";
-								
-								
-								fontString=fontString+childFont2;
-								countFont++;
+								for (var i:int=0; i<maxLen; i++) {
+									if(childFont2.substring(0,1)==" "){
+										childFont2=childFont2.substring(1);
+									}	
+								}	
 							}
 							
-							fontString=fontString.substring(0,fontString.length-1);
-							if(fontFont>0){
-								childFont="<font"+fontString;
-							}
+							childFont2=childFont2+">";
 							
 							
+							fontString=fontString+childFont2;
+							countFont++;
 						}
 						
-						fontFont++;
-				
-						result3=result3+childFont;
+						fontString=fontString.substring(0,fontString.length-1);
+						if(fontFont>0){
+							childFont="<font"+fontString;
+						}
+						
+						
 					}
-					result=result3;
-
+					
+					fontFont++;
+			
+					result3=result3+childFont;
 				}
+				result=result3;
+
+			}
 			 
 			 result = result.replace(tabpattern,"\t");
 			
@@ -285,6 +289,23 @@ package actionScripts.utils
 			return result;
 		}
 
+		//fix </button< to </button><
+		public static function fixNotCloseButton(totalXml:String):String 
+		{	
+			var pattern:RegExp = /<button[\s\S]*?<\/button>/g; 
+			totalXml=totalXml.replace(pattern,removeNewLineFN);
+	
+			return totalXml;
+		}
+
+		private static function removeNewLineFN():String{
+			var rex:RegExp = /(\t|\n|\r)/gi;
+			
+			var str:String=arguments[0].replace(rex, '');
+			
+			return str;
+		}
+
 		public static function fixNewTab(xml:XML):XML
 		{
 			var tabpattern:RegExp = /&amp;#tab;/g;
@@ -292,6 +313,112 @@ package actionScripts.utils
 			xmlstr=xmlstr.replace(tabpattern,"\t");
 			xml =new XML(xmlstr);
 			return xml;
+		}
+		public static function dominoPageUpdateWithoutSave(newFileLocation:FileLocation,newFormName:String,souceFormName:String):void{
+			var newDxlXMLStr:String =String(newFileLocation.fileBridge.read());
+			newDxlXMLStr=newDxlXMLStr.replace("name=\""+souceFormName+"\"","name=\""+newFormName+"\"");
+			newDxlXMLStr=newDxlXMLStr.replace("name='"+souceFormName+"'","name='"+newFormName+"'");
+			newDxlXMLStr=newDxlXMLStr.replace("<text>"+souceFormName+"</text>","<text>"+newFormName+"</text>");
+			newDxlXMLStr=newDxlXMLStr.replace("<formula>\""+souceFormName+"\"</formula>","<formula>\""+newFormName+"\"</formula>");
+			
+			
+			newFileLocation.fileBridge.save(newDxlXMLStr);
+
+		}
+		public static function dominoWindowTitleUpdate(sourceXml:FileLocation,newFormName:String,souceFormName:String):void{
+		
+				
+				var sourceFormXML:XML = new XML(sourceXml.fileBridge.read());
+				var windowsTitleName:String= sourceFormXML.MainApplication.@windowsTitle;
+				if(windowsTitleName!=null && windowsTitleName!="" && windowsTitleName.length>0){
+					windowsTitleName=base64Decode(windowsTitleName);
+					souceFormName="\""+souceFormName+"\"";
+					
+					if(windowsTitleName==souceFormName){
+						windowsTitleName="\""+newFormName+"\"";
+					}
+					
+				}else{
+					windowsTitleName="@Text(\""+newFormName+"\")";
+				}
+				
+				windowsTitleName=base64Encode(windowsTitleName);
+				var mainApplicationList:XMLList=sourceFormXML..MainApplication;
+				if(mainApplicationList.length()>0 && mainApplicationList.length()<2){
+					sourceFormXML.MainApplication.@windowsTitle=windowsTitleName;
+
+				} else if (mainApplicationList.length()>0&& mainApplicationList.length()>=2){
+					mainApplicationList[0].@windowsTitle=windowsTitleName;
+					delete mainApplicationList[1]
+				}
+				
+				sourceXml.fileBridge.save(sourceFormXML.toXMLString());
+
+		}
+
+		public static function base64Encode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Encoder = new Base64Encoder();
+			base64.insertNewLines = false;
+			var byte:ByteArray = new ByteArray();
+			byte.writeMultiByte(str, charset);
+			base64.encodeBytes(byte);
+			return base64.toString();
+		}
+		
+		public static function base64Decode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Decoder = new Base64Decoder();
+			base64.decode(str);
+			var byteArray:ByteArray = base64.toByteArray();
+			return byteArray.readMultiByte(byteArray.length, charset);;
+		}
+
+		public static function getDominActionDxlTemplate():String
+		{
+			var  dominlDxl:String="<?xml version='1.0' encoding='utf-8'?> \n";
+			dominlDxl=dominlDxl+"<!DOCTYPE database SYSTEM 'xmlschemas/domino_11_0_1.dtd'> \n";
+			dominlDxl=dominlDxl+"<database  version='11.0' maintenanceversion='1.0'";
+ 			dominlDxl=dominlDxl+"replicaid='862585A6006C3CED'  increasemaxfields='true' compressdesign='true'";
+ 			dominlDxl=dominlDxl+"compressdata='true'> \n";
+ 			dominlDxl=dominlDxl+"<sharedactions hide='v3 v4strict' designerversion='8.5.3' maxid='32'> \n";
+			dominlDxl=dominlDxl+"</sharedactions> \n";
+			dominlDxl=dominlDxl+"</database> \n";
+ 
+			return dominlDxl;
+
+		}
+
+		public static const AMPERSAND:String = "&amp;"
+		public static const APOSTROPHE:String = "&apos;"
+		public static const DBL_QUOTES:String = "&quot;"
+		public static const GT:String = "&gt;"
+		public static const LT:String = "&lt;"
+
+		public static function fixXmlSpecailCharacter(text:String):String
+		{
+			var amppattern:RegExp = /&/g;
+			text = text.replace(amppattern, AMPERSAND);
+
+			var ltpattern:RegExp = /</g;
+			text = text.replace(ltpattern, LT);
+			var gtpattern:RegExp = />/g;
+			text = text.replace(gtpattern, GT);
+
+			var qtpattern:RegExp = /"/g;
+			text = text.replace(qtpattern, DBL_QUOTES);
+
+
+			var aposattern:RegExp = /'/g;
+			text = text.replace(aposattern, APOSTROPHE);
+
+			return text
+
+
 		}
 
     }

@@ -29,10 +29,21 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.interfaces
+package actionScripts.plugins.help.view.events
 {
-    public interface IVisualEditorViewer
+    import flash.events.Event;
+    public class DominoActionPropertyChangeEvent extends Event
     {
+        public static const PROPERTY_CHANGE:String = "propertyChange";
         
+        public function DominoActionPropertyChangeEvent(type:String)
+        {
+            super(type, false, false);
+        }
+
+        override public function clone():Event
+        {
+            return new DominoActionPropertyChangeEvent(type);
+        }
     }
 }

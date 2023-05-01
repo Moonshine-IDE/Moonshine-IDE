@@ -75,6 +75,7 @@ package actionScripts.plugin.rename
 	import flash.filesystem.FileStream;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 
+	import actionScripts.utils.DominoUtils;
 	public class RenamePlugin extends PluginBase
 	{
 		private var renameSymbolViewWrapper:FeathersUIWrapper;
@@ -229,7 +230,15 @@ package actionScripts.plugin.rename
 			if (fileVisualEditor)
 			{
 				var newVisualEditorFile:FileLocation = fileVisualEditor.fileBridge.parent.resolvePath(newFile.fileBridge.nameWithoutExtension + ".xml");
+				if(fileWrapper.file.fileBridge.extension=="form" ||fileWrapper.file.fileBridge.extension=="page" ){
+					DominoUtils.dominoWindowTitleUpdate(fileVisualEditor,newFileNameWithoutExtension,sourceFileName);
+				}
+
+				if(fileWrapper.file.fileBridge.extension=="page"){
+					DominoUtils.dominoPageUpdateWithoutSave(newFile,newFileNameWithoutExtension,sourceFileName);
+				}
 				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);	
+					
 			}
 
 			// we need to update file location of the (if any) opened instance 
@@ -246,7 +255,7 @@ package actionScripts.plugin.rename
 			// updating the tree view
 			var tree:CustomTree = model.mainView.getTreeViewPanel().tree;
 			var tmpParent:FileWrapper = tree.getParentItem(fileWrapper);
-
+		    // update the windows Title name and other name after page rename
 
 			//update subfrom name in the old form/subfrom 
 			var projectPath:String=UtilsCore.getProjectFolder(fileWrapper);
@@ -272,7 +281,7 @@ package actionScripts.plugin.rename
 
 					FlashDevelopImporter.convertDomino(projectFile);
 				}
-
+				
 				//rename old simple view
 				var viewfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+sourceFileName +".view");
 				var viewTargetfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+newFileNameWithoutExtension +".view");

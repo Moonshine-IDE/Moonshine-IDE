@@ -29,10 +29,18 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.interfaces
+package actionScripts.impls
 {
-    public interface IVisualEditorViewer
-    {
-        
-    }
+    import flash.events.Event;
+    import actionScripts.plugin.templating.TemplatingPlugin;
+    import view.interfaces.IDominoVisualEditorLibraryBridge;
+    import flash.events.MouseEvent;
+
+    public class IDominoVisualEditorLibraryBridgeImp  implements IDominoFormBuilderLibraryBridge
+	{
+        function openCreateDominoActionPanel(event:MouseEvent):void
+        {
+            TemplatingPlugin.openDominoActionComponentTypeChoose(event);
+        }
+    }    
 }
