@@ -22,7 +22,8 @@
 -->
 <newfile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009"
 					 xmlns:s="library://ns.adobe.com/flex/spark"
-					 title="New Domino Form File"
+					 title="New Domino View"
+					 xmlns:forms="view.forms.*"
 					 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
 					 xmlns:newfile="components.popup.newFile.*" preinitialize="onPreinitialize(event)">
 	<fx:Metadata>
@@ -56,7 +57,7 @@
 			
 			protected function onPreinitialize(event:FlexEvent):void
 			{
-				createdFileExtension = ".form";
+				createdFileExtension = ".view";
 				warningMessage = "";
 				isDestinationValid=true;
 			
@@ -99,7 +100,7 @@
 				var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
 				if(SimpleValidator.validate(validateArr))
 				{
-					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_DOMINO_FORM, wrapperOfFolderLocation);
+					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_DOMINO_VIEW, wrapperOfFolderLocation);
 					tmpEvent.fileName = txtFileName.text;
 					dispatchEvent(tmpEvent);
 	
@@ -264,7 +265,7 @@
 			<view:PromptTextInput id="txtFileName"
 								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_\-/"
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
-			<s:Label text=".form" styleName="textInputLabel" textAlign="right"
+			<s:Label text=".view" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
@@ -273,6 +274,12 @@
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
+
+		<s:Label text="View Selection:"/>
+		      <s:TextArea id="viewSelection"
+                    text="" width="100%" minWidth="356" editable="true" selectable="true"
+                    prompt="View Selection"
+                    />
 	</s:VGroup>
 
 	<newfile:controlBarContent>
