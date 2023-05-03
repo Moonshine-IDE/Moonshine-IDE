@@ -291,6 +291,9 @@ package actionScripts.controllers
 				}
 				else if (extension == "action"){
 					openDominoActionFile(project, fileData);
+				}else if (extension == "view" && model.activeProject && model.activeProject.hasOwnProperty("isDominoVisualEditorProject") && model.activeProject["isDominoVisualEditorProject"] )
+				{
+					openDominoViewFile(project, fileData);
 				}
 				else
 				{
@@ -515,6 +518,23 @@ package actionScripts.controllers
 			);
 
 		}
+
+
+		private function openDominoViewFile(project:ProjectVO, value:Object):void
+		{
+			var editor:BasicTextEditor = model.flexCore.getDominoViewEditor();
+			var extension:String = file.fileBridge.extension;
+			if (!project)
+			{
+				project = model.activeProject;
+			}
+
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+
+		}
+
 
 		/**
 		 * Loading the formula from action file to editor

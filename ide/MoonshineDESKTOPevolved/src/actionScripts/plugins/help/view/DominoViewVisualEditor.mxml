@@ -1,0 +1,204 @@
+<?xml version="1.0"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:containers="spark.containers.*"
+    xmlns:tabnavigator="actionScripts.ui.tabNavigator.*"
+    xmlns:suportclasses="view.suportClasses.*"
+    xmlns:collapsiblehdivider="components.collapsibleHDivider.*"
+	xmlns:view="view.*"
+    creationComplete="onComplete()">        
+
+<containers:Navigator id="viewStack"  width="100%" height="100%" creationPolicy="all">
+        <s:NavigatorContent label="View" id="viewNavigator">
+            <s:HGroup id="viewEditorUI" width="100%" height="100%">
+             <s:DataGrid id="dgColumns"
+					width="90%" height="100%" requestedMinRowCount="4"
+					editable="true" sortableColumns="false" draggableColumns="true"
+					dragEnabled="true" dragMoveEnabled="true" dropEnabled="true"
+					dragStart="onRowDragStarts(event)" dragDrop="onRowDragAndDropped(event)"
+					dataProvider="{rowsDataProvider}">
+                        <s:columns>
+                            <s:ArrayList>
+                                <s:GridColumn width="30" dataField="number" headerText="#"/>
+                                <s:GridColumn width="100" dataField="unid" headerText="Unid" />
+                                <s:GridColumn  dataField="title" headerText="Title" />
+                            </s:ArrayList>
+                        </s:columns>
+		        </s:DataGrid>
+                <s:Group  width="10%"  minWidth="250" minHeight="600" height="100%">
+                        <s:VGroup horizontalAlign="left" verticalAlign="top" percentHeight="100" percentWidth="100"
+                                    paddingLeft="0" paddingRight="0">
+                        <view:PropertyEditorHeader id="propertyEditorHeader" width="100%" />
+                    
+                            <s:FormItem  skinClass="skins.FormItemSkin" width="100%">
+                            
+                            
+                                <s:Label text="Configuration(View):View Selection" width="100%" direction="rtl"/>
+                                <s:TextArea id="viewSelection"
+                                text="" width="100%" minWidth="156" editable="true" selectable="true"
+                                prompt="View Selection"
+                                />
+                                <!-- <s:TextInput id="textInput"
+                                            text=""  width="100" maxChars="100" 
+                                            enter="textInput_changeHandler(event)" focusOut="textInput_changeHandler(event)" skinClass="skins.TextInputSkin" prompt="This is title for the action"/>
+                                    -->
+                                
+                            
+                            </s:FormItem> 
+                        </s:VGroup>   
+                </s:Group>
+             </s:HGroup>
+        </s:NavigatorContent>
+        <s:NavigatorContent label="Dxl">
+            <s:Scroller width="100%" height="100%" id="codeContentGroupScroller">
+               <s:Group id="codeContentGroup" creationComplete="onContentGroupCreationComplete(event)">
+
+               </s:Group>
+            </s:Scroller>
+        </s:NavigatorContent>
+    </containers:Navigator>
+
+        <s:Group width="100%">
+            <tabnavigator:TabBarWithScroller id="tabBar" dataProvider="{viewStack}"
+                                         fontSize="11" fontFamily="_sans" color="0xEEEEEE"
+                                         skinClass="components.skins.EditorTabBarSkin"
+                                         cornerRadius="1" closeButtonVisible="false"
+                                         change="onTabBarChange(event)" left="0"/>
+        </s:Group>                                
+        
+
+
+<fx:Script><![CDATA[
+    
+    import mx.core.IVisualElement;
+    import mx.events.FlexEvent;
+    import flash.events.Event;
+    import actionScripts.plugins.ui.editor.DominoViewEditor;
+
+    import mx.controls.Alert;
+    import actionScripts.ui.FeathersUIWrapper;
+    import actionScripts.locator.IDEModel;
+
+    import mx.events.DragEvent;
+    import spark.events.IndexChangeEvent;
+
+    private var _codeEditor:IVisualElement;
+
+    private var showinmenu:Boolean ;
+    private var showinbar:Boolean ;
+    private var actionTitle:String="";
+
+    private var model:IDEModel = IDEModel.getInstance();
+    private var editor:DominoViewEditor = null;
+   
+
+
+    [Bindable]
+    private var rowsDataProvider:ArrayList = new ArrayList();
+       
+
+    public function set codeEditor(value:IVisualElement):void
+    {
+        _codeEditor = value;
+    }
+
+    public function onComplete():void {
+
+        propertyEditorHeader.componentName = "Domino View"
+        // editor=model.activeEditor as DominoViewEditor;
+        // codeContentGroupScroller.visible=false;
+        // viewEditorUI.visible=true;
+      
+    
+    }
+    
+   
+    private function onViewCreationComplete(event):void 
+    {
+
+    }
+    private function onContentGroupCreationComplete(event:FlexEvent):void
+    {
+        codeContentGroup.addElement(_codeEditor);
+      
+    }
+
+    private function textInput_changeHandler(event:Event):void
+    {
+
+        
+    }
+
+    private function check_changeHandler(event:Event):void
+    {
+
+    
+    }
+
+    protected function onRowDragStarts(event:DragEvent):void
+    {
+        dgColumns.endItemEditorSession();
+    }
+
+    protected function onRowDragAndDropped(event:DragEvent):void
+    {
+        dgColumns.callLater(updateToOwner, [true]);
+    }
+
+    private function updateToOwner(isAll:Boolean = false, updateType:String = null, itemIndex:int = -1):void
+    {
+       
+    }
+
+    private function onTabBarChange(event:IndexChangeEvent):void
+    {
+        //Alert.show(event.newIndex);
+        if (event.newIndex == 1)
+        {
+            codeContentGroup.visible=false;
+        }
+        else
+        {
+            codeContentGroup.visible=true;
+        }
+    }
+
+
+]]></fx:Script> 
+</s:VGroup>
+   
+       
