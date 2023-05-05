@@ -39,49 +39,11 @@
     xmlns:tabnavigator="actionScripts.ui.tabNavigator.*"
     xmlns:suportclasses="view.suportClasses.*"
     xmlns:collapsiblehdivider="components.collapsibleHDivider.*"
-	xmlns:view="view.*"
-    creationComplete="onComplete()">        
+	xmlns:view="view.*">        
 
 <containers:Navigator id="viewStack"  width="100%" height="100%" creationPolicy="all">
         <s:NavigatorContent label="View" id="viewNavigator">
-            <s:HGroup id="viewEditorUI" width="100%" height="100%">
-             <s:DataGrid id="dgColumns"
-					width="90%" height="100%" requestedMinRowCount="4"
-					editable="true" sortableColumns="false" draggableColumns="true"
-					dragEnabled="true" dragMoveEnabled="true" dropEnabled="true"
-					dragStart="onRowDragStarts(event)" dragDrop="onRowDragAndDropped(event)"
-					dataProvider="{rowsDataProvider}">
-                        <s:columns>
-                            <s:ArrayList>
-                                <s:GridColumn width="30" dataField="number" headerText="#"/>
-                                <s:GridColumn width="100" dataField="unid" headerText="Unid" />
-                                <s:GridColumn  dataField="title" headerText="Title" />
-                            </s:ArrayList>
-                        </s:columns>
-		        </s:DataGrid>
-                <s:Group  width="10%"  minWidth="250" minHeight="600" height="100%">
-                        <s:VGroup horizontalAlign="left" verticalAlign="top" percentHeight="100" percentWidth="100"
-                                    paddingLeft="0" paddingRight="0">
-                        <view:PropertyEditorHeader id="propertyEditorHeader" width="100%" />
-                    
-                            <s:FormItem  skinClass="skins.FormItemSkin" width="100%">
-                            
-                            
-                                <s:Label text="Configuration(View):View Selection" width="100%" direction="rtl"/>
-                                <s:TextArea id="viewSelection"
-                                text="" width="100%" minWidth="156" editable="true" selectable="true"
-                                prompt="View Selection"
-                                />
-                                <!-- <s:TextInput id="textInput"
-                                            text=""  width="100" maxChars="100" 
-                                            enter="textInput_changeHandler(event)" focusOut="textInput_changeHandler(event)" skinClass="skins.TextInputSkin" prompt="This is title for the action"/>
-                                    -->
-                                
-                            
-                            </s:FormItem> 
-                        </s:VGroup>   
-                </s:Group>
-             </s:HGroup>
+            <view:DominoViewMockVisualEditor id="dominoViewVisualEditor" percentWidth="100" percentHeight="100" right="0" left="0"/>
         </s:NavigatorContent>
         <s:NavigatorContent label="Dxl">
             <s:Scroller width="100%" height="100%" id="codeContentGroupScroller">
@@ -107,6 +69,7 @@
     import mx.core.IVisualElement;
     import mx.events.FlexEvent;
     import flash.events.Event;
+    import mx.collections.ArrayList;
     import actionScripts.plugins.ui.editor.DominoViewEditor;
 
     import mx.controls.Alert;
@@ -136,15 +99,7 @@
         _codeEditor = value;
     }
 
-    public function onComplete():void {
-
-        propertyEditorHeader.componentName = "Domino View"
-        // editor=model.activeEditor as DominoViewEditor;
-        // codeContentGroupScroller.visible=false;
-        // viewEditorUI.visible=true;
-      
     
-    }
     
    
     private function onViewCreationComplete(event):void 
@@ -169,20 +124,7 @@
     
     }
 
-    protected function onRowDragStarts(event:DragEvent):void
-    {
-        dgColumns.endItemEditorSession();
-    }
-
-    protected function onRowDragAndDropped(event:DragEvent):void
-    {
-        dgColumns.callLater(updateToOwner, [true]);
-    }
-
-    private function updateToOwner(isAll:Boolean = false, updateType:String = null, itemIndex:int = -1):void
-    {
-       
-    }
+    
 
     private function onTabBarChange(event:IndexChangeEvent):void
     {

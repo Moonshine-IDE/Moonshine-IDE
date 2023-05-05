@@ -42,6 +42,8 @@ package actionScripts.plugins.ui.editor
 
 
     import actionScripts.ui.FeathersUIWrapper;
+	import flash.events.Event;
+	import mx.events.FlexEvent;
 
     public class DominoViewEditor extends BasicTextEditor  
 	{
@@ -75,18 +77,34 @@ package actionScripts.plugins.ui.editor
 			text = "";
 			
 			dominoViewEditor = new DominoViewVisualEditor();
-			
+			dominoViewEditor.addEventListener(FlexEvent.CREATION_COMPLETE, onDominoViewEditorCreationComplete);
 			dominoViewEditor.percentWidth = 100;
 			dominoViewEditor.percentHeight = 100;
 
 			dominoViewEditor.codeEditor = editorWrapper;
 		}
 
-         override protected function createChildren():void
+		private function onDominoViewEditorCreationComplete(event:FlexEvent):void
+		{
+			dominoViewEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoViewEditorCreationComplete);
+			dominoViewEditor.dominoViewVisualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
+			dominoViewEditor.dominoViewVisualEditor.loadFile(this.currentFile.fileBridge.nativePath);
+		}
+
+        override protected function createChildren():void
 		{
 			addElement(dominoViewEditor);
 			
 			super.createChildren();
+		}
+
+
+		override protected function openHandler(event:Event):void
+		{
+			super.openHandler(event);
+			var filePath:String = file.fileBridge.nativePath;
+			dominoViewEditor.dominoViewVisualEditor.loadFile(filePath);
+			
 		}
     }
 }
