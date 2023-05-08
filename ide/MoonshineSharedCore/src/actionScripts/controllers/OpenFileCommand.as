@@ -528,6 +528,34 @@ package actionScripts.controllers
 			{
 				project = model.activeProject;
 			}
+			//editor = model.dominoViewVisualEditorCore.getVisualEditor(project);
+
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
+
+			// Let plugins hook in syntax highlighters & other functionality
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			ged.dispatchEvent(editorEvent);
+			
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
+			if (!ConstantsCoreVO.IS_AIR)
+			{
+				var rawData:String = String(value);
+				var jsonObj:Object = JSON.parse(rawData);
+				editor.open(file, jsonObj.text);
+			}
+			else
+			{
+				editor.open(file, value);
+			}
+			
+			if (atLine > -1)
+			{
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
+			}
 
 			ged.dispatchEvent(
 				new AddTabEvent(editor)

@@ -44,6 +44,7 @@ package actionScripts.plugins.ui.editor
     import actionScripts.ui.FeathersUIWrapper;
 	import flash.events.Event;
 	import mx.events.FlexEvent;
+	import mx.controls.Alert;
 
     public class DominoViewEditor extends BasicTextEditor  
 	{
@@ -87,8 +88,20 @@ package actionScripts.plugins.ui.editor
 		private function onDominoViewEditorCreationComplete(event:FlexEvent):void
 		{
 			dominoViewEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoViewEditorCreationComplete);
+			if(dominoViewEditor!=null){
+				if(dominoViewEditor.dominoViewVisualEditor!=null){
+
+				}else{
+					Alert.show("dominoViewEditor.dominoViewVisualEditor is null");
+				}
+
+				if(this.currentFile==null){
+					Alert.show("this.this.currentFile is null:");
+				}else{
+					Alert.show("file:"+this.currentFile.fileBridge.nativePath);
+				}
+			}
 			dominoViewEditor.dominoViewVisualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
-			dominoViewEditor.dominoViewVisualEditor.loadFile(this.currentFile.fileBridge.nativePath);
 		}
 
         override protected function createChildren():void
@@ -103,6 +116,7 @@ package actionScripts.plugins.ui.editor
 		{
 			super.openHandler(event);
 			var filePath:String = file.fileBridge.nativePath;
+			Alert.show("openHandler:"+filePath);
 			dominoViewEditor.dominoViewVisualEditor.loadFile(filePath);
 			
 		}
