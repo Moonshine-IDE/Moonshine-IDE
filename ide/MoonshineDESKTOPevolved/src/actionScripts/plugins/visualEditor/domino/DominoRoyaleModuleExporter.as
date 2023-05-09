@@ -51,10 +51,12 @@ package actionScripts.plugins.visualEditor.domino
 		protected static const TEMPLATE_MODULE_PATH:FileLocation = IDEModel.getInstance().fileCore.resolveApplicationDirectoryPath("elements/templates/royaleDominoElements/module");
 
 		private var components:Array;
+		private var subFormPath:FileLocation;
 
-		public function DominoRoyaleModuleExporter(targetPath:FileLocation, project:ProjectVO, components:Array)
+		public function DominoRoyaleModuleExporter(targetPath:FileLocation, project:ProjectVO, components:Array, subFormPath:FileLocation = null)
 		{
 			this.components = components;
+			this.subFormPath = subFormPath;
 
 			super(targetPath, project, function():void {});
 		}
@@ -86,14 +88,57 @@ package actionScripts.plugins.visualEditor.domino
 					tmpFormObject.viewName = "All By UNID/CRUD/" + nameWithoutExt;
 					tmpFormObject.pageContent = this.components[i].pageContent;
 					tmpFormObject.isSubForm = this.components[i].isSubForm;
+					tmpFormObject.subFormsNames = this.components[i].subFormsNames;
 
 					parseComponents(componentData, tmpFormObject);
 					formObjects.push(tmpFormObject);
 				}
 			}
 
+			for (var j:int = 0; j < formObjects.length; j++)
+			{
+				var formObj:DominoFormVO = formObjects[j];
+				var fields:Array = [];
+				if (!formObj.isSubForm)
+				{
+					prepareFieldsFromSubForms(fields, formObj.subFormsNames);
+
+					for each (var field:DominoFormFieldVO in fields)
+					{
+						formObj.fields.addItem(field);
+					}
+				}
+			}
+
 			copyModuleTemplates();
 			generateProjectClasses();
+		}
+
+		private function prepareFieldsFromSubForms(fields:Array, subFormNames:Array):void
+		{
+			for (var i:int = 0; i < formObjects.length; i++)
+			{
+				var formObj:DominoFormVO = formObjects[i];
+				if (subFormNames && subFormNames.length > 0)
+				{
+					for (var j:int = 0; j < subFormNames.length; j++)
+					{
+						var formName:String = subFormNames[j];
+						if (formObj.formName == formName)
+						{
+							for each (var field:DominoFormFieldVO in formObj.fields)
+							{
+								fields.push(field);
+							}
+
+							if (formObj.subFormsNames && formObj.subFormsNames.length > 0)
+							{
+								prepareFieldsFromSubForms(fields, formObj.subFormsNames);
+							}
+						}
+					}
+				}
+			}
 		}
 
 		override protected function copyTemplates(form:DominoFormVO):void
@@ -107,16 +152,19 @@ package actionScripts.plugins.visualEditor.domino
 
 			th.templatingData["$ProjectName"] = project.name;
 
-			var excludeFiles:Array = ["$subformsViews"];
+			var excludeFiles:Array = ["$subformsViews", "interfaces"];
+			var templateTargetPath:FileLocation = targetPath;
 			if (form.isSubForm)
 			{
 				excludeFiles = [];
 				excludeFiles.push("$moduleNameServices");
 				excludeFiles.push("$moduleNameVO");
 				excludeFiles.push("$moduleNameViews");
+
+				templateTargetPath = this.subFormPath;
 			}
 
-			th.projectTemplate(TEMPLATE_MODULE_PATH, targetPath, excludeFiles);
+			th.projectTemplate(TEMPLATE_MODULE_PATH, templateTargetPath, excludeFiles);
 		}
 
 		override protected function generateModuleClasses():void
@@ -125,13 +173,17 @@ package actionScripts.plugins.visualEditor.domino
 			{
 				if (!form.isSubForm)
 				{
-					waitingCount += 2;
+					waitingCount += 3;
 					new DominoVOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 					new DominoProxyClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+					new DominoFormGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
 				}
-
-				waitingCount += 1;
-				new DominoPageGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				else
+				{
+					waitingCount += 2;
+					new DominoInterfaceVOClassGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+					new DominoSubFormGenerator(this.project, form, classReferenceSettings, onModuleGenerationCompletes);
+				}
 			}
 		}
 
@@ -139,6 +191,31 @@ package actionScripts.plugins.visualEditor.domino
 		{
 			new DominoMainContentPageGenerator(this.project, this.formObjects, classReferenceSettings, onProjectFilesGenerationCompletes);
 			new DominoGlobalClassGenerator(this.project, classReferenceSettings, onProjectFilesGenerationCompletes);
+		}
+
+		override protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void
+		{
+			completionCount++;
+
+			if (waitingCount == completionCount)
+			{
+				waitingCount = 2;
+				completionCount = 0;
+
+				// project specific generation
+				generateProjectClasses();
+			}
+		}
+
+		override protected function onProjectFilesGenerationCompletes(origin:RoyalePageGeneratorBase):void
+		{
+			completionCount++;
+
+			if (waitingCount == completionCount)
+			{
+				onCompleteHandler();
+				onCompleteHandler = null;
+			}
 		}
 
 		private function parseComponents(componentData:Array, form:DominoFormVO):void
@@ -211,31 +288,6 @@ package actionScripts.plugins.visualEditor.domino
 				default:
 					return FormBuilderFieldType.TEXT;
 					break;
-			}
-		}
-
-		override protected function onModuleGenerationCompletes(origin:RoyalePageGeneratorBase):void
-		{
-			completionCount++;
-
-			if (waitingCount == completionCount)
-			{
-				waitingCount = 2;
-				completionCount = 0;
-
-				// project specific generation
-				generateProjectClasses();
-			}
-		}
-
-		override protected function onProjectFilesGenerationCompletes(origin:RoyalePageGeneratorBase):void
-		{
-			completionCount++;
-
-			if (waitingCount == completionCount)
-			{
-				onCompleteHandler();
-				onCompleteHandler = null;
 			}
 		}
 	}

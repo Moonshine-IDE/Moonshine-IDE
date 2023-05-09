@@ -53,6 +53,33 @@ package actionScripts.plugins.visualEditor.domino
 			super(project, form, classReferenceSettings, onComplete);
 		}
 
+		override public function generate():void
+		{
+			var fileContent:String = loadPageFile();
+			if (!fileContent) return;
+
+			generateClassReferences(onGenerationCompletes);
+
+			/*
+			 * @local
+			 */
+			function onGenerationCompletes():void
+			{
+				var subFormImplements:String = form.toSubformVOExtends();
+
+				fileContent = fileContent.replace(/%ImportStatements%/ig, generateSubformImportStatements());
+				fileContent = fileContent.replace(/%InterfacesImplements%/ig, subFormImplements ? " implements " + form.toSubformVOExtends() : "");
+				fileContent = fileContent.replace(/%PropertyStatements%/ig, generateProperties());
+				fileContent = fileContent.replace(/%ToRequestObjectStatements%/g, generateToRequestObjects());
+				fileContent = fileContent.replace(/%GetNewVOStatements%/g, generateNewVOfromObject());
+				fileContent = fileContent.replace(/%ToCloneStatements%/, cloneVOObject());
+				fileContent = fileContent.replace(/$moduleName/ig, form.formName);
+
+				saveFile(fileContent);
+				dispatchCompletion();
+			}
+		}
+
 		override protected function generateNewVOfromObject():String
 		{
 			var tmpContent:String = "";
@@ -187,6 +214,18 @@ package actionScripts.plugins.visualEditor.domino
 			return ("var tmpRequestObject:Object = {\n\t"+ tmpContents.join(",") + "\n};\n" +
 					"if (DominoUniversalID) tmpRequestObject.DominoUniversalID = DominoUniversalID;\n" +
 					"return tmpRequestObject;");
+		}
+
+		protected function generateSubformImportStatements():String
+		{
+			var importStatements:String = "";
+			for each (var moduleName:String in form.subFormsNames)
+			{
+				importStatements += "import ".concat(project.name, ".", "views.modules.subforms", ".",
+						moduleName, ".", "interfaces", ".I", moduleName, "VO;\n");
+			}
+
+			return importStatements;
 		}
 	}
 }
