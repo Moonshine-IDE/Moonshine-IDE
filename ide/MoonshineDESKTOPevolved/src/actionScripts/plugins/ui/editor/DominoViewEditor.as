@@ -88,19 +88,7 @@ package actionScripts.plugins.ui.editor
 		private function onDominoViewEditorCreationComplete(event:FlexEvent):void
 		{
 			dominoViewEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoViewEditorCreationComplete);
-			if(dominoViewEditor!=null){
-				if(dominoViewEditor.dominoViewVisualEditor!=null){
-
-				}else{
-					Alert.show("dominoViewEditor.dominoViewVisualEditor is null");
-				}
-
-				if(this.currentFile==null){
-					Alert.show("this.this.currentFile is null:");
-				}else{
-					Alert.show("file:"+this.currentFile.fileBridge.nativePath);
-				}
-			}
+		
 			dominoViewEditor.dominoViewVisualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 		}
 
@@ -116,7 +104,7 @@ package actionScripts.plugins.ui.editor
 		{
 			super.openHandler(event);
 			var filePath:String = file.fileBridge.nativePath;
-			Alert.show("openHandler:"+filePath);
+			
 			dominoViewEditor.dominoViewVisualEditor.loadFile(filePath);
 			
 		}
