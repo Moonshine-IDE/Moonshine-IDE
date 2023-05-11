@@ -2412,6 +2412,8 @@ package actionScripts.plugin.templating
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
+				//replace the view name to file name:
+				content=content.replace("$ViewName",event.fileName);
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".view");
 				fileToSave.fileBridge.save(content);
 
