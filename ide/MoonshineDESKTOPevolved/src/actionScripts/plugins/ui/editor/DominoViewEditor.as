@@ -34,6 +34,8 @@ package actionScripts.plugins.ui.editor
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.plugins.help.view.DominoViewVisualEditor;
     import actionScripts.valueObjects.ProjectVO;
+	
+	import view.suportClasses.events.PropertyEditorChangeEvent;
     
     import moonshine.editor.text.TextEditor;
     import moonshine.editor.text.events.TextEditorChangeEvent;
@@ -46,10 +48,14 @@ package actionScripts.plugins.ui.editor
 	import mx.events.FlexEvent;
 	import mx.controls.Alert;
 
+	import mx.events.CollectionEvent;
+	import mx.events.CollectionEventKind;
+
     public class DominoViewEditor extends BasicTextEditor  
 	{
         private var dominoViewEditor:DominoViewVisualEditor;
         private var visualEditorProject:ProjectVO;
+		private var hasChangedProperties:Boolean;
         
         
 
@@ -79,17 +85,99 @@ package actionScripts.plugins.ui.editor
 			
 			dominoViewEditor = new DominoViewVisualEditor();
 			dominoViewEditor.addEventListener(FlexEvent.CREATION_COMPLETE, onDominoViewEditorCreationComplete);
+			
 			dominoViewEditor.percentWidth = 100;
 			dominoViewEditor.percentHeight = 100;
 
 			dominoViewEditor.codeEditor = editorWrapper;
+			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
+		}
+		//dominoViewPropertyEditor
+		protected function handleEditorCollectionChange(event:CollectionEvent):void
+		{
+			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == this)
+			{
+				dominoViewEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoViewEditorCreationComplete);
+				
+				if (dominoViewEditor.dominoViewVisualEditor)
+				{
+					dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(Event.CHANGE, onDominoViewPropertyChange);
+			
+					dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
+					dominoViewEditor.dominoViewVisualEditor.removeEventListener("saveCode", onDominoViewEditorSaveCode);
+				}
+				
+				//dispatcher.removeEventListener(TreeMenuItemEvent.FILE_RENAMED, fileRenamedHandler);
+
+				model.editors.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
+				
+			}
+		}
+
+
+		private function onDominoViewEditorSaveCode(event:Event):void
+		{
+            _isChanged = true;
+			this.save();
+		}
+		override public function save():void
+		{
+			hasChangedProperties = false;
+			dominoViewEditor.dominoViewVisualEditor.saveEditedFile();
+		
 		}
 
 		private function onDominoViewEditorCreationComplete(event:FlexEvent):void
 		{
 			dominoViewEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoViewEditorCreationComplete);
-		
+			dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
+			dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.addEventListener(Event.CHANGE, onDominoViewPropertyChange);
+			
+			dominoViewEditor.dominoViewVisualEditor.addEventListener("saveCode", onDominoViewEditorSaveCode);
 			dominoViewEditor.dominoViewVisualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
+		}
+		private function onDominoViewPropertyChange(event:Event):void
+		{
+			updateChangeStatus();
+		}
+
+		override protected function closeTabHandler(event:Event):void
+		{
+			super.closeTabHandler(event);
+			
+			if (!dominoViewEditor.dominoViewVisualEditor) return;
+
+			if (model.activeEditor == this)
+			{
+				dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
+				dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(Event.CHANGE, onDominoViewPropertyChange);
+			
+				
+				//SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
+			}
+		}
+		override protected function updateChangeStatus():void
+		{
+			if (hasChangedProperties)
+			{
+				_isChanged = true;
+			}
+			else
+			{
+				_isChanged = editor.edited;
+				if (!_isChanged)
+				{
+					_isChanged = dominoViewEditor.dominoViewVisualEditor.hasChanged;
+				}
+			}
+			
+			dispatchEvent(new Event('labelChanged'));
+		}
+
+		private function onPropertyEditorChanged(event:PropertyEditorChangeEvent):void
+		{
+			hasChangedProperties = _isChanged = true;
+			dispatchEvent(new Event('labelChanged'));
 		}
 
         override protected function createChildren():void

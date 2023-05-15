@@ -275,11 +275,6 @@
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
 
-		<s:Label text="View Selection:"/>
-		      <s:TextArea id="viewSelection"
-                    text="" width="100%" minWidth="356" editable="true" selectable="true"
-                    prompt="View Selection"
-                    />
 	</s:VGroup>
 
 	<newfile:controlBarContent>
