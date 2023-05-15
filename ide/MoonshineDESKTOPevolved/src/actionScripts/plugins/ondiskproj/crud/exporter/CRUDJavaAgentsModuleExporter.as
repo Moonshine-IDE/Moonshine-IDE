@@ -157,7 +157,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		protected function copyTemplates(form:DominoFormVO):void
 		{
 			var th:TemplatingHelper = new TemplatingHelper();
-			th.templatingData["%eachform%"] = th.templatingData["%form%"] = form.formName.replace(/[^0-9a-zA-Z_]/, '');
+			th.templatingData["%eachform%"] = th.templatingData["%form%"] = form.formName.replace(/[\s_\(\)-]/g, '');
 			th.templatingData["%formRaw%"] = form.formName;
 			th.templatingData["%view%"] = form.viewName;
 			th.templatingData["%project%"] = targetPath.name;
