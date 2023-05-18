@@ -122,8 +122,9 @@ package actionScripts.plugins.ui.editor
 		}
 		override public function save():void
 		{
-			hasChangedProperties = false;
+			hasChangedProperties = _isChanged = false;
 			dominoViewEditor.dominoViewVisualEditor.saveEditedFile();
+			dispatchEvent(new Event('labelChanged'));
 		
 		}
 
