@@ -184,7 +184,6 @@ package actionScripts.plugins.ui.editor
         override protected function createChildren():void
 		{
 			addElement(dominoViewEditor);
-			
 			super.createChildren();
 		}
 
