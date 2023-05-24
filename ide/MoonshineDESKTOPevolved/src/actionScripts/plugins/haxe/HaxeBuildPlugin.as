@@ -288,7 +288,7 @@ package actionScripts.plugins.haxe
                         pendingDebug = true;
                         var commandParts:Array = [EnvironmentExecPaths.HAXELIB_ENVIRON_EXEC_PATH, "run", "lime", "build", project.limeTargetPlatform, "-debug"];
 			            var hxcppDebugServerFolder:File = File.applicationDirectory.resolvePath(HXCPP_DEBUG_SERVER_ROOT_PATH);
-                        commandParts.push("--source=\"" + hxcppDebugServerFolder.nativePath + "\"");
+                        commandParts.push("--source=" + hxcppDebugServerFolder.nativePath);
                         commandParts.push(HAXEFLAG_MACRO_INJECT_SERVER);
 			            start(new <String>[commandParts.join(" ")], project.folderLocation);
                         break;
@@ -477,7 +477,7 @@ package actionScripts.plugins.haxe
                     case HaxeProjectVO.LIME_PLATFORM_MACOS:
                     case HaxeProjectVO.LIME_PLATFORM_LINUX:
 			            var hxcppDebugServerFolder:File = File.applicationDirectory.resolvePath(HXCPP_DEBUG_SERVER_ROOT_PATH);
-                        commandParts.push("--source=\"" + hxcppDebugServerFolder.nativePath + "\"");
+                        commandParts.push("--source=" + hxcppDebugServerFolder.nativePath);
                         commandParts.push(HAXEFLAG_MACRO_INJECT_SERVER);
                         break;
                 }
