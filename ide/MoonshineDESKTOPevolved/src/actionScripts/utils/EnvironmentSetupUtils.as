@@ -330,10 +330,10 @@ package actionScripts.utils
 				if (substrIndex != -1)
 				{
 					var gitRootPath:String = model.gitPath.substring(0, substrIndex);
-					if (FileUtils.isPathExists(gitRootPath + "\\mingw64\\ssl\\cert.pem"))
+					if (FileUtils.isPathExists(gitRootPath + "\\mingw64\\ssl\\certs\\ca-bundle.crt"))
 					{
 						setCommand += getSetExportWithoutQuote("GIT_HOME", gitRootPath);
-						additionalCommandLines += "\"%GIT_HOME%\\bin\\git\" config --global http.sslCAInfo \"%GIT_HOME%\\mingw64\\ssl\\cert.pem\"\r\n";
+						additionalCommandLines += "\"%GIT_HOME%\\bin\\git\" config --global http.sslCAInfo \"%GIT_HOME%\\mingw64\\ssl\\certs\\ca-bundle.crt\"\r\n";
 						isValidToExecute = true;
 					}
 				}
