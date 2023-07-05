@@ -112,7 +112,7 @@ package actionScripts.plugins.tibbo
 			//when adding new listeners, don't forget to also remove them in
 			//dispose()
 
-			LanguageServerGlobals.addLanguageServerManager( this );
+			LanguageServerGlobals.getInstance().addLanguageServerManager( this );
 
 			bootstrapThenStartNativeProcess();
 		}
@@ -207,8 +207,8 @@ package actionScripts.plugins.tibbo
 			_languageClient.removeEventListener(LspNotificationEvent.APPLY_EDIT, languageClient_applyEditHandler);
 			_languageClient = null;
 			
-			LanguageServerGlobals.removeLanguageServerManager( this );
-			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
+			LanguageServerGlobals.getInstance().removeLanguageServerManager( this );
+			LanguageServerGlobals.getInstance().dispatchEvent( new Event( Event.REMOVED ) );
 			
 		}
 		
@@ -386,7 +386,7 @@ package actionScripts.plugins.tibbo
 				if ( _pid > 0 ) {
 					// PID is set, we don't need the stdout handler anymore
 					_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
-					LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.ADDED ) );
+					LanguageServerGlobals.getInstance().dispatchEvent( new Event( Event.ADDED ) );
 					initializeLanguageServer();
 				}
 			}
@@ -413,7 +413,7 @@ package actionScripts.plugins.tibbo
 				
 				warning("Tibbo Basic language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
-			LanguageServerGlobals.getEventDispatcher().dispatchEvent( new Event( Event.REMOVED ) );
+			LanguageServerGlobals.getInstance().dispatchEvent( new Event( Event.REMOVED ) );
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);
 			_languageServerProcess.removeEventListener(NativeProcessExitEvent.EXIT, languageServerProcess_exitHandler);
