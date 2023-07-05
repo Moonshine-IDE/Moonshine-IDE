@@ -33,7 +33,7 @@
 
 package actionScripts.plugin.core.compiler;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class HaxeBuildEvent extends Event {
 	public static final BUILD_DEBUG:String = "haxeBuildDebug";

@@ -32,8 +32,8 @@
 
 package actionScripts.events;
 
-import flash.display.DisplayObject;
-import flash.events.Event;
+import openfl.display.DisplayObject;
+import openfl.events.Event;
 
 class UpdateTabEvent extends Event {
 	public static final EVENT_TAB_UPDATED_OUTSIDE:String = "tabUpdatedOutside";

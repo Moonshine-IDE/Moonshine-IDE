@@ -172,6 +172,9 @@ import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
+	
+	import actionScripts.plugins.ui.editor.DominoFormulaEditor;
+  
 
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
@@ -211,6 +214,11 @@ import actionScripts.valueObjects.HelperConstants;
 		public function getTourDeEditor(swfSource:String):BasicTextEditor
 		{
 			return (new TourDeTextEditor(swfSource));
+		}
+
+		public function getDominoActionEditor():BasicTextEditor
+		{
+			return (new DominoFormulaEditor());
 		}
 		
 		public function getCorePlugins():Array
@@ -407,10 +415,10 @@ import actionScripts.valueObjects.HelperConstants;
 					new MenuItem(resourceManager.getString('resources','HOME'), null, null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
 					new MenuItem(null), //separator
 					new MenuItem(resourceManager.getString('resources','NAVIGATE_NEXT_PREVIOUS'), null, null, TabEvent.EVENT_TAB_NAVIGATE_NEXT_PREVIOUS_HOTKEYS,
-						"\t", [Keyboard.CONTROL],
+						"\t", [Keyboard.ALTERNATE],
 						"tab", [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','NAVIGATE_EDITORS_LIST'), null, null, TabEvent.EVENT_TAB_NAVIGATE_EDITORS_LIST_HOTKEYS,
-						"\t", [Keyboard.CONTROL, Keyboard.SHIFT],
+						"\t", [Keyboard.ALTERNATE, Keyboard.SHIFT],
 						"tab", [Keyboard.CONTROL, Keyboard.SHIFT])
 				]),
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[

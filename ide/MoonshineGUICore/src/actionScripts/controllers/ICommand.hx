@@ -33,7 +33,7 @@
 
 package actionScripts.controllers;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 interface ICommand {
 	function execute(event:Event):Void;

@@ -1,7 +1,9 @@
 package $ProjectName.views.modules.$moduleName.$moduleNameVO
 {
+    %ImportStatements%
+
     [Bindable]
-	public class $moduleNameVO  
+	public class $moduleNameVO %InterfacesImplements%
 	{
 	    public var DominoUniversalID:String;
 

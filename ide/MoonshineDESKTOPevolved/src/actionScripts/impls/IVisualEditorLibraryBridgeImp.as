@@ -51,6 +51,12 @@ package actionScripts.impls
 	import view.VisualEditor;
 	import view.interfaces.IVisualEditorLibraryBridge;
 	
+	import flash.events.MouseEvent;
+	import actionScripts.plugin.templating.TemplatingPlugin;
+
+	import mx.collections.ArrayList;
+	import flash.events.Event;
+
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
 	{
 		public var visualEditorProject:ProjectVO;
@@ -84,6 +90,13 @@ package actionScripts.impls
 			
 			dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]))
 		}
+
+		public function openDominoActionFile(path:String):void 
+		{
+			var tmpOpenFile:FileLocation = new FileLocation(path);
+			if (!tmpOpenFile) return;
+			dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]))
+		}
 		
 		public function getVisualEditorComponent():VisualEditor
 		{
@@ -114,6 +127,43 @@ package actionScripts.impls
 
             return editor.currentFile.fileBridge.getRelativePath(visualEditorProject.sourceFolder, true);
         }
+
+		public function openCreateDominoActionPanel(event:MouseEvent):void
+        {
+			var templaetPulgin:TemplatingPlugin=new TemplatingPlugin();
+
+            templaetPulgin.openDominoActionComponentTypeChoose(event);
+        }
+
+		//Copy& Past from Visual editor need update the status for it;
+
+		public function updateCurrentVisualEditorStatus():void{
+			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if(editor!=null){
+				editor.editorView.visualEditor.editingSurface.hasChanged=true;
+				editor.editorView.visualEditor.dispatchEvent(new Event('labelChanged'));
+			}
+		}
+
+		//getDominoActionList
+
+		public function getDominoActionList():ArrayList
+        {              
+			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if (!editor) return null;
+			return editor.getDominoActionList();
+
+		}
+
+		public function getDominoShareFieldList():ArrayList
+        {              
+			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if (!editor) return null;
+			return editor.getDominoShareFieldList();
+
+		}
+
+		
 
 		private function onNewFileAdded(event:TreeMenuItemEvent):void
 		{

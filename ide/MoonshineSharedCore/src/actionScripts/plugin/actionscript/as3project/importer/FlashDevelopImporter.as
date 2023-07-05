@@ -64,10 +64,6 @@ package actionScripts.plugin.actionscript.as3project.importer
 	import mx.controls.Alert;
 	import utils.StringHelperUtils;
 
-
-
-	import actionScripts.plugin.ondiskproj.exporter.OnDiskMavenSettingsExporter;
-
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
 		public static function test(file:FileLocation):FileLocation
@@ -338,56 +334,53 @@ package actionScripts.plugin.actionscript.as3project.importer
 
 		public static function convertDomino(file:FileLocation):void
 		{
-			var projectNameextensionIndex:int = file.fileBridge.name.lastIndexOf("veditorproj");
-			var folder:File ;
+			var folder:File;
 			var projectName:String;
-			var settingFile:File=null;
+			var settingFile:File = null;
 			var projectNameextensionIndex:int = file.fileBridge.name.lastIndexOf("veditorproj");
-			if(projectNameextensionIndex>0){
+			if(projectNameextensionIndex>0)
+			{
 				folder = (file.fileBridge.getFile as File).parent;
 				projectName=file.fileBridge.name.substring(0, projectNameextensionIndex - 1);
 				settingFile=new File(file.fileBridge.nativePath);
-			}else{
-				//get the correct project setting file end with veditorproj.
-				folder =file.fileBridge.getFile as File;
-				var getfiles:Array = folder.getDirectoryListing();
-					for (var i:int = 0; i < getfiles.length; i++) { 			  	 			  
-						var projectFileNameInt:int=getfiles[i].nativePath.lastIndexOf("veditorproj");
-						if(projectFileNameInt>0){
-							projectName=getfiles[i].nativePath.substring(0, projectFileNameInt - 1);;
-							settingFile=getfiles[i];
-						}
-					}
 			}
-				
-			
-			
-			
-		
-		
-			
+			else
+			{
+				//get the correct project setting file end with veditorproj.
+				folder = file.fileBridge.getFile as File;
+				var getFiles:Array = folder.getDirectoryListing();
+				for (var i:int = 0; i < getFiles.length; i++)
+				{
+					var projectFileNameInt:int=getFiles[i].nativePath.lastIndexOf("veditorproj");
+					if(projectFileNameInt>0)
+					{
+						projectName=getFiles[i].nativePath.substring(0, projectFileNameInt - 1);
+						settingFile=getFiles[i];
+					}
+				}
+			}
+
 			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
 			var requireFileLocation:FileLocation;
 
 			var base64CodeReg:RegExp = new RegExp("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$","i");
-			
-		
+
 			requireFileLocation = projectFolderLocation.resolvePath(".xml_conversion_required");
 			//1. first check the .xml_conversion_required file
 			if (requireFileLocation.fileBridge.exists)
 			{
-				
 				//DominoUtils.getDominoParentContent(projectName,projectName);
-             
 				//var visualEditorView:VisualEditorViewer=new VisualEditorViewer();
 				//2.start convert domino 
 				//2.1 load xml from visualeditor-src and convert it to dxl
 				var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
 				var subformXmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
-				if(!subformXmlFileLocation.fileBridge.exists){
-					subformXmlFileLocation.fileBridge.createDirectory()
+				if(!subformXmlFileLocation.fileBridge.exists)
+				{
+					subformXmlFileLocation.fileBridge.createDirectory();
 				}
-				if(xmlFileLocation.fileBridge.exists || subformXmlFileLocation.fileBridge.exists){
+				if(xmlFileLocation.fileBridge.exists || subformXmlFileLocation.fileBridge.exists)
+				{
 					var directory:Array = xmlFileLocation.fileBridge.getDirectoryListing();
 					var subdirectory:Array = subformXmlFileLocation.fileBridge.getDirectoryListing();
 					if(subdirectory){
@@ -397,45 +390,65 @@ package actionScripts.plugin.actionscript.as3project.importer
 						}
 					}
 					//add subfrom xml into directory ;
-					
 
 					for each (var xml:File in directory)
 					{
-						if (xml.extension == "xml" ) {
+						if (xml.extension == "xml" )
+						{
 							var xmlNameextensionIndex:int = xml.name.lastIndexOf("xml");
 							var xmlName:String=xml.name.substring(0, xmlNameextensionIndex - 1);
 							var xmlNavePath:String = xml.nativePath;
 							var subfromPath:String = "subforms"+File.separator+xml.name;
 
 							var dominoXml:XML;
-							if(xmlNavePath.indexOf(subfromPath)>=0){
-								dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
-							} else {
-								dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,projectName);
-							}
-							
 							
 							var _fileStreamMoonshine:FileStream = new FileStream();
 							_fileStreamMoonshine.open(xml, FileMode.READ);
 							var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
 							var internalxml:XML = new XML(data);
-							
 
-						
+							var windowsTitleName:String= internalxml.MainApplication.@windowsTitle;
+							if(windowsTitleName!=null && windowsTitleName!="" && windowsTitleName.length>0){
+								windowsTitleName=StringHelper.base64Decode(windowsTitleName);
+							}else{
+								windowsTitleName="@Text(\""+xmlName+"\")";
+							}
+							
+							if(xmlNavePath.indexOf(subfromPath)>=0){
+								dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
+							} else {
+								dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,windowsTitleName);
+							}
+
+							//first we insert the action bar if it exist
+							var xmlFileLocation:FileLocation= new FileLocation(xml.nativePath);
+							var xmlFileString:String=String(xmlFileLocation.fileBridge.read());
+							var	sourceXmlCache:XML = new XML(xmlFileString);
+
+							for each(var actionSource:XML in sourceXmlCache..actionbar) //no matter of depth Note here
+							{
+								var actionNode:XML=new XML("");
+								
+								dominoXml.appendChild(actionSource);
+							}
+
 							
 							var surfaceModel:SurfaceMockup=EditingSurfaceReader.fromXMLAutoConvert(internalxml);
-							if(surfaceModel!=null){
-								var dominoMainContainer:XML ;
-								if(xmlNavePath.indexOf(subfromPath)>=0){
+							if(surfaceModel!=null)
+							{
+								var dominoMainContainer:XML;
+								if(xmlNavePath.indexOf(subfromPath)>=0)
+								{
 									dominoMainContainer= MainApplicationCodeUtils.getDominPageMainContainerTag(dominoXml);
-								}else{
+								}
+								else
+								{
 									dominoMainContainer = MainApplicationCodeUtils.getDominMainContainerTag(dominoXml);
-								}									
-								
-								
-								
+								}
+
 								//convert to dxl
 								var dominoCode:XML=surfaceModel.toDominoCode(dominoMainContainer);
+							
 								
 								//fix the div node from the domino code 
 								for each(var div:XML in dominoCode..div) //no matter of depth Note here
@@ -474,15 +487,14 @@ package actionScripts.plugin.actionscript.as3project.importer
 								//fix wrong size on the font
 								for each(var font:XML in dominoCode..font)
 								{
-									if(font && font.@size){
+									if(font && font.@size)
+									{
 										var sizeStr:String = font.@size;
 										if(sizeStr.indexOf("ptpt")>0){
 											font.@size=sizeStr.replace(/ptpt/gi, "pt");
 										}
 									}
 								}	
-
-								
 
 								if(dominoCode!=null ){
 									var hasRichText:Boolean=false;	
@@ -495,7 +507,8 @@ package actionScripts.plugin.actionscript.as3project.importer
 										hasRichText=true;
 									
 									}
-									if(hasRichText==false){
+									if(hasRichText==false)
+									{
 										//add new richtext node
 										var richtext:XML = new XML("<richtext style='width:700px;height:700px;' class='flexHorizontalLayout flexHorizontalLayoutLeft flexHorizontalLayoutTop' direction='Horizontal' vdirection='Vertical'/>");
 										dominoMainContainer.appendChild(richtext);
@@ -549,7 +562,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 									}
 									//fix hidewhen
 									var richtextNodeList:XMLList=dominoXml..richtext;
-									var richtextNode=richtextNodeList[0];
+									var richtextNode:Object = richtextNodeList[0];
 									for each(var par:XML in dominoXml..par) //no matter of depth Note here
 									{
 										if(par.@hidewhen !=null && par.@hidewhen!="" && par.@def){
@@ -628,50 +641,64 @@ package actionScripts.plugin.actionscript.as3project.importer
 
 									//fix hide 
 									//remove all empty formual node 
-									for each(var formula:XML in dominoXml..formula){
-										if(formula.parent().name()=="code"){
-											if(formula.parent().parent().name()=="computedtext"){
-												if(formula.parent().parent().parent().name()=="par"){
-													if(formula.children().length()==1&& formula.children()[0]==" "){
+									for each(var formula:XML in dominoXml..formula)
+									{
+										if(formula.parent().name()=="code")
+										{
+											if(formula.parent().parent().name()=="computedtext")
+											{
+												if(formula.parent().parent().parent().name()=="par")
+												{
+													if(formula.children().length()==1&& formula.children()[0]==" ")
+													{
 														delete formula.parent().children()[formula.childIndex()];
 													}
-													
 												}
 											}
 										}
 
-									
-										if(formula.children()==null || formula.children().length()==0){
-											
-												delete formula.parent().children()[formula.childIndex()];
-											 
-											 
+										if(formula.children()==null || formula.children().length()==0)
+										{
+											delete formula.parent().children()[formula.childIndex()];
 										}
-										
 									}
 
-									for each(var code:XML in dominoXml..code){
+									for each(var code:XML in dominoXml..code)
+									{
 										var codeChilren:XMLList = code.children();
-										if(codeChilren.length()  == 0){
+										if(codeChilren.length() == 0)
+										{
 											delete code.parent().children()[code.childIndex()];
 										}
 									}
-									for each(var computedtext:XML in dominoXml..computedtext){
+
+									for each(var computedtext:XML in dominoXml..computedtext)
+									{
 										var computedtextChilren:XMLList = computedtext.children();
-										if(computedtextChilren.length()  == 0){
+										if(computedtextChilren.length() == 0)
+										{
 											delete computedtext.parent().children()[computedtext.childIndex()];
 										}
 									}
 									for each(var subformref:XML in dominoXml..subformref){
-										if(subformref.@name==null||subformref.@name=="" ){
-											Alert.show("subformref:"+subformref.toXMLString());
-											var subformrefChilren:XMLList = subformref.children();
-											if(subformrefChilren.length()== 0){
-												delete subformref.parent().children()[subformref.childIndex()];
+										if(subformref.@name){
+											var subformname:String=subformref.@name;
+											if(subformname.length<2){
+												
+												var subformrefChilren:XMLList = subformref.children();
+												if(subformrefChilren.length()== 0){
+													delete subformref.parent().children()[subformref.childIndex()];
+												}
 											}
 										}
 									
 										
+									}
+									for each(var dominoField:XML in dominoXml..field){
+										var choices:String=dominoField.@choicesdialog;
+										if(choices!=null && choices==""){
+											dominoField.@choicesdialog="none"
+										}
 									}
 									//computedtext
 							
@@ -681,22 +708,37 @@ package actionScripts.plugin.actionscript.as3project.importer
 								var extensionIndex:int = xml.name.lastIndexOf(xml.extension);
 								//write the dxl to traget form file
 								var xmlFileName:String=xml.name.substring(0, extensionIndex - 1);
-								var targetFileLocation:FileLocation ;
+								var targetFileLocation:FileLocation;
 
-								if(xmlNavePath.indexOf(subfromPath)>=0){
+								if(xmlNavePath.indexOf(subfromPath)>=0)
+								{
 									targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms"+File.separator+xmlFileName+".subform");
-								}else{
+								}
+								else
+								{
 									targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
 								}
 								
 								
 								var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
 								//remove old file
-								if(targetFileLocation.fileBridge.exists){
+								if(targetFileLocation.fileBridge.exists)
+								{
 									targetFileLocation.fileBridge.deleteFile();
 								}
 								dominoXml=DominoUtils.fixNewTab(dominoXml);
-								targetFileLocation.fileBridge.save(dominoXml.toXMLString());
+								//var dominoCodeXmlStr:String=DominoUtils.fixDominButton(dominoXml);
+								//fix </button<
+								var dominoCodeXmlStr:String=DominoUtils.fixNotCloseButton(dominoXml.toXMLString());
+								try{
+									dominoCode=new XML(dominoCodeXmlStr);
+								}catch(error:Error){
+									Alert.show("Error #"+ error.errorID +": "+ error.message);	
+									Alert.show("file :"+ xmlNavePath);	
+									Alert.show("xml :"+ dominoCodeXmlStr);	
+									
+								}
+								targetFileLocation.fileBridge.save(dominoCodeXmlStr);
 								// var _targetfileStreamMoonshine:FileStream = new FileStream();
 								// _targetfileStreamMoonshine.open(targetFormFile, FileMode.WRITE);
 								// _targetfileStreamMoonshine.writeUTFBytes(DominoUtils.fixDominButton(dominoXml.toXMLString()));
@@ -735,9 +777,51 @@ package actionScripts.plugin.actionscript.as3project.importer
 
 			//2. remove not need NewVisualEditorProject file
 			var newFileVisualTemplate:FileLocation= projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"NewVisualEditorProject.form");
-			if(newFileVisualTemplate.fileBridge.exists){
+			if(newFileVisualTemplate.fileBridge.exists)
+			{
 				newFileVisualTemplate.fileBridge.deleteFile();
 			}
+
+			//convertDominoAction(projectFolderLocation);
+		}
+
+		public static function convertDominoAction(projectFolderLocation:FileLocation):void
+		{
+			var separator:String= projectFolderLocation.fileBridge.separator;
+			var actionDxlFolderPath:String=projectFolderLocation.fileBridge.nativePath+separator+"nsfs"+separator+"nsf-moonshine"+separator+"odp"+separator+"Code"+separator+"actions";
+			var actionDxlFolderFileLocation:FileLocation=new FileLocation(actionDxlFolderPath);
+			if(!actionDxlFolderFileLocation.fileBridge.exists){
+				actionDxlFolderFileLocation.fileBridge.createDirectory();
+			} 
+			var actionDxlPath:String = actionDxlFolderFileLocation.fileBridge.nativePath+separator+"Shared Actions";
+			var actionDxl:FileLocation=new FileLocation(actionDxlPath); 
+			if(!actionDxl.fileBridge.exists){
+					//actionDxl.fileBridge.save(DominoUtils.getDominActionDxlTemplate());
+			}
+			var actionString:String=String(actionDxl.fileBridge.read());
+			var	actionDxlCache:XML = new XML(actionString);
+
+			//
+
+			var sourecActionsFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+separator+"nsf-moonshine"+separator+"odp"+separator+"SharedElements"+separator+"Actions");
+
+			if(sourecActionsFileLocation.fileBridge.exists){
+				var actionDirectory:Array = sourecActionsFileLocation.fileBridge.getDirectoryListing();
+				if(actionDirectory){
+					
+					for each (var actionxml:File in actionDirectory)
+					{
+						var actionXmlNavePath:String = actionxml.nativePath;
+						var actionFileLocation:FileLocation=new FileLocation(actionXmlNavePath);
+						var actionSigleFileString:String=String(actionFileLocation.fileBridge.read());
+						var actionSigleXML:XML=new XML(actionSigleFileString);
+						actionDxlCache.sharedactions.appendChild(actionSigleXML);
+					}
+
+					actionDxl.fileBridge.save(actionDxlCache.toXMLString());
+				}
+			}		
+
 		}
 	}
 }

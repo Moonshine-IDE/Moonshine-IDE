@@ -33,7 +33,7 @@
 
 package actionScripts.plugin.console;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class ConsoleCommandEvent extends Event {
 	public static final EVENT_COMMAND:String = "consoleCommand";

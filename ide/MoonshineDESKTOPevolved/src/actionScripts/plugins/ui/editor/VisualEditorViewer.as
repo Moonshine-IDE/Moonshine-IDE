@@ -196,6 +196,11 @@ package actionScripts.plugins.ui.editor
 			dispatcher.addEventListener(EVENT_SWITCH_TAB_TO_CODE, switchTabToCodeHandler);
 
 			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+			visualEditorView.visualEditor.editingSurface.sharedFieldList=getDominoShareFieldList();
+		
+			if(visualEditorView.visualEditor.dominoActionOrganizer!=null){
+				visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
+			}
 		}
 
 		private function previewStartCompleteHandler(event:PreviewPluginEvent):void
@@ -233,18 +238,25 @@ package actionScripts.plugins.ui.editor
 					var visualEditor:Object=  visualeEditorView.contentGroup.getElementAt(0) ;
 					if(visualEditor){
 						if( visualEditor.hasOwnProperty("visualEditorFilePath")){
-							var fileLocation:FileLocation=new FileLocation(visualEditor.visualEditorFilePath);
-							if(fileLocation.fileBridge.exists){
+							if(visualEditor.editingSurface!=null){
+								var visualEditorFileType:String = visualEditor.editingSurface.visualEditorFileType;
 								//we should only let follow code with form&subfrom file.
 								//these code clean the old design element in the surface editor and inital it again,
 								//after user click the tab, it will loading latest xml into surface, this is why we get the duplication element .
-								if(fileLocation.fileBridge.extension=="form" || fileLocation.fileBridge.extension=="subform"){
-									var data:Object=fileLocation.fileBridge.read();
+								//Alert.show("visualEditorFileType:"+visualEditorFileType);
+								if(visualEditorFileType=="form" || visualEditorFileType=="subform"|| visualEditorFileType=="field" || visualEditorFileType=="page"){
 									visualEditor.editingSurface.deleteAllByEditingSureface(visualEditor.editingSurface);
 									
 									var xml:XML = new XML("<mockup/>");
 									visualEditor.editingSurface.fromXMLByEditingSurface(xml,visualEditor.editingSurface);
+									//Alert.show("visualEditorFileType execute:"+visualEditorFileType);
 								}
+								
+							}
+							
+							var fileLocation:FileLocation=new FileLocation(visualEditor.visualEditorFilePath);
+							if(fileLocation.fileBridge.exists){
+								
 
 								
 							
@@ -258,8 +270,12 @@ package actionScripts.plugins.ui.editor
 			}
 
 			//update the subform for rename action
-			if(visualEditorView.visualEditor.editingSurface)
-			visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+			if(visualEditorView.visualEditor.editingSurface){
+				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+				visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
+				visualEditorView.visualEditor.editingSurface.sharedFieldList=getDominoShareFieldList();
+			}
+
 		}
 
 		private function onVisualEditorSaveCode(event:Event):void
@@ -455,8 +471,12 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 				visualEditorView.visualEditor.moonshineBridge = visualEditoryLibraryCore;
 				//when it swtich back the current view edtior , it need reload the sub from again
-				if(visualEditorView.visualEditor.editingSurface)
-				visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+				if(visualEditorView.visualEditor.editingSurface){
+					visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
+					visualEditorView.visualEditor.editingSurface.sharedFieldList=getDominoShareFieldList();
+					visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
+				}
+
 
 			}
 
@@ -480,7 +500,7 @@ package actionScripts.plugins.ui.editor
 			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){			
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 				mxmlString=DominoUtils.fixDominButton(mxmlCode);
-			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0 || file.fileBridge.nativePath.lastIndexOf(".subform")>=0){
+			}else if(file.fileBridge.nativePath.lastIndexOf(".form")>=0 || file.fileBridge.nativePath.lastIndexOf(".subform")>=0|| file.fileBridge.nativePath.lastIndexOf(".field")>=0){
 				mxmlCode=visualEditorView.visualEditor.editingSurface.toDominoCode(getDominoFormFileName());
 				mxmlString=DominoUtils.fixDominButton(mxmlCode);
 			} 
@@ -510,6 +530,13 @@ package actionScripts.plugins.ui.editor
 			if (veFilePath)
 			{
 				visualEditorView.visualEditor.loadFile(veFilePath);
+			}
+		}
+
+		public function reloadXmlFile(veFile:String):void
+		{
+			if(veFile!=null){
+				visualEditorView.visualEditor.loadFile(veFile);
 			}
 		}
 
@@ -543,6 +570,9 @@ package actionScripts.plugins.ui.editor
 					filePath= visualEditorProjectSourcedPath+File.separator+"subforms"+File.separator+file.fileBridge.name;
 					filePath=filePath.replace(/.mxml$|.xhtml$|.subform$|.page$|.dve$/, ".xml");
 					
+				}if(filePath.indexOf(".field")>=0){
+					filePath= visualEditorProjectSourcedPath+File.separator+"fields"+File.separator+file.fileBridge.name;
+					filePath=filePath.replace(/.mxml$|.xhtml$|.subform$|.page$|.field$|.dve$/, ".xml");
 				}else{
 					filePath=filePath.replace(visualEditorProject.sourceFolder.fileBridge.nativePath,visualEditorProjectSourcedPath).replace(/.mxml$|.xhtml$|.form$|.dve$|.subform$/, ".xml");	
 				}
@@ -553,6 +583,10 @@ package actionScripts.plugins.ui.editor
 
 			return null;
 		}
+
+		/** 
+		* This function will loading the subfrom list file from project folder
+		*/
 
 		private function getSubFromList():ArrayList {
 			var subforms:ArrayList = new ArrayList();
@@ -595,6 +629,94 @@ package actionScripts.plugins.ui.editor
 			
 			
 			return subforms;
+		}
+
+		/** 
+		* This function will loading the domino action list file from project folder
+		*/
+		public function getDominoActionList():ArrayList {
+			
+			var actionsList:ArrayList = new ArrayList();
+				actionsList.addItem({label: "none",value: "none",description:"none"});
+			var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
+			fileSoucePath=fileSoucePath.replace("Forms","SharedElements");
+			fileSoucePath=fileSoucePath+File.separator+"Actions";
+			var directory:File = new File(fileSoucePath);
+			if (directory.exists) {
+				var list:Array = directory.getDirectoryListing();
+				for (var i:uint = 0; i < list.length; i++) {
+					
+						var actionFile:String=list[i].name.substring(0,list[i].nativePath.length-4);
+						actionFile=actionFile.replace(".xml","");
+						actionsList.addItem(  {label: actionFile,value: actionFile,description:list[i].nativePath});		
+					
+				}
+			}
+			
+			
+
+			//sort the actionsList 
+			 if(actionsList.length>0){
+                var arry:ArrayCollection= new ArrayCollection(actionsList.toArray());
+
+                arry=GenericUtils.arrayCollectionSort(arry,"label",false);
+                
+				actionsList=new ArrayList();
+				for each(var item:Object in arry)
+				{
+					actionsList.addItem(item);
+					
+				}
+				
+
+            }
+			
+			
+			return actionsList;
+
+		}
+
+
+		public function getDominoShareFieldList():ArrayList {
+			
+			var actionsList:ArrayList = new ArrayList();
+				actionsList.addItem({label: "none",value: "none",description:"none"});
+			var fileSoucePath:String = visualEditorProject.sourceFolder.fileBridge.nativePath
+			fileSoucePath=fileSoucePath.replace("Forms","SharedElements");
+			fileSoucePath=fileSoucePath+File.separator+"Fields";
+			var directory:File = new File(fileSoucePath);
+			if (directory.exists) {
+				var list:Array = directory.getDirectoryListing();
+				for (var i:uint = 0; i < list.length; i++) {
+					
+						var actionFile:String=list[i].name.substring(0,list[i].nativePath.length-4);
+						actionFile=actionFile.replace(".field","");
+						actionsList.addItem(  {label: actionFile,value: actionFile,description:list[i].nativePath});		
+					
+				}
+			}
+			
+			
+
+			//sort the actionsList 
+			 if(actionsList.length>0){
+                var arry:ArrayCollection= new ArrayCollection(actionsList.toArray());
+
+                arry=GenericUtils.arrayCollectionSort(arry,"label",false);
+                
+				actionsList=new ArrayList();
+				for each(var item:Object in arry)
+				{
+					actionsList.addItem(item);
+					
+				}
+				
+
+            }
+			
+			
+			return actionsList;
+
 		}
 	}
 }

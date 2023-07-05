@@ -94,6 +94,9 @@ package actionScripts.plugin.templating
 	import components.popup.newFile.NewDominoFormPopup;
 	import components.popup.newFile.NewDominoPagePopup;
 	import components.popup.newFile.NewDominoSubFormPopup;
+	import components.popup.newFile.NewDominoShareFieldPopup;
+	import components.popup.newFile.NewDominoActionPopup;
+
 	import components.popup.newFile.NewFilePopup;
 	import components.popup.newFile.NewGroovyFilePopup;
 	import components.popup.newFile.NewHaxeFilePopup;
@@ -144,6 +147,8 @@ package actionScripts.plugin.templating
 		protected var newDominoFormComponentPopup:NewDominoFormPopup;
 		protected var newDominoPageComponentPopup:NewDominoPagePopup;
 		protected var newDominoSubformComponentPopup:NewDominoSubFormPopup;
+		protected var newDominoSharedFieldComponentPopup:NewDominoShareFieldPopup;
+		protected var newDominoActionComponentPopup:NewDominoActionPopup;
 		protected var newMXMLModuleComponentPopup:NewMXMLGenericFilePopup;
 		protected var newVisualEditorFilePopup:NewVisualEditorFilePopup;
 		protected var newOnDiskFilePopup:NewOnDiskFilePopup;
@@ -337,6 +342,15 @@ package actionScripts.plugin.templating
 			files = templatesDir.resolvePath("files/Domino Visual Editor Subform.subform.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_DOMINO_SUBFORM = files;
+
+
+			files = templatesDir.resolvePath("files/Domino Visual Share Field.field.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_DOMINO_SHAREDFIELD = files;
+
+			files = templatesDir.resolvePath("files/Domino Visual Editor Action.action.template");
+			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
+				ConstantsCoreVO.TEMPLATE_DOMINO_ACTION = files;	
 			// Just to generate a divider in relevant UI
 			//ConstantsCoreVO.TEMPLATES_MXML_COMPONENTS.addItem("NOTHING");
 			
@@ -978,10 +992,6 @@ package actionScripts.plugin.templating
 			if (ConstantsCoreVO.IS_AIR)
 			{
 				eventName = event.type.substr(24);
-				
-				//Alert.show("eventName1:"+event.type);
-				//Alert.show("eventName2:"+(event as NewFileEvent).type);
-				
 				// MXML type choose
 				switch (eventName)
 				{
@@ -1015,6 +1025,12 @@ package actionScripts.plugin.templating
 						break;
 					case "Domino Visual Editor Subform":
 						openDominoSubFormComponentTypeChoose(event);
+						break;	
+					case "Domino Visual Share Field":
+						openDominoShareFieldComponentTypeChoose(event);
+						break;	
+					case "Domino Visual Editor Action":
+						openDominoActionComponentTypeChoose(event);
 						break;	
 					case "Domino Visual Editor Page":
 						openDominoPageComponentTypeChoose(event);
@@ -1462,6 +1478,179 @@ package actionScripts.plugin.templating
 				
 			}
 		}
+		//newDominoSharedFieldComponentPopup
+		protected function openDominoShareFieldComponentTypeChoose(event:Event):void
+		{
+			if (!newDominoSharedFieldComponentPopup)
+			{
+				newDominoSharedFieldComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoShareFieldPopup, true) as NewDominoShareFieldPopup;
+				newDominoSharedFieldComponentPopup.addEventListener(CloseEvent.CLOSE, handleDominoShareFieldPopupClose);
+				newDominoSharedFieldComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoSharedFieldFileCreateRequest);
+                //setting default folder or selected folder for new file
+			    if (event is NewFileEvent) 
+				{
+					newDominoSharedFieldComponentPopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
+					newDominoSharedFieldComponentPopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
+					newDominoSharedFieldComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
+				}
+				else
+				{
+					// try to check if there is any selection in 
+					// TreeView item
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+					if (treeSelectedItem)
+					{
+						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(treeSelectedItem));
+						newDominoSharedFieldComponentPopup.folderLocation = creatingItemIn.file;
+						newDominoSharedFieldComponentPopup.wrapperOfFolderLocation = creatingItemIn;
+						newDominoSharedFieldComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+					}
+				}
+				//only for fixed folder for domino form file
+			
+				
+				if(newDominoSharedFieldComponentPopup.wrapperBelongToProject==null){
+					Alert.show("Please select a project that you want create the shread field!");
+				}else{
+					var dominoShareFieldFolderStr:String=newDominoSharedFieldComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Fields";
+					var dominoShareFieldFolder:FileLocation=new FileLocation(dominoShareFieldFolderStr);
+					if(!dominoShareFieldFolder.fileBridge.exists){
+						dominoShareFieldFolder.fileBridge.createDirectory();
+					}
+				
+				if(dominoShareFieldFolder.fileBridge.exists){
+					//set the tree selct to domino form folder
+					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+					var dominoShareFieldFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoSharedFieldComponentPopup.wrapperBelongToProject.projectFolder, dominoShareFieldFolderStr);
+					model.mainView.getTreeViewPanel().tree.callLater(function ():void
+					{
+						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+					
+						for (var j:int = 0; j < (wrappers.length - 1); j++)
+						{
+							model.mainView.getTreeViewPanel().tree.expandItem(wrappers[j], true);
+						}
+		
+						// selection
+						model.mainView.getTreeViewPanel().tree.selectedItem = dominoShareFieldFolderWrapper;
+						// scroll-to
+						model.mainView.getTreeViewPanel().tree.callLater(function ():void
+						{
+							model.mainView.getTreeViewPanel().tree.scrollToIndex(model.mainView.getTreeViewPanel().tree.getItemIndex(dominoShareFieldFolderWrapper));
+						});
+					});
+					
+					
+					//model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
+					newDominoSharedFieldComponentPopup.wrapperOfFolderLocation = dominoShareFieldFolderWrapper;
+					newDominoSharedFieldComponentPopup.folderLocation =dominoShareFieldFolder;
+					PopUpManager.centerPopUp(newDominoSharedFieldComponentPopup);
+					}else{
+						Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
+					}
+				}
+				
+				
+			}
+		}
+
+		public  function openDominoActionComponentTypeChoose(event:Event):void
+		{
+
+			
+			var tmpOnDiskEvent:NewFileEvent=null;
+			var insideLocation:FileWrapper =  model.mainView.getTreeViewPanel().tree.selectedItem as FileWrapper;
+		
+			if (insideLocation)
+			{
+				tmpOnDiskEvent = new NewFileEvent(
+						NewFileEvent.EVENT_NEW_FILE, insideLocation.nativePath,
+						ConstantsCoreVO.TEMPLATE_DOMINO_ACTION, insideLocation
+				);
+				tmpOnDiskEvent.ofProject = (event is NewFileEvent) ? (event as NewFileEvent).ofProject : model.activeProject;
+
+				dispatcher.dispatchEvent(tmpOnDiskEvent);
+
+				if (!newDominoActionComponentPopup)
+				{
+					newDominoActionComponentPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoActionPopup, true) as NewDominoActionPopup;
+					newDominoActionComponentPopup.addEventListener(CloseEvent.CLOSE, handleDominoActionPopupClose);
+					newDominoActionComponentPopup.addEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoActionFileCreateRequest);
+					//setting default folder or selected folder for new file
+					if (tmpOnDiskEvent is NewFileEvent) 
+					{
+						
+						newDominoActionComponentPopup.folderLocation = new FileLocation((tmpOnDiskEvent as NewFileEvent).filePath);
+						newDominoActionComponentPopup.wrapperOfFolderLocation = (tmpOnDiskEvent as NewFileEvent).insideLocation;
+						newDominoActionComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((tmpOnDiskEvent as NewFileEvent).insideLocation);
+						
+					}
+					else
+					{
+						
+						
+						// try to check if there is any selection in 
+						// TreeView item
+						
+					}
+					//only for fixed folder for domino form file
+					var dominoActionFolderStr:String="";
+					if(newDominoActionComponentPopup.wrapperBelongToProject){
+						dominoActionFolderStr=newDominoActionComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"SharedElements"+ model.fileCore.separator+"Actions";
+					}else{
+						dominoActionFolderStr=model.activeProject.projectFolder.nativePath;
+					}
+					
+					var dominoActionFolder:FileLocation=new FileLocation(dominoActionFolderStr);
+					if(!dominoActionFolder.fileBridge.exists){
+						dominoActionFolder.fileBridge.createDirectory();
+					}
+					
+				
+					
+					if(dominoActionFolder.fileBridge.exists){
+						//set the tree selct to domino form folder
+						UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+						//Alert.show("insideLocation:"+insideLocation.file.fileBridge.nativePath);
+						model.mainView.getTreeViewPanel().tree.callLater(function ():void
+						{
+							var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+						
+							for (var j:int = 0; j < (wrappers.length - 1); j++)
+							{
+								model.mainView.getTreeViewPanel().tree.expandItem(wrappers[j], true);
+							}
+			
+							// selection
+							model.mainView.getTreeViewPanel().tree.selectedItem = insideLocation;
+							// scroll-to
+							model.mainView.getTreeViewPanel().tree.callLater(function ():void
+							{
+								model.mainView.getTreeViewPanel().tree.scrollToIndex(model.mainView.getTreeViewPanel().tree.getItemIndex(insideLocation));
+							});
+						});
+						
+						
+						//model.mainView.getTreeViewPanel().tree.selectedItem = dominoFormFolderWrapper;
+						newDominoActionComponentPopup.wrapperOfFolderLocation = insideLocation;
+						newDominoActionComponentPopup.folderLocation =dominoActionFolder;
+						PopUpManager.centerPopUp(newDominoActionComponentPopup);
+					}else{
+						Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
+					}
+					
+				}
+
+			}
+			else
+			{
+				Alert.show("Please select the project where the shared action should be created.");
+				//error("error: Select location before creating a new file.");
+			}
+			
+			
+			
+		}
 
 
 		protected function openDominoPageComponentTypeChoose(event:Event):void
@@ -1568,6 +1757,7 @@ package actionScripts.plugin.templating
 		
 		protected function openNewComponentTypeChoose(event:Event, openType:String, fileTemplate:FileLocation=null):void
 		{
+			Alert.show("openNewComponentTypeChoose:1762");
 			if (!newFilePopup)
 			{
 				newFilePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewFilePopup, true) as NewFilePopup;
@@ -1644,6 +1834,22 @@ package actionScripts.plugin.templating
 			newDominoSubformComponentPopup.removeEventListener(CloseEvent.CLOSE, handleDominoSubformPopupClose);
 			newDominoSubformComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoSubformFileCreateRequest);
 			newDominoSubformComponentPopup = null;
+		}
+
+
+		protected function handleDominoShareFieldPopupClose(event:CloseEvent):void
+		{
+			newDominoSharedFieldComponentPopup.removeEventListener(CloseEvent.CLOSE, handleDominoShareFieldPopupClose);
+			newDominoSharedFieldComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoSharedFieldFileCreateRequest);
+			newDominoSharedFieldComponentPopup = null;
+		}
+
+
+		protected function handleDominoActionPopupClose(event:CloseEvent):void
+		{
+			newDominoActionComponentPopup.removeEventListener(CloseEvent.CLOSE, handleDominoActionPopupClose);
+			newDominoActionComponentPopup.removeEventListener(NewFileEvent.EVENT_NEW_FILE, onDominoActionFileCreateRequest);
+			newDominoActionComponentPopup = null;
 		}
 
 
@@ -2090,6 +2296,10 @@ package actionScripts.plugin.templating
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
+				
+				//replace page name 
+				content=content.replace(/\$Domino_Visual_Editor_Page/g,event.fileName);
+				
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".page");
 				fileToSave.fileBridge.save(content);
 
@@ -2109,6 +2319,53 @@ package actionScripts.plugin.templating
                 notifyNewFileCreated(event.insideLocation, fileToSave);
 			}
 		}
+
+
+		protected function onDominoSharedFieldFileCreateRequest(event:NewFileEvent):void
+		{
+			checkAndUpdateIfTemplateModified(event);
+			if (event.fromTemplate.fileBridge.exists)
+			{
+				var content:String = String(event.fromTemplate.fileBridge.read());
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".field");
+				fileToSave.fileBridge.save(content);
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
+			}
+		}
+
+		protected function onDominoActionFileCreateRequest(event:NewFileEvent):void
+		{
+			checkAndUpdateIfTemplateModified(event);
+			if (event.fromTemplate.fileBridge.exists)
+			{
+				var content:String = String(event.fromTemplate.fileBridge.read());
+				//action name contain some specail character , so , we need base64 encode in here
+				var fileName:String =event.fileName;
+				fileName=fileName.replace( /\\/g, '%5C');
+				fileName=fileName.replace( /\//g, '%2F');
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".action");
+				
+				content=updateDominoActionTitleName(content,event.fileName);
+				fileToSave.fileBridge.save(content);
+
+                notifyNewFileCreated(event.insideLocation, fileToSave);
+			}
+		}
+
+		private function updateDominoActionTitleName(content:String,titleName:String):String
+		{
+			var actionXml:XML = new XML(content);
+			var sourceTitle:String=actionXml.@title;
+			if(sourceTitle!=titleName){
+				actionXml.@title=titleName;
+			}
+
+			return actionXml.toXMLString();
+		}
+
+
+
 
 		protected function handleNewProjectFile(event:Event):void
 		{

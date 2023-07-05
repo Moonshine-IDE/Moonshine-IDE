@@ -33,7 +33,7 @@
 
 package actionScripts.plugin.core.compiler;
 
-import flash.events.Event;
+import openfl.events.Event;
 
 class GrailsBuildEvent extends Event {
 	public static final RUN_COMMAND:String = "runGrailsCommand";
