@@ -5,6 +5,7 @@ output=$ProjectName.tpc
 debug=on
 address=0.0.0.0.0.0
 watch=
+src_lib_ver=version
 [file1]
 path=main.tbs
 type=basic
