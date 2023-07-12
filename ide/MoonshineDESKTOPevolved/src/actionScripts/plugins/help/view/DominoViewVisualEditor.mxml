@@ -45,7 +45,7 @@
         <s:NavigatorContent label="View" id="viewNavigator">
             <view:DominoViewMockVisualEditor id="dominoViewVisualEditor" percentWidth="100" percentHeight="100" right="0" left="0"/>
         </s:NavigatorContent>
-        <s:NavigatorContent label="Dxl">
+        <s:NavigatorContent label="Code">
             <s:Scroller width="100%" height="100%" id="codeContentGroupScroller">
                <s:Group id="codeContentGroup" creationComplete="onContentGroupCreationComplete(event)">
 
@@ -78,6 +78,7 @@
 
     import mx.events.DragEvent;
     import spark.events.IndexChangeEvent;
+    import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
 
     private var _codeEditor:IVisualElement;
 
@@ -128,19 +129,26 @@
 
     private function onTabBarChange(event:IndexChangeEvent):void
     {
-        //Alert.show(event.newIndex);
+        
         if (event.newIndex == 1)
         {
-            codeContentGroup.visible=false;
+            dominoViewVisualEditor.setDominoViewGroupVisible(false);
+
+            dispatchEvent(new VisualEditorViewChangeEvent(VisualEditorViewChangeEvent.CODE_CHANGE));
         }
         else
         {
+            dominoViewVisualEditor.setDominoViewGroupVisible(true);
             codeContentGroup.visible=true;
         }
     }
 
 
 ]]></fx:Script> 
+<fx:Metadata>
+        [Event(name="codeChange", type="actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent")]
+        [Event(name="startPreview", type="flash.events.Event")]
+</fx:Metadata>
 </s:VGroup>
    
        
