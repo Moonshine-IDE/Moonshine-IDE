@@ -72,7 +72,7 @@ package actionScripts.plugins.ui.editor
 		{
 			if(!editor)
 			{
-				editor = new TextEditor(null, false);
+				editor = new TextEditor(null, true);
 			}
 			if(!editor.parser)
 			{
