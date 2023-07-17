@@ -38,6 +38,7 @@
     xmlns:containers="spark.containers.*"
     xmlns:tabnavigator="actionScripts.ui.tabNavigator.*"
     xmlns:suportclasses="view.suportClasses.*"
+    creationComplete="onComplete()"
     xmlns:collapsiblehdivider="components.collapsibleHDivider.*"
 	xmlns:view="view.*">        
 
@@ -101,7 +102,13 @@
     }
 
     
-    
+    public function onComplete():void {
+        editor=model.activeEditor as DominoViewEditor;
+        if(editor!=null){
+            
+            //editor.openHandler((new Event(Event.OPEN)));
+        }
+    }
    
     private function onViewCreationComplete(event):void 
     {
