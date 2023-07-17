@@ -135,6 +135,11 @@ package actionScripts.impls
 
 				// generic
 				GenericProjectPlugin,
+				
+				// tibbo
+				TibboBasicSyntaxPlugin,
+				TibboBasicProjectPlugin,
+				TibboBasicLanguageServerPlugin
             ];
         }
 
