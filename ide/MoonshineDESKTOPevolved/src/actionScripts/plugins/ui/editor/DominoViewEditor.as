@@ -51,7 +51,7 @@ package actionScripts.plugins.ui.editor
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
 
-		import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+	import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
 
     public class DominoViewEditor extends BasicTextEditor  
 	{
@@ -211,6 +211,10 @@ package actionScripts.plugins.ui.editor
 			
 			dominoViewEditor.dominoViewVisualEditor.loadFile(filePath);
 			
+		}
+
+		public function getFilePath():String {
+			return file.fileBridge.nativePath;
 		}
     }
 }

@@ -291,7 +291,7 @@ package actionScripts.controllers
 				}
 				else if (extension == "action"){
 					openDominoActionFile(project, fileData);
-				}else if (extension == "view" && model.activeProject && model.activeProject.hasOwnProperty("isDominoVisualEditorProject") && model.activeProject["isDominoVisualEditorProject"] )
+				}else if (extension == "view" && project && project.hasOwnProperty("isDominoVisualEditorProject") && project["isDominoVisualEditorProject"] )
 				{
 					openDominoViewFile(project, fileData);
 				}

@@ -102,18 +102,12 @@
     }
 
     
+    
     public function onComplete():void {
-        editor=model.activeEditor as DominoViewEditor;
-        if(editor!=null){
-            
-            //editor.openHandler((new Event(Event.OPEN)));
-        }
+        
     }
    
-    private function onViewCreationComplete(event):void 
-    {
-
-    }
+   
     private function onContentGroupCreationComplete(event:FlexEvent):void
     {
         codeContentGroup.addElement(_codeEditor);
