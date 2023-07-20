@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <template displayHome="true">
+        <title>Tibbo Basic Project</title>
+        <homeTitle>Tibbo Basic Project</homeTitle>
+        <name>Tibbo Basic Project</name>
+        <icon>Tibbo Basic Project.png</icon>
+        <description>Create a Tibbo Basic project.</description>
+    </template>
+</templates>

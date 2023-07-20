@@ -81,6 +81,7 @@ package actionScripts.utils
 	import components.views.splashscreen.SplashScreen;
 	
 	import feathers.data.ArrayCollection;
+	import actionScripts.plugin.tibbo.tibboproject.vo.TibboBasicProjectVO;
 
 	public class UtilsCore 
 	{
@@ -1131,6 +1132,10 @@ package actionScripts.utils
 			else if (value is HaxeProjectVO)
 			{
 				currentMenuType = ProjectMenuTypes.HAXE;
+			}
+			else if (value is TibboBasicProjectVO)
+			{
+				currentMenuType = ProjectMenuTypes.TIBBO_BASIC;
 			}
 			else if (value is OnDiskProjectVO)
 			{
