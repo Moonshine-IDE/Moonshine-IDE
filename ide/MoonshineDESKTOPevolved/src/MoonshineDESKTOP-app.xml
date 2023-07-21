@@ -247,6 +247,18 @@
 			<contentType>application/octet-stream</contentType>
 		</fileType>
 		<fileType>
+			<name>Moonshine.TibboBasic.File.1</name>
+			<extension>tbh</extension>
+			<description>Moonshine TibboBasic File 1</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.TibboBasic.File.2</name>
+			<extension>tbs</extension>
+			<description>Moonshine TibboBasic File 2</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
 			<name>Moonshine.Project.Configuration.File.1</name>
 			<extension>as3proj</extension>
 			<description>Moonshine Project Configuration File 1</description>
@@ -286,6 +298,12 @@
 			<name>Moonshine.Project.Configuration.File.7</name>
 			<extension>hxproj</extension>
 			<description>Moonshine Project Configuration File 7</description>
+			<contentType>text/plain</contentType>
+		</fileType>
+		<fileType>
+			<name>Moonshine.Project.Configuration.File.8</name>
+			<extension>tibboproj</extension>
+			<description>Moonshine Project Configuration File 8</description>
 			<contentType>text/plain</contentType>
 		</fileType>
 	</fileTypes>

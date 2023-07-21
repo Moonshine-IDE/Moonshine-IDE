@@ -1,4 +1,27 @@
-include "global.tbh"
+include "global.tbh" 'This includes a BASIC header file
+
+dim counter1 as byte 'This is a global variable
+'Variables must be defined or declared before use
+
+Const MAX_COUNTER=5 'BASIC constant
+
+declare function increment(x as byte) as byte 'This is a declaration
+'Procedures (subs and functions) must be defined or declared before use
+'==================================================================
+
+sub on_sys_init 'event handler for the ON_SYS_INIT event
+   counter1=0
+end sub
 
 
-' Put your BASIC code here
+sub on_sys_timer 'event handler for the ON_SYS_TIMER event
+   counter1=increment(counter1)
+   if counter1>=MAX_COUNTER then
+      counter1=0
+      pat.play("R-R-R",PL_PAT_CANINT) 'invoke method .play of the pat. object
+   end if
+end sub
+
+function increment(x as byte) as byte
+   increment=x+1
+end function
