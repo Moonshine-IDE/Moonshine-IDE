@@ -34,26 +34,27 @@ package actionScripts.ui.editor
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.LocationsEvent;
+	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SaveFileEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.languageServer.LanguageServerProjectVO;
+	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.utils.applyWorkspaceEdit;
 
 	import flash.events.Event;
 
-	import moonshine.editor.text.lsp.LspTextEditor;
-	import moonshine.editor.text.lsp.events.LspTextEditorLanguageRequestEvent;
-	import moonshine.lsp.LanguageClient;
-	import moonshine.lsp.Position;
 	import moonshine.editor.text.events.TextEditorChangeEvent;
-	import moonshine.lsp.CompletionItem;
+	import moonshine.editor.text.lsp.LspTextEditor;
 	import moonshine.editor.text.lsp.events.LspTextEditorLanguageActionEvent;
-	import actionScripts.utils.applyWorkspaceEdit;
-	import moonshine.lsp.WorkspaceEdit;
+	import moonshine.editor.text.lsp.events.LspTextEditorLanguageRequestEvent;
 	import moonshine.lsp.Command;
+	import moonshine.lsp.CompletionItem;
+	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.LocationLink;
-	import actionScripts.events.OpenLocationEvent;
+	import moonshine.lsp.Position;
+	import moonshine.lsp.WorkspaceEdit;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -434,6 +435,21 @@ package actionScripts.ui.editor
 
 		override protected function closeTabHandler(event:Event):void
 		{
+			if (event is CloseTabEvent)
+			{
+				var closeEvent:CloseTabEvent = CloseTabEvent(event);
+				if (closeEvent.tab != this)
+				{
+					return;
+				}
+			}
+			else if (model.activeEditor != this)
+			{
+				// can be dispatched by menu item as a regular Event
+				// instead of CloseTabEvent
+				return;
+			}
+
 			super.closeTabHandler(event);
 			
 			dispatchDidCloseEvent();
