@@ -198,6 +198,21 @@ package actionScripts.utils
 
 		}
 
+		public static function fixDominoViewName(sourceName:String):String
+		{
+			if(sourceName==null){
+				return "";
+			}
+			sourceName=stripAlias(sourceName);
+			sourceName=sourceName.replace(/>/g, "_3e");
+		
+			sourceName=sourceName.replace(/[\/\\]+/g, "_5c");
+			
+
+			return sourceName;
+
+		}
+
 		public static function stripAlias(fullName:String):String
 		{
         	var aliasStartIndex:int = fullName.indexOf('|');

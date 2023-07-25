@@ -2414,7 +2414,10 @@ package actionScripts.plugin.templating
 				var content:String = String(event.fromTemplate.fileBridge.read());
 				//replace the view name to file name:
 				content=content.replace("$ViewName",event.fileName);
-				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".view");
+				//replace \  to 5c from view name
+				
+				var replaceName:String= TextUtil.fixDominoViewName(event.fileName);
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + replaceName +".view");
 				fileToSave.fileBridge.save(content);
 
                 notifyNewFileCreated(event.insideLocation, fileToSave);
