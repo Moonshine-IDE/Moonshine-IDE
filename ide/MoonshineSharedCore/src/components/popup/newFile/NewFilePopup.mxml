@@ -62,7 +62,7 @@
         import actionScripts.interfaces.IVisualEditorProjectVO;
         import actionScripts.locator.IDEModel;
 
-
+        import actionScripts.utils.TextUtil;
         [Bindable]
         public static var AS_PLAIN_TEXT:String = "AS_PLAIN_TEXT";
 
@@ -154,14 +154,11 @@
             {
                 if (lblExtension.text && lblExtension.text == ".form")
                 {
-                    //Alert.show("duplication file name:"+fileName);
                     var targetXmlFilePath:String = wrapperBelongToProject.projectFolder.nativePath + "/visualeditor-src/main/webapp/" + fileName + ".xml";
                     var destinationXmlFile:FileLocation = new FileLocation(targetXmlFilePath);
                     var sourceXmlFileName:String = txtFileName.prompt;
                     var sourceXmlFilePath:String = wrapperBelongToProject.projectFolder.nativePath + "/visualeditor-src/main/webapp/" + sourceXmlFileName + ".xml";
                     var sourceXmlFile:FileLocation = new FileLocation(sourceXmlFilePath);
-                    //Alert.show("source xml file name:"+sourceXmlFilePath);
-                    //Alert.show("target  xml file name:"+targetXmlFilePath);
                     if (destinationXmlFile.fileBridge.exists)
                     {
                         destinationXmlFile.fileBridge.deleteFile();
@@ -319,6 +316,12 @@
                 var nameOnly:Array = folderFileLocation.fileBridge.name.split(".");
                 nameOnly.pop();
                 txtFileName.prompt = nameOnly.join(".");
+
+                if(extension&&extension=="view"){
+                    txtFileName.prompt=TextUtil.toDominoViewNormalName(txtFileName.prompt);
+                }
+
+
             }
             else if (openType == AS_XML)
             {
@@ -364,7 +367,6 @@
                     }
                 }
 
-                //Alert.show(":"+txtDestination.text);
                 txtFileName.setFocus();
             }
 

@@ -213,6 +213,19 @@ package actionScripts.utils
 
 		}
 
+		public static function toDominoViewNormalName(sourceName:String):String
+		{
+			if(sourceName==null){
+				return "";
+			}
+			sourceName=stripAlias(sourceName);
+		
+			sourceName=sourceName.replace(/_5c/g, "\\");
+			
+
+			return sourceName;
+		}
+
 		public static function stripAlias(fullName:String):String
 		{
         	var aliasStartIndex:int = fullName.indexOf('|');

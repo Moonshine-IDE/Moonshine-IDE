@@ -1835,7 +1835,6 @@ package actionScripts.plugin.templating
 		
 		protected function openNewComponentTypeChoose(event:Event, openType:String, fileTemplate:FileLocation=null):void
 		{
-			Alert.show("openNewComponentTypeChoose:1762");
 			if (!newFilePopup)
 			{
 				newFilePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewFilePopup, true) as NewFilePopup;

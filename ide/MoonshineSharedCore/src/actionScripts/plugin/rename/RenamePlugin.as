@@ -461,7 +461,11 @@ package actionScripts.plugin.rename
 		
 		private function onFileDuplicateRequest(event:DuplicateEvent):void
 		{
-			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(event.fileName + 
+			var fileName:String=event.fileName ;
+			if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "view"){
+				fileName=TextUtil.fixDominoViewName(fileName);
+			}
+			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(fileName + 
 				(event.fileLocation.fileBridge.extension ? "."+ event.fileLocation.fileBridge.extension : ""));
 			
 			// based on request, we also updates class name and package path
@@ -470,6 +474,9 @@ package actionScripts.plugin.rename
 			{
 				var updatedContent:String = getUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
 				fileToSave.fileBridge.save(updatedContent);
+			}else if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "view"){
+				var updatedViewContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
+				fileToSave.fileBridge.save(updatedViewContent);
 			}
 			else
 			{
@@ -489,6 +496,17 @@ package actionScripts.plugin.rename
 					new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.fileWrapper)
 				);
 			}
+		}
+
+
+		private function getDominoUpdatedFileContent(projectRef:FileWrapper, source:FileLocation, newFileName:String):String
+		{
+			var sourceContentXML:XML=new XML(source.fileBridge.read());
+			var sourceViewName:String = sourceContentXML.@name;
+			if(sourceViewName){
+				sourceContentXML.@name=newFileName;
+			}
+			return sourceContentXML.toXMLString();
 		}
 		
 		private function getUpdatedFileContent(projectRef:FileWrapper, source:FileLocation, newFileName:String):String
