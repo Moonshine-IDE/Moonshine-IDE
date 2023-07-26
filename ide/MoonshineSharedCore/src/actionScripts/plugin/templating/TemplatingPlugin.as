@@ -2411,11 +2411,13 @@ package actionScripts.plugin.templating
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
-				//replace the view name to file name:
-				content=content.replace("$ViewName",event.fileName);
 				//replace \  to 5c from view name
 				
 				var replaceName:String= TextUtil.fixDominoViewName(event.fileName);
+				//replace the view name to file name:
+				var sourceViewNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+				content=content.replace("$ViewName",sourceViewNameFormat);
+				
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + replaceName +".view");
 				fileToSave.fileBridge.save(content);
 

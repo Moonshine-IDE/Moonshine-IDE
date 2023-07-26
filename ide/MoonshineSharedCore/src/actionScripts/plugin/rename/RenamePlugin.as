@@ -529,6 +529,8 @@ package actionScripts.plugin.rename
 			var sourceContentXML:XML=new XML(source.fileBridge.read());
 			var sourceViewName:String = sourceContentXML.@name;
 			if(sourceViewName){
+				newFileName=newFileName.replace(/[\/\\]+/g, "_5c");
+				newFileName=newFileName.replace(/_5c/g, "\\");
 				sourceContentXML.@name=newFileName;
 			}
 			return sourceContentXML.toXMLString();

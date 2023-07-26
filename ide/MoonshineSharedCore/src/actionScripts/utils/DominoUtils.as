@@ -329,7 +329,10 @@ package actionScripts.utils
 		public static function dominoViewTitleUpdateWithoutSave(newFileLocation:FileLocation,newViewName:String,souceFormName:String):void{
 			var newDxlXMLStr:String =String(newFileLocation.fileBridge.read());
 			var newDxlXML:XML=new XML(newDxlXMLStr);
+			newViewName=newViewName.replace(/[\/\\]+/g, "_5c");
+			newViewName=newViewName.replace(/_5c/g, "\\");
 			newDxlXML.@name=newViewName;
+
 			newFileLocation.fileBridge.save(newDxlXML.toXMLString());
 		}
 		public static function dominoWindowTitleUpdate(sourceXml:FileLocation,newFormName:String,souceFormName:String):void{
