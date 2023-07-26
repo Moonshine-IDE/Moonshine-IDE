@@ -325,6 +325,13 @@ package actionScripts.utils
 			newFileLocation.fileBridge.save(newDxlXMLStr);
 
 		}
+
+		public static function dominoViewTitleUpdateWithoutSave(newFileLocation:FileLocation,newViewName:String,souceFormName:String):void{
+			var newDxlXMLStr:String =String(newFileLocation.fileBridge.read());
+			var newDxlXML:XML=new XML(newDxlXMLStr);
+			newDxlXML.@name=newViewName;
+			newFileLocation.fileBridge.save(newDxlXML.toXMLString());
+		}
 		public static function dominoWindowTitleUpdate(sourceXml:FileLocation,newFormName:String,souceFormName:String):void{
 		
 				

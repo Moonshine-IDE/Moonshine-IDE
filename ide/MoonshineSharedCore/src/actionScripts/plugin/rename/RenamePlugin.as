@@ -188,6 +188,16 @@ package actionScripts.plugin.rename
 				renameFileView.fileWrapper = event.changes as FileWrapper;
 				renameFileView.addEventListener(Event.CLOSE, handleRenameFileViewClose);
 				renameFileViewWrapper = new FeathersUIWrapper(renameFileView);
+				//update default name for view :nameTextInput
+				if(renameFileView.fileWrapper.file.fileBridge.extension=="view"){
+					if(renameFileView.nameTextInput && renameFileView.nameTextInput.text){
+						renameFileView.nameTextInput.text=TextUtil.toDominoViewNormalName(renameFileView.nameTextInput.text)
+					}
+
+				}
+
+			
+
 				PopUpManager.addPopUp(renameFileViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 				PopUpManager.centerPopUp(renameFileViewWrapper);
 				renameFileViewWrapper.assignFocus("top");
@@ -219,7 +229,15 @@ package actionScripts.plugin.rename
 			var fileVisualEditor:FileLocation = UtilsCore.getVisualEditorSourceFile(fileWrapper);
 			
 			var sourceFileName:String =fileWrapper.file.fileBridge.nameWithoutExtension;
-			var newFile:FileLocation = fileWrapper.file.fileBridge.parent.resolvePath(newName);
+			var newFile:FileLocation;
+			
+
+			if(fileWrapper.file.fileBridge.extension=="view"){
+				newFile = fileWrapper.file.fileBridge.parent.resolvePath(TextUtil.fixDominoViewName(newName));
+			}else{
+				newFile = fileWrapper.file.fileBridge.parent.resolvePath(newName);
+			}
+
 			_existingFilePath = fileWrapper.nativePath;
 			var newFileNameWithoutExtension:String = newFile.fileBridge.nameWithoutExtension;
 			
@@ -237,6 +255,10 @@ package actionScripts.plugin.rename
 				if(fileWrapper.file.fileBridge.extension=="page"){
 					DominoUtils.dominoPageUpdateWithoutSave(newFile,newFileNameWithoutExtension,sourceFileName);
 				}
+				if(fileWrapper.file.fileBridge.extension=="view"){
+					DominoUtils.dominoViewTitleUpdateWithoutSave(newFile,newFileNameWithoutExtension,sourceFileName);
+				}
+				//dominoViewTitleUpdateWithoutSave
 				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);	
 					
 			}
@@ -294,6 +316,9 @@ package actionScripts.plugin.rename
 					//create a new simple file with new form name 
 
 				}
+
+				//for normal view update the view name 
+				var sourceViewXML:XML=new XML(fileWrapper.file.fileBridge.read());
 			}
 			
 			var timeoutValue:uint = setTimeout(function():void 
