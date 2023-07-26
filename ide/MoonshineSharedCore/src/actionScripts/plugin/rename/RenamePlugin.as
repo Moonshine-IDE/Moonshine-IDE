@@ -245,6 +245,8 @@ package actionScripts.plugin.rename
 			fileWrapper.name = newFile.name;
 			fileWrapper.file = newFile;
 
+			Alert.show("newFile.name:"+newFile.name);
+
 			if (fileVisualEditor)
 			{
 				var newVisualEditorFile:FileLocation = fileVisualEditor.fileBridge.parent.resolvePath(newFile.fileBridge.nameWithoutExtension + ".xml");
@@ -255,12 +257,14 @@ package actionScripts.plugin.rename
 				if(fileWrapper.file.fileBridge.extension=="page"){
 					DominoUtils.dominoPageUpdateWithoutSave(newFile,newFileNameWithoutExtension,sourceFileName);
 				}
-				if(fileWrapper.file.fileBridge.extension=="view"){
-					DominoUtils.dominoViewTitleUpdateWithoutSave(newFile,newFileNameWithoutExtension,sourceFileName);
-				}
+			
 				//dominoViewTitleUpdateWithoutSave
 				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);	
 					
+			}
+
+			if(fileWrapper.file.fileBridge.extension=="view"){
+				DominoUtils.dominoViewTitleUpdateWithoutSave(newFile,newFileNameWithoutExtension,newFileNameWithoutExtension);
 			}
 
 			// we need to update file location of the (if any) opened instance 
@@ -317,8 +321,8 @@ package actionScripts.plugin.rename
 
 				}
 
-				//for normal view update the view name 
-				var sourceViewXML:XML=new XML(fileWrapper.file.fileBridge.read());
+				
+				
 			}
 			
 			var timeoutValue:uint = setTimeout(function():void 
@@ -527,12 +531,11 @@ package actionScripts.plugin.rename
 		private function getDominoUpdatedFileContent(projectRef:FileWrapper, source:FileLocation, newFileName:String):String
 		{
 			var sourceContentXML:XML=new XML(source.fileBridge.read());
-			var sourceViewName:String = sourceContentXML.@name;
-			if(sourceViewName){
-				newFileName=newFileName.replace(/[\/\\]+/g, "_5c");
-				newFileName=newFileName.replace(/_5c/g, "\\");
-				sourceContentXML.@name=newFileName;
-			}
+			
+			newFileName=newFileName.replace(/[\/\\]+/g, "_5c");
+			newFileName=newFileName.replace(/_5c/g, "\\");
+			sourceContentXML.@name=newFileName;
+			
 			return sourceContentXML.toXMLString();
 		}
 		

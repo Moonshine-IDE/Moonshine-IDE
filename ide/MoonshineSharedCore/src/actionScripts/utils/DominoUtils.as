@@ -333,6 +333,8 @@ package actionScripts.utils
 			newViewName=newViewName.replace(/_5c/g, "\\");
 			newDxlXML.@name=newViewName;
 
+		
+
 			newFileLocation.fileBridge.save(newDxlXML.toXMLString());
 		}
 		public static function dominoWindowTitleUpdate(sourceXml:FileLocation,newFormName:String,souceFormName:String):void{
