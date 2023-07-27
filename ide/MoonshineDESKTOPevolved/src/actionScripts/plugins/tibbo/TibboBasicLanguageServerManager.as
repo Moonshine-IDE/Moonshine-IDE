@@ -61,7 +61,7 @@ package actionScripts.plugins.tibbo
 
 	public class TibboBasicLanguageServerManager extends ConsoleOutputter implements ILanguageServerManager
 	{
-		private static const LANGUAGE_SERVER_ROOT_PATH:String = "elements/tibbo-basic-language-server";
+		private static const LANGUAGE_SERVER_ROOT_PATH:String = "elements/tbls";
 		private static const LANGUAGE_SERVER_SCRIPT_PATH:String = LANGUAGE_SERVER_ROOT_PATH + "/moonshine-basic.js";
 		
 		private static const LANGUAGE_ID:String = "tibbo-basic";
