@@ -188,13 +188,7 @@ package actionScripts.plugin.rename
 				renameFileView.fileWrapper = event.changes as FileWrapper;
 				renameFileView.addEventListener(Event.CLOSE, handleRenameFileViewClose);
 				renameFileViewWrapper = new FeathersUIWrapper(renameFileView);
-				//update default name for view :nameTextInput
-				if(renameFileView.fileWrapper.file.fileBridge.extension=="view"){
-					if(renameFileView.nameTextInput && renameFileView.nameTextInput.text){
-						renameFileView.nameTextInput.text=TextUtil.toDominoViewNormalName(renameFileView.nameTextInput.text)
-					}
-
-				}
+		
 
 			
 
@@ -245,7 +239,7 @@ package actionScripts.plugin.rename
 			fileWrapper.name = newFile.name;
 			fileWrapper.file = newFile;
 
-			Alert.show("newFile.name:"+newFile.name);
+			//Alert.show("newFile.name:"+newFile.name);
 
 			if (fileVisualEditor)
 			{
