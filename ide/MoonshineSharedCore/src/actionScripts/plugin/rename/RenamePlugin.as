@@ -224,7 +224,14 @@ package actionScripts.plugin.rename
 			
 			var sourceFileName:String =fileWrapper.file.fileBridge.nameWithoutExtension;
 			var newFile:FileLocation;
-			
+			var sourceFormName:String =null;
+
+			var newFile = fileWrapper.file.fileBridge.parent.resolvePath(newName);
+
+			var newNameWithOutExtension = newFile.fileBridge.nameWithoutExtension;
+			if(fileWrapper.file.fileBridge.extension=="form"){
+				sourceFormName=sourceFileName;
+			}
 
 			if(fileWrapper.file.fileBridge.extension=="view"){
 				newFile = fileWrapper.file.fileBridge.parent.resolvePath(TextUtil.fixDominoViewName(newName));
@@ -283,6 +290,12 @@ package actionScripts.plugin.rename
 				var projectFolder:FileLocation = new FileLocation(projectPath);
 				
 				replaceSubfromFromAllReferencesFilesXml(projectFolder,sourceFileName,newFileNameWithoutExtension);
+				if(sourceFormName){
+					replaceFormNameFromAllReferencesView(projectFolder,sourceFormName,newNameWithOutExtension);
+				}
+				
+				
+				
 				//look for the project file from project folder  :
 				var listing:Array = projectFolder.fileBridge.getDirectoryListing();
 				var projectFile:FileLocation = null;
@@ -388,6 +401,49 @@ package actionScripts.plugin.rename
 							
 						}
 				}
+		}
+
+		private  function replaceFormNameFromAllReferencesView(projectFolderLocation:FileLocation,sourceFormName:String,targetFormName:String):void{
+								
+			var viewFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views");
+			if(viewFileLocation.fileBridge.exists){
+				var directory:Array = viewFileLocation.fileBridge.getDirectoryListing();
+				for each (var xml:File in directory)
+				{
+					if (xml.extension == "view" ) {
+						var fileLocation:FileLocation=new FileLocation(xml.nativePath);
+					
+						//var data:String = ;
+						var viewxml:XML = new XML(fileLocation.fileBridge.read());
+
+						if(viewxml.code[0]){
+							if(viewxml.code[0].@event=="selection"){
+								if(viewxml.code[0].formula[0]){
+									var formulaNode:XML=viewxml.code[0].formula[0];
+									var formulaText=formulaNode.text();
+									if(formulaText.indexOf(sourceFormName)>0){
+
+										var formulaText1:String=formulaText.substring(0,formulaText.indexOf(sourceFormName));
+										var formulaText2:String=formulaText.substring(formulaText.indexOf(sourceFormName)+sourceFormName.length);
+										
+										formulaText=formulaText1+targetFormName+formulaText2;
+										var newFormulaNode:XML = new XML("<formula>"+formulaText+"</formula>");
+										formulaNode.parent().appendChild(newFormulaNode);
+										delete formulaNode.parent().children()[formulaNode.childIndex()];
+										fileLocation.fileBridge.deleteFile();
+										var _targetfileStreamMoonshine:FileStream = new FileStream();
+										_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
+										_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
+										_targetfileStreamMoonshine.close();
+									}
+								}
+								
+							}
+						}
+					}
+				}
+			}
+
 		}
 
 		private  function replaceSubfromFromAllReferencesFiles(projectFolderLocation:FileLocation,sourceSubformName:String,targetSubformName:String):void{
