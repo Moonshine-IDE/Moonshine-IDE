@@ -76,6 +76,7 @@ package actionScripts.plugin.rename
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 
 	import actionScripts.utils.DominoUtils;
+	import actionScripts.plugins.ui.editor.DominoViewEditor;
 	public class RenamePlugin extends PluginBase
 	{
 		private var renameSymbolViewWrapper:FeathersUIWrapper;
@@ -292,6 +293,7 @@ package actionScripts.plugin.rename
 				replaceSubfromFromAllReferencesFilesXml(projectFolder,sourceFileName,newFileNameWithoutExtension);
 				if(sourceFormName){
 					replaceFormNameFromAllReferencesView(projectFolder,sourceFormName,newNameWithOutExtension);
+					
 				}
 				
 				
@@ -435,6 +437,8 @@ package actionScripts.plugin.rename
 										_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
 										_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
 										_targetfileStreamMoonshine.close();
+
+										checkAndUpdateOpenedViewsInTab(fileLocation.fileBridge.nativePath);
 									}
 								}
 								
@@ -657,7 +661,25 @@ package actionScripts.plugin.rename
 				else updateChildrenPath(i, oldPath, newPath);
 			}
 		}
-		
+
+		//dominoViewEditor.dominoViewVisualEditor.loadFile(filePath);
+		private function checkAndUpdateOpenedViewsInTab(filePath:String):void
+		{
+			for each (var tab:IContentWindow in model.editors)
+			{
+				var ed:BasicTextEditor = tab as BasicTextEditor;
+				if (ed 
+					&& ed.currentFile
+					&& ed.currentFile.fileBridge.nativePath == filePath)
+				{
+					if(ed is DominoViewEditor){
+						(ed as DominoViewEditor).openLoadingFile(filePath);
+					}
+					
+					break;
+				}
+			}
+		}
 		private function checkAndUpdateOpenedTabs(oldPath:String, newFile:FileLocation):void
 		{
 			// updates to tab

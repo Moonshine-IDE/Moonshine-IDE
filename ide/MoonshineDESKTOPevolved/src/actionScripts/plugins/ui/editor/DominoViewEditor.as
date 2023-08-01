@@ -209,8 +209,14 @@ package actionScripts.plugins.ui.editor
 			super.openHandler(event);
 			var filePath:String = file.fileBridge.nativePath;
 			
-			dominoViewEditor.dominoViewVisualEditor.loadFile(filePath);
+			openLoadingFile(filePath);
 			
+		}
+
+
+		public function openLoadingFile(filePath:String):void
+		{
+			dominoViewEditor.dominoViewVisualEditor.loadFile(filePath);
 		}
 
 		public function getFilePath():String {
