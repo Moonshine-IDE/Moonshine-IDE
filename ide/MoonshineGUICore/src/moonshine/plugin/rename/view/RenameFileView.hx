@@ -111,7 +111,9 @@ class RenameFileView extends ResizableTitleWindow {
 
 		this.nameTextInput = new TextInput();
 		this.nameTextInput.prompt = "New name";
-		this.nameTextInput.restrict = "^ ";
+		//this.nameTextInput.restrict = "^ ";
+		
+		
 		this.nameTextInput.addEventListener(Event.CHANGE, nameTextInput_changeHandler);
 		this.nameTextInput.addEventListener(KeyboardEvent.KEY_DOWN, nameTextInput_keyDownHandler);
 		symbolNameField.addChild(this.nameTextInput);

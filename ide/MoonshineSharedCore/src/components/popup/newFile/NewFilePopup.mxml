@@ -402,7 +402,7 @@
         <s:Label id="lblName" text="Name:"/>
         <s:Group width="100%">
             <view:PromptTextInput id="txtFileName"
-                                  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z._\-\/\\"
+                                  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z._\-\/\\\ "
                                   change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
             <s:Label id="lblExtension"
                      styleName="textInputLabel" textAlign="right"
