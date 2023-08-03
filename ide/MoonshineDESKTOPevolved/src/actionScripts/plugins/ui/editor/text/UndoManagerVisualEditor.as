@@ -141,15 +141,16 @@ package actionScripts.plugins.ui.editor.text
 		{
 			if ((event.keyCode == 22 || event.ctrlKey) && !event.altKey)
 			{
-				event.stopImmediatePropagation();
-				event.preventDefault();
-				
 				switch (event.keyCode)
 				{
 					case Keyboard.Y:		// Y
+						event.stopImmediatePropagation();
+						event.preventDefault();
 						markEventAsPending('redo');
 						break;
 					case Keyboard.Z:		// Z
+						event.stopImmediatePropagation();
+						event.preventDefault();
 						markEventAsPending('undo');
 						break;
 				}

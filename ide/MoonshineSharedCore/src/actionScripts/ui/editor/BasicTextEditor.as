@@ -279,14 +279,17 @@ package actionScripts.ui.editor
 		{
 			if (event is CloseTabEvent)
 			{
-				if ((event as CloseTabEvent).isUserTriggered)
+				var closeEvent:CloseTabEvent = CloseTabEvent(event);
+				if (closeEvent.tab != this || !closeEvent.isUserTriggered)
 				{
-					SharedObjectUtil.removeLocationOfEditorFile(
-						(event as CloseTabEvent).tab as IContentWindow
-					);
+					return;
 				}
+				SharedObjectUtil.removeLocationOfEditorFile(
+					closeEvent.tab as IContentWindow
+				);
 			}
-			// suppose to call only when keyboard shortcuts Event
+			// can be dispatched by menu item as a regular Event
+			// instead of CloseTabEvent
 			else if (model.activeEditor == this)
 			{
 				SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);

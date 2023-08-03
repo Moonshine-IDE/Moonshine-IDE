@@ -234,6 +234,7 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".ondiskproj" "Moonshine.Project.Configuration.File.5"
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".hxproj" "Moonshine.Project.Configuration.File.6"
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".genericproj" "Moonshine.Project.Configuration.File.7"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".tibboproj" "Moonshine.Project.Configuration.File.8"
 	
 	;Store installation folder
 	WriteRegStr HKCU "Software\${INSTALLERNAME}" "" $INSTDIR
@@ -306,6 +307,9 @@ Section "Uninstall"
 	${unregisterExtension} ".javaproj" "Moonshine.Project.Configuration.File.3"
 	${unregisterExtension} ".grailsproj" "Moonshine.Project.Configuration.File.4"
 	${unregisterExtension} ".ondiskproj" "Moonshine.Project.Configuration.File.5"
+	${unregisterExtension} ".hxproj" "Moonshine.Project.Configuration.File.6"
+	${unregisterExtension} ".genericproj" "Moonshine.Project.Configuration.File.7"
+	${unregisterExtension} ".tibboproj" "Moonshine.Project.Configuration.File.8"
 	
 	DeleteRegKey /ifempty HKCU "Software\${INSTALLERNAME}"
 	
