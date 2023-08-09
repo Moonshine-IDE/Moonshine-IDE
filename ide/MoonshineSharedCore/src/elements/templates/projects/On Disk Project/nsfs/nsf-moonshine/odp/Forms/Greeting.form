@@ -3,12 +3,14 @@
 >
 
 <item name='$HTMLCode' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for form html code -->
 <rawitemdata type='1'>
 X/8QAAIADwAHAAAAAAAAAA==
 </rawitemdata></item>
 <item name='$TITLE'><text>Greeting</text></item>
 <item name='$Comment' sign='true'><text>Example Form from Moonshine-IDE Template</text></item>
 <item name='$Info' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for form information -->
 <rawitemdata type='1'>
 hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 </rawitemdata></item>
@@ -33,6 +35,7 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 <item name='$Fields'><textlist><text>Sex</text><text>Comment</text><text>NameLast</text><text
 >NameFirst</text></textlist></item>
 <item name='$Body' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for form body data -->
 <rawitemdata type='1'>
 gQKC/1oAAQAAAAAAAAAAAKAFAACgBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAABAAAAAJSHAAAAAAAAAAAAAAAAAQAAAAQAAACDBAEAhf8VAAEAABJIZWxsbywgV29y
@@ -65,6 +68,7 @@ BgAArf9x/ygAAAAAAAMAGAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAARm9vdGVyrf8TAA4ACAAAAAcA
 Rm9vdGVyAACuAt4GAACuAIX/CAABAAAKgQKDBAEAhf8IAAEAAAo=
 </rawitemdata></item>
 <item name='$V5ACTIONS' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for form action with Notes V5 or under version -->
 <rawitemdata type='1'>
 vRw/AAAAAQABAAAAAQAAAAAAAAAAAAAACAACAHn/bAABAPDw8AABAAAAAAAJAAAAAAABAPDw8AAA
 AB8AAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

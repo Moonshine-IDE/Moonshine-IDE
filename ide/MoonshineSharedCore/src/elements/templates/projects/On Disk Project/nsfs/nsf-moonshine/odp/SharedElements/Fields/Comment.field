@@ -4,10 +4,12 @@
 <updatedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></updatedby>
 <wassignedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></wassignedby>
 <item name='$HTMLCode' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for field html code -->
 <rawitemdata type='1'>
 </rawitemdata></item>
 <item name='$TITLE'><text>Comment</text></item>
 <item name='$Info' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for field info -->
 <rawitemdata type='1'>
 hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 </rawitemdata></item>
@@ -18,6 +20,7 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 </rawitemdata></item>
 <item name='$Fields'><text>Comment</text></item>
 <item name='$Body' summary='true' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for field body encode -->
 <rawitemdata type='1'>
 gQKC/1oAAQAAAAAAAAAAAKAFAACgBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAABAAAAAJSHAAAAAAAAAAAAAAAAAQAAAAQAAACDBAEAhf8IAAEAAArdBgAAiv/+/1AA

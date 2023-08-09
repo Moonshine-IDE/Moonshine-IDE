@@ -6,12 +6,14 @@
 <item name='$Flags'><text>34yQC</text></item>
 <item name='$TITLE'><text>$ACTIONS</text></item>
 <item name='$Body' sign='true' seal='true'>
+<!-- This rawitemdata base64 encode binary data is for store action data -->
 <rawitemdata type='1'>
 gv9GAAIAAAAAAAAAAACgBQAAoAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAKYsAAAAAAIATm9ybWFsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 gQKDBAIAhf8IAAEAAAo=
 </rawitemdata></item>
 <item name='$V5ACTIONS' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for action data in notes 5 or under version format -->
 <rawitemdata type='1'>
 vRw/AAAAAQABAAAAAQAAAA4AAAAAAAAACAACAHn/bAABAPDw8AABAAAAAAAJAAAAAAABAPDw8AAA
 AB8AAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -105,6 +107,7 @@ AABf/xAAAgAKAAcAAAAAAAAAX/8QAAIAAwAHAAAAAAAAAF//EAACAAYABwAAAAAAAABf/xAAAgAH
 AAcAAAAAAAAAX/8QAAIABQAHAAAAAAAAAF//EAACAAQABwAAAAAAAAA=
 </rawitemdata></item>
 <item name='$SCRIPTOBJ_5' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for action script data -->
 <rawitemdata type='14'>
 AQAAAkxTT0IDABQIZW4AAAQAGwB9AAQAAAAcBogCAAAAAAAAfAMoBAAAAAAoAKAAHAA8ABgCvAAA
 AAAAAAAAAAIAAAAEAFgBAAAAAFgBWAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

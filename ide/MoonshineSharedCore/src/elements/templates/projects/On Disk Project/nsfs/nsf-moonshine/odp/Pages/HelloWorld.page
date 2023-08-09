@@ -4,12 +4,14 @@
 <updatedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></updatedby>
 <wassignedby><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></wassignedby>
 <item name='$HTMLCode' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for page html code -->
 <rawitemdata type='1'>
 X/8QAAIADwAHAAAAAAAAAA==
 </rawitemdata></item>
 <item name='$TITLE'><text>HelloWorld</text></item>
 <item name='$Comment' sign='true'><text/></item>
 <item name='$Info' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for page info field -->
 <rawitemdata type='1'>
 hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 </rawitemdata></item>
@@ -17,6 +19,7 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$$ScriptName' summary='false' sign='true'><text>HelloWorld</text></item>
 <item name='$Body' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for page body  -->
 <rawitemdata type='1'>
 gQKC/1oAAQAAAAAAAAAAAKAFAACgBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAABAAAAAJSHAAAAAAAAAAAAAAAAAQAAAAQAAACDBAEAhf8VAAEBABJIZWxsbywgV29y

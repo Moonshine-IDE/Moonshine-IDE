@@ -6,6 +6,7 @@
 <item name='$TITLE' sign='true'><text>ExampleLotusScriptAgent</text></item>
 <item name='$AssistType' sign='true'><number>65413</number></item>
 <item name='$AssistLastRun' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for lotus script last running information -->
 <rawitemdata type='400'>
 AAAAAAAAAAA=
 </rawitemdata></item>
@@ -14,11 +15,13 @@ AAAAAAAAAAA=
 <item name='$AssistFlags' sign='true'><text>Es</text></item>
 <item name='$AssistTrigger'><text>4</text></item>
 <item name='$AssistInfo' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for lotus script information -->
 <rawitemdata type='11'>
 AQAEAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 </rawitemdata></item>
 <item name='$AssistQuery' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for Lotus script query -->
 <rawitemdata type='f'>
 gQYAAAAA
 </rawitemdata></item>
@@ -26,6 +29,7 @@ gQYAAAAA
 <item name='$Flags'><text>fL3</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$AssistRunInfo' summary='true'>
+<!-- This rawitemdata base64 encode binary data is for Lotus script run information -->
 <rawitemdata type='3'>
 BgAAAgAACAByAQAAAAAAAAUAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAA1FJwAByFJQZ9E24AHIUlhgAAAAAAAAAAAAAAAAAAAAAAAAAAO4Bhdd8h
@@ -48,6 +52,7 @@ luggeywRHIWFAKNtHerqO+RfqqEn330kRMhhgofCAgSF6mIXMZj9xq4TBxz/jvB7nqu4sgmIsZEI
 2u03Pj5xUGdbi1WtZhRLVmI9
 </rawitemdata></item>
 <item name='$AssistAction' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for Lotus scriont action list in the mean -->
 <rawitemdata type='10'>
 gQKF/+kBAAAAAN0BAAAnKytMb3R1c1NjcmlwdCBEZXZlbG9wbWVudCBFbnZpcm9ubWVudDoyOjU6
 KE9wdGlvbnMpOjA6NzQKJVJFTQoJQWdlbnQgRXhhbXBsZUxvdHVzU2NyaXB0QWdlbnQKCUNyZWF0
@@ -60,6 +65,7 @@ cG1lbnQgRW52aXJvbm1lbnQ6MjoyOkluaXRpYWxpemU6MToxMApTdWIgSW5pdGlhbGl6ZQoJTWVz
 c2FnZUJveCggIkhlbGxvLCBXb3JsZCEiICkKRW5kIFN1YgAi
 </rawitemdata></item>
 <item name='$AssistAction_Ex' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for action extral data -->
 <rawitemdata type='14'>
 gQKF/54DAAAAAJIDAAABAAACTFNPQgMAFAhlbgAABAABABIAAAAAAJwAqAAEAAAAAAAAAAAAAAAA
 ACQA//8AADgA/////1QAAAAAAAAAAQAAAAQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

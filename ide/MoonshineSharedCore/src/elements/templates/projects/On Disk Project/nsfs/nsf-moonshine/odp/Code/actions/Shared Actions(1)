@@ -7,6 +7,7 @@
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$TITLE'><text>$ACTIONS</text></item>
 <item name='$Body' sign='true' seal='true'>
+<!-- This rawitemdata base64 encode binary  is for store action body data-->
 <rawitemdata type='1'>
 gv9GAAIAAAAAAAAAAACgBQAAoAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAKYsAAAAAAIATm9ybWFsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

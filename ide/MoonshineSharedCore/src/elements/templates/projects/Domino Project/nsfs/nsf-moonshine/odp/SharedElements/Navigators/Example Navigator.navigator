@@ -4,6 +4,7 @@
     <text>Example Navigator</text>
   </item>
   <item name="$ViewMapDataset" sign="true">
+       <!-- This rawitemdata base64 encode binary data is view map data . -->
     <rawitemdata type="12">
 V/8WAQkAAAAAAAQAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgACAAAA//8AAAcABwAAAAEAAQABAAAKAAAAAAIA
@@ -13,6 +14,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 </rawitemdata>
   </item>
   <item name="$ViewMapLayout" sign="true">
+    <!-- This rawitemdata base64 encode binary data is for view map layout setting -->
     <rawitemdata type="13">
 rwYIAAAA
 </rawitemdata>

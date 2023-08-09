@@ -15,11 +15,13 @@ NgAFACgAIwADAAwACQAEAEV4YW1wbGVGaWVsZCRDb25mbGljdCRSRUYABAAEAAAACABmAAMA
 </formula>
   </item>
   <item name="$Collation" summary="true">
+    <!-- This rawitemdata base64 encode binary data is for share column collation rules -->
     <rawitemdata type="2">
 BgAAAABE
 </rawitemdata>
   </item>
   <item name="$ViewFormat" sign="true" summary="true">
+   <!-- This rawitemdata base64 encode binary data is for view format  -->
     <rawitemdata type="5">
 AQABAAEACAAAAFZDAAAMAAcAAAAAAFAAAQAACgAAAAAAAAAAAAICAAAARXhhbXBsZUZpZWxkRXhh
 bXBsZSYAAQAAAAEBAAkBAAAKAQEOCgAAAQCtKwEAAQABAAAAAAAAAAAAV0MBAQAJAAAAAAAAAAAA

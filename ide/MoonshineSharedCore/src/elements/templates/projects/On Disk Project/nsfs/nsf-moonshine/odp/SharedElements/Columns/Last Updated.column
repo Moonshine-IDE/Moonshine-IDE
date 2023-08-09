@@ -10,10 +10,12 @@
 OAACAAwAAgAkMKQAAwAFAB4AGQADAAIACQAEACQwJENvbmZsaWN0JFJFRgAEAAQAAAAIAGYAAwA=
 </formula></item>
 <item name='$Collation' summary='true'>
+<!-- This rawitemdata base64 encode binary data is for column collation data -->
 <rawitemdata type='2'>
 BgAAAABE
 </rawitemdata></item>
 <item name='$ViewFormat' summary='true' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for view format  -->
 <rawitemdata type='5'>
 AQABAAEACAAAAFZDAAACAAwADgAAAHIAAQAACgAAAAAAAAAAAAICAAAAJDBMYXN0IFVwZGF0ZWQO
 AAIADAACACQwpAADACYAAQAAAAEBAAkBAAAKAQEOCgAAAQCtKwEAAQABAAAAAAAAAAAAV0MBAQAJ

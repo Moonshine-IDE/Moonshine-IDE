@@ -5,6 +5,7 @@
 >CN=Justin M. Hill/OU=A55555/O=PNI</name><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></updatedby>
 <wassignedby><name>CN=Justin M. Hill/OU=A55555/O=PNI</name></wassignedby>
 <item name='$FormatNote' summary='true' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for view format notes field -->
 <rawitemdata type='4'>
 AQB7WhaxpIT9aaHcFwCoaCWG
 </rawitemdata></item>
@@ -16,10 +17,12 @@ RAACAAwAAgAkOGkAAwACAA4AAgAkN5AAVgEDAAUAHAAXAAMAAgACAAkAJDgkNyRDb25mbGljdAAE
 AAQAAAAIAGYAAwA=
 </formula></item>
 <item name='$Collation' summary='true'>
+<!-- This rawitemdata base64 encode binary data is for view collation -->
 <rawitemdata type='2'>
 GAACAABEgGYAAAACAIBmAAIAAgAkOCQ3
 </rawitemdata></item>
 <item name='$ViewFormat' summary='true' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for view format -->
 <rawitemdata type='5'>
 AQACAAkACgAAAFZDAQACAA0ADgAAAHkAAQAACgAAAAAAAAAAAAICAAAAVkMBAAIABwAaAAAAMwEB
 AAAKAAAAAAAAAAAAAgIAAAAkOENyZWF0aW9uIERhdGUOAAIADAACACQ4aQADACQ3RG9jVU5JRBoA
@@ -31,6 +34,7 @@ AAEAAAAAAAAAAAAAAAAAAQD///8AAQD///8AAAABAAAAAAABAICAgAABAAAAAAAAAAgAAAAAAAEA
 <item name='$Comment' sign='true'><text/></item>
 <item name='$DesignerVersion'><text>7</text></item>
 <item name='$V5ACTIONS' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for view action v5 -->
 <rawitemdata type='1'>
 i/8oAAEABTVMdWNpZGEgQ29uc29sZQAAAAAAAAAAAAAAAAAAAAAAAL0cCgAAAAEAAQAAAIEAAAAA
 AAAABQEBCggAAgB5/2wAAQAAAIAAAQAAAAAAAQD///8AAQAAAIAAAAAfAAAAAAAAAAAAAwAAAAAA
@@ -43,6 +47,7 @@ ABIAAAAAAAAAX01vdmUgVG8gRm9sZGVyLi4uBQA9fL7/LgAAAAUAAACdAQAAEwAAAAAAAABfUmVt
 b3ZlIEZyb20gRm9sZGVyAgYAPnw=
 </rawitemdata></item>
 <item name='$ACTIONS' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for view action -->
 <rawitemdata type='1'>
 vRwKAAAAAQABAAAAgQAAAAAAAAAdAQEKCAACAL7/JgAAAAUAAACdAQAACwAAAAAAAABDYXRlZ29y
 aV96ZQABAE58vv8oAAAABQAAAJ0BAAAOAAAAAAAAAF9FZGl0IERvY3VtZW50AgACCr7/KAAAAAUA

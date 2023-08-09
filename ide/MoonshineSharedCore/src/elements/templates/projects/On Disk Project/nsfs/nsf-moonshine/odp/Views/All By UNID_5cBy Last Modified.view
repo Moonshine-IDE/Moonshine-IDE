@@ -5,6 +5,7 @@
 >CN=Justin M. Hill/OU=A55555/O=PNI</name><name>CN=Joel C. Anderson/OU=A55D78/O=PNI</name></updatedby>
 <wassignedby><name>CN=Justin M. Hill/OU=A55555/O=PNI</name></wassignedby>
 <item name='$FormatNote' summary='true' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for view format notes field -->
 <rawitemdata type='4'>
 AQB4M0W4ZUx6kUHOLAAkaiWG
 </rawitemdata></item>
@@ -16,10 +17,12 @@ SgACAAwAAgAkOKQAAwACAA4AAgAkN5AAVgEDAAUAIgAdAAQAAgACAAQACQAkOCQ3Rm9ybSRDb25m
 bGljdAAEAAQAAAAIAGYAAwA=
 </formula></item>
 <item name='$Collation' summary='true'>
+<!-- This rawitemdata base64 encode binary data is for view collation -->
 <rawitemdata type='2'>
 GAACAABEgGYAAAACAIBmAAIAAgAkOCQ3
 </rawitemdata></item>
 <item name='$ViewFormat' summary='true' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for view format  -->
 <rawitemdata type='5'>
 AQADAAoACgAAAFZDAQACABEADgAAAHkAAQAACgAAAAAAAAAAAAICAAAAVkMBAAIABwAaAAAAMwEB
 AAAKAAAAAAAAAAAAAgIAAABWQwAABAAEAAAAAADlAAEAAAoAAAAAAAAAAAACAgAAACQ4TW9kaWZp

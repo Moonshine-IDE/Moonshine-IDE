@@ -4,9 +4,11 @@
 
 <item name='$HTMLCode' sign='true'>
 <rawitemdata type='1'>
+<!-- This rawitemdata base64 encode binary data is for field html code -->
 </rawitemdata></item>
 <item name='$TITLE'><text>Gateway_Address</text></item>
 <item name='$Info' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for form information -->
 <rawitemdata type='1'>
 hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 </rawitemdata></item>

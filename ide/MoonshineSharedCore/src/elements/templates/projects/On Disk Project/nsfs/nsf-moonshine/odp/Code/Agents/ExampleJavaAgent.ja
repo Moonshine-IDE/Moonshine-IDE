@@ -35,6 +35,7 @@ AAAAAAAAAAAAAAAAAAAASmF2YUFnZW50LmNsYXNzUEsFBgAAAAABAAEAPQAAAKkBAAAAAA==
 <item name='$TITLE' sign='true'><text>ExampleJavaAgent</text></item>
 <item name='$AssistType' sign='true'><number>65427</number></item>
 <item name='$AssistLastRun' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for agent run date  -->
 <rawitemdata type='400'>
 AAAAAAAAAAA=
 </rawitemdata></item>
@@ -43,20 +44,24 @@ AAAAAAAAAAA=
 <item name='$AssistFlags' sign='true'><text>Es</text></item>
 <item name='$AssistTrigger'><text>4</text></item>
 <item name='$AssistInfo' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for agent body -->
 <rawitemdata type='11'>
 AQAEAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 </rawitemdata></item>
 <item name='$AssistQuery' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for agent query way -->
 <rawitemdata type='f'>
 gQYAAAAA
 </rawitemdata></item>
 <item name='$AssistAction' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for agent action  -->
 <rawitemdata type='10'>
 gQKT/2YADwAlAB8AAQAAAAAAAABKYXZhQWdlbnQuY2xhc3NjOlxQcm9ncmFtIEZpbGVzICh4ODYp
 XElCTVxOb3Rlc1xEYXRhJSVzb3VyY2UlJS5qYXIAJSVvYmplY3QlJS5qYXIAAAA=
 </rawitemdata></item>
 <item name='$AssistAction_Ex' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for agent action -->
 <rawitemdata type='14'>
 gQI=
 </rawitemdata></item>
@@ -64,6 +69,7 @@ gQI=
 <item name='$Flags'><text>fJj3</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$AssistRunInfo' summary='true'>
+<!-- This rawitemdata base64 encode binary data is for agent run information -->
 <rawitemdata type='3'>
 BgAAAgAACABqAQAAAAAAAAUAAAAwAAAAAAAAAAAAAAAAAAAAngAAAAAAAAAAAAAAAAAAABAAAAAA
 AAAAEy9wAByFJQYAAAAAwvZvAByFJYZ9E24AHIUlhgAAAAAAAAAAAAAAAAAAAAAAAAAAU3RhcnRl

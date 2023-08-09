@@ -9,6 +9,7 @@
 <item name='$ImagesColorize' sign='true'><number>0</number></item>
 <item name='$FileSize' sign='true'><number>1523</number></item>
 <item name='$ImageData' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for store image encode data -->
 <rawitemdata type='1'>
 mQAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAH0AHAAAAAIAAAAAAPMFAAABAAAAAQAAAAAAAAB8
 AP0FAADzBfQFiVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhk

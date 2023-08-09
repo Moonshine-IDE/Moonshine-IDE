@@ -4,8 +4,10 @@
 <updatedby><name>CN=Jesse Gallagher/O=IKSG</name></updatedby>
 <wassignedby><name>CN=Jesse Gallagher/O=IKSG</name></wassignedby>
 <item name='$HTMLCode' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for page html code  -->
 <rawitemdata type='1'>
 </rawitemdata></item>
+<!-- This rawitemdata base64 encode binary data is for page information  -->
 <item name='$Info' sign='true'>
 <rawitemdata type='1'>
 hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
@@ -13,6 +15,7 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 <item name='$Flags'><text/></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$Body' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for page body encode  -->
 <rawitemdata type='1'>
 gQKC/1oAAQAAAAAAAAAAAKAFAACgBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAABAAAAAJSHAAAAAAAAAAAAAAAAAQAAAAQAAACDBAEAhf8eAAEAAApFeGFtcGxlIGFi

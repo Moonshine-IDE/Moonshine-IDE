@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <note xmlns="http://www.lotus.com/dxl" default="true" class="icon">
   <item name="IconBitmap" summary="true">
+    <!-- This rawitemdata base64 encode binary data is for icon encode base64 data  -->
     <rawitemdata type="6">
 AiAgAQAA///////wD///4Af//8AD//4AAH/8AAA/+AAAH/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAA
 D+AAAAfAAAADgAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAcAAAAPwAAAP8AAAD/AAAA/wAAAP

@@ -13,6 +13,7 @@
 <item name='$TITLE' sign='true'><text>OpenPage</text></item>
 <item name='$AssistType' sign='true'><number>65426</number></item>
 <item name='$AssistLastRun' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for agent last runing date -->
 <rawitemdata type='400'>
 AAAAAAAAAAA=
 </rawitemdata></item>
@@ -22,15 +23,18 @@ AAAAAAAAAAA=
 <item name='$AssistFlags' sign='true'><text>Es</text></item>
 <item name='$AssistTrigger'><text>4</text></item>
 <item name='$AssistInfo' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for agent information -->
 <rawitemdata type='11'>
 AQAEAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 </rawitemdata></item>
 <item name='$AssistQuery' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for agent query way. -->
 <rawitemdata type='f'>
 gQYAAAAA
 </rawitemdata></item>
 <item name='$AssistAction' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for store action -->
 <rawitemdata type='10'>
 gQKE/7wAAAAAALIAsgABAGAACABwYWdlTmFtZQIADwAAAAAAAAABAAsAU2VsZWN0IFBhZ2UAAQAi
 AFdoaWNoIHBhZ2Ugd291bGQgeW91IGxpa2UgdG8gb3Blbj8BAAoASGVsbG9Xb3JsZLAEAwAHABIA
@@ -38,6 +42,7 @@ DAAJMVMyUzZTOFMxMFMIAB4AAgC+GwAAAAAAAAUACABwYWdlTmFtZe0CAwAHAAwABQAJMFI0UwAA
 AAgAZgADAAcADAAGAAkwUkwxUw==
 </rawitemdata></item>
 <item name='$AssistAction_Ex' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for store extra action  -->
 <rawitemdata type='14'>
 gQI=
 </rawitemdata></item>
@@ -45,6 +50,7 @@ gQI=
 <item name='$Flags'><text>f3</text></item>
 <item name='$DesignerVersion'><text>8.5.3</text></item>
 <item name='$AssistRunInfo' summary='true'>
+<!-- This rawitemdata base64 encode binary data is for agent runing information  -->
 <rawitemdata type='3'>
 BgABAAAACACeAQAAAAAAAAUAAAAwAAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAakdhAIeHJYYAAAAAwEFhAIeHJYavZ04A24YlhgAAAAAAAAAAAAAAAAAAAAAAAAAAU3RhcnRl

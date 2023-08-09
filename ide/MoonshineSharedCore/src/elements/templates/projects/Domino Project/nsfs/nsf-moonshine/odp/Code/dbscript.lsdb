@@ -39,6 +39,7 @@ Sub Initialize
 	Print "Hello from example database script"
 End Sub<break/></text></item>
 <item name='$DBScript_O' summary='false' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for script library for this database -->
 <rawitemdata type='500'>
 AQAAAkxTT0IDABQIZW4AAAQACQA5AAQAAACoAmwBAAIAAAAArAC4AAAAAAAAAJgAFAA0AP//tABQ
 AAAAAAAAAAMAAAAEAAACAAAAAAAAAAAAAAAAWAFYAQAAAAAAAAAAAAAAAAACAAIAAAAAAAAAAAAA

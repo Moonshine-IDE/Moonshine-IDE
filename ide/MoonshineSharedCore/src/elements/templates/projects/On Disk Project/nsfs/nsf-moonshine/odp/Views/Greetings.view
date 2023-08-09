@@ -11,10 +11,12 @@ cAACAAwAAgAkMqQAAwAFADgAMwAGAAkACAADAAIACQAEAE5hbWVGaXJzdE5hbWVMYXN0U2V4JDIk
 Q29uZmxpY3QkUkVGAAQABAAAABwABQAEAEZvcm0BAAgAR3JlZXRpbmcKAgMABwAKAAQACUwxUw==
 </formula></item>
 <item name='$Collation' summary='true'>
+<!-- This rawitemdata base64 encode binary data is for view collation -->
 <rawitemdata type='2'>
 LwADAABEAGYAAAAJAIBmAAkACACAZgARAAMATmFtZUZpcnN0TmFtZUxhc3RTZXg=
 </rawitemdata></item>
 <item name='$ViewFormat' summary='true' sign='true'>
+<!-- This rawitemdata base64 encode binary data is for view format  -->
 <rawitemdata type='5'>
 AQAEAAMACAAAAFZDAQAJAAoAAAAAAIMAAQAACgAAAAAAAAAAAAICAAAAVkMBAAgACQAAAAAAxwAB
 AAAKAAAAAAAAAAAAAgIAAABWQwEAAwADAAAAAADHAAEAAAoAAAAAAAAAAAACAgAAAFZDAAACAAwA
