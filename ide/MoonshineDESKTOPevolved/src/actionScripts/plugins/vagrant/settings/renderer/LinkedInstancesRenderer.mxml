@@ -102,7 +102,7 @@
 				return "";
 			}
 
-			private function onItemDoubleClicked(event:Event):void
+			public function onItemDoubleClicked(event:Event):void
 			{
 				itemAddEdit(dgVagrantInstances.selectedItem as VagrantInstanceVO);
 			}

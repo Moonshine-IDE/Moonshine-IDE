@@ -124,8 +124,46 @@ package actionScripts.plugins.vagrant.utils
 					);
 				}
 			}
+			
+			// parse from super.human.installer created instances
+			getVagrantInstancesFromSHI(instances);
 
 			return instances;
+		}
+		
+		public static function getVagrantInstancesFromSHI(instances:ArrayCollection):Array
+		{
+			var filePath:File = File.userDirectory.resolvePath("Library/Application Support/Prominic.NET/SuperHumanInstallerDev/.shi_config.json");
+			var shiInstances:Array = [];
+			if (filePath.exists)
+			{
+				var readString:String = FileUtils.readFromFile(filePath) as String;
+				var readObject:Object = JSON.parse(readString);
+				var vagrantInstance:VagrantInstanceVO;
+				for (var i:int=0; i < readObject.servers.length; i++)
+				{
+					var isNameExists:Boolean = false;
+					var server:Object = readObject.servers[i];
+					for each (var existingServer:VagrantInstanceVO in instances)
+					{
+						if (existingServer.title == server.server_hostname)
+						{
+							isNameExists = true;
+							break;
+						}
+					}
+					
+					if (isNameExists) continue;
+					
+					vagrantInstance = new VagrantInstanceVO();
+					vagrantInstance.title = vagrantInstance.url = server.server_hostname;
+					vagrantInstance.localPath = File.userDirectory.nativePath +"Library/Application Support/Prominic.NET/SuperHumanInstallerDev/servers/"+ server.provisioner.type +"/"+ server.server_id;
+					instances.addItem(vagrantInstance);
+					shiInstances.push(vagrantInstance);
+				}
+			}
+			
+			return shiInstances;
 		}
 
 		public static function saveVagrantInstances(value:ArrayCollection):void

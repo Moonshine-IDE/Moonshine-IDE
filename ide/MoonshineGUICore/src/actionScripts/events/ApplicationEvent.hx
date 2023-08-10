@@ -35,11 +35,16 @@ package actionScripts.events;
 
 import openfl.events.Event;
 
-class ApplicationEvent extends Event {
+class ApplicationEvent extends Event 
+{
 	public static final APPLICATION_EXIT:String = "applicationExit";
 	public static final DISPOSE_FOOTPRINT:String = "disposeFootprints";
+	public static final INVOKE:String = "applicationInvokeEvent";
 
-	public function new(type:String) {
+	public var data:Dynamic;
+
+	public function new(type:String, ?data:Dynamic) {
 		super(type);
+		this.data = data;
 	}
 }

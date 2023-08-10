@@ -76,6 +76,7 @@ package actionScripts.plugins.startup
 	import moonshine.components.HelperView;
 	import moonshine.events.HelperEvent;
 	import moonshine.plugin.help.view.GettingStartedView;
+	import actionScripts.events.ApplicationEvent;
 	
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
 	{
@@ -508,6 +509,7 @@ package actionScripts.plugins.startup
 		 */
 		private function onInvokeEventFired(event:InvokeEvent):void
 		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ApplicationEvent(ApplicationEvent.INVOKE, event.arguments));
 			var updateNotifierFile:File = HelperConstants.HELPER_STORAGE.resolvePath(HelperConstants.MOONSHINE_NOTIFIER_FILE_NAME);
 			if (updateNotifierFile.exists)
 			{
