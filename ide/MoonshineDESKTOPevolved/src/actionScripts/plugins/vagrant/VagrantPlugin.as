@@ -166,6 +166,21 @@ import components.popup.SelectVagrantPopup;
 			dispatcher.addEventListener(DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT, onImportDocumentsJSONRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest, false, 0, true);
+			
+			// test
+			var filePath:File = File.userDirectory.resolvePath("Library/Application Support/Prominic.NET/SuperHumanInstallerDev/.shi_config");
+			if (!filePath.exists)
+			{
+				Alert.show(".shi_config not accessible");
+				filePath = File.userDirectory.resolvePath("Library/Application Support/Prominic.NET/SuperHumanInstallerDev/.shi_config.json");
+			}
+			if (filePath.exists)
+			{
+				Alert.show(filePath.nativePath);
+				var readString:String = FileUtils.readFromFile(filePath) as String;
+				var readObject:Object = JSON.parse(readString);
+				Alert.show(readObject.servers[0].server_hostname);
+			}
 		}
 		
 		override public function deactivate():void
