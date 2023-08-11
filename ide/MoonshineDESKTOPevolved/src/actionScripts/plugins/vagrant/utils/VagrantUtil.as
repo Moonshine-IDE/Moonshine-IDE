@@ -54,6 +54,7 @@ package actionScripts.plugins.vagrant.utils
 	import flash.utils.Dictionary;
 
 	import mx.collections.ArrayCollection;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class VagrantUtil extends EventDispatcher
 	{
@@ -68,6 +69,14 @@ package actionScripts.plugins.vagrant.utils
 
 		private static const instanceStateCheckLoaders:Dictionary = new Dictionary();
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private static const macSHIConfigLocation:Array = [
+				File.userDirectory.resolvePath("Library/Application Support/SuperHumanInstaller/.shi-config"),
+				File.userDirectory.resolvePath("Library/Application Support/SuperHumanInstallerDev/.shi-config")
+			];
+		private static const winSHIConfigLocation:Array = [
+				File.userDirectory.resolvePath("AppData/Roaming/SuperHumanInstaller/.shi-config"),
+				File.userDirectory.resolvePath("AppData/Roaming/SuperHumanInstallerDev/.shi-config")
+			];
 
 		public static const AS_VAGRANT_SSH: XML = <root><![CDATA[
 			#!/bin/bash
@@ -133,36 +142,40 @@ package actionScripts.plugins.vagrant.utils
 		
 		public static function getVagrantInstancesFromSHI(instances:ArrayCollection):Array
 		{
-			var filePath:File = File.userDirectory.resolvePath("Library/Application Support/Prominic.NET/SuperHumanInstallerDev/.shi_config.json");
 			var shiInstances:Array = [];
-			if (filePath.exists)
+			var locations:Array = ConstantsCoreVO.IS_MACOS ? macSHIConfigLocation : winSHIConfigLocation;
+			
+			for each (var filePath:File in locations)
 			{
-				var readString:String = FileUtils.readFromFile(filePath) as String;
-				var readObject:Object = JSON.parse(readString);
-				var vagrantInstance:VagrantInstanceVO;
-				for (var i:int=0; i < readObject.servers.length; i++)
+				if (filePath.exists)
 				{
-					var isNameExists:Boolean = false;
-					var server:Object = readObject.servers[i];
-					for each (var existingServer:VagrantInstanceVO in instances)
+					var readString:String = FileUtils.readFromFile(filePath) as String;
+					var readObject:Object = JSON.parse(readString);
+					var vagrantInstance:VagrantInstanceVO;
+					for (var i:int=0; i < readObject.servers.length; i++)
 					{
-						if (existingServer.title == server.server_hostname)
+						var isNameExists:Boolean = false;
+						var server:Object = readObject.servers[i];
+						for each (var existingServer:VagrantInstanceVO in instances)
 						{
-							isNameExists = true;
-							break;
+							if (existingServer.title == server.server_hostname)
+							{
+								isNameExists = true;
+								break;
+							}
 						}
+						
+						if (isNameExists) continue;
+						
+						vagrantInstance = new VagrantInstanceVO();
+						vagrantInstance.title = vagrantInstance.url = server.server_hostname;
+						vagrantInstance.localPath = File.userDirectory.nativePath +"Library/Application Support/Prominic.NET/SuperHumanInstallerDev/servers/"+ server.provisioner.type +"/"+ server.server_id;
+						instances.addItem(vagrantInstance);
+						shiInstances.push(vagrantInstance);
 					}
-					
-					if (isNameExists) continue;
-					
-					vagrantInstance = new VagrantInstanceVO();
-					vagrantInstance.title = vagrantInstance.url = server.server_hostname;
-					vagrantInstance.localPath = File.userDirectory.nativePath +"Library/Application Support/Prominic.NET/SuperHumanInstallerDev/servers/"+ server.provisioner.type +"/"+ server.server_id;
-					instances.addItem(vagrantInstance);
-					shiInstances.push(vagrantInstance);
 				}
 			}
-			
+
 			return shiInstances;
 		}
 
