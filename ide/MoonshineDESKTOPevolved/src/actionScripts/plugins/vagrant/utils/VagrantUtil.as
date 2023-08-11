@@ -136,7 +136,7 @@ package actionScripts.plugins.vagrant.utils
 			
 			// parse from super.human.installer created instances
 			getVagrantInstancesFromSHI(instances);
-
+			
 			return instances;
 		}
 		
@@ -167,8 +167,13 @@ package actionScripts.plugins.vagrant.utils
 						
 						if (isNameExists) continue;
 						
+						var server_hostname:String = (server.server_hostname.indexOf(".") == -1) ? 
+							server.server_hostname +"."+ server.server_organization +".com" : 
+							server.server_hostname;
+						
 						vagrantInstance = new VagrantInstanceVO();
-						vagrantInstance.title = vagrantInstance.url = server.server_hostname;
+						vagrantInstance.title = server_hostname;
+						vagrantInstance.url = "http://restapi."+ server_hostname +":8080";
 						vagrantInstance.localPath = filePath.parent.nativePath +"/servers/"+ server.provisioner.type +"/"+ server.server_id;
 						instances.addItem(vagrantInstance);
 						shiInstances.push(vagrantInstance);
