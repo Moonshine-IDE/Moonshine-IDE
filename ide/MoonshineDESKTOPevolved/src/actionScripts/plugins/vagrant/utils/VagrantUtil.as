@@ -169,7 +169,7 @@ package actionScripts.plugins.vagrant.utils
 						
 						vagrantInstance = new VagrantInstanceVO();
 						vagrantInstance.title = vagrantInstance.url = server.server_hostname;
-						vagrantInstance.localPath = File.userDirectory.nativePath +"Library/Application Support/Prominic.NET/SuperHumanInstallerDev/servers/"+ server.provisioner.type +"/"+ server.server_id;
+						vagrantInstance.localPath = filePath.parent.nativePath +"/servers/"+ server.provisioner.type +"/"+ server.server_id;
 						instances.addItem(vagrantInstance);
 						shiInstances.push(vagrantInstance);
 					}
