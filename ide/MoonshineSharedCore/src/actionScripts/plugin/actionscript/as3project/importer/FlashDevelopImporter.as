@@ -63,6 +63,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 
 	import mx.controls.Alert;
 	import utils.StringHelperUtils;
+	import view.domino.formEditor.object.FormObject;
 
 	public class FlashDevelopImporter extends FlashDevelopImporterBase
 	{
@@ -408,6 +409,16 @@ package actionScripts.plugin.actionscript.as3project.importer
 							var internalxml:XML = new XML(data);
 
 							var windowsTitleName:String= internalxml.MainApplication.@windowsTitle;
+							var formObject:FormObject = new FormObject();
+							
+							if(internalxml.MainApplication.@propagatenoreplace=="true"){
+								formObject.propagatenoreplace= true;
+							}
+							if(internalxml.MainApplication.@noreplace=="true"){
+								formObject.noreplace= true;
+							}
+							
+							formObject.hide= internalxml.MainApplication.@hide;
 							if(windowsTitleName!=null && windowsTitleName!="" && windowsTitleName.length>0){
 								windowsTitleName=StringHelper.base64Decode(windowsTitleName);
 							}else{
@@ -417,7 +428,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 							if(xmlNavePath.indexOf(subfromPath)>=0){
 								dominoXml =	MainApplicationCodeUtils.getDominoSubformMainContainer(xmlName);
 							} else {
-								dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,windowsTitleName);
+								dominoXml = MainApplicationCodeUtils.getDominoParentContent(xmlName,windowsTitleName,formObject);
 							}
 
 							//first we insert the action bar if it exist
