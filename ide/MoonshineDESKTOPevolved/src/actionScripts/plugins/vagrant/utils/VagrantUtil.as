@@ -156,9 +156,12 @@ package actionScripts.plugins.vagrant.utils
 					{
 						var isNameExists:Boolean = false;
 						var server:Object = readObject.servers[i];
+						var server_hostname:String = (server.server_hostname.indexOf(".") == -1) ? 
+							server.server_hostname +"."+ server.server_organization +".com" : 
+							server.server_hostname;
 						for each (var existingServer:VagrantInstanceVO in instances)
 						{
-							if (existingServer.title == server.server_hostname)
+							if (existingServer.titleOriginal == server_hostname)
 							{
 								isNameExists = true;
 								break;
@@ -167,12 +170,8 @@ package actionScripts.plugins.vagrant.utils
 						
 						if (isNameExists) continue;
 						
-						var server_hostname:String = (server.server_hostname.indexOf(".") == -1) ? 
-							server.server_hostname +"."+ server.server_organization +".com" : 
-							server.server_hostname;
-						
 						vagrantInstance = new VagrantInstanceVO();
-						vagrantInstance.title = server_hostname;
+						vagrantInstance.title = vagrantInstance.titleOriginal = server_hostname;
 						vagrantInstance.url = "http://restapi."+ server_hostname +":8080";
 						vagrantInstance.localPath = filePath.parent.nativePath +"/servers/"+ server.provisioner.type +"/"+ server.server_id;
 						instances.addItem(vagrantInstance);
@@ -180,6 +179,9 @@ package actionScripts.plugins.vagrant.utils
 					}
 				}
 			}
+			
+			// give a save on any newly addition
+			saveVagrantInstances(instances);
 
 			return shiInstances;
 		}
