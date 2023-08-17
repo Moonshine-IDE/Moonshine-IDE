@@ -367,7 +367,7 @@ package actionScripts.valueObjects
 
 
 			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN= new FileLocation("TEMPLATE");
-			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN.fileBridge.name = "Domino Visual Editor View Share Column.column";
+			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN.fileBridge.name = "Domino Visual Editor View Shared Column.column";
 			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN.fileBridge.isDirectory = false;
 			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN.fileBridge.extension = "view";
 			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN.fileBridge.data = "";

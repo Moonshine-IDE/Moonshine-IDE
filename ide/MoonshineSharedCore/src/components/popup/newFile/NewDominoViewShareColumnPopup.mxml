@@ -22,7 +22,7 @@
 -->
 <newfile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009"
 					 xmlns:s="library://ns.adobe.com/flex/spark"
-					 title="New Domino View Share Column"
+					 title="New Domino View Shared Column"
 					 xmlns:forms="view.forms.*"
 					 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
 					 xmlns:newfile="components.popup.newFile.*" preinitialize="onPreinitialize(event)">

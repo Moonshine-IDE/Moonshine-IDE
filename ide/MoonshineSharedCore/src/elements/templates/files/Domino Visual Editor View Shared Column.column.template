@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<sharedcolumn xmlns="http://www.lotus.com/dxl" name="$ColumnName" version="11.0" replicaid="86258A0B005043E4" noreplace="true" designerversion="8.5.3">
+<sharedcolumn  name="$ColumnName" version="11.0" replicaid="86258A0B005043E4" noreplace="true" designerversion="8.5.3">
 <column hidedetailrows="false" itemname="$0" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <columnheader title="LastModified">
 <font size="9pt" style="bold"/>

@@ -363,7 +363,7 @@ package actionScripts.plugin.templating
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_DOMINO_VIEW = files;
 
-			files = templatesDir.resolvePath("files/Domino Visual Editor View Share Column.column.template");
+			files = templatesDir.resolvePath("files/Domino Visual Editor View Shared Column.column.template");
 			if (!files.fileBridge.isHidden && !files.fileBridge.isDirectory)
 				ConstantsCoreVO.TEMPLATE_DOMINO_VIEW_SHARE_COLUMN = files;	
 			
@@ -1042,7 +1042,7 @@ package actionScripts.plugin.templating
 					case "Domino Visual Editor View":
 						openDominoViewComponentTypeChoose(event);
 						break;
-					case "Domino Visual Editor View Share Column":
+					case "Domino Visual Editor View Shared Column":
 						openDominoViewShareColumnComponentTypeChoose(event);
 						break;		
 					case "Domino Visual Share Field":
