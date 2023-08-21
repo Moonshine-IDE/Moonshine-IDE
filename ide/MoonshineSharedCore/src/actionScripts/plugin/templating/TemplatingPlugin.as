@@ -2515,9 +2515,18 @@ package actionScripts.plugin.templating
 				//replace \  to 5c from view name
 				
 				var replaceName:String= TextUtil.fixDominoViewName(event.fileName);
+				
+				var replaceNameSplitList:Array=replaceName.split("_5c");
+				var sharedColumnName:String="";
+				if(replaceNameSplitList.length>1){
+					sharedColumnName=replaceNameSplitList[replaceNameSplitList.length-1];
+				}else{
+					sharedColumnName=replaceNameSplitList[0];
+				}
 				//replace the view name to file name:
 				var sourceViewNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
 				content=content.replace("$ColumnName",sourceViewNameFormat);
+				content=content.replace("$SharedColumnName",sharedColumnName);
 				
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + replaceName +".column");
 				fileToSave.fileBridge.save(content);

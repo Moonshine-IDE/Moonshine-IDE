@@ -47,7 +47,8 @@ package actionScripts.impls
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
-	
+	import components.popup.DominoSharedColumnListPopup;
+	import spark.components.TitleWindow;
 	import view.VisualEditor;
 	import view.interfaces.IVisualEditorLibraryBridge;
 	
@@ -56,6 +57,7 @@ package actionScripts.impls
 
 	import mx.collections.ArrayList;
 	import flash.events.Event;
+	import flash.filesystem.File;
 
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
 	{
@@ -243,5 +245,12 @@ package actionScripts.impls
 				this.updateHandler = null;
 			}
 		}
+
+		public function getDominoSharedColumnListPopup(file:File):TitleWindow
+        {
+            var tmpPopup:DominoSharedColumnListPopup = new DominoSharedColumnListPopup();
+            tmpPopup.initializeColumnList(file);
+            return tmpPopup as TitleWindow;
+        }
 	}
 }

@@ -50,7 +50,7 @@ package actionScripts.plugins.ui.editor
 
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
-
+	import actionScripts.impls.IVisualEditorLibraryBridgeImp;
 	import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
 
     public class DominoViewEditor extends BasicTextEditor  
@@ -58,7 +58,7 @@ package actionScripts.plugins.ui.editor
         private var dominoViewEditor:DominoViewVisualEditor;
         private var visualEditorProject:ProjectVO;
 		private var hasChangedProperties:Boolean;
-        
+        private var visualEditoryLibraryCore:IVisualEditorLibraryBridgeImp;
         
 
         public function DominoViewEditor(visualEditorProject:ProjectVO = null)
@@ -78,6 +78,10 @@ package actionScripts.plugins.ui.editor
 			{
 				editor.parser = new PlainTextLineParser();
 			}
+
+			visualEditoryLibraryCore = new IVisualEditorLibraryBridgeImp();
+			visualEditoryLibraryCore.visualEditorProject = visualEditorProject;
+
 			editor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
 			editor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
 			editorWrapper = new FeathersUIWrapper(editor);
@@ -153,6 +157,7 @@ package actionScripts.plugins.ui.editor
 			
 			dominoViewEditor.dominoViewVisualEditor.addEventListener("saveCode", onDominoViewEditorSaveCode);
 			dominoViewEditor.dominoViewVisualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
+			dominoViewEditor.dominoViewVisualEditor.moonshineBridge = visualEditoryLibraryCore;
 		}
 		private function onDominoViewPropertyChange(event:Event):void
 		{
