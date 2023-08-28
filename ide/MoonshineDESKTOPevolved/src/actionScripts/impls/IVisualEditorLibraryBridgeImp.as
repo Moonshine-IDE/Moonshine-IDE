@@ -99,6 +99,15 @@ package actionScripts.impls
 			if (!tmpOpenFile) return;
 			dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]))
 		}
+
+		public function openDominoSharedColumnFile(path:String):void 
+		{
+			var tmpOpenFile:FileLocation = new FileLocation(path);
+			if (!tmpOpenFile) return;
+			var openFileEvent:OpenFileEvent=new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]);
+ 			openFileEvent.openAsTourDe=false;
+			dispatcher.dispatchEvent(openFileEvent)
+		}
 		
 		public function getVisualEditorComponent():VisualEditor
 		{

@@ -80,6 +80,7 @@ package actionScripts.controllers
 
 		public function execute(event:Event):void
 		{
+			
 			ActionNotifier.getInstance().notify("Open file");
 			model = IDEModel.getInstance();
 
@@ -200,12 +201,14 @@ package actionScripts.controllers
 
 		protected function openFile(fileDir:Object=null, openType:String=null, fileWrapper:FileWrapper=null, fileData:String=null):void
 		{
+			
 			if (fileDir) 
 			{
 				if (fileDir is FileLocation) file = fileDir as FileLocation;
 				else file = new FileLocation(fileDir.nativePath);
 			}
 
+			
 			var isFileOpen:Boolean = false;
 			
 			// If file is open already, just focus that editor.
@@ -268,7 +271,6 @@ package actionScripts.controllers
 				if (plugEvent.isDefaultPrevented())
 					return;
 			}
-			
 			// Load and see if it's a binary file
 			if (ConstantsCoreVO.IS_AIR)
 			{
@@ -281,6 +283,12 @@ package actionScripts.controllers
 					extension = extension.toLowerCase()
 				}
 
+				
+				if (!project)
+				{
+					project = model.activeProject;
+				}
+				
 				if (openAsTourDe) 
 				{
 					openTourDeFile(fileData);
