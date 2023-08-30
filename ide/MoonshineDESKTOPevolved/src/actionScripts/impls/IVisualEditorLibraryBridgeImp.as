@@ -58,6 +58,8 @@ package actionScripts.impls
 	import mx.collections.ArrayList;
 	import flash.events.Event;
 	import flash.filesystem.File;
+	import actionScripts.utils.TextUtil;
+	import mx.controls.Alert;
 
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
 	{
@@ -100,13 +102,22 @@ package actionScripts.impls
 			dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]))
 		}
 
-		public function openDominoSharedColumnFile(path:String):void 
+		public function openDominoSharedColumnFile(columnName:String):void 
 		{
-			var tmpOpenFile:FileLocation = new FileLocation(path);
-			if (!tmpOpenFile) return;
-			var openFileEvent:OpenFileEvent=new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]);
- 			openFileEvent.openAsTourDe=false;
-			dispatcher.dispatchEvent(openFileEvent)
+			var selectedProject:AS3ProjectVO=model.activeProject as AS3ProjectVO;
+			if(selectedProject&&selectedProject.sourceFolder){
+				var shareColumnFileName:String=TextUtil.fixDominoViewName(columnName);
+				var formFolder:String=selectedProject.sourceFolder.fileBridge.nativePath;
+				var parentPath:String=formFolder.substring(0,formFolder.length-5);
+				var shareColumnFilePath:String=parentPath+"SharedElements"+File.separator+"Columns"+File.separator+columnName+".column";
+				Alert.show("shareColumnFilePath:"+shareColumnFilePath);
+				var tmpOpenFile:FileLocation = new FileLocation(shareColumnFilePath);
+				if (!tmpOpenFile) return;
+				var openFileEvent:OpenFileEvent=new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]);
+				openFileEvent.openAsTourDe=false;
+				dispatcher.dispatchEvent(openFileEvent)
+			}
+			
 		}
 		
 		public function getVisualEditorComponent():VisualEditor
