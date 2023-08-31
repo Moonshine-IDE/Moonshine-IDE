@@ -110,7 +110,7 @@ package actionScripts.impls
 				var formFolder:String=selectedProject.sourceFolder.fileBridge.nativePath;
 				var parentPath:String=formFolder.substring(0,formFolder.length-5);
 				var shareColumnFilePath:String=parentPath+"SharedElements"+File.separator+"Columns"+File.separator+columnName+".column";
-				Alert.show("shareColumnFilePath:"+shareColumnFilePath);
+				//Alert.show("shareColumnFilePath:"+shareColumnFilePath);
 				var tmpOpenFile:FileLocation = new FileLocation(shareColumnFilePath);
 				if (!tmpOpenFile) return;
 				var openFileEvent:OpenFileEvent=new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]);
