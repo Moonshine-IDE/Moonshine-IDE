@@ -48,6 +48,7 @@ package actionScripts.plugins.nativeFiles
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.events.ApplicationEvent;
 
 	public class FileAssociationPlugin extends PluginBase
 	{
@@ -60,18 +61,18 @@ package actionScripts.plugins.nativeFiles
 			super.activate();
 			
 			// open-with listener
-			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
+			GlobalEventDispatcher.getInstance().addEventListener(ApplicationEvent.INVOKE, onAppInvokeEvent, false, 0, true);
 			
 			// drag-drop listeners
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onNativeItemDragEnter, false, 0, true);
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onNativeItemDragDrop, false, 0, true);
 		}
 		
-		private function onAppInvokeEvent(event:InvokeEvent):void
+		private function onAppInvokeEvent(event:ApplicationEvent):void
 		{
-			if (event.arguments.length)
+			if (event.data.length)
 			{
-				openFilesByPath(event.arguments);
+				openFilesByPath(event.data);
 			}
 			
 			// to rail the event in other parts of the applciation

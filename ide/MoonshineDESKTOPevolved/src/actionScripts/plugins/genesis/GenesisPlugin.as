@@ -44,17 +44,18 @@ package actionScripts.plugins.genesis
 
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
-import flash.net.URLRequest;
-import flash.net.navigateToURL;
-
-import mx.core.FlexGlobals;
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
+	
+	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
-import mx.utils.StringUtil;
-
-import spark.components.Alert;
+	import mx.utils.StringUtil;
+	
+	import spark.components.Alert;
+	import actionScripts.events.ApplicationEvent;
 
 	public class GenesisPlugin extends ConsoleBuildPluginBase
 	{
@@ -74,8 +75,7 @@ import spark.components.Alert;
 
 			dispatcher.addEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent, false, 0, true);
 			dispatcher.addEventListener(GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER, onOpenGenesisCatalogBrowserEvent, false, 0, true);
-
-			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
+			dispatcher.addEventListener(ApplicationEvent.INVOKE, onAppInvokeEvent, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -84,7 +84,7 @@ import spark.components.Alert;
 
 			dispatcher.removeEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent);
 			dispatcher.removeEventListener(GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER, onOpenGenesisCatalogBrowserEvent);
-			NativeApplication.nativeApplication.removeEventListener(InvokeEvent.INVOKE, onAppInvokeEvent);
+			dispatcher.removeEventListener(ApplicationEvent.INVOKE, onAppInvokeEvent);
 		}
 
 		private function onImportGenesisEvent(event:Event, withURL:String=null):void
@@ -104,17 +104,17 @@ import spark.components.Alert;
 			navigateToURL(new URLRequest("https://genesis.directory/apps"));
 		}
 
-		private function onAppInvokeEvent(event:InvokeEvent):void
+		private function onAppInvokeEvent(event:ApplicationEvent):void
 		{
-			if (event.arguments.length)
+			if (event.data.length)
 			{
-				if ((event.arguments[0] as String).toLowerCase().indexOf("://project/") != -1)
+				if ((event.data[0] as String).toLowerCase().indexOf("://project/") != -1)
 				{
-					var arguments:Array = event.arguments[0].split("/");
+					var arguments:Array = event.data[0].split("/");
 					// test only if there is some value followed by 'project/'
 					if (arguments[arguments.length - 1].toLowerCase() != "")
 					{
-						onImportGenesisEvent(null, event.arguments[0] as String);
+						onImportGenesisEvent(null, event.data[0] as String);
 					}
 				}
 			}
