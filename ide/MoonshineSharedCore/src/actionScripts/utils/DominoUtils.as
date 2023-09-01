@@ -39,6 +39,7 @@ package actionScripts.utils
 	import mx.utils.Base64Encoder;
     import mx.utils.Base64Decoder;
     import flash.utils.ByteArray;
+	import actionScripts.utils.TextUtil;
 
     public class DominoUtils
 	{
@@ -337,6 +338,18 @@ package actionScripts.utils
 
 			newFileLocation.fileBridge.save(newDxlXML.toXMLString());
 		}
+
+		public static function dominoSharedColumnNameUpdate(sourceXml:FileLocation,newSharedColumnFileName:String):void
+		{
+			//replace from \/ to _5c
+			var replaceName:String= TextUtil.fixDominoViewName(newSharedColumnFileName);
+			//replace _5c to / to make sure it get same
+			var newColumnNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+			var sourceSharedColumnXML:XML = new XML(sourceXml.fileBridge.read());
+			sourceSharedColumnXML.@name=newColumnNameFormat;
+			sourceXml.fileBridge.save(sourceSharedColumnXML.toXMLString());
+		}
+
 		public static function dominoWindowTitleUpdate(sourceXml:FileLocation,newFormName:String,souceFormName:String):void{
 		
 				

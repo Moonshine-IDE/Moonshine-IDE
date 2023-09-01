@@ -227,8 +227,11 @@ package actionScripts.plugin.rename
 			var newFile:FileLocation;
 			var sourceFormName:String =null;
 
+			
+			if(fileWrapper.file.fileBridge.extension=="column"){
+				newName=TextUtil.fixDominoViewName(newName);
+			}
 			var newFile = fileWrapper.file.fileBridge.parent.resolvePath(newName);
-
 			var newNameWithOutExtension = newFile.fileBridge.nameWithoutExtension;
 			if(fileWrapper.file.fileBridge.extension=="form"){
 				sourceFormName=sourceFileName;
@@ -267,6 +270,23 @@ package actionScripts.plugin.rename
 
 			if(fileWrapper.file.fileBridge.extension=="view"){
 				DominoUtils.dominoViewTitleUpdateWithoutSave(newFile,newFileNameWithoutExtension,newFileNameWithoutExtension);
+			}
+
+			if(fileWrapper.file.fileBridge.extension=="column"){
+				// update and Synchronize column file name into column name
+				DominoUtils.dominoSharedColumnNameUpdate(newFile,newFileNameWithoutExtension);
+				//sourceFileName
+				var replaceName:String= TextUtil.fixDominoViewName(sourceFileName);
+				var sourceColumnNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+				//newFielname
+				replaceName=TextUtil.fixDominoViewName(newNameWithOutExtension);
+				var newColumnNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+				var currentProjectPath:String=UtilsCore.getProjectFolder(fileWrapper);
+				if(currentProjectPath){
+					var currentProjectFolder:FileLocation = new FileLocation(currentProjectPath);
+					replaceSharedColumnNameFromAllReferencesView(currentProjectFolder,sourceColumnNameFormat,newColumnNameFormat);
+				}
+
 			}
 
 			// we need to update file location of the (if any) opened instance 
@@ -403,6 +423,39 @@ package actionScripts.plugin.rename
 							
 						}
 				}
+		}
+
+		private  function replaceSharedColumnNameFromAllReferencesView(projectFolderLocation:FileLocation,sourceColumnName:String,targetColumnName:String):void{
+			var viewFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views");
+			if(viewFileLocation.fileBridge.exists){
+				var directory:Array = viewFileLocation.fileBridge.getDirectoryListing();
+				for each (var xml:File in directory)
+				{
+					if (xml.extension == "view" ) {
+						var fileLocation:FileLocation=new FileLocation(xml.nativePath);
+					
+						//var data:String = ;
+						var _isChangedColumnName:Boolean = false;
+						var viewxml:XML = new XML(fileLocation.fileBridge.read());
+						for each(var sharedColumn:XML in viewxml..sharedcolumnref){
+							if(sharedColumn.@name==sourceColumnName){
+								sharedColumn.@name=targetColumnName;
+								_isChangedColumnName=true;
+							}
+						}
+
+						if(_isChangedColumnName){
+							fileLocation.fileBridge.deleteFile();
+							var _targetfileStreamMoonshine:FileStream = new FileStream();
+							_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
+							_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
+							_targetfileStreamMoonshine.close();
+
+							checkAndUpdateOpenedViewsInTab(fileLocation.fileBridge.nativePath);
+						}
+					}
+				}
+			}
 		}
 
 		private  function replaceFormNameFromAllReferencesView(projectFolderLocation:FileLocation,sourceFormName:String,targetFormName:String):void{

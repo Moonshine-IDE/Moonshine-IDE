@@ -52,8 +52,11 @@ package actionScripts.plugins.ui.editor
 	import mx.events.CollectionEventKind;
 
 	import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-
-    public class DominoViewShareColumnEditor extends BasicTextEditor  
+	import view.suportClasses.events.DominoViewUpdateEvent;
+	import view.suportClasses.events.DominoSharedColumnUpdateViewEvent;
+    import actionScripts.events.GlobalEventDispatcher;
+	
+	public class DominoViewShareColumnEditor extends BasicTextEditor  
 	{
         private var dominoShareColumnEditor:DominoShareColumnEditor;
         private var visualEditorProject:ProjectVO;
@@ -153,6 +156,7 @@ package actionScripts.plugins.ui.editor
 			
 			dominoShareColumnEditor.dominoViewVisualEditor.addEventListener("saveCode", onDominoViewEditorSaveCode);
 			dominoShareColumnEditor.dominoViewVisualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
+			dominoShareColumnEditor.dominoViewVisualEditor.addEventListener(DominoViewUpdateEvent.VIEW_UPDATE_AND_RELOAD,onDominoViewUpdateAndRoload);
 		}
 		private function onDominoViewPropertyChange(event:Event):void
 		{
@@ -169,6 +173,7 @@ package actionScripts.plugins.ui.editor
 			{
 				dominoShareColumnEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 				dominoShareColumnEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(Event.CHANGE, onDominoViewPropertyChange);
+				dominoShareColumnEditor.dominoViewVisualEditor.removeEventListener(DominoViewUpdateEvent.VIEW_UPDATE_AND_RELOAD,onDominoViewUpdateAndRoload);
 				
 				//SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
 			}
@@ -221,6 +226,13 @@ package actionScripts.plugins.ui.editor
 
 		public function getFilePath():String {
 			return file.fileBridge.nativePath;
+		}
+
+
+		private function onDominoViewUpdateAndRoload(event:DominoViewUpdateEvent):void 
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(new DominoSharedColumnUpdateViewEvent(DominoSharedColumnUpdateViewEvent.VIEW_UPDATE_AND_RELOAD, event.viewFilePath, true,true))
+			
 		}
     }
 }

@@ -53,7 +53,8 @@ package actionScripts.plugins.ui.editor
 	import actionScripts.impls.IVisualEditorLibraryBridgeImp;
 	import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
 	import view.suportClasses.events.DominoViewUpdateEvent;
-
+	import view.suportClasses.events.DominoSharedColumnUpdateViewEvent;
+	import actionScripts.events.GlobalEventDispatcher;
     public class DominoViewEditor extends BasicTextEditor  
 	{
         private var dominoViewEditor:DominoViewVisualEditor;
@@ -135,9 +136,8 @@ package actionScripts.plugins.ui.editor
 			updateChangeStatus()
 		}
 
-		private function onDominoViewUpdateAndRoload(event:DominoViewUpdateEvent):void 
+		private function onDominoViewUpdateAndRoload(event:DominoSharedColumnUpdateViewEvent):void 
 		{
-			Alert.show("onDominoViewUpdateAndRoload:"+event.viewFilePath+"-"+file.fileBridge.nativePath);
 			if(event.viewFilePath==file.fileBridge.nativePath){
 				openLoadingFile(event.viewFilePath);
 			}
@@ -168,7 +168,7 @@ package actionScripts.plugins.ui.editor
 			dominoViewEditor.dominoViewVisualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 			dominoViewEditor.dominoViewVisualEditor.moonshineBridge = visualEditoryLibraryCore;
 			
-			dominoViewEditor.dominoViewVisualEditor.addEventListener(DominoViewUpdateEvent.VIEW_UPDATE_AND_RELOAD,onDominoViewUpdateAndRoload);
+			GlobalEventDispatcher.getInstance().addEventListener(DominoSharedColumnUpdateViewEvent.VIEW_UPDATE_AND_RELOAD,onDominoViewUpdateAndRoload);
 		
 		}
 		private function onDominoViewPropertyChange(event:Event):void
@@ -186,7 +186,7 @@ package actionScripts.plugins.ui.editor
 			{
 				dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 				dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(Event.CHANGE, onDominoViewPropertyChange);
-				dominoViewEditor.dominoViewVisualEditor.removeEventListener(DominoViewUpdateEvent.VIEW_UPDATE_AND_RELOAD,onDominoViewUpdateAndRoload);
+				GlobalEventDispatcher.getInstance().removeEventListener(DominoSharedColumnUpdateViewEvent.VIEW_UPDATE_AND_RELOAD,onDominoViewUpdateAndRoload);
 				//SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
 			}
 		}
