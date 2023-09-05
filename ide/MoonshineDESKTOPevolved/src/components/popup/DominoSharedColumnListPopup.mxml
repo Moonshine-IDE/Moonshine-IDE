@@ -70,6 +70,9 @@
 
         import actionScripts.valueObjects.ProjectVO;
         import view.suportClasses.events.DominoViewSharedColumnAppendEvent;
+        
+        import actionScripts.utils.TextUtil;
+        
         public static const EVENT_COLUMN_INSERT:String = "sharedColumnInster";
         [Bindable] private var sharedColumnCollection:ArrayCollection = new ArrayCollection();
 
@@ -114,7 +117,10 @@
             if(UtilsCore.endsWith(f.nativePath,"column")){
                 var childFileLocation:FileLocation = new FileLocation(f.nativePath);
                 var childFileWraper:FileWrapper = new FileWrapper(childFileLocation);
-                
+                var n:String=TextUtil.toDominoViewNormalName(childFileWraper.name);
+               
+                childFileWraper.defaultName=n;
+               
                 sharedColumnCollection.addItem(childFileWraper);
             }
         }
@@ -160,7 +166,7 @@
             //get the domino project form folder value:
            if( tree.selectedItem){
             var currentPath:String = tree.selectedItem.nativePath;
-            txtDestination.text = tree.selectedItem.name;
+            txtDestination.text = tree.selectedItem.defaultName;
             isSubmitButtonEnabled=true;
             btnSubmit.enabled=true;
            }else{
@@ -205,7 +211,7 @@
             rowHeight="18"
             useRollOver="true"
             doubleClickEnabled="true"
-            labelField="name"
+            labelField="defaultName"
             itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
             itemClick="onTreeItemClicked(event)"/>
             <view:PromptTextInput id="txtDestination"
