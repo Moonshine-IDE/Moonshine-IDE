@@ -598,7 +598,7 @@ package actionScripts.plugin.rename
 		private function onFileDuplicateRequest(event:DuplicateEvent):void
 		{
 			var fileName:String=event.fileName ;
-			if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "view"){
+			if(event.fileLocation.fileBridge.extension && (event.fileLocation.fileBridge.extension == "view" ||event.fileLocation.fileBridge.extension == "column")){
 				fileName=TextUtil.fixDominoViewName(fileName);
 			}
 			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(fileName + 
@@ -611,6 +611,9 @@ package actionScripts.plugin.rename
 				var updatedContent:String = getUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
 				fileToSave.fileBridge.save(updatedContent);
 			}else if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "view"){
+				var updatedViewContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
+				fileToSave.fileBridge.save(updatedViewContent);
+			}else if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "column"){
 				var updatedViewContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
 				fileToSave.fileBridge.save(updatedViewContent);
 			}
@@ -633,6 +636,8 @@ package actionScripts.plugin.rename
 				);
 			}
 		}
+
+		
 
 
 		private function getDominoUpdatedFileContent(projectRef:FileWrapper, source:FileLocation, newFileName:String):String

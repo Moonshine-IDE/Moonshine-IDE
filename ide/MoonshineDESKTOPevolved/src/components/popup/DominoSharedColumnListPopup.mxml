@@ -118,7 +118,7 @@
                 var childFileLocation:FileLocation = new FileLocation(f.nativePath);
                 var childFileWraper:FileWrapper = new FileWrapper(childFileLocation);
                 var n:String=TextUtil.toDominoViewNormalName(childFileWraper.name);
-               
+                n=n.substring(0,n.length-8) ;
                 childFileWraper.defaultName=n;
                
                 sharedColumnCollection.addItem(childFileWraper);
