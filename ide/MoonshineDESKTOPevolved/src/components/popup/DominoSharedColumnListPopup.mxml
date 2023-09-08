@@ -72,6 +72,7 @@
         import view.suportClasses.events.DominoViewSharedColumnAppendEvent;
         
         import actionScripts.utils.TextUtil;
+        import utils.GenericUtils;
         
         public static const EVENT_COLUMN_INSERT:String = "sharedColumnInster";
         [Bindable] private var sharedColumnCollection:ArrayCollection = new ArrayCollection();
@@ -118,12 +119,16 @@
                 var childFileLocation:FileLocation = new FileLocation(f.nativePath);
                 var childFileWraper:FileWrapper = new FileWrapper(childFileLocation);
                 var n:String=TextUtil.toDominoViewNormalName(childFileWraper.name);
-                n=n.substring(0,n.length-8) ;
+                n=n.substring(0,n.length-7) ;
                 childFileWraper.defaultName=n;
+
+                
                
                 sharedColumnCollection.addItem(childFileWraper);
             }
         }
+
+        sharedColumnCollection=GenericUtils.arrayCollectionSort(sharedColumnCollection,"defaultName",false);
 
       					
         
