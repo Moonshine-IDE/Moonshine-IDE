@@ -366,14 +366,17 @@ package actionScripts.utils
 				}else{
 					windowsTitleName="@Text(\""+newFormName+"\")";
 				}
+				var sourceNoEncodeTitle:String=windowsTitleName;
 				
 				windowsTitleName=base64Encode(windowsTitleName);
 				var mainApplicationList:XMLList=sourceFormXML..MainApplication;
 				if(mainApplicationList.length()>0 && mainApplicationList.length()<2){
 					sourceFormXML.MainApplication.@windowsTitle=windowsTitleName;
+					sourceFormXML.MainApplication.@title=sourceNoEncodeTitle;
 
 				} else if (mainApplicationList.length()>0&& mainApplicationList.length()>=2){
 					mainApplicationList[0].@windowsTitle=windowsTitleName;
+					mainApplicationList[0].@title=sourceNoEncodeTitle;
 					delete mainApplicationList[1]
 				}
 				
