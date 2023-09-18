@@ -48,6 +48,7 @@ package actionScripts.impls
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
 	import components.popup.DominoSharedColumnListPopup;
+	import components.popup.newFile.NewDominoSharedColumnFromView;
 	import spark.components.TitleWindow;
 	import view.VisualEditor;
 	import view.interfaces.IVisualEditorLibraryBridge;
@@ -271,6 +272,27 @@ package actionScripts.impls
             var tmpPopup:DominoSharedColumnListPopup = new DominoSharedColumnListPopup();
             tmpPopup.initializeColumnList(file);
             return tmpPopup as TitleWindow;
+        }
+
+		public function getDominoNewSharedColumnFromViewColumn(n:String):TitleWindow
+        {
+            var newSharedColumnFromViewPopup:NewDominoSharedColumnFromView = new NewDominoSharedColumnFromView();
+			newSharedColumnFromViewPopup.defaultFileName=n;
+			var selectedProject:AS3ProjectVO=model.activeProject as AS3ProjectVO;
+			if(selectedProject&&selectedProject.sourceFolder){
+				var formFolder:String=selectedProject.sourceFolder.fileBridge.nativePath;
+				var parentPath:String=formFolder.substring(0,formFolder.length-5);
+				var shareColumnFilePath:String=parentPath+"SharedElements"+File.separator+"Columns"+File.separator;
+				newSharedColumnFromViewPopup.folderLocation = new FileLocation(shareColumnFilePath);
+				var tmpFW: FileWrapper = new FileWrapper(newSharedColumnFromViewPopup.folderLocation, true, null, false);
+
+				newSharedColumnFromViewPopup.wrapperOfFolderLocation=tmpFW;
+				newSharedColumnFromViewPopup.wrapperBelongToProject = selectedProject;
+			
+			}
+			
+			
+            return newSharedColumnFromViewPopup as TitleWindow;
         }
 	}
 }

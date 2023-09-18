@@ -55,7 +55,10 @@ package actionScripts.plugins.ui.editor
 	import view.suportClasses.events.DominoViewUpdateEvent;
 	import view.suportClasses.events.DominoSharedColumnUpdateViewEvent;
 	import actionScripts.events.GlobalEventDispatcher;
-    public class DominoViewEditor extends BasicTextEditor  
+    
+	import view.suportClasses.events.DominoViewColumnRightClickEvent;
+	
+	public class DominoViewEditor extends BasicTextEditor  
 	{
         private var dominoViewEditor:DominoViewVisualEditor;
         private var visualEditorProject:ProjectVO;
@@ -238,6 +241,15 @@ package actionScripts.plugins.ui.editor
 
 		public function getFilePath():String {
 			return file.fileBridge.nativePath;
+		}
+
+		public function dispatcherNewSharedColumnEventFromView(txtFileName:String):void 
+		{
+			var tmpEvent:DominoViewColumnRightClickEvent = new DominoViewColumnRightClickEvent(DominoViewColumnRightClickEvent.COLUMN_CLICK,txtFileName,true, true);
+					
+			dominoViewEditor.dominoViewVisualEditor.dgColumns.dispatchEvent(tmpEvent);
+                
+		
 		}
     }
 }
