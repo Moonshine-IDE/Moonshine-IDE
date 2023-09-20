@@ -49,7 +49,7 @@
 			import actionScripts.valueObjects.FileWrapper;
 
 
-            
+			import mx.controls.Alert;
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.plugins.ui.editor.DominoViewEditor;
 
@@ -57,13 +57,18 @@
 			private var isDominoValid:Boolean=false;
 			private var dominoFolderList:FileWrapper=null;
 			public var defaultFileName:String="";
+			
+			
+			private var dominoSharedColumnFolder:String ;
+			private var dominoSharedColumnFolderFileLocation:FileLocation ;
+			
 			protected function onPreinitialize(event:FlexEvent):void
 			{
 				createdFileExtension = ".column";
 				warningMessage = "";
 				isDestinationValid=true;
-
-                
+				dominoSharedColumnFolder=wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Columns";
+                dominoSharedColumnFolderFileLocation=new FileLocation(dominoSharedColumnFolder);
 			
 				
 			}
@@ -148,35 +153,32 @@
 				
                 //get the domino project form folder value:
                 var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
-				var dominoSharedColumnFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Columns";
+			
                 var currentPath:String = UtilsCore.getPathStringByProjectPath(
                         Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
                         tree.selectedItem.nativePath);
-                //btnCreate.enabled = false;
+             
 				 txtDestination.text = currentPath;
 				
-			
-				 //wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/SharedElements/Subforms";
-				
-                if ( !UtilsCore.endsWith(dominoSharedColumnFolder,currentPath))
+				if ( !UtilsCore.endsWith(dominoSharedColumnFolder,currentPath))
                 {
-					isDominoValid=true;
-                    warningMessage = "Domino forms are only supported in the Forms folder.";
-                    hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
-
+					
+					
+                    warningMessage = "Domino shared column are only supported in the columns folder.";
 				   	isSubmitButtonEnabled=false;
-					btnCreate.enabled = false; 
+					tree.selectedItem = wrapperOfFolderLocation;
+					txtDestination.text = UtilsCore.getPathStringByProjectPath(
+							Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+							wrapperOfFolderLocation.nativePath);
                 }else{
-                   hgExistingWarning.visible = hgExistingWarning.includeInLayout = false;
-					isDominoValid=false;
+					
+                   
 					warningMessage=""; 
 					isSubmitButtonEnabled=true;
-					btnCreate.enabled = true; 
+					 
 					treeScrollToCorrectPostion();
                 }
-				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
 				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
-                
                 
 			}
 	
@@ -187,6 +189,7 @@
 
                 if(defaultFileName){
                     txtFileName.text=defaultFileName;
+					txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
                 }
 				
 			
@@ -197,11 +200,11 @@
 					
 					if(!wrappers||wrappers.length<4){
 						UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
-						wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator+"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Cloumns");
+						wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator+"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Columns");
+
 					}
 					
-               
-					
+
 					txtDestination.text = UtilsCore.getPathStringByProjectPath(
 							Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
 							wrapperOfFolderLocation.nativePath);
@@ -279,7 +282,7 @@
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  visible="{(isDominoValid)}">
+				  visible="{(!isSubmitButtonEnabled)}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
@@ -290,6 +293,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onCreateButton(event)"
-				  enabled="{isSubmitButtonEnabled &amp;&amp; (!isDominoValid)}"/>
+				  enabled="{isSubmitButtonEnabled}"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>

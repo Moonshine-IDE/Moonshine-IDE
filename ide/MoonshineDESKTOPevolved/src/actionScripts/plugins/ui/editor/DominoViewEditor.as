@@ -131,9 +131,8 @@ package actionScripts.plugins.ui.editor
 
 		private function onDominoViewCodeChange(event:VisualEditorViewChangeEvent):void
 		{
-			
-			dominoViewEditor.dominoViewVisualEditor.saveEditedFile()
-			editor.text=dominoViewEditor.dominoViewVisualEditor.loadDxlFile();
+			var xml:XML=dominoViewEditor.dominoViewVisualEditor.getSavedXMLFromMemoryObject()
+			editor.text=xml.toXMLString();
 			
 
 			updateChangeStatus()

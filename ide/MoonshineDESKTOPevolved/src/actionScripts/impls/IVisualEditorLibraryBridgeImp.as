@@ -282,13 +282,18 @@ package actionScripts.impls
 			if(selectedProject&&selectedProject.sourceFolder){
 				var formFolder:String=selectedProject.sourceFolder.fileBridge.nativePath;
 				var parentPath:String=formFolder.substring(0,formFolder.length-5);
-				var shareColumnFilePath:String=parentPath+"SharedElements"+File.separator+"Columns"+File.separator;
+				var shareColumnFilePath:String=parentPath+"SharedElements"+File.separator+"Columns";
 				newSharedColumnFromViewPopup.folderLocation = new FileLocation(shareColumnFilePath);
 				var tmpFW: FileWrapper = new FileWrapper(newSharedColumnFromViewPopup.folderLocation, true, null, false);
 
 				newSharedColumnFromViewPopup.wrapperOfFolderLocation=tmpFW;
 				newSharedColumnFromViewPopup.wrapperBelongToProject = selectedProject;
-			
+				newSharedColumnFromViewPopup.wrapperBelongToProject.projectFolder= selectedProject.projectFolder;
+				
+				
+					
+					
+				
 			}
 			
 			

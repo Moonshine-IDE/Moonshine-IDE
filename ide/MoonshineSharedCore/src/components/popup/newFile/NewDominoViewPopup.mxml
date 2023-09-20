@@ -155,18 +155,15 @@
 				
                 if (!UtilsCore.endsWith(dominoFormFolder,currentPath) &&  !UtilsCore.endsWith(dominoSubFormFolder,currentPath))
                 {
-					isDominoValid=true;
+					
                     warningMessage = "Domino forms are only supported in the Forms folder.";
-                    hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
-
-				   	isSubmitButtonEnabled=false;
-					btnCreate.enabled = false; 
+                   	isSubmitButtonEnabled=false;
+					
                 }else{
-                   hgExistingWarning.visible = hgExistingWarning.includeInLayout = false;
-					isDominoValid=false;
+                 
 					warningMessage=""; 
 					isSubmitButtonEnabled=true;
-					btnCreate.enabled = true; 
+					
 					treeScrollToCorrectPostion();
                 }
 				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
@@ -180,6 +177,10 @@
 
 				super.onNewFileCreationComplete(event);
 				
+				 
+                txtFileName.text="NewView";
+				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
+                
 			
 				minHeight = height;
 				if (wrapperBelongToProject)
@@ -200,8 +201,8 @@
 				}
 	
 
-				
-	
+					
+				isDominoValid=true;
 				tree.callLater(parseFolders);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
 			}
@@ -270,7 +271,7 @@
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  visible="{(isDominoValid)}">
+				  visible="{(!isSubmitButtonEnabled)&amp;&amp; isDominoValid}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
@@ -281,6 +282,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onCreateButton(event)"
-				  enabled="{isSubmitButtonEnabled &amp;&amp; (!isDominoValid)}"/>
+				  enabled="{isSubmitButtonEnabled }"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>
