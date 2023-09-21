@@ -2479,7 +2479,12 @@ package actionScripts.plugin.templating
 			if (event.fromTemplate.fileBridge.exists)
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
-				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".subform");
+				var replaceName:String= TextUtil.fixDominoViewName(event.fileName);
+			
+				var sourceSubformNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+				content=content.replace("Domino Visual Editor Sub Form",sourceSubformNameFormat);
+				
+				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + replaceName +".subform");
 				fileToSave.fileBridge.save(content);
 
                 notifyNewFileCreated(event.insideLocation, fileToSave);

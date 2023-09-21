@@ -67,7 +67,9 @@
 			
 			import components.renderers.DividerRenderer;
 			import components.renderers.FileTypeRenderer;
-
+			import actionScripts.utils.TextUtil;
+			
+			
 			private static const SOURCE_ONLY_CREATION_ERROR:String = "Class files may only be created inside a source folder.";
 	
 			[Bindable]
@@ -205,9 +207,50 @@
 					targetFile.fileBridge.canonicalize();
 					
 					isSubmitButtonEnabled = !targetFile.fileBridge.exists;
+					//fixDominoViewName
+					
 					if (!isSubmitButtonEnabled)
 					{
-						warningMessage = modifiedName + createdFileExtension + " is already exists.";
+						warningMessage = modifiedName + createdFileExtension + " already exists.";
+					}
+				}
+			}
+
+
+			protected function onDominoNameChanged(event:TextOperationEvent):void
+			{
+				if (!event || !event.target) return;
+				
+				var inputText:String = event.target.text;
+				
+				// checks for nested folders path
+				if (inputText.indexOf("/") != -1 ||inputText.indexOf("\\") != -1 )
+				{
+					
+					modifiedName = TextUtil.fixDominoViewName(inputText);
+				}
+				else
+				{
+					
+					modifiedName = inputText;
+				}
+
+				
+				// validates the target file path
+				if (!isDestinationValid || modifiedName == "") isSubmitButtonEnabled = false;
+				else
+				{
+					var targetFile:FileLocation = wrapperOfFolderLocation.file.fileBridge.resolvePath(
+						modifiedName+ createdFileExtension
+					);
+					targetFile.fileBridge.canonicalize();
+					
+					isSubmitButtonEnabled = !targetFile.fileBridge.exists;
+					//fixDominoViewName
+					
+					if (!isSubmitButtonEnabled)
+					{
+						warningMessage = TextUtil.toDominoViewNormalName(modifiedName) + createdFileExtension + " already exists.";
 					}
 				}
 			}

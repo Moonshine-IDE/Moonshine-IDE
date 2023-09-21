@@ -145,7 +145,7 @@
 	
 			override protected function onNameChanged(event:TextOperationEvent):void
 			{
-				super.onNameChanged(event);
+				super.onDominoNameChanged(event);
 			}
 	
 			protected function onTreeItemClicked(event:ListEvent):void

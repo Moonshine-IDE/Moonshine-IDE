@@ -144,7 +144,7 @@
 	
 			override protected function onNameChanged(event:TextOperationEvent):void
 			{
-				super.onNameChanged(event);
+				super.onDominoNameChanged(event);
 			}
 	
 			protected function onTreeItemClicked(event:ListEvent):void
@@ -189,6 +189,8 @@
 
 				super.onNewFileCreationComplete(event);
 				
+				txtFileName.text="NewPage";
+				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
 			
 				minHeight = height;
 				if (wrapperBelongToProject)
@@ -271,7 +273,7 @@
 		<s:Label text="Name:"/>
 		<s:Group width="100%">
 			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_\-/"
+								  prompt="Name" width="100%" styleName="textInput" restrict="a-zA-Z0-9_\-\/\\ "
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
 			<s:Label text=".page" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
