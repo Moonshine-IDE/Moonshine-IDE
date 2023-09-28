@@ -465,45 +465,83 @@ package actionScripts.plugin.rename
 				var directory:Array = viewFileLocation.fileBridge.getDirectoryListing();
 				for each (var xml:File in directory)
 				{
+					var specialViewNameWithoutExtension = "All By UNID_5cCRUD_5c"+sourceFormName;
+					var specialViewName:String= specialViewNameWithoutExtension+".view";
+					var targetViewNameWithOutExtension:String= "All By UNID_5cCRUD_5c"+targetFormName;
+					var targetViewName:String=targetViewNameWithOutExtension+".view";
 					if (xml.extension == "view" ) {
-						var fileLocation:FileLocation=new FileLocation(xml.nativePath);
-					
-						//var data:String = ;
-						var viewxml:XML = new XML(fileLocation.fileBridge.read());
+						if(UtilsCore.endsWith(xml.nativePath,specialViewName)){
+							var fileLocation:FileLocation=new FileLocation(xml.nativePath);
+						
+							//var data:String = ;
+							var viewxml:XML = new XML(fileLocation.fileBridge.read());
 
-						if(viewxml.code[0]){
-							if(viewxml.code[0].@event=="selection"){
-								if(viewxml.code[0].formula[0]){
-									var formulaNode:XML=viewxml.code[0].formula[0];
-									var formulaText=formulaNode.text();
-									if(formulaText.indexOf(sourceFormName)>0){
+							var newFormulaNode:XML;
+							var changed:Boolean = false;
+							if(viewxml.code[0]){
+								if(viewxml.code[0].@event=="selection"){
+									if(viewxml.code[0].formula[0]){
+										var formulaNode:XML=viewxml.code[0].formula[0];
+										var formulaText=formulaNode.text();
+										if(formulaText.indexOf(sourceFormName)>0){
 
-										var formulaText1:String=formulaText.substring(0,formulaText.indexOf(sourceFormName));
-										var formulaText2:String=formulaText.substring(formulaText.indexOf(sourceFormName)+sourceFormName.length);
-										
-										formulaText=formulaText1+targetFormName+formulaText2;
-										var newFormulaNode:XML = new XML("<formula>"+formulaText+"</formula>");
-										formulaNode.parent().appendChild(newFormulaNode);
-										delete formulaNode.parent().children()[formulaNode.childIndex()];
-										fileLocation.fileBridge.deleteFile();
-										var _targetfileStreamMoonshine:FileStream = new FileStream();
-										_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
-										_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
-										_targetfileStreamMoonshine.close();
+											var formulaText1:String=formulaText.substring(0,formulaText.indexOf(sourceFormName));
+											var formulaText2:String=formulaText.substring(formulaText.indexOf(sourceFormName)+sourceFormName.length);
+											
+											formulaText=formulaText1+targetFormName+formulaText2;
+											newFormulaNode = new XML("<formula>"+formulaText+"</formula>");
+											formulaNode.parent().appendChild(newFormulaNode);
+											delete formulaNode.parent().children()[formulaNode.childIndex()];
+											changed=true;
+										}
+									}
+									
+								}
+							}
 
-										checkAndUpdateOpenedViewsInTab(fileLocation.fileBridge.nativePath);
+							//fix the view name :All By UNID_5cCRUD_5cNewForm.view
+							
+
+							if(viewxml.actionbar[0]){
+								if(viewxml.actionbar[0].action[0]){
+									if(viewxml.actionbar[0].action[0].@title=="New"){
+										var formulaNode2:XML=viewxml.actionbar[0].action[0].code[0].formula[0];
+										var newFormulaNode2:XML = new XML("<formula>"+"@Command([Compose]; \""+targetViewNameWithOutExtension+"\")"+"</formula>");
+										formulaNode2.parent().appendChild(newFormulaNode2);
+										delete formulaNode2.parent().children()[formulaNode2.childIndex()];
+										changed=true;
 									}
 								}
-								
 							}
-						}
 
-						//fix the view name :All By UNID_5cCRUD_5cNewForm.view
-						var specialViewName:String= "All By UNID_5cCRUD_5c"+sourceFormName+".view";
-						if(UtilsCore.endsWith(xml.nativePath,specialViewName)){
-							var newFile:FileLocation=new FileLocation(xml.parent.nativePath+File.separator+"All By UNID_5cCRUD_5c"+targetFormName+".view");
+							//update the view name in the dxl inside 
+							if(viewxml.@name){
+								
+								viewxml.@name=targetViewNameWithOutExtension;
+								changed=true;
+							}
+
+							if(changed==true){
+								fileLocation.fileBridge.deleteFile();
+								var _targetfileStreamMoonshine:FileStream = new FileStream();
+								_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
+								_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
+								_targetfileStreamMoonshine.close();
+
+								checkAndUpdateOpenedViewsInTab(fileLocation.fileBridge.nativePath);
+								changed=false;
+							}
+
+
+
+						
+							
+							var newFile:FileLocation=new FileLocation(xml.parent.nativePath+File.separator+targetViewName);
 							var xmlFileLocation:FileLocation=new FileLocation(xml.nativePath);
 							xmlFileLocation.fileBridge.moveTo(newFile, true);
+
+							
+						
 						}
 					}
 				}
