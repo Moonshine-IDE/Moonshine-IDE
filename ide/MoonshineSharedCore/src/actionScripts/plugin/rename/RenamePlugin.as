@@ -497,6 +497,14 @@ package actionScripts.plugin.rename
 								
 							}
 						}
+
+						//fix the view name :All By UNID_5cCRUD_5cNewForm.view
+						var specialViewName:String= "All By UNID_5cCRUD_5c"+sourceFormName+".view";
+						if(UtilsCore.endsWith(xml.nativePath,specialViewName)){
+							var newFile:FileLocation=new FileLocation(xml.parent.nativePath+File.separator+"All By UNID_5cCRUD_5c"+targetFormName+".view");
+							var xmlFileLocation:FileLocation=new FileLocation(xml.nativePath);
+							xmlFileLocation.fileBridge.moveTo(newFile, true);
+						}
 					}
 				}
 			}

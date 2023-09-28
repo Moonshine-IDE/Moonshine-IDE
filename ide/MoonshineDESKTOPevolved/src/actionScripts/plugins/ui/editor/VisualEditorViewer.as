@@ -233,7 +233,7 @@ package actionScripts.plugins.ui.editor
 			//Alert.show("tab:"+visualEditorView.tabBar.dataProvider.length);
 			for(var i:int=0;i<visualEditorView.tabBar.dataProvider.length;i++){
 				var	visualeEditorView:Object =visualEditorView.tabBar.dataProvider.getItemAt(i);
-				if(visualeEditorView){
+				if(visualeEditorView&&visualeEditorView.contentGroup){
 					
 					var visualEditor:Object=  visualeEditorView.contentGroup.getElementAt(0) ;
 					if(visualEditor){
