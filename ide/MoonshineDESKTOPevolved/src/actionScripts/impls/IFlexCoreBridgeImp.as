@@ -177,6 +177,8 @@ import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.plugins.ui.editor.DominoJavaAgentEditor;
   
 
+	import actionScripts.plugins.ui.editor.DominoViewEditor;
+	import actionScripts.plugins.ui.editor.DominoViewShareColumnEditor;
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
 		//--------------------------------------------------------------------------
@@ -225,6 +227,15 @@ import actionScripts.valueObjects.HelperConstants;
 		public function getDominoJavaAgentEditor():BasicTextEditor
 		{
 			return (new DominoJavaAgentEditor());
+		}
+		public function getDominoViewEditor():BasicTextEditor
+		{
+			return (new DominoViewEditor());
+		}
+
+		public function getDominoViewShareCloumnEditor():BasicTextEditor
+		{
+			return (new DominoViewShareColumnEditor());
 		}
 		
 		public function getCorePlugins():Array
@@ -421,10 +432,10 @@ import actionScripts.valueObjects.HelperConstants;
 					new MenuItem(resourceManager.getString('resources','HOME'), null, null, SplashScreenPlugin.EVENT_SHOW_SPLASH),
 					new MenuItem(null), //separator
 					new MenuItem(resourceManager.getString('resources','NAVIGATE_NEXT_PREVIOUS'), null, null, TabEvent.EVENT_TAB_NAVIGATE_NEXT_PREVIOUS_HOTKEYS,
-						"\t", [Keyboard.CONTROL],
+						"\t", [Keyboard.ALTERNATE],
 						"tab", [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','NAVIGATE_EDITORS_LIST'), null, null, TabEvent.EVENT_TAB_NAVIGATE_EDITORS_LIST_HOTKEYS,
-						"\t", [Keyboard.CONTROL, Keyboard.SHIFT],
+						"\t", [Keyboard.ALTERNATE, Keyboard.SHIFT],
 						"tab", [Keyboard.CONTROL, Keyboard.SHIFT])
 				]),
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[

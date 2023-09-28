@@ -370,7 +370,9 @@ package actionScripts.utils
 					else
 					{
 						var tmpConfigXML: XML = XML(configFile.fileBridge.read());
-						currentSDKVersion = Number(tmpConfigXML["target-player"]);
+						var targetPlayerVersion:Number = Number(tmpConfigXML["target-player"]);
+						//If we cannot parse target-player we are setting up to minimum supporte target-player by Moonshine version 10.
+						currentSDKVersion = isNaN(targetPlayerVersion) ? 10 : targetPlayerVersion;
 					}
 				}
 			}

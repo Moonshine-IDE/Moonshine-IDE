@@ -54,6 +54,9 @@ package actionScripts.impls
 	import actionScripts.plugins.java.JavaLanguageServerPlugin;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.ui.menu.vo.MenuItem;
+	import actionScripts.plugins.tibbo.TibboBasicLanguageServerPlugin;
+	import actionScripts.plugin.tibbo.tibboproject.TibboBasicProjectPlugin;
+	import actionScripts.plugin.syntax.TibboBasicSyntaxPlugin;
 
 	public class IProjectBridgeImpl implements IProjectBridge
 	{
@@ -92,6 +95,11 @@ package actionScripts.impls
 				HaxelibPlugin,
 				HaxeLanguageServerPlugin,
 
+				// tibbo basic
+				TibboBasicSyntaxPlugin,
+				TibboBasicProjectPlugin,
+				TibboBasicLanguageServerPlugin,
+
 				// on disk
 				OnDiskProjectPlugin,
 
@@ -127,6 +135,11 @@ package actionScripts.impls
 
 				// generic
 				GenericProjectPlugin,
+				
+				// tibbo
+				TibboBasicSyntaxPlugin,
+				TibboBasicProjectPlugin,
+				TibboBasicLanguageServerPlugin
             ];
         }
 

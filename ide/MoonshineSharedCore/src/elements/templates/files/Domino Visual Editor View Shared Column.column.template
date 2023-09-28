@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sharedcolumn  name="$ColumnName" version="11.0" replicaid="86258A0B005043E4" noreplace="true" designerversion="8.5.3">
+<column hidedetailrows="false" itemname="$0" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<columnheader title="$SharedColumnName">
+<font size="9" style="bold"/>
+</columnheader>
+<code event="value">
+<formula>@DocNumber</formula>
+</code>
+</column>
+</sharedcolumn>

@@ -245,8 +245,7 @@ package actionScripts.plugins.ui.editor
 								//after user click the tab, it will loading latest xml into surface, this is why we get the duplication element .
 								//Alert.show("visualEditorFileType:"+visualEditorFileType);
 								if(visualEditorFileType=="form" || visualEditorFileType=="subform"|| visualEditorFileType=="field" || visualEditorFileType=="page"){
-									visualEditor.editingSurface.deleteAllByEditingSureface(visualEditor.editingSurface);
-									
+									visualEditor.editingSurface.deleteAllByEditingSurface(visualEditor.editingSurface);
 									var xml:XML = new XML("<mockup/>");
 									visualEditor.editingSurface.fromXMLByEditingSurface(xml,visualEditor.editingSurface);
 									//Alert.show("visualEditorFileType execute:"+visualEditorFileType);

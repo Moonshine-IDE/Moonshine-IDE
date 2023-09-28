@@ -15,7 +15,7 @@
   </actionbar>
   <column sort="ascending" hidedetailrows="false" itemname="$0" width="27" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false">
     <columnheader title="UNID">
-      <font size="9pt" style="bold"/>
+      <font size="9" style="bold"/>
     </columnheader>
     <code event="value">
       <formula>@Text(@DocumentUniqueID)</formula>

@@ -142,7 +142,7 @@ class MoonshinePreferences {
             if ( f.exists ) {
                 var fs = new FileStream();
                 fs.open( f, FileMode.READ );
-                s = fs.readUTFBytes( f.size );
+                s = fs.readUTFBytes( Std.int(f.size) );
                 fs.close();
             }
             #end

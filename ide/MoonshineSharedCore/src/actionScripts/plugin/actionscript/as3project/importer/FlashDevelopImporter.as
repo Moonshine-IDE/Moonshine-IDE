@@ -733,9 +733,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 								try{
 									dominoCode=new XML(dominoCodeXmlStr);
 								}catch(error:Error){
-									Alert.show("Error #"+ error.errorID +": "+ error.message);	
-									Alert.show("file :"+ xmlNavePath);	
-									Alert.show("xml :"+ dominoCodeXmlStr);	
+								
 									
 								}
 								targetFileLocation.fileBridge.save(dominoCodeXmlStr);

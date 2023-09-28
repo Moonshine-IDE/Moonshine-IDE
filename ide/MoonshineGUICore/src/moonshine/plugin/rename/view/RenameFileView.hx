@@ -61,9 +61,11 @@ class RenameFileView extends ResizableTitleWindow {
 	private var cancelButton:Button;
 
 	private var _fileWrapper:FileWrapper;
+	private var _nameTextInputText:String;
 
 	@:flash.property
 	public var fileWrapper(get, set):FileWrapper;
+
 
 	private function get_fileWrapper():FileWrapper {
 		return this._fileWrapper;
@@ -109,7 +111,9 @@ class RenameFileView extends ResizableTitleWindow {
 
 		this.nameTextInput = new TextInput();
 		this.nameTextInput.prompt = "New name";
-		this.nameTextInput.restrict = "^ ";
+		//this.nameTextInput.restrict = "^ ";
+		
+		
 		this.nameTextInput.addEventListener(Event.CHANGE, nameTextInput_changeHandler);
 		this.nameTextInput.addEventListener(KeyboardEvent.KEY_DOWN, nameTextInput_keyDownHandler);
 		symbolNameField.addChild(this.nameTextInput);
@@ -145,7 +149,15 @@ class RenameFileView extends ResizableTitleWindow {
 				if (this._fileExtension != null) {
 					this._fileExtension = this._fileExtension.toLowerCase();
 				}
-				this.nameTextInput.text = this._fileWrapper.file.fileBridge.nameWithoutExtension;
+				if(this._fileExtension=="view"){
+					var pattern = ~/_5c/g;
+        			var fileName : String = this._fileWrapper.file.fileBridge.nameWithoutExtension;
+        			fileName = pattern.replace( fileName, "\\" );
+					this.nameTextInput.text = fileName;
+				}else{
+					this.nameTextInput.text = this._fileWrapper.file.fileBridge.nameWithoutExtension;
+				}
+				
 				this.nameTextInput.selectAll();
 			}
 		}

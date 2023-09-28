@@ -35,12 +35,17 @@ package actionScripts.impls
     import actionScripts.plugin.templating.TemplatingPlugin;
     import view.interfaces.IDominoVisualEditorLibraryBridge;
     import flash.events.MouseEvent;
+    import components.popup.DominoSharedColumnListPopup;
+    import actionScripts.valueObjects.FileWrapper;
+    import spark.components.TitleWindow;
 
     public class IDominoVisualEditorLibraryBridgeImp  implements IDominoFormBuilderLibraryBridge
 	{
-        function openCreateDominoActionPanel(event:MouseEvent):void
+        public function openCreateDominoActionPanel(event:MouseEvent):void
         {
             TemplatingPlugin.openDominoActionComponentTypeChoose(event);
         }
+
+        
     }    
 }

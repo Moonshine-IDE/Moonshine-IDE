@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:mx="library://ns.adobe.com/flex/mx"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:controls="components.controls.*"
+										   xmlns:utils="actionScripts.utils.*"
+                                           backgroundColor="0xf5f5f5" title="Domino View Shared Column List"
+										   width="600" minWidth="400" autoLayout="true"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   creationComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+        import actionScripts.events.SettingsEvent;
+		import actionScripts.locator.IDEModel;
+        import actionScripts.plugins.vagrant.VagrantPlugin;
+        import actionScripts.plugins.vagrant.utils.VagrantUtil;
+        import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
+        import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+        import actionScripts.utils.FileUtils;
+        import actionScripts.valueObjects.FileWrapper;
+        import actionScripts.factory.FileLocation;
+        import actionScripts.utils.UtilsCore;
+
+		import mx.collections.ArrayCollection;
+
+        import mx.events.FlexEvent;
+        import mx.events.ListEvent;
+
+        import actionScripts.events.GlobalEventDispatcher;
+
+        import mx.validators.Validator;
+
+        import spark.components.Alert;
+        import mx.collections.ArrayCollection;
+
+        import actionScripts.valueObjects.ProjectVO;
+        import view.suportClasses.events.DominoViewSharedColumnAppendEvent;
+        
+        import actionScripts.utils.TextUtil;
+        import utils.GenericUtils;
+        
+        public static const EVENT_COLUMN_INSERT:String = "sharedColumnInster";
+        [Bindable] private var sharedColumnCollection:ArrayCollection = new ArrayCollection();
+
+
+        [Bindable]
+		public var wrapperBelongToProject:ProjectVO;
+        private var  isSubmitButtonEnabled:Boolean = false;
+        private var  isDominoValid:Boolean = false;
+        public var wrapperOfSelectedSharedColumn:FileWrapper;
+        public var selectedSharedColumnNativePath:String;
+        [Bindable]
+        protected var model:IDEModel = IDEModel.getInstance();
+       
+        private  var dominosharedColumnFolderPath:String ;
+        private  var dominosharedColumnFolderFileLocation:FileLocation;
+        private  var dominosharedColumnFolderFileWraper:FileWrapper ;
+        private  var warningMessage:String="";
+        // public function DominoSharedColumnListPopup(fw:FileWrapper):ResizableTitleWindow
+        // {
+            
+        // }
+       public function initializeColumnList(file:File):void
+       {
+        var viewFilePath:String="Views"+model.fileCore.separator+file.name;
+        var sharedColumnFilePath:String="SharedElements"+model.fileCore.separator+"Columns"+model.fileCore.separator+file.name;
+        var parentPath:String
+        if(file.nativePath.indexOf(viewFilePath)>0){
+            parentPath =file.nativePath.replace(viewFilePath,"");
+        }else{
+            parentPath =file.nativePath.replace(sharedColumnFilePath,"");
+        }
+        
+        dominosharedColumnFolderPath=parentPath+"SharedElements"+model.fileCore.separator+"Columns";
+        dominosharedColumnFolderFileLocation= new FileLocation(dominosharedColumnFolderPath);
+        dominosharedColumnFolderFileWraper = new FileWrapper(dominosharedColumnFolderFileLocation, true, null, false);
+        var dominosharedColumnFile:File=new File(dominosharedColumnFolderPath);
+
+        var directory:Array = dominosharedColumnFile.getDirectoryListing();
+
+        for each (var f:File in directory)
+        {
+            if(UtilsCore.endsWith(f.nativePath,"column")){
+                var childFileLocation:FileLocation = new FileLocation(f.nativePath);
+                var childFileWraper:FileWrapper = new FileWrapper(childFileLocation);
+                var n:String=TextUtil.toDominoViewNormalName(childFileWraper.name);
+                n=n.substring(0,n.length-7) ;
+                childFileWraper.defaultName=n;
+
+                
+               
+                sharedColumnCollection.addItem(childFileWraper);
+            }
+        }
+
+        sharedColumnCollection=GenericUtils.arrayCollectionSort(sharedColumnCollection,"defaultName",false);
+
+      					
+        
+       }
+        protected function onCreationCompletes(event:FlexEvent):void
+        {
+           tree.callLater(parseFolders);
+        }
+
+        protected function parseFolders():void
+        {
+            tree.expandItem(dominosharedColumnFolderFileWraper, true);
+            UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+			UtilsCore.findFileWrapperInDepth(dominosharedColumnFolderFileWraper, dominosharedColumnFolderFileWraper.nativePath);
+            //treeScrollToCorrectPostion();
+        }
+
+
+        private function treeScrollToCorrectPostion():void 
+        {
+            var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+
+
+                tree.callLater(function ():void
+                {
+                
+                    
+                    for (var j:int = 0; j < (wrappers.length - 1); j++)
+                    {
+                        tree.expandItem(wrappers[j], true);
+                    }
+    
+                  
+                });
+        }
+
+        protected function onTreeItemClicked(event:ListEvent):void
+        {
+            
+            //get the domino project form folder value:
+           if( tree.selectedItem){
+            var currentPath:String = tree.selectedItem.nativePath;
+            txtDestination.text = tree.selectedItem.defaultName;
+            isSubmitButtonEnabled=true;
+            btnSubmit.enabled=true;
+           }else{
+             isSubmitButtonEnabled=false;
+             btnSubmit.enabled=false;
+           }
+            wrapperOfSelectedSharedColumn = tree.selectedItem as FileWrapper;
+            selectedSharedColumnNativePath=tree.selectedItem.nativePath;
+            
+            
+        }
+
+        private function onInsert():void 
+        {
+             var tmpEvent:DominoViewSharedColumnAppendEvent = new DominoViewSharedColumnAppendEvent(DominoViewSharedColumnAppendEvent.SHARED_COLUMN_APPEND, selectedSharedColumnNativePath, true,true);
+                dispatchEvent(tmpEvent);
+                super.closeThis();
+            
+        }
+        ]]>
+	</fx:Script>
+	<fx:Declarations>
+		
+	</fx:Declarations>
+
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+
+    <s:VGroup width="100%" height="100%">
+        <s:Label text="Select a shared column:"/>
+        <utils:CustomTreeFolders id="tree"
+            width="100%" height="100%"
+            color="0xEEEEEE"
+            dataProvider="{sharedColumnCollection}"
+            contentBackgroundColor="0x0"
+            rollOverColor="0x393939"
+            selectionColor="0xc165b8"
+            alternatingItemColors="[0x444444, 0x4d4c4c]"
+            verticalScrollBarStyleName="black"
+            borderVisible="false"
+            rowHeight="18"
+            useRollOver="true"
+            doubleClickEnabled="true"
+            labelField="defaultName"
+            itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
+            itemClick="onTreeItemClicked(event)"/>
+            <view:PromptTextInput id="txtDestination"
+								  prompt="Select Shared Column" editable="false" width="100%" styleName="textInput"/>
+         
+    </s:VGroup>
+    
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit"
+                label="Insert" styleName="darkButton"
+                enabled="{isSubmitButtonEnabled}"
+                click="onInsert()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

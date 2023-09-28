@@ -361,6 +361,17 @@ package actionScripts.impls
 		{
 			return null;
 		}
+		public function getDominoViewEditor():BasicTextEditor
+		{
+			return null;
+		}
+
+		public function getDominoViewShareCloumnEditor():BasicTextEditor
+		{
+			return null;
+		}
+
+		
 
 		public function getNewAntBuild():IFlexDisplayObject
 		{

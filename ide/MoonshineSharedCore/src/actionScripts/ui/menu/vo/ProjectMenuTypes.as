@@ -50,6 +50,7 @@ package actionScripts.ui.menu.vo
 		public static const JAVA:String = "java";
 		public static const GRAILS:String = "grails";
 		public static const HAXE:String = "haxe";
+		public static const TIBBO_BASIC:String = "tibboBasic";
 		public static const ON_DISK:String = "onDisk";
 		public static const GENERIC:String = "generic";
 		public static const TEMPLATE:String = "template";

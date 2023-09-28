@@ -47,7 +47,9 @@ package actionScripts.impls
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
-	
+	import components.popup.DominoSharedColumnListPopup;
+	import components.popup.newFile.NewDominoSharedColumnFromView;
+	import spark.components.TitleWindow;
 	import view.VisualEditor;
 	import view.interfaces.IVisualEditorLibraryBridge;
 	
@@ -56,6 +58,9 @@ package actionScripts.impls
 
 	import mx.collections.ArrayList;
 	import flash.events.Event;
+	import flash.filesystem.File;
+	import actionScripts.utils.TextUtil;
+	import mx.controls.Alert;
 
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
 	{
@@ -96,6 +101,24 @@ package actionScripts.impls
 			var tmpOpenFile:FileLocation = new FileLocation(path);
 			if (!tmpOpenFile) return;
 			dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]))
+		}
+
+		public function openDominoSharedColumnFile(columnName:String):void 
+		{
+			var selectedProject:AS3ProjectVO=model.activeProject as AS3ProjectVO;
+			if(selectedProject&&selectedProject.sourceFolder){
+				var shareColumnFileName:String=TextUtil.fixDominoViewName(columnName);
+				var formFolder:String=selectedProject.sourceFolder.fileBridge.nativePath;
+				var parentPath:String=formFolder.substring(0,formFolder.length-5);
+				var shareColumnFilePath:String=parentPath+"SharedElements"+File.separator+"Columns"+File.separator+shareColumnFileName+".column";
+				//Alert.show("shareColumnFilePath:"+shareColumnFilePath);
+				var tmpOpenFile:FileLocation = new FileLocation(shareColumnFilePath);
+				if (!tmpOpenFile) return;
+				var openFileEvent:OpenFileEvent=new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]);
+				openFileEvent.openAsTourDe=false;
+				dispatcher.dispatchEvent(openFileEvent)
+			}
+			
 		}
 		
 		public function getVisualEditorComponent():VisualEditor
@@ -243,5 +266,38 @@ package actionScripts.impls
 				this.updateHandler = null;
 			}
 		}
+
+		public function getDominoSharedColumnListPopup(file:File):TitleWindow
+        {
+            var tmpPopup:DominoSharedColumnListPopup = new DominoSharedColumnListPopup();
+            tmpPopup.initializeColumnList(file);
+            return tmpPopup as TitleWindow;
+        }
+
+		public function getDominoNewSharedColumnFromViewColumn(n:String):TitleWindow
+        {
+            var newSharedColumnFromViewPopup:NewDominoSharedColumnFromView = new NewDominoSharedColumnFromView();
+			newSharedColumnFromViewPopup.defaultFileName=n;
+			var selectedProject:AS3ProjectVO=model.activeProject as AS3ProjectVO;
+			if(selectedProject&&selectedProject.sourceFolder){
+				var formFolder:String=selectedProject.sourceFolder.fileBridge.nativePath;
+				var parentPath:String=formFolder.substring(0,formFolder.length-5);
+				var shareColumnFilePath:String=parentPath+"SharedElements"+File.separator+"Columns";
+				newSharedColumnFromViewPopup.folderLocation = new FileLocation(shareColumnFilePath);
+				var tmpFW: FileWrapper = new FileWrapper(newSharedColumnFromViewPopup.folderLocation, true, null, false);
+
+				newSharedColumnFromViewPopup.wrapperOfFolderLocation=tmpFW;
+				newSharedColumnFromViewPopup.wrapperBelongToProject = selectedProject;
+				newSharedColumnFromViewPopup.wrapperBelongToProject.projectFolder= selectedProject.projectFolder;
+				
+				
+					
+					
+				
+			}
+			
+			
+            return newSharedColumnFromViewPopup as TitleWindow;
+        }
 	}
 }

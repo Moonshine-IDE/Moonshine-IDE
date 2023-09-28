@@ -39,6 +39,7 @@ package actionScripts.utils
 	import mx.utils.Base64Encoder;
     import mx.utils.Base64Decoder;
     import flash.utils.ByteArray;
+	import actionScripts.utils.TextUtil;
 
     public class DominoUtils
 	{
@@ -325,6 +326,30 @@ package actionScripts.utils
 			newFileLocation.fileBridge.save(newDxlXMLStr);
 
 		}
+
+		public static function dominoViewTitleUpdateWithoutSave(newFileLocation:FileLocation,newViewName:String,souceFormName:String):void{
+			var newDxlXMLStr:String =String(newFileLocation.fileBridge.read());
+			var newDxlXML:XML=new XML(newDxlXMLStr);
+			newViewName=newViewName.replace(/[\/\\]+/g, "_5c");
+			newViewName=newViewName.replace(/_5c/g, "\\");
+			newDxlXML.@name=newViewName;
+
+		
+
+			newFileLocation.fileBridge.save(newDxlXML.toXMLString());
+		}
+
+		public static function dominoSharedColumnNameUpdate(sourceXml:FileLocation,newSharedColumnFileName:String):void
+		{
+			//replace from \/ to _5c
+			var replaceName:String= TextUtil.fixDominoViewName(newSharedColumnFileName);
+			//replace _5c to / to make sure it get same
+			var newColumnNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+			var sourceSharedColumnXML:XML = new XML(sourceXml.fileBridge.read());
+			sourceSharedColumnXML.@name=newColumnNameFormat;
+			sourceXml.fileBridge.save(sourceSharedColumnXML.toXMLString());
+		}
+
 		public static function dominoWindowTitleUpdate(sourceXml:FileLocation,newFormName:String,souceFormName:String):void{
 		
 				
@@ -341,14 +366,17 @@ package actionScripts.utils
 				}else{
 					windowsTitleName="@Text(\""+newFormName+"\")";
 				}
+				//var sourceNoEncodeTitle:String=windowsTitleName;
 				
 				windowsTitleName=base64Encode(windowsTitleName);
 				var mainApplicationList:XMLList=sourceFormXML..MainApplication;
 				if(mainApplicationList.length()>0 && mainApplicationList.length()<2){
 					sourceFormXML.MainApplication.@windowsTitle=windowsTitleName;
+					sourceFormXML.MainApplication.@title=newFormName;
 
 				} else if (mainApplicationList.length()>0&& mainApplicationList.length()>=2){
 					mainApplicationList[0].@windowsTitle=windowsTitleName;
+					mainApplicationList[0].@title=newFormName;
 					delete mainApplicationList[1]
 				}
 				

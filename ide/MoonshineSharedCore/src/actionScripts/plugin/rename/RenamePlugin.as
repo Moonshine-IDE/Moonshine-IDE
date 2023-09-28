@@ -76,6 +76,7 @@ package actionScripts.plugin.rename
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
 
 	import actionScripts.utils.DominoUtils;
+	import actionScripts.plugins.ui.editor.DominoViewEditor;
 	public class RenamePlugin extends PluginBase
 	{
 		private var renameSymbolViewWrapper:FeathersUIWrapper;
@@ -188,6 +189,10 @@ package actionScripts.plugin.rename
 				renameFileView.fileWrapper = event.changes as FileWrapper;
 				renameFileView.addEventListener(Event.CLOSE, handleRenameFileViewClose);
 				renameFileViewWrapper = new FeathersUIWrapper(renameFileView);
+		
+
+			
+
 				PopUpManager.addPopUp(renameFileViewWrapper, FlexGlobals.topLevelApplication as DisplayObject, true);
 				PopUpManager.centerPopUp(renameFileViewWrapper);
 				renameFileViewWrapper.assignFocus("top");
@@ -219,13 +224,33 @@ package actionScripts.plugin.rename
 			var fileVisualEditor:FileLocation = UtilsCore.getVisualEditorSourceFile(fileWrapper);
 			
 			var sourceFileName:String =fileWrapper.file.fileBridge.nameWithoutExtension;
-			var newFile:FileLocation = fileWrapper.file.fileBridge.parent.resolvePath(newName);
+			var newFile:FileLocation;
+			var sourceFormName:String =null;
+
+			
+			if(fileWrapper.file.fileBridge.extension=="column"){
+				newName=TextUtil.fixDominoViewName(newName);
+			}
+			var newFile = fileWrapper.file.fileBridge.parent.resolvePath(newName);
+			var newNameWithOutExtension = newFile.fileBridge.nameWithoutExtension;
+			if(fileWrapper.file.fileBridge.extension=="form"){
+				sourceFormName=sourceFileName;
+			}
+
+			if(fileWrapper.file.fileBridge.extension=="view"){
+				newFile = fileWrapper.file.fileBridge.parent.resolvePath(TextUtil.fixDominoViewName(newName));
+			}else{
+				newFile = fileWrapper.file.fileBridge.parent.resolvePath(newName);
+			}
+
 			_existingFilePath = fileWrapper.nativePath;
 			var newFileNameWithoutExtension:String = newFile.fileBridge.nameWithoutExtension;
 			
 			fileWrapper.file.fileBridge.moveTo(newFile, false);
 			fileWrapper.name = newFile.name;
 			fileWrapper.file = newFile;
+
+			//Alert.show("newFile.name:"+newFile.name);
 
 			if (fileVisualEditor)
 			{
@@ -237,8 +262,31 @@ package actionScripts.plugin.rename
 				if(fileWrapper.file.fileBridge.extension=="page"){
 					DominoUtils.dominoPageUpdateWithoutSave(newFile,newFileNameWithoutExtension,sourceFileName);
 				}
+			
+				//dominoViewTitleUpdateWithoutSave
 				fileVisualEditor.fileBridge.moveTo(newVisualEditorFile, false);	
 					
+			}
+
+			if(fileWrapper.file.fileBridge.extension=="view"){
+				DominoUtils.dominoViewTitleUpdateWithoutSave(newFile,newFileNameWithoutExtension,newFileNameWithoutExtension);
+			}
+
+			if(fileWrapper.file.fileBridge.extension=="column"){
+				// update and Synchronize column file name into column name
+				DominoUtils.dominoSharedColumnNameUpdate(newFile,newFileNameWithoutExtension);
+				//sourceFileName
+				var replaceName:String= TextUtil.fixDominoViewName(sourceFileName);
+				var sourceColumnNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+				//newFielname
+				replaceName=TextUtil.fixDominoViewName(newNameWithOutExtension);
+				var newColumnNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+				var currentProjectPath:String=UtilsCore.getProjectFolder(fileWrapper);
+				if(currentProjectPath){
+					var currentProjectFolder:FileLocation = new FileLocation(currentProjectPath);
+					replaceSharedColumnNameFromAllReferencesView(currentProjectFolder,sourceColumnNameFormat,newColumnNameFormat);
+				}
+
 			}
 
 			// we need to update file location of the (if any) opened instance 
@@ -263,6 +311,13 @@ package actionScripts.plugin.rename
 				var projectFolder:FileLocation = new FileLocation(projectPath);
 				
 				replaceSubfromFromAllReferencesFilesXml(projectFolder,sourceFileName,newFileNameWithoutExtension);
+				if(sourceFormName){
+					replaceFormNameFromAllReferencesView(projectFolder,sourceFormName,newNameWithOutExtension);
+					
+				}
+				
+				
+				
 				//look for the project file from project folder  :
 				var listing:Array = projectFolder.fileBridge.getDirectoryListing();
 				var projectFile:FileLocation = null;
@@ -283,17 +338,20 @@ package actionScripts.plugin.rename
 				}
 				
 				//rename old simple view
-				var viewfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+sourceFileName +".view");
-				var viewTargetfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+newFileNameWithoutExtension +".view");
-				if(viewfileToSave.fileBridge.exists){
-					var viewcontent:String = String(viewfileToSave.fileBridge.read());
-						var re:RegExp = new RegExp(sourceFileName, "g");
-						viewcontent = viewcontent.replace(re, newFileNameWithoutExtension);
-						viewTargetfileToSave.fileBridge.save(viewcontent);
-						viewfileToSave.fileBridge.deleteFile();
-					//create a new simple file with new form name 
+				// var viewfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+sourceFileName +".view");
+				// var viewTargetfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+newFileNameWithoutExtension +".view");
+				// if(viewfileToSave.fileBridge.exists){
+				// 	var viewcontent:String = String(viewfileToSave.fileBridge.read());
+				// 		var re:RegExp = new RegExp(sourceFileName, "g");
+				// 		viewcontent = viewcontent.replace(re, newFileNameWithoutExtension);
+				// 		viewTargetfileToSave.fileBridge.save(viewcontent);
+				// 		viewfileToSave.fileBridge.deleteFile();
+				// 	//create a new simple file with new form name 
 
-				}
+				// }
+
+				
+				
 			}
 			
 			var timeoutValue:uint = setTimeout(function():void 
@@ -365,6 +423,84 @@ package actionScripts.plugin.rename
 							
 						}
 				}
+		}
+
+		private  function replaceSharedColumnNameFromAllReferencesView(projectFolderLocation:FileLocation,sourceColumnName:String,targetColumnName:String):void{
+			var viewFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views");
+			if(viewFileLocation.fileBridge.exists){
+				var directory:Array = viewFileLocation.fileBridge.getDirectoryListing();
+				for each (var xml:File in directory)
+				{
+					if (xml.extension == "view" ) {
+						var fileLocation:FileLocation=new FileLocation(xml.nativePath);
+					
+						//var data:String = ;
+						var _isChangedColumnName:Boolean = false;
+						var viewxml:XML = new XML(fileLocation.fileBridge.read());
+						for each(var sharedColumn:XML in viewxml..sharedcolumnref){
+							if(sharedColumn.@name==sourceColumnName){
+								sharedColumn.@name=targetColumnName;
+								_isChangedColumnName=true;
+							}
+						}
+
+						if(_isChangedColumnName){
+							fileLocation.fileBridge.deleteFile();
+							var _targetfileStreamMoonshine:FileStream = new FileStream();
+							_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
+							_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
+							_targetfileStreamMoonshine.close();
+
+							checkAndUpdateOpenedViewsInTab(fileLocation.fileBridge.nativePath);
+						}
+					}
+				}
+			}
+		}
+
+		private  function replaceFormNameFromAllReferencesView(projectFolderLocation:FileLocation,sourceFormName:String,targetFormName:String):void{
+								
+			var viewFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views");
+			if(viewFileLocation.fileBridge.exists){
+				var directory:Array = viewFileLocation.fileBridge.getDirectoryListing();
+				for each (var xml:File in directory)
+				{
+					if (xml.extension == "view" ) {
+						var fileLocation:FileLocation=new FileLocation(xml.nativePath);
+					
+						//var data:String = ;
+						var viewxml:XML = new XML(fileLocation.fileBridge.read());
+
+						if(viewxml.code[0]){
+							if(viewxml.code[0].@event=="selection"){
+								if(viewxml.code[0].formula[0]){
+									var formulaNode:XML=viewxml.code[0].formula[0];
+									var formulaText=formulaNode.text();
+									if(formulaText.indexOf(sourceFormName)>0){
+
+										var formulaText1:String=formulaText.substring(0,formulaText.indexOf(sourceFormName));
+										var formulaText2:String=formulaText.substring(formulaText.indexOf(sourceFormName)+sourceFormName.length);
+										
+										formulaText=formulaText1+targetFormName+formulaText2;
+										var newFormulaNode:XML = new XML("<formula>"+formulaText+"</formula>");
+										formulaNode.parent().appendChild(newFormulaNode);
+										delete formulaNode.parent().children()[formulaNode.childIndex()];
+										fileLocation.fileBridge.deleteFile();
+										var _targetfileStreamMoonshine:FileStream = new FileStream();
+										_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
+										_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
+										_targetfileStreamMoonshine.close();
+
+										checkAndUpdateOpenedViewsInTab(fileLocation.fileBridge.nativePath);
+									}
+								}
+								
+							}
+						}
+					}
+				}
+			}
+
 		}
 
 		private  function replaceSubfromFromAllReferencesFiles(projectFolderLocation:FileLocation,sourceSubformName:String,targetSubformName:String):void{
@@ -461,7 +597,11 @@ package actionScripts.plugin.rename
 		
 		private function onFileDuplicateRequest(event:DuplicateEvent):void
 		{
-			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(event.fileName + 
+			var fileName:String=event.fileName ;
+			if(event.fileLocation.fileBridge.extension && (event.fileLocation.fileBridge.extension == "view" ||event.fileLocation.fileBridge.extension == "column")){
+				fileName=TextUtil.fixDominoViewName(fileName);
+			}
+			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(fileName + 
 				(event.fileLocation.fileBridge.extension ? "."+ event.fileLocation.fileBridge.extension : ""));
 			
 			// based on request, we also updates class name and package path
@@ -470,6 +610,12 @@ package actionScripts.plugin.rename
 			{
 				var updatedContent:String = getUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
 				fileToSave.fileBridge.save(updatedContent);
+			}else if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "view"){
+				var updatedViewContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
+				fileToSave.fileBridge.save(updatedViewContent);
+			}else if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "column"){
+				var updatedViewContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
+				fileToSave.fileBridge.save(updatedViewContent);
 			}
 			else
 			{
@@ -489,6 +635,20 @@ package actionScripts.plugin.rename
 					new TreeMenuItemEvent(TreeMenuItemEvent.NEW_FILE_CREATED, fileToSave.fileBridge.nativePath, event.fileWrapper)
 				);
 			}
+		}
+
+		
+
+
+		private function getDominoUpdatedFileContent(projectRef:FileWrapper, source:FileLocation, newFileName:String):String
+		{
+			var sourceContentXML:XML=new XML(source.fileBridge.read());
+			
+			newFileName=newFileName.replace(/[\/\\]+/g, "_5c");
+			newFileName=newFileName.replace(/_5c/g, "\\");
+			sourceContentXML.@name=newFileName;
+			
+			return sourceContentXML.toXMLString();
 		}
 		
 		private function getUpdatedFileContent(projectRef:FileWrapper, source:FileLocation, newFileName:String):String
@@ -559,7 +719,25 @@ package actionScripts.plugin.rename
 				else updateChildrenPath(i, oldPath, newPath);
 			}
 		}
-		
+
+		//dominoViewEditor.dominoViewVisualEditor.loadFile(filePath);
+		private function checkAndUpdateOpenedViewsInTab(filePath:String):void
+		{
+			for each (var tab:IContentWindow in model.editors)
+			{
+				var ed:BasicTextEditor = tab as BasicTextEditor;
+				if (ed 
+					&& ed.currentFile
+					&& ed.currentFile.fileBridge.nativePath == filePath)
+				{
+					if(ed is DominoViewEditor){
+						(ed as DominoViewEditor).openLoadingFile(filePath);
+					}
+					
+					break;
+				}
+			}
+		}
 		private function checkAndUpdateOpenedTabs(oldPath:String, newFile:FileLocation):void
 		{
 			// updates to tab

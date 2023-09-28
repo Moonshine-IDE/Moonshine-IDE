@@ -91,6 +91,8 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_DOMINO_FORM: FileLocation;
 		public static var TEMPLATE_DOMINO_PAGE: FileLocation;
 		public static var TEMPLATE_DOMINO_SUBFORM: FileLocation;
+		public static var TEMPLATE_DOMINO_VIEW: FileLocation;
+		public static var TEMPLATE_DOMINO_VIEW_SHARE_COLUMN: FileLocation;
 		public static var TEMPLATE_DOMINO_SHAREDFIELD: FileLocation;
 		public static var TEMPLATE_DOMINO_ACTION: FileLocation;
 		public static var TEMPLATE_TEXT: FileLocation;
@@ -321,15 +323,15 @@ package actionScripts.valueObjects
 			
 			READABLE_FILES = ["as", "mxml", "css", "xml", "bat", "txt", "as3proj", "actionScriptProperties", "html", "js", "veditorproj", "xhtml",
 								"java", "groovy", "gradle", "yml", "gsp", "properties", "javaproj", "sh", "ini", "jar", "hx", "hxproj", "grailsproj",
-								"json", "md"];
+								"json", "md", "tbh", "tbs", "tpr", "tph"];
 			READABLE_FILES.sort();
 
 			KNOWN_BINARY_FILES = ["nsf", "jpg", "jpeg", "png"]; // store in lower-case
 
-			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx"];
+			READABLE_CLASS_FILES = ["as", "mxml", "java", "groovy", "gradle", "hx", "tbs", "tbh"];
 			READABLE_CLASS_FILES.sort();
 
-			READABLE_PROJECT_FILES = ["actionScriptProperties", "as3proj", "veditorproj", "javaproj", "grailsproj", "ondiskproj", "genericproj", "hxproj"];
+			READABLE_PROJECT_FILES = ["actionScriptProperties", "as3proj", "veditorproj", "javaproj", "grailsproj", "ondiskproj", "genericproj", "hxproj", "tibboproj"];
 
 					TEMPLATE_CSS = new FileLocation("TEMPLATE");
 			TEMPLATE_CSS.fileBridge.name = "CSS File.css";
@@ -357,6 +359,21 @@ package actionScripts.valueObjects
 			TEMPLATE_DOMINO_SUBFORM.fileBridge.extension = "subform";
 			TEMPLATE_DOMINO_SUBFORM.fileBridge.data = "";
 
+			TEMPLATE_DOMINO_VIEW = new FileLocation("TEMPLATE");
+			TEMPLATE_DOMINO_VIEW.fileBridge.name = "Domino Visual Editor View.view";
+			TEMPLATE_DOMINO_VIEW.fileBridge.isDirectory = false;
+			TEMPLATE_DOMINO_VIEW.fileBridge.extension = "view";
+			TEMPLATE_DOMINO_VIEW.fileBridge.data = "";
+
+
+			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN= new FileLocation("TEMPLATE");
+			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN.fileBridge.name = "Domino Visual Editor View Shared Column.column";
+			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN.fileBridge.isDirectory = false;
+			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN.fileBridge.extension = "view";
+			TEMPLATE_DOMINO_VIEW_SHARE_COLUMN.fileBridge.data = "";
+
+			
+			
 			//FOR SHAREDFIELD
 			TEMPLATE_DOMINO_SHAREDFIELD= new FileLocation("TEMPLATE");
 			TEMPLATE_DOMINO_SHAREDFIELD.fileBridge.name = "Domino Visual Share Field.field";

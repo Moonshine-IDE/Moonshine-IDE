@@ -144,7 +144,7 @@
 	
 			override protected function onNameChanged(event:TextOperationEvent):void
 			{
-				super.onNameChanged(event);
+				super.onDominoNameChanged(event);
 			}
 	
 			protected function onTreeItemClicked(event:ListEvent):void
@@ -162,19 +162,18 @@
 				
                 if (!UtilsCore.endsWith(dominoFormFolder,currentPath))
                 {
-					isDominoValid=true;
+					
                     warningMessage = "Domino page file are only supported in the Pages folder.";
                     hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
 					
 				   	isSubmitButtonEnabled=false;
-					btnCreate.enabled = false;
+					
                 }else{
-                   hgExistingWarning.visible = hgExistingWarning.includeInLayout = false;
-					isDominoValid=false;
+                  
 					warningMessage=""; 
 					isSubmitButtonEnabled=true; 
 					treeScrollToCorrectPostion();
-					btnCreate.enabled = true;
+					
 					
                 }
 				
@@ -189,6 +188,8 @@
 
 				super.onNewFileCreationComplete(event);
 				
+				txtFileName.text="NewPage";
+				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
 			
 				minHeight = height;
 				if (wrapperBelongToProject)
@@ -271,14 +272,14 @@
 		<s:Label text="Name:"/>
 		<s:Group width="100%">
 			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_\-/"
+								  prompt="Name" width="100%" styleName="textInput" restrict="a-zA-Z0-9_\- "
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
 			<s:Label text=".page" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  visible="{(isDominoValid)}">
+				  visible="{(!isSubmitButtonEnabled)}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
@@ -288,6 +289,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onCreateButton(event)"
-				  enabled="{isSubmitButtonEnabled &amp;&amp; (!isDominoValid) }"/>
+				  enabled="{isSubmitButtonEnabled  }"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>

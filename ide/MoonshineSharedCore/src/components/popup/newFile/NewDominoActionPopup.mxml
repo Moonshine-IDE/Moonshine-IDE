@@ -108,7 +108,7 @@
 	
 			override protected function onNameChanged(event:TextOperationEvent):void
 			{
-				super.onNameChanged(event);
+				super.onDominoNameChanged(event);
 			}
 	
 		
