@@ -506,7 +506,7 @@ package actionScripts.plugin.rename
 								if(viewxml.actionbar[0].action[0]){
 									if(viewxml.actionbar[0].action[0].@title=="New"){
 										var formulaNode2:XML=viewxml.actionbar[0].action[0].code[0].formula[0];
-										var newFormulaNode2:XML = new XML("<formula>"+"@Command([Compose]; \""+targetViewNameWithOutExtension+"\")"+"</formula>");
+										var newFormulaNode2:XML = new XML("<formula>"+"@Command([Compose]; \""+targetFormName+"\")"+"</formula>");
 										formulaNode2.parent().appendChild(newFormulaNode2);
 										delete formulaNode2.parent().children()[formulaNode2.childIndex()];
 										changed=true;
@@ -517,7 +517,7 @@ package actionScripts.plugin.rename
 							//update the view name in the dxl inside 
 							if(viewxml.@name){
 								
-								viewxml.@name=targetViewNameWithOutExtension;
+								viewxml.@name=TextUtil.toDominoViewNormalName(targetViewNameWithOutExtension);
 								changed=true;
 							}
 
