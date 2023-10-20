@@ -58,6 +58,7 @@ package actionScripts.ui.tabview
 		public static const EVENT_TAB_CLOSE:String = "tabClose";
 		public static const EVENT_TABP_CLOSE_ALL:String = "tabCloseAll";
 		public static const EVENT_TAB_CLOSE_ALL_OTHERS:String = "tabCloseAllOthers";
+		public static const EVENT_TAB_DOUBLE_CLICKED:String = "tabDoubleClicked";
 
 		protected var closeButton:CloseTabButton;
 		protected var background:Sprite;
@@ -173,7 +174,9 @@ package actionScripts.ui.tabview
 		{
 			background = new Sprite();
 			background.filters = [new GlowFilter(innerGlowColor, 0.25, 0, 24, 2, 2, true)];
-			background.addEventListener(MouseEvent.CLICK, tabClicked);
+			background.addEventListener(MouseEvent.CLICK, tabClicked, false, 0, true);
+			background.addEventListener(MouseEvent.DOUBLE_CLICK, onTabDoubleClicked, false, 0, true);
+			background.doubleClickEnabled = true;
 			addChild(background);
 			
 			labelView = new Label();
@@ -342,6 +345,11 @@ package actionScripts.ui.tabview
 		protected function tabClicked(event:Event):void
 		{
 			dispatchEvent( new Event(EVENT_TAB_CLICK) );
+		}
+		
+		protected function onTabDoubleClicked(event:MouseEvent):void
+		{
+			dispatchEvent( new Event(EVENT_TAB_DOUBLE_CLICKED) );
 		}
 
         protected function onTabViewTabMouseOverOut(event:MouseEvent):void

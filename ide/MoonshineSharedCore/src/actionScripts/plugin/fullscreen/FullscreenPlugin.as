@@ -33,11 +33,17 @@ package actionScripts.plugin.fullscreen
 {
 	import flash.display.StageDisplayState;
 	import flash.events.Event;
+	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
 	
 	import mx.core.FlexGlobals;
 	
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import spark.components.Group;
+	import actionScripts.plugin.fullscreen.events.FullscreenEvent;
+	import mx.core.IVisualElement;
+	import mx.core.IVisualElementContainer;
 
 	public class FullscreenPlugin extends PluginBase 
 	{
@@ -51,6 +57,7 @@ package actionScripts.plugin.fullscreen
 		{
 			super.activate();
 			dispatcher.addEventListener(EVENT_FULLSCREEN, handleToggleFullscreen);
+			dispatcher.addEventListener(FullscreenEvent.EVENT_SECTION_FULLSCREEN, handleToggleSectionFullscreen);
 		}
 		
 		protected function handleToggleFullscreen(event:Event):void
@@ -65,5 +72,39 @@ package actionScripts.plugin.fullscreen
 				stage.displayState = StageDisplayState.NORMAL;
 			}
 		}
-	}
+		
+		private var sectionParentIndex:int = -1;
+		private var sectionParent:DisplayObjectContainer;
+		protected function handleToggleSectionFullscreen(event:FullscreenEvent):void
+		{
+			if (sectionParentIndex != -1) 
+			{
+				toggle(event);
+				return;	
+			}
+			
+			var fullscreenContainer:Group = this.model.mainView.parent as Group;
+			sectionParent = event.value.parent as DisplayObjectContainer;
+			for (var i:int; i < sectionParent.numChildren; i++)
+			{
+				if (sectionParent.getChildAt(i) == event.value)
+				{
+					sectionParentIndex = i;
+					break;
+				}
+			}
+			
+			event.value.x = event.value.y = 0;
+			fullscreenContainer.addElement(event.value as IVisualElement);
+		}
+		
+		protected function toggle(event:FullscreenEvent):void
+		{
+			var fullscreenContainer:Group = this.model.mainView.parent as Group;
+			fullscreenContainer.removeElement(event.value as IVisualElement);
+			
+			sectionParent.addChildAt(event.value, sectionParentIndex);
+			sectionParentIndex = -1;
+		}
+	}	
 }
