@@ -31,19 +31,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.fullscreen
 {
-	import flash.display.StageDisplayState;
-	import flash.events.Event;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.StageDisplayState;
+	import flash.events.Event;
 	
 	import mx.core.FlexGlobals;
-	
-	import actionScripts.plugin.PluginBase;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import spark.components.Group;
-	import actionScripts.plugin.fullscreen.events.FullscreenEvent;
 	import mx.core.IVisualElement;
 	import mx.core.IVisualElementContainer;
+	
+	import spark.components.Group;
+	
+	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.fullscreen.events.FullscreenEvent;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class FullscreenPlugin extends PluginBase 
 	{
@@ -53,6 +54,10 @@ package actionScripts.plugin.fullscreen
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Show edit in fullscreen."; }
 		
+		private var sectionParentIndex:int = -1;
+		private var sectionParent:DisplayObjectContainer;
+		private var sectionParentProperties:Object;
+			
 		override public function activate():void
 		{
 			super.activate();
@@ -73,8 +78,6 @@ package actionScripts.plugin.fullscreen
 			}
 		}
 		
-		private var sectionParentIndex:int = -1;
-		private var sectionParent:DisplayObjectContainer;
 		protected function handleToggleSectionFullscreen(event:FullscreenEvent):void
 		{
 			if (sectionParentIndex != -1) 
@@ -94,7 +97,17 @@ package actionScripts.plugin.fullscreen
 				}
 			}
 			
-			event.value.x = event.value.y = 0;
+			sectionParentProperties = new Object();
+			sectionParentProperties.x = event.value.x;
+			sectionParentProperties.y = event.value.y;
+			sectionParentProperties.width = event.value.width;
+			sectionParentProperties.height = event.value.height;
+			sectionParentProperties.percentWidth = event.value["percentWidth"];
+			sectionParentProperties.percentHeight = event.value["percentHeight"];
+			
+			event.value.x = 0;
+			event.value.y = ConstantsCoreVO.IS_MACOS ? 0 : 21;
+			event.value["percentWidth"] = event.value["percentHeight"] = 100;
 			fullscreenContainer.addElement(event.value as IVisualElement);
 		}
 		
@@ -102,6 +115,11 @@ package actionScripts.plugin.fullscreen
 		{
 			var fullscreenContainer:Group = this.model.mainView.parent as Group;
 			fullscreenContainer.removeElement(event.value as IVisualElement);
+			
+			for (var i:String in sectionParentProperties)
+			{
+				event.value[i] = sectionParentProperties[i];
+			}
 			
 			sectionParent.addChildAt(event.value, sectionParentIndex);
 			sectionParentIndex = -1;

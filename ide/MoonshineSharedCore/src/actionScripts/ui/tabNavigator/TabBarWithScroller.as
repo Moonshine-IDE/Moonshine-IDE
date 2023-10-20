@@ -31,18 +31,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabNavigator
 {
-    import actionScripts.ui.tabNavigator.event.ButtonBarButtonWithCloseEvent;
-    import actionScripts.ui.tabNavigator.skin.TabBarWithScrollerSkin;
-
+    import flash.events.Event;
     import flash.events.MouseEvent;
-
+    
     import mx.events.CollectionEvent;
     import mx.events.CollectionEventKind;
-
+    
     import spark.components.ButtonBarButton;
-
     import spark.components.TabBar;
-	import flash.events.Event;
+    
+    import actionScripts.ui.tabNavigator.event.ButtonBarButtonWithCloseEvent;
+    import actionScripts.ui.tabNavigator.skin.TabBarWithScrollerSkin;
 
     [Style(name="closeButtonVisible", type="Boolean", inherit="no", theme="spark")]
     [Event(name="closeButtonClick", type="flash.events.MouseEvent")]
@@ -190,7 +189,10 @@ package actionScripts.ui.tabNavigator
                     var closeTabButton:CloseTabButton = (elt as ButtonBarButtonWithClose).closeTabButton;
                     if (!closeTabButton.hasEventListener("closeButtonClick"))
                     {
-                        closeTabButton.addEventListener(MouseEvent.CLICK, onCloseButtonClick);
+                        closeTabButton.addEventListener(MouseEvent.CLICK, onCloseButtonClick, false, 0, true);
+						
+						(elt as ButtonBarButtonWithClose).doubleClickEnabled = true;
+						(elt as ButtonBarButtonWithClose).addEventListener(MouseEvent.DOUBLE_CLICK, onTabDoubleClicked, false, 0, true);
                     }
                 }
             }
@@ -200,5 +202,10 @@ package actionScripts.ui.tabNavigator
         {
             this.dispatchEvent(new ButtonBarButtonWithCloseEvent(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, event.target.itemIndex));
         }
+		
+		private function onTabDoubleClicked(event:MouseEvent):void
+		{
+			this.dispatchEvent(new ButtonBarButtonWithCloseEvent(ButtonBarButtonWithCloseEvent.DOUBLE_CLICK));
+		}
     }
 }
