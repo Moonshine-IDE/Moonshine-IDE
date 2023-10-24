@@ -114,6 +114,7 @@ package actionScripts.ui.tabNavigator
             if (instance == tabBar)
             {
                 tabBar.removeEventListener(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, onTabBarWithScrollerCloseButtonClick);
+				tabBar.removeEventListener(ButtonBarButtonWithCloseEvent.DOUBLE_CLICK, onTabBarWithScrollerDoubleClick);
             }
         }
 
@@ -166,7 +167,7 @@ package actionScripts.ui.tabNavigator
 		
 		private function onTabBarWithScrollerDoubleClick(event:ButtonBarButtonWithCloseEvent):void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new FullscreenEvent(FullscreenEvent.EVENT_SECTION_FULLSCREEN, this));
+			GlobalEventDispatcher.getInstance().dispatchEvent(new FullscreenEvent(FullscreenEvent.EVENT_SECTION_FULLSCREEN, FullscreenEvent.SECTION_BOTTOM));
 		}
     }
 }

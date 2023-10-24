@@ -35,15 +35,18 @@ package actionScripts.plugin.fullscreen
 	import flash.display.DisplayObjectContainer;
 	import flash.display.StageDisplayState;
 	import flash.events.Event;
+	import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
 	import mx.core.IVisualElement;
 	import mx.core.IVisualElementContainer;
+	import mx.events.DividerEvent;
 	
 	import spark.components.Group;
 	
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.fullscreen.events.FullscreenEvent;
+	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class FullscreenPlugin extends PluginBase 
@@ -54,9 +57,14 @@ package actionScripts.plugin.fullscreen
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Show edit in fullscreen."; }
 		
-		private var sectionParentIndex:int = -1;
-		private var sectionParent:DisplayObjectContainer;
-		private var sectionParentProperties:Object;
+		private var isSectionInFullscreen:Boolean;
+		private var currentSectionInFullscreenType:String;
+		private var sideBarWidth:Number;
+		
+		private var editorsHeight:Number;
+		private var editorsPercentHeight:Number;
+		private var consoleHeight:Number;
+		private var consolePercentHeight:Number;
 			
 		override public function activate():void
 		{
@@ -80,7 +88,49 @@ package actionScripts.plugin.fullscreen
 		
 		protected function handleToggleSectionFullscreen(event:FullscreenEvent):void
 		{
-			if (sectionParentIndex != -1) 
+			if (isSectionInFullscreen) 
+			{
+				this.toggle(event);
+				return;
+			}
+			
+			switch (event.value)
+			{
+				case FullscreenEvent.SECTION_EDITOR:
+					this.sideBarWidth = this.model.mainView.sidebar.width;
+					this.model.mainView.sidebar.width = 0;
+					this.model.mainView.bodyPanel.getElementAt(1)["minHeight"] = 0;
+					dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.HIDE_PROJECT_PANEL, null));
+					
+					this.model.mainView.bodyPanel.getElementAt(0).percentHeight = 100;
+					//this.model.mainView.bodyPanel.getElementAt(0).height = editorsHeight;
+					//this.model.mainView.bodyPanel.getElementAt(1).percentHeight = consolePercentHeight;
+					this.model.mainView.bodyPanel.getElementAt(1).height = 0;
+					break;
+				case FullscreenEvent.SECTION_BOTTOM:
+					editorsHeight = this.model.mainView.bodyPanel.getElementAt(0).height;
+					editorsPercentHeight = this.model.mainView.bodyPanel.getElementAt(0).percentHeight;
+					consoleHeight = this.model.mainView.bodyPanel.getElementAt(1).height;
+					consolePercentHeight = this.model.mainView.bodyPanel.getElementAt(1).percentHeight;
+					
+					this.sideBarWidth = this.model.mainView.sidebar.width;
+					this.model.mainView.sidebar.width = 0;
+					this.model.mainView.bodyPanel.getElementAt(0).height = 0;
+					this.model.mainView.bodyPanel.getElementAt(1).percentHeight = 100;
+					
+					this.model.mainView.bodyPanel.setStyle('dividerSkin', null);
+					this.model.mainView.bodyPanel.setStyle('dividerAlpha', 0);
+					this.model.mainView.bodyPanel.setStyle('dividerThickness', 0);
+					this.model.mainView.bodyPanel.setStyle('dividerAffordance', 0);
+					this.model.mainView.bodyPanel.setStyle('verticalGap', 0);
+					break;
+				case FullscreenEvent.SECTION_LEFT:
+					break;
+			}
+			
+			isSectionInFullscreen = true;
+			
+			/*if (sectionParentIndex != -1) 
 			{
 				toggle(event);
 				return;	
@@ -108,12 +158,23 @@ package actionScripts.plugin.fullscreen
 			event.value.x = 0;
 			event.value.y = ConstantsCoreVO.IS_MACOS ? 0 : 21;
 			event.value["percentWidth"] = event.value["percentHeight"] = 100;
-			fullscreenContainer.addElement(event.value as IVisualElement);
+			
+			try
+			{
+				sectionParent.removeChild(event.value);
+			}
+			catch (e:Error)
+			{
+				(sectionParent as IVisualElementContainer).removeElement(event.value as IVisualElement);
+			}
+			
+			fullscreenContainer.addElement(event.value as IVisualElement);*/
+			
 		}
 		
 		protected function toggle(event:FullscreenEvent):void
-		{
-			var fullscreenContainer:Group = this.model.mainView.parent as Group;
+		{	
+			/*var fullscreenContainer:Group = this.model.mainView.parent as Group;
 			fullscreenContainer.removeElement(event.value as IVisualElement);
 			
 			for (var i:String in sectionParentProperties)
@@ -122,7 +183,35 @@ package actionScripts.plugin.fullscreen
 			}
 			
 			sectionParent.addChildAt(event.value, sectionParentIndex);
-			sectionParentIndex = -1;
+			sectionParentIndex = -1;*/
+			
+			
+			switch (event.value)
+			{
+				case FullscreenEvent.SECTION_BOTTOM:
+					this.model.mainView.bodyPanel.getElementAt(0).percentHeight = editorsPercentHeight;
+					this.model.mainView.bodyPanel.getElementAt(0).height = editorsHeight;
+					this.model.mainView.bodyPanel.getElementAt(1).percentHeight = consolePercentHeight;
+					this.model.mainView.bodyPanel.getElementAt(1).height = consoleHeight;
+					
+					
+					this.model.mainView.bodyPanel.setStyle('dividerThickness', 7);
+					this.model.mainView.bodyPanel.setStyle('dividerAffordance', 4);
+					this.model.mainView.bodyPanel.setStyle('verticalGap', 7);
+					this.model.mainView.bodyPanel.setStyle('dividerAlpha', 1);
+					
+					break;
+				case FullscreenEvent.SECTION_EDITOR:
+					
+					break;
+				case FullscreenEvent.SECTION_LEFT:
+					break;
+			}
+			
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SHOW_PROJECT_PANEL, null));
+			this.model.mainView.sidebar.width = this.sideBarWidth;
+			
+			isSectionInFullscreen = false;
 		}
 	}	
 }

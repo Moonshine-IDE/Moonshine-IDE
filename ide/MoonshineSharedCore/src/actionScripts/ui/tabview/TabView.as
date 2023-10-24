@@ -48,6 +48,7 @@ package actionScripts.ui.tabview
     
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.fullscreen.events.FullscreenEvent;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.ScrollableMenu;
@@ -56,7 +57,6 @@ package actionScripts.ui.tabview
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.HamburgerMenuTabsVO;
-    import actionScripts.plugin.fullscreen.events.FullscreenEvent;
 	
     /*
         TODO:
@@ -395,7 +395,7 @@ package actionScripts.ui.tabview
 		
 		private function onTabDoubleClicked(event:Event):void
 		{
-			dispatcher.dispatchEvent(new FullscreenEvent(FullscreenEvent.EVENT_SECTION_FULLSCREEN, this));
+			dispatcher.dispatchEvent(new FullscreenEvent(FullscreenEvent.EVENT_SECTION_FULLSCREEN, FullscreenEvent.SECTION_EDITOR));
 		}
 
         private function updateTabLabel(event:Event):void

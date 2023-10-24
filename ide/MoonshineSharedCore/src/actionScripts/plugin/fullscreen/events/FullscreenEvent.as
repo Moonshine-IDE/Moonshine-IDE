@@ -32,18 +32,20 @@
 package actionScripts.plugin.fullscreen.events
 {
 	import flash.events.Event;
-	import flash.display.DisplayObject;
 
 	public class FullscreenEvent extends Event
 	{
 		public static const EVENT_SECTION_FULLSCREEN:String = "sectionFullscreenEvent";
+		public static const SECTION_BOTTOM:String = "eventSectionPositionBottom";
+		public static const SECTION_EDITOR:String = "eventSectionEditors";
+		public static const SECTION_LEFT:String = "eventSectionPositionLeft";
 
-		public var value:DisplayObject;
+		public var value:String;
 
-		public function FullscreenEvent(type:String, value:DisplayObject=null, bubbles:Boolean = false, cancelable:Boolean = false)
+		public function FullscreenEvent(type:String, value:String)
 		{
 			this.value = value;
-			super(type, bubbles, cancelable);
+			super(type);
 		}
 	}
 }

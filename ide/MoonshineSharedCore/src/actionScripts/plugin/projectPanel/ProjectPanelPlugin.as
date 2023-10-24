@@ -32,16 +32,16 @@
 package actionScripts.plugin.projectPanel
 {
     import flash.events.MouseEvent;
-
+    
     import mx.containers.dividedBoxClasses.BoxDivider;
     import mx.core.UIComponent;
     import mx.events.DividerEvent;
     import mx.events.FlexEvent;
     import mx.managers.CursorManager;
     import mx.managers.CursorManagerPriority;
-
+    
     import spark.components.NavigatorContent;
-
+    
     import actionScripts.interfaces.IViewWithTitle;
     import actionScripts.plugin.IPlugin;
     import actionScripts.plugin.PluginBase;
@@ -104,6 +104,8 @@ package actionScripts.plugin.projectPanel
             dispatcher.addEventListener(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, addViewToProjectPanelHandler);
             dispatcher.addEventListener(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, removeViewToProjectPanelHandler);
             dispatcher.addEventListener(ProjectPanelPluginEvent.SELECT_VIEW_IN_PROJECT_PANEL, selectViewInProjectPanelHandler);
+			dispatcher.addEventListener(ProjectPanelPluginEvent.SHOW_PROJECT_PANEL, onShowProjectPanel);
+			dispatcher.addEventListener(ProjectPanelPluginEvent.HIDE_PROJECT_PANEL, onHideProjectPanel);
         }
 
         override public function deactivate():void
@@ -124,6 +126,8 @@ package actionScripts.plugin.projectPanel
             dispatcher.removeEventListener(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, addViewToProjectPanelHandler);
             dispatcher.removeEventListener(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, removeViewToProjectPanelHandler);
             dispatcher.removeEventListener(ProjectPanelPluginEvent.SELECT_VIEW_IN_PROJECT_PANEL, selectViewInProjectPanelHandler);
+			dispatcher.removeEventListener(ProjectPanelPluginEvent.SHOW_PROJECT_PANEL, onShowProjectPanel);
+			dispatcher.removeEventListener(ProjectPanelPluginEvent.HIDE_PROJECT_PANEL, onHideProjectPanel);
         }
 
         private function addViewToProjectPanelHandler(event:ProjectPanelPluginEvent):void
@@ -241,6 +245,20 @@ package actionScripts.plugin.projectPanel
                 LayoutModifier.projectPanelHeight = tmpHeight;
             }
         }
+		
+		private function onShowProjectPanel(event:ProjectPanelPluginEvent):void
+		{
+			isOverTheExpandCollapseButton = true;
+			isProjectPanelHidden = true;
+			onProjectPanelDividerRelease(null);
+		}
+		
+		private function onHideProjectPanel(event:ProjectPanelPluginEvent):void
+		{
+			isOverTheExpandCollapseButton = true;
+			isProjectPanelHidden = false;
+			onProjectPanelDividerRelease(null);
+		}
 
         private function onSidebarDividerReleased(event:DividerEvent):void
         {
