@@ -31,24 +31,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.fullscreen
 {
-	import flash.display.DisplayObject;
-	import flash.display.DisplayObjectContainer;
 	import flash.display.StageDisplayState;
 	import flash.events.Event;
-	import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
 	import mx.core.IVisualElement;
-	import mx.core.IVisualElementContainer;
-	import mx.events.DividerEvent;
-	
-	import spark.components.Group;
 	
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.fullscreen.events.FullscreenEvent;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-
+	
 	public class FullscreenPlugin extends PluginBase 
 	{
 		public static const EVENT_FULLSCREEN:String = "fullscreenEvent";
@@ -61,9 +54,9 @@ package actionScripts.plugin.fullscreen
 		private var currentSectionInFullscreenType:String;
 		private var sideBarWidth:Number;
 		
-		private var editorsHeight:Number;
+		private var editorsLastHeight:Number;
 		private var editorsPercentHeight:Number;
-		private var consoleHeight:Number;
+		private var consoleLastHeight:Number;
 		private var consolePercentHeight:Number;
 			
 		override public function activate():void
@@ -94,121 +87,68 @@ package actionScripts.plugin.fullscreen
 				return;
 			}
 			
+			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
+			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
+			isSectionInFullscreen = true;
+			
 			switch (event.value)
 			{
 				case FullscreenEvent.SECTION_EDITOR:
+					// minimize sidebar
 					this.sideBarWidth = this.model.mainView.sidebar.width;
 					this.model.mainView.sidebar.width = 0;
-					this.model.mainView.bodyPanel.getElementAt(1)["minHeight"] = 0;
-					dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.HIDE_PROJECT_PANEL, null));
 					
-					this.model.mainView.bodyPanel.getElementAt(0).percentHeight = 100;
-					//this.model.mainView.bodyPanel.getElementAt(0).height = editorsHeight;
-					//this.model.mainView.bodyPanel.getElementAt(1).percentHeight = consolePercentHeight;
-					this.model.mainView.bodyPanel.getElementAt(1).height = 0;
+					// maximise editors and minimize console
+					editors.percentHeight = 100;
+					console["minHeight"] = 0;
+					console.height = 0;
+					
+					// requisite updates in projectpanelplugin
+					dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.HIDE_PROJECT_PANEL, null));
 					break;
 				case FullscreenEvent.SECTION_BOTTOM:
-					editorsHeight = this.model.mainView.bodyPanel.getElementAt(0).height;
-					editorsPercentHeight = this.model.mainView.bodyPanel.getElementAt(0).percentHeight;
-					consoleHeight = this.model.mainView.bodyPanel.getElementAt(1).height;
-					consolePercentHeight = this.model.mainView.bodyPanel.getElementAt(1).percentHeight;
+					// stores present properties before change
+					editorsLastHeight = editors.height;
+					editorsPercentHeight = editors.percentHeight;
+					consoleLastHeight = console.height;
+					consolePercentHeight = console.percentHeight;
 					
+					// minimize sidebar
 					this.sideBarWidth = this.model.mainView.sidebar.width;
 					this.model.mainView.sidebar.width = 0;
-					this.model.mainView.bodyPanel.getElementAt(0).height = 0;
-					this.model.mainView.bodyPanel.getElementAt(1).percentHeight = 100;
 					
-					this.model.mainView.bodyPanel.setStyle('dividerSkin', null);
-					this.model.mainView.bodyPanel.setStyle('dividerAlpha', 0);
-					this.model.mainView.bodyPanel.setStyle('dividerThickness', 0);
-					this.model.mainView.bodyPanel.setStyle('dividerAffordance', 0);
-					this.model.mainView.bodyPanel.setStyle('verticalGap', 0);
+					// minimize editors and maximize console
+					editors.height = 0;
+					console.percentHeight = 100;
 					break;
 				case FullscreenEvent.SECTION_LEFT:
 					break;
 			}
-			
-			isSectionInFullscreen = true;
-			
-			/*if (sectionParentIndex != -1) 
-			{
-				toggle(event);
-				return;	
-			}
-			
-			var fullscreenContainer:Group = this.model.mainView.parent as Group;
-			sectionParent = event.value.parent as DisplayObjectContainer;
-			for (var i:int; i < sectionParent.numChildren; i++)
-			{
-				if (sectionParent.getChildAt(i) == event.value)
-				{
-					sectionParentIndex = i;
-					break;
-				}
-			}
-			
-			sectionParentProperties = new Object();
-			sectionParentProperties.x = event.value.x;
-			sectionParentProperties.y = event.value.y;
-			sectionParentProperties.width = event.value.width;
-			sectionParentProperties.height = event.value.height;
-			sectionParentProperties.percentWidth = event.value["percentWidth"];
-			sectionParentProperties.percentHeight = event.value["percentHeight"];
-			
-			event.value.x = 0;
-			event.value.y = ConstantsCoreVO.IS_MACOS ? 0 : 21;
-			event.value["percentWidth"] = event.value["percentHeight"] = 100;
-			
-			try
-			{
-				sectionParent.removeChild(event.value);
-			}
-			catch (e:Error)
-			{
-				(sectionParent as IVisualElementContainer).removeElement(event.value as IVisualElement);
-			}
-			
-			fullscreenContainer.addElement(event.value as IVisualElement);*/
-			
 		}
 		
 		protected function toggle(event:FullscreenEvent):void
 		{	
-			/*var fullscreenContainer:Group = this.model.mainView.parent as Group;
-			fullscreenContainer.removeElement(event.value as IVisualElement);
-			
-			for (var i:String in sectionParentProperties)
-			{
-				event.value[i] = sectionParentProperties[i];
-			}
-			
-			sectionParent.addChildAt(event.value, sectionParentIndex);
-			sectionParentIndex = -1;*/
-			
+			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
+			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
 			
 			switch (event.value)
 			{
 				case FullscreenEvent.SECTION_BOTTOM:
-					this.model.mainView.bodyPanel.getElementAt(0).percentHeight = editorsPercentHeight;
-					this.model.mainView.bodyPanel.getElementAt(0).height = editorsHeight;
-					this.model.mainView.bodyPanel.getElementAt(1).percentHeight = consolePercentHeight;
-					this.model.mainView.bodyPanel.getElementAt(1).height = consoleHeight;
-					
-					
-					this.model.mainView.bodyPanel.setStyle('dividerThickness', 7);
-					this.model.mainView.bodyPanel.setStyle('dividerAffordance', 4);
-					this.model.mainView.bodyPanel.setStyle('verticalGap', 7);
-					this.model.mainView.bodyPanel.setStyle('dividerAlpha', 1);
-					
+					// assign last known sizes to editors and console
+					editors.percentHeight = editorsPercentHeight;
+					editors.height = editorsLastHeight;
+					console.percentHeight = consolePercentHeight;
+					console.height = consoleLastHeight;
 					break;
 				case FullscreenEvent.SECTION_EDITOR:
-					
 					break;
 				case FullscreenEvent.SECTION_LEFT:
 					break;
 			}
 			
+			// requisite changes in projectpanelplugin
 			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SHOW_PROJECT_PANEL, null));
+			// maximise sidebar per last stored size
 			this.model.mainView.sidebar.width = this.sideBarWidth;
 			
 			isSectionInFullscreen = false;
