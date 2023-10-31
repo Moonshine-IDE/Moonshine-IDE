@@ -41,6 +41,8 @@ package actionScripts.plugin.fullscreen
 	import actionScripts.plugin.fullscreen.events.FullscreenEvent;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import flash.utils.Timer;
+    import flash.events.TimerEvent;
 	
 	public class FullscreenPlugin extends PluginBase 
 	{
@@ -51,6 +53,7 @@ package actionScripts.plugin.fullscreen
 		override public function get description():String	{ return "Show edit in fullscreen."; }
 		
 		private var isSectionInFullscreen:Boolean;
+		private var isSectionFullscreenInProcess:Boolean;
 		private var currentSectionInFullscreenType:String;
 		private var sideBarWidth:Number;
 		
@@ -81,6 +84,9 @@ package actionScripts.plugin.fullscreen
 		
 		protected function handleToggleSectionFullscreen(event:FullscreenEvent):void
 		{
+			if (this.isSectionFullscreenInProcess) 
+				return;
+				
 			if (isSectionInFullscreen) 
 			{
 				this.toggle(event);
@@ -90,10 +96,13 @@ package actionScripts.plugin.fullscreen
 			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
 			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
 			isSectionInFullscreen = true;
+			this.isSectionFullscreenInProcess = true;
+			trace("handleTolggle recall");
 			
 			switch (event.value)
 			{
 				case FullscreenEvent.SECTION_EDITOR:
+					editors.addEventListener(Event.RENDER, onEditorsRenderEvent);
 					// minimize sidebar
 					this.sideBarWidth = this.model.mainView.sidebar.width;
 					this.model.mainView.sidebar.width = 0;
@@ -124,6 +133,30 @@ package actionScripts.plugin.fullscreen
 				case FullscreenEvent.SECTION_LEFT:
 					break;
 			}
+		}
+		
+		private var sectionProcessTimer:Timer;
+		private function onEditorsRenderEvent(event:Event):void
+		{
+			if (sectionProcessTimer)
+			{
+				trace("sectionTimerStopped");
+				sectionProcessTimer.stop();
+				sectionProcessTimer.removeEventListener(TimerEvent.TIMER_COMPLETE, onSectionProcessTimerCompletes);
+			}
+			
+			trace("sectionTimerReleased");
+			sectionProcessTimer = new Timer(2000, 1);
+			sectionProcessTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onSectionProcessTimerCompletes);
+			sectionProcessTimer.start();
+		}
+		
+		private function onSectionProcessTimerCompletes(event:TimerEvent):void
+		{
+			sectionProcessTimer.stop();
+			sectionProcessTimer.removeEventListener(TimerEvent.TIMER_COMPLETE, onSectionProcessTimerCompletes);
+			this.isSectionFullscreenInProcess = false;
+			trace("STOPPED");
 		}
 		
 		protected function toggle(event:FullscreenEvent):void
