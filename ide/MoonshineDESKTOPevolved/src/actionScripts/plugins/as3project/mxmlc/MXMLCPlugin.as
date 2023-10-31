@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
@@ -76,8 +89,8 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.utils.SDKUtils;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.utils.FindAndCopyApplicationDescriptor;
-	import actionScripts.valueObjects.ComponentTypes;
-	import actionScripts.valueObjects.ComponentVO;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
 	import actionScripts.valueObjects.MobileDeviceVO;
@@ -94,7 +107,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.formats.TextDecoration;
 	import actionScripts.plugin.console.ConsoleEvent;
 	
-	public class MXMLCPlugin extends CompilerPluginBase implements ISettingsProvider
+	public class MXMLCPlugin extends MXMLCPluginBase implements ISettingsProvider
 	{
 		private static const DEFAULT_PORT:int = 7936;
 
@@ -247,6 +260,7 @@ package actionScripts.plugins.as3project.mxmlc
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_AND_DEBUG, buildAndRun);
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD, build);
 			dispatcher.addEventListener(ActionScriptBuildEvent.BUILD_RELEASE, buildRelease);
+			dispatcher.addEventListener(ActionScriptBuildEvent.CLEAN, clean);
 			dispatcher.addEventListener(ProjectEvent.FLEX_SDK_UDPATED_OUTSIDE, onDefaultSDKUpdatedOutside);
 			
 			tempObj = new Object();
@@ -373,6 +387,87 @@ package actionScripts.plugins.as3project.mxmlc
 		private function releaseCommand(args:Array):void
 		{
 			build(null, false, true);
+		}
+
+		private function clean(event:Event):void
+		{
+			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+			if (!as3Project)
+			{
+				return;
+			}
+
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+
+			var outputFile:FileLocation;
+			var swfPath:FileLocation;
+			var swfFolderPath:FileLocation;
+			var folderCount:int = 0;
+			var currentTargets:Array = [];
+
+			if (as3Project.swfOutput.path)
+			{
+				outputFile = as3Project.swfOutput.path;
+				swfFolderPath = outputFile.fileBridge.parent;
+			}
+
+			if (swfFolderPath.fileBridge.exists)
+			{
+				var directoryItems:Array = swfFolderPath.fileBridge.getDirectoryListing();
+				if (directoryItems.length == 0)
+				{
+					success("Project files cleaned successfully: " + as3Project.name);
+				}
+				for each (var directory:Object in directoryItems)
+				{
+					folderCount++;
+					currentTargets.push(swfFolderPath);
+
+					directory.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+					directory.addEventListener(Event.COMPLETE, onProjectFolderComplete);
+
+					if (directory.isDirectory)
+					{
+						directory.deleteDirectoryAsync(true);
+					}
+					else
+					{
+						directory.deleteFileAsync();
+					}
+				}
+			}
+			else
+			{
+				success("Project files cleaned successfully: " + as3Project.name);
+			}
+
+			function onProjectFolderComplete(event:Event):void
+			{
+				event.target.removeEventListener(Event.COMPLETE, onProjectFolderComplete);
+				event.target.removeEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+
+				if (currentTargets)
+				{
+					folderCount--;
+					if (folderCount <= 0)
+					{
+						for (var i:int = 0; i < currentTargets.length; i++)
+						{
+							dispatcher.dispatchEvent(new RefreshTreeEvent(currentTargets[i], true));
+						}
+
+						success("Project files cleaned successfully: " + as3Project.name);
+						currentTargets = null;
+						folderCount = 0;
+					}
+				}
+			}
+
+			function onCleanProjectIOException(event:IOErrorEvent):void
+			{
+				event.target.removeEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+				error("Cannot delete file or folder: " + event.target.nativePath + "\nError: " + event.text);
+			}
 		}
 		
 		private function reset():void 
@@ -1001,7 +1096,6 @@ package actionScripts.plugins.as3project.mxmlc
 				{
 					outputFile = pvo.swfOutput.path.fileBridge.getFile as File;
 				}
-
 				var output:String;
 				if (outputFile)
 				{

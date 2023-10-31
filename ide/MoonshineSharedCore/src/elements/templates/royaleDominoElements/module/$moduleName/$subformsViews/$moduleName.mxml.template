@@ -1,0 +1,26 @@
+<j:VGroup  xmlns:j="library://ns.apache.org/royale/jewel" xmlns:fx="http://ns.adobe.com/mxml/2009"
+			xmlns:js="library://ns.apache.org/royale/basic" xmlns:html="library://ns.apache.org/royale/html"
+			xmlns:joditeditor="$ProjectName.classes.joditeditor.*"
+			xmlns:components="$ProjectName.views.components.*"
+			%NamespaceStatements%
+			gap="5" stateChangeComplete="{this.dispatchEvent(new Event('valueChange'))}"
+			itemsVerticalAlign="itemsTop" initComplete="onViewInitComplete(event)" percentHeight="100">
+  <j:beads>
+    <js:ContainerDataBinding/>
+  </j:beads>
+  <fx:Script><![CDATA[
+	%ImportStatements%
+
+	[Bindable] public var itemVO:I$moduleNameVO;
+	[Bindable] public var isDisabled:Boolean = false;
+
+    public static const NAME:String = "%ViewComponentName%";
+
+    private function onViewInitComplete(event:Event):void
+    {
+
+    }
+
+]]></fx:Script>
+  %ViewContent%
+</j:VGroup>

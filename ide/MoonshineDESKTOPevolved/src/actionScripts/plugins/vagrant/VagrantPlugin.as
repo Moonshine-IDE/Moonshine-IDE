@@ -1,34 +1,60 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
 	import actionScripts.events.DominoEvent;
+	import actionScripts.events.OnDiskBuildEvent;
 	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
 	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
-
+	import actionScripts.plugins.vagrant.utils.DatabaseJobBase;
+	import actionScripts.plugins.vagrant.utils.DeployBuildOnVagrantJob;
+	import actionScripts.plugins.vagrant.utils.DeployDatabaseJob;
+	import actionScripts.plugins.vagrant.utils.DeployRoyaleToVagrantJob;
+	import actionScripts.plugins.vagrant.utils.ImportDocumentsJSONJob;
+	import actionScripts.plugins.vagrant.utils.RunDatabaseOnVagrantJob;
+	
 	import components.popup.ConvertDominoDatabasePopup;
-
+	import components.popup.DeployDominoDatabasePopup;
+	import components.popup.DeployRoyaleVagrantPopup;
+	import components.popup.ImportDocumentJSONPopup;
+	import components.popup.SelectVagrantPopup;
+	
 	import flash.display.DisplayObject;
 
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
 
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
@@ -53,6 +79,12 @@ package actionScripts.plugins.vagrant
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import actionScripts.events.ApplicationEvent;
+	import actionScripts.plugin.settings.event.RequestSettingByNameEvent;
+	import flash.utils.setTimeout;
+	import actionScripts.plugins.vagrant.settings.renderer.LinkedInstancesRenderer;
+	import haxe.io.Error;
+	import flash.utils.clearInterval;
 
 	public class VagrantPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
 	{
@@ -63,6 +95,7 @@ package actionScripts.plugins.vagrant
 		override public function get description():String	{ return "Access to Vagrant support from Moonshine-IDE"; }
 		
 		private var pathSetting:PathSetting;
+		private var linkedInstanceSetting:LinkedInstancesSetting;
 		private var defaultVagrantPath:String;
 		private var defaultVirtualBoxPath:String;
 		private var vagrantConsole:VagrantConsolePlugin;
@@ -71,7 +104,16 @@ package actionScripts.plugins.vagrant
 		private var vagrantFileLocation:FileLocation;
 		private var vagrantInstances:ArrayCollection;
 		private var convertDominoDBPopup:ConvertDominoDatabasePopup;
+		private var deployDominoDBPopup:DeployDominoDatabasePopup;
+		private var importDocumentsJSONPopup:ImportDocumentJSONPopup;
+		private var deployRoyaleVagrantPopup:DeployRoyaleVagrantPopup;
+		private var selectVagrantPopup:SelectVagrantPopup;
 		private var dbConversionJob:ConvertDatabaseJob;
+		private var deployDBJob:DeployDatabaseJob;
+		private var importDocumentJSONJob:ImportDocumentsJSONJob;
+		private var deployRoyaleToVagrantJob:DeployRoyaleToVagrantJob;
+		private var runDatabaseOnVagrantJob:RunDatabaseOnVagrantJob;
+		private var deployBuildOnVagrantJob:DeployBuildOnVagrantJob;
 
 		public function get vagrantPath():String
 		{
@@ -126,6 +168,12 @@ package actionScripts.plugins.vagrant
 			}
 
 			dispatcher.addEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase, false, 0, true);
+			dispatcher.addEventListener(DominoEvent.EVENT_RUN_DOMINO_ON_VAGRANT, onRunDominoOnVagrant, false, 0, true);
+			dispatcher.addEventListener(DominoEvent.EVENT_BUILD_ON_VAGRANT, onBuildOnVagrant, false, 0, true);
+			dispatcher.addEventListener(DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT, onImportDocumentsJSONRequest, false, 0, true);
+			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest, false, 0, true);
+			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest, false, 0, true);
+			dispatcher.addEventListener(ApplicationEvent.INVOKE, onInvokeEvent, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -134,6 +182,12 @@ package actionScripts.plugins.vagrant
 			removeMenuListeners();
 			onConsoleDeactivated(null);
 			dispatcher.removeEventListener(DominoEvent.EVENT_CONVERT_DOMINO_DATABASE, onConvertDominoDatabase);
+			dispatcher.removeEventListener(DominoEvent.EVENT_RUN_DOMINO_ON_VAGRANT, onRunDominoOnVagrant);
+			dispatcher.removeEventListener(DominoEvent.EVENT_BUILD_ON_VAGRANT, onBuildOnVagrant);
+			dispatcher.removeEventListener(DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT, onImportDocumentsJSONRequest);
+			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest);
+			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest);
+			dispatcher.removeEventListener(ApplicationEvent.INVOKE, onInvokeEvent);
 		}
 
 		override public function resetSettings():void
@@ -146,6 +200,7 @@ package actionScripts.plugins.vagrant
 			if (pathSetting)
 			{
 				pathSetting = null;
+				linkedInstanceSetting = null;
 			}
 		}
 
@@ -158,13 +213,36 @@ package actionScripts.plugins.vagrant
         {
 			onSettingsClose();
 			pathSetting = new PathSetting(this, 'vagrantPath', 'Vagrant Home', true, vagrantPath, false, false, defaultVagrantPath);
+			linkedInstanceSetting = new LinkedInstancesSetting(vagrantInstances);
 
 			return Vector.<ISetting>([
 				pathSetting,
 				new PathSetting(this, 'virtualBoxPath', 'VirtualBox Home (Optional)', true, virtualBoxPath, false, false, defaultVirtualBoxPath),
-				new LinkedInstancesSetting(vagrantInstances)
+				linkedInstanceSetting
 			]);
         }
+        
+        private function onInvokeEvent(event:ApplicationEvent):void
+        {
+        	// loads/adds vagrant instances from SHI config
+        	var shiInstances:Array = VagrantUtil.getVagrantInstancesFromSHI(this.vagrantInstances);
+    
+        	if (shiInstances.length > 0)
+        	{
+	        	// open settings/vagrant-instance
+        		dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.vagrant::VagrantPlugin"));	
+        		
+        		var interval:uint = setTimeout(function():void
+        		{
+        			clearInterval(interval);
+        			
+					// get current instance of vagrant-instance in settings
+					var lir: LinkedInstancesRenderer = (linkedInstanceSetting.renderer) as LinkedInstancesRenderer;
+					lir.dgVagrantInstances.selectedItem = shiInstances[0]; // selects and opens the first item in edit
+					lir.onItemDoubleClicked(null);
+        		}, 1000);
+        	}
+		}
 
 		private function onConvertDominoDatabase(event:Event):void
 		{
@@ -178,11 +256,102 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
+		private function onRunDominoOnVagrant(event:Event):void
+		{
+			if (!selectVagrantPopup)
+			{
+				selectVagrantPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SelectVagrantPopup, true) as SelectVagrantPopup;
+				selectVagrantPopup.instances = vagrantInstances;
+				selectVagrantPopup.requireCapability = "java-domino-gradle";
+				selectVagrantPopup.addEventListener(CloseEvent.CLOSE, onSelectVagrantPopupClosed);
+				selectVagrantPopup.addEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelectedRunDominoOnVagrant);
+				PopUpManager.centerPopUp(selectVagrantPopup);
+			}
+		}
+
+		private function onBuildOnVagrant(event:Event):void
+		{
+			if (!selectVagrantPopup)
+			{
+				selectVagrantPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, SelectVagrantPopup, true) as SelectVagrantPopup;
+				selectVagrantPopup.instances = vagrantInstances;
+				selectVagrantPopup.requireCapability = "nsfodp";
+				selectVagrantPopup.addEventListener(CloseEvent.CLOSE, onSelectVagrantPopupClosed);
+				selectVagrantPopup.addEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelectedBuildOnVagrant);
+				PopUpManager.centerPopUp(selectVagrantPopup);
+			}
+		}
+
+		private function onDeployDominoDatabseRequest(event:Event):void
+		{
+			if (!deployDominoDBPopup)
+			{
+				deployDominoDBPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, DeployDominoDatabasePopup) as DeployDominoDatabasePopup;
+				deployDominoDBPopup.instances = vagrantInstances;
+				deployDominoDBPopup.addEventListener(CloseEvent.CLOSE, onDeployDominoDBPopupClosed);
+				deployDominoDBPopup.addEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployDatabaseProcess);
+				PopUpManager.centerPopUp(deployDominoDBPopup);
+			}
+		}
+
+		private function onImportDocumentsJSONRequest(event:Event):void
+		{
+			if (!importDocumentsJSONPopup)
+			{
+				importDocumentsJSONPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, ImportDocumentJSONPopup) as ImportDocumentJSONPopup;
+				importDocumentsJSONPopup.instances = vagrantInstances;
+				importDocumentsJSONPopup.addEventListener(CloseEvent.CLOSE, onImportDocumentJSONPopupClosed);
+				importDocumentsJSONPopup.addEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onImportDocumentJSONDatabaseProcess);
+				PopUpManager.centerPopUp(importDocumentsJSONPopup);
+			}
+		}
+
+		private function onDeployRoyalToVagrantRequest(event:Event):void
+		{
+			if (!deployRoyaleVagrantPopup)
+			{
+				deployRoyaleVagrantPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, DeployRoyaleVagrantPopup) as DeployRoyaleVagrantPopup;
+				deployRoyaleVagrantPopup.instances = vagrantInstances;
+				deployRoyaleVagrantPopup.addEventListener(CloseEvent.CLOSE, onDeployRoyaleVagrantPopupClosed);
+				deployRoyaleVagrantPopup.addEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployRoyaleVagrantProcess);
+				PopUpManager.centerPopUp(deployRoyaleVagrantPopup);
+			}
+		}
+
 		private function onConvertDominoDBPopupClosed(event:CloseEvent):void
 		{
 			convertDominoDBPopup.removeEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
 			convertDominoDBPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartNSFConversionProcess);
 			convertDominoDBPopup = null;
+		}
+
+		private function onDeployDominoDBPopupClosed(event:CloseEvent):void
+		{
+			deployDominoDBPopup.removeEventListener(CloseEvent.CLOSE, onConvertDominoDBPopupClosed);
+			deployDominoDBPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployDatabaseProcess);
+			deployDominoDBPopup = null;
+		}
+
+		private function onImportDocumentJSONPopupClosed(event:CloseEvent):void
+		{
+			importDocumentsJSONPopup.removeEventListener(CloseEvent.CLOSE, onImportDocumentJSONPopupClosed);
+			importDocumentsJSONPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onImportDocumentJSONDatabaseProcess);
+			importDocumentsJSONPopup = null;
+		}
+
+		private function onDeployRoyaleVagrantPopupClosed(event:CloseEvent):void
+		{
+			deployRoyaleVagrantPopup.removeEventListener(CloseEvent.CLOSE, onDeployRoyaleVagrantPopupClosed);
+			deployRoyaleVagrantPopup.removeEventListener(ConvertDominoDatabasePopup.EVENT_START_CONVERSION, onStartDeployRoyaleVagrantProcess);
+			deployRoyaleVagrantPopup = null;
+		}
+
+		private function onSelectVagrantPopupClosed(event:CloseEvent):void
+		{
+			selectVagrantPopup.removeEventListener(CloseEvent.CLOSE, onSelectVagrantPopupClosed);
+			selectVagrantPopup.removeEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelectedRunDominoOnVagrant);
+			selectVagrantPopup.removeEventListener(SelectVagrantPopup.EVENT_INSTANCE_SELECTED, onVagrantInstanceSelectedBuildOnVagrant);
+			selectVagrantPopup = null;
 		}
 
 		private function onStartNSFConversionProcess(event:Event):void
@@ -192,25 +361,192 @@ package actionScripts.plugins.vagrant
 
 			// get the object to work with
 			dbConversionJob = new ConvertDatabaseJob(
-					convertDominoDBPopup.uploadRequestReturn,
 					convertDominoDBPopup.selectedInstance.url,
 					convertDominoDBPopup.destinationFolder
 			);
 			configureListenersDBConversionJob(true);
+			dbConversionJob.uploadAndRunCommandOnServer(new File(convertDominoDBPopup.databasePath));
+		}
+
+		private function onStartDeployDatabaseProcess(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Deploying Database"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployDatabaseRequest, false, 0, true);
+
+			// get the object to work with
+			deployDBJob = new DeployDatabaseJob(
+					deployDominoDBPopup.selectedInstance.url,
+					deployDominoDBPopup.targetDatabase
+			);
+			configureListenersDeployDatabaseJob(true);
+			deployDBJob.uploadAndRunCommandOnServer(new File(deployDominoDBPopup.localDatabasePath));
+		}
+
+		private function onImportDocumentJSONDatabaseProcess(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED, "Deploying Database"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateImportDocumentJSONRequest, false, 0, true);
+
+			// get the object to work with
+			importDocumentJSONJob = new ImportDocumentsJSONJob(
+					importDocumentsJSONPopup.selectedInstance.url
+			);
+			configureListenersImportDocumentJSONJob(true);
+			importDocumentJSONJob.uploadAndRunCommandOnServer(new File(importDocumentsJSONPopup.jsonFilePath));
+		}
+
+		private function onStartDeployRoyaleVagrantProcess(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Deploying Royale to Vagrant"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployRoyaleVagrantRequest, false, 0, true);
+
+			// get the object to work with
+			deployRoyaleToVagrantJob = new DeployRoyaleToVagrantJob(
+					deployRoyaleVagrantPopup.selectedInstance.url,
+					deployRoyaleVagrantPopup.targetDatabase
+			);
+			deployRoyaleToVagrantJob.deployedURL = deployRoyaleVagrantPopup.databaseURL;
+			configureListenersDeployRoyaleToVagrantJob(true);
+			deployRoyaleToVagrantJob.zipProject(deployRoyaleVagrantPopup.sourceDirectory);
+		}
+
+		private function onVagrantInstanceSelectedRunDominoOnVagrant(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Deploy and run database to Vagrant"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunDatabaseVagrantRequest, false, 0, true);
+
+			// get the object to work with
+			runDatabaseOnVagrantJob = new RunDatabaseOnVagrantJob(
+					selectVagrantPopup.selectedInstance.url
+			);
+			configureListenersRunDatabaseToVagrantJob(true);
+			runDatabaseOnVagrantJob.zipProject(model.activeProject.folderLocation);
+		}
+
+		private function onVagrantInstanceSelectedBuildOnVagrant(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_STARTED,"Running Build on Vagrant"));
+			dispatcher.addEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildOnVagrantRequest, false, 0, true);
+
+			// get the object to work with
+			deployBuildOnVagrantJob = new DeployBuildOnVagrantJob(
+					selectVagrantPopup.selectedInstance.url
+			);
+			configureListenersDeployBuildOnVagrantJob(true);
+			deployBuildOnVagrantJob.zipProject(model.activeProject.folderLocation);
 		}
 
 		private function configureListenersDBConversionJob(listen:Boolean):void
 		{
 			if (listen)
 			{
-				dbConversionJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDBConversionEnded, false, 0, true);
-				dbConversionJob.addEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDBConversionEnded, false, 0, true);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDBConversionEnded, false, 0, true);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDBConversionEnded, false, 0, true);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDBConversionUploadUpdates, false, 0, true);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDBConversionUploadUpdates, false, 0, true);
 			}
 			else
 			{
-				dbConversionJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_COMPLETE, onDBConversionEnded);
-				dbConversionJob.removeEventListener(ConvertDatabaseJob.EVENT_CONVERSION_FAILED, onDBConversionEnded);
+				dbConversionJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDBConversionEnded);
+				dbConversionJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDBConversionEnded);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDBConversionUploadUpdates);
+				dbConversionJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDBConversionUploadUpdates);
 				dbConversionJob = null;
+			}
+		}
+
+		private function configureListenersDeployDatabaseJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				deployDBJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployDatabaseEnded, false, 0, true);
+				deployDBJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployDatabaseEnded, false, 0, true);
+				deployDBJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDeployDatabaseUploadUpdates, false, 0, true);
+				deployDBJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDeployDatabaseUploadUpdates, false, 0, true);
+			}
+			else
+			{
+				deployDBJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployDatabaseEnded);
+				deployDBJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployDatabaseEnded);
+				deployDBJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDeployDatabaseUploadUpdates);
+				deployDBJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDeployDatabaseUploadUpdates);
+				deployDBJob = null;
+			}
+		}
+
+		private function configureListenersImportDocumentJSONJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				importDocumentJSONJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onImportDocumentJSONJobEnded, false, 0, true);
+				importDocumentJSONJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onImportDocumentJSONJobEnded, false, 0, true);
+				importDocumentJSONJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onImportDocumentJSONUploadUpdates, false, 0, true);
+				importDocumentJSONJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onImportDocumentJSONUploadUpdates, false, 0, true);
+			}
+			else
+			{
+				importDocumentJSONJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onImportDocumentJSONJobEnded);
+				importDocumentJSONJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onImportDocumentJSONJobEnded);
+				importDocumentJSONJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onImportDocumentJSONUploadUpdates);
+				importDocumentJSONJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onImportDocumentJSONUploadUpdates);
+				importDocumentJSONJob = null;
+			}
+		}
+
+		private function configureListenersDeployRoyaleToVagrantJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				deployRoyaleToVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployRoyaleEnded, false, 0, true);
+				deployRoyaleToVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployRoyaleEnded, false, 0, true);
+				deployRoyaleToVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDeployRoyaleUploadUpdates, false, 0, true);
+				deployRoyaleToVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDeployRoyaleUploadUpdates, false, 0, true);
+			}
+			else
+			{
+				deployRoyaleToVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployRoyaleEnded);
+				deployRoyaleToVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployRoyaleEnded);
+				deployRoyaleToVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onDeployRoyaleUploadUpdates);
+				deployRoyaleToVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onDeployRoyaleUploadUpdates);
+				deployRoyaleToVagrantJob = null;
+			}
+		}
+
+		private function configureListenersRunDatabaseToVagrantJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				runDatabaseOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onRunDatabaseToVagrantEnded, false, 0, true);
+				runDatabaseOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onRunDatabaseToVagrantEnded, false, 0, true);
+				runDatabaseOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onVagrantUploadUpdates, false, 0, true);
+				runDatabaseOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onVagrantUploadUpdates, false, 0, true);
+			}
+			else
+			{
+				runDatabaseOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onRunDatabaseToVagrantEnded);
+				runDatabaseOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onRunDatabaseToVagrantEnded);
+				runDatabaseOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onVagrantUploadUpdates);
+				runDatabaseOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onVagrantUploadUpdates);
+				runDatabaseOnVagrantJob = null;
+			}
+		}
+
+		private function configureListenersDeployBuildOnVagrantJob(listen:Boolean):void
+		{
+			if (listen)
+			{
+				deployBuildOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployBuildOnVagrantEnded, false, 0, true);
+				deployBuildOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployBuildOnVagrantEnded, false, 0, true);
+				deployBuildOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onBuildOnVagrantUploadUpdates, false, 0, true);
+				deployBuildOnVagrantJob.addEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onBuildOnVagrantUploadUpdates, false, 0, true);
+			}
+			else
+			{
+				deployBuildOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_COMPLETE, onDeployBuildOnVagrantEnded);
+				deployBuildOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_CONVERSION_FAILED, onDeployBuildOnVagrantEnded);
+				deployBuildOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES, onBuildOnVagrantUploadUpdates);
+				deployBuildOnVagrantJob.removeEventListener(DatabaseJobBase.EVENT_VAGRANT_UPLOAD_FAILED, onBuildOnVagrantUploadUpdates);
+				deployBuildOnVagrantJob = null;
 			}
 		}
 
@@ -221,10 +557,165 @@ package actionScripts.plugins.vagrant
 			configureListenersDBConversionJob(false);
 		}
 
+		private function onDeployDatabaseEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployDatabaseRequest);
+			configureListenersDeployDatabaseJob(false);
+		}
+
+		private function onImportDocumentJSONJobEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateImportDocumentJSONRequest);
+			configureListenersImportDocumentJSONJob(false);
+		}
+
+		private function onDeployRoyaleEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateDeployRoyaleVagrantRequest);
+
+			if (event && event.type == DatabaseJobBase.EVENT_CONVERSION_COMPLETE)
+			{
+				navigateToURL(new URLRequest(deployRoyaleToVagrantJob.deployedURL));
+			}
+
+			configureListenersDeployRoyaleToVagrantJob(false);
+		}
+
+		private function onRunDatabaseToVagrantEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateRunDatabaseVagrantRequest);
+
+			if (event && event.type == DatabaseJobBase.EVENT_CONVERSION_COMPLETE)
+			{
+
+			}
+
+			configureListenersRunDatabaseToVagrantJob(false);
+		}
+
+		private function onDeployBuildOnVagrantEnded(event:Event):void
+		{
+			dispatcher.dispatchEvent(new StatusBarEvent(StatusBarEvent.PROJECT_BUILD_ENDED));
+			dispatcher.removeEventListener(StatusBarEvent.PROJECT_BUILD_TERMINATE, onTerminateBuildOnVagrantRequest);
+
+			if (event && event.type == DatabaseJobBase.EVENT_CONVERSION_COMPLETE)
+			{
+
+			}
+
+			configureListenersDeployBuildOnVagrantJob(false);
+		}
+
+		private function onDBConversionUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				convertDominoDBPopup.close();
+			}
+			else
+			{
+				convertDominoDBPopup.reset();
+			}
+		}
+
+		private function onDeployDatabaseUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				deployDominoDBPopup.close();
+			}
+			else
+			{
+				deployDominoDBPopup.reset();
+			}
+		}
+
+		private function onImportDocumentJSONUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				importDocumentsJSONPopup.close();
+			}
+			else
+			{
+				importDocumentsJSONPopup.reset();
+			}
+		}
+
+		private function onDeployRoyaleUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				deployRoyaleVagrantPopup.close();
+			}
+			else
+			{
+				deployRoyaleVagrantPopup.reset();
+			}
+		}
+
+		private function onVagrantUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				selectVagrantPopup.close();
+			}
+			else
+			{
+				selectVagrantPopup.reset();
+			}
+		}
+
+		private function onBuildOnVagrantUploadUpdates(event:Event):void
+		{
+			if (event.type == DatabaseJobBase.EVENT_VAGRANT_UPLOAD_COMPLETES)
+			{
+				selectVagrantPopup.close();
+			}
+			else
+			{
+				selectVagrantPopup.reset();
+			}
+		}
+
 		private function onTerminateConversionRequest(event:StatusBarEvent):void
 		{
 			dbConversionJob.stop();
 			onDBConversionEnded(null);
+		}
+
+		private function onTerminateDeployDatabaseRequest(event:StatusBarEvent):void
+		{
+			deployDBJob.stop();
+			onDeployDatabaseEnded(null);
+		}
+
+		private function onTerminateImportDocumentJSONRequest(event:StatusBarEvent):void
+		{
+			importDocumentJSONJob.stop();
+			onImportDocumentJSONJobEnded(null);
+		}
+
+		private function onTerminateDeployRoyaleVagrantRequest(event:StatusBarEvent):void
+		{
+			deployRoyaleToVagrantJob.stop();
+			onDeployRoyaleEnded(null);
+		}
+
+		private function onTerminateRunDatabaseVagrantRequest(event:StatusBarEvent):void
+		{
+			runDatabaseOnVagrantJob.stop();
+			onRunDatabaseToVagrantEnded(null);
+		}
+
+		private function onTerminateBuildOnVagrantRequest(event:StatusBarEvent):void
+		{
+			deployBuildOnVagrantJob.stop();
+			onDeployBuildOnVagrantEnded(null);
 		}
 
 		private function updateEventListeners():void

@@ -560,6 +560,27 @@
 				<string>Owner</string>]]>
 				</replacevalue>
 			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 6</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 6</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 7</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 7</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[<string>Moonshine Project Configuration File 8</string>]]></replacetoken>
+				<replacevalue><![CDATA[<string>Moonshine Project Configuration File 8</string>
+				<key>LSHandlerRank</key>
+				<string>Owner</string>]]>
+				</replacevalue>
+			</replacefilter>
 		</replace>
 		<!-- Since its found impossible to call an ANT variable inside ![CDATA[ section to replace <cfBundleName> value
 			I need to make a conditional statement -->
@@ -575,7 +596,26 @@
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>60.0</string>]]></replacevalue>
+					<string>60.0</string>
+					<key>CFBundleSupportedPlatforms</key>
+					<array>
+						<string>MacOSX</string>
+					</array>
+					<key>CFBundleURLTypes</key>
+					<array>
+						<dict>
+							<key>CFBundleIdentifier</key>
+							<string>com.moonshine-ide.development</string>
+							<key>CFBundleTypeRole</key>
+							<string>Viewer</string>
+							<key>CFBundleURLName</key>
+							<string>com.moonshine-ide.development</string>
+							<key>CFBundleURLSchemes</key>
+							<array>
+								<string>moonshinedevelopment</string>
+							</array>
+						</dict>
+					</array>]]></replacevalue>
 				</replace>
 			</then>
 			<else>
@@ -588,7 +628,25 @@
 					<key>LSApplicationCategoryType</key>
 					<string>public.app-category.developer-tools</string>
 					<key>CFBundleVersion</key>
-					<string>60.0</string>]]></replacevalue>
+					<string>60.0</string><key>CFBundleSupportedPlatforms</key>
+					<array>
+						<string>MacOSX</string>
+					</array>
+					<key>CFBundleURLTypes</key>
+					<array>
+						<dict>
+							<key>CFBundleIdentifier</key>
+							<string>com.moonshine-ide</string>
+							<key>CFBundleTypeRole</key>
+							<string>Viewer</string>
+							<key>CFBundleURLName</key>
+							<string>com.moonshine-ide</string>
+							<key>CFBundleURLSchemes</key>
+							<array>
+								<string>moonshine</string>
+							</array>
+						</dict>
+					</array>]]></replacevalue>
 				</replace>
 			</else>			
 		</if>
@@ -601,6 +659,11 @@
 				<replaceregexp file="${desktopBinaryFilename}/Contents/Info.plist" match="macapp-identifier" replace="com.moonshine-ide" flags="g"/>
 			</else>			
 		</if>
+		<!-- @devsena: Marking something in the app file to determine between App Store or non-App-Store build.
+			App Store build will contains the AppStoreConfig.xml where non-App-Store build won't -->  
+		<echo file="${desktopBinaryFilename}/Contents/Resources/elements/AppStoreConfig.xml" append="true">
+		   &lt;isAppStore&gt;true&lt;&#47;isAppStore&gt;
+		</echo>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='security unlock-keychain -p "${certSignedMacOSKeychainPass}"'/>
@@ -675,11 +738,11 @@
 		</exec>
 		
 
-		<!-- @devsena: Marking something in the app file to determine between App Store or non-App-Store build -->
-		<replace file="${desktopBinaryFilename}/Contents/Resources/elements/InstallConfig.xml" failOnNoReplacements="true">
-			<replacetoken><![CDATA[$isAppStoreVersion]]></replacetoken>
-			<replacevalue><![CDATA[false]]></replacevalue>
-		</replace>
+		<!-- @devsena: Remove the file in non-App-Store build so Moonshine thinks a Non-App-Store build  -->
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value="rm ${desktopBinaryFilename}/Contents/Resources/elements/AppStoreConfig.xml"/>
+		</exec>
 		<!-- @devsena: Avail non-sandbox entitlement to be use in upcoming process -->
 		<copy file="entitlement-non-sandbox.plist" tofile="${debug_dir}/entitlement.plist" overwrite="true"/>
 		<exec executable="bash" failonerror="true">
@@ -926,41 +989,16 @@
 
 	<target name="InstallHaxeDependencies" unless="nohaxelib">
 		<echo>Installing Haxe Libraries</echo>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="feathersui"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="openfl"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="actuate"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="lime"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
-			dir="${LibraryGUICore}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="markdown-openfl-textfield"/>
-			<arg value="--quiet"/>
-		</exec>
+                <haxelibInstall library="lime" version="8.0.0" />
+                <haxelibInstall library="openfl" version="9.2.0" />
+                <haxelibInstall library="feathersui" version="1.0.0" />
+                <haxelibInstall library="actuate" />
+                <haxelibInstall library="markdown-openfl-textfield" version="1.0.2" />
+                <haxelibInstall library="format" />
+                <haxelibInstall library="hxp" />
+                <haxelibInstall library="amfio" />
+				
+                <!-- install from Git -->
  		<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
  			dir="${LibraryGUICore}"
  			failonerror="true">
@@ -1214,4 +1252,19 @@
 			</then>
 		</if>
 	</target>
+	
+
+	<macrodef name="haxelibInstall" description="Install a haxe library">
+		<attribute name="library" />
+		<attribute name="version" default="" />
+
+		<sequential>
+			<exec executable="${HAXE_LIB_DIRECTORY}/haxelib"
+				dir="${LibraryGUICore}"
+				failonerror="true">
+				<arg line="install @{library} @{version} --always --quiet" />
+			</exec>
+		
+		</sequential>
+	</macrodef>
 </project>

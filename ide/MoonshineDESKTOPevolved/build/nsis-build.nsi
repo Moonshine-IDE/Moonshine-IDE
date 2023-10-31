@@ -212,7 +212,7 @@ FunctionEnd
 ;Installer Sections
 
 Section "Moonshine-IDE" SecMoonshineInstaller
-
+			
 	;copy all files
 	SetOutPath "$INSTDIR"
 	File /r "DEPLOY\${INSTALLERNAME}EXE\*"
@@ -232,6 +232,9 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".javaproj" "Moonshine.Project.Configuration.File.3"
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".grailsproj" "Moonshine.Project.Configuration.File.4"
 	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".ondiskproj" "Moonshine.Project.Configuration.File.5"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".hxproj" "Moonshine.Project.Configuration.File.6"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".genericproj" "Moonshine.Project.Configuration.File.7"
+	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".tibboproj" "Moonshine.Project.Configuration.File.8"
 	
 	;Store installation folder
 	WriteRegStr HKCU "Software\${INSTALLERNAME}" "" $INSTDIR
@@ -263,6 +266,11 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 		"NoModify" 0x1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"NoRepair" 0x1
+		
+	WriteRegStr HKCR "${INSTALLERNAME}" \
+		"URL Protocol" ""
+	WriteRegStr HKCR "${INSTALLERNAME}\shell\open\command" \
+		"" "$\"$INSTDIR\${INSTALLERNAME}.exe$\" $\"%1$\""
 	
 	${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 	IntFmt $0 "0x%08X" $0
@@ -299,8 +307,12 @@ Section "Uninstall"
 	${unregisterExtension} ".javaproj" "Moonshine.Project.Configuration.File.3"
 	${unregisterExtension} ".grailsproj" "Moonshine.Project.Configuration.File.4"
 	${unregisterExtension} ".ondiskproj" "Moonshine.Project.Configuration.File.5"
+	${unregisterExtension} ".hxproj" "Moonshine.Project.Configuration.File.6"
+	${unregisterExtension} ".genericproj" "Moonshine.Project.Configuration.File.7"
+	${unregisterExtension} ".tibboproj" "Moonshine.Project.Configuration.File.8"
 	
 	DeleteRegKey /ifempty HKCU "Software\${INSTALLERNAME}"
 	
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}"
+	DeleteRegKey HKCR "${INSTALLERNAME}"
 SectionEnd

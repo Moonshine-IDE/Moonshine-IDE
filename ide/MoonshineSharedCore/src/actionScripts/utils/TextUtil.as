@@ -1,25 +1,42 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
 	import flash.geom.Point;
 	import flash.xml.XMLNode;
+
+	import 	mx.utils.Base64Encoder;
+    import  mx.utils.Base64Decoder;
+    import  flash.utils.ByteArray;
 	
 	public class TextUtil
 	{
@@ -140,6 +157,87 @@ package actionScripts.utils
 		{
     		return new XMLNode( 3, str ).toString();
 		}
+
+
+		public static function base64Encode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Encoder = new Base64Encoder();
+			base64.insertNewLines = false;
+			var byte:ByteArray = new ByteArray();
+			byte.writeMultiByte(str, charset);
+			base64.encodeBytes(byte);
+			return base64.toString();
+		}
+		
+		public static function base64Decode(str:String, charset:String = "UTF-8"):String{
+			if((str==null)){
+				return "";
+			}
+			var base64:Base64Decoder = new Base64Decoder();
+			base64.decode(str);
+			var byteArray:ByteArray = base64.toByteArray();
+			return byteArray.readMultiByte(byteArray.length, charset);;
+		}
+
+		//some time the form name or view name contian some slash, it will break the path ,so we need fix with this function
+
+		public static function fixDominoName(sourceName:String):String
+		{
+			if(sourceName==null){
+				return "";
+			}
+			sourceName=stripAlias(sourceName);
+			sourceName=sourceName.replace(/>/g, "_3e");
+			sourceName=sourceName.replace(/\\\\/g, "_5c");
+			sourceName=sourceName.replace(/\\/g, "_2a");
+			sourceName=sourceName.replace(/\//g, "_2f");
+
+			return sourceName;
+
+		}
+
+		public static function fixDominoViewName(sourceName:String):String
+		{
+			if(sourceName==null){
+				return "";
+			}
+			sourceName=stripAlias(sourceName);
+			sourceName=sourceName.replace(/>/g, "_3e");
+		
+			sourceName=sourceName.replace(/[\/\\]+/g, "_5c");
+			
+
+			return sourceName;
+
+		}
+
+		public static function toDominoViewNormalName(sourceName:String):String
+		{
+			if(sourceName==null){
+				return "";
+			}
+			sourceName=stripAlias(sourceName);
+		
+			sourceName=sourceName.replace(/_5c/g, "\\");
+			
+
+			return sourceName;
+		}
+
+		public static function stripAlias(fullName:String):String
+		{
+        	var aliasStartIndex:int = fullName.indexOf('|');
+			if (aliasStartIndex >= 0) {
+				// strip the alias
+				return  fullName.substring(0, aliasStartIndex);
+			}
+			else {
+				// no alias found
+				return fullName;
+			}
+    	}
 
 	}
 }

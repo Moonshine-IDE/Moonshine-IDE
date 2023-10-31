@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter.components
 {
@@ -26,7 +39,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 	{
 		public static function toCode(value:DominoFormFieldVO):String
 		{
-			var formItem:String = readTemplate("FormItem.template");
+			var formItem:String = readTemplate("elements/templates/royaleTabularCRUD/elements/FormItem.template");
 			var formContent:String;
 			
 			if (value.isMultiValue)
@@ -111,7 +124,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var beads:String = updateBeads(field);
 			
-			var textInput:String = readTemplate("TextInput.template");;
+			var textInput:String = readTemplate("elements/templates/royaleTabularCRUD/elements/TextInput.template");
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
 			textInput = textInput.replace(/%Beads%/ig, beads);
 			
@@ -123,7 +136,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var beads:String = updateBeads(field);
 			
-			var textInput:String = readTemplate("TextInput.template");;
+			var textInput:String = readTemplate("elements/templates/royaleTabularCRUD/elements/TextInput.template");
 			textInput = textInput.replace(/%localId%/ig, field.name +"_id");
 			textInput = textInput.replace(/%Beads%/ig, beads);
 			
@@ -133,7 +146,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function toMultiValueListCode(field:DominoFormFieldVO):String
 		{			
-			var multiValueField:String = readTemplate("MultiValueList.template");;
+			var multiValueField:String = readTemplate("elements/templates/royaleTabularCRUD/elements/MultiValueList.template");
 			multiValueField = multiValueField.replace(/%localId%/ig, field.name +"_id");
 			multiValueField = multiValueField.replace(/%InputType%/ig, field.type);
 			multiValueField = multiValueField.replace(/%Restrict%/ig, 
@@ -147,7 +160,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var beads:String = updateBeads(field);
 			
-			var dateField:String = readTemplate("DateField.template");;
+			var dateField:String = readTemplate("elements/templates/royaleTabularCRUD/elements/DateField.template");
 			dateField = dateField.replace(/%localId%/ig, field.name +"_id");
 			dateField = dateField.replace(/%Beads%/ig, beads);
 			
@@ -157,7 +170,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function toRichTextFieldCode(field:DominoFormFieldVO):String
 		{
-			var richText:String = readTemplate("JoditEditor.template");
+			var richText:String = readTemplate("elements/templates/royaleTabularCRUD/elements/JoditEditor.template");
 			richText = richText.replace(/%localId%/ig, field.name +"_id");
 			
 			if (field.description) return formItemWithDescription(richText, field);
@@ -166,12 +179,12 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		
 		private static function updateBeads(field:DominoFormFieldVO):String
 		{
-			var beads:String = readTemplate("Beads.template");
+			var beads:String = readTemplate("elements/templates/royaleTabularCRUD/elements/Beads.template");
 			var beadElements:String = "";
 			
 			if (field.editable != FormBuilderEditableType.EDITABLE)
 			{
-				beadElements = readTemplate("BeadDisabled.template") +"\n";
+				beadElements = readTemplate("elements/templates/royaleTabularCRUD/elements/BeadDisabled.template") +"\n";
 			}
 			
 			switch (field.type)
@@ -183,7 +196,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 				case FormBuilderFieldType.RICH_TEXT:
 					break;
 				case FormBuilderFieldType.NUMBER:
-					var beadRestrict:String = readTemplate("BeadRestrict.template");
+					var beadRestrict:String = readTemplate("elements/templates/royaleTabularCRUD/elements/BeadRestrict.template");
 					beadElements += beadRestrict.replace(/%pattern%/gi, "[^0-9]") +"\n";
 					break;
 			}
@@ -196,7 +209,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter.components
 		{
 			var container:String = "<j:VGroup percentWidth=\"100\">\n"+ formItem;
 			
-			var label:String = readTemplate("Label.template");
+			var label:String = readTemplate("elements/templates/royaleTabularCRUD/elements/Label.template");
 			label = label.replace(/%Multiline%/ig, "true");
 			label = label.replace(/%ClassName%/ig, "formFieldDescription");
 			label = label.replace(/%PercentWidth%/ig, "100");

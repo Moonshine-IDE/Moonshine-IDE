@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject.vo
 {
@@ -34,16 +47,26 @@ package actionScripts.plugin.java.javaproject.vo
 	import actionScripts.plugin.settings.vo.NameValuePair;
 	import actionScripts.plugin.settings.vo.ProjectDirectoryPathSetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
-	import actionScripts.valueObjects.ProjectVO;
+import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
+import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.languageServer.LanguageServerProjectVO;
+	import actionScripts.valueObjects.IClasspathProject;
 
-	public class JavaProjectVO extends LanguageServerProjectVO implements IJavaProject
+	public class JavaProjectVO extends LanguageServerProjectVO implements IJavaProject, IClasspathProject
 	{
 		public static const CHANGE_CUSTOM_SDK:String = "CHANGE_CUSTOM_SDK";
 
 		public var mavenBuildOptions:MavenBuildOptions;
 		public var gradleBuildOptions:GradleBuildOptions;
-		public var classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		private var _classpaths:Vector.<FileLocation> = new Vector.<FileLocation>();
+		public function get classpaths():Vector.<FileLocation>
+		{
+			return _classpaths;
+		}
+		public function set classpaths(value:Vector.<FileLocation>):void
+		{
+			_classpaths = value;
+		}
 		
 		private var _jdkType:String = JavaTypes.JAVA_DEFAULT;
 		public function get jdkType():String									{	return _jdkType;	}
@@ -115,6 +138,21 @@ package actionScripts.plugin.java.javaproject.vo
 			JavaExporter.export(this);
 		}
 
+		override public function get customSDKs():EnvironmentUtilsCusomSDKsVO
+		{
+			var envCustomJava:EnvironmentUtilsCusomSDKsVO = new EnvironmentUtilsCusomSDKsVO();
+			if (jdkType == JavaTypes.JAVA_8)
+			{
+				envCustomJava.jdkPath = model.java8Path ? model.java8Path.fileBridge.nativePath : null;
+			}
+			else
+			{
+				envCustomJava.jdkPath = model.javaPathForTypeAhead ? model.javaPathForTypeAhead.fileBridge.nativePath : null;
+			}
+
+			return envCustomJava;
+		}
+
 		public var cleanWorkspaceButtonLabel:String = "Clean";
 
 		public function cleanJavaWorkspaceButtonClickHandler():void
@@ -122,6 +160,19 @@ package actionScripts.plugin.java.javaproject.vo
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 				new ExecuteLanguageServerCommandEvent(ExecuteLanguageServerCommandEvent.EVENT_EXECUTE_COMMAND,
 				this, "java.clean.workspace"));
+		}
+
+		override public function getProjectFilesToDelete():Array
+		{
+			var filesList:Array = [];
+			filesList.unshift(folderLocation.fileBridge.resolvePath("src"), folderLocation.fileBridge.resolvePath("bin"), 
+				folderLocation.fileBridge.resolvePath("pom.xml"), folderLocation.fileBridge.resolvePath("build.gradle"), 
+				folderLocation.fileBridge.resolvePath(".gradle"), folderLocation.fileBridge.resolvePath(".settings"),
+				folderLocation.fileBridge.resolvePath(".classpath"), folderLocation.fileBridge.resolvePath(".project"),
+				folderLocation.fileBridge.resolvePath(name +".javaproj"), 
+				folderLocation.fileBridge.resolvePath("target"), folderLocation.fileBridge.resolvePath("build"));
+			filesList.concat(projectFolder.projectReference.hiddenPaths);
+			return filesList;
 		}
 
 		private function getJavaSettings():Vector.<SettingsWrapper>

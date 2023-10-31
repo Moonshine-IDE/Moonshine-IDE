@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.controllers
 {
@@ -36,13 +49,18 @@ package actionScripts.controllers
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
-    import actionScripts.ui.editor.text.DebugHighlightManager;
+	import actionScripts.ui.editor.text.DebugHighlightManager;
     import actionScripts.ui.notifier.ActionNotifier;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.FileWrapper;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.valueObjects.URLDescriptorVO;
+
+
+	
+
+	import actionScripts.utils.TextUtil;
 
 	public class OpenFileCommand implements ICommand
 	{
@@ -62,6 +80,7 @@ package actionScripts.controllers
 
 		public function execute(event:Event):void
 		{
+			
 			ActionNotifier.getInstance().notify("Open file");
 			model = IDEModel.getInstance();
 
@@ -182,12 +201,14 @@ package actionScripts.controllers
 
 		protected function openFile(fileDir:Object=null, openType:String=null, fileWrapper:FileWrapper=null, fileData:String=null):void
 		{
+			
 			if (fileDir) 
 			{
 				if (fileDir is FileLocation) file = fileDir as FileLocation;
 				else file = new FileLocation(fileDir.nativePath);
 			}
 
+			
 			var isFileOpen:Boolean = false;
 			
 			// If file is open already, just focus that editor.
@@ -250,7 +271,6 @@ package actionScripts.controllers
 				if (plugEvent.isDefaultPrevented())
 					return;
 			}
-			
 			// Load and see if it's a binary file
 			if (ConstantsCoreVO.IS_AIR)
 			{
@@ -263,6 +283,12 @@ package actionScripts.controllers
 					extension = extension.toLowerCase()
 				}
 
+				
+				if (!project)
+				{
+					project = model.activeProject;
+				}
+				
 				if (openAsTourDe) 
 				{
 					openTourDeFile(fileData);
@@ -270,6 +296,15 @@ package actionScripts.controllers
 				else if ((project is OnDiskProjectVO) && (extension == "dfb")) 
 				{
 					openTabularInterfaceEditorFile(project);
+				}
+				else if (extension == "action"){
+					openDominoActionFile(project, fileData);
+				}else if (extension == "view" && project && project.hasOwnProperty("isDominoVisualEditorProject") && project["isDominoVisualEditorProject"] )
+				{
+					openDominoViewFile(project, fileData);
+				}else if (extension == "column" && project && project.hasOwnProperty("isDominoVisualEditorProject") && project["isDominoVisualEditorProject"] )
+				{
+					openDominoViewShareCloumnFile(project, fileData);
 				}
 				else
 				{
@@ -388,7 +423,7 @@ package actionScripts.controllers
 		
 		private function openTabularInterfaceEditorFile(project:ProjectVO):void
 		{
-			var editor:IContentWindow = model.ondiskCore.getTabularInterfaceEditor(file, project as OnDiskProjectVO);
+			var editor:IContentWindow = model.flexCore.getDominoFormBuilderWrapper(file, project as OnDiskProjectVO);
 			
 			ged.dispatchEvent(
 				new AddTabEvent(editor)
@@ -408,7 +443,7 @@ package actionScripts.controllers
 
 			if ((project is AS3ProjectVO &&
 				(project as AS3ProjectVO).isVisualEditorProject &&
-				(extension == "mxml" || extension == "xhtml" || extension == "form"|| extension == "page") && !lastOpenEvent.independentOpenFile) || 
+				(extension == "mxml" || extension == "xhtml" || extension == "form"|| extension == "page"|| extension == "subform"|| extension == "field") && !lastOpenEvent.independentOpenFile) || 
 				(project is OnDiskProjectVO) && (extension == "dve") )
 			{
 				editor = model.visualEditorCore.getVisualEditor(project);
@@ -455,6 +490,159 @@ package actionScripts.controllers
 			ged.dispatchEvent(
 				new AddTabEvent(editor)
 			);
+		}
+
+		private function openDominoActionFile(project:ProjectVO, value:Object):void
+		{
+			
+			var editor:BasicTextEditor = model.flexCore.getDominoActionEditor();
+			var extension:String = file.fileBridge.extension;
+			if (!project)
+			{
+				project = model.activeProject;
+			}
+
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
+
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			ged.dispatchEvent(editorEvent);
+			
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
+			
+			var formulaStr:String=loadingFormulaFromActionFile();
+			
+			editor.open(file, formulaStr);
+
+			//editor.openFileAsStringHandler(formulaStr);
+			
+			if (atLine > -1)
+			{
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
+			}
+
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+
+		}
+
+
+		private function openDominoViewFile(project:ProjectVO, value:Object):void
+		{
+			var editor:BasicTextEditor = model.flexCore.getDominoViewEditor();
+			var extension:String = file.fileBridge.extension;
+			if (!project)
+			{
+				project = model.activeProject;
+			}
+			//editor = model.dominoViewVisualEditorCore.getVisualEditor(project);
+
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
+
+			// Let plugins hook in syntax highlighters & other functionality
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			ged.dispatchEvent(editorEvent);
+			
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
+			if (!ConstantsCoreVO.IS_AIR)
+			{
+				var rawData:String = String(value);
+				var jsonObj:Object = JSON.parse(rawData);
+				editor.open(file, jsonObj.text);
+			}
+			else
+			{
+				editor.open(file, value);
+			}
+			
+			if (atLine > -1)
+			{
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
+			}
+
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+
+		}
+
+		private function openDominoViewShareCloumnFile(project:ProjectVO, value:Object):void
+		{
+			var editor:BasicTextEditor = model.flexCore.getDominoViewShareCloumnEditor();
+			var extension:String = file.fileBridge.extension;
+			if (!project)
+			{
+				project = model.activeProject;
+			}
+			//editor = model.dominoViewVisualEditorCore.getVisualEditor(project);
+
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
+
+			// Let plugins hook in syntax highlighters & other functionality
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			ged.dispatchEvent(editorEvent);
+			
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
+			if (!ConstantsCoreVO.IS_AIR)
+			{
+				var rawData:String = String(value);
+				var jsonObj:Object = JSON.parse(rawData);
+				editor.open(file, jsonObj.text);
+			}
+			else
+			{
+				editor.open(file, value);
+			}
+			
+			if (atLine > -1)
+			{
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
+			}
+
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+
+		}
+
+
+		/**
+		 * Loading the formula from action file to editor
+		 * @return 
+		 */
+		private function loadingFormulaFromActionFile():String 
+		{
+			var formula:String = "";
+			if(file){
+				var actionString:String=String(file.fileBridge.read());
+				
+				var actionXml:XML = new XML(actionString);
+				for each(var formulaXMLNode:XML in actionXml..formula) //no matter of depth Note here
+				{
+					
+					if(formulaXMLNode.text()){
+						
+						var decodeBase64: String =  TextUtil.base64Decode(formulaXMLNode.text());
+						formula=formula+decodeBase64;
+					}
+				}
+
+			}
+
+			return formula;
+
 		}
 	}
 }

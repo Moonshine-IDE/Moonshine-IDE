@@ -1,3 +1,34 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant.utils
 {
 	import actionScripts.controllers.DataAgent;
@@ -16,53 +47,18 @@ package actionScripts.plugins.vagrant.utils
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
-	public class ConvertDatabaseJob extends ConsoleOutputter
+	public class ConvertDatabaseJob extends DatabaseJobBase
 	{
-		public static const EVENT_CONVERSION_COMPLETE:String = "eventDBConversionCompletes";
-		public static const EVENT_CONVERSION_FAILED:String = "eventDBConversionFailed";
-
-		private static const CONVERSION_TEST_INTERVAL:int = 5000; // 5 seconds
-
-		private var serverURL:String;
-		private var uploadedNSFFilePath:String;
-		private var uploadedNSFFileSize:Number;
-		private var loader:DataAgent;
-		private var conversioTestTimeout:uint;
-		private var retryCount:int;
 		private var destinationProjectFolder:File;
-		private var isTerminate:Boolean;
 		private var downloader:FileDownloader;
 
-		public function ConvertDatabaseJob(nsfUploadCompletionData:Object, server:String, destinationFolder:File)
+		public function ConvertDatabaseJob(server:String, destinationFolder:File)
 		{
-			if (nsfUploadCompletionData)
-			{
-				serverURL = server;
-				destinationProjectFolder = destinationFolder;
-				if ("error" in nsfUploadCompletionData)
-				{
-					error("Failed to upload file with exit code:"+ nsfUploadCompletionData.error +"\n"+ nsfUploadCompletionData.message);
-				}
-				else
-				{
-					uploadedNSFFilePath = nsfUploadCompletionData.path;
-					uploadedNSFFileSize = Number(nsfUploadCompletionData.size);
-
-					print("Requesting conversion job to: "+ serverURL +"/task");
-					runConversionCommandOnServer();
-				}
-			}
+			destinationProjectFolder = destinationFolder;
+			super(server);
 		}
 
-		public function stop():void
-		{
-			clearTimeout(conversioTestTimeout);
-			isTerminate = true;
-			if (downloader) configureListenerOnFileDownloader(false);
-			warning("Conversion job terminates. Note: Some process may still runs on server.");
-		}
-
-		private function runConversionCommandOnServer(withId:String=null):void
+		override protected function runConversionCommandOnServer(withId:String=null):void
 		{
 			clearTimeout(conversioTestTimeout);
 			loader = new DataAgent(
@@ -74,73 +70,14 @@ package actionScripts.plugins.vagrant.utils
 			);
 		}
 
-		private function onConversionRunResponseLoaded(value:Object, message:String=null):void
+		override protected function onTaskStatusCompleted(withJSONObject:Object):void
 		{
-			// probable termination
-			if (isTerminate)
-				return;
-
-			var infoObject:Object = JSON.parse(value as String);
-			loader = null;
-
-			if (infoObject)
-			{
-				if ("error" in infoObject)
-				{
-					error("Conversion failed with exit code:"+ infoObject.error +"\n"+ infoObject.message);
-					dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
-				}
-				else
-				{
-					if ("taskStatus" in infoObject)
-					{
-						switch ((infoObject.taskStatus as String).toLowerCase())
-						{
-							case "executing":
-								print("Re-try conversion(#"+ infoObject.id +") check: "+ (++retryCount));
-								conversioTestTimeout = setTimeout(
-										runConversionCommandOnServer,
-										CONVERSION_TEST_INTERVAL,
-										infoObject.id
-								);
-								break;
-							case "completed":
-								if (infoObject.exitStatus != "0" && ("errorMessage" in infoObject))
-								{
-									error("Conversion failed with exit code: "+ infoObject.exitStatus +"\n"+ infoObject.errorMessage);
-									dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
-								}
-								else
-								{
-									print("Checking conversion project from: "+ serverURL + infoObject.workingDir);
-									downloader = new FileDownloader(
-											serverURL +"/file/download?path="+ infoObject.workingDir +"/result.zip", File.cacheDirectory.resolvePath("moonshine/result.zip")
-									);
-									configureListenerOnFileDownloader(true);
-									downloader.load();
-								}
-								break;
-							case "created":
-								trace(">>>>>> ", infoObject.taskStatus);
-								break;
-							case "failed":
-								if (infoObject.exitStatus != "0" && ("errorMessage" in infoObject))
-								{
-									error("Conversion failed with exit code: "+ infoObject.exitStatus +"\n"+ infoObject.errorMessage);
-									dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
-								}
-								break;
-						}
-					}
-				}
-			}
-		}
-
-		private function onConversionRunFault(message:String):void
-		{
-			loader = null;
-			error("Conversion request failed: "+ message);
-			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
+			print("%s", "Checking conversion project from: "+ serverURL + withJSONObject.workingDir);
+			downloader = new FileDownloader(
+					serverURL +"/file/download?path="+ withJSONObject.workingDir +"/result.zip", File.cacheDirectory.resolvePath("moonshine/result.zip")
+			);
+			configureListenerOnFileDownloader(true);
+			downloader.load();
 		}
 
 		private function configureListenerOnFileDownloader(listen:Boolean):void
@@ -158,7 +95,7 @@ package actionScripts.plugins.vagrant.utils
 			}
 		}
 
-		private function onFileDownloadeded(event:Event):void
+		protected function onFileDownloadeded(event:Event):void
 		{
 			configureListenerOnFileDownloader(false);
 			if (!destinationProjectFolder.exists)
@@ -172,12 +109,13 @@ package actionScripts.plugins.vagrant.utils
 			);
 		}
 
-		private function onFileDownloadFailed(event:Event):void
+		protected function onFileDownloadFailed(event:Event):void
 		{
 			configureListenerOnFileDownloader(false);
+			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 		}
 
-		private function onUnzipSuccess(event:Event):void
+		protected function onUnzipSuccess(event:Event):void
 		{
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, destinationProjectFolder)
@@ -186,9 +124,9 @@ package actionScripts.plugins.vagrant.utils
 			dispatchEvent(new Event(EVENT_CONVERSION_COMPLETE));
 		}
 
-		private function onUnzipError(event:ErrorEvent=null):void
+		protected function onUnzipError(event:ErrorEvent=null):void
 		{
-			if (event) error("Unzip error: ", event.toString());
+			if (event) error("%s", "Unzip error: ", event.toString());
 			else error("Unzip terminated with unhandled error!");
 			dispatchEvent(new Event(EVENT_CONVERSION_FAILED));
 		}

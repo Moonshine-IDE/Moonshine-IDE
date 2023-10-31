@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<resizableTitleWindow:ResizableTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+										   xmlns:s="library://ns.adobe.com/flex/spark"
+										   xmlns:mx="library://ns.adobe.com/flex/mx"
+										   xmlns:resizableTitleWindow="actionScripts.ui.resizableTitleWindow.*"
+										   xmlns:view="actionScripts.plugin.findreplace.view.*"
+										   xmlns:controls="components.controls.*"
+										   backgroundColor="0xf5f5f5" title="Deploy to Vagrant Server"
+										   width="600" minWidth="400" autoLayout="true"
+										   skinClass="components.skins.ResizableTitleWindowSkin"
+										   creationComplete="onCreationCompletes(event)">
+	<fx:Script>
+		<![CDATA[
+		import actionScripts.events.SettingsEvent;
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugins.vagrant.VagrantPlugin;
+		import actionScripts.plugins.vagrant.utils.VagrantUtil;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+		import actionScripts.valueObjects.ProjectVO;
+
+		import mx.collections.ArrayCollection;
+
+		import mx.events.FlexEvent;
+
+		import actionScripts.events.GlobalEventDispatcher;
+
+		import mx.validators.Validator;
+
+		import spark.components.Alert;
+
+		public static const EVENT_START_CONVERSION:String = "eventStartConversion";
+
+		public var instances:ArrayCollection;
+
+		[Bindable]
+		private var project:ProjectVO;
+		[Bindable]
+		private var nsfConverterInstances:ArrayCollection;
+		[Bindable]
+		private var targetDatabaseName:String;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var instanceStateCheckCount:int;
+		private var isInvalidSource:Boolean;
+
+		private var _sourceDirectory:File;
+		public function get sourceDirectory():File
+		{
+			return _sourceDirectory;
+		}
+
+		private var _uploadRequestReturn:Object;
+		public function get uploadRequestReturn():Object
+		{
+			return _uploadRequestReturn;
+		}
+
+		public function get targetDatabase():String
+		{
+			return txtTargetDatabase.text.replace(/ /g, "");
+		}
+
+		public function get databaseURL():String
+		{
+			return txtURL.text;
+		}
+
+		public function get selectedInstance():VagrantInstanceVO
+		{
+			return ddlInstances.selectedItem;
+		}
+
+		public function reset():void
+		{
+			enableUI();
+		}
+
+		public function close():void
+		{
+			closeThis();
+		}
+
+		override protected function closeThis():void
+		{
+			dispatcher.removeEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked);
+			super.closeThis();
+		}
+
+		protected function onCreationCompletes(event:FlexEvent):void
+		{
+			project = IDEModel.getInstance().activeProject;
+			targetDatabaseName = project.name;
+
+			disableUI();
+			dispatcher.addEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked, false, 0, true);
+			VagrantUtil.checkStates(instances);
+
+			_sourceDirectory = project.folderLocation.resolvePath("bin").fileBridge.getFile as File;
+			if (!_sourceDirectory.exists || (_sourceDirectory.getDirectoryListing().length == 0))
+			{
+				hgError.includeInLayout = hgError.visible = true;
+				isInvalidSource = true;
+			}
+		}
+
+		private function onIndividualInstanceChecked(event:Event):void
+		{
+			instanceStateCheckCount++;
+			if (instances && (instances.length == instanceStateCheckCount))
+			{
+				enableUI();
+				nsfConverterInstances = new ArrayCollection();
+				for each (var instance:VagrantInstanceVO in instances)
+				{
+					if (instance.capabilities && (instance.capabilities.indexOf("upload-html") != -1) &&
+							(instance.state == VagrantInstanceState.READY))
+					{
+						nsfConverterInstances.addItem(instance);
+					}
+				}
+			}
+		}
+
+		private function onConfigure():void
+		{
+			dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, VagrantPlugin.NAMESPACE));
+		}
+
+		private function onSubmit():void
+		{
+			// validations
+			var tmpArr:Array = new Array(svDownloadDir);
+			if (Validator.validateAll(tmpArr).length != 0 || isInvalidSource)
+			{
+				return;
+			}
+
+			Alert.OK_LABEL = "OK";
+			if (!ddlInstances.selectedItem)
+			{
+				Alert.show("A valid Vagrant Instance is missing.", "Error!");
+				return;
+			}
+
+			disableUI();
+			dispatchEvent(new Event(EVENT_START_CONVERSION));
+		}
+
+		private function disableUI():void
+		{
+			btnSubmit.enabled = false;
+			ddlInstances.enabled = false;
+		}
+
+		private function enableUI():void
+		{
+			btnSubmit.enabled = true;
+			ddlInstances.enabled = true;
+		}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:StringValidator id="svDownloadDir" source="{txtTargetDatabase}" property="text" trigger="{btnSubmit}"/>
+	</fx:Declarations>
+
+	<resizableTitleWindow:layout>
+		<s:VerticalLayout paddingLeft="12" paddingBottom="12" paddingTop="9" paddingRight="12"/>
+	</resizableTitleWindow:layout>
+
+	<s:Label text="Vagrant Instances:"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:DropDownList id="ddlInstances"
+						width="100%" height="26"
+						dataProvider="{nsfConverterInstances}" labelField="title" requireSelection="true"/>
+		<s:Button label="Configure" styleName="darkButton"
+				  click="onConfigure()"/>
+	</s:HGroup>
+
+	<s:Label text="Target Directory:"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<view:PromptTextInput id="txtTargetDatabase"
+							  width="100%" styleName="textInput" restrict="A-Za-z0-9_"
+								text="{targetDatabaseName}" change="{targetDatabaseName=event.target.text}"/>
+	</s:HGroup>
+
+	<s:Label text="Example URL:"/>
+	<s:Label id="txtURL" width="100%" maxDisplayedLines="3" styleName="uiText"
+		text="http://127.0.0.1:8080/{targetDatabaseName}/js-debug/index.html" fontStyle="italic"/>
+
+    <s:VGroup id="hgError"
+			  width="100%" paddingTop="6"
+			  visible="false" includeInLayout="false">
+		<mx:HRule height="1" width="100%" strokeColor="0x666666"/>
+		<s:HGroup width="100%" verticalAlign="middle" horizontalAlign="center">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label text="Project does not contain /bin/js-debug or /bin/js-release"/>
+		</s:HGroup>
+	</s:VGroup>
+
+	<resizableTitleWindow:controlBarContent>
+		<s:Spacer width="100%"/>
+		<s:Button id="btnSubmit"
+				  label="Submit" styleName="darkButton"
+					click="onSubmit()"/>
+	</resizableTitleWindow:controlBarContent>
+</resizableTitleWindow:ResizableTitleWindow>

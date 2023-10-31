@@ -1,0 +1,5 @@
+package;
+
+extern class XMLList {
+    
+}

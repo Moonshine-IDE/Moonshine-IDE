@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter
 {
@@ -24,7 +37,9 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IDeployDominoDatabaseProject;
 	import actionScripts.plugin.console.ConsoleOutputter;
+	import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.utils.FileDownloader;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -47,11 +62,11 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 
 	public class CRUDJavaAgentsExporter extends ConsoleOutputter
 	{
-		private static const TEMPLATE_DOWNLOAD_URL:String = "https://moonshine-ide.com/downloads/Moonshine-Domino-CRUD/dev/template.zip";
+		private static const TEMPLATE_DOWNLOAD_URL:String = "https://moonshine-ide.com/downloads/Moonshine-Domino-CRUD/prod/template.zip";
 
-		private var archiveDirectory:File;
-		private var targetDirectory:File;
-		private var model:IDEModel = IDEModel.getInstance();
+		protected var archiveDirectory:File;
+		protected var targetDirectory:File;
+		protected var model:IDEModel = IDEModel.getInstance();
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var fileDownloader:FileDownloader;
 
@@ -91,37 +106,20 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		{
 			warning("Downloading Java agent templates");
 			fileDownloader = new FileDownloader(TEMPLATE_DOWNLOAD_URL, archiveDirectory.resolvePath("template.zip"));
-			configureFileDownloaderListeners(true);
+			addFileDownloaderListeners();
 			fileDownloader.load();
-		}
-
-		private function configureFileDownloaderListeners(attach:Boolean):void
-		{
-			if (attach)
-			{
-				fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
-				fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
-				fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
-			}
-			else
-			{
-				fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
-				fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
-				fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
-				fileDownloader = null;
-			}
 		}
 
 		private function onTemplatesZipDownloaded(event:Event):void
 		{
 			success("Success: Java agent generation templates downloaded");
 			unzipTemplateArchive(fileDownloader.targetLocation);
-			configureFileDownloaderListeners(false);
+			removeAndCleanFileDownloaderListeners();
 		}
 
 		private function onTemplatesZipDownloadFailed(event:Event):void
 		{
-			configureFileDownloaderListeners(false);
+			removeAndCleanFileDownloaderListeners();
 		}
 
 		private function onTemplatesZipDownloadProgress(event:Event):void
@@ -139,32 +137,13 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			fs.readBytes(zipFileBytes);
 			fs.close();
 
-			configureUnzipListeners(fzip, true);
+			addUnzipListeners(fzip);
 			fzip.loadBytes(zipFileBytes);
-		}
-
-		private function configureUnzipListeners(fzip:Zip, attach:Boolean):void
-		{
-			if (attach)
-			{
-				fzip.addEventListener(ZipEvent.FILE_LOADED, onFileLoaded, false, 0, true);
-				fzip.addEventListener(Event.COMPLETE, onUnzipCompletes, false, 0, true);
-				fzip.addEventListener(ErrorEvent.ERROR, onUnzipError, false, 0, true);
-			}
-			else
-			{
-				fzip.removeEventListener(ZipEvent.FILE_LOADED, onFileLoaded);
-				fzip.removeEventListener(Event.COMPLETE, onUnzipCompletes);
-				fzip.removeEventListener(ErrorEvent.ERROR, onUnzipError);
-
-				fzip.close();
-				fzip = null;
-			}
 		}
 
 		private function onUnzipCompletes(event:Event):void
 		{
-			configureUnzipListeners(event.target as Zip, false);
+			removeAndCloseUnzipListeners(event.target as Zip);
 			archiveDirectory.resolvePath("template.zip").deleteFile();
 
 			// open file-browser for export location
@@ -193,14 +172,46 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			catch (e:Error)
 			{
 				error("Template files failed to unzip: " + e.message);
-				configureUnzipListeners(event.target as Zip, false);
+				removeAndCloseUnzipListeners(event.target as Zip);
 			}
 		}
 
 		private function onUnzipError(event:ErrorEvent):void
 		{
-			configureUnzipListeners(event.target as Zip, false);
+			removeAndCloseUnzipListeners(event.target as Zip);
 			error("Template file failed to unzip: " + event.text);
+		}
+
+		private function addFileDownloaderListeners():void
+		{
+			fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
+			fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
+			fileDownloader.addEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
+		}
+
+		private function removeAndCleanFileDownloaderListeners():void
+		{
+			fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOADED, onTemplatesZipDownloaded);
+			fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_FAILED, onTemplatesZipDownloadFailed);
+			fileDownloader.removeEventListener(FileDownloader.EVENT_FILE_DOWNLOAD_PROGRESS, onTemplatesZipDownloadProgress);
+			fileDownloader = null;
+		}
+
+		private function addUnzipListeners(fzip:Zip):void
+		{
+			fzip.addEventListener(ZipEvent.FILE_LOADED, onFileLoaded, false, 0, true);
+			fzip.addEventListener(Event.COMPLETE, onUnzipCompletes, false, 0, true);
+			fzip.addEventListener(ErrorEvent.ERROR, onUnzipError, false, 0, true);
+		}
+
+		private function removeAndCloseUnzipListeners(fzip:Zip):void
+		{
+			fzip.removeEventListener(ZipEvent.FILE_LOADED, onFileLoaded);
+			fzip.removeEventListener(Event.COMPLETE, onUnzipCompletes);
+			fzip.removeEventListener(ErrorEvent.ERROR, onUnzipError);
+
+			fzip.close();
+			fzip = null;
 		}
 
 		private function isDirectory(file:ZipFile):Boolean
@@ -248,8 +259,10 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			var th:TemplatingHelper = new TemplatingHelper();
 			th.templatingData["%project%"] = targetDirectory.name;
 			th.templatingData["%NotesExecutablePath%"] = ConstantsCoreVO.IS_MACOS ? model.notesPath +"/Contents/MacOS/" : model.notesPath;
+			th.templatingData["%server%"] = (model.activeProject as IDeployDominoDatabaseProject).targetServer;
+			th.templatingData["%databaseName%"] = (model.activeProject as IDeployDominoDatabaseProject).targetDatabase;
 
-			var excludes:Array = ["%eachform%Agents"];
+			var excludes:Array = ["%eachform%Agents", "%eachform%Docs", "%eachform%Scripts"];
 
 			th.projectTemplate(
 					new FileLocation(archiveDirectory.resolvePath("project").nativePath),
@@ -261,7 +274,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			generateModules();
 		}
 
-		private function generateModules():void
+		protected function generateModules():void
 		{
 			new CRUDJavaAgentsModuleExporter(
 					archiveDirectory,
@@ -271,7 +284,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			);
 		}
 
-		private function onModulesExported():void
+		protected function onModulesExported():void
 		{
 			// success message
 			notice("Project saved at: "+ targetDirectory.nativePath);

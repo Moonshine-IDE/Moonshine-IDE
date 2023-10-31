@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<newfile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+					 xmlns:s="library://ns.adobe.com/flex/spark"
+					 title="Create Action"
+					 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
+					 xmlns:newfile="components.popup.newFile.*" preinitialize="onPreinitialize(event)">
+	<fx:Metadata>
+		[Event(name="EVENT_NEW_FILE", type="actionScripts.events.NewFileEvent")]
+	</fx:Metadata>
+<fx:Script>
+		<![CDATA[
+			import actionScripts.factory.FileLocation;
+	
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+	
+			import spark.events.TextOperationEvent;
+	
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.extResources.com.validator.ValidatorType;
+			import actionScripts.ui.menu.MenuPlugin;
+			import actionScripts.utils.SimpleValidator;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+			import mx.controls.Alert;
+
+			
+
+            [Bindable]
+            private var _hasError:Boolean = false;
+
+            [Bindable]
+            public var prompt:String;
+
+
+			[Bindable] private var isDominoValid:Boolean=false;
+			private var dominoFolderList:FileWrapper=null;
+			
+			protected function onPreinitialize(event:FlexEvent):void
+			{
+				createdFileExtension = ".action";
+				warningMessage = "";
+				isDestinationValid=true;
+			
+				
+			}
+
+			
+
+			
+	
+			
+	
+			protected function onCreateButton(event:MouseEvent):void
+			{
+				// validation check for Enter key
+				if(!isSubmitButtonEnabled) return;
+	
+				// validation 2
+				var validateArr:Array = new Array(new ValidatorType(sValidator, txtDestination, "Source Package"));
+				if(SimpleValidator.validate(validateArr))
+				{
+					var tmpEvent:NewFileEvent = new NewFileEvent(NewFileEvent.EVENT_NEW_FILE, null, ConstantsCoreVO.TEMPLATE_DOMINO_ACTION, wrapperOfFolderLocation);
+					tmpEvent.fileName = txtFileName.text;
+					dispatchEvent(tmpEvent);
+	
+					doBeforeExit();
+					super.closeThis();
+				}
+			}
+	
+	
+			override protected function onNameChanged(event:TextOperationEvent):void
+			{
+				super.onDominoNameChanged(event);
+			}
+	
+		
+	
+			override protected function onNewFileCreationComplete(event:FlexEvent):void
+			{
+
+				 super.onNewFileCreationComplete(event);
+				
+			
+				minHeight = height;
+				if (wrapperBelongToProject)
+				{
+					var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
+				
+					if(wrappers==null || wrappers.length<4){
+						UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
+						var dominoActionFolderStr:String=wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator+"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"SharedElements"+ model.fileCore.separator+"Actions";
+				 		var dominoActionFolder:FileLocation=new FileLocation(dominoActionFolderStr);
+						if(!dominoActionFolder.fileBridge.exists){
+							dominoActionFolder.fileBridge.createDirectory();
+						}
+						
+						
+						wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, dominoActionFolderStr);
+					}
+					
+               
+					
+					txtDestination.text = UtilsCore.getPathStringByProjectPath(
+							Vector.<FileLocation>([new FileLocation(wrapperBelongToProject.folderPath)]),
+							wrapperOfFolderLocation.nativePath);
+					txtFileName.setFocus();
+				}
+	
+
+				
+	
+				// tree.callLater(parseFolders);
+				// GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
+			}
+
+		
+
+            private function textInput_changeHandler(event:Event):void
+        {
+           
+            
+        }
+		]]>
+</fx:Script>
+
+	<s:VGroup width="100%" height="100%">
+	
+		<s:HGroup  width="100%" verticalAlign="middle">
+            <s:Label text="Action Name:"/>
+            <view:PromptTextInput id="txtFileName"
+								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_\-/"
+								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
+
+                                  
+        </s:HGroup>
+        <s:HGroup id="hgExistingWarning"
+				  width="100%" verticalAlign="middle"
+				  visible="{isDominoValid}">
+			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
+			<s:Label text="{warningMessage}" width="100%"/>
+		</s:HGroup>
+			<s:Label text="Shared actions will be stored at this path:"/>
+			<view:PromptTextInput id="txtDestination" 
+								  prompt="Select Destination" editable="false" width="100%" styleName="textInput"/>
+	
+  
+	</s:VGroup>
+
+  
+
+<newfile:controlBarContent>
+		<s:Button id="btnCreate" label="Create"
+				  styleName="darkButton"
+				  click="onCreateButton(event)"
+				  enabled="{isSubmitButtonEnabled &amp;&amp; !isDominoValid }"/>
+
+</newfile:controlBarContent>
+</newfile:NewFileBase>

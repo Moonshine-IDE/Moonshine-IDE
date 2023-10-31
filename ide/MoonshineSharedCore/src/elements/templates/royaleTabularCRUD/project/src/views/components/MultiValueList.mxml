@@ -86,8 +86,7 @@
 				multivalueList = new List();
 				multivalueList.percentWidth = 100;
 				multivalueList.height = 100;
-				multivalueList.labelField = "value";
-				
+
 				switch (inputType)
 				{
 					case "Datetime":
@@ -123,10 +122,10 @@
 				switch (inputType)
 				{
 					case "Datetime":
-						dataProvider.setItemAt({value: this.dateField.selectedDate}, editIndex);
+						dataProvider.setItemAt(this.dateField.selectedDate, editIndex);
 						break;
 					default:
-						dataProvider.setItemAt({value: this.txtItemTitle.text}, editIndex);
+						dataProvider.setItemAt(this.txtItemTitle.text, editIndex);
 						break;
 				}
 				
@@ -156,10 +155,10 @@
 				switch (inputType)
 				{
 					case "Datetime":
-						dataProvider.addItem({value: this.dateField.selectedDate});
+						dataProvider.addItem(this.dateField.selectedDate);
 						break;
 					default:
-						dataProvider.addItem({value: this.txtItemTitle.text});
+						dataProvider.addItem(this.txtItemTitle.text);
 						this.txtItemTitle.text = null;
 						break;
 				}

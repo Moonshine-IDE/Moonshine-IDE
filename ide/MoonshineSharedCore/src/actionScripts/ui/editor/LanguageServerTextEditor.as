@@ -1,46 +1,60 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.LanguageServerMenuEvent;
 	import actionScripts.events.LocationsEvent;
+	import actionScripts.events.OpenLocationEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.SaveFileEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.languageServer.LanguageServerProjectVO;
+	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.ui.tabview.TabEvent;
+	import actionScripts.utils.applyWorkspaceEdit;
 
 	import flash.events.Event;
 
-	import moonshine.editor.text.lsp.LspTextEditor;
-	import moonshine.editor.text.lsp.events.LspTextEditorLanguageRequestEvent;
-	import moonshine.lsp.LanguageClient;
-	import moonshine.lsp.Position;
 	import moonshine.editor.text.events.TextEditorChangeEvent;
-	import moonshine.lsp.CompletionItem;
+	import moonshine.editor.text.lsp.LspTextEditor;
 	import moonshine.editor.text.lsp.events.LspTextEditorLanguageActionEvent;
-	import actionScripts.utils.applyWorkspaceEdit;
-	import moonshine.lsp.WorkspaceEdit;
+	import moonshine.editor.text.lsp.events.LspTextEditorLanguageRequestEvent;
 	import moonshine.lsp.Command;
+	import moonshine.lsp.CompletionItem;
+	import moonshine.lsp.LanguageClient;
 	import moonshine.lsp.LocationLink;
-	import actionScripts.events.OpenLocationEvent;
+	import moonshine.lsp.Position;
+	import moonshine.lsp.WorkspaceEdit;
 
 	public class LanguageServerTextEditor extends BasicTextEditor
 	{
@@ -85,7 +99,7 @@ package actionScripts.ui.editor
 				}
 				lspEditor.completionTriggerCharacters = completionTriggerCharacters;
 			}
-			var signatureHelpProvider:Object = serverCapabilities.completionProvider;
+			var signatureHelpProvider:Object = serverCapabilities.signatureHelpProvider;
 			if(signatureHelpProvider)
 			{
 				var signatureHelpTriggerCharacters:Array = signatureHelpProvider.triggerCharacters;
@@ -421,6 +435,21 @@ package actionScripts.ui.editor
 
 		override protected function closeTabHandler(event:Event):void
 		{
+			if (event is CloseTabEvent)
+			{
+				var closeEvent:CloseTabEvent = CloseTabEvent(event);
+				if (closeEvent.tab != this)
+				{
+					return;
+				}
+			}
+			else if (model.activeEditor != this)
+			{
+				// can be dispatched by menu item as a regular Event
+				// instead of CloseTabEvent
+				return;
+			}
+
 			super.closeTabHandler(event);
 			
 			dispatchDidCloseEvent();

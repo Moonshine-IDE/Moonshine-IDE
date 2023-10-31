@@ -1,21 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2016 Prominic.NET, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// Author: Prominic.NET, Inc.
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.impls
 {
@@ -35,10 +47,21 @@ package actionScripts.impls
 	import actionScripts.valueObjects.FileWrapper;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.ResourceVO;
-	
+	import components.popup.DominoSharedColumnListPopup;
+	import components.popup.newFile.NewDominoSharedColumnFromView;
+	import spark.components.TitleWindow;
 	import view.VisualEditor;
 	import view.interfaces.IVisualEditorLibraryBridge;
 	
+	import flash.events.MouseEvent;
+	import actionScripts.plugin.templating.TemplatingPlugin;
+
+	import mx.collections.ArrayList;
+	import flash.events.Event;
+	import flash.filesystem.File;
+	import actionScripts.utils.TextUtil;
+	import mx.controls.Alert;
+
 	public class IVisualEditorLibraryBridgeImp implements IVisualEditorLibraryBridge
 	{
 		public var visualEditorProject:ProjectVO;
@@ -72,6 +95,31 @@ package actionScripts.impls
 			
 			dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]))
 		}
+
+		public function openDominoActionFile(path:String):void 
+		{
+			var tmpOpenFile:FileLocation = new FileLocation(path);
+			if (!tmpOpenFile) return;
+			dispatcher.dispatchEvent(new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]))
+		}
+
+		public function openDominoSharedColumnFile(columnName:String):void 
+		{
+			var selectedProject:AS3ProjectVO=model.activeProject as AS3ProjectVO;
+			if(selectedProject&&selectedProject.sourceFolder){
+				var shareColumnFileName:String=TextUtil.fixDominoViewName(columnName);
+				var formFolder:String=selectedProject.sourceFolder.fileBridge.nativePath;
+				var parentPath:String=formFolder.substring(0,formFolder.length-5);
+				var shareColumnFilePath:String=parentPath+"SharedElements"+File.separator+"Columns"+File.separator+shareColumnFileName+".column";
+				//Alert.show("shareColumnFilePath:"+shareColumnFilePath);
+				var tmpOpenFile:FileLocation = new FileLocation(shareColumnFilePath);
+				if (!tmpOpenFile) return;
+				var openFileEvent:OpenFileEvent=new OpenFileEvent(OpenFileEvent.OPEN_FILE, [tmpOpenFile]);
+				openFileEvent.openAsTourDe=false;
+				dispatcher.dispatchEvent(openFileEvent)
+			}
+			
+		}
 		
 		public function getVisualEditorComponent():VisualEditor
 		{
@@ -102,6 +150,43 @@ package actionScripts.impls
 
             return editor.currentFile.fileBridge.getRelativePath(visualEditorProject.sourceFolder, true);
         }
+
+		public function openCreateDominoActionPanel(event:MouseEvent):void
+        {
+			var templaetPulgin:TemplatingPlugin=new TemplatingPlugin();
+
+            templaetPulgin.openDominoActionComponentTypeChoose(event);
+        }
+
+		//Copy& Past from Visual editor need update the status for it;
+
+		public function updateCurrentVisualEditorStatus():void{
+			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if(editor!=null){
+				editor.editorView.visualEditor.editingSurface.hasChanged=true;
+				editor.editorView.visualEditor.dispatchEvent(new Event('labelChanged'));
+			}
+		}
+
+		//getDominoActionList
+
+		public function getDominoActionList():ArrayList
+        {              
+			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if (!editor) return null;
+			return editor.getDominoActionList();
+
+		}
+
+		public function getDominoShareFieldList():ArrayList
+        {              
+			var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if (!editor) return null;
+			return editor.getDominoShareFieldList();
+
+		}
+
+		
 
 		private function onNewFileAdded(event:TreeMenuItemEvent):void
 		{
@@ -181,5 +266,38 @@ package actionScripts.impls
 				this.updateHandler = null;
 			}
 		}
+
+		public function getDominoSharedColumnListPopup(file:File):TitleWindow
+        {
+            var tmpPopup:DominoSharedColumnListPopup = new DominoSharedColumnListPopup();
+            tmpPopup.initializeColumnList(file);
+            return tmpPopup as TitleWindow;
+        }
+
+		public function getDominoNewSharedColumnFromViewColumn(n:String):TitleWindow
+        {
+            var newSharedColumnFromViewPopup:NewDominoSharedColumnFromView = new NewDominoSharedColumnFromView();
+			newSharedColumnFromViewPopup.defaultFileName=n;
+			var selectedProject:AS3ProjectVO=model.activeProject as AS3ProjectVO;
+			if(selectedProject&&selectedProject.sourceFolder){
+				var formFolder:String=selectedProject.sourceFolder.fileBridge.nativePath;
+				var parentPath:String=formFolder.substring(0,formFolder.length-5);
+				var shareColumnFilePath:String=parentPath+"SharedElements"+File.separator+"Columns";
+				newSharedColumnFromViewPopup.folderLocation = new FileLocation(shareColumnFilePath);
+				var tmpFW: FileWrapper = new FileWrapper(newSharedColumnFromViewPopup.folderLocation, true, null, false);
+
+				newSharedColumnFromViewPopup.wrapperOfFolderLocation=tmpFW;
+				newSharedColumnFromViewPopup.wrapperBelongToProject = selectedProject;
+				newSharedColumnFromViewPopup.wrapperBelongToProject.projectFolder= selectedProject.projectFolder;
+				
+				
+					
+					
+				
+			}
+			
+			
+            return newSharedColumnFromViewPopup as TitleWindow;
+        }
 	}
 }

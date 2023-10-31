@@ -9,7 +9,7 @@
 			override public function set data(value:Object):void
 			{
 				super.data = value;
-				this.text = Utils.getDateString(value[labelField] as Date);
+				this.text = Utils.getDateString(value as Date);
 			}
 			
 		]]>

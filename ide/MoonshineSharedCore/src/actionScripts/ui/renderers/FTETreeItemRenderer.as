@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.renderers
 {
@@ -27,11 +40,10 @@ package actionScripts.ui.renderers
 	import flash.filters.GlowFilter;
 	import flash.ui.ContextMenuItem;
 	import flash.ui.Keyboard;
-
-	import mx.controls.Alert;
 	
 	import mx.binding.utils.ChangeWatcher;
 	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 	import mx.controls.Image;
 	import mx.controls.treeClasses.TreeItemRenderer;
 	import mx.core.UIComponent;
@@ -71,6 +83,8 @@ package actionScripts.ui.renderers
 		public static const NEW:String = "New";
 		public static const NEW_FOLDER:String = "New Folder";
 		public static const COPY_PATH:String = "Copy Path";
+		public static const OPEN_PATH_IN_TERMINAL:String = "Open in "+ (ConstantsCoreVO.IS_MACOS ? "Terminal" : "Command Line");
+		public static const OPEN_PATH_IN_POWERSHELL:String = "Open in PowerShell";
 		public static const SHOW_IN_EXPLORER:String = "Show in Explorer";
 		public static const SHOW_IN_FINDER:String = "Show in Finder";
 		public static const DUPLICATE_FILE:String = "Duplicate";
@@ -236,6 +250,13 @@ package actionScripts.ui.renderers
 
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(COPY_PATH, updateOverMultiSelectionOption, "displaying"));
+				model.contextMenuCore.addItem(contextMenu,
+						model.contextMenuCore.getContextMenuItem(OPEN_PATH_IN_TERMINAL, populateOpenInTerminalMenu, "displaying"));
+				if (!ConstantsCoreVO.IS_MACOS)
+				{
+					model.contextMenuCore.addItem(contextMenu,
+						model.contextMenuCore.getContextMenuItem(OPEN_PATH_IN_POWERSHELL, updateOverMultiSelectionOption, "displaying"));
+				}
 				model.contextMenuCore.addItem(contextMenu,
 					model.contextMenuCore.getContextMenuItem(
 						ConstantsCoreVO.IS_MACOS ? SHOW_IN_FINDER : SHOW_IN_EXPLORER, 
@@ -465,6 +486,35 @@ package actionScripts.ui.renderers
 			model.contextMenuCore.subMenu(event.target, customize);
 		}
 
+		private function populateOpenInTerminalMenu(event:Event):void
+		{
+			// in case of Windows, for now, we don't
+			// have to support for theme
+			if (!ConstantsCoreVO.IS_MACOS)
+			{
+				updateOverMultiSelectionOption(event);
+				return;
+			}
+
+			model.contextMenuCore.removeAll(event.target);
+
+			var defaultOption:Object = model.contextMenuCore.getContextMenuItem("Default", redispatchOpenInTerminal, Event.SELECT);
+			defaultOption.data = "eventOpenInTerminalDefault";
+			model.contextMenuCore.subMenu(event.target, defaultOption);
+
+			model.contextMenuCore.subMenu(event.target, model.contextMenuCore.getContextMenuItem(null));
+
+			var themes:Array = model.flexCore.getTerminalThemeList();
+			for each (var theme:String in themes)
+			{
+				var eventType:String = "eventOpenInTerminal"+ theme;
+				var item:Object = model.contextMenuCore.getContextMenuItem(theme, redispatchOpenInTerminal, Event.SELECT);
+				item.data = eventType;
+
+				model.contextMenuCore.subMenu(event.target, item);
+			}
+		}
+
 		private function populateVagrantMenu(event:Event):void
 		{
 			model.contextMenuCore.removeAll(event.target);
@@ -578,6 +628,18 @@ package actionScripts.ui.renderers
 				e.extra = event.target.data;
 			}
 			
+			dispatchEvent(e);
+		}
+
+		private function redispatchOpenInTerminal(event:Event):void
+		{
+			var e:TreeMenuItemEvent = getNewTreeMenuItemEvent(event);
+			if (event.target.hasOwnProperty("data") && event.target.data)
+			{
+				e.menuLabel = OPEN_PATH_IN_TERMINAL;
+				e.extra = event.target.data;
+			}
+
 			dispatchEvent(e);
 		}
 		

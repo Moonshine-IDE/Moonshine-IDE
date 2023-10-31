@@ -1,0 +1,68 @@
+package $ProjectName.views.modules.$moduleName.$moduleNameVO
+{
+    %ImportStatements%
+
+    [Bindable]
+	public class $moduleNameVO %InterfacesImplements%
+	{
+	    public var DominoUniversalID:String;
+
+	    %PropertyStatements%
+
+		public function $moduleNameVO()
+		{
+		}
+
+		public function clone():$moduleNameVO
+		{
+		    var tmpVO:$moduleNameVO = new $moduleNameVO();
+		    %ToCloneStatements%
+		    return tmpVO;
+		}
+
+		public function toRequestObject():Object
+		{
+			%ToRequestObjectStatements%
+		}
+
+		public static function get$moduleNameVO(value:Object):$moduleNameVO
+        {
+            var tmpVO:$moduleNameVO = new $moduleNameVO();
+            %GetNewVOStatements%
+            return tmpVO;
+        }
+
+        public static function getToRequestMultivalueDateString(value:Array):String
+        {
+            var dates:Array = [];
+            for (var i:int; i < value.length; i++)
+            {
+                dates.push(getToRequestDateString(value[i] as Date));
+            }
+
+			return ((dates.length > 0) ? JSON.stringify(dates) : "[]");
+        }
+
+        public static function getToRequestDateString(value:Date):String
+        {
+            var dateString:String = value.toISOString();
+            return dateString;
+        }
+
+        public static function parseFromRequestMultivalueDateString(value:Array):Array
+        {
+            var dates:Array = [];
+            for (var i:int; i < value.length; i++)
+            {
+                dates.push(parseFromRequestDateString(value[i]));
+            }
+
+            return dates;
+        }
+
+        public static function parseFromRequestDateString(value:String):Date
+        {
+            return (new Date(value));
+        }
+	}
+}

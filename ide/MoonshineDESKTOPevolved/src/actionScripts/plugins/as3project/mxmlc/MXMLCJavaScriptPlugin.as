@@ -1,21 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2016 Prominic.NET, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// Author: Prominic.NET, Inc.
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.as3project.mxmlc
 {
@@ -47,6 +59,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.locator.HelperModel;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
 	import actionScripts.plugin.actionscript.mxmlc.MXMLCPluginEvent;
+	import actionScripts.plugin.console.ConsoleEvent;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	import actionScripts.plugin.core.compiler.JavaScriptBuildEvent;
@@ -77,9 +90,9 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
-	import actionScripts.plugin.console.ConsoleEvent;
+	import flash.utils.clearTimeout;
 
-    public class MXMLCJavaScriptPlugin extends CompilerPluginBase implements ISettingsProvider
+    public class MXMLCJavaScriptPlugin extends MXMLCPluginBase implements ISettingsProvider
 	{
 		private static const DEBUG_SERVER_PORT:int = 3000;
 
@@ -158,6 +171,7 @@ package actionScripts.plugins.as3project.mxmlc
 			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD_AND_DEBUG, buildAndDebug);
 			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD, buildDebug);
 			dispatcher.addEventListener(JavaScriptBuildEvent.BUILD_RELEASE, buildRelease);
+			dispatcher.addEventListener(JavaScriptBuildEvent.CLEAN, clean);
 			reset();
 		}
 		
@@ -226,6 +240,135 @@ package actionScripts.plugins.as3project.mxmlc
 		private function buildRelease(e:Event):void
 		{
 			build(e, true);
+		}
+
+		private function clean(e:Event):void
+		{
+			var as3Project:AS3ProjectVO = model.activeProject as AS3ProjectVO;
+			if (!as3Project)
+			{
+				return;
+			}
+
+            dispatcher.dispatchEvent(new ConsoleEvent(ConsoleEvent.SHOW_CONSOLE));
+
+			var outputFile:FileLocation;
+			var swfPath:FileLocation;
+			var swfFolderPath:FileLocation;
+			var folderCount:int = 0;
+			var currentTargets:Array = [];
+
+			if (as3Project.swfOutput.path)
+			{
+				outputFile = as3Project.swfOutput.path;
+				swfFolderPath = outputFile.fileBridge.parent;
+			}
+
+			if (swfFolderPath.fileBridge.exists)
+			{
+				var directoryItems:Array = swfFolderPath.fileBridge.getDirectoryListing();
+				for each (var directory:Object in directoryItems)
+				{
+					folderCount++;
+					currentTargets.push(swfFolderPath);
+
+					directory.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+					directory.addEventListener(Event.COMPLETE, onProjectFolderComplete);
+
+					if (directory.isDirectory)
+					{
+						directory.deleteDirectoryAsync(true);
+					}
+					else
+					{
+						directory.deleteFileAsync();
+					}
+				}
+			}
+
+			if (as3Project.isFlexJS || as3Project.isRoyale)
+			{
+				var binFolder:FileLocation = as3Project.folderLocation.resolvePath(as3Project.jsOutputPath).resolvePath("bin");
+				if (!binFolder.fileBridge.exists)
+				{
+					binFolder = as3Project.folderLocation.fileBridge.resolvePath("bin");
+				}
+
+				if (binFolder.fileBridge.exists)
+				{
+					var timeoutValue:uint = setTimeout(function():void
+					{
+						var jsDebugFolder:FileLocation = binFolder.resolvePath("js-debug");
+						var jsDebugFolderExists:Boolean = jsDebugFolder.fileBridge.exists;
+						if (jsDebugFolderExists)
+						{
+							folderCount++;
+							currentTargets.push(jsDebugFolder);
+						}
+
+						var jsReleaseFolder:FileLocation = binFolder.resolvePath("js-release");
+						var jsReleaseFolderExists:Boolean = jsReleaseFolder.fileBridge.exists;
+						if (jsReleaseFolderExists)
+						{
+							folderCount++;
+							currentTargets.push(jsReleaseFolder);
+						}
+
+						if (jsDebugFolderExists)
+						{
+							jsDebugFolder.fileBridge.getFile.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+							jsDebugFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onProjectFolderComplete);
+							jsDebugFolder.fileBridge.deleteDirectoryAsync(true);
+						}
+
+						if (jsReleaseFolderExists)
+						{
+							jsReleaseFolder.fileBridge.getFile.addEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+							jsReleaseFolder.fileBridge.getFile.addEventListener(Event.COMPLETE, onProjectFolderComplete);
+							jsReleaseFolder.fileBridge.deleteDirectoryAsync(true);
+						}
+
+						if (folderCount == 0)
+						{
+							success("JavaScript project files cleaned successfully: " + as3Project.name);
+						}
+
+						clearTimeout(timeoutValue);
+					}, 300);
+				}
+				else if ((!swfPath || !swfPath.fileBridge.exists) && !binFolder.fileBridge.exists)
+				{
+					success("Project files cleaned successfully: " + as3Project.name);
+				}
+			}
+
+			function onProjectFolderComplete(event:Event):void
+			{
+				event.target.removeEventListener(Event.COMPLETE, onProjectFolderComplete);
+				event.target.removeEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+
+				if (currentTargets)
+				{
+					folderCount--;
+					if (folderCount <= 0)
+					{
+						for (var i:int = 0; i < currentTargets.length; i++)
+						{
+							dispatcher.dispatchEvent(new RefreshTreeEvent(currentTargets[i], true));
+						}
+
+						success("Project files cleaned successfully: " + as3Project.name);
+						currentTargets = null;
+						folderCount = 0;
+					}
+				}
+			}
+
+			function onCleanProjectIOException(event:IOErrorEvent):void
+			{
+				event.target.removeEventListener(IOErrorEvent.IO_ERROR, onCleanProjectIOException);
+				error("Cannot delete file or folder: " + event.target.nativePath + "\nError: " + event.text);
+			}
 		}
 		
 		private function build(e:Event, release:Boolean=false, runAfterBuild:Boolean=false, debugAfterBuild:Boolean=false):void
@@ -379,13 +522,9 @@ package actionScripts.plugins.as3project.mxmlc
 				}
 
 				var targetFile:FileLocation = compile(activeProject as AS3ProjectVO);
-				if(!targetFile)
+				if(!targetFile || !targetFile.fileBridge.exists)
 				{
-					return;
-				}
-				if(!targetFile.fileBridge.exists)
-				{
-					error("Couldn't find target file");
+					error("Main application file or target file does not exists.");
 					return;
 				}
 				
@@ -397,9 +536,9 @@ package actionScripts.plugins.as3project.mxmlc
 					// FlexJS Application
 					shellInfo = new NativeProcessStartupInfo();
 					fschstr = fschFile.nativePath;
-					fschstr = UtilsCore.convertString(fschstr);
+					//fschstr = UtilsCore.convertString(fschstr);
 					SDKstr = currentSDK.nativePath;
-					SDKstr = UtilsCore.convertString(SDKstr);
+					//SDKstr = UtilsCore.convertString(SDKstr);
 					
 					// update build config file
 					as3Pvo.updateConfig();
@@ -461,9 +600,9 @@ package actionScripts.plugins.as3project.mxmlc
 
 			var sdkPathHomeArg:String;
 			var enLanguageArg:String = "SETUP_SH_VMARGS=\"-Duser.language=en -Duser.region=en\"";
-			var compilerPathHomeArg:String = "FALCON_HOME=\"" + SDKstr +"\"";
-			var compilerArg:String = "&& \"" + fschstr +"\"";
-			var configArg:String = " -load-config+=" + project.folderLocation.fileBridge.getRelativePath(project.config.file);
+			var compilerPathHomeArg:String = "FALCON_HOME=".concat('"', SDKstr, '"');
+			var compilerArg:String = "&& ".concat('"', fschstr, '"');
+			var configArg:String = " -load-config+=".concat('"', project.folderLocation.fileBridge.getRelativePath(project.config.file), '"');
 			var additionalBuildArgs:String = project.buildOptions.getArguments();
 			additionalBuildArgs = " " + additionalBuildArgs.replace("-optimize=false", "");
 				
@@ -489,11 +628,11 @@ package actionScripts.plugins.as3project.mxmlc
                 if (project.isRoyale)
                 {
                     jsCompilationArg = " -compiler.targets=JSRoyale";
-					sdkPathHomeArg = "ROYALE_HOME=\"" + SDKstr +"\"";
+					sdkPathHomeArg = "ROYALE_HOME=".concat('"', SDKstr, '"');
 					compilerPathHomeArg = "";
                 }
 
-				jsCompilationArg += " -js-output=\"".concat(project.jsOutputPath) +"\"";
+				jsCompilationArg += " -js-output=".concat('"', project.jsOutputPath, '"');
 			}
 
             if(Settings.os == "win")
@@ -960,12 +1099,12 @@ package actionScripts.plugins.as3project.mxmlc
 			if(runAfterBuild || debugAfterBuild)
 			{
 				dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
-				success("Project Build Successfully.");
+				success("Project %s build successfully.", pvo.name);
 				launchApplication();
 			}
 			else
 			{
-				success("Project Build Successfully.");
+				success("Project %s build successfully.", pvo.name);
 				dispatcher.dispatchEvent(new RefreshTreeEvent(new FileLocation(pvo.jsOutputPath).resolvePath("bin")));
 			}
 		}

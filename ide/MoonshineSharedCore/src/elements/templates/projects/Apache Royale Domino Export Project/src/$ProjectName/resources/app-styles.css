@@ -1,0 +1,37 @@
+@namespace "http://www.w3.org/1999/xhtml";
+@namespace j "library://ns.apache.org/royale/jewel";
+
+.jewel.textinput.readOnlyInput input[disabled] {
+    cursor: unset;
+    border: none;
+    background: none;
+    color: #808080;
+    padding: 0;
+}
+
+.jewel.datefield.readOnlyDateField[disabled] {
+    pointerEvents: none;
+}
+
+.jewel.datefield.readOnlyDateField[disabled] button {
+    visibility: hidden;
+}
+
+.jewel.datefield.readOnlyDateField[disabled] .jewel.textinput input {
+    border: none;
+    background: none;
+    color: #808080;
+    padding: 0;
+}
+
+.dxDataGrid {
+    height: calc(100vh - 20px);
+}
+
+.jewel.navigationlink {
+    padding: 15px;
+}
+
+.navIconLinkItemRenderer {
+    ISelectableItemRenderer: ClassReference("org.apache.royale.jewel.beads.itemRenderers.ClassSelectorListSelectableItemRendererBead");
+}

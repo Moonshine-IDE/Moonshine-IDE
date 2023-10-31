@@ -1,23 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2016 Prominic.NET, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// Author: Prominic.NET, Inc.
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 -->
 <newfile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009"
@@ -46,6 +58,7 @@
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
+
 
 
 
@@ -133,14 +146,15 @@
 	
 			override protected function onNameChanged(event:TextOperationEvent):void
 			{
-				super.onNameChanged(event);
+				super.onDominoNameChanged(event);
 			}
 	
 			protected function onTreeItemClicked(event:ListEvent):void
 			{
 				
                 //get the domino project form folder value:
-                var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms"
+                var dominoFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
+				var dominoSubFormFolder:String = wrapperBelongToProject.projectFolder.nativePath + model.fileCore.separator+"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Subforms";
                 var currentPath:String = UtilsCore.getPathStringByProjectPath(
                         Vector.<FileLocation>([new FileLocation(tree.selectedItem.projectReference.path)]),
                         tree.selectedItem.nativePath);
@@ -148,21 +162,19 @@
 				 txtDestination.text = currentPath;
 				
 			
+				 //wrapperBelongToProject.projectFolder.nativePath + "/nsfs/nsf-moonshine/odp/SharedElements/Subforms";
 				
-                if (!UtilsCore.endsWith(dominoFormFolder,currentPath))
+                if (!UtilsCore.endsWith(dominoFormFolder,currentPath) &&  !UtilsCore.endsWith(dominoSubFormFolder,currentPath))
                 {
-					isDominoValid=true;
+					
                     warningMessage = "Domino forms are only supported in the Forms folder.";
-                    hgExistingWarning.visible = hgExistingWarning.includeInLayout = true;
-
-				   	isSubmitButtonEnabled=false;
-					btnCreate.enabled = false; 
+                   	isSubmitButtonEnabled=false;
+					
+					
                 }else{
-                   hgExistingWarning.visible = hgExistingWarning.includeInLayout = false;
-					isDominoValid=false;
+                 	
 					warningMessage=""; 
 					isSubmitButtonEnabled=true;
-					btnCreate.enabled = true; 
 					treeScrollToCorrectPostion();
                 }
 				wrapperOfFolderLocation = tree.selectedItem as FileWrapper;
@@ -176,12 +188,14 @@
 
 				super.onNewFileCreationComplete(event);
 				
-			
+				txtFileName.text="NewForm";
+				txtFileName.dispatchEvent(new TextOperationEvent(TextOperationEvent.CHANGE));
+              
 				minHeight = height;
 				if (wrapperBelongToProject)
 				{
 					var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
-				
+					
 					if(wrappers.length<4){
 						UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
 						wrapperOfFolderLocation = UtilsCore.findDominoFileWrapperInDepth(wrapperBelongToProject.projectFolder, wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator+"nsfs"+ model.fileCore.separator+"nsf-moonshine"+ model.fileCore.separator+"odp"+ model.fileCore.separator+"Forms");
@@ -197,7 +211,7 @@
 	
 
 				
-	
+				
 				tree.callLater(parseFolders);
 				GlobalEventDispatcher.getInstance().dispatchEvent(new Event(MenuPlugin.CHANGE_MENU_MAC_DISABLE_STATE));
 			}
@@ -259,14 +273,14 @@
 		<s:Label text="Name:"/>
 		<s:Group width="100%">
 			<view:PromptTextInput id="txtFileName"
-								  prompt="Name" width="100%" styleName="textInput" restrict="0-9A-Za-z_\-/"
+								  prompt="Name" width="100%" styleName="textInput" restrict="a-zA-Z0-9_\- "
 								  change="onNameChanged(event)" enter="onCreateButton(null)" marginRight="50"/>
 			<s:Label text=".form" styleName="textInputLabel" textAlign="right"
 					 right="6" verticalCenter="0"/>
 		</s:Group>
 		<s:HGroup id="hgExistingWarning"
 				  width="100%" verticalAlign="middle"
-				  visible="{(isDominoValid)}">
+				  visible="{!isSubmitButtonEnabled}">
 			<s:Image source="@Embed('/elements/images/iconExclamationRed.png')"/>
 			<s:Label text="{warningMessage}" width="100%"/>
 		</s:HGroup>
@@ -276,6 +290,6 @@
 		<s:Button id="btnCreate" label="Create"
 				  styleName="darkButton"
 				  click="onCreateButton(event)"
-				  enabled="{isSubmitButtonEnabled &amp;&amp; (!isDominoValid)}"/>
+				  enabled="{isSubmitButtonEnabled }"/>
 	</newfile:controlBarContent>
 </newfile:NewFileBase>

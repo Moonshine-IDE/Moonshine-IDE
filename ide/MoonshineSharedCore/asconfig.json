@@ -12,7 +12,7 @@
 			"../MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc"
 		],
 		"include-sources": [
-			"src"
+			"src/components"
 		]
 	},
 	"type": "lib",

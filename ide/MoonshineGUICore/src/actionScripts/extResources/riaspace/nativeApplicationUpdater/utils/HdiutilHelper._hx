@@ -1,0 +1,109 @@
+package actionScripts.extResources.riaspace.nativeApplicationUpdater.utils;
+
+import flash.desktop.NativeProcess;
+import flash.desktop.NativeProcessStartupInfo;
+import flash.events.ErrorEvent;
+import flash.events.Event;
+import flash.events.EventDispatcher;
+import flash.events.IOErrorEvent;
+import flash.events.ProgressEvent;
+import flash.filesystem.File;
+import flash.Vector;
+import haxe.xml.Access;
+
+class HdiutilHelper extends EventDispatcher {
+	private var dmg:File;
+
+	private var result:() -> Void;
+
+	private var error:() -> Void;
+
+	private var hdiutilProcess:NativeProcess;
+
+	public var mountPoint:String;
+
+	public function new(dmg:File) {
+		this.dmg = dmg;
+		super();
+	}
+
+	public function attach() {
+		var info:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+		info.executable = new File("/usr/bin/hdiutil");
+
+		var args:Vector<String> = new Vector<String>();
+        args.push("attach");
+        args.push("-plist");
+        args.push(dmg.nativePath);
+		info.arguments = args;
+
+		hdiutilProcess = new NativeProcess();
+		hdiutilProcess.addEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, hdiutilProcess_errorHandler);
+		hdiutilProcess.addEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, hdiutilProcess_errorHandler);
+		hdiutilProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, hdiutilProcess_outputHandler);
+		hdiutilProcess.start(info);
+	}
+
+    private function hdiutilProcess_outputHandler(event:ProgressEvent)
+    {
+        hdiutilProcess.removeEventListener(IOErrorEvent.STANDARD_ERROR_IO_ERROR, hdiutilProcess_errorHandler);
+        hdiutilProcess.removeEventListener(IOErrorEvent.STANDARD_OUTPUT_IO_ERROR, hdiutilProcess_errorHandler);
+        hdiutilProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, hdiutilProcess_outputHandler);
+        hdiutilProcess.exit();
+
+        var plist = new Access( Xml.parse( hdiutilProcess.standardOutput.readUTFBytes( Std.int( event.bytesLoaded ) ) ) );
+        var dicts = plist.node.dict.node.array.nodes.dict;
+        for ( dict in dicts ) {
+            for ( element in dict.elements ) {
+                if ( element.name == "key" && element.text == "mount-point" ) {
+                    mountPoint = dict.child(element.childIndex() + 1);
+                    break;
+                }
+            }
+        }
+        /*
+        
+        // Storing current XML settings
+        var xmlSettings:Dynamic = XML.settings();
+        // Setting required custom XML settings
+        XML.setSettings(
+            {
+                ignoreWhitespace : true,
+                ignoreProcessingInstructions : true,
+                ignoreComments : true,
+                prettyPrinting : false
+            }
+        );
+        
+        var plist:XML = new XML(hdiutilProcess.standardOutput.readUTFBytes(event.bytesLoaded));
+        var dicts:XMLList = plist.dict.array.dict;
+        
+        // INFO: for some reason E4X didn't work
+        for each(var dict:XML in dicts)
+        {
+            for each(var element:XML in dict.elements())
+            {
+                if (element.name() == "key" && element.text() == "mount-point")
+                {
+                    mountPoint = dict.child(element.childIndex() + 1);
+                    break;
+                }
+            }
+        }
+        
+        // Reverting back original XML settings
+        XML.setSettings(xmlSettings);
+        
+        if (mountPoint)
+            dispatchEvent(new Event(Event.COMPLETE));
+        else
+            dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, "Couldn't find mount point!"));
+
+        */
+    }
+
+    private function hdiutilProcess_errorHandler(event:IOErrorEvent)
+    {
+        dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, event.text, event.errorID));
+    }
+}

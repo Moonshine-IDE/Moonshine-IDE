@@ -1,0 +1,10 @@
+package $ProjectName.views.modules.subforms.$moduleName.interfaces
+{
+    %ImportStatements%
+
+    [Bindable]
+	public interface I$moduleNameVO %InterfacesExtends%
+	{
+	    %PropertyStatements%
+	}
+}

@@ -1,33 +1,47 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2016 Prominic.NET, Inc.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
 //
-// Author: Prominic.NET, Inc. 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils
 {
-	import com.adobe.utils.StringUtil;
-	
+import actionScripts.managers.MacOSGitDetector;
+
+import com.adobe.utils.StringUtil;
+
 	import flash.events.Event;
 	import flash.events.NativeProcessExitEvent;
 	import flash.events.ProgressEvent;
-	
+
 	import mx.collections.ArrayCollection;
 	import mx.utils.UIDUtil;
-	
+
 	import actionScripts.events.WorkerEvent;
 	import actionScripts.interfaces.IWorkerSubscriber;
 	import actionScripts.locator.IDEWorker;
@@ -35,8 +49,8 @@ package actionScripts.utils
 	import actionScripts.plugin.help.HelpPlugin;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
-	import actionScripts.valueObjects.ComponentTypes;
-	import actionScripts.valueObjects.ComponentVO;
+	import moonshine.haxeScripts.valueObjects.ComponentTypes;
+	import moonshine.haxeScripts.valueObjects.ComponentVO;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.NativeProcessQueueVO;
 	import actionScripts.valueObjects.ProjectVO;
@@ -64,12 +78,12 @@ package actionScripts.utils
 		private static const QUERY_NEKO_VERSION:String = "getNekoVersion";
 		private static const QUERY_VIRTUALBOX_VERSION:String = "getVirtualBoxVersion";
 		private static const QUERY_EXTERNAL_EDITOR_VERSION:String = "getExternalEditorVersion";
-		
+
 		public var pendingProcess:Array /* of MethodDescriptor */ = [];
 		public var versionCheckType:String;
-		
+
 		protected var processType:String;
-		
+
 		private var worker:IDEWorker = IDEWorker.getInstance();
 		private var queue:Vector.<Object> = new Vector.<Object>();
 		private var environmentSetup:EnvironmentSetupUtils = EnvironmentSetupUtils.getInstance();
@@ -77,7 +91,7 @@ package actionScripts.utils
 		private var lastOutput:String;
 		private var subscribeIdToWorker:String;
 		private var itemUnderCursorIndex:int;
-		
+
 		/**
 		 * CONSTRUCTOR
 		 */
@@ -85,12 +99,12 @@ package actionScripts.utils
 		{
 			super();
 			activate();
-			
+
 			subscribeIdToWorker = UIDUtil.createUID();
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
 			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
 		}
-		
+
 		/**
 		 * Checks some required/optional software installation
 		 * and their version if available
@@ -117,7 +131,7 @@ package actionScripts.utils
 		{
 			worker.unSubscribeComponent(subscribeIdToWorker);
 		}
-		
+
 		private function startSDKVersionRequestProcess():void
 		{
 			var itemTypeUnderCursor:String;
@@ -241,8 +255,13 @@ package actionScripts.utils
 							itemTypeUnderCursor = QUERY_NOTES_VERSION;
 							break;
 					}
-					
+
 					environmentSetup.initCommandGenerationToSetLocalEnvironment(onEnvironmentPrepared, null, [commands]);
+				}
+				else if (ConstantsCoreVO.IS_MACOS &&
+						(itemUnderCursor.type == ComponentTypes.TYPE_GIT))
+				{
+					MacOSGitDetector.getInstance().test(onMacGitDetectionCompletes);
 				}
 				else
 				{
@@ -254,13 +273,25 @@ package actionScripts.utils
 			{
 				dispatchEvent(new Event(Event.COMPLETE));
 			}
-			
+
 			function onEnvironmentPrepared(value:String):void
 			{
 				addToQueue(new NativeProcessQueueVO(value, false, itemTypeUnderCursor, itemUnderCursorIndex));
 				worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 				itemUnderCursorIndex++;
 			}
+		}
+
+		private function onMacGitDetectionCompletes(value:String):void
+		{
+			if (value && !ConstantsCoreVO.IS_GIT_OSX_AVAILABLE)
+			{
+				var gitCVO:ComponentVO = components[itemUnderCursorIndex];
+				gitCVO.version = ComponentVO.GIT_ACCESS_PERMISSION_MISSING;
+			}
+
+			itemUnderCursorIndex++;
+			startSDKVersionRequestProcess();
 		}
 
 		private function startEditorsVersionRequestProcess():void
@@ -276,9 +307,9 @@ package actionScripts.utils
 					if (ConstantsCoreVO.IS_MACOS)
 					{
 						commands = 'defaults read "'+ itemUnderCursor.installPath.nativePath +'/Contents/Info.plist" CFBundleShortVersionString';
-						
+
 						queue = new Vector.<Object>();
-						
+
 						addToQueue(new NativeProcessQueueVO(commands, false, QUERY_EXTERNAL_EDITOR_VERSION, itemUnderCursorIndex));
 						worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 						itemUnderCursorIndex++;
@@ -290,7 +321,7 @@ package actionScripts.utils
 						{
 							powerShellPath = powerShellPath.replace(/\\/g, "/");
 							commands = '"'+ powerShellPath +'" -NoLogo -NoProfile \"(Get-Item -Path \''+ itemUnderCursor.installPath.nativePath +'\').VersionInfo | Select-Object ProductVersion | Format-List -Force\"';
-							
+
 							this.start(
 								new <String>[commands], null
 							);
@@ -313,7 +344,7 @@ package actionScripts.utils
 				dispatchEvent(new Event(Event.COMPLETE));
 			}
 		}
-		
+
 		override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
 		{
 			var stdOutput:String = getDataFromBytes(nativeProcess.standardOutput);
@@ -323,14 +354,14 @@ package actionScripts.utils
 				components[itemUnderCursorIndex].version = stdOutput.split(" : ")[1];
 			}
 		}
-		
+
 		override protected function onNativeProcessExit(event:NativeProcessExitEvent):void
 		{
 			super.onNativeProcessExit(event);
 			itemUnderCursorIndex++;
 			startEditorsVersionRequestProcess();
 		}
-		
+
 		public function onWorkerValueIncoming(value:Object):void
 		{
 			var tmpValue:Object = value.value;
@@ -360,12 +391,12 @@ package actionScripts.utils
 					break;
 			}
 		}
-		
+
 		private function addToQueue(value:Object):void
 		{
 			queue.push(value);
 		}
-		
+
 		private function listOfProcessEnded():void
 		{
 			switch (processType)
@@ -384,13 +415,13 @@ package actionScripts.utils
 				startEditorsVersionRequestProcess();
 			}
 		}
-		
-		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void 
+
+		private function shellError(value:Object /** type of WorkerNativeProcessResult **/):void
 		{
 			error(value.output);
 		}
-		
-		private function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void 
+
+		private function shellExit(value:Object /** type of WorkerNativeProcessResult **/):void
 		{
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			if (tmpQueue.extraArguments && tmpQueue.extraArguments.length != 0 && lastOutput)
@@ -402,38 +433,40 @@ package actionScripts.utils
 						components[tmpIndex].version = lastOutput;
 						break;
 					case QUERY_MAVEN_VERSION:
-					case QUERY_GRADLE_VERSION:	
+					case QUERY_GRADLE_VERSION:
 						components[tmpIndex].version = getVersionNumberedTypeLine(lastOutput);
 						break;
 				}
 			}
-			
+
 			lastOutput = null;
 		}
-		
-		private function shellTick(value:Object /** type of NativeProcessQueueVO **/):void
+
+		private function shellTick(value:Object):void
 		{
 			/*var tmpIndex:int = int(value.extraArguments[0]);
 			switch (value.processType)
 			{
-			case QUERY_FLEX_AIR_VERSION:
-			if (!components[tmpIndex].version) components[tmpIndex].version = lastOutput;
-			else components[tmpIndex].version += ", "+ lastOutput;
-			break;
+				case QUERY_SVN_GIT_VERSION:
+					if (!components[tmpIndex].type == ComponentTypes.TYPE_GIT)
+					{
+
+					}
+					break;
 			}*/
 		}
-		
-		private function shellData(value:Object /** type of WorkerNativeProcessResult **/):void 
+
+		private function shellData(value:Object /** type of WorkerNativeProcessResult **/):void
 		{
 			var match:Array;
 			var tmpQueue:Object = value.queue; /** type of NativeProcessQueueVO **/
 			var isFatal:Boolean;
 			var tmpProject:ProjectVO;
 			var versionNumberString:String;
-			
+
 			match = value.output.match(/fatal: .*/);
 			if (match) isFatal = true;
-			
+
 			match = value.output.match(/is not recognized as an internal or external command/);
 			if (!match)
 			{
@@ -515,7 +548,7 @@ package actionScripts.utils
 						break;
 				}
 			}
-			
+
 			if (isFatal)
 			{
 				shellError(value);
@@ -526,18 +559,18 @@ package actionScripts.utils
 				//notice(value.output);
 			}
 		}
-		
+
 		private function getVersionNumberedTypeLine(value:String):String
 		{
 			var lines:Array = value.split(UtilsCore.getLineBreakEncoding());
 			for each (var line:String in lines)
 			{
-				if ((line.match(/\d+.\d+.\d+/)) || line.match(/\d+.\d+/)) return line;
+				if ((line.match(/\d+\.\d+\.\d+/)) || line.match(/\d+\.\d+/)) return line;
 			}
-			
+
 			return null;
 		}
-		
+
 		/**
 		 * Retrieves Java path in OSX
 		 */
@@ -547,7 +580,7 @@ package actionScripts.utils
 			cmdFile = File.documentsDirectory.resolvePath("/bin/bash");
 			isMacOS = true;
 			checkingQueues = ["/usr/libexec/java_home/ -v 1.8"];
-			
+
 			nativeInfoReaderHandler = parseJavaOnlyPath;
 			startCheckingProcess();
 		}*/

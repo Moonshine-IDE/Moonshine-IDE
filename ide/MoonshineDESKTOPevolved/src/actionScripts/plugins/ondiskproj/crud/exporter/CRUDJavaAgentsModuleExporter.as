@@ -1,49 +1,50 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.ondiskproj.crud.exporter
 {
 	import actionScripts.impls.IDominoFormBuilderLibraryBridgeImp;
 	import actionScripts.plugin.console.ConsoleOutputter;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ProxyClassGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.RoyalePageGeneratorBase;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.VOClassGenerator;
 	import actionScripts.utils.FileUtils;
-
-	import avmplus.getQualifiedClassName;
-
-	import flash.events.Event;
 
 	import flash.filesystem.File;
 	import flash.utils.Dictionary;
 
 	import haxe.ds.ObjectMap;
-	import haxe.ds.StringMap;
 
 	import mx.collections.ArrayCollection;
 	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.templating.TemplatingHelper;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.AddEditPageGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.DashboardPageGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.ListingPageGenerator;
-	import actionScripts.plugins.ondiskproj.crud.exporter.pages.MainContentPageGenerator;
 	import actionScripts.plugins.ondiskproj.crud.exporter.settings.RoyaleCRUDClassReferenceSettings;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ProjectVO;
@@ -57,15 +58,15 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 	
 	public class CRUDJavaAgentsModuleExporter extends ConsoleOutputter
 	{
-		private static var TEMPLATE_MODULE_PATH:File;
 		private static var TEMPLATE_ELEMENTS_PATH:File;
 		
 		[Bindable] protected var classReferenceSettings:RoyaleCRUDClassReferenceSettings = new RoyaleCRUDClassReferenceSettings();
-		
-		protected var targetPath:File;
+
+		protected var moduleCopyTargets:ObjectMap = new ObjectMap();
 		protected var project:ProjectVO;
 		protected var formObjects:Vector.<DominoFormVO>;
 
+		private var targetPath:File;
 		private var completionCount:int;
 		private var waitingCount:int;
 		private var onCompleteHandler:Function;
@@ -77,10 +78,14 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			waitingCount = 0;
 			completionCount = 0;
 
-			TEMPLATE_MODULE_PATH = originPath.resolvePath("project/src/main/java");
+			moduleCopyTargets.set(originPath.resolvePath("project/src/main/java"), targetPath.resolvePath("src/main/java"));
+			moduleCopyTargets.set(originPath.resolvePath("project/src/main/generated"), targetPath.resolvePath("src/main/generated"));
+			moduleCopyTargets.set(originPath.resolvePath("project/docs"), targetPath.resolvePath("docs"));
+			moduleCopyTargets.set(originPath.resolvePath("project/agentProperties/agentbuild"), targetPath.resolvePath("agentProperties/agentbuild"));
+
 			TEMPLATE_ELEMENTS_PATH = originPath.resolvePath("elements");
 
-			this.targetPath = targetPath.resolvePath("src/main/java");
+			this.targetPath = targetPath;
 			this.project = project;
 			this.onCompleteHandler = onComplete;
 
@@ -98,13 +103,20 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			
 			// get all available dfb files
 			var resources:ArrayCollection = new ArrayCollection();
-			UtilsCore.parseFilesList(resources, null,null, ["dfb"], false, onFilesParseCompletes);
+			UtilsCore.parseFilesList(resources, null, this.project, ["dfb"], false, onFilesParseCompletes);
 
 			/*
 			 * @local
 			 */
 			function onFilesParseCompletes():void
 			{
+				if (resources.length == 0)
+				{
+					error("No .dfb module found in: "+ project.name +". Process terminates.");
+					onCompleteHandler = null;
+					return;
+				}
+
 				// parse to dfb files to form-object
 				// no matter opened or non-opened
 				formObjects = new Vector.<DominoFormVO>();
@@ -144,15 +156,17 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		
 		protected function copyTemplates(form:DominoFormVO):void
 		{
-			var moduleName:String = form.formName;
-
 			var th:TemplatingHelper = new TemplatingHelper();
-			th.templatingData["%eachform%"] = th.templatingData["%form%"] = form.formName.replace(/[^0-9a-zA-Z_]/, '');
+			th.templatingData["%eachform%"] = th.templatingData["%form%"] = form.formName.replace(/[\s_\(\)-]/g, '');
 			th.templatingData["%formRaw%"] = form.formName;
 			th.templatingData["%view%"] = form.viewName;
+			th.templatingData["%project%"] = targetPath.name;
 			generateModuleFilesContent(form, th);
 
-			th.projectTemplate(new FileLocation(TEMPLATE_MODULE_PATH.nativePath), new FileLocation(targetPath.nativePath));
+			for (var source:Object in moduleCopyTargets)
+			{
+				th.projectTemplate(new FileLocation(source.nativePath), new FileLocation(moduleCopyTargets[source].nativePath));
+			}
 		}
 		
 		protected function generateModuleFilesContent(form:DominoFormVO, th:TemplatingHelper):void
@@ -222,7 +236,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 			// since we know this is a subdirectory, we can simply cut off the elementsPath prefix
 			var relativePath:String = template.nativePath.substring(elementsDir.nativePath.length + 1);  // +1 for the file separator
 
-			var key:String = relativePath.replace('\\\\', '/');  // normalize windows paths
+			var key:String = relativePath.replace('\\', '/');  // normalize windows paths
 			key = key.replace('.template', '')  // use replaceAll for regex
 			return key
 		}

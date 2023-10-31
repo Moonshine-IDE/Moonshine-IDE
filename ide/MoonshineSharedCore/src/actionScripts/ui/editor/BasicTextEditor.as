@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor
 {
@@ -40,6 +53,8 @@ package actionScripts.ui.editor
     import actionScripts.locator.IDEModel;
     import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
     import actionScripts.plugin.console.ConsoleOutputEvent;
+    import actionScripts.plugin.texteditor.TextEditorPlugin;
+    import actionScripts.plugin.texteditor.events.TextEditorSettingsEvent;
     import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IContentWindowReloadable;
@@ -51,16 +66,30 @@ package actionScripts.ui.editor
     import actionScripts.utils.SharedObjectUtil;
     import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
+    import actionScripts.valueObjects.Settings;
     import actionScripts.valueObjects.URLDescriptorVO;
 
     import components.popup.FileSavePopup;
     import components.popup.SelectOpenedProject;
     import components.views.project.TreeView;
 
+    import feathers.graphics.FillStyle;
+    import feathers.skins.RectangleSkin;
+    import feathers.utils.DisplayObjectFactory;
+
+    import haxe.IMap;
+
     import moonshine.editor.text.TextEditor;
     import moonshine.editor.text.TextEditorSearchResult;
     import moonshine.editor.text.events.TextEditorChangeEvent;
     import moonshine.editor.text.events.TextEditorLineEvent;
+    import moonshine.editor.text.lines.TextLineRenderer;
+    import moonshine.editor.text.lsp.LspTextEditor;
+    import moonshine.editor.text.lsp.lines.LspTextLineRenderer;
+    import moonshine.editor.text.syntax.format.PlainTextFormatBuilder;
+    import moonshine.editor.text.syntax.format.SyntaxColorSettings;
+    import moonshine.editor.text.syntax.format.SyntaxFontSettings;
+    import moonshine.editor.text.syntax.parser.PlainTextLineParser;
 
     public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{
@@ -222,6 +251,7 @@ package actionScripts.ui.editor
 		protected function addedToStageHandler(event:Event):void
 		{
 			this.addGlobalListeners();
+			updateSyntaxColorScheme();
 		}
 		
 		protected function removedFromStageHandler(event:Event):void
@@ -231,9 +261,10 @@ package actionScripts.ui.editor
 		
 		protected function addGlobalListeners():void
 		{
-			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
-			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
-			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_FINISH, setDebugFinishHandler);
+			dispatcher.addEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler, false, 0, true);
+			dispatcher.addEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler, false, 0, true);
+			dispatcher.addEventListener(DebugLineEvent.SET_DEBUG_FINISH, setDebugFinishHandler, false, 0, true);
+			dispatcher.addEventListener(TextEditorSettingsEvent.SYNTAX_COLOR_SCHEME_CHANGE, syntaxColorSchemeChangeHandler, false, 0, true);
 		}
 		
 		protected function removeGlobalListeners():void
@@ -241,20 +272,24 @@ package actionScripts.ui.editor
 			dispatcher.removeEventListener(CloseTabEvent.EVENT_CLOSE_TAB, closeTabHandler);
 			dispatcher.removeEventListener(TabEvent.EVENT_TAB_SELECT, tabSelectHandler);
 			dispatcher.removeEventListener(DebugLineEvent.SET_DEBUG_FINISH, setDebugFinishHandler);
+			dispatcher.removeEventListener(TextEditorSettingsEvent.SYNTAX_COLOR_SCHEME_CHANGE, syntaxColorSchemeChangeHandler);
 		}
 		
 		protected function closeTabHandler(event:Event):void
 		{
 			if (event is CloseTabEvent)
 			{
-				if ((event as CloseTabEvent).isUserTriggered)
+				var closeEvent:CloseTabEvent = CloseTabEvent(event);
+				if (closeEvent.tab != this || !closeEvent.isUserTriggered)
 				{
-					SharedObjectUtil.removeLocationOfEditorFile(
-						(event as CloseTabEvent).tab as IContentWindow
-					);
+					return;
 				}
+				SharedObjectUtil.removeLocationOfEditorFile(
+					closeEvent.tab as IContentWindow
+				);
 			}
-			// suppose to call only when keyboard shortcuts Event
+			// can be dispatched by menu item as a regular Event
+			// instead of CloseTabEvent
 			else if (model.activeEditor == this)
 			{
 				SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
@@ -280,6 +315,10 @@ package actionScripts.ui.editor
 			if(!editor)
 			{
 				editor = new TextEditor(null, _readOnly);
+			}
+			if(!editor.parser)
+			{
+				editor.parser = new PlainTextLineParser();
 			}
 			editor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
 			editor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
@@ -593,6 +632,52 @@ package actionScripts.ui.editor
 			}, 1000);
 		}
 
+		private function getColorSettings():SyntaxColorSettings
+		{
+			var colorSettings:SyntaxColorSettings;
+			switch(model.syntaxColorScheme)
+			{
+				case TextEditorPlugin.SYNTAX_COLOR_SCHEME_DARK:
+					return SyntaxColorSettings.defaultDark();
+				case TextEditorPlugin.SYNTAX_COLOR_SCHEME_MONOKAI:
+					return SyntaxColorSettings.monokai();
+				default: // light
+					return SyntaxColorSettings.defaultLight();
+			}
+		}
+
+		private function updateSyntaxColorScheme():void
+		{
+			var colorSettings:SyntaxColorSettings = getColorSettings();
+			if (editor.parser is PlainTextLineParser)
+			{
+				var formatBuilder:PlainTextFormatBuilder = new PlainTextFormatBuilder();
+				formatBuilder.setFontSettings(new SyntaxFontSettings(Settings.font.defaultFontFamily, Settings.font.defaultFontSize));
+				formatBuilder.setColorSettings(colorSettings);
+				var formats:IMap = formatBuilder.build();
+				editor.textStyles = formats;
+				editor.embedFonts = Settings.font.defaultFontEmbedded;
+			}
+			editor.backgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.backgroundColor));
+			editor.textLineRendererFactory = DisplayObjectFactory.withFunction(function():TextLineRenderer
+			{
+				var textLineRenderer:TextLineRenderer = (editor is LspTextEditor) ? new LspTextLineRenderer() : new TextLineRenderer();
+				textLineRenderer.backgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.backgroundColor));
+				textLineRenderer.gutterBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.backgroundColor));
+				textLineRenderer.selectedTextBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.selectionBackgroundColor,
+					colorSettings.selectionBackgroundAlpha));
+				textLineRenderer.selectedTextBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.selectionUnfocusedBackgroundColor,
+					colorSettings.selectionUnfocusedBackgroundAlpha));
+				textLineRenderer.focusedBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.focusedLineBackgroundColor));
+				textLineRenderer.debuggerStoppedBackgroundSkin = new RectangleSkin(FillStyle.SolidColor(colorSettings.debuggerStoppedLineBackgroundColor));
+				textLineRenderer.searchResultBackgroundSkinFactory = function():RectangleSkin
+				{
+					return new RectangleSkin(FillStyle.SolidColor(colorSettings.searchResultBackgroundColor));
+				}
+				return textLineRenderer;
+			});
+		}
+
 		protected function handleSaveAsSelect(fileObj:Object):void
 		{
 			saveAs(new FileLocation(fileObj.nativePath));
@@ -628,6 +713,11 @@ package actionScripts.ui.editor
 		private function setDebugFinishHandler(event:DebugLineEvent):void
 		{
 			editor.debuggerLineIndex = -1;
+		}
+
+		private function syntaxColorSchemeChangeHandler(event:TextEditorSettingsEvent):void
+		{
+			updateSyntaxColorScheme();
 		}
     }
 }

@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:containers="spark.containers.*"
+    xmlns:tabnavigator="actionScripts.ui.tabNavigator.*"
+    xmlns:suportclasses="view.suportClasses.*"
+    creationComplete="onComplete()"
+    xmlns:collapsiblehdivider="components.collapsibleHDivider.*"
+	xmlns:view="view.*">        
+
+<containers:Navigator id="viewStack"  width="100%" height="100%" creationPolicy="all">
+        <s:NavigatorContent label="View" id="viewNavigator">
+            <view:DominoViewMockVisualEditor id="dominoViewVisualEditor" percentWidth="100" percentHeight="100" right="0" left="0"/>
+        </s:NavigatorContent>
+        <s:NavigatorContent label="Code">
+            <s:Scroller width="100%" height="100%" id="codeContentGroupScroller">
+               <s:Group id="codeContentGroup" creationComplete="onContentGroupCreationComplete(event)">
+
+               </s:Group>
+            </s:Scroller>
+        </s:NavigatorContent>
+    </containers:Navigator>
+
+        <s:Group width="100%">
+            <tabnavigator:TabBarWithScroller id="tabBar" dataProvider="{viewStack}"
+                                         fontSize="11" fontFamily="_sans" color="0xEEEEEE"
+                                         skinClass="components.skins.EditorTabBarSkin"
+                                         cornerRadius="1" closeButtonVisible="false"
+                                         change="onTabBarChange(event)" left="0"/>
+        </s:Group>                                
+        
+
+
+<fx:Script><![CDATA[
+    
+    import mx.core.IVisualElement;
+    import mx.events.FlexEvent;
+    import flash.events.Event;
+    import mx.collections.ArrayList;
+    import actionScripts.plugins.ui.editor.DominoViewEditor;
+
+    import mx.controls.Alert;
+    import actionScripts.ui.FeathersUIWrapper;
+    import actionScripts.locator.IDEModel;
+
+    import mx.events.DragEvent;
+    import spark.events.IndexChangeEvent;
+    import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+
+    private var _codeEditor:IVisualElement;
+
+    private var showinmenu:Boolean ;
+    private var showinbar:Boolean ;
+    private var actionTitle:String="";
+
+    private var model:IDEModel = IDEModel.getInstance();
+    private var editor:DominoViewEditor = null;
+   
+
+
+    [Bindable]
+    private var rowsDataProvider:ArrayList = new ArrayList();
+       
+
+    public function set codeEditor(value:IVisualElement):void
+    {
+        _codeEditor = value;
+    }
+
+    
+    
+    public function onComplete():void {
+        
+    }
+   
+   
+    private function onContentGroupCreationComplete(event:FlexEvent):void
+    {
+        codeContentGroup.addElement(_codeEditor);
+      
+    }
+
+    private function textInput_changeHandler(event:Event):void
+    {
+
+        
+    }
+
+    private function check_changeHandler(event:Event):void
+    {
+
+    
+    }
+
+    
+
+    private function onTabBarChange(event:IndexChangeEvent):void
+    {
+        
+        if (event.newIndex == 1)
+        {
+            dominoViewVisualEditor.setDominoViewGroupVisible(false);
+
+            dispatchEvent(new VisualEditorViewChangeEvent(VisualEditorViewChangeEvent.CODE_CHANGE));
+        }
+        else
+        {
+            dominoViewVisualEditor.setDominoViewGroupVisible(true);
+            codeContentGroup.visible=true;
+        }
+    }
+
+
+]]></fx:Script> 
+<fx:Metadata>
+        [Event(name="codeChange", type="actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent")]
+        [Event(name="startPreview", type="flash.events.Event")]
+</fx:Metadata>
+</s:VGroup>
+   
+       

@@ -1,20 +1,33 @@
 ////////////////////////////////////////////////////////////////////////////////
-// 
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and 
-// limitations under the License
-// 
-// No warranty of merchantability or fitness of any kind. 
-// Use this software at your own risk.
-// 
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant.utils
 {
@@ -41,6 +54,7 @@ package actionScripts.plugins.vagrant.utils
 	import flash.utils.Dictionary;
 
 	import mx.collections.ArrayCollection;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class VagrantUtil extends EventDispatcher
 	{
@@ -55,6 +69,14 @@ package actionScripts.plugins.vagrant.utils
 
 		private static const instanceStateCheckLoaders:Dictionary = new Dictionary();
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private static const macSHIConfigLocation:Array = [
+				File.userDirectory.resolvePath("Library/Application Support/SuperHumanInstaller/.shi-config"),
+				File.userDirectory.resolvePath("Library/Application Support/SuperHumanInstallerDev/.shi-config")
+			];
+		private static const winSHIConfigLocation:Array = [
+				File.userDirectory.resolvePath("AppData/Roaming/SuperHumanInstaller/.shi-config"),
+				File.userDirectory.resolvePath("AppData/Roaming/SuperHumanInstallerDev/.shi-config")
+			];
 
 		public static const AS_VAGRANT_SSH: XML = <root><![CDATA[
 			#!/bin/bash
@@ -111,8 +133,57 @@ package actionScripts.plugins.vagrant.utils
 					);
 				}
 			}
-
+			
+			// parse from super.human.installer created instances
+			getVagrantInstancesFromSHI(instances);
+			
 			return instances;
+		}
+		
+		public static function getVagrantInstancesFromSHI(instances:ArrayCollection):Array
+		{
+			var shiInstances:Array = [];
+			var locations:Array = ConstantsCoreVO.IS_MACOS ? macSHIConfigLocation : winSHIConfigLocation;
+			
+			for each (var filePath:File in locations)
+			{
+				if (filePath.exists)
+				{
+					var readString:String = FileUtils.readFromFile(filePath) as String;
+					var readObject:Object = JSON.parse(readString);
+					var vagrantInstance:VagrantInstanceVO;
+					for (var i:int=0; i < readObject.servers.length; i++)
+					{
+						var isNameExists:Boolean = false;
+						var server:Object = readObject.servers[i];
+						var server_hostname:String = (server.server_hostname.indexOf(".") == -1) ? 
+							server.server_hostname +"."+ server.server_organization +".com" : 
+							server.server_hostname;
+						for each (var existingServer:VagrantInstanceVO in instances)
+						{
+							if (existingServer.titleOriginal == server_hostname)
+							{
+								isNameExists = true;
+								break;
+							}
+						}
+						
+						if (isNameExists) continue;
+						
+						vagrantInstance = new VagrantInstanceVO();
+						vagrantInstance.title = vagrantInstance.titleOriginal = server_hostname;
+						vagrantInstance.url = "http://restapi."+ server_hostname +":8080";
+						vagrantInstance.localPath = filePath.parent.nativePath +"/servers/"+ server.provisioner.type +"/"+ server.server_id;
+						instances.addItem(vagrantInstance);
+						shiInstances.push(vagrantInstance);
+					}
+				}
+			}
+			
+			// give a save on any newly addition
+			saveVagrantInstances(instances);
+
+			return shiInstances;
 		}
 
 		public static function saveVagrantInstances(value:ArrayCollection):void
@@ -129,6 +200,7 @@ package actionScripts.plugins.vagrant.utils
 				var request:URLRequest = new URLRequest();
 				request.url = instance.url +"/info";
 				request.method = "GET";
+				request.idleTimeout = 2000;
 
 				var loader:URLLoader = new URLLoader();
 				loader.addEventListener(Event.COMPLETE, onStateCheckSuccess);

@@ -1,0 +1,5 @@
+<!--START_GENERATED_SCROLLABLE_SECTION_%ProjectName%_%ViewName%:  **DO NOT MODIFY ANYTHING BELOW THIS LINE MANUALLY**-->
+<j:ScrollableSectionContent name="{%ViewComponentName%.NAME}" className="sectionCenter">
+	%ViewComponent%
+</j:ScrollableSectionContent>
+<!--END_GENERATED_SCROLLABLE_SECTION_%ProjectName%_%ViewName%:  **DO NOT MODIFY ANYTHING ABOVE THIS LINE MANUALLY**-->
