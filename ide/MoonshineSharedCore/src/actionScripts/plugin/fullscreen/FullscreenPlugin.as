@@ -31,18 +31,34 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.fullscreen
 {
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
+	import flash.display.IBitmapDrawable;
 	import flash.display.StageDisplayState;
 	import flash.events.Event;
+	import flash.events.TimerEvent;
+	import flash.geom.Rectangle;
+	import flash.utils.Timer;
+	import flash.utils.getTimer;
+	import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
 	import mx.core.IVisualElement;
+	import mx.core.UIComponent;
+	import mx.events.FlexEvent;
+	import mx.events.ResizeEvent;
+	import mx.graphics.ImageSnapshot;
+	
+	import spark.components.Image;
 	
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.fullscreen.events.FullscreenEvent;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import flash.utils.Timer;
-    import flash.events.TimerEvent;
+	
+	import lime.system.Display;
+	
+	import org.osmf.events.DisplayObjectEvent;
 	
 	public class FullscreenPlugin extends PluginBase 
 	{
@@ -61,6 +77,7 @@ package actionScripts.plugin.fullscreen
 		private var editorsPercentHeight:Number;
 		private var consoleLastHeight:Number;
 		private var consolePercentHeight:Number;
+		private var sectionFullscreenCheckTimer:Timer;
 			
 		override public function activate():void
 		{
@@ -82,27 +99,31 @@ package actionScripts.plugin.fullscreen
 			}
 		}
 		
+		private var startTime:int;
+		private var startTime2:int;
+		
 		protected function handleToggleSectionFullscreen(event:FullscreenEvent):void
 		{
-			if (this.isSectionFullscreenInProcess) 
-				return;
-				
+			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
+			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
+			
+			(editors as UIComponent).mouseChildren = false;
+			(editors as UIComponent).mouseEnabled = false;
+			(console as UIComponent).mouseChildren = false;
+			(console as UIComponent).mouseEnabled = false;
+			
+			editors.addEventListener(Event.RENDER, onRenderEvent);
+			
 			if (isSectionInFullscreen) 
 			{
 				this.toggle(event);
 				return;
 			}
 			
-			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
-			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
 			isSectionInFullscreen = true;
-			this.isSectionFullscreenInProcess = true;
-			trace("handleTolggle recall");
-			
 			switch (event.value)
 			{
 				case FullscreenEvent.SECTION_EDITOR:
-					editors.addEventListener(Event.RENDER, onEditorsRenderEvent);
 					// minimize sidebar
 					this.sideBarWidth = this.model.mainView.sidebar.width;
 					this.model.mainView.sidebar.width = 0;
@@ -111,6 +132,7 @@ package actionScripts.plugin.fullscreen
 					editors.percentHeight = 100;
 					console["minHeight"] = 0;
 					console.height = 0;
+					(editors as UIComponent).invalidateDisplayList();
 					
 					// requisite updates in projectpanelplugin
 					dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.HIDE_PROJECT_PANEL, null));
@@ -135,28 +157,32 @@ package actionScripts.plugin.fullscreen
 			}
 		}
 		
-		private var sectionProcessTimer:Timer;
-		private function onEditorsRenderEvent(event:Event):void
+		private function onSectionFullscreenTimerTick(event:TimerEvent):void
 		{
-			if (sectionProcessTimer)
-			{
-				trace("sectionTimerStopped");
-				sectionProcessTimer.stop();
-				sectionProcessTimer.removeEventListener(TimerEvent.TIMER_COMPLETE, onSectionProcessTimerCompletes);
-			}
+			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
+			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
 			
-			trace("sectionTimerReleased");
-			sectionProcessTimer = new Timer(2000, 1);
-			sectionProcessTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onSectionProcessTimerCompletes);
-			sectionProcessTimer.start();
+			(editors as UIComponent).mouseChildren = true;
+			(editors as UIComponent).mouseEnabled = true;
+			(console as UIComponent).mouseChildren = true;
+			(console as UIComponent).mouseEnabled = true;
+			
+			this.sectionFullscreenCheckTimer.stop();
+			this.sectionFullscreenCheckTimer.removeEventListener(TimerEvent.TIMER, onSectionFullscreenTimerTick);
+			this.isSectionFullscreenInProcess = false;
 		}
 		
-		private function onSectionProcessTimerCompletes(event:TimerEvent):void
+		private function onRenderEvent(event:Event):void
 		{
-			sectionProcessTimer.stop();
-			sectionProcessTimer.removeEventListener(TimerEvent.TIMER_COMPLETE, onSectionProcessTimerCompletes);
-			this.isSectionFullscreenInProcess = false;
-			trace("STOPPED");
+			if (this.sectionFullscreenCheckTimer && this.sectionFullscreenCheckTimer.running)
+			{
+				this.sectionFullscreenCheckTimer.stop();
+				this.sectionFullscreenCheckTimer.removeEventListener(TimerEvent.TIMER, onSectionFullscreenTimerTick);
+			}
+			
+			this.sectionFullscreenCheckTimer = new Timer(1500, 1);
+			this.sectionFullscreenCheckTimer.addEventListener(TimerEvent.TIMER, onSectionFullscreenTimerTick);
+			this.sectionFullscreenCheckTimer.start();
 		}
 		
 		protected function toggle(event:FullscreenEvent):void
