@@ -48,6 +48,7 @@ package actionScripts.ui.tabview
     
     import actionScripts.events.GlobalEventDispatcher;
     import actionScripts.locator.IDEModel;
+    import actionScripts.plugin.fullscreen.events.FullscreenEvent;
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.IFileContentWindow;
     import actionScripts.ui.ScrollableMenu;
@@ -340,10 +341,11 @@ package actionScripts.ui.tabview
 			}
 			tabContainer.addChildAt(tab, 0);
 
-			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick);
-			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose);
-			tab.addEventListener(TabViewTab.EVENT_TABP_CLOSE_ALL, onTabCloseAll);
-			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE_ALL_OTHERS, onTabCloseAllOthers);
+			tab.addEventListener(TabViewTab.EVENT_TAB_CLICK, onTabClick, false, 0, true);
+			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE, onTabClose, false, 0, true);
+			tab.addEventListener(TabViewTab.EVENT_TABP_CLOSE_ALL, onTabCloseAll, false, 0, true);
+			tab.addEventListener(TabViewTab.EVENT_TAB_CLOSE_ALL_OTHERS, onTabCloseAllOthers, false, 0, true);
+			tab.addEventListener(TabViewTab.EVENT_TAB_DOUBLE_CLICKED, onTabDoubleClicked, false, 0, true);
 
 			invalidateLayoutTabs();
         }
@@ -389,6 +391,11 @@ package actionScripts.ui.tabview
 					null, false, null, true,
 					child as IContentWindow
 					);
+		}
+		
+		private function onTabDoubleClicked(event:Event):void
+		{
+			dispatcher.dispatchEvent(new FullscreenEvent(FullscreenEvent.EVENT_SECTION_FULLSCREEN, FullscreenEvent.SECTION_EDITOR));
 		}
 
         private function updateTabLabel(event:Event):void

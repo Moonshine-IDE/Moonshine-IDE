@@ -49,6 +49,7 @@ package actionScripts.ui
     
     import components.views.project.TreeView;
     import components.views.splashscreen.SplashScreen;
+    import actionScripts.plugin.fullscreen.events.FullscreenEvent;
 
     // TODO: Make this an all-in-one flexible layout thing
 	public class MainView extends VBox
@@ -61,6 +62,8 @@ package actionScripts.ui
 		private var _mainContent:TabView;
 		private var model:IDEModel;
 		private var childIndex:int=0;
+		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private var isSectionInFullscreen:Boolean;
 		
 		public function MainView()
 		{
@@ -69,6 +72,7 @@ package actionScripts.ui
 			setStyle('backgroundAlpha', 0);
 			model = IDEModel.getInstance();
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorChange);
+			dispatcher.addEventListener(FullscreenEvent.EVENT_SECTION_FULLSCREEN, handleToggleSectionFullscreen);
 			BindingUtils.bindSetter(activeEditorChanged, model, 'activeEditor');
 		}
 
@@ -156,7 +160,7 @@ package actionScripts.ui
 			
 			var e:CloseTabEvent = new CloseTabEvent(CloseTabEvent.EVENT_CLOSE_TAB, event.child);
 			e.isUserTriggered = true;
-			GlobalEventDispatcher.getInstance().dispatchEvent(e);
+			dispatcher.dispatchEvent(e);
 		}
 		
 		public function addPanel(panel:IPanelWindow):void
@@ -182,6 +186,43 @@ package actionScripts.ui
 			}
 			
 			return null;
+		}
+		
+		private function handleToggleSectionFullscreen(event:FullscreenEvent):void
+		{
+			if (isSectionInFullscreen) 
+			{
+				this.toggle(event);
+				return;
+			}
+			
+			switch (event.value)
+			{
+				case FullscreenEvent.SECTION_BOTTOM:
+					this.bodyPanel.setStyle('dividerSkin', null);
+					this.bodyPanel.setStyle('dividerAlpha', 0);
+					this.bodyPanel.setStyle('dividerThickness', 0);
+					this.bodyPanel.setStyle('dividerAffordance', 0);
+					this.bodyPanel.setStyle('verticalGap', 0);
+					break;
+			}
+			
+			isSectionInFullscreen = true;
+		}
+		
+		private function toggle(event:FullscreenEvent):void
+		{	
+			switch (event.value)
+			{
+				case FullscreenEvent.SECTION_BOTTOM:
+					this.bodyPanel.setStyle('dividerThickness', 7);
+					this.bodyPanel.setStyle('dividerAffordance', 4);
+					this.bodyPanel.setStyle('verticalGap', 7);
+					this.bodyPanel.setStyle('dividerAlpha', 1);
+					break;
+			}
+			
+			isSectionInFullscreen = false;
 		}
 	}
 }
