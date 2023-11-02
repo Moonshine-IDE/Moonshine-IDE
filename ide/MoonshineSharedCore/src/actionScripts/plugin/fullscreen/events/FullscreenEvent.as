@@ -29,26 +29,23 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.ui.tabNavigator.event
+package actionScripts.plugin.fullscreen.events
 {
-    import flash.events.Event;
+	import flash.events.Event;
 
-    public class ButtonBarButtonWithCloseEvent extends Event
-    {
-        public static const CLOSE_BUTTON_CLICK:String = "closeButtonClick";
-		public static const DOUBLE_CLICK:String = "buttonBarButtonDoubleClickEvent";
-        
-        public function ButtonBarButtonWithCloseEvent(type:String, itemIndex:int = -1)
-        {
-            super(type);
+	public class FullscreenEvent extends Event
+	{
+		public static const EVENT_SECTION_FULLSCREEN:String = "sectionFullscreenEvent";
+		public static const SECTION_BOTTOM:String = "eventSectionPositionBottom";
+		public static const SECTION_EDITOR:String = "eventSectionEditors";
+		public static const SECTION_LEFT:String = "eventSectionPositionLeft";
 
-            _itemIndex = itemIndex;
-        }
+		public var value:String;
 
-        private var _itemIndex:int;
-        public function get itemIndex():int
-        {
-            return _itemIndex;
-        }
-    }
+		public function FullscreenEvent(type:String, value:String)
+		{
+			this.value = value;
+			super(type);
+		}
+	}
 }

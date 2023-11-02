@@ -31,14 +31,35 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.fullscreen
 {
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
+	import flash.display.IBitmapDrawable;
 	import flash.display.StageDisplayState;
 	import flash.events.Event;
+	import flash.events.TimerEvent;
+	import flash.geom.Rectangle;
+	import flash.utils.Timer;
+	import flash.utils.getTimer;
+	import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
+	import mx.core.IVisualElement;
+	import mx.core.UIComponent;
+	import mx.events.FlexEvent;
+	import mx.events.ResizeEvent;
+	import mx.graphics.ImageSnapshot;
+	
+	import spark.components.Image;
 	
 	import actionScripts.plugin.PluginBase;
+	import actionScripts.plugin.fullscreen.events.FullscreenEvent;
+	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-
+	
+	import lime.system.Display;
+	
+	import org.osmf.events.DisplayObjectEvent;
+	
 	public class FullscreenPlugin extends PluginBase 
 	{
 		public static const EVENT_FULLSCREEN:String = "fullscreenEvent";
@@ -47,10 +68,22 @@ package actionScripts.plugin.fullscreen
 		override public function get author():String		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String	{ return "Show edit in fullscreen."; }
 		
+		private var isSectionInFullscreen:Boolean;
+		private var isSectionFullscreenInProcess:Boolean;
+		private var currentSectionInFullscreenType:String;
+		private var sideBarWidth:Number;
+		
+		private var editorsLastHeight:Number;
+		private var editorsPercentHeight:Number;
+		private var consoleLastHeight:Number;
+		private var consolePercentHeight:Number;
+		private var sectionFullscreenCheckTimer:Timer;
+			
 		override public function activate():void
 		{
 			super.activate();
 			dispatcher.addEventListener(EVENT_FULLSCREEN, handleToggleFullscreen);
+			dispatcher.addEventListener(FullscreenEvent.EVENT_SECTION_FULLSCREEN, handleToggleSectionFullscreen);
 		}
 		
 		protected function handleToggleFullscreen(event:Event):void
@@ -65,5 +98,119 @@ package actionScripts.plugin.fullscreen
 				stage.displayState = StageDisplayState.NORMAL;
 			}
 		}
-	}
+		
+		private var startTime:int;
+		private var startTime2:int;
+		
+		protected function handleToggleSectionFullscreen(event:FullscreenEvent):void
+		{
+			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
+			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
+			
+			(editors as UIComponent).mouseChildren = false;
+			(editors as UIComponent).mouseEnabled = false;
+			(console as UIComponent).mouseChildren = false;
+			(console as UIComponent).mouseEnabled = false;
+			
+			editors.addEventListener(Event.RENDER, onRenderEvent);
+			
+			if (isSectionInFullscreen) 
+			{
+				this.toggle(event);
+				return;
+			}
+			
+			isSectionInFullscreen = true;
+			switch (event.value)
+			{
+				case FullscreenEvent.SECTION_EDITOR:
+					// minimize sidebar
+					this.sideBarWidth = this.model.mainView.sidebar.width;
+					this.model.mainView.sidebar.width = 0;
+					
+					// maximise editors and minimize console
+					editors.percentHeight = 100;
+					console["minHeight"] = 0;
+					console.height = 0;
+					(editors as UIComponent).invalidateDisplayList();
+					
+					// requisite updates in projectpanelplugin
+					dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.HIDE_PROJECT_PANEL, null));
+					break;
+				case FullscreenEvent.SECTION_BOTTOM:
+					// stores present properties before change
+					editorsLastHeight = editors.height;
+					editorsPercentHeight = editors.percentHeight;
+					consoleLastHeight = console.height;
+					consolePercentHeight = console.percentHeight;
+					
+					// minimize sidebar
+					this.sideBarWidth = this.model.mainView.sidebar.width;
+					this.model.mainView.sidebar.width = 0;
+					
+					// minimize editors and maximize console
+					editors.height = 0;
+					console.percentHeight = 100;
+					break;
+				case FullscreenEvent.SECTION_LEFT:
+					break;
+			}
+		}
+		
+		private function onSectionFullscreenTimerTick(event:TimerEvent):void
+		{
+			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
+			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
+			
+			(editors as UIComponent).mouseChildren = true;
+			(editors as UIComponent).mouseEnabled = true;
+			(console as UIComponent).mouseChildren = true;
+			(console as UIComponent).mouseEnabled = true;
+			
+			this.sectionFullscreenCheckTimer.stop();
+			this.sectionFullscreenCheckTimer.removeEventListener(TimerEvent.TIMER, onSectionFullscreenTimerTick);
+			this.isSectionFullscreenInProcess = false;
+		}
+		
+		private function onRenderEvent(event:Event):void
+		{
+			if (this.sectionFullscreenCheckTimer && this.sectionFullscreenCheckTimer.running)
+			{
+				this.sectionFullscreenCheckTimer.stop();
+				this.sectionFullscreenCheckTimer.removeEventListener(TimerEvent.TIMER, onSectionFullscreenTimerTick);
+			}
+			
+			this.sectionFullscreenCheckTimer = new Timer(1500, 1);
+			this.sectionFullscreenCheckTimer.addEventListener(TimerEvent.TIMER, onSectionFullscreenTimerTick);
+			this.sectionFullscreenCheckTimer.start();
+		}
+		
+		protected function toggle(event:FullscreenEvent):void
+		{	
+			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
+			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
+			
+			switch (event.value)
+			{
+				case FullscreenEvent.SECTION_BOTTOM:
+					// assign last known sizes to editors and console
+					editors.percentHeight = editorsPercentHeight;
+					editors.height = editorsLastHeight;
+					console.percentHeight = consolePercentHeight;
+					console.height = consoleLastHeight;
+					break;
+				case FullscreenEvent.SECTION_EDITOR:
+					break;
+				case FullscreenEvent.SECTION_LEFT:
+					break;
+			}
+			
+			// requisite changes in projectpanelplugin
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SHOW_PROJECT_PANEL, null));
+			// maximise sidebar per last stored size
+			this.model.mainView.sidebar.width = this.sideBarWidth;
+			
+			isSectionInFullscreen = false;
+		}
+	}	
 }
