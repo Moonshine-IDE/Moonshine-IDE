@@ -31,34 +31,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.fullscreen
 {
-	import flash.display.Bitmap;
-	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
 	import flash.display.StageDisplayState;
 	import flash.events.Event;
-	import flash.events.TimerEvent;
-	import flash.geom.Rectangle;
-	import flash.utils.Timer;
-	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
 	import mx.core.IVisualElement;
 	import mx.core.UIComponent;
-	import mx.events.FlexEvent;
 	import mx.events.ResizeEvent;
 	import mx.graphics.ImageSnapshot;
-	
-	import spark.components.Image;
 	
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.plugin.fullscreen.events.FullscreenEvent;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import lime.system.Display;
-	
-	import org.osmf.events.DisplayObjectEvent;
 	
 	public class FullscreenPlugin extends PluginBase 
 	{
@@ -70,14 +57,8 @@ package actionScripts.plugin.fullscreen
 		
 		private var isSectionInFullscreen:Boolean;
 		private var isSectionFullscreenInProcess:Boolean;
-		private var currentSectionInFullscreenType:String;
 		private var sideBarWidth:Number;
-		
-		private var editorsLastHeight:Number;
-		private var editorsPercentHeight:Number;
-		private var consoleLastHeight:Number;
-		private var consolePercentHeight:Number;
-		private var sectionFullscreenCheckTimer:Timer;
+		private var currentSectionFullscreenType:String;
 			
 		override public function activate():void
 		{
@@ -99,9 +80,6 @@ package actionScripts.plugin.fullscreen
 			}
 		}
 		
-		private var startTime:int;
-		private var startTime2:int;
-		
 		protected function handleToggleSectionFullscreen(event:FullscreenEvent):void
 		{
 			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
@@ -112,7 +90,8 @@ package actionScripts.plugin.fullscreen
 			(console as UIComponent).mouseChildren = false;
 			(console as UIComponent).mouseEnabled = false;
 			
-			editors.addEventListener(Event.RENDER, onRenderEvent);
+			currentSectionFullscreenType = event.value;
+			this.model.mainView.mainContent.addEventListener(Event.ENTER_FRAME, onComponentPositionChange);
 			
 			if (isSectionInFullscreen) 
 			{
@@ -120,36 +99,29 @@ package actionScripts.plugin.fullscreen
 				return;
 			}
 			
-			isSectionInFullscreen = true;
 			switch (event.value)
 			{
 				case FullscreenEvent.SECTION_EDITOR:
 					// minimize sidebar
 					this.sideBarWidth = this.model.mainView.sidebar.width;
-					this.model.mainView.sidebar.width = 0;
-					
-					// maximise editors and minimize console
-					editors.percentHeight = 100;
-					console["minHeight"] = 0;
-					console.height = 0;
-					(editors as UIComponent).invalidateDisplayList();
-					
-					// requisite updates in projectpanelplugin
-					dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.HIDE_PROJECT_PANEL, null));
+					model.mainView.sidebar.includeInLayout = model.mainView.sidebar.visible = false;
+					model.mainView.callLater(function():void
+					{
+						editors.percentHeight = 100;
+						console["minHeight"] = 0;
+						console.height = 0;
+						
+						// requisite updates in projectpanelplugin
+						dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.HIDE_PROJECT_PANEL, null));
+					});
 					break;
 				case FullscreenEvent.SECTION_BOTTOM:
-					// stores present properties before change
-					editorsLastHeight = editors.height;
-					editorsPercentHeight = editors.percentHeight;
-					consoleLastHeight = console.height;
-					consolePercentHeight = console.percentHeight;
-					
 					// minimize sidebar
 					this.sideBarWidth = this.model.mainView.sidebar.width;
-					this.model.mainView.sidebar.width = 0;
+					model.mainView.sidebar.includeInLayout = model.mainView.sidebar.visible = false;
+					editors.includeInLayout = editors.visible = false;
 					
 					// minimize editors and maximize console
-					editors.height = 0;
 					console.percentHeight = 100;
 					break;
 				case FullscreenEvent.SECTION_LEFT:
@@ -157,32 +129,51 @@ package actionScripts.plugin.fullscreen
 			}
 		}
 		
-		private function onSectionFullscreenTimerTick(event:TimerEvent):void
+		private function onComponentPositionChange(event:Event):void
 		{
-			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
-			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
-			
-			(editors as UIComponent).mouseChildren = true;
-			(editors as UIComponent).mouseEnabled = true;
-			(console as UIComponent).mouseChildren = true;
-			(console as UIComponent).mouseEnabled = true;
-			
-			this.sectionFullscreenCheckTimer.stop();
-			this.sectionFullscreenCheckTimer.removeEventListener(TimerEvent.TIMER, onSectionFullscreenTimerTick);
-			this.isSectionFullscreenInProcess = false;
-		}
-		
-		private function onRenderEvent(event:Event):void
-		{
-			if (this.sectionFullscreenCheckTimer && this.sectionFullscreenCheckTimer.running)
+			switch (currentSectionFullscreenType)
 			{
-				this.sectionFullscreenCheckTimer.stop();
-				this.sectionFullscreenCheckTimer.removeEventListener(TimerEvent.TIMER, onSectionFullscreenTimerTick);
+				case FullscreenEvent.SECTION_EDITOR:
+					if (!isSectionInFullscreen && this.model.mainView.mainContent.x == 0) 
+					{
+						endProcess();
+						isSectionInFullscreen = true;
+					}
+					else if (isSectionInFullscreen && this.model.mainView.mainContent.x > 0)
+					{
+						endProcess();
+						isSectionInFullscreen = false;
+					}
+					break;
+				case FullscreenEvent.SECTION_BOTTOM:
+					if (!isSectionInFullscreen && this.model.mainView.bodyPanel.getElementAt(1).y == 0) 
+					{
+						endProcess();
+						isSectionInFullscreen = true;						
+					}
+					else if (isSectionInFullscreen && this.model.mainView.bodyPanel.getElementAt(1).y > 0) 
+					{
+						endProcess();
+						isSectionInFullscreen = false;
+					}
+					break;
 			}
 			
-			this.sectionFullscreenCheckTimer = new Timer(1500, 1);
-			this.sectionFullscreenCheckTimer.addEventListener(TimerEvent.TIMER, onSectionFullscreenTimerTick);
-			this.sectionFullscreenCheckTimer.start();
+			function endProcess():void
+			{
+				setTimeout(function():void
+				{
+					var editors:IVisualElement = model.mainView.bodyPanel.getElementAt(0);
+					var console:IVisualElement = model.mainView.bodyPanel.getElementAt(1);
+					
+					model.mainView.mainContent.removeEventListener(Event.ENTER_FRAME, onComponentPositionChange);
+					(editors as UIComponent).mouseChildren = true;
+					(editors as UIComponent).mouseEnabled = true;
+					(console as UIComponent).mouseChildren = true;
+					(console as UIComponent).mouseEnabled = true;
+					isSectionFullscreenInProcess = false;
+				}, 300);
+			}
 		}
 		
 		protected function toggle(event:FullscreenEvent):void
@@ -190,27 +181,13 @@ package actionScripts.plugin.fullscreen
 			var editors:IVisualElement = this.model.mainView.bodyPanel.getElementAt(0);
 			var console:IVisualElement = this.model.mainView.bodyPanel.getElementAt(1);
 			
-			switch (event.value)
-			{
-				case FullscreenEvent.SECTION_BOTTOM:
-					// assign last known sizes to editors and console
-					editors.percentHeight = editorsPercentHeight;
-					editors.height = editorsLastHeight;
-					console.percentHeight = consolePercentHeight;
-					console.height = consoleLastHeight;
-					break;
-				case FullscreenEvent.SECTION_EDITOR:
-					break;
-				case FullscreenEvent.SECTION_LEFT:
-					break;
-			}
+			model.mainView.sidebar.includeInLayout = model.mainView.sidebar.visible = true;
+			editors.includeInLayout = editors.visible = true;
 			
 			// requisite changes in projectpanelplugin
 			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SHOW_PROJECT_PANEL, null));
 			// maximise sidebar per last stored size
 			this.model.mainView.sidebar.width = this.sideBarWidth;
-			
-			isSectionInFullscreen = false;
 		}
 	}	
 }
