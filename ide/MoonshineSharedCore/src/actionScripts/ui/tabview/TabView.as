@@ -93,7 +93,7 @@ package actionScripts.ui.tabview
 
 		public function set selectedIndex(value:int):void
 		{
-			if (itemContainer.numChildren == 0) return;
+			//if (itemContainer.numChildren == 0) return;
 			//if (_selectedIndex == value) return;
 			if (value < 0) value = 0;
 			lastSelectedIndex = _selectedIndex;
@@ -116,23 +116,13 @@ package actionScripts.ui.tabview
 			}
 			
 			var itemToDisplay:DisplayObject = TabViewTab(tabContainer.getChildAt(value)).data as DisplayObject;
+			itemContainer.removeAllChildren();
+			itemContainer.addChild(itemToDisplay);
 			
-			// Display or hide content
-			for (i = 0; i < itemContainer.numChildren; i++) 
-			{	
-				var child:DisplayObject = itemContainer.getChildAt(i);
-				if (child == itemToDisplay)
-				{
-					child.visible = true;
-					UIComponent(child).setFocus();
-					IDEModel.getInstance().activeEditor = child as IContentWindow;
-					dispatcher.dispatchEvent(new TabEvent(TabEvent.EVENT_TAB_SELECT, child));
-				} 
-				else 
-				{
-					child.visible = false;
-				}
-			}
+			itemToDisplay.visible = true;
+			UIComponent(itemToDisplay).setFocus();
+			IDEModel.getInstance().activeEditor = itemToDisplay as IContentWindow;
+			dispatcher.dispatchEvent(new TabEvent(TabEvent.EVENT_TAB_SELECT, itemToDisplay));
 			
 			invalidateLayoutTabs();
 		}
@@ -395,6 +385,7 @@ package actionScripts.ui.tabview
 		
 		private function onTabDoubleClicked(event:Event):void
 		{
+			trace(">>>>>>>>>>>>>>>> "+ itemContainer.numChildren);
 			dispatcher.dispatchEvent(new FullscreenEvent(FullscreenEvent.EVENT_SECTION_FULLSCREEN, FullscreenEvent.SECTION_EDITOR));
 		}
 
@@ -445,25 +436,26 @@ package actionScripts.ui.tabview
 		override public function addChild(child:DisplayObject):DisplayObject
 		{
 			addTabFor(child);
-			var editor:DisplayObject = itemContainer.addChild(child);
+			//itemContainer.removeAllChildren();
+			//var editor:DisplayObject = itemContainer.addChild(child);
             selectedIndex = 0;
 
-			return editor;
+			return child;
 		}
 
 		public function addChildTab(child:DisplayObject):DisplayObject
 		{
             addTabFor(child);
-            return itemContainer.addChildAt(child, 0);
+            return child;
 		}
 
-		override public function removeChildAt(index:int):DisplayObject
+		/*override public function removeChildAt(index:int):DisplayObject
 		{
 			invalidateTabSelection();
 
 			removeTabFor(itemContainer.getChildAt(index));
 			return itemContainer.removeChildAt(index);
-		}
+		}*/
 		
 		override public function removeChild(child:DisplayObject):DisplayObject
 		{
@@ -474,7 +466,10 @@ package actionScripts.ui.tabview
 			if (tab)
             {
                 removeTabFor(child);
-                return itemContainer.removeChild(child);
+				if (child.parent != null) 
+				{
+	                return itemContainer.removeChild(child);
+				}
             }
 
 			return null;
