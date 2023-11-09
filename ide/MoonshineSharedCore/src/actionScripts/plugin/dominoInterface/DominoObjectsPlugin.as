@@ -40,7 +40,7 @@ package actionScripts.plugin.dominoInterface
 	{
 		public static const EVENT_DOMINO_OBJECTS:String = "EVENT_DOMINO_OBJECTS";
 
-		public function dominoObjectsPlugin()
+		public function DominoObjectsPlugin()
 		{
 			dominoObjectView = new DominoObjectsView();
 			dominoObjectView.percentWidth = 100;
