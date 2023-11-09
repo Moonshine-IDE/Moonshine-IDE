@@ -35,37 +35,38 @@ package actionScripts.plugin.dominoInterface
 	import moonshine.plugin.problems.events.ProblemsViewEvent;
 	import moonshine.plugin.problems.view.ProblemsView;
 	import moonshine.plugin.problems.vo.MoonshineDiagnostic;
-
-	public class dominoObjectsPlugin extends PluginBase
+	import actionScripts.plugin.console.view.DominoObjectsView;
+	public class DominoObjectsPlugin extends PluginBase
 	{
 		public static const EVENT_DOMINO_OBJECTS:String = "EVENT_DOMINO_OBJECTS";
 
 		public function dominoObjectsPlugin()
 		{
-			problemsView = new ProblemsView();
-			problemsViewWrapper = new ProblemsViewWrapper(problemsView);
-			problemsViewWrapper.percentWidth = 100;
-			problemsViewWrapper.percentHeight = 100;
-			problemsViewWrapper.minWidth = 0;
-			problemsViewWrapper.minHeight = 0;
+			dominoObjectView = new DominoObjectsView();
+			dominoObjectView.percentWidth = 100;
+			dominoObjectView.percentHeight = 100;
+			dominoObjectView.minWidth = 0;
+			dominoObjectView.minHeight = 0;
 		}
 
 		override public function get name():String { return "Problems Plugin"; }
 		override public function get author():String { return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
 		override public function get description():String { return "Displays problems in source files."; }
 
-		private var problemsViewWrapper:ProblemsViewWrapper;
-		private var problemsView:ProblemsView = new ProblemsView();
+		private var dominoObjectView:DominoObjectsView = new DominoObjectsView();
 		private var isStartupCall:Boolean = true;
-		private var isProblemsViewVisible:Boolean = false;
+		private var isDominoObjectsViewVisible:Boolean = false;
 		private var diagnosticsByProject:Dictionary = new Dictionary();
+		
+		
+		
+
 
 		override public function activate():void
 		{
 			super.activate();
 			dispatcher.addEventListener(EVENT_DOMINO_OBJECTS, handleDominoObjectsShow);
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
-			dispatcher.addEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, handleLanguageServerClosed);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 
@@ -74,37 +75,36 @@ package actionScripts.plugin.dominoInterface
 			super.deactivate();
 			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS, handleDominoObjectsShow);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
-			dispatcher.removeEventListener(ProjectEvent.LANGUAGE_SERVER_CLOSED, handleLanguageServerClosed);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 
 		private function handleDominoObjectsShow(event:Event):void
 		{
-			if (!isProblemsViewVisible)
+			if (!isDominoObjectsViewVisible)
             {
-                dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, problemsViewWrapper));
+                dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, dominoObjectView));
                 initializeProblemsViewEventHandlers(event);
-				isProblemsViewVisible = true;
+				isDominoObjectsViewVisible = true;
             }
 			else
 			{
-				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, problemsViewWrapper));
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, dominoObjectView));
                 cleanupProblemsViewEventHandlers();
-				isProblemsViewVisible = false;
+				isDominoObjectsViewVisible = false;
 			}
 			isStartupCall = false;
 		}
 		
 		private function initializeProblemsViewEventHandlers(event:Event):void
 		{
-			problemsView.addEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
-			problemsView.addEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
+			dominoObjectView.addEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
+			dominoObjectView.addEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
 		}
 
 		private function cleanupProblemsViewEventHandlers():void
 		{
-			problemsView.removeEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
-			problemsView.removeEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
+			dominoObjectView.removeEventListener(ProblemsViewEvent.OPEN_PROBLEM, problemsPanel_openProblemHandler);
+			dominoObjectView.removeEventListener(Event.REMOVED_FROM_STAGE, problemsPanel_removedFromStageHandler);
 		}
 
 		private function clearProblemsForProject(project:ProjectVO):void
@@ -119,16 +119,12 @@ package actionScripts.plugin.dominoInterface
 			{
 				return;
 			}
-			var problems:DiagnosticHierarchicalCollection = problemsView.problems;
-			for(var uri:String in diagnosticsByUri)
-			{
-				problems.clearDiagnostics(uri, project);
-			}
+		
 		}
 
 		private function problemsPanel_removedFromStageHandler(event:Event):void
 		{
-            isProblemsViewVisible = false;
+            isDominoObjectsViewVisible = false;
 		}
 
 		private function handleLanguageServerClosed(event:ProjectEvent):void
@@ -143,27 +139,7 @@ package actionScripts.plugin.dominoInterface
 
 		private function handleShowDiagnostics(event:DiagnosticsEvent):void
 		{
-			var problems:DiagnosticHierarchicalCollection = problemsView.problems;
-			var project:ProjectVO = event.project;
-			var diagnosticsByUri:Object = diagnosticsByProject[project];
-			if(!diagnosticsByUri)
-			{
-				diagnosticsByUri = {};
-				diagnosticsByProject[project] = diagnosticsByUri;
-			}
-			var uri:String = event.uri;
-			var diagnostics:Array = event.diagnostics;
-			diagnostics = diagnostics.map(function(diagnostic:Diagnostic, index:int, source:Array):MoonshineDiagnostic
-			{
-				var result:MoonshineDiagnostic = new MoonshineDiagnostic(new FileLocation(uri, true), project);
-				result.code = diagnostic.code;
-				result.message = diagnostic.message;
-				result.range = diagnostic.range;
-				result.severity = diagnostic.severity;
-				return result;
-			});
-			diagnosticsByUri[uri] = diagnostics;
-			problems.setDiagnostics(uri, project, diagnostics);
+			
 		}
 
 		private function problemsPanel_openProblemHandler(event:ProblemsViewEvent):void

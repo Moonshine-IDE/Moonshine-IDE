@@ -19,17 +19,27 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
-	xmlns:s="library://ns.adobe.com/flex/spark" xmlns:ui="actionScripts.ui.*"
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:ui="actionScripts.ui.*"
+	xmlns:utils="actionScripts.utils.*"
+	
+	xmlns:view="actionScripts.plugin.console.view.*"
+	xmlns:collapsiblehdivider="components.collapsibleHDivider.*" 
 	width="100%" 
 	height="25"
 	minHeight="25"
+	
 	backgroundColor="0x373737"
 	backgroundAlpha="1" percentHeight="100"
 	clipContent="false" updateComplete="consoleView_updateCompleteHandler(event)"
-	creationComplete="init()" xmlns:view="actionScripts.plugin.console.view.*"
-    implements="actionScripts.interfaces.IViewWithTitle" label="Objects">
-	<mx:Script>
+	creationComplete="init()" 
+	
+    label="Objects"
+	implements="actionScripts.interfaces.IViewWithTitle"
+	>
+	<fx:Script>
 		<![CDATA[
 		import flash.text.engine.ElementFormat;
 		import flash.text.engine.FontDescription;
@@ -40,10 +50,23 @@
 		import mx.managers.CursorManagerPriority;
 
 		import spark.components.RichEditableText;
+		import mx.events.ListEvent;
 
 		import actionScripts.locator.IDEModel;
 		import actionScripts.plugin.console.ConsoleCommandEvent;
 		import actionScripts.plugin.console.ConsoleStyle;
+		import spark.events.IndexChangeEvent;
+		import mx.collections.ArrayCollection;
+		import mx.core.ClassFactory;
+		import mx.collections.ArrayList;
+		import mx.collections.ArrayCollection;
+		
+
+		import mx.controls.listClasses.IListItemRenderer;
+
+		import view.domino.forms.imageClass.LoadImage;
+
+		 
 
 		[Bindable] public var showCommandLine:Boolean = true;
 
@@ -57,6 +80,73 @@
 		private var historyContainerHeight:int = 0;
 		private var cm:ContextMenu;
 		protected var model:IDEModel = IDEModel.getInstance();
+		[Bindable]
+		private var dataProviderList:ArrayCollection=new ArrayCollection();
+
+		private var codeFormulaArray:Array = [
+			{key: 'GlobalsOptions', value: ""},
+			{key: 'GlobalsDeclarations', value: ""},
+			{key: 'GlobalsInitialize', value: ""},
+			{key: 'GlobalsTeminate', value: ""},
+			{key: 'JSHeader', value: ""},
+			{key: 'onHelp', value: ""},
+			{key: 'onLoad', value: ""},
+			{key: 'onUnload', value: ""},
+			{key: 'Options', value: ""},
+			{key: 'Declarations', value: ""},
+			{key: 'Queryopen', value: ""},
+			{key: 'Postopen', value: ""},
+			{key: 'Querymodechange', value: ""},
+			{key: 'Postmodechange', value: ""},
+			{key: 'Queryrecalc', value: ""},
+			{key: 'Postrecalc', value: ""},
+			{key: 'QuerySave', value: ""},
+			{key: 'Postsave', value: ""},
+			{key: 'Querysend', value: ""},
+			{key: 'Postsend', value: ""},
+			{key: 'Querysend', value: ""},
+			{key: 'Queryclose', value: ""},
+			{key: 'Onsize', value: ""},
+			{key: 'Initialize', value: ""},
+			{key: 'Terminate', value: ""}
+
+    	]
+
+	
+		public var formulaRunWayList:ArrayCollection = new ArrayCollection(
+			[{label:"Client", value:"client"},
+			{label:"Web", value:"web"} ]);
+
+
+		public var formulaClientRunLanguage:ArrayCollection = new ArrayCollection(
+			[{label:"Formula", value:"formula"},
+			{label:"LotusScript", value:"lotusscript"},
+			{label:"JavaScript", value:"javascript"} ]);
+
+		public var formulaWebRunLanguage:ArrayCollection = new ArrayCollection(
+			[{label:"JavaScript", value:"javascript"},
+			{label:"Common JavaScript", value:"commonjavascript"} ]);
+
+		private function updateSelection(e:IndexChangeEvent):void
+		{
+			if(runList.selectedItem.label=="Client"){
+				runWayList.dataProvider=formulaClientRunLanguage;
+			}else{
+				runWayList.dataProvider=formulaWebRunLanguage;
+			}
+		}
+
+		private function updateSelectionWay(e:IndexChangeEvent):void
+		{
+		
+		}
+
+		
+
+
+			
+				
+		
 
 		public function get title():String
 		{
@@ -86,21 +176,22 @@
 			else
 			{
 				historyContainer.setStyle('top', 0);
-				historyContainer.setStyle('bottom', 25);
+				historyContainer.setStyle('bottom', 0);
 			}
 
 		}
 
 		private function init():void
 		{
+			runLabel.setStyle("color","#ffffff");
 			consolePopOver = _consolePopOver;
 			cm = new ContextMenu();
 			var clear:ContextMenuItem = new ContextMenuItem('Clear', false, true, true);
 			clear.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, clearHandler);
 			cm.customItems.push(clear);
 			cm.clipboardMenu = true;
-			history.contextMenu = cm;
-			(history.textDisplay as RichEditableText).contextMenu = cm;
+			//history.contextMenu = cm;
+			//(history.textDisplay as RichEditableText).contextMenu = cm;
 
 			if (displayContextMenuAbout)
 			{
@@ -126,6 +217,15 @@
 				help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
 				cm.customItems.push(help);
 			}
+
+			
+
+			// for each(var treeNode:XML in myTree.dataProvider..node){
+			// 	if(treeNode.@type=="LotusScript"){
+			// 		treeNode.@icon=
+			// 	}
+			// }
+			//myTree.itemRenderer=actionScripts.ui.renderers.DominoObjectsTreeItemRenderer;
 		}
 
 		private var cursorID:int = CursorManager.NO_CURSOR;
@@ -160,27 +260,27 @@
 
 		private function clearHandler(e:Event):void
 		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("clear", null));
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("clear", null));
 		}
 
 		private function aboutHandler(e:Event):void
 		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("about", null));
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("about", null));
 		}
 
 		private function hideHandler(e:Event):void
 		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("hide", null));
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("hide", null));
 		}
 
 		private function exitHandler(e:Event):void
 		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("exit", null));
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("exit", null));
 		}
 
 		private function helpHandler(e:Event):void
 		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("help", null));
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("help", null));
 		}
 
 		protected function consoleView_updateCompleteHandler(event:FlexEvent):void
@@ -189,53 +289,153 @@
 			if (!_consolePopOver)
 				historyContainerHeight = this.height;
 		}
+
+		protected function onTreeItemClicked(event:ListEvent):void
+		{
+			
+		}
+
+		[Bindable]
+		public var selectedNode:XML;
+
+		// Event handler for the Tree control change event.
+		public function treeChanged(event:Event):void {
+			selectedNode=Tree(event.target).selectedItem as XML;
+		}
+
+
+
+		private function textInput_changeHandler(event:Event):void
+        {
+            
+            
+        }
+
+		private function tree_iconFunc(item:Object):Class
+		{
+			var iconClass:Class;
+			var renderer:IListItemRenderer = myTree.itemToItemRenderer(item);
+			switch (XML(item).@type.toString())
+			{
+				case "LotusScript":
+					iconClass = LoadImage.DOMINO_OBJECT_TREE_PAGE;
+					break;
+				case "Formula":
+					iconClass = LoadImage.DOMINO_OBJECT_TREE_RHOMBUS;
+					break;
+				case "JavaScript":
+					iconClass = LoadImage.DOMINO_OBJECT_TREE_CIRCLE;
+					break;
+			}
+
+			return iconClass;
+		}
+
+		
 		]]>
-	</mx:Script>
-	
-	<mx:VBox id="historyContainer"
-			 width="100%"
+	</fx:Script>
+	 <fx:Declarations>
+        <fx:XMLList id="treeData">
+            <node label="(Globals)Email Reply Common Sub" type="">
+               
+				<node label="(Options)" type="LotusScript"/>
+				<node label="(Declarations)" type="LotusScript"/>
+				<node label="Initialize" type="LotusScript"/>
+				<node label="Teminate" type="LotusScript"/>
+                
+            </node>
+			<node label="Email Reply Common Subform(Sub)" type="">
+				<node label="Window Title" type="Formula"/>
+				<node label="HTML Head Conten" type="Formula"/>
+				<node label="HTML Body Attributes" type="Formula"/>
+				<node label="WebQueryOpen" type="Formula"/>
+				<node label="WebQuerySave" type="Formula"/>
+				<node label="Target Frame" type="Formula"/>
+				<node label="JS Header" type="JavaScript"/>
+				<node label="onHelp" type="JavaScript"/>
+				<node label="onLoad" type="JavaScript"/>
+				<node label="onUnload" type="JavaScript"/>
+				<node label="onClick" type="JavaScript"/>
+				<node label="onDbClick" type="JavaScript"/>
+				<node label="onKeyDown" type="JavaScript"/>
+				<node label="onKeyPress" type="JavaScript"/>
+				<node label="onKeyUp" type="JavaScript"/>
+				<node label="onMouseDown" type="JavaScript"/>
+				<node label="onMouseMove" type="JavaScript"/>
+				<node label="onMouseOut" type="JavaScript"/>
+				<node label="onMouseOver" type="JavaScript"/>
+				<node label="onMouseUp" type="JavaScript"/>
+				<node label="onRest" type="JavaScript"/>
+				<node label="onSubmit" type="JavaScript"/>
+				<node label="(Options)" type="LotusScript"/>
+				<node label="(Declarations)" type="LotusScript"/>
+				<node label="Queryopen" type="LotusScript"/>
+				<node label="Postopen" type="LotusScript"/>
+				<node label="Querymodechange" type="LotusScript"/>
+				<node label="Postmodechange" type="LotusScript"/>
+				<node label="Queryrecalc" type="LotusScript"/>
+				<node label="Postrecalc" type="LotusScript"/>
+				<node label="QuerySave" type="LotusScript"/>
+				<node label="Postsave" type="LotusScript"/>
+				<node label="Querysend" type="LotusScript"/>
+				<node label="Postsend" type="LotusScript"/>
+				<node label="Queryclose" type="LotusScript"/>
+				<node label="Onsize" type="LotusScript"/>
+				<node label="Initialize" type="LotusScript"/>
+				<node label="Terminate" type="LotusScript"/>
+            </node>
+        </fx:XMLList>
+    </fx:Declarations>
+
+	<collapsiblehdivider:CollapsibleEdgeContainersHDividerGroup percentWidth="100" bottom="0" id="historyContainer" top="0" gap="0" minWidth="250">
+		<mx:VBox percentHeight="100"
+			 percentWidth="30"
 			 backgroundAlpha="0.9"
 			 backgroundColor="0x373737">
-		<view:ConsoleViewTextArea id="history"
-								  editable="false" selectable="true" horizontalScrollPolicy="auto" verticalScrollPolicy="auto"
-								  height="100%" width="100%" lineBreak="toFit" color="0xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/>
-		<mx:Canvas width="100%">
-			<mx:HRule 
-				width="100%" 
-				height="1"
-				strokeColor="0x343434"
+			   <mx:Tree id="myTree" width="100%" 
+			    color="0xEEEEEE"
+				contentBackgroundColor="0x0"
+				rollOverColor="0x393939"
+				selectionColor="0xc165b8"
+				alternatingItemColors="[0x444444, 0x4d4c4c]"
+			   height="100%" labelField="@label"
+                showRoot="false" dataProvider="{treeData}" change="treeChanged(event)"
+				itemRenderer="actionScripts.ui.renderers.DominoTreeItemRenderer"
+			 
 				/>
+
+				
+			 </mx:VBox>
+			 <!-- iconFunction="tree_iconFunc" -->
 			
-			<mx:Canvas id="glowOverlay"
-					   width="100%"
-					   height="100%"
-					   bottom="0"
-					   backgroundColor="0xFFFFFF"
-					   backgroundAlpha="0.1"
-					   includeInLayout="false"
-					   mouseChildren="false"
-					   mouseEnabled="false"
-					   mouseFocusEnabled="false" 
-					   />
-			<mx:HBox width="100%" height="100%" paddingTop="3"
-					 horizontalGap="0"
-					 backgroundAlpha="1"
-					 backgroundColor="0x373737" bottom="0">
-				<mx:filters>
-					<mx:DropShadowFilter color="0x0" alpha="0.2" angle="90" blurX="24" blurY="24" distance="12" inner="true"/>
-					<mx:GlowFilter color="0xFFFFFF" alpha="0.05" blurX="24" blurY="24" inner="true" />
-				</mx:filters>
-				<s:Label id="commandPrefix"
-						  paddingRight="2"
-						  paddingTop="6"
-						  paddingBottom="3"
-						  fontSize="12"
-						  text=" >"
-						  color="0xdddddd" visible="{showCommandLine}" />
-				<ui:FeathersUIWrapper width="100%" height="100%" visible="{showCommandLine}">
-					<view:CommandLineEditor id="commandLine"/>
-				</ui:FeathersUIWrapper>
-			</mx:HBox>
-		</mx:Canvas>
-   </mx:VBox>
+		<s:Scroller percentWidth="70" percentHeight="100">
+			<s:VGroup horizontalAlign="left" verticalAlign="middle" percentWidth="100" percentHeight="100">
+				<s:HGroup verticalAlign="bottom" left="10" percentWidth="100">
+					<s:Label text="Run" id="runLabel" fontWeight="bold" percentWidth="10" />
+            		<s:DropDownList id="runList" prompt="Client" percentWidth="40"
+						 dataProvider="{formulaRunWayList}"
+						labelField="label" 
+						change="updateSelection(event);"/>
+					<s:DropDownList id="runWayList" prompt="Formula"
+						percentWidth="40" dataProvider="{formulaClientRunLanguage}"
+						labelField="label" 
+						change="updateSelectionWay(event);"/>	
+       		 	</s:HGroup>
+					
+				<s:TextArea id="textInput"  height="100%"
+						text="" width="100%" minWidth="156" editable="true" selectable="true"
+						prompt=""
+						
+						styleName="fixedWidthTexts"
+						textInput="textInput_changeHandler(event)"
+						focusOut="textInput_changeHandler(event)"
+						change="textInput_changeHandler(event)"
+				/>
+					
+			</s:VGroup>
+		</s:Scroller>
+
+	</collapsiblehdivider:CollapsibleEdgeContainersHDividerGroup>
+	
+  
 </mx:Canvas>

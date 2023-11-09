@@ -72,6 +72,8 @@ package actionScripts.plugins.ui.editor
 	import utils.GenericUtils;
 	import mx.collections.ArrayCollection;
 
+	import actionScripts.plugin.dominoInterface.DominoObjectsPlugin;
+
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
 		private static const EVENT_SWITCH_TAB_TO_CODE:String = "switchTabToCode";
@@ -531,9 +533,9 @@ package actionScripts.plugins.ui.editor
 				visualEditorView.visualEditor.loadFile(veFilePath);
 				//if it is a domino form file, open the Objects for the editor.text
 				 if(file.fileBridge.nativePath.lastIndexOf(".form")>=0){
-					
+					dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS));
 				 }
-				Alert.show("veFilePath:"+file.fileBridge.nativePath);
+				//Alert.show("veFilePath:"+file.fileBridge.nativePath);
 			}
 		}
 
