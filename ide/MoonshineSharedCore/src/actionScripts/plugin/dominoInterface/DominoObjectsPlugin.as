@@ -36,9 +36,19 @@ package actionScripts.plugin.dominoInterface
 	import moonshine.plugin.problems.view.ProblemsView;
 	import moonshine.plugin.problems.vo.MoonshineDiagnostic;
 	import actionScripts.plugin.console.view.DominoObjectsView;
-	public class DominoObjectsPlugin extends PluginBase
+	import mx.controls.Alert;
+	import flash.utils.Dictionary;
+	import actionScripts.locator.IDEModel;
+
+	import actionScripts.plugins.ui.editor.VisualEditorViewer;
+	import view.domino.surfaceComponents.components.DominoGlobalsObjects;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
+	public class DominoObjectsPlugin extends ConsoleBuildPluginBase
 	{
 		public static const EVENT_DOMINO_OBJECTS:String = "EVENT_DOMINO_OBJECTS";
+		public static const EVENT_DOMINO_OBJECTS_SAVE:String = "EVENT_DOMINO_OBJECTS_SAVE";
+		public static const EVENT_DOMINO_OBJECTS_UI_CLOSE:String = "EVENT_DOMINO_OBJECTS_UI_CLOSE";
 
 		public function DominoObjectsPlugin()
 		{
@@ -58,41 +68,83 @@ package actionScripts.plugin.dominoInterface
 		private var isDominoObjectsViewVisible:Boolean = false;
 		private var diagnosticsByProject:Dictionary = new Dictionary();
 		
-		
-		
+		private var optionsMap:Dictionary
 
+		
+		private var editor:VisualEditorViewer=null;
+
+		 
+		
+		
 
 		override public function activate():void
 		{
 			super.activate();
+			Alert.show("activate");
+			if(dominoObjectView){
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SELECT_VIEW_IN_PROJECT_PANEL, dominoObjectView));
+			}
+			
 			dispatcher.addEventListener(EVENT_DOMINO_OBJECTS, handleDominoObjectsShow);
+			dispatcher.addEventListener(EVENT_DOMINO_OBJECTS_UI_CLOSE, handleDominoObjectsClose);
+			dispatcher.addEventListener(EVENT_DOMINO_OBJECTS_SAVE, handleDominoObjectsSave);
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 
 		override public function deactivate():void
 		{
+			Alert.show("deactivate");
 			super.deactivate();
-			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS, handleDominoObjectsShow);
+			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS, handleDominoObjectsClose);
+			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS_UI_CLOSE, handleDominoObjectsClose);
+			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS_SAVE, handleDominoObjectsSave);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
 
+		private function handleDominoObjectsSave(event:Event):void
+		{
+			Alert.show("handleDominoObjectsSave");
+			
+			optionsMap=dominoObjectView.getOptionsMap();
+			// var editor:VisualEditorViewer= 
+			var path:String = editor.currentFile.fileBridge.nativePath;
+			var xml:XML = new XML(String(editor.currentFile.fileBridge.read()));
+			for each(var gobalOptions:XML in xml..dominoGlobalsObject) //no matter of depth Note here
+			{
+				delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+			}
+
+			var optionsXML:XML=new XML("<"+DominoGlobalsObjects.DOMINO_ELEMENT_NAME+" />");
+			//optionsXML.@
+			xml.appendChild(optionsXML);
+
+		}
+		private function handleDominoObjectsClose(event:Event):void
+		{
+			Alert.show("handleDominoObjectsClose");
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, dominoObjectView));
+		}
+
 		private function handleDominoObjectsShow(event:Event):void
 		{
-			if (!isDominoObjectsViewVisible)
-            {
-                dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, dominoObjectView));
-                initializeProblemsViewEventHandlers(event);
-				isDominoObjectsViewVisible = true;
-            }
-			else
-			{
-				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, dominoObjectView));
-                cleanupProblemsViewEventHandlers();
-				isDominoObjectsViewVisible = false;
-			}
-			isStartupCall = false;
+			if(!model)
+			model = IDEModel.getInstance();
+
+			if(!editor)
+			editor=model.activeEditor as VisualEditorViewer;
+
+			// if(editor.currentFile.fileBridge.extension=="form"){
+				
+			// }
+			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, dominoObjectView));
+			
+			 
+			// cleanupProblemsViewEventHandlers();
+			// isDominoObjectsViewVisible = false;
+			
+			// isStartupCall = false;
 		}
 		
 		private function initializeProblemsViewEventHandlers(event:Event):void
