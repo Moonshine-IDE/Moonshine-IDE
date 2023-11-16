@@ -15,6 +15,8 @@ Extension created and maintained by [Josh Tynjala](https://patreon.com/josht). B
 - **Find All References** for any symbol in the project across all source files.
 - **Rename Symbol** for classes, interfaces, methods, and variables.
 - **Organize Imports** sorts imports alphabetically, removes unused imports, and adds missing imports.
+- **Format** ActionScript and MXML code to match a particular style.
+- **Lint** ActionScript and MXML code to find "code smells" and other common issues.
 - **Quick Fixes** to add missing imports, generate missing variables or methods, or convert variables to getters/setters.
 - **Outline view** lists all symbols from the current file in a hierarchical tree.
 - **Go to Symbol in Workspace** with `Ctrl+T` and type the name of any symbol to search for it in the workspace.
@@ -31,8 +33,8 @@ Extension created and maintained by [Josh Tynjala](https://patreon.com/josht). B
 
 ## Minimum Requirements
 
-- Visual Studio Code 1.60
-- Java 8 Runtime
+- Visual Studio Code 1.70
+- Java 8 or newer
 
 ## asconfig.json
 
@@ -87,6 +89,10 @@ Here's another sample _asconfig.json_ file for a pure ActionScript project targe
 Debug and run SWF projects in Adobe AIR or Flash Player by installing the separate [Debugger for SWF](https://marketplace.visualstudio.com/items?itemName=bowlerhatllc.vscode-swf-debug) extension.
 
 Debug and run Apache Royale with Visual Studio Code's built-in support for debugging JavaScript (or install the appropriate extension for debugging in your chosen web browser). Enable the `source-map` compiler option in your _asconfig.json_ file so that you may add breakpoints and step through your original _.as_ or _.mxml_ class files.
+
+## Nightly builds
+
+Continuous integration produces builds on every push to the repository. Visit the [Actions page for vscode-as3mxml](https://github.com/BowlerHatLLC/vscode-as3mxml/actions?query=branch%3Amain+is%3Asuccess+event%3Apush) to find the most recent successful runs. Each run should have an artifact attached that is named **vscode-as3mxml**. Download this file, unzip it, and you'll get a _.vsix_ file that may be installed by Visual Studio Code.
 
 ## Support this project
 
