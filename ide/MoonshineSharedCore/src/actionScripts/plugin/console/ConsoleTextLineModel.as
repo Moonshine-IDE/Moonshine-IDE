@@ -38,7 +38,7 @@ package actionScripts.plugin.console
 	public class ConsoleTextLineModel extends TextLineModel
 	{
 		protected var markupText:String;
-		private var consoleOutputType:String;
+		public var consoleOutputType:String;
 
 		public function ConsoleTextLineModel(text:String, consoleOutputType:String)
 		{

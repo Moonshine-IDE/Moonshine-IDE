@@ -1,5 +1,6 @@
 package actionScripts.plugin.console.view;
 
+import openfl.text.TextFormat;
 import moonshine.editor.text.syntax.parser.HaxeLineParser;
 import moonshine.editor.text.syntax.format.HaxeSyntaxFormatBuilder;
 import feathers.controls.VScrollBar;
@@ -7,7 +8,6 @@ import feathers.data.ArrayCollection;
 import actionScripts.ui.editor.text.TextLineModel;
 import moonshine.editor.text.syntax.parser.PlainTextLineParser;
 import moonshine.editor.text.syntax.format.SyntaxFontSettings;
-import openfl.text.TextFormat;
 import moonshine.editor.text.syntax.format.SyntaxColorSettings;
 import moonshine.editor.text.syntax.format.PlainTextFormatBuilder;
 import moonshine.editor.text.syntax.parser.ILineParser;
@@ -22,27 +22,20 @@ import openfl.Vector;
 
 class ConsoleTextEditor extends TextEditor 
 {
-    private var consoleLineParser:ConsoleLineParser;
+    private var consoleLineParser = new ConsoleLineParser();
+    
     public function new(?text:String, readOnly:Bool = false)
     {
         super(text, readOnly);
 
-        this._lineHeight = 14;
+        this.backgroundSkin = new RectangleSkin(SolidColor(0x373737, 0.9));
 
-        this.backgroundSkin = new RectangleSkin(SolidColor(0x373737));
-        
-        var fontSetting = new SyntaxFontSettings();
-        fontSetting.fontSize = 12;
-
-        var colorSetting = new SyntaxColorSettings();
-        colorSetting.foregroundColor = 0xf4f4f4;
-
-		var consoleBuild = new ConsoleSyntaxFormBuilder();
-        consoleBuild.setColorSettings(colorSetting);
-        consoleBuild.setFontSettings(fontSetting);
-
-        consoleLineParser = new ConsoleLineParser();
-        this.setParserAndTextStyles(consoleLineParser, consoleBuild.build());
+        this.setParserAndTextStyles(consoleLineParser, [
+            0 => new TextFormat("_typewriter", 12, 0xf4f4f4),
+            ConsoleLineParser.CL_ERROR => new TextFormat("_typewriter", 12, 0xff6666),
+            ConsoleLineParser.CL_WARNING => new TextFormat("_typewriter", 12, 0xFFBF0F),
+            ConsoleLineParser.CL_SUCCESS => new TextFormat("_typewriter", 12, 0x33cc33)
+        ]);
     }
 
     override private function createTextLineRenderer():TextLineRenderer 
@@ -51,13 +44,12 @@ class ConsoleTextEditor extends TextEditor
 			return cast(_textLineRendererFactory.create(), TextLineRenderer);
 		}
 
-        var tlr = new ConsoleTextLineRenderer();
+        var tlr = new TextLineRenderer();
         tlr.breakpoint = false;
         tlr.breakpointGutterBackgroundSkin = null;
         tlr.breakpointSkin = null;
         tlr.unverifiedBreakpointSkin = null;
-        tlr.defaultTextStyleContext = 0x4;
-        tlr.backgroundSkin = new RectangleSkin(SolidColor(0x373737));
+        tlr.backgroundSkin = new RectangleSkin(SolidColor(0x373737, 0.9));
         tlr.selectedTextBackgroundSkinFactory = () -> {
             return new RectangleSkin(SolidColor(0x676767));
         }
@@ -97,6 +89,30 @@ class ConsoleTextEditor extends TextEditor
                 var vectorText:Vector<TextLineModel> = cast text;
                 for (i in vectorText)
                 {
+                    var replaceDelimiter = "\n";
+                    if (i.text.indexOf("\r\n") != -1) {
+                        replaceDelimiter = "\r\n";
+                    } else if (i.text.indexOf("\r") != -1) {
+                        replaceDelimiter = "\r";
+                    } else if (i.text.indexOf("\n") != -1) {
+                        replaceDelimiter = "\n";
+                    } else {
+                        _lineDelimiter = defaultLineDelimiter;
+                    }
+
+                    // Split lines regardless of line encoding
+                    i.text = ~/\r?\n|\r/g.replace(i.text, "");
+
+                    var consoleOutType:UInt = Reflect.getProperty(ConsoleStyle.name2style, cast(i, ConsoleTextLineModel).consoleOutputType);
+                    switch (consoleOutType)
+                    {
+                        case ConsoleStyle.ERROR:
+                            this.consoleLineParser.setErrorAtLine(this.lines.length);
+                        case ConsoleStyle.WARNING:
+                            this.consoleLineParser.setWarningAtLine(this.lines.length);
+                        case ConsoleStyle.SUCCESS:
+                            this.consoleLineParser.setSuccessAtLine(this.lines.length);
+                    }
                     this.text += "\n"+ i.text;
                 }    
             }
@@ -110,31 +126,5 @@ class ConsoleTextEditor extends TextEditor
         
         // Remove initial empty line (first time anything is outputted)
         //return 0;
-    }
-}
-
-class ConsoleSyntaxFormBuilder extends HaxeSyntaxFormatBuilder
-{
-    public function new()
-    {
-        super();
-    }
-
-    override public function build():Map<Int, TextFormat> {
-		var formats:Map<Int, TextFormat> = [];
-		formats.set(0 /* default, parser fault */, getTextFormat(_colorSettings.invalidColor));
-		formats.set(HaxeLineParser.HX_CODE, getTextFormat(_colorSettings.foregroundColor));
-		formats.set(HaxeLineParser.HX_STRING1, getTextFormat(_colorSettings.commentColor));
-		formats.set(HaxeLineParser.HX_STRING2, getTextFormat(_colorSettings.commentColor));
-		formats.set(ConsoleLineParser.CL_WARNING, getTextFormat(_colorSettings.commentColor));
-		return formats;
-	}
-}
-
-class ConsoleTextLineRenderer extends TextLineRenderer
-{
-    public function new()
-    {
-        super();
     }
 }

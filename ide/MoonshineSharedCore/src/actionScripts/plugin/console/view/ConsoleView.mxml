@@ -114,51 +114,6 @@
 					historyContainer.setStyle('bottom', 25);
 				}
 			}
-			
-			public function appendtext(text:*):void
-			{
-				var linesCount:int;
-				if (text is String)
-				{
-					var lines:Array = text.split('\n');
-					linesCount = lines.length;
-					var p:ParagraphElement;
-					var tf:TextFlow;
-					var pe:ParagraphElement;
-					var fe:FlowElement;
-					for (var i:int = 0; i < linesCount; i++)
-					{
-						p = new ParagraphElement();
-						tf = TextConverter.importToFlow(String(lines[i]) + "\n", TextConverter.TEXT_FIELD_HTML_FORMAT);
-						pe = tf.mxmlChildren[0];
-						for each (fe in pe.mxmlChildren)
-						{
-							p.addChild(fe);
-						}
-						
-						//this.textFlow.addChild(p);
-					}
-					
-					//callLater(setScroll);
-					//return this.numLines;
-				} 
-				else if (text is Vector.<TextLineModel>)
-				{
-					linesCount = text.length;
-					for (i = 0; i < linesCount; i++)
-					{
-						historyTextEditor.text += "\n"+ text[i].text;
-					}
-				}
-				/*else if (text is ParagraphElement)
-				{
-					//this.textFlow.addChild(text);
-					//callLater(setScroll);
-				}*/
-				
-				// Remove initial empty line (first time anything is outputted)
-				//return 0;
-			}
 	
 			private function init():void
 			{

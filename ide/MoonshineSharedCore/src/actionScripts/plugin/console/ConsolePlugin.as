@@ -326,6 +326,7 @@ package actionScripts.plugin.console
 		protected function consoleClearHandler(event:ConsoleOutputEvent):void
         {
             consoleView.history.text = "";
+			consoleView.historyTextEditor.text = null;
         }
 
 		protected function consoleOutputHandler(event:ConsoleOutputEvent):void
