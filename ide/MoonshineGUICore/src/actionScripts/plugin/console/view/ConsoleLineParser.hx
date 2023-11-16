@@ -25,6 +25,13 @@ class ConsoleLineParser implements ILineParser
 
 	public function setContext(newContext:Int):Void {}
 
+	public function reset():Void
+	{
+		this.errorLines = [];
+		this.warningLines = [];
+		this.successLines = [];	
+	}
+
 	public function setErrorAtLine(lineIndex:Int):Void
 	{
 		this.errorLines.push(lineIndex);

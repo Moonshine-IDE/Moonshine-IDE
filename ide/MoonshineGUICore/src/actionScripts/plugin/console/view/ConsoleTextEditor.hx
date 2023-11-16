@@ -56,31 +56,18 @@ class ConsoleTextEditor extends TextEditor
 		return tlr;
 	}
 
+    public function clearText():Void
+    {
+        this.text = null;
+        this.consoleLineParser.reset();   
+    }
+
     public function appendtext(text:Dynamic):Void
     {
         if (Std.isOfType(text, String))
         {
-            /*var lines:Array = text.split('\n');
-            linesCount = lines.length;
-            var p:ParagraphElement;
-            var tf:TextFlow;
-            var pe:ParagraphElement;
-            var fe:FlowElement;
-            for (var i:int = 0; i < linesCount; i++)
-            {
-                p = new ParagraphElement();
-                tf = TextConverter.importToFlow(String(lines[i]) + "\n", TextConverter.TEXT_FIELD_HTML_FORMAT);
-                pe = tf.mxmlChildren[0];
-                for each (fe in pe.mxmlChildren)
-                {
-                    p.addChild(fe);
-                }
-                
-                //this.textFlow.addChild(p);
-            }*/
-            
-            //callLater(setScroll);
-            //return this.numLines;
+            text = ~/^|$(\r?\n|\r)/g.replace(text, "");
+            this.text += "\n"+ text;
         } 
         else 
         {
@@ -89,19 +76,8 @@ class ConsoleTextEditor extends TextEditor
                 var vectorText:Vector<TextLineModel> = cast text;
                 for (i in vectorText)
                 {
-                    var replaceDelimiter = "\n";
-                    if (i.text.indexOf("\r\n") != -1) {
-                        replaceDelimiter = "\r\n";
-                    } else if (i.text.indexOf("\r") != -1) {
-                        replaceDelimiter = "\r";
-                    } else if (i.text.indexOf("\n") != -1) {
-                        replaceDelimiter = "\n";
-                    } else {
-                        _lineDelimiter = defaultLineDelimiter;
-                    }
-
                     // Split lines regardless of line encoding
-                    i.text = ~/\r?\n|\r/g.replace(i.text, "");
+                    i.text = ~/^|$(\r?\n|\r)/g.replace(i.text, "");
 
                     var consoleOutType:UInt = Reflect.getProperty(ConsoleStyle.name2style, cast(i, ConsoleTextLineModel).consoleOutputType);
                     switch (consoleOutType)
