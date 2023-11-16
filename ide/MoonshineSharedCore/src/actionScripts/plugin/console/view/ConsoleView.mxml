@@ -57,12 +57,17 @@
 			import actionScripts.locator.IDEModel;
 			import actionScripts.plugin.console.ConsoleCommandEvent;
 			import actionScripts.plugin.console.ConsoleStyle;
+			import actionScripts.plugin.console.ConsoleTextLineModel;
+			import actionScripts.ui.editor.text.TextLineModel;
 			
 			import feathers.graphics.FillStyle;
 			import feathers.skins.RectangleSkin;
 			
-			import moonshine.editor.text.TextEditor;
-
+			import flashx.textLayout.conversion.TextConverter;
+			import flashx.textLayout.elements.FlowElement;
+			import flashx.textLayout.elements.ParagraphElement;
+			import flashx.textLayout.elements.TextFlow;
+			
 			[Bindable] public var showCommandLine:Boolean = true;
 	
 			public var displayContextMenuAbout:Boolean = true;
@@ -70,7 +75,7 @@
 			public var displayContextMenuHelp:Boolean = true;
 			public var displayContextMenuExit:Boolean = true;
 				
-			public var historyTextEditor:TextEditor;
+			public var historyTextEditor:ConsoleTextEditor;
 	
 			private var _consolePopOver:Boolean;
 			[Bindable]
@@ -108,7 +113,51 @@
 					historyContainer.setStyle('top', 0);
 					historyContainer.setStyle('bottom', 25);
 				}
-	
+			}
+			
+			public function appendtext(text:*):void
+			{
+				var linesCount:int;
+				if (text is String)
+				{
+					var lines:Array = text.split('\n');
+					linesCount = lines.length;
+					var p:ParagraphElement;
+					var tf:TextFlow;
+					var pe:ParagraphElement;
+					var fe:FlowElement;
+					for (var i:int = 0; i < linesCount; i++)
+					{
+						p = new ParagraphElement();
+						tf = TextConverter.importToFlow(String(lines[i]) + "\n", TextConverter.TEXT_FIELD_HTML_FORMAT);
+						pe = tf.mxmlChildren[0];
+						for each (fe in pe.mxmlChildren)
+						{
+							p.addChild(fe);
+						}
+						
+						//this.textFlow.addChild(p);
+					}
+					
+					//callLater(setScroll);
+					//return this.numLines;
+				} 
+				else if (text is Vector.<TextLineModel>)
+				{
+					linesCount = text.length;
+					for (i = 0; i < linesCount; i++)
+					{
+						historyTextEditor.text += "\n"+ text[i].text;
+					}
+				}
+				/*else if (text is ParagraphElement)
+				{
+					//this.textFlow.addChild(text);
+					//callLater(setScroll);
+				}*/
+				
+				// Remove initial empty line (first time anything is outputted)
+				//return 0;
 			}
 	
 			private function init():void
@@ -119,15 +168,15 @@
 				
 				var selectedTextBackground:RectangleSkin = new RectangleSkin(FillStyle.SolidColor(0x676767));
 				
-				this.historyTextEditor = new TextEditor(null, true);
-				this.historyTextEditor.backgroundSkin = textEditorBackground;
+				this.historyTextEditor = new ConsoleTextEditor(null, true);
 				this.historyTextEditor.wordWrap = true;
 				this.historyTextEditor.showLineNumbers = false;
 				var wrapper:FeathersUIWrapper = new FeathersUIWrapper(this.historyTextEditor);
 				wrapper.percentWidth = wrapper.percentHeight = 100;
+				wrapper.minWidth = wrapper.minHeight = 0;
 				this.historyContainer.addElementAt(wrapper, 0);
 				
-				consolePopOver = _consolePopOver;
+				consolePopOver = _consolePopOver; 
 				cm = new ContextMenu();
 				var clear:ContextMenuItem = new ContextMenuItem('Clear', false, true, true);
 				clear.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, clearHandler);

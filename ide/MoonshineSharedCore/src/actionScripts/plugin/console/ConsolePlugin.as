@@ -337,7 +337,7 @@ package actionScripts.plugin.console
 			else
 			{
                 consoleView.history.appendtext(event.text);
-				consoleView.historyTextEditor.text += "\n"+ event.text;
+				consoleView.historyTextEditor.appendtext(event.text);
 			}
         }
 
@@ -367,7 +367,7 @@ package actionScripts.plugin.console
 			for each (var text:String in consoleTextCache)
 			{
 				consoleView.history.appendtext(text);
-				consoleView.historyTextEditor.text += "\n"+ text;
+				consoleView.historyTextEditor.appendtext(text);
 			}
 
 			consoleTextCache = null;

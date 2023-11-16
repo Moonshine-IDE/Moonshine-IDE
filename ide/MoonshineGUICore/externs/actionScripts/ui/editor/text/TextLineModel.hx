@@ -31,7 +31,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.editor.text;
 
-extern class TextLineModel {
-
-    
+extern class TextLineModel 
+{
+    @:flash.property
+	public var text(default, default):String;
 }
