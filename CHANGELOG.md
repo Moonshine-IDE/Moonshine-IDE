@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 * Language Server: Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.19.0.
 * Language Server: Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to v2.28.0.
-* Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.16.0.
+* Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.29.0.
 * Update Moonshine license to [Server Side Public License](https://www.mongodb.com/licensing/server-side-public-license) ([#577](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/577))
 * Misc. External Editors Update Requirements ([#1154](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1154))
 * Handing paths from project configuration in relative way (experimental) ([#1142](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1142)) 
