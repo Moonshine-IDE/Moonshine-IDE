@@ -1,5 +1,7 @@
 package actionScripts.plugin.console.view;
 
+import haxe.Timer;
+import feathers.events.ScrollEvent;
 import openfl.text.TextFormat;
 import moonshine.editor.text.syntax.parser.HaxeLineParser;
 import moonshine.editor.text.syntax.format.HaxeSyntaxFormatBuilder;
@@ -49,6 +51,10 @@ class ConsoleTextEditor extends TextEditor
         tlr.breakpointGutterBackgroundSkin = null;
         tlr.breakpointSkin = null;
         tlr.unverifiedBreakpointSkin = null;
+        tlr.gutterGap = 0.0;
+        tlr.gutterPaddingLeft = 2.0;
+        tlr.gutterPaddingRight = 0.0;
+        tlr.gutterBackgroundSkin = new RectangleSkin(SolidColor(0x373737, 0.9));
         tlr.backgroundSkin = new RectangleSkin(SolidColor(0x373737, 0.9));
         tlr.selectedTextBackgroundSkinFactory = () -> {
             return new RectangleSkin(SolidColor(0x676767));
@@ -71,28 +77,24 @@ class ConsoleTextEditor extends TextEditor
         } 
         else 
         {
-            try
+            var vectorText:Vector<TextLineModel> = cast text;
+            for (i in vectorText)
             {
-                var vectorText:Vector<TextLineModel> = cast text;
-                for (i in vectorText)
-                {
-                    // Split lines regardless of line encoding
-                    i.text = ~/^|$(\r?\n|\r)/g.replace(i.text, "");
+                // Split lines regardless of line encoding
+                i.text = ~/^|$(\r?\n|\r)/g.replace(i.text, "");
 
-                    var consoleOutType:UInt = Reflect.getProperty(ConsoleStyle.name2style, cast(i, ConsoleTextLineModel).consoleOutputType);
-                    switch (consoleOutType)
-                    {
-                        case ConsoleStyle.ERROR:
-                            this.consoleLineParser.setErrorAtLine(this.lines.length);
-                        case ConsoleStyle.WARNING:
-                            this.consoleLineParser.setWarningAtLine(this.lines.length);
-                        case ConsoleStyle.SUCCESS:
-                            this.consoleLineParser.setSuccessAtLine(this.lines.length);
-                    }
-                    this.text += "\n"+ i.text;
-                }    
+                var consoleOutType:UInt = Reflect.getProperty(ConsoleStyle.name2style, cast(i, ConsoleTextLineModel).consoleOutputType);
+                switch (consoleOutType)
+                {
+                    case ConsoleStyle.ERROR:
+                        this.consoleLineParser.setErrorAtLine(this.lines.length);
+                    case ConsoleStyle.WARNING:
+                        this.consoleLineParser.setWarningAtLine(this.lines.length);
+                    case ConsoleStyle.SUCCESS:
+                        this.consoleLineParser.setSuccessAtLine(this.lines.length);
+                }
+                this.text += "\n"+ i.text;
             }
-            catch (e){}
         }
         /*else if (text is ParagraphElement)
         {
@@ -102,5 +104,13 @@ class ConsoleTextEditor extends TextEditor
         
         // Remove initial empty line (first time anything is outputted)
         //return 0;
+
+        this.scrollToMaxYScroll();
+    }
+
+    private function scrollToMaxYScroll():Void
+    {
+        _caretLineIndex = _lines.length;
+        scrollToCaret();
     }
 }

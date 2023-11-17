@@ -325,13 +325,14 @@ package actionScripts.plugin.console
 
 		protected function consoleClearHandler(event:ConsoleOutputEvent):void
         {
-            consoleView.history.text = "";
+            //consoleView.history.text = "";
 			consoleView.historyTextEditor.clearText();
         }
 
 		protected function consoleOutputHandler(event:ConsoleOutputEvent):void
         {
-			if (!consoleView.history.textFlow)
+			consoleView.historyTextEditor.appendtext(event.text);
+			/*if (!consoleView.history.textFlow)
 			{
 				this.consoleTextCache.push(event.text);
 			}
@@ -339,7 +340,7 @@ package actionScripts.plugin.console
 			{
                 consoleView.history.appendtext(event.text);
 				consoleView.historyTextEditor.appendtext(event.text);
-			}
+			}*/
         }
 
 		protected function consolePrintHandler(event:ConsoleOutputEvent):void
@@ -367,7 +368,7 @@ package actionScripts.plugin.console
 
 			for each (var text:String in consoleTextCache)
 			{
-				consoleView.history.appendtext(text);
+				//consoleView.history.appendtext(text);
 				consoleView.historyTextEditor.appendtext(text);
 			}
 

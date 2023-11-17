@@ -137,9 +137,9 @@
 				clear.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, clearHandler);
 				cm.customItems.push(clear);
 				cm.clipboardMenu = true;
-				history.contextMenu = cm;
+				//history.contextMenu = cm;
 				historyTextEditor.contextMenu = cm;
-				(history.textDisplay as RichEditableText).contextMenu = cm;
+				//(history.textDisplay as RichEditableText).contextMenu = cm;
 	
 				if (displayContextMenuAbout)
 				{
@@ -236,9 +236,9 @@
 			 backgroundAlpha="0.9"
 			 backgroundColor="0x373737">
 		
-		<view:ConsoleViewTextArea id="history"
+		<!--view:ConsoleViewTextArea id="history"
 								  editable="false" selectable="true" horizontalScrollPolicy="auto" verticalScrollPolicy="auto"
-								  height="100%" width="100%" lineBreak="toFit" color="0xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/>
+								  height="100%" width="100%" lineBreak="toFit" color="0xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/-->
 		<mx:Canvas width="100%">
 			<mx:HRule 
 				width="100%" 
