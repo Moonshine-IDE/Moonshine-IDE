@@ -73,6 +73,8 @@ package actionScripts.plugin.dominoInterface
 		
 		private var editor:VisualEditorViewer=null;
 
+		private var dominoGlobalsObject:DominoGlobalsObjects=null;
+
 		 
 		
 		
@@ -80,7 +82,6 @@ package actionScripts.plugin.dominoInterface
 		override public function activate():void
 		{
 			super.activate();
-			Alert.show("activate");
 			if(dominoObjectView){
 				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.SELECT_VIEW_IN_PROJECT_PANEL, dominoObjectView));
 			}
@@ -94,7 +95,6 @@ package actionScripts.plugin.dominoInterface
 
 		override public function deactivate():void
 		{
-			Alert.show("deactivate");
 			super.deactivate();
 			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS, handleDominoObjectsClose);
 			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS_UI_CLOSE, handleDominoObjectsClose);
@@ -102,49 +102,99 @@ package actionScripts.plugin.dominoInterface
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
 		}
+		
 
 		private function handleDominoObjectsSave(event:Event):void
 		{
-			Alert.show("handleDominoObjectsSave");
 			
 			optionsMap=dominoObjectView.getOptionsMap();
 			// var editor:VisualEditorViewer= 
-			var path:String = editor.currentFile.fileBridge.nativePath;
-			var xml:XML = new XML(String(editor.currentFile.fileBridge.read()));
-			for each(var gobalOptions:XML in xml..dominoGlobalsObject) //no matter of depth Note here
-			{
-				delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+			model = IDEModel.getInstance();
+			editor=model.activeEditor as VisualEditorViewer;
+			if(editor){
+				var path:String = editor.getVisualEditorFilePath();
+				
+				
+				var xmlFileLocation:FileLocation = new FileLocation(path);
+
+				var xml:XML = new XML(String(xmlFileLocation.fileBridge.read()));
+				for each(var gobalOptions:XML in xml..dominoGlobalsObject) //no matter of depth Note here
+				{
+					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+				}
+
+				dominoGlobalsObject = new DominoGlobalsObjects();
+				if(optionsMap["globalsInitialize"]!=undefined && optionsMap["globalsInitialize"].toString().length>0)
+				{
+					dominoGlobalsObject.initialize=optionsMap["globalsInitialize"];
+				} 
+				if(optionsMap["globalsOptions"]!=undefined && optionsMap["globalsOptions"].toString().length>0)
+				{
+					dominoGlobalsObject.options=optionsMap["globalsOptions"];
+				}
+				if(optionsMap["globalsDeclarations"]!=undefined && optionsMap["globalsDeclarations"].toString().length>0)
+				{
+					dominoGlobalsObject.declarations=optionsMap["globalsDeclarations"];
+				}
+				if(optionsMap["globalsTeminate"]!=undefined && optionsMap["globalsTeminate"].toString().length>0)
+				{
+					dominoGlobalsObject.terminate=optionsMap["globalsTeminate"];
+				}
+				var optionsXML:XML=dominoGlobalsObject.toXML();
+				//optionsXML.@
+				xml.appendChild(optionsXML);
+				xmlFileLocation.fileBridge.save(xml.toXMLString());
 			}
 
-			var optionsXML:XML=new XML("<"+DominoGlobalsObjects.DOMINO_ELEMENT_NAME+" />");
-			//optionsXML.@
-			xml.appendChild(optionsXML);
 
 		}
 		private function handleDominoObjectsClose(event:Event):void
 		{
-			Alert.show("handleDominoObjectsClose");
 			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, dominoObjectView));
 		}
 
 		private function handleDominoObjectsShow(event:Event):void
 		{
-			if(!model)
+			
 			model = IDEModel.getInstance();
-
-			if(!editor)
 			editor=model.activeEditor as VisualEditorViewer;
+			
+			if(editor){
+			
+				var path:String = editor.getVisualEditorFilePath();
+				var xmlFileLocation:FileLocation = new FileLocation(path);
 
-			// if(editor.currentFile.fileBridge.extension=="form"){
+				var xml:XML = new XML(String(xmlFileLocation.fileBridge.read()));
 				
-			// }
-			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, dominoObjectView));
+				
+				if(xml){
+					var domainObjectList:XMLList=xml..dominoGlobalsObject;
+					if(domainObjectList.length()>0){
+						dominoGlobalsObject= new DominoGlobalsObjects();
+						dominoGlobalsObject.fromXMLDominoObject(domainObjectList[0]);
+						optionsMap=new Dictionary();
+						if(dominoGlobalsObject.initialize){
+							optionsMap["globalsInitialize"]=dominoGlobalsObject.initialize;
+						}
+						if(dominoGlobalsObject.options){
+							optionsMap["globalsOptions"]=dominoGlobalsObject.options;
+						}
+						if(dominoGlobalsObject.declarations){
+							optionsMap["globalsDeclarations"]=dominoGlobalsObject.declarations;
+						}
+						if(dominoGlobalsObject.initialize){
+							optionsMap["globalsTeminate"]=dominoGlobalsObject.terminate;
+						}
+						dominoObjectView.setOptionsMap(optionsMap);
+					}
+				}
+
+				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, dominoObjectView));
+				dominoObjectView.expandNodesWithChildrenByPublic()
+				
+					
+			}
 			
-			 
-			// cleanupProblemsViewEventHandlers();
-			// isDominoObjectsViewVisible = false;
-			
-			// isStartupCall = false;
 		}
 		
 		private function initializeProblemsViewEventHandlers(event:Event):void

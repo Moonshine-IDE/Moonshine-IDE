@@ -81,7 +81,7 @@
 
 		private var dominoGlobalsObjects:DominoGlobalsObjects
 
-		private var optionsMap:Dictionary
+		public var optionsMap:Dictionary
 		private var formOptionsMap:Dictionary; 
 
 		 
@@ -211,80 +211,77 @@
 			//history.contextMenu = cm;
 			//(history.textDisplay as RichEditableText).contextMenu = cm;
 
-			if (displayContextMenuAbout)
-			{
-				var about:ContextMenuItem = new ContextMenuItem('About', false, true, true);
-				about.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, aboutHandler);
-				cm.customItems.push(about);
-			}
-			if (displayContextMenuHide)
-			{
-				var hide:ContextMenuItem = new ContextMenuItem('Hide', false, true, true);
-				hide.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, hideHandler);
-				cm.customItems.push(hide);
-			}
-			if (displayContextMenuExit)
-			{
-				var exit:ContextMenuItem = new ContextMenuItem('Exit', false, true, true);
-				exit.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, exitHandler);
-				cm.customItems.push(exit);
-			}
-			if (displayContextMenuHelp)
-			{
-				var help:ContextMenuItem = new ContextMenuItem('Help', false, true, true);
-				help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
-				cm.customItems.push(help);
-			}
+			// if (displayContextMenuAbout)
+			// {
+			// 	var about:ContextMenuItem = new ContextMenuItem('About', false, true, true);
+			// 	about.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, aboutHandler);
+			// 	cm.customItems.push(about);
+			// }
+			// if (displayContextMenuHide)
+			// {
+			// 	var hide:ContextMenuItem = new ContextMenuItem('Hide', false, true, true);
+			// 	hide.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, hideHandler);
+			// 	cm.customItems.push(hide);
+			// }
+			// if (displayContextMenuExit)
+			// {
+			// 	var exit:ContextMenuItem = new ContextMenuItem('Exit', false, true, true);
+			// 	exit.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, exitHandler);
+			// 	cm.customItems.push(exit);
+			// }
+			// if (displayContextMenuHelp)
+			// {
+			// 	var help:ContextMenuItem = new ContextMenuItem('Help', false, true, true);
+			// 	help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
+			// 	cm.customItems.push(help);
+			// }
 
-			editor= model.activeEditor as VisualEditorViewer;
-			//inital the all object to the array
-			if(editor&&editor.text){
-				//first load it to xml
-				editxml=new XML(editor.text);
-				optionsMap = new Dictionary();
-				dominoGlobalsObjects=new DominoGlobalsObjects();
-				if(!editxml.MainApplication.dominoGlobalsObject){
-					
-				}
-				optionsMap=initalOptionsWithLoadingXML(editxml,optionsMap)
-
-			}
+			
 			//expend defaul options
 			expandNodesWithChildren(treeData);
-			// for each(var treeNode:XML in myTree.dataProvider..node){
-			// 	if(treeNode.@type=="LotusScript"){
-			// 		treeNode.@icon=
-			// 	}
-			// }
-			//myTree.itemRenderer=actionScripts.ui.renderers.DominoObjectsTreeItemRenderer;
+			
+		}
+
+		public function initalOptionsMap():void 
+		{	
+			editor= model.activeEditor as VisualEditorViewer;
+			//inital the all object to the array
+			if(optionsMap==null){
+				if(editor&&editor.text){
+					//first load it to xml
+					editxml=new XML(editor.text);
+					optionsMap = new Dictionary();
+					dominoGlobalsObjects=new DominoGlobalsObjects();
+					if(!editxml.MainApplication.dominoGlobalsObject){
+						
+					}
+					optionsMap=initalOptionsWithLoadingXML(editxml,optionsMap)
+					
+				}
+			}
 		}
 
 
 		private function initalOptionsWithLoadingXML(loadXml:XML,opMap:Dictionary):Dictionary
 		{
-			// if(loadXml.dominoGlobalsObject){
-			// 	if(loadXml.dominoGlobalsObject.@initialize){
-					
-			// 	}
-			// }
 			opMap["globalsInitialize"]=loadXml.dominoGlobalsObject.@initialize;
 			opMap["globalsOptions"]=loadXml.dominoGlobalsObject.@options;
 			opMap["globalsDeclarations"]=loadXml.dominoGlobalsObject.@declarations;
 			opMap["globalsTeminate"]=loadXml.dominoGlobalsObject.@terminate;
 
-			if(!opMap["globalsInitialize"] || opMap["globalsInitialize"]==""){
+			if(opMap["globalsInitialize"]==undefined || opMap["globalsInitialize"].toString().length==0){
 				opMap["globalsInitialize"]="Open Public"
 			}
 
-			if(!opMap["globalsOptions"] || opMap["globalsOptions"]==""){
+			if(opMap["globalsOptions"]==undefined || opMap["globalsOptions"].toString().length==0){
 				opMap["globalsOptions"]="Option Public"
 			}
 
-			if(!opMap["globalsDeclarations"] || opMap["globalsDeclarations"]==""){
+			if(opMap["globalsDeclarations"]==undefined || opMap["globalsDeclarations"].toString().length==0){
 				opMap["globalsDeclarations"]="Declarations Public"
 			}
 
-			if(!opMap["globalsTeminate"] || opMap["globalsTeminate"]==""){
+			if(opMap["globalsTeminate"]==undefined || opMap["globalsTeminate"].toString().length==0){
 				opMap["globalsTeminate"]="Sub Teminate"
 			}	
 
@@ -379,7 +376,11 @@
 		{
 			
 		}
-		function expandNodesWithChildren(currentItems:XMLList):void {
+		public function expandNodesWithChildrenByPublic():void
+		{
+			expandNodesWithChildren(treeData)
+		}
+		private function expandNodesWithChildren(currentItems:XMLList):void {
 			for each (var node:XML in currentItems) {
 
 				if (node.children().length() > 0) {
@@ -395,12 +396,13 @@
 		}
 
 		// Find the node by key and expand its parent nodes
-		function expandNodeByAttributeKey(attributeKey:String, currentItems:XMLList):void {
+		private function expandNodeByAttributeKey(attributeKey:String, currentItems:XMLList):void {
 			for each (var node:XML in currentItems) {
 				myTree.expandItem(node, true);
 				if (node.@key == attributeKey) {
 					// Node found, expand its parent nodes
 					myTree.selectedItem=node;
+					selectedNode=myTree.selectedItem as XML;
 					return;
 				}
 
@@ -419,14 +421,15 @@
 		// Event handler for the Tree control change event.
 		public function treeChanged(event:Event):void {
 			selectedNode=Tree(event.target).selectedItem as XML;
-			if(selectedNode.@key&&selectedNode.@key.toString().indexOf("globals")>=0){
-				initalDefaultValueForDropList();
-
-				textInput.text=optionsMap[selectedNode.@key]
+			if(selectedNode.@key){
+				var k:String=selectedNode.@key;
+				textInput.text=optionsMap[k]
 			}
+			
+
 		}
 
-		private function initalDefaultValueForDropList():void 
+		public function initalDefaultValueForDropList():void 
 		{
 			var selectindex:int=getSelectedIndex("Client",runList.dataProvider as ArrayCollection);
 			if(selectindex!=-1){
@@ -438,21 +441,44 @@
 				runWayList.selectedIndex=selectindex2;
 				runWayList.enabled = false;
 			}
+			textInput.text=optionsMap["globalsOptions"]
 		}
 
+		
 		public function getOptionsMap():Dictionary
 		{
 			return this.optionsMap;
+		}
+		public function setOptionsMap(op:Dictionary):void
+		{
+			if(optionsMap==null){
+				optionsMap=new Dictionary();
+			}
+			for (var key:Object in op) {
+				optionsMap[key] = op[key];
+			}
+			
 		}
 
 		private function textInput_changeHandler(event:Event):void
         {
             if(event.target){
 				if(event.target.hasOwnProperty("text")){
-					editor.dispatchEvent(new Event('labelChanged'));
+					// editor= model.activeEditor as VisualEditorViewer;
+					
+					if(!selectedNode){
+						selectedNode=myTree.selectedItem as XML;
+					}
 					if(selectedNode&&selectedNode.@key)
 					{
-						optionsMap[selectedNode.@key]=event.target.text;
+						var mapKey:String=selectedNode.@key
+						optionsMap[mapKey]=event.target.text;
+						var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+						if(editor!=null){
+							
+							editor.editorView.visualEditor.editingSurface.hasChanged=true;
+							editor.editorView.visualEditor.dispatchEvent(new Event('labelChanged'));
+						}
 					}
 				}
 			}
