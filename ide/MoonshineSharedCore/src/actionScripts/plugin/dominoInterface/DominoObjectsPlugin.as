@@ -20,6 +20,7 @@ package actionScripts.plugin.dominoInterface
 {
 	import flash.events.Event;
 	import flash.utils.Dictionary;
+	import utils.StringHelper;
 
 	import actionScripts.events.DiagnosticsEvent;
 	import actionScripts.events.OpenFileEvent;
@@ -166,8 +167,16 @@ package actionScripts.plugin.dominoInterface
 
 				var xml:XML = new XML(String(xmlFileLocation.fileBridge.read()));
 				
-				
+				var formTitle:String="Domino Form";
 				if(xml){
+					var formTitleList:XMLList = xml..MainApplication;
+					formTitle=formTitleList[0].@title;
+					if(formTitle==null||formTitle.length==0){
+						formTitle=StringHelper.base64Decode(formTitleList[0].@windowsTitle);
+					}
+					if(formTitle){
+						formTitle = formTitle.replace(/\"/g, "");
+					}
 					var domainObjectList:XMLList=xml..dominoGlobalsObject;
 					if(domainObjectList.length()>0){
 						dominoGlobalsObject= new DominoGlobalsObjects();
@@ -175,6 +184,8 @@ package actionScripts.plugin.dominoInterface
 						optionsMap=new Dictionary();
 						if(dominoGlobalsObject.initialize){
 							optionsMap["globalsInitialize"]=dominoGlobalsObject.initialize;
+						}else{
+							
 						}
 						if(dominoGlobalsObject.options){
 							optionsMap["globalsOptions"]=dominoGlobalsObject.options;
@@ -190,7 +201,7 @@ package actionScripts.plugin.dominoInterface
 				}
 
 				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, dominoObjectView));
-				dominoObjectView.expandNodesWithChildrenByPublic()
+				dominoObjectView.expandNodesWithChildrenByPublic(formTitle)
 				
 					
 			}

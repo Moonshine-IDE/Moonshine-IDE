@@ -74,6 +74,11 @@
 		import view.domino.viewEditor.object.DominoObjectsProperty;
 		import flash.utils.Dictionary;
 		import mx.events.TreeEvent;
+		import moonshine.editor.text.TextEditor;
+		import actionScripts.ui.FeathersUIWrapper;
+		import moonshine.editor.text.events.TextEditorChangeEvent;
+		import moonshine.editor.text.events.TextEditorLineEvent;
+
 
 		private var editor:VisualEditorViewer = null;
 
@@ -82,7 +87,9 @@
 		private var dominoGlobalsObjects:DominoGlobalsObjects
 
 		public var optionsMap:Dictionary
-		private var formOptionsMap:Dictionary; 
+		private var formOptionsMap:Dictionary;
+
+		private var languageEditor:TextEditor; 
 
 		 
 
@@ -238,8 +245,30 @@
 
 			
 			//expend defaul options
-			expandNodesWithChildren(treeData);
+			expandNodesWithChildren(treeData,null);
+			//add the code editor
+			if(languageEditor==null){
+				initalCodeEditor();
+			}
+
 			
+
+			
+
+			//languageEditor.wordWrap = false;
+			
+			
+		}
+		private function initalCodeEditor(): void
+		{
+			languageEditor=new TextEditor(null,false);
+			languageEditor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
+			languageEditor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
+			languageEditor.showLineNumbers = true;
+			var wrapper:FeathersUIWrapper = new FeathersUIWrapper(languageEditor);
+			wrapper.percentWidth = wrapper.percentHeight = 100;
+			wrapper.minWidth = wrapper.minHeight = 100;
+			codeEdtiorContainer.addElementAt(wrapper, 0);
 		}
 
 		public function initalOptionsMap():void 
@@ -259,6 +288,33 @@
 					
 				}
 			}
+		}
+
+
+		protected function handleTextChange(event:TextEditorChangeEvent):void
+		{
+			if(!selectedNode){
+				selectedNode=myTree.selectedItem as XML;
+			}
+			if(selectedNode&&selectedNode.@key)
+			{
+				var mapKey:String=selectedNode.@key
+				optionsMap[mapKey]=languageEditor.text;
+				var noweditor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+				if(noweditor!=null){
+					
+					noweditor.editorView.visualEditor.editingSurface.hasChanged=true;
+					noweditor.editorView.visualEditor.dispatchEvent(new Event('labelChanged'));
+				}
+			}
+		}
+
+		protected function handleToggleBreakpoint(event:TextEditorLineEvent):void
+		{
+			// var lineIndex:int = event.lineIndex;
+			
+			// var enabled:Boolean = languageEditor.breakpoints.indexOf(lineIndex) != -1;
+			// languageEditor.super.handleToggleBreakpoint(event);
 		}
 
 
@@ -376,16 +432,29 @@
 		{
 			
 		}
-		public function expandNodesWithChildrenByPublic():void
+		public function expandNodesWithChildrenByPublic(formTitle:String):void
 		{
-			expandNodesWithChildren(treeData)
+			expandNodesWithChildren(treeData,formTitle)
+			myTree.dataProvider.refresh();
+
 		}
-		private function expandNodesWithChildren(currentItems:XMLList):void {
+		private function expandNodesWithChildren(currentItems:XMLList,title:String):void {
 			for each (var node:XML in currentItems) {
+
+				//rename the label
+				if(title){
+					if(node.@label.toString().indexOf("(Globals)")>=0){
+						node.@label="(Globals)"+title
+					}
+
+					if(node.@label.toString().indexOf("(Sub)")>=0 || node.@label.toString().indexOf("(Form)")>=0 ){
+						node.@label=title+" (Form)"
+					}
+				}
 
 				if (node.children().length() > 0) {
 					myTree.expandItem(node, true);
-					expandNodesWithChildren(node.children());
+					expandNodesWithChildren(node.children(),title);
 				}
 
 				if(node.@key=="globalsOptions"){
@@ -423,7 +492,8 @@
 			selectedNode=Tree(event.target).selectedItem as XML;
 			if(selectedNode.@key){
 				var k:String=selectedNode.@key;
-				textInput.text=optionsMap[k]
+				//textInput.text=optionsMap[k]
+				languageEditor.text=optionsMap[k];
 			}
 			
 
@@ -441,7 +511,11 @@
 				runWayList.selectedIndex=selectindex2;
 				runWayList.enabled = false;
 			}
-			textInput.text=optionsMap["globalsOptions"]
+			if(languageEditor==null){
+				initalCodeEditor();
+			}
+			languageEditor.text=optionsMap["globalsOptions"]
+			//textInput.text=optionsMap["globalsOptions"]
 		}
 
 		
@@ -516,13 +590,26 @@
 			return -1; // Return -1 if the label is not found
 		}
 
+		private function findNodeByKey(key:String, xmlList:XMLList):XML {
+			for each (var node:XML in xmlList) {
+				if (node.@key == key) {
+					return node;
+				}
+				var childResult:XML = findNodeByKey(key, node.children());
+				if (childResult) {
+					return childResult;
+				}
+			}
+			return null;
+		}
+
 
 		
 		]]>
 	</fx:Script>
 	 <fx:Declarations>
         <fx:XMLList id="treeData">
-            <node label="(Globals)Email Reply Common Sub" type="">
+            <node label="(Globals)Email Reply Common Sub" type="globalForm">
                
 				<node label="(Options)" type="LotusScript" key="globalsOptions"/>
 				<node label="(Declarations)" type="LotusScript" key="globalsDeclarations"/>
@@ -530,9 +617,9 @@
 				<node label="Teminate" type="LotusScript" key="globalsTeminate"/>
                 
             </node>
-			<node label="Email Reply Common Subform(Sub)" type="" key="">
+			<node label="Email Reply Common Subform(Sub)" type="" key="commonSub">
 				<node label="Window Title" type="Formula" key="windowTitle"/>
-				<node label="HTML Head Conten" type="Formula" key="htmlHeadConten"/>
+				<node label="HTML Head Content" type="Formula" key="htmlHeadConten"/>
 				<node label="HTML Body Attributes" type="Formula" key="htmlBodyAttributes"/>
 				<node label="WebQueryOpen" type="Formula" key="webQueryOpen"/>
 				<node label="WebQuerySave" type="Formula" key="webQuerySave"/>
@@ -607,8 +694,10 @@
 						labelField="label" 
 						change="updateSelectionWay(event);"/>	
        		 	</s:HGroup>
+				<s:Group id="codeEdtiorContainer" minWidth="156" width="100%" height="100%">
+				</s:Group> 
 					
-				<s:TextArea id="textInput"  height="100%"
+				<!-- <s:TextArea id="textInput"  height="100%"
 						text="" width="100%" minWidth="156" editable="true" selectable="true"
 						prompt=""
 						
@@ -616,7 +705,7 @@
 						textInput="textInput_changeHandler(event)"
 						
 						change="textInput_changeHandler(event)"
-				/>
+				/> -->
 					
 			</s:VGroup>
 		</s:Scroller>
