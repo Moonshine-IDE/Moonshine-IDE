@@ -316,6 +316,17 @@
 			// var enabled:Boolean = languageEditor.breakpoints.indexOf(lineIndex) != -1;
 			// languageEditor.super.handleToggleBreakpoint(event);
 		}
+		
+		public function setObjectOptionsToDefault():void
+		{
+			if(optionsMap==null || optionsMap==undefined){
+				optionsMap=new Dictionary();
+			}
+			optionsMap["globalsInitialize"]="Open Public";
+			optionsMap["globalsOptions"]="Option Public";
+			optionsMap["globalsDeclarations"]="Declarations Public";
+			optionsMap["globalsTeminate"]="Sub Teminate";
+		}
 
 
 		private function initalOptionsWithLoadingXML(loadXml:XML,opMap:Dictionary):Dictionary
@@ -513,8 +524,12 @@
 			}
 			if(languageEditor==null){
 				initalCodeEditor();
+				if(languageEditor&&optionsMap){
+					languageEditor.text=optionsMap["globalsOptions"]
+				}
+				
 			}
-			languageEditor.text=optionsMap["globalsOptions"]
+			
 			//textInput.text=optionsMap["globalsOptions"]
 		}
 

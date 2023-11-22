@@ -119,7 +119,14 @@ package actionScripts.plugin.dominoInterface
 				var xmlFileLocation:FileLocation = new FileLocation(path);
 
 				var xml:XML = new XML(String(xmlFileLocation.fileBridge.read()));
+				var dxl:XML =new XML(String(editor.currentFile.fileBridge.read()));
+				
 				for each(var gobalOptions:XML in xml..dominoGlobalsObject) //no matter of depth Note here
+				{
+					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+				}
+
+				for each(var gobalOptions:XML in dxl..globals) //no matter of depth Note here
 				{
 					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
 				}
@@ -145,6 +152,10 @@ package actionScripts.plugin.dominoInterface
 				//optionsXML.@
 				xml.appendChild(optionsXML);
 				xmlFileLocation.fileBridge.save(xml.toXMLString());
+
+				var globaldxl:XML=dominoGlobalsObject.toCode();
+				dxl.appendChild(globaldxl);
+				editor.currentFile.fileBridge.save(dxl.toXMLString());
 			}
 
 
@@ -166,9 +177,8 @@ package actionScripts.plugin.dominoInterface
 				var xmlFileLocation:FileLocation = new FileLocation(path);
 
 				var xml:XML = new XML(String(xmlFileLocation.fileBridge.read()));
-				
 				var formTitle:String="Domino Form";
-				if(xml){
+				if(xml && xmlFileLocation.fileBridge.exists){
 					var formTitleList:XMLList = xml..MainApplication;
 					formTitle=formTitleList[0].@title;
 					if(formTitle==null||formTitle.length==0){
@@ -178,26 +188,33 @@ package actionScripts.plugin.dominoInterface
 						formTitle = formTitle.replace(/\"/g, "");
 					}
 					var domainObjectList:XMLList=xml..dominoGlobalsObject;
-					if(domainObjectList.length()>0){
+					
 						dominoGlobalsObject= new DominoGlobalsObjects();
-						dominoGlobalsObject.fromXMLDominoObject(domainObjectList[0]);
-						optionsMap=new Dictionary();
-						if(dominoGlobalsObject.initialize){
-							optionsMap["globalsInitialize"]=dominoGlobalsObject.initialize;
+						if(domainObjectList.length()>0){
+							dominoGlobalsObject.fromXMLDominoObject(domainObjectList[0]);
+							optionsMap=new Dictionary();
+							if(dominoGlobalsObject.initialize){
+								optionsMap["globalsInitialize"]=dominoGlobalsObject.initialize;
+							}else{
+								
+							}
+							if(dominoGlobalsObject.options){
+								optionsMap["globalsOptions"]=dominoGlobalsObject.options;
+							}
+							if(dominoGlobalsObject.declarations){
+								optionsMap["globalsDeclarations"]=dominoGlobalsObject.declarations;
+							}
+							if(dominoGlobalsObject.initialize){
+								optionsMap["globalsTeminate"]=dominoGlobalsObject.terminate;
+							}
 						}else{
-							
+							dominoObjectView.setObjectOptionsToDefault()
 						}
-						if(dominoGlobalsObject.options){
-							optionsMap["globalsOptions"]=dominoGlobalsObject.options;
-						}
-						if(dominoGlobalsObject.declarations){
-							optionsMap["globalsDeclarations"]=dominoGlobalsObject.declarations;
-						}
-						if(dominoGlobalsObject.initialize){
-							optionsMap["globalsTeminate"]=dominoGlobalsObject.terminate;
-						}
+						
+						
 						dominoObjectView.setOptionsMap(optionsMap);
-					}
+					
+
 				}
 
 				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, dominoObjectView));
