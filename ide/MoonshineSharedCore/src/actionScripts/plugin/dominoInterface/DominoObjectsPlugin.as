@@ -126,8 +126,9 @@ package actionScripts.plugin.dominoInterface
 					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
 				}
 
-				for each(var gobalOptions:XML in dxl..globals) //no matter of depth Note here
+				for each(var gobalOptions:XML in dxl..item) //no matter of depth Note here
 				{
+					if(gobalOptions.@name.toString()=="$Script")
 					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
 				}
 
