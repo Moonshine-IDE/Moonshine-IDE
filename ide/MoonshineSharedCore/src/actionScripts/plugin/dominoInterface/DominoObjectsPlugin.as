@@ -109,6 +109,7 @@ package actionScripts.plugin.dominoInterface
 		{
 			
 			optionsMap=dominoObjectView.getOptionsMap();
+			dominoObjectView.updateIconAfterSave();
 			// var editor:VisualEditorViewer= 
 			model = IDEModel.getInstance();
 			editor=model.activeEditor as VisualEditorViewer;

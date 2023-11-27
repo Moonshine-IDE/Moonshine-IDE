@@ -72,17 +72,31 @@ package actionScripts.ui.renderers
             }
             // Check the 'iconType' attribute of the data and set the custom icon accordingly
             if (data && XML(data).@type) {
-                
+                var value:String=XML(data).@value.toString();
                 switch (XML(data).@type.toString())
 				{
 					case "LotusScript":
-						customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_PAGE);
-                        break;
+                        if(value=="hasValue"){
+                            customIcon.source=LoadImage.DOMINO_OBJECT_TREE_PAGE_FILL
+                        }else{
+                            customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_PAGE);
+                        }
+						break;
 					case "Formula":
-						customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_RHOMBUS);
+                        if(value=="hasValue"){
+                            customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_RHOMBUS_FILL);
+                        }else{
+                            customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_RHOMBUS);
+                        }
+						
 					    break;
 					case "JavaScript":
-                        customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE);
+                        if(value=="hasValue"){
+                             customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE_FILL);
+                        }else{
+                            customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE);
+                        }
+                       
 						break;
                     default:
                         customIcon.source = null; // Clear the custom icon for default case

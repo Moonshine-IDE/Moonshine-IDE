@@ -463,16 +463,38 @@
 					}
 				}
 
+				if(optionsMap[node.@key.toString()]!=undefined && optionsMap[node.@key.toString()]!=null && optionsMap[node.@key.toString()].length>12){
+					node.@value="hasValue"
+					
+				}
+
+				
 				if (node.children().length() > 0) {
 					myTree.expandItem(node, true);
 					expandNodesWithChildren(node.children(),title);
 				}
-
+					
+				
+				
 				if(node.@key=="globalsOptions"){
+					
 					myTree.selectedItem = node;
 					initalDefaultValueForDropList();
 				}
 			}
+		}
+
+		public function  updateIconAfterSave():void
+		{
+			if(selectedNode!=null){
+				if(languageEditor.text!=null&& languageEditor.text.length>10){
+					selectedNode.@value="hasValue";
+				}else{
+					selectedNode.@value="";
+				}
+
+			}
+
 		}
 
 		// Find the node by key and expand its parent nodes
@@ -505,6 +527,38 @@
 				var k:String=selectedNode.@key;
 				//textInput.text=optionsMap[k]
 				languageEditor.text=optionsMap[k];
+
+				//enabled drp
+				if(selectedNode.@key.toString().indexOf("global")>=0){
+					var selectindex:int=getSelectedIndex("Client",runList.dataProvider as ArrayCollection);
+					if(selectindex!=-1){
+						runList.selectedIndex=selectindex;
+						runList.enabled = false;
+					}
+					var selectindex2:int=getSelectedIndex("LotusScript",runWayList.dataProvider as ArrayCollection);
+					if(selectindex2!=-1){
+						runWayList.selectedIndex=selectindex2;
+						runWayList.enabled = false;
+					}
+				}else{
+					if(selectedNode.@env!=null && selectedNode.@env!=undefined && selectedNode.@env.toString().length>0)
+					{
+						var env:String=selectedNode.@env
+						var selectindex:int=getSelectedIndex(env,runList.dataProvider as ArrayCollection);
+						if(selectindex!=-1){
+							runList.selectedIndex=selectindex;
+							runList.enabled = false;
+						}else{
+							runList.enabled = true;
+						}
+						runWayList.enabled = true;
+
+					}else{
+						runList.enabled = true;
+						runWayList.enabled = true;
+					}
+					
+				}
 			}
 			
 
@@ -624,43 +678,43 @@
 	</fx:Script>
 	 <fx:Declarations>
         <fx:XMLList id="treeData">
-            <node label="(Globals)Email Reply Common Sub" type="globalForm">
+            <node label="(Globals)Email Reply Common Sub" type="globalForm" value="">
                
-				<node label="(Options)" type="LotusScript" key="globalsOptions"/>
-				<node label="(Declarations)" type="LotusScript" key="globalsDeclarations"/>
-				<node label="Initialize" type="LotusScript" key="globalsInitialize"/>
-				<node label="Teminate" type="LotusScript" key="globalsTeminate"/>
+				<node label="(Options)" type="LotusScript" key="globalsOptions" value=""/>
+				<node label="(Declarations)" type="LotusScript" key="globalsDeclarations" value=""/>
+				<node label="Initialize" type="LotusScript" key="globalsInitialize" value=""/>
+				<node label="Teminate" type="LotusScript" key="globalsTeminate" value=""/>
                 
             </node>
-			<node label="Email Reply Common Subform(Sub)" type="" key="commonSub">
-				<node label="Window Title" type="Formula" key="windowTitle"/>
-				<node label="HTML Head Content" type="Formula" key="htmlHeadConten"/>
-				<node label="HTML Body Attributes" type="Formula" key="htmlBodyAttributes"/>
-				<node label="WebQueryOpen" type="Formula" key="webQueryOpen"/>
-				<node label="WebQuerySave" type="Formula" key="webQuerySave"/>
-				<node label="Target Frame" type="Formula" key="targetFrame"/>
-				<node label="JS Header" type="JavaScript" key="jsHeader"/>
-				<node label="onHelp" type="JavaScript" key="onHelp"/>
-				<node label="onLoad" type="JavaScript" key="onLoad"/>
-				<node label="onUnload" type="JavaScript" key="onUnload"/>
-				<node label="onClick" type="JavaScript" key="onClick"/>
-				<node label="onDbClick" type="JavaScript" key="onDbClick"/>
-				<node label="onKeyDown" type="JavaScript" key="onKeyDown"/>
-				<node label="onKeyPress" type="JavaScript" key="onKeyPress"/>
-				<node label="onKeyUp" type="JavaScript" key="onKeyUp"/>
-				<node label="onMouseDown" type="JavaScript" key="onMouseDown"/>
-				<node label="onMouseMove" type="JavaScript" key="onMouseMove"/>
-				<node label="onMouseOut" type="JavaScript" key="onMouseOut"/>
-				<node label="onMouseOver" type="JavaScript" key="onMouseOver"/>
-				<node label="onMouseUp" type="JavaScript" key="onMouseUp"/>
-				<node label="onRest" type="JavaScript" key="onRest"/>
-				<node label="onSubmit" type="JavaScript" key="onSubmit"/>
-				<node label="(Options)" type="LotusScript" key="options"/>
+			<node label="Email Reply Common Subform(Sub)" type="" key="commonSub" value="">
+				<node label="Window Title" type="Formula" key="windowTitle" value="" env="webclient"/>
+				<node label="HTML Head Content" type="Formula" key="htmlHeadConten" value="" env="web"/>
+				<node label="HTML Body Attributes" type="Formula" key="htmlBodyAttributes" value=""/>
+				<node label="WebQueryOpen" type="Formula" key="webQueryOpen" value=""/>
+				<node label="WebQuerySave" type="Formula" key="webQuerySave" value=""/>
+				<node label="Target Frame" type="Formula" key="targetFrame" value=""/>
+				<node label="JS Header" type="JavaScript" key="jsHeader" value="" env="web"/>
+				<node label="onHelp" type="JavaScript" key="onHelp" value="" env="web"/>
+				<node label="onLoad" type="JavaScript" key="onLoad" value="" env="web"/>
+				<node label="onUnload" type="JavaScript" key="onUnload" value="" env="web"/>
+				<node label="onClick" type="JavaScript" key="onClick" value="" env="web"/>
+				<node label="onDbClick" type="JavaScript" key="onDbClick" value="" env="web"/>
+				<node label="onKeyDown" type="JavaScript" key="onKeyDown" value="" env="web"/>
+				<node label="onKeyPress" type="JavaScript" key="onKeyPress" value="" env="web"/>
+				<node label="onKeyUp" type="JavaScript" key="onKeyUp" value="" env="web"/>
+				<node label="onMouseDown" type="JavaScript" key="onMouseDown" value="" env="web"/>
+				<node label="onMouseMove" type="JavaScript" key="onMouseMove" value="" env="web"/>
+				<node label="onMouseOut" type="JavaScript" key="onMouseOut" value="" env="web"/>
+				<node label="onMouseOver" type="JavaScript" key="onMouseOver" value="" env="web"/>
+				<node label="onMouseUp" type="JavaScript" key="onMouseUp" value="" env="web"/>
+				<node label="onRest" type="JavaScript" key="onRest" value="" env="web"/>
+				<node label="onSubmit" type="JavaScript" key="onSubmit" value="" env="web"/>
+				<node label="(Options)" type="LotusScript" key="options" value=""/>
 				<node label="(Declarations)" type="LotusScript" key="declarations"/>
-				<node label="Queryopen" type="LotusScript" key="queryopen"/>
-				<node label="Postopen" type="LotusScript" key="postopen"/>
-				<node label="Querymodechange" type="LotusScript" key="querymodechange"/>
-				<node label="Postmodechange" type="LotusScript" key="postmodechange"/>
+				<node label="Queryopen" type="LotusScript" key="queryopen" value=""/>
+				<node label="Postopen" type="LotusScript" key="postopen" value=""/>
+				<node label="Querymodechange" type="LotusScript" key="querymodechange" value=""/>
+				<node label="Postmodechange" type="LotusScript" key="postmodechange" value=""/>
 				<node label="Queryrecalc" type="LotusScript" key="queryrecalc"/>
 				<node label="Postrecalc" type="LotusScript" key="postrecalc"/>
 				<node label="QuerySave" type="LotusScript" key="querySave"/>
