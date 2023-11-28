@@ -73,7 +73,7 @@ class ConsoleTextEditor extends TextEditor
         if (Std.isOfType(text, String))
         {
             text = ~/^|$(\r?\n|\r)/g.replace(text, "");
-            this.text += "\n"+ text;
+            this.text += "\n"+ ~/^\/\*.*?(?:\*\/|\n)/.replace(text, "");
         } 
         else 
         {
@@ -101,9 +101,6 @@ class ConsoleTextEditor extends TextEditor
             //this.textFlow.addChild(text);
             //callLater(setScroll);
         }*/
-        
-        // Remove initial empty line (first time anything is outputted)
-        //return 0;
 
         this.scrollToMaxYScroll();
     }

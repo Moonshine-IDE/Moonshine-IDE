@@ -1,10 +1,11 @@
 package actionScripts.plugin.console.view;
 
+import moonshine.editor.text.syntax.parser.LineParser;
 import moonshine.editor.text.syntax.parser.ILineParser;
 import moonshine.editor.text.syntax.parser.LineParserPattern;
 import moonshine.editor.text.syntax.parser.HaxeLineParser;
 
-class ConsoleLineParser implements ILineParser
+class ConsoleLineParser extends LineParser
 {
     public static final CL_ERROR:Int = 0x1;
 	public static final CL_WARNING:Int = 0x2;
@@ -14,16 +15,24 @@ class ConsoleLineParser implements ILineParser
 	private var warningLines:Array<Int> = [];
 	private var successLines:Array<Int> = [];
 
-	@:flash.property
-	public var defaultContext(get, never):Int;
-	private function get_defaultContext():Int
+	public function new() 
 	{
-		return 0x0;	
+		super();
+
+		context = 0x0;
+		_defaultContext = 0x0;
+
+		wordBoundaries = ~/([\s,(){}\[\]\-+*%\/="'~!&|<>?:;.]+)/;
+
+		patterns = [
+			new LineParserPattern(CL_WARNING, ~/^\/\*.*?(?:\*\/|\n)/)
+		];
+		endPatterns = [
+			new LineParserPattern(CL_WARNING, ~/\*\//)
+		];
+
+		keywords = [];
 	}
-
-	public function new() {}
-
-	public function setContext(newContext:Int):Void {}
 
 	public function reset():Void
 	{
@@ -47,8 +56,13 @@ class ConsoleLineParser implements ILineParser
 		this.successLines.push(lineIndex);
 	}
 
-	public function parse(sourceCode:String, startLine:Int, startChar:Int, endLine:Int, endChar:Int):Array<Int>
+	override public function parse(sourceCode:String, startLine:Int, startChar:Int, endLine:Int, endChar:Int):Array<Int>
 	{
+		if (~/(\/\*|\*\/)/.match(sourceCode))
+		{
+			return super.parse(sourceCode, startLine, startChar, endLine, endChar);	
+		}
+
 		if (this.errorLines.indexOf(startLine) != -1)
 		{
 			return [0, CL_ERROR];
