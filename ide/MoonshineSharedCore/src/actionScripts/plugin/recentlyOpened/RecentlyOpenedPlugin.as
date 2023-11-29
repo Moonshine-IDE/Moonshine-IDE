@@ -170,6 +170,20 @@ package actionScripts.plugin.recentlyOpened
 			
 			if (cookie.data.hasOwnProperty('recentProjects'))
 			{
+				// git#1230 since I don't have a good way to determine which 
+				// entry was suppose to be displayed and which entry duplicated with
+				// different 'name', it's problematic to choose between them;
+				// thus a force list-clean approach probably helpful to clear-out
+				// already cluttered so list with duplicated items; This should run once
+				if (!cookie.data.hasOwnProperty("git1230forceClean"))
+				{
+					cookie.data.recentProjects = [];
+					cookie.data.recentProjectsOpenedOption = [];
+					cookie.data["git1230forceClean"] = true;
+					cookie.flush();
+					recentFiles = [];
+				}
+				
 				recentFiles = cookie.data.recentProjects;
 				recent = [];
 
@@ -180,11 +194,7 @@ package actionScripts.plugin.recentlyOpened
 					if (projectReferenceVO.path && projectReferenceVO.path != "")
 					{
 						f = new FileLocation(projectReferenceVO.path);
-						if (ConstantsCoreVO.IS_AIR && f.fileBridge.exists)
-						{
-							recent.push(projectReferenceVO);
-						}
-						else if (!ConstantsCoreVO.IS_AIR)
+						if (f.fileBridge.exists)
 						{
 							recent.push(projectReferenceVO);
 						}

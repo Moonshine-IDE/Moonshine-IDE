@@ -33,6 +33,7 @@
 //TODO
 package actionScripts.valueObjects;
 
+import actionScripts.utils.FileUtils;
 import actionScripts.factory.FileLocation;
 import actionScripts.locator.IDEModel;
 import haxe.DynamicAccess;
@@ -71,7 +72,8 @@ class ProjectReferenceVO {
 			// since https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1027 problem
 			// parse by path to overcome problem during reading from already saved data
 			if (tmpVO.path != null) {
-				tmpVO.name = cast( tmpVO.path.split(IDEModel.getInstance().fileCore.separator).pop(), String );
+				if (!FileUtils.isPathDirectory(tmpVO.path)) tmpVO.name = cast( tmpVO.path.split(IDEModel.getInstance().fileCore.separator).pop(), String );
+				else tmpVO.name = value.name;
 			} else {
 				tmpVO.name = value.name;
 			}
