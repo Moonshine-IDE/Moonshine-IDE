@@ -43,6 +43,9 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import flash.utils.clearTimeout;
+			import flash.utils.setTimeout;
+			
 			import mx.events.FlexEvent;
 			
 			import spark.components.Alert;
@@ -219,7 +222,21 @@
 			 */
 			private function handleInitializationArgs(event:InvokeEvent):void
 			{
-				GlobalEventDispatcher.getInstance().dispatchEvent(event);
+				// delay the dispatch when Moonshine starts,
+				// plugin classes those may listens to this event
+				// shall initialize after a delay and starts listening
+				if (!this.initialized)
+				{
+					var timeoutValue:uint = setTimeout(function():void
+					{
+						clearTimeout(timeoutValue);
+						GlobalEventDispatcher.getInstance().dispatchEvent(event);
+					}, 1000);
+				}
+				else
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(event);
+				}
 			}
 
 			/**
