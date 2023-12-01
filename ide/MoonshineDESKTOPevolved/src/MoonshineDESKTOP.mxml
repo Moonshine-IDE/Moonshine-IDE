@@ -227,7 +227,7 @@
 				// shall initialize after a delay and starts listening
 				if (!this.initialized)
 				{
-					IDEModel.getInstance().startupInvokeEvent = event.arguments;
+					IDEModel.getInstance().startupInvokeEvent = event;
 				}
 				else
 				{
