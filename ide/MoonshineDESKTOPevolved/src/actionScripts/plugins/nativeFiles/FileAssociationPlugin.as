@@ -49,6 +49,8 @@ package actionScripts.plugins.nativeFiles
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	import spark.components.Alert;
+	import mx.utils.ObjectUtil;
 
 	public class FileAssociationPlugin extends PluginBase
 	{
@@ -70,6 +72,7 @@ package actionScripts.plugins.nativeFiles
 		
 		private function onAppInvokeEvent(event:InvokeEvent):void
 		{
+			Alert.show(event.arguments.length.toString(), "TEST - IGNORE");
 			if (event.arguments.length)
 			{
 				openFilesByPath(event.arguments);
@@ -129,15 +132,20 @@ package actionScripts.plugins.nativeFiles
 					dispatcher.dispatchEvent(tmpOpenEvent);
 				}
 			}
-			
+				
 			// for project-configurations
 			if (projectFile && projectFile.fileBridge.exists)
 			{
+				Alert.show(projectFile.fileBridge.parent.fileBridge.nativePath, "TEST - IGNORE");
 				// considering file is the only configuration file 
 				// containing to its parent folder
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, projectFile.fileBridge.parent.fileBridge.getFile)
 				);
+			}
+			else
+			{
+				Alert.show(ObjectUtil.toString(paths), "TEST - IGNORE");
 			}
 		}
 	}
