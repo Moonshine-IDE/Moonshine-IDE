@@ -42,7 +42,6 @@ package actionScripts.plugins.nativeFiles
 	
 	import mx.core.FlexGlobals;
 	
-	import actionScripts.events.ApplicationEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
@@ -50,7 +49,6 @@ package actionScripts.plugins.nativeFiles
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import spark.components.Alert;
-	import mx.utils.ObjectUtil;
 
 	public class FileAssociationPlugin extends PluginBase
 	{
@@ -68,11 +66,17 @@ package actionScripts.plugins.nativeFiles
 			// drag-drop listeners
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onNativeItemDragEnter, false, 0, true);
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onNativeItemDragDrop, false, 0, true);
+			
+			// check if any startup invoke-arguments are pending
+			if (!model.startupInvokeEvent)
+			{
+				this.onAppInvokeEvent(model.startupInvokeEvent);
+				model.startupInvokeEvent = null;
+			}
 		}
 		
 		private function onAppInvokeEvent(event:InvokeEvent):void
 		{
-			Alert.show(event.arguments.length.toString(), "TEST - IGNORE");
 			if (event.arguments.length)
 			{
 				openFilesByPath(event.arguments);
@@ -142,10 +146,6 @@ package actionScripts.plugins.nativeFiles
 				GlobalEventDispatcher.getInstance().dispatchEvent(
 					new ProjectEvent(ProjectEvent.EVENT_IMPORT_PROJECT_NO_BROWSE_DIALOG, projectFile.fileBridge.parent.fileBridge.getFile)
 				);
-			}
-			else
-			{
-				Alert.show(ObjectUtil.toString(paths), "TEST - IGNORE");
 			}
 		}
 	}
