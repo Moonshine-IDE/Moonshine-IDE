@@ -42,13 +42,14 @@ package actionScripts.plugins.nativeFiles
 	
 	import mx.core.FlexGlobals;
 	
+	import spark.components.Alert;
+	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import spark.components.Alert;
 
 	public class FileAssociationPlugin extends PluginBase
 	{
@@ -70,7 +71,7 @@ package actionScripts.plugins.nativeFiles
 			// check if any startup invoke-arguments are pending
 			if (!model.startupInvokeEvent)
 			{
-				this.onAppInvokeEvent(model.startupInvokeEvent);
+				this.onAppInvokeEvent(model.startupInvokeEvent as InvokeEvent);
 				model.startupInvokeEvent = null;
 			}
 		}

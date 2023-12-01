@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
-	import flash.events.InvokeEvent;
+	import flash.events.Event;
 	
 	import mx.collections.ArrayCollection;
 	import mx.core.IFlexDisplayObject;
@@ -121,7 +121,7 @@ package actionScripts.locator
 		public var confirmApplicationExit:Boolean;
 		public var showHiddenPaths:Boolean;
 		public var syntaxColorScheme:String;
-		public var startupInvokeEvent:InvokeEvent;
+		public var startupInvokeEvent:Event;
 
 		public var version: String = "1.0.0";
 		public var build: String = "";
