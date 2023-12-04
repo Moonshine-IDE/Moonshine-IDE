@@ -33,7 +33,10 @@ package actionScripts.plugin.project
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.events.InvokeEvent;
 	import flash.net.SharedObject;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
@@ -47,6 +50,7 @@ package actionScripts.plugin.project
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.ShowSettingsEvent;
+	import actionScripts.events.WatchedFileChangeEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IPlugin;
 	import actionScripts.plugin.PluginBase;
@@ -68,9 +72,6 @@ package actionScripts.plugin.project
 	import components.popup.RunCommandPopup;
 	import components.views.project.OpenResourceView;
 	import components.views.project.TreeView;
-	import actionScripts.events.WatchedFileChangeEvent;
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
 
     public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -472,6 +473,13 @@ package actionScripts.plugin.project
         private function openPreviouslyOpenedProject():void
         {
             dispatcher.removeEventListener(ProjectEvent.SHOW_PREVIOUSLY_OPENED_PROJECTS, handleShowPreviouslyOpenedProjects);
+			
+			// check if any startup invoke-arguments are pending
+			if (model.startupInvokeEvent)
+			{
+				dispatcher.dispatchEvent(model.startupInvokeEvent);
+				model.startupInvokeEvent = null;
+			}
 			
             var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projects");
             if (!cookie) 

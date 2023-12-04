@@ -67,13 +67,6 @@ package actionScripts.plugins.nativeFiles
 			// drag-drop listeners
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onNativeItemDragEnter, false, 0, true);
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onNativeItemDragDrop, false, 0, true);
-			
-			// check if any startup invoke-arguments are pending
-			if (!model.startupInvokeEvent)
-			{
-				this.onAppInvokeEvent(model.startupInvokeEvent as InvokeEvent);
-				model.startupInvokeEvent = null;
-			}
 		}
 		
 		private function onAppInvokeEvent(event:InvokeEvent):void
@@ -141,7 +134,6 @@ package actionScripts.plugins.nativeFiles
 			// for project-configurations
 			if (projectFile && projectFile.fileBridge.exists)
 			{
-				Alert.show(projectFile.fileBridge.parent.fileBridge.nativePath, "TEST - IGNORE");
 				// considering file is the only configuration file 
 				// containing to its parent folder
 				GlobalEventDispatcher.getInstance().dispatchEvent(
