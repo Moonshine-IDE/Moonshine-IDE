@@ -33,7 +33,6 @@ package actionScripts.plugin.project
 {
 	import flash.display.DisplayObject;
 	import flash.events.Event;
-	import flash.events.InvokeEvent;
 	import flash.net.SharedObject;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
