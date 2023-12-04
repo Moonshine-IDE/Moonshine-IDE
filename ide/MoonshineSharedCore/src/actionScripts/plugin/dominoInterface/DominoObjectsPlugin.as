@@ -43,6 +43,7 @@ package actionScripts.plugin.dominoInterface
 
 	import actionScripts.plugins.ui.editor.VisualEditorViewer;
 	import view.domino.surfaceComponents.components.DominoGlobalsObjects;
+	import view.domino.surfaceComponents.components.DominoFormObjects;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	public class DominoObjectsPlugin extends ConsoleBuildPluginBase
@@ -75,6 +76,7 @@ package actionScripts.plugin.dominoInterface
 		private var editor:VisualEditorViewer=null;
 
 		private var dominoGlobalsObject:DominoGlobalsObjects=null;
+		private var dominoFormObject:DominoFormObjects=null;
 
 		 
 		
@@ -126,14 +128,23 @@ package actionScripts.plugin.dominoInterface
 				{
 					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
 				}
-
 				for each(var gobalOptions:XML in dxl..item) //no matter of depth Note here
 				{
 					if(gobalOptions.@name.toString()=="$Script")
 					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
 				}
 
+				for each(var formOptions:XML in xml..dominoFormObject) //no matter of depth Note here
+				{
+					delete formOptions.parent().children()[formOptions.childIndex()];
+				}
+				for each(var customformOptions:XML in xml..dominoCustomObject) //no matter of depth Note here
+				{
+					delete customformOptions.parent().children()[customformOptions.childIndex()];
+				}
+
 				dominoGlobalsObject = new DominoGlobalsObjects();
+				dominoFormObject=new DominoFormObjects();
 				if(optionsMap["globalsInitialize"]!=undefined && optionsMap["globalsInitialize"].toString().length>0)
 				{
 					dominoGlobalsObject.initialize=optionsMap["globalsInitialize"];
@@ -151,8 +162,17 @@ package actionScripts.plugin.dominoInterface
 					dominoGlobalsObject.terminate=optionsMap["globalsTeminate"];
 				}
 				var optionsXML:XML=dominoGlobalsObject.toXML();
+				
+				
+				var formOptionsXML:XML=DominoFormObjects.toXML(optionsMap);
+				//var customFormOptionsXML:XML=DominoFormObjects.toCustomXML(optionsMap);
+				
+				
 				//optionsXML.@
 				xml.appendChild(optionsXML);
+				xml.appendChild(formOptionsXML);
+				//xml.appendChild(customFormOptionsXML);
+				
 				xmlFileLocation.fileBridge.save(xml.toXMLString());
 
 				var globaldxl:XML=dominoGlobalsObject.toCode();
@@ -162,6 +182,10 @@ package actionScripts.plugin.dominoInterface
 
 
 		}
+
+
+		
+
 		private function handleDominoObjectsClose(event:Event):void
 		{
 			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, dominoObjectView));
@@ -190,11 +214,23 @@ package actionScripts.plugin.dominoInterface
 						formTitle = formTitle.replace(/\"/g, "");
 					}
 					var domainObjectList:XMLList=xml..dominoGlobalsObject;
+					var domainFormObjectList:XMLList=xml..dominoFormObject;
+					var domainCustomFormObjectList:XMLList=xml..dominoCustomObject;
+					var dominoForm:XMLList=null
+					var dominoCustomForm:XMLList=null
+					if(domainFormObjectList&&domainFormObjectList[0]){
+						dominoForm=domainFormObjectList[0].children();
+					}
+					if(domainCustomFormObjectList&&domainCustomFormObjectList[0]){
+						dominoCustomForm=domainCustomFormObjectList[0].children();
+					}
+					optionsMap=new Dictionary();
+
 					
 						dominoGlobalsObject= new DominoGlobalsObjects();
 						if(domainObjectList.length()>0){
 							dominoGlobalsObject.fromXMLDominoObject(domainObjectList[0]);
-							optionsMap=new Dictionary();
+							
 							if(dominoGlobalsObject.initialize){
 								optionsMap["globalsInitialize"]=dominoGlobalsObject.initialize;
 							}else{
@@ -213,7 +249,8 @@ package actionScripts.plugin.dominoInterface
 							dominoObjectView.setObjectOptionsToDefault()
 						}
 						
-						
+						optionsMap=dominoObjectView.initailFormOptions(optionsMap,dominoForm);
+						//optionsMap=dominoObjectView.initailCustomFormOptions(optionsMap,domainCustomFormObjectList)
 						dominoObjectView.setOptionsMap(optionsMap);
 					
 

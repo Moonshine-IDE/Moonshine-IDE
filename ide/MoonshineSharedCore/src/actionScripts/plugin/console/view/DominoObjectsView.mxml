@@ -71,6 +71,8 @@
 		import mx.controls.Alert;
 
 		import view.domino.surfaceComponents.components.DominoGlobalsObjects;
+		import view.domino.surfaceComponents.components.DominoFormObjects;
+		
 		import view.domino.viewEditor.object.DominoObjectsProperty;
 		import flash.utils.Dictionary;
 		import mx.events.TreeEvent;
@@ -78,6 +80,12 @@
 		import actionScripts.ui.FeathersUIWrapper;
 		import moonshine.editor.text.events.TextEditorChangeEvent;
 		import moonshine.editor.text.events.TextEditorLineEvent;
+
+		import flash.events.KeyboardEvent;
+
+		import utils.StringHelper;
+
+		private var customLotusScriptFunction:XMLList;
 
 
 		private var editor:VisualEditorViewer = null;
@@ -163,7 +171,28 @@
 
 		private function updateSelectionWay(e:IndexChangeEvent):void
 		{
-		
+			if(selectedNode&&selectedNode.@key)
+			{	var mapKey:String=selectedNode.@key
+				if(mapKey.indexOf('global')>=0){
+					
+				}else{
+					var formObj:DominoFormObjects=optionsMap[mapKey] as DominoFormObjects;
+					if(formObj!=undefined && formObj!=null){
+						if(runWayList.selectedItem.label=="Formula"){
+							languageEditor.text=formObj.formula;
+						}
+						if(runWayList.selectedItem.label=="LotusScript"){
+							languageEditor.text=formObj.lotusscript;
+						}
+						if(runWayList.selectedItem.label=="JavaScript"){
+							languageEditor.text=formObj.javascript;
+						}
+
+						
+						
+					}
+				}
+			}
 		}
 
 		
@@ -264,6 +293,7 @@
 			languageEditor=new TextEditor(null,false);
 			languageEditor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
 			languageEditor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
+			languageEditor.addEventListener(KeyboardEvent.KEY_DOWN, handleEntryInput);
 			languageEditor.showLineNumbers = true;
 			var wrapper:FeathersUIWrapper = new FeathersUIWrapper(languageEditor);
 			wrapper.percentWidth = wrapper.percentHeight = 100;
@@ -271,24 +301,7 @@
 			codeEdtiorContainer.addElementAt(wrapper, 0);
 		}
 
-		public function initalOptionsMap():void 
-		{	
-			editor= model.activeEditor as VisualEditorViewer;
-			//inital the all object to the array
-			if(optionsMap==null){
-				if(editor&&editor.text){
-					//first load it to xml
-					editxml=new XML(editor.text);
-					optionsMap = new Dictionary();
-					dominoGlobalsObjects=new DominoGlobalsObjects();
-					if(!editxml.MainApplication.dominoGlobalsObject){
-						
-					}
-					optionsMap=initalOptionsWithLoadingXML(editxml,optionsMap)
-					
-				}
-			}
-		}
+		
 
 
 		protected function handleTextChange(event:TextEditorChangeEvent):void
@@ -298,23 +311,114 @@
 			}
 			if(selectedNode&&selectedNode.@key)
 			{
+				
 				var mapKey:String=selectedNode.@key
-				optionsMap[mapKey]=languageEditor.text;
-				var noweditor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
-				if(noweditor!=null){
+				if(mapKey.indexOf('global')>=0){
+					optionsMap[mapKey]=languageEditor.text;
+				}else{
+					var formOptionObj:DominoFormObjects=optionsMap[mapKey];
+					if(formOptionObj==null){
+						formOptionObj=new DominoFormObjects();
+					}
 					
-					noweditor.editorView.visualEditor.editingSurface.hasChanged=true;
-					noweditor.editorView.visualEditor.dispatchEvent(new Event('labelChanged'));
+					if(runWayList.selectedItem){
+						if(runWayList.selectedItem.label=="Formula"){
+							formOptionObj.formula=languageEditor.text;
+						}
+						if(runWayList.selectedItem.label=="LotusScript"){
+							formOptionObj.lotusscript=languageEditor.text;
+						}
+						
+						if(runWayList.selectedItem.label.toString()=="JavaScript"){
+							formOptionObj.initalJavaScript(languageEditor.text);
+						}
+
+						if(runWayList.selectedItem.label=="Common JavaScript"){
+							formOptionObj.commonjavascript=languageEditor.text;
+						}
+						optionsMap[mapKey]=formOptionObj;
+						
+					}else{
+						Alert.show("please first select the language type on the Dropdown list.");
+					}
+				}
+
+
+				
+			}
+			var noweditor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if(noweditor!=null){
+				
+				noweditor.editorView.visualEditor.editingSurface.hasChanged=true;
+				noweditor.editorView.visualEditor.dispatchEvent(new Event('labelChanged'));
+			}
+		}
+
+		protected function handleEntryInput(event:KeyboardEvent):void 
+		{
+			 
+			if (event.keyCode == 13 && runWayList.selectedItem.label=="LotusScript") {
+				// Do something when Enter key is pressed
+				var myXML:XML = <root>{treeData}</root>;
+				
+
+				if(languageEditor.text.indexOf("Sub")==0){
+					if(languageEditor.text.indexOf("End Sub")<0){
+						languageEditor.text=languageEditor.text+"\nEnd Sub";
+					}
+
+					var funtionName:String=languageEditor.text.replace("Sub ","");
+					var leftParenthesis:int=funtionName.indexOf("(");
+					if(leftParenthesis==-1){
+						leftParenthesis=funtionName.length;
+					}
+					if(leftParenthesis>0){
+						funtionName=funtionName.substring(0, leftParenthesis);
+						
+						if(funtionName!=null&& funtionName!="")
+						{
+							//Alert.show("funtionName:"+funtionName);
+							var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
+							if(selectedNode!=null){
+								
+								treeData[1].appendChild(nodeXML);
+								//Alert.show("myXML:"+myXML.toString());
+								
+
+								var k:String=selectedNode.@key;
+								
+								var newFormObject:DominoFormObjects=new DominoFormObjects();
+
+								newFormObject.isCustomFunction=true;
+								newFormObject.lotusscript=languageEditor.text;
+								var sourceFormObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+								if(sourceFormObject){
+									sourceFormObject.lotusscript="";
+									optionsMap[k]="";
+								}
+								optionsMap[funtionName]=newFormObject;
+								//selectedNode=nodeXML;
+								myTree.selectedItem=nodeXML;
+								selectedNode=myTree.selectedItem as XML;
+								myTree.dataProvider.refresh();
+							}
+							
+							//optionsMap[funtionName]=languageEditor.text
+						}
+					}
 				}
 			}
 		}
 
 		protected function handleToggleBreakpoint(event:TextEditorLineEvent):void
 		{
-			// var lineIndex:int = event.lineIndex;
+			var lineIndex:int = event.lineIndex;
+
+			
+			
 			
 			// var enabled:Boolean = languageEditor.breakpoints.indexOf(lineIndex) != -1;
-			// languageEditor.super.handleToggleBreakpoint(event);
+			//languageEditor.handleToggleBreakpoint(event);
 		}
 		
 		public function setObjectOptionsToDefault():void
@@ -322,60 +426,144 @@
 			if(optionsMap==null || optionsMap==undefined){
 				optionsMap=new Dictionary();
 			}
-			optionsMap["globalsInitialize"]="Open Public";
+			optionsMap["globalsInitialize"]="Sub Initialize\n"+"End Sub";
 			optionsMap["globalsOptions"]="Option Public";
 			optionsMap["globalsDeclarations"]="Declarations Public";
-			optionsMap["globalsTeminate"]="Sub Teminate";
+			optionsMap["globalsTeminate"]="Sub Teminate\n"+"End Sub";
+			optionsMap=initailFormOptions(optionsMap,null);
 		}
 
-
-		private function initalOptionsWithLoadingXML(loadXml:XML,opMap:Dictionary):Dictionary
+		public function initailFormOptions(odp:Dictionary,formOptionsList:XMLList):Dictionary
 		{
-			opMap["globalsInitialize"]=loadXml.dominoGlobalsObject.@initialize;
-			opMap["globalsOptions"]=loadXml.dominoGlobalsObject.@options;
-			opMap["globalsDeclarations"]=loadXml.dominoGlobalsObject.@declarations;
-			opMap["globalsTeminate"]=loadXml.dominoGlobalsObject.@terminate;
-
-			if(opMap["globalsInitialize"]==undefined || opMap["globalsInitialize"].toString().length==0){
-				opMap["globalsInitialize"]="Open Public"
+			if(odp==null){
+					odp=new Dictionary();
 			}
+			odp=setDefaultValueForFormOptions("@Command([ToolsRunMacro]; \"<Your agent goes here>\"","formula","webQueryOpen",odp);
+			odp=setDefaultValueForFormOptions("@Command([ToolsRunMacro]; \"<Your agent goes here>\"","formula","webQuerySave",odp);
 
-			if(opMap["globalsOptions"]==undefined || opMap["globalsOptions"].toString().length==0){
-				opMap["globalsOptions"]="Option Public"
+			odp=setDefaultValueForFormOptions("Sub Queryopen(Source As Notesuidocument, Mode As Integer, Isnewdoc As Variant, Continue As Variant)\nEnd Sub","lotusscript","queryopen",odp);
+			odp=setDefaultValueForFormOptions("Sub Postopen(Source As Notesuidocument)\nEnd Sub","lotusscript","postopen",odp);
+			odp=setDefaultValueForFormOptions("Sub Querymodechange(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","querymodechange",odp);
+			odp=setDefaultValueForFormOptions("Sub Postmodechange(Source As Notesuidocument)\nEnd Sub","lotusscript","Postmodechange",odp);
+
+			odp=setDefaultValueForFormOptions("Sub Queryrecalc(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","queryrecalc",odp);
+			odp=setDefaultValueForFormOptions("Sub Postrecalc(Source As Notesuidocument)\nEnd Sub","lotusscript","postrecalc",odp);
+			odp=setDefaultValueForFormOptions("Sub Querysave(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","querySave",odp);
+			odp=setDefaultValueForFormOptions("Sub Postsave(Source As Notesuidocument)\nEnd Sub","lotusscript","postsave",odp);
+			odp=setDefaultValueForFormOptions("Sub Querysend(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","querysend",odp);
+			odp=setDefaultValueForFormOptions("Sub Postsend(Source As Notesuidocument)\nEnd Sub","lotusscript","postsend",odp);
+			odp=setDefaultValueForFormOptions("Sub Queryclose(Source As Notesuidocument, Continue As Variant\nEnd Sub","lotusscript","queryclose",odp);
+			odp=setDefaultValueForFormOptions("Sub Initialize\nEnd Sub","lotusscript","initialize",odp);
+			odp=setDefaultValueForFormOptions("Sub Terminate\nEnd Sub","lotusscript","terminate",odp);
+			if(formOptionsList){
+				
+				for each(var formOption:XML in formOptionsList) //no matter of depth Note here
+				{
+					if(formOption&&formOption.toXMLString().length>0){
+						var inistalForm:DominoFormObjects=new DominoFormObjects();
+						if(formOption.@formula)
+						{
+							inistalForm.formula=StringHelper.base64Decode(formOption.@formula);
+						}
+						if(formOption.@lotusscript)
+						{
+							inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript)
+						}
+						if(formOption.@javascript)
+						{
+							inistalForm.javascript=StringHelper.base64Decode(formOption.@javascript)
+						}
+						if(formOption.@commonjavascript)
+						{
+							inistalForm.commonjavascript=StringHelper.base64Decode(formOption.@commonjavascript)
+						}
+
+						if(formOption.@isCustomFunction=="true"){
+							inistalForm.isCustomFunction=true
+							var funtionName:String=formOption.name().toString()
+							var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
+							if(selectedNode!=null){
+								
+								treeData[1].appendChild(nodeXML);
+							}
+						}else{
+							inistalForm.isCustomFunction=false;
+							
+						}
+						odp[formOption.name().toString()]=inistalForm
+						
+					}
+				}
 			}
-
-			if(opMap["globalsDeclarations"]==undefined || opMap["globalsDeclarations"].toString().length==0){
-				opMap["globalsDeclarations"]="Declarations Public"
-			}
-
-			if(opMap["globalsTeminate"]==undefined || opMap["globalsTeminate"].toString().length==0){
-				opMap["globalsTeminate"]="Sub Teminate"
-			}	
-
-			opMap["jsHeader"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["onHelp"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["onLoad"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["onUnload"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["options"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["declarations"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["queryopen"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["postopen"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["querymodechange"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["postmodechange"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["queryrecalc"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["postrecalc"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["querySave"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["postsave"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["querysend"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["postsend"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["querysend"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["queryclose"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["qnsize"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["initialize"]=loadXml.dominoFormsObject.@jsHeader;
-			opMap["terminate"]=loadXml.dominoFormsObject.@jsHeader;
 			
-			return opMap;
+			return odp;
 		}
+
+		// public function initailCustomFormOptions(odp:Dictionary,formOptionsList:XMLList):Dictionary
+		// {
+		// 	if(formOptionsList){
+				
+		// 		for each(var formOption:XML in formOptionsList) //no matter of depth Note here
+		// 		{
+		// 			if(formOption&&formOption.toXMLString().length>0){
+		// 				var inistalForm:DominoFormObjects=new DominoFormObjects();
+		// 				if(formOption.@formula)
+		// 				{
+		// 					inistalForm.formula=StringHelper.base64Decode(formOption.@formula);
+		// 				}
+		// 				if(formOption.@lotusscript)
+		// 				{
+		// 					inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript)
+		// 				}
+		// 				if(formOption.@javascript)
+		// 				{
+		// 					inistalForm.javascript=StringHelper.base64Decode(formOption.@javascript)
+		// 				}
+		// 				if(formOption.@commonjavascript)
+		// 				{
+		// 					inistalForm.commonjavascript=StringHelper.base64Decode(formOption.@commonjavascript)
+		// 				}
+		// 				odp[formOption.name().toString()]=inistalForm
+		// 				var funtionName:String=formOption.name().toString()
+		// 				var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
+		// 				if(selectedNode!=null){
+							
+		// 					treeData[1].appendChild(nodeXML);
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// 	return odp;
+		// }
+
+		private function setDefaultValueForFormOptions(value:String,typeLanguage:String,key:String,odp:Dictionary):Dictionary
+		{
+			var formObjectOptions:DominoFormObjects=new DominoFormObjects();
+			if(typeLanguage=="formula"){
+				formObjectOptions.formula=value
+			}
+			if(typeLanguage=="lotusscript"){
+				formObjectOptions.lotusscript=value
+			}
+			if(typeLanguage=="javascript"){
+				formObjectOptions.javascript=value
+			}
+			if(typeLanguage=="commonjavascript"){
+				formObjectOptions.commonjavascript=value
+			}
+
+			if(odp[key.toString()]==undefined || odp[key.toString()]==null || odp[key.toString()]=="")
+			{
+				odp[key.toString()]=formObjectOptions
+			}
+			
+			
+			return odp;
+		
+		}
+
+
+		
 
 		private var cursorID:int = CursorManager.NO_CURSOR;
 
@@ -463,10 +651,25 @@
 					}
 				}
 
-				if(optionsMap[node.@key.toString()]!=undefined && optionsMap[node.@key.toString()]!=null && optionsMap[node.@key.toString()].length>12){
-					node.@value="hasValue"
+				if(optionsMap[node.@key.toString()]!=undefined && optionsMap[node.@key.toString()]!=null){
+					if(node.@key.toString().indexOf("global")>=0){
+						if(optionsMap[node.@key.toString()].length>12){
+							node.@value="hasValue"
+						}else{
+							node.@value=""
+						}
+					}else{
+						var formObj:DominoFormObjects=optionsMap[node.@key.toString()] as DominoFormObjects;
+						if(formObj!=null){
+							node.@value=""
+						}
+
+					}
 					
-				}
+				} 
+					
+					
+				
 
 				
 				if (node.children().length() > 0) {
@@ -526,7 +729,25 @@
 			if(selectedNode.@key){
 				var k:String=selectedNode.@key;
 				//textInput.text=optionsMap[k]
-				languageEditor.text=optionsMap[k];
+				if(k.indexOf("global")>=0){
+					languageEditor.text=optionsMap[k];
+				}else{
+					
+					if(optionsMap[k]!=null && optionsMap[k]!=undefined){
+						var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+						if(formObject)
+						languageEditor.text=formObject.lotusscript;
+
+						var selectindex2:int=getSelectedIndex("LotusScript",runWayList.dataProvider as ArrayCollection);
+						if(selectindex2!=-1){
+							runWayList.selectedIndex=selectindex2;
+						}
+					}else{
+						languageEditor.text=""
+					}
+					
+				}
+				
 
 				//enabled drp
 				if(selectedNode.@key.toString().indexOf("global")>=0){
