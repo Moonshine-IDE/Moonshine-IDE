@@ -368,16 +368,21 @@
 					}
 
 					var funtionName:String=languageEditor.text.replace("Sub ","");
+					
 					var leftParenthesis:int=funtionName.indexOf("(");
 					if(leftParenthesis==-1){
 						leftParenthesis=funtionName.length;
+					}
+
+					if(funtionName.indexOf("\n")>0){
+						leftParenthesis=funtionName.indexOf("\n")
 					}
 					if(leftParenthesis>0){
 						funtionName=funtionName.substring(0, leftParenthesis);
 						
 						if(funtionName!=null&& funtionName!="")
 						{
-							//Alert.show("funtionName:"+funtionName);
+							Alert.show("funtionName:"+funtionName);
 							var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
 							if(selectedNode!=null){
 								
@@ -477,19 +482,9 @@
 						{
 							inistalForm.commonjavascript=StringHelper.base64Decode(formOption.@commonjavascript)
 						}
-
-						if(formOption.@isCustomFunction=="true"){
-							inistalForm.isCustomFunction=true
-							var funtionName:String=formOption.name().toString()
-							var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
-							if(selectedNode!=null){
-								
-								treeData[1].appendChild(nodeXML);
-							}
-						}else{
-							inistalForm.isCustomFunction=false;
-							
-						}
+						inistalForm.isCustomFunction=false;
+						//Alert.show("fixed name:"+formOption.name().toString()+":"+inistalForm.lotusscript);
+						
 						odp[formOption.name().toString()]=inistalForm
 						
 					}
@@ -499,42 +494,53 @@
 			return odp;
 		}
 
-		// public function initailCustomFormOptions(odp:Dictionary,formOptionsList:XMLList):Dictionary
-		// {
-		// 	if(formOptionsList){
+		public function clearEditor():void
+		{
+			if(languageEditor){
+				languageEditor.text="";
+			}
+			
+		}
+
+		public function initailCustomFormOptions(odp:Dictionary,formOptionsList:XMLList):Dictionary
+		{
+			if(formOptionsList){
 				
-		// 		for each(var formOption:XML in formOptionsList) //no matter of depth Note here
-		// 		{
-		// 			if(formOption&&formOption.toXMLString().length>0){
-		// 				var inistalForm:DominoFormObjects=new DominoFormObjects();
-		// 				if(formOption.@formula)
-		// 				{
-		// 					inistalForm.formula=StringHelper.base64Decode(formOption.@formula);
-		// 				}
-		// 				if(formOption.@lotusscript)
-		// 				{
-		// 					inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript)
-		// 				}
-		// 				if(formOption.@javascript)
-		// 				{
-		// 					inistalForm.javascript=StringHelper.base64Decode(formOption.@javascript)
-		// 				}
-		// 				if(formOption.@commonjavascript)
-		// 				{
-		// 					inistalForm.commonjavascript=StringHelper.base64Decode(formOption.@commonjavascript)
-		// 				}
-		// 				odp[formOption.name().toString()]=inistalForm
-		// 				var funtionName:String=formOption.name().toString()
-		// 				var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
-		// 				if(selectedNode!=null){
+				for each(var formOption:XML in formOptionsList) //no matter of depth Note here
+				{
+					if(formOption&&formOption.toXMLString().length>0){
+						var inistalForm:DominoFormObjects=new DominoFormObjects();
+						if(formOption.@formula)
+						{
+							inistalForm.formula=StringHelper.base64Decode(formOption.@formula);
+						}
+						if(formOption.@lotusscript)
+						{
+							inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript)
+						}
+						if(formOption.@javascript)
+						{
+							inistalForm.javascript=StringHelper.base64Decode(formOption.@javascript)
+						}
+						if(formOption.@commonjavascript)
+						{
+							inistalForm.commonjavascript=StringHelper.base64Decode(formOption.@commonjavascript)
+						}
+						inistalForm.isCustomFunction=true
+						var funtionName:String=formOption.name().toString()
+						var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
+						if(selectedNode!=null){
 							
-		// 					treeData[1].appendChild(nodeXML);
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// 	return odp;
-		// }
+							treeData[1].appendChild(nodeXML);
+						}
+						//Alert.show("Custome name:"+formOption.name().toString()+":"+inistalForm.lotusscript);
+						odp[formOption.name().toString()]=inistalForm
+						
+					}
+				}
+			}
+			return odp;
+		}
 
 		private function setDefaultValueForFormOptions(value:String,typeLanguage:String,key:String,odp:Dictionary):Dictionary
 		{
@@ -817,10 +823,18 @@
 		{
 			if(optionsMap==null){
 				optionsMap=new Dictionary();
+			}else{
+				for (var key:Object in optionsMap) {
+					delete optionsMap[key];
+				}
 			}
+			
 			for (var key:Object in op) {
 				optionsMap[key] = op[key];
+				
 			}
+			
+			
 			
 		}
 

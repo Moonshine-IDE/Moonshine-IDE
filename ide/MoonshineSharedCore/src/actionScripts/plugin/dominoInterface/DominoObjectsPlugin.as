@@ -165,13 +165,13 @@ package actionScripts.plugin.dominoInterface
 				
 				
 				var formOptionsXML:XML=DominoFormObjects.toXML(optionsMap);
-				//var customFormOptionsXML:XML=DominoFormObjects.toCustomXML(optionsMap);
+				var customFormOptionsXML:XML=DominoFormObjects.toCustomXML(optionsMap);
 				
 				
 				//optionsXML.@
 				xml.appendChild(optionsXML);
 				xml.appendChild(formOptionsXML);
-				//xml.appendChild(customFormOptionsXML);
+				xml.appendChild(customFormOptionsXML);
 				
 				xmlFileLocation.fileBridge.save(xml.toXMLString());
 
@@ -198,13 +198,16 @@ package actionScripts.plugin.dominoInterface
 			editor=model.activeEditor as VisualEditorViewer;
 			
 			if(editor){
-			
+				if(dominoObjectView){
+					dominoObjectView.clearEditor()
+				}
 				var path:String = editor.getVisualEditorFilePath();
 				var xmlFileLocation:FileLocation = new FileLocation(path);
-
+				
 				var xml:XML = new XML(String(xmlFileLocation.fileBridge.read()));
 				var formTitle:String="Domino Form";
 				if(xml && xmlFileLocation.fileBridge.exists){
+					
 					var formTitleList:XMLList = xml..MainApplication;
 					formTitle=formTitleList[0].@title;
 					if(formTitle==null||formTitle.length==0){
@@ -224,7 +227,17 @@ package actionScripts.plugin.dominoInterface
 					if(domainCustomFormObjectList&&domainCustomFormObjectList[0]){
 						dominoCustomForm=domainCustomFormObjectList[0].children();
 					}
-					optionsMap=new Dictionary();
+					if(optionsMap){
+						for (var key:Object in optionsMap ) {
+							if(optionsMap[key]!=undefined){
+								delete optionsMap[key];
+							} 
+						}
+					}else{
+						optionsMap=new Dictionary();
+					}
+					
+					
 
 					
 						dominoGlobalsObject= new DominoGlobalsObjects();
@@ -248,9 +261,10 @@ package actionScripts.plugin.dominoInterface
 						}else{
 							dominoObjectView.setObjectOptionsToDefault()
 						}
+						optionsMap=dominoObjectView.initailCustomFormOptions(optionsMap,domainCustomFormObjectList)
 						
 						optionsMap=dominoObjectView.initailFormOptions(optionsMap,dominoForm);
-						//optionsMap=dominoObjectView.initailCustomFormOptions(optionsMap,domainCustomFormObjectList)
+						
 						dominoObjectView.setOptionsMap(optionsMap);
 					
 
