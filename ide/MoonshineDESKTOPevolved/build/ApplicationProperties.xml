@@ -6,8 +6,8 @@
 	<keepDebugFiles>true</keepDebugFiles> <!-- true|false -->
 
 	<!-- FLEX SDK INFORMATION -->
-	<winSDKPath><![CDATA[C:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_50.2]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
-	<winSDKPath64><![CDATA[C:\MoonshineSDKs\Flex_SDK\Flex_4.16.1_AIR_50.2]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<winSDKPath><![CDATA[]]></winSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
+	<winSDKPath64><![CDATA[]]></winSDKPath64> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	<unixSDKPath><![CDATA[]]></unixSDKPath> <!-- Leave blank if FLEX_HOME setup as environment variable -->
 	<haxeLibDirectory><![CDATA[]]></haxeLibDirectory> <!-- Set path of system HAXE_HOME, i.e. c:/HaxeToolkit/haxe (Windows), /usr/local/lib/haxe (macOS) -->
 	
