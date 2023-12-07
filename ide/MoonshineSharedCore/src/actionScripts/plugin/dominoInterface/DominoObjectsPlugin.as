@@ -226,6 +226,7 @@ package actionScripts.plugin.dominoInterface
 					}
 					if(domainCustomFormObjectList&&domainCustomFormObjectList[0]){
 						dominoCustomForm=domainCustomFormObjectList[0].children();
+						
 					}
 					if(optionsMap){
 						for (var key:Object in optionsMap ) {
@@ -237,7 +238,7 @@ package actionScripts.plugin.dominoInterface
 						optionsMap=new Dictionary();
 					}
 					
-					
+					dominoObjectView.initalTreeToDefault();
 
 					
 						dominoGlobalsObject= new DominoGlobalsObjects();
@@ -261,7 +262,7 @@ package actionScripts.plugin.dominoInterface
 						}else{
 							dominoObjectView.setObjectOptionsToDefault()
 						}
-						optionsMap=dominoObjectView.initailCustomFormOptions(optionsMap,domainCustomFormObjectList)
+						optionsMap=dominoObjectView.initailCustomFormOptions(optionsMap,dominoCustomForm)
 						
 						optionsMap=dominoObjectView.initailFormOptions(optionsMap,dominoForm);
 						

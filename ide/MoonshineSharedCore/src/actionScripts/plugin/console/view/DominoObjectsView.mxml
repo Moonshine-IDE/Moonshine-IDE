@@ -116,34 +116,35 @@
 		[Bindable]
 		private var dataProviderList:ArrayCollection=new ArrayCollection();
 
-		private var codeFormulaArray:Array = [
-			{key: 'globalsOptions', value: ""},
-			{key: 'globalsDeclarations', value: ""},
-			{key: 'globalsInitialize', value: ""},
-			{key: 'globalsTeminate', value: ""},
-			{key: 'jsHeader', value: ""},
-			{key: 'onHelp', value: ""},
-			{key: 'onLoad', value: ""},
-			{key: 'onUnload', value: ""},
-			{key: 'options', value: ""},
-			{key: 'declarations', value: ""},
-			{key: 'queryopen', value: ""},
-			{key: 'postopen', value: ""},
-			{key: 'querymodechange', value: ""},
-			{key: 'postmodechange', value: ""},
-			{key: 'queryrecalc', value: ""},
-			{key: 'postrecalc', value: ""},
-			{key: 'querySave', value: ""},
-			{key: 'postsave', value: ""},
-			{key: 'querysend', value: ""},
-			{key: 'postsend', value: ""},
-			{key: 'querysend', value: ""},
-			{key: 'queryclose', value: ""},
-			{key: 'qnsize', value: ""},
-			{key: 'initialize', value: ""},
-			{key: 'terminate', value: ""}
-
+		private var sourceLotusScriptFunctionName:Array = [
+			"Queryopen",
+			"Postopen",
+			"Querymodechange",
+			"Postmodechange",
+			"Queryrecalc",
+			"Postrecalc",
+			"Querysave",
+			"Postsave",
+			"Querysend",
+			"Postsend",
+			"Queryclose",
+			"Initialize",
+			"Terminate"
     	]
+
+		private function checkIsSourceFunctionName(checkName:String):Boolean 
+		{
+			var isSourceFunctionName:Boolean = false;
+			if(checkName!=null && checkName.length>0){
+				for each (var sorceName:String in sourceLotusScriptFunctionName) {
+					if(checkName==sorceName){
+						isSourceFunctionName = true
+					}
+				}
+			}
+
+			return isSourceFunctionName;
+		}
 
 	
 		public var formulaRunWayList:ArrayCollection = new ArrayCollection(
@@ -367,6 +368,8 @@
 						languageEditor.text=languageEditor.text+"\nEnd Sub";
 					}
 
+					
+
 					var funtionName:String=languageEditor.text.replace("Sub ","");
 					
 					var leftParenthesis:int=funtionName.indexOf("(");
@@ -382,33 +385,66 @@
 						
 						if(funtionName!=null&& funtionName!="")
 						{
-							Alert.show("funtionName:"+funtionName);
-							var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
-							if(selectedNode!=null){
-								
-								treeData[1].appendChild(nodeXML);
-								//Alert.show("myXML:"+myXML.toString());
-								
+							if(!checkIsSourceFunctionName(funtionName)){
+								var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
+								if(selectedNode!=null){
+									
+									treeData[1].appendChild(nodeXML);
+									//Alert.show("myXML:"+myXML.toString());
+									
 
-								var k:String=selectedNode.@key;
-								
-								var newFormObject:DominoFormObjects=new DominoFormObjects();
+									var k:String=selectedNode.@key;
+									
+									var newFormObject:DominoFormObjects=new DominoFormObjects();
 
-								newFormObject.isCustomFunction=true;
-								newFormObject.lotusscript=languageEditor.text;
-								var sourceFormObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
-								if(sourceFormObject){
-									sourceFormObject.lotusscript="";
-									optionsMap[k]="";
+									newFormObject.isCustomFunction=true;
+									newFormObject.lotusscript=languageEditor.text;
+									var sourceFormObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+									if(sourceFormObject){
+										sourceFormObject.lotusscript="";
+										optionsMap[k]="";
+									}
+									optionsMap[funtionName]=newFormObject;
+									//selectedNode=nodeXML;
+									myTree.selectedItem=nodeXML;
+									selectedNode=myTree.selectedItem as XML;
+									myTree.dataProvider.refresh();
 								}
-								optionsMap[funtionName]=newFormObject;
-								//selectedNode=nodeXML;
-								myTree.selectedItem=nodeXML;
-								selectedNode=myTree.selectedItem as XML;
-								myTree.dataProvider.refresh();
 							}
 							
 							//optionsMap[funtionName]=languageEditor.text
+						}
+					}
+				}
+			}else{
+				if(selectedNode!=null){
+					if(selectedNode.@key){
+						var k:String=selectedNode.@key;
+				
+						if(k.indexOf("global")>=0){
+							optionsMap[k]=languageEditor.text;
+						}else{
+							if(optionsMap[k]!=null && optionsMap[k]!=undefined){
+								var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+								if(formObject==undefined || formObject==null)
+								{
+									formObject=new DominoFormObjects();
+								}
+								if(formObject){
+									if(runWayList.selectedItem.label=="Formula"){
+										formObject.formula=languageEditor.text;
+									}
+									if(runWayList.selectedItem.label=="LotusScript"){
+										formObject.lotusscript=languageEditor.text;
+									}
+									if(runWayList.selectedItem.label=="JavaScript"){
+										formObject.javascript=languageEditor.text;
+									}
+									
+								}
+								optionsMap[k]=formObject;
+
+							}
 						}
 					}
 				}
@@ -529,11 +565,12 @@
 						inistalForm.isCustomFunction=true
 						var funtionName:String=formOption.name().toString()
 						var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
-						if(selectedNode!=null){
+						
 							
-							treeData[1].appendChild(nodeXML);
-						}
-						//Alert.show("Custome name:"+formOption.name().toString()+":"+inistalForm.lotusscript);
+						treeData[1].appendChild(nodeXML);
+
+						//Alert.show(formOption.name().toString()+":"+inistalForm.lotusscript);
+						
 						odp[formOption.name().toString()]=inistalForm
 						
 					}
@@ -643,6 +680,22 @@
 			myTree.dataProvider.refresh();
 
 		}
+
+		public function initalTreeToDefault():void 
+		{
+			for each(var formOption:XML in treeData[1].children()) //no matter of depth Note here
+			{
+				if(formOption!=null && formOption.toXMLString().length>0)
+				{
+					if(formOption.@create){
+						if(formOption.@create=="custom"){
+							delete formOption.parent().children()[formOption.childIndex()];
+						}
+					}
+				}
+			}
+			
+		}
 		private function expandNodesWithChildren(currentItems:XMLList,title:String):void {
 			for each (var node:XML in currentItems) {
 
@@ -667,6 +720,18 @@
 					}else{
 						var formObj:DominoFormObjects=optionsMap[node.@key.toString()] as DominoFormObjects;
 						if(formObj!=null){
+							if(formObj.formula!=null&&formObj.formula.length>0){
+								node.@value="hasValue"
+							}
+							if(formObj.lotusscript!=null&&formObj.lotusscript.length>0){
+								node.@value="hasValue"
+							}
+							if(formObj.javascript!=null&&formObj.javascript.length>0){
+								node.@value="hasValue"
+							}
+
+							
+						}else{
 							node.@value=""
 						}
 
@@ -741,8 +806,12 @@
 					
 					if(optionsMap[k]!=null && optionsMap[k]!=undefined){
 						var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
-						if(formObject)
-						languageEditor.text=formObject.lotusscript;
+						if(formObject){
+							languageEditor.text=formObject.lotusscript;
+						}
+
+						
+						
 
 						var selectindex2:int=getSelectedIndex("LotusScript",runWayList.dataProvider as ArrayCollection);
 						if(selectindex2!=-1){
