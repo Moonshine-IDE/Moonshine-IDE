@@ -486,10 +486,15 @@ package actionScripts.plugins.ui.editor
 				
 				if(event.child){
 					var basicTextEditor:BasicTextEditor=event.child as BasicTextEditor;
-					var selectextension:String=basicTextEditor.currentFile.fileBridge.extension;
-				
-					if(selectextension!="form" && selectextension!="subform"){
-							dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS_UI_CLOSE));
+					if(!basicTextEditor){
+						basicTextEditor=model.activeEditor as BasicTextEditor;
+					}
+					if(basicTextEditor){
+						var selectextension:String=basicTextEditor.currentFile.fileBridge.extension;
+					
+						if(selectextension!="form" && selectextension!="subform"){
+								dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS_UI_CLOSE));
+						}
 					}
 				}
 				
