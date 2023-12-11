@@ -228,45 +228,47 @@ package actionScripts.plugin.dominoInterface
 						dominoCustomForm=domainCustomFormObjectList[0].children();
 						
 					}
-					if(optionsMap){
-						for (var key:Object in optionsMap ) {
-							if(optionsMap[key]!=undefined){
-								delete optionsMap[key];
-							} 
-						}
-					}else{
-						optionsMap=new Dictionary();
-					}
+					optionsMap=new Dictionary();
 					
 					dominoObjectView.initalTreeToDefault();
 
 					
-						dominoGlobalsObject= new DominoGlobalsObjects();
-						if(domainObjectList.length()>0){
-							dominoGlobalsObject.fromXMLDominoObject(domainObjectList[0]);
-							
-							if(dominoGlobalsObject.initialize){
-								optionsMap["globalsInitialize"]=dominoGlobalsObject.initialize;
-							}else{
-								
-							}
-							if(dominoGlobalsObject.options){
-								optionsMap["globalsOptions"]=dominoGlobalsObject.options;
-							}
-							if(dominoGlobalsObject.declarations){
-								optionsMap["globalsDeclarations"]=dominoGlobalsObject.declarations;
-							}
-							if(dominoGlobalsObject.initialize){
-								optionsMap["globalsTeminate"]=dominoGlobalsObject.terminate;
-							}
+					dominoGlobalsObject= new DominoGlobalsObjects();
+					//Alert.show("length:"+domainObjectList.length());
+					if(domainObjectList.length()>0 ){
+						dominoGlobalsObject.fromXMLDominoObject(domainObjectList[0]);
+						
+						if(dominoGlobalsObject.initialize){
+							optionsMap["globalsInitialize"]=dominoGlobalsObject.initialize;
 						}else{
-							dominoObjectView.setObjectOptionsToDefault()
+							optionsMap["globalsInitialize"]="Sub Initialize\n"+"End Sub";
 						}
-						optionsMap=dominoObjectView.initailCustomFormOptions(optionsMap,dominoCustomForm)
-						
-						optionsMap=dominoObjectView.initailFormOptions(optionsMap,dominoForm);
-						
-						dominoObjectView.setOptionsMap(optionsMap);
+						//Alert.show("initialize:"+optionsMap["globalsInitialize"]);
+					
+						if(dominoGlobalsObject.options){
+							optionsMap["globalsOptions"]=dominoGlobalsObject.options;
+						}else{
+							optionsMap["globalsOptions"]="Option Public";
+						}
+						if(dominoGlobalsObject.declarations){
+							optionsMap["globalsDeclarations"]=dominoGlobalsObject.declarations;
+						}else{
+							optionsMap["globalsDeclarations"]="Declarations Public";
+						}
+						if(dominoGlobalsObject.initialize){
+							optionsMap["globalsTeminate"]=dominoGlobalsObject.terminate;
+						}else{
+							optionsMap["globalsTeminate"]="Sub Teminate\n"+"End Sub";
+						}
+					}else{
+						dominoObjectView.setObjectOptionsToDefault()
+					}
+					optionsMap=dominoObjectView.initailCustomFormOptions(optionsMap,dominoCustomForm)
+					
+					optionsMap=dominoObjectView.initailFormOptions(optionsMap,dominoForm);
+					
+					dominoObjectView.setOptionsMap(optionsMap);
+					dominoObjectView.setLanguageEditor();
 					
 
 				}
