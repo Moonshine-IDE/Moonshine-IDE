@@ -261,11 +261,16 @@ package actionScripts.plugin.dominoInterface
 							optionsMap["globalsTeminate"]="Sub Teminate\n"+"End Sub";
 						}
 					}else{
-						dominoObjectView.setObjectOptionsToDefault()
+						optionsMap=dominoObjectView.setObjectOptionsToDefault()
 					}
-					optionsMap=dominoObjectView.initailCustomFormOptions(optionsMap,dominoCustomForm)
-					
-					optionsMap=dominoObjectView.initailFormOptions(optionsMap,dominoForm);
+					if(dominoCustomForm){
+						optionsMap=dominoObjectView.initailCustomFormOptions(optionsMap,dominoCustomForm)
+					}
+					if(dominoForm){
+						optionsMap=dominoObjectView.initailFormOptions(optionsMap,dominoForm);
+					}else{
+						optionsMap=dominoObjectView.initailFormOptions(optionsMap,null);
+					}
 					
 					dominoObjectView.setOptionsMap(optionsMap);
 					dominoObjectView.setLanguageEditor();

@@ -599,9 +599,8 @@
 			//languageEditor.handleToggleBreakpoint(event);
 		}
 		
-		public function setObjectOptionsToDefault():void
+		public function setObjectOptionsToDefault():Dictionary
 		{
-			Alert.show("globalsInitialize1:"+optionsMap["globalsInitialize"]);
 			if(optionsMap==null || optionsMap==undefined){
 				optionsMap=new Dictionary();
 			}
@@ -626,6 +625,7 @@
 			}
 			Alert.show("globalsInitialize2:"+optionsMap["globalsInitialize"]);
 			// optionsMap=initailFormOptions(optionsMap,null);
+			return optionsMap
 		}
 
 		public function initailFormOptions(odp:Dictionary,formOptionsList:XMLList):Dictionary
