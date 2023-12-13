@@ -601,9 +601,7 @@
 		
 		public function setObjectOptionsToDefault():Dictionary
 		{
-			if(optionsMap==null || optionsMap==undefined){
-				optionsMap=new Dictionary();
-			}
+			optionsMap=new Dictionary();
 			if(optionsMap["globalsInitialize"]==undefined||optionsMap["globalsInitialize"]=="")
 			{
 				optionsMap["globalsInitialize"]="Sub Initialize\n"+"End Sub";
