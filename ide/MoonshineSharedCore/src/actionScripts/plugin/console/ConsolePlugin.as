@@ -48,9 +48,9 @@ package actionScripts.plugin.console
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.ui.FeathersUIWrapper;
 	
 	/**
 	 *  @private
@@ -223,7 +223,7 @@ package actionScripts.plugin.console
 			for (var cmd:String in console::commands)
 			{
 				var obj:Object = console::commands[cmd];
-				cmds.push(cmd +" - <font color='#4C9BE0'> " +obj.commandDesc+"</font>");	
+				cmds.push(cmd +" - " +obj.commandDesc);	
 			}
 			cmds = cmds.sort();
 			
@@ -234,7 +234,8 @@ package actionScripts.plugin.console
 			}
 			
 			halp = halp.substr(0, halp.length-1);
-			outputMsg(halp);
+			//html(halp);
+			print(halp);
 		}
 		
 		public function aboutCommand(args:Array):void
@@ -331,7 +332,7 @@ package actionScripts.plugin.console
 
 		protected function consoleOutputHandler(event:ConsoleOutputEvent):void
         {
-			consoleView.historyTextEditor.appendtext(event.text);
+			consoleView.historyTextEditor.appendtext(event.text, event.messageType);
 			/*if (!consoleView.history.textFlow)
 			{
 				this.consoleTextCache.push(event.text);
@@ -356,6 +357,9 @@ package actionScripts.plugin.console
                 case ConsoleOutputEvent.TYPE_NOTE:
                     warning(event.text);
                     break;
+				case ConsoleOutputEvent.TYPE_HTML:
+					html(event.text);
+					break;
                 default:
                     print(event.text);
                     break;

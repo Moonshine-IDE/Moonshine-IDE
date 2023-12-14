@@ -76,6 +76,11 @@ package actionScripts.plugin.console
 			formatOutput(HtmlFormatter.sprintfa(str, replacements), 'weak');
 		}
 		
+		protected function html(str:String, ...replacements):void 
+		{
+			formatHTML(HtmlFormatter.sprintfa(str, replacements));
+		}
+		
 		protected function debug(str:String, ...replacements):void
 		{
 			if(DEBUG)
@@ -105,9 +110,21 @@ package actionScripts.plugin.console
 			return lines;
 		}
 		
-		protected function outputMsg(msg:*):void
+		public function formatHTML(str:String):void
 		{
-			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, msg));
+			str = "<font color='#f4f4f4' face='courier'>"+ str +"</font>";
+			if (str.indexOf("<a") != -1)
+			{
+				str = str.replace(/\<a/g, "<font color=\"blue\"><u><a");
+				str = str.replace(/\<\/a\>/g, "</u></font color=\"blue\"><u></a>");
+			}
+			
+			outputMsg(str, ConsoleOutputEvent.TYPE_HTML);
+		}
+		
+		protected function outputMsg(msg:*, type:String=null):void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, msg, false, false, type));
 		}
 		
 		protected function clearOutput():void 

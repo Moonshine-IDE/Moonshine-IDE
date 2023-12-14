@@ -136,7 +136,7 @@
 				var clear:ContextMenuItem = new ContextMenuItem('Clear', false, true, true);
 				clear.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, clearHandler);
 				cm.customItems.push(clear);
-				cm.clipboardMenu = true;
+				//cm.clipboardMenu = true;
 				//history.contextMenu = cm;
 				historyTextEditor.contextMenu = cm;
 				//(history.textDisplay as RichEditableText).contextMenu = cm;
@@ -165,12 +165,26 @@
 					help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
 					cm.customItems.push(help);
 				}
+				
+				var copy:ContextMenuItem = new ContextMenuItem('Copy', true, true, true);
+				copy.addEventListener(Event.DISPLAYING, onCopyContextMenuShow);
+				copy.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, copyHandler);
+				cm.customItems.push(copy);
+				
+				var selectAll:ContextMenuItem = new ContextMenuItem('Select All', false, true, true);
+				selectAll.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, selectAllHandler);
+				cm.customItems.push(selectAll);
 			}
 	
 			private var cursorID:int = CursorManager.NO_CURSOR;
 	
 			[Embed(source="Assets.swf", symbol="mx.skins.cursor.VBoxDivider")]
 			private var cursor:Class;
+			
+			private function onCopyContextMenuShow(event:Event):void
+			{
+				(event.target as ContextMenuItem).enabled = this.historyTextEditor.selectedText != "";
+			}
 	
 			private function mouseOverDivider():void
 			{
@@ -220,6 +234,19 @@
 			private function helpHandler(e:Event):void
 			{
 				commandLine.dispatchEvent(new ConsoleCommandEvent("help", null));
+			}
+			
+			private function copyHandler(event:Event):void
+			{
+				if (this.historyTextEditor.selectedText)
+				{
+					Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, this.historyTextEditor.selectedText);
+				}
+			}
+			
+			private function selectAllHandler(event:Event):void
+			{
+				this.historyTextEditor.dispatchEvent(new Event(Event.SELECT_ALL));
 			}
 	
 			protected function consoleView_updateCompleteHandler(event:FlexEvent):void

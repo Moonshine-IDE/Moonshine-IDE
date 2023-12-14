@@ -203,7 +203,7 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
-		override protected function outputMsg(msg:*):void
+		override protected function outputMsg(msg:*, type:String=null):void
 		{
 			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT_VAGRANT, msg));
 		}
