@@ -637,7 +637,7 @@
 			odp=setDefaultValueForFormOptions("Sub Queryopen(Source As Notesuidocument, Mode As Integer, Isnewdoc As Variant, Continue As Variant)\nEnd Sub","lotusscript","queryopen",odp);
 			odp=setDefaultValueForFormOptions("Sub Postopen(Source As Notesuidocument)\nEnd Sub","lotusscript","postopen",odp);
 			odp=setDefaultValueForFormOptions("Sub Querymodechange(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","querymodechange",odp);
-			odp=setDefaultValueForFormOptions("Sub Postmodechange(Source As Notesuidocument)\nEnd Sub","lotusscript","Postmodechange",odp);
+			odp=setDefaultValueForFormOptions("Sub Postmodechange(Source As Notesuidocument)\nEnd Sub","lotusscript","postmodechange",odp);
 
 			odp=setDefaultValueForFormOptions("Sub Queryrecalc(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","queryrecalc",odp);
 			odp=setDefaultValueForFormOptions("Sub Postrecalc(Source As Notesuidocument)\nEnd Sub","lotusscript","postrecalc",odp);
@@ -961,7 +961,18 @@
 					if(optionsMap[k]!=null && optionsMap[k]!=undefined){
 						var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
 						if(formObject){
-							languageEditor.text=formObject.lotusscript;
+							if(selectedNode.@type!=null && selectedNode.@type!=undefined)
+							{
+								if(selectedNode.@type=="Formula")
+								{
+									languageEditor.text=formObject.formula;
+								}else{
+									languageEditor.text=formObject.lotusscript;
+								}
+							}else{
+								languageEditor.text=formObject.lotusscript;
+							}
+							
 						}
 
 						
@@ -1006,6 +1017,26 @@
 					}else{
 						runList.enabled = true;
 						runWayList.enabled = true;
+					}
+
+					//disabled if it is a formula
+
+					if(selectedNode.@type!=null && selectedNode.@type!=undefined)
+					{
+						if(selectedNode.@type=="Formula")
+						{
+							var selectindex:int=getSelectedIndex("Client",runList.dataProvider as ArrayCollection);
+							if(selectindex!=-1){
+								runList.selectedIndex=selectindex;
+								runList.enabled = false;
+							}
+							var selectindex2:int=getSelectedIndex("Formula",runWayList.dataProvider as ArrayCollection);
+							if(selectindex2!=-1){
+								runWayList.selectedIndex=selectindex2;
+								runWayList.enabled = false;
+							}
+
+						}
 					}
 					
 				}
@@ -1171,7 +1202,7 @@
 				<node label="Querysend" type="LotusScript" key="querysend"/>
 				<node label="Postsend" type="LotusScript" key="postsend"/>
 				<node label="Queryclose" type="LotusScript" key="queryclose"/>
-				<node label="Onsize" type="LotusScript" key="onsize"/>
+				<!-- <node label="Onsize" type="LotusScript" key="onsize"/> -->
 				<node label="Initialize" type="LotusScript" key="initialize"/>
 				<node label="Terminate" type="LotusScript" key="terminate"/>
             </node>
