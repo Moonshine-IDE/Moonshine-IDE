@@ -68,7 +68,7 @@ class ConsoleTextEditor extends TextEditor
         this.consoleLineParser.reset();   
     }
 
-    public function appendtext(text:Dynamic):Void
+    public function appendtext(text:Dynamic, ?type:String):Void
     {
         if (Std.isOfType(text, String))
         {
@@ -77,24 +77,27 @@ class ConsoleTextEditor extends TextEditor
         } 
         else 
         {
-            var vectorText:Vector<TextLineModel> = cast text;
-            for (i in vectorText)
-            {
-                // Split lines regardless of line encoding
-                i.text = ~/^|$(\r?\n|\r)/g.replace(i.text, "");
-
-                var consoleOutType:UInt = Reflect.getProperty(ConsoleStyle.name2style, cast(i, ConsoleTextLineModel).consoleOutputType);
-                switch (consoleOutType)
-                {
-                    case ConsoleStyle.ERROR:
-                        this.consoleLineParser.setErrorAtLine(this.lines.length);
-                    case ConsoleStyle.WARNING:
-                        this.consoleLineParser.setWarningAtLine(this.lines.length);
-                    case ConsoleStyle.SUCCESS:
-                        this.consoleLineParser.setSuccessAtLine(this.lines.length);
-                }
-                this.text += "\n"+ i.text;
-            }
+        	try
+        	{
+        		var vectorText:Vector<TextLineModel> = cast text;
+				for (i in vectorText)
+				{
+					// Split lines regardless of line encoding
+					i.text = ~/^|$(\r?\n|\r)/g.replace(i.text, "");
+	
+					var consoleOutType:UInt = Reflect.getProperty(ConsoleStyle.name2style, cast(i, ConsoleTextLineModel).consoleOutputType);
+					switch (consoleOutType)
+					{
+						case ConsoleStyle.ERROR:
+							this.consoleLineParser.setErrorAtLine(this.lines.length);
+						case ConsoleStyle.WARNING:
+							this.consoleLineParser.setWarningAtLine(this.lines.length);
+						case ConsoleStyle.SUCCESS:
+							this.consoleLineParser.setSuccessAtLine(this.lines.length);
+					}
+					this.text += "\n"+ i.text;
+				}
+        	} catch (e){}
         }
         /*else if (text is ParagraphElement)
         {
