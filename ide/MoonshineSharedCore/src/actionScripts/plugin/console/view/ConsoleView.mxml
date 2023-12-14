@@ -167,7 +167,7 @@
 				}
 				
 				var copy:ContextMenuItem = new ContextMenuItem('Copy', true, true, true);
-				copy.addEventListener(Event.DISPLAYING, onCopyContextMenuShow);
+				copy.addEventListener("displaying", onCopyContextMenuShow);
 				copy.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, copyHandler);
 				cm.customItems.push(copy);
 				
@@ -240,7 +240,7 @@
 			{
 				if (this.historyTextEditor.selectedText)
 				{
-					Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT, this.historyTextEditor.selectedText);
+					model.clipboardCore.copyText(this.historyTextEditor.selectedText);
 				}
 			}
 			
