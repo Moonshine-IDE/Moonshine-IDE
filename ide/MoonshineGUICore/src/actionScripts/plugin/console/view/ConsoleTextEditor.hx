@@ -24,6 +24,8 @@ import openfl.Vector;
 
 class ConsoleTextEditor extends TextEditor 
 {
+	public var htmlLines:Array<Int> = [];
+
     private var consoleLineParser = new ConsoleLineParser();
     
     public function new(?text:String, readOnly:Bool = false)
@@ -70,6 +72,11 @@ class ConsoleTextEditor extends TextEditor
 
     public function appendtext(text:Dynamic, ?type:String):Void
     {
+		if (type == ConsoleOutputEvent.TYPE_HTML)
+        {
+            htmlLines.push(this.lines.length);
+        }
+		
         if (Std.isOfType(text, String))
         {
             text = ~/^|$(\r?\n|\r)/g.replace(text, "");

@@ -181,6 +181,7 @@
 				for each (var i:ProjectReferenceVO in model.recentlyOpenedFiles)
 				{
 					var tmpRow:RecentProjectRenderer = new RecentProjectRenderer();
+					tmpRow.isFile = true;
 					tmpRow.project = i;
 					recentFiles.addElement(tmpRow);
 				}

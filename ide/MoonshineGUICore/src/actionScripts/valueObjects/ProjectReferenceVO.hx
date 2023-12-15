@@ -44,9 +44,8 @@ import flash.Vector;
 import openfl.Vector;
 #end
 
-class ProjectReferenceVO {
-	public var name:String;
-	public var path:String = "";
+class ProjectReferenceVO 
+{
 	public var startIn:String = "";
 	public var status:String = "";
 	public var loading:Bool;
@@ -56,6 +55,49 @@ class ProjectReferenceVO {
 	public var hiddenPaths:Vector<FileLocation> = new Vector<FileLocation>();
 	public var showHiddenPaths:Bool;
 	public var sourceFolder:FileLocation;
+
+	private var _name:String;
+	public var name(get, never):String;
+	private function get_name():String
+	{
+		return _name;	
+	}
+
+	private var _path:String;
+	public var path(get, set):String;
+	private function get_path():String
+	{
+		return _path;	
+	}
+	private function set_path(value:String):String
+	{
+		_path = value;
+		if (value != null && value != "")
+		{
+			// since https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1027 problem
+			// parse by path to overcome problem during reading from already saved data
+			if (!FileUtils.isPathDirectory(value)) 
+			{
+				var pathSplit = value.split(File.separator);
+				if (pathSplit.length > 3)
+				{
+					do
+					{
+						pathSplit.shift();
+					} while (pathSplit.length > 3);
+				}
+				
+				_name = "..."+ File.separator + pathSplit.join(File.separator);
+			}
+			else _name = cast( value.split(IDEModel.getInstance().fileCore.separator).pop(), String );
+		}	
+		else
+		{
+			this._name = null;	
+		}
+		return _path;
+	}
+
 
 	public function new() {}
 
@@ -69,28 +111,6 @@ class ProjectReferenceVO {
 		// value submission
 		if (value.path != null)
 			tmpVO.path = value.path;
-		if (value.name != null) {
-			// since https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1027 problem
-			// parse by path to overcome problem during reading from already saved data
-			if (tmpVO.path != null) {
-				if (!FileUtils.isPathDirectory(tmpVO.path)) 
-				{
-					var pathSplit = tmpVO.path.split(File.separator);
-					if (pathSplit.length > 3)
-					{
-						do
-						{
-							pathSplit.shift();
-						} while (pathSplit.length > 3);
-					}
-					
-					tmpVO.name = "..."+ File.separator + pathSplit.join(File.separator); //cast( tmpVO.path.split(IDEModel.getInstance().fileCore.separator).pop(), String ) +" ("+ tmpVO.path +")";
-				}
-				else tmpVO.name = value.name;
-			} else {
-				tmpVO.name = value.name;
-			}
-		}
 		if (value.startIn != null)
 			tmpVO.startIn = value.startIn;
 		if (value.status != null)

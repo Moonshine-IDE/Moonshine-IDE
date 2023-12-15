@@ -59,7 +59,7 @@ package actionScripts.plugin.project.vo
             this.projectName = projectName;
 
             projectReference = new ProjectReferenceVO();
-            projectReference.name = projectName;
+            //projectReference.name = projectName;
             projectReference.path = folderLocation.fileBridge.nativePath;
 
             this.folderLocation.fileBridge.name = projectName;

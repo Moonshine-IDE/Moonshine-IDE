@@ -126,7 +126,7 @@
 					if (i.isDirectory.toString() == "true")
 					{
 						tmpReference = new ProjectReferenceVO();
-						tmpReference.name = i.name.toString();
+						//tmpReference.name = i.name.toString();
 						tmpReference.path = i.nativePath.toString();
 						
 						ConstantsCoreVO.FLEX_PROJECTS.addItem(tmpReference);

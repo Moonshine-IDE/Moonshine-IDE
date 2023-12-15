@@ -41,7 +41,7 @@ class CustomMenuItem implements ICustomMenuItem implements IMenuEntity {
 	private var _checked:Bool;
 	private var _data:Dynamic;
 	private var _dynamicItem:Bool;
-	private var _enabled:Bool;
+	private var _enabled:Bool = true;
 	private var _isSeparator:Bool;
 	private var _label:String;
 	private var _shortcut:KeyboardShortcut;

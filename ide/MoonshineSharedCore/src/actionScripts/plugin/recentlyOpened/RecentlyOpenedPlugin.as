@@ -349,7 +349,7 @@ package actionScripts.plugin.recentlyOpened
 				customSDKPath = (event.project as AS3ProjectVO).buildOptions.customSDKPath;
 			}
 			var tmpSOReference: ProjectReferenceVO = new ProjectReferenceVO();
-			tmpSOReference.name = event.project.name;
+			//tmpSOReference.name = event.project.name;
 			tmpSOReference.sdk = customSDKPath ? customSDKPath : (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 			tmpSOReference.path = event.project.folderLocation.fileBridge.nativePath;
 			tmpSOReference.sourceFolder = event.project.sourceFolder;
@@ -410,7 +410,7 @@ package actionScripts.plugin.recentlyOpened
 			if (toRemove != -1) model.recentlyOpenedFiles.removeItemAt(toRemove);
 			
 			var tmpSOReference: ProjectReferenceVO = new ProjectReferenceVO();
-			tmpSOReference.name = f.fileBridge.name;
+			//tmpSOReference.name = f.fileBridge.name;
 			tmpSOReference.path = f.fileBridge.nativePath;
 			model.recentlyOpenedFiles.addItemAt(tmpSOReference, 0);
 			//model.selectedprojectFolders

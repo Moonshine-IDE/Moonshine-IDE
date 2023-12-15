@@ -447,7 +447,7 @@ package actionScripts.plugin.project
                             var as3Project:AS3ProjectVO = (project as AS3ProjectVO);
                             var customSDKPath:String = as3Project ? as3Project.buildOptions.customSDKPath : "";
                             var projectReferenceVO: ProjectReferenceVO = new ProjectReferenceVO();
-                            projectReferenceVO.name = project.name;
+                            //projectReferenceVO.name = project.name;
                             projectReferenceVO.sdk = customSDKPath ? customSDKPath :
                                     (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 
