@@ -73,7 +73,16 @@ package actionScripts.ui.renderers
             // Check the 'iconType' attribute of the data and set the custom icon accordingly
             if (data && XML(data).@type) {
                 var value:String=XML(data).@value.toString();
-                switch (XML(data).@type.toString())
+                var iconKey:String=XML(data).@type.toString();
+                if(iconKey.indexOf("-")>=0){
+                    if(iconKey.indexOf("LotusScript")>=0){
+                        iconKey="LotusScript"
+                    }else if(iconKey.indexOf("JavaScript")>=0){
+                        iconKey="JavaScript"
+                    }
+                }
+                
+                switch (iconKey)
 				{
 					case "LotusScript":
                         if(value=="hasValue"){
@@ -91,6 +100,14 @@ package actionScripts.ui.renderers
 						
 					    break;
 					case "JavaScript":
+                        if(value=="hasValue"){
+                             customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE_FILL);
+                        }else{
+                            customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE);
+                        }
+                       
+						break;
+                    case "Common JavaScript":
                         if(value=="hasValue"){
                              customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE_FILL);
                         }else{
