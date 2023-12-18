@@ -204,16 +204,7 @@ package actionScripts.plugin.projectPanel
         private function onViewCreationComplete(event:FlexEvent):void
         {
             view.removeEventListener(FlexEvent.CREATION_COMPLETE, onViewCreationComplete);
-
             setProjectPanelVisibility(LayoutModifier.isProjectPanelCollapsed);
-            if (!LayoutModifier.isProjectPanelCollapsed)
-            {
-                setProjectPanelHeight(LayoutModifier.projectPanelHeight);
-            }
-            else
-            {
-                setProjectPanelHeight(-1);
-            }
         }
 
         private function onProjectPanelDividerRelease(event:DividerEvent):void
@@ -222,15 +213,6 @@ package actionScripts.plugin.projectPanel
             if (isOverTheExpandCollapseButton)
             {
                 setProjectPanelVisibility(!isProjectPanelHidden);
-                if (!isProjectPanelHidden && LayoutModifier.projectPanelHeight != -1)
-                {
-                    this.setProjectPanelHeight(LayoutModifier.projectPanelHeight);
-                }
-                else
-                {
-                    this.setProjectPanelHeight(-1);
-                }
-
                 return;
             }
 
@@ -300,6 +282,15 @@ package actionScripts.plugin.projectPanel
             LayoutModifier.isProjectPanelCollapsed = value;
             isProjectPanelHidden = value;
             model.mainView.bodyPanel.setStyle('dividerSkin', isProjectPanelHidden ? customDividerSkinExpand : customDividerSkinCollapse);
+			
+			if (!isProjectPanelHidden && LayoutModifier.projectPanelHeight != -1)
+			{
+				this.setProjectPanelHeight(LayoutModifier.projectPanelHeight);
+			}
+			else
+			{
+				this.setProjectPanelHeight(-1);
+			}
         }
 
         public function setProjectPanelHeight(newTargetHeight:int):void

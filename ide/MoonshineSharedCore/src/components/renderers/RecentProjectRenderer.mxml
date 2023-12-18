@@ -53,7 +53,7 @@
 				if (this.isFile) 
 				{
 					var lastSeparatorIndex:int = project.name.lastIndexOf(IDEModel.getInstance().fileCore.separator);
-					lbl.htmlText = "<i>"+ project.name.substring(0, lastSeparatorIndex) +"</i> "+ project.name.substr(lastSeparatorIndex, project.name.length);
+					lbl.htmlText = "<i>"+ project.name.substring(0, lastSeparatorIndex) +"</i>"+ project.name.substr(lastSeparatorIndex, project.name.length);
 				}
 				else
 				{
@@ -78,8 +78,7 @@
 	fontSize="15"
 	textAlign="right"
 	mouseOver="event.target.setStyle('color', 0XFFFFFF)" mouseOut="event.target.setStyle('color', 0XD6D6D6)" creationComplete="event.target.setStyle('color', 0XD6D6D6)"
-	useHandCursor="true" buttonMode="true" mouseChildren="false"
-	width="100%"
+	useHandCursor="true" buttonMode="true" mouseChildren="false" width="{this.width - 6}" truncateToFit="true"
   	/>
   
 </s:HGroup>
