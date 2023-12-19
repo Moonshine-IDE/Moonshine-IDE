@@ -747,7 +747,19 @@
 						inistalForm.isCustomFunction=false;
 						trace("fixed name:"+formOption.name().toString()+":"+inistalForm.lotusscript);
 						
-						odp[formOption.name().toString()]=inistalForm
+						odp[formOption.name().toString()]=inistalForm;
+
+						
+						var count:int=checkIfMultipleLanguages(inistalForm);
+						if(count==1){
+							findNode.@value="hasValue";
+						}else if(count>1){
+							findNode.@value="mulValue";
+						}else{
+							findNode.@value=""
+						}
+						
+						
 						
 					}
 				}
@@ -1084,8 +1096,9 @@
 		public function treeChanged(event:Event):void {
 			runWayList.enabled = true;
 			selectedNode=Tree(event.target).selectedItem as XML;
-			var k:String=selectedNode.@key;
+			
 			if(selectedNode.@key){
+				var k:String=selectedNode.@key;
 				//enabled drp
 				if(selectedNode.@key.toString().indexOf("global")>=0){
 					var selectindex:int=getSelectedIndex("Client",runList.dataProvider as ArrayCollection);
@@ -1152,9 +1165,9 @@
 
 					var selectindex2:int=0
 					var typeValue:String
-					
-					if(optionsMap[k]!=null && optionsMap[k]!=undefined){
-						var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+					var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+						
+					if(formObject!=null && formObject!=undefined){
 						if(formObject.formula&&formObject.formula.toString().length>0){
 							typeValue="Formula"
 						}else if(formObject.lotusscript&&formObject.lotusscript.toString().length>0){
@@ -1208,14 +1221,13 @@
 							}
 							
 							
+						}else{
+							languageEditor.text=""
 						}
 
 						
-						
-
-						
 					}else{
-						
+						languageEditor.text=""
 					}
 					
 				}
