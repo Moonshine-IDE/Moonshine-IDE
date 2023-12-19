@@ -184,7 +184,12 @@
 		private function updateSelectionWay(e:IndexChangeEvent):void
 		{
 			if(selectedNode&&selectedNode.@key)
-			{	var mapKey:String=selectedNode.@key
+			{	
+				
+				//change the type for icon 
+				selectedNode.@iconType=runWayList.selectedItem.label;
+
+				var mapKey:String=selectedNode.@key
 				if(mapKey.indexOf('global')>=0){
 					
 				}else{
@@ -200,12 +205,31 @@
 							languageEditor.text=formObj.commonjavascript;
 						}
 
+						var count:int=checkIfMultipleLanguages(formObj);
+						var label:String =getLanguagesLabel(formObj);
+						if(count==1){
+							if(label.indexOf(selectedNode.@iconType.toString())>=0){
+								selectedNode.@value="hasValue";
+							}else{
+								selectedNode.@value=""
+							}
+							
+						}else if(count>1){
+							if(label.indexOf(selectedNode.@iconType.toString())>=0){
+								selectedNode.@value="mulValue";
+							}else{
+								selectedNode.@value=""
+							}
+							
+						}else{
+							selectedNode.@value=""
+						}
+
 						
 					}
 				}
 
-				//change the type for icon 
-				selectedNode.@type=runWayList.selectedItem.label;
+				
 
 			}
 		}
@@ -476,10 +500,11 @@
 								if(sourceFormObject){
 									sourceFormObject.lotusscript=sourceFunction;
 									optionsMap[k]=sourceFormObject;
+								
 								}
 								optionsMap[funtionName]=newFormObject;
 								//selectedNode=nodeXML;
-								nodeXML.@value="hasValue"
+								
 								myTree.selectedItem=nodeXML;
 								selectedNode=myTree.selectedItem as XML;
 								myTree.dataProvider.refresh();
@@ -524,6 +549,20 @@
 						}
 					}
 				}
+
+				var getFormObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+				if(getFormObject){
+					var count:int=checkIfMultipleLanguages(getFormObject);
+					if(count==1){
+						selectedNode.@value="hasValue";
+					}else if(count>1){
+						selectedNode.@value="mulValue";
+					}else{
+						selectedNode.@value=""
+					}
+				
+				}
+				
 			}
 		}
 
@@ -633,7 +672,7 @@
 				optionsMap["globalsTeminate"]="Sub Teminate\n"+"End Sub";
 			
 			}
-			Alert.show("globalsInitialize2:"+optionsMap["globalsInitialize"]);
+			//Alert.show("globalsInitialize2:"+optionsMap["globalsInitialize"]);
 			// optionsMap=initailFormOptions(optionsMap,null);
 			return optionsMap
 		}
@@ -660,27 +699,50 @@
 			odp=setDefaultValueForFormOptions("Sub Queryclose(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","queryclose",odp);
 			odp=setDefaultValueForFormOptions("Sub Initialize\nEnd Sub","lotusscript","initialize",odp);
 			odp=setDefaultValueForFormOptions("Sub Terminate\nEnd Sub","lotusscript","terminate",odp);
+			
 			if(formOptionsList){
 				
 				for each(var formOption:XML in formOptionsList) //no matter of depth Note here
 				{
 					if(formOption&&formOption.toXMLString().length>0){
+						var key:String= formOption.name().toString();
+						var findNodeList:XMLList= treeData[1].node.(@key ==key);
+						var findNode:XML=null;
+						if(findNodeList&&findNodeList.length()>0){
+							findNode=findNodeList[0]
+						}
+						
 						var inistalForm:DominoFormObjects=new DominoFormObjects();
-						if(formOption.@formula)
+						if(formOption.@formula!=null && formOption.@formula.toString().length>0)
 						{
 							inistalForm.formula=StringHelper.base64Decode(formOption.@formula);
+							if(findNode){
+								findNode.@iconType="Formula"
+							}
 						}
-						if(formOption.@lotusscript)
+						
+						
+						if(formOption.@lotusscript!=null && formOption.@lotusscript.toString().length>0)
 						{
-							inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript)
+							inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript);
+							if(findNode){
+								findNode.@iconType="LotusScript"
+							}
 						}
-						if(formOption.@javascript)
+						
+						if(formOption.@javascript!=null && formOption.@javascript.toString().length>0)
 						{
-							inistalForm.javascript=StringHelper.base64Decode(formOption.@javascript)
+							inistalForm.javascript=StringHelper.base64Decode(formOption.@javascript);
+							if(findNode){
+								findNode.@iconType="JavaScript"
+							}
 						}
-						if(formOption.@commonjavascript)
+						if(formOption.@commonjavascript!=null && formOption.@commonjavascript.toString().length>0)
 						{
-							inistalForm.commonjavascript=StringHelper.base64Decode(formOption.@commonjavascript)
+							inistalForm.commonjavascript=StringHelper.base64Decode(formOption.@commonjavascript);
+							if(findNode){
+								findNode.@iconType="JavaScript"
+							}
 						}
 						inistalForm.isCustomFunction=false;
 						trace("fixed name:"+formOption.name().toString()+":"+inistalForm.lotusscript);
@@ -710,26 +772,19 @@
 				{
 					if(formOption&&formOption.toXMLString().length>0){
 						var inistalForm:DominoFormObjects=new DominoFormObjects();
-						if(formOption.@formula)
-						{
-							inistalForm.formula=StringHelper.base64Decode(formOption.@formula);
-						}
-						if(formOption.@lotusscript)
-						{
-							inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript)
-						}
-						if(formOption.@javascript)
-						{
-							inistalForm.javascript=StringHelper.base64Decode(formOption.@javascript)
-						}
-						if(formOption.@commonjavascript)
-						{
-							inistalForm.commonjavascript=StringHelper.base64Decode(formOption.@commonjavascript)
-						}
+						var languageCount:int = checkIfMultipleLanguages(inistalForm)
+						inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript);
 						inistalForm.isCustomFunction=true
 						var funtionName:String=formOption.name().toString()
 						var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
-						nodeXML.@value="hasValue";
+						if(languageCount==1){
+							nodeXML.@value="hasValue";
+						}else if(languageCount>1){
+							nodeXML.@value="mulValue";
+						}else{
+							nodeXML.@value=""
+						}
+						
 							
 						treeData[1].appendChild(nodeXML);
 
@@ -745,25 +800,33 @@
 
 		private function setDefaultValueForFormOptions(value:String,typeLanguage:String,key:String,odp:Dictionary):Dictionary
 		{
+			//set the value for icon 
+			
 			var formObjectOptions:DominoFormObjects=new DominoFormObjects();
 			if(typeLanguage=="formula"){
 				formObjectOptions.formula=value
+				
 			}
 			if(typeLanguage=="lotusscript"){
 				formObjectOptions.lotusscript=value
 				formObjectOptions.cachelotusscript=value
+				
 			}
 			if(typeLanguage=="javascript"){
-				formObjectOptions.javascript=value
+				formObjectOptions.javascript=value;
+				
 			}
 			if(typeLanguage=="commonjavascript"){
-				formObjectOptions.commonjavascript=value
+				formObjectOptions.commonjavascript=value;
+				
 			}
 
 			if(odp[key.toString()]==undefined || odp[key.toString()]==null || odp[key.toString()]=="")
 			{
 				odp[key.toString()]=formObjectOptions
 			}
+
+			
 			
 			
 			return odp;
@@ -857,6 +920,16 @@
 							delete formOption.parent().children()[formOption.childIndex()];
 						}
 					}
+
+					if(formOption.@type!=null && formOption.@type!="")
+					{
+						if(formOption.@type.indexOf("-")<0){
+							formOption.@iconType=formOption.@type;
+						}else{
+							var list:Array = formOption.@type.split("-");
+							formOption.@iconType=list[0];
+						}
+					}
 				}
 			}
 			
@@ -885,14 +958,14 @@
 					}else{
 						var formObj:DominoFormObjects=optionsMap[node.@key.toString()] as DominoFormObjects;
 						if(formObj!=null){
-							if(formObj.formula!=null&&formObj.formula.length>0){
-								node.@value="hasValue"
-							}
-							if(formObj.lotusscript!=null&&formObj.lotusscript.length>0){
-								node.@value="hasValue"
-							}
-							if(formObj.javascript!=null&&formObj.javascript.length>0){
-								node.@value="hasValue"
+							var languageCount:int=checkIfMultipleLanguages(formObj);
+
+							if(languageCount==1){
+								node.@value="hasValue";
+							}else if(languageCount>1){
+								node.@value="mulValue";
+							}else if(languageCount==0){
+								node.@value=""
 							}
 
 							
@@ -921,6 +994,54 @@
 					initalDefaultValueForDropList();
 				}
 			}
+		}
+
+
+		private function checkIfMultipleLanguages(formObj:DominoFormObjects):int
+		{
+			var languageCount:int=0;
+
+			if(formObj.formula!=null&&formObj.formula.length>0){
+				languageCount++;
+				
+			}
+			if(formObj.lotusscript!=null&&formObj.lotusscript.length>0){
+				languageCount++;
+				
+			}
+			if(formObj.javascript!=null&&formObj.javascript.length>0){
+				languageCount++;
+				
+			}
+			if(formObj.commonjavascript!=null&&formObj.commonjavascript.length>0){
+				languageCount++;
+				
+			}
+			return languageCount;
+
+		}
+		private function getLanguagesLabel(formObj:DominoFormObjects):String
+		{
+			var languageLabel:String="";
+
+			if(formObj.formula!=null&&formObj.formula.length>0){
+				languageLabel=languageLabel+"Formula"
+				
+			}
+			if(formObj.lotusscript!=null&&formObj.lotusscript.length>0){
+				languageLabel=languageLabel+"LotusScript"
+				
+			}
+			if(formObj.javascript!=null&&formObj.javascript.length>0){
+				languageLabel=languageLabel+"JavaScript"
+				
+			}
+			if(formObj.commonjavascript!=null&&formObj.commonjavascript.length>0){
+				languageLabel=languageLabel+"Common JavaScript"
+				
+			}
+			return languageLabel;
+
 		}
 
 		public function  updateIconAfterSave():void
@@ -961,7 +1082,9 @@
 
 		// Event handler for the Tree control change event.
 		public function treeChanged(event:Event):void {
+			runWayList.enabled = true;
 			selectedNode=Tree(event.target).selectedItem as XML;
+			var k:String=selectedNode.@key;
 			if(selectedNode.@key){
 				//enabled drp
 				if(selectedNode.@key.toString().indexOf("global")>=0){
@@ -1004,9 +1127,10 @@
 					if(selectedNode.@type.indexOf("-")<0){
 						runWayList.dataProvider=formulaClientRunLanguageFull;
 						setRunWayListToCorrect(selectedNode.@type,false);
+						runWayList.enabled = false;
 					}else{
 						//JavaScript-Common Javascript
-						//LotusScript-JavaScript-Formula-Common Javascript
+						//JavaScript-LotusScript-Formula-Common Javascript
 						//LotusScript-Formula-JavaScript
 						//LotusScript-Formula
 						if(selectedNode.@type=="LotusScript-Formula-JavaScript"){
@@ -1015,23 +1139,43 @@
 						}else if(selectedNode.@type=="LotusScript-Formula"){
 							runWayList.dataProvider=formulaClientRunLanguage2;
 							
-						}else if(selectedNode.@type=="LotusScript-JavaScript-Formula-Common Javascript"){
+						}else if(selectedNode.@type=="JavaScript-LotusScript-Formula-Common Javascript"){
 							runWayList.dataProvider=formulaClientRunLanguageFull;
 						
 						}else if(selectedNode.@type=="JavaScript-Common Javascript"){
 							runWayList.dataProvider=formulaWebRunLanguage;
 							
 						}
+						runWayList.enabled = true;
 					}
 
 
 					var selectindex2:int=0
-					var typeValue:String=selectedNode.@type;	
-					if(typeValue.indexOf("-")>=0){
-						var typeList:Array=typeValue.split("-");
-						typeValue=typeList[0]
+					var typeValue:String
+					
+					if(optionsMap[k]!=null && optionsMap[k]!=undefined){
+						var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+						if(formObject.formula&&formObject.formula.toString().length>0){
+							typeValue="Formula"
+						}else if(formObject.lotusscript&&formObject.lotusscript.toString().length>0){
+							typeValue="LotusScript"
+							
+						}else if(formObject.javascript&&formObject.javascript.toString().length>0){
+							typeValue="JavaScript"
+						}else if(formObject.commonjavascript&&formObject.commonjavascript.toString().length>0){
+							typeValue="Common JavaScript"
+						}
+					}else{
+						typeValue=selectedNode.@type;	
+						if(typeValue.indexOf("-")>=0){
+							var typeList:Array=typeValue.split("-");
+							typeValue=typeList[0]
+						}
+
 					}
 					
+					
+					selectedNode.@iconType=typeValue;
 					selectindex2=getSelectedIndex(typeValue,runWayList.dataProvider as ArrayCollection);
 					if(selectindex2!=-1){
 						runWayList.selectedIndex=selectindex2;
@@ -1039,7 +1183,7 @@
 					
 				}
 
-				var k:String=selectedNode.@key;
+				
 				
 				//textInput.text=optionsMap[k]
 				if(k.indexOf("global")>=0){
@@ -1050,21 +1194,19 @@
 					if(optionsMap[k]!=null && optionsMap[k]!=undefined){
 						var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
 						if(formObject){
-							if(selectedNode.@type!=null && selectedNode.@type!=undefined)
-							{
-								if(selectedNode.@type=="Formula")
-								{
-									languageEditor.text=formObject.formula;
-								}else if(selectedNode.@type.indexOf("LotusScript")>=0){
-									languageEditor.text=formObject.lotusscript;
-									
-								}else if(selectedNode.@type.indexOf("JavaScript")>=0){
-									languageEditor.text=formObject.javascript;
-								
-								}
-							}else{
+							if(runWayList.selectedItem.label=="Formula"){
+								languageEditor.text=formObject.formula;
+
+							}else if(runWayList.selectedItem.label=="LotusScript"){
 								languageEditor.text=formObject.lotusscript;
+							}else if(runWayList.selectedItem.label=="JavaScript"){
+								languageEditor.text=formObject.javascript;
+							}else if(runWayList.selectedItem.label=="Common JavaScript"){
+								languageEditor.text=formObject.commonjavascript;
+							}else{
+								languageEditor.text=""
 							}
+							
 							
 						}
 
@@ -1073,7 +1215,7 @@
 
 						
 					}else{
-						languageEditor.text=""
+						
 					}
 					
 				}
@@ -1208,53 +1350,53 @@
 	</fx:Script>
 	 <fx:Declarations>
         <fx:XMLList id="treeData">
-            <node label="(Globals)Email Reply Common Sub" type="globalForm" value="">
+            <node label="(Globals)Email Reply Common Sub" type="globalForm" value="" iconType="">
                
-				<node label="(Options)" type="LotusScript" key="globalsOptions" value=""/>
-				<node label="(Declarations)" type="LotusScript" key="globalsDeclarations" value=""/>
-				<node label="Initialize" type="LotusScript" key="globalsInitialize" value=""/>
-				<node label="Teminate" type="LotusScript" key="globalsTeminate" value=""/>
+				<node label="(Options)" type="LotusScript" key="globalsOptions" value="" iconType="LotusScript"/>
+				<node label="(Declarations)" type="LotusScript" key="globalsDeclarations" value="" iconType="LotusScript"/>
+				<node label="Initialize" type="LotusScript" key="globalsInitialize" value="" iconType="LotusScript"/>
+				<node label="Teminate" type="LotusScript" key="globalsTeminate" value="" iconType="LotusScript"/>
                 
             </node>
-			<node label="Email Reply Common Subform(Sub)" type="" key="commonSub" value="">
-				<node label="Window Title" type="Formula" key="windowTitle" value="" env="Client"/>
-				<node label="HTML Head Content" type="Formula" key="htmlHeadConten" value="" env="Client"/>
-				<node label="HTML Body Attributes" type="Formula" key="htmlBodyAttributes" value="" env="Client"/>
-				<node label="WebQueryOpen" type="Formula" key="webQueryOpen" value="" env="Client"/>
-				<node label="WebQuerySave" type="Formula" key="webQuerySave" value="" env="Client"/>
-				<node label="Target Frame" type="Formula" key="targetFrame" value="" env="Client"/>
-				<node label="JS Header" type="JavaScript-Common Javascript" key="jsHeader" value="" env="WebClient"/>
-				<node label="onHelp" type="JavaScript-Common Javascript" key="onHelp" value="" env="WebClient"/>
-				<node label="onLoad" type="LotusScript-JavaScript-Formula-Common Javascript" key="onLoad" value="" env="WebClient"/>
-				<node label="onUnload" type="LotusScript-JavaScript-Formula-Common Javascript" key="onUnload" value="" env="WebClient"/>
-				<node label="onClick" type="JavaScript" key="onClick" value="" env="web"/>
-				<node label="onDbClick" type="JavaScript" key="onDbClick" value="" env="web"/>
-				<node label="onKeyDown" type="JavaScript" key="onKeyDown" value="" env="web"/>
-				<node label="onKeyPress" type="JavaScript" key="onKeyPress" value="" env="web"/>
-				<node label="onKeyUp" type="JavaScript" key="onKeyUp" value="" env="web"/>
-				<node label="onMouseDown" type="JavaScript" key="onMouseDown" value="" env="web"/>
-				<node label="onMouseMove" type="JavaScript" key="onMouseMove" value="" env="web"/>
-				<node label="onMouseOut" type="JavaScript" key="onMouseOut" value="" env="web"/>
-				<node label="onMouseOver" type="JavaScript" key="onMouseOver" value="" env="web"/>
-				<node label="onMouseUp" type="JavaScript" key="onMouseUp" value="" env="web"/>
-				<node label="onRest" type="JavaScript" key="onRest" value="" env="web"/>
-				<node label="onSubmit" type="LotusScript-JavaScript-Formula-Common Javascript" key="onSubmit" value="" env="WebClient"/>
-				<node label="(Options)" type="LotusScript" key="options" value="" />
-				<node label="(Declarations)" type="LotusScript" key="declarations"/>
-				<node label="Queryopen" type="LotusScript-Formula-JavaScript" key="queryopen" value="" env="Client"/>
-				<node label="Postopen" type="LotusScript-Formula" key="postopen" value="" env="Client"/>
-				<node label="Querymodechange" type="LotusScript-Formula-JavaScript" key="querymodechange" value="" env="Client"/>
-				<node label="Postmodechange" type="LotusScript-Formula-JavaScript" key="postmodechange" value="" env="Client"/>
-				<node label="Queryrecalc" type="LotusScript-Formula-JavaScript" key="queryrecalc" env="Client"/>
-				<node label="Postrecalc" type="LotusScript-Formula-JavaScript" key="postrecalc" env="Client"/>
-				<node label="QuerySave" type="LotusScript-Formula" key="querySave" env="Client"/>
-				<node label="Postsave" type="LotusScript-Formula-JavaScript" key="postsave" env="Client"/>
-				<node label="Querysend" type="LotusScript-Formula-JavaScript" key="querysend" env="Client"/>
-				<node label="Postsend" type="LotusScript-Formula-JavaScript" key="postsend" env="Client"/>
-				<node label="Queryclose" type="LotusScript-Formula" key="queryclose" env="Client"/>
+			<node label="Email Reply Common Subform(Sub)" type="" key="commonSub" value="" iconType="">
+				<node label="Window Title" type="Formula" key="windowTitle" value="" env="Client" iconType="Formula"/>
+				<node label="HTML Head Content" type="Formula" key="htmlHeadConten" value="" env="Client" iconType="Formula"/>
+				<node label="HTML Body Attributes" type="Formula" key="htmlBodyAttributes" value="" env="Client" iconType="Formula"/>
+				<node label="WebQueryOpen" type="Formula" key="webQueryOpen" value="" env="Client" iconType="Formula"/>
+				<node label="WebQuerySave" type="Formula" key="webQuerySave" value="" env="Client" iconType="Formula"/>
+				<node label="Target Frame" type="Formula" key="targetFrame" value="" env="Client" iconType="Formula"/>
+				<node label="JS Header" type="JavaScript-Common Javascript" key="jsHeader" value="" env="WebClient" iconType="JavaScript-Common Javascript"/>
+				<node label="onHelp" type="JavaScript-Common Javascript" key="onHelp" value="" env="WebClient" iconType="JavaScript-Common Javascript"/>
+				<node label="onLoad" type="JavaScript-LotusScript-Formula-Common Javascript" key="onLoad" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
+				<node label="onUnload" type="JavaScript-LotusScript-Formula-Common Javascript" key="onUnload" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
+				<node label="onClick" type="JavaScript" key="onClick" value="" env="web" iconType="JavaScript"/>
+				<node label="onDbClick" type="JavaScript" key="onDbClick" value="" env="web"  iconType="JavaScript"/>
+				<node label="onKeyDown" type="JavaScript" key="onKeyDown" value="" env="web" iconType="JavaScript"/>
+				<node label="onKeyPress" type="JavaScript" key="onKeyPress" value="" env="web" iconType="JavaScript"/>
+				<node label="onKeyUp" type="JavaScript" key="onKeyUp" value="" env="web" iconType="JavaScript"/>
+				<node label="onMouseDown" type="JavaScript" key="onMouseDown" value="" env="web" iconType="JavaScript"/>
+				<node label="onMouseMove" type="JavaScript" key="onMouseMove" value="" env="web" iconType="JavaScript"/>
+				<node label="onMouseOut" type="JavaScript" key="onMouseOut" value="" env="web" iconType="JavaScript"/>
+				<node label="onMouseOver" type="JavaScript" key="onMouseOver" value="" env="web" iconType="JavaScript"/>
+				<node label="onMouseUp" type="JavaScript" key="onMouseUp" value="" env="web" iconType="JavaScript"/>
+				<node label="onRest" type="JavaScript" key="onRest" value="" env="web" iconType="JavaScript"/>
+				<node label="onSubmit" type="JavaScript-LotusScript-Formula-Common Javascript" key="onSubmit" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
+				<node label="(Options)" type="LotusScript" key="options" value="" iconType="LotusScript"/>
+				<node label="(Declarations)" type="LotusScript" key="declarations" iconType="LotusScript"/>
+				<node label="Queryopen" type="LotusScript-Formula-JavaScript" key="queryopen" value="" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Postopen" type="LotusScript-Formula" key="postopen" value="" env="Client" iconType="LotusScript-Formula"/>
+				<node label="Querymodechange" type="LotusScript-Formula-JavaScript" key="querymodechange" value="" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Postmodechange" type="LotusScript-Formula-JavaScript" key="postmodechange" value="" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Queryrecalc" type="LotusScript-Formula-JavaScript" key="queryrecalc" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Postrecalc" type="LotusScript-Formula-JavaScript" key="postrecalc" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="QuerySave" type="LotusScript-Formula" key="querySave" env="Client" iconType="LotusScript-Formula"/>
+				<node label="Postsave" type="LotusScript-Formula-JavaScript" key="postsave" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Querysend" type="LotusScript-Formula-JavaScript" key="querysend" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Postsend" type="LotusScript-Formula-JavaScript" key="postsend" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Queryclose" type="LotusScript-Formula" key="queryclose" env="Client" iconType="LotusScript-Formula"/>
 				<!-- <node label="Onsize" type="LotusScript" key="onsize"/> -->
-				<node label="Initialize" type="LotusScript" key="initialize"/>
-				<node label="Terminate" type="LotusScript" key="terminate"/>
+				<node label="Initialize" type="LotusScript" key="initialize" iconType="LotusScript"/>
+				<node label="Terminate" type="LotusScript" key="terminate" iconType="LotusScript"/>
             </node>
         </fx:XMLList>
     </fx:Declarations>

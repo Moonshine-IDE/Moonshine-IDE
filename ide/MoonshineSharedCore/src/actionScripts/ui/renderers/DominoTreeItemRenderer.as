@@ -71,15 +71,12 @@ package actionScripts.ui.renderers
                 setStyle("defaultLeafIcon", null); // Hide the default leaf icon
             }
             // Check the 'iconType' attribute of the data and set the custom icon accordingly
-            if (data && XML(data).@type) {
+            if (data && XML(data).@iconType) {
                 var value:String=XML(data).@value.toString();
-                var iconKey:String=XML(data).@type.toString();
+                var iconKey:String=XML(data).@iconType.toString();
                 if(iconKey.indexOf("-")>=0){
-                    if(iconKey.indexOf("LotusScript")>=0){
-                        iconKey="LotusScript"
-                    }else if(iconKey.indexOf("JavaScript")>=0){
-                        iconKey="JavaScript"
-                    }
+                    var list:Array=iconKey.split("-");
+                    iconKey=list[0];
                 }
                 
                 switch (iconKey)
@@ -87,13 +84,17 @@ package actionScripts.ui.renderers
 					case "LotusScript":
                         if(value=="hasValue"){
                             customIcon.source=LoadImage.DOMINO_OBJECT_TREE_PAGE_FILL
-                        }else{
+                        }else if (value=="mulValue"){
+                            customIcon.source=LoadImage.DOMINO_OBJECT_TREE_PAGE_FILL_MUL
+                        }else {
                             customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_PAGE);
                         }
 						break;
 					case "Formula":
                         if(value=="hasValue"){
                             customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_RHOMBUS_FILL);
+                        }else if(value=="mulValue"){
+                            customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_RHOMBUS_FILL_MUL);
                         }else{
                             customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_RHOMBUS);
                         }
@@ -102,14 +103,19 @@ package actionScripts.ui.renderers
 					case "JavaScript":
                         if(value=="hasValue"){
                              customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE_FILL);
-                        }else{
+                        }else if(value=="mulValue"){
+                             customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE_FILL_MUL);
+                        }
+                        else{
                             customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE);
                         }
                        
 						break;
                     case "Common JavaScript":
                         if(value=="hasValue"){
-                             customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE_FILL);
+                            customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE_FILL);
+                        }else if(value=="mulValue"){
+                            customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE_FILL_MUL);
                         }else{
                             customIcon.source=(LoadImage.DOMINO_OBJECT_TREE_CIRCLE);
                         }
@@ -121,7 +127,7 @@ package actionScripts.ui.renderers
 
 				}
                 customIcon.visible = true;
-                if(XML(data).@type.toString()!=""){
+                if(XML(data).@iconType.toString()!=""){
                     this.icon.visible=false;
                 }
                 
