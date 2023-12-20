@@ -1381,17 +1381,17 @@
 				<node label="onHelp" type="JavaScript-Common Javascript" key="onHelp" value="" env="WebClient" iconType="JavaScript-Common Javascript"/>
 				<node label="onLoad" type="JavaScript-LotusScript-Formula-Common Javascript" key="onLoad" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
 				<node label="onUnload" type="JavaScript-LotusScript-Formula-Common Javascript" key="onUnload" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
-				<node label="onClick" type="JavaScript" key="onClick" value="" env="web" iconType="JavaScript"/>
-				<node label="onDbClick" type="JavaScript" key="onDbClick" value="" env="web"  iconType="JavaScript"/>
-				<node label="onKeyDown" type="JavaScript" key="onKeyDown" value="" env="web" iconType="JavaScript"/>
-				<node label="onKeyPress" type="JavaScript" key="onKeyPress" value="" env="web" iconType="JavaScript"/>
-				<node label="onKeyUp" type="JavaScript" key="onKeyUp" value="" env="web" iconType="JavaScript"/>
-				<node label="onMouseDown" type="JavaScript" key="onMouseDown" value="" env="web" iconType="JavaScript"/>
-				<node label="onMouseMove" type="JavaScript" key="onMouseMove" value="" env="web" iconType="JavaScript"/>
-				<node label="onMouseOut" type="JavaScript" key="onMouseOut" value="" env="web" iconType="JavaScript"/>
-				<node label="onMouseOver" type="JavaScript" key="onMouseOver" value="" env="web" iconType="JavaScript"/>
-				<node label="onMouseUp" type="JavaScript" key="onMouseUp" value="" env="web" iconType="JavaScript"/>
-				<node label="onRest" type="JavaScript" key="onRest" value="" env="web" iconType="JavaScript"/>
+				<node label="onClick" type="JavaScript" key="onClick" value="" env="Web" iconType="JavaScript"/>
+				<node label="onDbClick" type="JavaScript" key="onDbClick" value="" env="Web"  iconType="JavaScript"/>
+				<node label="onKeyDown" type="JavaScript" key="onKeyDown" value="" env="Web" iconType="JavaScript"/>
+				<node label="onKeyPress" type="JavaScript" key="onKeyPress" value="" env="Web" iconType="JavaScript"/>
+				<node label="onKeyUp" type="JavaScript" key="onKeyUp" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseDown" type="JavaScript" key="onMouseDown" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseMove" type="JavaScript" key="onMouseMove" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseOut" type="JavaScript" key="onMouseOut" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseOver" type="JavaScript" key="onMouseOver" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseUp" type="JavaScript" key="onMouseUp" value="" env="Web" iconType="JavaScript"/>
+				<node label="onRest" type="JavaScript" key="onRest" value="" env="Web" iconType="JavaScript"/>
 				<node label="onSubmit" type="JavaScript-LotusScript-Formula-Common Javascript" key="onSubmit" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
 				<node label="(Options)" type="LotusScript" key="options" value="" iconType="LotusScript"/>
 				<node label="(Declarations)" type="LotusScript" key="declarations" iconType="LotusScript"/>
