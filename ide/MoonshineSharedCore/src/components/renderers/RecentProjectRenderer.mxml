@@ -71,7 +71,7 @@
   
   <mx:Label
   	id="lbl"
-  	paddingTop="4"
+  	paddingTop="0"
 	paddingLeft="3"
 	paddingRight="3"
 	paddingBottom="0"
