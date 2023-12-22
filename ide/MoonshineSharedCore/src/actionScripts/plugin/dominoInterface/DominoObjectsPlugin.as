@@ -130,8 +130,13 @@ package actionScripts.plugin.dominoInterface
 				}
 				for each(var gobalOptions:XML in dxl..item) //no matter of depth Note here
 				{
-					if(gobalOptions.@name.toString()=="$Script")
-					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+					if(gobalOptions.@name.toString()=="$Script"){
+						delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+					}
+					if(gobalOptions.@name.toString()=="$$FormScript"){
+						delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+					}
+					
 				}
 
 				for each(var formOptions:XML in xml..dominoFormObject) //no matter of depth Note here
@@ -177,6 +182,8 @@ package actionScripts.plugin.dominoInterface
 
 				var globaldxl:XML=dominoGlobalsObject.toCode();
 				dxl.appendChild(globaldxl);
+				var formdxl:XML=dominoFormObject.toCode(optionsMap);
+				dxl.appendChild(formdxl);
 				editor.currentFile.fileBridge.save(dxl.toXMLString());
 			}
 
