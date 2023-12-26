@@ -349,10 +349,10 @@ package actionScripts.plugin.recentlyOpened
 				customSDKPath = (event.project as AS3ProjectVO).buildOptions.customSDKPath;
 			}
 			var tmpSOReference: ProjectReferenceVO = new ProjectReferenceVO();
-			//tmpSOReference.name = event.project.name;
 			tmpSOReference.sdk = customSDKPath ? customSDKPath : (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 			tmpSOReference.path = event.project.folderLocation.fileBridge.nativePath;
 			tmpSOReference.sourceFolder = event.project.sourceFolder;
+			tmpSOReference.name = event.project.name;
 			//tmpSOReference.projectId = event.project.projectId;
 			//tmpSOReference.isAway3D = (event.type == ProjectEvent.ADD_PROJECT_AWAY3D);
 			
