@@ -57,10 +57,15 @@ class ProjectReferenceVO
 	public var sourceFolder:FileLocation;
 
 	private var _name:String;
-	public var name(get, never):String;
+	public var name(get, set):String;
 	private function get_name():String
 	{
 		return _name;	
+	}
+	private function set_name(value:String):String
+	{
+		_name = value;
+		return _name;
 	}
 
 	private var _path:String;
