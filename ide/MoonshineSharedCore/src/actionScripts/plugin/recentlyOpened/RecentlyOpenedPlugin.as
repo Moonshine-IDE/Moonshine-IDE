@@ -123,6 +123,27 @@ package actionScripts.plugin.recentlyOpened
 			return UtilsCore.getRecentFilesMenu();
 		}
 		
+		override public function resetSettings():void
+		{
+			if (cookie.data.hasOwnProperty('recentFiles')) 
+				delete cookie.data['recentFiles'];
+			if (cookie.data.hasOwnProperty('recentProjects')) 
+				delete cookie.data['recentProjects'];
+			if (cookie.data.hasOwnProperty('recentProjectsOpenedOption')) 
+				delete cookie.data['recentProjectsOpenedOption'];
+			if (cookie.data.hasOwnProperty('lastBrowsedLocation')) 
+				delete cookie.data['lastBrowsedLocation'];
+			cookie.flush();
+			
+			model.recentlyOpenedFiles = new ArrayCollection();
+			model.recentlyOpenedProjects = new ArrayCollection();
+			model.recentlyOpenedProjectOpenedOption = new ArrayCollection();
+			model.recentSaveProjectPath = new ArrayCollection();
+
+			dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
+			dispatcher.dispatchEvent(new Event(RECENT_FILES_LIST_UPDATED));
+		}
+		
 		private function restoreFromCookie():void
 		{
 			// Uncomment & run to delete cookie
