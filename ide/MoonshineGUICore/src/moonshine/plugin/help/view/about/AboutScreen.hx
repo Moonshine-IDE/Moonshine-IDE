@@ -162,9 +162,7 @@ class AboutScreen extends LayoutGroup {
 		super();
 	}
 
-	override public function dispose() {
-		super.dispose();
-		
+	public function dispose() {
 		if (_softwareVersionChecker != null)
 			_softwareVersionChecker.dispose();
 		if (_editorVersionChecker != null)
