@@ -162,7 +162,7 @@ class AboutScreen extends LayoutGroup {
 		super();
 	}
 
-	public function dispose() {
+	#if (feathersui >= "1.3.0") override #end public function dispose() {
 		if (_softwareVersionChecker != null)
 			_softwareVersionChecker.dispose();
 		if (_editorVersionChecker != null)
@@ -181,6 +181,9 @@ class AboutScreen extends LayoutGroup {
 			_sdkComponents.removeAll();
 			_sdkComponents = null;
 		}
+		#if (feathersui >= "1.3.0")
+		super.dispose();
+		#end 
 	}
 
 	//
