@@ -216,23 +216,42 @@ package actionScripts.plugins.actionscript
 						label = label.substr(lastSlashIndex + 1);
 					}
 					args = decodeURIComponent(args);
-
-					var extension:String = "";
-					var dotIndex:int = label.lastIndexOf(".");
-					if(dotIndex != -1)
+					// with the swc URI scheme, we need to ask the language
+					// server to convert the URI's query string into the file
+					// text. in previous versions of the AS3 & MXML language
+					// server, the query consisted of the unmodified file text,
+					// but large files might be too long for URI size limits.
+					// the file text is compressed now, and the language server
+					// provides this command to decompress it. the compression
+					// method may change in the future, but this API should
+					// remain stable to handle any differences.
+					_languageClient.executeCommand({
+						command: "as3mxml.getLibraryDefinitionText",
+						"arguments": [args]
+					}, function(fileText:String):void
 					{
-						extension = label.substr(dotIndex + 1);
-					}
-					editor.defaultLabel = label;
+						if (!fileText)
+						{
+							error("Failed to open: " + label);
+							return;
+						}
+						var extension:String = "";
+						var dotIndex:int = label.lastIndexOf(".");
+						if(dotIndex != -1)
+						{
+							extension = label.substr(dotIndex + 1);
+						}
+						editor.defaultLabel = label;
 
-					var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
-					editorEvent.editor = editor.getEditorComponent();
-					editorEvent.fileExtension = extension;
-					GlobalEventDispatcher.getInstance().dispatchEvent(editorEvent);
+						var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+						editorEvent.editor = editor.getEditorComponent();
+						editorEvent.fileExtension = extension;
+						GlobalEventDispatcher.getInstance().dispatchEvent(editorEvent);
 
-					//editor.open() must be called after EditorPluginEvent.EVENT_EDITOR_OPEN
-					//is dispatched or the syntax highlighting will not work
-					editor.open(null, args);
+						//editor.open() must be called after EditorPluginEvent.EVENT_EDITOR_OPEN
+						//is dispatched or the syntax highlighting will not work
+						editor.open(null, fileText);
+					});
 					break;
 				}
 				default:
