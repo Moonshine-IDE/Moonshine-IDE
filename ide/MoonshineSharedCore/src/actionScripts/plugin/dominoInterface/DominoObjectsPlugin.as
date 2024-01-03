@@ -184,11 +184,20 @@ package actionScripts.plugin.dominoInterface
 				dxl.appendChild(globaldxl);
 				var formdxl:XML=dominoFormObject.toCode(optionsMap);
 				dxl.appendChild(formdxl);
-				editor.currentFile.fileBridge.save(dxl.toXMLString());
+				var finaldxl:String=fixSpaceAndNewLineForDxl(dxl.toXMLString());
+				editor.currentFile.fileBridge.save(finaldxl);
 			}
 
-
 		}
+
+
+		private function fixSpaceAndNewLineForDxl(originalString:String):String
+		{
+			var cleanedString:String = originalString.replace(/<text>([\s\S]*?)<\/text>/g, function(match:String, p1:String, offset:int, input:String):String {
+				return '<text>' + p1.replace(/^\s+|\s+$/g, "") + '</text>';
+			});	
+			return cleanedString;
+		}		
 
 
 		

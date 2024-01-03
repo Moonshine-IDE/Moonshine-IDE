@@ -1367,7 +1367,7 @@
 				<node label="(Options)" type="LotusScript" key="globalsOptions" value="" iconType="LotusScript"/>
 				<node label="(Declarations)" type="LotusScript" key="globalsDeclarations" value="" iconType="LotusScript"/>
 				<node label="Initialize" type="LotusScript" key="globalsInitialize" value="" iconType="LotusScript"/>
-				<node label="Teminate" type="LotusScript" key="globalsTeminate" value="" iconType="LotusScript"/>
+				<node label="Terminate" type="LotusScript" key="globalsTeminate" value="" iconType="LotusScript"/>
                 
             </node>
 			<node label="Email Reply Common Subform(Sub)" type="" key="commonSub" value="" iconType="">
