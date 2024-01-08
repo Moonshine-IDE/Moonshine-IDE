@@ -87,6 +87,8 @@
 
 		import com.adobe.utils.StringUtil;
 
+		import view.suportClasses.events.DominoLotusScriptCompileReturnEvent;
+
 		private var customLotusScriptFunction:XMLList;
 
 
@@ -333,6 +335,7 @@
 			languageEditor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
 			languageEditor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
 			languageEditor.addEventListener(KeyboardEvent.KEY_DOWN, handleEntryInput);
+			languageEditor.addEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
 			languageEditor.showLineNumbers = true;
 			var wrapper:FeathersUIWrapper = new FeathersUIWrapper(languageEditor);
 			wrapper.percentWidth = wrapper.percentHeight = 100;
@@ -347,6 +350,13 @@
 		{
 			if(languageEditor&&optionsMap){
 				languageEditor.text=optionsMap["globalsOptions"];
+			}
+		}
+
+		protected function handleLotusScriptCompile(event:DominoLotusScriptCompileReturnEvent):void 
+		{
+			if(event.compileResult){
+				
 			}
 		}
 

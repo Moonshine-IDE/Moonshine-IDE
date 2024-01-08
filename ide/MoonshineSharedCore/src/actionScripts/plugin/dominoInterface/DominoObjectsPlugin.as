@@ -46,6 +46,7 @@ package actionScripts.plugin.dominoInterface
 	import view.domino.surfaceComponents.components.DominoFormObjects;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
+	import view.suportClasses.events.DominoLotusScriptCompileConnectedEvent;
 	public class DominoObjectsPlugin extends ConsoleBuildPluginBase
 	{
 		public static const EVENT_DOMINO_OBJECTS:String = "EVENT_DOMINO_OBJECTS";
@@ -78,6 +79,12 @@ package actionScripts.plugin.dominoInterface
 		private var dominoGlobalsObject:DominoGlobalsObjects=null;
 		private var dominoFormObject:DominoFormObjects=null;
 
+		private var compile:DominoObjectsViewLotusScriptCompile=null;
+		private var compileConnected:Boolean=false;
+
+		private var needVaildLotusScirpt:String=null;
+		private var testCount:int=1;
+
 		 
 		
 		
@@ -94,6 +101,21 @@ package actionScripts.plugin.dominoInterface
 			dispatcher.addEventListener(EVENT_DOMINO_OBJECTS_SAVE, handleDominoObjectsSave);
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
+
+			dispatcher.addEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
+
+			//initializeSocket();
+			
+		}
+
+		private function initializeSocket():void 
+		{
+			if(compile==null){
+				//inital lotus script compile :
+				compile=DominoObjectsViewLotusScriptCompile.getInstance();
+			}
+
+			
 		}
 
 		override public function deactivate():void
@@ -104,6 +126,35 @@ package actionScripts.plugin.dominoInterface
 			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS_SAVE, handleDominoObjectsSave);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
+		}
+		
+		private function handleLotusScriptCompileConnected(even:DominoLotusScriptCompileConnectedEvent):void
+		{
+			compileConnected=even.connectedSuccess;
+			
+			
+			model = IDEModel.getInstance();
+			editor=model.activeEditor as VisualEditorViewer;
+			
+			
+			
+			
+			if(compileConnected==true){
+				if(needVaildLotusScirpt){
+				
+					needVaildLotusScirpt=StringHelper.base64Encode(needVaildLotusScirpt);
+					needVaildLotusScirpt=needVaildLotusScirpt+"\r\n"
+					compile.sendString(needVaildLotusScirpt);
+					needVaildLotusScirpt=null;
+					testCount++;
+					
+				}
+				
+			
+				
+			}
+			
+			
 		}
 		
 
@@ -185,7 +236,19 @@ package actionScripts.plugin.dominoInterface
 				var formdxl:XML=dominoFormObject.toCode(optionsMap);
 				dxl.appendChild(formdxl);
 				var finaldxl:String=fixSpaceAndNewLineForDxl(dxl.toXMLString());
+				needVaildLotusScirpt=finaldxl;
 				editor.currentFile.fileBridge.save(finaldxl);
+				initializeSocket();
+				compile.closeSocket();
+				compile.doConnectAction();
+
+				
+				
+				// if(compile!=null && compileConnected==true ){
+				// 	compile.sendString(finaldxl);
+				// 	
+				// }
+				
 			}
 
 		}
@@ -296,6 +359,7 @@ package actionScripts.plugin.dominoInterface
 
 				dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.ADD_VIEW_TO_PROJECT_PANEL, dominoObjectView));
 				dominoObjectView.expandNodesWithChildrenByPublic(formTitle)
+				
 				
 					
 			}
