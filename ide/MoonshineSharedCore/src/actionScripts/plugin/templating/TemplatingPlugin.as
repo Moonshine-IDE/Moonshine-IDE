@@ -2564,7 +2564,7 @@ package actionScripts.plugin.templating
 				var fileName:String =event.fileName;
 				fileName=fileName.replace( /\\/g, '%5C');
 				fileName=fileName.replace( /\//g, '%2F');
-				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".action");
+				fileToSave = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +".action");
 				
 				content=updateDominoActionTitleName(content,event.fileName);
 				fileToSave.fileBridge.save(content);

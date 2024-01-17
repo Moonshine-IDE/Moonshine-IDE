@@ -151,17 +151,7 @@ package actionScripts.ui.tabview
 				return;
 			}
 			
-			if (itemContainer.numChildren <= 1) return;
-			
-			if (lastSelectedIndex == selectedIndex) 
-			{
-				lastSelectedIndex = selectedIndex + 1;
-			}
-			else if (lastSelectedIndex > (itemContainer.numChildren - 1))
-			{
-				lastSelectedIndex = itemContainer.numChildren - 1;
-			}
-			
+			if (tabContainer.numChildren <= 1) return;
 			selectedIndex = lastSelectedIndex;
 		}
 		
@@ -184,7 +174,8 @@ package actionScripts.ui.tabview
 			var tmpCollection:Array = [];
 			var tab:TabViewTab;
 			var tabData:DisplayObject;
-			for (var i:int = 0; i < tabContainer.numChildren; i++)
+			var i:int = tabContainer.numChildren - 1;
+			while (i != -1)
 			{
 				tab = tabContainer.getChildAt(i) as TabViewTab;
 				tabData = tab.data as DisplayObject;
@@ -192,6 +183,7 @@ package actionScripts.ui.tabview
 				{
 					tmpCollection.push(new HamburgerMenuTabsVO(tab["label"], tabData, i));
 				}
+				i--;
 			}
 			if (_model.hamburgerTabs.length > 0)
 			{
@@ -217,24 +209,49 @@ package actionScripts.ui.tabview
 				editorsListMenu.selectedIndex = 0;
 			});
 			
-			editorsListMenu.addEventListener(MenuEvent.MENU_HIDE, onEditorsListMenuClosed, false, 0, true);
+			editorsListMenu.addEventListener(MenuEvent.ITEM_CLICK, onItemBeingSelectedOnClick, false, 0, true);
+		}
+
+		private function onItemBeingSelectedOnClick(event:MenuEvent):void
+		{
+			var selectedItem:HamburgerMenuTabsVO = event.item as HamburgerMenuTabsVO;
+			if (selectedItem.visibleIndex != -1)
+			{
+				selectedIndex = selectedItem.visibleIndex;
+			}
+			else
+			{
+				addTabFromHamburgerMenu(selectedItem);
+			}
+
+			this.removeEditorsListMenu();
 		}
 		
 		private function removeEditorsListMenu():void
 		{
-			editorsListMenu.hide();
-			editorsListMenu.removeEventListener(MenuEvent.MENU_HIDE, onEditorsListMenuClosed);
-			editorsListMenu = null;
+			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeysUp);
+			multiKeys = null;
+
+			if (editorsListMenu)
+			{
+				editorsListMenu.removeEventListener(MenuEvent.MENU_HIDE, onEditorsListMenuClosed);
+				editorsListMenu.removeEventListener(MenuEvent.ITEM_CLICK, onItemBeingSelectedOnClick);
+				editorsListMenu.hide();
+				editorsListMenu = null;
+			}
 		}
 		
 		private function onKeysUp(event:KeyboardEvent):void
 		{
-			if (event.keyCode == Keyboard.CONTROL || event.keyCode == Keyboard.SHIFT)
+			if (event.keyCode == Keyboard.ESCAPE)
+			{
+				return;
+			}
+			else if (event.keyCode == Keyboard.CONTROL || event.keyCode == Keyboard.SHIFT)
 			{
 				if ((multiKeys.length == 0) || multiKeys[0] != event.keyCode) multiKeys.push(event.keyCode);
 				if (multiKeys.length == 2)
 				{
-					stage.removeEventListener(KeyboardEvent.KEY_UP, onKeysUp);
 					removeEditorsListMenu();
 					multiKeys = null;
 				}
@@ -245,18 +262,6 @@ package actionScripts.ui.tabview
 		{
 			editorsListMenu.selectedIndex++;
 			editorsListMenu.selectedItem = editorsListMenu.dataProvider[editorsListMenu.selectedIndex];
-		}
-		
-		private function onEditorsListMenuClosed(event:MenuEvent):void
-		{
-			if ((editorsListMenu.selectedItemBasedOnSelectedIndex as HamburgerMenuTabsVO).visibleIndex != -1)
-			{
-				selectedIndex = (editorsListMenu.selectedItemBasedOnSelectedIndex as HamburgerMenuTabsVO).visibleIndex;
-			}
-			else
-			{
-				addTabFromHamburgerMenu(editorsListMenu.selectedItemBasedOnSelectedIndex as HamburgerMenuTabsVO);
-			}
 		}
 
 		public function setSelectedTab(editor:DisplayObject):void
@@ -385,7 +390,6 @@ package actionScripts.ui.tabview
 		
 		private function onTabDoubleClicked(event:Event):void
 		{
-			trace(">>>>>>>>>>>>>>>> "+ itemContainer.numChildren);
 			dispatcher.dispatchEvent(new FullscreenEvent(FullscreenEvent.EVENT_SECTION_FULLSCREEN, FullscreenEvent.SECTION_EDITOR));
 		}
 
