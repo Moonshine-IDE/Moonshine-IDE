@@ -234,7 +234,6 @@ package actionScripts.ui.tabview
 
 			if (editorsListMenu)
 			{
-				editorsListMenu.removeEventListener(MenuEvent.MENU_HIDE, onEditorsListMenuClosed);
 				editorsListMenu.removeEventListener(MenuEvent.ITEM_CLICK, onItemBeingSelectedOnClick);
 				editorsListMenu.hide();
 				editorsListMenu = null;
