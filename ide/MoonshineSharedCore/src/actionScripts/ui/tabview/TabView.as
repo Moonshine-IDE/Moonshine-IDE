@@ -208,8 +208,19 @@ package actionScripts.ui.tabview
 			{
 				editorsListMenu.selectedIndex = 0;
 			});
-			
+
+			editorsListMenu.addEventListener(MenuEvent.MENU_HIDE, onMenuBeingHide, false, 0, true);
 			editorsListMenu.addEventListener(MenuEvent.ITEM_CLICK, onItemBeingSelectedOnClick, false, 0, true);
+		}
+
+		private function onMenuBeingHide(event:MenuEvent):void
+		{
+			editorsListMenu.addEventListener(MenuEvent.MENU_HIDE, onMenuBeingHide, false, 0, true);
+			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeysUp);
+
+			editorsListMenu.removeEventListener(MenuEvent.MENU_HIDE, onMenuBeingHide);
+			editorsListMenu = null;
+			multiKeys = null;
 		}
 
 		private function onItemBeingSelectedOnClick(event:MenuEvent):void
@@ -236,7 +247,7 @@ package actionScripts.ui.tabview
 			{
 				editorsListMenu.removeEventListener(MenuEvent.ITEM_CLICK, onItemBeingSelectedOnClick);
 				editorsListMenu.hide();
-				editorsListMenu = null;
+
 			}
 		}
 		
@@ -246,7 +257,8 @@ package actionScripts.ui.tabview
 			{
 				return;
 			}
-			else if (event.keyCode == Keyboard.CONTROL || event.keyCode == Keyboard.SHIFT)
+
+			if (event.keyCode == Keyboard.CONTROL || event.keyCode == Keyboard.SHIFT)
 			{
 				if ((multiKeys.length == 0) || multiKeys[0] != event.keyCode) multiKeys.push(event.keyCode);
 				if (multiKeys.length == 2)
