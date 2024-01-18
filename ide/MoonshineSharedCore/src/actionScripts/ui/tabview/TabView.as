@@ -247,7 +247,6 @@ package actionScripts.ui.tabview
 			{
 				editorsListMenu.removeEventListener(MenuEvent.ITEM_CLICK, onItemBeingSelectedOnClick);
 				editorsListMenu.hide();
-
 			}
 		}
 		
@@ -474,12 +473,13 @@ package actionScripts.ui.tabview
 		
 		override public function removeChild(child:DisplayObject):DisplayObject
 		{
-			invalidateTabSelection();
-
 			var tab:TabViewTab = tabLookup[child];
-
 			if (tab)
             {
+				if (tab.selected)
+				{
+					invalidateTabSelection();
+				}
                 removeTabFor(child);
 				if (child.parent != null) 
 				{
