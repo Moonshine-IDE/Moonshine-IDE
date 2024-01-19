@@ -84,13 +84,7 @@ package actionScripts.plugin.dominoInterface
         public function onConnect(event:Event):void {
             connected=true;
             GlobalEventDispatcher.getInstance().dispatchEvent(new DominoLotusScriptCompileConnectedEvent(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, true, true,true))
-            Alert.show("Connected to server");
-
-            // Send multiple strings to the server
-            
-
-            // Optionally, close the connection when done
-            // socket.close();
+           
         }
         public function closeSocket():void 
         {
@@ -114,7 +108,7 @@ package actionScripts.plugin.dominoInterface
         public function onData(event:ProgressEvent):void {
             // Read the received data
             var receivedData:String = socket.readUTFBytes(socket.bytesAvailable);
-             Alert.show("Received data from server: " + receivedData);
+             //Alert.show("Received data from server: " + receivedData);
              GlobalEventDispatcher.getInstance().dispatchEvent(new DominoLotusScriptCompileReturnEvent(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE, receivedData, true,true))
         }
 

@@ -47,6 +47,8 @@ package actionScripts.plugin.dominoInterface
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugin.projectPanel.events.ProjectPanelPluginEvent;
 	import view.suportClasses.events.DominoLotusScriptCompileConnectedEvent;
+	import view.suportClasses.events.DominoLotusScriptCompileReturnEvent;
+	import com.adobe.utils.StringUtil;
 	public class DominoObjectsPlugin extends ConsoleBuildPluginBase
 	{
 		public static const EVENT_DOMINO_OBJECTS:String = "EVENT_DOMINO_OBJECTS";
@@ -101,6 +103,7 @@ package actionScripts.plugin.dominoInterface
 			dispatcher.addEventListener(EVENT_DOMINO_OBJECTS_SAVE, handleDominoObjectsSave);
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
+			dispatcher.addEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
 
 			dispatcher.addEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
 
@@ -126,16 +129,13 @@ package actionScripts.plugin.dominoInterface
 			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS_SAVE, handleDominoObjectsSave);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
+			dispatcher.removeEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
+			dispatcher.removeEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
 		}
 		
 		private function handleLotusScriptCompileConnected(even:DominoLotusScriptCompileConnectedEvent):void
 		{
 			compileConnected=even.connectedSuccess;
-			
-			
-			model = IDEModel.getInstance();
-			editor=model.activeEditor as VisualEditorViewer;
-			
 			
 			
 			
@@ -147,6 +147,7 @@ package actionScripts.plugin.dominoInterface
 					compile.sendString(needVaildLotusScirpt);
 					needVaildLotusScirpt=null;
 					testCount++;
+					
 					
 				}
 				
@@ -237,7 +238,11 @@ package actionScripts.plugin.dominoInterface
 				dxl.appendChild(formdxl);
 				var finaldxl:String=fixSpaceAndNewLineForDxl(dxl.toXMLString());
 				needVaildLotusScirpt=finaldxl;
-				editor.currentFile.fileBridge.save(finaldxl);
+				if(compileConnected==true){
+				}else{
+					editor.currentFile.fileBridge.save(finaldxl);
+				}
+				//
 				initializeSocket();
 				compile.closeSocket();
 				compile.doConnectAction();
@@ -251,6 +256,28 @@ package actionScripts.plugin.dominoInterface
 				
 			}
 
+		}
+
+		protected function handleLotusScriptCompile(event:DominoLotusScriptCompileReturnEvent):void 
+		{
+			if(event.compileResult){
+				
+				if(event.compileResult.length>1){
+					// [Error=­eµ■V, Line=4, File=}] {7}
+					var list:Array=event.compileResult.split(",");
+					var line:String=StringUtil.trim(list[1]);
+					var list2:Array=line.split("=");
+					line=list2[1];
+					var lineInt:int = parseInt(line);
+					lineInt=lineInt-1;
+					Alert.show("Lotus Script compile error: on line " + lineInt.toString() + "");
+				}else{
+					model = IDEModel.getInstance();
+					editor=model.activeEditor as VisualEditorViewer;
+					editor.currentFile.fileBridge.save(needVaildLotusScirpt);
+					Alert.show("Lotus script compile success and save success");
+				}
+			}
 		}
 
 
