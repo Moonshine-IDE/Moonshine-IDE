@@ -91,13 +91,23 @@ package actionScripts.ui.tabview
 			return _selectedIndex;
 		}
 
+		private var lastSelectedTab:TabViewTab;
 		public function set selectedIndex(value:int):void
 		{
-			//if (itemContainer.numChildren == 0) return;
+			if (tabContainer.numChildren == 0) return;
 			//if (_selectedIndex == value) return;
 			if (value < 0) value = 0;
-			lastSelectedIndex = _selectedIndex;
+
 			_selectedIndex = value;
+			this.tabContainer.getChildren().some(function(element:TabViewTab, index:int, arr:Array):Boolean {
+				if (element.selected)
+				{
+					lastSelectedTab = element as TabViewTab;
+					lastSelectedIndex = index;
+					return true;
+				}
+				return false;
+			});
 			
 			// Explicitly set new, so no automagic needed.
 			needsNewSelectedTab = false;
@@ -152,7 +162,18 @@ package actionScripts.ui.tabview
 			}
 			
 			if (tabContainer.numChildren <= 1) return;
-			selectedIndex = lastSelectedIndex;
+
+			if (this.lastSelectedTab.parent == null)
+			{
+				// suppose to trigger when the last visited tab removed
+				this.lastSelectedIndex = (this.lastSelectedIndex == 0) ? 0 : this.lastSelectedIndex++;
+				if (this.lastSelectedIndex == this.selectedIndex) this.lastSelectedIndex++;
+				selectedIndex = this.lastSelectedIndex;
+			}
+			else
+			{
+				selectedIndex = this.tabContainer.getChildIndex(this.lastSelectedTab);
+			}
 		}
 		
 		private function onTabListNavigate(event:Event):void
@@ -487,6 +508,18 @@ package actionScripts.ui.tabview
 				}
             }
 
+			// due to descending ordered index in tabContainer,
+			// removal of any tab at any position also practically updates
+			// the current selected tab's index; that needs to get updated
+			// for any latter action(s)
+			this.tabContainer.getChildren().some(function(element:TabViewTab, index:int, arr:Array):Boolean {
+				if (element.selected)
+				{
+					_selectedIndex = index;
+					return true;
+				}
+				return false;
+			});
 			return null;
 		}
 
