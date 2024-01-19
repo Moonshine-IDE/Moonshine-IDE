@@ -166,6 +166,12 @@ package actionScripts.ui.tabview
 			if (this.lastSelectedTab.parent == null)
 			{
 				// suppose to trigger when the last visited tab removed
+				if (this.lastSelectedIndex >= this.tabContainer.numChildren)
+				{
+					if ((this.lastSelectedIndex - 1) != this.selectedIndex) selectedIndex = this.tabContainer.numChildren - 1;
+					return;
+				}
+
 				this.lastSelectedIndex = (this.lastSelectedIndex == 0) ? 0 : this.lastSelectedIndex++;
 				if (this.lastSelectedIndex == this.selectedIndex) this.lastSelectedIndex++;
 				selectedIndex = this.lastSelectedIndex;
