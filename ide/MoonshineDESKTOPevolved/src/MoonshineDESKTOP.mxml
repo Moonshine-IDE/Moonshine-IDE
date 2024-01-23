@@ -43,10 +43,13 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import flash.utils.clearTimeout;
+			import flash.utils.setTimeout;
+			
 			import mx.events.FlexEvent;
-
+			
 			import spark.components.Alert;
-
+			
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.LayoutEvent;
 			import actionScripts.factory.FileLocation;
@@ -55,10 +58,10 @@
 			import actionScripts.impls.IContextMenuBridgeImp;
 			import actionScripts.impls.IFileBridgeImp;
 			import actionScripts.impls.IFlexCoreBridgeImp;
-			import actionScripts.impls.IProjectBridgeImpl;
 			import actionScripts.impls.ILanguageServerBridgeImp;
 			import actionScripts.impls.INativeMenuItemBridgeImp;
 			import actionScripts.impls.IOSXBookmarkerBridgeImp;
+			import actionScripts.impls.IProjectBridgeImpl;
 			import actionScripts.impls.IVisualEditorProjectBridgeImpl;
 			import actionScripts.locator.IDEModel;
 			import actionScripts.ui.LayoutModifier;
@@ -66,9 +69,9 @@
 			import actionScripts.utils.OSXBookmarkerNotifiers;
 			import actionScripts.utils.SDKUtils;
 			import actionScripts.valueObjects.ConstantsCoreVO;
-
+			
 			import components.MainEntryPoint;
-
+			
 			import no.doomsday.console.ConsoleUtil;
 
 			//--------------------------------------------------------------------------
@@ -135,6 +138,9 @@
 				// check if it's osx and packaged with bundled sdk
 				SDKUtils.checkBundledSDKPresence();
 				if (!ConstantsCoreVO.IS_BUNDLED_SDK_PRESENT) SDKUtils.checkHelperDownloadedSDKPresence();
+				
+				// did we start with any args?
+				nativeApplication.addEventListener(InvokeEvent.INVOKE, handleInitializationArgs, false, 0, true);
 
 				// addedToStage
 				addEventListener(Event.ADDED_TO_STAGE, initStage);
@@ -210,6 +216,24 @@
 			//  LISTENERS API
 			//
 			//--------------------------------------------------------------------------
+			
+			/**
+			 * On invoke handler
+			 */
+			private function handleInitializationArgs(event:InvokeEvent):void
+			{
+				// delay the dispatch when Moonshine starts,
+				// plugin classes those may listens to this event
+				// shall initialize after a delay and starts listening
+				if (!this.initialized)
+				{
+					IDEModel.getInstance().startupInvokeEvent = event;
+				}
+				else
+				{
+					GlobalEventDispatcher.getInstance().dispatchEvent(event);
+				}
+			}
 
 			/**
 			 * On added to stage

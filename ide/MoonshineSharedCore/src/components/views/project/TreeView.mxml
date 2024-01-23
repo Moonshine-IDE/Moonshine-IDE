@@ -964,7 +964,7 @@
 					if(as3Project.folderLocation.fileBridge.nativePath == event.from.fileBridge.nativePath)
 					{
 						as3Project.projectFolder.file = as3Project.folderLocation = as3Project.classpaths[0] = event.to;
-						as3Project.projectFolder.projectReference.name = event.to.fileBridge.name;
+						//as3Project.projectFolder.projectReference.name = event.to.fileBridge.name;
 						as3Project.projectFolder.projectReference.path = event.to.fileBridge.nativePath;
 	
 						refreshByWrapperItem(as3Project.projectFolder);

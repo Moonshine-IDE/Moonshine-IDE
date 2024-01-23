@@ -33,8 +33,9 @@ package actionScripts.plugin.console;
 
 import actionScripts.ui.editor.text.TextLineModel;
 
-extern class ConsoleTextLineModel extends TextLineModel {
+extern class ConsoleTextLineModel extends TextLineModel 
+{
+    public var consoleOutputType:String;
 
-    function new(text:String, style:String);
-
+    function new(text:String, consoleOutputType:String);
 }

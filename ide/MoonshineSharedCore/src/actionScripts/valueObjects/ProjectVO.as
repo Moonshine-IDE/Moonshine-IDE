@@ -117,7 +117,7 @@ package actionScripts.valueObjects
 			// filewrapper reference for later use, i.e. to determine
 			// a filewrapper belongs to which project
 			projectReference = new ProjectReferenceVO();
-			projectReference.name = projectName;
+			//projectReference.name = projectName;
 			projectReference.path = folder.fileBridge.nativePath;
 
 			folderLocation.fileBridge.name = this.projectName = projectName;

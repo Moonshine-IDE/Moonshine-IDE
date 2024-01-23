@@ -22,7 +22,9 @@ package actionScripts.ui
 	import mx.controls.scrollClasses.ScrollBar;
 	import mx.core.FlexGlobals;
 	import mx.core.mx_internal;
-	import mx.managers.PopUpManager;
+import mx.events.ListEvent;
+import mx.events.MenuEvent;
+import mx.managers.PopUpManager;
 	
 	use namespace mx_internal;
 	
@@ -212,7 +214,7 @@ package actionScripts.ui
 			
 			_selectedItemBasedOnSelectedIndex = dataProvider[selectedIndex];
 		}
-		
+
 		override protected function measure():void
 		{
 			super.measure();

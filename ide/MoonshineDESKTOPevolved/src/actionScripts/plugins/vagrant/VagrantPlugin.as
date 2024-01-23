@@ -31,9 +31,38 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
+	import flash.display.DisplayObject;
+	import flash.events.Event;
+	import flash.events.InvokeEvent;
+	import flash.events.NativeProcessExitEvent;
+	import flash.filesystem.File;
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
+	import flash.utils.clearInterval;
+	import flash.utils.setTimeout;
+	
+	import mx.collections.ArrayCollection;
+	import mx.core.FlexGlobals;
+	import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	
+	import spark.components.Alert;
+	
+	import actionScripts.events.ApplicationEvent;
 	import actionScripts.events.DominoEvent;
+	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.OnDiskBuildEvent;
+	import actionScripts.events.SettingsEvent;
+	import actionScripts.events.StatusBarEvent;
+	import actionScripts.factory.FileLocation;
+	import actionScripts.plugin.console.ConsoleOutputEvent;
+	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.event.RequestSettingByNameEvent;
+	import actionScripts.plugin.settings.vo.ISetting;
+	import actionScripts.plugin.settings.vo.PathSetting;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
+	import actionScripts.plugins.vagrant.settings.renderer.LinkedInstancesRenderer;
 	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
 	import actionScripts.plugins.vagrant.utils.DatabaseJobBase;
 	import actionScripts.plugins.vagrant.utils.DeployBuildOnVagrantJob;
@@ -41,6 +70,12 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugins.vagrant.utils.DeployRoyaleToVagrantJob;
 	import actionScripts.plugins.vagrant.utils.ImportDocumentsJSONJob;
 	import actionScripts.plugins.vagrant.utils.RunDatabaseOnVagrantJob;
+	import actionScripts.plugins.vagrant.utils.VagrantUtil;
+	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.utils.FileUtils;
+	import actionScripts.utils.MethodDescriptor;
+	import actionScripts.utils.UtilsCore;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 	
 	import components.popup.ConvertDominoDatabasePopup;
 	import components.popup.DeployDominoDatabasePopup;
@@ -48,43 +83,7 @@ package actionScripts.plugins.vagrant
 	import components.popup.ImportDocumentJSONPopup;
 	import components.popup.SelectVagrantPopup;
 	
-	import flash.display.DisplayObject;
-
-	import flash.events.Event;
-	import flash.events.NativeProcessExitEvent;
-	import flash.filesystem.File;
-	import flash.net.URLRequest;
-	import flash.net.navigateToURL;
-
-	import mx.collections.ArrayCollection;
-	import mx.core.FlexGlobals;
-
-	import mx.events.CloseEvent;
-	import mx.managers.PopUpManager;
-
-	import spark.components.Alert;
-	
-	import actionScripts.events.FilePluginEvent;
-	import actionScripts.events.SettingsEvent;
-	import actionScripts.events.StatusBarEvent;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.console.ConsoleOutputEvent;
-	import actionScripts.plugin.settings.ISettingsProvider;
-	import actionScripts.plugin.settings.vo.ISetting;
-	import actionScripts.plugin.settings.vo.PathSetting;
-	import actionScripts.plugins.build.ConsoleBuildPluginBase;
-	import actionScripts.plugins.vagrant.utils.VagrantUtil;
-	import actionScripts.ui.renderers.FTETreeItemRenderer;
-	import actionScripts.utils.FileUtils;
-	import actionScripts.utils.MethodDescriptor;
-	import actionScripts.utils.UtilsCore;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.events.ApplicationEvent;
-	import actionScripts.plugin.settings.event.RequestSettingByNameEvent;
-	import flash.utils.setTimeout;
-	import actionScripts.plugins.vagrant.settings.renderer.LinkedInstancesRenderer;
 	import haxe.io.Error;
-	import flash.utils.clearInterval;
 
 	public class VagrantPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
 	{
@@ -173,7 +172,7 @@ package actionScripts.plugins.vagrant
 			dispatcher.addEventListener(DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT, onImportDocumentsJSONRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest, false, 0, true);
-			dispatcher.addEventListener(ApplicationEvent.INVOKE, onInvokeEvent, false, 0, true);
+			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEvent, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -187,7 +186,7 @@ package actionScripts.plugins.vagrant
 			dispatcher.removeEventListener(DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT, onImportDocumentsJSONRequest);
 			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest);
 			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest);
-			dispatcher.removeEventListener(ApplicationEvent.INVOKE, onInvokeEvent);
+			dispatcher.removeEventListener(InvokeEvent.INVOKE, onInvokeEvent);
 		}
 
 		override public function resetSettings():void
@@ -204,7 +203,7 @@ package actionScripts.plugins.vagrant
 			}
 		}
 
-		override protected function outputMsg(msg:*):void
+		override protected function outputMsg(msg:*, type:String=null):void
 		{
 			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT_VAGRANT, msg));
 		}
@@ -222,7 +221,7 @@ package actionScripts.plugins.vagrant
 			]);
         }
         
-        private function onInvokeEvent(event:ApplicationEvent):void
+        private function onInvokeEvent(event:InvokeEvent):void
         {
         	// loads/adds vagrant instances from SHI config
         	var shiInstances:Array = VagrantUtil.getVagrantInstancesFromSHI(this.vagrantInstances);

@@ -45,6 +45,7 @@ class ConsoleOutputEvent extends Event {
 	public static final TYPE_INFO:String = "typeInfo";
 	public static final TYPE_SUCCESS:String = "typeSuccess";
 	public static final TYPE_NOTE:String = "typeNotice";
+	public static final TYPE_HTML:String = "typeHTML";
 
 	public var text:Any;
 	public var hideOtherOutput:Bool;

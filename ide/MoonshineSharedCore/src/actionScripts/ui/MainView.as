@@ -139,7 +139,6 @@ package actionScripts.ui
 				{
 					editor = model.editors.getItemAt(event.location) as DisplayObject;
                     mainContent.addChild(editor);
-                    mainContent.selectedIndex = _mainContent.getChildIndex(editor);
 					model.activeEditor = editor as IContentWindow;
 					break;
 				}

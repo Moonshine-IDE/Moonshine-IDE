@@ -805,7 +805,7 @@ package actionScripts.plugin.rename
 				if (i.path == oldPath)
 				{
 					i.path = newFile.fileBridge.nativePath;
-					i.name = newFile.name;
+					//i.name = newFile.name;
 					GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
 					break;
 				}

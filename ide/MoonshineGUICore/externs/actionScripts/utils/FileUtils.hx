@@ -35,5 +35,5 @@ extern class FileUtils {
 
     static public function getCreationDateForPath( path:String ):Date;
     public static function isPathExists(value:String):Bool;
-
+    public static function isPathDirectory(value:String):Bool;
 }

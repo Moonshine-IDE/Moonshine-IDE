@@ -68,6 +68,9 @@
 			 */
 			private function onPreInit(): void
 			{
+				// required when AS3 uses a .swc file compiled with Haxe
+				haxe.initSwc(null);
+
 				MoonshineTheme.initializeTheme();
 
 				var ideModel:IDEModel = IDEModel.getInstance();

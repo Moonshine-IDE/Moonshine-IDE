@@ -31,17 +31,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.genesis
 {
-	import actionScripts.plugins.build.ConsoleBuildPluginBase;
-	import actionScripts.events.GenesisEvent;
-	import actionScripts.plugins.genesis.utils.ImportGenesisCatalog;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-
-	import components.popup.ImportGenesisPopup;
-
 	import flash.desktop.NativeApplication;
-
 	import flash.display.DisplayObject;
-
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.net.URLRequest;
@@ -49,13 +40,19 @@ package actionScripts.plugins.genesis
 	
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
-
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
 	import mx.utils.StringUtil;
 	
 	import spark.components.Alert;
+	
 	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.GenesisEvent;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.genesis.utils.ImportGenesisCatalog;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	
+	import components.popup.ImportGenesisPopup;
 
 	public class GenesisPlugin extends ConsoleBuildPluginBase
 	{
@@ -75,7 +72,7 @@ package actionScripts.plugins.genesis
 
 			dispatcher.addEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent, false, 0, true);
 			dispatcher.addEventListener(GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER, onOpenGenesisCatalogBrowserEvent, false, 0, true);
-			dispatcher.addEventListener(ApplicationEvent.INVOKE, onAppInvokeEvent, false, 0, true);
+			dispatcher.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -84,7 +81,7 @@ package actionScripts.plugins.genesis
 
 			dispatcher.removeEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent);
 			dispatcher.removeEventListener(GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER, onOpenGenesisCatalogBrowserEvent);
-			dispatcher.removeEventListener(ApplicationEvent.INVOKE, onAppInvokeEvent);
+			dispatcher.removeEventListener(InvokeEvent.INVOKE, onAppInvokeEvent);
 		}
 
 		private function onImportGenesisEvent(event:Event, withURL:String=null):void
@@ -104,17 +101,17 @@ package actionScripts.plugins.genesis
 			navigateToURL(new URLRequest("https://genesis.directory/apps"));
 		}
 
-		private function onAppInvokeEvent(event:ApplicationEvent):void
+		private function onAppInvokeEvent(event:InvokeEvent):void
 		{
-			if (event.data.length)
+			if (event.arguments.length)
 			{
-				if ((event.data[0] as String).toLowerCase().indexOf("://project/") != -1)
+				if ((event.arguments[0] as String).toLowerCase().indexOf("://project/") != -1)
 				{
-					var arguments:Array = event.data[0].split("/");
+					var arguments:Array = event.arguments[0].split("/");
 					// test only if there is some value followed by 'project/'
 					if (arguments[arguments.length - 1].toLowerCase() != "")
 					{
-						onImportGenesisEvent(null, event.data[0] as String);
+						onImportGenesisEvent(null, event.arguments[0] as String);
 					}
 				}
 			}

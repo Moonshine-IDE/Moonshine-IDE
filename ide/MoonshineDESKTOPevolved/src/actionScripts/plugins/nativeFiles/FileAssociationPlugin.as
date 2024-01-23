@@ -42,13 +42,14 @@ package actionScripts.plugins.nativeFiles
 	
 	import mx.core.FlexGlobals;
 	
+	import spark.components.Alert;
+	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.events.ApplicationEvent;
 
 	public class FileAssociationPlugin extends PluginBase
 	{
@@ -61,23 +62,19 @@ package actionScripts.plugins.nativeFiles
 			super.activate();
 			
 			// open-with listener
-			GlobalEventDispatcher.getInstance().addEventListener(ApplicationEvent.INVOKE, onAppInvokeEvent, false, 0, true);
+			GlobalEventDispatcher.getInstance().addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
 			
 			// drag-drop listeners
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onNativeItemDragEnter, false, 0, true);
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onNativeItemDragDrop, false, 0, true);
 		}
 		
-		private function onAppInvokeEvent(event:ApplicationEvent):void
+		private function onAppInvokeEvent(event:InvokeEvent):void
 		{
-			if (event.data.length)
+			if (event.arguments.length)
 			{
-				openFilesByPath(event.data);
+				openFilesByPath(event.arguments);
 			}
-			
-			// to rail the event in other parts of the applciation
-			// where it may needed
-			dispatcher.dispatchEvent(event);
 		}
 		
 		private function onNativeItemDragEnter(event:NativeDragEvent):void
@@ -133,7 +130,7 @@ package actionScripts.plugins.nativeFiles
 					dispatcher.dispatchEvent(tmpOpenEvent);
 				}
 			}
-			
+				
 			// for project-configurations
 			if (projectFile && projectFile.fileBridge.exists)
 			{

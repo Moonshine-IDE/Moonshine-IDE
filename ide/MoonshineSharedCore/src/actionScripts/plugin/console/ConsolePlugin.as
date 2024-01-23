@@ -48,9 +48,9 @@ package actionScripts.plugin.console
     import actionScripts.plugin.settings.ISettingsProvider;
     import actionScripts.plugin.settings.vo.BooleanSetting;
     import actionScripts.plugin.settings.vo.ISetting;
+    import actionScripts.ui.FeathersUIWrapper;
     import actionScripts.ui.menu.MenuPlugin;
     import actionScripts.valueObjects.ConstantsCoreVO;
-    import actionScripts.ui.FeathersUIWrapper;
 	
 	/**
 	 *  @private
@@ -223,7 +223,7 @@ package actionScripts.plugin.console
 			for (var cmd:String in console::commands)
 			{
 				var obj:Object = console::commands[cmd];
-				cmds.push(cmd +" - <font color='#4C9BE0'> " +obj.commandDesc+"</font>");	
+				cmds.push(cmd +" - " +obj.commandDesc);	
 			}
 			cmds = cmds.sort();
 			
@@ -234,7 +234,8 @@ package actionScripts.plugin.console
 			}
 			
 			halp = halp.substr(0, halp.length-1);
-			outputMsg(halp);
+			//html(halp);
+			print(halp);
 		}
 		
 		public function aboutCommand(args:Array):void
@@ -325,19 +326,22 @@ package actionScripts.plugin.console
 
 		protected function consoleClearHandler(event:ConsoleOutputEvent):void
         {
-            consoleView.history.text = "";
+            //consoleView.history.text = "";
+			consoleView.historyTextEditor.clearText();
         }
 
 		protected function consoleOutputHandler(event:ConsoleOutputEvent):void
         {
-			if (!consoleView.history.textFlow)
+			consoleView.historyTextEditor.appendtext(event.text, event.messageType);
+			/*if (!consoleView.history.textFlow)
 			{
 				this.consoleTextCache.push(event.text);
 			}
 			else
 			{
                 consoleView.history.appendtext(event.text);
-			}
+				consoleView.historyTextEditor.appendtext(event.text);
+			}*/
         }
 
 		protected function consolePrintHandler(event:ConsoleOutputEvent):void
@@ -353,6 +357,9 @@ package actionScripts.plugin.console
                 case ConsoleOutputEvent.TYPE_NOTE:
                     warning(event.text);
                     break;
+				case ConsoleOutputEvent.TYPE_HTML:
+					html(event.text);
+					break;
                 default:
                     print(event.text);
                     break;
@@ -365,7 +372,8 @@ package actionScripts.plugin.console
 
 			for each (var text:String in consoleTextCache)
 			{
-				consoleView.history.appendtext(text);
+				//consoleView.history.appendtext(text);
+				consoleView.historyTextEditor.appendtext(text);
 			}
 
 			consoleTextCache = null;

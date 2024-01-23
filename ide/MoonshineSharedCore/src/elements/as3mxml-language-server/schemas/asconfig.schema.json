@@ -1,6 +1,6 @@
 {
   "title": "JSON schema for the ActionScript configuration file",
-  "$schema": "https://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "anyOf": [
     {
@@ -31,6 +31,7 @@
       "allOf": [
         { "$ref": "#/definitions/baseConfig" },
         {
+          "type": "object",
           "properties": {
             "type": {
               "type": "string",
@@ -61,6 +62,7 @@
       "allOf": [
         { "$ref": "#/definitions/baseConfig" },
         {
+          "type": "object",
           "properties": {
             "type": {
               "type": "string",
@@ -167,7 +169,7 @@
     "airOptionsAllTargets": {
       "type": "string",
       "description": "The package target for Adobe AIR applications.",
-      "pattern": "^(air|bundle|native|ipa-app-store|ipa-ad-hoc|ipa-debug|ipa-test|ipa-debug-interpreter|ipa-test-interpreter|ipa-debug-interpreter-simulator|ipa-test-interpreter-simulator|apk-captive-runtime|apk|apk-debug|apk-profile|aab)$"
+      "pattern": "^(air|bundle|native|ipa-app-store|ipa-ad-hoc|ipa-debug|ipa-test|ipa-debug-interpreter|ipa-test-interpreter|ipa-debug-interpreter-simulator|ipa-test-interpreter-simulator|apk-captive-runtime|apk|apk-debug|apk-profile|apk-emulator|aab|aab-debug|android-studio|android-studio-debug)$"
     },
     "airOptionsDesktopTargets": {
       "type": "string",
@@ -399,6 +401,22 @@
           "type": "boolean",
           "description": "Prints detailed compile times to the standard output. The default value is true."
         },
+        "context-root": {
+          "type": "string",
+          "description": "Adds the path to replace {context.root} tokens for service channel endpoints"
+        },
+        "contributor": {
+          "type": "string",
+          "description": "In a SWF project, a contributor's name to store in the metadata"
+        },
+        "creator": {
+          "type": "string",
+          "description": "In a SWF project, a creator's name to store in the metadata"
+        },
+        "date": {
+          "type": "string",
+          "description": "In a SWF project, the creation date to store in the metadata"
+        },
         "debug": {
           "type": "boolean",
           "description": "The generated output of the build will contain extra debug data."
@@ -478,6 +496,10 @@
             },
             "required": ["name", "value"]
           }
+        },
+        "description": {
+          "type": "string",
+          "description": "In a SWF project, the description to store in the metadata"
         },
         "directory": {
           "type": "boolean",
@@ -638,6 +660,10 @@
         "keep-generated-actionscript": {
           "type": "boolean",
           "description": "Determines whether to keep the generated ActionScript class files. The default value is false."
+        },
+        "language": {
+          "type": "string",
+          "description": "In a SWF project, the language to store in the metadata"
         },
         "library-path": {
           "type": "array",
@@ -812,9 +838,17 @@
           "type": "boolean",
           "description": "(Advanced, Apache Royale only) Determines if Closure compiler is prevented from renaming internal instance accessors (getters and setters) in the generated JavaScript"
         },
+        "publisher": {
+          "type": "string",
+          "description": "In a SWF project, the publisher's name to store in the metadata"
+        },
         "remove-circulars": {
           "type": "boolean",
           "description": "(Apache Royale only) Removes circular references from the generated JavaScript code for a release build."
+        },
+        "services": {
+          "type": "string",
+          "description": "Adds the path to a services configuration file"
         },
         "show-unused-type-selector-warnings": {
           "type": "boolean",
@@ -882,6 +916,10 @@
             }
           ],
           "description": "Specifies one or more theme files to use with this application."
+        },
+        "title": {
+          "type": "string",
+          "description": "In a SWF project, the title to store in the metadata"
         },
         "tools-locale": {
           "type": "string",

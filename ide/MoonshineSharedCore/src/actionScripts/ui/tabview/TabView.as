@@ -91,13 +91,23 @@ package actionScripts.ui.tabview
 			return _selectedIndex;
 		}
 
+		private var lastSelectedTab:TabViewTab;
 		public function set selectedIndex(value:int):void
 		{
-			if (itemContainer.numChildren == 0) return;
+			if (tabContainer.numChildren == 0) return;
 			//if (_selectedIndex == value) return;
 			if (value < 0) value = 0;
-			lastSelectedIndex = _selectedIndex;
+
 			_selectedIndex = value;
+			this.tabContainer.getChildren().some(function(element:TabViewTab, index:int, arr:Array):Boolean {
+				if (element.selected)
+				{
+					lastSelectedTab = element as TabViewTab;
+					lastSelectedIndex = index;
+					return true;
+				}
+				return false;
+			});
 			
 			// Explicitly set new, so no automagic needed.
 			needsNewSelectedTab = false;
@@ -116,23 +126,13 @@ package actionScripts.ui.tabview
 			}
 			
 			var itemToDisplay:DisplayObject = TabViewTab(tabContainer.getChildAt(value)).data as DisplayObject;
+			itemContainer.removeAllChildren();
+			itemContainer.addChild(itemToDisplay);
 			
-			// Display or hide content
-			for (i = 0; i < itemContainer.numChildren; i++) 
-			{	
-				var child:DisplayObject = itemContainer.getChildAt(i);
-				if (child == itemToDisplay)
-				{
-					child.visible = true;
-					UIComponent(child).setFocus();
-					IDEModel.getInstance().activeEditor = child as IContentWindow;
-					dispatcher.dispatchEvent(new TabEvent(TabEvent.EVENT_TAB_SELECT, child));
-				} 
-				else 
-				{
-					child.visible = false;
-				}
-			}
+			itemToDisplay.visible = true;
+			UIComponent(itemToDisplay).setFocus();
+			IDEModel.getInstance().activeEditor = itemToDisplay as IContentWindow;
+			dispatcher.dispatchEvent(new TabEvent(TabEvent.EVENT_TAB_SELECT, itemToDisplay));
 			
 			invalidateLayoutTabs();
 		}
@@ -161,18 +161,25 @@ package actionScripts.ui.tabview
 				return;
 			}
 			
-			if (itemContainer.numChildren <= 1) return;
-			
-			if (lastSelectedIndex == selectedIndex) 
+			if (tabContainer.numChildren <= 1) return;
+
+			if (this.lastSelectedTab.parent == null)
 			{
-				lastSelectedIndex = selectedIndex + 1;
+				// suppose to trigger when the last visited tab removed
+				if (this.lastSelectedIndex >= this.tabContainer.numChildren)
+				{
+					if ((this.lastSelectedIndex - 1) != this.selectedIndex) selectedIndex = this.tabContainer.numChildren - 1;
+					return;
+				}
+
+				this.lastSelectedIndex = (this.lastSelectedIndex == 0) ? 0 : this.lastSelectedIndex++;
+				if (this.lastSelectedIndex == this.selectedIndex) this.lastSelectedIndex++;
+				selectedIndex = this.lastSelectedIndex;
 			}
-			else if (lastSelectedIndex > (itemContainer.numChildren - 1))
+			else
 			{
-				lastSelectedIndex = itemContainer.numChildren - 1;
+				selectedIndex = this.tabContainer.getChildIndex(this.lastSelectedTab);
 			}
-			
-			selectedIndex = lastSelectedIndex;
 		}
 		
 		private function onTabListNavigate(event:Event):void
@@ -194,7 +201,8 @@ package actionScripts.ui.tabview
 			var tmpCollection:Array = [];
 			var tab:TabViewTab;
 			var tabData:DisplayObject;
-			for (var i:int = 0; i < tabContainer.numChildren; i++)
+			var i:int = tabContainer.numChildren - 1;
+			while (i != -1)
 			{
 				tab = tabContainer.getChildAt(i) as TabViewTab;
 				tabData = tab.data as DisplayObject;
@@ -202,6 +210,7 @@ package actionScripts.ui.tabview
 				{
 					tmpCollection.push(new HamburgerMenuTabsVO(tab["label"], tabData, i));
 				}
+				i--;
 			}
 			if (_model.hamburgerTabs.length > 0)
 			{
@@ -226,25 +235,60 @@ package actionScripts.ui.tabview
 			{
 				editorsListMenu.selectedIndex = 0;
 			});
-			
-			editorsListMenu.addEventListener(MenuEvent.MENU_HIDE, onEditorsListMenuClosed, false, 0, true);
+
+			editorsListMenu.addEventListener(MenuEvent.MENU_HIDE, onMenuBeingHide, false, 0, true);
+			editorsListMenu.addEventListener(MenuEvent.ITEM_CLICK, onItemBeingSelectedOnClick, false, 0, true);
+		}
+
+		private function onMenuBeingHide(event:MenuEvent):void
+		{
+			editorsListMenu.addEventListener(MenuEvent.MENU_HIDE, onMenuBeingHide, false, 0, true);
+			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeysUp);
+
+			editorsListMenu.removeEventListener(MenuEvent.MENU_HIDE, onMenuBeingHide);
+			editorsListMenu = null;
+			multiKeys = null;
+		}
+
+		private function onItemBeingSelectedOnClick(event:MenuEvent):void
+		{
+			var selectedItem:HamburgerMenuTabsVO = event.item as HamburgerMenuTabsVO;
+			if (selectedItem.visibleIndex != -1)
+			{
+				selectedIndex = selectedItem.visibleIndex;
+			}
+			else
+			{
+				addTabFromHamburgerMenu(selectedItem);
+			}
+
+			this.removeEditorsListMenu();
 		}
 		
 		private function removeEditorsListMenu():void
 		{
-			editorsListMenu.hide();
-			editorsListMenu.removeEventListener(MenuEvent.MENU_HIDE, onEditorsListMenuClosed);
-			editorsListMenu = null;
+			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeysUp);
+			multiKeys = null;
+
+			if (editorsListMenu)
+			{
+				editorsListMenu.removeEventListener(MenuEvent.ITEM_CLICK, onItemBeingSelectedOnClick);
+				editorsListMenu.hide();
+			}
 		}
 		
 		private function onKeysUp(event:KeyboardEvent):void
 		{
+			if (event.keyCode == Keyboard.ESCAPE)
+			{
+				return;
+			}
+
 			if (event.keyCode == Keyboard.CONTROL || event.keyCode == Keyboard.SHIFT)
 			{
 				if ((multiKeys.length == 0) || multiKeys[0] != event.keyCode) multiKeys.push(event.keyCode);
 				if (multiKeys.length == 2)
 				{
-					stage.removeEventListener(KeyboardEvent.KEY_UP, onKeysUp);
 					removeEditorsListMenu();
 					multiKeys = null;
 				}
@@ -255,18 +299,6 @@ package actionScripts.ui.tabview
 		{
 			editorsListMenu.selectedIndex++;
 			editorsListMenu.selectedItem = editorsListMenu.dataProvider[editorsListMenu.selectedIndex];
-		}
-		
-		private function onEditorsListMenuClosed(event:MenuEvent):void
-		{
-			if ((editorsListMenu.selectedItemBasedOnSelectedIndex as HamburgerMenuTabsVO).visibleIndex != -1)
-			{
-				selectedIndex = (editorsListMenu.selectedItemBasedOnSelectedIndex as HamburgerMenuTabsVO).visibleIndex;
-			}
-			else
-			{
-				addTabFromHamburgerMenu(editorsListMenu.selectedItemBasedOnSelectedIndex as HamburgerMenuTabsVO);
-			}
 		}
 
 		public function setSelectedTab(editor:DisplayObject):void
@@ -445,38 +477,55 @@ package actionScripts.ui.tabview
 		override public function addChild(child:DisplayObject):DisplayObject
 		{
 			addTabFor(child);
-			var editor:DisplayObject = itemContainer.addChild(child);
+			//itemContainer.removeAllChildren();
+			//var editor:DisplayObject = itemContainer.addChild(child);
             selectedIndex = 0;
 
-			return editor;
+			return child;
 		}
 
 		public function addChildTab(child:DisplayObject):DisplayObject
 		{
             addTabFor(child);
-            return itemContainer.addChildAt(child, 0);
+            return child;
 		}
 
-		override public function removeChildAt(index:int):DisplayObject
+		/*override public function removeChildAt(index:int):DisplayObject
 		{
 			invalidateTabSelection();
 
 			removeTabFor(itemContainer.getChildAt(index));
 			return itemContainer.removeChildAt(index);
-		}
+		}*/
 		
 		override public function removeChild(child:DisplayObject):DisplayObject
 		{
-			invalidateTabSelection();
-
 			var tab:TabViewTab = tabLookup[child];
-
 			if (tab)
             {
+				if (tab.selected)
+				{
+					invalidateTabSelection();
+				}
                 removeTabFor(child);
-                return itemContainer.removeChild(child);
+				if (child.parent != null) 
+				{
+	                return itemContainer.removeChild(child);
+				}
             }
 
+			// due to descending ordered index in tabContainer,
+			// removal of any tab at any position also practically updates
+			// the current selected tab's index; that needs to get updated
+			// for any latter action(s)
+			this.tabContainer.getChildren().some(function(element:TabViewTab, index:int, arr:Array):Boolean {
+				if (element.selected)
+				{
+					_selectedIndex = index;
+					return true;
+				}
+				return false;
+			});
 			return null;
 		}
 

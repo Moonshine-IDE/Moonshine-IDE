@@ -298,7 +298,7 @@ package actionScripts.plugins.ondiskproj.crud.exporter
 		{
 			var refVO:ProjectReferenceVO = new ProjectReferenceVO();
 			refVO.path = targetDirectory.nativePath;
-			refVO.name = targetDirectory.name;
+			//refVO.name = targetDirectory.name;
 			dispatcher.dispatchEvent(new MenuEvent("eventOpenRecentProject", false, false, refVO));
 		}
 	}

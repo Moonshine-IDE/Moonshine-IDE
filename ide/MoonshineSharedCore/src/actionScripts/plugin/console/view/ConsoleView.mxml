@@ -44,164 +44,217 @@
     implements="actionScripts.interfaces.IViewWithTitle" label="Console">
 	<mx:Script>
 		<![CDATA[
-		import flash.text.engine.ElementFormat;
-		import flash.text.engine.FontDescription;
-		import flash.text.engine.FontLookup;
-
-		import mx.events.FlexEvent;
-		import mx.managers.CursorManager;
-		import mx.managers.CursorManagerPriority;
-
-		import spark.components.RichEditableText;
-
-		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.console.ConsoleCommandEvent;
-		import actionScripts.plugin.console.ConsoleStyle;
-
-		[Bindable] public var showCommandLine:Boolean = true;
-
-		public var displayContextMenuAbout:Boolean = true;
-		public var displayContextMenuHide:Boolean = true;
-		public var displayContextMenuHelp:Boolean = true;
-		public var displayContextMenuExit:Boolean = true;
-
-		private var _consolePopOver:Boolean;
-		[Bindable]
-		private var historyContainerHeight:int = 0;
-		private var cm:ContextMenu;
-		protected var model:IDEModel = IDEModel.getInstance();
-
-		public function get title():String
-		{
-			return this.label;
-		}
-
-		public function get consolePopOver():Boolean
-		{
-			return _consolePopOver;
-		}
-
-		public function set consolePopOver(value:Boolean):void
-		{
-			_consolePopOver = value;
-
-			if (!historyContainer) return;
-
-			//divider.y = -1;
-
-			if (value)
+			import flash.text.engine.ElementFormat;
+			import flash.text.engine.FontDescription;
+			import flash.text.engine.FontLookup;
+			
+			import mx.events.FlexEvent;
+			import mx.managers.CursorManager;
+			import mx.managers.CursorManagerPriority;
+			
+			import spark.components.RichEditableText;
+			
+			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.console.ConsoleCommandEvent;
+			import actionScripts.plugin.console.ConsoleStyle;
+			import actionScripts.plugin.console.ConsoleTextLineModel;
+			import actionScripts.ui.editor.text.TextLineModel;
+			
+			import feathers.graphics.FillStyle;
+			import feathers.skins.RectangleSkin;
+			
+			import flashx.textLayout.conversion.TextConverter;
+			import flashx.textLayout.elements.FlowElement;
+			import flashx.textLayout.elements.ParagraphElement;
+			import flashx.textLayout.elements.TextFlow;
+			
+			[Bindable] public var showCommandLine:Boolean = true;
+	
+			public var displayContextMenuAbout:Boolean = true;
+			public var displayContextMenuHide:Boolean = true;
+			public var displayContextMenuHelp:Boolean = true;
+			public var displayContextMenuExit:Boolean = true;
+				
+			public var historyTextEditor:ConsoleTextEditor;
+	
+			private var _consolePopOver:Boolean;
+			[Bindable]
+			private var historyContainerHeight:int = 0;
+			private var cm:ContextMenu;
+			protected var model:IDEModel = IDEModel.getInstance();
+	
+			public function get title():String
 			{
-				height = minHeight;
-				historyContainer.setStyle('top', null);
-				historyContainer.setStyle('bottom', null);
-				//historyContainer.y = divider.y;
+				return this.label;
 			}
-			else
+	
+			public function get consolePopOver():Boolean
 			{
-				historyContainer.setStyle('top', 0);
-				historyContainer.setStyle('bottom', 25);
+				return _consolePopOver;
 			}
-
-		}
-
-		private function init():void
-		{
-			consolePopOver = _consolePopOver;
-			cm = new ContextMenu();
-			var clear:ContextMenuItem = new ContextMenuItem('Clear', false, true, true);
-			clear.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, clearHandler);
-			cm.customItems.push(clear);
-			cm.clipboardMenu = true;
-			history.contextMenu = cm;
-			(history.textDisplay as RichEditableText).contextMenu = cm;
-
-			if (displayContextMenuAbout)
+	
+			public function set consolePopOver(value:Boolean):void
 			{
-				var about:ContextMenuItem = new ContextMenuItem('About', false, true, true);
-				about.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, aboutHandler);
-				cm.customItems.push(about);
+				_consolePopOver = value;
+	
+				if (!historyContainer) return;
+	
+				//divider.y = -1;
+	
+				if (value)
+				{
+					height = minHeight;
+					historyContainer.setStyle('top', null);
+					historyContainer.setStyle('bottom', null);
+					//historyContainer.y = divider.y;
+				}
+				else
+				{
+					historyContainer.setStyle('top', 0);
+					historyContainer.setStyle('bottom', 25);
+				}
 			}
-			if (displayContextMenuHide)
+	
+			private function init():void
 			{
-				var hide:ContextMenuItem = new ContextMenuItem('Hide', false, true, true);
-				hide.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, hideHandler);
-				cm.customItems.push(hide);
+				var textEditorBackground:RectangleSkin = new RectangleSkin();
+				textEditorBackground.fill = FillStyle.SolidColor(0x373737);
+				textEditorBackground.border = null;
+				
+				var selectedTextBackground:RectangleSkin = new RectangleSkin(FillStyle.SolidColor(0x676767));
+				
+				this.historyTextEditor = new ConsoleTextEditor(null, true);
+				this.historyTextEditor.wordWrap = true;
+				this.historyTextEditor.showLineNumbers = false;
+				var wrapper:FeathersUIWrapper = new FeathersUIWrapper(this.historyTextEditor);
+				wrapper.percentWidth = wrapper.percentHeight = 100;
+				wrapper.minWidth = wrapper.minHeight = 0;
+				this.historyContainer.addElementAt(wrapper, 0);
+				
+				consolePopOver = _consolePopOver; 
+				cm = new ContextMenu();
+				var clear:ContextMenuItem = new ContextMenuItem('Clear', false, true, true);
+				clear.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, clearHandler);
+				cm.customItems.push(clear);
+				//cm.clipboardMenu = true;
+				//history.contextMenu = cm;
+				historyTextEditor.contextMenu = cm;
+				//(history.textDisplay as RichEditableText).contextMenu = cm;
+	
+				if (displayContextMenuAbout)
+				{
+					var about:ContextMenuItem = new ContextMenuItem('About', false, true, true);
+					about.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, aboutHandler);
+					cm.customItems.push(about);
+				}
+				if (displayContextMenuHide)
+				{
+					var hide:ContextMenuItem = new ContextMenuItem('Hide', false, true, true);
+					hide.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, hideHandler);
+					cm.customItems.push(hide);
+				}
+				if (displayContextMenuExit)
+				{
+					var exit:ContextMenuItem = new ContextMenuItem('Exit', false, true, true);
+					exit.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, exitHandler);
+					cm.customItems.push(exit);
+				}
+				if (displayContextMenuHelp)
+				{
+					var help:ContextMenuItem = new ContextMenuItem('Help', false, true, true);
+					help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
+					cm.customItems.push(help);
+				}
+				
+				var copy:ContextMenuItem = new ContextMenuItem('Copy', true, true, true);
+				copy.addEventListener("displaying", onCopyContextMenuShow);
+				copy.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, copyHandler);
+				cm.customItems.push(copy);
+				
+				var selectAll:ContextMenuItem = new ContextMenuItem('Select All', false, true, true);
+				selectAll.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, selectAllHandler);
+				cm.customItems.push(selectAll);
 			}
-			if (displayContextMenuExit)
+	
+			private var cursorID:int = CursorManager.NO_CURSOR;
+	
+			[Embed(source="Assets.swf", symbol="mx.skins.cursor.VBoxDivider")]
+			private var cursor:Class;
+			
+			private function onCopyContextMenuShow(event:Event):void
 			{
-				var exit:ContextMenuItem = new ContextMenuItem('Exit', false, true, true);
-				exit.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, exitHandler);
-				cm.customItems.push(exit);
+				(event.target as ContextMenuItem).enabled = this.historyTextEditor.selectedText != "";
 			}
-			if (displayContextMenuHelp)
+	
+			private function mouseOverDivider():void
 			{
-				var help:ContextMenuItem = new ContextMenuItem('Help', false, true, true);
-				help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
-				cm.customItems.push(help);
+				cursorID = cursorManager.setCursor(cursor, CursorManagerPriority.HIGH, 0, 0);
 			}
-		}
-
-		private var cursorID:int = CursorManager.NO_CURSOR;
-
-		[Embed(source="Assets.swf", symbol="mx.skins.cursor.VBoxDivider")]
-		private var cursor:Class;
-
-		private function mouseOverDivider():void
-		{
-			cursorID = cursorManager.setCursor(cursor, CursorManagerPriority.HIGH, 0, 0);
-		}
-
-		private function mouseOutDivider():void
-		{
-			if (cursorID != CursorManager.NO_CURSOR)
+	
+			private function mouseOutDivider():void
 			{
-				cursorManager.removeCursor(cursorID);
-				cursorID = CursorManager.NO_CURSOR;
+				if (cursorID != CursorManager.NO_CURSOR)
+				{
+					cursorManager.removeCursor(cursorID);
+					cursorID = CursorManager.NO_CURSOR;
+				}
 			}
-		}
-
-		private function mouseUpDivider(event:Event = null):void
-		{
-			parent.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveDivider);
-			stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUpDivider);
-		}
-
-		private function mouseMoveDivider(event:MouseEvent):void
-		{
-			historyContainerHeight = parent.height - parent.mouseY - minHeight;
-		}
-
-		private function clearHandler(e:Event):void
-		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("clear", null));
-		}
-
-		private function aboutHandler(e:Event):void
-		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("about", null));
-		}
-
-		private function hideHandler(e:Event):void
-		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("hide", null));
-		}
-
-		private function exitHandler(e:Event):void
-		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("exit", null));
-		}
-
-		private function helpHandler(e:Event):void
-		{
-			commandLine.dispatchEvent(new ConsoleCommandEvent("help", null));
-		}
-
-		protected function consoleView_updateCompleteHandler(event:FlexEvent):void
-		{
-			// TODO Auto-generated method stub
-			if (!_consolePopOver)
-				historyContainerHeight = this.height;
-		}
+	
+			private function mouseUpDivider(event:Event = null):void
+			{
+				parent.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveDivider);
+				stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUpDivider);
+			}
+	
+			private function mouseMoveDivider(event:MouseEvent):void
+			{
+				historyContainerHeight = parent.height - parent.mouseY - minHeight;
+			}
+	
+			private function clearHandler(e:Event):void
+			{
+				commandLine.dispatchEvent(new ConsoleCommandEvent("clear", null));
+			}
+	
+			private function aboutHandler(e:Event):void
+			{
+				commandLine.dispatchEvent(new ConsoleCommandEvent("about", null));
+			}
+	
+			private function hideHandler(e:Event):void
+			{
+				commandLine.dispatchEvent(new ConsoleCommandEvent("hide", null));
+			}
+	
+			private function exitHandler(e:Event):void
+			{
+				commandLine.dispatchEvent(new ConsoleCommandEvent("exit", null));
+			}
+	
+			private function helpHandler(e:Event):void
+			{
+				commandLine.dispatchEvent(new ConsoleCommandEvent("help", null));
+			}
+			
+			private function copyHandler(event:Event):void
+			{
+				if (this.historyTextEditor.selectedText)
+				{
+					model.clipboardCore.copyText(this.historyTextEditor.selectedText);
+				}
+			}
+			
+			private function selectAllHandler(event:Event):void
+			{
+				this.historyTextEditor.dispatchEvent(new Event(Event.SELECT_ALL));
+			}
+	
+			protected function consoleView_updateCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				if (!_consolePopOver)
+					historyContainerHeight = this.height;
+			}
 		]]>
 	</mx:Script>
 	
@@ -209,9 +262,10 @@
 			 width="100%"
 			 backgroundAlpha="0.9"
 			 backgroundColor="0x373737">
-		<view:ConsoleViewTextArea id="history"
+		
+		<!--view:ConsoleViewTextArea id="history"
 								  editable="false" selectable="true" horizontalScrollPolicy="auto" verticalScrollPolicy="auto"
-								  height="100%" width="100%" lineBreak="toFit" color="0xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/>
+								  height="100%" width="100%" lineBreak="toFit" color="0xffffff" styleName="consoleFixedWidthTexts" fontSize="12" focusedTextSelectionColor="0x676767"/-->
 		<mx:Canvas width="100%">
 			<mx:HRule 
 				width="100%" 

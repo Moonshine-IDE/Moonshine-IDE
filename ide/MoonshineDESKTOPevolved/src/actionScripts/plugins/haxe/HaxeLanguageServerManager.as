@@ -669,6 +669,12 @@ package actionScripts.plugins.haxe
 				
 				warning("Haxe language server exited unexpectedly. Close the " + project.name + " project and re-open it to enable code intelligence.");
 			}
+			// if the language server didn't start correctly,
+			// clear the active status bar animation
+			_dispatcher.dispatchEvent(new StatusBarEvent(
+				StatusBarEvent.LANGUAGE_SERVER_STATUS,
+				project.name
+			));
 			LanguageServerGlobals.getInstance().removeLanguageServerManager(this);
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, languageServerProcess_standardOutputDataHandler);
 			_languageServerProcess.removeEventListener(ProgressEvent.STANDARD_ERROR_DATA, languageServerProcess_standardErrorDataHandler);

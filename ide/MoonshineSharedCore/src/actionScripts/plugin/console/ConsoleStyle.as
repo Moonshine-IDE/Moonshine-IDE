@@ -42,7 +42,7 @@ package actionScripts.plugin.console
 		public static const SUCCESS:uint	= 14;
 		
 		// No touching, please.
-		internal static var name2style:Object = {};
+		public static var name2style:Object = {};
 		
 		init();
 		private static function init():void
