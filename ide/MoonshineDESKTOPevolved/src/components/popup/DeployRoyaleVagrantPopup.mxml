@@ -71,7 +71,10 @@
 		[Bindable]
 		private var nsfConverterInstances:ArrayCollection;
 		[Bindable]
-		private var targetDatabaseName:String;
+		private var targetDatabaseName:String = "";
+		[Bindable]
+		private var editUrl:Boolean;
+
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var instanceStateCheckCount:int;
 		private var isInvalidSource:Boolean;
@@ -93,9 +96,12 @@
 			return txtTargetDatabase.text.replace(/ /g, "");
 		}
 
+		[Bindable]
+		private var _databaseUrl:String = "http://127.0.0.1:8080/" + targetDatabaseName + "/js-debug/index.html";
+
 		public function get databaseURL():String
 		{
-			return txtURL.text;
+			return _databaseUrl;
 		}
 
 		public function get selectedInstance():VagrantInstanceVO
@@ -179,6 +185,11 @@
 			dispatchEvent(new Event(EVENT_START_CONVERSION));
 		}
 
+		private function onEditUrl(event:MouseEvent):void
+		{
+			this.editUrl = !editUrl;
+		}
+
 		private function disableUI():void
 		{
 			btnSubmit.enabled = false;
@@ -217,9 +228,19 @@
 								text="{targetDatabaseName}" change="{targetDatabaseName=event.target.text}"/>
 	</s:HGroup>
 
-	<s:Label text="Example URL:"/>
-	<s:Label id="txtURL" width="100%" maxDisplayedLines="3" styleName="uiText"
-		text="http://127.0.0.1:8080/{targetDatabaseName}/js-debug/index.html" fontStyle="italic"/>
+	<s:Label text="Launch URL:"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:Label id="txtURL" width="100%" maxDisplayedLines="3" styleName="uiText"
+				 fontStyle="italic" text="{_databaseUrl}" visible="{!editUrl}" includeInLayout="{!editUrl}"/>
+		<view:PromptTextInput id="txtEditUrl"
+							  width="100%" styleName="textInput" visible="{editUrl}" includeInLayout="{editUrl}"
+							  text="{_databaseUrl}" change="{_databaseUrl = event.target.text}"/>
+		<s:HGroup width="100%" horizontalAlign="right">
+			<s:Button id="btnEditUrl"
+					  label="Change URL" styleName="darkButton"
+					  click="onEditUrl(event)"/>
+		</s:HGroup>
+	</s:HGroup>
 
     <s:VGroup id="hgError"
 			  width="100%" paddingTop="6"
