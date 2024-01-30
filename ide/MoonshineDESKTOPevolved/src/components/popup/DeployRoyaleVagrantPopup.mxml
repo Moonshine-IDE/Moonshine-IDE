@@ -72,8 +72,6 @@
 		private var nsfConverterInstances:ArrayCollection;
 		[Bindable]
 		private var targetDatabaseName:String = "";
-		[Bindable]
-		private var editUrl:Boolean;
 
 		private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 		private var instanceStateCheckCount:int;
@@ -97,7 +95,7 @@
 		}
 
 		[Bindable]
-		private var _databaseUrl:String = "http://127.0.0.1:8080/" + targetDatabaseName + "/js-debug/index.html";
+		private var _databaseUrl:String;
 
 		public function get databaseURL():String
 		{
@@ -129,6 +127,7 @@
 		{
 			project = IDEModel.getInstance().activeProject;
 			targetDatabaseName = project.name;
+			_databaseUrl = "http://127.0.0.1:8080/" + targetDatabaseName + "/js-debug/index.html";
 
 			disableUI();
 			dispatcher.addEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked, false, 0, true);
@@ -185,11 +184,6 @@
 			dispatchEvent(new Event(EVENT_START_CONVERSION));
 		}
 
-		private function onEditUrl(event:MouseEvent):void
-		{
-			this.editUrl = !editUrl;
-		}
-
 		private function disableUI():void
 		{
 			btnSubmit.enabled = false;
@@ -230,16 +224,9 @@
 
 	<s:Label text="Launch URL:"/>
 	<s:HGroup width="100%" verticalAlign="middle">
-		<s:Label id="txtURL" width="100%" maxDisplayedLines="3" styleName="uiText"
-				 fontStyle="italic" text="{_databaseUrl}" visible="{!editUrl}" includeInLayout="{!editUrl}"/>
 		<view:PromptTextInput id="txtEditUrl"
-							  width="100%" styleName="textInput" visible="{editUrl}" includeInLayout="{editUrl}"
+							  width="100%" styleName="textInput"
 							  text="{_databaseUrl}" change="{_databaseUrl = event.target.text}"/>
-		<s:HGroup width="100%" horizontalAlign="right">
-			<s:Button id="btnEditUrl"
-					  label="Change URL" styleName="darkButton"
-					  click="onEditUrl(event)"/>
-		</s:HGroup>
 	</s:HGroup>
 
     <s:VGroup id="hgError"
