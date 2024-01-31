@@ -206,7 +206,7 @@
 		private function refreshDatabaseUrl():void
 		{
 			if (selectedInstance && selectedInstance.server &&
-					selectedInstance.server.type == "domino")
+					selectedInstance.server.serverType == "domino")
 			{
 				var server:Object = selectedInstance.server;
 				_databaseUrl = "http://" + server.serverType + "." + server.hostname + "/" + targetDatabaseName + "/js-debug/index.html";
