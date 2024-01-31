@@ -332,6 +332,8 @@ package actionScripts.plugin.console
 
 		protected function consoleOutputHandler(event:ConsoleOutputEvent):void
         {
+			if (!consoleView.historyTextEditor) return;
+
 			consoleView.historyTextEditor.appendtext(event.text, event.messageType);
 			/*if (!consoleView.history.textFlow)
 			{

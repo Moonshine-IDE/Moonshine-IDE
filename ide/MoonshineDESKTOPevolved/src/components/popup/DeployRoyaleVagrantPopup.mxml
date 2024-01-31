@@ -127,7 +127,7 @@
 		{
 			project = IDEModel.getInstance().activeProject;
 			targetDatabaseName = project.name;
-			_databaseUrl = "http://127.0.0.1:8080/" + targetDatabaseName + "/js-debug/index.html";
+			refreshDatabaseUrl();
 
 			disableUI();
 			dispatcher.addEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked, false, 0, true);
@@ -157,6 +157,8 @@
 					}
 				}
 			}
+
+			refreshDatabaseUrl();
 		}
 
 		private function onConfigure():void
@@ -184,6 +186,11 @@
 			dispatchEvent(new Event(EVENT_START_CONVERSION));
 		}
 
+		private function onInstanceChange(event:Event):void
+		{
+			refreshDatabaseUrl();
+		}
+
 		private function disableUI():void
 		{
 			btnSubmit.enabled = false;
@@ -196,6 +203,19 @@
 			ddlInstances.enabled = true;
 		}
 
+		private function refreshDatabaseUrl():void
+		{
+			if (selectedInstance && selectedInstance.server &&
+					selectedInstance.server.type == "domino")
+			{
+				var server:Object = selectedInstance.server;
+				_databaseUrl = "http://" + server.serverType + "." + server.hostname + "/" + targetDatabaseName + "/js-debug/index.html";
+			}
+			else
+			{
+				_databaseUrl = "http://127.0.0.1:8080/" + targetDatabaseName + "/js-debug/index.html";
+			}
+		}
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -210,7 +230,8 @@
 	<s:HGroup width="100%" verticalAlign="middle">
 		<s:DropDownList id="ddlInstances"
 						width="100%" height="26"
-						dataProvider="{nsfConverterInstances}" labelField="title" requireSelection="true"/>
+						dataProvider="{nsfConverterInstances}" labelField="title" requireSelection="true"
+					    change="onInstanceChange(event)"/>
 		<s:Button label="Configure" styleName="darkButton"
 				  click="onConfigure()"/>
 	</s:HGroup>
