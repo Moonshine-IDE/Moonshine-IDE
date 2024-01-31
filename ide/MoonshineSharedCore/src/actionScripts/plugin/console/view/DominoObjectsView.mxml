@@ -89,7 +89,7 @@
 
 		import view.suportClasses.events.DominoLotusScriptCompileReturnEvent;
 		import view.suportClasses.events.DominoLotusScriptEditorCompileErrorLineEvent;
-
+		import actionScripts.plugin.console.view.ConsoleTextEditor;
 		private var customLotusScriptFunction:XMLList;
 
 
@@ -360,7 +360,7 @@
 		protected function handleLotusScriptCompileLine(event:DominoLotusScriptEditorCompileErrorLineEvent):void
 		{
 			if(languageEditor){
-				var line:int=DominoLotusScriptEditorCompileErrorLineEvent.errorLine;
+				var line:int=event.errorLine;
 				if(line>0){
 
 				}

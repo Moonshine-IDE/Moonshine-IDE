@@ -85,6 +85,7 @@ package actionScripts.plugin.dominoInterface
 		private var compileConnected:Boolean=false;
 
 		private var needVaildLotusScirpt:String=null;
+		private var needCompileLotusScirpt:String=null;
 		private var testCount:int=1;
 
 		 
@@ -140,12 +141,11 @@ package actionScripts.plugin.dominoInterface
 			
 			
 			if(compileConnected==true){
-				if(needVaildLotusScirpt){
-				
-					needVaildLotusScirpt=StringHelper.base64Encode(needVaildLotusScirpt);
-					needVaildLotusScirpt=needVaildLotusScirpt+"\r\n"
-					compile.sendString(needVaildLotusScirpt);
-					needVaildLotusScirpt=null;
+				if(needCompileLotusScirpt){
+					//Alert.show("needCompileLotusScirpt:"+needCompileLotusScirpt);
+					needCompileLotusScirpt=StringHelper.base64Encode(needCompileLotusScirpt);
+					needCompileLotusScirpt=needCompileLotusScirpt+"\r\n"
+					compile.sendString(needCompileLotusScirpt);
 					testCount++;
 					
 					
@@ -175,7 +175,7 @@ package actionScripts.plugin.dominoInterface
 
 				var xml:XML = new XML(String(xmlFileLocation.fileBridge.read()));
 				var dxl:XML =new XML(String(editor.currentFile.fileBridge.read()));
-				
+				var compileDxl:XML =new XML(String(editor.currentFile.fileBridge.read()));
 				for each(var gobalOptions:XML in xml..dominoGlobalsObject) //no matter of depth Note here
 				{
 					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
@@ -233,11 +233,16 @@ package actionScripts.plugin.dominoInterface
 				xmlFileLocation.fileBridge.save(xml.toXMLString());
 
 				var globaldxl:XML=dominoGlobalsObject.toCode();
+				var globalCompiledxl:XML=dominoGlobalsObject.toCompileCode(dominoObjectView.selectedNode.@key);
 				dxl.appendChild(globaldxl);
+				compileDxl.appendChild(globalCompiledxl);
+				
 				var formdxl:XML=dominoFormObject.toCode(optionsMap);
 				dxl.appendChild(formdxl);
 				var finaldxl:String=fixSpaceAndNewLineForDxl(dxl.toXMLString());
 				needVaildLotusScirpt=finaldxl;
+				
+				needCompileLotusScirpt=compileDxl;
 				if(compileConnected==true){
 				}else{
 					editor.currentFile.fileBridge.save(finaldxl);
@@ -263,18 +268,19 @@ package actionScripts.plugin.dominoInterface
 			if(event.compileResult){
 				
 				if(event.compileResult.length>1){
-					// [Error=­eµ■V, Line=4, File=}] {7}
-					var list:Array=event.compileResult.split(",");
-					var line:String=StringUtil.trim(list[1]);
-					var list2:Array=line.split("=");
-					line=list2[1];
-					var lineInt:int = parseInt(line);
-					lineInt=lineInt-1;
-					Alert.show("Lotus Script compile error: on line " + lineInt.toString() + "");
+					// var list:Array=event.compileResult.split(",");
+					// var line:String=StringUtil.trim(list[1]);
+					// var list2:Array=line.split("=");
+					// line=list2[1];
+					// var lineInt:int = parseInt(line);
+					// lineInt=lineInt-1;
+					//Alert.show("Lotus Script compile error: on line " + lineInt.toString() + "");
+					Alert.show(event.compileResult);
 				}else{
 					model = IDEModel.getInstance();
 					editor=model.activeEditor as VisualEditorViewer;
-					editor.currentFile.fileBridge.save(needVaildLotusScirpt);
+					var dxl:String =StringHelper.base64Decode(needVaildLotusScirpt);
+					editor.currentFile.fileBridge.save(dxl);
 					Alert.show("Lotus script compile success and save success");
 				}
 			}
