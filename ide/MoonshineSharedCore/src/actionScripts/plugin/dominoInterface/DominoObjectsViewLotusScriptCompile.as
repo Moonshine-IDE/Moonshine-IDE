@@ -113,7 +113,7 @@ package actionScripts.plugin.dominoInterface
         }
 
         public function onError(event:IOErrorEvent):void {
-             Alert.show("Error connecting to server: " + event.text);
+             //Alert.show("Error connecting to server: " + event.text);
         }
     }
    

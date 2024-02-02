@@ -1458,11 +1458,13 @@
             		<s:DropDownList id="runList"  percentWidth="40"
 						 dataProvider="{formulaRunWayList}"
 						labelField="label" 
+						enabled="false"
 						change="updateSelection(event);"/>
 					<s:DropDownList id="runWayList" 
 						percentWidth="40" dataProvider="{formulaClientRunLanguage}"
 						labelField="label" 
-						change="updateSelectionWay(event);"/>	
+						change="updateSelectionWay(event);"
+						enabled="false"/>	
        		 	</s:HGroup>
 				<s:Group id="codeEdtiorContainer" minWidth="156" width="100%" height="100%">
 				</s:Group> 
