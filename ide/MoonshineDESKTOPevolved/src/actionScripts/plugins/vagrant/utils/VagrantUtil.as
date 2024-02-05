@@ -172,6 +172,10 @@ package actionScripts.plugins.vagrant.utils
 							if (existingServer.titleOriginal == serverHostname)
 							{
 								isNameExists = true;
+								if (!existingServer.server || !existingServer.server.hostname)
+								{
+									existingServer.server = vagrantServer;
+								}
 								break;
 							}
 						}
