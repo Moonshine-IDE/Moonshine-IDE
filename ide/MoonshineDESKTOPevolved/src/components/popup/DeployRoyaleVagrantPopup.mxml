@@ -201,6 +201,8 @@
 		{
 			btnSubmit.enabled = true;
 			ddlInstances.enabled = true;
+			txtTargetDatabase.enabled = true;
+			txtEditUrl.enabled = true;
 		}
 
 		private function refreshDatabaseUrl():void
@@ -239,14 +241,14 @@
 	<s:Label text="Target Directory:"/>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<view:PromptTextInput id="txtTargetDatabase"
-							  width="100%" styleName="textInput" restrict="A-Za-z0-9_"
+							  width="100%" styleName="textInput" restrict="A-Za-z0-9_" enabled="false"
 								text="{targetDatabaseName}" change="{targetDatabaseName=event.target.text}"/>
 	</s:HGroup>
 
 	<s:Label text="Launch URL:"/>
 	<s:HGroup width="100%" verticalAlign="middle">
 		<view:PromptTextInput id="txtEditUrl"
-							  width="100%" styleName="textInput"
+							  width="100%" styleName="textInput" enabled="false"
 							  text="{_databaseUrl}" change="{_databaseUrl = event.target.text}"/>
 	</s:HGroup>
 
