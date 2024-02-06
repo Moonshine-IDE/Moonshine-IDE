@@ -249,8 +249,11 @@ package actionScripts.plugin.dominoInterface
 				}
 				//
 				initializeSocket();
-				compile.closeSocket();
-				compile.doConnectAction();
+				if(compile!=null ){
+					compile.closeSocket();
+					compile.doConnectAction();
+				}
+				
 
 				
 				
