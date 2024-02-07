@@ -170,6 +170,8 @@ package actionScripts.plugins.vagrant.utils
 
 						for each (var existingServer:VagrantInstanceVO in instances)
 						{
+							dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Vagrant existing url: hostname " + existingServer.url + " " +
+									"titleOriginal " + existingServer.titleOriginal + " hostname " + existingServer.server.hostname));
 							if (existingServer.titleOriginal == serverHostname)
 							{
 								isNameExists = true;
