@@ -128,9 +128,13 @@ package actionScripts.plugins.vagrant.utils
 				var storedInstances:Array = cookie.data.vagrantInstances;
 				for each (var instance:Object in storedInstances)
 				{
-					instances.addItem(
-							VagrantInstanceVO.getNewInstance(instance)
-					);
+					var newInstance:VagrantInstanceVO = VagrantInstanceVO.getNewInstance(instance);
+					if (newInstance.titleOriginal && newInstance.server && newInstance.server.hostname != undefined)
+					{
+						instances.addItem(
+								VagrantInstanceVO.getNewInstance(instance)
+						);
+					}
 				}
 			}
 			
