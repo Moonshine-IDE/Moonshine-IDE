@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="100%" height="100%"
+		  paddingLeft="15" paddingTop="15" paddingRight="15" paddingBottom="15"
+		  visible="true" creationComplete="init()">
+	
+	<fx:Script>
+		<![CDATA[
+		import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
+		import actionScripts.plugins.vagrant.settings.NotesIDProfilesSetting;
+		import actionScripts.plugins.vagrant.utils.VagrantUtil;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+
+		import components.popup.vagrant.CreateNewVagrantInstancePopup;
+		import components.popup.vagrant.NewDominoServerPopup;
+		import components.popup.vagrant.NewIDFilePopup;
+		import components.popup.vagrant.TestServerAccessPopup;
+
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
+
+		import mx.managers.PopUpManager;
+
+		[Bindable]
+		public var setting:NotesIDProfilesSetting;
+
+		private var popupNewIDInstance:NewIDFilePopup;
+		private var popupNewDominoServer:NewDominoServerPopup;
+		private var popupTestServerAccess:TestServerAccessPopup;
+
+		private function init():void {
+			VagrantUtil.checkStates(setting.vagrantInstances);
+		}
+
+		private function idFileAddEdit(value:VagrantInstanceVO = null):void {
+			if (!popupNewIDInstance) {
+				popupNewIDInstance = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewIDFilePopup, true) as NewIDFilePopup;
+				popupNewIDInstance.instance = value;
+				popupNewIDInstance.addEventListener(NewIDFilePopup.EVENT_ADD_UPDATE_INSTANCE, onInstanceAddUpdate);
+				popupNewIDInstance.addEventListener(CloseEvent.CLOSE, onPopupNewIDInstanceClose);
+				PopUpManager.centerPopUp(popupNewIDInstance);
+			}
+		}
+
+		private function dominoVagrantAddEdit(value:VagrantInstanceVO = null):void {
+			if (!popupNewDominoServer) {
+				popupNewDominoServer = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewDominoServerPopup, true) as NewDominoServerPopup;
+				popupNewDominoServer.instance = value;
+				//popupNewDominoServer.addEventListener(NewDominoServerPopup.EVENT_ADD_UPDATE_INSTANCE, onInstanceAddUpdate);
+				popupNewDominoServer.addEventListener(CloseEvent.CLOSE, onPopupNewDominoVagrantClose);
+				PopUpManager.centerPopUp(popupNewDominoServer);
+			}
+		}
+
+		private function onTestServerAccess():void
+		{
+			if (!popupTestServerAccess) {
+				popupTestServerAccess = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, TestServerAccessPopup, true) as TestServerAccessPopup;
+				//popupNewDominoServer.addEventListener(NewDominoServerPopup.EVENT_ADD_UPDATE_INSTANCE, onInstanceAddUpdate);
+				popupTestServerAccess.addEventListener(CloseEvent.CLOSE, onPopupTestServerAccessClose);
+				PopUpManager.centerPopUp(popupTestServerAccess);
+			}
+		}
+
+		private function onPopupNewIDInstanceClose(event:CloseEvent):void {
+			popupNewIDInstance.removeEventListener(NewIDFilePopup.EVENT_ADD_UPDATE_INSTANCE, onInstanceAddUpdate);
+			popupNewIDInstance.removeEventListener(CloseEvent.CLOSE, onPopupNewIDInstanceClose);
+			popupNewIDInstance = null;
+		}
+
+		private function onPopupNewDominoVagrantClose(event:CloseEvent):void
+		{
+			popupNewDominoServer.removeEventListener(CloseEvent.CLOSE, onPopupNewDominoVagrantClose);
+			popupNewDominoServer = null;
+		}
+
+		private function onPopupTestServerAccessClose(event:CloseEvent):void
+		{
+			popupTestServerAccess.removeEventListener(CloseEvent.CLOSE, onPopupTestServerAccessClose);
+			popupTestServerAccess = null;
+		}
+
+		private function onInstanceAddUpdate(event:Event):void {
+			var instance:VagrantInstanceVO = popupNewIDInstance.instance;
+			if (setting.vagrantInstances.getItemIndex(instance) == -1) {
+				setting.vagrantInstances.addItem(instance);
+			}
+
+			VagrantUtil.saveVagrantInstances(setting.vagrantInstances);
+		}
+
+		private function capabilitiesLabelFunction(item:VagrantInstanceVO, column:GridColumn):String {
+			if (item.capabilities) return item.capabilities.join(", ");
+			return "";
+		}
+
+		public function onItemDoubleClicked(event:Event):void {
+			idFileAddEdit(dgIDFiles.selectedItem as VagrantInstanceVO);
+		}
+
+		private function onInstanceRemove(event:MouseEvent):void {
+			setting.vagrantInstances.removeItem(dgIDFiles.selectedItem);
+		}
+
+		private function onInstanceEdit(event:MouseEvent):void {
+			onItemDoubleClicked(null);
+		}
+		]]>
+	</fx:Script>
+
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:Label styleName="uiTextSettingsLabel"
+				 text="ID Files" />
+		<mx:Spacer width="100%"/>
+		<s:Label styleName="smallText" fontStyle="italic"
+				 text="Double-click to edit" />
+	</s:HGroup>
+
+	<s:DataGrid id="dgIDFiles"
+				width="100%"
+				sortableColumns="true" variableRowHeight="true" borderVisible="false"
+				contentBackgroundColor="0xe0e0e0" selectionColor="0xf6f6f6"
+				dataProvider="{setting.vagrantInstances}"
+				doubleClick="onItemDoubleClicked(event)" doubleClickEnabled="true">
+		<s:columns>
+			<s:ArrayList>
+				<s:GridColumn headerText="Label" dataField="state" width="200"/>
+				<s:GridColumn headerText="ID File" dataField="title"/>
+			</s:ArrayList>
+		</s:columns>
+	</s:DataGrid>
+
+	<s:HGroup width="100%" verticalAlign="middle" gap="4">
+		<s:Button label="+"
+				  styleName="lightButton"
+					click="idFileAddEdit()"/>
+		<s:Button label="-"
+				  enabled="{dgIDFiles.selectedItem}"
+				  styleName="lightButton"
+					click="onInstanceRemove(event)"/>
+		<s:Button label="Test Server Access"
+				  enabled="{dgIDFiles.selectedItem}"
+				  styleName="lightButton"
+					click="onTestServerAccess()"/>
+	</s:HGroup>
+
+	<s:HGroup width="100%" verticalAlign="middle" paddingTop="10">
+		<s:Label styleName="uiTextSettingsLabel"
+				 text="Domino Servers" />
+		<mx:Spacer width="100%"/>
+		<s:Label styleName="smallText" fontStyle="italic"
+				 text="Double-click to edit" />
+	</s:HGroup>
+
+	<s:DataGrid id="dgDominoServers"
+				width="100%"
+				sortableColumns="true" variableRowHeight="true" borderVisible="false"
+				contentBackgroundColor="0xe0e0e0" selectionColor="0xf6f6f6"
+				dataProvider="{setting.vagrantInstances}"
+				doubleClick="onItemDoubleClicked(event)" doubleClickEnabled="true">
+		<s:columns>
+			<s:ArrayList>
+				<s:GridColumn headerText="Server" dataField="state"/>
+				<s:GridColumn headerText="Address" dataField="title" width="200"/>
+			</s:ArrayList>
+		</s:columns>
+	</s:DataGrid>
+
+	<s:HGroup width="100%" verticalAlign="middle" gap="4">
+		<s:Button label="+"
+				  styleName="lightButton"
+				  click="dominoVagrantAddEdit()"/>
+		<s:Button label="-"
+				  enabled="{dgIDFiles.selectedItem}"
+				  styleName="lightButton"
+				  click="onInstanceRemove(event)"/>
+	</s:HGroup>
+</s:VGroup>

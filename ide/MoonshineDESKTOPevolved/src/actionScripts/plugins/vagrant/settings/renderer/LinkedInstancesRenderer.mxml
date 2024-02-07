@@ -41,82 +41,71 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
-			import actionScripts.plugins.vagrant.utils.VagrantUtil;
-			import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
+		import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
+		import actionScripts.plugins.vagrant.utils.VagrantUtil;
+		import actionScripts.plugins.vagrant.vo.VagrantInstanceVO;
 
-			import components.popup.CreateNewVagrantInstancePopup;
+		import components.popup.vagrant.CreateNewVagrantInstancePopup;
 
-			import mx.core.FlexGlobals;
-			import mx.events.CloseEvent;
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
 
-			import mx.managers.PopUpManager;
+		import mx.managers.PopUpManager;
 
-			[Bindable] public var setting:LinkedInstancesSetting;
+		[Bindable]
+		public var setting:LinkedInstancesSetting;
 
-			private var popupNewInstance:CreateNewVagrantInstancePopup;
-			
-			private function init():void
-			{
-				VagrantUtil.checkStates(setting.vagrantInstances);
+		private var popupNewInstance:CreateNewVagrantInstancePopup;
+
+		private function init():void {
+			VagrantUtil.checkStates(setting.vagrantInstances);
+		}
+
+		private function onNewInstance(event:MouseEvent):void {
+			itemAddEdit();
+		}
+
+		private function itemAddEdit(value:VagrantInstanceVO = null):void {
+			if (!popupNewInstance) {
+				popupNewInstance = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, CreateNewVagrantInstancePopup, true) as CreateNewVagrantInstancePopup;
+				popupNewInstance.instance = value;
+				popupNewInstance.addEventListener(CreateNewVagrantInstancePopup.EVENT_ADD_UPDATE_INSTANCE, onInstanceAddUpdate);
+				popupNewInstance.addEventListener(CloseEvent.CLOSE, onPopupNewInstanceClose);
+				PopUpManager.centerPopUp(popupNewInstance);
+			}
+		}
+
+		private function onPopupNewInstanceClose(event:CloseEvent):void {
+			popupNewInstance.removeEventListener(CreateNewVagrantInstancePopup.EVENT_ADD_UPDATE_INSTANCE, onInstanceAddUpdate);
+			popupNewInstance.removeEventListener(CloseEvent.CLOSE, onPopupNewInstanceClose);
+			popupNewInstance = null;
+		}
+
+		private function onInstanceAddUpdate(event:Event):void {
+			var instance:VagrantInstanceVO = popupNewInstance.instance;
+			if (setting.vagrantInstances.getItemIndex(instance) == -1) {
+				setting.vagrantInstances.addItem(instance);
 			}
 
-			private function onNewInstance(event:MouseEvent):void
-			{
-				itemAddEdit();
-			}
+			VagrantUtil.saveVagrantInstances(setting.vagrantInstances);
+		}
 
-			private function itemAddEdit(value:VagrantInstanceVO = null):void
-			{
-				if (!popupNewInstance)
-				{
-					popupNewInstance = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, CreateNewVagrantInstancePopup, true) as CreateNewVagrantInstancePopup;
-					popupNewInstance.instance = value;
-					popupNewInstance.addEventListener(CreateNewVagrantInstancePopup.EVENT_ADD_UPDATE_INSTANCE, onInstanceAddUpdate);
-					popupNewInstance.addEventListener(CloseEvent.CLOSE, onPopupNewInstanceClose);
-					PopUpManager.centerPopUp(popupNewInstance);
-				}
-			}
+		private function capabilitiesLabelFunction(item:VagrantInstanceVO, column:GridColumn):String {
+			if (item.capabilities) return item.capabilities.join(", ");
+			return "";
+		}
 
-			private function onPopupNewInstanceClose(event:CloseEvent):void
-			{
-				popupNewInstance.removeEventListener(CreateNewVagrantInstancePopup.EVENT_ADD_UPDATE_INSTANCE, onInstanceAddUpdate);
-				popupNewInstance.removeEventListener(CloseEvent.CLOSE, onPopupNewInstanceClose);
-				popupNewInstance = null;
-			}
+		public function onItemDoubleClicked(event:Event):void {
+			itemAddEdit(dgVagrantInstances.selectedItem as VagrantInstanceVO);
+		}
 
-			private function onInstanceAddUpdate(event:Event):void
-			{
-				var instance:VagrantInstanceVO = popupNewInstance.instance;
-				if (setting.vagrantInstances.getItemIndex(instance) == -1)
-				{
-					setting.vagrantInstances.addItem(instance);
-				}
+		private function onInstanceRemove(event:MouseEvent):void {
+			setting.vagrantInstances.removeItem(dgVagrantInstances.selectedItem);
+		}
 
-				VagrantUtil.saveVagrantInstances(setting.vagrantInstances);
-			}
-
-			private function capabilitiesLabelFunction(item:VagrantInstanceVO, column:GridColumn):String
-			{
-				if (item.capabilities) return item.capabilities.join(", ");
-				return "";
-			}
-
-			public function onItemDoubleClicked(event:Event):void
-			{
-				itemAddEdit(dgVagrantInstances.selectedItem as VagrantInstanceVO);
-			}
-
-			private function onInstanceRemove(event:MouseEvent):void
-			{
-				setting.vagrantInstances.removeItem(dgVagrantInstances.selectedItem);
-			}
-
-			private function onInstanceEdit(event:MouseEvent):void
-			{
-				onItemDoubleClicked(null);
-			}
-
+		private function onInstanceEdit(event:MouseEvent):void {
+			onItemDoubleClicked(null);
+		}
 		]]>
 	</fx:Script>
 
@@ -129,7 +118,7 @@
 	</s:HGroup>
 
 	<s:DataGrid id="dgVagrantInstances"
-				width="100%" height="100%"
+				width="100%"
 				sortableColumns="true" variableRowHeight="true" borderVisible="false"
 				contentBackgroundColor="0xe0e0e0" selectionColor="0xf6f6f6"
 				dataProvider="{setting.vagrantInstances}"

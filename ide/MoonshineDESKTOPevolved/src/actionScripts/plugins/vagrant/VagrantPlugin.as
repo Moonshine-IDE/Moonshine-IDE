@@ -31,7 +31,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
-	import flash.display.DisplayObject;
+import actionScripts.plugins.vagrant.settings.NotesIDProfilesSetting;
+
+import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.events.NativeProcessExitEvent;
@@ -94,6 +96,7 @@ package actionScripts.plugins.vagrant
 		
 		private var pathSetting:PathSetting;
 		private var linkedInstanceSetting:LinkedInstancesSetting;
+		private var notesIDProfilesSetting:NotesIDProfilesSetting;
 		private var defaultVagrantPath:String;
 		private var defaultVirtualBoxPath:String;
 		private var vagrantConsole:VagrantConsolePlugin;
@@ -199,6 +202,7 @@ package actionScripts.plugins.vagrant
 			{
 				pathSetting = null;
 				linkedInstanceSetting = null;
+				notesIDProfilesSetting = null;
 			}
 		}
 
@@ -212,11 +216,13 @@ package actionScripts.plugins.vagrant
 			onSettingsClose();
 			pathSetting = new PathSetting(this, 'vagrantPath', 'Vagrant Home', true, vagrantPath, false, false, defaultVagrantPath);
 			linkedInstanceSetting = new LinkedInstancesSetting(vagrantInstances);
+			notesIDProfilesSetting = new NotesIDProfilesSetting(vagrantInstances);
 
 			return Vector.<ISetting>([
 				pathSetting,
 				new PathSetting(this, 'virtualBoxPath', 'VirtualBox Home (Optional)', true, virtualBoxPath, false, false, defaultVirtualBoxPath),
-				linkedInstanceSetting
+				linkedInstanceSetting,
+				notesIDProfilesSetting
 			]);
         }
         
