@@ -167,6 +167,7 @@ package actionScripts.plugins.vagrant.utils
 							hostname: serverHostname,
 							serverType: server.type
 						};
+
 						for each (var existingServer:VagrantInstanceVO in instances)
 						{
 							if (existingServer.titleOriginal == serverHostname)
@@ -175,6 +176,8 @@ package actionScripts.plugins.vagrant.utils
 								if (!existingServer.server || !existingServer.server.hostname)
 								{
 									existingServer.server = vagrantServer;
+									dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Vagrant server: hostname " +
+									server ? server.hostname : "" + " serverType: " + server ? server.serverType : ""));
 								}
 								break;
 							}
