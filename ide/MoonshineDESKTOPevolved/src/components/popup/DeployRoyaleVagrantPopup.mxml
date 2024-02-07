@@ -209,8 +209,6 @@
 
 		private function refreshDatabaseUrl():void
 		{
-			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Vagrant refresh init " +
-									 "selectedInstance == null" + selectedInstance == null + " selectedInstance.serverType " + selectedInstance ? selectedInstance.server.serverType : ""));
 			if (selectedInstance && selectedInstance.server &&
 					selectedInstance.server.serverType == "domino")
 			{
