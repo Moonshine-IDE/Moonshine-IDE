@@ -98,7 +98,7 @@ package actionScripts.plugin.dominoInterface
 
         public function sendString(data:String):void {
             // Send data to the server
-            
+            //Alert.show("Sending data to server: " + data);
             socket.writeUTFBytes(data);
             socket.flush();
            

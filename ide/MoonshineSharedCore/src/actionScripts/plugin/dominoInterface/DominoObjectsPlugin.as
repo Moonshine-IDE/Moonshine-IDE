@@ -86,6 +86,7 @@ package actionScripts.plugin.dominoInterface
 
 		private var needVaildLotusScirpt:String=null;
 		private var needCompileLotusScirpt:String=null;
+		private var needConvertJavascript:String=null;
 		private var testCount:int=1;
 
 		 
@@ -141,15 +142,25 @@ package actionScripts.plugin.dominoInterface
 			
 			
 			if(compileConnected==true){
-				if(needCompileLotusScirpt){
-					//Alert.show("needCompileLotusScirpt:"+needCompileLotusScirpt);
-					needCompileLotusScirpt=StringHelper.base64Encode(needCompileLotusScirpt);
-					needCompileLotusScirpt=needCompileLotusScirpt+"\r\n"
-					compile.sendString(needCompileLotusScirpt);
-					testCount++;
-					
-					
+				var clientLanguage:String=dominoObjectView.getLanguageType();
+				if(clientLanguage=="LotusScript"){
+					if(needVaildLotusScirpt){
+						needCompileLotusScirpt=StringHelper.base64Encode(needCompileLotusScirpt);
+						needCompileLotusScirpt="compileLotusScript#"+needCompileLotusScirpt;
+						needCompileLotusScirpt=needCompileLotusScirpt+"\r\n"
+						compile.sendString(needCompileLotusScirpt);
+						needCompileLotusScirpt=null;
+					}
+				}else if(clientLanguage=="JavaScript" || clientLanguage=="Common JavaScript"){
+					if(needConvertJavascript){
+						needConvertJavascript=StringHelper.base64Encode(needConvertJavascript);
+						needConvertJavascript="convertJavaScriptToDxlRaw#"+needConvertJavascript;
+						needConvertJavascript=needConvertJavascript+"\r\n"
+						compile.sendString(needConvertJavascript);
+						needConvertJavascript=null;
+					}
 				}
+				
 				
 			
 				
@@ -233,6 +244,9 @@ package actionScripts.plugin.dominoInterface
 				xmlFileLocation.fileBridge.save(xml.toXMLString());
 
 				var globaldxl:XML=dominoGlobalsObject.toCode();
+				if(dominoObjectView.selectedNode==null){
+					dominoObjectView.initializeSelectNode();
+				}
 				var globalCompiledxl:XML=dominoGlobalsObject.toCompileCode(dominoObjectView.selectedNode.@key);
 				dxl.appendChild(globaldxl);
 				compileDxl.appendChild(globalCompiledxl);
@@ -243,6 +257,7 @@ package actionScripts.plugin.dominoInterface
 				needVaildLotusScirpt=finaldxl;
 				
 				needCompileLotusScirpt=compileDxl;
+				needConvertJavascript=dominoFormObject.toJavascriptDxl(optionsMap);
 				if(compileConnected==true){
 				}else{
 					editor.currentFile.fileBridge.save(finaldxl);
@@ -271,6 +286,29 @@ package actionScripts.plugin.dominoInterface
 			if(event.compileResult){
 				
 				if(event.compileResult.length>1){
+					if(event.compileResult.indexOf("#")){
+						var list:Array=event.compileResult.split("#");
+						var type:String=StringUtil.trim(list[0]);
+						var result:String=StringUtil.trim(list[1]);
+						if(type=="compileLotusScript"){
+							if(result=="success"){
+								
+								model = IDEModel.getInstance();
+								editor=model.activeEditor as VisualEditorViewer;
+								var dxl:String =StringHelper.base64Decode(needVaildLotusScirpt);
+								editor.currentFile.fileBridge.save(dxl);
+								Alert.show("Lotus script compile success and save success");
+							}else{
+								Alert.show(result);
+							}
+						}else if(type=="convertJavaScriptToDxlRaw"){
+							if(result=="success"){
+								Alert.show("Convert JavaScript to DXL success");
+							}else{
+								Alert.show("Convert JavaScript to DXL error: "+result);
+							}
+						}
+					}
 					// var list:Array=event.compileResult.split(",");
 					// var line:String=StringUtil.trim(list[1]);
 					// var list2:Array=line.split("=");
@@ -278,13 +316,9 @@ package actionScripts.plugin.dominoInterface
 					// var lineInt:int = parseInt(line);
 					// lineInt=lineInt-1;
 					//Alert.show("Lotus Script compile error: on line " + lineInt.toString() + "");
-					Alert.show(event.compileResult);
+					
 				}else{
-					model = IDEModel.getInstance();
-					editor=model.activeEditor as VisualEditorViewer;
-					var dxl:String =StringHelper.base64Decode(needVaildLotusScirpt);
-					editor.currentFile.fileBridge.save(dxl);
-					Alert.show("Lotus script compile success and save success");
+					
 				}
 			}
 		}

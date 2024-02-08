@@ -152,6 +152,7 @@
 		}
 
 	
+		
 		public var formulaRunWayList:ArrayCollection = new ArrayCollection(
 			[{label:"Client", value:"client"},
 			{label:"Web", value:"web"} ]);
@@ -183,6 +184,11 @@
 				runWayList.dataProvider=formulaWebRunLanguage;
 			}
 		}
+
+		public function getLanguageType():String
+		{
+			return runWayList.selectedItem.label;
+		} 
 
 		private function updateSelectionWay(e:IndexChangeEvent):void
 		{
@@ -453,6 +459,12 @@
 			
 		}
 
+		public function initializeSelectNode():void{
+			if(myTree.selectedItem){
+				selectedNode=myTree.selectedItem as XML;
+			}
+		}
+
 		protected function handleEntryInput(event:KeyboardEvent):void 
 		{
 			if(!selectedNode){
@@ -556,6 +568,12 @@
 										}
 										if(runWayList.selectedItem.label=="JavaScript"){
 											formObject.javascript=languageEditor.text;
+										}
+
+										if(runList.selectedItem.label=="Client"){
+											formObject.clientType="client";	
+										}else if(runList.selectedItem.label=="Web"){
+											formObject.clientType="web";
 										}
 										
 									}
@@ -1236,6 +1254,14 @@
 							}else{
 								languageEditor.text=""
 							}
+
+							if(formObject.clientType!=null && formObject.clientType!=""){
+								if(formObject.clientType=="client"){
+									runList.selectedIndex=0;
+								}else if(formObject.clientType=="web"){
+									runList.selectedIndex=1;
+								}	
+							}
 							
 							
 						}else{
@@ -1394,11 +1420,11 @@
 				<node label="WebQueryOpen" type="Formula" key="webQueryOpen" value="" env="Client" iconType="Formula"/>
 				<node label="WebQuerySave" type="Formula" key="webQuerySave" value="" env="Client" iconType="Formula"/>
 				<node label="Target Frame" type="Formula" key="targetFrame" value="" env="Client" iconType="Formula"/>
-				<node label="JS Header" type="JavaScript-Common Javascript" key="jsHeader" value="" env="WebClient" iconType="JavaScript-Common Javascript"/>
+				<node label="JS Header" type="JavaScript-Common Javascript" key="jsHeader" jseventName="jsheader" value="" env="WebClient" iconType="JavaScript-Common Javascript"/>
 				<node label="onHelp" type="JavaScript-Common Javascript" key="onHelp" value="" env="WebClient" iconType="JavaScript-Common Javascript"/>
-				<node label="onLoad" type="JavaScript-LotusScript-Formula-Common Javascript" key="onLoad" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
+				<node label="onLoad" type="JavaScript-LotusScript-Formula-Common Javascript" key="onLoad"  jseventName="onLoad" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
 				<node label="onUnload" type="JavaScript-LotusScript-Formula-Common Javascript" key="onUnload" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
-				<node label="onClick" type="JavaScript" key="onClick" value="" env="Web" iconType="JavaScript"/>
+				<node label="onClick" type="JavaScript" key="onClick" jseventName="onClick"  value="" env="Web" iconType="JavaScript"/>
 				<node label="onDbClick" type="JavaScript" key="onDbClick" value="" env="Web"  iconType="JavaScript"/>
 				<node label="onKeyDown" type="JavaScript" key="onKeyDown" value="" env="Web" iconType="JavaScript"/>
 				<node label="onKeyPress" type="JavaScript" key="onKeyPress" value="" env="Web" iconType="JavaScript"/>
