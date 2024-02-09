@@ -46,7 +46,6 @@
 		<![CDATA[
 		import actionScripts.events.SettingsEvent;
 		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.console.ConsoleOutputEvent;
 		import actionScripts.plugins.vagrant.VagrantPlugin;
 		import actionScripts.plugins.vagrant.utils.VagrantUtil;
 		import actionScripts.plugins.vagrant.vo.VagrantInstanceState;
@@ -213,8 +212,6 @@
 					selectedInstance.server.serverType == "domino")
 			{
 				var server:Object = selectedInstance.server;
-				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "Vagrant refresh: hostname " +
-				server ? server.hostname : "" + " serverType: " + server ? server.serverType : ""));
 				_databaseUrl = "http://" + server.serverType + "." + server.hostname + "/" + targetDatabaseName + "/js-debug/index.html";
 			}
 			else
