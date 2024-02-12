@@ -144,7 +144,7 @@ package actionScripts.plugin.dominoInterface
 			if(compileConnected==true){
 				var clientLanguage:String=dominoObjectView.getLanguageType();
 				if(clientLanguage=="LotusScript"){
-					if(needVaildLotusScirpt){
+					if(needCompileLotusScirpt){
 						needCompileLotusScirpt=StringHelper.base64Encode(needCompileLotusScirpt);
 						needCompileLotusScirpt="compileLotusScript#"+needCompileLotusScirpt;
 						needCompileLotusScirpt=needCompileLotusScirpt+"\r\n"
@@ -289,21 +289,63 @@ package actionScripts.plugin.dominoInterface
 					if(event.compileResult.indexOf("#")){
 						var list:Array=event.compileResult.split("#");
 						var type:String=StringUtil.trim(list[0]);
-						var result:String=StringUtil.trim(list[1]);
+						var result:String=null;
 						if(type=="compileLotusScript"){
+							result=StringUtil.trim(list[1]);
 							if(result=="success"){
 								
 								model = IDEModel.getInstance();
 								editor=model.activeEditor as VisualEditorViewer;
-								var dxl:String =StringHelper.base64Decode(needVaildLotusScirpt);
+								var dxl:String =(needVaildLotusScirpt);
+								
 								editor.currentFile.fileBridge.save(dxl);
 								Alert.show("Lotus script compile success and save success");
 							}else{
 								Alert.show(result);
 							}
 						}else if(type=="convertJavaScriptToDxlRaw"){
-							if(result=="success"){
-								Alert.show("Convert JavaScript to DXL success");
+							var flag:String=StringUtil.trim(list[1]);
+							result=StringUtil.trim(list[2]);
+							if(flag=="success"){
+								//Alert.show("Convert JavaScript to DXL success:"+needVaildLotusScirpt);
+								
+								
+								
+								var childxl:XML =new XML(String(needVaildLotusScirpt));
+								var titleXml:XML=null;
+								var body:XMLList = childxl.children();
+								for each (var item:XML in body)
+								{
+									var itemName:String = item.name();
+									if (itemName=="http://www.lotus.com/dxl::item" && item.@name=="$TITLE")
+									{
+										titleXml = item;
+									}
+								}
+							
+								
+								//$TITLE
+								for each(var htmlcode:XML in childxl..item) //no matter of depth Note here
+								{
+			
+									if(htmlcode.@name.toString()=="$HTMLCode"){
+										delete htmlcode.parent().children()[htmlcode.childIndex()];
+									}
+								}
+								var htmlNewCode:XML=new XML("<item name=\"$HTMLCode\" sign=\"true\"></item>");
+								var rawdataCode:XML=new XML("<rawitemdata type='1'>"+result+"\n"+"</rawitemdata>");
+								htmlNewCode.appendChild(rawdataCode);
+								if(titleXml!=null){
+									
+									titleXml.parent().insertChildBefore(titleXml,htmlNewCode);
+									model = IDEModel.getInstance();
+									editor=model.activeEditor as VisualEditorViewer;
+									editor.currentFile.fileBridge.save(childxl.toXMLString());
+									
+									
+								}
+								
+								
 							}else{
 								Alert.show("Convert JavaScript to DXL error: "+result);
 							}
@@ -402,7 +444,7 @@ package actionScripts.plugin.dominoInterface
 						if(dominoGlobalsObject.declarations){
 							optionsMap["globalsDeclarations"]=dominoGlobalsObject.declarations;
 						}else{
-							optionsMap["globalsDeclarations"]="Declarations Public";
+							optionsMap["globalsDeclarations"]="";
 						}
 						if(dominoGlobalsObject.initialize){
 							optionsMap["globalsTeminate"]=dominoGlobalsObject.terminate;

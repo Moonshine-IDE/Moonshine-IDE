@@ -699,7 +699,7 @@
 			}
 			if(optionsMap["globalsDeclarations"]==undefined||optionsMap["globalsDeclarations"]=="")
 			{
-				optionsMap["globalsDeclarations"]="Declarations Public";
+				optionsMap["globalsDeclarations"]="";
 			
 			}
 			if(optionsMap["globalsTeminate"]==undefined||optionsMap["globalsTeminate"]=="")
