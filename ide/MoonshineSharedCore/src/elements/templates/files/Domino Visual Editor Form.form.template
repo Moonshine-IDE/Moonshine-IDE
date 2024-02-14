@@ -8,10 +8,10 @@
     <text/>
   </item>
   <item name="$TITLE">
-    <text>Domino Visual Editor Form</text>
+    <text>"Domino Visual Editor Form"</text>
   </item>
   <item name="$WindowTitle">
-    <formula>Domino Visual Editor Form</formula>
+    <formula>"Domino Visual Editor Form"</formula>
   </item>
   <item name="$Fields">
     <textlist>
