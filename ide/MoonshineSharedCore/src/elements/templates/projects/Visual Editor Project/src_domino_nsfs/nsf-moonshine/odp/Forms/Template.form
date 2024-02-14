@@ -11,8 +11,8 @@ hhgBAIAAAAAAgAAAAQABAP///wAQAAAA
 <item name='$Flags'><text/></item>
 
 <item name='$TITLE'><text>$ProjectName</text></item>
-<item name="$WindowTitle">
-    <formula>$ProjectName</formula>
+<item name="$WindowTitle" sign="true">
+    <formula>"$ProjectName"</formula>
   </item>
 <item name='$Fields'><textlist>
 </textlist></item>
