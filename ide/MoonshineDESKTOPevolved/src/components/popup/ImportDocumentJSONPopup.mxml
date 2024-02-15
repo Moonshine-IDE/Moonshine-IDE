@@ -44,12 +44,9 @@
 										   creationComplete="onCreationCompletes(event)">
 	<fx:Script>
 		<![CDATA[
-		import actionScripts.events.FileUploaderEvent;
 		import actionScripts.events.SettingsEvent;
-		import actionScripts.factory.FileLocation;
 		import actionScripts.interfaces.IDeployDominoDatabaseProject;
 		import actionScripts.locator.IDEModel;
-		import actionScripts.plugin.console.ConsoleOutputEvent;
 		import actionScripts.plugin.ondiskproj.vo.OnDiskProjectVO;
 		import actionScripts.plugins.vagrant.VagrantPlugin;
 		import actionScripts.plugins.vagrant.utils.VagrantUtil;

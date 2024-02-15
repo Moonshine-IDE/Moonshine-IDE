@@ -127,7 +127,6 @@
 		{
 			project = IDEModel.getInstance().activeProject;
 			targetDatabaseName = project.name;
-			refreshDatabaseUrl();
 
 			disableUI();
 			dispatcher.addEventListener(VagrantUtil.EVENT_INSTANCE_STATE_CHECK_COMPLETES, onIndividualInstanceChecked, false, 0, true);
@@ -139,6 +138,8 @@
 				hgError.includeInLayout = hgError.visible = true;
 				isInvalidSource = true;
 			}
+
+			refreshDatabaseUrl();
 		}
 
 		private function onIndividualInstanceChecked(event:Event):void
