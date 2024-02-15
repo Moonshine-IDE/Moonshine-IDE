@@ -253,6 +253,9 @@ package actionScripts.plugin.dominoInterface
 				
 				var formdxl:XML=dominoFormObject.toCode(optionsMap);
 				dxl.appendChild(formdxl);
+
+				//save formula to dxl
+				dxl=dominoFormObject.toFormulaXML(optionsMap,dxl);
 				var finaldxl:String=fixSpaceAndNewLineForDxl(dxl.toXMLString());
 				needVaildLotusScirpt=finaldxl;
 				
