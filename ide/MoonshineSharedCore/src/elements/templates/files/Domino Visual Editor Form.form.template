@@ -8,10 +8,10 @@
     <text/>
   </item>
   <item name="$TITLE">
-    <text>$FormName</text>
+    <text>%form%</text>
   </item>
   <item name="$WindowTitle">
-    <formula>"$FormName"</formula>
+    <formula>"%form%"</formula>
   </item>
   <item name="$Fields">
     <textlist>
