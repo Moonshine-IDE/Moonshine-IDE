@@ -107,7 +107,7 @@ import mx.collections.ArrayCollection;
 		public function get jdkType():String									{	return _jdkType;	}
 		public function set jdkType(value:String):void							{	_jdkType = value;	}
 
-		private var _dominoBaseAgentURL:String = "http://127.0.0.1:8080/%CleanProjectName%.nsf";
+		private var _dominoBaseAgentURL:String = "/%CleanProjectName%.nsf";
 		public function get dominoBaseAgentURL():String							{	return _dominoBaseAgentURL;	}
 		public function set dominoBaseAgentURL(value:String):void				{	_dominoBaseAgentURL = value;}
 

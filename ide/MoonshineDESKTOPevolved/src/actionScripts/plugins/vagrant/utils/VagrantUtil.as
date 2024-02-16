@@ -128,9 +128,13 @@ package actionScripts.plugins.vagrant.utils
 				var storedInstances:Array = cookie.data.vagrantInstances;
 				for each (var instance:Object in storedInstances)
 				{
-					instances.addItem(
-							VagrantInstanceVO.getNewInstance(instance)
-					);
+					var newInstance:VagrantInstanceVO = VagrantInstanceVO.getNewInstance(instance);
+					if (newInstance.titleOriginal && newInstance.server && newInstance.server.hostname != undefined)
+					{
+						instances.addItem(
+								VagrantInstanceVO.getNewInstance(instance)
+						);
+					}
 				}
 			}
 			
@@ -156,14 +160,27 @@ package actionScripts.plugins.vagrant.utils
 					{
 						var isNameExists:Boolean = false;
 						var server:Object = readObject.servers[i];
-						var server_hostname:String = (server.server_hostname.indexOf(".") == -1) ? 
-							server.server_hostname +"."+ server.server_organization +".com" : 
-							server.server_hostname;
+						var vagrantServer:Object = { serverType: server.type };
+						var serverHostname:String = server.server_hostname;
+						if ((server.server_hostname.indexOf(".") == -1))
+						{
+							serverHostname = server.server_hostname + "."+ server.server_organization +".com";
+						}
+
+						vagrantServer = {
+							hostname: serverHostname,
+							serverType: server.type
+						};
+
 						for each (var existingServer:VagrantInstanceVO in instances)
 						{
-							if (existingServer.titleOriginal == server_hostname)
+							if (existingServer.titleOriginal == serverHostname)
 							{
 								isNameExists = true;
+								if (!existingServer.server || existingServer.server.hostname == undefined)
+								{
+									existingServer.server = vagrantServer;
+								}
 								break;
 							}
 						}
@@ -171,9 +188,10 @@ package actionScripts.plugins.vagrant.utils
 						if (isNameExists) continue;
 						
 						vagrantInstance = new VagrantInstanceVO();
-						vagrantInstance.title = vagrantInstance.titleOriginal = server_hostname;
-						vagrantInstance.url = "http://restapi."+ server_hostname +":8080";
+						vagrantInstance.title = vagrantInstance.titleOriginal = serverHostname;
+						vagrantInstance.url = "http://restapi."+ serverHostname +":8080";
 						vagrantInstance.localPath = filePath.parent.nativePath +"/servers/"+ server.provisioner.type +"/"+ server.server_id;
+						vagrantInstance.server = vagrantServer;
 						instances.addItem(vagrantInstance);
 						shiInstances.push(vagrantInstance);
 					}

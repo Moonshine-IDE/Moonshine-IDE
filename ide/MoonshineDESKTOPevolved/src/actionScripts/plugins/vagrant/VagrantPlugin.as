@@ -47,8 +47,7 @@ package actionScripts.plugins.vagrant
 	import mx.managers.PopUpManager;
 	
 	import spark.components.Alert;
-	
-	import actionScripts.events.ApplicationEvent;
+
 	import actionScripts.events.DominoEvent;
 	import actionScripts.events.FilePluginEvent;
 	import actionScripts.events.OnDiskBuildEvent;

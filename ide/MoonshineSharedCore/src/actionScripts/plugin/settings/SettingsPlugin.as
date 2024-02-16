@@ -204,6 +204,7 @@ package actionScripts.plugin.settings
             delete cookie.data["devicesAndroid"];
             delete cookie.data["devicesIOS"];
 			delete cookie.data["doNotShowRoyaleApiPrompt"];
+			delete cookie.data["vagrantInstances"];
 
             model.javaPathForTypeAhead = null;
 			model.java8Path = null;

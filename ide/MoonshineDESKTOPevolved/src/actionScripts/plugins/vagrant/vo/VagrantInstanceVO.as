@@ -100,6 +100,17 @@ package actionScripts.plugins.vagrant.vo
 			_localPath = value;
 		}
 
+		private var _server:Object = {};
+		public function get server():Object
+		{
+			return _server;
+		}
+
+		public function set server(value:Object):void
+		{
+			_server = value;
+		}
+
 		public static function getNewInstance(value:Object):VagrantInstanceVO
 		{
 			var tmpInstance:VagrantInstanceVO = new VagrantInstanceVO();
@@ -109,6 +120,7 @@ package actionScripts.plugins.vagrant.vo
 			if ("url" in value) tmpInstance.url = value.url;
 			if ("capabilities" in value) tmpInstance.capabilities = value.capabilities;
 			if ("localPath" in value) tmpInstance.localPath = value.localPath;
+			if ("server" in value) tmpInstance.server = value.server;
 
 			return tmpInstance;
 		}

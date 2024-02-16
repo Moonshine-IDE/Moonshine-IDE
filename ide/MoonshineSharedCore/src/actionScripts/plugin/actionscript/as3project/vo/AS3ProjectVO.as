@@ -445,7 +445,7 @@ import flash.events.Event;
             _jsOutputPath = value;
         }
 
-		private var _dominoBaseAgentURL:String = "http://127.0.0.1:8080/%CleanProjectName%.nsf";
+		private var _dominoBaseAgentURL:String = "/%CleanProjectName%.nsf";
 		public function get dominoBaseAgentURL():String							{	return _dominoBaseAgentURL;	}
 		public function set dominoBaseAgentURL(value:String):void				{	_dominoBaseAgentURL = value;}
 
