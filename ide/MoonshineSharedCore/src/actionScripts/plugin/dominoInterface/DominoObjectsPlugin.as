@@ -186,6 +186,7 @@ package actionScripts.plugin.dominoInterface
 
 				var xml:XML = new XML(String(xmlFileLocation.fileBridge.read()));
 				var dxl:XML =new XML(String(editor.currentFile.fileBridge.read()));
+				
 				var compileDxl:XML =new XML(String(editor.currentFile.fileBridge.read()));
 				for each(var gobalOptions:XML in xml..dominoGlobalsObject) //no matter of depth Note here
 				{
