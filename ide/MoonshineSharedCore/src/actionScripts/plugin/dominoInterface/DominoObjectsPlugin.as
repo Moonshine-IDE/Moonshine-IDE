@@ -188,6 +188,13 @@ package actionScripts.plugin.dominoInterface
 				var dxl:XML =new XML(String(editor.currentFile.fileBridge.read()));
 				
 				var compileDxl:XML =new XML(String(editor.currentFile.fileBridge.read()));
+				for each(var gobalOptions:XML in compileDxl..item) //no matter of depth Note here
+				{
+					if(gobalOptions.@name.toString()=="$Script"){
+						delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+					}
+				}	
+				
 				for each(var gobalOptions:XML in xml..dominoGlobalsObject) //no matter of depth Note here
 				{
 					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
@@ -250,6 +257,7 @@ package actionScripts.plugin.dominoInterface
 				}
 				var globalCompiledxl:XML=dominoGlobalsObject.toCompileCode(dominoObjectView.selectedNode.@key);
 				dxl.appendChild(globaldxl);
+				var editorText:String=dominoObjectView.getLanguageEditorText();
 				compileDxl.appendChild(globalCompiledxl);
 				
 				var formdxl:XML=dominoFormObject.toCode(optionsMap);
@@ -260,7 +268,7 @@ package actionScripts.plugin.dominoInterface
 				var finaldxl:String=fixSpaceAndNewLineForDxl(dxl.toXMLString());
 				needVaildLotusScirpt=finaldxl;
 				
-				needCompileLotusScirpt=compileDxl;
+				needCompileLotusScirpt=finaldxl;
 				needConvertJavascript=dominoFormObject.toJavascriptDxl(optionsMap);
 				if(compileConnected==true){
 				}else{
@@ -282,6 +290,46 @@ package actionScripts.plugin.dominoInterface
 				// }
 				
 			}
+
+		}
+
+// 		/'++LotusScript Development Environment:2:5:(Forward):0:1
+// Declare Sub Initialize
+// '++LotusScript Development Environment:2:2:Initialize:1:10
+// Sub Initialize
+//   'initial-1112
+// End Sub
+
+		private function getNeedCheckLotusScript(lotusScriptStr:String):XML 
+		{
+			var goobalsXml:XML = new XML("<item/>");
+            goobalsXml.@name="$Script"
+            goobalsXml.@summary="false"
+            goobalsXml.@sign="true"
+
+            
+            var text:String="";
+            if(lotusScriptStr.indexOf("Sub")!=-1){
+                var list:Array=lotusScriptStr.split("\n");
+                var functionName:String=list[0];
+                functionName=functionName.replace("Sub","");
+                functionName=StringUtil.trim(functionName);
+				text="'++LotusScript Development Environment:2:5:(Forward):0:1"+"\n";
+                text=text+"Declare Sub "+functionName+"\n";
+                text=text+'++LotusScript Development Environment:2:2:'+functionName+"1:10"+"\n";
+                text=text+lotusScriptStr;
+            }else{
+                text=lotusScriptStr
+            }
+ 			text=StringUtil.trim(text);
+           
+            
+            var breakXML:XML=new XML("<break/>");
+			var textXml:XML = new XML("<text>"+text+"</text>");
+            textXml.appendChild(breakXML);
+            goobalsXml.appendChild(textXml);
+
+			return goobalsXml;
 
 		}
 

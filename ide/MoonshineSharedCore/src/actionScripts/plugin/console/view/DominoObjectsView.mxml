@@ -190,6 +190,11 @@
 			return runWayList.selectedItem.label;
 		} 
 
+		public function getLanguageEditorText():String
+		{
+			return languageEditor.text;
+		}
+
 		private function updateSelectionWay(e:IndexChangeEvent):void
 		{
 			if(selectedNode&&selectedNode.@key)
