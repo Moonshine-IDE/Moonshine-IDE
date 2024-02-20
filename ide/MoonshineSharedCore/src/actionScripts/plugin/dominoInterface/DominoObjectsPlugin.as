@@ -353,7 +353,13 @@ package actionScripts.plugin.dominoInterface
 								editor.currentFile.fileBridge.save(dxl);
 								Alert.show("Lotus script compile success and save success");
 							}else{
-								Alert.show(result);
+								var errorLineNumber:int=getErrorLineNumber(result);
+								//"+errorLineNumber.toString()+"
+								var errorLine:String="LotusScript compile error on :\n";
+								
+								errorLine=errorLine+getCorrectDetailsLotusScritpCompileInfo(result);
+								
+								Alert.show(errorLine);
 							}
 						}else if(type=="convertJavaScriptToDxlRaw"){
 							var flag:String=StringUtil.trim(list[1]);
@@ -403,11 +409,7 @@ package actionScripts.plugin.dominoInterface
 							}
 						}
 					}
-					// var list:Array=event.compileResult.split(",");
-					// var line:String=StringUtil.trim(list[1]);
-					// var list2:Array=line.split("=");
-					// line=list2[1];
-					// var lineInt:int = parseInt(line);
+					
 					// lineInt=lineInt-1;
 					//Alert.show("Lotus Script compile error: on line " + lineInt.toString() + "");
 					
@@ -415,6 +417,85 @@ package actionScripts.plugin.dominoInterface
 					
 				}
 			}
+		}
+
+		private function getErrorLineNumber(errorMessage:String):int
+		{
+			var list:Array=errorMessage.split(",");
+			var line:String=StringUtil.trim(list[1]);
+			var list2:Array=line.split("=");
+			line=list2[1];
+			var lineInt:int = parseInt(line);
+			return lineInt;
+		}
+
+		private function getCorrectDetailsLotusScritpCompileInfo(errorMessage:String):String
+		{
+			
+			var lineInt:int = getErrorLineNumber(errorMessage);
+			if(lineInt&&lineInt>0){
+				lineInt=lineInt-1;
+			}
+			var selectKey:String=dominoObjectView.selectedNode.@key;
+			var returnString:String="";
+			if(selectKey){
+				var convertXml:XML =new XML(needVaildLotusScirpt);
+				var body:XMLList = convertXml.children();
+				var gobalScript:String=""; 
+				var formScript:String="";
+				var fileData:String=null;
+				for each (var item:XML in body)
+				{
+					var itemName:String = item.name();
+					if (itemName=="http://www.lotus.com/dxl::item" && item.@name=="$Script")
+					{
+						for each (var childitem:XML in item.children())
+						{
+							var childitemName:String = childitem.name();
+							if (childitemName=="http://www.lotus.com/dxl::text")
+							{
+								gobalScript = childitem.text().toString();
+							}
+
+						}
+						
+					
+						
+					}
+					if (itemName=="http://www.lotus.com/dxl::item" && item.@name=="$$FormScript")
+					{
+						for each (var childitem:XML in item.children())
+						{
+							var childitemName:String = childitem.name();
+							if (childitemName=="http://www.lotus.com/dxl::text")
+							{
+								formScript = childitem.text().toString();
+							}
+
+						}
+						
+					}
+				}
+				if(selectKey.indexOf("globals")!=-1){
+					fileData=gobalScript;
+				}else{
+					fileData=formScript;
+				}
+				
+				if(fileData){
+					var lines:Array = fileData.split(/\r\n|\r|\n/);
+    
+					
+					if (lineInt >= 0 && lineInt < lines.length) {
+						// Access the line at the specified index
+						returnString = lines[lineInt];
+						
+					} 
+				}
+			}
+
+			return returnString;
+			
 		}
 
 
