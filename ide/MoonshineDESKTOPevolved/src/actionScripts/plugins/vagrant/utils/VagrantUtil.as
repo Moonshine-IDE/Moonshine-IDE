@@ -129,12 +129,9 @@ package actionScripts.plugins.vagrant.utils
 				for each (var instance:Object in storedInstances)
 				{
 					var newInstance:VagrantInstanceVO = VagrantInstanceVO.getNewInstance(instance);
-					if (newInstance.titleOriginal && newInstance.server && newInstance.server.hostname != undefined)
-					{
-						instances.addItem(
-								VagrantInstanceVO.getNewInstance(instance)
-						);
-					}
+					instances.addItem(
+						VagrantInstanceVO.getNewInstance(instance)
+					);
 				}
 			}
 			
@@ -160,8 +157,9 @@ package actionScripts.plugins.vagrant.utils
 					{
 						var isNameExists:Boolean = false;
 						var server:Object = readObject.servers[i];
-						var vagrantServer:Object = { serverType: server.type };
 						var serverHostname:String = server.server_hostname;
+						if (!serverHostname) continue;
+						var vagrantServer:Object = { serverType: server.type };
 						if ((server.server_hostname.indexOf(".") == -1))
 						{
 							serverHostname = server.server_hostname + "."+ server.server_organization +".com";
