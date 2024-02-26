@@ -34,21 +34,31 @@
 -->
 <s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
 		  xmlns:s="library://ns.adobe.com/flex/spark" width="100%"
-	 	  creationComplete="init()" horizontalAlign="right">
+	 	  creationComplete="init()" horizontalAlign="right" xmlns:mx="library://ns.adobe.com/flex/mx">
 	<fx:Script>
 		<![CDATA[
+			import actionScripts.locator.IDEModel;
 			import actionScripts.valueObjects.ProjectReferenceVO;
 			
 			public static const RECENT_PROJECT_RENDERER_CLICK:String = "RECENT_PROJECT_RENDERER_CLICK";
 			
 			public var project:ProjectReferenceVO;
+			public var isFile:Boolean;
 			
 			private function init():void
 			{
 				lbl.removeEventListener(MouseEvent.CLICK, handleClick);
 				lbl.addEventListener(MouseEvent.CLICK, handleClick);
 				
-				lbl.text = project.name;
+				if (this.isFile) 
+				{
+					var lastSeparatorIndex:int = project.name.lastIndexOf(IDEModel.getInstance().fileCore.separator);
+					lbl.htmlText = "<i>"+ project.name.substring(0, lastSeparatorIndex) +"</i>"+ project.name.substr(lastSeparatorIndex, project.name.length);
+				}
+				else
+				{
+					lbl.text = project.name;
+				}
 			}
 			
 			private function handleClick(event:Event):void
@@ -59,18 +69,16 @@
 		]]>
 	</fx:Script>
   
-  <s:Label 
+  <mx:Label
   	id="lbl"
-  	paddingTop="4"
+  	paddingTop="0"
 	paddingLeft="3"
 	paddingRight="3"
 	paddingBottom="0"
 	fontSize="15"
-	maxDisplayedLines="1"
 	textAlign="right"
 	mouseOver="event.target.setStyle('color', 0XFFFFFF)" mouseOut="event.target.setStyle('color', 0XD6D6D6)" creationComplete="event.target.setStyle('color', 0XD6D6D6)"
-	useHandCursor="true" buttonMode="true" mouseChildren="false"
-	width="100%"
+	useHandCursor="true" buttonMode="true" mouseChildren="false" width="{this.width - 6}" truncateToFit="true"
   	/>
   
 </s:HGroup>

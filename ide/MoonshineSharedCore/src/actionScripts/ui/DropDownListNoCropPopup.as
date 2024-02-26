@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui
 {
+    import mx.events.ResizeEvent;
+
     import spark.components.DropDownList;
     import spark.components.PopUpAnchor;
 
@@ -37,7 +39,15 @@ package actionScripts.ui
             if (partName == "popUp")
             {
                 instance.popUpWidthMatchesAnchorWidth = false;
+                instance.addEventListener(ResizeEvent.RESIZE, onInstanceResized, false, 0, true);
             }
+        }
+
+        private function onInstanceResized(event:ResizeEvent):void
+        {
+            event.target.removeEventListener(ResizeEvent.RESIZE, onInstanceResized);
+            if (!isNaN(event.target.popUp.width) && width > event.target.popUp.width)
+                event.target.popUp.width = width;
         }
     }
 }

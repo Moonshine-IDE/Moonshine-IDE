@@ -97,8 +97,11 @@
 					return;
 				}
 
-				if (!instance) instance = new VagrantInstanceVO();
-				instance.title = txtLabel.text;
+				if (!instance) 
+				{
+					instance = new VagrantInstanceVO();
+					instance.title = instance.titleOriginal = txtLabel.text;
+				}
 				instance.url = txtURL.text;
 				instance.localPath = txtBrowsedPath.text;
 				instance.state = txtState.text;

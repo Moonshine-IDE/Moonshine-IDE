@@ -31,30 +31,28 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.genesis
 {
-	import actionScripts.plugins.build.ConsoleBuildPluginBase;
-	import actionScripts.events.GenesisEvent;
-	import actionScripts.plugins.genesis.utils.ImportGenesisCatalog;
-	import actionScripts.valueObjects.ConstantsCoreVO;
-
-	import components.popup.ImportGenesisPopup;
-
 	import flash.desktop.NativeApplication;
-
 	import flash.display.DisplayObject;
-
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
-import flash.net.URLRequest;
-import flash.net.navigateToURL;
-
-import mx.core.FlexGlobals;
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
+	
+	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
-
 	import mx.managers.PopUpManager;
 	import mx.utils.ObjectUtil;
-import mx.utils.StringUtil;
-
-import spark.components.Alert;
+	import mx.utils.StringUtil;
+	
+	import spark.components.Alert;
+	
+	import actionScripts.events.ApplicationEvent;
+	import actionScripts.events.GenesisEvent;
+	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.genesis.utils.ImportGenesisCatalog;
+	import actionScripts.valueObjects.ConstantsCoreVO;
+	
+	import components.popup.ImportGenesisPopup;
 
 	public class GenesisPlugin extends ConsoleBuildPluginBase
 	{
@@ -74,8 +72,7 @@ import spark.components.Alert;
 
 			dispatcher.addEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent, false, 0, true);
 			dispatcher.addEventListener(GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER, onOpenGenesisCatalogBrowserEvent, false, 0, true);
-
-			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
+			dispatcher.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -84,7 +81,7 @@ import spark.components.Alert;
 
 			dispatcher.removeEventListener(GenesisEvent.IMPORT_GENESIS_PROJECT, onImportGenesisEvent);
 			dispatcher.removeEventListener(GenesisEvent.OPEN_GENESIS_CATALOG_IN_BROWSER, onOpenGenesisCatalogBrowserEvent);
-			NativeApplication.nativeApplication.removeEventListener(InvokeEvent.INVOKE, onAppInvokeEvent);
+			dispatcher.removeEventListener(InvokeEvent.INVOKE, onAppInvokeEvent);
 		}
 
 		private function onImportGenesisEvent(event:Event, withURL:String=null):void

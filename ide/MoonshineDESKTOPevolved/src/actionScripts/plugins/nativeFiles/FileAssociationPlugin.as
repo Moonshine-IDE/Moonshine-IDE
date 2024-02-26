@@ -42,6 +42,8 @@ package actionScripts.plugins.nativeFiles
 	
 	import mx.core.FlexGlobals;
 	
+	import spark.components.Alert;
+	
 	import actionScripts.events.GlobalEventDispatcher;
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.ProjectEvent;
@@ -60,7 +62,7 @@ package actionScripts.plugins.nativeFiles
 			super.activate();
 			
 			// open-with listener
-			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
+			GlobalEventDispatcher.getInstance().addEventListener(InvokeEvent.INVOKE, onAppInvokeEvent, false, 0, true);
 			
 			// drag-drop listeners
 			FlexGlobals.topLevelApplication.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onNativeItemDragEnter, false, 0, true);
@@ -73,10 +75,6 @@ package actionScripts.plugins.nativeFiles
 			{
 				openFilesByPath(event.arguments);
 			}
-			
-			// to rail the event in other parts of the applciation
-			// where it may needed
-			dispatcher.dispatchEvent(event);
 		}
 		
 		private function onNativeItemDragEnter(event:NativeDragEvent):void
@@ -132,7 +130,7 @@ package actionScripts.plugins.nativeFiles
 					dispatcher.dispatchEvent(tmpOpenEvent);
 				}
 			}
-			
+				
 			// for project-configurations
 			if (projectFile && projectFile.fileBridge.exists)
 			{

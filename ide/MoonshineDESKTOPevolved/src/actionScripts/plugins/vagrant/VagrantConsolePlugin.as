@@ -143,7 +143,8 @@ package actionScripts.plugins.vagrant
             consoleView.removeEventListener(FlexEvent.CREATION_COMPLETE, onConsoleViewCreationComplete);
 			for each (var text:String in consoleTextCache)
 			{
-				consoleView.history.appendtext(text);
+				//consoleView.history.appendtext(text);
+				consoleView.historyTextEditor.appendtext(text);
 			}
 
 			consoleTextCache = null;

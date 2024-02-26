@@ -507,17 +507,17 @@ package actionScripts.utils
 		public static  function findDominoFileWrapperInDepth(wrapper:FileWrapper, searchPath:String):FileWrapper
 		{
 	
-
-
 			for each (var child:FileWrapper in wrapper.children)
 			{
-			
 			
 				if (searchPath == child.nativePath || searchPath.indexOf(child.nativePath + child.file.fileBridge.separator) == 0)
 				{
 					wrappersFoundThroughFindingAWrapper.push(child);
 					if (searchPath == child.nativePath) 
 					{
+						
+						
+					
 						return child;
 					}
 					child.updateChildren();
@@ -527,8 +527,7 @@ package actionScripts.utils
 
 
 				if(child.children && child.children.length > 0){
-					
-					if(endsWith(child.nativePath,"nsfs")|| endsWith(child.nativePath,"nsf-moonshine")||endsWith(child.nativePath,"odp")){
+					if(endsWith(child.nativePath,"nsfs")|| endsWith(child.nativePath,"nsf-moonshine")||endsWith(child.nativePath,"odp")||endsWith(child.nativePath,"SharedElements")){
 						findDominoFileWrapperInDepth(child, searchPath);
 					}
 					

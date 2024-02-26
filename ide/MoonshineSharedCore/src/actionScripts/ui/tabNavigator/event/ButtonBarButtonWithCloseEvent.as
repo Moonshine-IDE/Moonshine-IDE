@@ -36,6 +36,7 @@ package actionScripts.ui.tabNavigator.event
     public class ButtonBarButtonWithCloseEvent extends Event
     {
         public static const CLOSE_BUTTON_CLICK:String = "closeButtonClick";
+		public static const DOUBLE_CLICK:String = "buttonBarButtonDoubleClickEvent";
         
         public function ButtonBarButtonWithCloseEvent(type:String, itemIndex:int = -1)
         {

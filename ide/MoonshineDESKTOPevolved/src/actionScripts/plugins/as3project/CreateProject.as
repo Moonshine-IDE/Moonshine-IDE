@@ -1117,6 +1117,31 @@ package actionScripts.plugins.as3project
 					project_subfromxmlFolder.fileBridge.createDirectory();
 				}
 
+				var default_formxml:FileLocation =  targetFolder.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"$ProjectName.xml");
+				if(default_formxml.fileBridge.exists){
+					var defaultForm_target:FileLocation =  targetFolder.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+projectName+".xml");
+					default_formxml.fileBridge.copyFileTemplate(defaultForm_target, th.templatingData);
+					defaultForm_target.fileBridge.deleteFile(); 
+					//projectName
+				}
+
+				var default_form:FileLocation =targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+projectName+".form");
+				if(!default_form.fileBridge.exists){
+					default_form=targetFolder.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"$ProjectName.form");
+				}
+				if(default_form.fileBridge.exists)
+				{
+					//var conent_str:String=String(default_form.fileBridge.read());
+					default_form.fileBridge.copyFileTemplate(default_form, th.templatingData);
+					// conent_str = conent_str.replace(/$ProjectName/g, projectName);
+					// default_form.fileBridge.save(conent_str);
+				}else{
+					Alert.show("not yet found the form file");
+				}
+
+				
+
+
 				var project_sharefieldxmlFolder:FileLocation =  targetFolder.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"fields");
 				if(!project_sharefieldxmlFolder.fileBridge.exists){
 					project_sharefieldxmlFolder.fileBridge.createDirectory();

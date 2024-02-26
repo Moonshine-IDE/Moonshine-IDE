@@ -618,9 +618,6 @@ package actionScripts.ui.menu
 		private function recentFilesListUpdatedHandler(event:Event):void
 		{
 			var menu:Object = getMenuObject();
-			if(menu==null){
-				Alert.show("meau is null");
-			}
 			var subItemsLength:int = -1;
 			if (buildingNativeMenu)
 			{	

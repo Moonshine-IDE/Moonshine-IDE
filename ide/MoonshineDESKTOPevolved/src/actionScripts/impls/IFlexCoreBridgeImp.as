@@ -175,7 +175,7 @@ import actionScripts.valueObjects.HelperConstants;
 	
 	import actionScripts.plugins.ui.editor.DominoFormulaEditor;
 	import actionScripts.plugins.ui.editor.DominoViewEditor;
-
+	import actionScripts.plugins.ui.editor.DominoViewShareColumnEditor;
     public class IFlexCoreBridgeImp extends ProjectBridgeImplBase implements IFlexCoreBridge
 	{
 		//--------------------------------------------------------------------------
@@ -224,6 +224,11 @@ import actionScripts.valueObjects.HelperConstants;
 		public function getDominoViewEditor():BasicTextEditor
 		{
 			return (new DominoViewEditor());
+		}
+
+		public function getDominoViewShareCloumnEditor():BasicTextEditor
+		{
+			return (new DominoViewShareColumnEditor());
 		}
 		
 		public function getCorePlugins():Array

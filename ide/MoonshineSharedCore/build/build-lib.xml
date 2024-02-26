@@ -55,6 +55,7 @@
 			<property name="certSignedAIRPassword" value="${APP_PROPERTIES.certSignedAIRPass}" />
 			<property name="certSignedWindowsBinary" value="${APP_PROPERTIES.certSignedWindowsBinary}" />
 			<property name="certSignedWindowsBinaryPassword" value="${APP_PROPERTIES.certSignedWindowsBinaryPass}" />
+			<property name="thumbprintSMWindowsBinary" value="${APP_PROPERTIES.thumbprintSMWindowsBinary}" />
 			<property name="certSignedDevIDKeychainName" value="${APP_PROPERTIES.certSignedDevIDKeychainName}" />
 			<property name="certSignedMacOSKeychainName" value="${APP_PROPERTIES.certSignedMacOSKeychainName}" />
 			<property name="certSignedMacOSKeychainInstallerName" value="${APP_PROPERTIES.certSignedMacOSKeychainInstallerName}" />
@@ -96,6 +97,7 @@
 			<property name="certSignedWindowsBinary" value="${CERT_WIN_INSTALLER}" />
 			<property name="certSignedWindowsBinaryPassword" value="${CERT_WIN_INSTALLER_PASS}" />
 			<property name="certSignedDevIDKeychainName" value="${CERT_DEV_ID_KEYCHAIN}" />
+			<property name="thumbprintSMWindowsBinary" value="${THUMBPRINT_SM_WIN_BINARY}" />
 			<property name="certSignedMacOSKeychainName" value="${CERT_OSX_KEYCHAIN}" />
 			<property name="certSignedMacOSKeychainInstallerName" value="${CERT_OSX_KEYCHAIN_INSTALLER}" />
 			<property name="certSignedMacOSKeychainPass" value="${CERT_OSX_KEYCHAIN_PASS}" />
@@ -326,9 +328,9 @@
 		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/f"/>
-			<arg value="${certSignedWindowsBinary}"/>
+			<arg value="${debug_dir}/${certSelfSigned}"/> 
 			<arg value="/p"/>
-			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="${certSelfSignedPassword}"/>
 			<arg value="/tr"/>
 			<arg value="http://timestamp.digicert.com"/>
 			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
@@ -341,15 +343,23 @@
 			<arg value="/DTIMESTAMP=${timestamp.time}"/>
 			<arg value="nsis-build.nsi"/>
 		</exec>
-		<echo># Signed Process Running - Signing Installer: ${certSignedWindowsBinary}</echo>
+		<sleep milliseconds="2000"/>
+		<echo># Signed Process Running - Signing Installer</echo>
 		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
+			<env key="SM_CLIENT_CERT_FILE" value="${env.SM_CLIENT_CERT_FILE}"/>
+			<env key="SM_CLIENT_CERT_PASSWORD" value="${env.SM_CLIENT_CERT_PASSWORD}"/>
+			<env key="SM_API_KEY" value="${env.SM_API_KEY}"/>
+			<env key="SM_HOST" value="${env.SM_HOST}"/>
+			<env key="SM_THUMBPRINT" value="${env.SM_THUMBPRINT}"/>
 			<arg value="sign"/>
-			<arg value="/f"/>
-			<arg value="${certSignedWindowsBinary}"/>
-			<arg value="/p"/>
-			<arg value="${certSignedWindowsBinaryPassword}"/>
+			<arg value="/sha1"/>
+			<arg value="${thumbprintSMWindowsBinary}"/>
 			<arg value="/tr"/>
 			<arg value="http://timestamp.digicert.com"/>
+			<arg value="/td"/>
+			<arg value="SHA256"/>
+			<arg value="/fd"/>
+			<arg value="SHA256"/>
 			<arg value="${deploy_dir}/${installerName}-installer.exe"/>
 		</exec>
 	 </target>
@@ -936,7 +946,7 @@
 				</copy>
 			</then>
 			<else>
-				<if>
+				<!--if>
 					<equals arg1="${Is.Signed.Build}" arg2="true"/>
 					<then>
 						<copy file="${certSignedWindowsBinary}" todir="${debug_dir}" overwrite="true"/>
@@ -946,7 +956,7 @@
 						 </script>
 						<property name="certSignedWindowsBinary" value="${deploy_dir}/${installerName}.app"/>
 					</then>
-				</if>
+				</if-->
 				<replace file="${desktopApplicationDescriptor}">
 				    <replacetoken><![CDATA[<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>]]></replacetoken>  
 				    <replacevalue><![CDATA[]]></replacevalue>

@@ -80,6 +80,7 @@ package actionScripts.controllers
 
 		public function execute(event:Event):void
 		{
+			
 			ActionNotifier.getInstance().notify("Open file");
 			model = IDEModel.getInstance();
 
@@ -200,12 +201,14 @@ package actionScripts.controllers
 
 		protected function openFile(fileDir:Object=null, openType:String=null, fileWrapper:FileWrapper=null, fileData:String=null):void
 		{
+			
 			if (fileDir) 
 			{
 				if (fileDir is FileLocation) file = fileDir as FileLocation;
 				else file = new FileLocation(fileDir.nativePath);
 			}
 
+			
 			var isFileOpen:Boolean = false;
 			
 			// If file is open already, just focus that editor.
@@ -268,7 +271,6 @@ package actionScripts.controllers
 				if (plugEvent.isDefaultPrevented())
 					return;
 			}
-			
 			// Load and see if it's a binary file
 			if (ConstantsCoreVO.IS_AIR)
 			{
@@ -281,6 +283,12 @@ package actionScripts.controllers
 					extension = extension.toLowerCase()
 				}
 
+				
+				if (!project)
+				{
+					project = model.activeProject;
+				}
+				
 				if (openAsTourDe) 
 				{
 					openTourDeFile(fileData);
@@ -294,6 +302,9 @@ package actionScripts.controllers
 				}else if (extension == "view" && project && project.hasOwnProperty("isDominoVisualEditorProject") && project["isDominoVisualEditorProject"] )
 				{
 					openDominoViewFile(project, fileData);
+				}else if (extension == "column" && project && project.hasOwnProperty("isDominoVisualEditorProject") && project["isDominoVisualEditorProject"] )
+				{
+					openDominoViewShareCloumnFile(project, fileData);
 				}
 				else
 				{
@@ -523,6 +534,49 @@ package actionScripts.controllers
 		private function openDominoViewFile(project:ProjectVO, value:Object):void
 		{
 			var editor:BasicTextEditor = model.flexCore.getDominoViewEditor();
+			var extension:String = file.fileBridge.extension;
+			if (!project)
+			{
+				project = model.activeProject;
+			}
+			//editor = model.dominoViewVisualEditorCore.getVisualEditor(project);
+
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
+
+			// Let plugins hook in syntax highlighters & other functionality
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			ged.dispatchEvent(editorEvent);
+			
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
+			if (!ConstantsCoreVO.IS_AIR)
+			{
+				var rawData:String = String(value);
+				var jsonObj:Object = JSON.parse(rawData);
+				editor.open(file, jsonObj.text);
+			}
+			else
+			{
+				editor.open(file, value);
+			}
+			
+			if (atLine > -1)
+			{
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
+			}
+
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+
+		}
+
+		private function openDominoViewShareCloumnFile(project:ProjectVO, value:Object):void
+		{
+			var editor:BasicTextEditor = model.flexCore.getDominoViewShareCloumnEditor();
 			var extension:String = file.fileBridge.extension;
 			if (!project)
 			{

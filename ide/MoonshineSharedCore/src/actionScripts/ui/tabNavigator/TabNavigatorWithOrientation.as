@@ -31,16 +31,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.ui.tabNavigator
 {
-    import actionScripts.ui.tabNavigator.event.ButtonBarButtonWithCloseEvent;
-    import actionScripts.ui.tabNavigator.event.TabNavigatorEvent;
-    import actionScripts.ui.tabNavigator.skin.TabNavigatorWithOrientationSkin;
-
     import flash.events.Event;
     import flash.events.MouseEvent;
-
+    
     import spark.components.ButtonBarButton;
     import spark.components.NavigatorContent;
     import spark.containers.Navigator;
+    
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.plugin.fullscreen.events.FullscreenEvent;
+    import actionScripts.ui.tabNavigator.event.ButtonBarButtonWithCloseEvent;
+    import actionScripts.ui.tabNavigator.event.TabNavigatorEvent;
+    import actionScripts.ui.tabNavigator.skin.TabNavigatorWithOrientationSkin;
 
     [Event(name="tabClose", type="actionScripts.ui.tabNavigator.event.TabNavigatorEvent")]
     public class TabNavigatorWithOrientation extends Navigator
@@ -101,6 +103,7 @@ package actionScripts.ui.tabNavigator
                 tabBar.setStyle("fontSize", 11);
                 //tabBar.setStyle("fontFamily", "DejaVuSans");
 				tabBar.addEventListener(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, onTabBarWithScrollerCloseButtonClick);
+				tabBar.addEventListener(ButtonBarButtonWithCloseEvent.DOUBLE_CLICK, onTabBarWithScrollerDoubleClick);
 			}
         }
 
@@ -111,6 +114,7 @@ package actionScripts.ui.tabNavigator
             if (instance == tabBar)
             {
                 tabBar.removeEventListener(ButtonBarButtonWithCloseEvent.CLOSE_BUTTON_CLICK, onTabBarWithScrollerCloseButtonClick);
+				tabBar.removeEventListener(ButtonBarButtonWithCloseEvent.DOUBLE_CLICK, onTabBarWithScrollerDoubleClick);
             }
         }
 
@@ -160,5 +164,10 @@ package actionScripts.ui.tabNavigator
         {
             this.dispatchEvent(new TabNavigatorEvent(TabNavigatorEvent.TAB_CLOSE, event.itemIndex));
         }
+		
+		private function onTabBarWithScrollerDoubleClick(event:ButtonBarButtonWithCloseEvent):void
+		{
+			GlobalEventDispatcher.getInstance().dispatchEvent(new FullscreenEvent(FullscreenEvent.EVENT_SECTION_FULLSCREEN, FullscreenEvent.SECTION_BOTTOM));
+		}
     }
 }

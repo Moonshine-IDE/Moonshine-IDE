@@ -76,6 +76,7 @@ package actionScripts.plugins.startup
 	import moonshine.components.HelperView;
 	import moonshine.events.HelperEvent;
 	import moonshine.plugin.help.view.GettingStartedView;
+	import actionScripts.events.ApplicationEvent;
 	
 	public class StartupHelperPlugin extends PluginBase implements IPlugin
 	{

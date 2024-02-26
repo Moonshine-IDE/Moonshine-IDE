@@ -227,8 +227,11 @@ package actionScripts.plugin.rename
 			var newFile:FileLocation;
 			var sourceFormName:String =null;
 
+			
+			if(fileWrapper.file.fileBridge.extension=="column"){
+				newName=TextUtil.fixDominoViewName(newName);
+			}
 			var newFile = fileWrapper.file.fileBridge.parent.resolvePath(newName);
-
 			var newNameWithOutExtension = newFile.fileBridge.nameWithoutExtension;
 			if(fileWrapper.file.fileBridge.extension=="form"){
 				sourceFormName=sourceFileName;
@@ -267,6 +270,23 @@ package actionScripts.plugin.rename
 
 			if(fileWrapper.file.fileBridge.extension=="view"){
 				DominoUtils.dominoViewTitleUpdateWithoutSave(newFile,newFileNameWithoutExtension,newFileNameWithoutExtension);
+			}
+
+			if(fileWrapper.file.fileBridge.extension=="column"){
+				// update and Synchronize column file name into column name
+				DominoUtils.dominoSharedColumnNameUpdate(newFile,newFileNameWithoutExtension);
+				//sourceFileName
+				var replaceName:String= TextUtil.fixDominoViewName(sourceFileName);
+				var sourceColumnNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+				//newFielname
+				replaceName=TextUtil.fixDominoViewName(newNameWithOutExtension);
+				var newColumnNameFormat:String= TextUtil.toDominoViewNormalName(replaceName);
+				var currentProjectPath:String=UtilsCore.getProjectFolder(fileWrapper);
+				if(currentProjectPath){
+					var currentProjectFolder:FileLocation = new FileLocation(currentProjectPath);
+					replaceSharedColumnNameFromAllReferencesView(currentProjectFolder,sourceColumnNameFormat,newColumnNameFormat);
+				}
+
 			}
 
 			// we need to update file location of the (if any) opened instance 
@@ -318,17 +338,17 @@ package actionScripts.plugin.rename
 				}
 				
 				//rename old simple view
-				var viewfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+sourceFileName +".view");
-				var viewTargetfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+newFileNameWithoutExtension +".view");
-				if(viewfileToSave.fileBridge.exists){
-					var viewcontent:String = String(viewfileToSave.fileBridge.read());
-						var re:RegExp = new RegExp(sourceFileName, "g");
-						viewcontent = viewcontent.replace(re, newFileNameWithoutExtension);
-						viewTargetfileToSave.fileBridge.save(viewcontent);
-						viewfileToSave.fileBridge.deleteFile();
-					//create a new simple file with new form name 
+				// var viewfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+sourceFileName +".view");
+				// var viewTargetfileToSave:FileLocation = new FileLocation( projectPath+ File.separator+"nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views"+File.separator + "All By UNID_5cCRUD_5c"+newFileNameWithoutExtension +".view");
+				// if(viewfileToSave.fileBridge.exists){
+				// 	var viewcontent:String = String(viewfileToSave.fileBridge.read());
+				// 		var re:RegExp = new RegExp(sourceFileName, "g");
+				// 		viewcontent = viewcontent.replace(re, newFileNameWithoutExtension);
+				// 		viewTargetfileToSave.fileBridge.save(viewcontent);
+				// 		viewfileToSave.fileBridge.deleteFile();
+				// 	//create a new simple file with new form name 
 
-				}
+				// }
 
 				
 				
@@ -405,8 +425,7 @@ package actionScripts.plugin.rename
 				}
 		}
 
-		private  function replaceFormNameFromAllReferencesView(projectFolderLocation:FileLocation,sourceFormName:String,targetFormName:String):void{
-								
+		private  function replaceSharedColumnNameFromAllReferencesView(projectFolderLocation:FileLocation,sourceColumnName:String,targetColumnName:String):void{
 			var viewFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views");
 			if(viewFileLocation.fileBridge.exists){
 				var directory:Array = viewFileLocation.fileBridge.getDirectoryListing();
@@ -416,33 +435,113 @@ package actionScripts.plugin.rename
 						var fileLocation:FileLocation=new FileLocation(xml.nativePath);
 					
 						//var data:String = ;
+						var _isChangedColumnName:Boolean = false;
 						var viewxml:XML = new XML(fileLocation.fileBridge.read());
+						for each(var sharedColumn:XML in viewxml..sharedcolumnref){
+							if(sharedColumn.@name==sourceColumnName){
+								sharedColumn.@name=targetColumnName;
+								_isChangedColumnName=true;
+							}
+						}
 
-						if(viewxml.code[0]){
-							if(viewxml.code[0].@event=="selection"){
-								if(viewxml.code[0].formula[0]){
-									var formulaNode:XML=viewxml.code[0].formula[0];
-									var formulaText=formulaNode.text();
-									if(formulaText.indexOf(sourceFormName)>0){
+						if(_isChangedColumnName){
+							fileLocation.fileBridge.deleteFile();
+							var _targetfileStreamMoonshine:FileStream = new FileStream();
+							_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
+							_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
+							_targetfileStreamMoonshine.close();
 
-										var formulaText1:String=formulaText.substring(0,formulaText.indexOf(sourceFormName));
-										var formulaText2:String=formulaText.substring(formulaText.indexOf(sourceFormName)+sourceFormName.length);
-										
-										formulaText=formulaText1+targetFormName+formulaText2;
-										var newFormulaNode:XML = new XML("<formula>"+formulaText+"</formula>");
-										formulaNode.parent().appendChild(newFormulaNode);
-										delete formulaNode.parent().children()[formulaNode.childIndex()];
-										fileLocation.fileBridge.deleteFile();
-										var _targetfileStreamMoonshine:FileStream = new FileStream();
-										_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
-										_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
-										_targetfileStreamMoonshine.close();
+							checkAndUpdateOpenedViewsInTab(fileLocation.fileBridge.nativePath);
+						}
+					}
+				}
+			}
+		}
 
-										checkAndUpdateOpenedViewsInTab(fileLocation.fileBridge.nativePath);
+		private  function replaceFormNameFromAllReferencesView(projectFolderLocation:FileLocation,sourceFormName:String,targetFormName:String):void{
+								
+			var viewFileLocation:FileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Views");
+			if(viewFileLocation.fileBridge.exists){
+				var directory:Array = viewFileLocation.fileBridge.getDirectoryListing();
+				for each (var xml:File in directory)
+				{
+					var specialViewNameWithoutExtension = "All By UNID_5cCRUD_5c"+sourceFormName;
+					var specialViewName:String= specialViewNameWithoutExtension+".view";
+					var targetViewNameWithOutExtension:String= "All By UNID_5cCRUD_5c"+targetFormName;
+					var targetViewName:String=targetViewNameWithOutExtension+".view";
+					if (xml.extension == "view" ) {
+						if(UtilsCore.endsWith(xml.nativePath,specialViewName)){
+							var fileLocation:FileLocation=new FileLocation(xml.nativePath);
+						
+							//var data:String = ;
+							var viewxml:XML = new XML(fileLocation.fileBridge.read());
+
+							var newFormulaNode:XML;
+							var changed:Boolean = false;
+							if(viewxml.code[0]){
+								if(viewxml.code[0].@event=="selection"){
+									if(viewxml.code[0].formula[0]){
+										var formulaNode:XML=viewxml.code[0].formula[0];
+										var formulaText=formulaNode.text();
+										if(formulaText.indexOf(sourceFormName)>0){
+
+											var formulaText1:String=formulaText.substring(0,formulaText.indexOf(sourceFormName));
+											var formulaText2:String=formulaText.substring(formulaText.indexOf(sourceFormName)+sourceFormName.length);
+											
+											formulaText=formulaText1+targetFormName+formulaText2;
+											newFormulaNode = new XML("<formula>"+formulaText+"</formula>");
+											formulaNode.parent().appendChild(newFormulaNode);
+											delete formulaNode.parent().children()[formulaNode.childIndex()];
+											changed=true;
+										}
+									}
+									
+								}
+							}
+
+							//fix the view name :All By UNID_5cCRUD_5cNewForm.view
+							
+
+							if(viewxml.actionbar[0]){
+								if(viewxml.actionbar[0].action[0]){
+									if(viewxml.actionbar[0].action[0].@title=="New"){
+										var formulaNode2:XML=viewxml.actionbar[0].action[0].code[0].formula[0];
+										var newFormulaNode2:XML = new XML("<formula>"+"@Command([Compose]; \""+targetFormName+"\")"+"</formula>");
+										formulaNode2.parent().appendChild(newFormulaNode2);
+										delete formulaNode2.parent().children()[formulaNode2.childIndex()];
+										changed=true;
 									}
 								}
-								
 							}
+
+							//update the view name in the dxl inside 
+							if(viewxml.@name){
+								
+								viewxml.@name=TextUtil.toDominoViewNormalName(targetViewNameWithOutExtension);
+								changed=true;
+							}
+
+							if(changed==true){
+								fileLocation.fileBridge.deleteFile();
+								var _targetfileStreamMoonshine:FileStream = new FileStream();
+								_targetfileStreamMoonshine.open(xml, FileMode.WRITE);
+								_targetfileStreamMoonshine.writeUTFBytes(viewxml.toXMLString());
+								_targetfileStreamMoonshine.close();
+
+								checkAndUpdateOpenedViewsInTab(fileLocation.fileBridge.nativePath);
+								changed=false;
+							}
+
+
+
+						
+							
+							var newFile:FileLocation=new FileLocation(xml.parent.nativePath+File.separator+targetViewName);
+							var xmlFileLocation:FileLocation=new FileLocation(xml.nativePath);
+							xmlFileLocation.fileBridge.moveTo(newFile, true);
+
+							
+						
 						}
 					}
 				}
@@ -545,7 +644,7 @@ package actionScripts.plugin.rename
 		private function onFileDuplicateRequest(event:DuplicateEvent):void
 		{
 			var fileName:String=event.fileName ;
-			if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "view"){
+			if(event.fileLocation.fileBridge.extension && (event.fileLocation.fileBridge.extension == "view" ||event.fileLocation.fileBridge.extension == "column")){
 				fileName=TextUtil.fixDominoViewName(fileName);
 			}
 			var fileToSave:FileLocation = event.fileWrapper.file.fileBridge.resolvePath(fileName + 
@@ -558,6 +657,9 @@ package actionScripts.plugin.rename
 				var updatedContent:String = getUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
 				fileToSave.fileBridge.save(updatedContent);
 			}else if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "view"){
+				var updatedViewContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
+				fileToSave.fileBridge.save(updatedViewContent);
+			}else if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "column"){
 				var updatedViewContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
 				fileToSave.fileBridge.save(updatedViewContent);
 			}
@@ -580,6 +682,8 @@ package actionScripts.plugin.rename
 				);
 			}
 		}
+
+		
 
 
 		private function getDominoUpdatedFileContent(projectRef:FileWrapper, source:FileLocation, newFileName:String):String
@@ -701,7 +805,7 @@ package actionScripts.plugin.rename
 				if (i.path == oldPath)
 				{
 					i.path = newFile.fileBridge.nativePath;
-					i.name = newFile.name;
+					//i.name = newFile.name;
 					GlobalEventDispatcher.getInstance().dispatchEvent(new Event(RecentlyOpenedPlugin.RECENT_FILES_LIST_UPDATED));
 					break;
 				}

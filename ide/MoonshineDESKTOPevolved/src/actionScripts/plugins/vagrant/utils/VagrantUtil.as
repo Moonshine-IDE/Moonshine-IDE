@@ -54,6 +54,7 @@ package actionScripts.plugins.vagrant.utils
 	import flash.utils.Dictionary;
 
 	import mx.collections.ArrayCollection;
+	import actionScripts.valueObjects.ConstantsCoreVO;
 
 	public class VagrantUtil extends EventDispatcher
 	{
@@ -68,6 +69,14 @@ package actionScripts.plugins.vagrant.utils
 
 		private static const instanceStateCheckLoaders:Dictionary = new Dictionary();
 		private static const dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+		private static const macSHIConfigLocation:Array = [
+				File.userDirectory.resolvePath("Library/Application Support/SuperHumanInstaller/.shi-config"),
+				File.userDirectory.resolvePath("Library/Application Support/SuperHumanInstallerDev/.shi-config")
+			];
+		private static const winSHIConfigLocation:Array = [
+				File.userDirectory.resolvePath("AppData/Roaming/SuperHumanInstaller/.shi-config"),
+				File.userDirectory.resolvePath("AppData/Roaming/SuperHumanInstallerDev/.shi-config")
+			];
 
 		public static const AS_VAGRANT_SSH: XML = <root><![CDATA[
 			#!/bin/bash
@@ -119,13 +128,78 @@ package actionScripts.plugins.vagrant.utils
 				var storedInstances:Array = cookie.data.vagrantInstances;
 				for each (var instance:Object in storedInstances)
 				{
+					var newInstance:VagrantInstanceVO = VagrantInstanceVO.getNewInstance(instance);
 					instances.addItem(
-							VagrantInstanceVO.getNewInstance(instance)
+						VagrantInstanceVO.getNewInstance(instance)
 					);
 				}
 			}
-
+			
+			// parse from super.human.installer created instances
+			getVagrantInstancesFromSHI(instances);
+			
 			return instances;
+		}
+		
+		public static function getVagrantInstancesFromSHI(instances:ArrayCollection):Array
+		{
+			var shiInstances:Array = [];
+			var locations:Array = ConstantsCoreVO.IS_MACOS ? macSHIConfigLocation : winSHIConfigLocation;
+			
+			for each (var filePath:File in locations)
+			{
+				if (filePath.exists)
+				{
+					var readString:String = FileUtils.readFromFile(filePath) as String;
+					var readObject:Object = JSON.parse(readString);
+					var vagrantInstance:VagrantInstanceVO;
+					for (var i:int=0; i < readObject.servers.length; i++)
+					{
+						var isNameExists:Boolean = false;
+						var server:Object = readObject.servers[i];
+						var serverHostname:String = server.server_hostname;
+						if (!serverHostname) continue;
+						var vagrantServer:Object = { serverType: server.type };
+						if ((server.server_hostname.indexOf(".") == -1))
+						{
+							serverHostname = server.server_hostname + "."+ server.server_organization +".com";
+						}
+
+						vagrantServer = {
+							hostname: serverHostname,
+							serverType: server.type
+						};
+
+						for each (var existingServer:VagrantInstanceVO in instances)
+						{
+							if (existingServer.titleOriginal == serverHostname)
+							{
+								isNameExists = true;
+								if (!existingServer.server || existingServer.server.hostname == undefined)
+								{
+									existingServer.server = vagrantServer;
+								}
+								break;
+							}
+						}
+						
+						if (isNameExists) continue;
+						
+						vagrantInstance = new VagrantInstanceVO();
+						vagrantInstance.title = vagrantInstance.titleOriginal = serverHostname;
+						vagrantInstance.url = "http://restapi."+ serverHostname +":8080";
+						vagrantInstance.localPath = filePath.parent.nativePath +"/servers/"+ server.provisioner.type +"/"+ server.server_id;
+						vagrantInstance.server = vagrantServer;
+						instances.addItem(vagrantInstance);
+						shiInstances.push(vagrantInstance);
+					}
+				}
+			}
+			
+			// give a save on any newly addition
+			saveVagrantInstances(instances);
+
+			return shiInstances;
 		}
 
 		public static function saveVagrantInstances(value:ArrayCollection):void

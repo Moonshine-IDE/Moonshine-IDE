@@ -123,6 +123,27 @@ package actionScripts.plugin.recentlyOpened
 			return UtilsCore.getRecentFilesMenu();
 		}
 		
+		override public function resetSettings():void
+		{
+			if (cookie.data.hasOwnProperty('recentFiles')) 
+				delete cookie.data['recentFiles'];
+			if (cookie.data.hasOwnProperty('recentProjects')) 
+				delete cookie.data['recentProjects'];
+			if (cookie.data.hasOwnProperty('recentProjectsOpenedOption')) 
+				delete cookie.data['recentProjectsOpenedOption'];
+			if (cookie.data.hasOwnProperty('lastBrowsedLocation')) 
+				delete cookie.data['lastBrowsedLocation'];
+			cookie.flush();
+			
+			model.recentlyOpenedFiles = new ArrayCollection();
+			model.recentlyOpenedProjects = new ArrayCollection();
+			model.recentlyOpenedProjectOpenedOption = new ArrayCollection();
+			model.recentSaveProjectPath = new ArrayCollection();
+
+			dispatcher.dispatchEvent(new Event(RECENT_PROJECT_LIST_UPDATED));
+			dispatcher.dispatchEvent(new Event(RECENT_FILES_LIST_UPDATED));
+		}
+		
 		private function restoreFromCookie():void
 		{
 			// Uncomment & run to delete cookie
@@ -170,6 +191,20 @@ package actionScripts.plugin.recentlyOpened
 			
 			if (cookie.data.hasOwnProperty('recentProjects'))
 			{
+				// git#1230 since I don't have a good way to determine which 
+				// entry was suppose to be displayed and which entry duplicated with
+				// different 'name', it's problematic to choose between them;
+				// thus a force list-clean approach probably helpful to clear-out
+				// already cluttered so list with duplicated items; This should run once
+				if (!cookie.data.hasOwnProperty("git1230forceClean"))
+				{
+					cookie.data.recentProjects = [];
+					cookie.data.recentProjectsOpenedOption = [];
+					cookie.data["git1230forceClean"] = true;
+					cookie.flush();
+					recentFiles = [];
+				}
+				
 				recentFiles = cookie.data.recentProjects;
 				recent = [];
 
@@ -180,11 +215,7 @@ package actionScripts.plugin.recentlyOpened
 					if (projectReferenceVO.path && projectReferenceVO.path != "")
 					{
 						f = new FileLocation(projectReferenceVO.path);
-						if (ConstantsCoreVO.IS_AIR && f.fileBridge.exists)
-						{
-							recent.push(projectReferenceVO);
-						}
-						else if (!ConstantsCoreVO.IS_AIR)
+						if (f.fileBridge.exists)
 						{
 							recent.push(projectReferenceVO);
 						}
@@ -339,10 +370,10 @@ package actionScripts.plugin.recentlyOpened
 				customSDKPath = (event.project as AS3ProjectVO).buildOptions.customSDKPath;
 			}
 			var tmpSOReference: ProjectReferenceVO = new ProjectReferenceVO();
-			tmpSOReference.name = event.project.name;
 			tmpSOReference.sdk = customSDKPath ? customSDKPath : (model.defaultSDK ? model.defaultSDK.fileBridge.nativePath : null);
 			tmpSOReference.path = event.project.folderLocation.fileBridge.nativePath;
 			tmpSOReference.sourceFolder = event.project.sourceFolder;
+			tmpSOReference.name = event.project.name;
 			//tmpSOReference.projectId = event.project.projectId;
 			//tmpSOReference.isAway3D = (event.type == ProjectEvent.ADD_PROJECT_AWAY3D);
 			
@@ -400,7 +431,7 @@ package actionScripts.plugin.recentlyOpened
 			if (toRemove != -1) model.recentlyOpenedFiles.removeItemAt(toRemove);
 			
 			var tmpSOReference: ProjectReferenceVO = new ProjectReferenceVO();
-			tmpSOReference.name = f.fileBridge.name;
+			//tmpSOReference.name = f.fileBridge.name;
 			tmpSOReference.path = f.fileBridge.nativePath;
 			model.recentlyOpenedFiles.addItemAt(tmpSOReference, 0);
 			//model.selectedprojectFolders

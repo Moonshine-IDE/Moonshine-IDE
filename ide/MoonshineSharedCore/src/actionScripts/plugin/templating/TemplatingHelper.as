@@ -230,6 +230,7 @@ package actionScripts.plugin.templating
 				case "Domino Visual Editor Subform":
 					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];	
 				case "Domino Visual Editor View":
+					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];	
 				case "Domino Visual Editor Share Field":
 					return [ProjectMenuTypes.VISUAL_EDITOR_DOMINO,ProjectMenuTypes.TEMPLATE];		
 				case "Groovy Class":

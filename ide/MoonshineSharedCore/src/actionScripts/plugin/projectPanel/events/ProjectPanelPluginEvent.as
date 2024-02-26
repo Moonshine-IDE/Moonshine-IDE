@@ -31,15 +31,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.projectPanel.events
 {
-    import actionScripts.interfaces.IViewWithTitle;
-
     import flash.events.Event;
+    
+    import actionScripts.interfaces.IViewWithTitle;
 
     public class ProjectPanelPluginEvent extends Event
     {
         public static const ADD_VIEW_TO_PROJECT_PANEL:String = "addViewToProjectPanel";
         public static const REMOVE_VIEW_TO_PROJECT_PANEL:String = "removeViewToProjectPanel";
         public static const SELECT_VIEW_IN_PROJECT_PANEL:String = "selectViewInProjectPanel";
+		public static const HIDE_PROJECT_PANEL:String = "hideProjectPanelEvent";
+		public static const SHOW_PROJECT_PANEL:String = "showProjectPanelEvent";
 
         private var _view:IViewWithTitle;
 

@@ -31,23 +31,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator
 {
+	import flash.events.Event;
+	
 	import mx.collections.ArrayCollection;
-    import mx.core.IFlexDisplayObject;
-    
-    import actionScripts.factory.FileLocation;
-    import actionScripts.interfaces.IAboutBridge;
-    import actionScripts.interfaces.IClipboardBridge;
-    import actionScripts.interfaces.IContextMenuBridge;
-    import actionScripts.interfaces.IFileBridge;
-    import actionScripts.interfaces.IFlexCoreBridge;
-    import actionScripts.interfaces.IProjectBridge;
-    import actionScripts.interfaces.ILanguageServerBridge;
-    import actionScripts.interfaces.IOSXBookmarkerBridge;
-    import actionScripts.interfaces.IVisualEditorBridge;
-    import actionScripts.ui.IContentWindow;
-    import actionScripts.ui.MainView;
-    import actionScripts.utils.NoSDKNotifier;
-    import actionScripts.valueObjects.ProjectVO;
+	import mx.core.IFlexDisplayObject;
+	
+	import actionScripts.factory.FileLocation;
+	import actionScripts.interfaces.IAboutBridge;
+	import actionScripts.interfaces.IClipboardBridge;
+	import actionScripts.interfaces.IContextMenuBridge;
+	import actionScripts.interfaces.IFileBridge;
+	import actionScripts.interfaces.IFlexCoreBridge;
+	import actionScripts.interfaces.ILanguageServerBridge;
+	import actionScripts.interfaces.IOSXBookmarkerBridge;
+	import actionScripts.interfaces.IProjectBridge;
+	import actionScripts.interfaces.IVisualEditorBridge;
+	import actionScripts.ui.IContentWindow;
+	import actionScripts.ui.MainView;
+	import actionScripts.utils.NoSDKNotifier;
+	import actionScripts.valueObjects.ProjectVO;
 
 	[Bindable] public class IDEModel
 	{
@@ -119,6 +121,7 @@ package actionScripts.locator
 		public var confirmApplicationExit:Boolean;
 		public var showHiddenPaths:Boolean;
 		public var syntaxColorScheme:String;
+		public var startupInvokeEvent:Event;
 
 		public var version: String = "1.0.0";
 		public var build: String = "";

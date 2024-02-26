@@ -159,6 +159,15 @@ created by the TabBarSkin use the TabBarButtonSkin class.
 		<s:State name="normalWithTopScroller" stateGroups="withScroller"/>
 		<s:State name="normalWithBottomScroller" stateGroups="withScroller"/>
 	</s:states>
+	
+	<!-- fill -->
+	<!--- Defines the background appearance of the list-based component. -->
+	<s:Rect left="0" right="0" top="0" bottom="0" >
+		<s:fill>
+			<!--- Defines the color of the background. The default color is 0xFFFFFF. -->
+			<s:SolidColor color="0x424242" />
+		</s:fill>
+	</s:Rect>
 
 	<s:Scroller id="tabBarScroller" verticalScrollPolicy="{ScrollPolicy.OFF}"
 				horizontalScrollPolicy.normal="{ScrollPolicy.OFF}"

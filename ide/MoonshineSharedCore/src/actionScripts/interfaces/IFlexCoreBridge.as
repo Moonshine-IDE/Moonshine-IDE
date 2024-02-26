@@ -79,6 +79,7 @@ package actionScripts.interfaces
 		function getTourDeEditor(swfSource:String):BasicTextEditor;
 		function getDominoActionEditor():BasicTextEditor;
 		function getDominoViewEditor():BasicTextEditor;
+		function getDominoViewShareCloumnEditor():BasicTextEditor;
 		function getNewAntBuild():IFlexDisplayObject;
 		function untar(fileToUnzip:FileLocation, unzipTo:FileLocation, unzipCompleteFunction:Function, unzipErrorFunction:Function = null):void;
 		function removeExAttributesTo(path:String):void;

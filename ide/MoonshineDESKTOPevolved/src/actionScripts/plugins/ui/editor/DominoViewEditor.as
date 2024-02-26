@@ -50,15 +50,20 @@ package actionScripts.plugins.ui.editor
 
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
-
+	import actionScripts.impls.IVisualEditorLibraryBridgeImp;
 	import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
-
-    public class DominoViewEditor extends BasicTextEditor  
+	import view.suportClasses.events.DominoViewUpdateEvent;
+	import view.suportClasses.events.DominoSharedColumnUpdateViewEvent;
+	import actionScripts.events.GlobalEventDispatcher;
+    
+	import view.suportClasses.events.DominoViewColumnRightClickEvent;
+	
+	public class DominoViewEditor extends BasicTextEditor  
 	{
         private var dominoViewEditor:DominoViewVisualEditor;
         private var visualEditorProject:ProjectVO;
 		private var hasChangedProperties:Boolean;
-        
+        private var visualEditoryLibraryCore:IVisualEditorLibraryBridgeImp;
         
 
         public function DominoViewEditor(visualEditorProject:ProjectVO = null)
@@ -78,6 +83,10 @@ package actionScripts.plugins.ui.editor
 			{
 				editor.parser = new PlainTextLineParser();
 			}
+
+			visualEditoryLibraryCore = new IVisualEditorLibraryBridgeImp();
+			visualEditoryLibraryCore.visualEditorProject = visualEditorProject;
+
 			editor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
 			editor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
 			editorWrapper = new FeathersUIWrapper(editor);
@@ -91,7 +100,6 @@ package actionScripts.plugins.ui.editor
 			dominoViewEditor.percentWidth = 100;
 			dominoViewEditor.percentHeight = 100;
 			dominoViewEditor.addEventListener(VisualEditorViewChangeEvent.CODE_CHANGE, onDominoViewCodeChange);
-
 			dominoViewEditor.codeEditor = editorWrapper;
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 			
@@ -123,12 +131,19 @@ package actionScripts.plugins.ui.editor
 
 		private function onDominoViewCodeChange(event:VisualEditorViewChangeEvent):void
 		{
-			
-			dominoViewEditor.dominoViewVisualEditor.saveEditedFile()
-			editor.text=dominoViewEditor.dominoViewVisualEditor.loadDxlFile();
+			var xml:XML=dominoViewEditor.dominoViewVisualEditor.getSavedXMLFromMemoryObject()
+			editor.text=xml.toXMLString();
 			
 
 			updateChangeStatus()
+		}
+
+		private function onDominoViewUpdateAndRoload(event:DominoSharedColumnUpdateViewEvent):void 
+		{
+			if(event.viewFilePath==file.fileBridge.nativePath){
+				openLoadingFile(event.viewFilePath);
+			}
+			
 		}
 
 
@@ -153,6 +168,10 @@ package actionScripts.plugins.ui.editor
 			
 			dominoViewEditor.dominoViewVisualEditor.addEventListener("saveCode", onDominoViewEditorSaveCode);
 			dominoViewEditor.dominoViewVisualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
+			dominoViewEditor.dominoViewVisualEditor.moonshineBridge = visualEditoryLibraryCore;
+			
+			GlobalEventDispatcher.getInstance().addEventListener(DominoSharedColumnUpdateViewEvent.VIEW_UPDATE_AND_RELOAD,onDominoViewUpdateAndRoload);
+		
 		}
 		private function onDominoViewPropertyChange(event:Event):void
 		{
@@ -169,7 +188,7 @@ package actionScripts.plugins.ui.editor
 			{
 				dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 				dominoViewEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(Event.CHANGE, onDominoViewPropertyChange);
-				
+				GlobalEventDispatcher.getInstance().removeEventListener(DominoSharedColumnUpdateViewEvent.VIEW_UPDATE_AND_RELOAD,onDominoViewUpdateAndRoload);
 				//SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
 			}
 		}
@@ -221,6 +240,15 @@ package actionScripts.plugins.ui.editor
 
 		public function getFilePath():String {
 			return file.fileBridge.nativePath;
+		}
+
+		public function dispatcherNewSharedColumnEventFromView(txtFileName:String):void 
+		{
+			var tmpEvent:DominoViewColumnRightClickEvent = new DominoViewColumnRightClickEvent(DominoViewColumnRightClickEvent.COLUMN_CLICK,txtFileName,true, true);
+					
+			dominoViewEditor.dominoViewVisualEditor.dgColumns.dispatchEvent(tmpEvent);
+                
+		
 		}
     }
 }

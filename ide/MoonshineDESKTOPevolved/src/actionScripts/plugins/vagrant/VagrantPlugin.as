@@ -31,54 +31,58 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.vagrant
 {
-	import actionScripts.events.DominoEvent;
-	import actionScripts.events.OnDiskBuildEvent;
-	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
-	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
-	import actionScripts.plugins.vagrant.utils.DatabaseJobBase;
-	import actionScripts.plugins.vagrant.utils.DeployBuildOnVagrantJob;
-	import actionScripts.plugins.vagrant.utils.DeployDatabaseJob;
-	import actionScripts.plugins.vagrant.utils.DeployRoyaleToVagrantJob;
-import actionScripts.plugins.vagrant.utils.ImportDocumentsJSONJob;
-import actionScripts.plugins.vagrant.utils.RunDatabaseOnVagrantJob;
-
-	import components.popup.ConvertDominoDatabasePopup;
-	import components.popup.DeployDominoDatabasePopup;
-	import components.popup.DeployRoyaleVagrantPopup;
-import components.popup.ImportDocumentJSONPopup;
-import components.popup.SelectVagrantPopup;
-
 	import flash.display.DisplayObject;
-
 	import flash.events.Event;
+	import flash.events.InvokeEvent;
 	import flash.events.NativeProcessExitEvent;
 	import flash.filesystem.File;
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
-
+	import flash.utils.clearInterval;
+	import flash.utils.setTimeout;
+	
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
-
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
-
-	import spark.components.Alert;
 	
+	import spark.components.Alert;
+
+	import actionScripts.events.DominoEvent;
 	import actionScripts.events.FilePluginEvent;
+	import actionScripts.events.OnDiskBuildEvent;
 	import actionScripts.events.SettingsEvent;
 	import actionScripts.events.StatusBarEvent;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.console.ConsoleOutputEvent;
 	import actionScripts.plugin.settings.ISettingsProvider;
+	import actionScripts.plugin.settings.event.RequestSettingByNameEvent;
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.PathSetting;
 	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+	import actionScripts.plugins.vagrant.settings.LinkedInstancesSetting;
+	import actionScripts.plugins.vagrant.settings.renderer.LinkedInstancesRenderer;
+	import actionScripts.plugins.vagrant.utils.ConvertDatabaseJob;
+	import actionScripts.plugins.vagrant.utils.DatabaseJobBase;
+	import actionScripts.plugins.vagrant.utils.DeployBuildOnVagrantJob;
+	import actionScripts.plugins.vagrant.utils.DeployDatabaseJob;
+	import actionScripts.plugins.vagrant.utils.DeployRoyaleToVagrantJob;
+	import actionScripts.plugins.vagrant.utils.ImportDocumentsJSONJob;
+	import actionScripts.plugins.vagrant.utils.RunDatabaseOnVagrantJob;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
 	import actionScripts.ui.renderers.FTETreeItemRenderer;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
+	
+	import components.popup.ConvertDominoDatabasePopup;
+	import components.popup.DeployDominoDatabasePopup;
+	import components.popup.DeployRoyaleVagrantPopup;
+	import components.popup.ImportDocumentJSONPopup;
+	import components.popup.SelectVagrantPopup;
+	
+	import haxe.io.Error;
 
 	public class VagrantPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
 	{
@@ -89,6 +93,7 @@ import components.popup.SelectVagrantPopup;
 		override public function get description():String	{ return "Access to Vagrant support from Moonshine-IDE"; }
 		
 		private var pathSetting:PathSetting;
+		private var linkedInstanceSetting:LinkedInstancesSetting;
 		private var defaultVagrantPath:String;
 		private var defaultVirtualBoxPath:String;
 		private var vagrantConsole:VagrantConsolePlugin;
@@ -166,6 +171,7 @@ import components.popup.SelectVagrantPopup;
 			dispatcher.addEventListener(DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT, onImportDocumentsJSONRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest, false, 0, true);
 			dispatcher.addEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest, false, 0, true);
+			dispatcher.addEventListener(InvokeEvent.INVOKE, onInvokeEvent, false, 0, true);
 		}
 		
 		override public function deactivate():void
@@ -179,6 +185,7 @@ import components.popup.SelectVagrantPopup;
 			dispatcher.removeEventListener(DominoEvent.IMPORT_DOCUMENTS_JSON_VAGRANT, onImportDocumentsJSONRequest);
 			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_DOMINO_DATABASE, onDeployDominoDatabseRequest);
 			dispatcher.removeEventListener(OnDiskBuildEvent.DEPLOY_ROYALE_TO_VAGRANT, onDeployRoyalToVagrantRequest);
+			dispatcher.removeEventListener(InvokeEvent.INVOKE, onInvokeEvent);
 		}
 
 		override public function resetSettings():void
@@ -191,10 +198,11 @@ import components.popup.SelectVagrantPopup;
 			if (pathSetting)
 			{
 				pathSetting = null;
+				linkedInstanceSetting = null;
 			}
 		}
 
-		override protected function outputMsg(msg:*):void
+		override protected function outputMsg(msg:*, type:String=null):void
 		{
 			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT_VAGRANT, msg));
 		}
@@ -203,13 +211,36 @@ import components.popup.SelectVagrantPopup;
         {
 			onSettingsClose();
 			pathSetting = new PathSetting(this, 'vagrantPath', 'Vagrant Home', true, vagrantPath, false, false, defaultVagrantPath);
+			linkedInstanceSetting = new LinkedInstancesSetting(vagrantInstances);
 
 			return Vector.<ISetting>([
 				pathSetting,
 				new PathSetting(this, 'virtualBoxPath', 'VirtualBox Home (Optional)', true, virtualBoxPath, false, false, defaultVirtualBoxPath),
-				new LinkedInstancesSetting(vagrantInstances)
+				linkedInstanceSetting
 			]);
         }
+        
+        private function onInvokeEvent(event:InvokeEvent):void
+        {
+        	// loads/adds vagrant instances from SHI config
+        	var shiInstances:Array = VagrantUtil.getVagrantInstancesFromSHI(this.vagrantInstances);
+    
+        	if (shiInstances.length > 0)
+        	{
+	        	// open settings/vagrant-instance
+        		dispatcher.dispatchEvent(new SettingsEvent(SettingsEvent.EVENT_OPEN_SETTINGS, "actionScripts.plugins.vagrant::VagrantPlugin"));	
+        		
+        		var interval:uint = setTimeout(function():void
+        		{
+        			clearInterval(interval);
+        			
+					// get current instance of vagrant-instance in settings
+					var lir: LinkedInstancesRenderer = (linkedInstanceSetting.renderer) as LinkedInstancesRenderer;
+					lir.dgVagrantInstances.selectedItem = shiInstances[0]; // selects and opens the first item in edit
+					lir.onItemDoubleClicked(null);
+        		}, 1000);
+        	}
+		}
 
 		private function onConvertDominoDatabase(event:Event):void
 		{

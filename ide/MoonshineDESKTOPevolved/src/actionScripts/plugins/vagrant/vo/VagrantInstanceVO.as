@@ -57,6 +57,18 @@ package actionScripts.plugins.vagrant.vo
 		{
 			_title = value;
 		}
+		
+		// use to compare an edited entry against 
+		// loaded configuration file from SHI
+		private var _titleOriginal:String;
+		public function get titleOriginal():String
+		{
+			return _titleOriginal;
+		}
+		public function set titleOriginal(value:String):void
+		{
+			_titleOriginal = value;
+		}
 
 		private var _url:String;
 		public function get url():String
@@ -88,14 +100,27 @@ package actionScripts.plugins.vagrant.vo
 			_localPath = value;
 		}
 
+		private var _server:Object = {};
+		public function get server():Object
+		{
+			return _server;
+		}
+
+		public function set server(value:Object):void
+		{
+			_server = value;
+		}
+
 		public static function getNewInstance(value:Object):VagrantInstanceVO
 		{
 			var tmpInstance:VagrantInstanceVO = new VagrantInstanceVO();
 			if ("state" in value) tmpInstance.state = value.state;
 			if ("title" in value) tmpInstance.title = value.title;
+			if ("titleOriginal" in value) tmpInstance.titleOriginal = value.titleOriginal;
 			if ("url" in value) tmpInstance.url = value.url;
 			if ("capabilities" in value) tmpInstance.capabilities = value.capabilities;
 			if ("localPath" in value) tmpInstance.localPath = value.localPath;
+			if ("server" in value) tmpInstance.server = value.server;
 
 			return tmpInstance;
 		}
