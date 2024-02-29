@@ -159,6 +159,15 @@ package actionScripts.plugin.dominoInterface
 						compile.sendString(needConvertJavascript);
 						needConvertJavascript=null;
 					}
+				}else if(clientLanguage=="Formula"){
+					var editorText:String=dominoObjectView.getLanguageEditorText();
+					if(editorText!=null&&editorText.length>0){
+						editorText=StringHelper.base64Encode(editorText);
+						editorText="compileFormula#"+editorText;
+						
+						compile.sendString(editorText);
+					}
+
 				}
 				
 				
@@ -338,6 +347,7 @@ package actionScripts.plugin.dominoInterface
 			if(event.compileResult){
 				
 				if(event.compileResult.length>1){
+					Alert.show(event.compileResult);
 					if(event.compileResult.indexOf("#")){
 						var list:Array=event.compileResult.split("#");
 						var type:String=StringUtil.trim(list[0]);
@@ -406,6 +416,17 @@ package actionScripts.plugin.dominoInterface
 								
 							}else{
 								Alert.show("Convert JavaScript to DXL error: "+result);
+							}
+						}else if(type=="compileFormula"){
+							var flag:String=StringUtil.trim(list[1]);
+							result=StringUtil.trim(list[2]);
+							if(flag=="success"){
+								//Alert.show("Compile Formula success:"+result);
+								model = IDEModel.getInstance();
+								editor=model.activeEditor as VisualEditorViewer;
+								editor.currentFile.fileBridge.save(needVaildLotusScirpt);
+							}else{
+								Alert.show("Compile Formula error: "+result);
 							}
 						}
 					}
