@@ -365,7 +365,7 @@ package actionScripts.utils
 				// adds only if Haxe is available and installed in Moonshine custom location
 				if (isHaxeAvailable && model.haxePath.indexOf(HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath) != -1)
 				{
-					setCommand += HelperConstants.HAXE_SYMLINK_COMMANDS.join(";") +";";
+					setCommand += HelperConstants.HAXE_MAC_SYMLINK_COMMANDS.join(";") +";";
 					isNekoSymlinkGenerated = true;
 				}
 

@@ -1,0 +1,51 @@
+name: SUB - Build on Windows
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: "windows-latest"
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - uses: krdlab/setup-haxe@v1
+      with:
+        haxe-version: 4.2.5
+
+    - uses: joshtynjala/setup-apache-flex-action@v2
+      with:
+        flex-version: "4.16.1"
+        air-version: "33.1"
+        accept-air-license: true
+
+    - name: Prepare dependencies
+      working-directory: ..
+      run: |
+        git clone https://github.com/Moonshine-IDE/Moonshine-SDK-Installer.git
+        git clone https://github.com/Moonshine-IDE/VisualEditorConverterLib.git
+        git clone https://github.com/Moonshine-IDE/MockupVisualEditor.git
+
+    - name: Build VisualEditorConverterLib with Ant
+      working-directory: ../VisualEditorConverterLib
+      run: ant -noinput -buildfile 'build.xml'
+
+    - name: Build MockupVisualEditor with Ant
+      working-directory: ../MockupVisualEditor
+      run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
+
+    - name: Build MoonshineDESKTOPevolved with Ant
+      run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' '-DIs.Signed.Build=false'
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Moonshine
+        path: ide/MoonshineDESKTOPevolved/bin/MoonshineDESKTOPevolved.swf
