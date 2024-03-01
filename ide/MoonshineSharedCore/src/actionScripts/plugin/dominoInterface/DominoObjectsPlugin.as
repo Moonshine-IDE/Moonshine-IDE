@@ -164,7 +164,7 @@ package actionScripts.plugin.dominoInterface
 					if(editorText!=null&&editorText.length>0){
 						editorText=StringHelper.base64Encode(editorText);
 						editorText="compileFormula#"+editorText;
-						
+						editorText=editorText+"\r\n"
 						compile.sendString(editorText);
 					}
 
@@ -347,7 +347,7 @@ package actionScripts.plugin.dominoInterface
 			if(event.compileResult){
 				
 				if(event.compileResult.length>1){
-					Alert.show(event.compileResult);
+				
 					if(event.compileResult.indexOf("#")){
 						var list:Array=event.compileResult.split("#");
 						var type:String=StringUtil.trim(list[0]);

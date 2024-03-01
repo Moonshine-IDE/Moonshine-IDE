@@ -98,7 +98,7 @@ package actionScripts.plugin.dominoInterface
 
         public function sendString(data:String):void {
             // Send data to the server
-            //Alert.show("Sending data to server: " + data);
+            
             socket.writeUTFBytes(data);
             socket.flush();
            
@@ -108,7 +108,6 @@ package actionScripts.plugin.dominoInterface
         public function onData(event:ProgressEvent):void {
             // Read the received data
             var receivedData:String = socket.readUTFBytes(socket.bytesAvailable);
-             //Alert.show("Received data from server: " + receivedData);
              GlobalEventDispatcher.getInstance().dispatchEvent(new DominoLotusScriptCompileReturnEvent(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE, receivedData, true,true))
         }
 
