@@ -88,6 +88,9 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_AS3CLASS: FileLocation;
 		public static var TEMPLATE_AS3INTERFACE: FileLocation;
 		public static var TEMPLATE_CSS: FileLocation;
+		public static var TEMPLATE_DOMINO_AGENT_JAVA: FileLocation;
+		public static var TEMPLATE_DOMINO_AGENT_LOTUSSCRIPT: FileLocation;	
+		public static var TEMPLATE_DOMINO_AGENT_FORMULA: FileLocation;
 		public static var TEMPLATE_DOMINO_FORM: FileLocation;
 		public static var TEMPLATE_DOMINO_PAGE: FileLocation;
 		public static var TEMPLATE_DOMINO_SUBFORM: FileLocation;
@@ -338,6 +341,25 @@ package actionScripts.valueObjects
 			TEMPLATE_CSS.fileBridge.isDirectory = false;
 			TEMPLATE_CSS.fileBridge.extension = "css";
 			TEMPLATE_CSS.fileBridge.data = "";
+
+			TEMPLATE_DOMINO_AGENT_JAVA = new FileLocation("TEMPLATE");
+            TEMPLATE_DOMINO_AGENT_JAVA.fileBridge.name = "Domino Visual Editor Agent Java.ija";
+            TEMPLATE_DOMINO_AGENT_JAVA.fileBridge.isDirectory = false;
+            TEMPLATE_DOMINO_AGENT_JAVA.fileBridge.extension = "ija";
+            TEMPLATE_DOMINO_AGENT_JAVA.fileBridge.data = "";
+
+            TEMPLATE_DOMINO_AGENT_LOTUSSCRIPT = new FileLocation("TEMPLATE");
+            TEMPLATE_DOMINO_AGENT_LOTUSSCRIPT.fileBridge.name = "Domino Visual Editor Agent LotusScript.ila";
+            TEMPLATE_DOMINO_AGENT_LOTUSSCRIPT.fileBridge.isDirectory = false;
+            TEMPLATE_DOMINO_AGENT_LOTUSSCRIPT.fileBridge.extension = "ila";
+            TEMPLATE_DOMINO_AGENT_LOTUSSCRIPT.fileBridge.data = "";
+
+
+            TEMPLATE_DOMINO_AGENT_FORMULA = new FileLocation("TEMPLATE");
+            TEMPLATE_DOMINO_AGENT_FORMULA.fileBridge.name = "Domino Visual Editor Agent LotusScript.fa";
+            TEMPLATE_DOMINO_AGENT_FORMULA.fileBridge.isDirectory = false;
+            TEMPLATE_DOMINO_AGENT_FORMULA.fileBridge.extension = "fa";
+            TEMPLATE_DOMINO_AGENT_FORMULA.fileBridge.data = "";
 
 			TEMPLATE_DOMINO_FORM = new FileLocation("TEMPLATE");
 			TEMPLATE_DOMINO_FORM.fileBridge.name = "Domino Visual Editor Form.form";

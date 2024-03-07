@@ -305,8 +305,10 @@ package actionScripts.controllers
 				}else if (extension == "column" && project && project.hasOwnProperty("isDominoVisualEditorProject") && project["isDominoVisualEditorProject"] )
 				{
 					openDominoViewShareCloumnFile(project, fileData);
-				}
-				else
+				}else if (extension == "fa" && project && project.hasOwnProperty("isDominoVisualEditorProject") && project["isDominoVisualEditorProject"] )
+				{
+					openDominoAgentFile(project, fileData);
+				}else
 				{
 					//try to open dve with domino visual editor.
 					 /*if ((project is OnDiskProjectVO) && (extension == "dve"))
@@ -529,6 +531,43 @@ package actionScripts.controllers
 			);
 
 		}
+		//getDominoAgentEditor
+
+		private function openDominoAgentFile(project:ProjectVO, value:Object):void
+		{
+			var editor:BasicTextEditor = model.flexCore.getDominoAgentEditor();
+			var extension:String = file.fileBridge.extension;
+			if (!project)
+			{
+				project = model.activeProject;
+			}
+
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
+
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			ged.dispatchEvent(editorEvent);
+			
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
+			
+			var formulaStr:String=loadingDominoFormulaFromAgentFile();
+			
+			editor.open(file, formulaStr);
+
+			//editor.openFileAsStringHandler(formulaStr);
+			
+			if (atLine > -1)
+			{
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
+			}
+
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+		}
 
 
 		private function openDominoViewFile(project:ProjectVO, value:Object):void
@@ -636,6 +675,29 @@ package actionScripts.controllers
 						
 						var decodeBase64: String =  TextUtil.base64Decode(formulaXMLNode.text());
 						formula=formula+decodeBase64;
+					}
+				}
+
+			}
+
+			return formula;
+
+		}
+
+		private function loadingDominoFormulaFromAgentFile():String 
+		{
+			var formula:String = "";
+			if(file){
+				var actionString:String=String(file.fileBridge.read());
+				
+				var actionXml:XML = new XML(actionString);
+				for each(var formulaXMLNode:XML in actionXml..formula) //no matter of depth Note here
+				{
+					
+					if(formulaXMLNode.text()){
+						// var decodeBase64: String =  TextUtil.base64Decode(formulaXMLNode.text());
+						// formula=formula+decodeBase64;
+						formula=formulaXMLNode.text();
 					}
 				}
 

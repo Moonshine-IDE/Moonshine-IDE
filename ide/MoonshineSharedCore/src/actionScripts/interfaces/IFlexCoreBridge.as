@@ -78,6 +78,7 @@ package actionScripts.interfaces
 		function getSDKInstallerView():IFlexDisplayObject;
 		function getTourDeEditor(swfSource:String):BasicTextEditor;
 		function getDominoActionEditor():BasicTextEditor;
+		function getDominoAgentEditor():BasicTextEditor;
 		function getDominoViewEditor():BasicTextEditor;
 		function getDominoViewShareCloumnEditor():BasicTextEditor;
 		function getNewAntBuild():IFlexDisplayObject;
