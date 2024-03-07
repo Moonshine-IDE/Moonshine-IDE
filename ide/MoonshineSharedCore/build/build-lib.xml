@@ -854,6 +854,14 @@
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/hashlink-debug-adapter/node_modules/deasync/bin/darwin-x64-node-9/deasync.node'/>
 		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/tbls/node_modules/node-notifier/vendor/mac.noindex/terminal-notifier.app/Contents/MacOS/terminal-notifier'/>
+		</exec>
+		<exec executable="bash">
+			<arg value="-c"/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/tbls/node_modules/fsevents/fsevents.node'/>
+		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='cd ${debug_dir}/groovy-language-server-all;zip -r groovy-language-server-all.jar .'/>
