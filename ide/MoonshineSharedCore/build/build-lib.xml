@@ -864,7 +864,10 @@
 			<arg value="-c"/>
 			<arg value='codesign -f --options runtime --timestamp -v -s "${certSignedDevIDKeychainName}" --entitlements ${debug_dir}/entitlement.plist elements/tbls/node_modules/node-notifier/vendor/mac.noindex/terminal-notifier.app'/>
 		</exec>
-
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='spctl -vvv --assess --type exec elements/tbls/node_modules/node-notifier/vendor/mac.noindex/terminal-notifier.app'/>
+		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/tbls/node_modules/fsevents/fsevents.node'/>
