@@ -718,6 +718,7 @@
 			<arg value="-c"/>
 			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" --deep ${desktopBinaryFilename}'/>
 		</exec>
+		<copy file="entitlement.plist" todir="${debug_dir}" overwrite="true"/>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
 			<arg value='codesign -f --options runtime --timestamp -v -s "${certSignedDevIDKeychainName}" --entitlements ${debug_dir}/entitlement.plist ${desktopBinaryFilename}'/>
@@ -856,7 +857,12 @@
 		</exec>
 		<exec executable="bash">
 			<arg value="-c"/>
-			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" elements/tbls/node_modules/node-notifier/vendor/mac.noindex/terminal-notifier.app/Contents/MacOS/terminal-notifier'/>
+			<arg value='codesign -f -v -s "${certSignedDevIDKeychainName}" --deep elements/tbls/node_modules/node-notifier/vendor/mac.noindex/terminal-notifier.app'/>
+		</exec>
+		<copy file="JITEnabledEntitlement.plist" tofile="${debug_dir}/entitlement.plist" overwrite="true"/>
+		<exec executable="bash" failonerror="true">
+			<arg value="-c"/>
+			<arg value='codesign -f --options runtime --timestamp -v -s "${certSignedDevIDKeychainName}" --entitlements ${debug_dir}/entitlement.plist elements/tbls/node_modules/node-notifier/vendor/mac.noindex/terminal-notifier.app'/>
 		</exec>
 		<exec executable="bash" failonerror="true">
 			<arg value="-c"/>
@@ -951,7 +957,6 @@
 			<os family="unix"/>
 			<then>
 				<property name="desktopBinaryFilename" value="${deploy_dir}/${installerName}.app"/>
-				<copy file="entitlement.plist" todir="${debug_dir}" overwrite="true"/>
 				<copy file="../extensions/SSB.ane" todir="${debug_dir}" overwrite="true"/>
 				<copy todir="${basedir}/macOScripts" overwrite="true">
 					<fileset dir="${applicationSourceDirectory}/macOScripts"/>
