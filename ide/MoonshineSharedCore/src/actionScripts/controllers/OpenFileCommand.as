@@ -688,21 +688,26 @@ package actionScripts.controllers
 		{
 			var formula:String = "";
 			if(file){
+				var xmlns:Namespace = new Namespace("http://www.lotus.com/dxl");
+   
 				var actionString:String=String(file.fileBridge.read());
-				
 				var actionXml:XML = new XML(actionString);
-				for each(var formulaXMLNode:XML in actionXml..formula) //no matter of depth Note here
+				var body:XMLList = actionXml.children();
+				for each (var item:XML in body)
 				{
-					
-					if(formulaXMLNode.text()){
-						// var decodeBase64: String =  TextUtil.base64Decode(formulaXMLNode.text());
-						// formula=formula+decodeBase64;
-						formula=formulaXMLNode.text();
+					var itemName:String = item.name();
+					if (itemName=="http://www.lotus.com/dxl::code" && item.@event=="action")
+					{	
+						formula=item.children()[0].text();
+						
 					}
 				}
+						
+			
+				
 
 			}
-
+			
 			return formula;
 
 		}

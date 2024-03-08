@@ -48,7 +48,7 @@ package actionScripts.plugins.ui.editor
 
 	import actionScripts.ui.FeathersUIWrapper;
 
-	import actionScripts.plugins.help.view.DominoActionVisualEditorView;
+	import actionScripts.plugins.help.view.DominoAgentFormulaVisualEditor;
 	import moonshine.editor.text.events.TextEditorChangeEvent;
 
 	import moonshine.editor.text.TextEditor;
@@ -66,7 +66,7 @@ package actionScripts.plugins.ui.editor
     public class DominoAgentFormulaEditor extends BasicTextEditor  
 	{
 
-		private var dominoAgentFormulaEditor:DominoAgentFormulaEditor;
+		private var dominoAgentFormulaEditor:DominoAgentFormulaVisualEditor;
     	private var visualEditorProject:ProjectVO;
 		private var hasChangedProperties:Boolean;
 
@@ -79,7 +79,7 @@ package actionScripts.plugins.ui.editor
 		{
 			if(!editor)
 			{
-				editor = new TextEditor(null, true);
+				editor = new TextEditor("", false);
 			}
 			if(!editor.parser)
 			{
@@ -92,7 +92,7 @@ package actionScripts.plugins.ui.editor
 			editorWrapper.percentWidth = 100;
 			text = "";
 			
-			dominoAgentFormulaEditor = new DominoAgentFormulaEditor();
+			dominoAgentFormulaEditor = new DominoAgentFormulaVisualEditor();
 			dominoAgentFormulaEditor.addEventListener(FlexEvent.CREATION_COMPLETE, onDominoAgentFormulaEditorCreationComplete);
 			
 			dominoAgentFormulaEditor.percentWidth = 100;
@@ -140,23 +140,36 @@ package actionScripts.plugins.ui.editor
 		}
 
 
-		override protected function openHandler(event:Event):void
-		{
-			super.openHandler(event);
-			var filePath:String = file.fileBridge.nativePath;
+		// override protected function openHandler(event:Event):void
+		// {
+		// 	super.openHandler(event);
+		// 	var filePath:String = file.fileBridge.nativePath;
 			
-			openLoadingFile(filePath);
+		// 	openLoadingFile(filePath);
 			
-		}
+		// }
 
-        public function openLoadingFile(filePath:String):void
-		{
-			//dominoAgentFormulaEditor.dominoViewVisualEditor.loadFile(filePath);
-		}
+        // public function openLoadingFile(filePath:String):void
+		// {
+		// 	//dominoAgentFormulaEditor.dominoViewVisualEditor.loadFile(filePath);
+		// }
 
 		public function getFilePath():String {
 			return file.fileBridge.nativePath;
 		}
+
+		override public function open(newFile:FileLocation, fileData:Object=null):void
+		{
+			loadingFile = true;
+			currentFile = newFile;
+			if (fileData) 
+			{
+				super.openFileAsStringHandler(fileData as String);
+				return;
+			}
+
+			
+        }
 
         protected function handleEditorCollectionChange(event:CollectionEvent):void
 		{

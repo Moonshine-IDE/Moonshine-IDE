@@ -1,15 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<agent name='JMK - Set to Permanent' xmlns='http://www.lotus.com/dxl' version='12.0'
- maintenanceversion='1.0' replicaid='862580BD00039000' hide='v3' publicaccess='false'
- designerversion='5'>
-<noteinfo noteid='132' unid='284F9FFBFCCD0FD686256B6C0010E495' sequence='2'>
-<created><datetime dst='true'>20020225T220430,93-05</datetime></created>
-<modified><datetime dst='true'>20170203T193855,07-05</datetime></modified>
-<revised><datetime dst='true'>20040517T110945,92-05</datetime></revised>
-<lastaccessed><datetime dst='true'>20170203T193855,06-05</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20170203T193855,06-05</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Justin M Kuntz/OU=A55555/O=Prominic</name><name>CN=Jon E. Schultz II/OU=A55555/O=PNI</name></updatedby>
-<designchange><datetime dst='true'>20040517T111021,22-05</datetime></designchange>
+<agent name='$AgentName' xmlns='http://www.lotus.com/dxl' version='12.0'
+ maintenanceversion='1.0'  hide='v3' publicaccess='false' designerversion='10'>
 <trigger type='actionsmenu'/>
 <documentset type='selected'/>
 
@@ -18,7 +9,7 @@ SELECT @All</formula>
 </code>
 
 <rundata processeddocs='0' exitcode='0'>
-<agentmodified><datetime dst='true'20240306T144046,25+03</datetime></agentmodified>
+<agentmodified><datetime dst='true'>20240306T144046,25+03</datetime></agentmodified>
 <runlog></runlog>
 </rundata>
 </agent>

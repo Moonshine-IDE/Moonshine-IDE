@@ -33,38 +33,82 @@
 ////////////////////////////////////////////////////////////////////////////////
 -->
 
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
 	xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns:containers="spark.containers.*"
     xmlns:tabnavigator="actionScripts.ui.tabNavigator.*"
     xmlns:suportclasses="view.suportClasses.*"
+    xmlns:mx="library://ns.adobe.com/flex/mx"
     creationComplete="onComplete()"
     xmlns:collapsiblehdivider="components.collapsibleHDivider.*"
 	xmlns:view="view.*">        
+<collapsiblehdivider:CollapsibleEdgeContainersHDividerGroup percentWidth="100" percentHeight="100" bottom="0" top="0" gap="0" minWidth="250">
 
-<containers:Navigator id="viewStack"  width="100%" height="100%" creationPolicy="all">
-        <s:NavigatorContent label="View" id="viewNavigator">
-            <view:DominoViewShareColumnEditor id="dominoViewVisualEditor" percentWidth="100" percentHeight="100" right="0" left="0"/>
-        </s:NavigatorContent>
-        <s:NavigatorContent label="Code">
-            <s:Scroller width="100%" height="100%" id="codeContentGroupScroller">
-               <s:Group id="codeContentGroup" creationComplete="onContentGroupCreationComplete(event)">
+         <s:Group width="30%">
+           <mx:VBox percentHeight="100"
+			 percentWidth="100"
+			 backgroundAlpha="0.9"
+			 >
+			   <mx:Tree id="myTree" width="100%" 
+                
+				contentBackgroundColor="0xffffff"
+				rollOverColor="0x393939"
+				selectionColor="0xc165b8"
+				alternatingItemColors="[0xeeeeee, 0xffffff]"
+			   height="100%" labelField="@label"
+                showRoot="false" dataProvider="{treeData}" change="treeChanged(event)"
+				itemRenderer="actionScripts.ui.renderers.DominoTreeItemRenderer"
+			    />
 
-               </s:Group>
-            </s:Scroller>
-        </s:NavigatorContent>
-    </containers:Navigator>
+				
+			 </mx:VBox>
+        </s:Group> 
+        <s:Scroller width="70%" height="100%" id="codeContentGroupScroller">
+               <s:VGroup horizontalAlign="left" verticalAlign="middle" percentWidth="100" percentHeight="100">
+				<s:HGroup verticalAlign="bottom" left="10" percentWidth="100">
+					<s:Label text="Run" id="runLabel" fontWeight="bold" percentWidth="10" />
+            		<s:DropDownList id="runList"  percentWidth="40"
+						 dataProvider="{formulaRunWayList}"
+						labelField="label" 
+						enabled="false"
+						/>
+					<s:DropDownList id="runWayList" 
+						percentWidth="40" dataProvider="{formulaClientRunLanguage}"
+						labelField="label" 
+						
+						enabled="false"/>	
+       		 	</s:HGroup>
+				<s:Group id="codeContentGroup" creationComplete="onContentGroupCreationComplete(event)" minWidth="156" width="100%" height="100%">
+				</s:Group> 
+					
+				<!-- <s:TextArea id="textInput"  height="100%"
+						text="" width="100%" minWidth="156" editable="true" selectable="true"
+						prompt=""
+						
+						styleName="fixedWidthTexts"
+						textInput="textInput_changeHandler(event)"
+						
+						change="textInput_changeHandler(event)"
+				/> -->
+					
+			</s:VGroup>
+        </s:Scroller>
 
-        <s:Group width="100%">
-            <tabnavigator:TabBarWithScroller id="tabBar" dataProvider="{viewStack}"
-                                         fontSize="11" fontFamily="_sans" color="0xEEEEEE"
-                                         skinClass="components.skins.EditorTabBarSkin"
-                                         cornerRadius="1" closeButtonVisible="false"
-                                         change="onTabBarChange(event)" left="0"/>
-        </s:Group>                                
+                                      
         
 
-
+</collapsiblehdivider:CollapsibleEdgeContainersHDividerGroup>
+	 <fx:Declarations>
+        <fx:XMLList id="treeData">
+            <node label="Formula(Agent)" type="formula" value="" iconType="">
+               
+				<node label="Document Selection" type="formula" key="globalsOptions" value="" iconType="LotusScript"/>
+				<node label="Action" type="formula" key="globalsDeclarations" value="" iconType="LotusScript"/>
+			   
+            </node>
+			
+        </fx:XMLList>
+    </fx:Declarations>
 <fx:Script><![CDATA[
     
     import mx.core.IVisualElement;
@@ -79,6 +123,7 @@
 
     import mx.events.DragEvent;
     import spark.events.IndexChangeEvent;
+    import mx.collections.ArrayCollection;
     import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
 
     private var _codeEditor:IVisualElement;
@@ -101,10 +146,18 @@
         _codeEditor = value;
     }
 
-    
+    public var formulaRunWayList:ArrayCollection = new ArrayCollection(
+			[{label:"Client", value:"client"},
+			{label:"Web", value:"web"} ]);
+
+    public var formulaClientRunLanguage:ArrayCollection = new ArrayCollection(
+			[{label:"Formula", value:"formula"},
+			{label:"LotusScript", value:"lotusscript"},
+			{label:"JavaScript", value:"javascript"} ]);
     
     public function onComplete():void {
-        
+        runList.selectedIndex=0;
+        runWayList.selectedIndex=0;
     }
    
    
@@ -131,17 +184,14 @@
     private function onTabBarChange(event:IndexChangeEvent):void
     {
         
-        if (event.newIndex == 1)
-        {
-            dominoViewVisualEditor.setDominoViewGroupVisible(false);
+       
+    }
 
-            dispatchEvent(new VisualEditorViewChangeEvent(VisualEditorViewChangeEvent.CODE_CHANGE));
-        }
-        else
-        {
-            dominoViewVisualEditor.setDominoViewGroupVisible(true);
-            codeContentGroup.visible=true;
-        }
+
+    public function treeChanged(event:Event):void {
+		
+			
+
     }
 
 
@@ -150,6 +200,6 @@
         [Event(name="codeChange", type="actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent")]
         [Event(name="startPreview", type="flash.events.Event")]
 </fx:Metadata>
-</s:VGroup>
+</s:BorderContainer>
    
        

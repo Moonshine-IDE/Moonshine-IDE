@@ -2520,10 +2520,12 @@ package actionScripts.plugin.templating
 		protected function onDominoAgentFormulaFileCreateRequest(event:NewFileEvent):void
 		{
 			checkAndUpdateIfTemplateModified(event);
-			Alert.show("template:"+event.fromTemplate.fileBridge.nativePath+":"+event.fromTemplate.fileBridge.extension);
 				
 			if (event.fromTemplate.fileBridge.exists)
 			{
+				var content:String = String(event.fromTemplate.fileBridge.read());
+					content=content.replace(/\$AgentName/g,event.fileName);
+			
 				var templatePath:String=event.fromTemplate.fileBridge.nativePath;	
 				var extensionStr:String="";
 				if(templatePath.indexOf(".fa")>0){
@@ -2533,7 +2535,6 @@ package actionScripts.plugin.templating
 				}else if(templatePath.indexOf(".ila")>0){
 					extensionStr="lsa";
 				}
-				var content:String = String(event.fromTemplate.fileBridge.read());
 				var fileToSave:FileLocation = new FileLocation(event.insideLocation.nativePath + event.fromTemplate.fileBridge.separator + event.fileName +"."+extensionStr);
 				fileToSave.fileBridge.save(content);
 
