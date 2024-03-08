@@ -3,47 +3,117 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
-
 ## Moonshine IDE [3.3.4]
 
 ### Summary
 
+Key features for the 3.3.4 release:
+* JDK 17 support.  JDK 17 is now the default JDK for Moonshine, except for Domino projects
+* Improvements to workspaces.  
+    * Switch workspaces from the project sidebar.  
+    * Manage workspaces from Settings > Workspaces.
+    * Automatically create new workspaces when opening a repository or multiple projects
+* Added View editor in Domino Visual Editor. Includes support for Shared Columns.
+* Open Terminal to selected directory in Project sidebar
+* Updated license to [Server Side Public License](https://www.mongodb.com/licensing/server-side-public-license)
+
 ### Added
 
-* Workspaces: Switch Workspaces from Project Sidebar ([#1131](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1131))
-* Workspaces: Manage Workspaces ([#1132](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1132))
-* Workspaces: Open Multiple Projects in Separate Workspace ([#1136](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1136))
-* Open Path in Terminal ([#1038](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1038))
-* Mac Osx: Support for M1/ARM64 ([#1162](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1162))
-* Import Documents by JSON through Genesis ([#1171](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1171))
+* Control to switch workspaces form the project sidebar. ([#1131](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1131))
+* Manage workspaces from Settings > Workspaces ([#1132](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1132))
+* When opening multiple projects at once, give an option to select the workspace where the projects will be opened ([#1136](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1136))
+* Domino Visual Editor: View Support ([#1016](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1016))
+* Domino Visual Editor: View Column Properties ([#1017](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1017))
+* Open folders in Terminal from the right-click menu ([#1038](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1038))
+* macOS: Support for M1/ARM64 architecture ([#1162](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1162))
+* Import documents into your database from a JSON file ([#1171](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1171))
+* Use Home and End to move to the beginning and end of the line, and CTRL+Home and CTRL+End to jump to the beginning or end of the file ([#1225](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1225))
+* Expand/restore editor tab with double-Click ([#1224](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1224))
+* Warning for duplicate names for Forms and Views ([#1220](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1220))
+* Option to convert a column in a view to a shared column: ([#1219](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1219))
+* Automatically detect new Vagrant instances created in Super.Human.Installer ([#1217](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1217))
+* Domino Visual Editor; Shared Column Support ([#1216](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1216))
+* Domino Visual Editor; Design Properties for Forms and Views ([#1214](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1214))
+* Tibbo Basic Support ([#1211](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1211))
+* Domino Visual Editor: Export converted Royale project to external application ([#1148](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1148))
+* Open Genesis Directory Project in Workspace ([#1137](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1137))
+* Domino to Royale: Toggle Edit Mode in generated Royale forms ([#1110](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1110))
 
 ### Changed
 
+* Update Moonshine license to [Server Side Public License](https://www.mongodb.com/licensing/server-side-public-license) ([#577](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/577))
+* JDK 17+ support ([#1124](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1124))
+* Java Haxe Updates to support JDK 17 ([#1168](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1168))
+* Maven Updates to support JDK 17 ([#1167](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1167))
+* Gradle Updates to support JDK 17+ ([#1166](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1166))
 * Language Server: Updated [ActionScript & MXML](https://as3mxml.com) engine to v1.19.0.
 * Language Server: Updated [Haxe](https://github.com/vshaxe/haxe-language-server) engine to v2.28.0.
 * Language Server: Updated [Java eclipse.jdt.ls](https://github.com/eclipse/eclipse.jdt.ls) engine to v1.29.0.
-* Update Moonshine license to [Server Side Public License](https://www.mongodb.com/licensing/server-side-public-license) ([#577](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/577))
-* Misc. External Editors Update Requirements ([#1154](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1154))
-* Handing paths from project configuration in relative way (experimental) ([#1142](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1142)) 
-* Build File Modified Message Needs To Be Improved ([#1026](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1026))
-* Add DominoVagrant/demo To Default Repository List ([#1104](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1104))
-* AS3ProjectPlugin canCreateProject() should be refactored ([#1164](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1164))
+* Updated default paths for external editors ([#1154](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1154))
+* Changes to make Form Builder projects more portable ([#1142](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1142)) 
+* Improved prompt that triggers when build file is modified ([#1026](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1026))
+* Add DominoVagrant/demo To default Repository List ([#1104](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1104))
+* Refactor `AS3ProjectPlugin canCreateProject()` to make it easier to support new languages ([#1164](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1164))
+* Added .hxproj to the file association list ([#1172](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1172))
+* Can now edit URL in Deploy to Vagrant Server popup (Royale) ([#1242](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1242))
+* Improvements for width of workspace dropdown in project sidebar ([#1239](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1239))
+* Added path context for Recent Files ([#1231](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1231))
+* Replace console text-view with moonshine-feathersui-text-editor ([#1229](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1229))
+* Fixed clipboard paste for default value property ([#1226](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1226))
+* Domino Visual Editor: Allow nested view names ([#1213](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1213))
+* Updated Moonshine-Domino-CRUD Template to 0.7.0, which includes improvements to make agents easier to maintain ([#1193](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1193))
+* Form Builder: Populate default Form and View name ([#1158](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1158))
+* Form Builder: Make projects more portable ([#1142](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1142))
+* Internal: Support for Haxe libraries that need to be compiled from source ([#1113](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1113))
+* Started converting some interfaces to Haxe ([#1102](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1102))
+* Convert "About" view to Haxe ([#1024](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1024))
+* Domino Visual Editor: Copy/Paste support ([#1032](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1032))
 
 ### Fixed
 
-* "Java language server exited unexpectedly" Error on macOS Monterey ([#1120](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1120))
-* Form Builder: Generated Royale Interface Buttons Needs To Be Resize Properly ([#1128](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1128))
-* Apache Royale build: No error message when main application doesn't exists in attempt of compiling Royale based project ([#1151](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1151))
-* About: About screen does not display full screen width anymore ([#1153](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1153))
-* Getting Started Dialog Shows Git Installed When About Does Not ([#1155](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1155))
-* Editor: Editor Breakpoint Highlight Not Showing During Debug ([#1170](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1170))
-* Domino Visual Editor: Fixed issue where namespaces in forms caused problems during conversion to Apache Royale ([#1071](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1071))
-* .hxproj Not In The File-Association List For Moonshine ([#1172](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1172))
-* Java Gradle: Project Does Not Open on Startup - JavaImporter$parse() Error ([#1123](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1123))
-* CRUD Java Agents Generation Throws Error ([#1134](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1134))
-* Projects Not Reopened Properly After Switching Workspace ([#1135](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1135))
-* ReferenceError Error: After launch Moonshine in Getting Started page ([#1112](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1112))
-* TypeError: Error #2007 on app start makes Moonshine unusable ([#1152](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1152))
+* Fixed "Java language server exited unexpectedly" Error on macOS Monterey ([#1120](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1120))
+* Proper resizing for buttons in generated Royale interface ([#1128](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1128))
+* Report an error if no main application file exists when compiling a Royale project ([#1151](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1151))
+* Fixed resizing issues for the About page ([#1153](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1153))
+* About page now shows "Grant permission" for Git if permission was not granted on macOS ([#1155](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1155))
+* Debug breakpoint not displaying properly ([#1170](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1170))
+* Strip spaces and special characters in form names when generating Java and Royale code ([#1071](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1071))
+* Fixed errors when using Vagrant instance from Windows:  ([#1249](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1249))
+* Java Gradle project does not open on startup - JavaImporter$parse() error ([#1123](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1123))
+* Fixed handling of forward and backward slashes in view names for generated Java agents ([#1134](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1134))
+* Projects not reopened properly after switching workspace ([#1135](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1135))
+* Fixed ReferenceError when scrolling Getting Started page ([#1112](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1112))
+* Fixed Error #2007 on application startup ([#1152](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1152))
+* Errors when switching focus for Text Editors ([#1248](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1248))
+* Generated Apache Royale CRUD project used 127.0.0.1 for base URL ([#1243](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1243))
+* "Reset to Default" did not clear Recently Opened list ([#1232](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1232))
+* Duplicate entries in "Recent Projects" and "Home page" ([#1230](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1230))
+* Domino Visual Editor:  Default value not populated for some field types ([#1223](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1223))
+* Accordion/focusInHandler() Error In Form and View editor ([#1222](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1222))
+* Selection discrepancy for column delete ([#1221](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1221))
+* $TITLE not updated properly after Form rename ([#1218](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1218))
+* Code completion stopped working for Haxe project after switching between tabs ([#1212](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1212))
+* Fixed macOS shortcuts for switching tabs ([#1207](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1207))
+* Fixed parsing logic for Flash Player version ([#1205](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1205))
+* Domino Visual Editor: Remove obsolete Div component ([#1198](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1198))
+* Domino Visual Editor: Sidebar alignment issue for Page editor ([#1194](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1194))
+* Domino Visual Editor:  Invalid default value for $WindowTitle ([#1189](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1189))
+* Support Vagrant instance URLs used by Super.Human.Installer servers ([#1186](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1186))
+* Fixed .xml_conversion_required logic ([#1181](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1181))
+* Get rid of "ln" (link) warnings in Console ([#1157](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1157))
+* Domino to Royale:  Updated Royale containers to take into account direction provided by intermediate XML ([#1133](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1133))
+* Domino to Royale: Fixed Royale Column values which were displayed as "[Object]" ([#1122](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1122))
+* Domino to Royale: Switching between views when one is in edit mode does not reset them ([#1119](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1119))
+* Project > Recent Actions did not open Project or File ([#1115](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1115))
+* Reduced delay for Vagrant instance dropdown ([#1111](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1111))
+* Fixed TypeError in application menus ([#1109](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1109))
+* Select/Deselect All broken in multi-project prompt ([#1108](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1108))
+* Domino to Royale: Miscellanous fixes after practical test ([#1106](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1106))
+* Domino to Royale: Default name for generated project. ([#1101](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1101))
+* Debugging Openfl/Feathers application with "mac" target throws error ([#1094](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1094))
+* Moonshine-IDE not properly saving SVN credentials ([#1043](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1043))
+* File associations broken on Windows ([#800](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/800))
+
 
 ## Moonshine IDE [3.3.3]
 
