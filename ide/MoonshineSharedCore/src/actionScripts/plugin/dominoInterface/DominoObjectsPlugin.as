@@ -49,6 +49,7 @@ package actionScripts.plugin.dominoInterface
 	import view.suportClasses.events.DominoLotusScriptCompileConnectedEvent;
 	import view.suportClasses.events.DominoLotusScriptCompileReturnEvent;
 	import com.adobe.utils.StringUtil;
+	import actionScripts.plugins.ui.editor.DominoAgentFormulaEditor;
 	public class DominoObjectsPlugin extends ConsoleBuildPluginBase
 	{
 		public static const EVENT_DOMINO_OBJECTS:String = "EVENT_DOMINO_OBJECTS";
@@ -105,10 +106,7 @@ package actionScripts.plugin.dominoInterface
 			dispatcher.addEventListener(EVENT_DOMINO_OBJECTS_SAVE, handleDominoObjectsSave);
 			dispatcher.addEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
-			dispatcher.addEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
-
-			dispatcher.addEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
-
+			addLotusScriptCompileEventListeners();
 			//initializeSocket();
 			
 		}
@@ -131,8 +129,22 @@ package actionScripts.plugin.dominoInterface
 			dispatcher.removeEventListener(EVENT_DOMINO_OBJECTS_SAVE, handleDominoObjectsSave);
 			dispatcher.removeEventListener(DiagnosticsEvent.EVENT_SHOW_DIAGNOSTICS, handleShowDiagnostics);
 			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
+			removeLotusScriptCompileEventListeners();
+		}
+
+		private function addLotusScriptCompileEventListeners():void
+		{
+			dispatcher.addEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
+			dispatcher.addEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
+			dispatcher.dispatchEvent(new Event(DominoAgentFormulaEditor.EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE));
+			
+		}
+
+		private function removeLotusScriptCompileEventListeners():void
+		{
 			dispatcher.removeEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
 			dispatcher.removeEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
+	
 		}
 		
 		private function handleLotusScriptCompileConnected(even:DominoLotusScriptCompileConnectedEvent):void
@@ -141,33 +153,35 @@ package actionScripts.plugin.dominoInterface
 			
 			
 			
-			if(compileConnected==true){
+			if(compileConnected==true && dominoObjectView!=null){
 				var clientLanguage:String=dominoObjectView.getLanguageType();
-				if(clientLanguage=="LotusScript"){
-					if(needCompileLotusScirpt){
-						needCompileLotusScirpt=StringHelper.base64Encode(needCompileLotusScirpt);
-						needCompileLotusScirpt="compileLotusScript#"+needCompileLotusScirpt;
-						needCompileLotusScirpt=needCompileLotusScirpt+"\r\n"
-						compile.sendString(needCompileLotusScirpt);
-						needCompileLotusScirpt=null;
-					}
-				}else if(clientLanguage=="JavaScript" || clientLanguage=="Common JavaScript"){
-					if(needConvertJavascript){
-						needConvertJavascript=StringHelper.base64Encode(needConvertJavascript);
-						needConvertJavascript="convertJavaScriptToDxlRaw#"+needConvertJavascript;
-						needConvertJavascript=needConvertJavascript+"\r\n"
-						compile.sendString(needConvertJavascript);
-						needConvertJavascript=null;
-					}
-				}else if(clientLanguage=="Formula"){
-					var editorText:String=dominoObjectView.getLanguageEditorText();
-					if(editorText!=null&&editorText.length>0){
-						editorText=StringHelper.base64Encode(editorText);
-						editorText="compileFormula#"+editorText;
-						editorText=editorText+"\r\n"
-						compile.sendString(editorText);
-					}
+				if(clientLanguage){
+					if(clientLanguage=="LotusScript"){
+						if(needCompileLotusScirpt){
+							needCompileLotusScirpt=StringHelper.base64Encode(needCompileLotusScirpt);
+							needCompileLotusScirpt="compileLotusScript#"+needCompileLotusScirpt;
+							needCompileLotusScirpt=needCompileLotusScirpt+"\r\n"
+							compile.sendString(needCompileLotusScirpt);
+							needCompileLotusScirpt=null;
+						}
+					}else if(clientLanguage=="JavaScript" || clientLanguage=="Common JavaScript"){
+						if(needConvertJavascript){
+							needConvertJavascript=StringHelper.base64Encode(needConvertJavascript);
+							needConvertJavascript="convertJavaScriptToDxlRaw#"+needConvertJavascript;
+							needConvertJavascript=needConvertJavascript+"\r\n"
+							compile.sendString(needConvertJavascript);
+							needConvertJavascript=null;
+						}
+					}else if(clientLanguage=="Formula"){
+						var editorText:String=dominoObjectView.getLanguageEditorText();
+						if(editorText!=null&&editorText.length>0){
+							editorText=StringHelper.base64Encode(editorText);
+							editorText="compileFormula#"+editorText;
+							editorText=editorText+"\r\n"
+							compile.sendString(editorText);
+						}
 
+					}
 				}
 				
 				
@@ -176,6 +190,15 @@ package actionScripts.plugin.dominoInterface
 			}
 			
 			
+		}
+		private function getVisualEditorFilePath():String
+		{
+			model = IDEModel.getInstance();
+			editor=model.activeEditor as VisualEditorViewer;
+			if(editor){
+				return editor.getVisualEditorFilePath();
+			}
+			return null;
 		}
 		
 
@@ -533,11 +556,15 @@ package actionScripts.plugin.dominoInterface
 
 		private function handleDominoObjectsClose(event:Event):void
 		{
+		
 			dispatcher.dispatchEvent(new ProjectPanelPluginEvent(ProjectPanelPluginEvent.REMOVE_VIEW_TO_PROJECT_PANEL, dominoObjectView));
+			removeLotusScriptCompileEventListeners();
 		}
 
 		private function handleDominoObjectsShow(event:Event):void
 		{
+			addLotusScriptCompileEventListeners();
+
 			
 			model = IDEModel.getInstance();
 			editor=model.activeEditor as VisualEditorViewer;

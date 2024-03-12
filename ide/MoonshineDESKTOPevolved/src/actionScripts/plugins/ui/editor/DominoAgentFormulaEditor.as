@@ -61,14 +61,35 @@ package actionScripts.plugins.ui.editor
 	import mx.controls.Alert;
 	import actionScripts.utils.DominoUtils;
 	import mx.events.CollectionEvent;
+	import actionScripts.locator.IDEModel;
 	import mx.events.CollectionEventKind;
-	             
+	import actionScripts.ui.tabview.TabEvent;
+	
+	import utils.StringHelperUtils;
+	import utils.StringHelper;
+	import com.adobe.utils.StringUtil;
+	import actionScripts.plugin.dominoInterface.DominoObjectsViewLotusScriptCompile;
+	import view.suportClasses.events.DominoLotusScriptCompileReturnEvent;
+	import view.suportClasses.events.DominoLotusScriptCompileConnectedEvent;
+	import actionScripts.plugins.ui.editor.VisualEditorViewer;
+	
+	import actionScripts.plugin.dominoInterface.DominoObjectsPlugin;
+	import view.suportClasses.events.DominoLotusScriptCompileConnectedEvent;
+	import actionScripts.events.GlobalEventDispatcher;
     public class DominoAgentFormulaEditor extends BasicTextEditor  
 	{
 
 		private var dominoAgentFormulaEditor:DominoAgentFormulaVisualEditor;
     	private var visualEditorProject:ProjectVO;
 		private var hasChangedProperties:Boolean;
+		private var compileConnected:Boolean=false;
+		private var needVaildFormulaScirpt:String=null;
+
+		public static const EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE:String = "EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE";
+		public static const EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN:String = "EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN";
+		
+
+		private var compile:DominoObjectsViewLotusScriptCompile=null;
 
         public function DominoAgentFormulaEditor(visualEditorProject:ProjectVO = null){
             this.visualEditorProject=visualEditorProject;
@@ -98,20 +119,41 @@ package actionScripts.plugins.ui.editor
 			dominoAgentFormulaEditor.percentWidth = 100;
 			dominoAgentFormulaEditor.percentHeight = 100;
 			//dominoAgentFormulaEditor.addEventListener(VisualEditorViewChangeEvent.CODE_CHANGE, onDominoAgentFormulaCodeChange);
-
+			
 			dominoAgentFormulaEditor.codeEditor = editorWrapper;
 			model.editors.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 			
 			
 		}
+		override protected function tabSelectHandler(event:TabEvent):void
+		{	
+			if (event.child == this)
+			{
+				// check for any externally update
+				checkFileIfChanged();
+				editorWrapper.enabled = true;
+			}
+			else
+			{
+				editorWrapper.enabled = false;
+			}
+
+			dispatcher.dispatchEvent(new Event(EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN));
+		}
 
         private function onDominoAgentFormulaEditorCreationComplete(event:FlexEvent):void
 		{
-			//dominoAgentFormulaEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoViewEditorCreationComplete);
+			dominoAgentFormulaEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoAgentFormulaEditorCreationComplete);
 			//dominoAgentFormulaEditor.dominoViewVisualEditor.dominoViewPropertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			//dominoAgentFormulaEditor.dominoViewVisualEditor.dominoViewPropertyEditor.addEventListener(Event.CHANGE, onDominoAgentFormulaPropertyChange);
 			
+			
+			dispatcher.addEventListener(EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN, handleDominoFormulaAgentCompileOpen);
+			dispatcher.addEventListener(EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE, handleDominoFormulaAgentCompileClose);
+			dispatcher.dispatchEvent(new Event(EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN));
+			
 			//dominoAgentFormulaEditor.dominoViewVisualEditor.addEventListener("saveCode", onDominoViewEditorSaveCode);
+
 			//dominoAgentFormulaEditor.dominoViewVisualEditor.visualEditorFilePath = this.currentFile.fileBridge.nativePath;
 			
 		}
@@ -175,8 +217,11 @@ package actionScripts.plugins.ui.editor
 		{
 			if (event.kind == CollectionEventKind.REMOVE && event.items[0] == this)
 			{
-				// dominoAgentFormulaEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoViewEditorCreationComplete);
-				
+				dominoAgentFormulaEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoAgentFormulaEditorCreationComplete);
+				dispatcher.removeEventListener(EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN, handleDominoFormulaAgentCompileOpen);	
+				dispatcher.removeEventListener(EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE, handleDominoFormulaAgentCompileClose);
+				dispatcher.removeEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
+				dispatcher.removeEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
 				// if (dominoAgentFormulaEditor.dominoViewVisualEditor)
 				// {
 				// 	dominoAgentFormulaEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(Event.CHANGE, onDominoAgentFormulaPropertyChange);
@@ -189,14 +234,176 @@ package actionScripts.plugins.ui.editor
 				
 				//dispatcher.removeEventListener(TreeMenuItemEvent.FILE_RENAMED, fileRenamedHandler);
 
-				//model.editors.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
+				model.editors.removeEventListener(CollectionEvent.COLLECTION_CHANGE, handleEditorCollectionChange);
 				
 			}
+		}
+
+		private function handleDominoFormulaAgentCompileOpen(event:Event):void
+		{
+			dispatcher.addEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
+			dispatcher.addEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
+			
+			//remove the lotus compile from form objects view	
+			dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS_UI_CLOSE));
+			
+			initializeSocket();
+		}
+
+		private function handleDominoFormulaAgentCompileClose(event:Event):void
+		{
+			dispatcher.removeEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
+			dispatcher.removeEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
+				
+			
+		}	
+
+		private function handleLotusScriptCompileConnected(even:DominoLotusScriptCompileConnectedEvent):void
+		{
+			compileConnected=even.connectedSuccess;
+			
+			if(compileConnected==true){
+				
+				var editorText:String=super.text;
+				if(editorText!=null&&editorText.length>0){
+					editorText=StringHelper.base64Encode(editorText);
+					editorText="compileFormula#"+editorText;
+					editorText=editorText+"\r\n";
+					compile.sendString(editorText);
+				}
+			}
+			
+			
 		}
 
         private function onDominoAgentFormulaPropertyChange(event:Event):void
 		{
 			updateChangeStatus();
+		}
+
+		override public function save():void 
+		{
+
+			//StringHelper.base64Encode()
+			var actionString:String=String(file.fileBridge.read());
+			var formulaAgentXml:XML = new XML(actionString);
+			var body:XMLList = formulaAgentXml.children();
+
+			var formulaString:String=StringHelperUtils.fixXmlSpecailCharacter(super.text);
+			var formulNode:XML=new XML("<formula>"+formulaString+"</formula>");
+			var codeNode:XML=new XML("<code event='action'></code>");
+			codeNode.appendChild(formulNode);
+			for each (var item:XML in body)
+			{
+				var itemName:String = item.name();
+				if (itemName=="http://www.lotus.com/dxl::code" && item.@event=="action")
+				{	
+					var parent:XML=item.parent();
+					parent.insertChildBefore(item,codeNode);
+					delete parent.children()[item.childIndex()];
+					
+				
+				}
+			}
+			
+			var saveText:String = formulaAgentXml.toXMLString();
+			needVaildFormulaScirpt=saveText;
+			if(compileConnected==true){
+			}else{
+				executeSave(saveText)
+			}
+			//
+			initializeSocket();
+			if(compile!=null ){
+				compile.closeSocket();
+				compile.doConnectAction();
+			}
+
+			
+		}
+
+		private function executeSave(saveText:String):void{
+			if (ConstantsCoreVO.IS_AIR)
+			{
+				file.fileBridge.save(saveText);
+				editor.save();
+				super.updateChangeStatus();
+
+			
+				// Tell the world we've changed
+				dispatcher.dispatchEvent(
+					new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this)
+				);
+			}if (!ConstantsCoreVO.IS_AIR)
+			{
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saving in process..."));
+				super.loader = new DataAgent(URLDescriptorVO.FILE_MODIFY, onSaveSuccess, onSaveFault,
+						{path:file.fileBridge.nativePath,saveText:saveText});
+			}
+		}
+
+		protected function handleLotusScriptCompile(event:DominoLotusScriptCompileReturnEvent):void 
+		{
+			if(event.compileResult){
+				
+				if(event.compileResult.length>1){
+				
+					if(event.compileResult.indexOf("#")){
+						var list:Array=event.compileResult.split("#");
+						var type:String=StringUtil.trim(list[0]);
+						var result:String=null;
+						if(type=="compileLotusScript"){
+							
+						}else if(type=="convertJavaScriptToDxlRaw"){
+							
+							
+						}else if(type=="compileFormula"){
+							var flag:String=StringUtil.trim(list[1]);
+							result=StringUtil.trim(list[2]);
+							if(flag=="success"){
+								//Alert.show("Compile Formula success:"+result);
+								if(needVaildFormulaScirpt){
+									executeSave(needVaildFormulaScirpt);
+								}
+							}else{
+								Alert.show("Compile Formula error: "+result);
+							}
+						}
+					}
+					
+					// lineInt=lineInt-1;
+					//Alert.show("Lotus Script compile error: on line " + lineInt.toString() + "");
+					
+				}else{
+					
+				}
+			}
+		}
+
+		private function onSaveFault(message:String):void
+		{
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Save error!"));
+			loader = null;
+		}
+		
+		private function onSaveSuccess(value:Object, message:String=null):void
+		{
+			super.loader = null;
+			editor.save();
+			updateChangeStatus();
+			dispatcher.dispatchEvent(
+					new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, file.fileBridge.name +": Saving successful."));
+			dispatcher.dispatchEvent(new SaveFileEvent(SaveFileEvent.FILE_SAVED, file, this));
+		}
+
+		private function initializeSocket():void 
+		{
+			if(compile==null){
+				//inital lotus script compile :
+				compile=DominoObjectsViewLotusScriptCompile.getInstance();
+			}
+
+			
 		}
 
        

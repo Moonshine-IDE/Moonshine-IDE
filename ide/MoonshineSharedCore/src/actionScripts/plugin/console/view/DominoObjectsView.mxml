@@ -187,7 +187,12 @@
 
 		public function getLanguageType():String
 		{
-			return runWayList.selectedItem.label;
+			if(runWayList){
+				return runWayList.selectedItem.label;
+			}else{
+				return null;
+			}	
+			
 		} 
 
 		public function getLanguageEditorText():String

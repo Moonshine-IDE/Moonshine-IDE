@@ -692,17 +692,37 @@ package actionScripts.controllers
    
 				var actionString:String=String(file.fileBridge.read());
 				var actionXml:XML = new XML(actionString);
-				var body:XMLList = actionXml.children();
-				for each (var item:XML in body)
+
+				for each(var formulaNode:XML in actionXml..formula) //no matter of depth Note here
 				{
-					var itemName:String = item.name();
-					if (itemName=="http://www.lotus.com/dxl::code" && item.@event=="action")
-					{	
-						formula=item.children()[0].text();
-						
+					if(formulaNode.text()){
+						formula=formulaNode.text();
 					}
 				}
+				
+				if(formula==null || formula==""){
+					
+					var body:XMLList = actionXml.children();
+					for each (var item:XML in body)
+					{
+						var itemName:String = item.name();
+						if (itemName=="http://www.lotus.com/dxl::code" && item.@event=="action")
+						{	
+							var childbody:XMLList = item.children();
+							for each (var childitem:XML in childbody)
+							{
+								if(childitem.name()=="http://www.lotus.com/dxl::formula")
+								{
+									formula=childitem.text();
+								}
+							}
 						
+							
+						}
+					}
+				}
+
+			
 			
 				
 
