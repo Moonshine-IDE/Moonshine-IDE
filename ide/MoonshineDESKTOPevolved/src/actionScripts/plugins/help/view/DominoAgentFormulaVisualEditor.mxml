@@ -58,6 +58,7 @@
 			   height="100%" labelField="@label"
                 showRoot="false" dataProvider="{treeData}" change="treeChanged(event)"
 				itemRenderer="actionScripts.ui.renderers.DominoTreeItemRenderer"
+                creationComplete="onTreeComplete()"
 			    />
 
 				
@@ -102,8 +103,8 @@
         <fx:XMLList id="treeData">
             <node label="Formula(Agent)" type="formula" value="" iconType="">
                
-				<node label="Document Selection" type="formula" key="globalsOptions" value="" iconType="LotusScript"/>
-				<node label="Action" type="formula" key="globalsDeclarations" value="" iconType="LotusScript"/>
+				<node label="Document Selection" type="formula" key="DocumentSelection" value="" iconType="Formula"/>
+				<node label="Action" type="formula" key="Action" value="" iconType="Formula"/>
 			   
             </node>
 			
@@ -158,13 +159,35 @@
     public function onComplete():void {
         runList.selectedIndex=0;
         runWayList.selectedIndex=0;
+      
+        
+    }
+
+    private function onTreeComplete():void
+    {
+        expandNodesWithChildren(treeData,"Action");
+    }
+
+    private function expandNodesWithChildren(currentItems:XMLList,title:String):void {
+			for each (var node:XML in currentItems) {
+                if (node.children().length() > 0) {
+					myTree.expandItem(node, true);
+					expandNodesWithChildren(node.children(),title);
+				}
+
+                if(node.@key==title){
+					
+					myTree.selectedItem = node;
+					
+				}
+            }
     }
    
    
     private function onContentGroupCreationComplete(event:FlexEvent):void
     {
         codeContentGroup.addElement(_codeEditor);
-      
+        
     }
 
     private function textInput_changeHandler(event:Event):void
