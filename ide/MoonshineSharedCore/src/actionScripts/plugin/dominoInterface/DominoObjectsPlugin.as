@@ -384,7 +384,7 @@ package actionScripts.plugin.dominoInterface
 								var dxl:String =(needVaildLotusScirpt);
 								
 								editor.currentFile.fileBridge.save(dxl);
-								Alert.show("Lotus script compile success and save success");
+								
 							}else{
 								var errorLineNumber:int=getErrorLineNumber(result);
 								//"+errorLineNumber.toString()+"

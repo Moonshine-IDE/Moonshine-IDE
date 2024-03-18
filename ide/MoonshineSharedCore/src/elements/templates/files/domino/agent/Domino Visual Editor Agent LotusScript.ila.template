@@ -1,24 +1,38 @@
 <?xml version='1.0' encoding='utf-8'?>
-<agent name='$AgentName' xmlns='http://www.lotus.com/dxl' version='12.0'
- maintenanceversion='1.0' replicaid='862580BD00039000' hide='v3' publicaccess='false'
- designerversion='5'>
-<noteinfo noteid='132' unid='284F9FFBFCCD0FD686256B6C0010E495' sequence='2'>
-<created><datetime dst='true'>20020225T220430,93-05</datetime></created>
-<modified><datetime dst='true'>20170203T193855,07-05</datetime></modified>
-<revised><datetime dst='true'>20040517T110945,92-05</datetime></revised>
-<lastaccessed><datetime dst='true'>20170203T193855,06-05</datetime></lastaccessed>
-<addedtofile><datetime dst='true'>20170203T193855,06-05</datetime></addedtofile></noteinfo>
-<updatedby><name>CN=Justin M Kuntz/OU=A55555/O=Prominic</name><name>CN=Jon E. Schultz II/OU=A55555/O=PNI</name></updatedby>
-<designchange><datetime dst='true'>20040517T111021,22-05</datetime></designchange>
+<agent name='$AgentName' xmlns='http://www.lotus.com/dxl' version='12.0' maintenanceversion='1.0'
+ replicaid='C2258AB7003FBBBE' hide='v3' publicaccess='false' designerversion='8.5.3'>
+<noteinfo noteid='1e2' unid='6BA3A55CCAF78C3DC2258AD70059C60D' sequence='13'>
+<created><datetime dst='true'>20240305T192034,05+03</datetime></created>
+<modified><datetime dst='true'>20240314T153459,24+03</datetime></modified>
+<revised><datetime dst='true'>20240314T153459,23+03</datetime></revised>
+<lastaccessed><datetime dst='true'>20240314T153459,23+03</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20240305T192034,08+03</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Demo Admin/O=DEMO</name></updatedby>
+<wassignedby><name>CN=Demo Admin/O=DEMO</name></wassignedby>
+<designchange><datetime dst='true'>20240314T153459,23+03</datetime></designchange>
 <trigger type='actionsmenu'/>
-<documentset type='selected'/>
+<documentset type='selected'/><code event='options'><lotusscript>%REM
+	Agent $AgentName
+	Created $AgentCreatedDate by Demo Admin/DEMO
+	Description: Comments for Agent
+%END REM
+Option Public
+Option Declare
 
-<code event='action'><formula>@Text("test");
-SELECT @All</formula>
-</code>
 
+</lotusscript></code>
+<code event='declarations'><lotusscript>'This is Decliaration
+Dim s As Long
+
+</lotusscript></code>
+<code event='initialize'><lotusscript>Sub Initialize
+	
+End Sub
+
+</lotusscript></code>
+<code event='terminate'><lotusscript>Sub Terminate
+	'this is terminate
+	Dim doc As NotesDocument
+End Sub</lotusscript></code>
 <rundata processeddocs='0' exitcode='0'>
-<agentmodified><datetime dst='true'>20240306T144046,25+03</datetime></agentmodified>
-<runlog></runlog>
-</rundata>
-</agent>
+<agentmodified><datetime dst='true'>20240314T153458,66+03</datetime></agentmodified></rundata></agent>

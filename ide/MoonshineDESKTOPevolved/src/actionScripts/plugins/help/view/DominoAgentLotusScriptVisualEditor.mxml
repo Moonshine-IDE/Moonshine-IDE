@@ -1,0 +1,238 @@
+<?xml version="1.0"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:containers="spark.containers.*"
+    xmlns:tabnavigator="actionScripts.ui.tabNavigator.*"
+    xmlns:suportclasses="view.suportClasses.*"
+    xmlns:mx="library://ns.adobe.com/flex/mx"
+    creationComplete="onComplete()"
+    xmlns:collapsiblehdivider="components.collapsibleHDivider.*"
+	xmlns:view="view.*">        
+<collapsiblehdivider:CollapsibleEdgeContainersHDividerGroup percentWidth="100" percentHeight="100" bottom="0" top="0" gap="0" minWidth="250">
+
+         <s:Group width="30%">
+           <mx:VBox percentHeight="100"
+			 percentWidth="100"
+			 backgroundAlpha="0.9"
+			 >
+			   <mx:Tree id="myTree" width="100%" 
+                
+				contentBackgroundColor="0xffffff"
+				rollOverColor="0x393939"
+				selectionColor="0xc165b8"
+				alternatingItemColors="[0xeeeeee, 0xffffff]"
+			   height="100%" labelField="@label"
+                showRoot="false" dataProvider="{treeData}" change="treeChanged(event)"
+				itemRenderer="actionScripts.ui.renderers.DominoTreeItemRenderer"
+                creationComplete="onTreeComplete()"
+			    />
+
+				
+			 </mx:VBox>
+        </s:Group> 
+        <s:Scroller width="70%" height="100%" id="codeContentGroupScroller">
+               <s:VGroup horizontalAlign="left" verticalAlign="middle" percentWidth="100" percentHeight="100">
+				<s:HGroup verticalAlign="bottom" left="10" percentWidth="100">
+					<s:Label text="{functionName}" id="runLabel" fontWeight="bold" />
+            			
+       		 	</s:HGroup>
+				<s:Group id="codeContentGroup" creationComplete="onContentGroupCreationComplete(event)" minWidth="156" width="100%" height="100%">
+				</s:Group> 
+					
+				<!-- <s:TextArea id="textInput"  height="100%"
+						text="" width="100%" minWidth="156" editable="true" selectable="true"
+						prompt=""
+						
+						styleName="fixedWidthTexts"
+						textInput="textInput_changeHandler(event)"
+						
+						change="textInput_changeHandler(event)"
+				/> -->
+					
+			</s:VGroup>
+        </s:Scroller>
+
+                                      
+        
+
+</collapsiblehdivider:CollapsibleEdgeContainersHDividerGroup>
+	 <fx:Declarations>
+        <fx:XMLList id="treeData">
+        <node label="Agent" >
+            <node label="LotusScript(Agent)" type="lotusScript" value="" iconType="">
+               
+				<node label="(Option)" type="lotusScript" key="options" value="" iconType="LotusScript"/>
+				<node label="(Declarations)" type="lotusScript" key="declarations" value="" iconType="LotusScript"/>
+                <node label="Initialize" type="lotusScript" key="initialize" value="" iconType="LotusScript"/>
+			    <node label="Terminate" type="lotusScript" key="terminate" value="" iconType="LotusScript"/>
+            </node>
+         </node>   
+            
+			
+        </fx:XMLList>
+    </fx:Declarations>
+<fx:Script><![CDATA[
+    
+    import mx.core.IVisualElement;
+    import mx.events.FlexEvent;
+    import flash.events.Event;
+    import mx.collections.ArrayList;
+    import actionScripts.plugins.ui.editor.DominoViewEditor;
+
+    import mx.controls.Alert;
+    import actionScripts.ui.FeathersUIWrapper;
+    import actionScripts.locator.IDEModel;
+
+    import mx.events.DragEvent;
+    import spark.events.IndexChangeEvent;
+    import mx.collections.ArrayCollection;
+    import actionScripts.events.GlobalEventDispatcher;
+    import actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent;
+
+    import actionScripts.plugins.ui.editor.DominoAgentLotusScriptEditor;
+    import view.suportClasses.events.DominoLotusScriptAgentEditorTreeChangeEvent;
+    private var _codeEditor:IVisualElement;
+
+    private var showinmenu:Boolean ;
+    private var showinbar:Boolean ;
+    private var actionTitle:String="";
+
+    private var model:IDEModel = IDEModel.getInstance();
+    private var editor:DominoViewEditor = null;
+
+    private var functionName:String = "";
+
+    public var agentName:String = "";   
+
+   
+
+
+    [Bindable]
+    private var rowsDataProvider:ArrayList = new ArrayList();
+       
+
+    public function set codeEditor(value:IVisualElement):void
+    {
+        _codeEditor = value;
+    }
+
+    public var formulaRunWayList:ArrayCollection = new ArrayCollection(
+			[{label:"Client", value:"client"},
+			{label:"Web", value:"web"} ]);
+
+    public var formulaClientRunLanguage:ArrayCollection = new ArrayCollection(
+			[{label:"Formula", value:"formula"},
+			{label:"LotusScript", value:"lotusscript"},
+			{label:"JavaScript", value:"javascript"} ]);
+    
+    public function onComplete():void {
+        if(agentName!=null&&agentName!=""){
+            treeData.children()[0].@label = agentName;
+        }
+        
+      
+        
+    }
+
+    private function onTreeComplete():void
+    {
+        expandNodesWithChildren(treeData,"initialize");
+    }
+
+    private function expandNodesWithChildren(currentItems:XMLList,title:String):void {
+			for each (var node:XML in currentItems) {
+                if (node.children().length() > 0) {
+					myTree.expandItem(node, true);
+					expandNodesWithChildren(node.children(),title);
+				}
+
+                if(node.@key==title){
+					
+					myTree.selectedItem = node;
+					
+				}
+            }
+    }
+   
+   
+    private function onContentGroupCreationComplete(event:FlexEvent):void
+    {
+        codeContentGroup.addElement(_codeEditor);
+        
+    }
+
+    private function textInput_changeHandler(event:Event):void
+    {
+
+        
+    }
+
+    private function check_changeHandler(event:Event):void
+    {
+
+    
+    }
+
+    
+
+    private function onTabBarChange(event:IndexChangeEvent):void
+    {
+        
+       
+    }
+
+
+    public function treeChanged(event:Event):void {
+            var selectNode:XML = myTree.selectedItem as XML;
+            if(selectNode){
+               
+                GlobalEventDispatcher.getInstance().dispatchEvent(new DominoLotusScriptAgentEditorTreeChangeEvent(DominoLotusScriptAgentEditorTreeChangeEvent.DOMINO_LOTUSSCRIPT_AGENT_TREE_CHANGE, selectNode.@key.toString(), true,true));
+            }
+		
+			
+
+    }
+
+
+]]></fx:Script> 
+<fx:Metadata>
+        [Event(name="codeChange", type="actionScripts.plugins.help.view.events.VisualEditorViewChangeEvent")]
+        [Event(name="startPreview", type="flash.events.Event")]
+</fx:Metadata>
+</s:BorderContainer>
+   
+       

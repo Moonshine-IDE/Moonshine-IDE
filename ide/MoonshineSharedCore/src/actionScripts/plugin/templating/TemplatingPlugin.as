@@ -112,6 +112,7 @@ package actionScripts.plugin.templating
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
 	import actionScripts.utils.TextUtil;
+	import actionScripts.utils.DominoUtils;
     /*
     Templating plugin
 
@@ -2525,7 +2526,8 @@ package actionScripts.plugin.templating
 			{
 				var content:String = String(event.fromTemplate.fileBridge.read());
 					content=content.replace(/\$AgentName/g,event.fileName);
-			
+				var dates:String=DominoUtils.getDateFormatForDomino();
+					content=content.replace(/\$AgentCreatedDate/g,dates);
 				var templatePath:String=event.fromTemplate.fileBridge.nativePath;	
 				var extensionStr:String="";
 				if(templatePath.indexOf(".fa")>0){

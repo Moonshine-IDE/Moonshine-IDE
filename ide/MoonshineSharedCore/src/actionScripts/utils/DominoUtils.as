@@ -40,6 +40,7 @@ package actionScripts.utils
     import mx.utils.Base64Decoder;
     import flash.utils.ByteArray;
 	import actionScripts.utils.TextUtil;
+	import flash.globalization.DateTimeFormatter;
 
     public class DominoUtils
 	{
@@ -103,6 +104,15 @@ package actionScripts.utils
 			xml=xml+"</xsl:template>\n";
 			xml=xml+"</xsl:stylesheet>\n";
 			return xml;
+		}
+
+		public static function getDateFormatForDomino():String
+		{
+			var dat:Date = new Date();
+			var dateFormatter:DateTimeFormatter = new DateTimeFormatter("en-US");
+			dateFormatter.setDateTimePattern("MMM dd, yyyy");
+			var dateStr:String = dateFormatter.format(dat);
+			return dateStr;
 		}
 
 		public static function fixDominButton(xml:XML):String

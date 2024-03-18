@@ -308,6 +308,9 @@ package actionScripts.controllers
 				}else if (extension == "fa" && project && project.hasOwnProperty("isDominoVisualEditorProject") && project["isDominoVisualEditorProject"] )
 				{
 					openDominoAgentFile(project, fileData);
+				}else if (extension == "lsa" && project && project.hasOwnProperty("isDominoVisualEditorProject") && project["isDominoVisualEditorProject"] )
+				{
+					openDominoAgentLotusScriptFile(project, fileData);
 				}else
 				{
 					//try to open dve with domino visual editor.
@@ -532,6 +535,42 @@ package actionScripts.controllers
 
 		}
 		//getDominoAgentEditor
+		private function openDominoAgentLotusScriptFile(project:ProjectVO, value:Object):void
+		{
+			var editor:BasicTextEditor = model.flexCore.getDominoAgentLotusScriptEditor();
+			var extension:String = file.fileBridge.extension;
+			if (!project)
+			{
+				project = model.activeProject;
+			}
+
+			if (wrapper) editor.projectPath = wrapper.projectReference.path;
+
+			var editorEvent:EditorPluginEvent = new EditorPluginEvent(EditorPluginEvent.EVENT_EDITOR_OPEN);
+			editorEvent.editor = editor.getEditorComponent();
+			editorEvent.file = file;
+			editorEvent.fileExtension = file.fileBridge.extension;
+			ged.dispatchEvent(editorEvent);
+			
+			editor.lastOpenType = lastOpenEvent ? lastOpenEvent.type : null;
+			
+			var formulaStr:String=loadingDominoLotusScriptFromAgentFile();
+			
+			editor.open(file, formulaStr);
+
+			//editor.openFileAsStringHandler(formulaStr);
+			
+			if (atLine > -1)
+			{
+				editor.setSelection(atLine, 0, atLine, 0);
+				editor.scrollToCaret();
+			}
+
+			ged.dispatchEvent(
+				new AddTabEvent(editor)
+			);
+		}
+
 
 		private function openDominoAgentFile(project:ProjectVO, value:Object):void
 		{
@@ -682,6 +721,55 @@ package actionScripts.controllers
 
 			return formula;
 
+		}
+
+		private function loadingDominoLotusScriptFromAgentFile():String 
+		{
+			var lotusScriptInital:String = "";
+			if(file){
+				var xmlns:Namespace = new Namespace("http://www.lotus.com/dxl");
+   
+				var actionString:String=String(file.fileBridge.read());
+				var actionXml:XML = new XML(actionString);
+
+				for each(var codeNode:XML in actionXml..code) //no matter of depth Note here
+				{
+					if(codeNode.@event=="initialize"){
+						if(codeNode.text()){
+							lotusScriptInital=codeNode.children()[0].text();
+						}
+					}
+				}
+				
+				if(lotusScriptInital==null || lotusScriptInital==""){
+					
+					var body:XMLList = actionXml.children();
+					for each (var item:XML in body)
+					{
+						var itemName:String = item.name();
+						if (itemName=="http://www.lotus.com/dxl::code" && item.@event=="initialize")
+						{	
+							var childbody:XMLList = item.children();
+							for each (var childitem:XML in childbody)
+							{
+								if(childitem.name()=="http://www.lotus.com/dxl::lotusscript")
+								{
+									lotusScriptInital=childitem.text();
+								}
+							}
+						
+							
+						}
+					}
+				}
+
+			
+			
+				
+
+			}
+			
+			return lotusScriptInital;
 		}
 
 		private function loadingDominoFormulaFromAgentFile():String 

@@ -361,7 +361,11 @@ package actionScripts.impls
 		{
 			return null;
 		}
-
+		public function getDominoAgentLotusScriptEditor():BasicTextEditor
+		{
+			return null;
+		}
+		
 		public function getDominoViewEditor():BasicTextEditor
 		{
 			return null;
