@@ -77,7 +77,8 @@ package actionScripts.plugins.ui.editor
 	import view.suportClasses.events.DominoLotusScriptCompileConnectedEvent;
 	import actionScripts.events.GlobalEventDispatcher;
 	import view.suportClasses.events.DominoLotusScriptAgentEditorTreeChangeEvent;
-    public class DominoAgentLotusScriptEditor extends BasicTextEditor  
+    import actionScripts.plugins.ui.editor.DominoAgentFormulaEditor;
+	public class DominoAgentLotusScriptEditor extends BasicTextEditor  
 	{
 
 		private var dominoAgentLotusScriptEditor:DominoAgentLotusScriptVisualEditor;
@@ -88,8 +89,8 @@ package actionScripts.plugins.ui.editor
 
 		private var selectLotusScriptAgentType:String="initialize";
 
-		public static const EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE:String = "EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE";
-		public static const EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN:String = "EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN";
+		public static const EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_CLOSE:String = "EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_CLOSE";
+		public static const EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_OPEN:String = "EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_OPEN";
 		public static const EVENT_DOMINO_LOTUSSCRIPT_AGENT_TREE_CHANGE:String = "EVENT_DOMINO_LOTUSSCRIPT_AGENT_TREE_CHANGE";
 		
 
@@ -142,7 +143,9 @@ package actionScripts.plugins.ui.editor
 				editorWrapper.enabled = false;
 			}
 
-			dispatcher.dispatchEvent(new Event(EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN));
+			dispatcher.dispatchEvent(new Event(DominoAgentFormulaEditor.EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE));
+
+			dispatcher.dispatchEvent(new Event(EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_OPEN));
 		}
 
         private function onDominoAgentLotusScriptEditorCreationComplete(event:FlexEvent):void
@@ -152,9 +155,9 @@ package actionScripts.plugins.ui.editor
 			//dominoAgentLotusScriptEditor.dominoViewVisualEditor.dominoViewPropertyEditor.addEventListener(Event.CHANGE, onDominoAgentFormulaPropertyChange);
 			
 			
-			dispatcher.addEventListener(EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN, handleDominoFormulaAgentCompileOpen);
-			dispatcher.addEventListener(EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE, handleDominoFormulaAgentCompileClose);
-			dispatcher.dispatchEvent(new Event(EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN));
+			dispatcher.addEventListener(EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_OPEN, handleDominoLotusScriptAgentCompileOpen);
+			dispatcher.addEventListener(EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_CLOSE, handleDominoFormulaLotusSCriptCompileClose);
+			dispatcher.dispatchEvent(new Event(EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_OPEN));
 			
 			//dominoAgentLotusScriptEditor.dominoViewVisualEditor.addEventListener("saveCode", onDominoViewEditorSaveCode);
 
@@ -236,8 +239,8 @@ package actionScripts.plugins.ui.editor
 				dispatcher.removeEventListener(DominoLotusScriptAgentEditorTreeChangeEvent.DOMINO_LOTUSSCRIPT_AGENT_TREE_CHANGE, handleTreeSelectedEvent);
 			
 				dominoAgentLotusScriptEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoAgentLotusScriptEditorCreationComplete);
-				dispatcher.removeEventListener(EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN, handleDominoFormulaAgentCompileOpen);	
-				dispatcher.removeEventListener(EVENT_DOMINO_FORMULA_AGENT_COMPILE_CLOSE, handleDominoFormulaAgentCompileClose);
+				dispatcher.removeEventListener(EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_OPEN, handleDominoLotusScriptAgentCompileOpen);	
+				dispatcher.removeEventListener(EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_CLOSE, handleDominoFormulaLotusSCriptCompileClose);
 				dispatcher.removeEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
 				dispatcher.removeEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
 				// if (dominoAgentLotusScriptEditor.dominoViewVisualEditor)
@@ -319,7 +322,7 @@ package actionScripts.plugins.ui.editor
 			return lotusScriptInital;
 		}
 
-		private function handleDominoFormulaAgentCompileOpen(event:Event):void
+		private function handleDominoLotusScriptAgentCompileOpen(event:Event):void
 		{
 			dispatcher.addEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
 			dispatcher.addEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
@@ -330,7 +333,7 @@ package actionScripts.plugins.ui.editor
 			initializeSocket();
 		}
 
-		private function handleDominoFormulaAgentCompileClose(event:Event):void
+		private function handleDominoFormulaLotusSCriptCompileClose(event:Event):void
 		{
 			dispatcher.removeEventListener(DominoLotusScriptCompileConnectedEvent.DOMINO_LOTUSSCRIPT_COMPILE_CONNECTED, handleLotusScriptCompileConnected);
 			dispatcher.removeEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
@@ -345,9 +348,13 @@ package actionScripts.plugins.ui.editor
 			if(compileConnected==true){
 				
 				var editorText:String=super.text;
-				if(editorText!=null&&editorText.length>0){
+				var agentNode:XML=new XML("<lotusscript>"+editorText+"</lotusscript>");
+				var codeNode:XML=new XML("<code event='"+selectLotusScriptAgentType+"'></code>");
+				codeNode.appendChild(agentNode);
+				editorText=codeNode.toXMLString();
+				if(super.text!=null&&super.text.length>0){
 					editorText=StringHelper.base64Encode(editorText);
-					editorText="compileFormula#"+editorText;
+					editorText="compileLotusScriptAgent#"+editorText;
 					editorText=editorText+"\r\n";
 					compile.sendString(editorText);
 				}
@@ -371,6 +378,7 @@ package actionScripts.plugins.ui.editor
 			var body:XMLList = lotusScriptAgentXml.children();
 
 			var lotusScriptString:String=StringHelperUtils.fixXmlSpecailCharacter(super.text);
+			
 			var formulNode:XML=new XML("<lotusscript>"+lotusScriptString+"</lotusscript>");
 			var codeNode:XML=new XML("<code event='"+selectLotusScriptAgentType+"'></code>");
 			codeNode.appendChild(formulNode);
@@ -433,7 +441,7 @@ package actionScripts.plugins.ui.editor
 						var list:Array=event.compileResult.split("#");
 						var type:String=StringUtil.trim(list[0]);
 						var result:String=null;
-						if(type=="compileLotusScript"){
+						if(type=="compileLotusScriptAgent"){
 							result=StringUtil.trim(list[1]);
 							if(result=="success"){
 								executeSave(needVaildLotusScirpt)

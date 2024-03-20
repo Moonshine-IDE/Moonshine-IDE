@@ -137,7 +137,7 @@ package actionScripts.plugins.ui.editor
 			{
 				editorWrapper.enabled = false;
 			}
-
+			dispatcher.dispatchEvent(new Event(DominoAgentLotusScriptEditor.EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_CLOSE));
 			dispatcher.dispatchEvent(new Event(EVENT_DOMINO_FORMULA_AGENT_COMPILE_OPEN));
 		}
 
@@ -269,6 +269,7 @@ package actionScripts.plugins.ui.editor
 					editorText=StringHelper.base64Encode(editorText);
 					editorText="compileFormula#"+editorText;
 					editorText=editorText+"\r\n";
+					
 					compile.sendString(editorText);
 				}
 			}
