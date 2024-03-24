@@ -51,7 +51,7 @@ import actionScripts.utils.PathSetupHelperUtil;
 import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.valueObjects.ProjectVO;
 
-	import flash.desktop.NativeApplication;
+import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.Screen;
 	import flash.display.Stage;
@@ -59,10 +59,10 @@ import actionScripts.valueObjects.HelperConstants;
 	import flash.ui.Keyboard;
 
 	import mx.collections.ArrayCollection;
-	import mx.controls.HTML;
+import mx.controls.HTML;
 	import mx.core.FlexGlobals;
 	import mx.core.IFlexDisplayObject;
-	import mx.resources.IResourceManager;
+import mx.resources.IResourceManager;
 	import mx.resources.ResourceManager;
 	
 	import actionScripts.events.ChangeLineEncodingEvent;
@@ -171,8 +171,7 @@ import actionScripts.valueObjects.HelperConstants;
 	import actionScripts.plugins.fswatcher.FSWatcherPlugin;
 	import actionScripts.plugin.texteditor.TextEditorPlugin;
 	import actionScripts.plugin.actionscript.as3project.importer.FlashDevelopImporter;
-	import actionScripts.plugin.actionscript.as3project.importer.FlashBuilderImporter;
-	
+
 	import actionScripts.plugins.ui.editor.DominoFormulaEditor;
 	import actionScripts.plugins.ui.editor.DominoViewEditor;
 	import actionScripts.plugins.ui.editor.DominoViewShareColumnEditor;

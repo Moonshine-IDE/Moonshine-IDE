@@ -29,22 +29,14 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.interfaces
-{
+package actionScripts.interfaces {
 import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.ui.editor.BasicTextEditor;
-	import actionScripts.plugin.ILanguageServerPlugin;
 
-	public interface ILanguageServerBridge
-	{
-		function get connectedProjectCount():int;
-
-		function registerLanguageServerPlugin(plugin:ILanguageServerPlugin):void;
-		function unregisterLanguageServerPlugin(plugin:ILanguageServerPlugin):void;
-
-		function hasLanguageServerForProject(project:ProjectVO):Boolean;
-
-		function hasCustomTextEditorForUri(uri:String, project:ProjectVO):Boolean;
-		function getCustomTextEditorForUri(scheme:String, project:ProjectVO, readOnly:Boolean = false):BasicTextEditor;
-	}
+public interface IBuildActionsProvider
+    {
+        function testProjectExtension(project:ProjectVO):Boolean;
+        function buildByActionbar():void;
+        function runByActionbar():void;
+        function debugByActionbar():void;
+    }
 }

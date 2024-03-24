@@ -31,7 +31,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-	import actionScripts.valueObjects.ProjectVO;
+import actionScripts.plugin.IPlugin;
+import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.IProjectTypePlugin;
 	import actionScripts.ui.menu.vo.MenuItem;
@@ -43,7 +44,10 @@ package actionScripts.interfaces
         function getPluginsNotToShowInSettings():Array;
 		function registerProjectTypePlugin(provider:IProjectTypePlugin):void;
 		function unregisterProjectTypePlugin(provider:IProjectTypePlugin):void;
+		function registerActionBarTypePlugin(plugin:IPlugin):void;
+		function unregisterActionBarTypePlugin(plugin:IPlugin):void;
 		function parseProject(location:FileLocation):ProjectVO;
 		function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>;
+		function startProjectBuild(project:ProjectVO):void;
 	}
 }

@@ -38,7 +38,8 @@ package actionScripts.interfaces
 	import flash.display.DisplayObject;
     
     import mx.collections.ArrayCollection;
-    import mx.core.IFlexDisplayObject;
+import mx.containers.VBox;
+import mx.core.IFlexDisplayObject;
     
     import actionScripts.events.NewProjectEvent;
     import actionScripts.factory.FileLocation;
@@ -48,7 +49,9 @@ package actionScripts.interfaces
     import actionScripts.valueObjects.EnvironmentUtilsCusomSDKsVO;
     import actionScripts.valueObjects.FileWrapper;
 
-	/**
+import mx.core.UIComponent;
+
+/**
 	 * IFlexCoreBridge
 	 * 
 	 *

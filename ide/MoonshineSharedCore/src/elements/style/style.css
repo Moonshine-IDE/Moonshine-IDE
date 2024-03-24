@@ -453,6 +453,12 @@ mx|ScrollBar.black
 	icon: Embed("/elements/images/code-action-icon.png");
 }
 
+.sidebarActionButton
+{
+	skinClass: ClassReference("elements.skins.MiniDarkIconButtonSkin");
+	icon: Embed("/elements/images/debug-play-icon.png");
+}
+
 mx|NumericStepper
 {
 	fontFamily: '_sans';

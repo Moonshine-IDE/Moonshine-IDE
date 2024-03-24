@@ -31,9 +31,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin
 {
-	import actionScripts.locator.IDEModel;
+import actionScripts.interfaces.IBuildActionsProvider;
+import actionScripts.locator.IDEModel;
 	import actionScripts.plugin.settings.SettingsPlugin;
-	import actionScripts.ui.menu.MenuPlugin;
+import actionScripts.plugins.build.CompilerPluginBase;
+import actionScripts.ui.menu.MenuPlugin;
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.utils.moonshine_internal;
 
@@ -142,6 +144,11 @@ package actionScripts.plugin
             {
                 var lsPlugin:ILanguageServerPlugin = ILanguageServerPlugin(plug);
 			    model.languageServerCore.registerLanguageServerPlugin(lsPlugin);
+            }
+
+            if (plug is IBuildActionsProvider)
+            {
+                model.projectCore.registerActionBarTypePlugin(plug as IPlugin)
             }
         }
 

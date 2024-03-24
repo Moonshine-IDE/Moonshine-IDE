@@ -32,7 +32,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 -->
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:s="spark.components.*"
+		 xmlns:sidebar="actionScripts.ui.sidebar.*" xmlns:controls="components.controls.*"
 		 implements="actionScripts.ui.IPanelWindow"
 		 width="100%"
 		 height="100%"
@@ -1310,6 +1311,8 @@
 							   width="100%"
 							   scrollFromSource="onScrollFromSource(event)"
 							   creationComplete="initHeader()" />
+
+	<controls:ActionbarSidebar width="100%"/>
 
 	<utils:CustomTree
 			id="tree"

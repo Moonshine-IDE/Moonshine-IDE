@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<actions>
+	<actionTypes>
+		<type type="build" id="1"/>
+		<type type="run" id="2"/>
+		<type type="debug" id="3"/>
+	</actionTypes>
+	<configTypes>
+		<type id="actionScriptProperties,as3proj" actions="1,2,3"/>
+		<type id="veditorproj" actions="1,2"/>
+		<type id="javaproj" actions="1"/>
+		<type id="grailsproj" actions="1"/>
+		<type id="ondiskproj" actions=""/>
+		<type id="genericproj" actions=""/>
+		<type id="hxproj" actions="1,2,3"/>
+		<type id="tibboproj" actions="1"/>
+	</configTypes>
+</actions>

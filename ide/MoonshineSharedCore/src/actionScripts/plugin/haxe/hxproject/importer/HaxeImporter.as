@@ -44,7 +44,7 @@ package actionScripts.plugin.haxe.hxproject.importer
 
 	public class HaxeImporter extends FlashDevelopImporterBase
 	{
-		private static const FILE_EXTENSION_HXPROJ:String = ".hxproj";
+		public static const FILE_EXTENSION_HXPROJ:String = ".hxproj";
 
 		public static function test(file:FileLocation):FileLocation
 		{

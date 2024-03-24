@@ -32,7 +32,7 @@
 package actionScripts.plugin.haxe.hxproject
 {
     import actionScripts.events.NewProjectEvent;
-    import actionScripts.plugin.PluginBase;
+import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
     import actionScripts.valueObjects.ConstantsCoreVO;

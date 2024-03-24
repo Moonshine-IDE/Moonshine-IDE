@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+          xmlns:s="library://ns.adobe.com/flex/spark"
+            backgroundColor="0x424242" verticalGap="0"
+            creationComplete="onCreationCompletes()" preinitialize="onPreInitialize()">
+    <mx:Script>
+        <![CDATA[
+        import actionScripts.events.GlobalEventDispatcher;
+        import actionScripts.events.ProjectEvent;
+        import actionScripts.factory.FileLocation;
+        import actionScripts.locator.IDEModel;
+        import actionScripts.valueObjects.ConstantsCoreVO;
+        import actionScripts.valueObjects.ProjectVO;
+
+        import spark.components.Button;
+
+        private static const ACTION_TYPE_BUILD:String = "build";
+        private static const ACTION_TYPE_RUN:String = "run";
+        private static const ACTION_TYPE_DEBUG:String = "debug";
+
+        private var model:IDEModel = IDEModel.getInstance();
+        private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+        private var lastSelectedProjectExtension:String;
+        private var actionsByID:Dictionary = new Dictionary();
+        private var actionsByExtension:Dictionary = new Dictionary();
+        private var activeProject:ProjectVO;
+
+        private function onPreInitialize():void
+        {
+            if (ConstantsCoreVO.IS_AIR)
+            {
+                var localActions:FileLocation = this.model.fileCore.resolveApplicationDirectoryPath("elements/data/moonshine-actions.xml");
+                var localActionsOutput:String = localActions.fileBridge.read() as String;
+                this.parseActions(new XML(localActionsOutput));
+            }
+        }
+
+        private function onCreationCompletes():void
+        {
+            this.dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectSelectionChangedInSidebar, false, 0, true);
+        }
+
+        private function onProjectSelectionChangedInSidebar(event:ProjectEvent):void
+        {
+            if (!event.project.projectFile) return;
+            this.activeProject = event.project;
+
+            var projectFileExtension:String = this.activeProject.projectFile.fileBridge.extension;
+            if (lastSelectedProjectExtension == projectFileExtension) return;
+            this.lblProjectName.text = this.activeProject.name;
+
+            if (this.actionsByExtension[projectFileExtension] != undefined)
+            {
+                this.hideActionButtons();
+                var ids:Array = this.actionsByExtension[projectFileExtension];
+                var typeById:String;
+                for each(var id:String in ids)
+                {
+                    typeById = this.actionsByID[id];
+                    switch (typeById)
+                    {
+                        case ACTION_TYPE_BUILD:
+                            this.btnBuild.includeInLayout = this.btnBuild.visible = true;
+                            break;
+                        case ACTION_TYPE_RUN:
+                            this.btnRun.includeInLayout = this.btnRun.visible = true;
+                            break;
+                        case ACTION_TYPE_DEBUG:
+                            this.btnDebug.includeInLayout = this.btnDebug.visible = true;
+                            break;
+                    }
+                }
+
+                // make workflow option visible irrespective
+                // of project types
+                this.btnWorkdflow.includeInLayout = this.btnWorkdflow.visible = true;
+            }
+        }
+
+        private function hideActionButtons():void
+        {
+            for (var i:int; i < this.hgActionButtons.numElements; i++)
+            {
+                this.hgActionButtons.getElementAt(i).includeInLayout =
+                        this.hgActionButtons.getElementAt(i).visible = false;
+            }
+        }
+
+        private function parseActions(value:XML):void
+        {
+            var type:XML;
+            for each (type in value.actionTypes.type)
+            {
+                this.actionsByID[String(type.@id)] = String(type.@type);
+            }
+            for each (type in value.configTypes.type)
+            {
+                var ids:Array = String(type.@id).split(",");
+                for each (var id:String in ids)
+                {
+                    this.actionsByExtension[id] = String(type.@actions).split(",");
+                }
+            }
+        }
+
+        private function onProjectBuild(event:MouseEvent):void
+        {
+            this.model.projectCore.startProjectBuild(this.activeProject);
+        }
+        ]]>
+    </mx:Script>
+    <s:HGroup width="100%" height="32" padding="2" verticalAlign="middle">
+        <s:Label id="lblProjectName"
+                 width="100%" showTruncationTip="true" paddingLeft="8"
+                 fontSize="10" fontWeight="bold" color="0xFFFFCC"/>
+        <s:HGroup id="hgActionButtons" paddingRight="4">
+            <s:Button id="btnBuild" styleName="sidebarActionButton" toolTip="Build" width="22" height="22" includeInLayout="false" visible="false"
+                      click="onProjectBuild(event)"/>
+            <s:Button id="btnRun" styleName="sidebarActionButton" toolTip="Play" width="22" height="22" includeInLayout="false" visible="false"/>
+            <!--s:Button id="btnStop" styleName="sidebarActionButton" icon="/elements/images/icoStop.png" toolTip="Stop" width="22" height="22" includeInLayout="false" visible="false"/-->
+            <s:Button id="btnDebug" styleName="sidebarActionButton" toolTip="Debug" width="22" height="22" includeInLayout="false" visible="false"/>
+            <s:Button id="btnWorkdflow" styleName="sidebarActionButton" toolTip="Workflow" width="22" height="22" includeInLayout="false" visible="false"/>
+        </s:HGroup>
+    </s:HGroup>
+    <mx:HRule width="100%" strokeWidth="1" strokeColor="0x000"/>
+</mx:VBox>
