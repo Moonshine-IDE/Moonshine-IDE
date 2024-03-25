@@ -29,23 +29,13 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.interfaces
+package actionScripts.ui.actionbar.vo
 {
-	import actionScripts.ui.actionbar.vo.ActionItemVO;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.IProjectTypePlugin;
-	import actionScripts.ui.menu.vo.MenuItem;
-
-	public interface IProjectBridge
-	{
-        function getCorePlugins():Array;
-        function getDefaultPlugins():Array;
-        function getPluginsNotToShowInSettings():Array;
-		function registerProjectTypePlugin(provider:IProjectTypePlugin):void;
-		function unregisterProjectTypePlugin(provider:IProjectTypePlugin):void;
-		function parseProject(location:FileLocation):ProjectVO;
-		function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>;
-		function getActionItems(project:ProjectVO):Vector.<ActionItemVO>;
-	}
+    public class ActionItemTypes
+    {
+        public static const BUILD:String = "action-type-build";
+        public static const RUN:String = "action-type-run";
+        public static const DEBUG:String = "action-type-debug";
+        public static const WORKFLOW:String = "action-type-workflow";
+    }
 }

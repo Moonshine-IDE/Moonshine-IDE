@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <actions>
 	<actionTypes>
-		<type type="build" id="1"/>
-		<type type="run" id="2"/>
-		<type type="debug" id="3"/>
+		<type type="action-type-build" id="1"/>
+		<type type="action-type-run" id="2"/>
+		<type type="action-type-debug" id="3"/>
 	</actionTypes>
 	<configTypes>
 		<type id="actionScriptProperties,as3proj" actions="1,2,3"/>

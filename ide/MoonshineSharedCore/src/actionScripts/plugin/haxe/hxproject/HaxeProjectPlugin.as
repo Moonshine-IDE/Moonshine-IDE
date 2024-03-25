@@ -32,10 +32,13 @@
 package actionScripts.plugin.haxe.hxproject
 {
     import actionScripts.events.NewProjectEvent;
-import actionScripts.plugin.PluginBase;
+	import actionScripts.interfaces.IActionItemsProvider;
+	import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
-    import actionScripts.valueObjects.ConstantsCoreVO;
+import actionScripts.ui.actionbar.vo.ActionItemTypes;
+import actionScripts.ui.actionbar.vo.ActionItemVO;
+	import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.plugin.IProjectTypePlugin;
     import actionScripts.factory.FileLocation;
     import actionScripts.plugin.haxe.hxproject.importer.HaxeImporter;
@@ -48,11 +51,12 @@ import actionScripts.plugin.PluginBase;
     import mx.resources.ResourceManager;
     import actionScripts.plugin.core.compiler.HaxeBuildEvent;
 	
-	public class HaxeProjectPlugin extends PluginBase implements IProjectTypePlugin
+	public class HaxeProjectPlugin extends PluginBase implements IProjectTypePlugin, IActionItemsProvider
 	{	
 		public var activeType:uint = ProjectType.HAXE;
 		private var executeCreateHaxeProject:CreateHaxeProject;
 		private var _projectMenu:Vector.<MenuItem>;
+		private var actionItems:Vector.<ActionItemVO>;
         private var resourceManager:IResourceManager = ResourceManager.getInstance();
 		
 		override public function get name():String 			{ return "Haxe Project Plugin"; }
@@ -88,6 +92,20 @@ import actionScripts.plugin.PluginBase;
             }
 
             return _projectMenu;
+		}
+
+		public function getActionItems():Vector.<ActionItemVO>
+		{
+			if (!actionItems)
+			{
+				actionItems = Vector.<ActionItemVO>([
+					new ActionItemVO(resourceManager.getString('resources', 'BUILD_PROJECT'), ActionItemTypes.BUILD, HaxeBuildEvent.BUILD_DEBUG),
+					new ActionItemVO(resourceManager.getString('resources', 'BUILD_AND_RUN'), ActionItemTypes.RUN, HaxeBuildEvent.BUILD_AND_RUN),
+					new ActionItemVO("Debug", ActionItemTypes.DEBUG, HaxeBuildEvent.BUILD_DEBUG)
+				]);
+			}
+
+			return actionItems;
 		}
 		
 		override public function activate():void

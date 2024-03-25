@@ -31,10 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugins.haxe
 {
-import actionScripts.interfaces.IBuildActionsProvider;
-import actionScripts.plugin.haxe.hxproject.importer.HaxeImporter;
-
-import flash.desktop.NativeProcess;
+    import flash.desktop.NativeProcess;
     import flash.desktop.NativeProcessStartupInfo;
     import flash.errors.IllegalOperationError;
     import flash.events.Event;
@@ -75,7 +72,7 @@ import flash.desktop.NativeProcess;
     import actionScripts.plugin.console.ConsoleEvent;
     import actionScripts.plugin.core.compiler.ProjectActionEvent;
 
-    public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider, IBuildActionsProvider
+    public class HaxeBuildPlugin extends ConsoleBuildPluginBase implements ISettingsProvider
     {
         public static var NAMESPACE:String = "actionScripts.plugins.haxe::HaxeBuildPlugin";
 
@@ -194,28 +191,6 @@ import flash.desktop.NativeProcess;
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_DEBUG, haxeBuildDebugHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.BUILD_RELEASE, haxeBuildReleaseHandler);
 			dispatcher.removeEventListener(HaxeBuildEvent.CLEAN, haxeCleanHandler);
-        }
-
-
-        public function testProjectExtension(project:ProjectVO):Boolean
-        {
-            if (!project.projectFile) return false;
-            return ("."+ project.projectFile.fileBridge.extension == HaxeImporter.FILE_EXTENSION_HXPROJ);
-        }
-
-        public function buildByActionbar():void
-        {
-            this.haxeBuildDebugHandler(null);
-        }
-
-        public function runByActionbar():void
-        {
-            this.haxeBuildAndRunHandler(null);
-        }
-
-        public function debugByActionbar():void
-        {
-
         }
 
 		override protected function checkProjectForInvalidPaths(project:ProjectVO):void

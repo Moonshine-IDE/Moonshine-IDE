@@ -32,10 +32,9 @@
 package actionScripts.impls
 {
 	import actionScripts.factory.FileLocation;
-import actionScripts.interfaces.IBuildActionsProvider;
-import actionScripts.interfaces.IProjectBridge;
-import actionScripts.plugin.IPlugin;
-import actionScripts.plugin.IProjectTypePlugin;
+	import actionScripts.interfaces.IActionItemsProvider;
+	import actionScripts.interfaces.IProjectBridge;
+	import actionScripts.plugin.IProjectTypePlugin;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.genericproj.GenericProjectPlugin;
 	import actionScripts.plugin.groovy.grailsproject.GrailsProjectPlugin;
@@ -47,14 +46,15 @@ import actionScripts.plugin.IProjectTypePlugin;
 	import actionScripts.plugin.syntax.HaxeSyntaxPlugin;
 	import actionScripts.plugin.syntax.JavaSyntaxPlugin;
 	import actionScripts.plugins.actionscript.AS3LanguageServerPlugin;
-import actionScripts.plugins.grails.GrailsBuildPlugin;
+	import actionScripts.plugins.grails.GrailsBuildPlugin;
 	import actionScripts.plugins.groovy.GroovyLanguageServerPlugin;
 	import actionScripts.plugins.haxe.HaxeBuildPlugin;
 	import actionScripts.plugins.haxelib.HaxelibPlugin;
 	import actionScripts.plugins.haxe.HaxeLanguageServerPlugin;
 	import actionScripts.plugins.java.JavaBuildPlugin;
 	import actionScripts.plugins.java.JavaLanguageServerPlugin;
-	import actionScripts.valueObjects.ProjectVO;
+import actionScripts.ui.actionbar.vo.ActionItemVO;
+import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.ui.menu.vo.MenuItem;
 	import actionScripts.plugins.tibbo.TibboBasicLanguageServerPlugin;
 	import actionScripts.plugin.tibbo.tibboproject.TibboBasicProjectPlugin;
@@ -63,7 +63,6 @@ import actionScripts.plugins.grails.GrailsBuildPlugin;
 	public class IProjectBridgeImpl implements IProjectBridge
 	{
 		private var _projectTypePlugins:Array = [];
-		private var _actionbarTypePlugins:Array = [];
 
         public function getCorePlugins():Array
         {
@@ -166,26 +165,6 @@ import actionScripts.plugins.grails.GrailsBuildPlugin;
 			_projectTypePlugins.removeAt(index);
 		}
 
-		public function registerActionBarTypePlugin(plugin:IPlugin):void
-		{
-			var index:int = _actionbarTypePlugins.indexOf(plugin);
-			if (index != -1)
-			{
-				return;
-			}
-			_actionbarTypePlugins.push(plugin);
-		}
-
-		public function unregisterActionBarTypePlugin(plugin:IPlugin):void
-		{
-			var index:int = _actionbarTypePlugins.indexOf(plugin);
-			if (index == -1)
-			{
-				return;
-			}
-			_actionbarTypePlugins.removeAt(index);
-		}
-
 		public function parseProject(location:FileLocation):ProjectVO
 		{
 			for(var i:int = 0; i < _projectTypePlugins.length; i++)
@@ -215,17 +194,18 @@ import actionScripts.plugins.grails.GrailsBuildPlugin;
 			return null;
 		}
 
-		public function startProjectBuild(project:ProjectVO):void
+		public function getActionItems(project:ProjectVO):Vector.<ActionItemVO>
 		{
-			for(var i:int = 0; i < _actionbarTypePlugins.length; i++)
+			for(var i:int = 0; i < _projectTypePlugins.length; i++)
 			{
-				var plugin:IPlugin = _actionbarTypePlugins[i];
-				if ((plugin as IBuildActionsProvider).testProjectExtension(project))
+				var plugin:IProjectTypePlugin = _projectTypePlugins[i];
+				if (!(plugin is IActionItemsProvider) || !(project is plugin.projectClass))
 				{
-					(plugin as IBuildActionsProvider).buildByActionbar();
-					break;
+					continue;
 				}
+				return (plugin as IActionItemsProvider).getActionItems();
 			}
+			return null;
 		}
 	}
 }

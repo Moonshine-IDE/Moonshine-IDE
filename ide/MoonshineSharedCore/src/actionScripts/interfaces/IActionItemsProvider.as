@@ -31,21 +31,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces
 {
-	import actionScripts.ui.actionbar.vo.ActionItemVO;
-	import actionScripts.valueObjects.ProjectVO;
-	import actionScripts.factory.FileLocation;
-	import actionScripts.plugin.IProjectTypePlugin;
-	import actionScripts.ui.menu.vo.MenuItem;
+    import actionScripts.ui.actionbar.vo.ActionItemVO;
 
-	public interface IProjectBridge
-	{
-        function getCorePlugins():Array;
-        function getDefaultPlugins():Array;
-        function getPluginsNotToShowInSettings():Array;
-		function registerProjectTypePlugin(provider:IProjectTypePlugin):void;
-		function unregisterProjectTypePlugin(provider:IProjectTypePlugin):void;
-		function parseProject(location:FileLocation):ProjectVO;
-		function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>;
-		function getActionItems(project:ProjectVO):Vector.<ActionItemVO>;
-	}
+    public interface IActionItemsProvider
+    {
+        function getActionItems():Vector.<ActionItemVO>
+    }
 }
