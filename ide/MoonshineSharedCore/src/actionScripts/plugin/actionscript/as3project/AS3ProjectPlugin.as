@@ -31,6 +31,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project
 {
+import actionScripts.interfaces.IActionItemsProvider;
+import actionScripts.ui.actionbar.vo.ActionItemTypes;
+import actionScripts.ui.actionbar.vo.ActionItemVO;
 import actionScripts.utils.UtilsCore;
 import actionScripts.valueObjects.OpenProjectOptionsVO;
 
@@ -87,7 +90,7 @@ import flash.display.DisplayObject;
 	import actionScripts.events.MavenBuildEvent;
 	import actionScripts.plugin.core.compiler.ActionScriptBuildEvent;
 	
-	public class AS3ProjectPlugin extends PluginBase implements IProjectTypePlugin
+	public class AS3ProjectPlugin extends PluginBase implements IProjectTypePlugin, IActionItemsProvider
 	{
 		public static const AS3PROJ_AS_AIR:uint = 1;
 		public static const AS3PROJ_AS_WEB:uint = 2;
@@ -112,6 +115,12 @@ import flash.display.DisplayObject;
 		private var dominoMenu:Vector.<MenuItem>;
 		private var veFlex:Vector.<MenuItem>;
 		private var vePrimeFaces:Vector.<MenuItem>;
+		private var actionItemsActionScript:Vector.<ActionItemVO>;
+		private var actionItemsLibrary:Vector.<ActionItemVO>;
+		private var actionItemsRoyale:Vector.<ActionItemVO>;
+		private var actionItemsVEPrimefaces:Vector.<ActionItemVO>;
+		private var actionItemsDomino:Vector.<ActionItemVO>;
+		private var actionItemVE:Vector.<ActionItemVO>;
         private var resourceManager:IResourceManager = ResourceManager.getInstance();
 		
 		override public function get name():String 			{return "AS3 Project Plugin";}
@@ -126,6 +135,74 @@ import flash.display.DisplayObject;
 		public function AS3ProjectPlugin()
 		{
 			super();
+		}
+
+		public function getActionItems(project:ProjectVO):Vector.<ActionItemVO>
+		{
+			var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+			if (as3Project.isLibraryProject)
+			{
+				if (!actionItemsLibrary)
+				{
+					actionItemsLibrary = Vector.<ActionItemVO>([
+						new ActionItemVO(resourceManager.getString('resources', 'BUILD_PROJECT'), ActionItemTypes.BUILD, ActionScriptBuildEvent.BUILD),
+						new ActionItemVO(resourceManager.getString('resources', 'BUILD_RELEASE'), ActionItemTypes.RUN, ActionScriptBuildEvent.BUILD_RELEASE)
+					]);
+				}
+				return actionItemsLibrary;
+			}
+			else if (as3Project.isRoyale)
+			{
+				if (!actionItemsRoyale)
+				{
+					actionItemsRoyale = Vector.<ActionItemVO>([
+						new ActionItemVO(resourceManager.getString('resources', 'BUILD_PROJECT'), ActionItemTypes.BUILD, ProjectActionEvent.BUILD),
+						new ActionItemVO(resourceManager.getString('resources', 'BUILD_AND_RUN'), ActionItemTypes.RUN, ProjectActionEvent.BUILD_AND_RUN),
+						new ActionItemVO("Debug", ActionItemTypes.DEBUG, ProjectActionEvent.BUILD_AND_DEBUG)
+					]);
+				}
+				return actionItemsRoyale;
+			}
+			else if (as3Project.isVisualEditorProject)
+			{
+				if (as3Project.isPrimeFacesVisualEditorProject)
+				{
+					if (!actionItemsVEPrimefaces)
+					{
+						actionItemsVEPrimefaces = Vector.<ActionItemVO>([
+							new ActionItemVO(resourceManager.getString('resources', 'START_PREVIEW'), ActionItemTypes.RUN, PreviewPluginEvent.START_VISUALEDITOR_PREVIEW)
+						]);
+					}
+					return actionItemsVEPrimefaces;
+				}
+				else if (as3Project.isDominoVisualEditorProject)
+				{
+					if (!actionItemsDomino)
+					{
+						actionItemsDomino = Vector.<ActionItemVO>([
+							new ActionItemVO(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), ActionItemTypes.BUILD, MavenBuildEvent.START_MAVEN_BUILD)
+						]);
+					}
+					return actionItemsDomino;
+				}
+
+				if (!actionItemVE)
+				{
+					actionItemVE = Vector.<ActionItemVO>([
+						new ActionItemVO(resourceManager.getString('resources', 'EXPORT_VISUALEDITOR_PROJECT_TO_FLEX'), ActionItemTypes.EXPORT, ExportVisualEditorProjectEvent.EVENT_INIT_EXPORT_VISUALEDITOR_PROJECT_TO_FLEX)
+					]);
+				}
+				return actionItemVE;
+			}
+			else if (!actionItemsActionScript)
+			{
+				actionItemsActionScript = Vector.<ActionItemVO>([
+					new ActionItemVO(resourceManager.getString('resources', 'BUILD_PROJECT'), ActionItemTypes.BUILD, ProjectActionEvent.BUILD),
+					new ActionItemVO(resourceManager.getString('resources', 'BUILD_AND_RUN'), ActionItemTypes.RUN, ProjectActionEvent.BUILD_AND_RUN),
+					new ActionItemVO("Debug", ActionItemTypes.DEBUG, ProjectActionEvent.BUILD_AND_DEBUG)
+				]);
+			}
+			return actionItemsActionScript;
 		}
 
 		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>

@@ -94,7 +94,7 @@ import actionScripts.ui.actionbar.vo.ActionItemVO;
             return _projectMenu;
 		}
 
-		public function getActionItems():Vector.<ActionItemVO>
+		public function getActionItems(project:ProjectVO):Vector.<ActionItemVO>
 		{
 			if (!actionItems)
 			{

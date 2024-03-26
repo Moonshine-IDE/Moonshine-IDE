@@ -203,7 +203,7 @@ import actionScripts.valueObjects.ProjectVO;
 				{
 					continue;
 				}
-				return (plugin as IActionItemsProvider).getActionItems();
+				return (plugin as IActionItemsProvider).getActionItems(project);
 			}
 			return null;
 		}

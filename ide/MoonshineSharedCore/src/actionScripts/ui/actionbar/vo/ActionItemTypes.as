@@ -36,6 +36,7 @@ package actionScripts.ui.actionbar.vo
         public static const BUILD:String = "action-type-build";
         public static const RUN:String = "action-type-run";
         public static const DEBUG:String = "action-type-debug";
+        public static const EXPORT:String = "action-type-export";
         public static const WORKFLOW:String = "action-type-workflow";
     }
 }

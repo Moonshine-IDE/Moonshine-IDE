@@ -32,9 +32,10 @@
 package actionScripts.interfaces
 {
     import actionScripts.ui.actionbar.vo.ActionItemVO;
+    import actionScripts.valueObjects.ProjectVO;
 
     public interface IActionItemsProvider
     {
-        function getActionItems():Vector.<ActionItemVO>
+        function getActionItems(project:ProjectVO):Vector.<ActionItemVO>
     }
 }
