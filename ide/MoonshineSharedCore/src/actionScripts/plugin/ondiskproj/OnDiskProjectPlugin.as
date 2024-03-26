@@ -31,7 +31,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.ondiskproj
 {
-    import flash.display.DisplayObject;
+import actionScripts.interfaces.IActionItemsProvider;
+import actionScripts.ui.actionbar.vo.ActionItemTypes;
+import actionScripts.ui.actionbar.vo.ActionItemVO;
+
+import flash.display.DisplayObject;
     import flash.events.Event;
     
     import mx.core.FlexGlobals;
@@ -65,7 +69,7 @@ package actionScripts.plugin.ondiskproj
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.events.DominoEvent;
 	
-	public class OnDiskProjectPlugin extends PluginBase implements IProjectTypePlugin
+	public class OnDiskProjectPlugin extends PluginBase implements IProjectTypePlugin, IActionItemsProvider
 	{
 		public static const EVENT_NEW_FILE_WINDOW:String = "onOnDiskNewFileWindowRequest";
 		
@@ -82,7 +86,21 @@ package actionScripts.plugin.ondiskproj
 		
 		protected var newOnDiskFilePopup:NewOnDiskFilePopup;
 		private var _projectMenu:Vector.<MenuItem>;
+		private var actionItems:Vector.<ActionItemVO>;
         private var resourceManager:IResourceManager = ResourceManager.getInstance();
+
+		public function getActionItems(project:ProjectVO):Vector.<ActionItemVO>
+		{
+			if (!actionItems)
+			{
+				actionItems = Vector.<ActionItemVO>([
+					new ActionItemVO(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), ActionItemTypes.BUILD, MavenBuildEvent.START_MAVEN_BUILD),
+					new ActionItemVO(resourceManager.getString('resources', 'BUILD_ON_VAGRANT'), ActionItemTypes.BUILD, DominoEvent.EVENT_BUILD_ON_VAGRANT)
+				]);
+			}
+
+			return actionItems;
+		}
 
 		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>
 		{

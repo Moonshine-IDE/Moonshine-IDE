@@ -31,7 +31,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject
 {
-	import flash.events.Event;
+import actionScripts.interfaces.IActionItemsProvider;
+import actionScripts.ui.actionbar.vo.ActionItemTypes;
+import actionScripts.ui.actionbar.vo.ActionItemVO;
+
+import flash.events.Event;
 	
 	import actionScripts.events.GradleBuildEvent;
 	import actionScripts.events.MavenBuildEvent;
@@ -58,7 +62,7 @@ package actionScripts.plugin.java.javaproject
 	import flash.ui.Keyboard;
 	import actionScripts.events.DominoEvent;
 
-	public class JavaProjectPlugin extends PluginBase implements IProjectTypePlugin
+	public class JavaProjectPlugin extends PluginBase implements IProjectTypePlugin, IActionItemsProvider
 	{
 		override public function get name():String 			{ return "Java Project Plugin"; }
 		override public function get author():String 		{ return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team"; }
@@ -66,11 +70,45 @@ package actionScripts.plugin.java.javaproject
 
 		private var _gradleProjectMenu:Vector.<MenuItem>;
 		private var _mavenProjectMenu:Vector.<MenuItem>;
+		private var actionItemsGradle:Vector.<ActionItemVO>;
+		private var actionItemsMaven:Vector.<ActionItemVO>;
         private var resourceManager:IResourceManager = ResourceManager.getInstance();
 
 		public function get projectClass():Class
 		{
 			return JavaProjectVO;
+		}
+
+		public function getActionItems(project:ProjectVO):Vector.<ActionItemVO>
+		{
+			var javaProject:JavaProjectVO = JavaProjectVO(project);
+			if (javaProject.hasGradleBuild())
+			{
+				if (!actionItemsGradle)
+				{
+					actionItemsGradle = Vector.<ActionItemVO>([
+						new ActionItemVO(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), ActionItemTypes.BUILD, JavaBuildEvent.JAVA_BUILD)
+					]);
+					if (javaProject.projectType == JavaProjectTypes.JAVA_DOMINO)
+					{
+						actionItemsGradle.push(
+							new ActionItemVO(resourceManager.getString('resources', 'RUN_ON_VAGRANT'), ActionItemTypes.RUN, DominoEvent.EVENT_RUN_DOMINO_ON_VAGRANT)
+						)
+					}
+				}
+				return actionItemsGradle;
+			}
+			else
+			{
+				if (!actionItemsMaven)
+				{
+					actionItemsMaven = Vector.<ActionItemVO>([
+						new ActionItemVO(resourceManager.getString('resources', 'BUILD_PROJECT'), ActionItemTypes.BUILD, JavaBuildEvent.JAVA_BUILD),
+						new ActionItemVO(resourceManager.getString('resources', 'BUILD_AND_RUN'), ActionItemTypes.BUILD, JavaBuildEvent.BUILD_AND_RUN)
+					]);
+				}
+				return actionItemsMaven;
+			}
 		}
 
 		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>

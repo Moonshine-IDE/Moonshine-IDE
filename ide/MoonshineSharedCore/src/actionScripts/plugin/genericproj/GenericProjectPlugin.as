@@ -33,10 +33,13 @@ package actionScripts.plugin.genericproj
 {
 	import actionScripts.events.GradleBuildEvent;
 	import actionScripts.events.MavenBuildEvent;
-	import actionScripts.plugin.core.compiler.JavaBuildEvent;
+import actionScripts.interfaces.IActionItemsProvider;
+import actionScripts.plugin.core.compiler.JavaBuildEvent;
 	import actionScripts.plugin.genericproj.events.GenericProjectEvent;
 	import actionScripts.plugin.genericproj.vo.GenericProjectVO;
-	import actionScripts.valueObjects.TemplateVO;
+import actionScripts.ui.actionbar.vo.ActionItemTypes;
+import actionScripts.ui.actionbar.vo.ActionItemVO;
+import actionScripts.valueObjects.TemplateVO;
 
 	import flash.display.DisplayObject;
     import flash.events.Event;
@@ -69,7 +72,7 @@ package actionScripts.plugin.genericproj
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import flash.ui.Keyboard;
 	
-	public class GenericProjectPlugin extends PluginBase implements IProjectTypePlugin
+	public class GenericProjectPlugin extends PluginBase implements IProjectTypePlugin, IActionItemsProvider
 	{
 		public var activeType:uint = ProjectType.ONDISK;
 		
@@ -84,6 +87,32 @@ package actionScripts.plugin.genericproj
 		public function get projectClass():Class
 		{
 			return GenericProjectVO;
+		}
+
+		public function getActionItems(project:ProjectVO):Vector.<ActionItemVO>
+		{
+			var genericProject:GenericProjectVO = GenericProjectVO(project);
+			var actionItems:Vector.<ActionItemVO> = new Vector.<ActionItemVO>();
+			if (genericProject.hasPom())
+			{
+				actionItems.push(
+					new ActionItemVO(resourceManager.getString('resources', 'BUILD_WITH_APACHE_MAVEN'), ActionItemTypes.BUILD, MavenBuildEvent.START_MAVEN_BUILD)
+				);
+			}
+			if (genericProject.isAntFileAvailable)
+			{
+				actionItems.push(
+					new ActionItemVO(resourceManager.getString('resources', 'BUILD_WITH_APACHE_ANT'), ActionItemTypes.BUILD, "selectedProjectAntBuild")
+				);
+			}
+			if (genericProject.hasGradleBuild())
+			{
+				actionItems.push(
+					new ActionItemVO(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), ActionItemTypes.RUN, GradleBuildEvent.START_GRADLE_BUILD)
+				);
+			}
+
+			return actionItems;
 		}
 
 		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>

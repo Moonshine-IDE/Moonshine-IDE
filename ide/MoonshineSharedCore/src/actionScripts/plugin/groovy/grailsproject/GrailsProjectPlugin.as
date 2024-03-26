@@ -32,10 +32,13 @@
 package actionScripts.plugin.groovy.grailsproject
 {
     import actionScripts.events.NewProjectEvent;
-    import actionScripts.plugin.PluginBase;
+import actionScripts.interfaces.IActionItemsProvider;
+import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
-    import actionScripts.valueObjects.ConstantsCoreVO;
+import actionScripts.ui.actionbar.vo.ActionItemTypes;
+import actionScripts.ui.actionbar.vo.ActionItemVO;
+import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.factory.FileLocation;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.plugin.groovy.grailsproject.importer.GrailsImporter;
@@ -49,12 +52,13 @@ package actionScripts.plugin.groovy.grailsproject
     import actionScripts.plugin.core.compiler.GrailsBuildEvent;
     import actionScripts.events.GradleBuildEvent;
 	
-	public class GrailsProjectPlugin extends PluginBase implements IProjectTypePlugin
+	public class GrailsProjectPlugin extends PluginBase implements IProjectTypePlugin, IActionItemsProvider
 	{	
 		public var activeType:uint = ProjectType.GROOVY;
 		
         protected var executeCreateGroovyProject:CreateGrailsProject;
 		private var _projectMenu:Vector.<MenuItem>;
+		private var actionItems:Vector.<ActionItemVO>;
         private var resourceManager:IResourceManager = ResourceManager.getInstance();
 		
 		override public function get name():String 			{ return "Grails Project Plugin"; }
@@ -64,6 +68,20 @@ package actionScripts.plugin.groovy.grailsproject
 		public function get projectClass():Class
 		{
 			return GrailsProjectVO;
+		}
+
+		public function getActionItems(project:ProjectVO):Vector.<ActionItemVO>
+		{
+			if (!actionItems)
+			{
+				actionItems = Vector.<ActionItemVO>([
+					new ActionItemVO(resourceManager.getString('resources', 'BUILD_AND_RUN'), ActionItemTypes.RUN, GrailsBuildEvent.BUILD_AND_RUN),
+					new ActionItemVO(resourceManager.getString('resources', 'RUN_GRAILS_TASKS'), ActionItemTypes.RUN, GrailsBuildEvent.RUN_COMMAND),
+					new ActionItemVO(resourceManager.getString('resources', 'RUN_GRADLE_TASKS'), ActionItemTypes.RUN, GradleBuildEvent.RUN_COMMAND)
+				]);
+			}
+
+			return actionItems;
 		}
 
 		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>

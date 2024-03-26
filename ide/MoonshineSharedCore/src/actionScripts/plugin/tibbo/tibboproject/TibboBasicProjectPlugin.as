@@ -2,18 +2,20 @@ package actionScripts.plugin.tibbo.tibboproject
 {
     import actionScripts.events.NewProjectEvent;
     import actionScripts.factory.FileLocation;
-    import actionScripts.plugin.IProjectTypePlugin;
+import actionScripts.interfaces.IActionItemsProvider;
+import actionScripts.plugin.IProjectTypePlugin;
     import actionScripts.plugin.PluginBase;
     import actionScripts.plugin.tibbo.tibboproject.importer.TibboBasicImporter;
     import actionScripts.plugin.project.ProjectTemplateType;
     import actionScripts.plugin.project.ProjectType;
-    import actionScripts.valueObjects.ConstantsCoreVO;
+import actionScripts.ui.actionbar.vo.ActionItemVO;
+import actionScripts.valueObjects.ConstantsCoreVO;
     import actionScripts.valueObjects.ProjectVO;
     import actionScripts.plugin.tibbo.tibboproject.vo.TibboBasicProjectVO;
     import actionScripts.ui.menu.vo.ProjectMenuTypes;
     import actionScripts.ui.menu.vo.MenuItem;
 	
-	public class TibboBasicProjectPlugin extends PluginBase implements IProjectTypePlugin
+	public class TibboBasicProjectPlugin extends PluginBase implements IProjectTypePlugin, IActionItemsProvider
 	{	
 		public var activeType:uint = ProjectType.TIBBO_BASIC;
 		private var executeCreateProject:CreateTibboBasicProject;
@@ -25,6 +27,11 @@ package actionScripts.plugin.tibbo.tibboproject
 		public function get projectClass():Class
 		{
 			return TibboBasicProjectVO;
+		}
+
+		public function getActionItems(project:ProjectVO):Vector.<ActionItemVO>
+		{
+			return Vector.<ActionItemVO>([]);
 		}
 
 		public function getProjectMenuItems(project:ProjectVO):Vector.<MenuItem>

@@ -86,16 +86,16 @@
                 switch (action.type)
                 {
                     case ActionItemTypes.BUILD:
-                        tmpButton = getNewActionButton(action.type, imageBuild);
+                        tmpButton = getNewActionButton(action, imageBuild);
                         break;
                     case ActionItemTypes.RUN:
-                        tmpButton = getNewActionButton(action.type, imageRun);
+                        tmpButton = getNewActionButton(action, imageRun);
                         break;
                     case ActionItemTypes.DEBUG:
-                        tmpButton = getNewActionButton(action.type, imageDebug);
+                        tmpButton = getNewActionButton(action, imageDebug);
                         break;
                     case ActionItemTypes.EXPORT:
-                        tmpButton = getNewActionButton(action.type, imageExport);
+                        tmpButton = getNewActionButton(action, imageExport);
                         break;
                 }
 
@@ -134,13 +134,14 @@
             }
         }
 
-        private function getNewActionButton(type:String, icon:Class):Button
+        private function getNewActionButton(action:ActionItemVO, icon:Class):Button
         {
             var tmpButton:Button = new Button();
             tmpButton.width = tmpButton.height = 22;
             tmpButton.styleName = "sidebarActionButton";
-            if (icon) tmpButton.setStyle("icon", icon);
-            tmpButton.label = type;
+            tmpButton.setStyle("icon", icon);
+            tmpButton.label = action.type;
+            tmpButton.toolTip = action.title;
             tmpButton.addEventListener(MouseEvent.CLICK, onActionItemClick, false, 0, true);
 
             return tmpButton;
@@ -152,6 +153,9 @@
                  width="100%" showTruncationTip="true" paddingLeft="8"
                  fontSize="10" fontWeight="bold" color="0xFFFFCC"/>
         <s:HGroup id="hgActionButtons" paddingRight="4"/>
+        <s:Button styleName="sidebarActionButton" width="22" height="22"
+                  label="{ActionItemTypes.WORKFLOW}"
+                  click="onActionItemClick(event)"/>
     </s:HGroup>
     <mx:HRule width="100%" strokeWidth="1" strokeColor="0x000"/>
 </mx:VBox>
