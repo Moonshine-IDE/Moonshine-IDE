@@ -47,15 +47,16 @@
 
         import spark.components.Button;
 
-        [Embed(source="/elements/images/icoStop.png")]
+        [Embed(source="/elements/images/icoBuild.png")]
         public var imageBuild:Class;
         [Embed(source="/elements/images/debug-play-icon.png")]
         public var imageRun:Class;
-        [Embed(source="/elements/images/debug-play-icon.png")]
+        [Embed(source="/elements/images/icoDebug.png")]
         public var imageDebug:Class;
-        [Embed(source="/elements/images/icoStop.png")]
+        [Embed(source="/elements/images/icoExport.png")]
         public var imageExport:Class;
-        [Embed(source="/elements/images/icoStop.png")]
+        [Embed(source="/elements/images/icoWorkflow.png")]
+		[Bindable]
         public var imageWorkflow:Class;
 
         private var model:IDEModel = IDEModel.getInstance();
@@ -154,6 +155,7 @@
                  fontSize="10" fontWeight="bold" color="0xFFFFCC"/>
         <s:HGroup id="hgActionButtons" paddingRight="4"/>
         <s:Button styleName="sidebarActionButton" width="22" height="22"
+				  icon="{imageWorkflow}" toolTip="Workflow"
                   label="{ActionItemTypes.WORKFLOW}"
                   click="onActionItemClick(event)"/>
     </s:HGroup>
