@@ -1,0 +1,1519 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and 
+// limitations under the License
+// 
+// No warranty of merchantability or fitness of any kind. 
+// Use this software at your own risk.
+// 
+////////////////////////////////////////////////////////////////////////////////
+-->
+<mx:Canvas xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:ui="actionScripts.ui.*"
+	xmlns:utils="actionScripts.utils.*"
+	
+	xmlns:view="actionScripts.plugin.console.view.*"
+	xmlns:collapsiblehdivider="components.collapsibleHDivider.*" 
+	width="100%" 
+	height="25"
+	minHeight="25"
+	
+	backgroundColor="0x373737"
+	backgroundAlpha="1" percentHeight="100"
+	clipContent="false" updateComplete="consoleView_updateCompleteHandler(event)"
+	creationComplete="onComplete()" 
+	
+    label="Objects"
+	implements="actionScripts.interfaces.IViewWithTitle"
+	>
+	<fx:Script>
+		<![CDATA[
+		import flash.text.engine.ElementFormat;
+		import flash.text.engine.FontDescription;
+		import flash.text.engine.FontLookup;
+
+		import mx.events.FlexEvent;
+		import mx.managers.CursorManager;
+		import mx.managers.CursorManagerPriority;
+
+		import spark.components.RichEditableText;
+		import mx.events.ListEvent;
+
+		import actionScripts.locator.IDEModel;
+		import actionScripts.plugin.console.ConsoleCommandEvent;
+		import actionScripts.plugin.console.ConsoleStyle;
+		import spark.events.IndexChangeEvent;
+		import mx.collections.ArrayCollection;
+		import mx.core.ClassFactory;
+		import mx.collections.ArrayList;
+		import mx.collections.ArrayCollection;
+		import mx.collections.HierarchicalData;
+		
+
+		import mx.controls.listClasses.IListItemRenderer;
+
+		import view.domino.forms.imageClass.LoadImage;
+
+		import actionScripts.plugins.ui.editor.VisualEditorViewer;
+		import mx.controls.Alert;
+
+		import view.domino.surfaceComponents.components.DominoGlobalsObjects;
+		import view.domino.surfaceComponents.components.DominoFormObjects;
+		
+		import view.domino.viewEditor.object.DominoObjectsProperty;
+		import flash.utils.Dictionary;
+		import mx.events.TreeEvent;
+		import moonshine.editor.text.TextEditor;
+		import actionScripts.ui.FeathersUIWrapper;
+		import moonshine.editor.text.events.TextEditorChangeEvent;
+		import moonshine.editor.text.events.TextEditorLineEvent;
+
+		import flash.events.KeyboardEvent;
+
+		import utils.StringHelper;
+
+		import com.adobe.utils.StringUtil;
+
+		import view.suportClasses.events.DominoLotusScriptCompileReturnEvent;
+		import view.suportClasses.events.DominoLotusScriptEditorCompileErrorLineEvent;
+		import actionScripts.plugin.console.view.ConsoleTextEditor;
+		private var customLotusScriptFunction:XMLList;
+
+
+		private var editor:VisualEditorViewer = null;
+
+		private var editxml:XML = null;
+
+		private var dominoGlobalsObjects:DominoGlobalsObjects
+
+		public var optionsMap:Dictionary
+		private var formOptionsMap:Dictionary;
+
+		private var languageEditor:TextEditor; 
+
+		 
+
+		[Bindable] public var showCommandLine:Boolean = true;
+
+		public var displayContextMenuAbout:Boolean = true;
+		public var displayContextMenuHide:Boolean = true;
+		public var displayContextMenuHelp:Boolean = true;
+		public var displayContextMenuExit:Boolean = true;
+
+		private var _consolePopOver:Boolean;
+		[Bindable]
+		private var historyContainerHeight:int = 0;
+		private var cm:ContextMenu;
+		protected var model:IDEModel = IDEModel.getInstance();
+		[Bindable]
+		private var dataProviderList:ArrayCollection=new ArrayCollection();
+
+		private var sourceLotusScriptFunctionName:Array = [
+			"Queryopen",
+			"Postopen",
+			"Querymodechange",
+			"Postmodechange",
+			"Queryrecalc",
+			"Postrecalc",
+			"Querysave",
+			"Postsave",
+			"Querysend",
+			"Postsend",
+			"Queryclose",
+			"Initialize",
+			"Terminate"
+    	]
+
+		private function checkIsSourceFunctionName(checkName:String):Boolean 
+		{
+			var isSourceFunctionName:Boolean = false;
+			if(checkName!=null && checkName.length>0){
+				for each (var sorceName:String in sourceLotusScriptFunctionName) {
+					if(checkName==sorceName){
+						isSourceFunctionName = true
+					}
+				}
+			}
+
+			return isSourceFunctionName;
+		}
+
+	
+		
+		public var formulaRunWayList:ArrayCollection = new ArrayCollection(
+			[{label:"Client", value:"client"},
+			{label:"Web", value:"web"} ]);
+
+
+		public var formulaClientRunLanguage:ArrayCollection = new ArrayCollection(
+			[{label:"Formula", value:"formula"},
+			{label:"LotusScript", value:"lotusscript"},
+			{label:"JavaScript", value:"javascript"} ]);
+
+		public var formulaClientRunLanguage2:ArrayCollection = new ArrayCollection(
+			[{label:"Formula", value:"formula"},
+			{label:"LotusScript", value:"lotusscript"} ]);
+		public var formulaClientRunLanguageFull:ArrayCollection = new ArrayCollection(
+			[{label:"Formula", value:"formula"},
+			{label:"LotusScript", value:"lotusscript"},
+			{label:"JavaScript", value:"javascript"}, 
+			{label:"Common JavaScript", value:"commonjavascript"}]);
+
+		public var formulaWebRunLanguage:ArrayCollection = new ArrayCollection(
+			[{label:"JavaScript", value:"javascript"},
+			{label:"Common JavaScript", value:"commonjavascript"} ]);
+
+		private function updateSelection(e:IndexChangeEvent):void
+		{
+			if(runList.selectedItem.label=="Client"){
+				runWayList.dataProvider=formulaClientRunLanguage;
+			}else{
+				runWayList.dataProvider=formulaWebRunLanguage;
+			}
+		}
+
+		public function getLanguageType():String
+		{
+			return runWayList.selectedItem.label;
+		} 
+
+		public function getLanguageEditorText():String
+		{
+			return languageEditor.text;
+		}
+
+		private function updateSelectionWay(e:IndexChangeEvent):void
+		{
+			if(selectedNode&&selectedNode.@key)
+			{	
+				
+				//change the type for icon 
+				selectedNode.@iconType=runWayList.selectedItem.label;
+
+				var mapKey:String=selectedNode.@key
+				if(mapKey.indexOf('global')>=0){
+					
+				}else{
+					var formObj:DominoFormObjects=optionsMap[mapKey] as DominoFormObjects;
+					if(formObj!=undefined && formObj!=null){
+						if(runWayList.selectedItem.label=="Formula"){
+							languageEditor.text=formObj.formula;
+						}else if(runWayList.selectedItem.label=="LotusScript"){
+							languageEditor.text=formObj.lotusscript;
+						}else if(runWayList.selectedItem.label=="JavaScript"){
+							languageEditor.text=formObj.javascript;
+						}else if(runWayList.selectedItem.label=="Common JavaScript"){
+							languageEditor.text=formObj.commonjavascript;
+						}
+
+						var count:int=checkIfMultipleLanguages(formObj);
+						var label:String =getLanguagesLabel(formObj);
+						if(count==1){
+							if(label.indexOf(selectedNode.@iconType.toString())>=0){
+								selectedNode.@value="hasValue";
+							}else{
+								selectedNode.@value=""
+							}
+							
+						}else if(count>1){
+							if(label.indexOf(selectedNode.@iconType.toString())>=0){
+								selectedNode.@value="mulValue";
+							}else{
+								selectedNode.@value=""
+							}
+							
+						}else{
+							selectedNode.@value=""
+						}
+
+						
+					}
+				}
+
+				
+
+			}
+		}
+
+		
+
+
+			
+				
+		
+
+		public function get title():String
+		{
+			return this.label;
+		}
+
+		public function get consolePopOver():Boolean
+		{
+			return _consolePopOver;
+		}
+
+		public function set consolePopOver(value:Boolean):void
+		{
+			_consolePopOver = value;
+
+			if (!historyContainer) return;
+
+			//divider.y = -1;
+
+			if (value)
+			{
+				height = minHeight;
+				historyContainer.setStyle('top', null);
+				historyContainer.setStyle('bottom', null);
+				//historyContainer.y = divider.y;
+			}
+			else
+			{
+				historyContainer.setStyle('top', 0);
+				historyContainer.setStyle('bottom', 0);
+			}
+
+		}
+
+		private function onComplete():void
+		{
+			runLabel.setStyle("color","#ffffff");
+			consolePopOver = _consolePopOver;
+			cm = new ContextMenu();
+			var clear:ContextMenuItem = new ContextMenuItem('Clear', false, true, true);
+			clear.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, clearHandler);
+			cm.customItems.push(clear);
+			cm.clipboardMenu = true;
+			//history.contextMenu = cm;
+			//(history.textDisplay as RichEditableText).contextMenu = cm;
+
+			// if (displayContextMenuAbout)
+			// {
+			// 	var about:ContextMenuItem = new ContextMenuItem('About', false, true, true);
+			// 	about.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, aboutHandler);
+			// 	cm.customItems.push(about);
+			// }
+			// if (displayContextMenuHide)
+			// {
+			// 	var hide:ContextMenuItem = new ContextMenuItem('Hide', false, true, true);
+			// 	hide.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, hideHandler);
+			// 	cm.customItems.push(hide);
+			// }
+			// if (displayContextMenuExit)
+			// {
+			// 	var exit:ContextMenuItem = new ContextMenuItem('Exit', false, true, true);
+			// 	exit.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, exitHandler);
+			// 	cm.customItems.push(exit);
+			// }
+			// if (displayContextMenuHelp)
+			// {
+			// 	var help:ContextMenuItem = new ContextMenuItem('Help', false, true, true);
+			// 	help.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, helpHandler);
+			// 	cm.customItems.push(help);
+			// }
+
+			
+			//expend defaul options
+			expandNodesWithChildren(treeData,null);
+			//add the code editor
+			if(languageEditor==null){
+				initalCodeEditor();
+			}
+
+			
+
+			
+
+			//languageEditor.wordWrap = false;
+			
+			
+		}
+		private function initalCodeEditor(): void
+		{
+			languageEditor=new TextEditor(null,false);
+			languageEditor.addEventListener(TextEditorChangeEvent.TEXT_CHANGE, handleTextChange);
+			languageEditor.addEventListener(TextEditorLineEvent.TOGGLE_BREAKPOINT, handleToggleBreakpoint);
+			languageEditor.addEventListener(KeyboardEvent.KEY_DOWN, handleEntryInput);
+			//languageEditor.addEventListener(DominoLotusScriptCompileReturnEvent.DOMINO_LOTUSSCRIPT_COMPILE,handleLotusScriptCompile);
+			languageEditor.addEventListener(DominoLotusScriptEditorCompileErrorLineEvent.LOTUSSCRIPT_COMPILE_ERROR,handleLotusScriptCompileLine);
+			languageEditor.showLineNumbers = true;
+			var wrapper:FeathersUIWrapper = new FeathersUIWrapper(languageEditor);
+			wrapper.percentWidth = wrapper.percentHeight = 100;
+			wrapper.minWidth = wrapper.minHeight = 100;
+			codeEdtiorContainer.addElementAt(wrapper, 0);
+			if(optionsMap){
+				languageEditor.text=optionsMap["globalsOptions"];
+			}
+			
+		}
+
+		public function setLanguageEditor():void 
+		{
+			if(languageEditor&&optionsMap){
+				languageEditor.text=optionsMap["globalsOptions"];
+			}
+		}
+
+		
+		protected function handleLotusScriptCompileLine(event:DominoLotusScriptEditorCompileErrorLineEvent):void
+		{
+			if(languageEditor){
+				var line:int=event.errorLine;
+				if(line>0){
+
+				}
+			}
+		}
+
+		
+
+
+		protected function handleTextChange(event:TextEditorChangeEvent):void
+		{
+			if(!selectedNode){
+				selectedNode=myTree.selectedItem as XML;
+			}
+			if(selectedNode&&selectedNode.@key)
+			{
+				
+				var mapKey:String=selectedNode.@key
+				if(mapKey.indexOf('global')>=0){
+					optionsMap[mapKey]=languageEditor.text;
+				}else{
+					var formOptionObj:DominoFormObjects=optionsMap[mapKey];
+					if(formOptionObj==null){
+						formOptionObj=new DominoFormObjects();
+					}
+					
+					if(runWayList.selectedItem){
+						if(runWayList.selectedItem.label=="Formula"){
+							formOptionObj.formula=languageEditor.text;
+						}
+						if(runWayList.selectedItem.label=="LotusScript"){
+							formOptionObj.lotusscript=languageEditor.text;
+						}
+						
+						if(runWayList.selectedItem.label.toString()=="JavaScript"){
+							formOptionObj.initalJavaScript(languageEditor.text);
+						}
+
+						if(runWayList.selectedItem.label=="Common JavaScript"){
+							formOptionObj.commonjavascript=languageEditor.text;
+						}
+						optionsMap[mapKey]=formOptionObj;
+						
+					}else{
+						Alert.show("please first select the language type on the Dropdown list.");
+					}
+				}
+
+
+				
+			}
+			var noweditor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+			if(noweditor!=null){
+				
+				noweditor.editorView.visualEditor.editingSurface.hasChanged=true;
+				noweditor.editorView.visualEditor.dispatchEvent(new Event('labelChanged'));
+			}
+		}
+
+
+		private function generated(k:String):String 
+		{
+			var defautStr:String = "";
+			if(k=="terminate"){
+				defautStr = "Sub Terminate\nEnd Sub";
+			}else if(k=="initialize"){
+				defautStr = "Sub Initialize\nEnd Sub";
+			}else if(k=="queryclose"){
+				defautStr="Sub Queryclose(Source As Notesuidocument, Continue As Variant\nEnd Sub"
+			}else if(k=="querysend"){
+				defautStr="Sub Postsend(Source As Notesuidocument)\nEnd Sub"
+			}else if(k=="querySave"){
+				defautStr="Sub Postsave(Source As Notesuidocument)\nEnd Sub"
+			}else if(k=="queryrecalc"){
+				defautStr="Sub Queryrecalc(Source As Notesuidocument, Continue As Variant)\nEnd Sub"
+			}else if(k=="postrecalc"){
+				defautStr="Sub Postrecalc(Source As Notesuidocument)\nEnd Sub"
+			
+			}else if(k=="Postmodechange"){
+				defautStr="Sub Postmodechange(Source As Notesuidocument)\nEnd Sub"
+			}else if(k=="querymodechange"){
+				defautStr="Sub Querymodechange(Source As Notesuidocument, Continue As Variant)\nEnd Sub"
+			}else if(k=="postopen"){
+				defautStr="Sub Postopen(Source As Notesuidocument)\nEnd Sub"
+			}else if(k=="queryopen"){
+				defautStr="Sub Queryopen(Source As Notesuidocument, Mode As Integer, Isnewdoc As Variant, Continue As Variant)\nEnd Sub"
+			}
+
+			return defautStr;
+			
+		}
+
+		public function initializeSelectNode():void{
+			if(myTree.selectedItem){
+				selectedNode=myTree.selectedItem as XML;
+			}
+		}
+
+		protected function handleEntryInput(event:KeyboardEvent):void 
+		{
+			if(!selectedNode){
+				selectedNode=myTree.selectedItem as XML;
+			}
+			if(selectedNode){
+				var k:String=selectedNode.@key;
+				if (event.keyCode == 13 && runWayList.selectedItem.label=="LotusScript" && k.indexOf('global')<0) {
+					// Do something when Enter key is pressed
+					var myXML:XML = <root>{treeData}</root>;
+					if(languageEditor.text.indexOf("End Sub")<0){
+							languageEditor.text=languageEditor.text+"\nEnd Sub";
+					}
+					var funtionName:String=dominoGetLotusScriptFunctionName()
+
+					if(funtionName!=null&& funtionName!="")
+					{
+						if(!checkIsSourceFunctionName(funtionName)){
+							var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
+							if(selectedNode!=null){
+								
+								treeData[1].appendChild(nodeXML);
+								//Alert.show("myXML:"+myXML.toString());
+								
+
+								
+								
+								var newFormObject:DominoFormObjects=new DominoFormObjects();
+
+								var newFuntion:String=null
+								var sourceFunction:String=null;
+								var functionList:Array=languageEditor.text.split("End Sub\n");
+								if(functionList.length > 0){
+									sourceFunction=functionList[0];
+									sourceFunction=sourceFunction+"\nEnd Sub"
+									if(functionList.length==1){
+										newFuntion=functionList[0];
+										var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+										if(formObject!=null && formObject!=undefined){
+											sourceFunction=generated(k);
+											if(!sourceFunction){
+												sourceFunction=formObject.lotusscript;
+											}
+										}else{
+											sourceFunction="";
+										}
+										
+									}else{
+										newFuntion=functionList[1];
+									}
+
+									
+									
+									if(newFuntion.indexOf("End Sub")<0){
+											newFuntion=newFuntion+"\nEnd Sub";
+									}
+								}
+
+								newFormObject.isCustomFunction=true;
+								newFormObject.lotusscript=newFuntion;
+								var sourceFormObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+								if(sourceFormObject){
+									sourceFormObject.lotusscript=sourceFunction;
+									optionsMap[k]=sourceFormObject;
+								
+								}
+								optionsMap[funtionName]=newFormObject;
+								//selectedNode=nodeXML;
+								
+								myTree.selectedItem=nodeXML;
+								selectedNode=myTree.selectedItem as XML;
+								myTree.dataProvider.refresh();
+								languageEditor.text=newFuntion;
+							}
+						}
+						
+						//optionsMap[funtionName]=languageEditor.text
+					}
+						
+					
+				}else{
+					if(selectedNode!=null){
+						if(selectedNode.@key){
+							var k:String=selectedNode.@key;
+					
+							if(k.indexOf("global")>=0){
+								optionsMap[k]=languageEditor.text;
+							}else{
+								if(optionsMap[k]!=null && optionsMap[k]!=undefined){
+									var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+									if(formObject==undefined || formObject==null)
+									{
+										formObject=new DominoFormObjects();
+									}
+									if(formObject){
+										if(runWayList.selectedItem.label=="Formula"){
+											formObject.formula=languageEditor.text;
+										}
+										if(runWayList.selectedItem.label=="LotusScript"){
+											formObject.lotusscript=languageEditor.text;
+										}
+										if(runWayList.selectedItem.label=="JavaScript"){
+											formObject.javascript=languageEditor.text;
+										}
+
+										if(runList.selectedItem.label=="Client"){
+											formObject.clientType="client";	
+										}else if(runList.selectedItem.label=="Web"){
+											formObject.clientType="web";
+										}
+										
+									}
+									optionsMap[k]=formObject;
+
+								}
+							}
+						}
+					}
+				}
+
+				var getFormObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+				if(getFormObject){
+					var count:int=checkIfMultipleLanguages(getFormObject);
+					if(count==1){
+						selectedNode.@value="hasValue";
+					}else if(count>1){
+						selectedNode.@value="mulValue";
+					}else{
+						selectedNode.@value=""
+					}
+				
+				}
+				
+			}
+		}
+
+		private function dominoGetLotusScriptFunctionName():String
+		{
+			var funtionName:String=null;
+			if(languageEditor.text.indexOf("Sub")==0){
+
+				var subNameList:Array=languageEditor.text.split("Sub");
+				for each(var subFunctionStr:String in subNameList)
+				{
+					if(subFunctionStr!=null&& subFunctionStr.length>0){
+						subFunctionStr=StringUtil.trim(subFunctionStr);
+						if(subFunctionStr.length>0){
+							funtionName=subFunctionStr.replace("Sub ","");
+					
+							var leftParenthesis:int=funtionName.indexOf("(");
+							if(leftParenthesis==-1){
+								leftParenthesis=funtionName.length;
+							}
+							// if(leftParenthesis>0){
+
+							// }else{
+							// 	if(funtionName.indexOf("\n")>0){
+							// 		leftParenthesis=funtionName.indexOf("\n")
+							// 	}
+							// }
+
+							
+							if(leftParenthesis>0){
+								funtionName=funtionName.substring(0, leftParenthesis);
+							}
+
+							if(funtionName){
+								var pattern:RegExp = /[@#$!%&*\n\s]/;
+								var containsSpecialChars:Boolean = pattern.test(funtionName);
+								if(containsSpecialChars){
+									funtionName=null
+								}
+							}
+							if(funtionName){
+								if(!checkIsSourceFunctionName(funtionName))
+								{
+									break;
+								}
+							}
+							
+
+						}
+					}
+				}
+
+					
+
+					
+			}
+
+			
+
+			return funtionName;
+				
+		}
+
+		private function formatDominoLotusScriptFunction():String
+		{
+			var newFuntion:String=null
+			var functionList:Array=languageEditor.text.split("End Sub\n");
+			if(functionList.length > 0){
+				newFuntion=functionList[1];
+				if(newFuntion.indexOf("End Sub")<0){
+						newFuntion=newFuntion+"\nEnd Sub";
+				}
+			}
+			return newFuntion;
+		}
+
+		protected function handleToggleBreakpoint(event:TextEditorLineEvent):void
+		{
+			var lineIndex:int = event.lineIndex;
+
+			
+			
+			
+			// var enabled:Boolean = languageEditor.breakpoints.indexOf(lineIndex) != -1;
+			//languageEditor.handleToggleBreakpoint(event);
+		}
+		
+		public function setObjectOptionsToDefault():Dictionary
+		{
+			optionsMap=new Dictionary();
+			if(optionsMap["globalsInitialize"]==undefined||optionsMap["globalsInitialize"]=="")
+			{
+				optionsMap["globalsInitialize"]="Sub Initialize\n"+"End Sub";
+			}
+			if(optionsMap["globalsOptions"]==undefined||optionsMap["globalsOptions"]=="")
+			{
+				optionsMap["globalsOptions"]="Option Public";
+			
+			}
+			if(optionsMap["globalsDeclarations"]==undefined||optionsMap["globalsDeclarations"]=="")
+			{
+				optionsMap["globalsDeclarations"]="";
+			
+			}
+			if(optionsMap["globalsTeminate"]==undefined||optionsMap["globalsTeminate"]=="")
+			{
+				optionsMap["globalsTeminate"]="Sub Teminate\n"+"End Sub";
+			
+			}
+			//Alert.show("globalsInitialize2:"+optionsMap["globalsInitialize"]);
+			// optionsMap=initailFormOptions(optionsMap,null);
+			return optionsMap
+		}
+
+		public function initailFormOptions(odp:Dictionary,formOptionsList:XMLList):Dictionary
+		{
+			if(odp==null){
+					odp=new Dictionary();
+			}
+			odp=setDefaultValueForFormOptions("@Command([ToolsRunMacro]; \"<Your agent goes here>\")","formula","webQueryOpen",odp);
+			odp=setDefaultValueForFormOptions("@Command([ToolsRunMacro]; \"<Your agent goes here>\")","formula","webQuerySave",odp);
+
+			odp=setDefaultValueForFormOptions("Sub Queryopen(Source As Notesuidocument, Mode As Integer, Isnewdoc As Variant, Continue As Variant)\nEnd Sub","lotusscript","queryopen",odp);
+			odp=setDefaultValueForFormOptions("Sub Postopen(Source As Notesuidocument)\nEnd Sub","lotusscript","postopen",odp);
+			odp=setDefaultValueForFormOptions("Sub Querymodechange(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","querymodechange",odp);
+			odp=setDefaultValueForFormOptions("Sub Postmodechange(Source As Notesuidocument)\nEnd Sub","lotusscript","postmodechange",odp);
+
+			odp=setDefaultValueForFormOptions("Sub Queryrecalc(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","queryrecalc",odp);
+			odp=setDefaultValueForFormOptions("Sub Postrecalc(Source As Notesuidocument)\nEnd Sub","lotusscript","postrecalc",odp);
+			odp=setDefaultValueForFormOptions("Sub Querysave(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","querySave",odp);
+			odp=setDefaultValueForFormOptions("Sub Postsave(Source As Notesuidocument)\nEnd Sub","lotusscript","postsave",odp);
+			odp=setDefaultValueForFormOptions("Sub Querysend(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","querysend",odp);
+			odp=setDefaultValueForFormOptions("Sub Postsend(Source As Notesuidocument)\nEnd Sub","lotusscript","postsend",odp);
+			odp=setDefaultValueForFormOptions("Sub Queryclose(Source As Notesuidocument, Continue As Variant)\nEnd Sub","lotusscript","queryclose",odp);
+			odp=setDefaultValueForFormOptions("Sub Initialize\nEnd Sub","lotusscript","initialize",odp);
+			odp=setDefaultValueForFormOptions("Sub Terminate\nEnd Sub","lotusscript","terminate",odp);
+			
+			if(formOptionsList){
+				
+				for each(var formOption:XML in formOptionsList) //no matter of depth Note here
+				{
+					if(formOption&&formOption.toXMLString().length>0){
+						var key:String= formOption.name().toString();
+						var findNodeList:XMLList= treeData[1].node.(@key ==key);
+						var findNode:XML=null;
+						if(findNodeList&&findNodeList.length()>0){
+							findNode=findNodeList[0]
+						}
+						
+						var inistalForm:DominoFormObjects=new DominoFormObjects();
+						if(formOption.@formula!=null && formOption.@formula.toString().length>0)
+						{
+							inistalForm.formula=StringHelper.base64Decode(formOption.@formula);
+							if(findNode){
+								findNode.@iconType="Formula"
+							}
+						}
+						
+						
+						if(formOption.@lotusscript!=null && formOption.@lotusscript.toString().length>0)
+						{
+							inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript);
+							if(findNode){
+								findNode.@iconType="LotusScript"
+							}
+						}
+						
+						if(formOption.@javascript!=null && formOption.@javascript.toString().length>0)
+						{
+							inistalForm.javascript=StringHelper.base64Decode(formOption.@javascript);
+							if(findNode){
+								findNode.@iconType="JavaScript"
+							}
+						}
+						if(formOption.@commonjavascript!=null && formOption.@commonjavascript.toString().length>0)
+						{
+							inistalForm.commonjavascript=StringHelper.base64Decode(formOption.@commonjavascript);
+							if(findNode){
+								findNode.@iconType="JavaScript"
+							}
+						}
+						inistalForm.isCustomFunction=false;
+						trace("fixed name:"+formOption.name().toString()+":"+inistalForm.lotusscript);
+						
+						odp[formOption.name().toString()]=inistalForm;
+
+						
+						var count:int=checkIfMultipleLanguages(inistalForm);
+						if(count==1){
+							findNode.@value="hasValue";
+						}else if(count>1){
+							findNode.@value="mulValue";
+						}else{
+							findNode.@value=""
+						}
+						
+						
+						
+					}
+				}
+			}
+			
+			return odp;
+		}
+
+		public function clearEditor():void
+		{
+			if(languageEditor){
+				languageEditor.text="";
+			}
+			
+		}
+
+		public function initailCustomFormOptions(odp:Dictionary,formOptionsList:XMLList):Dictionary
+		{
+			if(formOptionsList){
+				
+				for each(var formOption:XML in formOptionsList) //no matter of depth Note here
+				{
+					if(formOption&&formOption.toXMLString().length>0){
+						var inistalForm:DominoFormObjects=new DominoFormObjects();
+						var languageCount:int = checkIfMultipleLanguages(inistalForm)
+						inistalForm.lotusscript=StringHelper.base64Decode(formOption.@lotusscript);
+						inistalForm.isCustomFunction=true
+						var funtionName:String=formOption.name().toString()
+						var nodeXML:XML=new XML("<node label=\""+funtionName+"\" type=\"LotusScript\" key=\""+funtionName+"\" value=\"\" env=\"web\" create=\"custom\"/>");
+						if(languageCount==1){
+							nodeXML.@value="hasValue";
+						}else if(languageCount>1){
+							nodeXML.@value="mulValue";
+						}else{
+							nodeXML.@value=""
+						}
+						
+							
+						treeData[1].appendChild(nodeXML);
+
+						//Alert.show(formOption.name().toString()+":"+inistalForm.lotusscript);
+						
+						odp[formOption.name().toString()]=inistalForm
+						
+					}
+				}
+			}
+			return odp;
+		}
+
+		private function setDefaultValueForFormOptions(value:String,typeLanguage:String,key:String,odp:Dictionary):Dictionary
+		{
+			//set the value for icon 
+			
+			var formObjectOptions:DominoFormObjects=new DominoFormObjects();
+			if(typeLanguage=="formula"){
+				formObjectOptions.formula=value
+				
+			}
+			if(typeLanguage=="lotusscript"){
+				formObjectOptions.lotusscript=value
+				formObjectOptions.cachelotusscript=value
+				
+			}
+			if(typeLanguage=="javascript"){
+				formObjectOptions.javascript=value;
+				
+			}
+			if(typeLanguage=="commonjavascript"){
+				formObjectOptions.commonjavascript=value;
+				
+			}
+
+			if(odp[key.toString()]==undefined || odp[key.toString()]==null || odp[key.toString()]=="")
+			{
+				odp[key.toString()]=formObjectOptions
+			}
+
+			
+			
+			
+			return odp;
+		
+		}
+
+
+		
+
+		private var cursorID:int = CursorManager.NO_CURSOR;
+
+		[Embed(source="Assets.swf", symbol="mx.skins.cursor.VBoxDivider")]
+		private var cursor:Class;
+
+		private function mouseOverDivider():void
+		{
+			cursorID = cursorManager.setCursor(cursor, CursorManagerPriority.HIGH, 0, 0);
+		}
+
+		private function mouseOutDivider():void
+		{
+			if (cursorID != CursorManager.NO_CURSOR)
+			{
+				cursorManager.removeCursor(cursorID);
+				cursorID = CursorManager.NO_CURSOR;
+			}
+		}
+
+		private function mouseUpDivider(event:Event = null):void
+		{
+			parent.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveDivider);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUpDivider);
+		}
+
+		private function mouseMoveDivider(event:MouseEvent):void
+		{
+			historyContainerHeight = parent.height - parent.mouseY - minHeight;
+		}
+
+		private function clearHandler(e:Event):void
+		{
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("clear", null));
+		}
+
+		private function aboutHandler(e:Event):void
+		{
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("about", null));
+		}
+
+		private function hideHandler(e:Event):void
+		{
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("hide", null));
+		}
+
+		private function exitHandler(e:Event):void
+		{
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("exit", null));
+		}
+
+		private function helpHandler(e:Event):void
+		{
+			//commandLine.dispatchEvent(new ConsoleCommandEvent("help", null));
+		}
+
+		protected function consoleView_updateCompleteHandler(event:FlexEvent):void
+		{
+			// TODO Auto-generated method stub
+			if (!_consolePopOver)
+				historyContainerHeight = this.height;
+		}
+
+		protected function onTreeItemClicked(event:ListEvent):void
+		{
+			
+		}
+		public function expandNodesWithChildrenByPublic(formTitle:String):void
+		{
+			expandNodesWithChildren(treeData,formTitle)
+			myTree.dataProvider.refresh();
+
+		}
+
+		public function initalTreeToDefault():void 
+		{
+			for each(var formOption:XML in treeData[1].children()) //no matter of depth Note here
+			{
+				if(formOption!=null && formOption.toXMLString().length>0)
+				{
+					if(formOption.@create){
+						if(formOption.@create=="custom"){
+							delete formOption.parent().children()[formOption.childIndex()];
+						}
+					}
+
+					if(formOption.@type!=null && formOption.@type!="")
+					{
+						if(formOption.@type.indexOf("-")<0){
+							formOption.@iconType=formOption.@type;
+						}else{
+							var list:Array = formOption.@type.split("-");
+							formOption.@iconType=list[0];
+						}
+					}
+				}
+			}
+			
+		}
+		private function expandNodesWithChildren(currentItems:XMLList,title:String):void {
+			for each (var node:XML in currentItems) {
+
+				//rename the label
+				if(title){
+					if(node.@label.toString().indexOf("(Globals)")>=0){
+						node.@label="(Globals)"+title
+					}
+
+					if(node.@label.toString().indexOf("(Sub)")>=0 || node.@label.toString().indexOf("(Form)")>=0 ){
+						node.@label=title+" (Form)"
+					}
+				}
+
+				if(optionsMap[node.@key.toString()]!=undefined && optionsMap[node.@key.toString()]!=null){
+					if(node.@key.toString().indexOf("global")>=0){
+						if(optionsMap[node.@key.toString()].length>12){
+							node.@value="hasValue"
+						}else{
+							node.@value=""
+						}
+					}else{
+						var formObj:DominoFormObjects=optionsMap[node.@key.toString()] as DominoFormObjects;
+						if(formObj!=null){
+							var languageCount:int=checkIfMultipleLanguages(formObj);
+
+							if(languageCount==1){
+								node.@value="hasValue";
+							}else if(languageCount>1){
+								node.@value="mulValue";
+							}else if(languageCount==0){
+								node.@value=""
+							}
+
+							
+						}else{
+							node.@value=""
+						}
+
+					}
+					
+				} 
+					
+					
+				
+
+				
+				if (node.children().length() > 0) {
+					myTree.expandItem(node, true);
+					expandNodesWithChildren(node.children(),title);
+				}
+					
+				
+				
+				if(node.@key=="globalsOptions"){
+					
+					myTree.selectedItem = node;
+					initalDefaultValueForDropList();
+				}
+			}
+		}
+
+
+		private function checkIfMultipleLanguages(formObj:DominoFormObjects):int
+		{
+			var languageCount:int=0;
+
+			if(formObj.formula!=null&&formObj.formula.length>0){
+				languageCount++;
+				
+			}
+			if(formObj.lotusscript!=null&&formObj.lotusscript.length>0){
+				languageCount++;
+				
+			}
+			if(formObj.javascript!=null&&formObj.javascript.length>0){
+				languageCount++;
+				
+			}
+			if(formObj.commonjavascript!=null&&formObj.commonjavascript.length>0){
+				languageCount++;
+				
+			}
+			return languageCount;
+
+		}
+		private function getLanguagesLabel(formObj:DominoFormObjects):String
+		{
+			var languageLabel:String="";
+
+			if(formObj.formula!=null&&formObj.formula.length>0){
+				languageLabel=languageLabel+"Formula"
+				
+			}
+			if(formObj.lotusscript!=null&&formObj.lotusscript.length>0){
+				languageLabel=languageLabel+"LotusScript"
+				
+			}
+			if(formObj.javascript!=null&&formObj.javascript.length>0){
+				languageLabel=languageLabel+"JavaScript"
+				
+			}
+			if(formObj.commonjavascript!=null&&formObj.commonjavascript.length>0){
+				languageLabel=languageLabel+"Common JavaScript"
+				
+			}
+			return languageLabel;
+
+		}
+
+		public function  updateIconAfterSave():void
+		{
+			if(selectedNode!=null){
+				if(languageEditor.text!=null&& languageEditor.text.length>10){
+					selectedNode.@value="hasValue";
+				}else{
+					selectedNode.@value="";
+				}
+
+			}
+
+		}
+
+		// Find the node by key and expand its parent nodes
+		private function expandNodeByAttributeKey(attributeKey:String, currentItems:XMLList):void {
+			for each (var node:XML in currentItems) {
+				myTree.expandItem(node, true);
+				if (node.@key == attributeKey) {
+					// Node found, expand its parent nodes
+					myTree.selectedItem=node;
+					selectedNode=myTree.selectedItem as XML;
+					return;
+				}
+
+				// If the node has children, recursively search in them
+				if (node.children().length() > 0) {
+					expandNodeByAttributeKey( node.children(),node.children());
+				}
+			}
+		}
+
+		
+
+		[Bindable]
+		public var selectedNode:XML;
+
+		// Event handler for the Tree control change event.
+		public function treeChanged(event:Event):void {
+			runWayList.enabled = true;
+			selectedNode=Tree(event.target).selectedItem as XML;
+			
+			if(selectedNode.@key){
+				var k:String=selectedNode.@key;
+				//enabled drp
+				if(selectedNode.@key.toString().indexOf("global")>=0){
+					var selectindex:int=getSelectedIndex("Client",runList.dataProvider as ArrayCollection);
+					if(selectindex!=-1){
+						runList.selectedIndex=selectindex;
+						runList.enabled = false;
+					}
+					var selectindex2:int=getSelectedIndex("LotusScript",runWayList.dataProvider as ArrayCollection);
+					if(selectindex2!=-1){
+						runWayList.selectedIndex=selectindex2;
+						runWayList.enabled = false;
+					}
+				}else{
+					if(selectedNode.@env!=null && selectedNode.@env!=undefined && selectedNode.@env.toString().length>0)
+					{
+						var env:String=selectedNode.@env
+						var selectindex:int=getSelectedIndex(env,runList.dataProvider as ArrayCollection);
+						if(selectindex!=-1){
+							runList.selectedIndex=selectindex;
+							runList.enabled = false;
+						}else{
+							runList.enabled = true;
+						}
+						runWayList.enabled = true;
+
+					}else{
+						runList.enabled = true;
+						runWayList.enabled = true;
+					}
+
+					
+				}
+
+				//set the correct language options 
+				
+				if(selectedNode.@type!=null && selectedNode.@type!=undefined)
+				{
+
+					if(selectedNode.@type.indexOf("-")<0){
+						runWayList.dataProvider=formulaClientRunLanguageFull;
+						setRunWayListToCorrect(selectedNode.@type,false);
+						runWayList.enabled = false;
+					}else{
+						//JavaScript-Common Javascript
+						//JavaScript-LotusScript-Formula-Common Javascript
+						//LotusScript-Formula-JavaScript
+						//LotusScript-Formula
+						if(selectedNode.@type=="LotusScript-Formula-JavaScript"){
+							runWayList.dataProvider=formulaClientRunLanguage
+							
+						}else if(selectedNode.@type=="LotusScript-Formula"){
+							runWayList.dataProvider=formulaClientRunLanguage2;
+							
+						}else if(selectedNode.@type=="JavaScript-LotusScript-Formula-Common Javascript"){
+							runWayList.dataProvider=formulaClientRunLanguageFull;
+						
+						}else if(selectedNode.@type=="JavaScript-Common Javascript"){
+							runWayList.dataProvider=formulaWebRunLanguage;
+							
+						}
+						runWayList.enabled = true;
+					}
+
+
+					var selectindex2:int=0
+					var typeValue:String
+					var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+						
+					if(formObject!=null && formObject!=undefined){
+						if(formObject.formula&&formObject.formula.toString().length>0){
+							typeValue="Formula"
+						}else if(formObject.lotusscript&&formObject.lotusscript.toString().length>0){
+							typeValue="LotusScript"
+							
+						}else if(formObject.javascript&&formObject.javascript.toString().length>0){
+							typeValue="JavaScript"
+						}else if(formObject.commonjavascript&&formObject.commonjavascript.toString().length>0){
+							typeValue="Common JavaScript"
+						}
+					}else{
+						typeValue=selectedNode.@type;	
+						if(typeValue.indexOf("-")>=0){
+							var typeList:Array=typeValue.split("-");
+							typeValue=typeList[0]
+						}
+
+					}
+					
+					
+					selectedNode.@iconType=typeValue;
+					selectindex2=getSelectedIndex(typeValue,runWayList.dataProvider as ArrayCollection);
+					if(selectindex2!=-1){
+						runWayList.selectedIndex=selectindex2;
+					}
+					
+				}
+
+				
+				
+				//textInput.text=optionsMap[k]
+				if(k.indexOf("global")>=0){
+					//Alert.show("k:"+k+"-"+optionsMap[k]);
+					languageEditor.text=optionsMap[k];
+				}else{
+					
+					if(optionsMap[k]!=null && optionsMap[k]!=undefined){
+						var formObject:DominoFormObjects=optionsMap[k] as DominoFormObjects;
+						if(formObject){
+							if(runWayList.selectedItem.label=="Formula"){
+								languageEditor.text=formObject.formula;
+
+							}else if(runWayList.selectedItem.label=="LotusScript"){
+								languageEditor.text=formObject.lotusscript;
+							}else if(runWayList.selectedItem.label=="JavaScript"){
+								languageEditor.text=formObject.javascript;
+							}else if(runWayList.selectedItem.label=="Common JavaScript"){
+								languageEditor.text=formObject.commonjavascript;
+							}else{
+								languageEditor.text=""
+							}
+
+							if(formObject.clientType!=null && formObject.clientType!=""){
+								if(formObject.clientType=="client"){
+									runList.selectedIndex=0;
+								}else if(formObject.clientType=="web"){
+									runList.selectedIndex=1;
+								}	
+							}
+							
+							
+						}else{
+							languageEditor.text=""
+						}
+
+						
+					}else{
+						languageEditor.text=""
+					}
+					
+				}
+				
+
+				
+			}
+			
+
+		}
+
+		private function setRunWayListToCorrect(label:String,enabled:Boolean):void 
+		{
+			var selectindex2:int=getSelectedIndex(label,runWayList.dataProvider as ArrayCollection);
+			
+				if(selectindex2!=-1){
+					runWayList.selectedIndex=selectindex2;
+					runWayList.enabled = enabled;
+				}
+		}
+
+		public function initalDefaultValueForDropList():void 
+		{
+			var selectindex:int=getSelectedIndex("Client",runList.dataProvider as ArrayCollection);
+			if(selectindex!=-1){
+				runList.selectedIndex=selectindex;
+				runList.enabled = false;
+			}
+			var selectindex2:int=getSelectedIndex("LotusScript",runWayList.dataProvider as ArrayCollection);
+			if(selectindex2!=-1){
+				runWayList.selectedIndex=selectindex2;
+				runWayList.enabled = false;
+			}
+			if(languageEditor==null){
+				initalCodeEditor();
+				if(languageEditor&&optionsMap){
+					languageEditor.text=optionsMap["globalsOptions"]
+				}
+				
+			}
+			
+			//textInput.text=optionsMap["globalsOptions"]
+		}
+
+		
+		public function getOptionsMap():Dictionary
+		{
+			return this.optionsMap;
+		}
+		public function setOptionsMap(op:Dictionary):void
+		{
+			optionsMap=new Dictionary();
+			
+			for (var key:Object in op) {
+				optionsMap[key] = op[key];
+			}
+				
+		}
+
+		private function textInput_changeHandler(event:Event):void
+        {
+            if(event.target){
+				if(event.target.hasOwnProperty("text")){
+					// editor= model.activeEditor as VisualEditorViewer;
+					
+					if(!selectedNode){
+						selectedNode=myTree.selectedItem as XML;
+					}
+					if(selectedNode&&selectedNode.@key)
+					{
+						var mapKey:String=selectedNode.@key
+						optionsMap[mapKey]=event.target.text;
+						var editor:VisualEditorViewer = model.activeEditor as VisualEditorViewer;
+						if(editor!=null){
+							
+							editor.editorView.visualEditor.editingSurface.hasChanged=true;
+							editor.editorView.visualEditor.dispatchEvent(new Event('labelChanged'));
+						}
+					}
+				}
+			}
+            
+        }
+
+		private function tree_iconFunc(item:Object):Class
+		{
+			var iconClass:Class;
+			var renderer:IListItemRenderer = myTree.itemToItemRenderer(item);
+			switch (XML(item).@type.toString())
+			{
+				case "LotusScript":
+					iconClass = LoadImage.DOMINO_OBJECT_TREE_PAGE;
+					break;
+				case "Formula":
+					iconClass = LoadImage.DOMINO_OBJECT_TREE_RHOMBUS;
+					break;
+				case "JavaScript":
+					iconClass = LoadImage.DOMINO_OBJECT_TREE_CIRCLE;
+					break;
+			}
+
+			return iconClass;
+		}
+
+
+		private function getSelectedIndex(label:String,list:ArrayCollection):int {
+			
+			for (var i:int = 0; i < list.length; i++) {
+				if (list[i].label == label) {
+					return i;
+				}
+			}
+			return -1; // Return -1 if the label is not found
+		}
+
+		private function findNodeByKey(key:String, xmlList:XMLList):XML {
+			for each (var node:XML in xmlList) {
+				if (node.@key == key) {
+					return node;
+				}
+				var childResult:XML = findNodeByKey(key, node.children());
+				if (childResult) {
+					return childResult;
+				}
+			}
+			return null;
+		}
+
+
+		
+		]]>
+	</fx:Script>
+	 <fx:Declarations>
+        <fx:XMLList id="treeData">
+            <node label="(Globals)Email Reply Common Sub" type="globalForm" value="" iconType="">
+               
+				<node label="(Options)" type="LotusScript" key="globalsOptions" value="" iconType="LotusScript"/>
+				<node label="(Declarations)" type="LotusScript" key="globalsDeclarations" value="" iconType="LotusScript"/>
+				<node label="Initialize" type="LotusScript" key="globalsInitialize" value="" iconType="LotusScript"/>
+				<node label="Terminate" type="LotusScript" key="globalsTeminate" value="" iconType="LotusScript"/>
+                
+            </node>
+			<node label="Email Reply Common Subform(Sub)" type="" key="commonSub" value="" iconType="">
+				<node label="Window Title" type="Formula" key="windowTitle" value="" env="Client" iconType="Formula"/>
+				<node label="HTML Head Content" type="Formula" key="htmlHeadConten" value="" env="Client" iconType="Formula"/>
+				<node label="HTML Body Attributes" type="Formula" key="htmlBodyAttributes" value="" env="Client" iconType="Formula"/>
+				<node label="WebQueryOpen" type="Formula" key="webQueryOpen" value="" env="Client" iconType="Formula"/>
+				<node label="WebQuerySave" type="Formula" key="webQuerySave" value="" env="Client" iconType="Formula"/>
+				<node label="Target Frame" type="Formula" key="targetFrame" value="" env="Client" iconType="Formula"/>
+				<node label="JS Header" type="JavaScript-Common Javascript" key="jsHeader" jseventName="jsheader" value="" env="WebClient" iconType="JavaScript-Common Javascript"/>
+				<node label="onHelp" type="JavaScript-Common Javascript" key="onHelp" value="" env="WebClient" iconType="JavaScript-Common Javascript"/>
+				<node label="onLoad" type="JavaScript-LotusScript-Formula-Common Javascript" key="onLoad"  jseventName="onLoad" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
+				<node label="onUnload" type="JavaScript-LotusScript-Formula-Common Javascript" key="onUnload" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
+				<node label="onClick" type="JavaScript" key="onClick" jseventName="onClick"  value="" env="Web" iconType="JavaScript"/>
+				<node label="onDbClick" type="JavaScript" key="onDbClick" value="" env="Web"  iconType="JavaScript"/>
+				<node label="onKeyDown" type="JavaScript" key="onKeyDown" value="" env="Web" iconType="JavaScript"/>
+				<node label="onKeyPress" type="JavaScript" key="onKeyPress" value="" env="Web" iconType="JavaScript"/>
+				<node label="onKeyUp" type="JavaScript" key="onKeyUp" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseDown" type="JavaScript" key="onMouseDown" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseMove" type="JavaScript" key="onMouseMove" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseOut" type="JavaScript" key="onMouseOut" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseOver" type="JavaScript" key="onMouseOver" value="" env="Web" iconType="JavaScript"/>
+				<node label="onMouseUp" type="JavaScript" key="onMouseUp" value="" env="Web" iconType="JavaScript"/>
+				<node label="onRest" type="JavaScript" key="onRest" value="" env="Web" iconType="JavaScript"/>
+				<node label="onSubmit" type="JavaScript-LotusScript-Formula-Common Javascript" key="onSubmit" value="" env="WebClient" iconType="JavaScript-LotusScript-Formula-Common Javascript"/>
+				<node label="(Options)" type="LotusScript" key="options" value="" iconType="LotusScript"/>
+				<node label="(Declarations)" type="LotusScript" key="declarations" iconType="LotusScript"/>
+				<node label="Queryopen" type="LotusScript-Formula-JavaScript" key="queryopen" value="" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Postopen" type="LotusScript-Formula" key="postopen" value="" env="Client" iconType="LotusScript-Formula"/>
+				<node label="Querymodechange" type="LotusScript-Formula-JavaScript" key="querymodechange" value="" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Postmodechange" type="LotusScript-Formula-JavaScript" key="postmodechange" value="" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Queryrecalc" type="LotusScript-Formula-JavaScript" key="queryrecalc" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Postrecalc" type="LotusScript-Formula-JavaScript" key="postrecalc" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="QuerySave" type="LotusScript-Formula" key="querySave" env="Client" iconType="LotusScript-Formula"/>
+				<node label="Postsave" type="LotusScript-Formula-JavaScript" key="postsave" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Querysend" type="LotusScript-Formula-JavaScript" key="querysend" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Postsend" type="LotusScript-Formula-JavaScript" key="postsend" env="Client" iconType="LotusScript-Formula-JavaScript"/>
+				<node label="Queryclose" type="LotusScript-Formula" key="queryclose" env="Client" iconType="LotusScript-Formula"/>
+				<!-- <node label="Onsize" type="LotusScript" key="onsize"/> -->
+				<node label="Initialize" type="LotusScript" key="initialize" iconType="LotusScript"/>
+				<node label="Terminate" type="LotusScript" key="terminate" iconType="LotusScript"/>
+            </node>
+        </fx:XMLList>
+    </fx:Declarations>
+
+	<collapsiblehdivider:CollapsibleEdgeContainersHDividerGroup percentWidth="100" bottom="0" id="historyContainer" top="0" gap="0" minWidth="250">
+		<mx:VBox percentHeight="100"
+			 percentWidth="30"
+			 backgroundAlpha="0.9"
+			 backgroundColor="0x373737">
+			   <mx:Tree id="myTree" width="100%" 
+			    color="0xEEEEEE"
+				contentBackgroundColor="0x0"
+				rollOverColor="0x393939"
+				selectionColor="0xc165b8"
+				alternatingItemColors="[0x444444, 0x4d4c4c]"
+			   height="100%" labelField="@label"
+                showRoot="false" dataProvider="{treeData}" change="treeChanged(event)"
+				itemRenderer="actionScripts.ui.renderers.DominoTreeItemRenderer"
+			 
+				/>
+
+				
+			 </mx:VBox>
+			 <!-- iconFunction="tree_iconFunc" -->
+			
+		<s:Scroller percentWidth="70" percentHeight="100">
+			<s:VGroup horizontalAlign="left" verticalAlign="middle" percentWidth="100" percentHeight="100">
+				<s:HGroup verticalAlign="bottom" left="10" percentWidth="100">
+					<s:Label text="Run" id="runLabel" fontWeight="bold" percentWidth="10" />
+            		<s:DropDownList id="runList"  percentWidth="40"
+						 dataProvider="{formulaRunWayList}"
+						labelField="label" 
+						enabled="false"
+						change="updateSelection(event);"/>
+					<s:DropDownList id="runWayList" 
+						percentWidth="40" dataProvider="{formulaClientRunLanguage}"
+						labelField="label" 
+						change="updateSelectionWay(event);"
+						enabled="false"/>	
+       		 	</s:HGroup>
+				<s:Group id="codeEdtiorContainer" minWidth="156" width="100%" height="100%">
+				</s:Group> 
+					
+				<!-- <s:TextArea id="textInput"  height="100%"
+						text="" width="100%" minWidth="156" editable="true" selectable="true"
+						prompt=""
+						
+						styleName="fixedWidthTexts"
+						textInput="textInput_changeHandler(event)"
+						
+						change="textInput_changeHandler(event)"
+				/> -->
+					
+			</s:VGroup>
+		</s:Scroller>
+
+	</collapsiblehdivider:CollapsibleEdgeContainersHDividerGroup>
+	
+  
+</mx:Canvas>
