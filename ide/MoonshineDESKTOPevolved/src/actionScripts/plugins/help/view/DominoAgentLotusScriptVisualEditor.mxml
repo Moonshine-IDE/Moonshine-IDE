@@ -41,6 +41,7 @@
     xmlns:mx="library://ns.adobe.com/flex/mx"
     creationComplete="onComplete()"
     xmlns:collapsiblehdivider="components.collapsibleHDivider.*"
+    xmlns:agentProperty="view.domino.propertyEditors.*"
 	xmlns:view="view.*">        
 <collapsiblehdivider:CollapsibleEdgeContainersHDividerGroup percentWidth="100" percentHeight="100" bottom="0" top="0" gap="0" minWidth="250">
 
@@ -64,7 +65,7 @@
 				
 			 </mx:VBox>
         </s:Group> 
-        <s:Scroller width="70%" height="100%" id="codeContentGroupScroller">
+        <s:Scroller width="50%" height="100%" id="codeContentGroupScroller">
                <s:VGroup horizontalAlign="left" verticalAlign="middle" percentWidth="100" percentHeight="100">
 				<s:HGroup verticalAlign="bottom" left="10" percentWidth="100">
 					<s:Label text="{functionName}" id="runLabel" fontWeight="bold" />
@@ -85,7 +86,33 @@
 					
 			</s:VGroup>
         </s:Scroller>
-
+        <s:Group width="20%" minWidth="250" height="100%" id="agentPropertyEditor" >
+            
+                   
+                    <view:PropertyEditorHeader id="propertyEditorHeader" width="100%" />
+                    
+                    
+                    <agentProperty:DominoAgentPropertyEditor id="agentPropertyPanel"  visible="{bbPropertyPanel.selectedIndex==0}" creationComplete="propertyOnComplete()"/>
+                    <agentProperty:DominoAgentSecurityPropertyEditor id="agentSecurityPropertyPanel" visible="{bbPropertyPanel.selectedIndex==1}" />
+                     <s:ButtonBar id="bbPropertyPanel" 
+                                right="0" bottom="0" selectedIndex="0" 
+                                skinClass="skins.VisualEditorButtonBarSkin" requireSelection="true"
+                                includeInLayout="true"
+                                visible="true"
+                            >
+                        <s:ArrayList>
+                            <fx:Object  label="Basic" toolTip="Basic"/>
+                            <fx:Object  label="Security" toolTip="Security"/>
+                            <!-- <fx:Object icon="@Embed('/assets/cog-solid.png')" label="" toolTip="Actions"/> -->
+                            
+                        </s:ArrayList>
+                    </s:ButtonBar>
+                    
+            
+							
+         
+           
+        </s:Group>
                                       
         
 
@@ -105,6 +132,11 @@
 			
         </fx:XMLList>
     </fx:Declarations>
+    <fx:Metadata>
+		[Event(name="change",type="flash.events.Event")]
+		[Event(name="propertyEditorChanged",type="view.suportClasses.events.PropertyEditorChangeEvent")]
+	
+	</fx:Metadata>
 <fx:Script><![CDATA[
     
     import mx.core.IVisualElement;
@@ -125,6 +157,10 @@
 
     import actionScripts.plugins.ui.editor.DominoAgentLotusScriptEditor;
     import view.suportClasses.events.DominoLotusScriptAgentEditorTreeChangeEvent;
+    import view.domino.viewEditor.object.AgentObject;
+
+    import view.suportClasses.events.PropertyEditorChangeEvent;
+
     private var _codeEditor:IVisualElement;
 
     private var showinmenu:Boolean ;
@@ -138,12 +174,28 @@
 
     public var agentName:String = "";   
 
-   
+    private var agentObject:AgentObject = new AgentObject();
+
+    private var _hasChanged:Boolean = false;
 
 
     [Bindable]
     private var rowsDataProvider:ArrayList = new ArrayList();
        
+
+    public function get hasChanged():Boolean
+	{
+		return _hasChanged;
+	}
+
+	public function set hasChanged(value:Boolean):void
+	{
+		if (_hasChanged != value)
+		{
+			_hasChanged = value;
+			dispatchEvent(new Event(Event.CHANGE));
+		}
+	}
 
     public function set codeEditor(value:IVisualElement):void
     {
@@ -163,10 +215,38 @@
         if(agentName!=null&&agentName!=""){
             treeData.children()[0].@label = agentName;
         }
-        
+        if(agentObject==null){
+            agentObject = new AgentObject();
+        }
+        agentObject.agentName = agentName;
+       
+       
+       
       
+    }
+
+    public function propertyOnComplete():void {
+        if(agentPropertyPanel!=null){
+            if(agentObject){
+                //agentPropertyPanel.initializeAgentProperty(agentObject);
+                //agentPropertyEditor.addEventListener("agentPropertyChanged", onDominoAgentPropertyChanged);
+            }
+            
+        }
         
     }
+
+    public function securityPropertyOnComplete():void {
+        agentSecurityPropertyPanel.initializeAgentProperty(agentObject);    
+        agentSecurityPropertyPanel.addEventListener("agentPropertyChanged", onDominoAgentPropertyChanged);  
+        
+    }
+
+    private function onDominoAgentPropertyChanged(event:Event):void
+	{
+		agentPropertyEditor.dispatchEvent(new PropertyEditorChangeEvent(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, null));
+		hasChanged=true;
+	}
 
     private function onTreeComplete():void
     {

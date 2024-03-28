@@ -448,6 +448,24 @@ package actionScripts.plugins.ui.editor
 								
 							}else{
 								var errorLineNumber:int=getErrorLineNumber(result);
+								if(errorLineNumber&&errorLineNumber>0){
+									if(selectLotusScriptAgentType=="initialize"){
+										errorLineNumber=errorLineNumber-7;
+										if(errorLineNumber>1){
+											errorLineNumber=errorLineNumber-1;
+										}
+									}else if(selectLotusScriptAgentType=="options"){
+										errorLineNumber=errorLineNumber-1;
+									}else if(selectLotusScriptAgentType=="declarations"){
+										errorLineNumber=errorLineNumber-5;
+									}else if(selectLotusScriptAgentType=="terminate"){
+										errorLineNumber=errorLineNumber-7;
+										if(errorLineNumber>1){
+											errorLineNumber=errorLineNumber-1;
+										}
+									}
+								}
+								
 								//"+errorLineNumber.toString()+"
 								var errorLine:String="LotusScript compile error on :\n";
 								
