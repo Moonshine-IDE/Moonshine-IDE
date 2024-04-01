@@ -1218,8 +1218,8 @@ package actionScripts.plugins.as3project
 			// Figure out which one is the settings file
 			var settingsFile:FileLocation = targetFolder.resolvePath(projectSettingsFile);
             
-			var descriptorFile:File = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
-                    new File(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
+			var descriptorFile:FileLocation = (isMobileProject || (isActionScriptProject && activeType == ProjectType.AS3PROJ_AS_AIR)) ?
+                    new FileLocation(project.folderLocation.fileBridge.nativePath + File.separator + sourcePath + File.separator + sourceFile +"-app.xml") :
                     null;
 			// Alert.show("projectSettingsFile:"+projectSettingsFile);
 			if (!isJavaProject && !isGrailsProject && !isHaxeProject)

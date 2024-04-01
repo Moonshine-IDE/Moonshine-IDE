@@ -35,10 +35,6 @@ package actionScripts.plugin.actionscript.as3project.importer
 	import actionScripts.plugin.project.ProjectTemplateType;
 	import actionScripts.utils.SerializeUtil;
 
-    import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
-	
 	import actionScripts.factory.FileLocation;
 	import actionScripts.plugin.actionscript.as3project.AS3ProjectPlugin;
 	import actionScripts.plugin.actionscript.as3project.vo.AS3ProjectVO;
@@ -71,7 +67,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 			if (!file.fileBridge.exists) return null;
 			
 			var listing:Array = file.fileBridge.getDirectoryListing();
-			for each (var i:File in listing)
+			for each (var i:Object in listing)
 			{
 				if (i.extension == "as3proj" || i.extension == "veditorproj") {
 					return (new FileLocation(i.nativePath));
@@ -81,25 +77,21 @@ package actionScripts.plugin.actionscript.as3project.importer
 			return null;
 		}
 		
-		public static function parse(file:FileLocation, projectName:String=null, descriptorFile:File=null, shallUpdateChildren:Boolean=true, projectTemplateType:String = null):AS3ProjectVO
+		public static function parse(file:FileLocation, projectName:String=null, descriptorFile:FileLocation=null, shallUpdateChildren:Boolean=true, projectTemplateType:String = null):AS3ProjectVO
 		{
-			var folder:File = (file.fileBridge.getFile as File).parent;
+			var folder:FileLocation = file.fileBridge.parent;
 			
-			var project:AS3ProjectVO = new AS3ProjectVO(new FileLocation(folder.nativePath), projectName, shallUpdateChildren);
+			var project:AS3ProjectVO = new AS3ProjectVO(new FileLocation(folder.fileBridge.nativePath), projectName, shallUpdateChildren);
 			project.isVisualEditorProject = file.fileBridge.name.indexOf("veditorproj") > -1;
 			project.isFlexJSRoyalProject= file.fileBridge.name.indexOf("royaleveditorproj") > -1;
 			//royaleveditorpro
 			project.projectFile = file;
 			
 			project.projectName = file.fileBridge.name.substring(0, file.fileBridge.name.lastIndexOf("."));
-			project.config = new MXMLCConfigVO(new FileLocation(folder.resolvePath("obj/"+project.projectName+"Config.xml").nativePath));
+			project.config = new MXMLCConfigVO(new FileLocation(folder.resolvePath("obj/"+project.projectName+"Config.xml").fileBridge.nativePath));
 			project.projectFolder.name = project.projectName;
 			
-			var stream:FileStream = new FileStream();
-			
-			stream.open(file.fileBridge.getFile as File, FileMode.READ);
-			var data:XML = XML(stream.readUTFBytes(file.fileBridge.getFile.size));
-			stream.close();
+			var data:XML = new XML(file.fileBridge.read());
 			
 			// Parse XML file
             project.classpaths.length = 0;
@@ -177,8 +169,8 @@ package actionScripts.plugin.actionscript.as3project.importer
 				var target:FileLocation = project.targets[0];
 				
 				// determine source folder path
-				var substrPath:String = target.fileBridge.nativePath.replace(project.folderLocation.fileBridge.nativePath + File.separator, "");
-				var pathSplit:Array = substrPath.split(File.separator);
+				var substrPath:String = target.fileBridge.nativePath.replace(project.folderLocation.fileBridge.nativePath + file.fileBridge.separator, "");
+				var pathSplit:Array = substrPath.split(file.fileBridge.separator);
 				// remove the last class file name
 				pathSplit.pop();
 				var finalPath:String = project.folderLocation.fileBridge.nativePath;
@@ -186,7 +178,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 				// deeper more than 1 level
 				for (var j:int=0; j < pathSplit.length; j++)
 				{
-					finalPath += File.separator + pathSplit[j];
+					finalPath += file.fileBridge.separator + pathSplit[j];
 				}
 				
 				// even before deciding, go for some more checks -
@@ -194,7 +186,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 				// to a file exists in different path
 				for each (var i:FileLocation in project.classpaths)
 				{
-					if ((finalPath + File.separator).indexOf(i.fileBridge.nativePath + File.separator) != -1) project.sourceFolder = i;
+					if ((finalPath + file.fileBridge.separator).indexOf(i.fileBridge.nativePath + file.fileBridge.separator) != -1) project.sourceFolder = i;
 				}
 				
 				// if yet not decided from above approach
@@ -207,7 +199,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 				// we shall try to select the source folder based on its classpaths
 				for each (var k:FileLocation in project.classpaths)
 				{
-					if (k.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + File.separator) != -1) 
+					if (k.fileBridge.nativePath.indexOf(project.folderLocation.fileBridge.nativePath + file.fileBridge.separator) != -1)
 					{
 						project.sourceFolder = k;
 						break;
@@ -218,7 +210,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 			if (project.isVisualEditorProject||project.isFlexJSRoyalProject)
 			{
 				project.visualEditorSourceFolder = new FileLocation(
-                        project.folderLocation.fileBridge.nativePath + File.separator + "visualeditor-src/main/webapp"
+                        project.folderLocation.fileBridge.nativePath + file.fileBridge.separator + "visualeditor-src/main/webapp"
 				);
 			}
 
@@ -328,30 +320,32 @@ package actionScripts.plugin.actionscript.as3project.importer
             project.buildOptions.certIosProvisioning = SerializeUtil.deserializeString(data.moonshineRunCustomization.certIosProvisioning);
 			
 			UtilsCore.setProjectMenuType(project);
+
+			parseWorkflowFile(project);
 			
 			return project;
 		}
 
 		public static function convertDomino(file:FileLocation):void
 		{
-			var folder:File;
+			var folder:FileLocation;
 			var projectName:String;
-			var settingFile:File = null;
+			var settingFile:FileLocation = null;
 			var projectNameextensionIndex:int = file.fileBridge.name.lastIndexOf("veditorproj");
 			if(projectNameextensionIndex>0)
 			{
-				folder = (file.fileBridge.getFile as File).parent;
-				projectName=file.fileBridge.name.substring(0, projectNameextensionIndex - 1);
-				settingFile=new File(file.fileBridge.nativePath);
+				folder = file.fileBridge.parent;
+				projectName = file.fileBridge.name.substring(0, projectNameextensionIndex - 1);
+				settingFile = new FileLocation(file.fileBridge.nativePath);
 			}
 			else
 			{
 				//get the correct project setting file end with veditorproj.
-				folder = file.fileBridge.getFile as File;
-				var getFiles:Array = folder.getDirectoryListing();
+				folder = file;
+				var getFiles:Array = folder.fileBridge.getDirectoryListing();
 				for (var i:int = 0; i < getFiles.length; i++)
 				{
-					var projectFileNameInt:int=getFiles[i].nativePath.lastIndexOf("veditorproj");
+					var projectFileNameInt:int = getFiles[i].nativePath.lastIndexOf("veditorproj");
 					if(projectFileNameInt>0)
 					{
 						projectName=getFiles[i].nativePath.substring(0, projectFileNameInt - 1);
@@ -360,8 +354,9 @@ package actionScripts.plugin.actionscript.as3project.importer
 				}
 			}
 
-			var projectFolderLocation:FileLocation=new FileLocation(folder.nativePath);
+			var projectFolderLocation:FileLocation = new FileLocation(folder.fileBridge.nativePath);
 			var requireFileLocation:FileLocation;
+			var fileSeparator:String = folder.fileBridge.separator;
 
 			var base64CodeReg:RegExp = new RegExp("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$","i");
 
@@ -373,8 +368,8 @@ package actionScripts.plugin.actionscript.as3project.importer
 				//var visualEditorView:VisualEditorViewer=new VisualEditorViewer();
 				//2.start convert domino 
 				//2.1 load xml from visualeditor-src and convert it to dxl
-				var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
-				var subformXmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
+				var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+ fileSeparator +"main"+ fileSeparator +"webapp");
+				var subformXmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+fileSeparator+"main"+fileSeparator+"webapp"+fileSeparator+"subforms");
 				if(!subformXmlFileLocation.fileBridge.exists)
 				{
 					subformXmlFileLocation.fileBridge.createDirectory();
@@ -384,28 +379,26 @@ package actionScripts.plugin.actionscript.as3project.importer
 					var directory:Array = xmlFileLocation.fileBridge.getDirectoryListing();
 					var subdirectory:Array = subformXmlFileLocation.fileBridge.getDirectoryListing();
 					if(subdirectory){
-						for each (var subxml:File in subdirectory)
+						for each (var subxml:Object in subdirectory)
 						{
 							directory.push(subxml);
 						}
 					}
 					//add subfrom xml into directory ;
 
-					for each (var xml:File in directory)
+					for each (var xml:Object in directory)
 					{
 						if (xml.extension == "xml" )
 						{
 							var xmlNameextensionIndex:int = xml.name.lastIndexOf("xml");
 							var xmlName:String=xml.name.substring(0, xmlNameextensionIndex - 1);
 							var xmlNavePath:String = xml.nativePath;
-							var subfromPath:String = "subforms"+File.separator+xml.name;
+							var subfromPath:String = "subforms"+fileSeparator+xml.name;
 
 							var dominoXml:XML;
-							
-							var _fileStreamMoonshine:FileStream = new FileStream();
-							_fileStreamMoonshine.open(xml, FileMode.READ);
-							var data:String = _fileStreamMoonshine.readUTFBytes(_fileStreamMoonshine.bytesAvailable);
-							var internalxml:XML = new XML(data);
+							var internalxml:XML = new XML(
+									new FileLocation(xml.nativePath).fileBridge.read()
+							);
 
 							var windowsTitleName:String= internalxml.MainApplication.@windowsTitle;
 							if(windowsTitleName!=null && windowsTitleName!="" && windowsTitleName.length>0){
@@ -712,15 +705,15 @@ package actionScripts.plugin.actionscript.as3project.importer
 
 								if(xmlNavePath.indexOf(subfromPath)>=0)
 								{
-									targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"SharedElements"+File.separator+"Subforms"+File.separator+xmlFileName+".subform");
+									targetFileLocation = projectFolderLocation.resolvePath("nsfs"+fileSeparator+"nsf-moonshine"+fileSeparator+"odp"+fileSeparator+"SharedElements"+fileSeparator+"Subforms"+fileSeparator+xmlFileName+".subform");
 								}
 								else
 								{
-									targetFileLocation = projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+xmlFileName+".form");
+									targetFileLocation = projectFolderLocation.resolvePath("nsfs"+fileSeparator+"nsf-moonshine"+fileSeparator+"odp"+fileSeparator+"Forms"+fileSeparator+xmlFileName+".form");
 								}
 								
 								
-								var targetFormFile:File=new File(targetFileLocation.fileBridge.nativePath);
+								var targetFormFile:FileLocation = targetFileLocation;
 								//remove old file
 								if(targetFileLocation.fileBridge.exists)
 								{
@@ -743,13 +736,12 @@ package actionScripts.plugin.actionscript.as3project.importer
 								// _targetfileStreamMoonshine.close();
 
 							}
-							_fileStreamMoonshine.close();
 						}
 					}
 
 					//2.2 we should seting the settingsFilePath into .veditorproj file
 					//2.2.1 load the .veditorporj file from local Domino project.
-					if(settingFile!=null && settingFile.exists){
+					if(settingFile!=null && settingFile.fileBridge.exists){
 						
 						//if manven setting.xml file config exist
 						// if (OnDiskMavenSettingsExporter.mavenSettingsPath && OnDiskMavenSettingsExporter.mavenSettingsPath.fileBridge.exists) { 
@@ -774,7 +766,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 			}
 
 			//2. remove not need NewVisualEditorProject file
-			var newFileVisualTemplate:FileLocation= projectFolderLocation.resolvePath("nsfs"+File.separator+"nsf-moonshine"+File.separator+"odp"+File.separator+"Forms"+File.separator+"NewVisualEditorProject.form");
+			var newFileVisualTemplate:FileLocation= projectFolderLocation.resolvePath("nsfs"+fileSeparator+"nsf-moonshine"+fileSeparator+"odp"+fileSeparator+"Forms"+fileSeparator+"NewVisualEditorProject.form");
 			if(newFileVisualTemplate.fileBridge.exists)
 			{
 				newFileVisualTemplate.fileBridge.deleteFile();
@@ -807,7 +799,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 				var actionDirectory:Array = sourecActionsFileLocation.fileBridge.getDirectoryListing();
 				if(actionDirectory){
 					
-					for each (var actionxml:File in actionDirectory)
+					for each (var actionxml:Object in actionDirectory)
 					{
 						var actionXmlNavePath:String = actionxml.nativePath;
 						var actionFileLocation:FileLocation=new FileLocation(actionXmlNavePath);
