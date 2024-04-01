@@ -190,12 +190,22 @@ package actionScripts.plugins.ui.editor
 		{
 			
 			if(file){
-				dominoAgentLotusScriptEditor.agentName=file.fileBridge.name;
+				agentObject=initalAgentObject(file);
+				if(agentObject){
+					if(agentObject.agentName==null || agentObject.agentName==""){
+						agentObject.agentName=file.fileBridge.name;
+					}
+					dominoAgentLotusScriptEditor.agentObject=agentObject;
+				}
+				
 			}else{
 				Alert.show("Agent file is null");
 			}
 			
 			addElement(dominoAgentLotusScriptEditor);
+			if(agentObject){
+				dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject=agentObject;
+			}
 			super.createChildren();
 		}
 
@@ -222,9 +232,8 @@ package actionScripts.plugins.ui.editor
 		{
 			loadingFile = true;
 			currentFile = newFile;
-			agentObject=initalAgentObject(opneFile);
+			
 
-			dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject=agentObject;
 			//inital agent object
 			if (fileData) 
 			{
@@ -235,7 +244,7 @@ package actionScripts.plugins.ui.editor
 			
         }
 
-		pirvate function initalAgentObject(opneFile:FileLocation):AgentObject
+		private function initalAgentObject(opneFile:FileLocation):AgentObject
 		{
 			if(opneFile){
 				if(agentObject==null){
@@ -244,14 +253,10 @@ package actionScripts.plugins.ui.editor
 				
 				var agentString:String=String(opneFile.fileBridge.read());
 				var agentAgentXml:XML = new XML(agentString);
+				agentObject.agentName=agentAgentXml.@name;
+				agentObject.agentAlias=agentAgentXml.@alias;
+				agentObject.agentComment=agentAgentXml.@comment;
 				
-
-				var agentNode:XML=agentAgentXml..agent[0];
-				if(agentNode){
-					agentObject.agentName=agentNode.@name;
-					agentObject.agentAlias=agentNode.@alias;
-					agentObject.agentComment=agentNode.@comment;
-				}
 				
 				
 			}
@@ -410,19 +415,20 @@ package actionScripts.plugins.ui.editor
 			var lotusScriptAgentXml:XML = new XML(actionString);
 			var body:XMLList = lotusScriptAgentXml.children();
 
-			var agentNode:XML=lotusScriptAgentXml..agent[0];
+			
 			var agentName:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentName;
 			var agentAlias:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentAlias;	
 			var agentComment:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentComment;	
+		
 			if(agentName){
-				agentNode.@name=agentName;
+				lotusScriptAgentXml.@name=agentName;
 			}
 			if(agentAlias){
-				agentNode.@alias=agentAlias;
+				lotusScriptAgentXml.@alias=agentAlias;
 			}
 
 			if(agentComment){
-				agentNode.@comment=agentComment;
+				lotusScriptAgentXml.@comment=agentComment;
 			}
 
 

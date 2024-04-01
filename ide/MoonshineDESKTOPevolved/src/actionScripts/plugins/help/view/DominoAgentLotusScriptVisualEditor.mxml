@@ -181,7 +181,7 @@
 
     public var agentName:String = "";   
 
-    private var agentObject:AgentObject = new AgentObject();
+    public var agentObject:AgentObject = new AgentObject();
 
     private var _hasChanged:Boolean = false;
 
