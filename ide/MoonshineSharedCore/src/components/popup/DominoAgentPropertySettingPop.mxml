@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<newfile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009"
+					 xmlns:s="library://ns.adobe.com/flex/spark"
+					 title="New Domino Page File"
+					 xmlns:mx="library://ns.adobe.com/flex/mx"
+					 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
+					 xmlns:newfile="components.popup.newFile.*" preinitialize="onPreinitialize(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import actionScripts.factory.FileLocation;
+	
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+
+			import mx.collections.ArrayCollection;
+			import spark.events.IndexChangeEvent;
+	
+			import spark.events.TextOperationEvent;
+	
+			import actionScripts.events.GlobalEventDispatcher;
+			import actionScripts.events.NewFileEvent;
+			import actionScripts.extResources.com.validator.ValidatorType;
+			import actionScripts.ui.menu.MenuPlugin;
+			import actionScripts.utils.SimpleValidator;
+			import actionScripts.utils.UtilsCore;
+			import actionScripts.valueObjects.ConstantsCoreVO;
+			import actionScripts.valueObjects.FileWrapper;
+
+
+				[Bindable]
+				public var agentRunOnList:ArrayCollection = new ArrayCollection(
+					[ {label:"Local", value:"local"},
+						{label:"-Any Server-", value:"anyServer"},
+						{label:"Other", value:"other"}
+						
+						
+					]);
+
+			
+			protected function onPreinitialize(event:FlexEvent):void
+			{
+				createdFileExtension = ".css";
+			}
+
+			protected function onCloseAction(event:MouseEvent):void
+			{
+			}
+
+			private function displayDate(date:Date):void {
+                if (date == null) {
+                  //  selection.text = "Date selected: ";
+                } else {
+                   // selection.text = "Date selected: " + date.getFullYear().toString() + "/" + (date.getMonth()+1).toString() + "/" + date.getDate();
+                }
+            }
+
+			private function agentTargetChanged(e:IndexChangeEvent):void
+			{
+
+			}
+
+			 private function dateChanged(date:Date):void {
+                if (date == null) {
+                    //selection.text = "Date selected: ";
+                } else {
+                    //selection.text = "Date selected: " + date.getFullYear().toString() + '/' + (date.getMonth()+1).toString() + '/' + date.getDate();
+                }
+            }
+
+		]]>
+	</fx:Script>
+	<s:VGroup width="100%" verticalCenter="0" autoLayout="true"
+			  gap="5" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
+			   addedToStage="title='Agent Scheduler'"
+			  horizontalAlign="center">
+
+       <s:Label text="Run Agent After Documents Are Created or Modified" width="100%" />
+        <s:Label text=" " width="100%" height="5"/>
+		<s:Label text=" By default. this agent will execute at intervals of 30 minutes - not  immediately after each document update.There is also a default minimum delay of 5 mitues in processing any new or modified environment and will also be impacted by system load" width="100%" />
+	    <s:Label text=" " width="100%" height="5"/>
+	 <s:Label text="Restrict Dates When Agent Runs" width="100%" />
+	 <s:Label text=" " width="100%" height="5"/>
+		<s:HGroup left="0" width="100%">
+				<s:CheckBox id="agentStaringDate" selected="false" enabled="true" width="15"/>
+								
+				<s:Label text="Start running agent on this date  " />
+					<mx:DateField id="dateField1" yearNavigationEnabled="true" 
+                change="dateChanged(DateField(event.target).selectedDate)" />
+
+		</s:HGroup>
+	
+		<s:HGroup left="0" width="100%">
+				<s:CheckBox id="agentStaringDate2" selected="false" enabled="true" width="15"/>
+								
+				<s:Label text="Stop running agent on this date  "  />
+				<mx:DateField id="dateField2" yearNavigationEnabled="true" 
+                change="dateChanged(DateField(event.target).selectedDate)"/>
+
+
+		</s:HGroup>
+		
+		<s:HGroup width="100%">
+				<s:CheckBox id="agentStaringDate3" selected="false" enabled="true"/>
+								
+				<s:Label text="Don't run agent on weekend  " width="100%" />
+				
+		</s:HGroup>
+   <s:Label text=" " width="100%" height="5"/>
+		<s:Label text="Where The Agent Runs" width="100%" />
+		  <s:Label text=" " width="100%" height="5"/>
+		<s:HGroup left="0" width="100%">
+			<s:Label text="Run on:" width="50" />
+			<s:DropDownList id="agentRunList" 
+									dataProvider="{agentRunOnList}"
+									requireSelection="true"
+									change="agentTargetChanged(event)"/>
+		</s:HGroup>
+			<s:HGroup left="0" width="100%">
+				<s:CheckBox id="agentStaringDate4" selected="false" enabled="true"/>
+								
+				<s:Label text="Choose server when agent is enable" width="100%" />
+				
+		</s:HGroup>
+		 
+	</s:VGroup>
+	
+
+	<newfile:controlBarContent>
+		<s:Button id="btnCreate" label="OK"
+				  styleName="darkButton"
+				  click="onCloseAction(event)"
+				  enabled="true"/>
+		<s:Button id="btnCreate2" label="Cancle"
+				  styleName="darkButton"
+				  click="onCloseAction(event)"
+				  enabled="true"/>
+	</newfile:controlBarContent>
+</newfile:NewFileBase>

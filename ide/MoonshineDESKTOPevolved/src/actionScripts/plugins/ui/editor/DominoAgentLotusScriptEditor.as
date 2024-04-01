@@ -78,6 +78,8 @@ package actionScripts.plugins.ui.editor
 	import actionScripts.events.GlobalEventDispatcher;
 	import view.suportClasses.events.DominoLotusScriptAgentEditorTreeChangeEvent;
     import actionScripts.plugins.ui.editor.DominoAgentFormulaEditor;
+	import view.domino.viewEditor.object.AgentObject;
+
 	public class DominoAgentLotusScriptEditor extends BasicTextEditor  
 	{
 
@@ -86,6 +88,8 @@ package actionScripts.plugins.ui.editor
 		private var hasChangedProperties:Boolean;
 		private var compileConnected:Boolean=false;
 		private var needVaildLotusScirpt:String=null;
+
+		private var agentObject:AgentObject=null;
 
 		private var selectLotusScriptAgentType:String="initialize";
 
@@ -151,7 +155,7 @@ package actionScripts.plugins.ui.editor
         private function onDominoAgentLotusScriptEditorCreationComplete(event:FlexEvent):void
 		{
 			dominoAgentLotusScriptEditor.removeEventListener(FlexEvent.CREATION_COMPLETE, onDominoAgentLotusScriptEditorCreationComplete);
-			//dominoAgentLotusScriptEditor.dominoViewVisualEditor.dominoViewPropertyEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
+			dominoAgentLotusScriptEditor.addEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 			//dominoAgentLotusScriptEditor.dominoViewVisualEditor.dominoViewPropertyEditor.addEventListener(Event.CHANGE, onDominoAgentFormulaPropertyChange);
 			
 			
@@ -218,6 +222,10 @@ package actionScripts.plugins.ui.editor
 		{
 			loadingFile = true;
 			currentFile = newFile;
+			agentObject=initalAgentObject(opneFile);
+
+			dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject=agentObject;
+			//inital agent object
 			if (fileData) 
 			{
 				super.openFileAsStringHandler(fileData as String);
@@ -226,6 +234,29 @@ package actionScripts.plugins.ui.editor
 
 			
         }
+
+		pirvate function initalAgentObject(opneFile:FileLocation):AgentObject
+		{
+			if(opneFile){
+				if(agentObject==null){
+					agentObject=new AgentObject();
+				}
+				
+				var agentString:String=String(opneFile.fileBridge.read());
+				var agentAgentXml:XML = new XML(agentString);
+				
+
+				var agentNode:XML=agentAgentXml..agent[0];
+				if(agentNode){
+					agentObject.agentName=agentNode.@name;
+					agentObject.agentAlias=agentNode.@alias;
+					agentObject.agentComment=agentNode.@comment;
+				}
+				
+				
+			}
+			return agentObject;
+		}
 
 
 
@@ -247,7 +278,7 @@ package actionScripts.plugins.ui.editor
 				// {
 				// 	dominoAgentLotusScriptEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(Event.CHANGE, onDominoAgentFormulaPropertyChange);
 			
-				// 	dominoAgentLotusScriptEditor.dominoViewVisualEditor.dominoViewPropertyEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
+				dominoAgentLotusScriptEditor.removeEventListener(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, onPropertyEditorChanged);
 				// 	dominoAgentLotusScriptEditor.dominoViewVisualEditor.removeEventListener("saveCode", onDominoViewEditorSaveCode);
 				// 	dominoAgentLotusScriptEditor.removeEventListener(VisualEditorViewChangeEvent.CODE_CHANGE, onDominoViewCodeChange);
 
@@ -370,12 +401,30 @@ package actionScripts.plugins.ui.editor
 
 		override public function save():void 
 		{
+			//Alert.show("agent name:"+dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentName);
 
+			//var xmlStr:String="<?xml version=\"1.0\" encoding=\"utf-8\"?>"+"\r\n"
 			//selectLotusScriptAgentType
 			//StringHelper.base64Encode()
 			var actionString:String=String(file.fileBridge.read());
 			var lotusScriptAgentXml:XML = new XML(actionString);
 			var body:XMLList = lotusScriptAgentXml.children();
+
+			var agentNode:XML=lotusScriptAgentXml..agent[0];
+			var agentName:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentName;
+			var agentAlias:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentAlias;	
+			var agentComment:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentComment;	
+			if(agentName){
+				agentNode.@name=agentName;
+			}
+			if(agentAlias){
+				agentNode.@alias=agentAlias;
+			}
+
+			if(agentComment){
+				agentNode.@comment=agentComment;
+			}
+
 
 			var lotusScriptString:String=StringHelperUtils.fixXmlSpecailCharacter(super.text);
 			

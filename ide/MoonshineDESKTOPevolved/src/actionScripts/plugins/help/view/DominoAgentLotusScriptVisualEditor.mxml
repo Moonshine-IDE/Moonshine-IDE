@@ -160,6 +160,13 @@
     import view.domino.viewEditor.object.AgentObject;
 
     import view.suportClasses.events.PropertyEditorChangeEvent;
+    import components.popup.DominoAgentPropertySettingPop;
+    import actionScripts.events.GlobalEventDispatcher;
+
+    import mx.events.CloseEvent;
+	import mx.managers.PopUpManager;
+	import mx.core.FlexGlobals;
+	import flash.display.DisplayObject;
 
     private var _codeEditor:IVisualElement;
 
@@ -178,9 +185,14 @@
 
     private var _hasChanged:Boolean = false;
 
+    private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
+
 
     [Bindable]
     private var rowsDataProvider:ArrayList = new ArrayList();
+
+
+    private var newAgentSchlderPopup:DominoAgentPropertySettingPop=null;
        
 
     public function get hasChanged():Boolean
@@ -218,18 +230,53 @@
         if(agentObject==null){
             agentObject = new AgentObject();
         }
+
+        if(agentName.indexOf(".")>0){
+            agentName = agentName.substring(0,agentName.indexOf("."));
+        }   
         agentObject.agentName = agentName;
        
+        agentPropertyPanel.addEventListener("openAgentScheduleUI", handleAgentSchedulePopupOpen);
+        agentPropertyEditor.addEventListener("agentPropertyChanged", onDominoAgentPropertyChanged);
+        agentSecurityPropertyPanel.addEventListener("agentPropertyChanged", onDominoAgentPropertyChanged);
+        agentPropertyPanel.agentObject=agentObject;
+        agentSecurityPropertyPanel.agentObject=agentObject;
+        
        
        
       
     }
 
+    private function handleAgentSchedulePopupOpen(event:Event):void {
+        
+     
+		if (!newAgentSchlderPopup)
+		{
+			newAgentSchlderPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject,DominoAgentPropertySettingPop , true) as DominoAgentPropertySettingPop;
+			newAgentSchlderPopup.addEventListener(CloseEvent.CLOSE, handleAgentSchedulePopupClose);
+			// newAgentSchlderPopup.addEventListener(DuplicateEvent.EVENT_APPLY_DUPLICATE, onFileDuplicateRequest);
+			// newAgentSchlderPopup.openType = NewFilePopup.AS_DUPLICATE_FILE;
+			// newAgentSchlderPopup.folderFileLocation = event.fileWrapper.file;
+			
+			
+
+			PopUpManager.centerPopUp(newAgentSchlderPopup);
+		}
+        //dispatcher.dispatchEvent(new Event(EVENT_DOMINO_LOTUSSCRIPT_AGENT_COMPILE_OPEN));
+    }
+
+    private function handleAgentSchedulePopupClose(event:CloseEvent):void
+	{
+            newAgentSchlderPopup.removeEventListener(CloseEvent.CLOSE, handleAgentSchedulePopupClose);
+			
+			newAgentSchlderPopup = null;
+	}
+
     public function propertyOnComplete():void {
         if(agentPropertyPanel!=null){
             if(agentObject){
-                //agentPropertyPanel.initializeAgentProperty(agentObject);
-                //agentPropertyEditor.addEventListener("agentPropertyChanged", onDominoAgentPropertyChanged);
+                //
+                
             }
             
         }
@@ -244,7 +291,8 @@
 
     private function onDominoAgentPropertyChanged(event:Event):void
 	{
-		agentPropertyEditor.dispatchEvent(new PropertyEditorChangeEvent(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, null));
+      
+        this.dispatchEvent(new PropertyEditorChangeEvent(PropertyEditorChangeEvent.PROPERTY_EDITOR_CHANGED, null));
 		hasChanged=true;
 	}
 
