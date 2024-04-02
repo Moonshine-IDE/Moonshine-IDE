@@ -31,17 +31,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.workflows
 {
+	import actionScripts.events.GeneralEvent;
 	import actionScripts.ui.actionbar.vo.ActionItemTypes;
+	import actionScripts.utils.SharedObjectConst;
 
 	import flash.events.Event;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 
-	import feathers.data.ArrayHierarchicalCollection;
+	import flash.net.SharedObject;
+
+	import haxe.ds.ObjectMap;
 
 	import moonshine.plugin.workflows.events.WorkflowEvent;
 	import moonshine.plugin.workflows.views.WorkflowView;
+	import moonshine.plugin.workflows.vo.WorkflowVO;
 
 	public class WorkflowsPlugin extends PluginBase
 	{
@@ -51,13 +56,19 @@ package actionScripts.plugin.workflows
 
 		private var workflowViewWrapper:WorkflowViewWrapper;
 		private var workflowView:WorkflowView;
+		private var cookie:SharedObject;
+		private var selectionMap:ObjectMap = new ObjectMap();
 
 		public function WorkflowsPlugin()
 		{
 			super();
-			
+
+			cookie = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_WORKFLOWS);
+			restoreFromCookies();
+
 			workflowView = new WorkflowView();
 			workflowView.addEventListener(Event.CLOSE, workflowView_closeHandler, false, 0, true);
+			workflowView.addEventListener(WorkflowView.EVENT_SELECTION_CHANGE, onSelectionChange, false, 0, true);
 			workflowViewWrapper = new WorkflowViewWrapper(workflowView);
 			workflowViewWrapper.percentWidth = 100;
 			workflowViewWrapper.percentHeight = 100;
@@ -77,11 +88,59 @@ package actionScripts.plugin.workflows
 			dispatcher.removeEventListener(WorkflowEvent.LOAD_WORKFLOW, handleWorkflowAddEvent);
 		}
 
+		override public function resetSettings():void
+		{
+			if (cookie.data.hasOwnProperty("workflows"))
+			{
+				delete cookie.data["workflows"];
+				cookie.flush();
+			}
+		}
+
+		private function saveToCookie():void
+		{
+			cookie.data["workflows"] = this.selectionMap;
+			cookie.flush();
+		}
+
+		private function restoreFromCookies():void
+		{
+			if (cookie.data.hasOwnProperty("workflows"))
+			{
+				var workflowsData:Object = cookie.data["workflows"];
+				for (var i:String in workflowsData)
+				{
+					selectionMap.set(i, workflowsData[i]);
+				}
+			}
+		}
+
+		private function onSelectionChange(event:GeneralEvent):void
+		{
+			var item:WorkflowVO = event.value as WorkflowVO;
+			var selectedItems:Array;
+			if (selectionMap.exists(item.origin))
+			{
+				selectedItems = selectionMap.get(item.origin) as Array;
+				if (item.isSelected && selectedItems.indexOf(item.title) == -1)
+				{
+					selectedItems.push(item.title);
+				}
+				else if (!item.isSelected && selectedItems.indexOf(item.title) != -1)
+				{
+					selectedItems.splice(selectedItems.indexOf(item.title), 1);
+				}
+			}
+			else
+			{
+				selectionMap.set(item.origin, [item.title]);
+			}
+
+			saveToCookie();
+		}
+
 		private function handleWorkflowShow(event:Event):void
 		{
-			//var collection:ArrayHierarchicalCollection = workflowView.workflows;
-			//collection.removeAll();
-			
 			if (!workflowViewWrapper.parent)
             {
 				LayoutModifier.addToSidebar(workflowViewWrapper, event);

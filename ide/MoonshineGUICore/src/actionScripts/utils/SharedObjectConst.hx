@@ -38,5 +38,6 @@ class SharedObjectConst {
 	public static final REPOSITORY_HISTORY:String = "repositoriesHistory";
 	public static final MOONSHINE_IDE_PROJECT:String = "moonshine-ide-project";
 	public static final MOONSHINE_IDE_WORKSPACE:String = "moonshine-ide-workspace";
+	public static final MOONSHINE_IDE_WORKFLOWS:String = "moonshine-ide-workflows";
 	public static final SHARED_UPDATE_CHECKER:String = "sharedObjectTesterAndUpdater";
 }

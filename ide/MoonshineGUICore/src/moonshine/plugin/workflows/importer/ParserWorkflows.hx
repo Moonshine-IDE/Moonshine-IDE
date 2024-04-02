@@ -31,26 +31,28 @@
 ////////////////////////////////////////////////////////////////////////////////
 package moonshine.plugin.workflows.importer;
 
+import actionScripts.valueObjects.ProjectVO;
 import feathers.data.ArrayHierarchicalCollection;
 import haxe.xml.Access;
 import moonshine.plugin.workflows.vo.WorkflowVO;
 
 class ParserWorkflows 
 {
-    public static function parse(xml:Xml, origin:String):ArrayHierarchicalCollection<WorkflowVO>
+    public static function parse(xml:Xml, origin:ProjectVO):ArrayHierarchicalCollection<WorkflowVO>
     {
         var access = new Access(xml);
         var collection = new Array();
+        var originPath = origin.folderLocation.fileBridge.nativePath;
 
         for (item in access.node.root.node.workflows.nodes.workflow) 
         {
-            var workflow = new WorkflowVO();
-            workflow.title = item.node.title.innerData +" ("+ origin +")";
+            var workflow = new WorkflowVO(originPath);
+            workflow.title = item.node.title.innerData +" ("+ origin.name +")";
             workflow.children = new Array();
             for (listItem in item.node.items.nodes.item)
             {
                 workflow.children.push(
-                    new WorkflowVO(listItem.innerData, true)
+                    new WorkflowVO(originPath, listItem.innerData)
                 );
             }
 

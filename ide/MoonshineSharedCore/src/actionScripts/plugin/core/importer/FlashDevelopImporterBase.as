@@ -90,7 +90,7 @@ public class FlashDevelopImporterBase extends EventDispatcher
 			if (!workflowFile.fileBridge.exists)
 				return;
 
-			var workflows:ArrayHierarchicalCollection = ParserWorkflows.parse(Xml.parse(workflowFile.fileBridge.read() as String), project.name);
+			var workflows:ArrayHierarchicalCollection = ParserWorkflows.parse(Xml.parse(workflowFile.fileBridge.read() as String), project);
 			GlobalEventDispatcher.getInstance().dispatchEvent(
 					new WorkflowEvent(WorkflowEvent.LOAD_WORKFLOW, project, workflows)
 			);

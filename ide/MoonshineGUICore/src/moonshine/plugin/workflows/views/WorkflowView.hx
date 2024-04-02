@@ -32,10 +32,7 @@
 
 package moonshine.plugin.workflows.views;
 
-import feathers.controls.Check;
-import feathers.data.TreeViewItemState;
-import moonshine.plugin.symbols.view.SymbolIcon;
-import feathers.controls.dataRenderers.HierarchicalItemRenderer;
+import actionScripts.events.GeneralEvent;
 import feathers.utils.DisplayObjectRecycler;
 import feathers.core.InvalidationFlag;
 import feathers.data.ArrayHierarchicalCollection;
@@ -50,6 +47,8 @@ import feathers.controls.Panel;
 
 class WorkflowView extends Panel implements IViewWithTitle 
 {
+    public static final EVENT_SELECTION_CHANGE = "workflow-selection-change";
+
     @:flash.property
 	public var title(get, never):String;
 	public function get_title():String 
@@ -122,5 +121,7 @@ class WorkflowView extends Panel implements IViewWithTitle
     private function onSelectionChange(event:Event):Void
     {
         var item:WorkflowVO = cast cast(event.target, WorkflowTreeItemRenderer).data;
+        item.isSelected = !item.isSelected;
+        this.dispatchEvent(new GeneralEvent(EVENT_SELECTION_CHANGE, item));
     }
 }

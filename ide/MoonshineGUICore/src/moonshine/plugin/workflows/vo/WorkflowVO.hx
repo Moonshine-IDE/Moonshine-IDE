@@ -36,9 +36,11 @@ class WorkflowVO
     public var title:String;
     public var children:Array<WorkflowVO>;
     public var isSelected:Bool;
+    public var origin:String; // <-- Should hold the path to project the workflow associated to
 
-    public function new(?title:String, ?isSelected:Bool, ?children:Array<WorkflowVO>)
+    public function new(origin:String, ?title:String, ?isSelected:Bool, ?children:Array<WorkflowVO>)
     {
+        this.origin = origin;
         this.title = title;
         this.children = children;
         this.isSelected = isSelected;
