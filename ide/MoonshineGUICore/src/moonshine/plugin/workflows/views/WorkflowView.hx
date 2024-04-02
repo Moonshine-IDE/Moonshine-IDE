@@ -32,6 +32,13 @@
 
 package moonshine.plugin.workflows.views;
 
+import feathers.controls.Check;
+import feathers.data.TreeViewItemState;
+import moonshine.plugin.symbols.view.SymbolIcon;
+import feathers.controls.dataRenderers.HierarchicalItemRenderer;
+import feathers.utils.DisplayObjectRecycler;
+import feathers.core.InvalidationFlag;
+import feathers.data.ArrayHierarchicalCollection;
 import openfl.events.Event;
 import moonshine.ui.SideBarViewHeader;
 import moonshine.plugin.workflows.vo.WorkflowVO;
@@ -47,7 +54,20 @@ class WorkflowView extends Panel implements IViewWithTitle
 	public var title(get, never):String;
 	public function get_title():String 
     {
-		return "Workflow";
+		return "Workflows";
+	}
+
+    private var _workflows:ArrayHierarchicalCollection<WorkflowVO> = new ArrayHierarchicalCollection();
+	@:flash.property
+	public var workflows(get, set):ArrayHierarchicalCollection<WorkflowVO>;
+
+	private function get_workflows():ArrayHierarchicalCollection<WorkflowVO> {
+		return this._workflows;
+	}
+	private function set_workflows(value:ArrayHierarchicalCollection<WorkflowVO>):ArrayHierarchicalCollection<WorkflowVO> {
+		this._workflows = value;
+		this.setInvalid(InvalidationFlag.DATA);
+		return this._workflows;
 	}
 
     private var tree:TreeView;
@@ -65,6 +85,13 @@ class WorkflowView extends Panel implements IViewWithTitle
         this.tree.variant = TreeView.VARIANT_BORDERLESS;
         this.tree.layoutData = AnchorLayoutData.fill();
         this.tree.itemToText = (item:WorkflowVO) -> item.title;
+        this.tree.itemRendererRecycler = DisplayObjectRecycler.withFunction(() -> {
+			var itemRenderer = new WorkflowTreeItemRenderer();
+            itemRenderer.addEventListener(WorkflowTreeItemRenderer.EVENT_WORKFLOW_SELECTION_CHANGE, this.onSelectionChange, false, 0, true);
+			return itemRenderer;
+		}, null, null, (itemRenderer:WorkflowTreeItemRenderer) -> {
+            itemRenderer.removeEventListener(WorkflowTreeItemRenderer.EVENT_WORKFLOW_SELECTION_CHANGE, this.onSelectionChange);
+        });
         this.addChild(this.tree);
 
         var header = new SideBarViewHeader();
@@ -76,8 +103,24 @@ class WorkflowView extends Panel implements IViewWithTitle
         super.initialize();
     }
 
+    override private function update():Void 
+    {
+		var dataInvalid = this.isInvalid(InvalidationFlag.DATA);
+		if (dataInvalid) 
+        {
+            this._workflows.itemToChildren = (item:WorkflowVO) -> item.children;
+			this.tree.dataProvider = this._workflows;
+		}
+		super.update();
+	}
+
     private function onCloseRequest(event:Event):Void 
     {
 		this.dispatchEvent(new Event(Event.CLOSE));
 	}
+
+    private function onSelectionChange(event:Event):Void
+    {
+        var item:WorkflowVO = cast cast(event.target, WorkflowTreeItemRenderer).data;
+    }
 }

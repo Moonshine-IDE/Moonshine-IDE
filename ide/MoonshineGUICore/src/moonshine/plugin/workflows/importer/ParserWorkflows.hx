@@ -34,11 +34,10 @@ package moonshine.plugin.workflows.importer;
 import feathers.data.ArrayHierarchicalCollection;
 import haxe.xml.Access;
 import moonshine.plugin.workflows.vo.WorkflowVO;
-import feathers.data.ArrayCollection;
 
 class ParserWorkflows 
 {
-    public static function parse(xml:Xml):ArrayHierarchicalCollection<WorkflowVO>
+    public static function parse(xml:Xml, origin:String):ArrayHierarchicalCollection<WorkflowVO>
     {
         var access = new Access(xml);
         var collection = new Array();
@@ -46,12 +45,12 @@ class ParserWorkflows
         for (item in access.node.root.node.workflows.nodes.workflow) 
         {
             var workflow = new WorkflowVO();
-            workflow.title = item.node.title.innerData;
+            workflow.title = item.node.title.innerData +" ("+ origin +")";
             workflow.children = new Array();
             for (listItem in item.node.items.nodes.item)
             {
                 workflow.children.push(
-                    new WorkflowVO(listItem.innerData)
+                    new WorkflowVO(listItem.innerData, true)
                 );
             }
 

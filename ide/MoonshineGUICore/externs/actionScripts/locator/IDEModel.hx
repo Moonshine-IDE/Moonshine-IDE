@@ -31,6 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator;
 
+import actionScripts.interfaces.IProjectBridge;
 import actionScripts.factory.FileLocation;
 import actionScripts.interfaces.IClipboardBridge;
 import actionScripts.interfaces.IFileBridge;
@@ -46,6 +47,7 @@ extern class IDEModel {
 	public var defaultSDK:FileLocation;
 	public var editors:ArrayCollection;
 	public var fileCore:IFileBridge;
+	public var projectCore:IProjectBridge;
 	public var gitPath:String;
 	public var gradlePath:String;
 	public var grailsPath:String;

@@ -110,6 +110,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final IMAGE_VARIANT_LARGE_REFRESH_ICON:String = "image-icon-large-refresh";
 	public static final THEME_VARIANT_BUSY_LABEL:String = "moonshine-label-busy-status-light";
 	public static final THEME_VARIANT_DARK_BUTTON:String = "moonshine-button--dark";
+	public static final THEME_VARIANT_ACTIONBAR_BUTTON:String = "moonshine-button--dark-actionbar";
 	public static final THEME_VARIANT_HORIZONTAL_DIVIDER = "moonshine-horizontal-divider";
 	public static final THEME_VARIANT_LARGE_BUTTON:String = "moonshine-button--large";
 	public static final THEME_VARIANT_LIGHT_BUTTON:String = "moonshine-button--light";
@@ -138,6 +139,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_LIGHT_BUTTON, setLightButtonStyles);
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_DARK_BUTTON, setDarkButtonStyles);
 		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_LARGE_BUTTON, setLargeButtonStyles);
+		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_ACTIONBAR_BUTTON, setActionButtonStyles);
 
 		this.styleProvider.setStyleFunction(DebugAdapterView, null, setDebugAdapterViewStyles);
 
@@ -357,6 +359,65 @@ class MoonshineTheme extends SDKInstallerTheme {
 		button.paddingRight = 8.0;
 		button.paddingBottom = 8.0;
 		button.paddingLeft = 8.0;
+		button.gap = 4.0;
+	}
+
+	private function setActionButtonStyles(button:Button):Void {
+		var backgroundSkin = new MoonshineButtonSkin();
+		backgroundSkin.outerBorderFill = SolidColor(MoonshineColor.GREY_2);
+		backgroundSkin.outerBorderSize = 2.0;
+		backgroundSkin.outerBorderRadius = 6.0;
+		backgroundSkin.innerBorderFill = SolidColor(MoonshineColor.GREY_4C);
+		backgroundSkin.innerBorderSize = 1.0;
+		backgroundSkin.innerBorderRadius = 4.0;
+		backgroundSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x404040, 0x404040], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		backgroundSkin.borderRadius = 4.0;
+		button.backgroundSkin = backgroundSkin;
+
+		var hoverSkin = new MoonshineButtonSkin();
+		hoverSkin.outerBorderFill = SolidColor(MoonshineColor.GREY_2);
+		hoverSkin.outerBorderSize = 2.0;
+		hoverSkin.outerBorderRadius = 6.0;
+		hoverSkin.innerBorderFill = SolidColor(MoonshineColor.GREY_4C);
+		hoverSkin.innerBorderSize = 1.0;
+		hoverSkin.innerBorderRadius = 4.0;
+		hoverSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x3E3E3E, 0x3E3E3E], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		hoverSkin.borderRadius = 4.0;
+		button.setSkinForState(HOVER, hoverSkin);
+
+		var downSkin = new MoonshineButtonSkin();
+		downSkin.outerBorderFill = SolidColor(MoonshineColor.GREY_29);
+		downSkin.outerBorderSize = 2.0;
+		downSkin.outerBorderRadius = 6.0;
+		downSkin.innerBorderFill = SolidColor(0x474747);
+		downSkin.innerBorderSize = 1.0;
+		downSkin.innerBorderRadius = 4.0;
+		downSkin.fill = Gradient(LINEAR, [0x3F3F3F, 0x3F3F3F, 0x3C3C3C, 0x3C3C3C], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		downSkin.borderRadius = 4.0;
+		button.setSkinForState(DOWN, downSkin);
+
+		var disabledSkin = new MoonshineButtonSkin();
+		disabledSkin.outerBorderFill = SolidColor(MoonshineColor.GREY_29);
+		disabledSkin.outerBorderSize = 2.0;
+		disabledSkin.outerBorderRadius = 6.0;
+		disabledSkin.innerBorderFill = SolidColor(MoonshineColor.GREY_4C);
+		disabledSkin.innerBorderSize = 1.0;
+		disabledSkin.innerBorderRadius = 4.0;
+		disabledSkin.fill = Gradient(LINEAR, [0x444444, 0x444444, 0x404040, 0x404040], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		disabledSkin.alpha = 0.5;
+		button.setSkinForState(DISABLED, disabledSkin);
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, MoonshineColor.PINK_2);
+		focusRectSkin.cornerRadius = 5.0;
+		button.focusRectSkin = focusRectSkin;
+
+		button.textFormat = MoonshineTypography.getLightOnDarkSecondaryTextFormat();
+		button.setTextFormatForState(DISABLED, MoonshineTypography.getTextFormat(MoonshineTypography.DEFAULT_FONT_SIZE, MoonshineColor.GREY_6));
+		// button.embedFonts = true;
+
+		button.setPadding(2);
 		button.gap = 4.0;
 	}
 

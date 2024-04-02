@@ -29,14 +29,19 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.ui.actionbar.vo
+
+package actionScripts.ui.actionbar.vo;
+
+class ActionItemVO 
 {
-    public class ActionItemTypes
+    public var title:String;
+    public var type:String;
+    public var event:String;
+
+    public function new(title:String, type:String, event:String)
     {
-        public static const BUILD:String = "action-type-build";
-        public static const RUN:String = "action-type-run";
-        public static const DEBUG:String = "action-type-debug";
-        public static const EXPORT:String = "action-type-export";
-        public static const WORKFLOW:String = "action-type-workflow";
-    }
+        this.title = title;
+        this.type = type;
+        this.event = event;
+    }    
 }

@@ -40,8 +40,6 @@ package actionScripts.plugin.workflows
 
 	import feathers.data.ArrayHierarchicalCollection;
 
-	import moonshine.editor.text.events.TextEditorChangeEvent;
-
 	import moonshine.plugin.workflows.events.WorkflowEvent;
 	import moonshine.plugin.workflows.views.WorkflowView;
 
@@ -81,24 +79,17 @@ package actionScripts.plugin.workflows
 
 		private function handleWorkflowShow(event:Event):void
 		{
-			var collection:ArrayHierarchicalCollection = workflowView.outline;
-			collection.removeAll();
+			//var collection:ArrayHierarchicalCollection = workflowView.workflows;
+			//collection.removeAll();
 			
 			if (!workflowViewWrapper.parent)
             {
 				LayoutModifier.addToSidebar(workflowViewWrapper, event);
-
-				this.refreshSymbols();
             }
 			else
 			{
-				//don't bother refreshing because the outline view is being
-				//hidden
-				changeTimer.reset();
-
 				LayoutModifier.removeFromSidebar(workflowViewWrapper);
 			}
-			isStartupCall = false;
 		}
 
 		private function workflowView_closeHandler(event:Event):void
@@ -106,23 +97,9 @@ package actionScripts.plugin.workflows
 			LayoutModifier.removeFromSidebar(this.workflowViewWrapper);
 		}
 
-		private function handleDidChange(event:TextEditorChangeEvent):void
-		{
-			//the file has been edited. to avoid updating the outline too often,
-			//reset the timer and start over from the beginning.
-			changeTimer.reset();
-			
-			if(!this.workflowViewWrapper.parent)
-			{
-				//we can ignore this event when the outline isn't visible
-				return;
-			}
-			changeTimer.start();
-		}
-
 		private function handleWorkflowAddEvent(event:WorkflowEvent):void
 		{
-
+			workflowView.workflows = event.workflows;
 		}
 	}
 }

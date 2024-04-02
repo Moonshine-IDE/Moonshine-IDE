@@ -31,4 +31,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.interfaces;
 
-extern interface IProjectBridge {}
+import actionScripts.ui.actionbar.vo.ActionItemVO;
+import actionScripts.valueObjects.ProjectVO;
+#if flash
+import flash.Vector;
+#else
+import openfl.Vector;
+#end
+
+extern interface IProjectBridge 
+{
+	function getActionItems(project:ProjectVO):Vector<ActionItemVO>;
+}

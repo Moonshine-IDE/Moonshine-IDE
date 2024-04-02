@@ -34,7 +34,8 @@ package actionScripts.impls
 	import actionScripts.events.DominoEvent;
 	import actionScripts.events.GenesisEvent;
 	import actionScripts.managers.StartupHelper;
-	import actionScripts.plugins.build.ConsoleBuildPluginBase;
+import actionScripts.plugin.workflows.WorkflowsPlugin;
+import actionScripts.plugins.build.ConsoleBuildPluginBase;
 	import actionScripts.plugins.exportToRoyaleTemplatedApp.ExportToRoyaleTemplatedAppPlugin;
 	import actionScripts.plugins.genesis.GenesisPlugin;
 	import actionScripts.plugins.lsmonitor.LanguageServersMonitor;
@@ -307,7 +308,8 @@ import mx.resources.IResourceManager;
 				TextEditorPlugin,
 				GenesisPlugin,
 				OpenInTerminalPlugin,
-				DominoObjectsPlugin
+				DominoObjectsPlugin,
+				WorkflowsPlugin
 			];
 
 			// conditional additions
@@ -325,7 +327,7 @@ import mx.resources.IResourceManager;
 					MXMLCJavaScriptPlugin, OutlinePlugin, ProblemsPlugin, SymbolsPlugin, ReferencesPlugin, LocationsPlugin, StartupHelperPlugin, RenamePlugin, SearchPlugin, OrganizeImportsPlugin, Away3DPlugin, MouseManagerPlugin,
 					ExportToFlexPlugin, ExportToPrimeFacesPlugin, ExportDominoToRoyalePlugin, ExportToRoyaleTemplatedAppPlugin,
 					UncaughtErrorsPlugin, HiddenFilesPlugin, RunJavaProject, VisualEditorRefreshFilesPlugin, PreviewPrimeFacesProjectPlugin, VersionControlPlugin, HttpServerPlugin, RoyaleApiReportConfiguratorPlugin, RoyaleApiReportPlugin,
-					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin, GenesisPlugin];
+					MultiMenuEventsNotifierPlugin, MXMLCFlashModulePlugin, FSWatcherPlugin, LanguageServersMonitor, ExportDominoJavaAgentsPlugin, GenesisPlugin, WorkflowsPlugin];
 		}
 		
 		public function getQuitMenuItem():MenuItem

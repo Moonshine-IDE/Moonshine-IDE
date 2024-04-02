@@ -31,6 +31,8 @@
 	<haxedef name="no-deprecation-warnings" />
 	<define name="desktop" />
 
+	<assets path="src/moonshine/theme/assets" rename="theme/assets" />
+
 	<section if="flash">
 		<source path="build_macros/flash"/>
 		<haxeflag name="--macro" value="AddFlashPropertyMeta.find('feathers')"/>
