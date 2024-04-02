@@ -44,7 +44,7 @@ class WorkflowEvent extends Event
 	public var project:ProjectVO;
 	public var workflows:ArrayHierarchicalCollection<WorkflowVO>;
 
-	public function new(type:String, project:ProjectVO, workflows:ArrayHierarchicalCollection<WorkflowVO>) 
+	public function new(type:String, project:ProjectVO, ?workflows:ArrayHierarchicalCollection<WorkflowVO>) 
 	{
 		super(type);
 		

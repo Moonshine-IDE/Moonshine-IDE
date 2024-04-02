@@ -35,6 +35,8 @@ package actionScripts.plugin.workflows
 	import actionScripts.ui.actionbar.vo.ActionItemTypes;
 	import actionScripts.utils.SharedObjectConst;
 
+	import feathers.data.ArrayHierarchicalCollection;
+
 	import flash.events.Event;
 	import actionScripts.plugin.PluginBase;
 	import actionScripts.ui.LayoutModifier;
@@ -45,6 +47,7 @@ package actionScripts.plugin.workflows
 	import haxe.ds.ObjectMap;
 
 	import moonshine.plugin.workflows.events.WorkflowEvent;
+	import moonshine.plugin.workflows.importer.ParserWorkflows;
 	import moonshine.plugin.workflows.views.WorkflowView;
 	import moonshine.plugin.workflows.vo.WorkflowVO;
 
@@ -158,7 +161,15 @@ package actionScripts.plugin.workflows
 
 		private function handleWorkflowAddEvent(event:WorkflowEvent):void
 		{
-			workflowView.workflows = event.workflows;
+			var workflows:ArrayHierarchicalCollection = event.workflows;
+			if (!workflows)
+			{
+				workflows = ParserWorkflows.parse(
+					Xml.parse(event.project.folderLocation.resolvePath("moonshine-workflows.xml").fileBridge.read() as String), event.project, selectionMap
+				);
+			}
+
+			workflowView.workflows = workflows;
 		}
 	}
 }

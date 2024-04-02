@@ -31,6 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package moonshine.plugin.workflows.importer;
 
+import haxe.ds.ObjectMap;
 import actionScripts.valueObjects.ProjectVO;
 import feathers.data.ArrayHierarchicalCollection;
 import haxe.xml.Access;
@@ -38,11 +39,12 @@ import moonshine.plugin.workflows.vo.WorkflowVO;
 
 class ParserWorkflows 
 {
-    public static function parse(xml:Xml, origin:ProjectVO):ArrayHierarchicalCollection<WorkflowVO>
+    public static function parse(xml:Xml, origin:ProjectVO, selectionMap:ObjectMap<String, Array<String>>):ArrayHierarchicalCollection<WorkflowVO>
     {
         var access = new Access(xml);
         var collection = new Array();
         var originPath = origin.folderLocation.fileBridge.nativePath;
+        var selections = selectionMap.get(origin.folderLocation.fileBridge.nativePath);
 
         for (item in access.node.root.node.workflows.nodes.workflow) 
         {
@@ -52,7 +54,7 @@ class ParserWorkflows
             for (listItem in item.node.items.nodes.item)
             {
                 workflow.children.push(
-                    new WorkflowVO(originPath, listItem.innerData)
+                    new WorkflowVO(originPath, listItem.innerData, (selections.indexOf(listItem.innerData) != -1))
                 );
             }
 

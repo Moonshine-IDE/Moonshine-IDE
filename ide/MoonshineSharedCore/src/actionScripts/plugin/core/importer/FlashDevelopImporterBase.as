@@ -31,11 +31,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.core.importer
 {
-import actionScripts.events.GlobalEventDispatcher;
-
-import feathers.data.ArrayHierarchicalCollection;
-
-import flash.events.EventDispatcher;
+	import actionScripts.events.GlobalEventDispatcher;
+	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	
 	import actionScripts.factory.FileLocation;
@@ -43,11 +40,9 @@ import flash.events.EventDispatcher;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	import actionScripts.valueObjects.ProjectVO;
 
-import moonshine.plugin.workflows.events.WorkflowEvent;
+	import moonshine.plugin.workflows.events.WorkflowEvent;
 
-import moonshine.plugin.workflows.importer.ParserWorkflows;
-
-public class FlashDevelopImporterBase extends EventDispatcher
+	public class FlashDevelopImporterBase extends EventDispatcher
 	{
 		public function FlashDevelopImporterBase(target:IEventDispatcher=null)
 		{
@@ -90,9 +85,8 @@ public class FlashDevelopImporterBase extends EventDispatcher
 			if (!workflowFile.fileBridge.exists)
 				return;
 
-			var workflows:ArrayHierarchicalCollection = ParserWorkflows.parse(Xml.parse(workflowFile.fileBridge.read() as String), project);
 			GlobalEventDispatcher.getInstance().dispatchEvent(
-					new WorkflowEvent(WorkflowEvent.LOAD_WORKFLOW, project, workflows)
+					new WorkflowEvent(WorkflowEvent.LOAD_WORKFLOW, project)
 			);
 		}
 	}
