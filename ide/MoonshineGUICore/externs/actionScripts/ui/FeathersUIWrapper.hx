@@ -32,4 +32,13 @@
 
 package actionScripts.ui;
 
-extern class FeathersUIWrapper {}
+import mx.core.IUIComponent;
+import feathers.core.FeathersControl;
+
+extern class FeathersUIWrapper /*implements IUIComponent*/
+{
+    @:flash.property
+	public var feathersUIControl(get, set):FeathersControl;
+
+    public function new(feathersUIControl:FeathersControl=null);
+}

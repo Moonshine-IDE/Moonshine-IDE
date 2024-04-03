@@ -59,6 +59,7 @@ class ActionbarSidebar extends LayoutGroup
     private var lblTitle:Label;
     private var buttonsContainer:LayoutGroup;
     private var activeProject:ProjectVO;
+    private var btnWorkflows:Button;
     private var projectActionItems:Vector<ActionItemVO>;
     private var buttonsMap:Map<Button, String> = new Map();
     private var dispatcher = GlobalEventDispatcher.getInstance();
@@ -100,11 +101,12 @@ class ActionbarSidebar extends LayoutGroup
         var icoWorkflow = new AssetLoader("/elements/images/icoWorkflow.png");
         icoWorkflow.maxWidth = icoWorkflow.maxHeight = 10;
 
-        var btnWorkflows = new Button();
+        btnWorkflows = new Button();
         btnWorkflows.variant = MoonshineTheme.THEME_VARIANT_ACTIONBAR_BUTTON;
         btnWorkflows.icon = icoWorkflow;
         btnWorkflows.width = btnWorkflows.height = 22;
         btnWorkflows.toolTip = "Workflows";
+        btnWorkflows.visible = false;
         btnWorkflows.addEventListener(TriggerEvent.TRIGGER, this.onActionItemClick, false, 0, true);
         this.buttonsMap.set(btnWorkflows, ActionItemTypes.WORKFLOW);
         mainHolder.addChild(btnWorkflows);
@@ -116,6 +118,7 @@ class ActionbarSidebar extends LayoutGroup
         this.addChild(divider);
 
         this.dispatcher.addEventListener(ProjectEvent.ACTIVE_PROJECT_CHANGED, onProjectSelectionChangedInSidebar, false, 0, true);
+        this.dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, onProjectRemoved, false, 0, true);
 
         super.initialize();
     }
@@ -128,9 +131,11 @@ class ActionbarSidebar extends LayoutGroup
         projectActionItems = model.projectCore.getActionItems(event.project);
         if (projectActionItems == null) return;
 
-        this.activeProject = event.project;
-        this.lblTitle.text = this.activeProject.name;
         this.removeActionButtons();
+        
+        this.activeProject = event.project;
+        this.btnWorkflows.visible = true;
+        this.lblTitle.text = this.activeProject.name;
 
         for (action in projectActionItems)
         {
@@ -156,8 +161,16 @@ class ActionbarSidebar extends LayoutGroup
         //this.btnWorkdflow.includeInLayout = this.btnWorkdflow.visible = true;
     }
 
+    private function onProjectRemoved(event:ProjectEvent):Void
+    {
+        if (event.project == this.activeProject) 
+            this.removeActionButtons();   
+    }
+
     private function removeActionButtons():Void
     {
+        this.lblTitle.text = "";
+        this.btnWorkflows.visible = false;
         // remove listeners
         while (this.buttonsContainer.numChildren != 0) 
         {

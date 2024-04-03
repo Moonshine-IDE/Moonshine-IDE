@@ -32,7 +32,8 @@
 package actionScripts.plugin.workflows
 {
 	import actionScripts.events.GeneralEvent;
-	import actionScripts.ui.actionbar.vo.ActionItemTypes;
+import actionScripts.events.ProjectEvent;
+import actionScripts.ui.actionbar.vo.ActionItemTypes;
 	import actionScripts.utils.SharedObjectConst;
 
 	import feathers.data.ArrayHierarchicalCollection;
@@ -82,6 +83,7 @@ package actionScripts.plugin.workflows
 			super.activate();
 			dispatcher.addEventListener(ActionItemTypes.WORKFLOW, handleWorkflowShow);
 			dispatcher.addEventListener(WorkflowEvent.LOAD_WORKFLOW, handleWorkflowAddEvent);
+			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleProjectClose);
 		}
 
 		override public function deactivate():void
@@ -89,6 +91,7 @@ package actionScripts.plugin.workflows
 			super.deactivate();
 			dispatcher.removeEventListener(ActionItemTypes.WORKFLOW, handleWorkflowShow);
 			dispatcher.removeEventListener(WorkflowEvent.LOAD_WORKFLOW, handleWorkflowAddEvent);
+			dispatcher.removeEventListener(ProjectEvent.REMOVE_PROJECT, handleProjectClose);
 		}
 
 		override public function resetSettings():void
@@ -170,6 +173,11 @@ package actionScripts.plugin.workflows
 			}
 
 			workflowView.workflows = workflows;
+		}
+
+		private function handleProjectClose(event:ProjectEvent):void
+		{
+			workflowView.removeWorkflowFor(event.project.folderLocation.fileBridge.nativePath);
 		}
 	}
 }

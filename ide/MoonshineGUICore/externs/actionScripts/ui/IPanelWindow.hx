@@ -29,42 +29,11 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package moonshine.plugin.workflows.importer;
 
-import haxe.ds.ObjectMap;
-import actionScripts.valueObjects.ProjectVO;
-import feathers.data.ArrayHierarchicalCollection;
-import haxe.xml.Access;
-import moonshine.plugin.workflows.vo.WorkflowVO;
+package actionScripts.ui;
 
-class ParserWorkflows 
-{
-    public static function parse(xml:Xml, origin:ProjectVO, selectionMap:ObjectMap<String, Array<String>>):ArrayHierarchicalCollection<WorkflowVO>
-    {
-        var access = new Access(xml);
-        var collection = new Array();
-        var originPath = origin.folderLocation.fileBridge.nativePath;
-        var selections = selectionMap.get(origin.folderLocation.fileBridge.nativePath);
+import mx.core.IUIComponent;
 
-        for (item in access.node.root.node.workflows.nodes.workflow) 
-        {
-            var workflow = new WorkflowVO(originPath);
-            workflow.title = item.node.title.innerData +" ("+ origin.name +")";
-            workflow.children = new Array();
-            for (listItem in item.node.items.nodes.item)
-            {
-                workflow.children.push(
-                    new WorkflowVO(originPath, 
-                        listItem.innerData, 
-                        (selections != null) ? (selections.indexOf(listItem.innerData) != -1) : null
-                        )
-                );
-            }
-
-            if (workflow.children.length == 0) workflow.children = null;
-            collection.push(workflow);
-        }
-
-        return (new ArrayHierarchicalCollection(collection));
-    } 
+extern interface IPanelWindow extends IUIComponent {
+    
 }

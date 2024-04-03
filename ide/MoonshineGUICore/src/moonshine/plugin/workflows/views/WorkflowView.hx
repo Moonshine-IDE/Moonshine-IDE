@@ -64,7 +64,14 @@ class WorkflowView extends Panel implements IViewWithTitle
 		return this._workflows;
 	}
 	private function set_workflows(value:ArrayHierarchicalCollection<WorkflowVO>):ArrayHierarchicalCollection<WorkflowVO> {
-		this._workflows = value;
+        if (this._workflows != null)
+        {
+            for (item in value.array)
+            {
+                this._workflows.addAt(item, [this._workflows.getLength()]);
+            }
+        } else 
+            this._workflows = value;
 		this.setInvalid(InvalidationFlag.DATA);
 		return this._workflows;
 	}
@@ -112,6 +119,21 @@ class WorkflowView extends Panel implements IViewWithTitle
 		}
 		super.update();
 	}
+
+    public function removeWorkflowFor(path:String):Void
+    {
+        if (this.workflows == null) 
+            return;
+        
+        var i = this.workflows.array.length;
+        while (--i >= 0)
+        {
+            if (this.workflows.array[i].origin == path)
+            {
+                this.workflows.remove(this.workflows.array[i]);
+            }
+        }
+    }
 
     private function onCloseRequest(event:Event):Void 
     {

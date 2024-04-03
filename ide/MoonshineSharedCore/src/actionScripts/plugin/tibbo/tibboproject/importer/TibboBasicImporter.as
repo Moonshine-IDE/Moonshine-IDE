@@ -93,7 +93,8 @@ package actionScripts.plugin.tibbo.tibboproject.importer
 					}
 				}
 			}
-			
+
+			parseWorkflowFile(project);
 			UtilsCore.setProjectMenuType(project);
 
 			return project;
