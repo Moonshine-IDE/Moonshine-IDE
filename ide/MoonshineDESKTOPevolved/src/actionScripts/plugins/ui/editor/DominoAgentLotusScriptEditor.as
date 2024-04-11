@@ -256,7 +256,41 @@ package actionScripts.plugins.ui.editor
 				agentObject.agentName=agentAgentXml.@name;
 				agentObject.agentAlias=agentAgentXml.@alias;
 				agentObject.agentComment=agentAgentXml.@comment;
-				
+				var trigger:XML=null;
+				var body:XMLList = agentAgentXml.children();
+				for each (var item:XML in body)
+				{
+					var itemName:String = item.name();
+					if (itemName=="http://www.lotus.com/dxl::trigger")
+					{	
+						trigger=item;
+					}
+				}
+				if(trigger){
+					
+					var scheduled:XML=trigger.scheduled[0];
+					if(scheduled){
+						agentObject.hours=scheduled.@hours;
+						agentObject.agentScheduleType=scheduled.@type;	
+						agentObject.minutes=scheduled.@minutes;
+						agentObject.runlocation=scheduled.@runlocation;
+						agentObject.runserver=scheduled.@runserver;
+						var startDate:XML=scheduled.startdate[0];
+						if(startDate){
+							var startDateTime:XML=startDate.datetime[0];
+							if(startDateTime){
+								agentObject.startdate=startDateTime.text();
+							}
+						}
+						var endDate:XML=scheduled.enddate[0];
+						if(endDate){
+							var endDateTime:XML=endDate.datetime[0];
+							if(endDateTime){
+								agentObject.enddate=endDateTime.text();
+							}
+						}
+					}
+				}
 				
 				
 			}
@@ -419,7 +453,35 @@ package actionScripts.plugins.ui.editor
 			var agentName:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentName;
 			var agentAlias:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentAlias;	
 			var agentComment:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentComment;	
-		
+			var agentType:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentType;
+			var agentScheduleType:String=dominoAgentLotusScriptEditor.agentPropertyPanel.agentObject.agentScheduleType;
+			
+			if(agentType){
+				var trigger:XML=null;
+				var body:XMLList = lotusScriptAgentXml.children();
+				for each (var item:XML in body)
+				{
+					var itemName:String = item.name();
+					if (itemName=="http://www.lotus.com/dxl::trigger")
+					{	
+						trigger=item;
+					}
+				}
+				if(trigger){
+					trigger.@type=agentType;
+					
+					if(agentType=="scheduled"){
+						var scheduled:XML=trigger.scheduled[0];
+						if(!scheduled){
+							scheduled=new XML("<scheduled></scheduled>");
+							scheduled.@type=agentScheduleType;
+							trigger.appendChild(scheduled);
+						}else{
+							scheduled.@type=agentScheduleType;
+						}
+					}
+				}
+			}
 			if(agentName){
 				lotusScriptAgentXml.@name=agentName;
 			}

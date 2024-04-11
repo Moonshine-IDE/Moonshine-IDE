@@ -35,6 +35,7 @@
 <newfile:NewFileBase xmlns:fx="http://ns.adobe.com/mxml/2009"
 					 xmlns:s="library://ns.adobe.com/flex/spark"
 					 title="New Domino Page File"
+					 creationComplete="onComplete()"
 					 xmlns:mx="library://ns.adobe.com/flex/mx"
 					 xmlns:view="actionScripts.plugin.findreplace.view.*" xmlns:utils="actionScripts.utils.*"
 					 xmlns:newfile="components.popup.newFile.*" preinitialize="onPreinitialize(event)">
@@ -51,6 +52,7 @@
 			import spark.events.IndexChangeEvent;
 	
 			import spark.events.TextOperationEvent;
+			import mx.events.CloseEvent;
 	
 			import actionScripts.events.GlobalEventDispatcher;
 			import actionScripts.events.NewFileEvent;
@@ -60,16 +62,46 @@
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
+			import view.domino.viewEditor.object.AgentPropertyObjectList;
+			import view.domino.viewEditor.object.AgentScheduleObject;
+			import view.domino.viewEditor.object.AgentObject
+			
+			[Bindable]
+			private var titleLabel:String = "Run Agent After Documents Are Created or Modified";
 
+			
+			[Bindable]
+			public var agentPopType:String = "";
+			[Bindable]
+			public var agentRunDayHoursList:ArrayCollection = new ArrayCollection();
+			public var agentRunDayNumberList:ArrayCollection = new ArrayCollection();
+			public var agentRunDayMinsList:ArrayCollection = new ArrayCollection();
+			public var agentRunDayStartHoursList:ArrayCollection = new ArrayCollection(); //
+			public var agentRunDayEndHoursList:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			public var agentRunOnList:ArrayCollection = new ArrayCollection(
+			[ {label:"Local", value:"local"},
+				{label:"-Any Server-", value:"any"},
+				{label:"Choose", value:"chose"},
+				{label:"Other", value:"server"}
+				
+				
+			]);
 
-				[Bindable]
-				public var agentRunOnList:ArrayCollection = new ArrayCollection(
-					[ {label:"Local", value:"local"},
-						{label:"-Any Server-", value:"anyServer"},
-						{label:"Other", value:"other"}
-						
-						
-					]);
+			public var agentObject:AgentObject;
+
+			[Bindable]
+			public var agentRunOnDayList:ArrayCollection = new ArrayCollection(
+			[ {label:"Monday", value:"monday"},
+				{label:"Tuesday", value:"tuesday"},
+				{label:"Wednesday", value:"wednesday"},
+				{label:"Thursday", value:"thursday"},
+				{label:"Friday", value:"friday"},
+				{label:"Saturday", value:"saturday"},
+				{label:"Sunday", value:"sunday"}
+				
+				
+			]);
 
 			
 			protected function onPreinitialize(event:FlexEvent):void
@@ -79,6 +111,25 @@
 
 			protected function onCloseAction(event:MouseEvent):void
 			{
+				super.closeByCrossSign(event);
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE, true));
+			}
+
+			private function confirmDone():void
+			{
+				if(this.agentObject){
+					if(agentStaringDate.selected==true){
+						if(dateField1.selectedDate){
+							this.agentObject.startdate=dateField1.selectedDate.toString();
+						}
+					}
+
+					if(agentStaringDate2.selected==true){
+						if(dateField2.selectedDate){
+							this.agentObject.enddate=dateField2.selectedDate.toString();
+						}
+					}
+				}
 			}
 
 			private function displayDate(date:Date):void {
@@ -88,13 +139,138 @@
                    // selection.text = "Date selected: " + date.getFullYear().toString() + "/" + (date.getMonth()+1).toString() + "/" + date.getDate();
                 }
             }
+			private function agentHoursChanged(e:IndexChangeEvent):void
+			{
+				this.dispatchEvent(new Event("agentPropertyChanged",true, true));
+			}
+			private function agentMinsChanged(e:IndexChangeEvent):void
+			{
+				this.dispatchEvent(new Event("agentPropertyChanged",true, true));
+			}
+
+			public function onComplete():void {
+				//docupdateLabel
+				//serverStartLabel
+			
+				for(var i:int=0; i<24; i++){
+					var obj:AgentPropertyObjectList=new AgentPropertyObjectList();
+					obj.label=i.toString();
+					obj.value=i.toString();
+					agentRunDayHoursList.addItem(obj);
+					//
+					var obj2:AgentPropertyObjectList=new AgentPropertyObjectList();
+					if(i<13){
+						obj2.label=i.toString()+":00 AM";
+						obj2.value=i.toString()
+					}else{
+						obj2.label=(i-12).toString()+":00 PM";
+						obj2.value=(i-12).toString()
+					}
+					agentRunDayStartHoursList.addItem(obj2);
+				}
+				//agentRunDayMinsList
+				for(var i:int=0; i<60; i++){
+					var obj:AgentPropertyObjectList=new AgentPropertyObjectList();
+					obj.label=i.toString();
+					obj.value=i.toString();
+					agentRunDayMinsList.addItem(obj);
+				}
+				for(var i:int=1; i<32; i++){
+					var obj:AgentPropertyObjectList=new AgentPropertyObjectList();
+					obj.label=i.toString();
+					obj.value=i.toString();
+					agentRunDayNumberList.addItem(obj);
+				}
+				//agentRunDayNumberList
+
+				if(agentPopType){
+					if(agentPopType=="docupdate"){
+						docupdateLabel.visible=true;
+						docupdateLabel.includeInLayout=true	
+						serverStartLabel.visible=false;
+						serverStartLabel.includeInLayout=false;
+						scheduPanel.visible=false;
+						scheduPanel.includeInLayout=false;
+						titleLabel="Run Agent After Documents Are Created or Modified";
+					}else if(agentPopType=="serverstart"){
+						docupdateLabel.visible=false;
+						docupdateLabel.includeInLayout=false	
+						serverStartLabel.visible=true;
+						serverStartLabel.includeInLayout=true;
+						scheduPanel.visible=false;
+						scheduPanel.includeInLayout=false;
+						titleLabel="Run Agent When Server Starts";
+					}else {
+						docupdateLabel.visible=false;
+						docupdateLabel.includeInLayout=false	
+						serverStartLabel.visible=false;
+						serverStartLabel.includeInLayout=false;
+						
+
+						//scheduPanelMonthly
+						//scheduPanelWeekly
+						//scheduPanelDaily
+						//scheduPanel
+						if(agentPopType=="byminutes"){
+							scheduPanel.visible=true;
+							scheduPanel.includeInLayout=true;
+							scheduPanelDaily.visible=false;
+							scheduPanelDaily.includeInLayout=false;
+							scheduPanelWeekly.visible=false;
+							scheduPanelWeekly.includeInLayout=false;
+							scheduPanelMonthly.visible=false;
+							scheduPanelMonthly.includeInLayout=false;
+							titleLabel="Run Agent More Than Once A Day";
+						}else if(agentPopType=="daily"){
+							titleLabel="Run Agent Once Every Day";
+							scheduPanel.visible=false;
+							scheduPanelDaily.visible=true;
+							scheduPanelDaily.includeInLayout=true;
+							scheduPanelWeekly.visible=false;
+							scheduPanelWeekly.includeInLayout=false;
+							scheduPanelMonthly.visible=false;
+							scheduPanelMonthly.includeInLayout=false;	
+						}else if(agentPopType=="weekly"){
+							titleLabel="Run Agent Once Every Week";
+							scheduPanel.visible=false;
+							scheduPanelDaily.visible=false;
+							scheduPanelDaily.includeInLayout=false;
+							scheduPanelWeekly.visible=true;
+							scheduPanelWeekly.includeInLayout=true;
+							scheduPanelMonthly.visible=false;
+							scheduPanelMonthly.includeInLayout=false;	
+						}else if(agentPopType=="monthly"){
+							titleLabel="Run Agent Once Every Month";
+							scheduPanel.visible=false;
+							scheduPanelDaily.visible=false;
+							scheduPanelDaily.includeInLayout=false;
+							scheduPanelWeekly.visible=false;
+							scheduPanelWeekly.includeInLayout=false;
+							scheduPanelMonthly.visible=true;
+							scheduPanelMonthly.includeInLayout=true;
+
+						}else if(agentPopType=="never"){
+						}
+						
+					}
+
+				}else{
+					docupdateLabel.visible=true;
+					docupdateLabel.includeInLayout=true	
+					serverStartLabel.visible=false;
+					serverStartLabel.includeInLayout=false;
+					scheduPanel.visible=false;
+					scheduPanel.includeInLayout=false;
+				}
+				
+			}
 
 			private function agentTargetChanged(e:IndexChangeEvent):void
 			{
 
 			}
 
-			 private function dateChanged(date:Date):void {
+			private function dateChanged(date:Date):void {
                 if (date == null) {
                     //selection.text = "Date selected: ";
                 } else {
@@ -102,17 +278,120 @@
                 }
             }
 
+			private function agentRunDay_changeHandler(event:Event)
+			{
+		
+			}
+			
 		]]>
 	</fx:Script>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="agentRunSchedule"/>
+		
+	</fx:Declarations>
 	<s:VGroup width="100%" verticalCenter="0" autoLayout="true"
 			  gap="5" paddingLeft="12" paddingBottom="3" paddingTop="9" paddingRight="13"
 			   addedToStage="title='Agent Scheduler'"
 			  horizontalAlign="center">
 
-       <s:Label text="Run Agent After Documents Are Created or Modified" width="100%" />
+       <s:Label text="{titleLabel}" width="100%" />
         <s:Label text=" " width="100%" height="5"/>
-		<s:Label text=" By default. this agent will execute at intervals of 30 minutes - not  immediately after each document update.There is also a default minimum delay of 5 mitues in processing any new or modified environment and will also be impacted by system load" width="100%" />
-	    <s:Label text=" " width="100%" height="5"/>
+		
+		<s:Label text=" By default. this agent will execute at intervals of 30 minutes - not  immediately after each document update.There is also a default minimum delay of 5 mitues in processing any new or modified environment and will also be impacted by system load" width="100%" id="docupdateLabel" visible="true" includeInLayout="true" />
+		<s:Label text=" The agent will execute with in a couple of minutes when the Domino server starts" width="100%" id="serverStartLabel" visible="false" includeInLayout="false"/>
+	    
+		<s:Group id="scheduPanel" width="100%" visible="false" includeInLayout="false">
+			<s:layout>
+				<s:VerticalLayout verticalAlign="middle" />
+			
+			</s:layout>
+
+			<s:HGroup left="5" width="100%">
+				<s:Label text="Run Agent every " width="20%" />
+				<s:DropDownList id="runAgentHoursList" width="80"
+									dataProvider="{agentRunDayHoursList}"
+									change="agentHoursChanged(event)" visible="true" includeInLayout="true"/>	
+				<s:Label text=" hour(s) " width="12%" />
+				<s:DropDownList id="runAgentMinsList" width="80"
+									dataProvider="{agentRunDayMinsList}"
+									change="agentMinsChanged(event)" visible="true" includeInLayout="true"/>
+				<s:Label text=" minutes" width="13%" />										
+			</s:HGroup>
+
+			
+			<s:HGroup left="5" width="100%">
+			<s:RadioButton id="agentRunDayRadioBtn" label="Betweens times" groupName="agentRunSchedule" click="agentRunDay_changeHandler(event)" selected="true"/>
+				<s:DropDownList id="runAgentStartingHour" width="100"
+									dataProvider="{agentRunDayStartHoursList}"
+									change="agentHoursChanged(event)" visible="true" includeInLayout="true"/>
+				<s:Label text=" and "  />	
+				<s:DropDownList id="runAgentEndingHour" width="100"
+									dataProvider="{agentRunDayStartHoursList}"
+									change="agentHoursChanged(event)" visible="true" includeInLayout="true"/>				
+			</s:HGroup>
+			<s:RadioButton id="agentRunAllDayRadioBtn" label="All day" groupName="agentRunSchedule"  click="agentRunDay_changeHandler(event)"/>	
+
+
+		</s:Group>
+
+		<s:Group id="scheduPanelDaily" width="100%" visible="false" includeInLayout="false">
+			<s:layout>
+				<s:VerticalLayout verticalAlign="middle" />
+			
+			</s:layout>
+			<s:HGroup left="5" width="100%">
+				<s:Label text="Starting running agent at " width="35%" />
+				<s:DropDownList id="runAgentDailyHoursList" 
+									dataProvider="{agentRunDayStartHoursList}"
+									change="agentHoursChanged(event)" visible="true" includeInLayout="true"/>	
+												
+			</s:HGroup>
+		</s:Group>	
+
+		<s:Group id="scheduPanelWeekly" width="100%" visible="false" includeInLayout="false">
+			<s:layout>
+				<s:VerticalLayout verticalAlign="middle" />
+			
+			</s:layout>
+			<s:HGroup left="5" width="100%">
+				<s:Label text="On day " width="10%" />
+				<s:DropDownList id="runAgentWeeklyDaysList" 
+									dataProvider="{agentRunOnDayList}"
+									change="agentHoursChanged(event)" visible="true" includeInLayout="true"/>	
+												
+			</s:HGroup>
+			<s:HGroup left="5" width="100%">
+				<s:Label text="At time " width="10%" />
+				<s:DropDownList id="runAgentWeeklyAtTimeList" 
+									dataProvider="{agentRunDayStartHoursList}"
+									change="agentHoursChanged(event)" visible="true" includeInLayout="true"/>	
+												
+			</s:HGroup>
+		</s:Group>
+
+		<s:Group id="scheduPanelMonthly" width="100%" visible="false" includeInLayout="false">
+			<s:layout>
+				<s:VerticalLayout verticalAlign="middle" />
+			
+			</s:layout>
+			<s:HGroup left="5" width="100%">
+				<s:Label text="On day " width="10%" />
+				<s:DropDownList id="runAgentMonthDaysList" 
+									dataProvider="{agentRunDayNumberList}"
+									change="agentHoursChanged(event)" visible="true" includeInLayout="true"/>	
+												
+			</s:HGroup>
+			<s:HGroup left="5" width="100%">
+				<s:Label text="At time " width="10%" />
+				<s:DropDownList id="runAgentMonthAtTimeList" 
+									dataProvider="{agentRunDayStartHoursList}"
+									change="agentHoursChanged(event)" visible="true" includeInLayout="true"/>	
+												
+			</s:HGroup>
+		</s:Group>
+		
+		
+		<s:Label text=" " width="100%" height="5"/>
 	 <s:Label text="Restrict Dates When Agent Runs" width="100%" />
 	 <s:Label text=" " width="100%" height="5"/>
 		<s:HGroup left="0" width="100%">

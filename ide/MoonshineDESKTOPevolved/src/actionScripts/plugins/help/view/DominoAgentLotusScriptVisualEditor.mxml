@@ -168,6 +168,8 @@
 	import mx.core.FlexGlobals;
 	import flash.display.DisplayObject;
 
+    import view.suportClasses.events.DominoAgentPropertiesPopEvent;
+
     private var _codeEditor:IVisualElement;
 
     private var showinmenu:Boolean ;
@@ -236,7 +238,7 @@
         }   
         agentObject.agentName = agentName;
        
-        agentPropertyPanel.addEventListener("openAgentScheduleUI", handleAgentSchedulePopupOpen);
+        agentPropertyPanel.addEventListener(DominoAgentPropertiesPopEvent.DOMINO_AGENT_PROPERTIES_POP, handleAgentSchedulePopupOpen);
         agentPropertyEditor.addEventListener("agentPropertyChanged", onDominoAgentPropertyChanged);
         agentSecurityPropertyPanel.addEventListener("agentPropertyChanged", onDominoAgentPropertyChanged);
         agentPropertyPanel.agentObject=agentObject;
@@ -247,14 +249,17 @@
       
     }
 
-    private function handleAgentSchedulePopupOpen(event:Event):void {
+    private function handleAgentSchedulePopupOpen(event:DominoAgentPropertiesPopEvent):void {
         
      
 		if (!newAgentSchlderPopup)
 		{
 			newAgentSchlderPopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject,DominoAgentPropertySettingPop , true) as DominoAgentPropertySettingPop;
 			newAgentSchlderPopup.addEventListener(CloseEvent.CLOSE, handleAgentSchedulePopupClose);
-			// newAgentSchlderPopup.addEventListener(DuplicateEvent.EVENT_APPLY_DUPLICATE, onFileDuplicateRequest);
+			newAgentSchlderPopup.agentPopType=event.agentPropertyType;
+            newAgentSchlderPopup.agentObject = event.agentObject;
+            
+            // newAgentSchlderPopup.addEventListener(DuplicateEvent.EVENT_APPLY_DUPLICATE, onFileDuplicateRequest);
 			// newAgentSchlderPopup.openType = NewFilePopup.AS_DUPLICATE_FILE;
 			// newAgentSchlderPopup.folderFileLocation = event.fileWrapper.file;
 			
