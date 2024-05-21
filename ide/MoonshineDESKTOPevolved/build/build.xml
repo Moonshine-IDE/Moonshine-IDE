@@ -1,3 +1,129 @@
-<project name="Moonshine Desktop Build Script" basedir="." default="checkOS">
-	<import file="../../MoonshineSharedCore/build/build-lib.xml" />
+<project name="MoonshineBuildScriptLibrary" basedir="." default="build" >
+	<description>
+	</description>
+ 	
+	<!--
+	//==========================================================================
+	//
+	//  PROPERTIES
+	//
+	//==========================================================================
+	-->
+
+	<!-- Read local properties -->
+	<property file="local.properties"/>
+
+	<!-- Read all environment properties -->
+	<property environment="env"/>
+
+	<tstamp>
+		<format property="timestamp" pattern="yyyy-MM-dd_HH-mm-ss" />
+		<format property="timestamp.time" pattern="MM/dd/yyyy hh:mm aa"/>
+	</tstamp>
+
+	<!-- ANCHOR - Tool Properties -->	
+	<property name="JAVA_HOME" value="${env.JAVA_HOME}"/>
+	<property name="FLEX_HOME" value="${env.FLEX_HOME}"/>
+    <property name="adt.cmd" value="${FLEX_HOME}/lib/adt.jar"/>
+	<property name="haxelib.cmd" value="haxelib"/>
+	<property name="signtool.cmd" value="signtool"/>
+	<property name="nsis.cmd" value="makensis"/>
+	<taskdef 
+		resource="net/sf/antcontrib/antcontrib.properties" 
+		classpath="./ant-contrib-0.6.jar"/>
+	<taskdef 
+		resource="flexTasks.tasks" 
+		classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+	
+	<property name="build.is.development" value="true"/>
+	<property name="build.number" value="0"/>
+
+	<!-- ANCHOR - App Properties -->
+	<if>
+		<equals arg1="${build.is.development}" arg2="true"/>
+		<then>
+			<property name="app.id" value="com.moonshine-ide.development"/>
+			<property name="app.title" value="Moonshine Development"/>
+			<property name="app.name" value="Moonshine Development" />
+		</then>
+		<else>
+			<property name="app.id" value="com.moonshine-ide"/>
+			<property name="app.title" value="Moonshine"/>
+			<property name="app.name" value="Moonshine" />
+		</else>			
+	</if>
+	<property name="app.version" value="1.0.0"/>
+
+	<!-- Detect Operating System -->
+	<condition property="is.windows">
+		<os family="windows"/>
+	</condition>
+	<condition property="is.macos">
+		<os family="mac"/>
+	</condition>
+	<condition property="is.linux">
+		<and>
+    		<os family="unix"/>
+    		<not>
+      			<os family="mac"/>
+    		</not>
+  		</and>
+	</condition>
+	
+	<!--
+	//==========================================================================
+	//
+	//  WORKFLOWS
+	//
+	//==========================================================================
+	-->
+	
+	<!-- ANCHOR - Build Workflow -->
+	<target name="build">
+		<antcall>
+			<target name="print-info"/>		
+		</antcall>
+	</target>
+
+    <!-- ANCHOR - Print Info -->
+    <target name="print-info">
+        <echo message="Build Properties:"/>
+		<echo message="=========="/>
+		<echo message="Is Development: ${build.is.development}"/>
+		<echo message="OS: ${os.name}"/>
+		<echo message=""/>
+		<echo message="App Properties:"/>
+		<echo message="=========="/>
+		<echo message="App Name: ${app.name}"/>
+		<echo message="App Title: ${app.title}"/>
+		<echo message="App ID: ${app.id}"/>
+		<echo message="App Version: ${app.version}"/>
+		<echo message=""/>
+		<echo message="Tools:"/>
+		<echo message="=========="/>
+		<echo message="Global JAVA_HOME: ${env.JAVA_HOME}"/>
+		<echo message="Workflow JAVA_HOME: ${JAVA_HOME}"/>
+		<echo message="FLEX_HOME: ${FLEX_HOME}"/>
+		<echo message="adt command: ${adt.cmd}"/>
+		<echo message="haxelib command: ${haxelib.cmd}"/>
+		<echo message="signtool command: ${signtool.cmd}"/>
+		<echo message="nsis command: ${nsis.cmd}"/>
+    </target>
+
+    <!-- ANCHOR - Init -->
+	<target name="init">
+		<mkdir dir="./bin"/>
+		<mkdir dir="./bin/app"/>
+		<mkdir dir="./bin/deploy"/>
+
+		<java jar="${adt.cmd}" fork="true" failonerror="true">
+			<arg line="-certificate" />
+			<arg line="-cn MoonshineSelfSignedCertificate" />
+			<arg line="2048-RSA" />
+	   		<arg line="./bin/MoonshineSelfSignedCertificate.p12" />
+	   		<arg line="moonshine"/>
+		</java>
+		<echo message="Created Self-Signed Certificate"/>
+	</target>
+
 </project>
