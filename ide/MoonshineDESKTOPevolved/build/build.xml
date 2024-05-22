@@ -82,6 +82,9 @@
 	<target name="build">
 		<antcall>
 			<target name="print-info"/>		
+			<target name="init"/>
+			<target name="compile-gui-core"/>
+			<target name="compile-swf"/>
 		</antcall>
 	</target>
 
@@ -90,6 +93,7 @@
         <echo message="Build Properties:"/>
 		<echo message="=========="/>
 		<echo message="Is Development: ${build.is.development}"/>
+		<echo message="Is Debug: ${build.is.debug}"/>
 		<echo message="OS: ${os.name}"/>
 		<echo message=""/>
 		<echo message="App Properties:"/>
@@ -125,5 +129,58 @@
 		</java>
 		<echo message="Created Self-Signed Certificate"/>
 	</target>
+
+	<!-- ANCHOR - Compile GUI Core -->
+	<target name="compile-gui-core">
+		<exec executable="${haxelib.cmd}"
+			dir="../../MoonshineGUICore"
+			failonerror="true">
+			<arg value="run"/>
+			<arg value="openfl"/>
+			<arg value="build"/>
+			<arg value="flash"/>
+		</exec>
+		<echo message="Compiled GUI Core"/>
+	</target>
+
+	<!-- ANCHOR - Compile SWF -->
+	<target name="compile-swf">
+		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
+			<arg value="-Dflexcompiler=${FLEX_HOME}/bin/mxmlc"/>
+			<arg value="-jar"/>
+			<arg value="${FLEX_HOME}/lib/mxmlc.jar"/>
+			
+			<!-- Compiler arguments -->
+			<arg value="+flexlib=${FLEX_HOME}/frameworks"/>
+			<arg value="../src/MoonshineDESKTOP.mxml"/>
+			<arg value="-output=./bin/Moonshine.swf"/>
+			<arg value="-swf-version=44"/>
+			<arg value="+configname=air"/>
+			<arg value="-locale=en_US,ja_JP"/>
+			<arg value="-optimize=true"/>
+			<arg value="-debug=${build.is.debug}"/>
+			<arg value="-actionscript-file-encoding=UTF-8"/>
+			<arg value="-incremental=false"/>
+			<arg value="-keep-generated-actionscript=false"/>
+			<arg value="-allow-source-path-overlap=true"/>
+			<arg value="+maxmemory=2048m"/>
+
+			<!-- Define arguments -->
+			<arg value="-define+=CONFIG::OSX,false"/>
+			
+			<!-- Source-path arguments -->
+			<arg value="-source-path=../../MoonshineSharedCore/src"/>
+			<arg value="-source-path=../../MoonshineSharedCore/src/locale/{locale}"/>
+			<arg value="-source-path=../src"/>
+			<arg value="-source-path=../../../../Moonshine-SDK-Installer/InstallerSharedCore/src"/>
+			
+			<!-- Library-path arguments -->
+			<arg value="-library-path+=../libs"/>
+			<arg value="-library-path+=../../MoonshineSharedCore/libs"/>
+			<arg value="-library-path+=../../MoonshineGUICore/bin/flash/bin"/>
+		</exec>
+    	<echo message="Compiled SWF"/>
+	</target>
+
 
 </project>
