@@ -79,6 +79,7 @@ package actionScripts.plugin.ondiskproj.importer
 			var project:OnDiskProjectVO = new OnDiskProjectVO(projectFolder, projectName);
 			var separator:String = IDEModel.getInstance().fileCore.separator;
 
+			project.projectFolder.name = project.projectName;
 			project.projectFile = settingsFileLocation;
 			
 			var data:XML;
