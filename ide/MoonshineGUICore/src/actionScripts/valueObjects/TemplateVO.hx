@@ -41,6 +41,7 @@ class TemplateVO {
 	public var logoImagePath:String;
 	public var file:FileLocation;
 	public var displayHome:Bool;
+	public var link:String;
 
 	public function new() {}
 }
