@@ -129,7 +129,9 @@ package actionScripts.valueObjects
 		public static var TEMPLATE_ODP_FORMBUILDER_FILE:FileLocation;
 		
 		public static var TEMPLATES_OPEN_PROJECTS: ArrayCollection;
-		
+
+		public static var TEMPLATES_NEWS_MOONSHINE:ArrayCollection;
+
 		public static var TEMPLATES_ANDROID_DEVICES:ArrayCollection;
 		public static var TEMPLATES_IOS_DEVICES:ArrayCollection;
 		
@@ -546,6 +548,22 @@ Yg4BAIQAAAAAAAAAAAA=
 			VISUALEDITOR_FLEX_PROJECT.fileBridge.name = resourceManager.getString('resources', 'VE_PROJECT');
             VISUALEDITOR_FLEX_PROJECT.fileBridge.isDirectory = true;
             VISUALEDITOR_FLEX_PROJECT.fileBridge.data = "Create a Flex project using visual editor.";
+
+            var moonshineDevVO:TemplateVO = new TemplateVO();
+                moonshineDevVO.logoImagePath = "/elements/images/moonshine-logo-circle.png";
+                moonshineDevVO.link = "https://www.moonshine.dev/";
+                moonshineDevVO.displayHome = true;
+                moonshineDevVO.homeTitle = "Try the new web version of Moonshine-IDE - Go to Moonshine.dev!";
+                moonshineDevVO.title = "Try the new web version of Moonshine-IDE - Go to Moonshine.dev!";
+
+            var topicBoxVO:TemplateVO = new TemplateVO();
+                topicBoxVO.logoImagePath = "/elements/images/Topicbox_Icon_RGB.png";
+                topicBoxVO.link = "https://moonshine-ide.topicbox.com/latest";
+                topicBoxVO.displayHome = true;
+                topicBoxVO.homeTitle = "View the Discussion";
+                topicBoxVO.title = "View the Discussion";
+
+            TEMPLATES_NEWS_MOONSHINE = new ArrayCollection([moonshineDevVO, topicBoxVO]);
 
 			var openTemplateProjectVO:TemplateVO = new TemplateVO();
 			var openTemplateProject:FileLocation = new FileLocation("");
