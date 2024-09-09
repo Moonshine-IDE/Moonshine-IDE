@@ -1016,9 +1016,9 @@
 
 	<target name="InstallHaxeDependencies" unless="nohaxelib">
 		<echo>Installing Haxe Libraries</echo>
-                <haxelibInstall library="lime" version="8.0.0" />
-                <haxelibInstall library="openfl" version="9.2.0" />
-                <haxelibInstall library="feathersui" version="1.0.0" />
+                <haxelibInstall library="lime" version="8.1.3" />
+                <haxelibInstall library="openfl" version="9.3.4" />
+                <haxelibInstall library="feathersui" version="1.3.0" />
                 <haxelibInstall library="actuate" />
                 <haxelibInstall library="markdown-openfl-textfield" version="1.0.2" />
                 <haxelibInstall library="format" />
