@@ -84,6 +84,7 @@
 			<target name="print-info"/>		
 			<target name="init"/>
 			<target name="modify-app-descriptor"/>
+			<target name="install-haxe-dependencies"/>
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
 			<target name="compile-app"/>
@@ -158,6 +159,42 @@
 			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
 			value="./bin/MoonshineSDKInstaller.swf" />
 		<echo message="Modified App Descriptor"/>
+	</target>
+
+	<!-- ANCHOR - Install Haxe Dependencies -->
+	<target name="install-haxe-dependencies">
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="feathersui"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="openfl"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="actuate"/>
+			<arg value="--quiet"/>
+		</exec>
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="install"/>
+			<arg value="lime"/>
+			<arg value="--quiet"/>
+		</exec>
+		<echo message="Installed Haxe Dependencies"/>
+		<echo message=""/>
+		<echo message="All Installed Haxelib Libraries:"/>
+		<echo message="=========="/>
+		<exec executable="${haxelib.cmd}">
+			<arg value="list"/>
+		</exec>
+		
 	</target>
 
 	<!-- ANCHOR - Compile GUI Core -->
