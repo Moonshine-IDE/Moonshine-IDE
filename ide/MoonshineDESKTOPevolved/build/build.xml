@@ -42,12 +42,12 @@
 	<if>
 		<equals arg1="${build.is.development}" arg2="true"/>
 		<then>
-			<property name="app.id" value="com.moonshine-ide.development"/>
+			<property name="app.id" value="net.prominic.moonshine-ide.development"/>
 			<property name="app.title" value="Moonshine Development"/>
-			<property name="app.name" value="Moonshine Development" />
+			<property name="app.name" value="MoonshineDevelopment" />
 		</then>
 		<else>
-			<property name="app.id" value="com.moonshine-ide"/>
+			<property name="app.id" value="net.prominic.moonshine-ide"/>
 			<property name="app.title" value="Moonshine"/>
 			<property name="app.name" value="Moonshine" />
 		</else>			
@@ -83,6 +83,7 @@
 		<antcall>
 			<target name="print-info"/>		
 			<target name="init"/>
+			<target name="modify-app-descriptor"/>
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
 			<target name="compile-app"/>
@@ -129,6 +130,34 @@
 	   		<arg line="moonshine"/>
 		</java>
 		<echo message="Created Self-Signed Certificate"/>
+	</target>
+
+	<!-- ANCHOR - Modify App Descriptor -->
+	<target name="modify-app-descriptor">
+		<copy file="../src/MoonshineDESKTOP-Windows-app.xml" todir="./bin" overwrite="true"/>
+
+		<replaceregexp 
+			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			match="filenameToBeReplacedByANT" 
+			replace="${app.name}" />
+		<replaceregexp 
+			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			match="nameToBeReplacedByANT" 
+			replace="${app.title} ${app.version}" 
+			encoding="utf-8" />
+		<replaceregexp 
+			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			match="idToBeReplacedByANT" 
+			replace="${app.id}" />
+		<replaceregexp 
+			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			match="0.0.0" 
+			replace="${app.version}" />
+		<replace 
+			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
+			value="./bin/MoonshineSDKInstaller.swf" />
+		<echo message="Modified App Descriptor"/>
 	</target>
 
 	<!-- ANCHOR - Compile GUI Core -->
@@ -184,16 +213,15 @@
 	</target>
 
 	<target name="compile-app">
-		<echo>Self-signed Process Running</echo>
 		<java jar="${adt.cmd}" fork="true" failonerror="true">
 			<arg line="-package" />
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore './bin/MoonshineSelfSignedCertificate.p12'" />
 	   		<arg line="-storepass 'moonshine'" />
 			<arg line="-tsa 'http://timestamp.digicert.com'" />
-	   		<arg line="-target native"/>
+	   		<arg line="-target bundle"/>
 	   		<arg line="bin/app" />
-	   		<arg line="'../src/MoonshineDESKTOP-Windows-app.xml'" />
+	   		<arg line="'./bin/MoonshineDESKTOP-Windows-app.xml'" />
 	   		<arg line="'./bin/MoonshineDESKTOP.swf'" />
 			<arg line="elements" />
 			<arg line="installer"/>
@@ -202,6 +230,7 @@
 			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</java>
+		<echo message="Compiled App"/>
 	 </target>
 
 </project>
