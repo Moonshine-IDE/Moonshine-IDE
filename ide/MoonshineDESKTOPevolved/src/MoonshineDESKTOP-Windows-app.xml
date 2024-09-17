@@ -46,7 +46,7 @@
 	<initialWindow>
 		<!-- The main SWF or HTML file of the application. Required. -->
 		<!-- Note: In Flash Builder, the SWF reference is set automatically. -->
-		<content>MoonshineDESKTOP.swf</content>
+		<content>bin/MoonshineDESKTOP.swf</content>
 		
 		<!-- The title of the main window. Optional. -->
 		<!-- <title></title> -->

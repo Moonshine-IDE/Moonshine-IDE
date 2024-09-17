@@ -85,6 +85,7 @@
 			<target name="init"/>
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
+			<target name="compile-app"/>
 		</antcall>
 	</target>
 
@@ -153,7 +154,7 @@
 			<!-- Compiler arguments -->
 			<arg value="+flexlib=${FLEX_HOME}/frameworks"/>
 			<arg value="../src/MoonshineDESKTOP.mxml"/>
-			<arg value="-output=./bin/Moonshine.swf"/>
+			<arg value="-output=./bin/MoonshineDESKTOP.swf"/>
 			<arg value="-swf-version=44"/>
 			<arg value="+configname=air"/>
 			<arg value="-locale=en_US,ja_JP"/>
@@ -182,5 +183,25 @@
     	<echo message="Compiled SWF"/>
 	</target>
 
+	<target name="compile-app">
+		<echo>Self-signed Process Running</echo>
+		<java jar="${adt.cmd}" fork="true" failonerror="true">
+			<arg line="-package" />
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore './bin/MoonshineSelfSignedCertificate.p12'" />
+	   		<arg line="-storepass 'moonshine'" />
+			<arg line="-tsa 'http://timestamp.digicert.com'" />
+	   		<arg line="-target native"/>
+	   		<arg line="bin/app" />
+	   		<arg line="'../src/MoonshineDESKTOP-Windows-app.xml'" />
+	   		<arg line="'./bin/MoonshineDESKTOP.swf'" />
+			<arg line="elements" />
+			<arg line="installer"/>
+			<arg line="tourDeFlex" />
+			<arg line="defaultSDKs"/>
+			<arg line="helperResources"/>
+	   		<!-- Add folders to be bundled in the AIR file here -->
+		</java>
+	 </target>
 
 </project>
