@@ -163,30 +163,15 @@
 
 	<!-- ANCHOR - Install Haxe Dependencies -->
 	<target name="install-haxe-dependencies">
-		<exec executable="${haxelib.cmd}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="feathersui"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${haxelib.cmd}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="openfl"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${haxelib.cmd}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="actuate"/>
-			<arg value="--quiet"/>
-		</exec>
-		<exec executable="${haxelib.cmd}"
-			failonerror="true">
-			<arg value="install"/>
-			<arg value="lime"/>
-			<arg value="--quiet"/>
-		</exec>
+		<haxelibInstall library="lime" />
+		<haxelibInstall library="openfl" />
+		<haxelibInstall library="feathersui" />
+		<haxelibInstall library="actuate" />
+		<haxelibInstall library="markdown-openfl-textfield" />
+		<haxelibInstall library="format" />
+		<haxelibInstall library="hxp" />
+		<haxelibInstall library="amfio" />
+
 		<echo message="Installed Haxe Dependencies"/>
 		<echo message=""/>
 		<echo message="All Installed Haxelib Libraries:"/>
@@ -269,5 +254,16 @@
 		</java>
 		<echo message="Compiled App"/>
 	 </target>
+
+	<macrodef name="haxelibInstall" description="Install a haxe library">
+		<attribute name="library" />
+		<attribute name="version" default="" />
+
+		<sequential>
+			<exec executable="${haxelib.cmd}" failonerror="true">
+				<arg line="install @{library} @{version} --always --quiet" />
+			</exec>		
+		</sequential>
+	</macrodef>
 
 </project>
