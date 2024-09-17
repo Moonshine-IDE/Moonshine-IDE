@@ -172,6 +172,16 @@
 		<haxelibInstall library="hxp" />
 		<haxelibInstall library="amfio" />
 
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-openfl-language-client"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-openfl-language-client.git"/>
+			<arg value="--always"/>
+			<arg value="--quiet"/>
+		</exec>
+
+
 		<echo message="Installed Haxe Dependencies"/>
 		<echo message=""/>
 		<echo message="All Installed Haxelib Libraries:"/>
