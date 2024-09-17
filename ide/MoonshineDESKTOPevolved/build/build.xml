@@ -262,7 +262,8 @@
 	</target>
 
 	<target name="compile-app">
-		<java jar="${adt.cmd}" fork="true" failonerror="true">
+		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
+			<arg line="-jar ${adt.cmd}"/>
 			<arg line="-package" />
 			<arg line="-storetype pkcs12" />
 			<arg line="-keystore './bin/MoonshineSelfSignedCertificate.p12'" />
@@ -278,7 +279,7 @@
 			<arg line="defaultSDKs"/>
 			<arg line="helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
-		</java>
+		</exec>
 		<echo message="Compiled App"/>
 	 </target>
 
