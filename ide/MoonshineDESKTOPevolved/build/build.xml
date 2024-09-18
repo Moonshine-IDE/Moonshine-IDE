@@ -314,7 +314,6 @@
 			<arg line="./bin/elements" />
 			<arg line="./bin/installer"/>
 			<arg line="./bin/tourDeFlex" />
-			<arg line="./bin/defaultSDKs"/>
 			<arg line="./bin/helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</exec>
