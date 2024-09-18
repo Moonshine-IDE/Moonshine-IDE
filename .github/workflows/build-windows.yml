@@ -66,13 +66,13 @@ jobs:
         working-directory: ../MockupVisualEditor
         run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
 
-      - name: Build MoonshineDESKTOPevolved with Ant
-        run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' '-DIs.Signed.Build=false'
+      # - name: Build MoonshineDESKTOPevolved with Ant
+      #   run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' '-DIs.Signed.Build=false'
 
       - name: Build Moonshine with Ant
         run: >
           ant
-          - buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml'
+          -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml'
           build
           -Dapp.version=${{ inputs.version }}
           -Dbuild.is.development=${{ inputs.env != 'production' }}
