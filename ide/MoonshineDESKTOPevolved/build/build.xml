@@ -84,6 +84,7 @@
 			<target name="print-info"/>		
 			<target name="init"/>
 			<target name="modify-app-descriptor"/>
+			<target name="copy-elements-folder"/>
 			<target name="install-haxe-dependencies"/>
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
@@ -159,6 +160,30 @@
 			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
 			value="./bin/MoonshineSDKInstaller.swf" />
 		<echo message="Modified App Descriptor"/>
+	</target>
+
+	<!-- ANCHOR - Copy Elements Folder -->
+	<target name="copy-elements-folder">
+		<if>
+			<os family="windows"/>
+			<then>
+				<echo message="Copy elements for Windows"/>
+				<copy todir="./elements" overwrite="true">
+					<fileset dir="../../MoonshineSharedCore/src/elements">
+						<exclude name="**/config_linux/**"/>
+						<exclude name="**/config_mac/**"/>
+					</fileset>
+				</copy>
+			</then>
+			<else>
+				<!-- <echo message="Copy elements for Mac"/>
+				<copy todir="${basedir}/elements" overwrite="true">
+					<fileset dir="${LibraryMoonshineCore}/src/elements">
+						<exclude name="**/config_win/**"/>
+					</fileset>
+				</copy> -->
+			</else>
+		</if>
 	</target>
 
 	<!-- ANCHOR - Install Haxe Dependencies -->
