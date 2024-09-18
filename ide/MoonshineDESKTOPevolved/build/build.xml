@@ -84,7 +84,7 @@
 			<target name="print-info"/>		
 			<target name="init"/>
 			<target name="modify-app-descriptor"/>
-			<target name="copy-elements-folder"/>
+			<target name="copy-folders"/>
 			<target name="install-haxe-dependencies"/>
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
@@ -136,39 +136,39 @@
 
 	<!-- ANCHOR - Modify App Descriptor -->
 	<target name="modify-app-descriptor">
-		<copy file="../src/MoonshineDESKTOP-Windows-app.xml" todir="./bin" overwrite="true"/>
+		<copy file="../src/MoonshineDESKTOP-app.xml" todir="./bin" overwrite="true"/>
 
 		<replaceregexp 
-			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			file="./bin/MoonshineDESKTOP-app.xml" 
 			match="filenameToBeReplacedByANT" 
 			replace="${app.name}" />
 		<replaceregexp 
-			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			file="./bin/MoonshineDESKTOP-app.xml" 
 			match="nameToBeReplacedByANT" 
 			replace="${app.title} ${app.version}" 
 			encoding="utf-8" />
 		<replaceregexp 
-			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			file="./bin/MoonshineDESKTOP-app.xml" 
 			match="idToBeReplacedByANT" 
 			replace="${app.id}" />
 		<replaceregexp 
-			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			file="./bin/MoonshineDESKTOP-app.xml" 
 			match="0.0.0" 
 			replace="${app.version}" />
 		<replace 
-			file="./bin/MoonshineDESKTOP-Windows-app.xml" 
+			file="./bin/MoonshineDESKTOP-app.xml" 
 			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
 			value="./bin/MoonshineSDKInstaller.swf" />
 		<echo message="Modified App Descriptor"/>
 	</target>
 
-	<!-- ANCHOR - Copy Elements Folder -->
-	<target name="copy-elements-folder">
+	<!-- ANCHOR - Copy Folders -->
+	<target name="copy-folders">
 		<if>
 			<os family="windows"/>
 			<then>
 				<echo message="Copy elements for Windows"/>
-				<copy todir="./elements" overwrite="true">
+				<copy todir="./bin/elements" overwrite="true">
 					<fileset dir="../../MoonshineSharedCore/src/elements">
 						<exclude name="**/config_linux/**"/>
 						<exclude name="**/config_mac/**"/>
@@ -184,6 +184,18 @@
 				</copy> -->
 			</else>
 		</if>
+
+		<copy todir="./bin/installer" overwrite="true">
+			<fileset dir="../src/installer"/>
+		</copy>
+
+		<copy todir="./bin/tourDeFlex" overwrite="true">
+			<fileset dir="../tourDeFlex"/>
+		</copy>
+
+		<copy todir="./bin/helperResources" overwrite="true">
+			<fileset dir="../../../../Moonshine-SDK-Installer/InstallerSharedCore/src/helperResources"/>
+		</copy>
 	</target>
 
 	<!-- ANCHOR - Install Haxe Dependencies -->
@@ -286,6 +298,7 @@
     	<echo message="Compiled SWF"/>
 	</target>
 
+
 	<target name="compile-app">
 		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
 			<arg line="-jar ${adt.cmd}"/>
@@ -296,13 +309,13 @@
 			<arg line="-tsa 'http://timestamp.digicert.com'" />
 	   		<arg line="-target bundle"/>
 	   		<arg line="bin/app" />
-	   		<arg line="'./bin/MoonshineDESKTOP-Windows-app.xml'" />
+	   		<arg line="'./bin/MoonshineDESKTOP-app.xml'" />
 	   		<arg line="'./bin/MoonshineDESKTOP.swf'" />
-			<arg line="elements" />
-			<arg line="installer"/>
-			<arg line="tourDeFlex" />
-			<arg line="defaultSDKs"/>
-			<arg line="helperResources"/>
+			<arg line="./bin/elements" />
+			<arg line="./bin/installer"/>
+			<arg line="./bin/tourDeFlex" />
+			<arg line="./bin/defaultSDKs"/>
+			<arg line="./bin/helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</exec>
 		<echo message="Compiled App"/>
