@@ -70,7 +70,7 @@ jobs:
       #   run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' '-DIs.Signed.Build=false'
 
       - name: Build Moonshine with Ant hardcoded
-        run: ant -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' build -Dapp.version=1.0.0 -Dbuild.is.development=false -Dbuild.number=20
+        run: ant -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
