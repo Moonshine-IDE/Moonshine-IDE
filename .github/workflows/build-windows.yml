@@ -67,7 +67,14 @@ jobs:
         run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
 
       - name: Build MoonshineDESKTOPevolved with Ant
-        run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' build -Dapp.version=${{ inputs.version }} -Dbuild.is.development=${{ inputs.env != 'production' }} -Dbuild.number=${{ github.run_number }}
+        shell: cmd
+        run: >
+          ant -noinput
+          -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml'
+          -Dapp.version=${{ inputs.version }}
+          -Dbuild.is.development=${{ inputs.env != 'production' }}
+          -Dbuild.number=${{ github.run_number }}
+          build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
