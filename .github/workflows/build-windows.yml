@@ -70,7 +70,7 @@ jobs:
         shell: cmd
         run: >
           ant -noinput
-          -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml'
+          -buildfile "ide/MoonshineDESKTOPevolved/build/build.xml"
           -Dapp.version=${{ inputs.version }}
           -Dbuild.is.development=${{ inputs.env != 'production' }}
           -Dbuild.number=${{ github.run_number }}
