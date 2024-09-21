@@ -73,4 +73,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Moonshine
-          path: ide/MoonshineDESKTOPevolved/bin/MoonshineDESKTOPevolved.swf
+          path: ide/MoonshineDESKTOPevolved/bin/app/bin/MoonshineDESKTOPevolved.swf
+          if-no-files-found: error
