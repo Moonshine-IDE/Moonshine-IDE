@@ -67,11 +67,18 @@ jobs:
         run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
 
       - name: Build MoonshineDESKTOPevolved with Ant
-        run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml'
+        shell: cmd
+        run: >
+          ant 
+          -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml'
+          build
+          -Dapp.version=${{ inputs.version }}
+          -Dbuild.is.development=${{ inputs.env != 'production' }}
+          -Dbuild.number=${{ github.run_number }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Moonshine
-          path: ide/MoonshineDESKTOPevolved/bin/app/bin/MoonshineDESKTOPevolved.swf
+          path: ide/MoonshineDESKTOPevolved/bin/${{ env.app_name }}.swf
           if-no-files-found: error
