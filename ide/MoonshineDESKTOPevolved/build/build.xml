@@ -83,6 +83,7 @@
 		<antcall>
 			<target name="print-info"/>		
 			<target name="init"/>
+			<target name="install-haxe-dependencies"/>
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
 		</antcall>
@@ -128,6 +129,54 @@
 	   		<arg line="moonshine"/>
 		</java>
 		<echo message="Created Self-Signed Certificate"/>
+	</target>
+
+	<!-- ANCHOR - Install Haxe Dependencies -->
+	<target name="install-haxe-dependencies">
+		<haxelibInstall library="lime" />
+		<haxelibInstall library="openfl" />
+		<haxelibInstall library="feathersui" />
+		<haxelibInstall library="actuate" />
+		<haxelibInstall library="markdown-openfl-textfield" />
+		<haxelibInstall library="format" />
+		<haxelibInstall library="hxp" />
+		<haxelibInstall library="amfio" />
+
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-openfl-language-client"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-openfl-language-client.git"/>
+			<arg value="--always"/>
+			<arg value="--quiet"/>
+		</exec>
+
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-openfl-debug-adapter-client"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-openfl-debug-adapter-client.git"/>
+			<arg value="--always"/>
+			<arg value="--quiet"/>
+		</exec>
+
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-feathersui-text-editor"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor.git"/>
+			<arg value="--always"/>
+			<arg value="--quiet"/>
+		</exec>
+
+		<echo message="Installed Haxe Dependencies"/>
+		<echo message=""/>
+		<echo message="All Installed Haxelib Libraries:"/>
+		<echo message="=========="/>
+		<exec executable="${haxelib.cmd}">
+			<arg value="list"/>
+		</exec>
+		
 	</target>
 
 	<!-- ANCHOR - Compile GUI Core -->
@@ -182,5 +231,15 @@
     	<echo message="Compiled SWF"/>
 	</target>
 
+	<macrodef name="haxelibInstall" description="Install a haxe library">
+		<attribute name="library" />
+		<attribute name="version" default="" />
+
+		<sequential>
+			<exec executable="${haxelib.cmd}" failonerror="true">
+				<arg line="install @{library} @{version} --always --quiet" />
+			</exec>		
+		</sequential>
+	</macrodef>
 
 </project>

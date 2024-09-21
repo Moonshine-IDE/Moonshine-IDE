@@ -2,50 +2,75 @@ name: SUB - Build on Windows
 
 on:
   workflow_dispatch:
+    inputs:
+      env:
+        description: "An Environment"
+        required: true
+        type: choice
+        options:
+          - development
+          - production
+      version:
+        description: "A Version"
+        required: true
+        type: string
+
   workflow_call:
+    inputs:
+      env:
+        description: "An Environment"
+        required: true
+        type: string
+      version:
+        description: "A Version"
+        required: true
+        type: string
+
+env:
+  app_name: ${{ inputs.env == 'production' && 'Moonshine' || 'MoonshineDevelopment' }}
 
 jobs:
   build:
     runs-on: "windows-latest"
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '11'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "11"
 
-    - uses: krdlab/setup-haxe@v1
-      with:
-        haxe-version: 4.2.5
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.2.5
 
-    - uses: joshtynjala/setup-apache-flex-action@v2
-      with:
-        flex-version: "4.16.1"
-        air-version: "33.1"
-        accept-air-license: true
+      - uses: joshtynjala/setup-apache-flex-action@v2
+        with:
+          flex-version: "4.16.1"
+          air-version: "33.1"
+          accept-air-license: true
 
-    - name: Prepare dependencies
-      working-directory: ..
-      run: |
-        git clone https://github.com/Moonshine-IDE/Moonshine-SDK-Installer.git
-        git clone https://github.com/Moonshine-IDE/VisualEditorConverterLib.git
-        git clone https://github.com/Moonshine-IDE/MockupVisualEditor.git
+      - name: Prepare dependencies
+        working-directory: ..
+        run: |
+          git clone https://github.com/Moonshine-IDE/Moonshine-SDK-Installer.git
+          git clone https://github.com/Moonshine-IDE/VisualEditorConverterLib.git
+          git clone https://github.com/Moonshine-IDE/MockupVisualEditor.git
 
-    - name: Build VisualEditorConverterLib with Ant
-      working-directory: ../VisualEditorConverterLib
-      run: ant -noinput -buildfile 'build.xml'
+      - name: Build VisualEditorConverterLib with Ant
+        working-directory: ../VisualEditorConverterLib
+        run: ant -noinput -buildfile 'build.xml'
 
-    - name: Build MockupVisualEditor with Ant
-      working-directory: ../MockupVisualEditor
-      run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
+      - name: Build MockupVisualEditor with Ant
+        working-directory: ../MockupVisualEditor
+        run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
 
-    - name: Build MoonshineDESKTOPevolved with Ant
-      run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' '-DIs.Signed.Build=false'
+      - name: Build MoonshineDESKTOPevolved with Ant
+        run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml'
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Moonshine
-        path: ide/MoonshineDESKTOPevolved/bin/MoonshineDESKTOPevolved.swf
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Moonshine
+          path: ide/MoonshineDESKTOPevolved/bin/MoonshineDESKTOPevolved.swf
