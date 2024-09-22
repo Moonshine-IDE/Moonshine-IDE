@@ -83,6 +83,7 @@
 		<antcall>
 			<target name="print-info"/>		
 			<target name="init"/>
+			<target name="modify-app-descriptor"/>
 			<target name="install-haxe-dependencies"/>
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
@@ -129,6 +130,34 @@
 	   		<arg line="moonshine"/>
 		</java>
 		<echo message="Created Self-Signed Certificate"/>
+	</target>
+
+	<!-- ANCHOR - Modify App Descriptor -->
+	<target name="modify-app-descriptor">
+		<copy file="../src/MoonshineDESKTOP-app.xml" todir="./bin" overwrite="true"/>
+
+		<replaceregexp 
+			file="./bin/MoonshineDESKTOP-app.xml" 
+			match="filenameToBeReplacedByANT" 
+			replace="${app.name}" />
+		<replaceregexp 
+			file="./bin/MoonshineDESKTOP-app.xml" 
+			match="nameToBeReplacedByANT" 
+			replace="${app.title} ${app.version}" 
+			encoding="utf-8" />
+		<replaceregexp 
+			file="./bin/MoonshineDESKTOP-app.xml" 
+			match="idToBeReplacedByANT" 
+			replace="${app.id}" />
+		<replaceregexp 
+			file="./bin/MoonshineDESKTOP-app.xml" 
+			match="0.0.0" 
+			replace="${app.version}" />
+		<replace 
+			file="./bin/MoonshineDESKTOP-app.xml" 
+			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
+			value="./bin/MoonshineSDKInstaller.swf" />
+		<echo message="Modified App Descriptor"/>
 	</target>
 
 	<!-- ANCHOR - Install Haxe Dependencies -->
