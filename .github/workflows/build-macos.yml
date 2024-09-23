@@ -78,12 +78,9 @@ jobs:
       - name: List all files
         run: ls -R ide/MoonshineDESKTOPevolved/build
 
-      - name: Compress Artifact
-        run: zip -r ide/MoonshineDESKTOPevolved/Moonshine.zip ide/MoonshineDESKTOPevolved/build/bin/app/*
-
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Moonshine
-          path: ide/MoonshineDESKTOPevolved/Moonshine.zip
+          name: Moonshine          
+          path: ide/MoonshineDESKTOPevolved/build/bin/app/${{ env.app_name }}.app
           if-no-files-found: error
