@@ -67,7 +67,6 @@ jobs:
         run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
 
       - name: Build MoonshineDESKTOPevolved with Ant
-        shell: cmd
         run: >
           ant -noinput
           -buildfile "ide/MoonshineDESKTOPevolved/build/build.xml"
