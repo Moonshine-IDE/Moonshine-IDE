@@ -288,6 +288,15 @@
 	</target>
 
 	<target name="compile-app">
+		<switch value="true">
+			<case value="${is.windows}">
+				<property name="app.path" value="bin/app"/>
+			</case>
+			<case value="${is.macos}">
+				<property name="app.path" value="bin/app/${app.name}.app"/>
+			</case>
+		</switch>
+
 		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
 			<arg line="-jar ${adt.cmd}"/>
 			<arg line="-package" />
@@ -296,7 +305,7 @@
 	   		<arg line="-storepass 'moonshine'" />
 			<arg line="-tsa 'http://timestamp.digicert.com'" />
 	   		<arg line="-target bundle"/>
-	   		<arg line="bin/app/"/>
+	   		<arg line="${app.path}" />
 	   		<arg line="'./bin/MoonshineDESKTOP-app.xml'" />
 	   		<arg line="'./bin/Moonshine.swf'" />
 			<arg line="./elements" />
