@@ -44,7 +44,7 @@
 		<then>
 			<property name="app.id" value="com.moonshine-ide.development"/>
 			<property name="app.title" value="Moonshine Development"/>
-			<property name="app.name" value="Moonshine Development" />
+			<property name="app.name" value="MoonshineDevelopment" />
 		</then>
 		<else>
 			<property name="app.id" value="com.moonshine-ide"/>
@@ -88,6 +88,7 @@
 			<target name="install-haxe-dependencies"/>
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
+			<target name="compile-app"/>
 		</antcall>
 	</target>
 
@@ -157,7 +158,7 @@
 		<replace 
 			file="./bin/MoonshineDESKTOP-app.xml" 
 			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
-			value="./bin/MoonshineSDKInstaller.swf" />
+			value="./bin/Moonshine.swf" />
 		<echo message="Modified App Descriptor"/>
 	</target>
 
@@ -285,6 +286,27 @@
 		</exec>
     	<echo message="Compiled SWF"/>
 	</target>
+
+	<target name="compile-app">
+		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
+			<arg line="-jar ${adt.cmd}"/>
+			<arg line="-package" />
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore './bin/MoonshineSelfSignedCertificate.p12'" />
+	   		<arg line="-storepass 'moonshine'" />
+			<arg line="-tsa 'http://timestamp.digicert.com'" />
+	   		<arg line="-target bundle"/>
+	   		<arg line="bin/app/"/>
+	   		<arg line="'./bin/MoonshineDESKTOP-app.xml'" />
+	   		<arg line="'./bin/Moonshine.swf'" />
+			<arg line="./elements" />
+			<arg line="./installer"/>
+			<arg line="./tourDeFlex" />
+			<arg line="./helperResources"/>
+	   		<!-- Add folders to be bundled in the AIR file here -->			
+		</exec>
+		<echo message="Compiled App"/>
+	 </target>
 
 	<macrodef name="haxelibInstall" description="Install a haxe library">
 		<attribute name="library" />
