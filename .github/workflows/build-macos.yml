@@ -75,12 +75,15 @@ jobs:
           -Dbuild.number=${{ github.run_number }}
           build
 
+      - name: List all files
+        run: ls -R ide/MoonshineDESKTOPevolved/build
+
       - name: Compress Artifact
-        run: zip -r ide/MoonshineDESKTOPevolved/Moonshine.zip ide/MoonshineDESKTOPevolved/build/bin/app/
+        run: zip -r ide/MoonshineDESKTOPevolved/Moonshine.zip ide/MoonshineDESKTOPevolved/build/bin/app/*
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Moonshine
-          path: ide\MoonshineDESKTOPevolved\Moonshine.zip
+          path: ide/MoonshineDESKTOPevolved/Moonshine.zip
           if-no-files-found: error
