@@ -92,6 +92,41 @@
 		</antcall>
 	</target>
 
+	<!-- ANCHOR - Pack And Sign Workflow -->
+	<target name="pack-and-sign">
+		<switch value="true">
+			<case value="${is.windows}">
+				<antcall>
+					<!-- Windows Tasks -->		
+					<target name="create-windows-installer"/>
+					<target name="sign-windows-installer"/>
+				</antcall>
+			</case>
+			<case value="${is.macos}">
+				<antcall>
+					<!-- macOS Tasks -->
+					<!-- <target name="sign-macos-app"/> -->
+					<target name="create-macos-pkg"/>
+					<!-- <target name="sign-macos-pkg"/> -->
+					<!-- <target name="notarize-macos-pkg"/> -->
+				</antcall>
+			</case>
+			<case value="${is.linux}">
+					<!-- Linux Tasks -->
+					<echo message="Linux not supported yet."/>
+			</case>
+		</switch>		
+	</target>
+
+	<!-- ANCHOR - Clean Workflow -->
+	<target name="clean">
+		<delete dir="./bin"/>
+		<delete dir="./elements"/>
+		<delete dir="./helperResources"/>
+		<delete dir="./installer"/>
+		<delete dir="./tourDeFlex"/>
+	</target>
+
     <!-- ANCHOR - Print Info -->
     <target name="print-info">
         <echo message="Build Properties:"/>
@@ -315,8 +350,20 @@
 	   		<!-- Add folders to be bundled in the AIR file here -->			
 		</exec>
 		<echo message="Compiled App"/>
-	 </target>
+	</target>
 
+	<!-- ANCHOR - Create macOS pkg -->
+	<target name="create-macos-pkg">
+		<exec executable="productbuild" failonerror="true">
+			<arg value="--component"/>
+			<arg value="bin/app/${app.name}.app"/>			
+			<arg value="/Applications"/>
+			<arg value="./bin/deploy/moonshine-unsigned.pkg"/>
+		</exec>
+		<echo message="Created macOS pkg"/>
+	</target>
+
+	<!-- ANCHOR - Haxelib macro -->
 	<macrodef name="haxelibInstall" description="Install a haxe library">
 		<attribute name="library" />
 		<attribute name="version" default="" />

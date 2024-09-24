@@ -73,7 +73,7 @@ jobs:
           -Dapp.version=${{ inputs.version }}
           -Dbuild.is.development=${{ inputs.env != 'production' }}
           -Dbuild.number=${{ github.run_number }}
-          build
+          build pack-and-sign
 
       - name: List all files
         run: ls -R ide/MoonshineDESKTOPevolved/build
@@ -82,5 +82,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Moonshine          
-          path: ide/MoonshineDESKTOPevolved/build/bin/app/${{ env.app_name }}.app
+          path: ide/MoonshineDESKTOPevolved/build/bin/deploy/moonshine-unsigned.pkg
           if-no-files-found: error
