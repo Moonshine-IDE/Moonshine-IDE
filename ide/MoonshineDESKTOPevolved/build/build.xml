@@ -105,7 +105,7 @@
 			<case value="${is.macos}">
 				<antcall>
 					<!-- macOS Tasks -->
-					<!-- <target name="sign-macos-app"/> -->
+					<target name="sign-macos-app"/>
 					<target name="create-macos-pkg"/>
 					<!-- <target name="sign-macos-pkg"/> -->
 					<!-- <target name="notarize-macos-pkg"/> -->
@@ -350,6 +350,54 @@
 	   		<!-- Add folders to be bundled in the AIR file here -->			
 		</exec>
 		<echo message="Compiled App"/>
+	</target>
+
+	<!-- ANCHOR - Sign macOS app -->
+	<target name="sign-macos-app">
+		<echo message="Kechain: ${keychain.name}"/>
+		<echo message="Notarytool Profile: ${notarytool.profile}"/>
+
+		<!-- Show Nuber of Developer ID Application Certificates -->
+		<exec executable="bash" outputproperty="certs.application.in.keychain">
+            <arg value="-c"/>
+            <arg value="security find-certificate -a | grep -s 'Developer ID Application' | grep -c 'alis'"/>
+        </exec>
+		<!-- Show Number of Developer ID Installer Certificates -->
+		<echo message="certs.application.in.keychain: ${certs.application.in.keychain}"/>
+		<exec executable="bash" outputproperty="certs.installer.in.keychain">
+            <arg value="-c"/>
+            <arg value="security find-certificate -a | grep -s 'Developer ID Installer' | grep -c 'alis'"/>
+        </exec>
+		<echo message="certs.installer.in.keychain: ${certs.installer.in.keychain}"/>
+
+		<exec executable="codesign" failonerror="true">
+            <arg value="./bin/app/${app.name}.app"/>
+            <arg value="--sign"/>
+            <arg value="Developer ID Application"/>
+			<arg value="--entitlements"/>
+			<arg value="entitlement-non-sandbox.plist"/>
+            <arg value="--options"/>
+            <arg value="runtime"/>
+            <arg value="--force"/>
+            <arg value="--timestamp"/>
+            <arg value="--verbose"/>
+            <arg value="--deep"/>
+        </exec>  
+
+		<exec executable="codesign" failonerror="true">
+			<arg value="-vvv"/>
+			<arg value="--deep"/>
+			<arg value="--strict"/>
+            <arg value="./bin/app/${app.name}.app"/>
+        </exec>
+
+		<exec executable="spctl" failonerror="true">
+			<arg value="-vvv"/>
+			<arg value="--assess"/>
+			<arg value="--type"/>
+			<arg value="exec"/>
+            <arg value="./bin/app/${app.name}.app"/>
+        </exec>
 	</target>
 
 	<!-- ANCHOR - Create macOS pkg -->
