@@ -107,7 +107,7 @@
 					<!-- macOS Tasks -->
 					<target name="sign-macos-app"/>
 					<target name="create-macos-pkg"/>
-					<!-- <target name="sign-macos-pkg"/> -->
+					<target name="sign-macos-pkg"/>
 					<!-- <target name="notarize-macos-pkg"/> -->
 				</antcall>
 			</case>
@@ -352,6 +352,16 @@
 		<echo message="Compiled App"/>
 	</target>
 
+
+
+	<!--
+	//==========================================================================
+	//
+	//  MACOS SUBTASKS
+	//
+	//==========================================================================
+	-->
+
 	<!-- ANCHOR - Sign macOS app -->
 	<target name="sign-macos-app">
 		<echo message="Kechain: ${keychain.name}"/>
@@ -406,9 +416,33 @@
 			<arg value="--component"/>
 			<arg value="bin/app/${app.name}.app"/>			
 			<arg value="/Applications"/>
-			<arg value="./bin/deploy/moonshine-unsigned.pkg"/>
+			<arg value="./bin/deploy/${app.name}-unsigned.pkg"/>
 		</exec>
 		<echo message="Created macOS pkg"/>
+	</target>
+
+	<!-- ANCHOR - Sign macOS pkg -->
+	<target name="sign-macos-pkg">
+		<exec executable="productsign" failonerror="true">
+			<arg value="--sign"/>
+			<arg value="Developer ID Installer"/>
+			<arg value="./bin/deploy/${app.name}-unsigned.pkg"/>
+			<arg value="./bin/deploy/${app.name}-${app.version}.pkg"/>
+		</exec>
+		<echo message="Signed macOS pkg"/>
+	</target>
+
+	<!-- ANCHOR - Notarize macOS pkg -->
+	<target name="notarize-macos-pkg">
+		<exec executable="xcrun" failonerror="true">
+			<arg value="notarytool"/>
+			<arg value="submit"/>
+			<arg value="./bin/deploy/${app.name}-${app.version}.pkg"/>
+			<arg value="--keychain-profile"/>
+			<arg value="${notarytool.profile}"/>
+			<arg value="--wait"/>
+		</exec>
+		<echo message="Notarized macOS pkg"/>
 	</target>
 
 	<!-- ANCHOR - Haxelib macro -->
