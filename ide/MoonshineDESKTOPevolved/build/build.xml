@@ -108,7 +108,7 @@
 					<target name="sign-macos-app"/>
 					<target name="create-macos-pkg"/>
 					<target name="sign-macos-pkg"/>
-					<!-- <target name="notarize-macos-pkg"/> -->
+					<target name="notarize-macos-pkg"/>
 				</antcall>
 			</case>
 			<case value="${is.linux}">
