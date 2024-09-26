@@ -143,6 +143,8 @@ jobs:
           -Dapp.version=${{ inputs.version }}
           -Dbuild.is.development=${{ inputs.env != 'production' }}
           -Dbuild.number=${{ github.run_number }}
+          -Dkeychain.name=build.keychain
+          -Dnotarytool.profile="notarytool-profile"  
           build pack-and-sign
 
       - name: List all files
