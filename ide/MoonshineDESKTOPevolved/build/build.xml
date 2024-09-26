@@ -105,6 +105,7 @@
 			<case value="${is.macos}">
 				<antcall>
 					<!-- macOS Tasks -->
+					<target name="sign-node-binaries"/>
 					<target name="sign-macos-app"/>
 					<target name="create-macos-pkg"/>
 					<target name="sign-macos-pkg"/>
@@ -361,6 +362,26 @@
 	//
 	//==========================================================================
 	-->
+
+	<!-- ANCHOR - Macro for signing all .node binaries -->
+	<target name="sign-node-binaries">
+		<echo message="Signing all .node binaries in node_modules directories"/>
+		
+		<!-- Find and sign all .node binaries -->
+		<apply executable="codesign" failonerror="true" parallel="true">
+			<arg value="--deep"/>
+			<arg value="--force"/>
+			<arg value="--options"/>
+			<arg value="runtime"/>
+			<arg value="--timestamp"/>
+			<arg value="--sign"/>
+			<arg value="Developer ID Application"/>
+			<fileset dir="${basedir}">
+				<include name="**/node_modules/**/*.node"/>
+				<include name="**/node_modules/node-notifier/vendor/mac.noindex/terminal-notifier.app/Contents/MacOS/terminal-notifier"/>
+			</fileset>
+		</apply>
+	</target>
 
 	<!-- ANCHOR - Sign macOS app -->
 	<target name="sign-macos-app">
