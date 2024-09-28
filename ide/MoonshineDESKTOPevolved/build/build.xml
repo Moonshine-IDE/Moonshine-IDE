@@ -353,7 +353,47 @@
 		<echo message="Compiled App"/>
 	</target>
 
+	<!--
+	//==========================================================================
+	//
+	//  WINDOWS SUBTASKS
+	//
+	//==========================================================================
+	-->
 
+	<!-- ANCHOR - Create Windows Installer -->
+	<target name="create-windows-installer">
+		<exec executable="${nsis.cmd}" failonerror="true">
+			<arg value="/DVERSION=${app.version}"/>
+			<arg value="/DAPP_NAME=${app.name}"/>
+			<arg value="/DAPP_TITLE=${app.title}"/>
+			<arg value="/DINSTALLER_NAME=${app.name}-${app.version}-Installer"/>
+			<arg value="/DAPPID=${app.id}"/>
+			<arg value="/DTIMESTAMP=${timestamp.time}"/>
+			<arg value="./nsis-build.nsi"/>
+		</exec>
+		<echo message="Created Windows Installer"/>
+	</target>
+		
+	<!-- ANCHOR - Sign Windows Installer -->
+	<target name="sign-windows-installer">
+		<exec executable="${signtool.cmd}" failonerror="true">
+			<arg value="sign"/>
+			<arg value="/sha1"/>
+			<arg value="${env.SM_THUMBPRINT}"/>
+			<arg value="/tr"/>
+			<arg value="http://timestamp.digicert.com"/>
+			<arg value="/td"/>
+			<arg value="SHA256"/>
+			<arg value="/fd"/>
+			<arg value="SHA256"/>
+			<arg value="./bin/app/${app.name}-${app.version}-Installer.exe"/>
+		</exec>
+		<move 
+			file="./bin/app/${app.name}-${app.version}-Installer.exe" 
+			tofile="./bin/deploy/${app.name}-${app.version}-Installer.exe"/>
+		<echo message="Signed Windows Installer"/>
+	 </target>	
 
 	<!--
 	//==========================================================================
@@ -363,7 +403,7 @@
 	//==========================================================================
 	-->
 
-	<!-- ANCHOR - Macro for signing all .node binaries -->
+	<!-- ANCHOR - Signigning all .node binaries -->
 	<target name="sign-node-binaries">
 		<echo message="Signing all .node binaries in node_modules directories"/>
 		
@@ -465,6 +505,14 @@
 		</exec>
 		<echo message="Notarized macOS pkg"/>
 	</target>
+
+	<!--
+	//==========================================================================
+	//
+	//  MACROS
+	//
+	//==========================================================================
+	-->
 
 	<!-- ANCHOR - Haxelib macro -->
 	<macrodef name="haxelibInstall" description="Install a haxe library">

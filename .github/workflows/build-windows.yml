@@ -74,20 +74,11 @@ jobs:
           -Dapp.version=${{ inputs.version }}
           -Dbuild.is.development=${{ inputs.env != 'production' }}
           -Dbuild.number=${{ github.run_number }}
-          build
-
-      - name: Compress Artifact
-        shell: pwsh
-        run: |
-          # Navigate to the app directory
-          Set-Location -Path "ide\MoonshineDESKTOPevolved\build\bin\app\"
-
-          # Compress the current directory into Moonshine.zip located in ide\MoonshineDESKTOPevolved\
-          Compress-Archive -Path * -DestinationPath "..\..\..\Moonshine.zip" -CompressionLevel Optimal
+          build pack-and-sign
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Moonshine
-          path: ide\MoonshineDESKTOPevolved\Moonshine.zip
+          path: ide\MoonshineDESKTOPevolved\build\bin\deploy\${{ env.app_name }}-${{ inputs.version }}-Installer.exe
           if-no-files-found: error
