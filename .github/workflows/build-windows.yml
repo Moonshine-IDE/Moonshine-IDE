@@ -53,7 +53,7 @@ jobs:
           air-license-base64: ${{ secrets.AIR_LICENSE_BASE64 }}
 
       - name: Install NSIS plugin nsProcess
-        working-directory: MoonshineSDKInstaller/build
+        working-directory: ide\MoonshineDESKTOPevolved\build
         run: |
           Invoke-RestMethod -Uri "https://nsis.sourceforge.io/mediawiki/images/2/2f/ExecCmd.zip" -OutFile ExecCmd.zip
           7z x ExecCmd.zip -o'ExecCmd' -y
