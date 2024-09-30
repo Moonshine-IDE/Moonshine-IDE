@@ -1,0 +1,29 @@
+name: MANUAL - Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "An Environment"
+        required: true
+        type: choice
+        options:
+          - development
+          - production
+      version:
+        description: "A Version"
+        required: true
+        type: string
+
+env:
+  app_name: ${{ inputs.env == 'production' && 'Moonshine' || 'MoonshineDevelopment' }}
+  tag: v${{ inputs.version }}${{ inputs.env == 'production' && ' ' || '-Dev' }}
+
+jobs:
+  release:
+    name: Draft Development Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print info
+        run: |
+          echo "This is a stub process"
