@@ -110,8 +110,8 @@ jobs:
       - name: Unlock keychain
         shell: bash
         run: |
-          security unlock-keychain -p "${{ secrets.MAC_KEYCHAIN_PASS }}" build.keychain    
-      
+          security unlock-keychain -p "${{ secrets.MAC_KEYCHAIN_PASS }}" build.keychain
+
       - name: Create notarization profile
         shell: bash
         run: |
@@ -153,6 +153,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Moonshine          
+          name: moonshine-macos-setup
           path: ide/MoonshineDESKTOPevolved/build/bin/deploy/${{ env.app_name }}-${{ inputs.version }}.pkg
           if-no-files-found: error
