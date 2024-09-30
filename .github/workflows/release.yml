@@ -22,7 +22,7 @@ env:
 jobs:
   build-windows:
     name: Build on Windows
-    uses: moonshine-ide/moonshine-ide/.github/workflows/build-windows.yml@master
+    uses: moonshine-ide/moonshine-ide/.github/workflows/build-windows.yml@1250-github-actions-2
     secrets: inherit
     with:
       env: ${{ inputs.env }}
@@ -30,7 +30,7 @@ jobs:
 
   build-macos:
     name: Build on MacOS
-    uses: moonshine-ide/moonshine-ide/.github/workflows/build-macos.yml@master
+    uses: moonshine-ide/moonshine-ide/.github/workflows/build-macos.yml@1250-github-actions-2
     secrets: inherit
     with:
       env: ${{ inputs.env }}
