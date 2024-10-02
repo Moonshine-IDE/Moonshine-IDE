@@ -50,7 +50,7 @@
 			labelDisplay.addEventListener(MouseEvent.CLICK, handleClick);
 			labelDisplay.setStyle('color', 0XD6D6D6);
 			labelDisplay.setStyle('fontWeight', 'bold');
-			labelDisplay.setStyle('fontSize', 24);
+			labelDisplay.setStyle('fontSize', 20);
 		}
 
 		private function handleClick(event:Event):void
@@ -103,11 +103,14 @@
 	</s:layout>
 	
 	<s:Image id="fileIcon" height="40" width="40" smooth="true"  />
+
 	<s:Label id="labelDisplay"
 			paddingLeft="3"
 			paddingRight="3"
 			baseline="50"
 			height="100%"
+			maxDisplayedLines="2"
+			lineBreak="toFit"
 			verticalAlign="middle"
 			mouseOver="onLabelDisplayMouseOver(event)"
 			mouseOut="onLabelDisplayMouseOut(event)"
