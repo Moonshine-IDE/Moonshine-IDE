@@ -142,6 +142,7 @@ jobs:
           -buildfile "ide/MoonshineDESKTOPevolved/build/build.xml"
           -Dapp.version=${{ inputs.version }}
           -Dbuild.is.development=${{ inputs.env != 'production' }}
+          -Dbuild.is.debug=${{ inputs.env != 'production' }}
           -Dbuild.number=${{ github.run_number }}
           -Dkeychain.name=build.keychain
           -Dnotarytool.profile="notarytool-profile"  
