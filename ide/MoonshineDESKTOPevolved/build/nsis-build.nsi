@@ -14,14 +14,14 @@
 ;General
 
 	;Name and file
-	Name "${INSTALLERNAME}-IDE"
-	OutFile "DEPLOY\${INSTALLERNAME}-installer.exe"
+	Name "${APP_NAME}-IDE"
+	OutFile "bin\app\${INSTALLER_NAME}.exe"
 
 	;Default installation folder
-	InstallDir "$PROGRAMFILES64\${INSTALLERNAME}"
+	InstallDir "$PROGRAMFILES64\${APP_NAME}"
 	
 	;Get installation folder from registry if available
-	InstallDirRegKey HKCU "Software\${INSTALLERNAME}" ""
+	InstallDirRegKey HKCU "Software\${APP_NAME}" ""
 
 	;Request application privileges for Windows Vista and higher
 	RequestExecutionLevel admin
@@ -29,7 +29,6 @@
 ;--------------------------------
 ;Start of running process check
 
-!define APP_NAME find_close_terminate
 !define WND_PROCESS_TITLE "Moonshine-IDE"
 !define TO_MS 2000
 !define SYNC_TERM 0x00100001
@@ -69,80 +68,24 @@ LangString stopMsg 0 "Stopping ${WND_PROCESS_TITLE} Application"
 
 ;--------------------------------
 ;End of running process check
-	
-;--------------------------------
-;Start of StrContains
-	
-	Var STR_HAYSTACK
-	Var STR_NEEDLE
-	Var STR_CONTAINS_VAR_1
-	Var STR_CONTAINS_VAR_2
-	Var STR_CONTAINS_VAR_3
-	Var STR_CONTAINS_VAR_4
-	Var STR_RETURN_VAR
-	 
-	Function StrContains
-	  Exch $STR_NEEDLE
-	  Exch 1
-	  Exch $STR_HAYSTACK
-	  ; Uncomment to debug
-	  ;MessageBox MB_OK 'STR_NEEDLE = $STR_NEEDLE STR_HAYSTACK = $STR_HAYSTACK '
-		StrCpy $STR_RETURN_VAR ""
-		StrCpy $STR_CONTAINS_VAR_1 -1
-		StrLen $STR_CONTAINS_VAR_2 $STR_NEEDLE
-		StrLen $STR_CONTAINS_VAR_4 $STR_HAYSTACK
-		loop:
-		  IntOp $STR_CONTAINS_VAR_1 $STR_CONTAINS_VAR_1 + 1
-		  StrCpy $STR_CONTAINS_VAR_3 $STR_HAYSTACK $STR_CONTAINS_VAR_2 $STR_CONTAINS_VAR_1
-		  StrCmp $STR_CONTAINS_VAR_3 $STR_NEEDLE found
-		  StrCmp $STR_CONTAINS_VAR_1 $STR_CONTAINS_VAR_4 done
-		  Goto loop
-		found:
-		  StrCpy $STR_RETURN_VAR $STR_NEEDLE
-		  Goto done
-		done:
-	   Pop $STR_NEEDLE ;Prevent "invalid opcode" errors and keep the
-	   Exch $STR_RETURN_VAR  
-	FunctionEnd
-	 
-	!macro _StrContainsConstructor OUT NEEDLE HAYSTACK
-	  Push `${HAYSTACK}`
-	  Push `${NEEDLE}`
-	  Call StrContains
-	  Pop `${OUT}`
-	!macroend
-	 
-	!define StrContains '!insertmacro "_StrContainsConstructor"'
-	
-;--------------------------------
-;End of StrContains
-	
+
 Function .onInit
-	!insertmacro TerminateApp "${INSTALLERNAME}.exe"
+	!insertmacro TerminateApp "${APP_TITLE}.exe"
 	
-	ReadRegStr $R2 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
-		"InstallLocation"
-	${StrContains} $0 "(x86)" $R2
-	StrCmp $0 "" check_timestamp 0
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION \
-		"This will install 64-Bit Moonshine-IDE on your system.$\n$\nA 32-Bit version is currently installed. You will need to uninstall the 32-bit version before you can install the new version. \
-		Your settings and open projects will still be available in the new version.$\n$\nDo you want to uninstall the old version now?" \
-		IDYES run_x86_uninstaller IDNO quit_installation
-	check_timestamp:
-		ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
-			"TimeStamp"
-		StrCmp $R0 "" done
-		StrCmp $R0 "${TIMESTAMP}" 0 done
-		MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
-			"This version of Moonshine-IDE is already installed. Do you want to run the current installation?$\n$\n \
-			Yes - Start Moonshine-IDE now$\n \
-			No - Do a fresh install$\n \
-			Cancel - Cancel this installation" \
-			IDYES run_application IDNO run_uninstaller
-			Abort
+	ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
+		"TimeStamp"
+	StrCmp $R0 "" done
+	StrCmp $R0 "${TIMESTAMP}" 0 done
+	MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
+		"This version of ${APP_TITLE} is already installed. Do you want to run the current installation?$\n$\n \
+		Yes - Start ${APP_TITLE} now$\n \
+		No - Do a fresh install$\n \
+		Cancel - Cancel this installation" \
+		IDYES run_application IDNO run_uninstaller
+		Abort
 	run_application:
 		ClearErrors
-		Exec "$INSTDIR\${INSTALLERNAME}.exe"
+		Exec "$INSTDIR\${APP_TITLE}.exe"
 		Abort
 	run_uninstaller:
 		ClearErrors
@@ -160,22 +103,6 @@ Function .onInit
 		uninstall_success:
 			Delete "$INSTDIR\uninstall.exe"
 			RmDir "$INSTDIR"
-			Goto done
-	run_x86_uninstaller:
-		ClearErrors
-		;x86 uninstaller path
-		ReadRegStr $R3 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
-			"UninstallString"
-		ExecWait '$R3'
-		IfErrors uninstall_fail_x86 uninstall_success_x86
-		uninstall_fail_x86:
-			Quit
-		uninstall_success_x86:
-			RmDir "$R2"
-			Goto check_timestamp
-	quit_installation:
-		ClearErrors
-		Quit
 	done:
 FunctionEnd
 
@@ -185,8 +112,8 @@ FunctionEnd
 	!define MUI_HEADERIMAGE
 	;!define MUI_HEADERIMAGE_BITMAP "header.bmp"
 	;!define MUI_WELCOMEFINISHPAGE_BITMAP "wizard.bmp"
-	!define MUI_FINISHPAGE_RUN "$INSTDIR\${INSTALLERNAME}.exe"
-	!define MUI_FINISHPAGE_RUN_TEXT "Run ${INSTALLERNAME}-IDE"
+	!define MUI_FINISHPAGE_RUN "$INSTDIR\${APP_TITLE}.exe"
+	!define MUI_FINISHPAGE_RUN_TEXT "Run ${APP_TITLE}"
 	!define MUI_FINISHPAGE_NOAUTOCLOSE
 	;!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
 	;!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall.ico"
@@ -215,35 +142,35 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 			
 	;copy all files
 	SetOutPath "$INSTDIR"
-	File /r "DEPLOY\${INSTALLERNAME}EXE\*"
+	File /r "bin\app\*"
 	
 	;File-type associations
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".as" "Moonshine.ActionScript.File"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".css" "Moonshine.CSS.File"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".txt" "Moonshine.Text.File"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".mxml" "Moonshine.MXML.File"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".xml" "Moonshine.XML.File"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".js" "Moonshine.JavaScript.File"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".htm" "Moonshine.HTML.File"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".html" "Moonshine.HTML.File.2"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".awd" "Moonshine.AwayBuilder.File"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".as3proj" "Moonshine.Project.Configuration.File.1"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".veditorproj" "Moonshine.Project.Configuration.File.2"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".javaproj" "Moonshine.Project.Configuration.File.3"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".grailsproj" "Moonshine.Project.Configuration.File.4"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".ondiskproj" "Moonshine.Project.Configuration.File.5"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".hxproj" "Moonshine.Project.Configuration.File.6"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".genericproj" "Moonshine.Project.Configuration.File.7"
-	${registerExtension} "$INSTDIR\${INSTALLERNAME}.exe" ".tibboproj" "Moonshine.Project.Configuration.File.8"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".as" "Moonshine.ActionScript.File"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".css" "Moonshine.CSS.File"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".txt" "Moonshine.Text.File"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".mxml" "Moonshine.MXML.File"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".xml" "Moonshine.XML.File"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".js" "Moonshine.JavaScript.File"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".htm" "Moonshine.HTML.File"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".html" "Moonshine.HTML.File.2"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".awd" "Moonshine.AwayBuilder.File"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".as3proj" "Moonshine.Project.Configuration.File.1"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".veditorproj" "Moonshine.Project.Configuration.File.2"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".javaproj" "Moonshine.Project.Configuration.File.3"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".grailsproj" "Moonshine.Project.Configuration.File.4"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".ondiskproj" "Moonshine.Project.Configuration.File.5"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".hxproj" "Moonshine.Project.Configuration.File.6"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".genericproj" "Moonshine.Project.Configuration.File.7"
+	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".tibboproj" "Moonshine.Project.Configuration.File.8"
 	
 	;Store installation folder
-	WriteRegStr HKCU "Software\${INSTALLERNAME}" "" $INSTDIR
+	WriteRegStr HKCU "Software\${APP_NAME}" "" $INSTDIR
 	
 	;Create uninstaller
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 	
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
-		"DisplayName" "${INSTALLERNAME}"
+		"DisplayName" "${APP_NAME}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"Publisher" "Prominic.NET, Inc."
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
@@ -255,7 +182,7 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"HelpLink" "https://moonshine-ide.com/faq/"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
-		"DisplayIcon" "$\"$INSTDIR\${INSTALLERNAME}.exe$\""
+		"DisplayIcon" "$\"$INSTDIR\${APP_TITLE}.exe$\""
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
@@ -267,10 +194,10 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"NoRepair" 0x1
 		
-	WriteRegStr HKCR "${INSTALLERNAME}" \
+	WriteRegStr HKCR "${APP_NAME}" \
 		"URL Protocol" ""
-	WriteRegStr HKCR "${INSTALLERNAME}\shell\open\command" \
-		"" "$\"$INSTDIR\${INSTALLERNAME}.exe$\" $\"%1$\""
+	WriteRegStr HKCR "${APP_NAME}\shell\open\command" \
+		"" "$\"$INSTDIR\${APP_NAME}.exe$\" $\"%1$\""
 	
 	${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
 	IntFmt $0 "0x%08X" $0
@@ -278,7 +205,7 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 		"EstimatedSize" "$0"
 	
 	;Create Start Menu entry
-	CreateShortCut "$SMPROGRAMS\${INSTALLERNAME} (64-bit).lnk" "$INSTDIR\${INSTALLERNAME}.exe"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME} (64-bit).lnk" "$INSTDIR\${APP_TITLE}.exe"
 
 SectionEnd
 
@@ -290,7 +217,7 @@ Section "Uninstall"
 	RMDir /r "$INSTDIR\*"
 	RMDir "$INSTDIR"
 	
-	Delete "$SMPROGRAMS\${INSTALLERNAME}.lnk"
+	Delete "$SMPROGRAMS\${APP_NAME}.lnk"
 	
 	;Cleanup of file-type associations
 	${unregisterExtension} ".as" "Moonshine.ActionScript.File"
@@ -311,8 +238,8 @@ Section "Uninstall"
 	${unregisterExtension} ".genericproj" "Moonshine.Project.Configuration.File.7"
 	${unregisterExtension} ".tibboproj" "Moonshine.Project.Configuration.File.8"
 	
-	DeleteRegKey /ifempty HKCU "Software\${INSTALLERNAME}"
+	DeleteRegKey /ifempty HKCU "Software\${APP_NAME}"
 	
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}"
-	DeleteRegKey HKCR "${INSTALLERNAME}"
+	DeleteRegKey HKCR "${APP_NAME}"
 SectionEnd

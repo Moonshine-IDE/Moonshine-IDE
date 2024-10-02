@@ -20,10 +20,62 @@ env:
   tag: v${{ inputs.version }}${{ inputs.env == 'production' && ' ' || '-Dev' }}
 
 jobs:
+  build-windows:
+    name: Build on Windows
+    uses: moonshine-ide/moonshine-ide/.github/workflows/build-windows.yml@master
+    secrets: inherit
+    with:
+      env: ${{ inputs.env }}
+      version: ${{ inputs.version }}
+
+  build-macos:
+    name: Build on MacOS
+    uses: moonshine-ide/moonshine-ide/.github/workflows/build-macos.yml@master
+    secrets: inherit
+    with:
+      env: ${{ inputs.env }}
+      version: ${{ inputs.version }}
+
   release:
     name: Draft Development Release
+    needs: [build-windows, build-macos]
     runs-on: ubuntu-latest
+
     steps:
       - name: Print info
         run: |
-          echo "This is a stub process"
+          echo "Ref: ${{ github.ref_name }}"
+          echo "Env: ${{ inputs.env }}"
+          echo "Version: ${{ inputs.version }}"
+          echo "Tag: ${{ env.tag }}"
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download windows installer
+        uses: actions/download-artifact@v4
+        with:
+          name: moonshine-windows-setup
+
+      - name: Download macos installer
+        uses: actions/download-artifact@v4
+        with:
+          name: moonshine-macos-setup
+
+      - name: Debug artifacts
+        run: ls .
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Moonshine IDE ${{ inputs.version }} ${{ inputs.env == 'production' && ' ' || 'Development' }}
+          tag_name: ${{ env.tag }}
+          target_commitish: ${{ github.sha }}
+          body: |
+            This is a ${{ inputs.env }} release of Moonshine-IDE.
+          draft: true
+          prerelease: ${{ inputs.env == 'development' }}
+          files: |
+            ${{ env.app_name }}-${{ inputs.version }}-Installer.exe
+            ${{ env.app_name }}-${{ inputs.version }}.pkg
+          fail_on_unmatched_files: true

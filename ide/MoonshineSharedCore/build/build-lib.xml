@@ -325,35 +325,33 @@
 	   		<!-- Add folders to be bundled in the AIR file here -->
 		</java>
 		<echo># Signed Process Running - Signing Executable</echo>
-		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
+		<exec executable="signtool" failonerror="true">
 			<arg value="sign"/>
-			<arg value="/f"/>
-			<arg value="${debug_dir}/${certSelfSigned}"/> 
-			<arg value="/p"/>
-			<arg value="${certSelfSignedPassword}"/>
+			<arg value="/sha1"/>
+			<arg value="${env.SM_THUMBPRINT}"/>
 			<arg value="/tr"/>
 			<arg value="http://timestamp.digicert.com"/>
+			<arg value="/td"/>
+			<arg value="SHA256"/>
+			<arg value="/fd"/>
+			<arg value="SHA256"/>
 			<arg value="${windowsBundleFilename}/${installerName}.exe"/>
 		</exec>
 		<echo># Signed Process Running - Praparing Installer</echo>
-		<exec executable="${NSIS_HOME}/makensis.exe" failonerror="true">
+		<exec executable="makensis" failonerror="true">
 			<arg value="/DVERSION=${BuildVersion}"/>
 			<arg value="/DINSTALLERNAME=${installerName}"/>
 			<arg value="/DAPPID=${applicationID}"/>
 			<arg value="/DTIMESTAMP=${timestamp.time}"/>
 			<arg value="nsis-build.nsi"/>
 		</exec>
-		<sleep milliseconds="2000"/>
+
 		<echo># Signed Process Running - Signing Installer</echo>
-		<exec executable="${SIGNTOOL_HOME}/signtool.exe" failonerror="true">
-			<env key="SM_CLIENT_CERT_FILE" value="${env.SM_CLIENT_CERT_FILE}"/>
-			<env key="SM_CLIENT_CERT_PASSWORD" value="${env.SM_CLIENT_CERT_PASSWORD}"/>
-			<env key="SM_API_KEY" value="${env.SM_API_KEY}"/>
-			<env key="SM_HOST" value="${env.SM_HOST}"/>
-			<env key="SM_THUMBPRINT" value="${env.SM_THUMBPRINT}"/>
+		<exec executable="signtool" failonerror="true">
+
 			<arg value="sign"/>
 			<arg value="/sha1"/>
-			<arg value="${thumbprintSMWindowsBinary}"/>
+			<arg value="${env.SM_THUMBPRINT}"/>
 			<arg value="/tr"/>
 			<arg value="http://timestamp.digicert.com"/>
 			<arg value="/td"/>

@@ -31,7 +31,7 @@ env:
 
 jobs:
   build:
-    runs-on: "windows-latest"
+    runs-on: "macos-13"
 
     steps:
       - uses: actions/checkout@v4
@@ -50,6 +50,76 @@ jobs:
           flex-version: "4.16.1"
           air-version: "33.1"
           accept-air-license: true
+          air-license-base64: ${{ secrets.AIR_LICENSE_BASE64 }}
+
+      # Prepare signing
+
+      - name: Check for Keychain
+        id: check_keychain
+        shell: bash
+        run: |
+          if security list-keychains | grep -q "build.keychain"; then
+            echo "keychain_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "keychain_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create keychain
+        if: steps.check_keychain.outputs.keychain_exists == 'false'
+        shell: bash
+        run: |
+          security create-keychain -p "${{ secrets.MAC_KEYCHAIN_PASS }}" build.keychain
+          echo "Keychain created"
+          security set-keychain-settings -lut 21600 build.keychain
+          echo "Keychain settings set"
+          security default-keychain -s build.keychain
+          echo "Keychain made default"
+          security unlock-keychain -p "${{ secrets.MAC_KEYCHAIN_PASS }}" build.keychain  
+          echo "Keychain unlocked"
+
+      - name: Import certificates
+        shell: bash
+        run: |
+          echo "${{ secrets.MAC_APPLICATION_CERTKEY }}" | base64 --decode > application_certkey.p12
+          echo "${{ secrets.MAC_INSTALLER_CERTKEY }}" | base64 --decode > installer_certkey.p12
+
+          security import ./application_certkey.p12 \
+            -k build.keychain \
+            -f pkcs12 \
+            -P "${{ secrets.MAC_CERTKEY_PASS }}" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/productsign \
+            -T /usr/bin/productbuild
+
+            security import ./installer_certkey.p12 \
+            -k build.keychain \
+            -f pkcs12 \
+            -P "${{ secrets.MAC_CERTKEY_PASS }}" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/productsign
+
+      - name: Allow codesign and productsign to use keychain
+        shell: bash
+        run: |
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign:,productsign: \
+            -s \
+            -k "${{ secrets.MAC_KEYCHAIN_PASS }}" \
+            build.keychain
+
+      - name: Unlock keychain
+        shell: bash
+        run: |
+          security unlock-keychain -p "${{ secrets.MAC_KEYCHAIN_PASS }}" build.keychain
+
+      - name: Create notarization profile
+        shell: bash
+        run: |
+          xcrun notarytool \
+          store-credentials "notarytool-profile" \
+          --apple-id ${{ secrets.MAC_NOTARIZATION_APPLE_ID }} \
+          --team-id ${{ secrets.MAC_NOTARIZATION_TEAM_ID }} \
+          --password ${{ secrets.MAC_NOTARIZATION_PASS }}
 
       - name: Prepare dependencies
         working-directory: ..
@@ -67,19 +137,22 @@ jobs:
         run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
 
       - name: Build MoonshineDESKTOPevolved with Ant
-        run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' '-DIs.Signed.Build=false'
-
-      - name: Build Moonshine with Ant
         run: >
-          ant
-          - buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml'
-          build
+          ant -noinput
+          -buildfile "ide/MoonshineDESKTOPevolved/build/build.xml"
           -Dapp.version=${{ inputs.version }}
           -Dbuild.is.development=${{ inputs.env != 'production' }}
           -Dbuild.number=${{ github.run_number }}
+          -Dkeychain.name=build.keychain
+          -Dnotarytool.profile="notarytool-profile"  
+          build pack-and-sign
 
-      - name: Upload artifact
+      - name: List all files
+        run: ls -R ide/MoonshineDESKTOPevolved/build
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Moonshine
-          path: ide/MoonshineDESKTOPevolved/build/bin/app/MoonshineDevelopment.exe
+          name: moonshine-macos-setup
+          path: ide/MoonshineDESKTOPevolved/build/bin/deploy/${{ env.app_name }}-${{ inputs.version }}.pkg
+          if-no-files-found: error
