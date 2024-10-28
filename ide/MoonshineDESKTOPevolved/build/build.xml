@@ -385,7 +385,7 @@
 	</target>
 		
 	<!-- ANCHOR - Sign Windows Installer -->
-	<target name="sign-windows-installer">
+	<target name="sign-windows-installer" unless="${build.is.development}">
 		<exec executable="${signtool.cmd}" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/sha1"/>
