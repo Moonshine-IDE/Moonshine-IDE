@@ -36,6 +36,7 @@
 		classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
 	
 	<property name="build.is.development" value="true"/>
+	<property name="build.is.debug" value="true"/>
 	<property name="build.number" value="0"/>
 
 	<!-- ANCHOR - App Properties -->
@@ -89,6 +90,7 @@
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
 			<target name="compile-app"/>
+			<target name="post-compile"/>
 		</antcall>
 	</target>
 
@@ -351,6 +353,13 @@
 	   		<!-- Add folders to be bundled in the AIR file here -->			
 		</exec>
 		<echo message="Compiled App"/>
+	</target>
+
+	<!-- ANCHOR - Post Compile -->
+	<target name="post-compile">
+		<copy overwrite="true" failonerror="true"
+			tofile="${app.path}/Contents/Resources/Icon.icns" 
+			file="./elements/images/moonshineIcons.icns" />
 	</target>
 
 	<!--
