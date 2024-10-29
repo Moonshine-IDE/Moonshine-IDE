@@ -155,5 +155,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: moonshine-macos-setup
-          path: ide/MoonshineDESKTOPevolved/build/bin/deploy/${{ env.app_name }}-${{ inputs.version }}.pkg
+          path: ide/MoonshineDESKTOPevolved/build/deploy/${{ env.app_name }}-${{ inputs.version }}.pkg
           if-no-files-found: error

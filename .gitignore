@@ -8,6 +8,8 @@ ide/FileSystemWatcherWorker/bin/
 ide/MoonshineDESKTOPevolved/bin-release/
 ide/MoonshineDESKTOPevolved/bin/
 ide/MoonshineDESKTOPevolved/build/bin
+ide/MoonshineDESKTOPevolved/build/bin-debug/
+ide/MoonshineDESKTOPevolved/build/deploy/
 ide/MoonshineDESKTOPevolved/build/elements/
 ide/MoonshineDESKTOPevolved/build/helperResources/
 ide/MoonshineDESKTOPevolved/build/installer/sdk-installer-config-4.0.xml
