@@ -382,6 +382,7 @@
 			<arg value="/DTIMESTAMP=${timestamp.time}"/>
 			<arg value="./nsis-build.nsi"/>
 		</exec>
+		<echo message="Signed Windows Installer"/>
 		<echo message="Created Windows Installer"/>
 	</target>
 		
@@ -397,12 +398,9 @@
 			<arg value="SHA256"/>
 			<arg value="/fd"/>
 			<arg value="SHA256"/>
-			<arg value="./bin/app/${app.name}-${app.version}-Installer.exe"/>
+			<arg value="./deploy/${app.name}-${app.version}-Installer.exe"/>
 		</exec>
-		<move 
-			file="./bin/app/${app.name}-${app.version}-Installer.exe" 
-			tofile="./bin/deploy/${app.name}-${app.version}-Installer.exe"/>
-		<echo message="Signed Windows Installer"/>
+		
 	 </target>	
 
 	<!--

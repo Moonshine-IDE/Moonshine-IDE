@@ -132,5 +132,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: moonshine-windows-setup
-          path: ide\MoonshineDESKTOPevolved\build\bin\deploy\${{ env.app_name }}-${{ inputs.version }}-Installer.exe
+          path: ide\MoonshineDESKTOPevolved\build\deploy\${{ env.app_name }}-${{ inputs.version }}-Installer.exe
           if-no-files-found: error
