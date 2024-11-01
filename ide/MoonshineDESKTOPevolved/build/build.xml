@@ -197,7 +197,7 @@
 		<replace 
 			file="./deploy/MoonshineDESKTOP-app.xml" 
 			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
-			value="./bin-debug/Moonshine.swf" />
+			value="bin-debug/Moonshine.swf" />
 		<echo message="Modified App Descriptor"/>
 	</target>
 
