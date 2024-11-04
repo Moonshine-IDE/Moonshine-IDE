@@ -223,8 +223,8 @@
 		<equals arg1="${is.macos}" arg2="true"/>
 		<then>
 			<copy file="../extensions/SSB.ane" todir="./bin-debug" overwrite="true"/>
-			<copy todir="${basedir}/macOScripts" overwrite="true">
-				<fileset dir="${applicationSourceDirectory}/macOScripts"/>
+			<copy todir="./macOScripts" overwrite="true">
+				<fileset dir="../src/macOScripts"/>
 			</copy>
 		</then>
 		</if>
