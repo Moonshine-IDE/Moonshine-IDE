@@ -356,6 +356,7 @@
 			<arg line="-extdir"/>
 			<arg line="../extensions"/>
 			<arg line="./elements" />
+			<arg line="./macOScripts"/>
 			<arg line="./installer"/>
 			<arg line="./tourDeFlex" />
 			<arg line="./helperResources"/>
