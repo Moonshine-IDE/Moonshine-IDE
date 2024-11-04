@@ -20,6 +20,7 @@ ide/MoonshineDESKTOPevolved/MoonshineDESKTOPevolved.iml
 ide/MoonshineDESKTOPevolved/obj/MoonshineDESKTOPevolvedConfig.xml
 ide/MoonshineGUICore/bin/**/haxe
 ide/MoonshineGUICore/bin/**/obj
+ide/MoonshineGUICore/bin/flash/
 ide/MoonshineSharedCore/MoonshineSharedCore.iml
 ide/MoonshineSharedCore/bin/MoonshineSharedCore.swc
 ide/MoonshineSharedCore/obj/MoonshineSharedCoreConfig.xml
@@ -40,4 +41,3 @@ language-server-wrappers/moonshine-as3mxml/moonshine-as3mxml.iml
 library/ApacheFlexSDKInstallerLib/obj/
 
 vscode-nextgenas_MoonshineModifications/build/
-ide/MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc
