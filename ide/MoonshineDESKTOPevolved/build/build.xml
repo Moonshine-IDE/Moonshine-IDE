@@ -204,11 +204,7 @@
 	<!-- ANCHOR - Copy Files -->
 	<target name="copy-files">
 		<copy todir="./elements" overwrite="true">
-			<fileset dir="../../MoonshineSharedCore/src/elements">
-				<exclude name="**/config_linux/**"/>
-        		<exclude name="**/config_mac/**"/>
-				<exclude name="**/config_win/**"/>
-			</fileset>
+			<fileset dir="../../MoonshineSharedCore/src/elements" />
 		</copy>
 
 		<copy todir="./installer" overwrite="true">
@@ -222,6 +218,16 @@
 		<copy todir="./helperResources" overwrite="true">
     		<fileset dir="../../../../Moonshine-SDK-Installer/InstallerSharedCore/src/helperResources"/>
 		</copy>
+
+		<if>
+		<equals arg1="${is.macos}" arg2="true"/>
+		<then>
+			<copy file="../extensions/SSB.ane" todir="./bin-debug" overwrite="true"/>
+			<copy todir="${basedir}/macOScripts" overwrite="true">
+				<fileset dir="${applicationSourceDirectory}/macOScripts"/>
+			</copy>
+		</then>
+		</if>
 
 		<echo message="Copied Files"/>
 	</target>
@@ -347,6 +353,8 @@
 	   		<arg line="${app.path}" />
 	   		<arg line="'./deploy/MoonshineDESKTOP-app.xml'" />
 	   		<arg line="'./bin-debug/Moonshine.swf'" />
+			<arg line="-extdir"/>
+			<arg line="../extensions"/>
 			<arg line="./elements" />
 			<arg line="./installer"/>
 			<arg line="./tourDeFlex" />
