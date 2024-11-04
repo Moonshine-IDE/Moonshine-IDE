@@ -367,9 +367,17 @@
 
 	<!-- ANCHOR - Post Compile -->
 	<target name="post-compile">
-		<copy overwrite="true" failonerror="true"
-			tofile="${app.path}/Contents/Resources/Icon.icns" 
-			file="./elements/images/moonshineIcons.icns" />
+		<if condition="${is.macos}">
+			<then>
+				<copy overwrite="true" failonerror="true"
+					tofile="${app.path}/Contents/Resources/Icon.icns" 
+					file="./elements/images/moonshineIcons.icns" />
+				<exec executable="bash">
+					<arg value="-c"/>
+					<arg value="chmod -R 777 bin-debug/app/${app.name}.app"/>
+				</exec>
+			</then>		
+		</if>
 	</target>
 
 	<!--
