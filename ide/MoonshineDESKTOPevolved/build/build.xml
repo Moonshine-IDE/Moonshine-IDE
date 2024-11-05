@@ -54,6 +54,7 @@
 		</else>			
 	</if>
 	<property name="app.version" value="1.0.0"/>
+	<property name="is.debug" value="true"/>
 
 	<!-- Detect Operating System -->
 	<condition property="is.windows">
@@ -314,13 +315,13 @@
 			<arg value="+maxmemory=2048m"/>
 
 			<!-- Define arguments -->
-			<arg value="-define+=CONFIG::OSX,false"/>
+			<arg value="-define+=CONFIG::OSX,${is.macos}"/>
 			
 			<!-- Source-path arguments -->
-			<arg value="-source-path=../../MoonshineSharedCore/src"/>
-			<arg value="-source-path=../../MoonshineSharedCore/src/locale/{locale}"/>
-			<arg value="-source-path=../src"/>
-			<arg value="-source-path=../../../../Moonshine-SDK-Installer/InstallerSharedCore/src"/>
+			<arg value="-source-path+=../../MoonshineSharedCore/src"/>
+			<arg value="-source-path+=../../MoonshineSharedCore/src/locale/{locale}"/>
+			<arg value="-source-path+=../src"/>
+			<arg value="-source-path+=../../../../Moonshine-SDK-Installer/InstallerSharedCore/src"/>
 			
 			<!-- Library-path arguments -->
 			<arg value="-library-path+=../libs"/>
