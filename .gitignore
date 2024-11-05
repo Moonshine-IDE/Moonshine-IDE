@@ -8,7 +8,10 @@ ide/FileSystemWatcherWorker/bin/
 ide/MoonshineDESKTOPevolved/bin-release/
 ide/MoonshineDESKTOPevolved/bin/
 ide/MoonshineDESKTOPevolved/build/bin
+ide/MoonshineDESKTOPevolved/build/bin-debug/
+ide/MoonshineDESKTOPevolved/build/deploy/
 ide/MoonshineDESKTOPevolved/build/elements/
+ide/MoonshineDESKTOPevolved/build/macOScripts/
 ide/MoonshineDESKTOPevolved/build/helperResources/
 ide/MoonshineDESKTOPevolved/build/installer/sdk-installer-config-4.0.xml
 ide/MoonshineDESKTOPevolved/build/local.properties
@@ -18,6 +21,7 @@ ide/MoonshineDESKTOPevolved/MoonshineDESKTOPevolved.iml
 ide/MoonshineDESKTOPevolved/obj/MoonshineDESKTOPevolvedConfig.xml
 ide/MoonshineGUICore/bin/**/haxe
 ide/MoonshineGUICore/bin/**/obj
+ide/MoonshineGUICore/bin/flash/
 ide/MoonshineSharedCore/MoonshineSharedCore.iml
 ide/MoonshineSharedCore/bin/MoonshineSharedCore.swc
 ide/MoonshineSharedCore/obj/MoonshineSharedCoreConfig.xml
@@ -38,4 +42,3 @@ language-server-wrappers/moonshine-as3mxml/moonshine-as3mxml.iml
 library/ApacheFlexSDKInstallerLib/obj/
 
 vscode-nextgenas_MoonshineModifications/build/
-ide/MoonshineGUICore/bin/flash/bin/MoonshineGUICore.swc

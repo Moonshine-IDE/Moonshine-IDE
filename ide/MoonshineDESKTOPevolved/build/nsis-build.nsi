@@ -15,7 +15,7 @@
 
 	;Name and file
 	Name "${APP_NAME}-IDE"
-	OutFile "bin\app\${INSTALLER_NAME}.exe"
+	OutFile "deploy\${INSTALLER_NAME}.exe"
 
 	;Default installation folder
 	InstallDir "$PROGRAMFILES64\${APP_NAME}"
@@ -70,7 +70,7 @@ LangString stopMsg 0 "Stopping ${WND_PROCESS_TITLE} Application"
 ;End of running process check
 
 Function .onInit
-	!insertmacro TerminateApp "${APP_TITLE}.exe"
+	!insertmacro TerminateApp "${APP_NAME}.exe"
 	
 	ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"TimeStamp"
@@ -85,7 +85,7 @@ Function .onInit
 		Abort
 	run_application:
 		ClearErrors
-		Exec "$INSTDIR\${APP_TITLE}.exe"
+		Exec "$INSTDIR\${APP_NAME}.exe"
 		Abort
 	run_uninstaller:
 		ClearErrors
@@ -112,7 +112,7 @@ FunctionEnd
 	!define MUI_HEADERIMAGE
 	;!define MUI_HEADERIMAGE_BITMAP "header.bmp"
 	;!define MUI_WELCOMEFINISHPAGE_BITMAP "wizard.bmp"
-	!define MUI_FINISHPAGE_RUN "$INSTDIR\${APP_TITLE}.exe"
+	!define MUI_FINISHPAGE_RUN "$INSTDIR\${APP_NAME}.exe"
 	!define MUI_FINISHPAGE_RUN_TEXT "Run ${APP_TITLE}"
 	!define MUI_FINISHPAGE_NOAUTOCLOSE
 	;!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
@@ -142,7 +142,7 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 			
 	;copy all files
 	SetOutPath "$INSTDIR"
-	File /r "bin\app\*"
+	File /r "bin-debug\app\*"
 	
 	;File-type associations
 	${registerExtension} "$INSTDIR\${APP_NAME}.exe" ".as" "Moonshine.ActionScript.File"
@@ -182,7 +182,7 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"HelpLink" "https://moonshine-ide.com/faq/"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
-		"DisplayIcon" "$\"$INSTDIR\${APP_TITLE}.exe$\""
+		"DisplayIcon" "$\"$INSTDIR\${APP_NAME}.exe$\""
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
 		"UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPID}" \
@@ -205,7 +205,7 @@ Section "Moonshine-IDE" SecMoonshineInstaller
 		"EstimatedSize" "$0"
 	
 	;Create Start Menu entry
-	CreateShortCut "$SMPROGRAMS\${APP_NAME} (64-bit).lnk" "$INSTDIR\${APP_TITLE}.exe"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME} (64-bit).lnk" "$INSTDIR\${APP_NAME}.exe"
 
 SectionEnd
 

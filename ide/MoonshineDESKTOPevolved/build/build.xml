@@ -36,6 +36,7 @@
 		classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
 	
 	<property name="build.is.development" value="true"/>
+	<property name="build.is.debug" value="true"/>
 	<property name="build.number" value="0"/>
 
 	<!-- ANCHOR - App Properties -->
@@ -53,6 +54,7 @@
 		</else>			
 	</if>
 	<property name="app.version" value="1.0.0"/>
+	<property name="is.debug" value="true"/>
 
 	<!-- Detect Operating System -->
 	<condition property="is.windows">
@@ -89,6 +91,7 @@
 			<target name="compile-gui-core"/>
 			<target name="compile-swf"/>
 			<target name="compile-app"/>
+			<target name="post-compile"/>
 		</antcall>
 	</target>
 
@@ -121,8 +124,10 @@
 
 	<!-- ANCHOR - Clean Workflow -->
 	<target name="clean">
-		<delete dir="./bin"/>
+		<delete dir="./bin-debug"/>
+		<delete dir="./deploy"/>
 		<delete dir="./elements"/>
+		<delete dir="./macOScripts"/>
 		<delete dir="./helperResources"/>
 		<delete dir="./installer"/>
 		<delete dir="./tourDeFlex"/>
@@ -156,15 +161,15 @@
 
     <!-- ANCHOR - Init -->
 	<target name="init">
-		<mkdir dir="./bin"/>
-		<mkdir dir="./bin/app"/>
-		<mkdir dir="./bin/deploy"/>
+		<mkdir dir="./bin-debug"/>
+		<mkdir dir="./bin-debug/app"/>
+		<mkdir dir="./deploy"/>
 
 		<java jar="${adt.cmd}" fork="true" failonerror="true">
 			<arg line="-certificate" />
 			<arg line="-cn MoonshineSelfSignedCertificate" />
 			<arg line="2048-RSA" />
-	   		<arg line="./bin/MoonshineSelfSignedCertificate.p12" />
+	   		<arg line="./deploy/MoonshineSelfSignedCertificate.p12" />
 	   		<arg line="moonshine"/>
 		</java>
 		<echo message="Created Self-Signed Certificate"/>
@@ -172,40 +177,36 @@
 
 	<!-- ANCHOR - Modify App Descriptor -->
 	<target name="modify-app-descriptor">
-		<copy file="../src/MoonshineDESKTOP-app.xml" todir="./bin" overwrite="true"/>
+		<copy file="../src/MoonshineDESKTOP-app.xml" todir="./deploy" overwrite="true"/>
 
 		<replaceregexp 
-			file="./bin/MoonshineDESKTOP-app.xml" 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
 			match="filenameToBeReplacedByANT" 
 			replace="${app.name}" />
 		<replaceregexp 
-			file="./bin/MoonshineDESKTOP-app.xml" 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
 			match="nameToBeReplacedByANT" 
 			replace="${app.title} ${app.version}" 
 			encoding="utf-8" />
 		<replaceregexp 
-			file="./bin/MoonshineDESKTOP-app.xml" 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
 			match="idToBeReplacedByANT" 
 			replace="${app.id}" />
 		<replaceregexp 
-			file="./bin/MoonshineDESKTOP-app.xml" 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
 			match="0.0.0" 
 			replace="${app.version}" />
 		<replace 
-			file="./bin/MoonshineDESKTOP-app.xml" 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
 			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
-			value="./bin/Moonshine.swf" />
+			value="bin-debug/Moonshine.swf" />
 		<echo message="Modified App Descriptor"/>
 	</target>
 
 	<!-- ANCHOR - Copy Files -->
 	<target name="copy-files">
 		<copy todir="./elements" overwrite="true">
-			<fileset dir="../../MoonshineSharedCore/src/elements">
-				<exclude name="**/config_linux/**"/>
-        		<exclude name="**/config_mac/**"/>
-				<exclude name="**/config_win/**"/>
-			</fileset>
+			<fileset dir="../../MoonshineSharedCore/src/elements" />
 		</copy>
 
 		<copy todir="./installer" overwrite="true">
@@ -219,6 +220,13 @@
 		<copy todir="./helperResources" overwrite="true">
     		<fileset dir="../../../../Moonshine-SDK-Installer/InstallerSharedCore/src/helperResources"/>
 		</copy>
+
+
+		<copy file="../extensions/SSB.ane" todir="./bin-debug" overwrite="true"/>
+		<copy todir="./macOScripts" overwrite="true">
+			<fileset dir="../src/macOScripts"/>
+		</copy>
+
 
 		<echo message="Copied Files"/>
 	</target>
@@ -286,6 +294,11 @@
 
 	<!-- ANCHOR - Compile SWF -->
 	<target name="compile-swf">
+		<condition property="ismacos" value="true" else="false">
+        	<equals arg1="${is.macos}" arg2="true"/>
+    	</condition>
+		<echo message="Is macOS: ${ismacos}"/>
+
 		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
 			<arg value="-Dflexcompiler=${FLEX_HOME}/bin/mxmlc"/>
 			<arg value="-jar"/>
@@ -294,7 +307,7 @@
 			<!-- Compiler arguments -->
 			<arg value="+flexlib=${FLEX_HOME}/frameworks"/>
 			<arg value="../src/MoonshineDESKTOP.mxml"/>
-			<arg value="-output=./bin/Moonshine.swf"/>
+			<arg value="-output=./bin-debug/Moonshine.swf"/>
 			<arg value="-swf-version=44"/>
 			<arg value="+configname=air"/>
 			<arg value="-locale=en_US,ja_JP"/>
@@ -310,10 +323,10 @@
 			<arg value="-define+=CONFIG::OSX,false"/>
 			
 			<!-- Source-path arguments -->
-			<arg value="-source-path=../../MoonshineSharedCore/src"/>
-			<arg value="-source-path=../../MoonshineSharedCore/src/locale/{locale}"/>
-			<arg value="-source-path=../src"/>
-			<arg value="-source-path=../../../../Moonshine-SDK-Installer/InstallerSharedCore/src"/>
+			<arg value="-source-path+=../../MoonshineSharedCore/src"/>
+			<arg value="-source-path+=../../MoonshineSharedCore/src/locale/{locale}"/>
+			<arg value="-source-path+=../src"/>
+			<arg value="-source-path+=../../../../Moonshine-SDK-Installer/InstallerSharedCore/src"/>
 			
 			<!-- Library-path arguments -->
 			<arg value="-library-path+=../libs"/>
@@ -326,10 +339,10 @@
 	<target name="compile-app">
 		<switch value="true">
 			<case value="${is.windows}">
-				<property name="app.path" value="bin/app"/>
+				<property name="app.path" value="bin-debug/app"/>
 			</case>
 			<case value="${is.macos}">
-				<property name="app.path" value="bin/app/${app.name}.app"/>
+				<property name="app.path" value="bin-debug/app/${app.name}.app"/>
 			</case>
 		</switch>
 
@@ -337,20 +350,39 @@
 			<arg line="-jar ${adt.cmd}"/>
 			<arg line="-package" />
 			<arg line="-storetype pkcs12" />
-			<arg line="-keystore './bin/MoonshineSelfSignedCertificate.p12'" />
+			<arg line="-keystore './deploy/MoonshineSelfSignedCertificate.p12'" />
 	   		<arg line="-storepass 'moonshine'" />
 			<arg line="-tsa 'http://timestamp.digicert.com'" />
 	   		<arg line="-target bundle"/>
 	   		<arg line="${app.path}" />
-	   		<arg line="'./bin/MoonshineDESKTOP-app.xml'" />
-	   		<arg line="'./bin/Moonshine.swf'" />
+	   		<arg line="'./deploy/MoonshineDESKTOP-app.xml'" />
+	   		<arg line="'./bin-debug/Moonshine.swf'" />
+			<arg line="-extdir"/>
+			<arg line="../extensions"/>
 			<arg line="./elements" />
+			<arg line="./macOScripts"/>
 			<arg line="./installer"/>
 			<arg line="./tourDeFlex" />
 			<arg line="./helperResources"/>
 	   		<!-- Add folders to be bundled in the AIR file here -->			
 		</exec>
 		<echo message="Compiled App"/>
+	</target>
+
+	<!-- ANCHOR - Post Compile -->
+	<target name="post-compile">
+		<if>
+			<equals arg1="${is.macos}" arg2="true"/>
+			<then>
+				<copy overwrite="true" failonerror="true"
+					tofile="${app.path}/Contents/Resources/Icon.icns" 
+					file="./elements/images/moonshineIcons.icns" />
+				<exec executable="bash">
+					<arg value="-c"/>
+					<arg value="chmod -R 777 bin-debug/app/${app.name}.app"/>
+				</exec>
+			</then>		
+		</if>
 	</target>
 
 	<!--
@@ -372,11 +404,12 @@
 			<arg value="/DTIMESTAMP=${timestamp.time}"/>
 			<arg value="./nsis-build.nsi"/>
 		</exec>
+		<echo message="Signed Windows Installer"/>
 		<echo message="Created Windows Installer"/>
 	</target>
 		
 	<!-- ANCHOR - Sign Windows Installer -->
-	<target name="sign-windows-installer">
+	<target name="sign-windows-installer" unless="${build.is.development}">
 		<exec executable="${signtool.cmd}" failonerror="true">
 			<arg value="sign"/>
 			<arg value="/sha1"/>
@@ -387,12 +420,9 @@
 			<arg value="SHA256"/>
 			<arg value="/fd"/>
 			<arg value="SHA256"/>
-			<arg value="./bin/app/${app.name}-${app.version}-Installer.exe"/>
+			<arg value="./deploy/${app.name}-${app.version}-Installer.exe"/>
 		</exec>
-		<move 
-			file="./bin/app/${app.name}-${app.version}-Installer.exe" 
-			tofile="./bin/deploy/${app.name}-${app.version}-Installer.exe"/>
-		<echo message="Signed Windows Installer"/>
+		
 	 </target>	
 
 	<!--
@@ -442,7 +472,7 @@
 		<echo message="certs.installer.in.keychain: ${certs.installer.in.keychain}"/>
 
 		<exec executable="codesign" failonerror="true">
-            <arg value="./bin/app/${app.name}.app"/>
+            <arg value="./bin-debug/app/${app.name}.app"/>
             <arg value="--sign"/>
             <arg value="Developer ID Application"/>
 			<arg value="--entitlements"/>
@@ -459,7 +489,7 @@
 			<arg value="-vvv"/>
 			<arg value="--deep"/>
 			<arg value="--strict"/>
-            <arg value="./bin/app/${app.name}.app"/>
+            <arg value="./bin-debug/app/${app.name}.app"/>
         </exec>
 
 		<exec executable="spctl" failonerror="true">
@@ -467,7 +497,7 @@
 			<arg value="--assess"/>
 			<arg value="--type"/>
 			<arg value="exec"/>
-            <arg value="./bin/app/${app.name}.app"/>
+            <arg value="./bin-debug/app/${app.name}.app"/>
         </exec>
 	</target>
 
@@ -475,9 +505,9 @@
 	<target name="create-macos-pkg">
 		<exec executable="productbuild" failonerror="true">
 			<arg value="--component"/>
-			<arg value="bin/app/${app.name}.app"/>			
+			<arg value="bin-debug/app/${app.name}.app"/>			
 			<arg value="/Applications"/>
-			<arg value="./bin/deploy/${app.name}-unsigned.pkg"/>
+			<arg value="./deploy/${app.name}-unsigned.pkg"/>
 		</exec>
 		<echo message="Created macOS pkg"/>
 	</target>
@@ -487,8 +517,8 @@
 		<exec executable="productsign" failonerror="true">
 			<arg value="--sign"/>
 			<arg value="Developer ID Installer"/>
-			<arg value="./bin/deploy/${app.name}-unsigned.pkg"/>
-			<arg value="./bin/deploy/${app.name}-${app.version}.pkg"/>
+			<arg value="./deploy/${app.name}-unsigned.pkg"/>
+			<arg value="./deploy/${app.name}-${app.version}.pkg"/>
 		</exec>
 		<echo message="Signed macOS pkg"/>
 	</target>
@@ -498,7 +528,7 @@
 		<exec executable="xcrun" failonerror="true">
 			<arg value="notarytool"/>
 			<arg value="submit"/>
-			<arg value="./bin/deploy/${app.name}-${app.version}.pkg"/>
+			<arg value="./deploy/${app.name}-${app.version}.pkg"/>
 			<arg value="--keychain-profile"/>
 			<arg value="${notarytool.profile}"/>
 			<arg value="--wait"/>
