@@ -126,6 +126,7 @@
 		<delete dir="./bin-debug"/>
 		<delete dir="./deploy"/>
 		<delete dir="./elements"/>
+		<delete dir="./macOScripts"/>
 		<delete dir="./helperResources"/>
 		<delete dir="./installer"/>
 		<delete dir="./tourDeFlex"/>
@@ -219,15 +220,12 @@
     		<fileset dir="../../../../Moonshine-SDK-Installer/InstallerSharedCore/src/helperResources"/>
 		</copy>
 
-		<if>
-		<equals arg1="${is.macos}" arg2="true"/>
-		<then>
-			<copy file="../extensions/SSB.ane" todir="./bin-debug" overwrite="true"/>
-			<copy todir="./macOScripts" overwrite="true">
-				<fileset dir="../src/macOScripts"/>
-			</copy>
-		</then>
-		</if>
+
+		<copy file="../extensions/SSB.ane" todir="./bin-debug" overwrite="true"/>
+		<copy todir="./macOScripts" overwrite="true">
+			<fileset dir="../src/macOScripts"/>
+		</copy>
+
 
 		<echo message="Copied Files"/>
 	</target>
@@ -367,7 +365,8 @@
 
 	<!-- ANCHOR - Post Compile -->
 	<target name="post-compile">
-		<if condition="${is.macos}">
+		<if>
+			<equals arg1="${is.macos}" arg2="true"/>
 			<then>
 				<copy overwrite="true" failonerror="true"
 					tofile="${app.path}/Contents/Resources/Icon.icns" 
