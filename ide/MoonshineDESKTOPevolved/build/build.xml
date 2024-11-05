@@ -294,6 +294,11 @@
 
 	<!-- ANCHOR - Compile SWF -->
 	<target name="compile-swf">
+		<condition property="ismacos" value="true" else="false">
+        	<equals arg1="${is.macos}" arg2="true"/>
+    	</condition>
+		<echo message="Is macOS: ${ismacos}"/>
+
 		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
 			<arg value="-Dflexcompiler=${FLEX_HOME}/bin/mxmlc"/>
 			<arg value="-jar"/>
@@ -315,7 +320,7 @@
 			<arg value="+maxmemory=2048m"/>
 
 			<!-- Define arguments -->
-			<arg value="-define+=CONFIG::OSX,${is.macos}"/>
+			<arg value="-define+=CONFIG::OSX,${ismacos}"/>
 			
 			<!-- Source-path arguments -->
 			<arg value="-source-path+=../../MoonshineSharedCore/src"/>
