@@ -320,7 +320,7 @@
 			<arg value="+maxmemory=2048m"/>
 
 			<!-- Define arguments -->
-			<arg value="-define+=CONFIG::OSX,${ismacos}"/>
+			<arg value="-define+=CONFIG::OSX,false"/>
 			
 			<!-- Source-path arguments -->
 			<arg value="-source-path+=../../MoonshineSharedCore/src"/>
