@@ -338,5 +338,5 @@
         <!-- <containsVideo></containsVideo> -->
     <!-- </android> -->
 	<!-- End of the schema for adding the android specific tags in AndroidManifest.xml file-->
-
+	<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>
 </application>

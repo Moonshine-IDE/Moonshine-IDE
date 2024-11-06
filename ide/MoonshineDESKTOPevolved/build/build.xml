@@ -201,6 +201,18 @@
 			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
 			value="bin-debug/Moonshine.swf" />
 		<echo message="Modified App Descriptor"/>
+
+		<!-- Remove SSB extension on Windows -->
+		<if>
+			<equals arg1="${is.windows}" arg2="true"/>
+			<then>
+				<replace file="./deploy/MoonshineDESKTOP-app.xml">
+					<replacetoken><![CDATA[<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>]]></replacetoken>  
+					<replacevalue><![CDATA[]]></replacevalue>
+				</replace>
+			</then>
+		</if>
+		
 	</target>
 
 	<!-- ANCHOR - Copy Files -->
@@ -226,7 +238,6 @@
 		<copy todir="./macOScripts" overwrite="true">
 			<fileset dir="../src/macOScripts"/>
 		</copy>
-
 
 		<echo message="Copied Files"/>
 	</target>
@@ -294,10 +305,9 @@
 
 	<!-- ANCHOR - Compile SWF -->
 	<target name="compile-swf">
-		<condition property="ismacos" value="true" else="false">
+		<condition property="extension.path" value="../extensions/SSB.ane" else="">
         	<equals arg1="${is.macos}" arg2="true"/>
     	</condition>
-		<echo message="Is macOS: ${ismacos}"/>
 
 		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
 			<arg value="-Dflexcompiler=${FLEX_HOME}/bin/mxmlc"/>
@@ -320,7 +330,7 @@
 			<arg value="+maxmemory=2048m"/>
 
 			<!-- Define arguments -->
-			<arg value="-define+=CONFIG::OSX,false"/>
+			<arg value="-define+=CONFIG::OSX,${is.macos}"/>
 			
 			<!-- Source-path arguments -->
 			<arg value="-source-path+=../../MoonshineSharedCore/src"/>
@@ -332,6 +342,8 @@
 			<arg value="-library-path+=../libs"/>
 			<arg value="-library-path+=../../MoonshineSharedCore/libs"/>
 			<arg value="-library-path+=../../MoonshineGUICore/bin/flash/bin"/>
+
+			<arg value="-external-library-path+=${extension.path}"/>
 		</exec>
     	<echo message="Compiled SWF"/>
 	</target>
