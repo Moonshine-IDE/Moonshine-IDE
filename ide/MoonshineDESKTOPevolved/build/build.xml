@@ -81,18 +81,41 @@
 	-->
 	
 	<!-- ANCHOR - Build Workflow -->
-	<target name="build">
-		<antcall>
-			<target name="print-info"/>		
-			<target name="init"/>
-			<target name="modify-app-descriptor"/>
-			<target name="copy-files"/>
-			<target name="install-haxe-dependencies"/>
-			<target name="compile-gui-core"/>
-			<target name="compile-swf"/>
-			<target name="compile-app"/>
-			<target name="post-compile"/>
-		</antcall>
+	<target name="build">			
+		<switch value="true">
+			<case value="${is.windows}">
+				<antcall>
+					<!-- Windows Tasks -->	
+					<target name="print-info"/>		
+					<target name="init"/>
+					<target name="modify-app-descriptor"/>
+					<target name="copy-files"/>
+					<target name="install-haxe-dependencies"/>
+					<target name="compile-gui-core"/>	
+					<target name="compile-swf-for-windows"/>
+					<target name="compile-app"/>
+					<target name="post-compile"/>
+				</antcall>
+			</case>
+			<case value="${is.macos}">
+				<antcall>
+					<!-- macOS Tasks -->
+					<target name="print-info"/>		
+					<target name="init"/>
+					<target name="modify-app-descriptor"/>
+					<target name="copy-files"/>
+					<target name="install-haxe-dependencies"/>
+					<target name="compile-gui-core"/>
+					<target name="compile-swf-for-macos"/>
+					<target name="compile-app"/>
+					<target name="post-compile"/>
+				</antcall>
+			</case>
+			<case value="${is.linux}">
+					<!-- Linux Tasks -->
+					<echo message="Linux not supported yet."/>
+			</case>
+		</switch>		
 	</target>
 
 	<!-- ANCHOR - Pack And Sign Workflow -->
@@ -303,12 +326,8 @@
 		<echo message="Compiled GUI Core"/>
 	</target>
 
-	<!-- ANCHOR - Compile SWF -->
-	<target name="compile-swf">
-		<condition property="extension.path" value="../extensions/SSB.ane" else="">
-        	<equals arg1="${is.macos}" arg2="true"/>
-    	</condition>
-
+	<!-- ANCHOR - Compile SWF for macOS -->
+	<target name="compile-swf-for-macos">
 		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
 			<arg value="-Dflexcompiler=${FLEX_HOME}/bin/mxmlc"/>
 			<arg value="-jar"/>
@@ -330,7 +349,7 @@
 			<arg value="+maxmemory=2048m"/>
 
 			<!-- Define arguments -->
-			<arg value="-define+=CONFIG::OSX,${is.macos}"/>
+			<arg value="-define+=CONFIG::OSX,true"/>
 			
 			<!-- Source-path arguments -->
 			<arg value="-source-path+=../../MoonshineSharedCore/src"/>
@@ -343,9 +362,48 @@
 			<arg value="-library-path+=../../MoonshineSharedCore/libs"/>
 			<arg value="-library-path+=../../MoonshineGUICore/bin/flash/bin"/>
 
-			<arg value="-external-library-path+=${extension.path}"/>
+			<arg value="-external-library-path+=../extensions/SSB.ane"/>
 		</exec>
-    	<echo message="Compiled SWF"/>
+    	<echo message="Compiled SWF for macOS"/>
+	</target>
+
+	<!-- ANCHOR - Compile SWF for Windows -->
+	<target name="compile-swf-for-windows">
+		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
+			<arg value="-Dflexcompiler=${FLEX_HOME}/bin/mxmlc"/>
+			<arg value="-jar"/>
+			<arg value="${FLEX_HOME}/lib/mxmlc.jar"/>
+			
+			<!-- Compiler arguments -->
+			<arg value="+flexlib=${FLEX_HOME}/frameworks"/>
+			<arg value="../src/MoonshineDESKTOP.mxml"/>
+			<arg value="-output=./bin-debug/Moonshine.swf"/>
+			<arg value="-swf-version=44"/>
+			<arg value="+configname=air"/>
+			<arg value="-locale=en_US,ja_JP"/>
+			<arg value="-optimize=true"/>
+			<arg value="-debug=${build.is.debug}"/>
+			<arg value="-actionscript-file-encoding=UTF-8"/>
+			<arg value="-incremental=false"/>
+			<arg value="-keep-generated-actionscript=false"/>
+			<arg value="-allow-source-path-overlap=true"/>
+			<arg value="+maxmemory=2048m"/>
+
+			<!-- Define arguments -->
+			<arg value="-define+=CONFIG::OSX,false"/>
+			
+			<!-- Source-path arguments -->
+			<arg value="-source-path+=../../MoonshineSharedCore/src"/>
+			<arg value="-source-path+=../../MoonshineSharedCore/src/locale/{locale}"/>
+			<arg value="-source-path+=../src"/>
+			<arg value="-source-path+=../../../../Moonshine-SDK-Installer/InstallerSharedCore/src"/>
+			
+			<!-- Library-path arguments -->
+			<arg value="-library-path+=../libs"/>
+			<arg value="-library-path+=../../MoonshineSharedCore/libs"/>
+			<arg value="-library-path+=../../MoonshineGUICore/bin/flash/bin"/>
+		</exec>
+    	<echo message="Compiled SWF for Windows"/>
 	</target>
 
 	<target name="compile-app">
