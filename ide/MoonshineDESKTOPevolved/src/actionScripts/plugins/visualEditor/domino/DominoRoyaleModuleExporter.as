@@ -95,9 +95,9 @@ package actionScripts.plugins.visualEditor.domino
 				}
 			}
 
-			for (var j:int = 0; j < formObjects.length; j++)
+			for (var k:int = 0; k < formObjects.length; k++)
 			{
-				var formObj:DominoFormVO = formObjects[j];
+				var formObj:DominoFormVO = formObjects[k];
 				var fields:Array = [];
 				if (!formObj.isSubForm)
 				{

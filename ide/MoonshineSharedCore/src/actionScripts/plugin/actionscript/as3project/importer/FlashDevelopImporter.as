@@ -374,15 +374,15 @@ package actionScripts.plugin.actionscript.as3project.importer
 				//var visualEditorView:VisualEditorViewer=new VisualEditorViewer();
 				//2.start convert domino 
 				//2.1 load xml from visualeditor-src and convert it to dxl
-				var xmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
+				var xmlVisualEditorWebAppFile:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp");
 				var subformXmlFileLocation:FileLocation = projectFolderLocation.resolvePath("visualeditor-src"+File.separator+"main"+File.separator+"webapp"+File.separator+"subforms");
 				if(!subformXmlFileLocation.fileBridge.exists)
 				{
 					subformXmlFileLocation.fileBridge.createDirectory();
 				}
-				if(xmlFileLocation.fileBridge.exists || subformXmlFileLocation.fileBridge.exists)
+				if(xmlVisualEditorWebAppFile.fileBridge.exists || subformXmlFileLocation.fileBridge.exists)
 				{
-					var directory:Array = xmlFileLocation.fileBridge.getDirectoryListing();
+					var directory:Array = xmlVisualEditorWebAppFile.fileBridge.getDirectoryListing();
 					var subdirectory:Array = subformXmlFileLocation.fileBridge.getDirectoryListing();
 					if(subdirectory){
 						for each (var subxml:File in subdirectory)
@@ -432,7 +432,7 @@ package actionScripts.plugin.actionscript.as3project.importer
 							}
 
 							//first we insert the action bar if it exist
-							var xmlFileLocation:FileLocation= new FileLocation(xml.nativePath);
+							var xmlFileLocation:FileLocation = new FileLocation(xml.nativePath);
 							var xmlFileString:String=String(xmlFileLocation.fileBridge.read());
 							var	sourceXmlCache:XML = new XML(xmlFileString);
 
@@ -582,14 +582,14 @@ package actionScripts.plugin.actionscript.as3project.importer
 											if(pardefId!=null){
 												for each(var pardef:XML in dominoXml..pardef)
 												{
-													var id:String = pardef.@id;
-													if(pardefId==id){
+													var parDefId:String = pardef.@id;
+													if(pardefId==parDefId){
 													
 														if(pardef.code!=null){
 															if(pardef.code.@event!=null && pardef.code.@event!=""){
 																if(pardef.code.@event=="hidewhen"){
 																	var formulaXmlList:XMLList=pardef.code.formula;
-																	var formulaXml=formulaXmlList[0];
+																	var formulaXml:XMLList = formulaXmlList[0];
 																	if(formulaXml){
 																	
 																		if(formulaXml.text()!=par.@hidewhen){
