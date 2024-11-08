@@ -134,7 +134,7 @@ jobs:
 
       - name: Build MockupVisualEditor with Ant
         working-directory: ../MockupVisualEditor
-        run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
+        run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs mainBuildWithoutDoc
 
       - name: Build MoonshineDESKTOPevolved with Ant
         run: >
