@@ -553,15 +553,15 @@ Yg4BAIQAAAAAAAAAAAA=
                 moonshineDevVO.logoImagePath = "/elements/images/moonshine-logo-circle.png";
                 moonshineDevVO.link = "https://www.moonshine.dev/";
                 moonshineDevVO.displayHome = true;
-                moonshineDevVO.homeTitle = "Try web version of Moonshine-IDE – Fast, Multiplatform App Development at Moonshine.dev!";
-                moonshineDevVO.title = "Try web version of Moonshine-IDE – Fast, Multiplatform App Development at Moonshine.dev!";
+                moonshineDevVO.homeTitle = "New web version features advanced Design View and AI at Moonshine.dev!";
+                moonshineDevVO.title = "New web version features advanced Design View and AI at Moonshine.dev!";
 
             var topicBoxVO:TemplateVO = new TemplateVO();
                 topicBoxVO.logoImagePath = "/elements/images/Topicbox_Icon_RGB.png";
                 topicBoxVO.link = "https://moonshine-ide.topicbox.com/latest";
                 topicBoxVO.displayHome = true;
-                topicBoxVO.homeTitle = "View the Discussion";
-                topicBoxVO.title = "View the Discussion";
+                topicBoxVO.homeTitle = "View the Moonshine user group discussion forum";
+                topicBoxVO.title = "View the Moonshine user group discussion forum";
 
             TEMPLATES_NEWS_MOONSHINE = new ArrayCollection([moonshineDevVO, topicBoxVO]);
 
