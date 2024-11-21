@@ -29,19 +29,9 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-package actionScripts.valueObjects;
-
-import actionScripts.factory.FileLocation;
-
-class TemplateVO {
-	public var title:String;
-	public var homeTitle:String;
-	public var description:String;
-	public var logoImagePath:String;
-	public var file:FileLocation;
-	public var displayHome:Bool;
-	public var link:String;
-
-	public function new() {}
+package actionScripts.plugin.dominoInterface
+{
+    public class DominoSingletonEnforcer {
+        // No need for any content here
+    }
 }

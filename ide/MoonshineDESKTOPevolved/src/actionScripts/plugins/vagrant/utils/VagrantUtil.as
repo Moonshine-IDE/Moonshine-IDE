@@ -129,12 +129,7 @@ package actionScripts.plugins.vagrant.utils
 				for each (var instance:Object in storedInstances)
 				{
 					var newInstance:VagrantInstanceVO = VagrantInstanceVO.getNewInstance(instance);
-					if (newInstance.titleOriginal && newInstance.server && newInstance.server.hostname != undefined)
-					{
-						instances.addItem(
-								VagrantInstanceVO.getNewInstance(instance)
-						);
-					}
+					instances.addItem(newInstance);
 				}
 			}
 			
@@ -160,8 +155,9 @@ package actionScripts.plugins.vagrant.utils
 					{
 						var isNameExists:Boolean = false;
 						var server:Object = readObject.servers[i];
-						var vagrantServer:Object = { serverType: server.type };
 						var serverHostname:String = server.server_hostname;
+						if (!serverHostname) continue;
+						var vagrantServer:Object = { serverType: server.type };
 						if ((server.server_hostname.indexOf(".") == -1))
 						{
 							serverHostname = server.server_hostname + "."+ server.server_organization +".com";
@@ -220,6 +216,8 @@ package actionScripts.plugins.vagrant.utils
 				request.method = "GET";
 				request.idleTimeout = 2000;
 
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "[Vagrant Status] Checking server status: " + instance.url + "/info"));
+
 				var loader:URLLoader = new URLLoader();
 				loader.addEventListener(Event.COMPLETE, onStateCheckSuccess);
 				loader.addEventListener(IOErrorEvent.IO_ERROR, onStateCheckIOError);
@@ -241,7 +239,15 @@ package actionScripts.plugins.vagrant.utils
 		{
 			var infoObject:Object = JSON.parse(event.target.data.toString());
 			var instance:VagrantInstanceVO = instanceStateCheckLoaders[event.target];
-			instance.state = ("status" in infoObject) ? infoObject["status"] : VagrantInstanceState.UNREACHABLE;
+			if ("status" in infoObject)
+			{
+				instance.state = infoObject["status"];
+			}
+			else
+			{
+				dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "[Vagrant Status] No 'status' property in returned object", false, false, ConsoleOutputEvent.TYPE_INFO));
+				instance.state = VagrantInstanceState.UNREACHABLE;
+			}
 			instance.capabilities = ("capabilities" in infoObject) ? (infoObject["capabilities"] as Array) : [];
 
 			releaseLoaderListeners(event.target as URLLoader);
@@ -251,23 +257,24 @@ package actionScripts.plugins.vagrant.utils
 
 		private static function onStateCheckIOError(event:IOErrorEvent):void
 		{
-			var instance:VagrantInstanceVO = instanceStateCheckLoaders[event.target];
-			instance.state = VagrantInstanceState.UNREACHABLE;
-			instance.capabilities = [];
-
-			releaseLoaderListeners(event.target as URLLoader);
-			delete instanceStateCheckLoaders[event.target];
-			dispatcher.dispatchEvent(new Event(EVENT_INSTANCE_STATE_CHECK_COMPLETES));
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "[Vagrant Status] Server error: " + event.errorID + " " + event.text, false, false, ConsoleOutputEvent.TYPE_ERROR));
+			reportUnreachableState(event.target);
 		}
 
 		private static function onStateCheckSecurityError(event:SecurityErrorEvent):void
 		{
-			var instance:VagrantInstanceVO = instanceStateCheckLoaders[event.target];
+			dispatcher.dispatchEvent(new ConsoleOutputEvent(ConsoleOutputEvent.CONSOLE_OUTPUT, "[Vagrant Status] Server error: " + event.errorID + " " + event.text, false, false, ConsoleOutputEvent.TYPE_ERROR));
+			reportUnreachableState(event.target);
+		}
+
+		private static function reportUnreachableState(target:Object):void
+		{
+			var instance:VagrantInstanceVO = instanceStateCheckLoaders[target];
 			instance.state = VagrantInstanceState.UNREACHABLE;
 			instance.capabilities = [];
 
-			releaseLoaderListeners(event.target as URLLoader);
-			delete instanceStateCheckLoaders[event.target];
+			releaseLoaderListeners(target as URLLoader);
+			delete instanceStateCheckLoaders[target];
 			dispatcher.dispatchEvent(new Event(EVENT_INSTANCE_STATE_CHECK_COMPLETES));
 		}
 

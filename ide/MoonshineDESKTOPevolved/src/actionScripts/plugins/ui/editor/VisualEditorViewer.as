@@ -72,6 +72,8 @@ package actionScripts.plugins.ui.editor
 	import utils.GenericUtils;
 	import mx.collections.ArrayCollection;
 
+	import actionScripts.plugin.dominoInterface.DominoObjectsPlugin;
+
 	public class VisualEditorViewer extends BasicTextEditor implements IVisualEditorViewer
 	{
 		private static const EVENT_SWITCH_TAB_TO_CODE:String = "switchTabToCode";
@@ -327,6 +329,16 @@ package actionScripts.plugins.ui.editor
 				}
 			}
 
+			if((visualEditorProject as IVisualEditorProjectVO).isDominoVisualEditorProject){
+			//Domino Objects property save
+				if(visualEditorView.visualEditor.editingSurface){
+					var visualEditorFileType:String = visualEditorView.visualEditor.editingSurface.visualEditorFileType;
+					if(visualEditorFileType=="form" || visualEditorFileType=="subform"){
+						dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS_SAVE));
+					}
+					
+				}
+			}
 			refreshFileForPreview();
 		}
 
@@ -411,6 +423,11 @@ package actionScripts.plugins.ui.editor
 		{
 			updateChangeStatus();
 		}
+
+		public function onDominoObjectUpdate():void
+		{
+			dispatchEvent(new Event('labelChanged'));
+		}
 		
 		private function onPropertyEditorChanged(event:PropertyEditorChangeEvent):void
 		{
@@ -453,6 +470,8 @@ package actionScripts.plugins.ui.editor
 				
 				SharedObjectUtil.removeLocationOfEditorFile(model.activeEditor);
 			}
+			//check if any form or subfrom editor exist in the tabs, if no noe exist ,close the Objects UI
+			dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS_UI_CLOSE));
 		}
 		
 		override protected function tabSelectHandler(event:TabEvent):void
@@ -463,6 +482,25 @@ package actionScripts.plugins.ui.editor
 			if (!event.child.hasOwnProperty("editor") || event.child["editor"] != this.editor)
 			{
 				visualEditorView.visualEditor.editingSurface.selectedItem = null;
+				
+				
+				if(event.child){
+					var basicTextEditor:BasicTextEditor=event.child as BasicTextEditor;
+					if(!basicTextEditor){
+						basicTextEditor=model.activeEditor as BasicTextEditor;
+					}
+					if(basicTextEditor){
+						var selectextension:String=basicTextEditor.currentFile.fileBridge.extension;
+					
+						if(selectextension!="form" && selectextension!="subform"){
+								dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS_UI_CLOSE));
+						}
+					}
+				}
+				
+				//if(!visualEditorView.visualEditor.editingSurface){
+					
+				//}
 			}
 			else
 			{
@@ -474,10 +512,21 @@ package actionScripts.plugins.ui.editor
 					visualEditorView.visualEditor.editingSurface.subFormList=getSubFromList();
 					visualEditorView.visualEditor.editingSurface.sharedFieldList=getDominoShareFieldList();
 					visualEditorView.visualEditor.dominoActionOrganizer.dominoActionsProEditor=getDominoActionList();
+					dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS));
 				}
-
-
+				//if it swtich to not form edit ,it need close the Objects UI
+		
 			}
+			
+
+			if (event.child&&event.child.hasOwnProperty("editor")){
+				
+			} else{
+				dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS_UI_CLOSE));
+			}
+
+			
+			
 
 			
 		}
@@ -529,6 +578,11 @@ package actionScripts.plugins.ui.editor
 			if (veFilePath)
 			{
 				visualEditorView.visualEditor.loadFile(veFilePath);
+				//if it is a domino form file, open the Objects for the editor.text
+				 if(file.fileBridge.nativePath.lastIndexOf(".form")>=0){
+					dispatcher.dispatchEvent(new Event(DominoObjectsPlugin.EVENT_DOMINO_OBJECTS));
+				 }
+				//Alert.show("veFilePath:"+file.fileBridge.nativePath);
 			}
 		}
 
@@ -548,7 +602,7 @@ package actionScripts.plugins.ui.editor
 			return fileName;
 		}
 		
-		private function getVisualEditorFilePath():String
+		public function getVisualEditorFilePath():String
 		{
 			var visualEditorProjectSourcedPath:String = (visualEditorProject as IVisualEditorProjectVO).visualEditorSourceFolder.fileBridge.nativePath;
 			

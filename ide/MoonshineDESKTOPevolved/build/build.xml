@@ -1,3 +1,629 @@
-<project name="Moonshine Desktop Build Script" basedir="." default="checkOS">
-	<import file="../../MoonshineSharedCore/build/build-lib.xml" />
+<project name="MoonshineBuildScriptLibrary" basedir="." default="build" >
+	<description>
+	</description>
+ 	
+	<!--
+	//==========================================================================
+	//
+	//  PROPERTIES
+	//
+	//==========================================================================
+	-->
+
+	<!-- Read local properties -->
+	<property file="local.properties"/>
+
+	<!-- Read all environment properties -->
+	<property environment="env"/>
+
+	<tstamp>
+		<format property="timestamp" pattern="yyyy-MM-dd_HH-mm-ss" />
+		<format property="timestamp.time" pattern="MM/dd/yyyy hh:mm aa"/>
+	</tstamp>
+
+	<!-- ANCHOR - Tool Properties -->	
+	<property name="JAVA_HOME" value="${env.JAVA_HOME}"/>
+	<property name="FLEX_HOME" value="${env.FLEX_HOME}"/>
+    <property name="adt.cmd" value="${FLEX_HOME}/lib/adt.jar"/>
+	<property name="haxelib.cmd" value="haxelib"/>
+	<property name="signtool.cmd" value="signtool"/>
+	<property name="nsis.cmd" value="makensis"/>
+	<taskdef 
+		resource="net/sf/antcontrib/antcontrib.properties" 
+		classpath="./ant-contrib-0.6.jar"/>
+	<taskdef 
+		resource="flexTasks.tasks" 
+		classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+	
+	<property name="build.is.development" value="true"/>
+	<property name="build.is.debug" value="true"/>
+	<property name="build.number" value="0"/>
+
+	<!-- ANCHOR - App Properties -->
+	<if>
+		<equals arg1="${build.is.development}" arg2="true"/>
+		<then>
+			<property name="app.id" value="com.moonshine-ide.development"/>
+			<property name="app.title" value="Moonshine Development"/>
+			<property name="app.name" value="MoonshineDevelopment" />
+		</then>
+		<else>
+			<property name="app.id" value="com.moonshine-ide"/>
+			<property name="app.title" value="Moonshine"/>
+			<property name="app.name" value="Moonshine" />
+		</else>			
+	</if>
+	<property name="app.version" value="1.0.0"/>
+	<property name="is.debug" value="true"/>
+
+	<!-- Detect Operating System -->
+	<condition property="is.windows">
+		<os family="windows"/>
+	</condition>
+	<condition property="is.macos">
+		<os family="mac"/>
+	</condition>
+	<condition property="is.linux">
+		<and>
+    		<os family="unix"/>
+    		<not>
+      			<os family="mac"/>
+    		</not>
+  		</and>
+	</condition>
+	
+	<!--
+	//==========================================================================
+	//
+	//  WORKFLOWS
+	//
+	//==========================================================================
+	-->
+	
+	<!-- ANCHOR - Build Workflow -->
+	<target name="build">			
+		<switch value="true">
+			<case value="${is.windows}">
+				<antcall>
+					<!-- Windows Tasks -->	
+					<target name="print-info"/>		
+					<target name="init"/>
+					<target name="modify-app-descriptor"/>
+					<target name="copy-files"/>
+					<target name="install-haxe-dependencies"/>
+					<target name="compile-gui-core"/>	
+					<target name="compile-swf-for-windows"/>
+					<target name="compile-app"/>
+					<target name="post-compile"/>
+				</antcall>
+			</case>
+			<case value="${is.macos}">
+				<antcall>
+					<!-- macOS Tasks -->
+					<target name="print-info"/>		
+					<target name="init"/>
+					<target name="modify-app-descriptor"/>
+					<target name="copy-files"/>
+					<target name="install-haxe-dependencies"/>
+					<target name="compile-gui-core"/>
+					<target name="compile-swf-for-macos"/>
+					<target name="compile-app"/>
+					<target name="post-compile"/>
+				</antcall>
+			</case>
+			<case value="${is.linux}">
+					<!-- Linux Tasks -->
+					<echo message="Linux not supported yet."/>
+			</case>
+		</switch>		
+	</target>
+
+	<!-- ANCHOR - Pack And Sign Workflow -->
+	<target name="pack-and-sign">
+		<switch value="true">
+			<case value="${is.windows}">
+				<antcall>
+					<!-- Windows Tasks -->		
+					<target name="create-windows-installer"/>
+					<target name="sign-windows-installer"/>
+				</antcall>
+			</case>
+			<case value="${is.macos}">
+				<antcall>
+					<!-- macOS Tasks -->
+					<target name="sign-node-binaries"/>
+					<target name="sign-macos-app"/>
+					<target name="create-macos-pkg"/>
+					<target name="sign-macos-pkg"/>
+					<target name="notarize-macos-pkg"/>
+				</antcall>
+			</case>
+			<case value="${is.linux}">
+					<!-- Linux Tasks -->
+					<echo message="Linux not supported yet."/>
+			</case>
+		</switch>		
+	</target>
+
+	<!-- ANCHOR - Clean Workflow -->
+	<target name="clean">
+		<delete dir="./bin-debug"/>
+		<delete dir="./deploy"/>
+		<delete dir="./elements"/>
+		<delete dir="./macOScripts"/>
+		<delete dir="./helperResources"/>
+		<delete dir="./installer"/>
+		<delete dir="./tourDeFlex"/>
+	</target>
+
+    <!-- ANCHOR - Print Info -->
+    <target name="print-info">
+        <echo message="Build Properties:"/>
+		<echo message="=========="/>
+		<echo message="Is Development: ${build.is.development}"/>
+		<echo message="Is Debug: ${build.is.debug}"/>
+		<echo message="OS: ${os.name}"/>
+		<echo message=""/>
+		<echo message="App Properties:"/>
+		<echo message="=========="/>
+		<echo message="App Name: ${app.name}"/>
+		<echo message="App Title: ${app.title}"/>
+		<echo message="App ID: ${app.id}"/>
+		<echo message="App Version: ${app.version}"/>
+		<echo message=""/>
+		<echo message="Tools:"/>
+		<echo message="=========="/>
+		<echo message="Global JAVA_HOME: ${env.JAVA_HOME}"/>
+		<echo message="Workflow JAVA_HOME: ${JAVA_HOME}"/>
+		<echo message="FLEX_HOME: ${FLEX_HOME}"/>
+		<echo message="adt command: ${adt.cmd}"/>
+		<echo message="haxelib command: ${haxelib.cmd}"/>
+		<echo message="signtool command: ${signtool.cmd}"/>
+		<echo message="nsis command: ${nsis.cmd}"/>
+    </target>
+
+    <!-- ANCHOR - Init -->
+	<target name="init">
+		<mkdir dir="./bin-debug"/>
+		<mkdir dir="./bin-debug/app"/>
+		<mkdir dir="./deploy"/>
+
+		<java jar="${adt.cmd}" fork="true" failonerror="true">
+			<arg line="-certificate" />
+			<arg line="-cn MoonshineSelfSignedCertificate" />
+			<arg line="2048-RSA" />
+	   		<arg line="./deploy/MoonshineSelfSignedCertificate.p12" />
+	   		<arg line="moonshine"/>
+		</java>
+		<echo message="Created Self-Signed Certificate"/>
+	</target>
+
+	<!-- ANCHOR - Modify App Descriptor -->
+	<target name="modify-app-descriptor">
+		<copy file="../src/MoonshineDESKTOP-app.xml" todir="./deploy" overwrite="true"/>
+
+		<replaceregexp 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
+			match="filenameToBeReplacedByANT" 
+			replace="${app.name}" />
+		<replaceregexp 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
+			match="nameToBeReplacedByANT" 
+			replace="${app.title} ${app.version}" 
+			encoding="utf-8" />
+		<replaceregexp 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
+			match="idToBeReplacedByANT" 
+			replace="${app.id}" />
+		<replaceregexp 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
+			match="0.0.0" 
+			replace="${app.version}" />
+		<replace 
+			file="./deploy/MoonshineDESKTOP-app.xml" 
+			token="[This value will be overwritten by Flash Builder in the output app.xml]" 
+			value="bin-debug/Moonshine.swf" />
+		<echo message="Modified App Descriptor"/>
+
+		<!-- Remove SSB extension on Windows -->
+		<if>
+			<equals arg1="${is.windows}" arg2="true"/>
+			<then>
+				<replace file="./deploy/MoonshineDESKTOP-app.xml">
+					<replacetoken><![CDATA[<extensions><extensionID>karar.santanu.SecurityScopeBookmark</extensionID></extensions>]]></replacetoken>  
+					<replacevalue><![CDATA[]]></replacevalue>
+				</replace>
+			</then>
+		</if>
+		
+	</target>
+
+	<!-- ANCHOR - Copy Files -->
+	<target name="copy-files">
+		<copy todir="./elements" overwrite="true">
+			<fileset dir="../../MoonshineSharedCore/src/elements" />
+		</copy>
+
+		<copy todir="./installer" overwrite="true">
+			<fileset dir="../src/installer"/>
+		</copy>
+
+		<copy todir="./tourDeFlex" overwrite="true">
+		    <fileset dir="../tourDeFlex"/>
+		</copy>
+
+		<copy todir="./helperResources" overwrite="true">
+    		<fileset dir="../../../../Moonshine-SDK-Installer/InstallerSharedCore/src/helperResources"/>
+		</copy>
+
+
+		<copy file="../extensions/SSB.ane" todir="./bin-debug" overwrite="true"/>
+		<copy todir="./macOScripts" overwrite="true">
+			<fileset dir="../src/macOScripts"/>
+		</copy>
+
+		<echo message="Copied Files"/>
+	</target>
+
+	<!-- ANCHOR - Install Haxe Dependencies -->
+	<target name="install-haxe-dependencies">
+		<haxelibInstall library="lime" />
+		<haxelibInstall library="openfl" />
+		<haxelibInstall library="feathersui" />
+		<haxelibInstall library="actuate" />
+		<haxelibInstall library="markdown-openfl-textfield" />
+		<haxelibInstall library="format" />
+		<haxelibInstall library="hxp" />
+		<haxelibInstall library="amfio" />
+
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-openfl-language-client"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-openfl-language-client.git"/>
+			<arg value="--always"/>
+			<arg value="--quiet"/>
+		</exec>
+
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-openfl-debug-adapter-client"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-openfl-debug-adapter-client.git"/>
+			<arg value="--always"/>
+			<arg value="--quiet"/>
+		</exec>
+
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="moonshine-feathersui-text-editor"/>
+			<arg value="https://github.com/Moonshine-IDE/moonshine-feathersui-text-editor.git"/>
+			<arg value="--always"/>
+			<arg value="--quiet"/>
+		</exec>
+
+		<echo message="Installed Haxe Dependencies"/>
+		<echo message=""/>
+		<echo message="All Installed Haxelib Libraries:"/>
+		<echo message="=========="/>
+		<exec executable="${haxelib.cmd}">
+			<arg value="list"/>
+		</exec>
+		
+	</target>
+
+	<!-- ANCHOR - Compile GUI Core -->
+	<target name="compile-gui-core">
+		<exec executable="${haxelib.cmd}"
+			dir="../../MoonshineGUICore"
+			failonerror="true">
+			<arg value="run"/>
+			<arg value="openfl"/>
+			<arg value="build"/>
+			<arg value="flash"/>
+		</exec>
+		<echo message="Compiled GUI Core"/>
+	</target>
+
+	<!-- ANCHOR - Compile SWF for macOS -->
+	<target name="compile-swf-for-macos">
+		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
+			<arg value="-Dflexcompiler=${FLEX_HOME}/bin/mxmlc"/>
+			<arg value="-jar"/>
+			<arg value="${FLEX_HOME}/lib/mxmlc.jar"/>
+			
+			<!-- Compiler arguments -->
+			<arg value="+flexlib=${FLEX_HOME}/frameworks"/>
+			<arg value="../src/MoonshineDESKTOP.mxml"/>
+			<arg value="-output=./bin-debug/Moonshine.swf"/>
+			<arg value="-swf-version=44"/>
+			<arg value="+configname=air"/>
+			<arg value="-locale=en_US,ja_JP"/>
+			<arg value="-optimize=true"/>
+			<arg value="-debug=${build.is.debug}"/>
+			<arg value="-actionscript-file-encoding=UTF-8"/>
+			<arg value="-incremental=false"/>
+			<arg value="-keep-generated-actionscript=false"/>
+			<arg value="-allow-source-path-overlap=true"/>
+			<arg value="+maxmemory=2048m"/>
+
+			<!-- Define arguments -->
+			<arg value="-define+=CONFIG::OSX,true"/>
+			
+			<!-- Source-path arguments -->
+			<arg value="-source-path+=../../MoonshineSharedCore/src"/>
+			<arg value="-source-path+=../../MoonshineSharedCore/src/locale/{locale}"/>
+			<arg value="-source-path+=../src"/>
+			<arg value="-source-path+=../../../../Moonshine-SDK-Installer/InstallerSharedCore/src"/>
+			
+			<!-- Library-path arguments -->
+			<arg value="-library-path+=../libs"/>
+			<arg value="-library-path+=../../MoonshineSharedCore/libs"/>
+			<arg value="-library-path+=../../MoonshineGUICore/bin/flash/bin"/>
+
+			<arg value="-external-library-path+=../extensions/SSB.ane"/>
+		</exec>
+    	<echo message="Compiled SWF for macOS"/>
+	</target>
+
+	<!-- ANCHOR - Compile SWF for Windows -->
+	<target name="compile-swf-for-windows">
+		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
+			<arg value="-Dflexcompiler=${FLEX_HOME}/bin/mxmlc"/>
+			<arg value="-jar"/>
+			<arg value="${FLEX_HOME}/lib/mxmlc.jar"/>
+			
+			<!-- Compiler arguments -->
+			<arg value="+flexlib=${FLEX_HOME}/frameworks"/>
+			<arg value="../src/MoonshineDESKTOP.mxml"/>
+			<arg value="-output=./bin-debug/Moonshine.swf"/>
+			<arg value="-swf-version=44"/>
+			<arg value="+configname=air"/>
+			<arg value="-locale=en_US,ja_JP"/>
+			<arg value="-optimize=true"/>
+			<arg value="-debug=${build.is.debug}"/>
+			<arg value="-actionscript-file-encoding=UTF-8"/>
+			<arg value="-incremental=false"/>
+			<arg value="-keep-generated-actionscript=false"/>
+			<arg value="-allow-source-path-overlap=true"/>
+			<arg value="+maxmemory=2048m"/>
+
+			<!-- Define arguments -->
+			<arg value="-define+=CONFIG::OSX,false"/>
+			
+			<!-- Source-path arguments -->
+			<arg value="-source-path+=../../MoonshineSharedCore/src"/>
+			<arg value="-source-path+=../../MoonshineSharedCore/src/locale/{locale}"/>
+			<arg value="-source-path+=../src"/>
+			<arg value="-source-path+=../../../../Moonshine-SDK-Installer/InstallerSharedCore/src"/>
+			
+			<!-- Library-path arguments -->
+			<arg value="-library-path+=../libs"/>
+			<arg value="-library-path+=../../MoonshineSharedCore/libs"/>
+			<arg value="-library-path+=../../MoonshineGUICore/bin/flash/bin"/>
+		</exec>
+    	<echo message="Compiled SWF for Windows"/>
+	</target>
+
+	<target name="compile-app">
+		<switch value="true">
+			<case value="${is.windows}">
+				<property name="app.path" value="bin-debug/app"/>
+			</case>
+			<case value="${is.macos}">
+				<property name="app.path" value="bin-debug/app/${app.name}.app"/>
+			</case>
+		</switch>
+
+		<exec executable="${JAVA_HOME}/bin/java" failonerror="true">
+			<arg line="-jar ${adt.cmd}"/>
+			<arg line="-package" />
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore './deploy/MoonshineSelfSignedCertificate.p12'" />
+	   		<arg line="-storepass 'moonshine'" />
+			<arg line="-tsa 'http://timestamp.digicert.com'" />
+	   		<arg line="-target bundle"/>
+	   		<arg line="${app.path}" />
+	   		<arg line="'./deploy/MoonshineDESKTOP-app.xml'" />
+	   		<arg line="'./bin-debug/Moonshine.swf'" />
+			<arg line="-extdir"/>
+			<arg line="../extensions"/>
+			<arg line="./elements" />
+			<arg line="./macOScripts"/>
+			<arg line="./installer"/>
+			<arg line="./tourDeFlex" />
+			<arg line="./helperResources"/>
+	   		<!-- Add folders to be bundled in the AIR file here -->			
+		</exec>
+		<echo message="Compiled App"/>
+	</target>
+
+	<!-- ANCHOR - Post Compile -->
+	<target name="post-compile">
+		<if>
+			<equals arg1="${is.macos}" arg2="true"/>
+			<then>
+				<copy overwrite="true" failonerror="true"
+					tofile="${app.path}/Contents/Resources/Icon.icns" 
+					file="./elements/images/moonshineIcons.icns" />
+				<exec executable="bash">
+					<arg value="-c"/>
+					<arg value="chmod -R 777 bin-debug/app/${app.name}.app"/>
+				</exec>
+			</then>		
+		</if>
+	</target>
+
+	<!--
+	//==========================================================================
+	//
+	//  WINDOWS SUBTASKS
+	//
+	//==========================================================================
+	-->
+
+	<!-- ANCHOR - Create Windows Installer -->
+	<target name="create-windows-installer">
+		<exec executable="${nsis.cmd}" failonerror="true">
+			<arg value="/DVERSION=${app.version}"/>
+			<arg value="/DAPP_NAME=${app.name}"/>
+			<arg value="/DAPP_TITLE=${app.title}"/>
+			<arg value="/DINSTALLER_NAME=${app.name}-${app.version}-Installer"/>
+			<arg value="/DAPPID=${app.id}"/>
+			<arg value="/DTIMESTAMP=${timestamp.time}"/>
+			<arg value="./nsis-build.nsi"/>
+		</exec>
+		<echo message="Signed Windows Installer"/>
+		<echo message="Created Windows Installer"/>
+	</target>
+		
+	<!-- ANCHOR - Sign Windows Installer -->
+	<target name="sign-windows-installer" unless="${build.is.development}">
+		<exec executable="${signtool.cmd}" failonerror="true">
+			<arg value="sign"/>
+			<arg value="/sha1"/>
+			<arg value="${env.SM_THUMBPRINT}"/>
+			<arg value="/tr"/>
+			<arg value="http://timestamp.digicert.com"/>
+			<arg value="/td"/>
+			<arg value="SHA256"/>
+			<arg value="/fd"/>
+			<arg value="SHA256"/>
+			<arg value="./deploy/${app.name}-${app.version}-Installer.exe"/>
+		</exec>
+		
+	 </target>	
+
+	<!--
+	//==========================================================================
+	//
+	//  MACOS SUBTASKS
+	//
+	//==========================================================================
+	-->
+
+	<!-- ANCHOR - Signigning all .node binaries -->
+	<target name="sign-node-binaries">
+		<echo message="Signing all .node binaries in node_modules directories"/>
+		
+		<!-- Find and sign all .node binaries -->
+		<apply executable="codesign" failonerror="true" parallel="true">
+			<arg value="--deep"/>
+			<arg value="--force"/>
+			<arg value="--options"/>
+			<arg value="runtime"/>
+			<arg value="--timestamp"/>
+			<arg value="--sign"/>
+			<arg value="Developer ID Application"/>
+			<fileset dir="${basedir}">
+				<include name="**/node_modules/**/*.node"/>
+				<include name="**/node_modules/node-notifier/vendor/mac.noindex/terminal-notifier.app/Contents/MacOS/terminal-notifier"/>
+			</fileset>
+		</apply>
+	</target>
+
+	<!-- ANCHOR - Sign macOS app -->
+	<target name="sign-macos-app">
+		<echo message="Kechain: ${keychain.name}"/>
+		<echo message="Notarytool Profile: ${notarytool.profile}"/>
+
+		<!-- Show Nuber of Developer ID Application Certificates -->
+		<exec executable="bash" outputproperty="certs.application.in.keychain">
+            <arg value="-c"/>
+            <arg value="security find-certificate -a | grep -s 'Developer ID Application' | grep -c 'alis'"/>
+        </exec>
+		<!-- Show Number of Developer ID Installer Certificates -->
+		<echo message="certs.application.in.keychain: ${certs.application.in.keychain}"/>
+		<exec executable="bash" outputproperty="certs.installer.in.keychain">
+            <arg value="-c"/>
+            <arg value="security find-certificate -a | grep -s 'Developer ID Installer' | grep -c 'alis'"/>
+        </exec>
+		<echo message="certs.installer.in.keychain: ${certs.installer.in.keychain}"/>
+
+		<exec executable="codesign" failonerror="true">
+            <arg value="./bin-debug/app/${app.name}.app"/>
+            <arg value="--sign"/>
+            <arg value="Developer ID Application"/>
+			<arg value="--entitlements"/>
+			<arg value="entitlement-non-sandbox.plist"/>
+            <arg value="--options"/>
+            <arg value="runtime"/>
+            <arg value="--force"/>
+            <arg value="--timestamp"/>
+            <arg value="--verbose"/>
+            <arg value="--deep"/>
+        </exec>  
+
+		<exec executable="codesign" failonerror="true">
+			<arg value="-vvv"/>
+			<arg value="--deep"/>
+			<arg value="--strict"/>
+            <arg value="./bin-debug/app/${app.name}.app"/>
+        </exec>
+
+		<exec executable="spctl" failonerror="true">
+			<arg value="-vvv"/>
+			<arg value="--assess"/>
+			<arg value="--type"/>
+			<arg value="exec"/>
+            <arg value="./bin-debug/app/${app.name}.app"/>
+        </exec>
+	</target>
+
+	<!-- ANCHOR - Create macOS pkg -->
+	<target name="create-macos-pkg">
+		<exec executable="productbuild" failonerror="true">
+			<arg value="--component"/>
+			<arg value="bin-debug/app/${app.name}.app"/>			
+			<arg value="/Applications"/>
+			<arg value="./deploy/${app.name}-unsigned.pkg"/>
+		</exec>
+		<echo message="Created macOS pkg"/>
+	</target>
+
+	<!-- ANCHOR - Sign macOS pkg -->
+	<target name="sign-macos-pkg">
+		<exec executable="productsign" failonerror="true">
+			<arg value="--sign"/>
+			<arg value="Developer ID Installer"/>
+			<arg value="./deploy/${app.name}-unsigned.pkg"/>
+			<arg value="./deploy/${app.name}-${app.version}.pkg"/>
+		</exec>
+		<echo message="Signed macOS pkg"/>
+	</target>
+
+	<!-- ANCHOR - Notarize macOS pkg -->
+	<target name="notarize-macos-pkg">
+		<exec executable="xcrun" failonerror="true">
+			<arg value="notarytool"/>
+			<arg value="submit"/>
+			<arg value="./deploy/${app.name}-${app.version}.pkg"/>
+			<arg value="--keychain-profile"/>
+			<arg value="${notarytool.profile}"/>
+			<arg value="--wait"/>
+		</exec>
+		<echo message="Notarized macOS pkg"/>
+	</target>
+
+	<!--
+	//==========================================================================
+	//
+	//  MACROS
+	//
+	//==========================================================================
+	-->
+
+	<!-- ANCHOR - Haxelib macro -->
+	<macrodef name="haxelibInstall" description="Install a haxe library">
+		<attribute name="library" />
+		<attribute name="version" default="" />
+
+		<sequential>
+			<exec executable="${haxelib.cmd}" failonerror="true">
+				<arg line="install @{library} @{version} --always --quiet" />
+			</exec>		
+		</sequential>
+	</macrodef>
+
 </project>

@@ -42,7 +42,9 @@
 		   creationComplete="onSplashScreenCreationComplete(event)" horizontalScrollPolicy="off" verticalScrollPolicy="off">
 	<fx:Script>
 		<![CDATA[
-			import mx.controls.Alert;
+		import components.renderers.MoonshineNewsItemRenderer;
+
+		import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.effects.Fade;
 			import mx.events.EffectEvent;
@@ -214,7 +216,14 @@
 						new MenuEvent(ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT)
 				);
 			}
-	
+
+			private function handleNewsOpen(event:Event):void
+			{
+				var dataNews:Object = event.target as MoonshineNewsItemRenderer;
+				var link:String = dataNews.data.link;
+				navigateToURL(new URLRequest(link));
+			}
+
 			private function handleTemplateClick(event:Event):void
 			{
 				var rdr:TemplateItemRenderer = event.target as TemplateItemRenderer;
@@ -415,10 +424,19 @@
 	</fx:Script>
 	
 	<splashscreen:ArtContainer/>
-	
 	<s:VGroup id="vgLeftList"
 		left="20" verticalCenter="0"
-		gap="20" width="60%">
+		gap="20">
+		<s:DataGroup id="newsList" dataProvider="{ConstantsCoreVO.TEMPLATES_NEWS_MOONSHINE}"
+					 itemRenderer="components.renderers.MoonshineNewsItemRenderer"
+					 color="0xFFFFFF" width="100%"
+					 creationComplete="newsList.addEventListener('itemClick', handleNewsOpen)">
+			<s:layout>
+				<s:VerticalLayout
+						gap="10"
+						clipAndEnableScrolling="false" />
+			</s:layout>
+		</s:DataGroup>
 		<s:Label 
 			text="OPEN"
 			color="0xFFFFFF"
@@ -448,15 +466,14 @@
 			fontStyle="italic"
 			fontSize="18"
 			/>
+
 		<s:DataGroup id="projectTemplateList"
 					 dataProvider="{plugin.projectsTemplates}"
 					 itemRenderer="components.renderers.TemplateItemRenderer"
-					 color="0xFFFFFF" width="100%"
+					 color="0xFFFFFF"
 					 creationComplete="projectTemplateList.addEventListener('itemClick', handleTemplateClick)">
 			<s:layout>
-				<s:VerticalLayout
-					gap="10" 
-					clipAndEnableScrolling="false" />
+				<s:TileLayout horizontalGap="5" requestedColumnCount="2"/>
 			</s:layout>
 		</s:DataGroup>
 		<s:Label 
