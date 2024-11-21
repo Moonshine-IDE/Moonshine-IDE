@@ -2,50 +2,135 @@ name: SUB - Build on Windows
 
 on:
   workflow_dispatch:
+    inputs:
+      env:
+        description: "An Environment"
+        required: true
+        type: choice
+        options:
+          - development
+          - production
+      version:
+        description: "A Version"
+        required: true
+        type: string
+
   workflow_call:
+    inputs:
+      env:
+        description: "An Environment"
+        required: true
+        type: string
+      version:
+        description: "A Version"
+        required: true
+        type: string
+
+env:
+  app_name: ${{ inputs.env == 'production' && 'Moonshine' || 'MoonshineDevelopment' }}
 
 jobs:
   build:
     runs-on: "windows-latest"
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '11'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "11"
 
-    - uses: krdlab/setup-haxe@v1
-      with:
-        haxe-version: 4.2.5
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.2.5
 
-    - uses: joshtynjala/setup-apache-flex-action@v2
-      with:
-        flex-version: "4.16.1"
-        air-version: "33.1"
-        accept-air-license: true
+      - uses: joshtynjala/setup-apache-flex-action@v2
+        with:
+          flex-version: "4.16.1"
+          air-version: "33.1"
+          accept-air-license: true
+          air-license-base64: ${{ secrets.AIR_LICENSE_BASE64 }}
 
-    - name: Prepare dependencies
-      working-directory: ..
-      run: |
-        git clone https://github.com/Moonshine-IDE/Moonshine-SDK-Installer.git
-        git clone https://github.com/Moonshine-IDE/VisualEditorConverterLib.git
-        git clone https://github.com/Moonshine-IDE/MockupVisualEditor.git
+      - name: Install NSIS plugin nsProcess
+        working-directory: ide\MoonshineDESKTOPevolved\build
+        run: |
+          Invoke-RestMethod -Uri "https://nsis.sourceforge.io/mediawiki/images/2/2f/ExecCmd.zip" -OutFile ExecCmd.zip
+          7z x ExecCmd.zip -o'ExecCmd' -y
+          mv ExecCmd\ExecCmd.dll "C:\Program Files (x86)\NSIS\Plugins\x86-unicode\ExecCmd.dll"
 
-    - name: Build VisualEditorConverterLib with Ant
-      working-directory: ../VisualEditorConverterLib
-      run: ant -noinput -buildfile 'build.xml'
+      - name: Setup signing certificate
+        run: |
+          echo "${{ secrets.SM_CLIENT_CERT_FILE_B64 }}" | base64 --decode > /d/Certificate_pkcs12.p12
+        shell: bash
 
-    - name: Build MockupVisualEditor with Ant
-      working-directory: ../MockupVisualEditor
-      run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs
+      - name: Set signing variables
+        id: variables
+        run: |
+          echo "SM_HOST=${{ secrets.SM_HOST }}" >> "$GITHUB_ENV" 
+          echo "SM_API_KEY=${{ secrets.SM_API_KEY }}" >> "$GITHUB_ENV" 
+          echo "SM_CLIENT_CERT_FILE=D:\\Certificate_pkcs12.p12" >> "$GITHUB_ENV" 
+          echo "SM_CLIENT_CERT_PASSWORD=${{ secrets.SM_CLIENT_CERT_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "SM_THUMBPRINT=${{ secrets.SM_THUMBPRINT }}" >> "$GITHUB_ENV"
+          echo "C:\Program Files (x86)\Windows Kits\10\App Certification Kit" >> $GITHUB_PATH 
+          echo "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools" >> $GITHUB_PATH 
+          echo "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools" >> $GITHUB_PATH
+        shell: bash
 
-    - name: Build MoonshineDESKTOPevolved with Ant
-      run: ant -noinput -buildfile 'ide/MoonshineDESKTOPevolved/build/build.xml' '-DIs.Signed.Build=false'
+      - name: Cache smtools
+        id: cache-smtools
+        uses: actions/cache@v3
+        with:
+          path: smtools-windows-x64.msi
+          key: smtools-windows
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Moonshine
-        path: ide/MoonshineDESKTOPevolved/bin/MoonshineDESKTOPevolved.swf
+      - name: Download smtools
+        if: ${{ steps.cache-smtools.outputs.cache-hit != 'true' }}
+        run: |
+          curl ^
+          -X GET https://one.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download ^
+          -H "x-api-key:${{ secrets.SM_API_KEY }}" ^
+          -o smtools-windows-x64.msi
+        shell: cmd
+
+      - name: Setup SSM KSP for signing
+        run: |
+          msiexec /i smtools-windows-x64.msi /quiet /qn 
+          smksp_registrar.exe list 
+          smctl.exe keypair ls 
+          C:\Windows\System32\certutil.exe -csp "DigiCert Signing Manager KSP" -key -user 
+          smksp_cert_sync.exe
+        shell: cmd
+
+      - name: Prepare dependencies
+        working-directory: ..
+        run: |
+          git clone https://github.com/Moonshine-IDE/Moonshine-SDK-Installer.git
+          git clone https://github.com/Moonshine-IDE/VisualEditorConverterLib.git
+          git clone https://github.com/Moonshine-IDE/MockupVisualEditor.git
+
+      - name: Build VisualEditorConverterLib with Ant
+        working-directory: ../VisualEditorConverterLib
+        run: ant -noinput -buildfile 'build.xml'
+
+      - name: Build MockupVisualEditor with Ant
+        working-directory: ../MockupVisualEditor
+        run: ant -noinput -buildfile 'build.xml' -DMOONSHINE_LIBS_PATH=../Moonshine-IDE/ide/MoonshineDESKTOPevolved/libs mainBuildWithoutDoc
+
+      - name: Build MoonshineDESKTOPevolved with Ant
+        shell: cmd
+        run: >
+          ant -noinput
+          -buildfile "ide/MoonshineDESKTOPevolved/build/build.xml"
+          -Dapp.version=${{ inputs.version }}
+          -Dbuild.is.development=${{ inputs.env != 'production' }}
+          -Dbuild.is.debug=${{ inputs.env != 'production' }}
+          -Dbuild.number=${{ github.run_number }}
+          build pack-and-sign
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: moonshine-windows-setup
+          path: ide\MoonshineDESKTOPevolved\build\deploy\${{ env.app_name }}-${{ inputs.version }}-Installer.exe
+          if-no-files-found: error

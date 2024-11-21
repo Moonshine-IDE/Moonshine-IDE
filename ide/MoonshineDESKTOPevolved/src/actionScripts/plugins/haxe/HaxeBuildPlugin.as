@@ -196,20 +196,19 @@ package actionScripts.plugins.haxe
 		override protected function checkProjectForInvalidPaths(project:ProjectVO):void
 		{
 			invalidPaths = [];
-			var tmpLocation:FileLocation;
 
 			var hxProject:HaxeProjectVO = project as HaxeProjectVO;
 			if (!hxProject)
 			{
 				return;
 			}
-			var tmpLocation:FileLocation;
+
 			invalidPaths = [];
 			
 			checkPathFileLocation(hxProject.folderLocation, "Location");
 			if (hxProject.sourceFolder) checkPathFileLocation(hxProject.sourceFolder, "Source Folder");
 			
-			for each (tmpLocation in hxProject.classpaths)
+			for each (var tmpLocation:FileLocation in hxProject.classpaths)
 			{
 				checkPathFileLocation(tmpLocation, "Classpath");
 			}

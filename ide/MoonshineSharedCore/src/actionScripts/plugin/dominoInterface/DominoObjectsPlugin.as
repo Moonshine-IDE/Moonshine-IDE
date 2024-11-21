@@ -197,24 +197,24 @@ package actionScripts.plugin.dominoInterface
 				var dxl:XML =new XML(String(editor.currentFile.fileBridge.read()));
 				
 				var compileDxl:XML =new XML(String(editor.currentFile.fileBridge.read()));
-				for each(var gobalOptions:XML in compileDxl..item) //no matter of depth Note here
+				for each(var compileDxlItems:XML in compileDxl..item) //no matter of depth Note here
 				{
-					if(gobalOptions.@name.toString()=="$Script"){
-						delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+					if(compileDxlItems.@name.toString()=="$Script"){
+						delete compileDxlItems.parent().children()[compileDxlItems.childIndex()];
 					}
 				}	
 				
-				for each(var gobalOptions:XML in xml..dominoGlobalsObject) //no matter of depth Note here
+				for each(var globalOptions:XML in xml..dominoGlobalsObject) //no matter of depth Note here
 				{
-					delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+					delete globalOptions.parent().children()[globalOptions.childIndex()];
 				}
-				for each(var gobalOptions:XML in dxl..item) //no matter of depth Note here
+				for each(var dxlItems:XML in dxl..item) //no matter of depth Note here
 				{
-					if(gobalOptions.@name.toString()=="$Script"){
-						delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+					if(dxlItems.@name.toString()=="$Script"){
+						delete dxlItems.parent().children()[dxlItems.childIndex()];
 					}
-					if(gobalOptions.@name.toString()=="$$FormScript"){
-						delete gobalOptions.parent().children()[gobalOptions.childIndex()];
+					if(dxlItems.@name.toString()=="$$FormScript"){
+						delete dxlItems.parent().children()[dxlItems.childIndex()];
 					}
 					
 				}
@@ -223,9 +223,9 @@ package actionScripts.plugin.dominoInterface
 				{
 					delete formOptions.parent().children()[formOptions.childIndex()];
 				}
-				for each(var customformOptions:XML in xml..dominoCustomObject) //no matter of depth Note here
+				for each(var customFormOptions:XML in xml..dominoCustomObject) //no matter of depth Note here
 				{
-					delete customformOptions.parent().children()[customformOptions.childIndex()];
+					delete customFormOptions.parent().children()[customFormOptions.childIndex()];
 				}
 
 				dominoGlobalsObject = new DominoGlobalsObjects();
@@ -462,35 +462,35 @@ package actionScripts.plugin.dominoInterface
 			if(selectKey){
 				var convertXml:XML =new XML(needVaildLotusScirpt);
 				var body:XMLList = convertXml.children();
-				var gobalScript:String=""; 
+				var globalScript:String="";
 				var formScript:String="";
 				var fileData:String=null;
+				var childItemName:String = null;
+				var childItem:XML = null;
+
 				for each (var item:XML in body)
 				{
 					var itemName:String = item.name();
 					if (itemName=="http://www.lotus.com/dxl::item" && item.@name=="$Script")
 					{
-						for each (var childitem:XML in item.children())
+						for each (childItem in item.children())
 						{
-							var childitemName:String = childitem.name();
-							if (childitemName=="http://www.lotus.com/dxl::text")
+							childItemName = childItem.name();
+							if (childItemName=="http://www.lotus.com/dxl::text")
 							{
-								gobalScript = childitem.text().toString();
+								globalScript = childItem.text().toString();
 							}
 
 						}
-						
-					
-						
 					}
 					if (itemName=="http://www.lotus.com/dxl::item" && item.@name=="$$FormScript")
 					{
-						for each (var childitem:XML in item.children())
+						for each (childItem in item.children())
 						{
-							var childitemName:String = childitem.name();
-							if (childitemName=="http://www.lotus.com/dxl::text")
+							childItemName = childItem.name();
+							if (childItemName=="http://www.lotus.com/dxl::text")
 							{
-								formScript = childitem.text().toString();
+								formScript = childItem.text().toString();
 							}
 
 						}
@@ -498,7 +498,7 @@ package actionScripts.plugin.dominoInterface
 					}
 				}
 				if(selectKey.indexOf("globals")!=-1){
-					fileData=gobalScript;
+					fileData=globalScript;
 				}else{
 					fileData=formScript;
 				}

@@ -224,15 +224,14 @@ package actionScripts.plugin.rename
 			var fileVisualEditor:FileLocation = UtilsCore.getVisualEditorSourceFile(fileWrapper);
 			
 			var sourceFileName:String =fileWrapper.file.fileBridge.nameWithoutExtension;
-			var newFile:FileLocation;
 			var sourceFormName:String =null;
 
 			
 			if(fileWrapper.file.fileBridge.extension=="column"){
 				newName=TextUtil.fixDominoViewName(newName);
 			}
-			var newFile = fileWrapper.file.fileBridge.parent.resolvePath(newName);
-			var newNameWithOutExtension = newFile.fileBridge.nameWithoutExtension;
+			var newFile:FileLocation = fileWrapper.file.fileBridge.parent.resolvePath(newName);
+			var newNameWithOutExtension:String = newFile.fileBridge.nameWithoutExtension;
 			if(fileWrapper.file.fileBridge.extension=="form"){
 				sourceFormName=sourceFileName;
 			}
@@ -465,7 +464,7 @@ package actionScripts.plugin.rename
 				var directory:Array = viewFileLocation.fileBridge.getDirectoryListing();
 				for each (var xml:File in directory)
 				{
-					var specialViewNameWithoutExtension = "All By UNID_5cCRUD_5c"+sourceFormName;
+					var specialViewNameWithoutExtension:String = "All By UNID_5cCRUD_5c"+sourceFormName;
 					var specialViewName:String= specialViewNameWithoutExtension+".view";
 					var targetViewNameWithOutExtension:String= "All By UNID_5cCRUD_5c"+targetFormName;
 					var targetViewName:String=targetViewNameWithOutExtension+".view";
@@ -482,7 +481,7 @@ package actionScripts.plugin.rename
 								if(viewxml.code[0].@event=="selection"){
 									if(viewxml.code[0].formula[0]){
 										var formulaNode:XML=viewxml.code[0].formula[0];
-										var formulaText=formulaNode.text();
+										var formulaText:String = formulaNode.text();
 										if(formulaText.indexOf(sourceFormName)>0){
 
 											var formulaText1:String=formulaText.substring(0,formulaText.indexOf(sourceFormName));
@@ -587,16 +586,12 @@ package actionScripts.plugin.rename
 							}
 						}
 
-						
 						var subformrefList:XMLList=xml.xmlns::subformref;
-						
-	
-						for each(var subform:XML in xml..subformref) //no matter of depth Note here
+						for each(var subFormRef:XML in xml..subformref) //no matter of depth Note here
 						{
-							
-							if(subform.@name==sourceSubformName){
+							if(subFormRef.@name==sourceSubformName){
 								
-								subform.@name=targetSubformName;
+								subFormRef.@name=targetSubformName;
 							}
 						}
 
@@ -660,8 +655,8 @@ package actionScripts.plugin.rename
 				var updatedViewContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
 				fileToSave.fileBridge.save(updatedViewContent);
 			}else if(event.fileLocation.fileBridge.extension && event.fileLocation.fileBridge.extension == "column"){
-				var updatedViewContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
-				fileToSave.fileBridge.save(updatedViewContent);
+				var updatedColumnContent:String =getDominoUpdatedFileContent(event.fileWrapper, event.fileLocation, event.fileName);
+				fileToSave.fileBridge.save(updatedColumnContent);
 			}
 			else
 			{

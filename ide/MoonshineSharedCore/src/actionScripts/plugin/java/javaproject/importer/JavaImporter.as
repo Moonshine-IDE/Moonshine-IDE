@@ -134,6 +134,7 @@ package actionScripts.plugin.java.javaproject.importer
             }
 
             var javaProject:JavaProjectVO = new JavaProjectVO(projectFolder, projectName);
+			javaProject.projectFolder.name = javaProject.projectName;
 			//javaProject.menuType = ProjectMenuTypes.JAVA;
 
             var sourceDirectory:String = null;
