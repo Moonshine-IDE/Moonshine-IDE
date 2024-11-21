@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the Server Side Public License, version 1,
+//  as published by MongoDB, Inc.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//  Server Side Public License for more details.
+//
+//  You should have received a copy of the Server Side Public License
+//  along with this program. If not, see
+//
+//  http://www.mongodb.com/licensing/server-side-public-license
+//
+//  As a special exception, the copyright holders give permission to link the
+//  code of portions of this program with the OpenSSL library under certain
+//  conditions as described in each individual source file and distribute
+//  linked combinations including the program with the OpenSSL library. You
+//  must comply with the Server Side Public License in all respects for
+//  all of the code used other than as permitted herein. If you modify file(s)
+//  with this exception, you may extend this exception to your version of the
+//  file(s), but you are not obligated to do so. If you do not wish to do so,
+//  delete this exception statement from your version. If you delete this
+//  exception statement from all source files in the program, then also delete
+//  it in the license file.
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				creationComplete="onTemplateItemCreationComplete(event)" autoDrawBackground="false" width="100%">
+	
+	<fx:Script>
+		<![CDATA[
+		import actionScripts.valueObjects.ConstantsCoreVO;
+
+		import mx.events.FlexEvent;
+
+		private var loader:Loader = new Loader();
+
+		private function onTemplateItemCreationComplete(event:FlexEvent):void
+		{
+			labelDisplay.removeEventListener(MouseEvent.CLICK, handleClick);
+			labelDisplay.addEventListener(MouseEvent.CLICK, handleClick);
+			labelDisplay.setStyle('color', 0XD6D6D6);
+			labelDisplay.setStyle('fontWeight', 'bold');
+			labelDisplay.setStyle('fontSize', 20);
+		}
+
+		private function handleClick(event:Event):void
+		{
+			dispatchEvent(new Event("itemClick", true, false));
+		}
+
+		override public function set data(value:Object):void
+		{
+			super.data = value;
+			if(ConstantsCoreVO.IS_AIR)
+			{
+				label = value.homeTitle;
+				// desc.text = value.description;
+				if(value.logoImagePath)
+				{
+					fileIcon.includeInLayout = true;
+					loader.load(new URLRequest(value.logoImagePath));
+					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, doneLoad);
+				} else
+				{
+					fileIcon.visible = false;
+					fileIcon.includeInLayout = false;
+				}
+			} else
+			{
+				label = value.fileBridge.name;
+			}
+		}
+
+		private function doneLoad(e:Event):void
+		{
+			fileIcon.source = e.currentTarget.content;
+		}
+
+		private function onLabelDisplayMouseOver(event:MouseEvent):void
+		{
+			event.target.setStyle('color', 0XFFFFFF);
+		}
+
+		private function onLabelDisplayMouseOut(event:MouseEvent):void
+		{
+			event.target.setStyle('color', 0XD6D6D6);
+		}
+		]]>
+	</fx:Script>
+
+	<s:layout>
+		<s:HorizontalLayout  />
+	</s:layout>
+	
+	<s:Image id="fileIcon" height="40" width="40" smooth="true"  />
+
+	<s:Label id="labelDisplay"
+			paddingLeft="3"
+			paddingRight="3"
+			baseline="50"
+			height="100%"
+			maxDisplayedLines="2"
+			lineBreak="toFit"
+			verticalAlign="middle"
+			mouseOver="onLabelDisplayMouseOver(event)"
+			mouseOut="onLabelDisplayMouseOut(event)"
+			useHandCursor="true" buttonMode="true" mouseChildren="false"/>
+</s:ItemRenderer>

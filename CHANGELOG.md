@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) 
 
+## Moonshine IDE [3.4.0]
+
+### Summary
+
+We've introduced convenient links to access our new discussion platform on Topicbox, as well as a direct link to our latest project, Moonshine.dev, where you can explore our work and stay updated on new developments.
+
+### Added
+* Moonshine.dev Link and Promotion ([#1254](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1254))
+* Topicbox Integration ([#1237](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1237))
+* [Domino Visual Editor] Interface Similar to "Objects" from Domino Designer ([#1009](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1009))
+* LotusScript Compilation and Validation ([#1234](https://github.com/Moonshine-IDE/Moonshine-IDE/issues/1234))
+
 ## Moonshine IDE [3.3.4]
 
 ### Summary
