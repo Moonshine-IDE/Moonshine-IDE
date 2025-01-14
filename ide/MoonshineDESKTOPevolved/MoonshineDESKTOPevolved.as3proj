@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   <output>
-    <movie version="32"/>
-    <movie disabled="False"/>
-    <movie platform="AIR"/>
-    <movie background="#000000"/>
-    <movie height="100"/>
     <movie fps="24"/>
+    <movie height="100"/>
+    <movie version="50"/>
+    <movie background="#000000"/>
     <movie path="bin-debug/MoonshineDESKTOP.swf"/>
+    <movie disabled="False"/>
     <movie input=""/>
     <movie width="100"/>
+    <movie platform="AIR"/>
   </output>
   &lt;!-- Other classes to be compiled into your SWF --&gt;
   <jsOutput>
@@ -21,47 +21,44 @@
     <class path="../../../Moonshine-SDK-Installer/InstallerSharedCore/src"/>
     <class path="src"/>
   </classpaths>
-  <moonshineResourcePaths>
-    <class path="../MoonshineSharedCore/src/elements/templates"/>
-    <class path="../MoonshineSharedCore/src/elements"/>
-  </moonshineResourcePaths>
+  <moonshineResourcePaths></moonshineResourcePaths>
   <moonshineNativeExtensionPaths></moonshineNativeExtensionPaths>
   <build>
-    <option benchmark="False"/>
-    <option showDeprecationWarnings="True"/>
-    <option accessible="True"/>
-    <option es="False"/>
-    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false  +configname=air"/>
-    <option useNetwork="True"/>
-    <option loadConfig=""/>
-    <option useResourceBundleMetadata="True"/>
-    <option warnings="True"/>
+    <option showUnusedTypeSelectorWarnings="True"/>
     <option showActionScriptWarnings="True"/>
     <option linkReport=""/>
-    <option customSDK=""/>
-    <option showBindingWarnings="True"/>
-    <option optimize="True"/>
-    <option compilerConstants=""/>
-    <option antBuildPath=""/>
-    <option strict="True"/>
-    <option locale=""/>
-    <option sourceMap="False"/>
-    <option allowSourcePathOverlap="False"/>
     <option staticLinkRSL="False"/>
-    <option showUnusedTypeSelectorWarnings="True"/>
+    <option customSDK="/Users/santanukarar/Downloads/MoonshineSDKs/Flex_SDK/Flex_4.16.1_AIR_50.2"/>
+    <option allowSourcePathOverlap="False"/>
+    <option optimize="True"/>
+    <option warnings="True"/>
+    <option sourceMap="False"/>
+    <option benchmark="False"/>
+    <option strict="True"/>
+    <option useNetwork="True"/>
+    <option locale=""/>
+    <option showBindingWarnings="True"/>
     <option verboseStackTraces="False"/>
+    <option loadConfig=""/>
+    <option antBuildPath=""/>
+    <option es="False"/>
+    <option compilerConstants=""/>
+    <option accessible="True"/>
+    <option additional="-locale en_US ja_JP -allow-source-path-overlap=true -swf-version 39 -define+=CONFIG::OSX,false  +configname=air"/>
+    <option showDeprecationWarnings="True"/>
+    <option useResourceBundleMetadata="True"/>
   </build>
   <mavenBuild>
-    <option dominoNotesProgram=""/>
-    <option commandLine=""/>
-    <option dominoNotesPlatform=""/>
     <option settingsFilePath=""/>
+    <option dominoNotesPlatform=""/>
     <option mavenBuildPath="/Users/prominic2/work/Moonshine-IDE_fresh/ide/MoonshineDESKTOPevolved"/>
+    <option commandLine=""/>
+    <option dominoNotesProgram=""/>
     <actions>
-      <action action="install" actionName="Build"/>
-      <action action="clean" actionName="Clean"/>
-      <action action="clean install" actionName="Clean and Build"/>
-      <action action="war:exploded" actionName="Exploded"/>
+      <action actionName="Build" action="install"/>
+      <action actionName="Clean" action="clean"/>
+      <action actionName="Clean and Build" action="clean install"/>
+      <action actionName="Exploded" action="war:exploded"/>
     </actions>
   </mavenBuild>
   <includeLibraries></includeLibraries>
@@ -86,25 +83,25 @@
   <postBuildCommand alwaysRun="False">null</postBuildCommand>
   <trustSVNCertificate>False</trustSVNCertificate>
   <options>
-    <option isExportedToExistingSource="False"/>
-    <option isRoyale="False"/>
-    <option defaultBuildTargets=""/>
     <option isDominoVisualEditor="False"/>
-    <option jdkType="default-java"/>
-    <option testMovie="AIR"/>
     <option showHiddenPaths="False"/>
+    <option defaultBuildTargets=""/>
+    <option testMovie="AIR"/>
     <option visualEditorExportPath=""/>
-    <option isPrimeFacesVisualEditor="False"/>
+    <option isRoyale="False"/>
     <option testMovieCommand=""/>
+    <option isPrimeFacesVisualEditor="False"/>
+    <option jdkType="default-java"/>
+    <option isExportedToExistingSource="False"/>
   </options>
   <moonshineRunCustomization>
-    <option urlToLaunch=""/>
-    <option projectType="1"/>
-    <option targetPlatform="1"/>
-    <option webBrowser="null"/>
     <option deviceSimulator="null"/>
     <option customUrlToLaunch=""/>
+    <option targetPlatform="1"/>
+    <option webBrowser="null"/>
     <option launchMethod="Simulator"/>
+    <option projectType="1"/>
+    <option urlToLaunch=""/>
     <option deviceConnectType="USB"/>
     <deviceSimulator>null</deviceSimulator>
     <certAndroid>null</certAndroid>
