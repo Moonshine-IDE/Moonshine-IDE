@@ -265,7 +265,7 @@ package actionScripts.valueObjects
 					continue;
                 }
 
-				if (projectReference.showHiddenPaths)
+				if (projectReference && projectReference.showHiddenPaths)
 				{
 					fw = new FileWrapper(new FileLocation(currentDirectory.nativePath), false, projectReference, false);
 					fw.children = [];
