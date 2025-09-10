@@ -616,6 +616,10 @@ package actionScripts.impls
 		
 		public function get parent():FileLocation
 		{
+			if (!_file.parent)
+			{
+				return null;
+			}
 			return (new FileLocation(_file.parent.nativePath));
 		}
 		
