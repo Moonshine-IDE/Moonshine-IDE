@@ -300,7 +300,7 @@ package actionScripts.valueObjects
 
 		private function testIfSourceFolder(wrapper:FileWrapper):Boolean
 		{
-			if (!projectReference.sourceFolder) return false;
+			if (!projectReference || !projectReference.sourceFolder) return false;
 
 			if (projectReference.sourceFolder &&
 					(wrapper.nativePath == projectReference.sourceFolder.fileBridge.nativePath))
