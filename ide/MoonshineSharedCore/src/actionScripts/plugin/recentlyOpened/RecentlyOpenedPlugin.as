@@ -67,7 +67,7 @@ package actionScripts.plugin.recentlyOpened
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
 	
-	import components.views.project.TreeView;
+	import components.views.project.ProjectTreeView;
 
 	public class RecentlyOpenedPlugin extends PluginBase implements IMenuPlugin
 	{
@@ -381,14 +381,14 @@ package actionScripts.plugin.recentlyOpened
 			model.recentlyOpenedProjectOpenedOption.addItemAt({path:f.fileBridge.nativePath, option:(event.extras ? event.extras[0] : "")}, 0);
 			
 			//Moon-166 fix: This will set selected project in the tree view
-			/*var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
-			tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;*/
+			/*var tmpTreeView:ProjectTreeView = model.mainView.getTreeViewPanel();
+			tmpTreeView.selectedItem = model.activeProject.projectFolder;*/
 			
 			var timeoutValue:uint = setTimeout(function():void{
-				var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
+				var tmpTreeView:ProjectTreeView = model.mainView.getTreeViewPanel();
 				if (model.activeProject)
 				{
-					tmpTreeView.tree.selectedItem = model.activeProject.projectFolder;
+					tmpTreeView.selectedItem = model.activeProject.projectFolder;
                 }
 				clearTimeout(timeoutValue);
 			}, 200);

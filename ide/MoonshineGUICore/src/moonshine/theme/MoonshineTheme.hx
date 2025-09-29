@@ -1216,12 +1216,12 @@ class MoonshineTheme extends SDKInstallerTheme {
 		// itemRenderer.embedFonts = true;
 
 		itemRenderer.horizontalAlign = LEFT;
-		itemRenderer.paddingTop = 4.0;
+		itemRenderer.paddingTop = 2.0;
 		itemRenderer.paddingRight = 4.0;
-		itemRenderer.paddingBottom = 4.0;
+		itemRenderer.paddingBottom = 2.0;
 		itemRenderer.paddingLeft = 4.0;
 		itemRenderer.gap = 4.0;
-		itemRenderer.indentation = 12.0;
+		itemRenderer.indentation = 15.0;
 	}
 
 	private function setTourDeFlexHierarchicalItemRendererItemRendererStyles(itemRenderer:TourDeFlexHierarchicalItemRenderer):Void {
@@ -1239,25 +1239,25 @@ class MoonshineTheme extends SDKInstallerTheme {
 	private function setHierarchicalItemRendererDisclosureButtonStyles(button:ToggleButton):Void {
 		var icon = new Shape();
 		icon.graphics.beginFill(MoonshineColor.PURPLE, 0.0);
-		icon.graphics.drawRect(0.0, 0.0, 12.0, 12.0);
+		icon.graphics.drawRect(0.0, 0.0, 8.0, 12.0);
 		icon.graphics.endFill();
 		icon.graphics.beginFill(MoonshineColor.DARK_TEAL);
-		icon.graphics.moveTo(2.0, 2.0);
-		icon.graphics.lineTo(10.0, 6.0);
-		icon.graphics.lineTo(2.0, 10.0);
-		icon.graphics.lineTo(2.0, 2.0);
+		icon.graphics.moveTo(0.0, 2.0);
+		icon.graphics.lineTo(8.0, 6.0);
+		icon.graphics.lineTo(0.0, 10.0);
+		icon.graphics.lineTo(0.0, 2.0);
 		icon.graphics.endFill();
 		button.icon = icon;
 
 		var selectedIcon = new Shape();
 		selectedIcon.graphics.beginFill(MoonshineColor.PURPLE, 0.0);
-		selectedIcon.graphics.drawRect(0.0, 0.0, 12.0, 12.0);
+		selectedIcon.graphics.drawRect(0.0, 0.0, 8.0, 12.0);
 		selectedIcon.graphics.endFill();
 		selectedIcon.graphics.beginFill(MoonshineColor.DARK_TEAL);
-		selectedIcon.graphics.moveTo(2.0, 2.0);
-		selectedIcon.graphics.lineTo(10.0, 2.0);
-		selectedIcon.graphics.lineTo(6.0, 10.0);
-		selectedIcon.graphics.lineTo(2.0, 2.0);
+		selectedIcon.graphics.moveTo(0.0, 2.0);
+		selectedIcon.graphics.lineTo(8.0, 2.0);
+		selectedIcon.graphics.lineTo(4.0, 10.0);
+		selectedIcon.graphics.lineTo(0.0, 2.0);
 		selectedIcon.graphics.endFill();
 		button.selectedIcon = selectedIcon;
 	}

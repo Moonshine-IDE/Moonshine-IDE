@@ -71,7 +71,7 @@ package actionScripts.ui.editor
 
     import components.popup.FileSavePopup;
     import components.popup.SelectOpenedProject;
-    import components.views.project.TreeView;
+    import components.views.project.ProjectTreeView;
 
     import feathers.graphics.FillStyle;
     import feathers.skins.RectangleSkin;
@@ -549,7 +549,7 @@ package actionScripts.ui.editor
 				{
 					if (model.mainView.isProjectViewAdded)
 					{
-						var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
+						var tmpTreeView:ProjectTreeView = model.mainView.getTreeViewPanel();
 						if(tmpTreeView) //might be null if closed by user
 						{
 							var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();

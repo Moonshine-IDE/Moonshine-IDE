@@ -70,7 +70,7 @@ package actionScripts.plugins.vagrant
 	import actionScripts.plugins.vagrant.utils.ImportDocumentsJSONJob;
 	import actionScripts.plugins.vagrant.utils.RunDatabaseOnVagrantJob;
 	import actionScripts.plugins.vagrant.utils.VagrantUtil;
-	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 	import actionScripts.utils.FileUtils;
 	import actionScripts.utils.MethodDescriptor;
 	import actionScripts.utils.UtilsCore;
@@ -725,7 +725,7 @@ package actionScripts.plugins.vagrant
 				dispatcher.addEventListener(eventName, onVagrantOptionSelect, false, 0, true);
 			}
 
-			dispatcher.addEventListener(FTETreeItemRenderer.CONFIGURE_VAGRANT, onConfigureVagrant, false, 0, true);
+			dispatcher.addEventListener(FileWrapperHierarchicalItemRenderer.CONFIGURE_VAGRANT, onConfigureVagrant, false, 0, true);
 		}
 
 		private function removeMenuListeners():void
@@ -737,7 +737,7 @@ package actionScripts.plugins.vagrant
 				dispatcher.removeEventListener(eventName, onVagrantOptionSelect);
 			}
 
-			dispatcher.removeEventListener(FTETreeItemRenderer.CONFIGURE_VAGRANT, onConfigureVagrant);
+			dispatcher.removeEventListener(FileWrapperHierarchicalItemRenderer.CONFIGURE_VAGRANT, onConfigureVagrant);
 		}
 
 		private function onConfigureVagrant(event:Event):void

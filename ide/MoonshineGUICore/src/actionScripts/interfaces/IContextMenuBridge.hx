@@ -33,13 +33,10 @@
 
 package actionScripts.interfaces;
 
-import flash.ui.ContextMenu;
-import haxe.Constraints.Function;
-
 interface IContextMenuBridge {
-	function getContextMenu():ContextMenu;
+	function getContextMenu():#if flash flash.ui.ContextMenu #else Dynamic #end;
 	function getContextMenuItem(title:String, ?listener:Dynamic->Void, forState:String = null, hasSeparatorBefore:Bool = false):Dynamic;
-	function subMenu(menuOf:Dynamic, menuItem:Dynamic = null, extendedListner:Dynamic->Void):Void;
+	function subMenu(menuOf:Dynamic, menuItem:Dynamic = null, ?extendedListner:Dynamic->Void):Void;
 	function addItem(menuOf:Dynamic, menuItem:Dynamic):Void;
 	function removeAll(menuOf:Dynamic):Void;
 }

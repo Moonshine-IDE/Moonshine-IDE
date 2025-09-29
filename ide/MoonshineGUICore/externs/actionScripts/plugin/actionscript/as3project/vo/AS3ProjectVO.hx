@@ -31,11 +31,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.actionscript.as3project.vo;
 
+import actionScripts.valueObjects.ProjectVO;
 import actionScripts.factory.FileLocation;
+import openfl.Vector;
 
-extern class AS3ProjectVO {
-
-    @:flash.property
-    public var sourceFolder(default, default):FileLocation;
-
+extern class AS3ProjectVO extends ProjectVO {
+    public var targets:Vector<FileLocation>;
+    public var isLibraryProject:Bool;
+    public var isVisualEditorProject:Bool;
+    public var isPrimeFacesVisualEditorProject:Bool;
 }

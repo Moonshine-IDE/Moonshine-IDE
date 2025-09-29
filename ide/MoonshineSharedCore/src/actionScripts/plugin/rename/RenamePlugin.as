@@ -55,7 +55,6 @@ package actionScripts.plugin.rename
     import actionScripts.ui.IContentWindow;
     import actionScripts.ui.editor.BasicTextEditor;
     import actionScripts.ui.editor.LanguageServerTextEditor;
-    import actionScripts.utils.CustomTree;
     import actionScripts.utils.TextUtil;
     import actionScripts.utils.UtilsCore;
     import actionScripts.valueObjects.ConstantsCoreVO;
@@ -300,8 +299,7 @@ package actionScripts.plugin.rename
 			}
 			
 			// updating the tree view
-			var tree:CustomTree = model.mainView.getTreeViewPanel().tree;
-			var tmpParent:FileWrapper = tree.getParentItem(fileWrapper);
+			var tmpParent:FileWrapper = model.mainView.getTreeViewPanel().getParentItem(fileWrapper);
 		    // update the windows Title name and other name after page rename
 
 			//update subfrom name in the old form/subfrom 
@@ -358,10 +356,12 @@ package actionScripts.plugin.rename
 					model.mainView.getTreeViewPanel().sortChildren(fileWrapper);
 					
 					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(fileWrapper, null, tmpParent);
-					tree.selectedItem = tmpFileW;
+					model.mainView.getTreeViewPanel().selectedItem = tmpFileW;
 					
-					var indexToItemRenderer:int = tree.getItemIndex(tmpFileW);
-					tree.callLater(tree.scrollToIndex, [indexToItemRenderer]);
+					model.mainView.getTreeViewPanel().callLater(function():void
+					{
+						model.mainView.getTreeViewPanel().scrollToItem(tmpFileW);
+					});
 					
 					dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_RENAMED, null, fileWrapper));
 					clearTimeout(timeoutValue);
@@ -621,7 +621,7 @@ package actionScripts.plugin.rename
 				newFilePopup.openType = NewFilePopup.AS_DUPLICATE_FILE;
 				newFilePopup.folderFileLocation = event.fileWrapper.file;
 				
-				var creatingItemIn:FileWrapper = FileWrapper(model.mainView.getTreeViewPanel().tree.getParentItem(event.fileWrapper));
+				var creatingItemIn:FileWrapper = FileWrapper(model.mainView.getTreeViewPanel().getParentItem(event.fileWrapper));
 				newFilePopup.wrapperOfFolderLocation = creatingItemIn;
 				newFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
 

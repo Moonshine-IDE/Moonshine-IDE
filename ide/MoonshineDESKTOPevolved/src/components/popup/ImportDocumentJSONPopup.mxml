@@ -123,8 +123,8 @@
 				project = (IDEModel.getInstance().activeProject as IDeployDominoDatabaseProject);
 			}
 
-			var selectedTreeItem:FileWrapper = IDEModel.getInstance().mainView.getTreeViewPanel().tree.selectedItem ?
-					IDEModel.getInstance().mainView.getTreeViewPanel().tree.selectedItem as FileWrapper : null;
+			var selectedTreeItem:FileWrapper = IDEModel.getInstance().mainView.getTreeViewPanel().selectedItem ?
+					IDEModel.getInstance().mainView.getTreeViewPanel().selectedItem as FileWrapper : null;
 			if (selectedTreeItem && selectedTreeItem.file.fileBridge.extension &&
 					selectedTreeItem.file.fileBridge.extension.toLowerCase() == "json")
 			{

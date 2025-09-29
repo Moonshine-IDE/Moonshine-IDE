@@ -166,6 +166,10 @@ package actionScripts.ui
 				this.addChild(this._feathersUIControl);
 				this._feathersUIControl.addEventListener(MouseEvent.MOUSE_DOWN, feathersUIControl_mouseDownCaptureHandler, true);
 				this._feathersUIControl.addEventListener(Event.RESIZE, feathersUIControl_resizeHandler);
+				if (this.stage != null)
+				{
+					this.initializeAfterAddedToStage();
+				}
 			}
 			this.invalidateSize();
 			this.invalidateDisplayList();
@@ -293,6 +297,19 @@ package actionScripts.ui
 			}
 		}
 
+		private function initializeAfterAddedToStage():void
+		{
+			if(this._popUpRoot == null) {
+				this._popUpRoot = new Sprite();
+				DisplayObjectContainer(this.systemManager).addChild(this._popUpRoot);
+				PopUpManager.forStage(this.stage).root = this._popUpRoot;
+			}
+			
+			this._feathersUIFocusManager = new DefaultFocusManager(this._feathersUIControl);
+			this._feathersUIFocusManager.enabled = false;
+			this._feathersUIToolTipManager = new DefaultToolTipManager(this._feathersUIControl);
+		}
+
 		protected function feathersUIControl_resizeHandler(event:Event):void
 		{
 			if(this._ignoreResize)
@@ -322,15 +339,7 @@ package actionScripts.ui
 				return;
 			}
 
-			if(this._popUpRoot == null) {
-				this._popUpRoot = new Sprite();
-				DisplayObjectContainer(this.systemManager).addChild(this._popUpRoot);
-				PopUpManager.forStage(this.stage).root = this._popUpRoot;
-			}
-			
-			this._feathersUIFocusManager = new DefaultFocusManager(this._feathersUIControl);
-			this._feathersUIFocusManager.enabled = false;
-			this._feathersUIToolTipManager = new DefaultToolTipManager(this._feathersUIControl);
+			this.initializeAfterAddedToStage();
 		}
 
 		protected function feathersUIWrapper_removedFromStageHandler(event:Event):void

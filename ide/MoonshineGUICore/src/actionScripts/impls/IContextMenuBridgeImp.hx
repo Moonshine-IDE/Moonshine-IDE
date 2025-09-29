@@ -53,7 +53,7 @@ class IContextMenuBridgeImp implements IContextMenuBridge {
 		return tmpCMI;
 	}
 
-	public function subMenu(menuOf:Dynamic, menuItem:Dynamic = null, extendedListner:Dynamic->Void) {
+	public function subMenu(menuOf:Dynamic, menuItem:Dynamic = null, ?extendedListner:Dynamic->Void) {
 		if (cast(menuOf, NativeMenuItem).submenu == null)
 			cast(menuOf, NativeMenuItem).submenu = new NativeMenu();
 

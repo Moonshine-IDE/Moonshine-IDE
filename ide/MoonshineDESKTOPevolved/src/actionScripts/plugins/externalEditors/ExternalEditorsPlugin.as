@@ -62,7 +62,7 @@ package actionScripts.plugins.externalEditors
 	import actionScripts.plugins.externalEditors.settings.ExternalEditorSetting;
 	import actionScripts.plugins.externalEditors.utils.ExternalEditorsSharedObjectUtil;
 	import actionScripts.plugins.externalEditors.vo.ExternalEditorVO;
-	import actionScripts.ui.renderers.FTETreeItemRenderer;
+	import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 	import actionScripts.utils.SharedObjectUpdaterWithNewUpdates;
 	import actionScripts.utils.UtilsCore;
 	import actionScripts.valueObjects.ConstantsCoreVO;
@@ -220,7 +220,7 @@ package actionScripts.plugins.externalEditors
 				dispatcher.addEventListener(eventName, onOpenWithExternalEditor, false, 0, true);
 			}
 			
-			dispatcher.addEventListener(FTETreeItemRenderer.CONFIGURE_EXTERNAL_EDITORS, onOpenExternalEditorConfiguration, false, 0, true);
+			dispatcher.addEventListener(FileWrapperHierarchicalItemRenderer.CONFIGURE_EXTERNAL_EDITORS, onOpenExternalEditorConfiguration, false, 0, true);
 		}
 		
 		private function onSettingsSaved(event:SettingsEvent):void

@@ -84,7 +84,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.WebBrowserVO;
 	
 	import components.popup.SelectOpenedProject;
-	import components.views.project.TreeView;
+	import components.views.project.ProjectTreeView;
 	
 	import flashx.textLayout.elements.LinkElement;
 	import flashx.textLayout.elements.ParagraphElement;
@@ -408,7 +408,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// check if user has selection/select any particular project or not
 				if (model.mainView.isProjectViewAdded)
 				{
-					var tmpTreeView:TreeView = model.mainView.getTreeViewPanel();
+					var tmpTreeView:ProjectTreeView = model.mainView.getTreeViewPanel();
 					if(tmpTreeView) //might be null if closed by user
 					{
 						var projectReference:ProjectVO = tmpTreeView.getProjectBySelection();

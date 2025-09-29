@@ -70,7 +70,7 @@ package actionScripts.plugin.project
 	
 	import components.popup.RunCommandPopup;
 	import components.views.project.OpenResourceView;
-	import components.views.project.TreeView;
+	import components.views.project.ProjectTreeView;
 
     public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -81,7 +81,7 @@ package actionScripts.plugin.project
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
 		override public function get description():String 	{return "Provides project settings.";}
 		
-		private var treeView:TreeView;
+		private var treeView:ProjectTreeView;
 		private var openResourceView:OpenResourceView;
 		private var lastActiveProjectMenuType:String;
 		private var customCommandPopup:RunCommandPopup;
@@ -91,7 +91,7 @@ package actionScripts.plugin.project
 
 		public function ProjectPlugin()
 		{
-			treeView = new TreeView();
+			treeView = new ProjectTreeView();
 			treeView.projects = model.projects;
 		}
 
@@ -127,7 +127,10 @@ package actionScripts.plugin.project
                 var activeEditorFile:FileLocation = basicTextEditor.currentFile;
                 var activeFilePath:String = activeEditorFile.fileBridge.nativePath;
                 var childrenForOpen:Array = activeFilePath.split(activeEditorFile.fileBridge.separator);
-                treeView.tree.expandChildrenByName("name", childrenForOpen);
+                treeView.expandChildrenByName("name", childrenForOpen);
+				var fw:FileWrapper = new FileWrapper(activeEditorFile);
+				treeView.scrollToItem(fw);
+				treeView.selectedItem = fw;
             }
         }
 

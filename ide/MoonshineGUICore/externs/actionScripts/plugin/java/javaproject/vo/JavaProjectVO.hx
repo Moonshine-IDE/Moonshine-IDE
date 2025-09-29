@@ -31,4 +31,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.plugin.java.javaproject.vo;
 
-extern class JavaProjectVO {}
+import actionScripts.valueObjects.ProjectVO;
+
+extern class JavaProjectVO extends ProjectVO {
+	public function hasGradleBuild():Bool;
+}

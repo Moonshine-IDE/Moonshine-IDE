@@ -32,9 +32,13 @@
 
 package actionScripts.valueObjects;
 
+import actionScripts.plugin.core.sourcecontrol.ISourceControlProvider;
 import actionScripts.factory.FileLocation;
 
 extern class FileWrapper {
+	public function new(file:FileLocation, isRoot:Bool = false,
+									projectRef:ProjectReferenceVO=null, shallUpdateChildren:Bool = true);
+
 	public var projectReference:ProjectReferenceVO;
 
 	@:flash.property
@@ -59,7 +63,7 @@ extern class FileWrapper {
 	public var defaultName(default, default):String;
 
 	@:flash.property
-	public var children(default, default):Array<Dynamic>;
+	public var children(default, default):Array<FileWrapper>;
 
 	@:flash.property
 	public var nativePath(default, never):String;
@@ -69,4 +73,8 @@ extern class FileWrapper {
 
 	@:flash.property
 	public var isDeleting(default, default):Bool;
+
+	public var sourceController:ISourceControlProvider;
+
+	public function updateChildren():Void;
 }

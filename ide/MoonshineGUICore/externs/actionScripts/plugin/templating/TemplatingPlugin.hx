@@ -29,6 +29,14 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.ui.renderers;
+package actionScripts.plugin.templating;
 
-extern class FTETreeItemRenderer {}
+import actionScripts.factory.FileLocation;
+import actionScripts.plugin.settings.ISettingsProvider;
+
+extern class TemplatingPlugin extends PluginBase implements ISettingsProvider implements IMenuPlugin {
+	public static var fileTemplates:Array<FileLocation>;
+	public static var projectTemplates:Array<FileLocation>;
+
+
+}

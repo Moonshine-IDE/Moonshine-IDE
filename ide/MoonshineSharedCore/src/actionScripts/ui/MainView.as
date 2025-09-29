@@ -47,7 +47,7 @@ package actionScripts.ui
     import actionScripts.ui.tabview.TabView;
     import actionScripts.valueObjects.ConstantsCoreVO;
     
-    import components.views.project.TreeView;
+    import components.views.project.ProjectTreeView;
     import components.views.splashscreen.SplashScreen;
     import actionScripts.plugin.fullscreen.events.FullscreenEvent;
 
@@ -174,13 +174,13 @@ package actionScripts.ui
 			isProjectViewAdded = true;
 		}
 		
-		public function getTreeViewPanel():TreeView
+		public function getTreeViewPanel():ProjectTreeView
 		{
 			if (isProjectViewAdded)
 			{
 				for (var i:int=0; i < sidebar.numElements; i++)
 				{
-					if (sidebar.getElementAt(i) is TreeView) return (sidebar.getElementAt(i) as TreeView);
+					if (sidebar.getElementAt(i) is ProjectTreeView) return (sidebar.getElementAt(i) as ProjectTreeView);
 				}
 			}
 			

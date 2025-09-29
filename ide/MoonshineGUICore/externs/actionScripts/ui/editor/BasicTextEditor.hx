@@ -37,6 +37,7 @@ import actionScripts.factory.FileLocation;
 extern class BasicTextEditor {
 
     public var editor:TextEditor;
+    public var currentFile:FileLocation;
 
     public function saveAs(file:FileLocation=null):Void;
 

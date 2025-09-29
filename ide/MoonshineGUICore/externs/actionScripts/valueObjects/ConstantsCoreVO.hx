@@ -32,9 +32,15 @@
 
 package actionScripts.valueObjects;
 
+import openfl.display.MovieClip;
+import openfl.display.Bitmap;
+
 extern class ConstantsCoreVO {
 
 	public static inline final MOONSHINE_IDE_COPYRIGHT_LABEL:String = "Copyright © STARTcloud, Inc. 2015-2022. All rights reserved.";
+
+	public static var sourceFolderIcon:Class<Bitmap>;
+	public static var loaderIcon:Class<MovieClip>;
 
 	public static var IS_AIR:Bool;
 	public static var MOONSHINE_IDE_LABEL:String;

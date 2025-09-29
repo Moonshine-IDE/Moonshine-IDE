@@ -32,7 +32,7 @@
 
 package actionScripts.events;
 
-import actionScripts.ui.renderers.FTETreeItemRenderer;
+import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 import actionScripts.valueObjects.FileWrapper;
 import openfl.events.Event;
 
@@ -47,7 +47,7 @@ class TreeMenuItemEvent extends Event {
 
 	public var menuLabel:String;
 	public var data:FileWrapper;
-	public var renderer:FTETreeItemRenderer;
+	public var renderer:FileWrapperHierarchicalItemRenderer;
 	public var extra:Any;
 	public var showAlert:Bool;
 

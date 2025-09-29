@@ -31,6 +31,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils;
 
+import actionScripts.valueObjects.FileWrapper;
+import actionScripts.valueObjects.ProjectVO;
+
 extern class UtilsCore {
     public static function isNewerVersionSDKThan(olderVersion:Int, sdkPath:String):Bool;
+    public static function isVagrantAvailable():Bool;
+    public static function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO;
 }

@@ -29,10 +29,9 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.interfaces;
 
-extern interface IFlexCoreBridge {
-	public var vagrantMenuOptions(default, null):Array<String>;
-	function getExternalEditors():Dynamic;
-    function getTerminalThemeList():Array<String>;
+
+package actionScripts.plugin;
+
+interface IMenuPlugin {
 }

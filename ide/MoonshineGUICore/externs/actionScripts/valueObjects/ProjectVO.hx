@@ -37,4 +37,7 @@ import actionScripts.factory.FileLocation;
 extern class ProjectVO {
 	public var name:String;
 	public var folderLocation:FileLocation;
+	public var projectFolder:FileWrapper;
+	public var sourceFolder:FileLocation;
+	public var menuType:String;
 }

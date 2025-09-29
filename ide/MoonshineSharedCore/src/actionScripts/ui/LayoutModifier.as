@@ -47,7 +47,7 @@ package actionScripts.ui
 	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
 	
-	import components.views.project.TreeView;
+	import components.views.project.ProjectTreeView;
 
 	public class LayoutModifier
 	{
@@ -93,7 +93,7 @@ package actionScripts.ui
 			attachProjectPanelSections();
 		}
 		
-		public static function attachSidebarSections(treeView:TreeView):void
+		public static function attachSidebarSections(treeView:ProjectTreeView):void
 		{
 			model.mainView.addPanel(treeView);
 			

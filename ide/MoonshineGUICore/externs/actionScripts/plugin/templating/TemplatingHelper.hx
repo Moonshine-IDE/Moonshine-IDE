@@ -29,10 +29,11 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.interfaces;
+package actionScripts.plugin.templating;
 
-extern interface IFlexCoreBridge {
-	public var vagrantMenuOptions(default, null):Array<String>;
-	function getExternalEditors():Dynamic;
-    function getTerminalThemeList():Array<String>;
+import actionScripts.factory.FileLocation;
+
+extern class TemplatingHelper {
+    public static function getTemplateLabel(template:FileLocation):String;
+	public static function getTemplateMenuType(file:String):Array<String>;
 }

@@ -31,6 +31,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.locator;
 
+import actionScripts.interfaces.IFlexCoreBridge;
+import actionScripts.valueObjects.ProjectVO;
+import actionScripts.interfaces.IContextMenuBridge;
 import actionScripts.factory.FileLocation;
 import actionScripts.interfaces.IClipboardBridge;
 import actionScripts.interfaces.IFileBridge;
@@ -41,11 +44,14 @@ extern class IDEModel {
 	public static function getInstance():IDEModel;
 
 	public var activeEditor:IContentWindow;
+	public var activeProject:ProjectVO;
 	public var antHomePath:FileLocation;
 	public var clipboardCore:IClipboardBridge;
+	public var contextMenuCore:IContextMenuBridge;
 	public var defaultSDK:FileLocation;
 	public var editors:ArrayCollection;
 	public var fileCore:IFileBridge;
+	public var flexCore:IFlexCoreBridge;
 	public var gitPath:String;
 	public var gradlePath:String;
 	public var grailsPath:String;
@@ -58,6 +64,7 @@ extern class IDEModel {
 	public var nodePath:String;
 	public var notesPath:String;
 	public var projects:ArrayCollection;
+	public var showHiddenPaths:Bool;
 	public var svnPath:String;
 	public var userSavedSDKs:ArrayCollection;
 	public var vagrantPath:String;
