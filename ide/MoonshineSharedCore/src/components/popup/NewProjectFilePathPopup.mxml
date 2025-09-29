@@ -64,6 +64,13 @@
 
 		private function onFileSelectedDoubleClick(event:MouseEvent):void
 		{
+			if ((tree.selectedItem as FileWrapper).file.fileBridge.isDirectory)
+			{
+				// can't use a directory as the main application file
+				// but we can toggle it open or closed instead
+				tree.expandItem(tree.selectedItem, !tree.isItemOpen(tree.selectedItem), true, true);
+				return;
+			}
 			selectMainProjectFile();
 		}
 
