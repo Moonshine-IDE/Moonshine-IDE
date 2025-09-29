@@ -120,7 +120,7 @@
 								 useRollOver="true"
 								 labelField="name"
 						  		 iconFunction="{getIconForFile}"
-								 itemRenderer="actionScripts.ui.renderers.FTETreeItemRenderer"
+								 itemRenderer="actionScripts.ui.renderers.GenericTreeItemRenderer"
 								 doubleClickEnabled="true"
 								 doubleClick="onFileSelectedDoubleClick(event)"/>
 		<s:HGroup id="hgExistingWarning" 
