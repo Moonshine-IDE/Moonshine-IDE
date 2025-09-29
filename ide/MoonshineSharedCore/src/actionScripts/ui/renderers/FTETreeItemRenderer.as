@@ -580,7 +580,7 @@ package actionScripts.ui.renderers
 				{
 					item.enabled = enableTypes.some(function hasView(item:String, index:int, arr:Array):Boolean
 					{
-						return activeProject.menuType.indexOf(item) != -1;
+						return activeProject && activeProject.menuType.indexOf(item) != -1;
 					});
 				}
 				
