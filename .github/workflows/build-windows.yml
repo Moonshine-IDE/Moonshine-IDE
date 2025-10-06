@@ -36,6 +36,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install NSIS
+        run: |
+          # Install NSIS
+          choco install nsis -y
+          
+          # Paths (v3 layout)
+          $nsisRoot = "${env:ProgramFiles(x86)}\NSIS"
+          $pluginDir = Join-Path $nsisRoot "Plugins\x86-unicode"
+          $includeDir = Join-Path $nsisRoot "Include"
+          
+          # Ensure dirs exist (they will after install, but this is defensive)
+          New-Item -ItemType Directory -Force -Path $pluginDir, $includeDir | Out-Null
+          
+          # Add NSIS to Path
+          Add-Content -Path $env:GITHUB_PATH -Value $nsisRoot
+
       - uses: actions/setup-java@v3
         with:
           distribution: "temurin"
