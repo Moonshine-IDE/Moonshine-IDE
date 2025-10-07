@@ -269,12 +269,20 @@
 	<target name="install-haxe-dependencies">
 		<haxelibInstall library="lime" />
 		<haxelibInstall library="openfl" />
-		<haxelibInstall library="feathersui" />
 		<haxelibInstall library="actuate" />
 		<haxelibInstall library="markdown-openfl-textfield" />
 		<haxelibInstall library="format" />
 		<haxelibInstall library="hxp" />
 		<haxelibInstall library="amfio" />
+
+		<exec executable="${haxelib.cmd}"
+			failonerror="true">
+			<arg value="git"/>
+			<arg value="feathersui"/>
+			<arg value="https://github.com/feathersui/feathersui-openfl.git"/>
+			<arg value="--always"/>
+			<arg value="--quiet"/>
+		</exec>
 
 		<exec executable="${haxelib.cmd}"
 			failonerror="true">

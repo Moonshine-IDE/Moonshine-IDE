@@ -43,12 +43,12 @@ jobs:
 
       - uses: krdlab/setup-haxe@master
         with:
-          haxe-version: 4.3.6
+          haxe-version: 4.3.7
 
       - uses: joshtynjala/setup-apache-flex-action@v2.2.0
         with:
           flex-version: "4.16.1"
-          air-version: "51.1.3.1"
+          air-version: "51.2.2.5"
           accept-air-license: true
           air-license-base64: ${{ secrets.AIR_LICENSE_BASE64 }}
 
