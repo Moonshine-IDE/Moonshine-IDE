@@ -326,11 +326,11 @@
 		<exec executable="${haxelib.cmd}"
 			dir="../../MoonshineGUICore"
 			failonerror="true">
-			<arg value="-Dair"/>
 			<arg value="run"/>
 			<arg value="openfl"/>
 			<arg value="build"/>
 			<arg value="flash"/>
+			<arg value="-Dair"/>
 		</exec>
 		<echo message="Compiled GUI Core"/>
 	</target>
