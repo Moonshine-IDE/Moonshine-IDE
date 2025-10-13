@@ -293,7 +293,7 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 			isOpenIcon.visible = isActiveFile;
 			
 			var isSourceFolder = fw.isSourceFolder;
-			if (!isSourceFolder && fw.projectReference != null)
+			if (!isSourceFolder && fw.projectReference != null && fw.projectReference.sourceFolder != null)
 			{
 				isSourceFolder = fw.nativePath == fw.projectReference.sourceFolder.fileBridge.nativePath;	
 			}
