@@ -256,12 +256,15 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 		@see `feathers.data.IHierarchicalCollection.updateAt`
 	**/
 	public function updateAt(location:Array<Int>):Void {
-		var item = getItemAtLocation(location, false);
-		if (item == null) {
-			return;
+		var item = getItemAtLocation(location, false, false);
+		if (item != null) {
+			// clear from the cache, if possible
+			var items:Array<FileWrapper> = [item];
+			while (items.length > 0) {
+				var current = items.shift();
+				this.removeFromCache(current, items);
+			}
 		}
-		
-		_childrenMap.remove(item.nativePath);
 		HierarchicalCollectionEvent.dispatch(this, HierarchicalCollectionEvent.UPDATE_ITEM, location);
 	}
 
@@ -269,7 +272,11 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 		if (item == null) {
 			return;
 		}
-		_childrenMap.remove(item.nativePath);
+		var items:Array<FileWrapper> = [item];
+		while (items.length > 0) {
+			var current = items.shift();
+			this.removeFromCache(current, items);
+		}
 		var location = locationOf(item);
 		if (location == null) {
 			return;
@@ -292,26 +299,43 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 		_childrenMap.clear();
 	}
 
-	private function getItemAtLocation(location:Array<Int>, useCache:Bool = true):FileWrapper {
+	private function getItemAtLocation(location:Array<Int>, useCache:Bool = true, validate:Bool = true):FileWrapper {
 		if (location == null || location.length == 0) {
 			return null;
 		}
 		var rootIndex = location[0];
 		if (rootIndex >= _roots.length) {
-			throw new RangeError('Expected location index less than ${roots.length}, but actual index is ${rootIndex}. Full location: <${location}>');
+			if (validate) {
+				throw new RangeError('Expected location index less than ${roots.length}, but actual index is ${rootIndex}. Full location: <${location}>');
+			} else {
+				return null;
+			}
 		}
 		var current:FileWrapper = _roots[rootIndex];
 		var i = 1;
 		while (i < location.length) {
 			if (!current.file.fileBridge.isDirectory) {
-				throw new IOError('Item is not a directory: ${current.nativePath}');
+				if (validate) {
+					throw new IOError('Item is not a directory: ${current.nativePath}');
+				} else {
+					return null;
+				}
 			}
 			var children = getChildren(current, useCache);
 			if (children == null) {
-				throw new IOError('Cannot read directory: ${current.nativePath}');
+				if (validate) {
+					throw new IOError('Cannot read directory: ${current.nativePath}');
+				} else {
+					return null;
+				}
 			}
 			var childIndex = location[i];
 			if (childIndex >= children.length) {
+				if (validate) {
+					throw new RangeError('Expected location index less than ${children.length}, but actual index is ${childIndex}. Full location: <${location}>');
+				} else {
+					return null;
+				}
 				return null;
 			}
 			current = children[childIndex];
@@ -365,5 +389,18 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 			_childrenMap.set(fileWrapper.nativePath, children);
 		}
 		return children;
+	}
+
+	private function removeFromCache(item:FileWrapper, items:Array<FileWrapper>):Void {
+		if (item == null) {
+			return;
+		}	
+		var children = _childrenMap.get(item.nativePath);
+		_childrenMap.remove(item.nativePath);
+		if (children != null) {
+			for (child in children) {
+				items.push(child);
+			}
+		}
 	}
 }
