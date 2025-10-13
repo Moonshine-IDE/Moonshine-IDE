@@ -83,7 +83,6 @@
 			import components.popup.NewFolderPopup;
 
 			import feathers.controls.TreeView;
-			import feathers.events.FeathersEvent;
 			import feathers.events.TreeViewEvent;
 			import feathers.utils.DisplayObjectRecycler;
 
@@ -264,31 +263,31 @@
 				// get the actual FileWrapper instance used by the collection
 				// because the one passed in may have the same path, but be a
 				// different instance
-				var location:Array = _feathersTreeView.dataProvider.locationOf(item);
-				if (location == null)
-				{
-					return;
-				}
-				item = _feathersTreeView.dataProvider.get(location) as FileWrapper;
+				item = findTreeViewItem(item);
 				if (item == null)
 				{
 					return;
 				}
+				
 				if (!_feathersTreeView.dataProvider.isBranch(item))
 				{
 					// nothing to expand
 					return;
 				}
 
-				var oldIgnoreTreeBranchChanges:Boolean = _ignoreTreeBranchChanges;
-				_ignoreTreeBranchChanges = true;
-				_feathersTreeView.toggleBranch(item, open);
-				_ignoreTreeBranchChanges = oldIgnoreTreeBranchChanges;
-				if (open)
+				var alreadyOpen:Boolean = _feathersTreeView.openBranches.indexOf(item) != -1;
+				if (alreadyOpen != open)
 				{
-					// Flex Tree dispatches an add event when opening a
-					// branch, but Feathers does not, so we force it here
-					reopenPreviouslyClosedItems(CollectionEventKind.ADD, item.children.slice());
+					var oldIgnoreTreeBranchChanges:Boolean = _ignoreTreeBranchChanges;
+					_ignoreTreeBranchChanges = true;
+					_feathersTreeView.toggleBranch(item, open);
+					_ignoreTreeBranchChanges = oldIgnoreTreeBranchChanges;
+					if (open)
+					{
+						// Flex Tree dispatches an add event when opening a
+						// branch, but Feathers does not, so we force it here
+						reopenPreviouslyClosedItems(CollectionEventKind.ADD, item.children.slice());
+					}
 				}
 			}
 
@@ -598,9 +597,17 @@
 					return;
 				}
 
-				var lastSelectedItem:Object = _feathersTreeView.selectedItem;
+				var lastSelectedItem:FileWrapper = _feathersTreeView.selectedItem as FileWrapper;
 				var lastSelectedLocation:Array = _feathersTreeView.selectedLocation;
-				var openItems:Array = _feathersTreeView.getOpenBranches();
+				if (!_feathersTreeView.dataProvider.isBranch(fw))
+				{
+					if (lastSelectedItem != null && lastSelectedItem.nativePath == fw.nativePath)
+					{
+						_feathersTreeView.selectedItem = fw;
+					}
+					return;
+				}
+				var openItems:Array = _feathersTreeView.openBranches;
 				var items:Array = [fw];
 				var newItems:Array = [];
 				do
@@ -615,24 +622,18 @@
 					newItems = temp;
 				}
 				while(items.length > 0);
+
 				var oldIgnoreTreeBranchChanges:Boolean = _ignoreTreeBranchChanges;
 				_ignoreTreeBranchChanges = true;
-				for each (item in openItems)
-				{
-					if (_feathersTreeView.dataProvider.contains(item))
-					{
-						_feathersTreeView.toggleBranch(item, true);
-						// Flex Tree dispatches an add event when opening a
-						// branch, but Feathers does not, so we force it here
-						reopenPreviouslyClosedItems(CollectionEventKind.ADD, item.children.slice());
-					}
-				}
+
+				_feathersTreeView.openBranches = openItems;
+
 				_ignoreTreeBranchChanges = oldIgnoreTreeBranchChanges;
 	
-				_feathersTreeView.selectedItem = findTreeViewItem(lastSelectedItem as FileWrapper);
+				_feathersTreeView.selectedItem = findTreeViewItem(lastSelectedItem);
 	
 				// if still there has no selection to the tree
-				if(!_feathersTreeView.selectedItem && lastSelectedLocation && _feathersTreeView.dataProvider.contains(lastSelectedItem))
+				if(!_feathersTreeView.selectedItem && lastSelectedItem && lastSelectedLocation && _feathersTreeView.dataProvider.contains(lastSelectedItem))
 				{
 					_feathersTreeView.selectedLocation = lastSelectedLocation;
 				}
@@ -1514,25 +1515,28 @@
 				var projectTree:Array = cookie.data.projectTree;
 				if (projectTree && items.length > 0)
 				{
-					var item:Object = items.shift();
-					var fileWrapper:FileWrapper = item as FileWrapper;
-					if (fileWrapper != null && !_feathersTreeView.isBranchOpen(fileWrapper))
+					var fileWrapper:FileWrapper = items.shift() as FileWrapper;
+					if (fileWrapper != null && _feathersTreeView.dataProvider.isBranch(fileWrapper))
 					{
-						var hasItemForOpen:Boolean = projectTree.some(
-								function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean {
-									return itemForOpen.hasOwnProperty(fileWrapper[PROPERTY_NAME_KEY]) &&
-											itemForOpen[fileWrapper[PROPERTY_NAME_KEY]] == fileWrapper[PROPERTY_NAME_KEY_VALUE];
-								});
-						if (hasItemForOpen)
+						var open:Boolean = _feathersTreeView.openBranches.indexOf(fileWrapper) != -1;
+						if (!open)
 						{
-							//updateTreeViewItem(fileWrapper);
-							// - or -
-							// var location:Array = _feathersTreeView.dataProvider.locationOf(fileWrapper);
-							// if (location != null) {
-							// 	_feathersTreeView.dataProvider.updateAt(location);
-							// }
-							expandItem(fileWrapper, true);
-							fileWrapper.sortChildren();
+							var hasItemForOpen:Boolean = projectTree.some(
+									function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean {
+										return itemForOpen.hasOwnProperty(fileWrapper[PROPERTY_NAME_KEY]) &&
+												itemForOpen[fileWrapper[PROPERTY_NAME_KEY]] == fileWrapper[PROPERTY_NAME_KEY_VALUE];
+									});
+							if (hasItemForOpen)
+							{
+								//updateTreeViewItem(fileWrapper);
+								// - or -
+								// var location:Array = _feathersTreeView.dataProvider.locationOf(fileWrapper);
+								// if (location != null) {
+								// 	_feathersTreeView.dataProvider.updateAt(location);
+								// }
+								expandItem(fileWrapper, true);
+								fileWrapper.sortChildren();
+							}
 						}
 					}
 					
