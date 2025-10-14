@@ -129,7 +129,9 @@ class FileSystemWatcher extends EventDispatcher {
 		}
 		_watchedDirectories.set(directory, fileInfoForDir);
 		if (!hasDirs) {
-			_timer = new Timer(_pollingMS);
+			// repeat only once. we'll reset and start fresh after checking for
+			// file changes so that there's a long enough delay between checks.
+			_timer = new Timer(_pollingMS, 1);
 			_timer.addEventListener(TimerEvent.TIMER, fileWatcher_timer_timerHandler);
 			_timer.start();
 		}
@@ -236,6 +238,12 @@ class FileSystemWatcher extends EventDispatcher {
 				dispatchEvent(new FileSystemWatcherEvent(FileSystemWatcherEvent.FILE_CREATED, file));
 			}
 		}
+		// if checking for changes took an especially long time, the next timer
+		// event could be almost immediately. let's wait the full polling time
+		// before checking again so that CPU usage isn't constant.
+		_timer.stop();
+		_timer.reset();
+		_timer.start();
 	}
 
 	#if lime_cffi
