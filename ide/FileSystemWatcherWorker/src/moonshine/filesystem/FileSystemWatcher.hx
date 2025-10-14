@@ -184,9 +184,12 @@ class FileSystemWatcher extends EventDispatcher {
 				var i = files.length - 1;
 				while (i >= 0) {
 					var file = files[i];
-					if (file.nativePath == existingNativePath) {
+					if (file != null && file.nativePath == existingNativePath) {
 						found = true;
-						files.splice(i, 1);
+						// it can be faster to check for null than to modify the
+						// array by calling splice() because splice() can cause
+						// a lot of garbage collection on some targets.
+						files[i] = null;
 						if (file.isDirectory) {
 							break;
 						}
@@ -215,6 +218,9 @@ class FileSystemWatcher extends EventDispatcher {
 				}
 			}
 			for (file in files) {
+				if (file == null) {
+					continue;
+				}
 				var modificationDate = 0.0;
 				try {
 					modificationDate = file.modificationDate.getTime();
