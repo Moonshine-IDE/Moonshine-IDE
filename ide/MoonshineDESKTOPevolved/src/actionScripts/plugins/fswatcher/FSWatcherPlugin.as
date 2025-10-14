@@ -60,7 +60,8 @@ package actionScripts.plugins.fswatcher
 			"**/.hg",
 			"**/CVS",
 			"**/.DS_Store",
-			"**/Thumbs.db"
+			"**/Thumbs.db",
+			"**/node_modules"
 		];
 
 		override public function get name():String
