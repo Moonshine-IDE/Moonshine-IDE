@@ -71,6 +71,7 @@
 			import actionScripts.ui.LayoutModifier;
 			import actionScripts.ui.editor.BasicTextEditor;
 			import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
+			import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
 			import actionScripts.ui.tabview.TabViewTab;
 			import actionScripts.utils.FileCoreUtil;
 			import actionScripts.utils.SharedObjectUtil;
@@ -81,6 +82,7 @@
 			import actionScripts.valueObjects.URLDescriptorVO;
 
 			import components.popup.NewFolderPopup;
+			import components.views.project.ProjectTreeContextMenuItem;
 
 			import feathers.controls.TreeView;
 			import feathers.events.TreeViewEvent;
@@ -463,6 +465,7 @@
 				_feathersTreeView.itemRendererRecycler = DisplayObjectRecycler.withFunction(function():DisplayObject {
 					var itemRenderer:FileWrapperHierarchicalItemRenderer = new FileWrapperHierarchicalItemRenderer();
 					itemRenderer.doubleClickEnabled = true;
+					new FileWrapperNativeContextMenuProvider(itemRenderer);
 					return itemRenderer;
 				});
 				_feathersTreeView.addEventListener(TreeViewEvent.BRANCH_OPENING, function(event:TreeViewEvent):void {
@@ -786,8 +789,8 @@
 	
 				switch (event.menuLabel)
 				{
-					case FileWrapperHierarchicalItemRenderer.SETTINGS:
-					case FileWrapperHierarchicalItemRenderer.PROJECT_SETUP:
+					case ProjectTreeContextMenuItem.SETTINGS:
+					case ProjectTreeContextMenuItem.PROJECT_SETUP:
 					{
 						project = UtilsCore.getProjectFromProjectFolder(fileWrapper);
 						dispatcher.dispatchEvent(
@@ -795,8 +798,8 @@
 						)
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.OPEN:
-					case FileWrapperHierarchicalItemRenderer.OPEN_FILE_FOLDER:
+					case ProjectTreeContextMenuItem.OPEN:
+					case ProjectTreeContextMenuItem.OPEN_FILE_FOLDER:
 					{
 						if(isMultiSelection)
 						{
@@ -808,15 +811,15 @@
 						}
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.CLOSE:
+					case ProjectTreeContextMenuItem.CLOSE:
 					{
 						onFileDeletedOnServer([fileWrapper], event.menuLabel);
 						refreshActiveProject(fileWrapper);
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.DELETE:
-					case FileWrapperHierarchicalItemRenderer.DELETE_PROJECT:
-					case FileWrapperHierarchicalItemRenderer.DELETE_FILE_FOLDER:
+					case ProjectTreeContextMenuItem.DELETE:
+					case ProjectTreeContextMenuItem.DELETE_PROJECT:
+					case ProjectTreeContextMenuItem.DELETE_FILE_FOLDER:
 					{
 						if(isMultiSelection && isMultiSelectionIsValid())
 						{
@@ -835,27 +838,27 @@
 						}
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.RENAME:
+					case ProjectTreeContextMenuItem.RENAME:
 					{
 						renameFileFolder(event.renderer);
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.DUPLICATE_FILE:
+					case ProjectTreeContextMenuItem.DUPLICATE_FILE:
 					{
 						dispatcher.dispatchEvent(new DuplicateEvent(DuplicateEvent.EVENT_OPEN_DUPLICATE_FILE_VIEW, fileWrapper));
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.COPY_FILE:
+					case ProjectTreeContextMenuItem.COPY_FILE:
 					{
 						dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_COPY_FILE, isMultiSelection ? _feathersTreeView.selectedItems : [fileWrapper]));
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.PASTE_FILE:
+					case ProjectTreeContextMenuItem.PASTE_FILE:
 					{
 						dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES, fileWrapper.file.fileBridge.isDirectory ? [fileWrapper] : [FileWrapper(getParentItem(fileWrapper))]));
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.SET_AS_DEFAULT_APPLICATION:
+					case ProjectTreeContextMenuItem.SET_AS_DEFAULT_APPLICATION:
 					{
 						if(model.activeProject is AS3ProjectVO)
 						{
@@ -866,12 +869,12 @@
 						}
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.REFRESH:
+					case ProjectTreeContextMenuItem.REFRESH:
 					{
 						refreshFileFolder(fileWrapper);
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.NEW:
+					case ProjectTreeContextMenuItem.NEW:
 					{
 						// Right-clicking a directory creates the file in the dir,
 						// otherwise create in same dir as clicked file
@@ -883,7 +886,7 @@
 						}
 	
 						// for new file type creation
-						if(event.extra != FileWrapperHierarchicalItemRenderer.NEW_FOLDER)
+						if(event.extra != ProjectTreeContextMenuItem.NEW_FOLDER)
 						{
 							var newFileEvent:NewFileEvent = new NewFileEvent(event.extra, creatingItemIn.file.fileBridge.nativePath, null, creatingItemIn);
 							newFileEvent.ofProject = UtilsCore.getProjectFromProjectFolder(fileWrapper);
@@ -905,10 +908,10 @@
 	
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.OPEN_WITH:
+					case ProjectTreeContextMenuItem.OPEN_WITH:
 					{
-						if (event.extra == FileWrapperHierarchicalItemRenderer.CONFIGURE_EXTERNAL_EDITORS ||
-								event.extra == FileWrapperHierarchicalItemRenderer.CONFIGURE_VAGRANT)
+						if (event.extra == ProjectTreeContextMenuItem.CONFIGURE_EXTERNAL_EDITORS ||
+								event.extra == ProjectTreeContextMenuItem.CONFIGURE_VAGRANT)
 						{
 							dispatcher.dispatchEvent(new Event(event.extra));
 						}
@@ -918,23 +921,23 @@
 						}
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.VAGRANT_GROUP:
+					case ProjectTreeContextMenuItem.VAGRANT_GROUP:
 					{
 						dispatcher.dispatchEvent(new FilePluginEvent(event.extra, fileWrapper.file));
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.RUN_ANT_SCRIPT:
+					case ProjectTreeContextMenuItem.RUN_ANT_SCRIPT:
 					{
 						model.antScriptFile = new FileLocation(fileWrapper.file.fileBridge.nativePath);
 						dispatcher.dispatchEvent(new RunANTScriptEvent(RunANTScriptEvent.ANT_BUILD));
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.COPY_PATH:
+					case ProjectTreeContextMenuItem.COPY_PATH:
 					{
 						FileCoreUtil.copyPathToClipboard(fileWrapper.file);
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.OPEN_PATH_IN_TERMINAL:
+					case ProjectTreeContextMenuItem.OPEN_PATH_IN_TERMINAL:
 					{
 						if (ConstantsCoreVO.IS_MACOS)
 						{
@@ -946,24 +949,24 @@
 						}
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.OPEN_PATH_IN_POWERSHELL:
+					case ProjectTreeContextMenuItem.OPEN_PATH_IN_POWERSHELL:
 					{
 						dispatcher.dispatchEvent(new FilePluginEvent(FilePluginEvent.EVENT_OPEN_PATH_IN_POWERSHELL, fileWrapper.file));
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.SHOW_IN_EXPLORER:
-					case FileWrapperHierarchicalItemRenderer.SHOW_IN_FINDER:
+					case ProjectTreeContextMenuItem.SHOW_IN_EXPLORER:
+					case ProjectTreeContextMenuItem.SHOW_IN_FINDER:
 					{
 						FileCoreUtil.showInExplorer(fileWrapper.file);
 						break;
 					}
-					case FileWrapperHierarchicalItemRenderer.MARK_AS_VISIBLE:
+					case ProjectTreeContextMenuItem.MARK_AS_VISIBLE:
 						dispatcher.dispatchEvent(new HiddenFilesEvent(HiddenFilesEvent.MARK_FILES_AS_VISIBLE, fileWrapper));
 						break;
-					case FileWrapperHierarchicalItemRenderer.MARK_AS_HIDDEN:
+					case ProjectTreeContextMenuItem.MARK_AS_HIDDEN:
 						dispatcher.dispatchEvent(new HiddenFilesEvent(HiddenFilesEvent.MARK_FILES_AS_HIDDEN, fileWrapper));
 						break;
-					case FileWrapperHierarchicalItemRenderer.PREVIEW:
+					case ProjectTreeContextMenuItem.PREVIEW:
 						dispatcher.dispatchEvent(new PreviewPluginEvent(PreviewPluginEvent.START_VISUALEDITOR_PREVIEW, fileWrapper));
 						break;
 				}
@@ -1272,7 +1275,7 @@
 			
 			private function onCloseProjectRequest(event:ProjectEvent):void
 			{
-				onFileDeletedOnServer([event.anObject], FileWrapperHierarchicalItemRenderer.CLOSE);
+				onFileDeletedOnServer([event.anObject], ProjectTreeContextMenuItem.CLOSE);
 			}
 	
 			private function onFileDeletedOnServer(value:Array, removalType:String = null):void
@@ -1287,7 +1290,7 @@
 				if(value[0].isRoot)
 				{
 					tmpProject = UtilsCore.getProjectFromProjectFolder(value[0]);
-					UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value[0], (removalType == FileWrapperHierarchicalItemRenderer.CLOSE ? false : true), function ():void
+					UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value[0], (removalType == ProjectTreeContextMenuItem.CLOSE ? false : true), function ():void
 					{
 						for each (var project:ProjectVO in projects)
 						{

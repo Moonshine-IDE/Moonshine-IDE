@@ -47,8 +47,6 @@ package actionScripts.plugin.templating
 	import mx.resources.ResourceManager;
 	import mx.utils.StringUtil;
 	
-	import __AS3__.vec.Vector;
-	
 	import actionScripts.events.ASModulesEvent;
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.EditorPluginEvent;
@@ -97,7 +95,6 @@ package actionScripts.plugin.templating
 	import components.popup.newFile.NewDominoViewShareColumnPopup;
 	import components.popup.newFile.NewDominoShareFieldPopup;
 	import components.popup.newFile.NewDominoActionPopup;
-
 	import components.popup.newFile.NewFilePopup;
 	import components.popup.newFile.NewGroovyFilePopup;
 	import components.popup.newFile.NewHaxeFilePopup;
@@ -106,11 +103,11 @@ package actionScripts.plugin.templating
 	import components.popup.newFile.NewMXMLGenericFilePopup;
 	import components.popup.newFile.NewVisualEditorFilePopup;
 	import components.popup.newFile.NewOnDiskFilePopup;
+	import components.views.project.ProjectTreeContextMenuItem;
 
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
 	import actionScripts.utils.TextUtil;
-	import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
     /*
     Templating plugin
 
@@ -833,7 +830,7 @@ package actionScripts.plugin.templating
 						{
 							isProjectOpen = true;
 							i.projectFolder.isRoot = true;
-							model.mainView.getTreeViewPanel().dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, FileWrapperHierarchicalItemRenderer.DELETE_PROJECT, i.projectFolder, false));
+							model.mainView.getTreeViewPanel().dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, ProjectTreeContextMenuItem.DELETE_PROJECT, i.projectFolder, false));
 							break;
 						}
 					}
