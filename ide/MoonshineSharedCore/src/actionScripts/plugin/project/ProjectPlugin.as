@@ -37,6 +37,7 @@ package actionScripts.plugin.project
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
+	import mx.binding.utils.ChangeWatcher;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
 	import mx.managers.PopUpManager;
@@ -93,6 +94,7 @@ package actionScripts.plugin.project
 		{
 			treeView = new ProjectTreeView();
 			treeView.projects = model.projects;
+			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
 
 		override public function activate():void
@@ -538,5 +540,15 @@ package actionScripts.plugin.project
                 }
             }
         }
+
+		private function onActiveEditorChange(event:Event):void
+		{
+			var fileLocation:FileLocation = null;
+			if (model.activeEditor is BasicTextEditor)
+			{
+				fileLocation = BasicTextEditor(model.activeEditor).currentFile;
+			}
+			treeView.activeFile = fileLocation;
+		}
     }
 }

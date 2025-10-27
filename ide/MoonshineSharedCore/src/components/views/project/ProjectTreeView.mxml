@@ -69,7 +69,6 @@
 			import actionScripts.plugin.java.javaproject.vo.JavaProjectVO;
 			import actionScripts.plugin.templating.TemplatingHelper;
 			import actionScripts.ui.LayoutModifier;
-			import actionScripts.ui.editor.BasicTextEditor;
 			import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 			import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
 			import actionScripts.ui.tabview.TabViewTab;
@@ -90,7 +89,6 @@
 
 			import flash.display.DisplayObject;
 
-			import mx.binding.utils.ChangeWatcher;
 			import mx.collections.ArrayCollection;
 			import mx.collections.Sort;
 			import mx.collections.SortField;
@@ -124,6 +122,8 @@
 
 			[Bindable]
 			private var _feathersTreeView:feathers.controls.TreeView;
+
+			private var _activeFile:FileLocation;
 
 			private var _ignoreTreeBranchChanges:Boolean = false;
 
@@ -181,6 +181,35 @@
 				model.selectedprojectFolders.refresh();
 
 				
+			}
+
+			public function get activeFile():FileLocation
+			{
+				return _activeFile;
+			}
+
+			public function set activeFile(value:FileLocation):void
+			{
+				if (_activeFile == value)
+				{
+					return;
+				}
+				_activeFile = value;
+
+				if (_oldActiveEditorFileWrapper)
+				{
+					updateTreeViewItem(_oldActiveEditorFileWrapper);
+				}
+				if (_activeFile)
+				{
+					var fileWrapper:FileWrapper = new FileWrapper(_activeFile);
+					updateTreeViewItem(fileWrapper);
+					_oldActiveEditorFileWrapper = fileWrapper;
+				}
+				else
+				{
+					_oldActiveEditorFileWrapper = null;
+				}
 			}
 
 			public function isItemVisible(item:Object):*
@@ -445,8 +474,6 @@
 				dispatcher.addEventListener(ProjectEvent.CLOSE_PROJECT, onCloseProjectRequest, false, 0, true);
 				
 				addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
-
-				ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 
 				_feathersTreeView = new feathers.controls.TreeView();
 				_feathersTreeView.variant = feathers.controls.TreeView.VARIANT_BORDERLESS;
@@ -1560,26 +1587,6 @@
 					return;
 				}
 				_feathersTreeView.dataProvider.updateAt(location);
-			}
-
-			private function onActiveEditorChange(event:Event):void
-			{
-				if (_oldActiveEditorFileWrapper)
-				{
-					updateTreeViewItem(_oldActiveEditorFileWrapper);
-				}
-				var activeEditor:BasicTextEditor = model.activeEditor as BasicTextEditor;
-				if (activeEditor)
-				{
-					var fileLocation:FileLocation = activeEditor.currentFile;
-					var fileWrapper:FileWrapper = new FileWrapper(fileLocation);
-					updateTreeViewItem(fileWrapper);
-					_oldActiveEditorFileWrapper = fileWrapper;
-				}
-				else
-				{
-					_oldActiveEditorFileWrapper = null;
-				}
 			}
 			
 		]]>
