@@ -50,10 +50,11 @@
 			import actionScripts.events.ProjectEvent;
 			import actionScripts.factory.FileLocation;
 			import actionScripts.locator.IDEModel;
+			import actionScripts.plugin.workspace.WorkspacePlugin;
 			import actionScripts.ui.LayoutModifier;
+			import actionScripts.ui.project.ProjectViewHeader;
 			import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 			import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
-			import actionScripts.ui.tabview.TabViewTab;
 			import actionScripts.utils.SharedObjectUtil;
 			import actionScripts.utils.UtilsCore;
 			import actionScripts.valueObjects.ConstantsCoreVO;
@@ -61,16 +62,20 @@
 			import actionScripts.valueObjects.ProjectVO;
 
 			import feathers.controls.TreeView;
+			import feathers.data.ArrayCollection;
 			import feathers.events.TreeViewEvent;
 			import feathers.utils.DisplayObjectRecycler;
 
 			import flash.display.DisplayObject;
 
 			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
 			import mx.collections.Sort;
 			import mx.collections.SortField;
 			import mx.events.CollectionEvent;
 			import mx.events.CollectionEventKind;
+			import feathers.data.IFlatCollection;
+			import actionScripts.valueObjects.WorkspaceVO;
 
 			private static const PROPERTY_NAME_KEY:String = "name";
 			private static const PROPERTY_NAME_KEY_VALUE:String = "nativePath";
@@ -82,11 +87,14 @@
 	
 			private var templateToCreate:FileLocation;
 	
-			private var _projects:ArrayCollection;
+			private var _projects:mx.collections.ArrayCollection;
 			private var _refreshActiveProjectTimeout:uint = uint.MAX_VALUE;
 
 			[Bindable]
 			private var _feathersTreeView:feathers.controls.TreeView;
+
+			[Bindable]
+			private var _feathersHeader:ProjectViewHeader;
 
 			private var _activeFile:FileLocation;
 
@@ -141,12 +149,12 @@
 			}
 
 			[Bindable]
-			public function get projects():ArrayCollection
+			public function get projects():mx.collections.ArrayCollection
 			{
 				return _projects;
 			}
 	
-			public function set projects(value:ArrayCollection):void
+			public function set projects(value:mx.collections.ArrayCollection):void
 			{
 				_projects = value;
 	
@@ -492,6 +500,10 @@
 	
 			private function onPreinitialize():void
 			{
+				_feathersHeader = new ProjectViewHeader();
+				_feathersHeader.addEventListener("scrollFromSource", onScrollFromSource);
+				_feathersHeader.addEventListener(Event.CLOSE, handleClose);
+
 				_feathersTreeView = new feathers.controls.TreeView();
 				_feathersTreeView.variant = feathers.controls.TreeView.VARIANT_BORDERLESS;
 				_feathersTreeView.itemToText = function(item:Object):String {
@@ -534,6 +546,30 @@
 
 				setFeathersTreeViewData(model.selectedprojectFolders);
 				model.selectedprojectFolders.addEventListener(CollectionEvent.COLLECTION_CHANGE, onSelectedProjectFoldersChange);
+
+				setFeathersWorkspaceData(WorkspacePlugin.workspacesForViews);
+
+				GlobalEventDispatcher.getInstance().addEventListener(
+						WorkspacePlugin.EVENT_WORKSPACE_CHANGED,
+						onWorkspaceChanged,
+						false, 0, true
+				);
+				onWorkspaceChanged(null);
+			}
+
+			private function onWorkspaceChanged(event:Event):void
+			{
+				if (_feathersHeader.workspaces == null) {
+					return;
+				}
+				for each (var workspace:WorkspaceVO in WorkspacePlugin.workspacesForViews.source)
+				{
+					if (workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE)
+					{
+						_feathersHeader.selectedWorkspace = workspace;
+						break;
+					}
+				}
 			}
 
 			private function onSelectedProjectFoldersChange(event:CollectionEvent):void
@@ -541,7 +577,13 @@
 				setFeathersTreeViewData(model.selectedprojectFolders);
 			}
 
-			private function setFeathersTreeViewData(folders:ArrayCollection):void
+			private function setFeathersWorkspaceData(workspaces:mx.collections.ArrayList):void
+			{
+				var roots:Array = workspaces.source.slice();
+				_feathersHeader.workspaces = new feathers.data.ArrayCollection(roots);
+			}
+
+			private function setFeathersTreeViewData(folders:mx.collections.ArrayCollection):void
 			{
 				var roots:Array = folders.source.slice();
 				_feathersTreeView.dataProvider = new FileWrapperHierarchicalCollection(roots);
@@ -614,11 +656,6 @@
 				// this may return the item to find, or it might return a
 				// different object that has the same native path
 				return _feathersTreeView.dataProvider.get(location) as FileWrapper;
-			}
-	
-			private function initHeader():void
-			{
-				header.addEventListener(TabViewTab.EVENT_TAB_CLOSE, handleClose);
 			}
 	
 			private function handleClose(event:Event):void
@@ -796,12 +833,9 @@
 		]]>
 	</mx:Script>
 
-	<project:ProjectViewHeader id="header"
-							   label="{'Workspace: '+ ConstantsCoreVO.CURRENT_WORKSPACE}"
-							   showScrollFromSourceIcon="true"
-							   width="100%"
-							   scrollFromSource="onScrollFromSource(event)"
-							   creationComplete="initHeader()" />
+	<ui:FeathersUIWrapper
+		feathersUIControl="{_feathersHeader}"
+		width="100%"/>
 
 	<ui:FeathersUIWrapper
 			feathersUIControl="{_feathersTreeView}"

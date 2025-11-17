@@ -33,7 +33,8 @@
 
 package moonshine.theme;
 
-import moonshine.style.MoonshineVScrollBarLightThumbSkin;
+import actionScripts.ui.project.ProjectViewHeader;
+import feathers.controls.AssetLoader;
 import feathers.controls.BasicButton;
 import feathers.controls.Button;
 import feathers.controls.ButtonState;
@@ -48,7 +49,6 @@ import feathers.controls.Panel;
 import feathers.controls.PopUpListView;
 import feathers.controls.Radio;
 import feathers.controls.TabBar;
-import feathers.controls.TextCallout;
 import feathers.controls.TextInput;
 import feathers.controls.TextInputState;
 import feathers.controls.ToggleButton;
@@ -62,6 +62,7 @@ import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
 import feathers.controls.dataRenderers.SortOrderHeaderRenderer;
 import feathers.controls.navigators.TabNavigator;
+import feathers.controls.popups.DropDownPopUpAdapter;
 import feathers.core.DefaultToolTipManager;
 import feathers.layout.HorizontalLayout;
 import feathers.layout.HorizontalLayoutData;
@@ -71,8 +72,6 @@ import feathers.skins.CircleSkin;
 import feathers.skins.RectangleSkin;
 import feathers.skins.TriangleSkin;
 import feathers.style.Theme;
-import openfl.display.Bitmap;
-import openfl.filters.DropShadowFilter;
 import moonshine.components.StandardPopupView;
 import moonshine.plugin.debugadapter.view.DebugAdapterView;
 import moonshine.plugin.debugadapter.view.ThreadOrStackFrameItemRenderer;
@@ -80,6 +79,7 @@ import moonshine.plugin.help.view.TourDeFlexHierarchicalItemRenderer;
 import moonshine.style.MoonshineButtonSkin;
 import moonshine.style.MoonshineControlBarSkin;
 import moonshine.style.MoonshineHScrollBarThumbSkin;
+import moonshine.style.MoonshineVScrollBarLightThumbSkin;
 import moonshine.style.MoonshineVScrollBarThumbSkin;
 import moonshine.theme.SDKInstallerTheme;
 import moonshine.theme.assets.DebugPauseIcon;
@@ -92,7 +92,9 @@ import moonshine.theme.assets.RefreshIcon;
 import moonshine.ui.ResizableTitleWindow;
 import moonshine.ui.SideBarViewHeader;
 import moonshine.ui.TitleWindow;
+import openfl.display.Bitmap;
 import openfl.display.Shape;
+import openfl.filters.DropShadowFilter;
 import openfl.filters.GlowFilter;
 import openfl.geom.Matrix;
 
@@ -127,6 +129,9 @@ class MoonshineTheme extends SDKInstallerTheme {
 	public static final THEME_VARIANT_LIGHT_GRID_VIEW_TABBAR:String = "moonshine-light-grid-view-tabbar";
 	public static final THEME_VARIANT_LIGHT_TAB_NAVIGATOR:String = "moonshine-light-tab-navigator";
 	public static final THEME_VARIANT_LIGHT_VSCROLLBAR:String = "moonshine-light-vscrollbar";
+
+	// used internally only
+	private static final THEME_VARIANT_WORKSPACE_POP_UP_LIST_VIEW_BUTTON:String = "moonshine-workspace-pop-up-list-view-button";
 
 	public static final ASSET_LOGO:String = "/elements/moonshine_logo/logo_new_48.png";
 	public static final ASSET_COPY_ICON:String = "/elements/images/copy_content_icon.png";
@@ -180,6 +185,12 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(VScrollBar, THEME_VARIANT_LIGHT_VSCROLLBAR, setVScrollBarLightStyles);
 
 		this.styleProvider.setStyleFunction(Radio, null, setRadioStyles);
+
+		this.styleProvider.setStyleFunction(ProjectViewHeader, null, setProjectViewHeaderStyles);
+		this.styleProvider.setStyleFunction(PopUpListView, ProjectViewHeader.CHILD_VARIANT_WORKSPACE_LIST_VIEW, setProjectViewHeaderWorkspaceListViewStyles);
+		this.styleProvider.setStyleFunction(Button, THEME_VARIANT_WORKSPACE_POP_UP_LIST_VIEW_BUTTON, setProjectViewHeaderWorkspacePopUpListViewButtonStyles);
+		this.styleProvider.setStyleFunction(Button, ProjectViewHeader.CHILD_VARIANT_CLOSE_BUTTON, setSideBarViewHeaderCloseButtonStyles);
+		this.styleProvider.setStyleFunction(Button, ProjectViewHeader.CHILD_VARIANT_SCROLL_FROM_SOURCE_BUTTON, setProjectViewHeaderScrollFromSourceButtonStyles);
 
 		this.styleProvider.setStyleFunction(SideBarViewHeader, null, setSideBarViewHeaderStyles);
 		this.styleProvider.setStyleFunction(Label, SideBarViewHeader.CHILD_VARIANT_TITLE, setSideBarViewHeaderTitleStyles);
@@ -888,6 +899,128 @@ class MoonshineTheme extends SDKInstallerTheme {
 		scrollBar.paddingRight = 1;
 		scrollBar.paddingTop = 1;
 		scrollBar.paddingBottom = 1;
+	}
+
+	private function setProjectViewHeaderStyles(header:ProjectViewHeader):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = Gradient(LINEAR, [0xF2F2F2, 0xEEEEEE, 0xEEEEEE, 0xD8D8D8], [1.0, 1.0, 1.0, 1.0], [0x00, 0x3F, 0xCF, 0xFF],
+			90.0 * Math.PI / 180.0);
+		backgroundSkin.border = null;
+		header.backgroundSkin = backgroundSkin;
+
+		var layout = new HorizontalLayout();
+		layout.horizontalAlign = LEFT;
+		layout.verticalAlign = MIDDLE;
+		layout.paddingTop = 4.0;
+		layout.paddingRight = 6.0;
+		layout.paddingBottom = 4.0;
+		layout.paddingLeft = 6.0;
+		layout.gap = 6.0;
+		header.layout = layout;
+	}
+
+	private function setProjectViewHeaderWorkspaceListViewStyles(listView:PopUpListView):Void {
+		listView.popUpAdapter = new DropDownPopUpAdapter();
+		listView.layoutData = HorizontalLayoutData.fillHorizontal();
+		listView.customButtonVariant = THEME_VARIANT_WORKSPACE_POP_UP_LIST_VIEW_BUTTON;
+	}
+
+	private function setProjectViewHeaderWorkspacePopUpListViewButtonStyles(button:Button):Void {
+		var backgroundSkin = new MoonshineButtonSkin();
+		backgroundSkin.outerBorderFill = SolidColor(MoonshineColor.GREY_FC);
+		backgroundSkin.outerBorderSize = 1.0;
+		backgroundSkin.outerBorderRadius = 6.0;
+		backgroundSkin.innerBorderFill = SolidColor(MoonshineColor.GREY_D3);
+		backgroundSkin.innerBorderSize = 1.0;
+		backgroundSkin.innerBorderRadius = 4.0;
+		backgroundSkin.fill = Gradient(LINEAR, [0xF9F9F7, 0xF9F9F7, 0xEFEFED, 0xEFEFED], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		backgroundSkin.borderRadius = 4.0;
+		backgroundSkin.filters = [new GlowFilter(MoonshineColor.GREY_E5, 1.0, 2.0, 2.0, 3.0)];
+		button.backgroundSkin = backgroundSkin;
+
+		var hoverSkin = new MoonshineButtonSkin();
+		hoverSkin.outerBorderFill = SolidColor(MoonshineColor.GREY_FC);
+		hoverSkin.outerBorderSize = 1.0;
+		hoverSkin.outerBorderRadius = 6.0;
+		hoverSkin.innerBorderFill = SolidColor(MoonshineColor.GREY_D3);
+		hoverSkin.innerBorderSize = 1.0;
+		hoverSkin.innerBorderRadius = 4.0;
+		hoverSkin.fill = Gradient(LINEAR, [0xF9F9F7, 0xF9F9F7, 0xEAEAE8, 0xEAEAE8], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		hoverSkin.borderRadius = 4.0;
+		hoverSkin.filters = [new GlowFilter(MoonshineColor.GREY_E5, 1.0, 2.0, 2.0, 3.0)];
+		button.setSkinForState(HOVER, hoverSkin);
+
+		var downSkin = new MoonshineButtonSkin();
+		downSkin.outerBorderFill = SolidColor(MoonshineColor.GREY_FC);
+		downSkin.outerBorderSize = 1.0;
+		downSkin.outerBorderRadius = 6.0;
+		downSkin.innerBorderFill = SolidColor(MoonshineColor.GREY_D3);
+		downSkin.innerBorderSize = 1.0;
+		downSkin.innerBorderRadius = 4.0;
+		downSkin.fill = Gradient(LINEAR, [0xF1F1F1, 0xF1F1F1, 0xE7E7E7, 0xE7E7E7], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		downSkin.borderRadius = 4.0;
+		downSkin.filters = [new GlowFilter(MoonshineColor.GREY_D, 1.0, 2.0, 2.0, 3.0)];
+		button.setSkinForState(DOWN, downSkin);
+
+		var disabledSkin = new MoonshineButtonSkin();
+		disabledSkin.outerBorderFill = SolidColor(MoonshineColor.GREY_C);
+		disabledSkin.outerBorderSize = 1.0;
+		disabledSkin.outerBorderRadius = 6.0;
+		disabledSkin.innerBorderFill = SolidColor(MoonshineColor.WHITE);
+		disabledSkin.innerBorderSize = 1.0;
+		disabledSkin.innerBorderRadius = 4.0;
+		disabledSkin.fill = Gradient(LINEAR, [0xE1E1E1, 0xE1E1E1, 0xD6D6D6, 0xD6D6D6], [1.0, 1.0, 1.0, 1.0], [0x00, 0x7F, 0x80, 0xFF], Math.PI / 2.0);
+		disabledSkin.borderRadius = 4.0;
+		disabledSkin.alpha = 0.5;
+		disabledSkin.filters = [new GlowFilter(MoonshineColor.GREY_E5, 1.0, 2.0, 2.0, 3.0)];
+		button.setSkinForState(DISABLED, disabledSkin);
+
+		var focusRectSkin = new RectangleSkin();
+		focusRectSkin.fill = null;
+		focusRectSkin.border = SolidColor(1.0, MoonshineColor.PINK_2);
+		focusRectSkin.cornerRadius = 5.0;
+		button.focusRectSkin = focusRectSkin;
+
+		button.textFormat = MoonshineTypography.getGreyTextFormat();
+		button.setTextFormatForState(DISABLED, MoonshineTypography.getDarkOnLightDisabledTextFormat());
+		// button.embedFonts = true;
+
+		button.paddingTop = 4.0;
+		button.paddingRight = 8.0;
+		button.paddingBottom = 4.0;
+		button.paddingLeft = 8.0;
+
+		button.horizontalAlign = LEFT;
+		button.gap = 1.0 / 0.0; // Math.POSITIVE_INFINITY bug workaround
+		button.minGap = 4.0;
+
+		if (button.icon == null) {
+			var icon = new TriangleSkin();
+			icon.pointPosition = BOTTOM;
+			icon.fill = SolidColor(MoonshineColor.GREY_5);
+			icon.disabledFill = SolidColor(MoonshineColor.GREY_9);
+			icon.width = 8.0;
+			icon.height = 4.0;
+			button.icon = icon;
+		}
+
+		button.iconPosition = RIGHT;
+	}
+
+	private function setProjectViewHeaderScrollFromSourceButtonStyles(button:Button):Void {
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.border = None;
+		backgroundSkin.fill = SolidColor(MoonshineColor.PURPLE, 0.0);
+		backgroundSkin.width = 14.0;
+		backgroundSkin.height = 14.0;
+		button.backgroundSkin = backgroundSkin;
+
+		var icon = new AssetLoader();
+		icon.source = "/elements/images/scroll_from_source.png";
+		button.icon = icon;
+
+		button.horizontalAlign = CENTER;
+		button.verticalAlign = MIDDLE;
 	}
 
 	private function setSideBarViewHeaderStyles(header:SideBarViewHeader):Void {

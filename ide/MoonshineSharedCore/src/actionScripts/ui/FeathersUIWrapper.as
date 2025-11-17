@@ -36,6 +36,7 @@ package actionScripts.ui
 	import feathers.core.FeathersControl;
 	import feathers.core.IFocusContainer;
 	import feathers.core.IFocusManager;
+	import feathers.core.IFocusManagerAware;
 	import feathers.core.IFocusObject;
 	import feathers.core.PopUpManager;
 	import feathers.layout.Measurements;
@@ -48,6 +49,7 @@ package actionScripts.ui
 	import flash.events.Event;
 	import flash.events.FocusEvent;
 	import flash.events.MouseEvent;
+	import flash.utils.Dictionary;
 
 	import mx.core.IFlexDisplayObject;
 	import mx.core.UIComponent;
@@ -57,6 +59,8 @@ package actionScripts.ui
 	[DefaultProperty("feathersUIControl")]
 	public class FeathersUIWrapper extends UIComponent implements IFocusManagerContainer, IFocusManagerComplexComponent
 	{
+		private static var _popUpRootsForSystemManagers:Dictionary = new Dictionary(true);
+
 		public function FeathersUIWrapper(feathersUIControl:FeathersControl = null)
 		{
 			super();
@@ -69,7 +73,6 @@ package actionScripts.ui
 
 		private var _feathersUIFocusManager:IFocusManager;
 		private var _feathersUIToolTipManager:DefaultToolTipManager;
-		private var _popUpRoot:Sprite;
 
 		public function get defaultButton():IFlexDisplayObject
 		{
@@ -299,10 +302,12 @@ package actionScripts.ui
 
 		private function initializeAfterAddedToStage():void
 		{
-			if(this._popUpRoot == null) {
-				this._popUpRoot = new Sprite();
-				DisplayObjectContainer(this.systemManager).addChild(this._popUpRoot);
-				PopUpManager.forStage(this.stage).root = this._popUpRoot;
+			var popUpRoot:Sprite = _popUpRootsForSystemManagers[this.systemManager];
+			if(popUpRoot == null) {
+				popUpRoot = new Sprite();
+				DisplayObjectContainer(this.systemManager).addChild(popUpRoot);
+				_popUpRootsForSystemManagers[this.systemManager] = popUpRoot;
+				PopUpManager.forStage(this.systemManager.stage).root = popUpRoot;
 			}
 			
 			this._feathersUIFocusManager = new DefaultFocusManager(this._feathersUIControl);
@@ -369,9 +374,38 @@ package actionScripts.ui
 			if(this.stage != null && this.stage.focus != null && (this.stage.focus == this || this.contains(this.stage.focus))) {
 				return;
 			}
-			if(this._feathersUIFocusManager) {
-				this._feathersUIFocusManager.enabled = false;
+			var focusObject:IFocusObject = this.stage.focus as IFocusObject;
+			if (focusObject != null && focusObject.focusOwner != null && this.contains(DisplayObject(focusObject.focusOwner))) {
+				// the focused object may be on the PopUpManager, but owned by
+				// something that we manage. in that case, we should not
+				// consider our focus lost until after it loses focus.
+				// temporarily pass control to this other handler.
+				focusObject.addEventListener(FocusEvent.FOCUS_OUT, feathersUIWrapper_ownedFocusObject_focusOutHandler);
+				return;
 			}
+			if(this._feathersUIFocusManager != null) {
+				var canDisableFocusManager:Boolean = true;
+				if (this.stage.focus is IFocusManagerAware) {
+					var focusManagerAware:IFocusManagerAware = IFocusManagerAware(this.stage.focus);
+					if (focusManagerAware.focusManager == this._feathersUIFocusManager) {
+						canDisableFocusManager = false;
+					}
+				}
+				if (canDisableFocusManager) {
+					this._feathersUIFocusManager.enabled = false;
+				}
+			}
+		}
+
+		protected function feathersUIWrapper_ownedFocusObject_focusOutHandler(event:FocusEvent):void
+		{
+			var ownedFocusObject:IFocusObject = IFocusObject(event.currentTarget);
+			if(this.stage != null && this.stage.focus != null && (this.stage.focus == ownedFocusObject || (ownedFocusObject is DisplayObjectContainer && DisplayObjectContainer(ownedFocusObject).contains(this.stage.focus)))) {
+				return;
+			}
+			ownedFocusObject.removeEventListener(FocusEvent.FOCUS_OUT, feathersUIWrapper_ownedFocusObject_focusOutHandler);
+			// pass control back to the main focus out handler
+			this.feathersUIWrapper_focusOutHandler(event);
 		}
 
 		protected function feathersUIControl_mouseDownCaptureHandler(event:MouseEvent):void {

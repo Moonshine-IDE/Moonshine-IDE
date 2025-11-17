@@ -1,6 +1,7 @@
+
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//  Copyright (C) STARTcloud, Inc. 2015-2025. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the Server Side Public License, version 1,
@@ -30,22 +31,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package actionScripts.valueObjects;
+package actionScripts.plugin.workspace;
 
-import openfl.display.MovieClip;
-import openfl.display.Bitmap;
+import actionScripts.plugin.settings.ISettingsProvider;
 
-extern class ConstantsCoreVO {
+extern class WorkspacePlugin extends PluginBase implements ISettingsProvider {
+	public static final EVENT_SAVE_AS:String;
+	public static final EVENT_NEW:String;
+	public static final EVENT_LOAD:String;
+	public static final EVENT_WORKSPACE_CHANGED:String;
 
-	public static inline final MOONSHINE_IDE_COPYRIGHT_LABEL:String = "Copyright © STARTcloud, Inc. 2015-2022. All rights reserved.";
-
-	public static var sourceFolderIcon:Class<Bitmap>;
-	public static var loaderIcon:Class<MovieClip>;
-
-	public static var IS_AIR:Bool;
-	public static var MOONSHINE_IDE_LABEL:String;
-	public static var IS_MACOS:Bool;
-	public static var IS_APP_STORE_VERSION:Bool;
-	public static var CURRENT_WORKSPACE:String;
-
+	public static var workspacesForViews:Dynamic;
 }
