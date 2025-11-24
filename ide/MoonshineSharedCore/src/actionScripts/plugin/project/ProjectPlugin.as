@@ -38,6 +38,9 @@ package actionScripts.plugin.project
 	import flash.utils.setTimeout;
 
 	import mx.binding.utils.ChangeWatcher;
+	import mx.collections.ArrayList;
+	import mx.collections.Sort;
+	import mx.collections.SortField;
 	import mx.controls.Alert;
 	import mx.core.FlexGlobals;
 	import mx.events.CloseEvent;
@@ -45,7 +48,8 @@ package actionScripts.plugin.project
 	import mx.events.CollectionEventKind;
 	import mx.managers.PopUpManager;
 
-    import actionScripts.events.AddTabEvent;
+	import actionScripts.data.FileWrapperHierarchicalCollection;
+	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.CustomCommandsEvent;
 	import actionScripts.events.DeleteFileEvent;
 	import actionScripts.events.DuplicateEvent;
@@ -75,6 +79,7 @@ package actionScripts.plugin.project
 	import actionScripts.plugin.settings.vo.ISetting;
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.plugin.templating.TemplatingHelper;
+	import actionScripts.plugin.workspace.WorkspacePlugin;
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.MenuPlugin;
@@ -94,6 +99,8 @@ package actionScripts.plugin.project
 	import components.views.project.OpenResourceView;
 	import components.views.project.ProjectTreeContextMenuItem;
 	import components.views.project.ProjectTreeView;
+
+	import feathers.data.ArrayCollection;
 
 	public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -120,7 +127,6 @@ package actionScripts.plugin.project
 		public function ProjectPlugin()
 		{
 			treeView = new ProjectTreeView();
-			treeView.projects = model.projects;
 			treeView.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
@@ -131,6 +137,8 @@ package actionScripts.plugin.project
 			_activated = true;
 
 			model.projects.addEventListener(CollectionEvent.COLLECTION_CHANGE, handleProjectsChange, false, 0, true);
+			model.selectedprojectFolders.addEventListener(CollectionEvent.COLLECTION_CHANGE, onSelectedProjectFoldersChange);
+			WorkspacePlugin.workspacesForViews.addEventListener(CollectionEvent.COLLECTION_CHANGE, onWorkspacesForViewsChange);
 			
 			dispatcher.addEventListener(ProjectEvent.ADD_PROJECT, handleAddProject);
 			dispatcher.addEventListener(ProjectEvent.REMOVE_PROJECT, handleRemoveProject);
@@ -156,6 +164,18 @@ package actionScripts.plugin.project
 			dispatcher.addEventListener(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, onProjectRenameRequest, false, 0, true);
 			dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onFileNewFolderCreationRequested, false, 0, true);
 			dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, onNewFilesFoldersCopied, false, 0, true);
+
+			model.selectedprojectFolders.removeAll();
+
+			var dataSortField:SortField = new SortField("name", true);
+			var dataSort:Sort = new Sort();
+			dataSort.fields = [dataSortField];
+			model.selectedprojectFolders.sort = dataSort;
+			
+			model.selectedprojectFolders.refresh();
+			
+			setFeathersTreeViewData(model.selectedprojectFolders);
+			setFeathersWorkspaceData(WorkspacePlugin.workspacesForViews);
 		}
 
 		override public function deactivate():void
@@ -178,6 +198,18 @@ package actionScripts.plugin.project
 		public function getSettingsList():Vector.<ISetting>	
 		{
 			return new Vector.<ISetting>();
+		}
+
+		private function setFeathersTreeViewData(folders:mx.collections.ArrayCollection):void
+		{
+			var roots:Array = folders.source.slice();
+			treeView.projects = new FileWrapperHierarchicalCollection(roots);
+		}
+
+		private function setFeathersWorkspaceData(workspaces:ArrayList):void
+		{
+			var roots:Array = workspaces.source.slice();
+			treeView.workspaces = new feathers.data.ArrayCollection(roots);
 		}
 		
 		private function showProjectPanel():void
@@ -794,7 +826,7 @@ package actionScripts.plugin.project
 			{
 				onTmpProjectUpdateFault(null);
 
-				treeView.projects[projectIndex] = tmpProjectVO;
+				model.projects[projectIndex] = tmpProjectVO;
 				model.selectedprojectFolders[projectIndex] = tmpProjectVO.projectFolder;
 				treeView.refreshItem(model.selectedprojectFolders[projectIndex]);
 			}
@@ -1135,11 +1167,11 @@ package actionScripts.plugin.project
 				tmpProject = UtilsCore.getProjectFromProjectFolder(value[0]);
 				UtilsCore.closeAllRelativeEditors(tmpProject ? tmpProject : value[0], (removalType == ProjectTreeContextMenuItem.CLOSE ? false : true), function ():void
 				{
-					for each (var project:ProjectVO in treeView.projects)
+					for each (var project:ProjectVO in model.projects)
 					{
 						if(project.projectFolder.nativePath === value[0].nativePath)
 						{
-							treeView.projects.removeItem(project);
+							model.projects.removeItem(project);
 							dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.REMOVE_PROJECT, project));
 							break;
 						}
@@ -1256,7 +1288,7 @@ package actionScripts.plugin.project
 				}
 				case CollectionEventKind.ADD:
 				{
-					project = treeView.projects.getItemAt(event.location) as ProjectVO;
+					project = model.projects.getItemAt(event.location) as ProjectVO;
 					model.selectedprojectFolders.addItemAt(project.projectFolder, 0);
 					
 					if (((project is AS3ProjectVO) && (project as AS3ProjectVO).isVisualEditorProject))
@@ -1348,6 +1380,16 @@ package actionScripts.plugin.project
 					}
 				}
 			}
+		}
+
+		private function onSelectedProjectFoldersChange(event:CollectionEvent):void
+		{
+			setFeathersTreeViewData(model.selectedprojectFolders);
+		}
+
+		private function onWorkspacesForViewsChange(event:CollectionEvent):void
+		{
+			setFeathersWorkspaceData(WorkspacePlugin.workspacesForViews);
 		}
     }
 }

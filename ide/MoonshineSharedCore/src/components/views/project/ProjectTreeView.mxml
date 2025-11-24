@@ -60,6 +60,7 @@
 			import actionScripts.valueObjects.ConstantsCoreVO;
 			import actionScripts.valueObjects.FileWrapper;
 			import actionScripts.valueObjects.ProjectVO;
+			import actionScripts.valueObjects.WorkspaceVO;
 
 			import feathers.controls.TreeView;
 			import feathers.data.ArrayCollection;
@@ -68,15 +69,8 @@
 
 			import flash.display.DisplayObject;
 
-			import mx.collections.ArrayCollection;
-			import mx.collections.ArrayList;
-			import mx.collections.Sort;
-			import mx.collections.SortField;
-			import mx.events.CollectionEvent;
-			import mx.events.CollectionEventKind;
-			import feathers.data.IFlatCollection;
-			import actionScripts.valueObjects.WorkspaceVO;
-
+			private static const COLLECTION_EVENT_KIND_ADD:String = "add";
+			private static const COLLECTION_EVENT_KIND_RESET:String = "reset";
 			private static const PROPERTY_NAME_KEY:String = "name";
 			private static const PROPERTY_NAME_KEY_VALUE:String = "nativePath";
 
@@ -87,7 +81,6 @@
 	
 			private var templateToCreate:FileLocation;
 	
-			private var _projects:mx.collections.ArrayCollection;
 			private var _refreshActiveProjectTimeout:uint = uint.MAX_VALUE;
 
 			[Bindable]
@@ -148,34 +141,42 @@
 				}
 			}
 
+			private var _projects:FileWrapperHierarchicalCollection;
+
 			[Bindable]
-			public function get projects():mx.collections.ArrayCollection
+			public function get projects():FileWrapperHierarchicalCollection
 			{
 				return _projects;
 			}
 	
-			public function set projects(value:mx.collections.ArrayCollection):void
+			public function set projects(value:FileWrapperHierarchicalCollection):void
 			{
 				_projects = value;
-	
-				// Scrape up all .projectFolders in here
-				var pdirs:Array = [];
-				for (var i:int = 0; i < value.length; i++)
+				if (_feathersTreeView != null)
 				{
-					var project:ProjectVO = value[i];
-					pdirs.push(project.projectFolder);
+					_feathersTreeView.dataProvider = _projects;
 				}
+				if (value != null)
+				{
+					reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_RESET, value.roots.slice());
+				}
+			}
 
-				model.selectedprojectFolders.removeAll();
+			private var _workspaces:ArrayCollection;
 
-				var dataSortField:SortField = new SortField("name", true);
-				var dataSort:Sort = new Sort();
-				dataSort.fields = [dataSortField];
-				model.selectedprojectFolders.sort = dataSort;
-				
-				model.selectedprojectFolders.refresh();
-
-				
+			[Bindable]
+			public function get workspaces():ArrayCollection
+			{
+				return _workspaces;
+			}
+	
+			public function set workspaces(value:ArrayCollection):void
+			{
+				_workspaces = value;
+				if (_feathersHeader != null)
+				{
+					_feathersHeader.workspaces = _workspaces;
+				}
 			}
 
 			public function get activeFile():FileLocation
@@ -312,7 +313,7 @@
 					{
 						// Flex Tree dispatches an add event when opening a
 						// branch, but Feathers does not, so we force it here
-						reopenPreviouslyClosedItems(CollectionEventKind.ADD, item.children.slice());
+						reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_ADD, item.children.slice());
 					}
 				}
 			}
@@ -484,7 +485,7 @@
 			{
 				if(!_feathersTreeView.selectedItem && !orByProjectPath) return null;
 	
-				for (var i:int; i < projects.length; i++)
+				for (var i:int; i < projects.getLength(); i++)
 				{
 					if(!orByProjectPath)
 					{
@@ -501,11 +502,13 @@
 			private function onPreinitialize():void
 			{
 				_feathersHeader = new ProjectViewHeader();
+				_feathersHeader.workspaces = _workspaces;
 				_feathersHeader.addEventListener("scrollFromSource", onScrollFromSource);
 				_feathersHeader.addEventListener(Event.CLOSE, handleClose);
 
 				_feathersTreeView = new feathers.controls.TreeView();
 				_feathersTreeView.variant = feathers.controls.TreeView.VARIANT_BORDERLESS;
+				_feathersTreeView.dataProvider = _projects;
 				_feathersTreeView.itemToText = function(item:Object):String {
 					if ((item is ProjectVO)) {
 						var project:ProjectVO = ProjectVO(item);
@@ -544,11 +547,6 @@
 				_feathersTreeView.addEventListener(TreeViewEvent.ITEM_TRIGGER, fileSingleClickedInTreeView);
 				_feathersTreeView.addEventListener(TreeViewEvent.ITEM_DOUBLE_CLICK, fileDoubleClickedInTreeView);
 
-				setFeathersTreeViewData(model.selectedprojectFolders);
-				model.selectedprojectFolders.addEventListener(CollectionEvent.COLLECTION_CHANGE, onSelectedProjectFoldersChange);
-
-				setFeathersWorkspaceData(WorkspacePlugin.workspacesForViews);
-
 				GlobalEventDispatcher.getInstance().addEventListener(
 						WorkspacePlugin.EVENT_WORKSPACE_CHANGED,
 						onWorkspaceChanged,
@@ -570,24 +568,6 @@
 						break;
 					}
 				}
-			}
-
-			private function onSelectedProjectFoldersChange(event:CollectionEvent):void
-			{
-				setFeathersTreeViewData(model.selectedprojectFolders);
-			}
-
-			private function setFeathersWorkspaceData(workspaces:mx.collections.ArrayList):void
-			{
-				var roots:Array = workspaces.source.slice();
-				_feathersHeader.workspaces = new feathers.data.ArrayCollection(roots);
-			}
-
-			private function setFeathersTreeViewData(folders:mx.collections.ArrayCollection):void
-			{
-				var roots:Array = folders.source.slice();
-				_feathersTreeView.dataProvider = new FileWrapperHierarchicalCollection(roots);
-				reopenPreviouslyClosedItems(CollectionEventKind.RESET, model.selectedprojectFolders.source.slice());
 			}
 
 			private function updateChildrenAndOpenItems(fw:FileWrapper, openItems:Array, newItems:Array):void
@@ -684,7 +664,7 @@
 					{
 						// Flex Tree dispatches an add event when opening a
 						// branch, but Feathers does not, so we force it here
-						reopenPreviouslyClosedItems(CollectionEventKind.ADD, item.children.slice());
+						reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_ADD, item.children.slice());
 					}
 				} 
 				else
@@ -748,10 +728,10 @@
 				var itemsCount:int = model.selectedprojectFolders.length;
 				if (itemsCount > 0)
 				{
-					if (eventKind == CollectionEventKind.ADD || eventKind == CollectionEventKind.RESET)
+					if (eventKind == COLLECTION_EVENT_KIND_ADD || eventKind == COLLECTION_EVENT_KIND_RESET)
 					{
 						itemsCount = items.length;
-						if (eventKind == CollectionEventKind.RESET)
+						if (eventKind == COLLECTION_EVENT_KIND_RESET)
 						{
 							if (itemsCount == 0)
 							{
