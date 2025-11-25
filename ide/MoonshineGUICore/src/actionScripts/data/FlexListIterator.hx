@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//  Copyright (C) STARTcloud, Inc. 2015-2025. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the Server Side Public License, version 1,
@@ -29,16 +29,35 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.utils;
+package actionScripts.data;
 
-import actionScripts.factory.FileLocation;
-import actionScripts.valueObjects.FileWrapper;
-import actionScripts.valueObjects.ProjectVO;
+import mx.collections.IList;
 
-extern class UtilsCore {
-    public static function isNewerVersionSDKThan(olderVersion:Int, sdkPath:String):Bool;
-    public static function isVagrantAvailable():Bool;
-    public static function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO;
-    public static function setProjectMenuType(value:ProjectVO):Void;
-    public static function findFileWrapperAgainstFileLocation(current:FileWrapper, target:FileLocation):FileWrapper;
+/**
+	An iterator for `mx.collections.IList`.
+**/
+class FlexListIterator {
+	final list:IList;
+	var current:Int = 0;
+
+	/**
+		Creates a `FlexListIterator` instance.
+	**/
+	public function new(list:IList) {
+		this.list = list;
+	}
+
+	/**
+		Checks if there is another item in the `IList`.
+	**/
+	public function hasNext():Bool {
+		return current < list.length;
+	}
+
+	/**
+		Gets the next item in the `IList`.
+	**/
+	public function next():Dynamic {
+		return list.getItemAt(current++);
+	}
 }

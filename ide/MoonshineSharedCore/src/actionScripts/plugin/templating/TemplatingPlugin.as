@@ -108,6 +108,7 @@ package actionScripts.plugin.templating
 	import actionScripts.interfaces.IVisualEditorProjectVO;
 	import actionScripts.plugin.ondiskproj.OnDiskProjectPlugin;
 	import actionScripts.utils.TextUtil;
+	import mx.core.UIComponent;
     /*
     Templating plugin
 
@@ -1400,7 +1401,7 @@ package actionScripts.plugin.templating
 					//set the tree selct to domino form folder
 					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
 					var dominoFormFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoFormComponentPopup.wrapperBelongToProject.projectFolder, dominoFormFolderStr);
-					model.mainView.getTreeViewPanel().callLater(function ():void
+					UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 					{
 						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
 					
@@ -1412,7 +1413,7 @@ package actionScripts.plugin.templating
 						// selection
 						model.mainView.getTreeViewPanel().selectedItem = dominoFormFolderWrapper;
 						// scroll-to
-						model.mainView.getTreeViewPanel().callLater(function ():void
+						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
 							model.mainView.getTreeViewPanel().scrollToItem(dominoFormFolderWrapper);
 						});
@@ -1465,7 +1466,7 @@ package actionScripts.plugin.templating
 					//set the tree selct to domino form folder
 					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
 					var dominoSubformFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoSubformComponentPopup.wrapperBelongToProject.projectFolder, dominoSubformFolderStr);
-					model.mainView.getTreeViewPanel().callLater(function ():void
+					UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 					{
 						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
 					
@@ -1477,7 +1478,7 @@ package actionScripts.plugin.templating
 						// selection
 						model.mainView.getTreeViewPanel().selectedItem = dominoSubformFolderWrapper;
 						// scroll-to
-						model.mainView.getTreeViewPanel().callLater(function ():void
+						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
 							model.mainView.getTreeViewPanel().scrollToItem(dominoSubformFolderWrapper);
 						});
@@ -1538,7 +1539,7 @@ package actionScripts.plugin.templating
 					//set the tree selct to domino form folder
 					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
 					var dominoShareFieldFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoSharedFieldComponentPopup.wrapperBelongToProject.projectFolder, dominoShareFieldFolderStr);
-					model.mainView.getTreeViewPanel().callLater(function ():void
+					UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 					{
 						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
 					
@@ -1550,7 +1551,7 @@ package actionScripts.plugin.templating
 						// selection
 						model.mainView.getTreeViewPanel().selectedItem = dominoShareFieldFolderWrapper;
 						// scroll-to
-						model.mainView.getTreeViewPanel().callLater(function ():void
+						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
 							model.mainView.getTreeViewPanel().scrollToItem(dominoShareFieldFolderWrapper);
 						});
@@ -1628,7 +1629,7 @@ package actionScripts.plugin.templating
 						//set the tree selct to domino form folder
 						UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
 						//Alert.show("insideLocation:"+insideLocation.file.fileBridge.nativePath);
-						model.mainView.getTreeViewPanel().callLater(function ():void
+						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
 							var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
 						
@@ -1640,7 +1641,7 @@ package actionScripts.plugin.templating
 							// selection
 							model.mainView.getTreeViewPanel().selectedItem = insideLocation;
 							// scroll-to
-							model.mainView.getTreeViewPanel().callLater(function ():void
+							UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 							{
 								model.mainView.getTreeViewPanel().scrollToItem(insideLocation);
 							});
@@ -1704,7 +1705,7 @@ package actionScripts.plugin.templating
 					//set the tree selct to domino form folder
 					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
 					var dominoViewFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoViewShareColumnPopup.wrapperBelongToProject.projectFolder, dominoViewFolderStr);
-					model.mainView.getTreeViewPanel().callLater(function ():void
+					UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 					{
 						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
 					
@@ -1716,7 +1717,7 @@ package actionScripts.plugin.templating
 						// selection
 						model.mainView.getTreeViewPanel().selectedItem = dominoViewFolderWrapper;
 						// scroll-to
-						model.mainView.getTreeViewPanel().callLater(function ():void
+						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
 							model.mainView.getTreeViewPanel().scrollToItem(dominoViewFolderWrapper);
 						});
@@ -1771,7 +1772,7 @@ package actionScripts.plugin.templating
 					//set the tree selct to domino form folder
 					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
 					var dominoViewFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoViewComponentPopup.wrapperBelongToProject.projectFolder, dominoViewFolderStr);
-					model.mainView.getTreeViewPanel().callLater(function ():void
+					UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 					{
 						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
 					
@@ -1783,7 +1784,7 @@ package actionScripts.plugin.templating
 						// selection
 						model.mainView.getTreeViewPanel().selectedItem = dominoViewFolderWrapper;
 						// scroll-to
-						model.mainView.getTreeViewPanel().callLater(function ():void
+						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
 							model.mainView.getTreeViewPanel().scrollToItem(dominoViewFolderWrapper);
 						});
@@ -1838,7 +1839,7 @@ package actionScripts.plugin.templating
 					//set the tree selct to domino form folder
 					UtilsCore.wrappersFoundThroughFindingAWrapper = new Vector.<FileWrapper>();
 					var dominoPageFolderWrapper:FileWrapper = UtilsCore.findDominoFileWrapperInDepth(newDominoPageComponentPopup.wrapperBelongToProject.projectFolder, dominoPageFolderStr);
-					model.mainView.getTreeViewPanel().callLater(function ():void
+					UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 					{
 						var wrappers:Vector.<FileWrapper> = UtilsCore.wrappersFoundThroughFindingAWrapper;
 					
@@ -1850,7 +1851,7 @@ package actionScripts.plugin.templating
 						// selection
 						model.mainView.getTreeViewPanel().selectedItem = dominoPageFolderWrapper;
 						// scroll-to
-						model.mainView.getTreeViewPanel().callLater(function ():void
+						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
 							model.mainView.getTreeViewPanel().scrollToItem(dominoPageFolderWrapper);
 						});

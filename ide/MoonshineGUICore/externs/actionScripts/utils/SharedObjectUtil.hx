@@ -31,14 +31,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package actionScripts.utils;
 
-import actionScripts.factory.FileLocation;
-import actionScripts.valueObjects.FileWrapper;
-import actionScripts.valueObjects.ProjectVO;
+import openfl.net.SharedObject;
 
-extern class UtilsCore {
-    public static function isNewerVersionSDKThan(olderVersion:Int, sdkPath:String):Bool;
-    public static function isVagrantAvailable():Bool;
-    public static function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO;
-    public static function setProjectMenuType(value:ProjectVO):Void;
-    public static function findFileWrapperAgainstFileLocation(current:FileWrapper, target:FileLocation):FileWrapper;
+extern class SharedObjectUtil {
+	public static function getMoonshineIDEProjectSO(name:String):SharedObject;
+	public static function saveProjectTreeItemForOpen(item:Dynamic, propertyNameKey:String,
+            propertyNameKeyValue:String):Void;
+	public static function removeProjectTreeItemFromOpenedItems(item:Dynamic, propertyNameKey:String,
+			propertyNameKeyValue:String):Void;
 }

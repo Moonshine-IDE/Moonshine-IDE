@@ -84,13 +84,13 @@ package actionScripts.plugins.as3project.mxmlc
 	import actionScripts.valueObjects.WebBrowserVO;
 	
 	import components.popup.SelectOpenedProject;
-	import components.views.project.ProjectTreeView;
 	
 	import flashx.textLayout.elements.LinkElement;
 	import flashx.textLayout.elements.ParagraphElement;
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
 	import flash.utils.clearTimeout;
+	import actionScripts.ui.project.ProjectTreeView;
 
     public class MXMLCJavaScriptPlugin extends MXMLCPluginBase implements ISettingsProvider
 	{

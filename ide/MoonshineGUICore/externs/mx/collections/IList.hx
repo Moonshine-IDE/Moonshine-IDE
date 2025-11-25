@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//  Copyright (C) STARTcloud, Inc. 2015-2025. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the Server Side Public License, version 1,
@@ -29,16 +29,23 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.utils;
+package mx.collections;
 
-import actionScripts.factory.FileLocation;
-import actionScripts.valueObjects.FileWrapper;
-import actionScripts.valueObjects.ProjectVO;
+import openfl.events.IEventDispatcher;
 
-extern class UtilsCore {
-    public static function isNewerVersionSDKThan(olderVersion:Int, sdkPath:String):Bool;
-    public static function isVagrantAvailable():Bool;
-    public static function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO;
-    public static function setProjectMenuType(value:ProjectVO):Void;
-    public static function findFileWrapperAgainstFileLocation(current:FileWrapper, target:FileLocation):FileWrapper;
+extern interface IList extends IEventDispatcher {
+
+    @:flash.property
+    public var length(default, never):Int;
+
+	public function addItem(item:Dynamic):Void;
+	public function addItemAt(item:Dynamic, index:Int):Void;
+	public function getItemAt(index:Int, prefetch:Int = 0):Dynamic;
+	public function getItemIndex(item:Dynamic):Int;
+	public function itemUpdated(item:Dynamic, property:Dynamic = null, oldValue:Dynamic = null, newValue:Dynamic = null):Void;
+	public function removeAll():Void;
+	public function removeItemAt(index:Int):Dynamic;
+	public function setItemAt(item:Dynamic, index:Int):Void;
+	public function toArray():Array<Dynamic>;
+
 }

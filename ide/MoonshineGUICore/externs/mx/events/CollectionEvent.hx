@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//  Copyright (C) STARTcloud, Inc. 2015-2025. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the Server Side Public License, version 1,
@@ -29,16 +29,16 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.utils;
 
-import actionScripts.factory.FileLocation;
-import actionScripts.valueObjects.FileWrapper;
-import actionScripts.valueObjects.ProjectVO;
+package mx.events;
 
-extern class UtilsCore {
-    public static function isNewerVersionSDKThan(olderVersion:Int, sdkPath:String):Bool;
-    public static function isVagrantAvailable():Bool;
-    public static function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO;
-    public static function setProjectMenuType(value:ProjectVO):Void;
-    public static function findFileWrapperAgainstFileLocation(current:FileWrapper, target:FileLocation):FileWrapper;
+import openfl.events.Event;
+
+class CollectionEvent extends Event {
+	public static final COLLECTION_CHANGE:String = "collectionChange";
+
+	public var kind:String;
+	public var location:Int;
+	public var oldLocation:Int;
+	public var items:Array<Dynamic>;
 }

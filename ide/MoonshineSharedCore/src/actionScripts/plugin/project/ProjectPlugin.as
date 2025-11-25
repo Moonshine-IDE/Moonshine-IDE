@@ -98,9 +98,10 @@ package actionScripts.plugin.project
 	import components.popup.RunCommandPopup;
 	import components.views.project.OpenResourceView;
 	import components.views.project.ProjectTreeContextMenuItem;
-	import components.views.project.ProjectTreeView;
 
 	import feathers.data.ArrayCollection;
+	import actionScripts.ui.project.ProjectTreeView;
+	import actionScripts.data.FlexListCollection;
 
 	public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -203,13 +204,14 @@ package actionScripts.plugin.project
 		private function setFeathersTreeViewData(folders:mx.collections.ArrayCollection):void
 		{
 			var roots:Array = folders.source.slice();
-			treeView.projects = new FileWrapperHierarchicalCollection(roots);
+			treeView.dataProvider = new FileWrapperHierarchicalCollection(roots);
+
+			treeView.projects = new FlexListCollection(model.projects);
 		}
 
 		private function setFeathersWorkspaceData(workspaces:ArrayList):void
 		{
-			var roots:Array = workspaces.source.slice();
-			treeView.workspaces = new feathers.data.ArrayCollection(roots);
+			treeView.workspaces = new FlexListCollection(workspaces);
 		}
 		
 		private function showProjectPanel():void

@@ -71,7 +71,6 @@ package actionScripts.ui.editor
 
     import components.popup.FileSavePopup;
     import components.popup.SelectOpenedProject;
-    import components.views.project.ProjectTreeView;
 
     import feathers.graphics.FillStyle;
     import feathers.skins.RectangleSkin;
@@ -90,6 +89,7 @@ package actionScripts.ui.editor
     import moonshine.editor.text.syntax.format.SyntaxColorSettings;
     import moonshine.editor.text.syntax.format.SyntaxFontSettings;
     import moonshine.editor.text.syntax.parser.PlainTextLineParser;
+    import actionScripts.ui.project.ProjectTreeView;
 
     public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{

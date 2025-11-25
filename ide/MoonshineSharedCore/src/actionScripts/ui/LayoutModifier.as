@@ -46,8 +46,7 @@ package actionScripts.ui
 	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	
-	import components.views.project.ProjectTreeView;
+	import actionScripts.ui.project.ProjectTreeView;
 
 	public class LayoutModifier
 	{
@@ -95,7 +94,8 @@ package actionScripts.ui
 		
 		public static function attachSidebarSections(treeView:ProjectTreeView):void
 		{
-			model.mainView.addPanel(treeView);
+			var treeViewWrapper:ProjectTreeViewWrapper = new ProjectTreeViewWrapper(treeView);
+			model.mainView.addPanel(treeViewWrapper);
 			
 			// if restarted for next time
 			if (sidebarChildren)
@@ -109,7 +109,7 @@ package actionScripts.ui
 					{
 						case "TreeView":
 							isTreeViewAttempted = true;
-							treeView.percentHeight = sidebarChildren[i].height;
+							treeViewWrapper.percentHeight = sidebarChildren[i].height;
 							break;
 						case "DebugAdapterView":
 							dispatcher.dispatchEvent(new GeneralEvent(ConstantsCoreVO.EVENT_SHOW_DEBUG_VIEW, sidebarChildren[i].height));
@@ -144,12 +144,12 @@ package actionScripts.ui
 					if (childWithLargestHeight) 
 					{
 						childWithLargestHeight.percentHeight = childWithLargestHeight.percentHeight / 2;
-						treeView.percentHeight = childWithLargestHeight.percentHeight;
+						treeViewWrapper.percentHeight = childWithLargestHeight.percentHeight;
 					}
 				}
 				else if (!isTreeViewAttempted && model.mainView.sidebar.numChildren == 1) 
 				{
-					treeView.percentHeight = 100;
+					treeViewWrapper.percentHeight = 100;
 				}
 				
 				isSidebarCreated = true;
@@ -367,5 +367,16 @@ package actionScripts.ui
 				applicationSize = FlexGlobals.topLevelApplication.stage.nativeWindow.width +":"+ FlexGlobals.topLevelApplication.stage.nativeWindow.height;
 			}
 		}
+	}
+}
+
+import actionScripts.ui.IPanelWindow;
+import actionScripts.ui.FeathersUIWrapper;
+import feathers.core.FeathersControl;
+
+class ProjectTreeViewWrapper extends FeathersUIWrapper implements IPanelWindow {
+	public function ProjectTreeViewWrapper(feathersUIControl:FeathersControl) {
+		super(feathersUIControl);
+		percentWidth = 100.0;
 	}
 }

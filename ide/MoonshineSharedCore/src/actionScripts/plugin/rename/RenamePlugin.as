@@ -76,6 +76,8 @@ package actionScripts.plugin.rename
 
 	import actionScripts.utils.DominoUtils;
 	import actionScripts.plugins.ui.editor.DominoViewEditor;
+	import mx.core.IUIComponent;
+	import mx.core.UIComponent;
 	public class RenamePlugin extends PluginBase
 	{
 		private var renameSymbolViewWrapper:FeathersUIWrapper;
@@ -358,7 +360,7 @@ package actionScripts.plugin.rename
 					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(fileWrapper, null, tmpParent);
 					model.mainView.getTreeViewPanel().selectedItem = tmpFileW;
 					
-					model.mainView.getTreeViewPanel().callLater(function():void
+					UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function():void
 					{
 						model.mainView.getTreeViewPanel().scrollToItem(tmpFileW);
 					});

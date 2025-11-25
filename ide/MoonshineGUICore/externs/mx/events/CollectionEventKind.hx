@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//  Copyright (C) STARTcloud, Inc. 2015-2025. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the Server Side Public License, version 1,
@@ -29,16 +29,15 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-package actionScripts.utils;
 
-import actionScripts.factory.FileLocation;
-import actionScripts.valueObjects.FileWrapper;
-import actionScripts.valueObjects.ProjectVO;
+package mx.events;
 
-extern class UtilsCore {
-    public static function isNewerVersionSDKThan(olderVersion:Int, sdkPath:String):Bool;
-    public static function isVagrantAvailable():Bool;
-    public static function getProjectFromProjectFolder(projectFolder:FileWrapper):ProjectVO;
-    public static function setProjectMenuType(value:ProjectVO):Void;
-    public static function findFileWrapperAgainstFileLocation(current:FileWrapper, target:FileLocation):FileWrapper;
+class CollectionEventKind {
+	public static final ADD:String = "add";
+	public static final MOVE:String = "move";
+	public static final REFRESH:String = "refresh";
+	public static final REMOVE:String = "remove";
+	public static final REPLACE:String = "replace";
+	public static final RESET:String = "reset";
+	public static final UPDATE:String = "update";
 }

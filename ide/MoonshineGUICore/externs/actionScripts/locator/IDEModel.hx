@@ -69,6 +69,7 @@ extern class IDEModel {
 	public var userSavedSDKs:ArrayCollection;
 	public var vagrantPath:String;
     public var virtualBoxPath:String;
+	public var selectedprojectFolders:Dynamic;
 
 	public function getVersionWithBuildNumber():String;
 }

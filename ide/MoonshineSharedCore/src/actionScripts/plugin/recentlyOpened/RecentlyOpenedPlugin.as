@@ -66,8 +66,7 @@ package actionScripts.plugin.recentlyOpened
 	import actionScripts.valueObjects.ProjectReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.SDKReferenceVO;
-	
-	import components.views.project.ProjectTreeView;
+	import actionScripts.ui.project.ProjectTreeView;
 
 	public class RecentlyOpenedPlugin extends PluginBase implements IMenuPlugin
 	{

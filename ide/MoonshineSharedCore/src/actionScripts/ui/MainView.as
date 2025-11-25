@@ -47,9 +47,9 @@ package actionScripts.ui
     import actionScripts.ui.tabview.TabView;
     import actionScripts.valueObjects.ConstantsCoreVO;
     
-    import components.views.project.ProjectTreeView;
     import components.views.splashscreen.SplashScreen;
     import actionScripts.plugin.fullscreen.events.FullscreenEvent;
+    import actionScripts.ui.project.ProjectTreeView;
 
     // TODO: Make this an all-in-one flexible layout thing
 	public class MainView extends VBox

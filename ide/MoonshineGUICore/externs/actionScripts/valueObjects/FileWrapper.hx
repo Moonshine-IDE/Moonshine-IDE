@@ -77,4 +77,6 @@ extern class FileWrapper {
 	public var sourceController:ISourceControlProvider;
 
 	public function updateChildren():Void;
+
+	public function sortChildren():Void;
 }

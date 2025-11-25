@@ -40,4 +40,5 @@ extern class ProjectVO {
 	public var projectFolder:FileWrapper;
 	public var sourceFolder:FileLocation;
 	public var menuType:String;
+	public var folderPath:String;
 }
