@@ -5,7 +5,6 @@ import actionScripts.events.GlobalEventDispatcher;
 import actionScripts.events.OpenFileEvent;
 import actionScripts.events.ProjectEvent;
 import actionScripts.factory.FileLocation;
-import actionScripts.plugin.workspace.WorkspacePlugin;
 import actionScripts.ui.project.ProjectViewHeader;
 import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
@@ -22,13 +21,12 @@ import feathers.events.TreeViewEvent;
 import feathers.layout.VerticalLayout;
 import feathers.layout.VerticalLayoutData;
 import feathers.utils.DisplayObjectRecycler;
-import moonshine.plugin.workspace.events.WorkspaceEvent;
-import openfl.Lib;
 import openfl.display.DisplayObject;
 import openfl.events.Event;
 import openfl.net.SharedObject;
 
 class ProjectTreeView extends LayoutGroup {
+	public static final WORKSPACE_CHANGE:String = "workspaceChange";
 
 	private static final COLLECTION_EVENT_KIND_ADD:String = "add";
 	private static final COLLECTION_EVENT_KIND_RESET:String = "reset";
@@ -98,6 +96,28 @@ class ProjectTreeView extends LayoutGroup {
 			_treeView.selectedItems = null;
 		}
 		return cast _treeView.selectedItems;
+	}
+
+	private var _selectedWorkspace:WorkspaceVO = null;
+
+	@:flash.property
+	public var selectedWorkspace(get, set):WorkspaceVO;
+
+	private function get_selectedWorkspace():WorkspaceVO
+	{
+		return _selectedWorkspace;
+	}
+
+	private function set_selectedWorkspace(value:WorkspaceVO):WorkspaceVO
+	{
+		if (_selectedWorkspace == value)
+		{
+			return _selectedWorkspace;
+		}
+		_selectedWorkspace = value;
+		setInvalid(SELECTION);
+		dispatchEvent(new Event(WORKSPACE_CHANGE));
+		return _selectedWorkspace;
 	}
 
 	private var _activeFile:FileLocation;
@@ -240,13 +260,6 @@ class ProjectTreeView extends LayoutGroup {
 		_treeView.addEventListener(Event.CHANGE, onTreeViewChange);
 		_treeView.addEventListener(TreeViewEvent.ITEM_DOUBLE_CLICK, fileDoubleClickedInTreeView);
 		addChild(_treeView);
-
-		dispatcher.addEventListener(
-				WorkspacePlugin.EVENT_WORKSPACE_CHANGED,
-				onWorkspaceChanged,
-				false, 0, true
-		);
-		onWorkspaceChanged(null);
 	}
 
 	public function isItemVisible(item:Any):Bool
@@ -525,22 +538,17 @@ class ProjectTreeView extends LayoutGroup {
 		return null;
 	}
 
-	private function onWorkspaceChanged(event:Event):Void
+	override private function update():Void
 	{
-		if (_header.workspaces == null) {
-			return;
-		}
-		for (workspace in _workspaces)
+		var dataInvalid = isInvalid(DATA);
+		var selectionInvalid = isInvalid(SELECTION);
+
+		if (dataInvalid || selectionInvalid)
 		{
-			if (workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE)
-			{
-				var oldIgnoreWorkspaceChange = _ignoreWorkspaceChange;
-				_ignoreWorkspaceChange = true;
-				_header.selectedWorkspace = workspace;
-				_ignoreWorkspaceChange = oldIgnoreWorkspaceChange;
-				break;
-			}
+			_header.selectedWorkspace = _selectedWorkspace;
 		}
+
+		super.update();
 	}
 
 	private function updateChildrenAndOpenItems(fw:FileWrapper, openItems:Array<FileWrapper>, newItems:Array<FileWrapper>):Void
@@ -621,9 +629,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (_ignoreWorkspaceChange || _header.selectedWorkspace == null) {
 			return;
 		}
-		dispatcher.dispatchEvent(
-			new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, _header.selectedWorkspace.label)
-		);
+		selectedWorkspace = _header.selectedWorkspace;
 	}
 
 	private function onTreeViewChange(event:Event):Void {

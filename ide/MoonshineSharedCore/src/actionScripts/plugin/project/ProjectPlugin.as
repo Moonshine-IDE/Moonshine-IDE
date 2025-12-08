@@ -49,6 +49,7 @@ package actionScripts.plugin.project
 	import mx.managers.PopUpManager;
 
 	import actionScripts.data.FileWrapperHierarchicalCollection;
+	import actionScripts.data.FlexListCollection;
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.CustomCommandsEvent;
 	import actionScripts.events.DeleteFileEvent;
@@ -80,9 +81,11 @@ package actionScripts.plugin.project
 	import actionScripts.plugin.settings.vo.SettingsWrapper;
 	import actionScripts.plugin.templating.TemplatingHelper;
 	import actionScripts.plugin.workspace.WorkspacePlugin;
+	import actionScripts.ui.IPanelWindow;
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.MenuPlugin;
+	import actionScripts.ui.project.ProjectTreeView;
 	import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.FileCoreUtil;
@@ -93,16 +96,14 @@ package actionScripts.plugin.project
 	import actionScripts.valueObjects.ProjectReferenceVO;
 	import actionScripts.valueObjects.ProjectVO;
 	import actionScripts.valueObjects.URLDescriptorVO;
+	import actionScripts.valueObjects.WorkspaceVO;
 
 	import components.popup.NewFolderPopup;
 	import components.popup.RunCommandPopup;
 	import components.views.project.OpenResourceView;
 	import components.views.project.ProjectTreeContextMenuItem;
 
-	import feathers.data.ArrayCollection;
-	import actionScripts.ui.project.ProjectTreeView;
-	import actionScripts.data.FlexListCollection;
-	import actionScripts.ui.IPanelWindow;
+	import moonshine.plugin.workspace.events.WorkspaceEvent;
 
 	public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -126,11 +127,14 @@ package actionScripts.plugin.project
 		private var _refreshDebounceTimeoutID:uint = uint.MAX_VALUE;
 		private var _refreshQueue:Array = [];
 
+		private var _ignoreSelectedWorkspaceChange:Boolean = false;
+
 		public function ProjectPlugin()
 		{
 			treeView = new ProjectTreeView();
 			treeView.addEventListener(Event.CHANGE, onTreeViewChange);
 			treeView.addEventListener(Event.CLOSE, onTreeViewClose);
+			treeView.addEventListener(ProjectTreeView.WORKSPACE_CHANGE, onTreeViewWorkspaceChange);
 			treeView.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
@@ -168,6 +172,13 @@ package actionScripts.plugin.project
 			dispatcher.addEventListener(RenameApplicationEvent.RENAME_APPLICATION_FOLDER, onProjectRenameRequest, false, 0, true);
 			dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILE_CREATED, onFileNewFolderCreationRequested, false, 0, true);
 			dispatcher.addEventListener(TreeMenuItemEvent.NEW_FILES_FOLDERS_COPIED, onNewFilesFoldersCopied, false, 0, true);
+
+			dispatcher.addEventListener(
+					WorkspacePlugin.EVENT_WORKSPACE_CHANGED,
+					onWorkspaceChanged,
+					false, 0, true
+			);
+			onWorkspaceChanged(null);
 
 			model.selectedprojectFolders.removeAll();
 
@@ -635,6 +646,16 @@ package actionScripts.plugin.project
 				return;
 			}
 			LayoutModifier.removeFromSidebar(treeView.parent as IPanelWindow);
+		}
+
+		private function onTreeViewWorkspaceChange(event:Event):void
+		{
+			if (treeView.selectedWorkspace)
+			{
+				dispatcher.dispatchEvent(
+					new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, treeView.selectedWorkspace.label)
+				);
+			}
 		}
 
 		private function refreshActiveProject(file:FileLocation):void
@@ -1424,6 +1445,21 @@ package actionScripts.plugin.project
 						model.selectedprojectFolders.removeItemAt(i);
 						i--;
 					}
+				}
+			}
+		}
+
+		private function onWorkspaceChanged(event:Event):void
+		{
+			for each (var workspace:WorkspaceVO in WorkspacePlugin.workspacesForViews.source)
+			{
+				if (workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE)
+				{
+					var oldIgnoreSelectedWorkspaceChange:Boolean = _ignoreSelectedWorkspaceChange
+					_ignoreSelectedWorkspaceChange = true;
+					treeView.selectedWorkspace = workspace;
+					_ignoreSelectedWorkspaceChange = oldIgnoreSelectedWorkspaceChange;
+					break;
 				}
 			}
 		}
