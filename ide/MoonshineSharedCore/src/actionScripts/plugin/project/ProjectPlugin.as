@@ -102,6 +102,7 @@ package actionScripts.plugin.project
 	import feathers.data.ArrayCollection;
 	import actionScripts.ui.project.ProjectTreeView;
 	import actionScripts.data.FlexListCollection;
+	import actionScripts.ui.IPanelWindow;
 
 	public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -129,6 +130,7 @@ package actionScripts.plugin.project
 		{
 			treeView = new ProjectTreeView();
 			treeView.addEventListener(Event.CHANGE, onTreeViewChange);
+			treeView.addEventListener(Event.CLOSE, onTreeViewClose);
 			treeView.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
@@ -624,6 +626,15 @@ package actionScripts.plugin.project
 			{
 				refreshActiveProject(treeView.selectedItem.file);
 			}
+		}
+
+		private function onTreeViewClose(event:Event):void
+		{
+			if (treeView.stage == null)
+			{
+				return;
+			}
+			LayoutModifier.removeFromSidebar(treeView.parent as IPanelWindow);
 		}
 
 		private function refreshActiveProject(file:FileLocation):void

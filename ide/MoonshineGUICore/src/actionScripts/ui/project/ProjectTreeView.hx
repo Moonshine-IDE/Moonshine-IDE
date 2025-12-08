@@ -6,7 +6,6 @@ import actionScripts.events.OpenFileEvent;
 import actionScripts.events.ProjectEvent;
 import actionScripts.factory.FileLocation;
 import actionScripts.plugin.workspace.WorkspacePlugin;
-import actionScripts.ui.LayoutModifier;
 import actionScripts.ui.project.ProjectViewHeader;
 import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
@@ -615,7 +614,7 @@ class ProjectTreeView extends LayoutGroup {
 
 	private function handleClose(event:Event):Void
 	{
-		if(stage != null) LayoutModifier.removeFromSidebar(cast(this.parent, IPanelWindow));
+		dispatchEvent(new Event(Event.CLOSE));
 	}
 
 	private function handleWorkspaceChange(event:Event):Void {
