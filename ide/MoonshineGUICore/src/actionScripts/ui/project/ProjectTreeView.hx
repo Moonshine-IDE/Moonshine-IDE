@@ -3,7 +3,6 @@ package actionScripts.ui.project;
 import actionScripts.data.FileWrapperHierarchicalCollection;
 import actionScripts.events.GlobalEventDispatcher;
 import actionScripts.events.OpenFileEvent;
-import actionScripts.events.ProjectEvent;
 import actionScripts.factory.FileLocation;
 import actionScripts.ui.project.ProjectViewHeader;
 import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
@@ -27,6 +26,7 @@ import openfl.net.SharedObject;
 
 class ProjectTreeView extends LayoutGroup {
 	public static final WORKSPACE_CHANGE:String = "workspaceChange";
+	public static final SCROLL_FROM_SOURCE:String = "scrollFromSource";
 
 	private static final COLLECTION_EVENT_KIND_ADD:String = "add";
 	private static final COLLECTION_EVENT_KIND_RESET:String = "reset";
@@ -213,7 +213,7 @@ class ProjectTreeView extends LayoutGroup {
 		_header = new ProjectViewHeader();
 		_header.layoutData = VerticalLayoutData.fillHorizontal();
 		_header.workspaces = _workspaces;
-		_header.addEventListener("scrollFromSource", onScrollFromSource);
+		_header.addEventListener(SCROLL_FROM_SOURCE, onHeaderScrollFromSource);
 		_header.addEventListener(Event.CLOSE, handleClose);
 		_header.addEventListener(Event.CHANGE, handleWorkspaceChange);
 		addChild(_header);
@@ -681,9 +681,9 @@ class ProjectTreeView extends LayoutGroup {
 		removeFromOpenedItems(event.state.data);
 	}
 
-	private function onScrollFromSource(event:Event):Void
+	private function onHeaderScrollFromSource(event:Event):Void
 	{
-		dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SCROLL_FROM_SOURCE));
+		dispatchEvent(new Event(SCROLL_FROM_SOURCE));
 	}
 
 	private function reopenPreviouslyClosedItems(eventKind:String, items:Array<Any>):Void

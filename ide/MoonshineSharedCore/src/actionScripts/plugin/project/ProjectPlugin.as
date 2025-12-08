@@ -135,6 +135,7 @@ package actionScripts.plugin.project
 			treeView.addEventListener(Event.CHANGE, onTreeViewChange);
 			treeView.addEventListener(Event.CLOSE, onTreeViewClose);
 			treeView.addEventListener(ProjectTreeView.WORKSPACE_CHANGE, onTreeViewWorkspaceChange);
+			treeView.addEventListener(ProjectTreeView.SCROLL_FROM_SOURCE, onTreeViewScrollFromSource);
 			treeView.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
@@ -656,6 +657,11 @@ package actionScripts.plugin.project
 					new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, treeView.selectedWorkspace.label)
 				);
 			}
+		}
+
+		private function onTreeViewScrollFromSource(event:Event):void
+		{
+			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SCROLL_FROM_SOURCE));
 		}
 
 		private function refreshActiveProject(file:FileLocation):void
