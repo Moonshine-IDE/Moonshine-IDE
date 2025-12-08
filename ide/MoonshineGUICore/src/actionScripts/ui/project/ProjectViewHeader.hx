@@ -32,14 +32,12 @@
 
 package actionScripts.ui.project;
 
-import actionScripts.events.GlobalEventDispatcher;
 import actionScripts.valueObjects.WorkspaceVO;
 import feathers.controls.Button;
 import feathers.controls.LayoutGroup;
 import feathers.controls.PopUpListView;
 import feathers.data.IFlatCollection;
 import feathers.events.TriggerEvent;
-import moonshine.plugin.workspace.events.WorkspaceEvent;
 import openfl.events.Event;
 
 @:meta(Event(name="scrollFromSource",type="flash.events.Event"))
@@ -111,6 +109,7 @@ class ProjectViewHeader extends LayoutGroup {
 		}
 		_selectedWorkspace = value;
 		setInvalid(SELECTION);
+		dispatchEvent(new Event(Event.CHANGE));
 		return _selectedWorkspace;
 	}
 
@@ -152,6 +151,7 @@ class ProjectViewHeader extends LayoutGroup {
 		var selectionInvalid = isInvalid(SELECTION);
 
 		if (dataInvalid || selectionInvalid) {
+			var oldIgnoreWorkspaceChange = _ignoreWorkspaceChange;
 			_ignoreWorkspaceChange = true;
 			workspaceListView.dataProvider = _workspaces;
 			workspaceListView.selectedItem = _selectedWorkspace;
@@ -159,7 +159,7 @@ class ProjectViewHeader extends LayoutGroup {
 			if (index != -1) {
 				workspaceListView.dataProvider.updateAt(index);
 			}
-			_ignoreWorkspaceChange = false;
+			_ignoreWorkspaceChange = oldIgnoreWorkspaceChange;
 			closeButton.visible = closeEnabled;
 			closeButton.includeInLayout = closeEnabled;
 		}
@@ -179,8 +179,7 @@ class ProjectViewHeader extends LayoutGroup {
 		if (_ignoreWorkspaceChange || workspaceListView.selectedItem == null) {
 			return;
 		}
-		GlobalEventDispatcher.getInstance().dispatchEvent(
-				new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, workspaceListView.selectedItem.label)
-		);
+		_selectedWorkspace = workspaceListView.selectedItem;
+		dispatchEvent(new Event(Event.CHANGE));
 	}
 }

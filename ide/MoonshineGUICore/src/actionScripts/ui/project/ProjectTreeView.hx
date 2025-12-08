@@ -1,14 +1,5 @@
 package actionScripts.ui.project;
 
-import feathers.data.IFlatCollection;
-import openfl.Lib;
-import openfl.net.SharedObject;
-import openfl.events.Event;
-import feathers.layout.VerticalLayoutData;
-import feathers.controls.TreeView;
-import feathers.layout.VerticalLayout;
-import feathers.controls.LayoutGroup;
-
 import actionScripts.data.FileWrapperHierarchicalCollection;
 import actionScripts.events.GlobalEventDispatcher;
 import actionScripts.events.OpenFileEvent;
@@ -26,13 +17,18 @@ import actionScripts.valueObjects.ConstantsCoreVO;
 import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
 import actionScripts.valueObjects.WorkspaceVO;
-
+import feathers.controls.LayoutGroup;
 import feathers.controls.TreeView;
-import feathers.data.ArrayCollection;
+import feathers.data.IFlatCollection;
 import feathers.events.TreeViewEvent;
+import feathers.layout.VerticalLayout;
+import feathers.layout.VerticalLayoutData;
 import feathers.utils.DisplayObjectRecycler;
-
+import moonshine.plugin.workspace.events.WorkspaceEvent;
+import openfl.Lib;
 import openfl.display.DisplayObject;
+import openfl.events.Event;
+import openfl.net.SharedObject;
 
 class ProjectTreeView extends LayoutGroup {
 
@@ -53,6 +49,8 @@ class ProjectTreeView extends LayoutGroup {
 	private var _refreshActiveProjectTimeout:Int = -1;
 
 	private var _ignoreTreeBranchChanges:Bool = false;
+
+	private var _ignoreWorkspaceChange:Bool = false;
 
 	private var _oldActiveEditorFileWrapper:FileWrapper;
 
@@ -203,6 +201,7 @@ class ProjectTreeView extends LayoutGroup {
 		_header.workspaces = _workspaces;
 		_header.addEventListener("scrollFromSource", onScrollFromSource);
 		_header.addEventListener(Event.CLOSE, handleClose);
+		_header.addEventListener(Event.CHANGE, handleWorkspaceChange);
 		addChild(_header);
 
 		_treeView = new TreeView();
@@ -248,7 +247,7 @@ class ProjectTreeView extends LayoutGroup {
 		_treeView.addEventListener(TreeViewEvent.ITEM_DOUBLE_CLICK, fileDoubleClickedInTreeView);
 		addChild(_treeView);
 
-		GlobalEventDispatcher.getInstance().addEventListener(
+		dispatcher.addEventListener(
 				WorkspacePlugin.EVENT_WORKSPACE_CHANGED,
 				onWorkspaceChanged,
 				false, 0, true
@@ -559,7 +558,10 @@ class ProjectTreeView extends LayoutGroup {
 		{
 			if (workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE)
 			{
+				var oldIgnoreWorkspaceChange = _ignoreWorkspaceChange;
+				_ignoreWorkspaceChange = true;
 				_header.selectedWorkspace = workspace;
+				_ignoreWorkspaceChange = oldIgnoreWorkspaceChange;
 				break;
 			}
 		}
@@ -637,6 +639,15 @@ class ProjectTreeView extends LayoutGroup {
 	private function handleClose(event:Event):Void
 	{
 		if(stage != null) LayoutModifier.removeFromSidebar(cast(this.parent, IPanelWindow));
+	}
+
+	private function handleWorkspaceChange(event:Event):Void {
+		if (_ignoreWorkspaceChange || _header.selectedWorkspace == null) {
+			return;
+		}
+		dispatcher.dispatchEvent(
+			new WorkspaceEvent(WorkspaceEvent.LOAD_WORKSPACE_WITH_LABEL, _header.selectedWorkspace.label)
+		);
 	}
 
 	private function fileSingleClickedInTreeView(event:TreeViewEvent):Void
