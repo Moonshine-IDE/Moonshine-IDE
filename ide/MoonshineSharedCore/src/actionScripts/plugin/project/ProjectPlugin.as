@@ -128,6 +128,7 @@ package actionScripts.plugin.project
 		public function ProjectPlugin()
 		{
 			treeView = new ProjectTreeView();
+			treeView.addEventListener(Event.CHANGE, onTreeViewChange);
 			treeView.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
@@ -614,6 +615,32 @@ package actionScripts.plugin.project
 				fileLocation = BasicTextEditor(model.activeEditor).currentFile;
 			}
 			treeView.activeFile = fileLocation;
+			refreshActiveProject(fileLocation);
+		}
+
+		private function onTreeViewChange(event:Event):void
+		{
+			if (treeView.selectedItem)
+			{
+				refreshActiveProject(treeView.selectedItem.file);
+			}
+		}
+
+		private function refreshActiveProject(file:FileLocation):void
+		{
+			if(file == null) return;
+
+			var activeProject:ProjectVO = UtilsCore.getProjectByAnyFilePath(file.fileBridge.nativePath);
+			if(activeProject != null)
+			{
+				if(model.activeProject != activeProject)
+				{
+					model.activeProject = activeProject;
+					UtilsCore.setProjectMenuType(activeProject);
+
+					dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProject));
+				}
+			}
 		}
 	
 		private function handleNewFolderPopupClose(event:CloseEvent):void
@@ -881,7 +908,7 @@ package actionScripts.plugin.project
 				case ProjectTreeContextMenuItem.CLOSE:
 				{
 					onFileDeletedOnServer([fileWrapper], event.menuLabel);
-					treeView.refreshActiveProject(fileWrapper);
+					refreshActiveProject(fileWrapper.file);
 					break;
 				}
 				case ProjectTreeContextMenuItem.DELETE:
@@ -1284,7 +1311,10 @@ package actionScripts.plugin.project
 							catch (e:Error) {}
 						}
 						clearTimeout(timeoutValue);
-						treeView.refreshActiveProject(treeView.selectedItem);
+						if (treeView.selectedItem)
+						{
+							refreshActiveProject(treeView.selectedItem.file);
+						}
 					}, 100);
 					break;
 				}
@@ -1302,7 +1332,10 @@ package actionScripts.plugin.project
 					{
 						treeView.selectedItem = project.projectFolder;
 						clearTimeout(timeoutValue);
-						treeView.refreshActiveProject(treeView.selectedItem);
+						if (treeView.selectedItem)
+						{
+							refreshActiveProject(treeView.selectedItem.file);
+						}
 						if(ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT > 0) ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT--;
 					}, 1000);
 

@@ -5,7 +5,6 @@ import actionScripts.events.GlobalEventDispatcher;
 import actionScripts.events.OpenFileEvent;
 import actionScripts.events.ProjectEvent;
 import actionScripts.factory.FileLocation;
-import actionScripts.locator.IDEModel;
 import actionScripts.plugin.workspace.WorkspacePlugin;
 import actionScripts.ui.LayoutModifier;
 import actionScripts.ui.project.ProjectViewHeader;
@@ -40,13 +39,9 @@ class ProjectTreeView extends LayoutGroup {
 	private var _header:ProjectViewHeader;
 	private var _treeView:TreeView;
 
-	private var model:IDEModel = IDEModel.getInstance();
-
 	private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
 	private var templateToCreate:FileLocation;
-
-	private var _refreshActiveProjectTimeout:Int = -1;
 
 	private var _ignoreTreeBranchChanges:Bool = false;
 
@@ -243,7 +238,7 @@ class ProjectTreeView extends LayoutGroup {
 		});
 		_treeView.addEventListener(TreeViewEvent.BRANCH_OPEN, onTreeViewBranchOpen);
 		_treeView.addEventListener(TreeViewEvent.BRANCH_CLOSE, onTreeViewBranchClose);
-		_treeView.addEventListener(TreeViewEvent.ITEM_TRIGGER, fileSingleClickedInTreeView);
+		_treeView.addEventListener(Event.CHANGE, onTreeViewChange);
 		_treeView.addEventListener(TreeViewEvent.ITEM_DOUBLE_CLICK, fileDoubleClickedInTreeView);
 		addChild(_treeView);
 
@@ -513,23 +508,6 @@ class ProjectTreeView extends LayoutGroup {
 		}
 	}
 
-	public function refreshActiveProject(projectFileWrapper:FileWrapper):Void
-	{
-		if(projectFileWrapper == null) return;
-
-		var activeProject:ProjectVO = UtilsCore.getProjectFromProjectFolder(projectFileWrapper);
-		if(activeProject != null)
-		{
-			if(model.activeProject != activeProject)
-			{
-				model.activeProject = activeProject;
-				UtilsCore.setProjectMenuType(activeProject);
-
-				dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.ACTIVE_PROJECT_CHANGED, activeProject));
-			}
-		}
-	}
-
 	public function getProjectBySelection(orByProjectPath:String = null):ProjectVO
 	{
 		if(!_treeView.selectedItem && (orByProjectPath == null || orByProjectPath.length == 0)) return null;
@@ -649,35 +627,15 @@ class ProjectTreeView extends LayoutGroup {
 		);
 	}
 
-	private function fileSingleClickedInTreeView(event:TreeViewEvent):Void
-	{
-		var item:FileWrapper = Std.downcast(event.state.data, FileWrapper);
-		refreshActiveProject(item);
+	private function onTreeViewChange(event:Event):Void {
+		dispatchEvent(new Event(Event.CHANGE));
 	}
 
 	private function fileDoubleClickedInTreeView(event:TreeViewEvent):Void
 	{
-		/*
-		* @local
-		*/
-		function callRefreshActiveProject(value:FileWrapper):Void
-		{
-			if (_refreshActiveProjectTimeout != -1)
-			{
-				Lib.clearTimeout(_refreshActiveProjectTimeout);
-				_refreshActiveProjectTimeout = -1;
-			}
-			_refreshActiveProjectTimeout = Lib.setTimeout(function():Void
-			{
-				_refreshActiveProjectTimeout = -1;
-				refreshActiveProject(value);
-			}, 300);
-		}
-
 		var item:FileWrapper = Std.downcast(event.state.data, FileWrapper);
 		if(_treeView.dataProvider.isBranch(item))
 		{
-			callRefreshActiveProject(item);
 			// don't ignore tree branch changes here!
 			// this is a user interaction and the opened or closed
 			// folder should be saved
@@ -694,7 +652,6 @@ class ProjectTreeView extends LayoutGroup {
 		{
 			if(item.file.fileBridge.isDirectory || item.isWorking) return;
 
-			callRefreshActiveProject(item);
 			dispatcher.dispatchEvent(
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [item.file], -1, [item])
 			);
