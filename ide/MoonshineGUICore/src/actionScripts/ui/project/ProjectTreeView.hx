@@ -401,7 +401,7 @@ class ProjectTreeView extends LayoutGroup {
 
 	public function refresh(dir:FileLocation, markAsDeletion:Bool = false):Void
 	{
-		var folders:Array<FileWrapper> = model.selectedprojectFolders.source;
+		var folders:Array<FileWrapper> = _dataProvider.roots;
 		var wrappersToSort:Array<FileWrapper> = [];
 		for (fw in folders)
 		{
@@ -553,8 +553,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (_header.workspaces == null) {
 			return;
 		}
-		var workspaces:Array<WorkspaceVO> = WorkspacePlugin.workspacesForViews.source;
-		for (workspace in workspaces)
+		for (workspace in _workspaces)
 		{
 			if (workspace.label == ConstantsCoreVO.CURRENT_WORKSPACE)
 			{
@@ -597,7 +596,7 @@ class ProjectTreeView extends LayoutGroup {
 	private function setSelectedItem(fw:FileWrapper):Void
 	{
 		var filew:FileWrapper = null;
-		var folders:Array<FileWrapper> = model.selectedprojectFolders.source;
+		var folders:Array<FileWrapper> = _dataProvider.roots;
 		if(folders.length > 1)
 		{
 			for (i in 0...folders.length)
@@ -611,7 +610,7 @@ class ProjectTreeView extends LayoutGroup {
 		}
 		else
 		{
-			filew = Std.downcast(model.selectedprojectFolders[0], FileWrapper);
+			filew = Std.downcast(_dataProvider.get([0]), FileWrapper);
 		}
 
 		_treeView.selectedItem = findTreeViewItem(filew);
@@ -727,12 +726,12 @@ class ProjectTreeView extends LayoutGroup {
 
 	private function reopenPreviouslyClosedItems(eventKind:String, items:Array<Any>):Void
 	{
-		if (model.selectedprojectFolders == null || _treeView == null)
+		if (_dataProvider== null || _treeView == null)
 		{
 			return;
 		}
 
-		var itemsCount:Int = model.selectedprojectFolders.length;
+		var itemsCount:Int = _dataProvider.getLength();
 		if (itemsCount > 0)
 		{
 			if (eventKind == COLLECTION_EVENT_KIND_ADD || eventKind == COLLECTION_EVENT_KIND_RESET)
@@ -742,7 +741,7 @@ class ProjectTreeView extends LayoutGroup {
 				{
 					if (itemsCount == 0)
 					{
-						items = model.selectedprojectFolders.source.copy();
+						items = _dataProvider.roots.copy();
 						itemsCount = items.length;
 					}
 				}
