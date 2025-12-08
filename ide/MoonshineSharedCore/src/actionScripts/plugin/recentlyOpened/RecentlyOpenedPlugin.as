@@ -385,7 +385,7 @@ package actionScripts.plugin.recentlyOpened
 			
 			var timeoutValue:uint = setTimeout(function():void{
 				var tmpTreeView:ProjectTreeView = model.mainView.getTreeViewPanel();
-				if (model.activeProject)
+				if (tmpTreeView && model.activeProject)
 				{
 					tmpTreeView.selectedItem = model.activeProject.projectFolder;
                 }
