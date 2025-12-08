@@ -61,6 +61,7 @@ package actionScripts.plugin.project
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.PreviewPluginEvent;
 	import actionScripts.events.ProjectEvent;
+	import actionScripts.events.ProjectTreeViewEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.RefreshVisualEditorSourcesEvent;
 	import actionScripts.events.RenameApplicationEvent;
@@ -134,8 +135,9 @@ package actionScripts.plugin.project
 			treeView = new ProjectTreeView();
 			treeView.addEventListener(Event.CHANGE, onTreeViewChange);
 			treeView.addEventListener(Event.CLOSE, onTreeViewClose);
-			treeView.addEventListener(ProjectTreeView.WORKSPACE_CHANGE, onTreeViewWorkspaceChange);
-			treeView.addEventListener(ProjectTreeView.SCROLL_FROM_SOURCE, onTreeViewScrollFromSource);
+			treeView.addEventListener(ProjectTreeViewEvent.EVENT_WORKSPACE_CHANGE, onTreeViewWorkspaceChange);
+			treeView.addEventListener(ProjectTreeViewEvent.EVENT_SCROLL_FROM_SOURCE, onTreeViewScrollFromSource);
+			treeView.addEventListener(ProjectTreeViewEvent.EVENT_OPEN_FILE, onTreeViewOpenFile);
 			treeView.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
@@ -662,6 +664,14 @@ package actionScripts.plugin.project
 		private function onTreeViewScrollFromSource(event:Event):void
 		{
 			dispatcher.dispatchEvent(new ProjectEvent(ProjectEvent.SCROLL_FROM_SOURCE));
+		}
+
+		private function onTreeViewOpenFile(event:ProjectTreeViewEvent):void
+		{
+			var item:FileWrapper = event.file;
+			dispatcher.dispatchEvent(
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [item.file], -1, [item])
+			);
 		}
 
 		private function refreshActiveProject(file:FileLocation):void

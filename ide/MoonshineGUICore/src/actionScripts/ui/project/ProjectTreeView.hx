@@ -1,8 +1,7 @@
 package actionScripts.ui.project;
 
 import actionScripts.data.FileWrapperHierarchicalCollection;
-import actionScripts.events.GlobalEventDispatcher;
-import actionScripts.events.OpenFileEvent;
+import actionScripts.events.ProjectTreeViewEvent;
 import actionScripts.factory.FileLocation;
 import actionScripts.ui.project.ProjectViewHeader;
 import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
@@ -25,9 +24,6 @@ import openfl.events.Event;
 import openfl.net.SharedObject;
 
 class ProjectTreeView extends LayoutGroup {
-	public static final WORKSPACE_CHANGE:String = "workspaceChange";
-	public static final SCROLL_FROM_SOURCE:String = "scrollFromSource";
-
 	private static final COLLECTION_EVENT_KIND_ADD:String = "add";
 	private static final COLLECTION_EVENT_KIND_RESET:String = "reset";
 	private static final PROPERTY_NAME_KEY:String = "name";
@@ -35,8 +31,6 @@ class ProjectTreeView extends LayoutGroup {
 
 	private var _header:ProjectViewHeader;
 	private var _treeView:TreeView;
-
-	private var dispatcher:GlobalEventDispatcher = GlobalEventDispatcher.getInstance();
 
 	private var templateToCreate:FileLocation;
 
@@ -116,7 +110,7 @@ class ProjectTreeView extends LayoutGroup {
 		}
 		_selectedWorkspace = value;
 		setInvalid(SELECTION);
-		dispatchEvent(new Event(WORKSPACE_CHANGE));
+		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_WORKSPACE_CHANGE));
 		return _selectedWorkspace;
 	}
 
@@ -213,7 +207,7 @@ class ProjectTreeView extends LayoutGroup {
 		_header = new ProjectViewHeader();
 		_header.layoutData = VerticalLayoutData.fillHorizontal();
 		_header.workspaces = _workspaces;
-		_header.addEventListener(SCROLL_FROM_SOURCE, onHeaderScrollFromSource);
+		_header.addEventListener(ProjectTreeViewEvent.EVENT_SCROLL_FROM_SOURCE, onHeaderScrollFromSource);
 		_header.addEventListener(Event.CLOSE, handleClose);
 		_header.addEventListener(Event.CHANGE, handleWorkspaceChange);
 		addChild(_header);
@@ -657,9 +651,7 @@ class ProjectTreeView extends LayoutGroup {
 		{
 			if(item.file.fileBridge.isDirectory || item.isWorking) return;
 
-			dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [item.file], -1, [item])
-			);
+			dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_OPEN_FILE, item));
 		}
 	}
 
@@ -683,7 +675,7 @@ class ProjectTreeView extends LayoutGroup {
 
 	private function onHeaderScrollFromSource(event:Event):Void
 	{
-		dispatchEvent(new Event(SCROLL_FROM_SOURCE));
+		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_SCROLL_FROM_SOURCE));
 	}
 
 	private function reopenPreviouslyClosedItems(eventKind:String, items:Array<Any>):Void

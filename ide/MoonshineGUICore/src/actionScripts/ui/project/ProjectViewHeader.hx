@@ -32,6 +32,7 @@
 
 package actionScripts.ui.project;
 
+import actionScripts.events.ProjectTreeViewEvent;
 import actionScripts.valueObjects.WorkspaceVO;
 import feathers.controls.Button;
 import feathers.controls.LayoutGroup;
@@ -168,7 +169,7 @@ class ProjectViewHeader extends LayoutGroup {
 	}
 
 	private function scrollFromSourceButton_triggerHandler(event:TriggerEvent):Void {
-		dispatchEvent(new Event("scrollFromSource"));
+		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_SCROLL_FROM_SOURCE));
 	}
 
 	private function closeButton_triggerHandler(event:TriggerEvent):Void {
