@@ -368,7 +368,7 @@ class FileWrapperNativeContextMenuProvider {
 	private function updatePasteMenuOption(event:Event):Void
 	{
 		var contextMenuItem:Dynamic = event.target;
-		contextMenuItem.enabled = Clipboard.generalClipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT);
+		contextMenuItem.enabled = #if air Clipboard.generalClipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT) #else false #end;
 		if (contextMenuItem.enabled) contextMenuItem.addEventListener(Event.SELECT, redispatch, false, 0, true);
 	}
 		

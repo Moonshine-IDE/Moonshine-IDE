@@ -419,7 +419,7 @@ class FileWrapperFeathersContextMenuProvider {
 		
 	private function updatePasteMenuOption(contextMenuItem:MenuItem):Void
 	{
-		contextMenuItem.enabled = Clipboard.generalClipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT);
+		contextMenuItem.enabled = #if air Clipboard.generalClipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT) #else false #end;
 	}
 		
 	private function updateOverMultiSelectionOption(contextMenuItem:MenuItem):Void
