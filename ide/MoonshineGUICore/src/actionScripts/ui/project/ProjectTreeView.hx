@@ -366,13 +366,13 @@ class ProjectTreeView extends LayoutGroup {
 		}
 	}
 
-	public function expandChildrenByName(itemPropertyName:String, childrenForOpen:Array<Any>):Void
+	public function expandChildrenByName(itemPropertyName:String, childrenForOpen:Array<String>):Void
 	{
 		var location:Array<Int> = [];
 		var childrenForOpenCount:Int = childrenForOpen.length;
 		for (i in 0...childrenForOpenCount)
 		{
-			var item:Any = childrenForOpen[i];
+			var item:String = childrenForOpen[i];
 			var dataProviderCount:Int = _treeView.dataProvider.getLength(location);
 			for (j in 0...dataProviderCount)
 			{
@@ -388,7 +388,7 @@ class ProjectTreeView extends LayoutGroup {
 					if (_treeView.dataProvider.isBranch(childForOpen)
 							&& !_treeView.isBranchOpen(childForOpen))
 					{
-						saveItemForOpen(childrenForOpen);
+						saveItemForOpen(childForOpen);
 						expandItem(childForOpen, true);
 					}
 
@@ -661,7 +661,11 @@ class ProjectTreeView extends LayoutGroup {
 		{
 			return;
 		}
-		saveItemForOpen(event.state.data);
+		var item:FileWrapper = Std.downcast(event.state.data, FileWrapper);
+		if (item != null)
+		{
+			saveItemForOpen(item);
+		}
 	}
 
 	private function onTreeViewBranchClose(event:TreeViewEvent):Void
@@ -670,7 +674,11 @@ class ProjectTreeView extends LayoutGroup {
 		{
 			return;
 		}
-		removeFromOpenedItems(event.state.data);
+		var item:FileWrapper = cast(event.state.data, FileWrapper);
+		if (item != null)
+		{
+			removeFromOpenedItems(item);
+		}
 	}
 
 	private function onHeaderScrollFromSource(event:Event):Void
@@ -708,12 +716,12 @@ class ProjectTreeView extends LayoutGroup {
 		}
 	}
 
-	private function saveItemForOpen(item:Any):Void
+	private function saveItemForOpen(item:FileWrapper):Void
 	{
 		SharedObjectUtil.saveProjectTreeItemForOpen(item, PROPERTY_NAME_KEY, PROPERTY_NAME_KEY_VALUE);
 	}
 
-	private function removeFromOpenedItems(item:Any):Void
+	private function removeFromOpenedItems(item:FileWrapper):Void
 	{
 		SharedObjectUtil.removeProjectTreeItemFromOpenedItems(item, PROPERTY_NAME_KEY, PROPERTY_NAME_KEY_VALUE);
 	}
