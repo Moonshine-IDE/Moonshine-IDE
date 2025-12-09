@@ -413,11 +413,13 @@ class ProjectTreeView extends LayoutGroup {
 					var tmpFW:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(fw, dir);
 					if(tmpFW != null)
 					{
-						if(_treeView.selectedItem)
+						if(_treeView.selectedItem != null)
 						{
 							var lastSelectedItem:FileWrapper = Std.downcast(_treeView.selectedItem, FileWrapper);
 							if(tmpFW.nativePath == lastSelectedItem.nativePath || lastSelectedItem.nativePath.indexOf(tmpFW.nativePath + tmpFW.file.fileBridge.separator) != -1)
+							{
 								_treeView.selectedItem.isDeleting = markAsDeletion;
+							}
 						}
 						refreshItem(tmpFW);
 						wrappersToSort.push(tmpFW);
@@ -508,7 +510,10 @@ class ProjectTreeView extends LayoutGroup {
 		_treeView.selectedItem = findTreeViewItem(lastSelectedItem);
 
 		// if still there has no selection to the tree
-		if(_treeView.selectedItem == null && lastSelectedItem != null && lastSelectedLocation != null && _treeView.dataProvider.contains(lastSelectedItem))
+		if(_treeView.selectedItem == null
+			&& lastSelectedItem != null
+			&& lastSelectedLocation != null
+			&& _treeView.dataProvider.contains(lastSelectedItem))
 		{
 			_treeView.selectedLocation = lastSelectedLocation;
 		}
@@ -516,16 +521,26 @@ class ProjectTreeView extends LayoutGroup {
 
 	public function getProjectBySelection(orByProjectPath:String = null):ProjectVO
 	{
-		if(!_treeView.selectedItem && (orByProjectPath == null || orByProjectPath.length == 0)) return null;
+		if(!_treeView.selectedItem && (orByProjectPath == null || orByProjectPath.length == 0))
+		{
+			return null;
+		}
 
 		for (i in 0...projects.length)
 		{
 			if(orByProjectPath == null || orByProjectPath.length == 0)
 			{
-				if(cast(_treeView.selectedItem, FileWrapper).projectReference.path == projects.get(i).folderPath) return projects.get(i);
-			} else
+				if(cast(_treeView.selectedItem, FileWrapper).projectReference.path == projects.get(i).folderPath)
+				{
+					return projects.get(i);
+				}
+			}
+			else
 			{
-				if(orByProjectPath == projects.get(i).folderPath) return projects.get(i);
+				if(orByProjectPath == projects.get(i).folderPath)
+				{
+					return projects.get(i);
+				}
 			}
 		}
 
@@ -620,7 +635,8 @@ class ProjectTreeView extends LayoutGroup {
 	}
 
 	private function handleWorkspaceChange(event:Event):Void {
-		if (_ignoreWorkspaceChange || _header.selectedWorkspace == null) {
+		if (_ignoreWorkspaceChange || _header.selectedWorkspace == null)
+		{
 			return;
 		}
 		selectedWorkspace = _header.selectedWorkspace;
@@ -748,12 +764,6 @@ class ProjectTreeView extends LayoutGroup {
 							});
 					if (hasItemForOpen)
 					{
-						//updateTreeViewItem(fileWrapper);
-						// - or -
-						// var location:Array = _treeView.dataProvider.locationOf(fileWrapper);
-						// if (location != null) {
-						// 	_treeView.dataProvider.updateAt(location);
-						// }
 						expandItem(fileWrapper, true);
 						fileWrapper.sortChildren();
 					}
