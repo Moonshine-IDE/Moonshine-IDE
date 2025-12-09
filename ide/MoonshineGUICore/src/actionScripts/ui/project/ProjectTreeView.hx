@@ -40,9 +40,9 @@ class ProjectTreeView extends LayoutGroup {
 
 	private var _oldActiveEditorFileWrapper:FileWrapper;
 
-	public var selectedItem(get, set):FileWrapper;
+	public var selectedFile(get, set):FileWrapper;
 
-	private function get_selectedItem():FileWrapper
+	private function get_selectedFile():FileWrapper
 	{
 		if (_treeView == null)
 		{
@@ -51,7 +51,7 @@ class ProjectTreeView extends LayoutGroup {
 		return cast(_treeView.selectedItem, FileWrapper);
 	}
 
-	private function set_selectedItem(value:FileWrapper):FileWrapper
+	private function set_selectedFile(value:FileWrapper):FileWrapper
 	{
 		if (_treeView == null)
 		{
@@ -61,9 +61,9 @@ class ProjectTreeView extends LayoutGroup {
 		return cast(_treeView.selectedItem, FileWrapper);
 	}
 
-	public var selectedItems(get, set):Array<FileWrapper>;
+	public var selectedFiles(get, set):Array<FileWrapper>;
 
-	private function get_selectedItems():Array<FileWrapper>
+	private function get_selectedFiles():Array<FileWrapper>
 	{
 		if (_treeView == null)
 		{
@@ -72,7 +72,7 @@ class ProjectTreeView extends LayoutGroup {
 		return cast _treeView.selectedItems;
 	}
 
-	private function set_selectedItems(value:Array<FileWrapper>):Array<FileWrapper>
+	private function set_selectedFiles(value:Array<FileWrapper>):Array<FileWrapper>
 	{
 		if (_treeView == null)
 		{

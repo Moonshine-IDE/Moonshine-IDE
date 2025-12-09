@@ -1168,8 +1168,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newMXMLComponentPopup.folderLocation = creatingItemIn.file;
@@ -1201,8 +1201,8 @@ package actionScripts.plugin.templating
                 {
                     // try to check if there is any selection in
                     // TreeView item
-                    var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-                    if (treeSelectedItem)
+                    var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+                    if (treeSelectedItem != null)
                     {
                         var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
                         newVisualEditorFilePopup.folderLocation = creatingItemIn.file;
@@ -1219,7 +1219,7 @@ package actionScripts.plugin.templating
         {
 			var insideLocation:FileWrapper = (event is NewFileEvent) ?
 					(event as NewFileEvent).insideLocation :
-					(model.mainView.getTreeViewPanel().selectedItem as FileWrapper);
+					(model.mainView.getTreeViewPanel().selectedFile as FileWrapper);
 			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
 			{
 				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().getParentItem(insideLocation));
@@ -1244,7 +1244,7 @@ package actionScripts.plugin.templating
 		{
 			var insideLocation:FileWrapper = (event is NewFileEvent) ?
 					(event as NewFileEvent).insideLocation :
-					(model.mainView.getTreeViewPanel().selectedItem as FileWrapper);
+					(model.mainView.getTreeViewPanel().selectedFile as FileWrapper);
 			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
 			{
 				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().getParentItem(insideLocation));
@@ -1280,7 +1280,7 @@ package actionScripts.plugin.templating
             //     else
             //     {
 			// 		var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-            //         if (treeSelectedItem)
+            //         if (treeSelectedItem != null)
             //         {
             //             var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
             //             newOnDiskFilePopup.folderLocation = creatingItemIn.file;
@@ -1292,20 +1292,24 @@ package actionScripts.plugin.templating
 			// }
 			
 			var tmpOnDiskEvent:NewFileEvent =null;
-			if(event is NewFileEvent){
+			if(event is NewFileEvent)
+			{
 				tmpOnDiskEvent= new NewFileEvent(
-				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
-				ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE, (event as NewFileEvent).insideLocation
+					OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, (event as NewFileEvent).filePath,
+					ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE, (event as NewFileEvent).insideLocation
 				);
 				tmpOnDiskEvent.ofProject = (event as NewFileEvent).ofProject;
-			}else{
-				var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-				if(treeSelectedItem){
-				var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-				tmpOnDiskEvent= new NewFileEvent(
-				OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, creatingItemIn.file.fileBridge.nativePath,
-				ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE, creatingItemIn
-				);
+			}
+			else
+			{
+				var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+				if(treeSelectedItem != null)
+				{
+					var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
+					tmpOnDiskEvent = new NewFileEvent(
+						OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, creatingItemIn.file.fileBridge.nativePath,
+						ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE, creatingItemIn
+					);
 				}
 			}
 			
@@ -1341,8 +1345,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newCSSComponentPopup.folderLocation = creatingItemIn.file;
@@ -1359,7 +1363,7 @@ package actionScripts.plugin.templating
 		{
 			var dominoFormFolderStr:String;
 			var dominoFormFolder:FileLocation;
-			var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
+			var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
 
 			if (!newDominoFormComponentPopup)
 			{
@@ -1376,7 +1380,7 @@ package actionScripts.plugin.templating
 				else
 				{
 					
-					if (treeSelectedItem)
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newDominoFormComponentPopup.folderLocation = creatingItemIn.file;
@@ -1411,7 +1415,7 @@ package actionScripts.plugin.templating
 						}
 		
 						// selection
-						model.mainView.getTreeViewPanel().selectedItem = dominoFormFolderWrapper;
+						model.mainView.getTreeViewPanel().selectedFile = dominoFormFolderWrapper;
 						// scroll-to
 						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
@@ -1448,8 +1452,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newDominoSubformComponentPopup.folderLocation = creatingItemIn.file;
@@ -1476,7 +1480,7 @@ package actionScripts.plugin.templating
 						}
 		
 						// selection
-						model.mainView.getTreeViewPanel().selectedItem = dominoSubformFolderWrapper;
+						model.mainView.getTreeViewPanel().selectedFile = dominoSubformFolderWrapper;
 						// scroll-to
 						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
@@ -1514,8 +1518,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newDominoSharedFieldComponentPopup.folderLocation = creatingItemIn.file;
@@ -1549,7 +1553,7 @@ package actionScripts.plugin.templating
 						}
 		
 						// selection
-						model.mainView.getTreeViewPanel().selectedItem = dominoShareFieldFolderWrapper;
+						model.mainView.getTreeViewPanel().selectedFile = dominoShareFieldFolderWrapper;
 						// scroll-to
 						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
@@ -1576,7 +1580,7 @@ package actionScripts.plugin.templating
 
 			
 			var tmpOnDiskEvent:NewFileEvent=null;
-			var insideLocation:FileWrapper =  model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
+			var insideLocation:FileWrapper =  model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
 		
 			if (insideLocation)
 			{
@@ -1639,7 +1643,7 @@ package actionScripts.plugin.templating
 							}
 			
 							// selection
-							model.mainView.getTreeViewPanel().selectedItem = insideLocation;
+							model.mainView.getTreeViewPanel().selectedFile = insideLocation;
 							// scroll-to
 							UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 							{
@@ -1687,8 +1691,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newDominoViewShareColumnPopup.folderLocation = creatingItemIn.file;
@@ -1715,7 +1719,7 @@ package actionScripts.plugin.templating
 						}
 		
 						// selection
-						model.mainView.getTreeViewPanel().selectedItem = dominoViewFolderWrapper;
+						model.mainView.getTreeViewPanel().selectedFile = dominoViewFolderWrapper;
 						// scroll-to
 						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
@@ -1754,8 +1758,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newDominoViewComponentPopup.folderLocation = creatingItemIn.file;
@@ -1782,7 +1786,7 @@ package actionScripts.plugin.templating
 						}
 		
 						// selection
-						model.mainView.getTreeViewPanel().selectedItem = dominoViewFolderWrapper;
+						model.mainView.getTreeViewPanel().selectedFile = dominoViewFolderWrapper;
 						// scroll-to
 						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
@@ -1821,8 +1825,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newDominoPageComponentPopup.folderLocation = creatingItemIn.file;
@@ -1849,7 +1853,7 @@ package actionScripts.plugin.templating
 						}
 		
 						// selection
-						model.mainView.getTreeViewPanel().selectedItem = dominoPageFolderWrapper;
+						model.mainView.getTreeViewPanel().selectedFile = dominoPageFolderWrapper;
 						// scroll-to
 						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
@@ -1891,8 +1895,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newMXMLModuleComponentPopup.folderLocation = creatingItemIn.file;
@@ -1926,8 +1930,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newFilePopup.wrapperOfFolderLocation = creatingItemIn;
@@ -2060,8 +2064,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newAS3ComponentPopup.folderLocation = creatingItemIn.file;
@@ -2130,8 +2134,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newJavaComponentPopup.folderLocation = creatingItemIn.file;
@@ -2168,8 +2172,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newGroovyComponentPopup.folderLocation = creatingItemIn.file;
@@ -2206,8 +2210,8 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-					if (treeSelectedItem)
+					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					if (treeSelectedItem != null)
 					{
 						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
 						newHaxeComponentPopup.folderLocation = creatingItemIn.file;

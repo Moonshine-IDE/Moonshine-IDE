@@ -358,7 +358,7 @@ package actionScripts.plugin.rename
 					model.mainView.getTreeViewPanel().sortChildren(fileWrapper);
 					
 					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(fileWrapper, null, tmpParent);
-					model.mainView.getTreeViewPanel().selectedItem = tmpFileW;
+					model.mainView.getTreeViewPanel().selectedFile = tmpFileW;
 					
 					UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function():void
 					{
