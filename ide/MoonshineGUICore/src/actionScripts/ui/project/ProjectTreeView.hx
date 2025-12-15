@@ -8,7 +8,6 @@ import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
 import actionScripts.utils.SharedObjectUtil;
 import actionScripts.utils.UtilsCore;
-import actionScripts.valueObjects.ConstantsCoreVO;
 import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
 import actionScripts.valueObjects.WorkspaceVO;
@@ -406,33 +405,30 @@ class ProjectTreeView extends LayoutGroup {
 		var wrappersToSort:Array<FileWrapper> = [];
 		for (fw in folders)
 		{
-			if(ConstantsCoreVO.IS_AIR)
-			{
-				if((dir.fileBridge.nativePath + dir.fileBridge.separator).indexOf(fw.nativePath + dir.fileBridge.separator) != -1)
-				{
-					var tmpFW:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(fw, dir);
-					if(tmpFW != null)
-					{
-						if(_treeView.selectedItem != null)
-						{
-							var lastSelectedItem:FileWrapper = Std.downcast(_treeView.selectedItem, FileWrapper);
-							if(tmpFW.nativePath == lastSelectedItem.nativePath || lastSelectedItem.nativePath.indexOf(tmpFW.nativePath + tmpFW.file.fileBridge.separator) != -1)
-							{
-								_treeView.selectedItem.isDeleting = markAsDeletion;
-							}
-						}
-						refreshItem(tmpFW);
-						wrappersToSort.push(tmpFW);
-					}
-					break;
-				}
-			}
-			else
+			#if (air || sys)
+			if((dir.fileBridge.nativePath + dir.fileBridge.separator).indexOf(fw.nativePath + dir.fileBridge.separator) != -1)
 			{
 				var tmpFW:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(fw, dir);
-				refreshItem(tmpFW);
-				wrappersToSort.push(tmpFW);
+				if(tmpFW != null)
+				{
+					if(_treeView.selectedItem != null)
+					{
+						var lastSelectedItem:FileWrapper = Std.downcast(_treeView.selectedItem, FileWrapper);
+						if(tmpFW.nativePath == lastSelectedItem.nativePath || lastSelectedItem.nativePath.indexOf(tmpFW.nativePath + tmpFW.file.fileBridge.separator) != -1)
+						{
+							_treeView.selectedItem.isDeleting = markAsDeletion;
+						}
+					}
+					refreshItem(tmpFW);
+					wrappersToSort.push(tmpFW);
+				}
+				break;
 			}
+			#else
+			var tmpFW:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(fw, dir);
+			refreshItem(tmpFW);
+			wrappersToSort.push(tmpFW);
+			#end
 		}
 
 		while(wrappersToSort.length > 0)
