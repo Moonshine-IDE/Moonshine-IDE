@@ -748,6 +748,11 @@ package actionScripts.plugins.actionscript
 		private function languageServerProcess_standardOutputDataHandler(e:ProgressEvent):void
 		{
 			var output:IDataInput = _languageServerProcess.standardOutput;
+			if (output.bytesAvailable == 0)
+			{
+				// standardOutput may have been closed
+				return;
+			}
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			if ( data.search(LANGUAGE_SERVER_PROCESS_FORMATTED_PID) > -1 ) {
 				// Formatted PID found
@@ -765,6 +770,11 @@ package actionScripts.plugins.actionscript
 		private function languageServerProcess_standardErrorDataHandler(e:ProgressEvent):void
 		{
 			var output:IDataInput = _languageServerProcess.standardError;
+			if (output.bytesAvailable == 0)
+			{
+				// standardError may have been closed
+				return;
+			}
 			var data:String = output.readUTFBytes(output.bytesAvailable);
 			trace(data);
 		}
