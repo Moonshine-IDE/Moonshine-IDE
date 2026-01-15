@@ -66,8 +66,9 @@
 				if(value.logoImagePath)
 				{
 					fileIcon.includeInLayout = true;
-					loader.load(new URLRequest(value.logoImagePath));
-					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, doneLoad);
+					fileIcon.source = value.logoImagePath;
+					//loader.load(new URLRequest(value.logoImagePath));
+					//loader.contentLoaderInfo.addEventListener(Event.COMPLETE, doneLoad);
 				} else
 				{
 					fileIcon.visible = false;

@@ -4,7 +4,7 @@
         <title>Generic Project</title>
         <homeTitle>Generic Project</homeTitle>
         <name>Generic Project</name>
-        <icon>Generic Project.png</icon>
+        <icon>Generic.png</icon>
         <description>Create a new generic project.</description>
     </template>
 </templates>

@@ -4,7 +4,7 @@
         <title>Apache Royale Project REST</title>
         <homeTitle>Apache Royale Project REST</homeTitle>
         <name>Apache Royale Project REST</name>
-        <icon>Royale Browser Project.png</icon>
+        <icon>RoyaleBrowser.png</icon>
         <description>Create a Apache® Royale project that will generate an SWF and HTML files, to run on browser.</description>
     </template>
 </templates>

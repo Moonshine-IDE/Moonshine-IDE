@@ -4,7 +4,7 @@
         <title>Away3D Project</title>
         <homeTitle>Away3D Project</homeTitle>
         <name>Away3D Project</name>
-        <icon>Away3D Project.png</icon>
+        <icon>Away3D.png</icon>
         <description>Create a new Away3D project.</description>
     </template>
 </templates>
