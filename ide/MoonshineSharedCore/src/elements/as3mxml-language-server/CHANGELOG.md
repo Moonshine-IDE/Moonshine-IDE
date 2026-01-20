@@ -1,11 +1,129 @@
 # ActionScript & MXML for Visual Studio Code Changelog
 
+## 1.23.0
+
+### New Features
+
+- Build: Added Adobe AIR packaging tasks for Linux.
+- Build: Added `includes` to `compilerOptions` section.
+- General: Added `as3mxml.languageServer.enabled` property, which may be set to `false` to disable the language server.
+- Hover, Definition: Support detection of ActionScript class references in `<fx:Style>` MXML tags and in _.css_ files in Apache Flex and Apache Royale projects.
+- Hover: Anonymous functions without a name can now provide documentation using the `function` keyword instead.
+- Hover: Detect `@eventType`, `@example`, and `@includeExample` ASDoc tags.
+- Inlay Hints: Added inlay hints for function parameter names. Disabled by default, but set `as3mxml.inlayHints.parameterNames.enabled` to either `"all"` or `"literals"` to enable this feature. Also adds `as3mxml.inlayHints.parameterNames.suppressWhenArgumentMatchesName` setting to customize the behavior further.
+- Syntax: Improved both ActionScript and MXML bracket pairs, word pattern detection, and other syntax options.
+
+### Fixed Issues
+
+- Build: Fixed strict requirement for Adobe AIR application descriptors on platforms that the current operating system cannot target.
+- Build: Fixed appending of `define` to compiler options in a way that caused values with spaces to behave differently on Windows and macOS.
+- Build: Fixed tasks continuing to use value after changing `as3mxml.java.path` setting.
+- Formatting: Require all syntax errors to be fixed before formatting may be used.
+- General: Add workaround for missing range length for text document change events if language client doesn't provide it.
+- Hover, Definition: Added missing support for `*` and `void` core language types.
+- Hover: Added missing documentation for certain classes in _playerglobal.swc_ and _airglobal.swc_. Now checks _playerglobal_rb.swc_, if the SDK includes it.
+- Hover: Fixed detection of tag values in ASDoc comments to allow both spaces and tabs after the tag name.
+- Syntax: Fix arrays incorrectly highlighted as metadata in some situations.
+- Syntax: Fixed highlighting of symbols with names containing the _$_ character.
+- Workspace Symbols: Fixed search failing to find symbols with names containing the _$_ character.
+- Views: Fixed missing labels in ActionScript Source Paths view tree items.
+
+### Other Changes
+
+- Dependencies: eclipse/lsp4j language server updated to v0.24.0.
+- Extensibility: Exposed `editorSDKPath` property to other extensions.
+- General: Improved performance when iterating over ActionScript code embedded in MXML specifier nodes.
+- Problems: Improved performance of checking for problems in real-time as the user types.
+- Build: Allow `unpackage-anes` command line option for bundled asconfigc for release builds.
+
+## 1.22.0
+
+### New Features
+
+- Build: Added support for `licenseFile` and `licenseDevID` to `airOptions` in _asconfig.json_.
+- Completion: Added support for completion of fields after `::` operator.
+- General: Added support for `avm2.intrinsics.memory` package when using ASC 2.0 compiler from AIR SDK.
+- Hover: Namespace identifiers before `::` are now resolved.
+- General: Resolves documentation for `@inheritDoc` ASDoc tag.
+- Settings: Added `actionscript.views.explorer.showCreateNewActionScriptProject` setting to optionally hide the welcome view.
+
+### Fixed Issues
+
+- Completion: Fixed ignored `[Exclude]` metadata on superclasses.
+- Definition: Ctrl+click on `super()` function call now resolves super constructor instead of super class.
+- General: Fix ignored `type` parameter in `[ArrayElementType]`, `[HostComponent]`, and `[InstanceType]` for hover, rename, definition, and references.
+- General: Fix ignored `type` and `arrayType` parameters in `[Style]` and `[Inspectable]` for hover, rename, definition, and references.
+- General: Detect `name` parameter of `[Event]` as an identifier that can .
+- General: Fixed detection of ASDoc comment descriptions starting on same line as `/**`.
+- General: Fixed incorrect detection of Markdown syntax in HTML doc comments.
+- General: Fixed space versus tab detection in `@param` and `@throws` ASDoc tags.
+- Syntax: Fix incorrect highlighting of escape sequences in verbatim strings.
+- Tasks: Fixed resolution of `asconfig` field in multi-root workspaces where task is defined in the _.code-workspace_ file.
+
+### Other Changes
+
+- Config: When `mainClass` is not found, the error is now more clear about its origin (instead of "must specify target").
+- Completion: Improved performance by checking for duplicates in a `Set` instead of a `List`.
+- Dependencies: Apache Royale compiler updated to v0.9.12. This fixes issues with null pointer exceptions, formatting AS3 and MXML code, and more.
+- General: Requires JDK 11 or newer due to new Royale minimum requirements. Previously JDK 8 or newer was required.
+- Tasks: Allow `asconfig` field to be left blank or set to "asconfig.json", and the task will resolve either way.
+
+## 1.21.1
+
+### Fixed Issues
+
+- Build: Fixed detection of ANEs in `library-path` and `external-library-path` when _asconfig.json_ is not in the root of the workspace.
+- Build: Fixed resolution of relative paths in `htmlTemplate` and `extends` when _asconfig.json_ is not in the root of the workspace.
+- Hover: Fixed ASDoc code sample rendering when code block contains `@` symbol at the start of the line. Was incorrectly detected as an ASDoc tag instead of part of the code.
+
+## 1.21.0
+
+### Fixed Issues
+
+- Completion: Fixed ActionScript completion being triggered inside `<fx:Style>` element in MXML.
+- General: Fixed null exception in real-time problems checker.
+- Hover: Fixed detection and formatting of `@param` asdoc tags that contain tab characters instead of spaces.
+- Outline: Fixed document symbols not being rendered because range and selection range were not properly bounded.
+- Create Projcet: Fixed invalid Adobe AIR application ID generatd from class and package containing underscore (`_`) or other unsupported characters.
+
+### Other Changes
+
+- General: Dropped support for old versions of Apache FlexJS. Apache Royale remains supported, of course.
+- Views: Improved visibility behavior for AS3 Source Paths view, SDK status bar item, and Royale Target status bar item. In workspaces that contain valid projects with _asconfig.json_ files, these views are always visible after the language server starts successfully. In other workspaces, these views are visible only when a file of type _.as_, _.mxml_, or _asconfig.json_ is open in a visible editor.
+
+## 1.20.1
+
+### Fixed Issues
+
+- Build: Fixed resolution of `mainClass` to use relative paths for quick compile commands.
+- Build: Fixed resolution of `mainClass` when no `source-path` compiler option is specified (resolve relative to project root).
+- Build: Restores final fallback resolution of `mainClass` from the current working directory.
+- Royale: Detects when _asconfig.json_ is saved and updates the Royale target status bar item.
+- New Project: Populates `<renderMode>direct</renderMode>` for Feathers SDK projects.
+- New Project: Does not set `<visible>true</visible>` for AS3 projects if `<visible>` is uncommented.
+
+## 1.20.0
+
+### New Features
+
+- Royale: When developing a project that supports both JS and SWF targets, a new status bar item allows easy switching between `COMPILE::JS` and `COMPILE:SWF` conditional compilation values by allowing a preferred value from the `targets` compiler option to be selected.
+- Completion: Improved sorting for MXML tag completion to give higher priority to existing declared namespaces and to member variables or properties, similar to how AS3 imports and members get higher priority already.
+
+### Fixed Issues
+
+- Build: Fixed resolution of `mainClass` when _asconfig.json_ is not in the workspace root.
+- Completion: Fixed issue where imports might be incorrectly added inside a comment at the top of a file if the comment contains what appears to be the start of a `package` block or another `import` statement.
+- General: Fixed project initialization if the `mainClass` or a directory from the `source-path` compiler option doesn't exist yet.
+- General: ActionScript SDK status bar item remains visible if any _visible_ editor contains a file of type _.as_, _.mxml_ or _asconfig.json_ file. Previously, it was based on the currently active editor only, which could cause the status bar item to be hidden if the terminal or another view received active focus.
+- Project: When creating a new project on Windows, fixed invalid JSON contents of _settings.json_ for SDK path containing backslashes.
+- General: Fixed `FileSystemNotFoundException` when opening a file URI with an unrecognized protocol, such as _vsls:_.
+
 ## 1.19.0
 
 ### New Features
 
 - Commands: Added new _ActionScript: Create New Project_ command to create a project with some simple built-in templates for all supported SDK types, including Apache Flex, Apache Royale, Feathers SDK, and pure ActionScript 3.0 projects.
-- Explorer: When no workspace folders are oepn, a button is displayed in the Explorer to create a new ActionScript project.
+- Explorer: When no workspace folders are open, a button is displayed in the Explorer to create a new ActionScript project.
 
 ### Fixed Issues
 

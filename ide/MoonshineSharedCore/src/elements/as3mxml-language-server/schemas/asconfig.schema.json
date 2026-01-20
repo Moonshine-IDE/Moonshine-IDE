@@ -231,6 +231,14 @@
       "description": "Instructs the ADT utility how to package the Adobe AIR application.",
       "additionalProperties": false,
       "properties": {
+        "licenseFile": {
+          "type": "string",
+          "description": "The AIR developer license file to use instead of lib/adt.cfg."
+        },
+        "licenseDevID": {
+          "type": "string",
+          "description": "The AIR developer ID to use instead of the one in lib/adt.cfg."
+        },
         "target": { "$ref": "#/definitions/airOptionsAllTargets" },
         "extdir": { "$ref": "#/definitions/airOptionsExtdir" },
         "files": { "$ref": "#/definitions/airOptionsFiles" },
@@ -545,6 +553,13 @@
         "swf-external-library-path": {
           "type": "array",
           "description": "(Apache Royale only) Specifies a list of SWC files, or directories containing SWC files, to exclude from linking in only the generated SWF output.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "includes": {
+          "type": "array",
+          "description": "Specifies a list of classes or other symbols to link in the output, regardless of whether they are referenced.",
           "items": {
             "type": "string"
           }

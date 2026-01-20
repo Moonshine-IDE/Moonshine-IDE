@@ -2,7 +2,7 @@
   "name": "vscode-as3mxml",
   "displayName": "ActionScript & MXML",
   "description": "Language support for ActionScript and MXML",
-  "version": "1.19.0",
+  "version": "1.23.0",
   "publisher": "bowlerhatllc",
   "homepage": "https://as3mxml.com/",
   "repository": {
@@ -35,23 +35,23 @@
     "build-debug": "mvn package"
   },
   "engines": {
-    "vscode": "^1.70.0"
+    "vscode": "^1.82.0"
   },
   "devDependencies": {
-    "@rgrove/parse-xml": "^4.0.1",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "^14.18.44",
-    "@types/vscode": "^1.70.0",
+    "@rgrove/parse-xml": "^4.2.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^18.19.124",
+    "@types/vscode": "^1.82.0",
+    "@vscode/vsce": "^3.2.2",
     "glob": "^8.1.0",
     "json5": "^2.2.3",
-    "mocha": "^10.2.0",
-    "ts-loader": "^9.4.2",
-    "typescript": "^4.9.5",
-    "@vscode/vsce": "^2.19.0",
-    "vscode-jsonrpc": "^8.0.2",
-    "vscode-languageclient": "^8.0.2",
-    "webpack": "^5.82.0",
-    "webpack-cli": "^5.0.2"
+    "mocha": "^11.1.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "~5.9.2",
+    "vscode-jsonrpc": "^8.2.1",
+    "vscode-languageclient": "^9.0.1",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1"
   },
   "activationEvents": [
     "onLanguage:actionscript",
@@ -145,13 +145,13 @@
         "key": "ctrl+enter",
         "mac": "cmd+enter",
         "command": "as3mxml.quickCompileAndRun",
-        "when": "config.as3mxml.quickCompile.enabled"
+        "when": "as3mxml.codeIntelligenceReady && config.as3mxml.quickCompile.enabled"
       },
       {
         "key": "ctrl+shift+enter",
         "mac": "cmd+shift+enter",
         "command": "as3mxml.quickCompileAndDebug",
-        "when": "config.as3mxml.quickCompile.enabled"
+        "when": "as3mxml.codeIntelligenceReady && config.as3mxml.quickCompile.enabled"
       }
     ],
     "menus": {
@@ -184,7 +184,7 @@
       "explorer/context": [
         {
           "command": "as3mxml.organizeImportsInDirectory",
-          "when": "explorerResourceIsFolder"
+          "when": "as3mxml.codeIntelligenceReady && explorerResourceIsFolder"
         }
       ]
     },
@@ -193,7 +193,7 @@
         {
           "id": "actionScriptSourcePaths",
           "name": "ActionScript Source Path",
-          "when": "resourceLangId =~ /(actionscript|mxml)/"
+          "when": "as3mxml.codeIntelligenceReady || resourceLangId =~ /(actionscript|mxml)/ || resourceFilename =~ /^asconfig(\\.\\w+)?\\.json$/"
         }
       ]
     },
@@ -201,7 +201,7 @@
       {
         "view": "explorer",
         "contents": "%viewsWelcome.workbench.createNewActionScriptProject%",
-        "when": "workspaceFolderCount == 0"
+        "when": "workspaceFolderCount == 0 && config.actionscript.views.explorer.showCreateNewActionScriptProject"
       }
     ],
     "languages": [
@@ -435,6 +435,11 @@
           "default": true,
           "description": "Specifies if the experimental quick compile commands are enabled or not."
         },
+        "as3mxml.languageServer.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "(Advanced) Specifies if the ActionScript & MXML language server is enabled."
+        },
         "as3mxml.languageServer.jvmargs": {
           "type": "string",
           "default": null,
@@ -498,6 +503,21 @@
           "type": "boolean",
           "default": true,
           "description": "When organizing imports, determines if a new line is inserted between top level packages"
+        },
+        "as3mxml.inlayHints.parameterNames.enabled": {
+          "type": "string",
+          "enum": [
+            "all",
+            "literals",
+            "none"
+          ],
+          "default": "none",
+          "description": "Enable or disable inlay hints for ActionScript parameter names"
+        },
+        "as3mxml.inlayHints.parameterNames.suppressWhenArgumentMatchesName": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable inlay hints for ActionScript parameter names when the argument value matches the parameter name"
         },
         "as3mxml.format.enabled": {
           "type": "boolean",
@@ -628,6 +648,11 @@
           "default": "off",
           "description": "(Advanced) Logs the communication between Visual Studio Code and the ActionScript & MXML language server",
           "scope": "window"
+        },
+        "actionscript.views.explorer.showCreateNewActionScriptProject": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show or hides the create new ActionScript project view in explorer"
         }
       }
     },
