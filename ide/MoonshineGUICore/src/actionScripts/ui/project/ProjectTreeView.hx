@@ -6,7 +6,6 @@ import actionScripts.factory.FileLocation;
 import actionScripts.ui.project.ProjectViewHeader;
 import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
-import actionScripts.utils.SharedObjectUtil;
 import actionScripts.utils.UtilsCore;
 import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
@@ -20,13 +19,10 @@ import feathers.layout.VerticalLayoutData;
 import feathers.utils.DisplayObjectRecycler;
 import openfl.display.DisplayObject;
 import openfl.events.Event;
-import openfl.net.SharedObject;
 
 class ProjectTreeView extends LayoutGroup {
 	private static final COLLECTION_EVENT_KIND_ADD:String = "add";
 	private static final COLLECTION_EVENT_KIND_RESET:String = "reset";
-	private static final PROPERTY_NAME_KEY:String = "name";
-	private static final PROPERTY_NAME_KEY_VALUE:String = "nativePath";
 
 	private var _header:ProjectViewHeader;
 	private var _treeView:TreeView;
@@ -192,6 +188,11 @@ class ProjectTreeView extends LayoutGroup {
 		}
 		return _dataProvider;
 	}
+
+	public var projectTreeCookieCallback:() -> Array<Any>;
+	public var projectTreeCookieName:String;
+	public var projectTreeCookiePropertyNameKey:String;
+	public var projectTreeCookiePropertyNameKeyValue:String;
 
 	public function new() {
 		super();
@@ -730,20 +731,19 @@ class ProjectTreeView extends LayoutGroup {
 
 	private function saveItemForOpen(item:FileWrapper):Void
 	{
-		SharedObjectUtil.saveProjectTreeItemForOpen(item, PROPERTY_NAME_KEY, PROPERTY_NAME_KEY_VALUE);
+		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_SAVE_TO_OPENED_ITEMS, item));
 	}
 
 	private function removeFromOpenedItems(item:FileWrapper):Void
 	{
-		SharedObjectUtil.removeProjectTreeItemFromOpenedItems(item, PROPERTY_NAME_KEY, PROPERTY_NAME_KEY_VALUE);
+		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_REMOVE_FROM_OPENED_ITEMS, item));
 	}
 
 	private function setItemsAsOpen(items:Array<Any>):Void
 	{
-		var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projectTree");
-		if (cookie == null) return;
+		if (projectTreeCookieCallback == null) return;
 
-		var projectTree:Array<Any> = cookie.data.projectTree;
+		var projectTree:Array<Any> = projectTreeCookieCallback();
 		if (projectTree != null && items.length > 0)
 		{
 			var fileWrapper:FileWrapper = Std.downcast(items.shift(), FileWrapper);
@@ -754,9 +754,9 @@ class ProjectTreeView extends LayoutGroup {
 				{
 					var hasItemForOpen:Bool = Lambda.exists(projectTree,
 							function hasSomeItemForOpen(itemForOpen:Any):Bool {
-								var name:String = Reflect.getProperty(fileWrapper, PROPERTY_NAME_KEY);
+								var name:String = Reflect.getProperty(fileWrapper, projectTreeCookiePropertyNameKey);
 								return (Reflect.hasField(itemForOpen, name) || Reflect.hasField(itemForOpen, 'get_$name')) &&
-										Reflect.getProperty(itemForOpen, name) == Reflect.getProperty(fileWrapper, PROPERTY_NAME_KEY_VALUE);
+										Reflect.getProperty(itemForOpen, name) == Reflect.getProperty(fileWrapper, projectTreeCookiePropertyNameKeyValue);
 							});
 					if (hasItemForOpen)
 					{

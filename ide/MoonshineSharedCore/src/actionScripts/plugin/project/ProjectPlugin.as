@@ -110,6 +110,9 @@ package actionScripts.plugin.project
 	{
 		public static const EVENT_PROJECT_SETTINGS:String = "projectSettingsEvent";
 		public static const EVENT_SHOW_OPEN_RESOURCE:String = "showOpenResource";
+
+		private static const PROPERTY_NAME_KEY:String = "name";
+		private static const PROPERTY_NAME_KEY_VALUE:String = "nativePath";
 		
 		override public function get name():String 	{return "Project Plugin";}
 		override public function get author():String 		{return ConstantsCoreVO.MOONSHINE_IDE_LABEL +" Project Team";}
@@ -138,7 +141,12 @@ package actionScripts.plugin.project
 			treeView.addEventListener(ProjectTreeViewEvent.EVENT_WORKSPACE_CHANGE, onTreeViewWorkspaceChange);
 			treeView.addEventListener(ProjectTreeViewEvent.EVENT_SCROLL_FROM_SOURCE, onTreeViewScrollFromSource);
 			treeView.addEventListener(ProjectTreeViewEvent.EVENT_OPEN_FILE, onTreeViewOpenFile);
+			treeView.addEventListener(ProjectTreeViewEvent.EVENT_SAVE_TO_OPENED_ITEMS, onTreeViewSaveToOpenedItems);
+			treeView.addEventListener(ProjectTreeViewEvent.EVENT_REMOVE_FROM_OPENED_ITEMS, onTreeViewRemoveFromOpenedItems);
 			treeView.addEventListener(TreeMenuItemEvent.RIGHT_CLICK_ITEM_SELECTED, handleNativeMenuItemClick);
+			treeView.projectTreeCookieCallback = onTreeViewProjectTreeRequest;
+			treeView.projectTreeCookiePropertyNameKey = PROPERTY_NAME_KEY;
+			treeView.projectTreeCookiePropertyNameKeyValue = PROPERTY_NAME_KEY_VALUE;
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
 
@@ -650,6 +658,16 @@ package actionScripts.plugin.project
 			}
 			LayoutModifier.removeFromSidebar(treeView.parent as IPanelWindow);
 		}
+		
+		private function onTreeViewProjectTreeRequest():Array
+		{
+			var cookie:SharedObject = SharedObjectUtil.getMoonshineIDEProjectSO("projectTree");
+			if (cookie == null)
+			{
+				return null;
+			}
+			return cookie.data.projectTree;
+		}
 
 		private function onTreeViewWorkspaceChange(event:Event):void
 		{
@@ -672,6 +690,16 @@ package actionScripts.plugin.project
 			dispatcher.dispatchEvent(
 					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [item.file], -1, [item])
 			);
+		}
+
+		private function onTreeViewSaveToOpenedItems(event:ProjectTreeViewEvent):void
+		{
+			SharedObjectUtil.saveProjectTreeItemForOpen(event.file, PROPERTY_NAME_KEY, PROPERTY_NAME_KEY_VALUE);
+		}
+
+		private function onTreeViewRemoveFromOpenedItems(event:ProjectTreeViewEvent):void
+		{
+			SharedObjectUtil.removeProjectTreeItemFromOpenedItems(event.file, PROPERTY_NAME_KEY, PROPERTY_NAME_KEY_VALUE);
 		}
 
 		private function refreshActiveProject(file:FileLocation):void
