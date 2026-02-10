@@ -71,10 +71,14 @@ package actionScripts.plugins.externalEditors.importer
 				{
 					continue;
 				}
-				else if (!ConstantsCoreVO.IS_MACOS && !isWindows)
+				else if (ConstantsCoreVO.IS_WINDOWS && !isWindows)
 				{
 					continue;
 				} 
+				else if (!ConstantsCoreVO.IS_MACOS && !ConstantsCoreVO.IS_WINDOWS)
+				{
+					continue;
+				}
 				
 				tmpEditor = new ExternalEditorVO(String(editor.@id));
 				tmpEditor.title = String(editor.title);
@@ -112,7 +116,7 @@ package actionScripts.plugins.externalEditors.importer
 				return (path.replace("$userDirectory", File.userDirectory.nativePath));
 			}
 			
-			if (!ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				return validateWindowsInstallation(path);
 			}

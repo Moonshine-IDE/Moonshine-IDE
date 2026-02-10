@@ -148,7 +148,7 @@ package actionScripts.plugins.as3project.mxmlc
 
 		private function get mxmlcPath():String
 		{
-			if (ConstantsCoreVO.IS_MACOS)
+			if (!ConstantsCoreVO.IS_WINDOWS)
 				return currentSDK.resolvePath("bin/mxmlc").nativePath;
 			
 			// on Windows we need to know if it's a 
@@ -765,7 +765,7 @@ package actionScripts.plugins.as3project.mxmlc
 				// determine if the sdk version is lower than 0.8.0 or not
 				var isFlexJSAfter7:Boolean = UtilsCore.isNewerVersionSDKThan(7, currentSDK.nativePath);
 				
-				var compilerExtension:String = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
+				var compilerExtension:String = ConstantsCoreVO.IS_WINDOWS ? ".bat" : "";
 				var mxmlcFile:File = currentSDK.resolvePath("js/bin/mxmlc"+ compilerExtension);
 				if (!mxmlcFile.exists)
 				{
@@ -782,9 +782,9 @@ package actionScripts.plugins.as3project.mxmlc
 				if (!isFlexJSAfter7) mxmlcFile = currentSDK.resolvePath("bin/mxmlc"+ compilerExtension);
 				
 				//If application is flexJS and sdk is flex sdk then error popup alert
-				var fcshFile:File = ConstantsCoreVO.IS_MACOS ?
-                        currentSDK.resolvePath(fcshPath) :
-						getWindowsCompilerFile(currentSDK, "bin/fcsh");
+				var fcshFile:File = ConstantsCoreVO.IS_WINDOWS ?
+						getWindowsCompilerFile(currentSDK, "bin/fcsh") :
+						currentSDK.resolvePath(fcshPath);
 				if (fcshFile.exists)
 				{
 					Alert.show("Invalid SDK - Please configure a Apache Royale® SDK instead","Error!");

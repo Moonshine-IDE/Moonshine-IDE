@@ -133,8 +133,7 @@ package actionScripts.ui.menu
 		
 		protected var topNativeMenuItemsForFileNew:Object;
 		
-		public var activeMenus:uint = ((Settings.os != "win") && ConstantsCoreVO.IS_AIR) ? BUILD_NATIVE_MENU : BUILD_CUSTOM_MENU;
-		//public var activeMenus:uint = ( (Settings.os != "mac") && ConstantsCoreVO.IS_AIR) ? BUILD_NATIVE_MENU : BUILD_CUSTOM_MENU;
+		public var activeMenus:uint = (ConstantsCoreVO.IS_MACOS && ConstantsCoreVO.IS_AIR) ? BUILD_NATIVE_MENU : BUILD_CUSTOM_MENU;
 		
 		protected static var shortcutManager:KeyboardShortcutManager = KeyboardShortcutManager.getInstance();
 		private var buildingNativeMenu:Boolean = false;
@@ -954,13 +953,13 @@ package actionScripts.ui.menu
 
 		private function getMenuObject():Object
 		{
-			if (Settings.os == "win")
-			{
-				return (model.mainView.getChildAt(0) as MenuBar).menu;
-			}
-			else if (Settings.os == "mac")
+			if (ConstantsCoreVO.IS_MACOS)
 			{
 				return FlexGlobals.topLevelApplication.nativeApplication.menu;
+			}
+			else
+			{
+				return (model.mainView.getChildAt(0) as MenuBar).menu;
 			}
 
 			return null;

@@ -43,6 +43,7 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import flash.system.Capabilities;
 			import flash.utils.clearTimeout;
 			import flash.utils.setTimeout;
 			
@@ -129,7 +130,9 @@
 			private function onInitialized():void
 			{
 				// sets the application runs in which platform
-				ConstantsCoreVO.IS_MACOS = !NativeApplication.supportsSystemTrayIcon;
+				ConstantsCoreVO.IS_MACOS = Capabilities.version.indexOf("MAC") != -1;
+				ConstantsCoreVO.IS_WINDOWS = Capabilities.version.indexOf("WIN") != -1;
+				ConstantsCoreVO.IS_LINUX = Capabilities.version.indexOf("LNX") != -1;
 
 				// attach main view
 				var mCore:MainEntryPoint = new MainEntryPoint();

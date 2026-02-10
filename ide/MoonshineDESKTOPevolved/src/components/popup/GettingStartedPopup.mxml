@@ -180,7 +180,7 @@
 			
 			private function runAppStoreHelper(event:HelperEvent):void
 			{
-				if (!ConstantsCoreVO.IS_MACOS)
+				if (ConstantsCoreVO.IS_WINDOWS)
 				{
 					if (!msdkiDownloadUtil.is64BitSDKInstallerExists())
 					{

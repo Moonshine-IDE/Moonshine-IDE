@@ -198,7 +198,7 @@ package actionScripts.ui.feathersWrapper.help
 		
 		private function onDownload3rdPartySoftware(event:Event):void
 		{
-			if (!ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				if (!msdkiDownloadUtil.is64BitSDKInstallerExists())
 				{

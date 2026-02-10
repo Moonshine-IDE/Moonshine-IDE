@@ -72,18 +72,7 @@ package actionScripts.utils
 
 			_errorText = null;
 			var command:String;
-			if (ConstantsCoreVO.IS_MACOS)
-			{
-				if (source.isDirectory)
-				{
-					command = 'cd "'+ source.nativePath +'";zip -r "'+ destination.nativePath +'" *';
-				}
-				else
-				{
-					command = 'zip "'+ destination.nativePath +'" "'+ source.nativePath +'"';
-				}
-			}
-			else
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
 				if (powerShellPath)
@@ -101,6 +90,17 @@ package actionScripts.utils
 				{
 					error("Failed to locate PowerShell during execution.");
 					return;
+				}
+			}
+			else
+			{
+				if (source.isDirectory)
+				{
+					command = 'cd "'+ source.nativePath +'";zip -r "'+ destination.nativePath +'" *';
+				}
+				else
+				{
+					command = 'zip "'+ destination.nativePath +'" "'+ source.nativePath +'"';
 				}
 			}
 

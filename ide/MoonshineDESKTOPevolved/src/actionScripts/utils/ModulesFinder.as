@@ -60,7 +60,12 @@ package actionScripts.utils
 			isError = false;
 			
 			var command:String;
-			if (ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
+			{
+				command = '"c:\\Windows\\System32\\findstr.exe" /s /i /m /c:"<s:Module " ';
+				command += '"'+ (sourceFolder ? sourceFolder.fileBridge.nativePath : projectFolder.fileBridge.nativePath) +'\\*"';
+			}
+			else
 			{
 				command = "/usr/bin/grep -ilR '<s:Module ' '"+ 
 					(
@@ -68,11 +73,6 @@ package actionScripts.utils
 						projectFolder.fileBridge.nativePath : 
 						projectFolder.fileBridge.getRelativePath(sourceFolder, true)
 					) +"'";
-			}
-			else
-			{
-				command = '"c:\\Windows\\System32\\findstr.exe" /s /i /m /c:"<s:Module " ';
-				command += '"'+ (sourceFolder ? sourceFolder.fileBridge.nativePath : projectFolder.fileBridge.nativePath) +'\\*"';
 			}
 			
 			// run the command
@@ -92,7 +92,7 @@ package actionScripts.utils
 		override protected function onNativeProcessStandardOutputData(event:ProgressEvent):void
 		{
 			modulesFileList = getDataFromBytes(nativeProcess.standardOutput).split(
-				ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n"
+				ConstantsCoreVO.IS_WINDOWS ? "\r\n" : "\n" 
 			);
 			
 			// result insert a blank row at the end

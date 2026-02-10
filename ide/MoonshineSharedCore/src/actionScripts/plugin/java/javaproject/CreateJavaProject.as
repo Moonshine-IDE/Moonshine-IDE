@@ -359,7 +359,7 @@ package actionScripts.plugin.java.javaproject
 			// but that is suppose to be trigger in later step
 			var targetJavaPath:String = (pvo.projectType == JavaProjectTypes.JAVA_DOMINO) ?
 					model.java8Path.fileBridge.nativePath : model.javaPathForTypeAhead.fileBridge.nativePath;
-			if (targetJavaPath && !ConstantsCoreVO.IS_MACOS) targetJavaPath = targetJavaPath.replace(/\\/g, "/");
+			if (targetJavaPath && ConstantsCoreVO.IS_WINDOWS) targetJavaPath = targetJavaPath.replace(/\\/g, "/");
 			th.templatingData["$JavaHomePath"] = targetJavaPath;
 			
 			var pattern:RegExp = new RegExp(/(_)/g);

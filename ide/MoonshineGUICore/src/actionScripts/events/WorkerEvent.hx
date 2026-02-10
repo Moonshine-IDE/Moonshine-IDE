@@ -42,7 +42,7 @@ class WorkerEvent {
 	public static final REPLACE_FILE_WITH_VALUE:String = "REPLACE_FILE_WITH_VALUE";
 	public static final GET_FILE_LIST:String = "GET_FILE_LIST";
 	public static final SET_FILE_LIST:String = "SET_FILE_LIST";
-	public static final SET_IS_MACOS:String = "SET_IS_MACOS"; // running standard code to determine macOS platform always returning true even in Windows
+	public static final SET_IS_WINDOWS:String = "SET_IS_WINDOWS";
 	public static final RUN_LIST_OF_NATIVEPROCESS:String = "RUN_LIST_OF_NATIVEPROCESS";
 	public static final RUN_LIST_OF_NATIVEPROCESS_ENDED:String = "RUN_LIST_OF_NATIVEPROCESS_ENDED";
 	public static final RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK:String = "RUN_LIST_OF_NATIVEPROCESS_PROCESS_TICK";

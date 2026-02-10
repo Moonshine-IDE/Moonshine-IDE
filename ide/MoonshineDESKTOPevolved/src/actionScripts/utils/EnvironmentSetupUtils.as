@@ -135,13 +135,13 @@ package actionScripts.utils
 		{
 			isSingleProcessRunning = true;
 			
-			if (ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
-				executeOSX();
+				executeWindows();
 			}
 			else
 			{
-				executeWindows();
+				executeOSX();
 			}
 		}
 		
@@ -217,9 +217,9 @@ package actionScripts.utils
 		
 		private function getPlatformCommand():String
 		{
-			var setCommand:String = ConstantsCoreVO.IS_MACOS ? "" : "@echo off\r\n";
+			var setCommand:String = ConstantsCoreVO.IS_WINDOWS ? "@echo off\r\n" : "";
 			var isValidToExecute:Boolean;
-			var setPathCommand:String = ConstantsCoreVO.IS_MACOS ? "export PATH=" : "set PATH=";
+			var setPathCommand:String = ConstantsCoreVO.IS_WINDOWS ? "set PATH=" : "export PATH=";
 			var defaultOrCustomSDKPath:String;
 			var additionalCommandLines:String = "";
 			var defaultSDKtype:String;
@@ -240,13 +240,13 @@ package actionScripts.utils
 			{
 				var flexRoyaleHomeType:String = (defaultSDKtype && defaultSDKtype == SDKTypes.ROYALE) ? "ROYALE_HOME" : "FLEX_HOME";
 				setCommand += getSetExportWithoutQuote(flexRoyaleHomeType, defaultOrCustomSDKPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ flexRoyaleHomeType +"/bin:" : "%"+ flexRoyaleHomeType +"%\\bin;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? ("%"+ flexRoyaleHomeType +"%\\bin;") : ("$"+ flexRoyaleHomeType +"/bin:"));
 				
 				if (!defaultSDKtype || (defaultSDKtype && defaultSDKtype != SDKTypes.ROYALE))
 				{
 					var airHomeType:String = "AIR_SDK_HOME";
 					setCommand += getSetExportWithoutQuote(airHomeType, defaultOrCustomSDKPath);
-					setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$"+ airHomeType +"/bin:" : "%"+ airHomeType +"%\\bin;");
+					setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? ("%"+ airHomeType +"%\\bin;") : ("$"+ airHomeType +"/bin:"));
 				}
 				
 				isValidToExecute = true;
@@ -261,45 +261,45 @@ package actionScripts.utils
 			if (defaultOrCustomSDKPath)
 			{
 				setCommand += getSetExportWithoutQuote("JAVA_HOME", defaultOrCustomSDKPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$JAVA_HOME/bin:" : "%JAVA_HOME%\\bin;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%JAVA_HOME%\\bin;" : "$JAVA_HOME/bin:");
 				isValidToExecute = true;
 			}
 			
 			if (UtilsCore.isAntAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("ANT_HOME", model.antHomePath.fileBridge.nativePath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$ANT_HOME/bin:" : "%ANT_HOME%\\bin;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%ANT_HOME%\\bin;" : "$ANT_HOME/bin:");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isMavenAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("MAVEN_HOME", model.mavenPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$MAVEN_HOME/bin:" : "%MAVEN_HOME%\\bin;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%MAVEN_HOME%\\bin;" : "$MAVEN_HOME/bin:");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isGradleAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("GRADLE_HOME", model.gradlePath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$GRADLE_HOME/bin:" : "%GRADLE_HOME%\\bin;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%GRADLE_HOME%\\bin;" : "$GRADLE_HOME/bin:");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isGrailsAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("GRAILS_HOME", model.grailsPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$GRAILS_HOME/bin:" : "%GRAILS_HOME%\\bin;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%GRAILS_HOME%\\bin;" : "$GRAILS_HOME/bin:");
 				isValidToExecute = true;
 			}
 			if (UtilsCore.isHaxeAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("HAXE_HOME", model.haxePath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$HAXE_HOME:" : "%HAXE_HOME%;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%HAXE_HOME%;" : "$HAXE_HOME:");
 				isValidToExecute = true;
 				isHaxeAvailable = true;
 			}
 			if (UtilsCore.isNekoAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("NEKO_HOME", model.nekoPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$NEKO_HOME:" : "%NEKO_HOME%;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%NEKO_HOME%;" : "$NEKO_HOME:");
 				valueDYLD_LIBRARY_PATHs.push(model.nekoPath);
 				isValidToExecute = true;
 			}
@@ -312,16 +312,16 @@ package actionScripts.utils
 				}
 
 				setCommand += getSetExportWithoutQuote("VAGRANT_HOME", File.applicationStorageDirectory.nativePath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$VAGRANT_HOME:" : "%VAGRANT_HOME%;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%VAGRANT_HOME%;" : "$VAGRANT_HOME:");
 				isValidToExecute = true;
 			}*/
 			if (UtilsCore.isVirtualBoxAvailable())
 			{
 				setCommand += getSetExportWithoutQuote("VIRTUALBOX_HOME", model.virtualBoxPath);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$VIRTUALBOX_HOME:" : "%VIRTUALBOX_HOME%;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%VIRTUALBOX_HOME%;" : "$VIRTUALBOX_HOME:");
 				isValidToExecute = true;
 			}
-			if (!ConstantsCoreVO.IS_MACOS && UtilsCore.isGitPresent())
+			if (ConstantsCoreVO.IS_WINDOWS && UtilsCore.isGitPresent())
 			{
 				// moonshine stores gir path with 'bin\git.exe' format 
 				// we need to find probable sdk root instead
@@ -349,16 +349,23 @@ package actionScripts.utils
 			{
 				setCommand += getSetExportWithoutQuote(
 						"DYLD_LIBRARY_PATH",
-						ConstantsCoreVO.IS_MACOS ? valueDYLD_LIBRARY_PATHs.join(":") : valueDYLD_LIBRARY_PATHs.join(";")
+						ConstantsCoreVO.IS_WINDOWS ? valueDYLD_LIBRARY_PATHs.join(";") : valueDYLD_LIBRARY_PATHs.join(":")
 				);
-				setPathCommand += (ConstantsCoreVO.IS_MACOS ? "$DYLD_LIBRARY_PATH:" : "%DYLD_LIBRARY_PATH%;");
+				setPathCommand += (ConstantsCoreVO.IS_WINDOWS ? "%DYLD_LIBRARY_PATH%;" : "$DYLD_LIBRARY_PATH:");
 				isValidToExecute = true;
 			}
 
 			// if nothing found in above three don't run
 			if (!isValidToExecute) return null;
 			
-			if (ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
+			{
+				// need to set PATH under application shell
+				setCommand += setPathCommand + "%PATH%\r\n";
+				if (additionalCommandLines != "") setCommand += additionalCommandLines;
+				if (executeWithCommands) setCommand += executeWithCommands.join("\r\n");
+			}
+			else
 			{
 				setCommand += setPathCommand + "$PATH;";
 
@@ -372,35 +379,28 @@ package actionScripts.utils
 				if (additionalCommandLines != "") setCommand += additionalCommandLines;
 				if (executeWithCommands) setCommand += executeWithCommands.join(";");
 			}
-			else
-			{
-				// need to set PATH under application shell
-				setCommand += setPathCommand + "%PATH%\r\n";
-				if (additionalCommandLines != "") setCommand += additionalCommandLines;
-				if (executeWithCommands) setCommand += executeWithCommands.join("\r\n");
-			}
 			
 			return setCommand;
 		}
 		
 		private function getSetExportWithQuote(field:String, path:String):String
 		{
-			if (ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
-				return "export "+ field +"=\""+ path +"\";";
+				return "set "+ field +"=\""+ path +"\"\r\n";
 			}
 
-			return "set "+ field +"=\""+ path +"\"\r\n";
+			return "export "+ field +"=\""+ path +"\";";
 		}
 
 		private function getSetExportWithoutQuote(field:String, path:String):String
 		{
-			if (ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
-				return getSetExportWithQuote(field, path);
+				return "set "+ field +"="+ UtilsCore.getEncodedForShell(path) +"\r\n";
 			}
 
-			return "set "+ field +"="+ UtilsCore.getEncodedForShell(path) +"\r\n";
+			return getSetExportWithQuote(field, path);
 		}
 
 		private function onBatchFileWriteComplete():void
@@ -425,10 +425,11 @@ package actionScripts.utils
 		private function onCommandLineExecutionWith(command:String):void
 		{
 			customInfo = new NativeProcessStartupInfo();
-			customInfo.executable = ConstantsCoreVO.IS_MACOS ? 
-				File.documentsDirectory.resolvePath("/bin/bash") : new File("c:\\Windows\\System32\\cmd.exe");
+			customInfo.executable = ConstantsCoreVO.IS_WINDOWS ?
+				new File("c:\\Windows\\System32\\cmd.exe") :
+				File.documentsDirectory.resolvePath("/bin/bash");
 			
-			customInfo.arguments = Vector.<String>([ConstantsCoreVO.IS_MACOS ? "-c" : "/c", command]);
+			customInfo.arguments = Vector.<String>([(ConstantsCoreVO.IS_WINDOWS ? "/c" : "-c"), command]);
 			customProcess = new NativeProcess();
 			startShell(true);
 			customProcess.start(customInfo);
@@ -455,7 +456,7 @@ package actionScripts.utils
 		private function onDisposeFootprints(event:ApplicationEvent):void
 		{
 			var tempDirectory:FileLocation = model.fileCore.resolveTemporaryDirectoryPath("moonshine");
-			if (!ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				customInfo = new NativeProcessStartupInfo();
 				customInfo.executable = new File("c:\\Windows\\System32\\cmd.exe");

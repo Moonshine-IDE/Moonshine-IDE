@@ -165,7 +165,7 @@ package actionScripts.plugins.startup
 			clearTimeout(startHelpingTimeout);
 			
 			// env.variable parsing only available for Windows
-			if (!ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				environmentUtil = new EnvironmentUtils();
 				addEventListenersToEnvironmentUtil();
@@ -207,6 +207,8 @@ package actionScripts.plugins.startup
 			toggleListenersInstallerItemsManager(true);
 			
 			HelperConstants.IS_MACOS = ConstantsCoreVO.IS_MACOS;
+			HelperConstants.IS_WINDOWS = ConstantsCoreVO.IS_WINDOWS;
+			HelperConstants.IS_LINUX = ConstantsCoreVO.IS_LINUX;
 			installerItemsManager.dependencyCheckUtil = dependencyCheckUtil;
 			installerItemsManager.environmentUtil = environmentUtil;
 			installerItemsManager.loadItemsAndDetect();
@@ -473,7 +475,7 @@ package actionScripts.plugins.startup
 		 */
 		private function togglePolling(start:Boolean):void
 		{
-			if (!ConstantsCoreVO.IS_MACOS) 
+			if (ConstantsCoreVO.IS_WINDOWS) 
 			{
 				if (start)
 				{

@@ -91,7 +91,7 @@ package actionScripts.utils
 			var isDriveDifferenceOnWindows:Boolean;
 
 			// specific drive-check case on Windows
-			if (!ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				if (projectPathString.charAt(0) != sourcePathString.charAt(0))
 				{
@@ -100,7 +100,7 @@ package actionScripts.utils
 			}
 
 			// relative path conditions applicable for all platforms
-			if (!isDriveDifferenceOnWindows || ConstantsCoreVO.IS_MACOS)
+			if (!isDriveDifferenceOnWindows || !ConstantsCoreVO.IS_WINDOWS)
 			{
 				var sourceRelativePath:String = projectPathFile.getRelativePath(sourcePathFile, true);
 				// if only non-null
@@ -436,7 +436,7 @@ package actionScripts.utils
 		{
 			if (!UtilsCore.isSVNPresent() || forceUpdate)
 			{
-				if (path && !ConstantsCoreVO.IS_MACOS && path.indexOf("svn.exe") == -1)
+				if (path && ConstantsCoreVO.IS_WINDOWS && path.indexOf("svn.exe") == -1)
 				{
 					path += (File.separator +'bin'+ File.separator +'svn.exe');
 				}
@@ -481,7 +481,7 @@ package actionScripts.utils
 			 */
 			function updateMoonshineConfiguration():void
 			{
-				if (!ConstantsCoreVO.IS_MACOS && (providedPath == null || providedPath.indexOf("git.exe") == -1))
+				if (ConstantsCoreVO.IS_WINDOWS && (providedPath == null || providedPath.indexOf("git.exe") == -1))
 				{
 					providedPath += (File.separator +'bin'+ File.separator +'git.exe');
 				}

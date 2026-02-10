@@ -78,31 +78,31 @@ package actionScripts.plugins.swflauncher.launchers
 		private function startUnzipProcess(toFolder:File, byANE:File):void
 		{
 			var processArgs:Vector.<String> = new Vector.<String>;
-			if (ConstantsCoreVO.IS_MACOS)
-			{
-				processArgs.push("-c");
-				processArgs.push("unzip ../"+ byANE.name);
-			}
-			else
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				processArgs.push("xf");
 				processArgs.push("..\\"+ byANE.name);
 			}
+			else
+			{
+				processArgs.push("-c");
+				processArgs.push("unzip ../"+ byANE.name);
+			}
 			
 			var tmpExecutableJava:FileLocation = UtilsCore.getExecutableJavaLocation();
-			if (!ConstantsCoreVO.IS_MACOS && (!tmpExecutableJava || !tmpExecutableJava.fileBridge.exists))
+			if (ConstantsCoreVO.IS_WINDOWS && (!tmpExecutableJava || !tmpExecutableJava.fileBridge.exists))
 			{
 				Alert.show("You need Java to complete this process.\nYou can setup Java by going into Settings under File menu.", "Error!");
 				return;
 			}
-			else if (!ConstantsCoreVO.IS_MACOS)
+			else if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				tmpExecutableJava = tmpExecutableJava.fileBridge.parent.resolvePath("jar.exe");
 			}
 			
 			var shellInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
 			shellInfo.arguments = processArgs;
-			shellInfo.executable = ConstantsCoreVO.IS_MACOS ? new File("/bin/bash") : tmpExecutableJava.fileBridge.getFile as File;
+			shellInfo.executable = ConstantsCoreVO.IS_WINDOWS ? tmpExecutableJava.fileBridge.getFile as File : new File("/bin/bash");
 			shellInfo.workingDirectory = toFolder;
 			
 			var fcsh:NativeProcess = new NativeProcess();

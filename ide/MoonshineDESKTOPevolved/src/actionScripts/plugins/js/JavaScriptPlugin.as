@@ -55,7 +55,7 @@ package actionScripts.plugins.js
 				// directory, we can try to use it as the default, if it exists.
 				// if the user saves a different path (or clears the path) in
 				// the settings, these default values will be safely ignored.
-				var nodeDir:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\Program Files\\nodejs")
+				var nodeDir:File = new File(ConstantsCoreVO.IS_WINDOWS ? "C:\\Program Files\\nodejs" : "/usr/local/bin")
 				defaultNodePath = (nodeDir.exists && nodeDir.isDirectory) ? nodeDir.nativePath : null;
 				if(defaultNodePath && model.nodePath == null)
 				{

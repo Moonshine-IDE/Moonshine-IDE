@@ -191,7 +191,7 @@ package actionScripts.plugins.svn.commands
 		{
 			if (remoteOutput)
 			{
-				var lines:Array = remoteOutput.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
+				var lines:Array = remoteOutput.split(ConstantsCoreVO.IS_WINDOWS ? "\r\n" : "\n");
 				var tmpRepoItem:RepositoryItemVO;
 				for each (var line:String in lines)
 				{

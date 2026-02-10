@@ -440,7 +440,7 @@ package actionScripts.plugins.visualEditor
         private function getPreRunPreviewServerCommands():Array
         {
             var executableJavaLocation:FileLocation = UtilsCore.getExecutableJavaLocation();
-            var prefixSet:String = ConstantsCoreVO.IS_MACOS ? "export" : "set";
+            var prefixSet:String = ConstantsCoreVO.IS_WINDOWS ? "set" : "export";
 
             return [prefixSet.concat(" JAVA_EXEC=", executableJavaLocation.fileBridge.nativePath),
                     prefixSet.concat(" TARGET_PATH=", getMavenBuildProjectPath())];

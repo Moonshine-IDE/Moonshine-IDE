@@ -84,7 +84,7 @@ package actionScripts.plugins.git.commands
 				{
 					value.output = StringUtil.trim(value.output);
 
-					var tmpOrigins:Array = value.output.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
+					var tmpOrigins:Array = value.output.split(ConstantsCoreVO.IS_WINDOWS ? "\r\n" : "\n");
 					isMultipleOrigin = tmpOrigins.length > 1;
 
 					var calculatedURL:String;

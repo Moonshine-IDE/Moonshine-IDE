@@ -74,7 +74,7 @@ class FileWrapperNativeContextMenuProvider {
 			model.contextMenuCore.getContextMenuItem(ProjectTreeContextMenuItem.COPY_PATH, updateOverMultiSelectionOption, "displaying"));
 		model.contextMenuCore.addItem(contextMenu,
 				model.contextMenuCore.getContextMenuItem(ProjectTreeContextMenuItem.OPEN_PATH_IN_TERMINAL, populateOpenInTerminalMenu, "displaying"));
-		if (!ConstantsCoreVO.IS_MACOS)
+		if (ConstantsCoreVO.IS_WINDOWS)
 		{
 			model.contextMenuCore.addItem(contextMenu,
 				model.contextMenuCore.getContextMenuItem(ProjectTreeContextMenuItem.OPEN_PATH_IN_POWERSHELL, updateOverMultiSelectionOption, "displaying"));

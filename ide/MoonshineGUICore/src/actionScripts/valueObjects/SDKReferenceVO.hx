@@ -222,7 +222,7 @@ class SDKReferenceVO {
 		
 	private function getType():String {
 		// flex
-		var compilerExtension:String = ConstantsCoreVO.IS_MACOS ? "" : ".bat";
+		var compilerExtension:String = ConstantsCoreVO.IS_WINDOWS ? ".bat" : "";
 		var compilerFile:FileLocation = fileLocation.resolvePath(FLEX_SDK_COMPILER + compilerExtension);
 		if (compilerFile.fileBridge.exists) {
 			if (fileLocation.resolvePath("frameworks/libs/spark.swc").fileBridge.exists

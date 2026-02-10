@@ -150,14 +150,14 @@ package actionScripts.plugins.vagrant
 				// if the user saves a different path (or clears the path) in
 				// the settings, these default values will be safely ignored.
 				// --vagrant--
-				var defaultLocation:File = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : "C:\\HashiCorp\\Vagrant");
+				var defaultLocation:File = new File(ConstantsCoreVO.IS_WINDOWS ? "C:\\HashiCorp\\Vagrant" : "/usr/local/bin");
 				defaultVagrantPath = defaultLocation.exists ? defaultLocation.nativePath : null;
 				if (defaultVagrantPath && !model.vagrantPath)
 				{
 					model.vagrantPath = defaultVagrantPath;
 				}
 				// --virtualBox--
-				defaultLocation = new File(ConstantsCoreVO.IS_MACOS ? "/usr/local/bin" : FileUtils.getValidOrPossibleWindowsInstallation("Oracle/VirtualBox"));
+				defaultLocation = new File(ConstantsCoreVO.IS_WINDOWS ? FileUtils.getValidOrPossibleWindowsInstallation("Oracle/VirtualBox") : "/usr/local/bin");
 				defaultVirtualBoxPath = defaultLocation.exists ? defaultLocation.nativePath : null;
 				if (defaultVirtualBoxPath && !model.virtualBoxPath)
 				{
@@ -802,11 +802,7 @@ package actionScripts.plugins.vagrant
 
 			var binPath:String = UtilsCore.getVagrantBinPath();
 			var command:String;
-			if (ConstantsCoreVO.IS_MACOS)
-			{
-				command = '"'+ binPath +'" up 2>&1 | tee vagrant_up.log';
-			}
-			else
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
 				if (powerShellPath)
@@ -818,6 +814,10 @@ package actionScripts.plugins.vagrant
 					error("Failed to locate PowerShell during execution.");
 					return;
 				}
+			}
+			else
+			{
+				command = '"'+ binPath +'" up 2>&1 | tee vagrant_up.log';
 			}
 			
 			warning("%s", command);

@@ -713,7 +713,7 @@ package actionScripts.plugins.haxe
                                     hlExe = hlRoot.resolvePath("mac/hl");
                                     break;
                                 }
-                                case "lin":
+                                case "lnx":
                                 {
                                     hlExe = hlRoot.resolvePath("linux/hl");
                                     break;

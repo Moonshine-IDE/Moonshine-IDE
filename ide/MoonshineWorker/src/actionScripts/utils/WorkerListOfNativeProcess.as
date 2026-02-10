@@ -92,7 +92,7 @@ package actionScripts.utils
 		private function renewProcessInfo():NativeProcessStartupInfo
 		{
 			customInfo = new NativeProcessStartupInfo();
-			customInfo.executable = !MoonshineWorker.IS_MACOS ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
+			customInfo.executable = MoonshineWorker.IS_WINDOWS ? new File("c:\\Windows\\System32\\cmd.exe") : new File("/bin/bash");
 			
 			return customInfo;
 		}
@@ -125,7 +125,7 @@ package actionScripts.utils
 			
 			var tmpArr:Array = queue[0].com.split("&&");
 			
-			if (!MoonshineWorker.IS_MACOS)
+			if (MoonshineWorker.IS_WINDOWS)
 			{
 				tmpArr.unshift("/c");
 			}

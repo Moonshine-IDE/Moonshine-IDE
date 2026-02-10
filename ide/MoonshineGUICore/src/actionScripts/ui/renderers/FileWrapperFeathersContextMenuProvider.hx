@@ -109,7 +109,7 @@ class FileWrapperFeathersContextMenuProvider {
 		var items:Array<MenuItem> = [];
 		items.push(getContextMenuItem(ProjectTreeContextMenuItem.COPY_PATH, redispatch, updateOverMultiSelectionOption));
 		items.push(getContextMenuItem(ProjectTreeContextMenuItem.OPEN_PATH_IN_TERMINAL, redispatch, populateOpenInTerminalMenu));
-		if (!ConstantsCoreVO.IS_MACOS)
+		if (ConstantsCoreVO.IS_WINDOWS)
 		{
 			items.push(getContextMenuItem(ProjectTreeContextMenuItem.OPEN_PATH_IN_POWERSHELL, redispatch, updateOverMultiSelectionOption));
 		}

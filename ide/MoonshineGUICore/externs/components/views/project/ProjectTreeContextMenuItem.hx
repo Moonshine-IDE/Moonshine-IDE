@@ -44,7 +44,7 @@ class ProjectTreeContextMenuItem {
 	public static final NEW:String = "New";
 	public static final NEW_FOLDER:String = "New Folder";
 	public static final COPY_PATH:String = "Copy Path";
-	public static final OPEN_PATH_IN_TERMINAL:String = "Open in "+ (ConstantsCoreVO.IS_MACOS ? "Terminal" : "Command Line");
+	public static final OPEN_PATH_IN_TERMINAL:String = "Open in "+ (ConstantsCoreVO.IS_WINDOWS ? "Command Line" : "Terminal");
 	public static final OPEN_PATH_IN_POWERSHELL:String = "Open in PowerShell";
 	public static final SHOW_IN_EXPLORER:String = "Show in Explorer";
 	public static final SHOW_IN_FINDER:String = "Show in Finder";

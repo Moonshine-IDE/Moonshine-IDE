@@ -117,6 +117,7 @@ package actionScripts.plugins.java
 		private static const LANGUAGE_SERVER_FEATURES_PATH:String = "features";
 		private static const LANGUAGE_SERVER_WINDOWS_CONFIG_PATH:String = "config_win";
 		private static const LANGUAGE_SERVER_MACOS_CONFIG_PATH:String = "config_mac";
+		private static const LANGUAGE_SERVER_LINUX_CONFIG_PATH:String = "config_linux";
 		private static const PATH_WORKSPACE_STORAGE:String = "java/workspaces";
 
 		private static const MINIMUM_JAVA_MAJOR_VERSION:int = 17;
@@ -440,9 +441,13 @@ package actionScripts.plugins.java
 			{
 				configFile = appFolder.resolvePath(LANGUAGE_SERVER_MACOS_CONFIG_PATH);
 			}
-			else
+			else if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				configFile = appFolder.resolvePath(LANGUAGE_SERVER_WINDOWS_CONFIG_PATH);
+			}
+			else
+			{
+				configFile = appFolder.resolvePath(LANGUAGE_SERVER_LINUX_CONFIG_PATH);
 			}
 			var pluginsPath:File = appFolder.resolvePath(LANGUAGE_SERVER_PLUGINS_PATH);
 			var featuresPath:File = appFolder.resolvePath(LANGUAGE_SERVER_FEATURES_PATH);

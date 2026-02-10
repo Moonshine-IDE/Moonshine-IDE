@@ -75,11 +75,7 @@ class Settings {
 	}
 
 	private static function _init() {
-		#if air
-		_os = Capabilities.os.substr(0, 3).toLowerCase();
-		#else
 		_os = Capabilities.version.substr(0, 3).toLowerCase();
-		#end
 		_keyboard = new KeyboardSettings();
 		_font = new FontSettings();
 

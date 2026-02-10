@@ -47,7 +47,7 @@ package actionScripts.utils
 		 */
 		public static function escapeSingleOption(option:String):String
 		{
-			if(ConstantsCoreVO.IS_MACOS)
+			if(!ConstantsCoreVO.IS_WINDOWS)
 			{
 				//on macOS, a backslash can be used to escape a space character
 				return option.replace(/ /g, "\\ ");

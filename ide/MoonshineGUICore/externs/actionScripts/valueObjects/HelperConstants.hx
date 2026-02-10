@@ -42,6 +42,8 @@ extern class HelperConstants
 	public static final DEFAULT_SDK_FOLDER_NAME:String;
 	
 	public static var IS_MACOS:Bool;
+	public static var IS_WINDOWS:Bool;
+	public static var IS_LINUX:Bool;
 	public static var IS_RUNNING_IN_MOON:Bool;
 	public static var IS_INSTALLER_READY:Bool;
 	public static var CONFIG_AIR_VERSION:String;

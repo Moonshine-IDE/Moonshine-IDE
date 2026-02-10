@@ -44,7 +44,7 @@ package
 	
 	public class MoonshineWorker extends Sprite
 	{
-		public static var IS_MACOS:Boolean;
+		public static var IS_WINDOWS:Boolean;
 		
 		public var mainToWorker:MessageChannel;
 		public var workerToMain:MessageChannel;
@@ -69,8 +69,8 @@ package
 			var incomingObject:Object = mainToWorker.receive();
 			switch (incomingObject.event)
 			{
-				case WorkerEvent.SET_IS_MACOS:
-					IS_MACOS = incomingObject.value;
+				case WorkerEvent.SET_IS_WINDOWS:
+					IS_WINDOWS = incomingObject.value;
 					break;
 				case WorkerEvent.SEARCH_IN_PROJECTS:
 					searchInProjects.projectSearchObject = incomingObject;

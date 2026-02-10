@@ -102,7 +102,7 @@ import com.adobe.utils.StringUtil;
 
 			subscribeIdToWorker = UIDUtil.createUID();
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
-			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
+			worker.sendToWorker(WorkerEvent.SET_IS_WINDOWS, ConstantsCoreVO.IS_WINDOWS, subscribeIdToWorker);
 		}
 
 		/**
@@ -150,14 +150,14 @@ import com.adobe.utils.StringUtil;
 						case ComponentTypes.TYPE_FLEX_HARMAN:
 						case ComponentTypes.TYPE_FEATHERS:
 						case ComponentTypes.TYPE_FLEXJS:
-							executable = ConstantsCoreVO.IS_MACOS ? "mxmlc" : "mxmlc.bat";
-							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version' + (ConstantsCoreVO.IS_MACOS ? ';' : '&& ');
-							executable = ConstantsCoreVO.IS_MACOS ? "adt" : "adt.bat";
+							executable = ConstantsCoreVO.IS_WINDOWS ? "mxmlc.bat" : "mxmlc";
+							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version' + (ConstantsCoreVO.IS_WINDOWS ? '&& ' : ';');
+							executable = ConstantsCoreVO.IS_WINDOWS ? "adt.bat" : "adt";
 							commands += '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" -version';
 							itemTypeUnderCursor = QUERY_FLEX_AIR_VERSION;
 							break;
 						case ComponentTypes.TYPE_ROYALE:
-							executable = ConstantsCoreVO.IS_MACOS ? "mxmlc" : "mxmlc.bat";
+							executable = ConstantsCoreVO.IS_WINDOWS ? "mxmlc.bat" : "mxmlc";
 							commands = '"'+ itemUnderCursor.installToPath+'/js/bin/'+ executable +'" --version';
 							itemTypeUnderCursor = QUERY_ROYALE_FJS_VERSION;
 							break;
@@ -168,12 +168,12 @@ import com.adobe.utils.StringUtil;
 									QUERY_JDK_8_VERSION : QUERY_JDK_VERSION;
 							break;
 						case ComponentTypes.TYPE_ANT:
-							executable = ConstantsCoreVO.IS_MACOS ? "ant" : "ant.bat";
+							executable = ConstantsCoreVO.IS_WINDOWS ? "ant.bat" : "ant";
 							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" -version';
 							itemTypeUnderCursor = QUERY_ANT_VERSION;
 							break;
 						case ComponentTypes.TYPE_MAVEN:
-							executable = ConstantsCoreVO.IS_MACOS ? "mvn" : "mvn.cmd";
+							executable = ConstantsCoreVO.IS_WINDOWS ? "mvn.cmd" : "mvn";
 							executableFullPath = itemUnderCursor.installToPath+'/bin/'+ executable;
 							if (!FileUtils.isPathExists(executableFullPath))
 							{
@@ -188,26 +188,26 @@ import com.adobe.utils.StringUtil;
 							itemTypeUnderCursor = QUERY_SVN_GIT_VERSION;
 							break;
 						case ComponentTypes.TYPE_GRADLE:
-							executable = ConstantsCoreVO.IS_MACOS ? "gradle" : "gradle.bat";
+							executable = ConstantsCoreVO.IS_WINDOWS ? "gradle.bat" : "gradle";
 							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
 							itemTypeUnderCursor = QUERY_GRADLE_VERSION;
 							break;
 						case ComponentTypes.TYPE_GRAILS:
-							executable = ConstantsCoreVO.IS_MACOS ? "grails" : "grails.bat";
+							executable = ConstantsCoreVO.IS_WINDOWS ? "grails.bat" : "grails";
 							commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
 							itemTypeUnderCursor = QUERY_GRAILS_VERSION;
 							break;
 						case ComponentTypes.TYPE_NODEJS:
-							executable = ConstantsCoreVO.IS_MACOS ? "node" : "node.exe";
-							if (ConstantsCoreVO.IS_MACOS) commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version';
-							else commands = '"'+ itemUnderCursor.installToPath+'/'+ executable +'" --version';
+							executable = ConstantsCoreVO.IS_WINDOWS ? "node.exe" : "node";
+							if (ConstantsCoreVO.IS_WINDOWS) commands = '"'+ itemUnderCursor.installToPath+'/'+ executable +'" --version';
+							else commands = '"'+ itemUnderCursor.installToPath+'/bin/'+ executable +'" --version'; 
 							itemTypeUnderCursor = QUERY_NODEJS_VERSION;
 							break;
 						case ComponentTypes.TYPE_VAGRANT:
 							executable = UtilsCore.getVagrantBinPath();
 							if (executable)
 							{
-								if (ConstantsCoreVO.IS_MACOS) commands = '"'+ executable +'" --version';
+								if (ConstantsCoreVO.IS_WINDOWS) commands = '"'+ executable +'" --version';
 								else commands = '"'+ executable +'" --version';
 								itemTypeUnderCursor = QUERY_VAGRANT_VERSION;
 							}
@@ -239,7 +239,7 @@ import com.adobe.utils.StringUtil;
 						case ComponentTypes.TYPE_VIRTUALBOX:
 							if (UtilsCore.isVirtualBoxAvailable())
 							{
-								commands = '"'+ itemUnderCursor.installToPath +"/"+ (ConstantsCoreVO.IS_MACOS ? 'VBoxManage' : 'VBoxManage.exe') +'" -v';
+								commands = '"'+ itemUnderCursor.installToPath +"/"+ (ConstantsCoreVO.IS_WINDOWS ? 'VBoxManage.exe' : 'VBoxManage') +'" -v';
 								itemTypeUnderCursor = QUERY_VIRTUALBOX_VERSION;
 							}
 							break;
@@ -248,7 +248,7 @@ import com.adobe.utils.StringUtil;
 							{
 								commands = 'defaults read "'+ itemUnderCursor.installToPath+'"/Contents/Info CFBundleShortVersionString';
 							}
-							else
+							else if (ConstantsCoreVO.IS_WINDOWS)
 							{
 								commands = '"'+ itemUnderCursor.installToPath+'/nsd.exe" -version';
 							}
@@ -314,7 +314,7 @@ import com.adobe.utils.StringUtil;
 						worker.sendToWorker(WorkerEvent.RUN_LIST_OF_NATIVEPROCESS, {queue:queue, workingDirectory:null}, subscribeIdToWorker);
 						itemUnderCursorIndex++;
 					}
-					else
+					else if (ConstantsCoreVO.IS_WINDOWS)
 					{
 						var powerShellPath:String = UtilsCore.getPowerShellExecutablePath();
 						if (powerShellPath)
@@ -524,7 +524,7 @@ import com.adobe.utils.StringUtil;
 						{
 							components[int(tmpQueue.extraArguments[0])].version = value.output;
 						}
-						else if (!ConstantsCoreVO.IS_MACOS)
+						else if (ConstantsCoreVO.IS_WINDOWS)
 						{
 							match = value.output.match(/Release /);
 							if (match)

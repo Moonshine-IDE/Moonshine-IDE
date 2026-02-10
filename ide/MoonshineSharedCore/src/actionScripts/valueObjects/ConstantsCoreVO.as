@@ -260,6 +260,8 @@ package actionScripts.valueObjects
 		//--------------------------------------------------------------------------
 		
 		public static var IS_MACOS							: Boolean;
+		public static var IS_WINDOWS						: Boolean;
+		public static var IS_LINUX							: Boolean;
 		public static var is64BitSupport					: Boolean = Capabilities.supports64BitProcesses;
 		public static var IS_DEVELOPMENT_MODE				: Boolean;
 		public static var IS_AUTH_REQUIRED					: Boolean; // MoonshineServerPluginOpenSource

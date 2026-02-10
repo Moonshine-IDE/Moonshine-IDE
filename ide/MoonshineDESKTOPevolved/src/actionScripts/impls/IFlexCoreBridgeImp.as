@@ -353,9 +353,11 @@ import actionScripts.valueObjects.HelperConstants;
 					new MenuItem(resourceManager.getString('resources','NEW'),[]),
 					new MenuItem(resourceManager.getString('resources','OPEN'), null, null, OpenFileEvent.OPEN_FILE,
 						'o', [Keyboard.COMMAND, Keyboard.SHIFT],
+						'o', [Keyboard.CONTROL, Keyboard.SHIFT],
 						'o', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT,
 						'o', [Keyboard.COMMAND],
+						'o', [Keyboard.CONTROL],
 						'o', [Keyboard.CONTROL]),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','OPEN_RECENT_PROJECTS'),[]),
@@ -363,12 +365,15 @@ import actionScripts.valueObjects.HelperConstants;
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','SAVE'), null, null, MenuPlugin.MENU_SAVE_EVENT,
 						's', [Keyboard.COMMAND],
+						's', [Keyboard.CONTROL],
 						's', [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','SAVE_AS'), null, null, MenuPlugin.MENU_SAVE_AS_EVENT,
 						's', [Keyboard.COMMAND, Keyboard.SHIFT],
+						's', [Keyboard.CONTROL, Keyboard.SHIFT],
 						's', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(resourceManager.getString('resources','CLOSE'), null, null, CloseTabEvent.EVENT_CLOSE_TAB,
 						'w', [Keyboard.COMMAND],
+						'w', [Keyboard.CONTROL],
 						'w', [Keyboard.CONTROL]),
 					new MenuItem("Close All", null, null, CloseTabEvent.EVENT_CLOSE_ALL_TABS),
 					new MenuItem("Close Others", null, null, CloseTabEvent.EVENT_CLOSE_ALL_OTHER_TABS),
@@ -390,18 +395,22 @@ import actionScripts.valueObjects.HelperConstants;
 					new MenuItem(resourceManager.getString('resources','FIND'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS,
 								ProjectMenuTypes.JAVA, ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES,ProjectMenuTypes.VISUAL_EDITOR_DOMINO, ProjectMenuTypes.VISUAL_EDITOR_FLEX, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE, ProjectMenuTypes.ON_DISK], FindReplacePlugin.EVENT_FIND_NEXT,
 						'f', [Keyboard.COMMAND],
+						'f', [Keyboard.CONTROL],
 						'f', [Keyboard.CONTROL]),
 					/*new MenuItem(resourceManager.getString('resources','FINDE_PREV'), null, null, FindReplacePlugin.EVENT_FIND_PREV,
 						'f', [Keyboard.COMMAND, Keyboard.SHIFT],
+						'f', [Keyboard.CONTROL, Keyboard.SHIFT],
 						'f', [Keyboard.CONTROL, Keyboard.SHIFT]),*/
 					new MenuItem(resourceManager.getString('resources','FIND_RESOURCES'), null, null, FindResourcesPlugin.EVENT_FIND_RESOURCES,
 						'r', [Keyboard.COMMAND, Keyboard.SHIFT],
+						'r', [Keyboard.CONTROL, Keyboard.SHIFT],
 						'r', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(resourceManager.getString('resources','DOCUMENT_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], SymbolsPlugin.EVENT_OPEN_DOCUMENT_SYMBOLS_VIEW),
 					new MenuItem(resourceManager.getString('resources','WORKSPACE_SYMBOLS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], SymbolsPlugin.EVENT_OPEN_WORKSPACE_SYMBOLS_VIEW),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources','GO_TO_LINE'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], FindReplacePlugin.EVENT_GO_TO_LINE,
 						'l', [Keyboard.COMMAND],
+						'l', [Keyboard.CONTROL],
 						'l', [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','GO_TO_DEFINITION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], LanguageServerMenuEvent.EVENT_MENU_GO_TO_DEFINITION),
 					new MenuItem(resourceManager.getString('resources','GO_TO_TYPE_DEFINITION'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.GRAILS, ProjectMenuTypes.HAXE], LanguageServerMenuEvent.EVENT_MENU_GO_TO_TYPE_DEFINITION),
@@ -413,10 +422,13 @@ import actionScripts.valueObjects.HelperConstants;
 					new MenuItem(resourceManager.getString('resources','RENAME_SYMBOL'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.JAVA, ProjectMenuTypes.GRAILS], RenameEvent.EVENT_OPEN_RENAME_SYMBOL_VIEW),
 					new MenuItem(resourceManager.getString('resources', 'ORGANIZE_IMPORTS'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.JS_ROYALE, ProjectMenuTypes.LIBRARY_FLEX_AS], LanguageServerMenuEvent.EVENT_MENU_ORGANIZE_IMPORTS,
 						'i', [Keyboard.COMMAND, Keyboard.SHIFT],
+						'i', [Keyboard.CONTROL, Keyboard.SHIFT],
 						'i', [Keyboard.CONTROL, Keyboard.SHIFT]),
 					new MenuItem(null),
 					new MenuItem(resourceManager.getString('resources', 'DUPLICATE'), null, [ProjectMenuTypes.VISUAL_EDITOR_PRIMEFACES, ProjectMenuTypes.VISUAL_EDITOR_FLEX,ProjectMenuTypes.VISUAL_EDITOR_DOMINO], VisualEditorEvent.DUPLICATE_ELEMENT,
-						'u', [Keyboard.COMMAND], 'u', [Keyboard.CONTROL])
+						'u', [Keyboard.COMMAND],
+						'u', [Keyboard.CONTROL],
+						'u', [Keyboard.CONTROL])
 				]),
 				new MenuItem(resourceManager.getString('resources','VIEW'), [
 					new MenuItem(resourceManager.getString('resources','PROJECT_VIEW'), null, null, ProjectEvent.SHOW_PROJECT_VIEW),
@@ -437,6 +449,7 @@ import actionScripts.valueObjects.HelperConstants;
 				new MenuItem(resourceManager.getString('resources','PROJECT'),[
 					new MenuItem(resourceManager.getString('resources','OPEN_IMPORT_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_FLASHBUILDER_PROJECT, 
 						'o', [Keyboard.COMMAND],
+						'o', [Keyboard.CONTROL],
 						'o', [Keyboard.CONTROL]),
 					new MenuItem(resourceManager.getString('resources','IMPORT_ARCHIVE_PROJECT'), null, null, ProjectEvent.EVENT_IMPORT_PROJECT_ARCHIVE),
 					new MenuItem(resourceManager.getString('resources', 'IMPORT_FROM_GENESIS_CATALOG'), null, null, GenesisEvent.IMPORT_GENESIS_PROJECT),
@@ -446,10 +459,11 @@ import actionScripts.valueObjects.HelperConstants;
 				new MenuItem(resourceManager.getString('resources','DEBUG'),[
 					new MenuItem(resourceManager.getString('resources','BUILD_AND_DEBUG'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.HAXE], ProjectActionEvent.BUILD_AND_DEBUG,
 						"d", [Keyboard.COMMAND],
+						"d", [Keyboard.CONTROL],
 						"d", [Keyboard.CONTROL]),
 					new MenuItem(null),					
 					new MenuItem(resourceManager.getString('resources','STEP_OVER'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_OVER,
-						"e",[Keyboard.COMMAND],
+						"e", [Keyboard.COMMAND],
 						"f6", []),
 					new MenuItem(resourceManager.getString('resources','STEP_INTO'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_INTO),
 					new MenuItem(resourceManager.getString('resources','STEP_OUT'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STEP_OUT),
@@ -457,7 +471,8 @@ import actionScripts.valueObjects.HelperConstants;
 						"r",[Keyboard.COMMAND],
 						"f8", []),
 					new MenuItem(resourceManager.getString('resources','STOP'), null, [ProjectMenuTypes.FLEX_AS, ProjectMenuTypes.PURE_AS, ProjectMenuTypes.LIBRARY_FLEX_AS, ProjectMenuTypes.HAXE], DebugActionEvent.DEBUG_STOP,
-						"t",[Keyboard.COMMAND],
+						"t", [Keyboard.COMMAND],
+						"t", [Keyboard.CONTROL],
 						"t", [Keyboard.CONTROL])
 				]),
 				new MenuItem(resourceManager.getString('resources','SUBVERSION'), [
@@ -502,6 +517,7 @@ import actionScripts.valueObjects.HelperConstants;
 				var projectMenuItems:Vector.<MenuItem> = wmn[3].items;
 				projectMenuItems.splice(0, 0, new MenuItem(resourceManager.getString('resources','SEARCH_IN_PROJECTS'), null, null, SearchPlugin.SEARCH_IN_PROJECTS,
 					'f', [Keyboard.COMMAND, Keyboard.SHIFT],
+					'f', [Keyboard.CONTROL, Keyboard.SHIFT],
 					'f', [Keyboard.CONTROL, Keyboard.SHIFT]));
 			}
 			
@@ -624,7 +640,7 @@ import actionScripts.valueObjects.HelperConstants;
 
 		public function get defaultInstallationPathSDKs():String
 		{
-			if ( HelperConstants.DEFAULT_INSTALLATION_PATH == null ) HelperConstants.HELPER_STORAGE;
+			if ( HelperConstants.DEFAULT_INSTALLATION_PATH == null ) return HelperConstants.HELPER_STORAGE.nativePath;
 			return HelperConstants.DEFAULT_INSTALLATION_PATH.nativePath;
 		}
 

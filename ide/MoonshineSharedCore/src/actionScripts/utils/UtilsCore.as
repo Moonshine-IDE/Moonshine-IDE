@@ -82,6 +82,7 @@ package actionScripts.utils
 	
 	import feathers.data.ArrayCollection;
 	import actionScripts.plugin.tibbo.tibboproject.vo.TibboBasicProjectVO;
+	import actionScripts.valueObjects.Settings;
 
 	public class UtilsCore 
 	{
@@ -250,13 +251,13 @@ package actionScripts.utils
 			if (!path) return null;
 			
 			//path = path.replace(/\//g, IDEModel.getInstance().fileCore.separator);
-			if (ConstantsCoreVO.IS_MACOS) path = path.replace(/\\/g, model.fileCore.separator);
+			if (!ConstantsCoreVO.IS_WINDOWS) path = path.replace(/\\/g, model.fileCore.separator);
 			return path;
 		}
 		
 		public static function convertString(path:String):String
 		{
-			if (!ConstantsCoreVO.IS_MACOS)
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				path= path.split(" ").join("^ ");
 				path= path.split("(").join("^(");
@@ -277,7 +278,7 @@ package actionScripts.utils
 		{
 			for each (var i:SDKReferenceVO in model.userSavedSDKs)
 			{
-				if (!ConstantsCoreVO.IS_MACOS) searchByValue = searchByValue.replace(/(\/)/g, "\\");
+				if (ConstantsCoreVO.IS_WINDOWS) searchByValue = searchByValue.replace(/(\/)/g, "\\");
 				if (i[searchByField] == searchByValue)
 				{
 					return i;
@@ -381,7 +382,7 @@ package actionScripts.utils
 		public static function getPackageReferenceByProjectPath(classPaths:Vector.<FileLocation>, filePath:String=null, fileWrapper:FileWrapper=null, fileLocation:FileLocation=null, appendProjectNameAsPrefix:Boolean=true):String
 		{
 			var path:String = getPathStringByProjectPath(classPaths, filePath, fileWrapper, fileLocation, appendProjectNameAsPrefix);
-			var pattern:RegExp = new RegExp(ConstantsCoreVO.IS_MACOS ? model.fileCore.separator : "\\" + model.fileCore.separator, "g");
+			var pattern:RegExp = new RegExp(ConstantsCoreVO.IS_WINDOWS ? "\\" + model.fileCore.separator : model.fileCore.separator, "g");
 			path = path.replace(pattern, ".");
 			return path;
 		}
@@ -800,18 +801,7 @@ package actionScripts.utils
 			var executableFile:FileLocation;
 			var separator:String = model.fileCore.separator;
 
-			if (ConstantsCoreVO.IS_MACOS)
-			{
-				if (model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists)
-				{
-					executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath.concat(separator, "bin", separator, "java"));
-				}
-				else
-				{
-					executableFile = new FileLocation(separator.concat("usr", separator, "bin", separator, "java"));
-				}
-            }
-			else 
+			if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				if (model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists) 
 				{
@@ -819,7 +809,7 @@ package actionScripts.utils
 					if (!executableFile.fileBridge.exists)
 					{
 						executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath.concat(separator, "javaw.exe"));
-                    } // in case of user setup by 'javaPath/bin'
+					} // in case of user setup by 'javaPath/bin'
 				}
 				else
 				{
@@ -837,6 +827,17 @@ package actionScripts.utils
 							}
 						}
 					}
+				}
+			}
+			else
+			{
+				if (model.javaPathForTypeAhead && model.javaPathForTypeAhead.fileBridge.exists)
+				{
+					executableFile = new FileLocation(model.javaPathForTypeAhead.fileBridge.nativePath.concat(separator, "bin", separator, "java"));
+				}
+				else
+				{
+					executableFile = new FileLocation(separator.concat("usr", separator, "bin", separator, "java"));
 				}
 			}
 			
@@ -1163,10 +1164,10 @@ package actionScripts.utils
 		/**
 		 * Returns encoded string to run on Windows' shell
 		 */
-		public static function getEncodedForShell(value:String, forceOSXEncode:Boolean=false, forceWindowsEncode:Boolean=false):String
+		public static function getEncodedForShell(value:String, forceBashEncode:Boolean=false, forceWindowsEncode:Boolean=false):String
 		{
 			var tmpValue:String = "";
-			if (ConstantsCoreVO.IS_MACOS || forceOSXEncode)
+			if (!ConstantsCoreVO.IS_WINDOWS || forceBashEncode)
 			{
 				// @note
 				// in case of /bash one should send the value surrounded by $''
@@ -1175,7 +1176,7 @@ package actionScripts.utils
 				tmpValue = value.replace(/(")/g, '\\"');
 				tmpValue = value.replace(/(')/g, "\\'");
 			}
-			else if (!ConstantsCoreVO.IS_MACOS || forceWindowsEncode)
+			else if (ConstantsCoreVO.IS_WINDOWS || forceWindowsEncode)
 			{
 				for (var i:int; i < value.length; i++)
 				{
@@ -1216,7 +1217,7 @@ package actionScripts.utils
 		public static function getPowerShellExecutablePath():String
 		{
 			// possible termination
-			if (ConstantsCoreVO.IS_MACOS) return null;
+			if (!ConstantsCoreVO.IS_WINDOWS) return null;
 			
 			var installDirectories:Array = ["C:\\Windows\\SysWOW64\\", "C:\\Windows\\System32\\"];
 			var tmpPath:String;
@@ -1243,16 +1244,16 @@ package actionScripts.utils
 		public static function getConsolePath():String
 		{
 			var separator:String = model.fileCore.separator;
-            if (!ConstantsCoreVO.IS_MACOS)
-            {
-                // in windows
-                return "c:".concat(separator, "Windows", separator, "System32", separator, "cmd.exe");
-            }
-            else
-            {
-                // in mac
-                return separator.concat("bin", separator, "bash");
-            }
+			if (ConstantsCoreVO.IS_WINDOWS)
+			{
+				// in windows
+				return "c:".concat(separator, "Windows", separator, "System32", separator, "cmd.exe");
+			}
+			else
+			{
+				// in mac
+				return separator.concat("bin", separator, "bash");
+			}
 		}
 		
 		public static function isMavenAvailable():Boolean
@@ -1346,7 +1347,7 @@ package actionScripts.utils
 				return null;
 			}
 
-			var executable:String = ConstantsCoreVO.IS_MACOS ? "haxelib" : "haxelib.exe";
+			var executable:String = ConstantsCoreVO.IS_WINDOWS ? "haxelib.exe" : "haxelib";
 			if (model.fileCore.isPathExists([model.haxePath, executable].join(model.fileCore.separator)))
 			{
 				return [model.haxePath, executable].join(model.fileCore.separator);
@@ -1392,7 +1393,7 @@ package actionScripts.utils
 				return null;
 			}
 
-			var executable:String = ConstantsCoreVO.IS_MACOS ? "neko" : "neko.exe";
+			var executable:String = ConstantsCoreVO.IS_WINDOWS ? "neko.exe" : "neko";
 			if (model.fileCore.isPathExists([model.nekoPath, executable].join(model.fileCore.separator)))
 			{
 				return [model.nekoPath, executable].join(model.fileCore.separator);
@@ -1420,17 +1421,17 @@ package actionScripts.utils
 			{
 				return null;
 			}
-			else if (!ConstantsCoreVO.IS_MACOS)
-            {
-                return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
-            }
-            else
-            {
-                return UtilsCore.convertString(mavenLocation.resolvePath(mavenBin + "mvn").fileBridge.nativePath);
-            }
+			else if (ConstantsCoreVO.IS_WINDOWS)
+			{
+				return mavenLocation.resolvePath(mavenBin + "mvn.cmd").fileBridge.nativePath;
+			}
+			else
+			{
+				return UtilsCore.convertString(mavenLocation.resolvePath(mavenBin + "mvn").fileBridge.nativePath);
+			}
 			
 			return null;
-        }
+		}
 		
 		public static function getGradleBinPath():String
 		{
@@ -1450,7 +1451,7 @@ package actionScripts.utils
 			{
 				return null;
 			}
-			else if (!ConstantsCoreVO.IS_MACOS)
+			else if (ConstantsCoreVO.IS_WINDOWS)
 			{
 				return gradleLocation.resolvePath(gradleBin + "gradle.bat").fileBridge.nativePath;
 			}
@@ -1481,17 +1482,17 @@ package actionScripts.utils
 			{
 				return null;
 			}
-			else if (!ConstantsCoreVO.IS_MACOS)
-            {
-                return grailsLocation.resolvePath(grailsBin + "grails.bat").fileBridge.nativePath;
-            }
-            else
-            {
-                return UtilsCore.convertString(grailsLocation.resolvePath(grailsBin + "grails").fileBridge.nativePath);
-            }
+			else if (ConstantsCoreVO.IS_WINDOWS)
+			{
+				return grailsLocation.resolvePath(grailsBin + "grails.bat").fileBridge.nativePath;
+			}
+			else
+			{
+				return UtilsCore.convertString(grailsLocation.resolvePath(grailsBin + "grails").fileBridge.nativePath);
+			}
 			
 			return null;
-        }
+		}
 
         public static function getNodeBinPath():String
         {
@@ -1505,12 +1506,12 @@ package actionScripts.utils
 			{
 				return null;
 			}
-			else if (!ConstantsCoreVO.IS_MACOS)
-            {
-                return nodeLocation.resolvePath("node.exe").fileBridge.nativePath;
-            }
-            else
-            {
+			else if (ConstantsCoreVO.IS_WINDOWS)
+			{
+				return nodeLocation.resolvePath("node.exe").fileBridge.nativePath;
+			}
+			else
+			{
 				if (nodeLocation.resolvePath("node").fileBridge.exists)
 				{
 					return UtilsCore.convertString(nodeLocation.resolvePath("node").fileBridge.nativePath);
@@ -1631,7 +1632,7 @@ package actionScripts.utils
 				return false;
 			}
 
-			var virtualBoxExecutable:String = ConstantsCoreVO.IS_MACOS ? "VBoxManage" : "VirtualBoxVM.exe";
+			var virtualBoxExecutable:String = ConstantsCoreVO.IS_WINDOWS ? "VirtualBoxVM.exe" : "VBoxManage";
 			if (model.fileCore.isPathExists([model.virtualBoxPath, virtualBoxExecutable].join(model.fileCore.separator)))
 			{
 				return true;
@@ -1647,7 +1648,7 @@ package actionScripts.utils
 				return null;
 			}
 
-			var vagrantExecutable:String = ConstantsCoreVO.IS_MACOS ? "vagrant" : "vagrant.exe";
+			var vagrantExecutable:String = ConstantsCoreVO.IS_WINDOWS ? "vagrant.exe" : "vagrant";
 			if (model.fileCore.isPathExists([model.vagrantPath, vagrantExecutable].join(model.fileCore.separator)))
 			{
 				return [model.vagrantPath, vagrantExecutable].join(model.fileCore.separator);
@@ -1715,7 +1716,7 @@ package actionScripts.utils
 		
 		public static function getLineBreakEncoding():String
 		{
-			return (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
+			return (ConstantsCoreVO.IS_WINDOWS ? "\r\n" : "\n");
 		}
 
 		public static function getProjectFolder(fw:FileWrapper):String

@@ -45,6 +45,8 @@ extern class ConstantsCoreVO {
 	public static var IS_AIR:Bool;
 	public static var MOONSHINE_IDE_LABEL:String;
 	public static var IS_MACOS:Bool;
+	public static var IS_WINDOWS:Bool;
+	public static var IS_LINUX:Bool;
 	public static var IS_APP_STORE_VERSION:Bool;
 	public static var CURRENT_WORKSPACE:String;
 

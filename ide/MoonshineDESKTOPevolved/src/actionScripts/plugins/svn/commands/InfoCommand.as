@@ -100,7 +100,7 @@ package actionScripts.plugins.svn.commands
 			{
 				// Refresh succeded
 				var str:String = customProcess.standardOutput.readUTFBytes(customProcess.standardOutput.bytesAvailable);
-				infoLines = str.split(ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n");
+				infoLines = str.split(ConstantsCoreVO.IS_WINDOWS ? "\r\n" : "\n");
 
 				dispatchEvent(new Event(Event.COMPLETE));
 			}

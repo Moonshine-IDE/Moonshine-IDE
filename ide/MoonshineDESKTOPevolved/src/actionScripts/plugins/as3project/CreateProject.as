@@ -132,8 +132,9 @@ package actionScripts.plugins.as3project
 		private var isHaxeProject:Boolean;
 		private var isInvalidToSave:Boolean;
 		private var librarySettingObject:LibrarySettingsVO;
-		private var filePathReg:RegExp = ConstantsCoreVO.IS_MACOS ? 
-			new RegExp("^(?:[\w]\:|.*/)([^\|/]*)$", "i") : new RegExp(/^(?:[\w]\:|\\)(\\[a-z_\-\s0-9\.]+)+$/i);
+		private var filePathReg:RegExp = ConstantsCoreVO.IS_WINDOWS ? 
+			new RegExp(/^(?:[\w]\:|\\)(\\[a-z_\-\s0-9\.]+)+$/i) :
+			new RegExp("^(?:[\w]\:|.*/)([^\|/]*)$", "i");
 		
 		private var _allProjectTemplates:ArrayCollection;
 		private var _isProjectFromExistingSource:Boolean;

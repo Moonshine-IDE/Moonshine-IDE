@@ -62,7 +62,7 @@ package actionScripts.utils
 		private var filesTreeByDirectory:Dictionary = new Dictionary();
 		private var allOutput:String = "";
 		private var fileSeparator:String;
-		private var newLineCharacter:String = ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n";
+		private var newLineCharacter:String = ConstantsCoreVO.IS_WINDOWS ? "\r\n" : "\n";
 		
 		private var _projectPath:String;
 		public function get projectPath():String
@@ -99,7 +99,7 @@ package actionScripts.utils
 			subscribeIdToWorker = UIDUtil.createUID();
 			
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
-			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
+			worker.sendToWorker(WorkerEvent.SET_IS_WINDOWS, ConstantsCoreVO.IS_WINDOWS, subscribeIdToWorker);
 		}
 		
 		public function parseFilesPaths(fromPath:String, withName:String, readableExtensions:Array=null):void
@@ -120,16 +120,16 @@ package actionScripts.utils
 			var tmpExtensions:String = "";
 			if (readableExtensions)
 			{
-				if (ConstantsCoreVO.IS_MACOS)
-				{
-					tmpExtensions = " -regex '.*\\.("+ readableExtensions.join("|") +")'";
-				}
-				else
+				if (ConstantsCoreVO.IS_WINDOWS)
 				{
 					for each (var ext:String in readableExtensions)
 					{
 						tmpExtensions += "*."+ ext +" ";
 					}
+				}
+				else
+				{
+					tmpExtensions = " -regex '.*\\.("+ readableExtensions.join("|") +")'";
 				}
 			}
 
@@ -138,9 +138,9 @@ package actionScripts.utils
 			// windows: dir /a-d /b /s *.mxml *.xml
 			queue = new Vector.<Object>();
 			addToQueue(new NativeProcessQueueVO(
-				ConstantsCoreVO.IS_MACOS ?
-					"find -E $'"+ UtilsCore.getEncodedForShell(fromPath) +"'"+ tmpExtensions +" -type f > '"+ _filePath +"'" :
-					"dir /a-d /b /s "+ tmpExtensions +" > "+ UtilsCore.getEncodedForShell(_filePath),
+				ConstantsCoreVO.IS_WINDOWS ?
+					"dir /a-d /b /s "+ tmpExtensions +" > "+ UtilsCore.getEncodedForShell(_filePath) :
+					"find -E $'"+ UtilsCore.getEncodedForShell(fromPath) +"'"+ tmpExtensions +" -type f > '"+ _filePath +"'",
 				false,
 				PARSE_FILES_ON_PATH)
 			);
@@ -200,7 +200,7 @@ package actionScripts.utils
 			{
 				if (output)
 				{
-					_resultsStringFormat += (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n") + output;
+					_resultsStringFormat += (ConstantsCoreVO.IS_WINDOWS ? "\r\n" : "\n") + output;
 				}
 				dispatchEvent(new Event(EVENT_PARSE_COMPLETED));
 			}

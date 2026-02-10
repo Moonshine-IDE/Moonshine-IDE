@@ -442,7 +442,7 @@ package actionScripts.plugins.externalEditors
 			 * top overcome this holding situation once
 			 * NativeProcess once triggered
 			 */
-			if (!ConstantsCoreVO.IS_MACOS && value)
+			if (ConstantsCoreVO.IS_WINDOWS && value)
 			{
 				// a bit of interval before closing this
 				// https://github.com/Moonshine-IDE/Moonshine-IDE/issues/707

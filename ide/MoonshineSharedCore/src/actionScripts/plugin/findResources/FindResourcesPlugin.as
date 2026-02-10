@@ -131,7 +131,7 @@ package actionScripts.plugin.findResources
 			// don't update anything if the window closed
 			if (!findResourcesView) return;
 			
-			parsedStrings += (ConstantsCoreVO.IS_MACOS ? "\n" : "\r\n") + (event.currentTarget as FileSystemParser).resultsStringFormat;
+			parsedStrings += (ConstantsCoreVO.IS_WINDOWS ? "\r\n" : "\n") + (event.currentTarget as FileSystemParser).resultsStringFormat;
 			updatesFilesInUI(event.currentTarget as FileSystemParser);
 			
 			if (projectsPaths.length == 0)

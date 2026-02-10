@@ -93,7 +93,7 @@ package actionScripts.plugins.git.commands
 			subscribeIdToWorker = UIDUtil.createUID();
 			
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
-			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
+			worker.sendToWorker(WorkerEvent.SET_IS_WINDOWS, ConstantsCoreVO.IS_WINDOWS, subscribeIdToWorker);
 		}
 		
 		protected function unsubscribeFromWorker():void

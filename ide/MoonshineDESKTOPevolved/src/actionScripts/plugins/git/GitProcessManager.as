@@ -122,7 +122,7 @@ package actionScripts.plugins.git
 		public function GitProcessManager()
 		{
 			worker.subscribeAsIndividualComponent(subscribeIdToWorker, this);
-			worker.sendToWorker(WorkerEvent.SET_IS_MACOS, ConstantsCoreVO.IS_MACOS, subscribeIdToWorker);
+			worker.sendToWorker(WorkerEvent.SET_IS_WINDOWS, ConstantsCoreVO.IS_WINDOWS, subscribeIdToWorker);
 		}
 		
 		public function getOSXCodePath(completion:Function, against:String):void
