@@ -48,20 +48,6 @@ package actionScripts.plugins.js
 		public function JavaScriptPlugin()
 		{
 			super();
-
-			if(!ConstantsCoreVO.IS_MACOS || !ConstantsCoreVO.IS_APP_STORE_VERSION)
-			{
-				// because most users install Node.js to a standard installation
-				// directory, we can try to use it as the default, if it exists.
-				// if the user saves a different path (or clears the path) in
-				// the settings, these default values will be safely ignored.
-				var nodeDir:File = new File(ConstantsCoreVO.IS_WINDOWS ? "C:\\Program Files\\nodejs" : "/usr/local/bin")
-				defaultNodePath = (nodeDir.exists && nodeDir.isDirectory) ? nodeDir.nativePath : null;
-				if(defaultNodePath && model.nodePath == null)
-				{
-					model.nodePath = defaultNodePath;
-				}
-			}
 		}
 		
 		private var nodePathSetting:PathSetting;
