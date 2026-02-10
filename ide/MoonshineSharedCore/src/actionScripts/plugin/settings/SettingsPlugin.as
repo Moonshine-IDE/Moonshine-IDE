@@ -400,7 +400,7 @@ package actionScripts.plugin.settings
 
 		private function getXMLSettingsForSave(content:Object):XML
 		{
-			var saveData:XML
+			var saveData:XML;
 			if (content) saveData = retrieveXMLSettings(content);
 				
 			if (!saveData)
@@ -424,9 +424,12 @@ package actionScripts.plugin.settings
 			}
 		}
 
-		private function mergeSaveDataFromList(settingsList:Vector.<ISetting>, content:Object=null):XML
+		private function mergeSaveDataFromList(settingsList:Vector.<ISetting>, content:XML=null):XML
 		{
-			var saveData:XML = getXMLSettingsForSave(content);
+			var saveData:XML = content;
+
+			// if content is not provided, use some defaults
+			if (!content) saveData = getXMLSettingsForSave(content);
 
 			var propName:String;
 			var propValue:String;
