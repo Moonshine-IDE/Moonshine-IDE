@@ -57,10 +57,12 @@ import feathers.controls.TreeGridView;
 import feathers.controls.TreeView;
 import feathers.controls.VProgressBar;
 import feathers.controls.VScrollBar;
+import feathers.controls.dataRenderers.GridViewRowRenderer;
 import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.controls.dataRenderers.ItemRenderer;
 import feathers.controls.dataRenderers.LayoutGroupItemRenderer;
 import feathers.controls.dataRenderers.SortOrderHeaderRenderer;
+import feathers.controls.dataRenderers.TreeGridViewRowRenderer;
 import feathers.controls.navigators.TabNavigator;
 import feathers.controls.popups.DropDownPopUpAdapter;
 import feathers.core.DefaultToolTipManager;
@@ -153,6 +155,11 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(GridView, THEME_VARIANT_LIGHT_GRID_VIEW, setLightGridViewStyles);
 		this.styleProvider.setStyleFunction(SortOrderHeaderRenderer, GridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
 		this.styleProvider.setStyleFunction(SortOrderHeaderRenderer, THEME_VARIANT_LIGHT_GRID_VIEW, setGridViewOrTreeGridViewHeaderLightStyles);
+		#if (feathersui >= "1.3.0")
+		this.styleProvider.setStyleFunction(GridViewRowRenderer, null, setGridViewRowStyles);
+		#end
+		this.styleProvider.setStyleFunction(ItemRenderer, GridView.CHILD_VARIANT_CELL_RENDERER, setGridViewItemRendererStyles);
+		this.styleProvider.setStyleFunction(LayoutGroupItemRenderer, GridView.CHILD_VARIANT_CELL_RENDERER, setGridViewLayoutGroupItemRendererStyles);
 		this.styleProvider.setStyleFunction(ItemRenderer, THEME_VARIANT_LIGHT_GRID_VIEW, setItemRendererLightStyles);
 
 		this.styleProvider.setStyleFunction(ItemRenderer, null, setItemRendererStyles);
@@ -207,6 +214,11 @@ class MoonshineTheme extends SDKInstallerTheme {
 		this.styleProvider.setStyleFunction(TreeGridView, null, setTreeGridViewStyles);
 		this.styleProvider.setStyleFunction(TreeGridView, TreeGridView.VARIANT_BORDERLESS, setBorderlessTreeGridViewStyles);
 		this.styleProvider.setStyleFunction(SortOrderHeaderRenderer, TreeGridView.CHILD_VARIANT_HEADER_RENDERER, setGridViewOrTreeGridViewHeaderStyles);
+		#if (feathersui >= "1.3.0")
+		this.styleProvider.setStyleFunction(TreeGridViewRowRenderer, null, setTreeGridViewRowStyles);
+		#end
+		this.styleProvider.setStyleFunction(HierarchicalItemRenderer, TreeGridView.CHILD_VARIANT_CELL_RENDERER, setTreeGridViewItemRendererStyles);
+		this.styleProvider.setStyleFunction(LayoutGroupItemRenderer, TreeGridView.CHILD_VARIANT_CELL_RENDERER, setGridViewLayoutGroupItemRendererStyles);
 
 		this.styleProvider.setStyleFunction(TreeView, null, setTreeViewStyles);
 		this.styleProvider.setStyleFunction(TreeView, TreeView.VARIANT_BORDERLESS, setBorderlessTreeViewStyles);
@@ -490,6 +502,117 @@ class MoonshineTheme extends SDKInstallerTheme {
 		gridView.fixedScrollBars = true;
 	}
 
+	private function setGridViewRowStyles(rowRenderer:GridViewRowRenderer):Void {
+		#if (feathersui >= "1.3.0")
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(MoonshineColor.GREY_4);
+		backgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		rowRenderer.backgroundSkin = backgroundSkin;
+		#end
+
+		#if (feathersui >= "1.4.0")
+		var alternateBackgroundSkin = new RectangleSkin();
+		alternateBackgroundSkin.fill = SolidColor(MoonshineColor.GREY_4C);
+		alternateBackgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		rowRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
+		#end
+	}
+
+	private function setGridViewItemRendererStyles(itemRenderer:ItemRenderer):Void {
+		#if (feathersui < "1.3.0")
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(MoonshineColor.GREY_4);
+		backgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		itemRenderer.backgroundSkin = backgroundSkin;
+
+		var alternateBackgroundSkin = new RectangleSkin();
+		alternateBackgroundSkin.fill = SolidColor(MoonshineColor.GREY_4C);
+		alternateBackgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
+		#end
+
+		itemRenderer.textFormat = MoonshineTypography.getLightOnDarkTextFormat();
+		itemRenderer.disabledTextFormat = MoonshineTypography.getLightOnDarkDisabledTextFormat();
+		itemRenderer.secondaryTextFormat = MoonshineTypography.getLightOnDarkSecondaryTextFormat();
+		itemRenderer.disabledSecondaryTextFormat = MoonshineTypography.getLightOnDarkSecondaryDisabledTextFormat();
+		// itemRenderer.embedFonts = true;
+
+		itemRenderer.horizontalAlign = LEFT;
+		itemRenderer.paddingTop = 4.0;
+		itemRenderer.paddingRight = 4.0;
+		itemRenderer.paddingBottom = 4.0;
+		itemRenderer.paddingLeft = 4.0;
+		itemRenderer.gap = 4.0;
+	}
+
+	private function setGridViewLayoutGroupItemRendererStyles(itemRenderer:LayoutGroupItemRenderer):Void {
+		#if (feathersui < "1.3.0")
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(MoonshineColor.GREY_4);
+		backgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		itemRenderer.backgroundSkin = backgroundSkin;
+
+		var alternateBackgroundSkin = new RectangleSkin();
+		alternateBackgroundSkin.fill = SolidColor(MoonshineColor.GREY_4C);
+		alternateBackgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
+		#end
+	}
+
+	private function setTreeGridViewRowStyles(rowRenderer:TreeGridViewRowRenderer):Void {
+		#if (feathersui >= "1.3.0")
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(MoonshineColor.GREY_4);
+		backgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		rowRenderer.backgroundSkin = backgroundSkin;
+		#end
+
+		#if (feathersui >= "1.4.0")
+		var alternateBackgroundSkin = new RectangleSkin();
+		alternateBackgroundSkin.fill = SolidColor(MoonshineColor.GREY_4C);
+		alternateBackgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		rowRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
+		#end
+	}
+
+	private function setTreeGridViewItemRendererStyles(itemRenderer:HierarchicalItemRenderer):Void {
+		#if (feathersui < "1.3.0")
+		var backgroundSkin = new RectangleSkin();
+		backgroundSkin.fill = SolidColor(MoonshineColor.GREY_4);
+		backgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		backgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		itemRenderer.backgroundSkin = backgroundSkin;
+
+		var alternateBackgroundSkin = new RectangleSkin();
+		alternateBackgroundSkin.fill = SolidColor(MoonshineColor.GREY_4C);
+		alternateBackgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
+		alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
+		itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
+		#end
+
+		itemRenderer.textFormat = MoonshineTypography.getLightOnDarkTextFormat();
+		itemRenderer.disabledTextFormat = MoonshineTypography.getLightOnDarkDisabledTextFormat();
+		itemRenderer.secondaryTextFormat = MoonshineTypography.getLightOnDarkSecondaryTextFormat();
+		itemRenderer.disabledSecondaryTextFormat = MoonshineTypography.getLightOnDarkSecondaryDisabledTextFormat();
+		// itemRenderer.embedFonts = true;
+
+		itemRenderer.horizontalAlign = LEFT;
+		itemRenderer.paddingTop = 2.0;
+		itemRenderer.paddingRight = 4.0;
+		itemRenderer.paddingBottom = 2.0;
+		itemRenderer.paddingLeft = 4.0;
+		itemRenderer.gap = 4.0;
+		itemRenderer.indentation = 15.0;
+	}
+
 	private function setGridViewOrTreeGridViewHeaderStyles(headerRenderer:SortOrderHeaderRenderer):Void {
 		var backgroundSkin = new RectangleSkin();
 		backgroundSkin.fill = SolidColor(MoonshineColor.GREY_5);
@@ -684,8 +807,7 @@ class MoonshineTheme extends SDKInstallerTheme {
 		alternateBackgroundSkin.fill = SolidColor(MoonshineColor.GREY_4C);
 		alternateBackgroundSkin.selectedFill = SolidColor(MoonshineColor.PINK_2);
 		alternateBackgroundSkin.setFillForState(ToggleButtonState.HOVER(false), SolidColor(MoonshineColor.GREY_39));
-		// TODO: enable with feathersui-beta.9
-		// itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
+		itemRenderer.alternateBackgroundSkin = alternateBackgroundSkin;
 	}
 
 	private function setTitleWindowCloseButtonStyles(button:Button):Void {
