@@ -52,7 +52,7 @@ jobs:
           # Add NSIS to Path
           Add-Content -Path $env:GITHUB_PATH -Value $nsisRoot
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "11"
@@ -95,7 +95,7 @@ jobs:
 
       - name: Cache smtools
         id: cache-smtools
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: smtools-windows-x64.msi
           key: smtools-windows
