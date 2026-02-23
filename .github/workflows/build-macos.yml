@@ -48,7 +48,7 @@ jobs:
       - uses: joshtynjala/setup-apache-flex-action@v2.2.0
         with:
           flex-version: "4.16.1"
-          air-version: "51.2.2.5"
+          air-version: "51.3.1.1"
           accept-air-license: true
           air-license-base64: ${{ secrets.AIR_LICENSE_BASE64 }}
 
