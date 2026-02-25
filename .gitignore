@@ -5,8 +5,9 @@
 *.code-workspace
 
 ide/FileSystemWatcherWorker/bin/
-ide/MoonshineDESKTOPevolved/bin-release/
 ide/MoonshineDESKTOPevolved/bin/
+ide/MoonshineDESKTOPevolved/bin-debug/
+ide/MoonshineDESKTOPevolved/bin-release/
 ide/MoonshineDESKTOPevolved/build/bin
 ide/MoonshineDESKTOPevolved/build/bin-debug/
 ide/MoonshineDESKTOPevolved/build/deploy/
