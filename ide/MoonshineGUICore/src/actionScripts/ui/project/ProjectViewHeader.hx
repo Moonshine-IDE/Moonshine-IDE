@@ -155,10 +155,14 @@ class ProjectViewHeader extends LayoutGroup {
 			var oldIgnoreWorkspaceChange = _ignoreWorkspaceChange;
 			_ignoreWorkspaceChange = true;
 			workspaceListView.dataProvider = _workspaces;
-			workspaceListView.selectedItem = _selectedWorkspace;
-			var index = workspaceListView.dataProvider.indexOf(_selectedWorkspace);
-			if (index != -1) {
-				workspaceListView.dataProvider.updateAt(index);
+			if (_workspaces != null) {
+				workspaceListView.selectedItem = _selectedWorkspace;
+				var index = _workspaces.indexOf(_selectedWorkspace);
+				if (index != -1) {
+					_workspaces.updateAt(index);
+				}
+			} else {
+				workspaceListView.selectedItem = null;
 			}
 			_ignoreWorkspaceChange = oldIgnoreWorkspaceChange;
 			closeButton.visible = closeEnabled;

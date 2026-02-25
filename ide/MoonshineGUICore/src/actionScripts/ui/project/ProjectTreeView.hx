@@ -159,6 +159,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (_header != null)
 		{
 			_header.workspaces = _workspaces;
+			_header.visible = _header.includeInLayout = _workspaces != null;
 		}
 		return _workspaces;
 	}
@@ -207,6 +208,7 @@ class ProjectTreeView extends LayoutGroup {
 		_header = new ProjectViewHeader();
 		_header.layoutData = VerticalLayoutData.fillHorizontal();
 		_header.workspaces = _workspaces;
+		_header.visible = _header.includeInLayout = _workspaces != null;
 		_header.addEventListener(ProjectTreeViewEvent.EVENT_SCROLL_FROM_SOURCE, onHeaderScrollFromSource);
 		_header.addEventListener(Event.CLOSE, handleClose);
 		_header.addEventListener(Event.CHANGE, handleWorkspaceChange);
