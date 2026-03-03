@@ -474,12 +474,21 @@ package actionScripts.plugins.java
 				"-Dosgi.sharedConfiguration.area=" + configFile.nativePath,
 				"-Dosgi.sharedConfiguration.area.readOnly=true",
 				"-Dosgi.configuration.cascaded=true",
+				"-Dfile.encoding=UTF-8",
+				"-XX:+UseParallelGC",
+				"-XX:GCTimeRatio=4",
+				"-XX:AdaptiveSizePolicyWeight=90",
+				"-Dsun.zip.disableMemoryMapping=true",
 				"-Xmx1G",
+				"-Xms100m",
+				"-Xlog:disable",
 				"--add-modules=ALL-SYSTEM",
 				"--add-opens",
 				"java.base/java.util=ALL-UNNAMED",
 				"--add-opens",
 				"java.base/java.lang=ALL-UNNAMED",
+				"--add-opens",
+				"java.base/sun.nio.fs=ALL-UNNAMED",
 				"-cp",
 				cp,
 				// Starting the wrapper instead of the language server launcher
@@ -1271,7 +1280,7 @@ package actionScripts.plugins.java
 				}
 				case "ProjectStatus":
 				{
-					if (message.params.message == "WARNING")
+					if (message.params.message != "OK")
 					{
 						// no message to display to the user, but we should
 						// probably log this for contributors
