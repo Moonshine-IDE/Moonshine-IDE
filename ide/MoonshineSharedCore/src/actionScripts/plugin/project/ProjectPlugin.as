@@ -32,7 +32,10 @@
 package actionScripts.plugin.project
 {
 	import flash.display.DisplayObject;
+	import flash.display.MovieClip;
+	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.filters.GlowFilter;
 	import flash.net.SharedObject;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
@@ -48,7 +51,6 @@ package actionScripts.plugin.project
 	import mx.events.CollectionEventKind;
 	import mx.managers.PopUpManager;
 
-	import actionScripts.data.FileWrapperHierarchicalCollection;
 	import actionScripts.data.FlexListCollection;
 	import actionScripts.events.AddTabEvent;
 	import actionScripts.events.CustomCommandsEvent;
@@ -61,7 +63,6 @@ package actionScripts.plugin.project
 	import actionScripts.events.OpenFileEvent;
 	import actionScripts.events.PreviewPluginEvent;
 	import actionScripts.events.ProjectEvent;
-	import actionScripts.events.ProjectTreeViewEvent;
 	import actionScripts.events.RefreshTreeEvent;
 	import actionScripts.events.RefreshVisualEditorSourcesEvent;
 	import actionScripts.events.RenameApplicationEvent;
@@ -86,8 +87,6 @@ package actionScripts.plugin.project
 	import actionScripts.ui.LayoutModifier;
 	import actionScripts.ui.editor.BasicTextEditor;
 	import actionScripts.ui.menu.MenuPlugin;
-	import actionScripts.ui.project.ProjectTreeView;
-	import actionScripts.ui.renderers.FileWrapperHierarchicalItemRenderer;
 	import actionScripts.ui.tabview.CloseTabEvent;
 	import actionScripts.utils.FileCoreUtil;
 	import actionScripts.utils.SharedObjectUtil;
@@ -103,8 +102,15 @@ package actionScripts.plugin.project
 	import components.popup.RunCommandPopup;
 	import components.views.project.OpenResourceView;
 	import components.views.project.ProjectTreeContextMenuItem;
+	
+	import feathers.controls.BitmapImage;
 
+	import moonshine.data.FileWrapperHierarchicalCollection;
+	import moonshine.events.ProjectTreeViewEvent;
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
+	import moonshine.ui.project.ProjectTreeView;
+	import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer
+	import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
 
 	public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -147,6 +153,9 @@ package actionScripts.plugin.project
 			treeView.projectTreeCookieCallback = onTreeViewProjectTreeRequest;
 			treeView.projectTreeCookiePropertyNameKey = PROPERTY_NAME_KEY;
 			treeView.projectTreeCookiePropertyNameKeyValue = PROPERTY_NAME_KEY_VALUE;
+			treeView.initializeItemRendererCallback = onTreeViewInitItemRenderer;
+			treeView.isActiveFileCallback = onTreeViewIsActiveFileRequest;
+			treeView.isSourceFolderCallback = onTreeViewIsSourceFolderRequest;
 			ChangeWatcher.watch(model, 'activeEditor', onActiveEditorChange);
 		}
 
@@ -667,6 +676,58 @@ package actionScripts.plugin.project
 				return null;
 			}
 			return cookie.data.projectTree;
+		}
+
+		private function onTreeViewInitItemRenderer(itemRenderer:FileWrapperHierarchicalItemRenderer):void
+		{
+			new FileWrapperNativeContextMenuProvider(itemRenderer);
+
+			var isOpenIcon:Sprite = new Sprite();
+			isOpenIcon.mouseEnabled = false;
+			isOpenIcon.mouseChildren = false;
+			isOpenIcon.graphics.clear();
+			isOpenIcon.graphics.beginFill(0xe15fd5);
+			isOpenIcon.graphics.drawCircle(2, 2, 2);
+			isOpenIcon.graphics.endFill();
+			var glow:GlowFilter = new GlowFilter(0xff00e4, .4, 6, 6, 2);
+			isOpenIcon.filters = [glow];
+			itemRenderer.isOpenIcon = isOpenIcon;
+
+			var isSourceFolderIcon:BitmapImage = new BitmapImage();
+			isSourceFolderIcon.toolTip = "Source folder";
+			isSourceFolderIcon.source = new ConstantsCoreVO.sourceFolderIcon().bitmapData;
+			itemRenderer.isSourceFolderIcon = isSourceFolderIcon;
+
+			var isLoadingIcon:MovieClip = new ConstantsCoreVO.loaderIcon();
+			isLoadingIcon.stop();
+			isLoadingIcon.visible = false;
+			itemRenderer.isLoadingIcon = isLoadingIcon;
+		}
+
+		private function onTreeViewIsActiveFileRequest(fw:FileWrapper):Boolean
+		{
+			if (model.activeEditor is BasicTextEditor)
+			{
+				var textEditor:BasicTextEditor = BasicTextEditor(model.activeEditor);
+				if (textEditor.currentFile != null)
+				{
+					if (fw.nativePath != null
+						&& fw.nativePath == textEditor.currentFile.fileBridge.nativePath)
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		private function onTreeViewIsSourceFolderRequest(fw:FileWrapper):Boolean
+		{
+			if (fw.projectReference != null && fw.projectReference.sourceFolder != null)
+			{
+				return fw.nativePath == fw.projectReference.sourceFolder.fileBridge.nativePath;	
+			}
+			return false;
 		}
 
 		private function onTreeViewWorkspaceChange(event:Event):void

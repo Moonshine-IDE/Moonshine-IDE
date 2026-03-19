@@ -30,23 +30,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package actionScripts.events;
+package actionScripts.factory;
 
-import actionScripts.valueObjects.FileWrapper;
-import openfl.events.Event;
+import actionScripts.interfaces.IFileBridge;
+import openfl.events.EventDispatcher;
 
-class ProjectTreeViewEvent extends Event {
-	public static final EVENT_WORKSPACE_CHANGE:String = "workspaceChange";
-	public static final EVENT_SCROLL_FROM_SOURCE:String = "scrollFromSource";
-	public static final EVENT_OPEN_FILE:String = "openFile";
-	public static final EVENT_SAVE_TO_OPENED_ITEMS:String = "saveToOpenedItems";
-	public static final EVENT_REMOVE_FROM_OPENED_ITEMS:String = "removeFromOpenedItems";
-
-	public var file:FileWrapper;
-
-	public function new(type:String, file:FileWrapper = null) {
-		super(type, false, false);
-		this.file = file;
-	}
-	
+extern class FileLocation extends EventDispatcher {
+	public var fileBridge:IFileBridge;
 }

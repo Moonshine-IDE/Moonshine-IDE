@@ -49,7 +49,7 @@ package actionScripts.ui
     
     import components.views.splashscreen.SplashScreen;
     import actionScripts.plugin.fullscreen.events.FullscreenEvent;
-    import actionScripts.ui.project.ProjectTreeView;
+    import moonshine.ui.project.ProjectTreeView;
 
     // TODO: Make this an all-in-one flexible layout thing
 	public class MainView extends VBox

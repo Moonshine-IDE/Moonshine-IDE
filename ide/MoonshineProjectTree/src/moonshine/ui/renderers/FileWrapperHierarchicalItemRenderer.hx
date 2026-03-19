@@ -29,12 +29,8 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
+package moonshine.ui.renderers;
 
-package actionScripts.ui.renderers;
-
-import actionScripts.locator.IDEModel;
-import actionScripts.ui.editor.BasicTextEditor;
-import actionScripts.valueObjects.ConstantsCoreVO;
 import actionScripts.valueObjects.FileWrapper;
 import feathers.controls.BitmapImage;
 import feathers.controls.Menu;
@@ -43,6 +39,7 @@ import feathers.controls.dataRenderers.HierarchicalItemRenderer;
 import feathers.controls.dataRenderers.ITreeViewItemRenderer;
 import feathers.core.IValidating;
 import feathers.text.TextFormat;
+import openfl.display.DisplayObject;
 import openfl.display.MovieClip;
 import openfl.display.Sprite;
 import openfl.events.MouseEvent;
@@ -80,15 +77,34 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 		return _treeViewOwner;
 	}
 
-	public var nativeContextMenuFactory:#if flash (data:Dynamic)->flash.ui.ContextMenu #else (data:Dynamic)->Dynamic #end;
+	public var nativeContextMenuFactory:#if flash(data:Dynamic) -> flash.ui.ContextMenu #else(data:Dynamic) -> Dynamic #end;
 
-	public var feathersContextMenuFactory:(data:Dynamic)->Menu;
+	public var feathersContextMenuFactory:(data:Dynamic) -> Menu;
 
-	private var model:IDEModel = IDEModel.getInstance();
+	public var isActiveFileCallback:(FileWrapper) -> Bool;
+	public var isSourceFolderCallback:(FileWrapper) -> Bool;
 
-	private var isOpenIcon:Sprite;
-	private var isSourceFolderIcon:BitmapImage;
-	private var isLoadingIcon:MovieClip;
+	private var _currentIsOpenIcon:DisplayObject = null;
+	private var _currentIsSourceFolderIcon:DisplayObject = null;
+	private var _currentIsLoadingIcon:DisplayObject = null;
+
+	/**
+		Optional icon to indicate that the file is the currently active editor.
+	**/
+	@:style
+	public var isOpenIcon:DisplayObject = null;
+
+	/**
+		Optional icon to indicate that the folder is a source folder.
+	**/
+	@:style
+	public var isSourceFolderIcon:DisplayObject = null;
+
+	/**
+		Optional icon to indicate that the folder contents are loading.
+	**/
+	@:style
+	public var isLoadingIcon:MovieClip = null;
 
 	private var _rootTextFormat:TextFormat;
 	private var _deletingTextFormat:TextFormat;
@@ -104,8 +120,7 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 		_hiddenTextFormat = null;
 		_normalTextFormat = null;
 		super.set_textFormat(value);
-		if (value != null)
-		{
+		if (value != null) {
 			_rootTextFormat = value.clone();
 			_rootTextFormat.color = 0xffffcc;
 			_hiddenTextFormat = value.clone();
@@ -118,39 +133,6 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 			// #end
 		}
 		return get_textFormat();
-	}
-
-	override private function initialize():Void {
-		super.initialize();
-		
-		if (isOpenIcon == null) {
-			isOpenIcon = new Sprite();
-			isOpenIcon.mouseEnabled = false;
-			isOpenIcon.mouseChildren = false;
-			isOpenIcon.graphics.clear();
-			isOpenIcon.graphics.beginFill(0xe15fd5);
-			isOpenIcon.graphics.drawCircle(2, 2, 2);
-			isOpenIcon.graphics.endFill();
-			isOpenIcon.visible = false;
-			var glow:GlowFilter = new GlowFilter(0xff00e4, .4, 6, 6, 2);
-			isOpenIcon.filters = [glow];
-			addChild(isOpenIcon);
-		}
-
-		if (isSourceFolderIcon == null) {
-			isSourceFolderIcon = new BitmapImage();
-			isSourceFolderIcon.toolTip = "Source folder";
-			isSourceFolderIcon.source = Type.createInstance(ConstantsCoreVO.sourceFolderIcon, []).bitmapData;
-			isSourceFolderIcon.visible = false;
-			addChild(isSourceFolderIcon);
-		}
-
-		if (isLoadingIcon == null) {
-			isLoadingIcon = Type.createInstance(ConstantsCoreVO.loaderIcon, []);
-			isLoadingIcon.stop();
-			isLoadingIcon.visible = false;
-			addChild(isLoadingIcon);
-		}
 	}
 
 	override private function update():Void {
@@ -173,14 +155,13 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 	private function updateTextFormat():Void {
 		runWithInvalidationFlagsOnly(() -> {
 			var fw:FileWrapper = Std.downcast(data, FileWrapper);
-			if (fw == null)
-			{
+			if (fw == null) {
 				textFormat = _normalTextFormat;
 				return;
 			}
 			if (fw.isRoot) {
 				textFormat = _rootTextFormat;
-			} else if (!ConstantsCoreVO.IS_AIR && fw.isDeleting) {
+			} else if (fw.isDeleting) {
 				textFormat = _deletingTextFormat;
 			} else if (fw.isHidden) {
 				textFormat = _hiddenTextFormat;
@@ -193,23 +174,20 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 	override private function layoutChildren():Void {
 		super.layoutChildren();
 
-		if ((isOpenIcon is IValidating))
-		{
+		if ((isOpenIcon is IValidating)) {
 			(cast isOpenIcon : IValidating).validateNow();
 		}
 
-		if ((isSourceFolderIcon is IValidating))
-		{
+		if ((isSourceFolderIcon is IValidating)) {
 			(cast isSourceFolderIcon : IValidating).validateNow();
 		}
 
-		if ((isLoadingIcon is IValidating))
-		{
+		if ((isLoadingIcon is IValidating)) {
 			(cast isLoadingIcon : IValidating).validateNow();
 		}
 
 		if (isOpenIcon != null) {
-			isOpenIcon.x = textField.x-8;
+			isOpenIcon.x = textField.x - 8;
 			isOpenIcon.y = (actualHeight - isOpenIcon.height) / 2.0;
 		}
 		if (isSourceFolderIcon != null) {
@@ -234,49 +212,91 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 	}
 
 	private function updateIcons():Void {
+		this.refreshIsOpenIcon();
+		this.refreshIsSourceFolderIcon();
+		this.refreshIsLoadingIcon();
+
 		var fw:FileWrapper = Std.downcast(data, FileWrapper);
-		if (fw != null)
-		{
-			// Show lil' dot if we are the currently opened file
-			var isActiveFile:Bool = false;
-			if ((model.activeEditor is BasicTextEditor))
-			{
-				var textEditor:BasicTextEditor = cast model.activeEditor;
-				if (textEditor.currentFile != null)
-				{
-					if (fw.nativePath != null
-						&& fw.nativePath == textEditor.currentFile.fileBridge.nativePath)
-					{
-						isActiveFile = true;
-					}
+		if (fw != null) {
+			if (isOpenIcon != null) {
+				// Show lil' dot if we are the currently opened file
+				var isActiveFile:Bool = false;
+				if (isActiveFileCallback != null) {
+					isActiveFile = isActiveFileCallback(fw);
+				}
+				isOpenIcon.visible = isActiveFile;
+			}
+
+			if (isSourceFolderIcon != null) {
+				var isSourceFolder = fw.isSourceFolder;
+				if (!isSourceFolder && isSourceFolderCallback != null) {
+					isSourceFolder = isSourceFolderCallback(fw);
+				}
+				isSourceFolderIcon.visible = isSourceFolder;
+			}
+
+			if (isLoadingIcon != null) {
+				if (fw.isWorking) {
+					isLoadingIcon.visible = true;
+					isLoadingIcon.play();
+				} else {
+					isLoadingIcon.visible = false;
+					isLoadingIcon.stop();
 				}
 			}
-			isOpenIcon.visible = isActiveFile;
-			
-			var isSourceFolder = fw.isSourceFolder;
-			if (!isSourceFolder && fw.projectReference != null && fw.projectReference.sourceFolder != null)
-			{
-				isSourceFolder = fw.nativePath == fw.projectReference.sourceFolder.fileBridge.nativePath;	
+		} else {
+			if (isOpenIcon != null) {
+				isOpenIcon.visible = false;
 			}
-			isSourceFolderIcon.visible = isSourceFolder;
-
-			if (fw.isWorking)
-			{
-				isLoadingIcon.visible = true;
-				isLoadingIcon.play();
+			if (isSourceFolderIcon != null) {
+				isSourceFolderIcon.visible = false;
 			}
-			else
-			{
+			if (isLoadingIcon != null) {
 				isLoadingIcon.visible = false;
 				isLoadingIcon.stop();
 			}
 		}
-		else
-		{
-			isOpenIcon.visible = false;
-			isSourceFolderIcon.visible = false;
-			isLoadingIcon.visible = false;
-			isLoadingIcon.stop();
+	}
+
+	private function refreshIsOpenIcon():Void {
+		var oldIcon = _currentIsOpenIcon;
+		_currentIsOpenIcon = isOpenIcon;
+		if (_currentIsOpenIcon == oldIcon) {
+			return;
+		}
+		if (oldIcon != null) {
+			removeChild(oldIcon);
+		}
+		if (_currentIsOpenIcon != null) {
+			addChild(_currentIsOpenIcon);
+		}
+	}
+
+	private function refreshIsSourceFolderIcon():Void {
+		var oldIcon = _currentIsSourceFolderIcon;
+		_currentIsSourceFolderIcon = isSourceFolderIcon;
+		if (_currentIsSourceFolderIcon == oldIcon) {
+			return;
+		}
+		if (oldIcon != null) {
+			removeChild(oldIcon);
+		}
+		if (_currentIsSourceFolderIcon != null) {
+			addChild(_currentIsSourceFolderIcon);
+		}
+	}
+
+	private function refreshIsLoadingIcon():Void {
+		var oldIcon = _currentIsLoadingIcon;
+		_currentIsLoadingIcon = isLoadingIcon;
+		if (_currentIsLoadingIcon == oldIcon) {
+			return;
+		}
+		if (oldIcon != null) {
+			removeChild(oldIcon);
+		}
+		if (_currentIsLoadingIcon != null) {
+			addChild(_currentIsLoadingIcon);
 		}
 	}
 

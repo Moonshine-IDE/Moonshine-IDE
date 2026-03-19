@@ -29,33 +29,22 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-package actionScripts.events;
+package moonshine.events;
 
 import actionScripts.valueObjects.FileWrapper;
-import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer;
 import openfl.events.Event;
 
-class TreeMenuItemEvent extends Event {
-	public static final RIGHT_CLICK_ITEM_SELECTED:String = "menuItemSelectedEvent";
-	public static final EDIT_CANCEL:String = "editCancel";
-	public static final EDIT_END:String = "editEnd";
-	public static final NEW_FILE_CREATED:String = "NEW_FILE_CREATED";
-	public static final FILE_DELETED:String = "FILE_DELETED";
-	public static final FILE_RENAMED:String = "FILE_RENAMED";
-	public static final NEW_FILES_FOLDERS_COPIED:String = "NEW_FILE_FOLDER_COPIED";
+class ProjectTreeViewEvent extends Event {
+	public static final EVENT_WORKSPACE_CHANGE:String = "workspaceChange";
+	public static final EVENT_SCROLL_FROM_SOURCE:String = "scrollFromSource";
+	public static final EVENT_OPEN_FILE:String = "openFile";
+	public static final EVENT_SAVE_TO_OPENED_ITEMS:String = "saveToOpenedItems";
+	public static final EVENT_REMOVE_FROM_OPENED_ITEMS:String = "removeFromOpenedItems";
 
-	public var menuLabel:String;
-	public var data:FileWrapper;
-	public var renderer:FileWrapperHierarchicalItemRenderer;
-	public var extra:Any;
-	public var showAlert:Bool;
+	public var file:FileWrapper;
 
-	public function new(type:String, menuLabel:String, data:FileWrapper, showAlert:Bool = true) {
-		this.menuLabel = menuLabel;
-		this.data = data;
-		this.showAlert = showAlert;
-
-		super(type, true, false);
+	public function new(type:String, file:FileWrapper = null) {
+		super(type, false, false);
+		this.file = file;
 	}
 }

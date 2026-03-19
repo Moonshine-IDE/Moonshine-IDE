@@ -6,6 +6,7 @@
 
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/src" />
 	<source path="../../../Moonshine-SDK-Installer/MoonshineSDKInstallerGUICore/externs" />
+	<source path="../MoonshineProjectTree/src" />
 	<source path="externs" />
 	<source path="src" />
 

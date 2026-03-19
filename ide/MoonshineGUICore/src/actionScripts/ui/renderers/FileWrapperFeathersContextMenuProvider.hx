@@ -48,6 +48,7 @@ import feathers.controls.Menu;
 import feathers.controls.TreeView;
 import feathers.data.ArrayHierarchicalCollection;
 import feathers.events.MenuEvent;
+import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer;
 import openfl.desktop.Clipboard;
 import openfl.desktop.ClipboardFormats;
 import openfl.events.Event;

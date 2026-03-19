@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<meta title="MoonshineProjectTree" package="Moonshine" version="1.0.0" company="Prominic.NET" />
+	<app main="openfl.display.Sprite" file="MoonshineProjectTree" />
+
+	<source path="externs" />
+	<source path="src" />
+
+	<haxelib name="openfl" />
+	<haxelib name="actuate" />
+	<haxelib name="feathersui" />
+
+	<haxeflag name="--macro" value="include('moonshine', true, null, null, true)"/>
+</project>

@@ -29,11 +29,10 @@
 //  it in the license file.
 //
 ////////////////////////////////////////////////////////////////////////////////
+package moonshine.ui.project;
 
-package actionScripts.ui.project;
-
-import actionScripts.events.ProjectTreeViewEvent;
 import actionScripts.valueObjects.WorkspaceVO;
+import moonshine.events.ProjectTreeViewEvent;
 import feathers.controls.Button;
 import feathers.controls.LayoutGroup;
 import feathers.controls.PopUpListView;
@@ -41,8 +40,8 @@ import feathers.data.IFlatCollection;
 import feathers.events.TriggerEvent;
 import openfl.events.Event;
 
-@:meta(Event(name="scrollFromSource",type="flash.events.Event"))
-@:meta(Event(name="close",type="flash.events.Event"))
+@:meta(Event(name = "scrollFromSource", type = "flash.events.Event"))
+@:meta(Event(name = "close", type = "flash.events.Event"))
 @:styleContext
 class ProjectViewHeader extends LayoutGroup {
 	public static final CHILD_VARIANT_WORKSPACE_LIST_VIEW = "projectViewHeader--workspaceListView";
@@ -119,8 +118,7 @@ class ProjectViewHeader extends LayoutGroup {
 			workspaceListView = new PopUpListView();
 			workspaceListView.variant = CHILD_VARIANT_WORKSPACE_LIST_VIEW;
 			workspaceListView.itemToText = (workspace:WorkspaceVO) -> {
-				if (workspace == workspaceListView.selectedItem)
-				{
+				if (workspace == workspaceListView.selectedItem) {
 					return "Workspace: " + workspace.label;
 				}
 				return workspace.label;

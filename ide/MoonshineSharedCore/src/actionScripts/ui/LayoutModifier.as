@@ -46,7 +46,7 @@ package actionScripts.ui
 	import actionScripts.plugin.outline.OutlinePlugin;
 	import actionScripts.plugin.problems.ProblemsPlugin;
 	import actionScripts.valueObjects.ConstantsCoreVO;
-	import actionScripts.ui.project.ProjectTreeView;
+	import moonshine.ui.project.ProjectTreeView;
 
 	public class LayoutModifier
 	{

@@ -105,7 +105,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
 	import actionScripts.plugin.console.ConsoleEvent;
-	import actionScripts.ui.project.ProjectTreeView;
+	import moonshine.ui.project.ProjectTreeView;
 	
 	public class MXMLCPlugin extends MXMLCPluginBase implements ISettingsProvider
 	{

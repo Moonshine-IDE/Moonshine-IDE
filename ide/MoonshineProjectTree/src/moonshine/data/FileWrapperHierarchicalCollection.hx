@@ -30,7 +30,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package actionScripts.data;
+package moonshine.data;
 
 import openfl.errors.IOError;
 import openfl.errors.RangeError;

@@ -45,6 +45,7 @@ import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
 import components.views.project.ProjectTreeContextMenuItem;
 import feathers.controls.TreeView;
+import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer;
 import openfl.desktop.Clipboard;
 import openfl.desktop.ClipboardFormats;
 import openfl.events.Event;

@@ -89,7 +89,7 @@ package actionScripts.ui.editor
     import moonshine.editor.text.syntax.format.SyntaxColorSettings;
     import moonshine.editor.text.syntax.format.SyntaxFontSettings;
     import moonshine.editor.text.syntax.parser.PlainTextLineParser;
-    import actionScripts.ui.project.ProjectTreeView;
+    import moonshine.ui.project.ProjectTreeView;
 
     public class BasicTextEditor extends Group implements IContentWindow, IFileContentWindow, IFocusManagerComponent, IContentWindowReloadable
 	{

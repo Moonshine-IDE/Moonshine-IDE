@@ -30,32 +30,44 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package actionScripts.events;
+package actionScripts.valueObjects;
 
-import actionScripts.valueObjects.FileWrapper;
-import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer;
-import openfl.events.Event;
+import actionScripts.factory.FileLocation;
 
-class TreeMenuItemEvent extends Event {
-	public static final RIGHT_CLICK_ITEM_SELECTED:String = "menuItemSelectedEvent";
-	public static final EDIT_CANCEL:String = "editCancel";
-	public static final EDIT_END:String = "editEnd";
-	public static final NEW_FILE_CREATED:String = "NEW_FILE_CREATED";
-	public static final FILE_DELETED:String = "FILE_DELETED";
-	public static final FILE_RENAMED:String = "FILE_RENAMED";
-	public static final NEW_FILES_FOLDERS_COPIED:String = "NEW_FILE_FOLDER_COPIED";
+extern class FileWrapper {
+	public function new(file:FileLocation, isRoot:Bool = false,
+									projectRef:ProjectReferenceVO=null, shallUpdateChildren:Bool = true);
 
-	public var menuLabel:String;
-	public var data:FileWrapper;
-	public var renderer:FileWrapperHierarchicalItemRenderer;
-	public var extra:Any;
-	public var showAlert:Bool;
+	public var projectReference:ProjectReferenceVO;
 
-	public function new(type:String, menuLabel:String, data:FileWrapper, showAlert:Bool = true) {
-		this.menuLabel = menuLabel;
-		this.data = data;
-		this.showAlert = showAlert;
+	@:flash.property
+	public var file(default, default):FileLocation;
 
-		super(type, true, false);
-	}
+	@:flash.property
+	public var isHidden(default, never):Bool;
+
+	@:flash.property
+	public var isRoot(default, default):Bool;
+
+	@:flash.property
+	public var isSourceFolder(default, default):Bool;
+
+	@:flash.property
+	public var name(default, default):String;
+
+	@:flash.property
+	public var children(default, default):Array<FileWrapper>;
+
+	@:flash.property
+	public var nativePath(default, never):String;
+
+	@:flash.property
+	public var isWorking(default, default):Bool;
+
+	@:flash.property
+	public var isDeleting(default, default):Bool;
+
+	public function updateChildren():Void;
+
+	public function sortChildren():Void;
 }

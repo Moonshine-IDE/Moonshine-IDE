@@ -33,7 +33,7 @@
 
 package moonshine.theme;
 
-import actionScripts.ui.project.ProjectViewHeader;
+import moonshine.ui.project.ProjectViewHeader;
 import feathers.controls.AssetLoader;
 import feathers.controls.BasicButton;
 import feathers.controls.Button;

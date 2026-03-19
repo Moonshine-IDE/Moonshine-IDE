@@ -90,7 +90,7 @@ package actionScripts.plugins.as3project.mxmlc
 	import flashx.textLayout.elements.SpanElement;
 	import flashx.textLayout.formats.TextDecoration;
 	import flash.utils.clearTimeout;
-	import actionScripts.ui.project.ProjectTreeView;
+	import moonshine.ui.project.ProjectTreeView;
 
     public class MXMLCJavaScriptPlugin extends MXMLCPluginBase implements ISettingsProvider
 	{
