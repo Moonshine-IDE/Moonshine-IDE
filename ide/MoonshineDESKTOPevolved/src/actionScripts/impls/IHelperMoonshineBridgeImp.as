@@ -161,9 +161,27 @@ package actionScripts.impls
 			return IDEModel.getInstance().javaVersionForTypeAhead;
 		}
 		
+		public function get javaPathForTypeahead():String
+		{
+			if (IDEModel.getInstance().javaPathForTypeAhead)
+			{
+				return IDEModel.getInstance().javaPathForTypeAhead.fileBridge.nativePath;
+			}
+			return null;
+		}
+		
 		public function get javaVersionInJava8Path():String
 		{
 			return IDEModel.getInstance().javaVersionInJava8Path;
+		}
+
+		public function get java8Path():String
+		{
+			if (IDEModel.getInstance().javaPathForTypeAhead)
+			{
+				return IDEModel.getInstance().java8Path.fileBridge.nativePath;
+			}
+			return null;
 		}
 	}
 }
