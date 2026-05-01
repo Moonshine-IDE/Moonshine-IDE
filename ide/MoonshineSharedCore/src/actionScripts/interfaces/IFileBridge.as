@@ -43,6 +43,7 @@ package actionScripts.interfaces
 		}
 		function isPathExists(value:String):Boolean;
 		function getDirectoryListing():Array;
+		function getDirectoryListingAsync(successHandler:Function, errorHandler:Function = null):void;
 		function deleteFileOrDirectory():void;
 		function onSuccessDelete(value:Object, message:String=null):void;
 		function onFault(message:String=null):void;

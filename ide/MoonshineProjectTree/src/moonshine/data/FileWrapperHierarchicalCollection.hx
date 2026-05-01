@@ -32,12 +32,14 @@
 
 package moonshine.data;
 
+import actionScripts.factory.FileLocation;
 import openfl.errors.IOError;
 import openfl.errors.RangeError;
 import actionScripts.valueObjects.FileWrapper;
 import feathers.data.IHierarchicalCollection;
 import feathers.events.FeathersEvent;
 import feathers.events.HierarchicalCollectionEvent;
+import moonshine.events.FileWrapperHierarchicalCollectionEvent;
 import openfl.errors.ArgumentError;
 import openfl.errors.Error;
 import openfl.events.Event;
@@ -66,6 +68,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 	}
 
 	private var _childrenMap:Map<String, Array<FileWrapper>> = [];
+	private var _pendingDirectoryListings:Map<String, Bool> = [];
 
 	private var _roots:Array<FileWrapper>;
 
@@ -81,6 +84,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 		}
 		_roots = value;
 		_childrenMap.clear();
+		_pendingDirectoryListings.clear();
 		if (_roots != null && _sortCompareFunction != null) {
 			_roots.sort(_sortCompareFunction);
 		}
@@ -107,6 +111,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 		}
 		_filterFunction = value;
 		_childrenMap.clear();
+		_pendingDirectoryListings.clear();
 		HierarchicalCollectionEvent.dispatch(this, HierarchicalCollectionEvent.FILTER_CHANGE, null);
 		FeathersEvent.dispatch(this, Event.CHANGE);
 		return _filterFunction;
@@ -133,6 +138,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 		}
 		_sortCompareFunction = value;
 		_childrenMap.clear();
+		_pendingDirectoryListings.clear();
 		if (_roots != null && _sortCompareFunction != null) {
 			_roots.sort(_sortCompareFunction);
 		}
@@ -205,7 +211,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 			if (parentFileLocation == null) {
 				break;
 			}
-			var parentWrapper = new FileWrapper(parentFileLocation, false, current.projectReference, true);
+			var parentWrapper = new FileWrapper(parentFileLocation, false, current.projectReference, false);
 			var filesInParent = getChildren(parentWrapper);
 			if (filesInParent == null) {
 				return null;
@@ -288,7 +294,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 		@see `feathers.data.IHierarchicalCollection.updateAt`
 	**/
 	public function updateAt(location:Array<Int>):Void {
-		var item = getItemAtLocation(location, false, false);
+		var item = getItemAtLocation(location, true, false);
 		if (item != null) {
 			// clear from the cache, if possible
 			var items:Array<FileWrapper> = [item];
@@ -321,6 +327,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 	**/
 	public function updateAll():Void {
 		_childrenMap.clear();
+		_pendingDirectoryListings.clear();
 		HierarchicalCollectionEvent.dispatch(this, HierarchicalCollectionEvent.UPDATE_ALL, null);
 	}
 
@@ -329,6 +336,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 	**/
 	public function refresh():Void {
 		_childrenMap.clear();
+		_pendingDirectoryListings.clear();
 	}
 
 	private function getItemAtLocation(location:Array<Int>, useCache:Bool = true, validate:Bool = true):FileWrapper {
@@ -389,23 +397,64 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 				return children;
 			}
 		}
-		try {
-			// we have our own cache, so don't worry about the FileWrapper's
-			// also, don't check shallUpdateChildren because it is commonly false
-			fileWrapper.updateChildren();
-			children = fileWrapper.children;
-		} catch (e:Dynamic) {
+		if (!fileWrapper.file.fileBridge.isDirectory) {
 			return null;
 		}
-		if (children == null) {
-			if (fileWrapper.file.fileBridge.isDirectory) {
-				// this probably shouldn't happen, but better to be safe
-				children = [];
-			} else {
-				return null;
-			}
+
+		children = [];
+		if (useCache) {
+			_childrenMap.set(fileWrapper.nativePath, children);
 		}
-		
+		loadChildrenAsync(fileWrapper, useCache);
+		return children;
+	}
+
+	private function loadChildrenAsync(fileWrapper:FileWrapper, useCache:Bool):Void {
+		var nativePath = fileWrapper.nativePath;
+		if (_pendingDirectoryListings.exists(nativePath)) {
+			return;
+		}
+		_pendingDirectoryListings.set(nativePath, true);
+		fileWrapper.file.fileBridge.getDirectoryListingAsync(function(directoryListing:Array<FileLocation>):Void {
+			_pendingDirectoryListings.remove(nativePath);
+			var children = createChildren(fileWrapper, directoryListing);
+			if (useCache) {
+				_childrenMap.set(nativePath, children);
+			}
+			fileWrapper.children = children;
+			dispatchEvent(new FileWrapperHierarchicalCollectionEvent(FileWrapperHierarchicalCollectionEvent.DIRECTORY_LISTING_RECEIVED, fileWrapper));
+			var location = locationOf(fileWrapper);
+			if (location != null) {
+				HierarchicalCollectionEvent.dispatch(this, HierarchicalCollectionEvent.UPDATE_ITEM, location);
+			}
+		}, function(error:String):Void {
+			_pendingDirectoryListings.remove(nativePath);
+		});
+	}
+
+	private function createChildren(fileWrapper:FileWrapper, directoryListing:Array<FileLocation>):Array<FileWrapper> {
+		var children:Array<FileWrapper> = [];
+		if (directoryListing == null) {
+			return children;
+		}
+		var projectReference = fileWrapper.projectReference;
+		var showHiddenPaths:Bool = projectReference != null && Reflect.getProperty(projectReference, "showHiddenPaths") == true;
+		var hiddenPaths:Dynamic = projectReference == null ? null : Reflect.getProperty(projectReference, "hiddenPaths");
+		for (currentFile in directoryListing) {
+			if (currentFile.fileBridge.isHidden) {
+				continue;
+			}
+			if (!showHiddenPaths && isProjectHiddenPath(hiddenPaths, currentFile)) {
+				continue;
+			}
+			var child = new FileWrapper(currentFile, false, projectReference, false);
+			child.children = [];
+			Reflect.setProperty(child, "sourceController", Reflect.getProperty(fileWrapper, "sourceController"));
+			if (child.file.fileBridge.isDirectory) {
+				child.isSourceFolder = isSourceFolder(child, projectReference);
+			}
+			children.push(child);
+		}
 		if (_filterFunction != null) {
 			children = children.filter(_filterFunction);
 		}
@@ -417,10 +466,36 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 			}
 			children.sort(_sortCompareFunction);
 		}
-		if (useCache) {
-			_childrenMap.set(fileWrapper.nativePath, children);
-		}
 		return children;
+	}
+
+	private function isProjectHiddenPath(hiddenPaths:Dynamic, currentFile:FileLocation):Bool {
+		if (hiddenPaths == null) {
+			return false;
+		}
+		var currentNativePath = currentFile.fileBridge.nativePath;
+		var length:Null<Int> = Reflect.getProperty(hiddenPaths, "length");
+		if (length == null) {
+			return false;
+		}
+		for (i in 0...length) {
+			var hiddenFile:FileLocation = untyped hiddenPaths[i];
+			if (hiddenFile != null && hiddenFile.fileBridge.nativePath == currentNativePath) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private function isSourceFolder(wrapper:FileWrapper, projectReference:Dynamic):Bool {
+		if (projectReference == null) {
+			return false;
+		}
+		var sourceFolder:FileLocation = Reflect.getProperty(projectReference, "sourceFolder");
+		if (sourceFolder == null) {
+			return false;
+		}
+		return wrapper.nativePath == sourceFolder.fileBridge.nativePath;
 	}
 
 	private function removeFromCache(item:FileWrapper, items:Array<FileWrapper>):Void {
@@ -429,6 +504,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 		}	
 		var children = _childrenMap.get(item.nativePath);
 		_childrenMap.remove(item.nativePath);
+		_pendingDirectoryListings.remove(item.nativePath);
 		if (children != null) {
 			for (child in children) {
 				items.push(child);

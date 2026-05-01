@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (C) STARTcloud, Inc. 2015-2022. All rights reserved.
+//  Copyright (C) STARTcloud, Inc. 2015-2025. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the Server Side Public License, version 1,
@@ -30,36 +30,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package actionScripts.interfaces;
+package moonshine.events;
 
-import actionScripts.factory.FileLocation;
+import actionScripts.valueObjects.FileWrapper;
+import openfl.events.Event;
 
-extern interface IFileBridge {
-	@:flash.property
-	public var nativePath(default, default):String;
+class FileWrapperHierarchicalCollectionEvent extends Event {
+	public static final DIRECTORY_LISTING_RECEIVED:String = "directoryListingReceived";
 
-	@:flash.property
-	public var name(default, default):String;
+	public var fileWrapper:FileWrapper;
 
-	@:flash.property
-	public var parent(default, null):FileLocation;
-
-	@:flash.property
-	public var exists(default, null):Bool;
-
-	@:flash.property
-	public var isDirectory(default, default):Bool;
-
-	@:flash.property
-	public var isHidden(default, default):Bool;
-
-	@:flash.property
-	public var extension(default, null):String;
-
-	@:flash.property
-	public var separator(default, null):String;
-
-	function getDirectoryListing():Array<Dynamic>;
-
-	function getDirectoryListingAsync(successHandler:(output:Array<FileLocation>) -> Void, ?errorHandler:(error:String) -> Void):Void;
+	public function new(type:String, fileWrapper:FileWrapper = null) {
+		super(type, false, false);
+		this.fileWrapper = fileWrapper;
+	}
 }

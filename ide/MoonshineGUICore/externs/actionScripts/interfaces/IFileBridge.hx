@@ -63,6 +63,9 @@ extern interface IFileBridge {
 	public var isDirectory(default, default):Bool;
 
 	@:flash.property
+	public var isHidden(default, default):Bool;
+
+	@:flash.property
 	public var separator(default, null):String;
 
 	public function read():Dynamic;
@@ -78,5 +81,7 @@ extern interface IFileBridge {
 	public function isPathExists(value:String):Bool;
 
 	public function openWithDefaultApplication():Void;
+
+	function getDirectoryListingAsync(successHandler:(output:Array<FileLocation>) -> Void, ?errorHandler:(error:String) -> Void):Void;
 
 }

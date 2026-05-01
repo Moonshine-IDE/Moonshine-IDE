@@ -75,6 +75,11 @@ package actionScripts.impls
 		{
 			return _file.getDirectoryListing();
 		}
+
+		public function getDirectoryListingAsync(successHandler:Function, errorHandler:Function = null):void
+		{
+			//TODO: implement function
+		}
 		
 		public function deleteFileOrDirectory():void
 		{

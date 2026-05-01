@@ -5,6 +5,7 @@ import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
 import actionScripts.valueObjects.WorkspaceVO;
 import moonshine.data.FileWrapperHierarchicalCollection;
+import moonshine.events.FileWrapperHierarchicalCollectionEvent;
 import moonshine.events.ProjectTreeViewEvent;
 import moonshine.ui.project.ProjectViewHeader;
 import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer;
@@ -153,11 +154,15 @@ class ProjectTreeView extends LayoutGroup {
 		if (_dataProvider == value) {
 			return _dataProvider;
 		}
+		if (_dataProvider != null) {
+			_dataProvider.removeEventListener(FileWrapperHierarchicalCollectionEvent.DIRECTORY_LISTING_RECEIVED, onDirectoryListingReceived);
+		}
 		_dataProvider = value;
 		if (_treeView != null) {
 			_treeView.dataProvider = _dataProvider;
 		}
 		if (value != null) {
+			value.addEventListener(FileWrapperHierarchicalCollectionEvent.DIRECTORY_LISTING_RECEIVED, onDirectoryListingReceived);
 			reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_RESET, value.roots.copy());
 		}
 		return _dataProvider;
@@ -333,7 +338,9 @@ class ProjectTreeView extends LayoutGroup {
 			if (open) {
 				// Flex Tree dispatches an add event when opening a
 				// branch, but Feathers does not, so we force it here
-				reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_ADD, item.children.copy());
+				if (item.children != null) {
+					reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_ADD, item.children.copy());
+				}
 			}
 		}
 	}
@@ -496,12 +503,14 @@ class ProjectTreeView extends LayoutGroup {
 		super.update();
 	}
 
-	private function updateChildrenAndOpenItems(fw:FileWrapper, openItems:Array<FileWrapper>, newItems:Array<FileWrapper>):Void {
+	private function updateChildrenAndOpenItems(fw:FileWrapper, openItems:Array<FileWrapper>, newItems:Array<FileWrapper>, refreshItem:Bool = true):Void {
 		var location:Array<Int> = _treeView.dataProvider.locationOf(fw);
 		if (location == null) {
 			return;
 		}
-		_treeView.dataProvider.updateAt(location);
+		if (refreshItem) {
+			_treeView.dataProvider.updateAt(location);
+		}
 		var length:Int = _treeView.dataProvider.getLength(location);
 		for (i in 0...length) {
 			location.push(i);
@@ -577,7 +586,9 @@ class ProjectTreeView extends LayoutGroup {
 			if (open) {
 				// Flex Tree dispatches an add event when opening a
 				// branch, but Feathers does not, so we force it here
-				reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_ADD, item.children.copy());
+				if (item.children != null) {
+					reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_ADD, item.children.copy());
+				}
 			}
 		} else {
 			if (item.file.fileBridge.isDirectory || item.isWorking)
@@ -604,6 +615,26 @@ class ProjectTreeView extends LayoutGroup {
 		var item:FileWrapper = cast(event.state.data, FileWrapper);
 		if (item != null) {
 			removeFromOpenedItems(item);
+		}
+	}
+
+	private function onDirectoryListingReceived(event:FileWrapperHierarchicalCollectionEvent):Void {
+		if (_treeView == null || _treeView.dataProvider != _dataProvider || event.fileWrapper == null) {
+			return;
+		}
+		var item = findTreeViewItem(event.fileWrapper);
+		if (item == null || !_treeView.isBranchOpen(item)) {
+			return;
+		}
+		var openItems:Array<FileWrapper> = cast _treeView.openBranches;
+		var newItems:Array<FileWrapper> = [];
+		updateChildrenAndOpenItems(item, openItems, newItems, false);
+		var oldIgnoreTreeBranchChanges:Bool = _ignoreTreeBranchChanges;
+		_ignoreTreeBranchChanges = true;
+		_treeView.openBranches = openItems;
+		_ignoreTreeBranchChanges = oldIgnoreTreeBranchChanges;
+		if (item.children != null) {
+			reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_ADD, item.children.copy());
 		}
 	}
 

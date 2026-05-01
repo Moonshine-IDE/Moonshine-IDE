@@ -32,6 +32,8 @@
 package actionScripts.impls
 {
 	import flash.events.Event;
+	import flash.events.FileListEvent;
+	import flash.events.IOErrorEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
@@ -103,6 +105,39 @@ package actionScripts.impls
 		{
 			if (!checkFileExistenceAndReport()) return [];
 			return _file.getDirectoryListing();
+		}
+
+		public function getDirectoryListingAsync(successHandler:Function, errorHandler:Function = null):void
+		{
+			if (!checkFileExistenceAndReport())
+			{
+				if (errorHandler != null)
+				{
+					errorHandler("Directory does not exist: " + _file.nativePath);
+				}
+				return;
+			}
+
+			_file.addEventListener(FileListEvent.DIRECTORY_LISTING, onDirectoryListing);
+			_file.addEventListener(IOErrorEvent.IO_ERROR, onDirectoryListingError);
+
+			_file.getDirectoryListingAsync();
+
+			function onDirectoryListing(event:FileListEvent):void
+			{
+				_file.removeEventListener(FileListEvent.DIRECTORY_LISTING, onDirectoryListing);
+				_file.removeEventListener(IOErrorEvent.IO_ERROR, onDirectoryListingError);
+				var fileLocations:Array = event.files.map(function(file:File, index:int, source:Array):FileLocation {
+					return new FileLocation(file.nativePath);
+				});
+				successHandler(fileLocations);
+			}
+			function onDirectoryListingError(event:IOErrorEvent):void
+			{
+				_file.removeEventListener(FileListEvent.DIRECTORY_LISTING, onDirectoryListing);
+				_file.removeEventListener(IOErrorEvent.IO_ERROR, onDirectoryListingError);
+				if (errorHandler != null) errorHandler(event.text);
+			}
 		}
 		
 		public function deleteFileOrDirectory():void
