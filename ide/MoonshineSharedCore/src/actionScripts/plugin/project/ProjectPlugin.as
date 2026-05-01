@@ -1572,6 +1572,12 @@ package actionScripts.plugin.project
 
 		private function onSelectedProjectFoldersChange(event:CollectionEvent):void
 		{
+			if (event.kind == CollectionEventKind.UPDATE)
+			{
+				// changing the properties of items should not replace the
+				// data provider
+				return;
+			}
 			setFeathersTreeViewData(model.selectedprojectFolders);
 		}
 
