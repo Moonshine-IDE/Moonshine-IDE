@@ -387,7 +387,10 @@ package actionScripts.plugin.recentlyOpened
 				var tmpTreeView:ProjectTreeView = model.mainView.getTreeViewPanel();
 				if (tmpTreeView && model.activeProject)
 				{
-					tmpTreeView.selectedFile = model.activeProject.projectFolder;
+					if (model.activeProject != null)
+					{
+						tmpTreeView.selectedFile = model.activeProject.projectFolder.file;
+					}
                 }
 				clearTimeout(timeoutValue);
 			}, 200);

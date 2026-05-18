@@ -66,6 +66,7 @@
 		import mx.validators.Validator;
 
 		import spark.components.Alert;
+		import actionScripts.factory.FileLocation;
 
 		public static const EVENT_START_CONVERSION:String = "eventStartConversion";
 
@@ -125,12 +126,11 @@
 			}
 
 			var tmpTreeView:ProjectTreeView = IDEModel.getInstance().mainView.getTreeViewPanel();
-			var selectedTreeItem:FileWrapper = tmpTreeView.selectedFile != null ?
-					tmpTreeView.selectedFile as FileWrapper : null;
-			if (selectedTreeItem && selectedTreeItem.file.fileBridge.extension &&
-					selectedTreeItem.file.fileBridge.extension.toLowerCase() == "json")
+			var selectedTreeItem:FileLocation = tmpTreeView.selectedFile;
+			if (selectedTreeItem && selectedTreeItem.fileBridge.extension &&
+					selectedTreeItem.fileBridge.extension.toLowerCase() == "json")
 			{
-				txtFile.text = selectedTreeItem.file.fileBridge.nativePath;
+				txtFile.text = selectedTreeItem.fileBridge.nativePath;
 			}
 
 			disableUI();

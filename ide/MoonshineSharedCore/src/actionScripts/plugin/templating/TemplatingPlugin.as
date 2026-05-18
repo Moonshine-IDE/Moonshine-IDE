@@ -1168,13 +1168,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newMXMLComponentPopup.folderLocation = creatingItemIn.file;
-						newMXMLComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newMXMLComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newMXMLComponentPopup.folderLocation = creatingItemIn;
+						newMXMLComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newMXMLComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				
@@ -1201,13 +1211,23 @@ package actionScripts.plugin.templating
                 {
                     // try to check if there is any selection in
                     // TreeView item
-                    var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+                    var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
                     if (treeSelectedItem != null)
                     {
-                        var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-                        newVisualEditorFilePopup.folderLocation = creatingItemIn.file;
-                        newVisualEditorFilePopup.wrapperOfFolderLocation = creatingItemIn;
-                        newVisualEditorFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+                        var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+                        newVisualEditorFilePopup.folderLocation = creatingItemIn;
+                        newVisualEditorFilePopup.wrapperOfFolderLocation = creatingItemInWrapper;
+                        newVisualEditorFilePopup.wrapperBelongToProject = creatingItemInProject;
                     }
                 }
 
@@ -1219,7 +1239,7 @@ package actionScripts.plugin.templating
         {
 			var insideLocation:FileWrapper = (event is NewFileEvent) ?
 					(event as NewFileEvent).insideLocation :
-					(model.mainView.getTreeViewPanel().selectedFile as FileWrapper);
+					UtilsCore.findFileWrapperAgainstFileLocation(model.activeProject.projectFolder, model.mainView.getTreeViewPanel().selectedFile);
 			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
 			{
 				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().getParentItem(insideLocation));
@@ -1244,7 +1264,7 @@ package actionScripts.plugin.templating
 		{
 			var insideLocation:FileWrapper = (event is NewFileEvent) ?
 					(event as NewFileEvent).insideLocation :
-					(model.mainView.getTreeViewPanel().selectedFile as FileWrapper);
+					UtilsCore.findFileWrapperAgainstFileLocation(model.activeProject.projectFolder, model.mainView.getTreeViewPanel().selectedFile);
 			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
 			{
 				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().getParentItem(insideLocation));
@@ -1266,31 +1286,7 @@ package actionScripts.plugin.templating
 		}
 		
 		protected function openOnDiskVisualEditorTypeChoose(event:Event):void
-		{
-			// if(!newOnDiskFilePopup){
-			// 	newOnDiskFilePopup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as DisplayObject, NewOnDiskFilePopup, true) as NewOnDiskFilePopup;
-			// 	newOnDiskFilePopup.addEventListener(CloseEvent.CLOSE, handleNewFilePopupClose);
-			// 	if (event is NewFileEvent)
-            //     {
-            //         newOnDiskFilePopup.folderLocation = new FileLocation((event as NewFileEvent).filePath);
-			// 		newOnDiskFilePopup.wrapperOfFolderLocation = (event as NewFileEvent).insideLocation;
-			// 		newOnDiskFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder((event as NewFileEvent).insideLocation);
-			
-            //     }
-            //     else
-            //     {
-			// 		var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedItem as FileWrapper;
-            //         if (treeSelectedItem != null)
-            //         {
-            //             var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-            //             newOnDiskFilePopup.folderLocation = creatingItemIn.file;
-            //             newOnDiskFilePopup.wrapperOfFolderLocation = creatingItemIn;
-            //             newOnDiskFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
-            //         }
-			// 	}
-			// 	PopUpManager.centerPopUp(newOnDiskFilePopup);
-			// }
-			
+		{	
 			var tmpOnDiskEvent:NewFileEvent =null;
 			if(event is NewFileEvent)
 			{
@@ -1302,13 +1298,23 @@ package actionScripts.plugin.templating
 			}
 			else
 			{
-				var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+				var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 				if(treeSelectedItem != null)
 				{
-					var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
+					var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+					var creatingItemInProject:ProjectVO = null;
+					for each (var project:ProjectVO in model.projects)
+					{
+						if (project.projectFolder.containsFile(creatingItemIn))
+						{
+							creatingItemInProject = project;
+							break;
+						}
+					}
+					var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
 					tmpOnDiskEvent = new NewFileEvent(
-						OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, creatingItemIn.file.fileBridge.nativePath,
-						ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE, creatingItemIn
+						OnDiskProjectPlugin.EVENT_NEW_FILE_WINDOW, creatingItemIn.fileBridge.nativePath,
+						ConstantsCoreVO.TEMPLATE_ODP_VISUALEDITOR_FILE, creatingItemInWrapper
 					);
 				}
 			}
@@ -1345,13 +1351,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newCSSComponentPopup.folderLocation = creatingItemIn.file;
-						newCSSComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newCSSComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newCSSComponentPopup.folderLocation = creatingItemIn;
+						newCSSComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newCSSComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				
@@ -1363,7 +1379,7 @@ package actionScripts.plugin.templating
 		{
 			var dominoFormFolderStr:String;
 			var dominoFormFolder:FileLocation;
-			var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+			var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 
 			if (!newDominoFormComponentPopup)
 			{
@@ -1382,16 +1398,26 @@ package actionScripts.plugin.templating
 					
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newDominoFormComponentPopup.folderLocation = creatingItemIn.file;
-						newDominoFormComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newDominoFormComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newDominoFormComponentPopup.folderLocation = creatingItemIn;
+						newDominoFormComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newDominoFormComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				//only for fixed folder for domino form file
 				
 			
-				if(treeSelectedItem && UtilsCore.endsWith(treeSelectedItem.nativePath,"Subforms")){
+				if(treeSelectedItem && UtilsCore.endsWith(treeSelectedItem.fileBridge.nativePath,"Subforms")){
 					dominoFormFolderStr =newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"SharedElements"+model.fileCore.separator+"Subforms";
 				}else{
 					dominoFormFolderStr =newDominoFormComponentPopup.wrapperBelongToProject.projectFolder.nativePath +  model.fileCore.separator +"nsfs"+model.fileCore.separator+"nsf-moonshine"+model.fileCore.separator+"odp"+model.fileCore.separator+"Forms";
@@ -1411,15 +1437,16 @@ package actionScripts.plugin.templating
 					
 						for (var j:int = 0; j < (wrappers.length - 1); j++)
 						{
-							model.mainView.getTreeViewPanel().expandItem(wrappers[j], true);
+							var wrapper:FileWrapper = wrappers[j];
+							model.mainView.getTreeViewPanel().expandItem(wrapper.file, true);
 						}
 		
 						// selection
-						model.mainView.getTreeViewPanel().selectedFile = dominoFormFolderWrapper;
+						model.mainView.getTreeViewPanel().selectedFile = dominoFormFolderWrapper.file;
 						// scroll-to
 						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
-							model.mainView.getTreeViewPanel().scrollToItem(dominoFormFolderWrapper);
+							model.mainView.getTreeViewPanel().scrollToItem(dominoFormFolderWrapper.file);
 						});
 					});
 					
@@ -1452,13 +1479,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newDominoSubformComponentPopup.folderLocation = creatingItemIn.file;
-						newDominoSubformComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newDominoSubformComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newDominoSubformComponentPopup.folderLocation = creatingItemIn;
+						newDominoSubformComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newDominoSubformComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				//only for fixed folder for domino form file
@@ -1476,15 +1513,15 @@ package actionScripts.plugin.templating
 					
 						for (var j:int = 0; j < (wrappers.length - 1); j++)
 						{
-							model.mainView.getTreeViewPanel().expandItem(wrappers[j], true);
+							model.mainView.getTreeViewPanel().expandItem(FileWrapper(wrappers[j]).file, true);
 						}
 		
 						// selection
-						model.mainView.getTreeViewPanel().selectedFile = dominoSubformFolderWrapper;
+						model.mainView.getTreeViewPanel().selectedFile = dominoSubformFolderWrapper.file;
 						// scroll-to
 						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
-							model.mainView.getTreeViewPanel().scrollToItem(dominoSubformFolderWrapper);
+							model.mainView.getTreeViewPanel().scrollToItem(dominoSubformFolderWrapper.file);
 						});
 					});
 					
@@ -1518,13 +1555,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newDominoSharedFieldComponentPopup.folderLocation = creatingItemIn.file;
-						newDominoSharedFieldComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newDominoSharedFieldComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newDominoSharedFieldComponentPopup.folderLocation = creatingItemIn;
+						newDominoSharedFieldComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newDominoSharedFieldComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				//only for fixed folder for domino form file
@@ -1549,15 +1596,15 @@ package actionScripts.plugin.templating
 					
 						for (var j:int = 0; j < (wrappers.length - 1); j++)
 						{
-							model.mainView.getTreeViewPanel().expandItem(wrappers[j], true);
+							model.mainView.getTreeViewPanel().expandItem(FileWrapper(wrappers[j]).file, true);
 						}
 		
 						// selection
-						model.mainView.getTreeViewPanel().selectedFile = dominoShareFieldFolderWrapper;
+						model.mainView.getTreeViewPanel().selectedFile = dominoShareFieldFolderWrapper.file;
 						// scroll-to
 						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
 						{
-							model.mainView.getTreeViewPanel().scrollToItem(dominoShareFieldFolderWrapper);
+							model.mainView.getTreeViewPanel().scrollToItem(dominoShareFieldFolderWrapper.file);
 						});
 					});
 					
@@ -1580,15 +1627,18 @@ package actionScripts.plugin.templating
 
 			
 			var tmpOnDiskEvent:NewFileEvent=null;
-			var insideLocation:FileWrapper =  model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+			var insideLocation:FileLocation =  model.mainView.getTreeViewPanel().selectedFile;
 		
 			if (insideLocation)
 			{
+				var insideLocationProject:ProjectVO = (event is NewFileEvent) ? (event as NewFileEvent).ofProject : model.activeProject;
+				var insideLocationWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(insideLocationProject.projectFolder, insideLocation);
 				tmpOnDiskEvent = new NewFileEvent(
-						NewFileEvent.EVENT_NEW_FILE, insideLocation.nativePath,
-						ConstantsCoreVO.TEMPLATE_DOMINO_ACTION, insideLocation
+						NewFileEvent.EVENT_NEW_FILE, insideLocation.fileBridge.nativePath,
+						ConstantsCoreVO.TEMPLATE_DOMINO_ACTION,
+						insideLocationWrapper
 				);
-				tmpOnDiskEvent.ofProject = (event is NewFileEvent) ? (event as NewFileEvent).ofProject : model.activeProject;
+				tmpOnDiskEvent.ofProject = insideLocationProject;
 
 				dispatcher.dispatchEvent(tmpOnDiskEvent);
 
@@ -1639,7 +1689,7 @@ package actionScripts.plugin.templating
 						
 							for (var j:int = 0; j < (wrappers.length - 1); j++)
 							{
-								model.mainView.getTreeViewPanel().expandItem(wrappers[j], true);
+								model.mainView.getTreeViewPanel().expandItem(FileWrapper(wrappers[j]).file, true);
 							}
 			
 							// selection
@@ -1651,10 +1701,8 @@ package actionScripts.plugin.templating
 							});
 						});
 						
-						
-						//model.mainView.getTreeViewPanel().selectedItem = dominoFormFolderWrapper;
-						newDominoActionComponentPopup.wrapperOfFolderLocation = insideLocation;
-						newDominoActionComponentPopup.folderLocation =dominoActionFolder;
+						newDominoActionComponentPopup.wrapperOfFolderLocation = insideLocationWrapper;
+						newDominoActionComponentPopup.folderLocation = dominoActionFolder;
 						PopUpManager.centerPopUp(newDominoActionComponentPopup);
 					}else{
 						Alert.show("Can't found the form folder from the project,please make sure it is ODP domino project!");
@@ -1691,13 +1739,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newDominoViewShareColumnPopup.folderLocation = creatingItemIn.file;
-						newDominoViewShareColumnPopup.wrapperOfFolderLocation = creatingItemIn;
-						newDominoViewShareColumnPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newDominoViewShareColumnPopup.folderLocation = creatingItemIn;
+						newDominoViewShareColumnPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newDominoViewShareColumnPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				//only for fixed folder for domino form file
@@ -1715,16 +1773,19 @@ package actionScripts.plugin.templating
 					
 						for (var j:int = 0; j < (wrappers.length - 1); j++)
 						{
-							model.mainView.getTreeViewPanel().expandItem(wrappers[j], true);
+							model.mainView.getTreeViewPanel().expandItem(FileWrapper(wrappers[j]).file, true);
 						}
 		
-						// selection
-						model.mainView.getTreeViewPanel().selectedFile = dominoViewFolderWrapper;
-						// scroll-to
-						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
+						if (dominoViewFolderWrapper != null)
 						{
-							model.mainView.getTreeViewPanel().scrollToItem(dominoViewFolderWrapper);
-						});
+							// selection
+							model.mainView.getTreeViewPanel().selectedFile = dominoViewFolderWrapper.file;
+							// scroll-to
+							UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
+							{
+								model.mainView.getTreeViewPanel().scrollToItem(dominoViewFolderWrapper.file);
+							});
+						}
 					});
 					
 					
@@ -1758,13 +1819,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newDominoViewComponentPopup.folderLocation = creatingItemIn.file;
-						newDominoViewComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newDominoViewComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newDominoViewComponentPopup.folderLocation = creatingItemIn;
+						newDominoViewComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newDominoViewComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				//only for fixed folder for domino form file
@@ -1782,16 +1853,19 @@ package actionScripts.plugin.templating
 					
 						for (var j:int = 0; j < (wrappers.length - 1); j++)
 						{
-							model.mainView.getTreeViewPanel().expandItem(wrappers[j], true);
+							model.mainView.getTreeViewPanel().expandItem(FileWrapper(wrappers[j]).file, true);
 						}
 		
-						// selection
-						model.mainView.getTreeViewPanel().selectedFile = dominoViewFolderWrapper;
-						// scroll-to
-						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
+						if (dominoViewFolderWrapper != null)
 						{
-							model.mainView.getTreeViewPanel().scrollToItem(dominoViewFolderWrapper);
-						});
+							// selection
+							model.mainView.getTreeViewPanel().selectedFile = dominoViewFolderWrapper.file;
+							// scroll-to
+							UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
+							{
+								model.mainView.getTreeViewPanel().scrollToItem(dominoViewFolderWrapper.file);
+							});
+						}
 					});
 					
 					
@@ -1825,13 +1899,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newDominoPageComponentPopup.folderLocation = creatingItemIn.file;
-						newDominoPageComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newDominoPageComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newDominoPageComponentPopup.folderLocation = creatingItemIn;
+						newDominoPageComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newDominoPageComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				//only for fixed folder for domino form file
@@ -1849,16 +1933,19 @@ package actionScripts.plugin.templating
 					
 						for (var j:int = 0; j < (wrappers.length - 1); j++)
 						{
-							model.mainView.getTreeViewPanel().expandItem(wrappers[j], true);
+							model.mainView.getTreeViewPanel().expandItem(FileWrapper(wrappers[j]).file, true);
 						}
 		
-						// selection
-						model.mainView.getTreeViewPanel().selectedFile = dominoPageFolderWrapper;
-						// scroll-to
-						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
+						if (dominoPageFolderWrapper != null)
 						{
-							model.mainView.getTreeViewPanel().scrollToItem(dominoPageFolderWrapper);
-						});
+							// selection
+							model.mainView.getTreeViewPanel().selectedFile = dominoPageFolderWrapper.file;
+							// scroll-to
+							UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function ():void
+							{
+								model.mainView.getTreeViewPanel().scrollToItem(dominoPageFolderWrapper.file);
+							});
+						}
 					});
 					
 					
@@ -1895,13 +1982,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newMXMLModuleComponentPopup.folderLocation = creatingItemIn.file;
-						newMXMLModuleComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newMXMLModuleComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newMXMLModuleComponentPopup.folderLocation = creatingItemIn;
+						newMXMLModuleComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newMXMLModuleComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				
@@ -1930,12 +2027,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newFilePopup.wrapperOfFolderLocation = creatingItemIn;
-						newFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newFilePopup.folderLocation = creatingItemIn;
+						newFilePopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newFilePopup.wrapperBelongToProject =creatingItemInProject;
 					}
 				}
 				//Alert.show("wrapperOfFolderLocation:"+ newFilePopup.wrapperOfFolderLocation.nativePath);
@@ -2064,13 +2172,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in 
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newAS3ComponentPopup.folderLocation = creatingItemIn.file;
-						newAS3ComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newAS3ComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newAS3ComponentPopup.folderLocation = creatingItemIn;
+						newAS3ComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newAS3ComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 				
@@ -2134,13 +2252,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newJavaComponentPopup.folderLocation = creatingItemIn.file;
-						newJavaComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newJavaComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newJavaComponentPopup.folderLocation = creatingItemIn;
+						newJavaComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newJavaComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 
@@ -2172,13 +2300,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newGroovyComponentPopup.folderLocation = creatingItemIn.file;
-						newGroovyComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newGroovyComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newGroovyComponentPopup.folderLocation = creatingItemIn;
+						newGroovyComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newGroovyComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 
@@ -2210,13 +2348,23 @@ package actionScripts.plugin.templating
 				{
 					// try to check if there is any selection in
 					// TreeView item
-					var treeSelectedItem:FileWrapper = model.mainView.getTreeViewPanel().selectedFile as FileWrapper;
+					var treeSelectedItem:FileLocation = model.mainView.getTreeViewPanel().selectedFile;
 					if (treeSelectedItem != null)
 					{
-						var creatingItemIn:FileWrapper = (treeSelectedItem.file.fileBridge.isDirectory) ? treeSelectedItem : FileWrapper(model.mainView.getTreeViewPanel().getParentItem(treeSelectedItem));
-						newHaxeComponentPopup.folderLocation = creatingItemIn.file;
-						newHaxeComponentPopup.wrapperOfFolderLocation = creatingItemIn;
-						newHaxeComponentPopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
+						var creatingItemIn:FileLocation = (treeSelectedItem.fileBridge.isDirectory) ? treeSelectedItem : treeSelectedItem.fileBridge.parent;
+						var creatingItemInProject:ProjectVO = null;
+						for each (var project:ProjectVO in model.projects)
+						{
+							if (project.projectFolder.containsFile(creatingItemIn))
+							{
+								creatingItemInProject = project;
+								break;
+							}
+						}
+						var creatingItemInWrapper:FileWrapper = UtilsCore.findFileWrapperAgainstFileLocation(creatingItemInProject.projectFolder, creatingItemIn);
+						newHaxeComponentPopup.folderLocation = creatingItemIn;
+						newHaxeComponentPopup.wrapperOfFolderLocation = creatingItemInWrapper;
+						newHaxeComponentPopup.wrapperBelongToProject = creatingItemInProject;
 					}
 				}
 

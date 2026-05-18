@@ -111,6 +111,7 @@ package actionScripts.plugin.project
 	import moonshine.ui.project.ProjectTreeView;
 	import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer
 	import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
+	import feathers.data.ArrayCollection;
 
 	public class ProjectPlugin extends PluginBase implements IPlugin, ISettingsProvider
 	{
@@ -237,8 +238,11 @@ package actionScripts.plugin.project
 
 		private function setFeathersTreeViewData(folders:mx.collections.ArrayCollection):void
 		{
-			var roots:Array = folders.source.slice();
-			treeView.dataProvider = new FileWrapperHierarchicalCollection(roots);
+			var roots:Array = folders.source.map(function(root:FileWrapper, index:int, source:Array):FileLocation
+			{
+				return root.file;
+			});
+			treeView.dataProvider = new ArrayCollection(roots);
 
 			treeView.projects = new FlexListCollection(model.projects);
 		}
@@ -655,7 +659,7 @@ package actionScripts.plugin.project
 		{
 			if (treeView.selectedFile != null)
 			{
-				refreshActiveProject(treeView.selectedFile.file);
+				refreshActiveProject(treeView.selectedFile);
 			}
 		}
 
@@ -892,14 +896,14 @@ package actionScripts.plugin.project
 			if (!isImmediateExists) insideLocation.children.push(folderWrappers[0]);
 
 			// Make sure item is open before adding
-			treeView.expandItem(insideLocation, true);
+			treeView.expandItem(insideLocation.file, true);
 			// refresh after creating so that the user can see the
 			// change immediately, instead of waiting for the file
 			// system watcher, which might take a second or two
-			treeView.refreshItem(insideLocation);
+			treeView.refreshItem(insideLocation.file);
 			if (isFolderCreationEvent)
 			{
-				treeView.expandItem(folderWrappers[0], true);
+				treeView.expandItem(FileWrapper(folderWrappers[0]).file, true);
 			}
 
 			// refresh the folder section and select
@@ -911,9 +915,12 @@ package actionScripts.plugin.project
 				// so we need new instance of the wrapper so we can
 				// select and scroll-to-index
 				var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(newFile, null, insideLocation);
-				treeView.selectedFile = tmpFileW;
-
-				treeView.scrollToItem(tmpFileW);
+				if (tmpFileW != null)
+				{
+					var tmpLocation:FileLocation = tmpFileW.file;
+					treeView.selectedFile = tmpLocation;
+					treeView.scrollToItem(tmpLocation);
+				}
 				clearTimeout(timeoutValue);
 			}, 300);
 		}
@@ -926,7 +933,7 @@ package actionScripts.plugin.project
 			}
 			else
 			{
-				treeView.refreshItem(fileWrapper);
+				treeView.refreshItem(fileWrapper.file);
 			}
 
 			if(fileWrapper.sourceController)
@@ -994,7 +1001,7 @@ package actionScripts.plugin.project
 
 				model.projects[projectIndex] = tmpProjectVO;
 				model.selectedprojectFolders[projectIndex] = tmpProjectVO.projectFolder;
-				treeView.refreshItem(model.selectedprojectFolders[projectIndex]);
+				treeView.refreshItem(FileWrapper(model.selectedprojectFolders[projectIndex]).file);
 			}
 
 			function onTmpProjectUpdateFault(event:Event):void
@@ -1016,7 +1023,10 @@ package actionScripts.plugin.project
 			var fw:FileWrapper;
 
 			if((treeView.selectedFiles.length > 1)
-					&& (treeView.selectedFiles.indexOf(fileWrapper) != -1)) isMultiSelection = true;
+					&& (fileLocationsToFileWrappers(treeView.selectedFiles).indexOf(fileWrapper) != -1))
+			{
+				isMultiSelection = true;
+			}
 
 			switch (event.menuLabel)
 			{
@@ -1034,7 +1044,7 @@ package actionScripts.plugin.project
 				{
 					if(isMultiSelection)
 					{
-						openFileFolder(treeView.selectedFiles);
+						openFileFolder(fileLocationsToFileWrappers(treeView.selectedFiles));
 					}
 					else
 					{
@@ -1081,22 +1091,27 @@ package actionScripts.plugin.project
 				}
 				case ProjectTreeContextMenuItem.COPY_FILE:
 				{
-					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_COPY_FILE, isMultiSelection ? treeView.selectedFiles : [fileWrapper]));
+					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_COPY_FILE,
+						isMultiSelection ? fileLocationsToFileWrappers(treeView.selectedFiles) : [fileWrapper]));
 					break;
 				}
 				case ProjectTreeContextMenuItem.PASTE_FILE:
 				{
-					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES, fileWrapper.file.fileBridge.isDirectory ? [fileWrapper] : [treeView.getParentItem(fileWrapper)]));
+					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES,
+						fileWrapper.file.fileBridge.isDirectory ? [fileWrapper] : [treeView.getParentItem(fileWrapper)]));
 					break;
 				}
 				case ProjectTreeContextMenuItem.SET_AS_DEFAULT_APPLICATION:
 				{
 					if(model.activeProject is AS3ProjectVO)
 					{
-						TemplatingHelper.setFileAsDefaultApplication(fileWrapper, FileWrapper(treeView.getParentItem(fileWrapper)));
-					} else if(model.activeProject is JavaProjectVO)
+						TemplatingHelper.setFileAsDefaultApplication(fileWrapper,
+							FileWrapper(treeView.getParentItem(fileWrapper)));
+					}
+					else if(model.activeProject is JavaProjectVO)
 					{
-						dispatcher.dispatchEvent(new ProjectActionEvent(ProjectActionEvent.SET_DEFAULT_APPLICATION, fileWrapper.file));
+						dispatcher.dispatchEvent(new ProjectActionEvent(ProjectActionEvent.SET_DEFAULT_APPLICATION,
+							fileWrapper.file));
 					}
 					break;
 				}
@@ -1211,8 +1226,11 @@ package actionScripts.plugin.project
 				if(!event2 || event2.detail == Alert.YES)
 				{
 					var parentFileWrapper:FileWrapper = treeView.getParentItem(fileWrapper);
-					var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(treeView.selectedFiles[0] as FileWrapper);
-					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file, isMultiSelection ? treeView.selectedFiles : [fileWrapper], onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
+					var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(
+						fileLocationToFileWrapper(treeView.selectedFiles[0] as FileLocation));
+					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file,
+						isMultiSelection ? fileLocationsToFileWrappers(treeView.selectedFiles) : [fileWrapper],
+						onFileDeletedOnServer, event.showAlert, projectAssociatedWithFile));
 					//Alert.show("delete file:"+fileWrapper.file.fileBridge.nativePath);
 					var parentFolder:String=fileWrapper.file.fileBridge.parent.fileBridge.nativePath;
 					//Alert.show("parentFolder file:"+parentFolder);
@@ -1230,7 +1248,7 @@ package actionScripts.plugin.project
 					// system watcher, which might take a second or two
 					if (parentFileWrapper)
 					{
-						treeView.refreshItem(parentFileWrapper);
+						treeView.refreshItem(parentFileWrapper.file);
 					}
 
 				}
@@ -1254,13 +1272,14 @@ package actionScripts.plugin.project
 			{
 				var hasProjectRoot:Boolean;
 				var hasProjectFiles:Boolean;
-				for each (var fw:FileWrapper in treeView.selectedFiles)
+				for each (var fileLocation:FileLocation in treeView.selectedFiles)
 				{
+					var fw:FileWrapper = fileLocationToFileWrapper(fileLocation);
 					if(fw.isRoot) hasProjectRoot = true;
 					else hasProjectFiles = true;
 
 					// terminate if any file do not exists
-					if(!fw.file.fileBridge.exists)
+					if(!fileLocation.fileBridge.exists)
 					{
 						Alert.show("One or more files to the selection does not exists.", "Error");
 						return false;
@@ -1298,7 +1317,7 @@ package actionScripts.plugin.project
 				{
 					if(fw.file.fileBridge.isDirectory && fw.file.fileBridge.isDirectory)
 					{
-						treeView.expandItem(fw, true);
+						treeView.expandItem(fw.file, true);
 					}
 					else
 					{
@@ -1313,6 +1332,47 @@ package actionScripts.plugin.project
 				}
 			}
 		}
+
+		private function fileLocationToFileWrapper(location:FileLocation):FileWrapper
+		{
+			var foundProject:ProjectVO = null;
+			for each (var currentProject:ProjectVO in model.projects)
+			{
+				if (currentProject.projectFolder.containsFile(location))
+				{
+					foundProject = currentProject;
+					break;
+				}
+			}
+			if (foundProject == null)
+			{
+				return null;
+			}
+					
+			return UtilsCore.findFileWrapperAgainstFileLocation(currentProject.projectFolder, location);
+		}
+
+		private function fileLocationsToFileWrappers(locations:Array):Array
+		{
+			return locations.map(function(location:FileLocation, index:int, source:Array):FileWrapper
+			{
+				return fileLocationToFileWrapper(location);
+				var foundProject:ProjectVO = null;
+				for each (var currentProject:ProjectVO in model.projects)
+				{
+					if (currentProject.projectFolder.containsFile(location))
+					{
+						foundProject = currentProject;
+						break;
+					}
+				}
+						
+				return UtilsCore.findFileWrapperAgainstFileLocation(currentProject.projectFolder, location);
+			}).filter(function(wrapper:FileWrapper, index:int, source:Array):Boolean
+			{
+				return wrapper != null;
+			});
+		}
 			
 		private function onCloseProjectRequest(event:ProjectEvent):void
 		{
@@ -1325,7 +1385,7 @@ package actionScripts.plugin.project
 
 			var parentCollection:Array;
 			var tmpProject:ProjectVO;
-			var lastSelectedItem:FileWrapper = treeView.selectedFile;
+			var lastSelectedItem:FileLocation = treeView.selectedFile;
 			var lastProcessedProjectPath:String;
 			// if the file/folder is a project root
 			if(value[0].isRoot)
@@ -1367,10 +1427,10 @@ package actionScripts.plugin.project
 					// this is a scenario when both parent and children
 					// get selected and called for deletion
 					parentCollection.splice(parentCollection.indexOf(value), 1);
-					if(lastSelectedItem != null && lastSelectedItem == value)
+					if(lastSelectedItem != null)
 					{
-						var parentItem:Object = treeView.getParentItem(value);
-						treeView.selectedFile = parentItem as FileWrapper;
+						var parentItem:FileLocation = lastSelectedItem.fileBridge.parent;
+						treeView.selectedFile = parentItem;
 					}
 				} catch (e:Error)
 				{
@@ -1431,7 +1491,7 @@ package actionScripts.plugin.project
 					// direct search (i.e. getItemIndex) of fileWrapper object in the collection
 					// returns -1 even the fileWrapper object and object inside the collection has same
 					// instance id. Thus a different approach it needs to parse by its uid value
-					var lastSelectedItem:FileWrapper = treeView.selectedFile;
+					var lastSelectedItem:FileLocation = treeView.selectedFile;
 					var tmpFWIndex:int = UtilsCore.findFileWrapperIndexByID(project.projectFolder, model.selectedprojectFolders);
 					model.selectedprojectFolders.removeItemAt(tmpFWIndex);
 					timeoutValue = setTimeout(function ():void
@@ -1451,7 +1511,7 @@ package actionScripts.plugin.project
 						clearTimeout(timeoutValue);
 						if (treeView.selectedFile != null)
 						{
-							refreshActiveProject(treeView.selectedFile.file);
+							refreshActiveProject(treeView.selectedFile);
 						}
 					}, 100);
 					break;
@@ -1468,11 +1528,11 @@ package actionScripts.plugin.project
 					
 					timeoutValue = setTimeout(function ():void
 					{
-						treeView.selectedFile = project.projectFolder;
+						treeView.selectedFile = project.projectFolder.file;
 						clearTimeout(timeoutValue);
 						if (treeView.selectedFile != null)
 						{
-							refreshActiveProject(treeView.selectedFile.file);
+							refreshActiveProject(treeView.selectedFile);
 						}
 						if(ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT > 0) ConstantsCoreVO.STARTUP_PROJECT_OPEN_QUEUE_LEFT--;
 					}, 1000);
@@ -1487,28 +1547,34 @@ package actionScripts.plugin.project
 			var insideLocation:FileWrapper = TreeMenuItemEvent(event).data;
 
 			// refresh the folder section and select
-			treeView.selectedFile = insideLocation;
+			treeView.selectedFile = insideLocation.file;
 			refreshByWrapperItem(insideLocation);
-			treeView.expandItem(insideLocation, true);
+			treeView.expandItem(insideLocation.file, true);
 		}
 	
 		private function onProjectRenameRequest(event:RenameApplicationEvent):void
 		{
-			for each (var as3Project:AS3ProjectVO in model.projects)
+			var toLocation:FileLocation = event.to;
+			for each (var project:ProjectVO in model.projects)
 			{
-				if(as3Project.folderLocation.fileBridge.nativePath == event.from.fileBridge.nativePath)
+				if(project.folderLocation.fileBridge.nativePath == event.from.fileBridge.nativePath)
 				{
-					as3Project.projectFolder.file = as3Project.folderLocation = as3Project.classpaths[0] = event.to;
-					//as3Project.projectFolder.projectReference.name = event.to.fileBridge.name;
-					as3Project.projectFolder.projectReference.path = event.to.fileBridge.nativePath;
+					project.projectFolder.file = toLocation;
+					project.folderLocation = toLocation;
+					if (project is AS3ProjectVO)
+					{
+						var as3Project:AS3ProjectVO = AS3ProjectVO(project);
+						as3Project.classpaths[0] = toLocation;
+					}
+					//project.projectFolder.projectReference.name = event.to.fileBridge.name;
+					project.projectFolder.projectReference.path = event.to.fileBridge.nativePath;
 
-					refreshByWrapperItem(as3Project.projectFolder);
+					refreshByWrapperItem(project.projectFolder);
 
 					var timeoutValue:uint = setTimeout(function ():void
 					{
-						treeView.selectedFile = as3Project.projectFolder;
-
-						treeView.scrollToItem(as3Project.projectFolder);
+						treeView.selectedFile = project.projectFolder.file;
+						treeView.scrollToItem(project.projectFolder.file);
 						clearTimeout(timeoutValue);
 					}, 300);
 					break;
@@ -1525,15 +1591,19 @@ package actionScripts.plugin.project
                 var activeFilePath:String = activeEditorFile.fileBridge.nativePath;
                 var childrenForOpen:Array = activeFilePath.split(activeEditorFile.fileBridge.separator);
                 treeView.expandChildrenByName("name", childrenForOpen);
-				var fw:FileWrapper = new FileWrapper(activeEditorFile);
-				treeView.scrollToItem(fw);
-				treeView.selectedFile = fw;
+				treeView.scrollToItem(activeEditorFile);
+				treeView.selectedFile = activeEditorFile;
             }
         }
 	
 		private function onProjectFilesUpdates(event:ProjectEvent):void
 		{
-			treeView.refreshItem(event.anObject as FileWrapper);
+			var fileWrapper:FileWrapper = event.anObject as FileWrapper;
+			if (fileWrapper == null)
+			{
+				return;
+			}
+			treeView.refreshItem(fileWrapper.file);
 		}
 	
 		private function onProjectTreeUpdates(event:ProjectEvent):void

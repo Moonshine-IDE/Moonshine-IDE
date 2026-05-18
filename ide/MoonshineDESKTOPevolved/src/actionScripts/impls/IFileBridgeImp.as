@@ -75,6 +75,8 @@ package actionScripts.impls
 		private var _file: File = ConstantsCoreVO.LAST_BROWSED_LOCATION ? 
 			new File(ConstantsCoreVO.LAST_BROWSED_LOCATION) : 
 			File.desktopDirectory;
+		private var _pendingDirectoryListingSuccessHandlers:Array = [];
+		private var _pendingDirectoryListingErrorHandlers:Array = [];
 
 		private var _isBrowsed:Boolean;
 		public function get isBrowsed():Boolean
@@ -118,6 +120,16 @@ package actionScripts.impls
 				return;
 			}
 
+			var alreadyPending:Boolean = _pendingDirectoryListingSuccessHandlers.length > 0;
+			_pendingDirectoryListingSuccessHandlers.push(successHandler);
+			if (errorHandler != null)
+			{
+				_pendingDirectoryListingErrorHandlers.push(errorHandler);
+			}
+			if (alreadyPending)
+			{
+				return;
+			}
 			_file.addEventListener(FileListEvent.DIRECTORY_LISTING, onDirectoryListing);
 			_file.addEventListener(IOErrorEvent.IO_ERROR, onDirectoryListingError);
 
@@ -130,13 +142,23 @@ package actionScripts.impls
 				var fileLocations:Array = event.files.map(function(file:File, index:int, source:Array):FileLocation {
 					return new FileLocation(file.nativePath);
 				});
-				successHandler(fileLocations);
+				for each(var successHandler:Function in _pendingDirectoryListingSuccessHandlers)
+				{
+					successHandler(fileLocations);
+				}
+				_pendingDirectoryListingSuccessHandlers.length = 0;
+				_pendingDirectoryListingErrorHandlers.length = 0;
 			}
 			function onDirectoryListingError(event:IOErrorEvent):void
 			{
 				_file.removeEventListener(FileListEvent.DIRECTORY_LISTING, onDirectoryListing);
 				_file.removeEventListener(IOErrorEvent.IO_ERROR, onDirectoryListingError);
-				if (errorHandler != null) errorHandler(event.text);
+				for each(var errorHandler:Function in _pendingDirectoryListingErrorHandlers)
+				{
+					errorHandler(event.text);
+				}
+				_pendingDirectoryListingSuccessHandlers.length = 0;
+				_pendingDirectoryListingErrorHandlers.length = 0;
 			}
 		}
 		

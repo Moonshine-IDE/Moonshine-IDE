@@ -301,7 +301,7 @@ package actionScripts.plugin.rename
 			}
 			
 			// updating the tree view
-			var tmpParent:FileWrapper = model.mainView.getTreeViewPanel().getParentItem(fileWrapper);
+
 		    // update the windows Title name and other name after page rename
 
 			//update subfrom name in the old form/subfrom 
@@ -357,13 +357,17 @@ package actionScripts.plugin.rename
 				{
 					model.mainView.getTreeViewPanel().sortChildren(fileWrapper);
 					
+					var tmpParent:FileWrapper = model.mainView.getTreeViewPanel().getParentItem(fileWrapper);
 					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(fileWrapper, null, tmpParent);
-					model.mainView.getTreeViewPanel().selectedFile = tmpFileW;
-					
-					UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function():void
+					if (tmpFileW != null)
 					{
-						model.mainView.getTreeViewPanel().scrollToItem(tmpFileW);
-					});
+						model.mainView.getTreeViewPanel().selectedFile = tmpFileW.file;
+						
+						UIComponent(model.mainView.getTreeViewPanel().parent).callLater(function():void
+						{
+							model.mainView.getTreeViewPanel().scrollToItem(tmpFileW.file);
+						});
+					}
 					
 					dispatcher.dispatchEvent(new TreeMenuItemEvent(TreeMenuItemEvent.FILE_RENAMED, null, fileWrapper));
 					clearTimeout(timeoutValue);

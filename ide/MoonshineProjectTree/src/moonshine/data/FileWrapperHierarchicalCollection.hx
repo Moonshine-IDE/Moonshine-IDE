@@ -208,7 +208,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 				}
 			}
 			var parentFileLocation = current.file.fileBridge.parent;
-			if (parentFileLocation == null) {
+			if (parentFileLocation == null || !parentFileLocation.fileBridge.isDirectory) {
 				break;
 			}
 			var parentWrapper = new FileWrapper(parentFileLocation, false, current.projectReference, false);
