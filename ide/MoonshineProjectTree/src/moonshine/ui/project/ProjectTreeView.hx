@@ -194,8 +194,8 @@ class ProjectTreeView extends LayoutGroup {
 	**/
 	public var initializeItemRendererCallback:(FileWrapperHierarchicalItemRenderer) -> Void;
 
-	public var isActiveFileCallback:(FileWrapper) -> Bool;
-	public var isSourceFolderCallback:(FileWrapper) -> Bool;
+	public var isActiveFileCallback:(FileLocation) -> Bool;
+	public var isSourceFolderCallback:(FileLocation) -> Bool;
 
 	public function new() {
 		super();
@@ -640,7 +640,7 @@ class ProjectTreeView extends LayoutGroup {
 			if (item.file.fileBridge.isDirectory || item.isWorking)
 				return;
 
-			dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_OPEN_FILE, item));
+			dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_OPEN_FILE, item.file));
 		}
 	}
 
@@ -712,11 +712,11 @@ class ProjectTreeView extends LayoutGroup {
 	}
 
 	private function saveItemForOpen(item:FileWrapper):Void {
-		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_SAVE_TO_OPENED_ITEMS, item));
+		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_SAVE_TO_OPENED_ITEMS, item.file));
 	}
 
 	private function removeFromOpenedItems(item:FileWrapper):Void {
-		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_REMOVE_FROM_OPENED_ITEMS, item));
+		dispatchEvent(new ProjectTreeViewEvent(ProjectTreeViewEvent.EVENT_REMOVE_FROM_OPENED_ITEMS, item.file));
 	}
 
 	private function setItemsAsOpen(items:Array<Any>):Void {

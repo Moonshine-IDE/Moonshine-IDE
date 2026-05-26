@@ -191,6 +191,66 @@ package actionScripts.utils
 			cookie.flush();
 		}
 
+		public static function saveProjectTreeFileLocationForOpen(item:FileLocation):void
+		{
+            if (!IDEModel.getInstance().openPreviouslyOpenedProjectBranches) return;
+            if (!item) return;
+
+			var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            var projectTree:Array = cookie.data.projectTree;
+			if (!projectTree)
+			{
+				cookie.data.projectTree = projectTree = [];
+			}
+
+            var itemName:String = item.name;
+            var itemNativePath:String = item.fileBridge.nativePath;
+            var hasItemForOpen:Boolean = projectTree.some(
+                    function hasSomeItemForOpen(itemForOpen:Object, index:int, arr:Array):Boolean
+                    {
+                        return itemForOpen.hasOwnProperty(itemName) && itemForOpen[itemName] == itemNativePath;
+                    });
+
+            if (!hasItemForOpen)
+            {
+                var itemForSave:Object = {};
+                itemForSave[itemName] = itemNativePath;
+                projectTree.push(itemForSave);
+
+                cookie.data.projectTree = projectTree;
+                cookie.flush();
+            }
+		}
+		
+		public static function removeProjectTreeFileLocationFromOpenedItems(item:FileLocation):void
+		{
+            if (!IDEModel.getInstance().openPreviouslyOpenedProjectBranches) return;
+            if (!item) return;
+            
+            var cookie:Object = SharedObject.getLocal(SharedObjectConst.MOONSHINE_IDE_PROJECT);
+            var projectTree:Array = cookie.data.projectTree;
+            if (!projectTree) return;
+
+            var itemName:String = item.name;
+
+            var itemsRemoved:Boolean = false;
+            for (var i:int = 0; i < projectTree.length; i++)
+            {
+                var itemForRemove:Object = projectTree[i];
+                if (itemForRemove.hasOwnProperty(itemName))
+                {
+                    projectTree.removeAt(i);
+                    itemsRemoved = true;
+                }
+            }
+            cookie.data.projectTree = projectTree;
+
+            if (itemsRemoved)
+            {
+                cookie.flush();
+            }
+		}
+
 		public static function saveProjectTreeItemForOpen(item:Object, propertyNameKey:String,
                                                           propertyNameKeyValue:String):void
 		{

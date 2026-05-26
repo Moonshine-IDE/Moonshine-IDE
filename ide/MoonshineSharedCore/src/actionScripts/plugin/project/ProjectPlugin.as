@@ -708,15 +708,16 @@ package actionScripts.plugin.project
 			itemRenderer.isLoadingIcon = isLoadingIcon;
 		}
 
-		private function onTreeViewIsActiveFileRequest(fw:FileWrapper):Boolean
+		private function onTreeViewIsActiveFileRequest(file:FileLocation):Boolean
 		{
 			if (model.activeEditor is BasicTextEditor)
 			{
 				var textEditor:BasicTextEditor = BasicTextEditor(model.activeEditor);
 				if (textEditor.currentFile != null)
 				{
-					if (fw.nativePath != null
-						&& fw.nativePath == textEditor.currentFile.fileBridge.nativePath)
+					var nativePath:String = file.fileBridge.nativePath;
+					if (nativePath != null
+						&& nativePath == textEditor.currentFile.fileBridge.nativePath)
 					{
 						return true;
 					}
@@ -725,13 +726,22 @@ package actionScripts.plugin.project
 			return false;
 		}
 
-		private function onTreeViewIsSourceFolderRequest(fw:FileWrapper):Boolean
+		private function onTreeViewIsSourceFolderRequest(file:FileLocation):Boolean
 		{
-			if (fw.projectReference != null && fw.projectReference.sourceFolder != null)
+			var foundProject:ProjectVO = null;
+			for each (var currentProject:ProjectVO in model.projects)
 			{
-				return fw.nativePath == fw.projectReference.sourceFolder.fileBridge.nativePath;	
+				if (currentProject.projectFolder.containsFile(file))
+				{
+					foundProject = currentProject;
+					break;
+				}
 			}
-			return false;
+			if (foundProject == null || foundProject.sourceFolder == null)
+			{
+				return false;
+			}
+			return foundProject.sourceFolder.fileBridge.nativePath == file.fileBridge.nativePath;
 		}
 
 		private function onTreeViewWorkspaceChange(event:Event):void
@@ -751,20 +761,21 @@ package actionScripts.plugin.project
 
 		private function onTreeViewOpenFile(event:ProjectTreeViewEvent):void
 		{
-			var item:FileWrapper = event.file;
+			var location:FileLocation = event.file;
+			var wrapper:FileWrapper = fileLocationToFileWrapper(location);
 			dispatcher.dispatchEvent(
-					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [item.file], -1, [item])
+					new OpenFileEvent(OpenFileEvent.OPEN_FILE, [location], -1, [wrapper])
 			);
 		}
 
 		private function onTreeViewSaveToOpenedItems(event:ProjectTreeViewEvent):void
 		{
-			SharedObjectUtil.saveProjectTreeItemForOpen(event.file, PROPERTY_NAME_KEY, PROPERTY_NAME_KEY_VALUE);
+			SharedObjectUtil.saveProjectTreeFileLocationForOpen(event.file);
 		}
 
 		private function onTreeViewRemoveFromOpenedItems(event:ProjectTreeViewEvent):void
 		{
-			SharedObjectUtil.removeProjectTreeItemFromOpenedItems(event.file, PROPERTY_NAME_KEY, PROPERTY_NAME_KEY_VALUE);
+			SharedObjectUtil.removeProjectTreeFileLocationFromOpenedItems(event.file);
 		}
 
 		private function refreshActiveProject(file:FileLocation):void

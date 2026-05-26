@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package moonshine.events;
 
-import actionScripts.valueObjects.FileWrapper;
+import actionScripts.factory.FileLocation;
 import openfl.events.Event;
 
 class ProjectTreeViewEvent extends Event {
@@ -41,9 +41,9 @@ class ProjectTreeViewEvent extends Event {
 	public static final EVENT_SAVE_TO_OPENED_ITEMS:String = "saveToOpenedItems";
 	public static final EVENT_REMOVE_FROM_OPENED_ITEMS:String = "removeFromOpenedItems";
 
-	public var file:FileWrapper;
+	public var file:FileLocation;
 
-	public function new(type:String, file:FileWrapper = null) {
+	public function new(type:String, file:FileLocation = null) {
 		super(type, false, false);
 		this.file = file;
 	}

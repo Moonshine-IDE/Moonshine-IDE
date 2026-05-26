@@ -31,6 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package moonshine.ui.renderers;
 
+import actionScripts.factory.FileLocation;
 import actionScripts.valueObjects.FileWrapper;
 import feathers.controls.BitmapImage;
 import feathers.controls.Menu;
@@ -81,8 +82,8 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 
 	public var feathersContextMenuFactory:(data:Dynamic) -> Menu;
 
-	public var isActiveFileCallback:(FileWrapper) -> Bool;
-	public var isSourceFolderCallback:(FileWrapper) -> Bool;
+	public var isActiveFileCallback:(FileLocation) -> Bool;
+	public var isSourceFolderCallback:(FileLocation) -> Bool;
 
 	private var _currentIsOpenIcon:DisplayObject = null;
 	private var _currentIsSourceFolderIcon:DisplayObject = null;
@@ -222,7 +223,7 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 				// Show lil' dot if we are the currently opened file
 				var isActiveFile:Bool = false;
 				if (isActiveFileCallback != null) {
-					isActiveFile = isActiveFileCallback(fw);
+					isActiveFile = isActiveFileCallback(fw.file);
 				}
 				isOpenIcon.visible = isActiveFile;
 			}
@@ -230,7 +231,7 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 			if (isSourceFolderIcon != null) {
 				var isSourceFolder = fw.isSourceFolder;
 				if (!isSourceFolder && isSourceFolderCallback != null) {
-					isSourceFolder = isSourceFolderCallback(fw);
+					isSourceFolder = isSourceFolderCallback(fw.file);
 				}
 				isSourceFolderIcon.visible = isSourceFolder;
 			}
