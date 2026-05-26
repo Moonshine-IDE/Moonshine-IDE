@@ -551,7 +551,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (itemToFind == null) {
 			return null;
 		}
-		var wrapper = new FileWrapper(itemToFind, false, null, false);
+		var wrapper = createFileWrapper(itemToFind);
 		// locationOf does not check for the exact object. it checks for
 		// an object that has the same native path. this allows us to
 		// convert into the object that's actually in the data provider.
@@ -713,6 +713,20 @@ class ProjectTreeView extends LayoutGroup {
 			return;
 		}
 		_treeView.dataProvider.updateAt(location);
+	}
+	
+	private function createFileWrapper(item:FileLocation):FileWrapper
+	{
+		var projectReference:ProjectReferenceVO = null;
+		for (i in 0..._dataProvider.length) {
+			var root = _dataProvider.get(i);
+			if (StringTools.startsWith(item.fileBridge.nativePath, root.fileBridge.nativePath + root.fileBridge.separator)) {
+				projectReference = new ProjectReferenceVO();
+				projectReference.path = root.fileBridge.nativePath;
+				break;
+			}
+		}
+		return new FileWrapper(item, false, projectReference, false);
 	}
 
 	private function findFileWrapperAgainstFileLocation(current:FileWrapper, target:FileLocation):FileWrapper {
