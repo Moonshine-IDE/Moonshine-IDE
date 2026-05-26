@@ -355,9 +355,9 @@ package actionScripts.plugin.rename
 			
 			var timeoutValue:uint = setTimeout(function():void 
 				{
-					model.mainView.getTreeViewPanel().sortChildren(fileWrapper);
+					UtilsCore.sortChildren(fileWrapper);
 					
-					var tmpParent:FileWrapper = model.mainView.getTreeViewPanel().getParentItem(fileWrapper);
+					var tmpParent:FileWrapper = UtilsCore.getParentItem(fileWrapper);
 					var tmpFileW:FileWrapper = UtilsCore.findFileWrapperAgainstProject(fileWrapper, null, tmpParent);
 					if (tmpFileW != null)
 					{
@@ -627,7 +627,7 @@ package actionScripts.plugin.rename
 				newFilePopup.openType = NewFilePopup.AS_DUPLICATE_FILE;
 				newFilePopup.folderFileLocation = event.fileWrapper.file;
 				
-				var creatingItemIn:FileWrapper = FileWrapper(model.mainView.getTreeViewPanel().getParentItem(event.fileWrapper));
+				var creatingItemIn:FileWrapper = UtilsCore.getParentItem(event.fileWrapper);
 				newFilePopup.wrapperOfFolderLocation = creatingItemIn;
 				newFilePopup.wrapperBelongToProject = UtilsCore.getProjectFromProjectFolder(creatingItemIn);
 

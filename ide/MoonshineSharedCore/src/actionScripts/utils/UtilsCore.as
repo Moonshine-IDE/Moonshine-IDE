@@ -481,6 +481,66 @@ package actionScripts.utils
 			}
 			return current;
 		}
+
+		public static function sortChildren(item:FileWrapper):void
+		{
+			if (item == null)
+			{
+				return;
+			}
+
+			if (item.file.fileBridge.isDirectory)
+			{
+				item.sortChildren();
+			}
+			else
+			{
+				var parentItem:FileWrapper = UtilsCore.getParentItem(item);
+				parentItem.sortChildren();
+			}
+		}
+
+		public static function getParentItem(item:FileWrapper):FileWrapper
+		{
+			if (item == null)
+			{
+				return null;
+			}
+
+			var foundProject:ProjectVO = null;
+			for (var i:int = 0; i < model.projects.length; i++) 
+			{
+				var project:ProjectVO = ProjectVO(model.projects.getItemAt(i));
+				if (item.projectReference != null)
+				{
+					if (item.projectReference.path == project.projectFolder.nativePath)
+					{
+						foundProject = project;
+						break;
+					}
+				}
+				else if (StringTools.startsWith(item.nativePath, project.projectFolder.nativePath + model.fileCore.separator)) 
+				{
+					foundProject = project;
+					break;
+				}
+			}
+			if (foundProject == null)
+			{
+				return null;
+			}
+
+			var projectReference:ProjectReferenceVO = item.projectReference;
+			if (projectReference == null)
+			{
+				projectReference = new ProjectReferenceVO();
+				projectReference.path = project.projectFolder.nativePath;
+			}
+
+			var parentItem:FileWrapper = new FileWrapper(item.file.fileBridge.parent, false, projectReference, false);
+			var result:FileWrapper = findFileWrapperAgainstProject(parentItem, foundProject);
+			return result;
+		}
 		
 		/**
 		 * Another way of finding fileWrapper

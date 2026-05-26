@@ -272,25 +272,6 @@ class ProjectTreeView extends LayoutGroup {
 		return true;
 	}
 
-	public function getParentItem(item:FileWrapper):FileWrapper {
-		if (_treeView == null || item == null) {
-			return null;
-		}
-
-		var location:Array<Int> = _treeView.dataProvider.locationOf(item);
-		if (location == null) {
-			return null;
-		}
-
-		location.pop();
-
-		if (location.length == 0) {
-			return null;
-		}
-
-		return cast(_treeView.dataProvider.get(location), FileWrapper);
-	}
-
 	public function scrollToItem(item:FileLocation):Void {
 		if (_treeView == null) {
 			return;
@@ -306,29 +287,6 @@ class ProjectTreeView extends LayoutGroup {
 			return;
 		}
 		_treeView.scrollToLocation(location);
-	}
-
-	public function sortChildren(wrapper:FileWrapper):Void {
-		if (wrapper == null)
-			return;
-
-		if (_treeView.dataProvider.isBranch(wrapper)) {
-			wrapper.sortChildren();
-		} else {
-			var location:Array<Int> = _treeView.dataProvider.locationOf(wrapper);
-			if (location == null)
-				return;
-
-			location.pop();
-			if (location.length == 0)
-				return;
-
-			var parentWrapper:FileWrapper = Std.downcast(_treeView.dataProvider.get(location), FileWrapper);
-			if (parentWrapper == null)
-				return;
-
-			parentWrapper.sortChildren();
-		}
 	}
 
 	public function expandItem(item:FileLocation, open:Bool):Void {
@@ -394,7 +352,7 @@ class ProjectTreeView extends LayoutGroup {
 
 		while (wrappersToSort.length > 0) {
 			var tmpFW = wrappersToSort.shift();
-			sortChildren(tmpFW);
+			tmpFW.sortChildren();
 			var children:Array<FileWrapper> = tmpFW.children;
 			if (children != null) {
 				var childCount:Int = children.length;

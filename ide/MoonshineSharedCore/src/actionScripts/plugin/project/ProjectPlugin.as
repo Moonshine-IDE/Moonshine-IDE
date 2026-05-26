@@ -919,7 +919,7 @@ package actionScripts.plugin.project
 			// refresh the folder section and select
 			var timeoutValue:uint = setTimeout(function ():void
 			{
-				treeView.sortChildren(insideLocation);
+				UtilsCore.sortChildren(insideLocation);
 
 				// after a refresh new fileWrapper being created,
 				// so we need new instance of the wrapper so we can
@@ -953,7 +953,7 @@ package actionScripts.plugin.project
 
 			if (fileWrapper.file.fileBridge.isDirectory) 
 			{
-				treeView.sortChildren(fileWrapper);
+				UtilsCore.sortChildren(fileWrapper);
 			}
 		}
 	
@@ -1108,7 +1108,7 @@ package actionScripts.plugin.project
 				case ProjectTreeContextMenuItem.PASTE_FILE:
 				{
 					dispatcher.dispatchEvent(new FileCopyPasteEvent(FileCopyPasteEvent.EVENT_PASTE_FILES,
-						fileWrapper.file.fileBridge.isDirectory ? [fileWrapper] : [treeView.getParentItem(fileWrapper)]));
+						fileWrapper.file.fileBridge.isDirectory ? [fileWrapper] : [UtilsCore.getParentItem(fileWrapper)]));
 					break;
 				}
 				case ProjectTreeContextMenuItem.SET_AS_DEFAULT_APPLICATION:
@@ -1116,7 +1116,7 @@ package actionScripts.plugin.project
 					if(model.activeProject is AS3ProjectVO)
 					{
 						TemplatingHelper.setFileAsDefaultApplication(fileWrapper,
-							FileWrapper(treeView.getParentItem(fileWrapper)));
+							UtilsCore.getParentItem(fileWrapper));
 					}
 					else if(model.activeProject is JavaProjectVO)
 					{
@@ -1135,7 +1135,7 @@ package actionScripts.plugin.project
 					// Right-clicking a directory creates the file in the dir,
 					// otherwise create in same dir as clicked file
 					creatingItemIn = (fileWrapper.file.fileBridge.isDirectory || !fileWrapper.file.fileBridge.exists) ?
-							fileWrapper : treeView.getParentItem(fileWrapper);
+							fileWrapper : UtilsCore.getParentItem(fileWrapper);
 					if(!creatingItemIn.file.fileBridge.checkFileExistenceAndReport())
 					{
 						return;
@@ -1235,7 +1235,7 @@ package actionScripts.plugin.project
 			{
 				if(!event2 || event2.detail == Alert.YES)
 				{
-					var parentFileWrapper:FileWrapper = treeView.getParentItem(fileWrapper);
+					var parentFileWrapper:FileWrapper = UtilsCore.getParentItem(fileWrapper);
 					var projectAssociatedWithFile:ProjectVO = UtilsCore.getProjectFromProjectFolder(
 						fileLocationToFileWrapper(treeView.selectedFiles[0] as FileLocation));
 					dispatcher.dispatchEvent(new DeleteFileEvent(fileWrapper.file,

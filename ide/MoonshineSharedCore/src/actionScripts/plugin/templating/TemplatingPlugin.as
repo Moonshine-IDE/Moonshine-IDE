@@ -1242,7 +1242,7 @@ package actionScripts.plugin.templating
 					UtilsCore.findFileWrapperAgainstFileLocation(model.activeProject.projectFolder, model.mainView.getTreeViewPanel().selectedFile);
 			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
 			{
-				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().getParentItem(insideLocation));
+				insideLocation = UtilsCore.getParentItem(insideLocation);
 			}
 			if (insideLocation)
 			{
@@ -1267,7 +1267,7 @@ package actionScripts.plugin.templating
 					UtilsCore.findFileWrapperAgainstFileLocation(model.activeProject.projectFolder, model.mainView.getTreeViewPanel().selectedFile);
 			if (insideLocation && !insideLocation.file.fileBridge.isDirectory)
 			{
-				insideLocation = FileWrapper(model.mainView.getTreeViewPanel().getParentItem(insideLocation));
+				insideLocation = UtilsCore.getParentItem(insideLocation);
 			}
 			if (insideLocation)
 			{
