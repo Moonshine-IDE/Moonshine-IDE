@@ -537,7 +537,7 @@ package actionScripts.utils
 				projectReference.path = project.projectFolder.nativePath;
 			}
 
-			var parentItem:FileWrapper = new FileWrapper(item.file.fileBridge.parent, false, projectReference, false);
+			var parentItem:FileWrapper = new FileWrapper(item.file.fileBridge.parent, false, projectReference, true);
 			var result:FileWrapper = findFileWrapperAgainstProject(parentItem, foundProject);
 			return result;
 		}
