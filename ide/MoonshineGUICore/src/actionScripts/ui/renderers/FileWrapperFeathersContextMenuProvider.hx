@@ -399,7 +399,7 @@ class FileWrapperFeathersContextMenuProvider {
 			item.data = eventType;
 			
 			var enableTypes = TemplatingHelper.getTemplateMenuType(label);
-			if (enableTypes.length == 0)
+			if (activeProject == null || enableTypes.length == 0)
 			{
 				item.enabled = true;
 			}
