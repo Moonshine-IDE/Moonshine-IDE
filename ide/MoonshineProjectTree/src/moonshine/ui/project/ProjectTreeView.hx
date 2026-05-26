@@ -282,7 +282,7 @@ class ProjectTreeView extends LayoutGroup {
 			return;
 		}
 
-		var location:Array<Int> = _treeView.dataProvider.locationOf(item);
+		var location:Array<Int> = _treeView.dataProvider.locationOf(wrapper);
 		if (location == null) {
 			return;
 		}
