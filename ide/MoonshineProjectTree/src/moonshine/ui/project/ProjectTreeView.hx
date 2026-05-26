@@ -59,7 +59,7 @@ class ProjectTreeView extends LayoutGroup {
 		if (_treeView == null) {
 			return null;
 		}
-		return cast _treeView.selectedItems;
+		return _treeView.selectedItems.map(wrapper -> wrapper.file);
 	}
 
 	private function set_selectedFiles(value:Array<FileLocation>):Array<FileLocation> {
