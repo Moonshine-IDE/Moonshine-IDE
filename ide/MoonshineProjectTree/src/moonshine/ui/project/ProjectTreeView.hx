@@ -5,11 +5,11 @@ import actionScripts.factory.FileLocation;
 import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
 import actionScripts.valueObjects.WorkspaceVO;
-import moonshine.data.FileWrapperHierarchicalCollection;
-import moonshine.events.FileWrapperHierarchicalCollectionEvent;
+import moonshine.data.ProjectTreeViewCollection;
+import moonshine.events.ProjectTreeViewCollectionEvent;
 import moonshine.events.ProjectTreeViewEvent;
 import moonshine.ui.project.ProjectViewHeader;
-import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer;
+import moonshine.ui.renderers.ProjectTreeViewItemRenderer;
 import feathers.controls.LayoutGroup;
 import feathers.controls.TreeView;
 import feathers.data.IFlatCollection;
@@ -143,7 +143,7 @@ class ProjectTreeView extends LayoutGroup {
 
 	public var projects:IFlatCollection<ProjectVO>;
 
-	private var _hierarchicalCollection:FileWrapperHierarchicalCollection;
+	private var _hierarchicalCollection:ProjectTreeViewCollection;
 
 	private var _dataProvider:IFlatCollection<FileLocation>;
 
@@ -158,7 +158,7 @@ class ProjectTreeView extends LayoutGroup {
 			return _dataProvider;
 		}
 		if (_hierarchicalCollection != null) {
-			_hierarchicalCollection.removeEventListener(FileWrapperHierarchicalCollectionEvent.DIRECTORY_LISTING_RECEIVED, onDirectoryListingReceived);
+			_hierarchicalCollection.removeEventListener(ProjectTreeViewCollectionEvent.DIRECTORY_LISTING_RECEIVED, onDirectoryListingReceived);
 		}
 		_dataProvider = value;
 		if (value != null) {
@@ -169,7 +169,7 @@ class ProjectTreeView extends LayoutGroup {
 				projRef.path = item.fileBridge.nativePath.toString();
 				roots.push(new FileWrapper(item, true, projRef));
 			}
-			_hierarchicalCollection = new FileWrapperHierarchicalCollection(roots);
+			_hierarchicalCollection = new ProjectTreeViewCollection(roots);
 		} else {
 			_hierarchicalCollection = null;
 		}
@@ -177,7 +177,7 @@ class ProjectTreeView extends LayoutGroup {
 			_treeView.dataProvider = _hierarchicalCollection;
 		}
 		if (_hierarchicalCollection != null) {
-			_hierarchicalCollection.addEventListener(FileWrapperHierarchicalCollectionEvent.DIRECTORY_LISTING_RECEIVED, onDirectoryListingReceived);
+			_hierarchicalCollection.addEventListener(ProjectTreeViewCollectionEvent.DIRECTORY_LISTING_RECEIVED, onDirectoryListingReceived);
 			reopenPreviouslyClosedItems(COLLECTION_EVENT_KIND_RESET, _hierarchicalCollection.roots.copy());
 		}
 		return _dataProvider;
@@ -192,7 +192,7 @@ class ProjectTreeView extends LayoutGroup {
 		Used to initialize the item renderer, such as configuring a context
 		menu or customizing skins.
 	**/
-	public var initializeItemRendererCallback:(FileWrapperHierarchicalItemRenderer) -> Void;
+	public var initializeItemRendererCallback:(ProjectTreeViewItemRenderer) -> Void;
 
 	public var isActiveFileCallback:(FileLocation) -> Bool;
 	public var isSourceFolderCallback:(FileLocation) -> Bool;
@@ -224,7 +224,7 @@ class ProjectTreeView extends LayoutGroup {
 		}
 		_treeView.allowMultipleSelection = true;
 		_treeView.itemRendererRecycler = DisplayObjectRecycler.withFunction(function():DisplayObject {
-			var itemRenderer:FileWrapperHierarchicalItemRenderer = new FileWrapperHierarchicalItemRenderer();
+			var itemRenderer:ProjectTreeViewItemRenderer = new ProjectTreeViewItemRenderer();
 			itemRenderer.doubleClickEnabled = true;
 			itemRenderer.isActiveFileCallback = isActiveFileCallback;
 			itemRenderer.isSourceFolderCallback = isSourceFolderCallback;
@@ -664,7 +664,7 @@ class ProjectTreeView extends LayoutGroup {
 		}
 	}
 
-	private function onDirectoryListingReceived(event:FileWrapperHierarchicalCollectionEvent):Void {
+	private function onDirectoryListingReceived(event:ProjectTreeViewCollectionEvent):Void {
 		if (_treeView == null || _treeView.dataProvider != _hierarchicalCollection || event.fileWrapper == null) {
 			return;
 		}

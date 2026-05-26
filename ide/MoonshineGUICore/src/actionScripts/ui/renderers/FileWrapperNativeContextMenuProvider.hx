@@ -45,16 +45,16 @@ import actionScripts.valueObjects.FileWrapper;
 import actionScripts.valueObjects.ProjectVO;
 import components.views.project.ProjectTreeContextMenuItem;
 import feathers.controls.TreeView;
-import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer;
+import moonshine.ui.renderers.ProjectTreeViewItemRenderer;
 import openfl.desktop.Clipboard;
 import openfl.desktop.ClipboardFormats;
 import openfl.events.Event;
 
 class FileWrapperNativeContextMenuProvider {
-	private var contextMenuOwner:FileWrapperHierarchicalItemRenderer;
+	private var contextMenuOwner:ProjectTreeViewItemRenderer;
 	private var model:IDEModel = IDEModel.getInstance();
 
-	public function new(target:FileWrapperHierarchicalItemRenderer) {
+	public function new(target:ProjectTreeViewItemRenderer) {
 		contextMenuOwner = target;
 		contextMenuOwner.nativeContextMenuFactory = provide;
 	}

@@ -48,17 +48,17 @@ import feathers.controls.Menu;
 import feathers.controls.TreeView;
 import feathers.data.ArrayHierarchicalCollection;
 import feathers.events.MenuEvent;
-import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer;
+import moonshine.ui.renderers.ProjectTreeViewItemRenderer;
 import openfl.desktop.Clipboard;
 import openfl.desktop.ClipboardFormats;
 import openfl.events.Event;
 
 class FileWrapperFeathersContextMenuProvider {
-	private var contextMenuOwner:FileWrapperHierarchicalItemRenderer;
+	private var contextMenuOwner:ProjectTreeViewItemRenderer;
 	private var model:IDEModel = IDEModel.getInstance();
 	private var dataProvider:ArrayHierarchicalCollection<MenuItem>;
 
-	public function new(target:FileWrapperHierarchicalItemRenderer) {
+	public function new(target:ProjectTreeViewItemRenderer) {
 		contextMenuOwner = target;
 		contextMenuOwner.feathersContextMenuFactory = provide;
 	}

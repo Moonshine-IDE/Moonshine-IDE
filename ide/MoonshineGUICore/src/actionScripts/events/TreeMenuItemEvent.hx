@@ -33,7 +33,7 @@
 package actionScripts.events;
 
 import actionScripts.valueObjects.FileWrapper;
-import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer;
+import moonshine.ui.renderers.ProjectTreeViewItemRenderer;
 import openfl.events.Event;
 
 class TreeMenuItemEvent extends Event {
@@ -47,7 +47,7 @@ class TreeMenuItemEvent extends Event {
 
 	public var menuLabel:String;
 	public var data:FileWrapper;
-	public var renderer:FileWrapperHierarchicalItemRenderer;
+	public var renderer:ProjectTreeViewItemRenderer;
 	public var extra:Any;
 	public var showAlert:Bool;
 

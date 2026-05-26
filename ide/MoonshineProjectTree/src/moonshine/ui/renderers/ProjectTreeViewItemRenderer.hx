@@ -46,10 +46,10 @@ import openfl.display.Sprite;
 import openfl.events.MouseEvent;
 import openfl.filters.GlowFilter;
 
-class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer implements ITreeViewItemRenderer {
+class ProjectTreeViewItemRenderer extends HierarchicalItemRenderer implements ITreeViewItemRenderer {
 	public function new() {
 		super();
-		addEventListener(MouseEvent.RIGHT_CLICK, fileWrapperHierarchicalItemRenderer_rightClickHandler);
+		addEventListener(MouseEvent.RIGHT_CLICK, projectTreeViewItemRenderer_rightClickHandler);
 	}
 
 	private var _location:Array<Int>;
@@ -305,7 +305,7 @@ class FileWrapperHierarchicalItemRenderer extends HierarchicalItemRenderer imple
 		contextMenu = nativeContextMenuFactory != null ? nativeContextMenuFactory(data) : null;
 	}
 
-	private function fileWrapperHierarchicalItemRenderer_rightClickHandler(event:MouseEvent):Void {
+	private function projectTreeViewItemRenderer_rightClickHandler(event:MouseEvent):Void {
 		if (nativeContextMenuFactory != null || feathersContextMenuFactory == null) {
 			return;
 		}

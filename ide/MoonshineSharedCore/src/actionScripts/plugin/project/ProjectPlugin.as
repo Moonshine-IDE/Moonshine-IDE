@@ -105,11 +105,10 @@ package actionScripts.plugin.project
 	
 	import feathers.controls.BitmapImage;
 
-	import moonshine.data.FileWrapperHierarchicalCollection;
 	import moonshine.events.ProjectTreeViewEvent;
 	import moonshine.plugin.workspace.events.WorkspaceEvent;
 	import moonshine.ui.project.ProjectTreeView;
-	import moonshine.ui.renderers.FileWrapperHierarchicalItemRenderer
+	import moonshine.ui.renderers.ProjectTreeViewItemRenderer
 	import actionScripts.ui.renderers.FileWrapperNativeContextMenuProvider;
 	import feathers.data.ArrayCollection;
 
@@ -682,7 +681,7 @@ package actionScripts.plugin.project
 			return cookie.data.projectTree;
 		}
 
-		private function onTreeViewInitItemRenderer(itemRenderer:FileWrapperHierarchicalItemRenderer):void
+		private function onTreeViewInitItemRenderer(itemRenderer:ProjectTreeViewItemRenderer):void
 		{
 			new FileWrapperNativeContextMenuProvider(itemRenderer);
 
@@ -1269,7 +1268,7 @@ package actionScripts.plugin.project
 				* @local
 				* Rename file/folder
 				*/
-			function renameFileFolder(rendererObject:FileWrapperHierarchicalItemRenderer):void
+			function renameFileFolder(rendererObject:ProjectTreeViewItemRenderer):void
 			{
 				dispatcher.dispatchEvent(new RenameEvent(RenameEvent.EVENT_OPEN_RENAME_FILE_VIEW, rendererObject.data));
 			}

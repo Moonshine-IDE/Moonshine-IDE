@@ -1,4 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 //
 //  Copyright (C) STARTcloud, Inc. 2015-2025. All rights reserved.
 //
@@ -35,7 +39,7 @@ package moonshine.events;
 import actionScripts.valueObjects.FileWrapper;
 import openfl.events.Event;
 
-class FileWrapperHierarchicalCollectionEvent extends Event {
+class ProjectTreeViewCollectionEvent extends Event {
 	public static final DIRECTORY_LISTING_RECEIVED:String = "directoryListingReceived";
 
 	public var fileWrapper:FileWrapper;

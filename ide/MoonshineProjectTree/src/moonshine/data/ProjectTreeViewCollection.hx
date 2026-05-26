@@ -39,13 +39,13 @@ import actionScripts.valueObjects.FileWrapper;
 import feathers.data.IHierarchicalCollection;
 import feathers.events.FeathersEvent;
 import feathers.events.HierarchicalCollectionEvent;
-import moonshine.events.FileWrapperHierarchicalCollectionEvent;
+import moonshine.events.ProjectTreeViewCollectionEvent;
 import openfl.errors.ArgumentError;
 import openfl.errors.Error;
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
 
-class FileWrapperHierarchicalCollection extends EventDispatcher implements IHierarchicalCollection<FileWrapper> {
+class ProjectTreeViewCollection extends EventDispatcher implements IHierarchicalCollection<FileWrapper> {
 	private static function defaultSortCompareFunction(a:FileWrapper, b:FileWrapper):Int {
 		if (a.file.fileBridge.isDirectory && !b.file.fileBridge.isDirectory) {
 			return -1;
@@ -422,7 +422,7 @@ class FileWrapperHierarchicalCollection extends EventDispatcher implements IHier
 				_childrenMap.set(nativePath, children);
 			}
 			fileWrapper.children = children;
-			dispatchEvent(new FileWrapperHierarchicalCollectionEvent(FileWrapperHierarchicalCollectionEvent.DIRECTORY_LISTING_RECEIVED, fileWrapper));
+			dispatchEvent(new ProjectTreeViewCollectionEvent(ProjectTreeViewCollectionEvent.DIRECTORY_LISTING_RECEIVED, fileWrapper));
 			var location = locationOf(fileWrapper);
 			if (location != null) {
 				HierarchicalCollectionEvent.dispatch(this, HierarchicalCollectionEvent.UPDATE_ITEM, location);
