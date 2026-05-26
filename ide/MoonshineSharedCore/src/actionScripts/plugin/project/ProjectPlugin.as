@@ -1367,17 +1367,6 @@ package actionScripts.plugin.project
 			return locations.map(function(location:FileLocation, index:int, source:Array):FileWrapper
 			{
 				return fileLocationToFileWrapper(location);
-				var foundProject:ProjectVO = null;
-				for each (var currentProject:ProjectVO in model.projects)
-				{
-					if (currentProject.projectFolder.containsFile(location))
-					{
-						foundProject = currentProject;
-						break;
-					}
-				}
-						
-				return UtilsCore.findFileWrapperAgainstFileLocation(currentProject.projectFolder, location);
 			}).filter(function(wrapper:FileWrapper, index:int, source:Array):Boolean
 			{
 				return wrapper != null;
